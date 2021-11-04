@@ -1,6 +1,6 @@
 from .block_type import BlockType
 import itertools
-from .mcnp_input import Message, Title, Comment, Card
+from .mcnp_input import Card, Comment, Message, Title
 import re
 
 
