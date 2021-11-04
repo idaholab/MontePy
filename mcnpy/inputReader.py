@@ -83,6 +83,8 @@ def read_data(fh):
         else:
             if commentFinder.match(line):
                 if not is_in_comment:
+                    if words:
+                        yield Card(block_type, words)
                     # removes leading comment info
                     words = [commentFinder.split(line)[1]]
                     is_in_comment = True
