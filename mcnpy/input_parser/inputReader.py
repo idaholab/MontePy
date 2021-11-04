@@ -233,6 +233,3 @@ class BlockType(Enum):
     SURFACE = 1
     DATA = 2
 
-
-for row in read_input("simple.imcnp"):
-    print(row)
