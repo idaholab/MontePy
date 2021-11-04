@@ -1,4 +1,4 @@
-from enum import Enum, unique
+from .block_type import BlockType
 import itertools
 import re
 
@@ -227,9 +227,4 @@ class Card(MCNP_Input):
         """
         return self.__block_type
 
-@unique
-class BlockType(Enum):
-    CELL = 0
-    SURFACE = 1
-    DATA = 2
 
