@@ -4,10 +4,13 @@ from .mcnp_input import Card, Comment, Message, Title
 import re
 
 
-def read_input(input_file):
+def read_input_syntax(input_file):
     """
     Creates a generator function to return a new MCNP input card for 
     every new one that is encountered.
+
+    This is meant to just handle the MCNP input syntax, it does not 
+    semantically parse the inputs.
 
     :param input_file: the path to the input file to be read
     :type input_file: str

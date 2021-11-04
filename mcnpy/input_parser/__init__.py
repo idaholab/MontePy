@@ -1,1 +1,1 @@
-from .inputReader import read_input
+from .input_reader import read_input
