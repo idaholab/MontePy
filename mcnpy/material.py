@@ -1,5 +1,6 @@
 from .errors import *
 from .isotope import Isotope
+import itertools
 from .material_component import MaterialComponent
 from .mcnp_card import MCNP_Card
 import re
@@ -33,12 +34,14 @@ class Material(MCNP_Card):
             )
         words_iter = iter(words[1:])
         set_atom_frac = False
+        has_parameters = False
         for isotope_str in words_iter:
             try:
                 isotope = Isotope(isotope_str)
                 fraction = next(words_iter)
                 fraction = float(fraction)
             except MalformedInputError:
+                has_parameters = True
                 break
             except ValueError:
                 raise MalformedInputError(
@@ -60,8 +63,12 @@ class Material(MCNP_Card):
                         "Material definitons cannot use atom and mass fraction at the same time",
                     )
             self.__material_components[isotope] = MaterialComponent(isotope, fraction)
+        param_str = ""
+        if has_parameters:
+            for string in itertools.chain([isotope_str], words_iter):
+                param_str += string + " "
+            self.__parameter_string = param_str
 
-    # TODO force to have only mass of number fraction
     @property
     def old_material_number(self):
         """
@@ -101,6 +108,16 @@ class Material(MCNP_Card):
         :rtype: dict
         """
         return self.__material_components
+
+    @property
+    def parameter_string(self):
+        """
+        String containing the key value pairs specified if any
+
+        :rtype: str
+        """
+        if hasattribute(self, "__parameter_string"):
+            return self.__parameter_string
 
     def format_for_mcnp_input(self):
         pass
