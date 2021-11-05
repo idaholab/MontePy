@@ -164,5 +164,8 @@ class Surface(MCNP_Card):
         assert number > 0
         self.__surface_number = number
 
+    def __str__(self):
+        return f"SURFACE: {self.surface_number}, {self.surface_type}"
+
     def format_for_mcnp_input(self):
         pass

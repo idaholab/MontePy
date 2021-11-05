@@ -211,3 +211,17 @@ class Cell(MCNP_Card):
 
     def format_for_mcnp_input(self):
         pass
+
+    def __str__(self):
+        ret = f"CELL: {self.__cell_number} \n"
+        ret += str(self.__material) + "\n"
+        if hasattr(self, "__density"):
+            ret += f"density: {self.__density} "
+            if self.__is_atom_dens:
+                ret += "atom/b-cm"
+            else:
+                ret += "g/cc"
+        for surface in self.__surfaces:
+            ret += str(surface) + "\n"
+        ret += "\n"
+        return ret

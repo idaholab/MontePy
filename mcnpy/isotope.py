@@ -1,5 +1,6 @@
 from .errors import *
 
+
 class Isotope:
     """
     A class to represent an MCNP isotope
@@ -17,7 +18,7 @@ class Isotope:
             self.__ZAID = parts[0]
             self.__library = parts[1]
         else:
-            raise MalformedInputError(ZAID, "Not a valid isotope identifier." )
+            raise MalformedInputError(ZAID, "Not a valid isotope identifier.")
 
     @property
     def ZAID(self):

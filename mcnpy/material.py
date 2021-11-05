@@ -119,5 +119,17 @@ class Material(MCNP_Card):
         if hasattr(self, "__parameter_string"):
             return self.__parameter_string
 
+    def __str__(self):
+        ret = f"MATERIAL: {self.material_number} fractions: "
+        if self.is_atom_fraction:
+            ret += "atom\n"
+        else:
+            ret += "mass\n"
+
+        for component in self.material_components:
+            ret += str(self.material_components[component]) + "\n"
+
+        return ret
+
     def format_for_mcnp_input(self):
         pass

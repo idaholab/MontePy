@@ -7,10 +7,12 @@ class MalformedInputError(Exception):
         self.message = message + "\n the full input: \n " + str(card)
         super().__init__(self.message)
 
+
 class UnsupportedFeature(Exception):
     """
     Raised when MCNP syntax that is not supported is found
     """
+
     def __init__(self, message):
         self.message = message
         super().__init__(self.message)

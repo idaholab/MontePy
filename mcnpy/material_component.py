@@ -1,4 +1,3 @@
-
 class MaterialComponent:
     """
     A class to represent a single component in a material.
@@ -33,3 +32,6 @@ class MaterialComponent:
         :rtype: float
         """
         return self.__fraction
+
+    def __str__(self):
+        return f"{self.isotope} {self.fraction}"

@@ -11,7 +11,10 @@ class MCNP_Problem:
     """
 
     def __init__(self, file_name):
-        """"""
+        """
+        :param file_name: the path to the file that will be read.
+        :type file_name: str
+        """
         self.__input_file = file_name
         self.__original_inputs = []
         self.__cells = []
@@ -135,6 +138,17 @@ class MCNP_Problem:
             material_dict[material.material_number] = material
         for surface in self.__surfaces:
             surface_dict[surface.surface_number] = surface
-
         for cell in self.__cells:
             cell.update_pointers(material_dict, surface_dict)
+
+    def __str__(self):
+        ret = f"MCNP problem for: {self.__input_file}\n"
+        if self.__message:
+            ret += str(self.__message) + "\n"
+        ret += str(self.__title)
+        for cell in self.__cells:
+            ret += str(cell) + "\n"
+        for data_card in self.__data_cards:
+            if not isinstance(data_card, Material):
+                ret += str(data_card) + "\n"
+        return ret

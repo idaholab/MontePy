@@ -7,10 +7,10 @@ import re
 
 def read_input_syntax(input_file):
     """
-    Creates a generator function to return a new MCNP input card for 
+    Creates a generator function to return a new MCNP input card for
     every new one that is encountered.
 
-    This is meant to just handle the MCNP input syntax, it does not 
+    This is meant to just handle the MCNP input syntax, it does not
     semantically parse the inputs.
 
     :param input_file: the path to the input file to be read
@@ -19,6 +19,7 @@ def read_input_syntax(input_file):
     with open(input_file, "r") as fh:
         yield from read_front_matters(fh)
         yield from read_data(fh)
+
 
 def read_front_matters(fh):
     """
@@ -37,21 +38,22 @@ def read_front_matters(fh):
     is_in_message_block = False
     found_title = False
     lines = []
-    for i,line in enumerate(fh):
+    for i, line in enumerate(fh):
         if i == 0 and line.startswith("MESSAGE:"):
             is_in_message_block = True
             lines.append(line.strip("MESSAGE: "))
         elif is_in_message_block:
             if line.strip():
                 lines.append(line)
-            #message block is terminated by a blank line
+            # message block is terminated by a blank line
             else:
                 yield Message(lines)
                 is_in_message_block = False
-        #title always follows complete message, or is first
+        # title always follows complete message, or is first
         else:
             yield Title(line)
             break
+
 
 def read_data(fh):
     """
@@ -68,16 +70,16 @@ def read_data(fh):
     :rtype: MCNP_input
 
     """
-    commentFinder = re.compile("^\s{0,4}C\s",re.IGNORECASE)
+    commentFinder = re.compile("^\s{0,4}C\s", re.IGNORECASE)
     block_counter = 0
     block_type = BlockType.CELL
     is_in_comment = False
     continue_card = False
     words = []
     for line in fh:
-        #transition to next block with blank line
+        # transition to next block with blank line
         if not line.strip():
-            #flush current card
+            # flush current card
             if is_in_comment:
                 yield Comment(words)
             else:
@@ -86,10 +88,10 @@ def read_data(fh):
             block_counter += 1
             if block_counter < 3:
                 block_type = BlockType(block_counter)
-            #if reached the final input block
+            # if reached the final input block
             else:
                 break
-        #if not a new block
+        # if not a new block
         else:
             if commentFinder.match(line):
                 if not is_in_comment:
@@ -100,28 +102,29 @@ def read_data(fh):
                     is_in_comment = True
                 else:
                     words.append(commentFinder.split(line)[1])
-            #if not a comment
+            # if not a comment
             else:
-                #terminate comment
+                # terminate comment
                 if is_in_comment:
                     is_in_comment = False
                     yield Comment(words)
                     words = []
-                if "#" in line[0:4]: 
-                    raise errors.UnsupportedFeature("Vertical Input format is not allowed")
-                #throw away comments
+                if "#" in line[0:4]:
+                    raise errors.UnsupportedFeature(
+                        "Vertical Input format is not allowed"
+                    )
+                # throw away comments
                 line = line.split("$")[0]
-                #removes continue card
-                temp_words = line.replace(" &","").split()
+                # removes continue card
+                temp_words = line.replace(" &", "").split()
                 # if beginning a new card
                 if line[0:4].strip() and not continue_card:
                     if words:
                         yield Card(block_type, words)
                     words = temp_words
-                else: 
+                else:
                     words = words + temp_words
                 if line.endswith(" &"):
                     continue_card = True
                 else:
                     continue_card = False
-

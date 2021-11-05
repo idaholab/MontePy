@@ -43,8 +43,11 @@ class DataCard(MCNP_Card):
         """
         identifier = input_card.words[0].lower()
 
-        #material finder
+        # material finder
         if "m" in identifier and "mt" not in identifier:
             return Material(input_card, comment)
         else:
             return DataCard(input_card, comment)
+
+    def __str__(self):
+        return f"DATA CARD: {self.__words}"
