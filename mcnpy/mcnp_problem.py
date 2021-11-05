@@ -7,4 +7,77 @@ class MCNP_Problem:
     """
     A class to represent an entire MCNP problem in a semantic way.
     """
-    pass
+
+    def __init__(self, file_name):
+        """
+
+        """
+        self.__input_file = file_name
+
+    @property
+    def original_inputs(self):
+        """
+        A list of the MCNP_Inputs read from the original file.
+        
+        This should not be mutated, and should be used a reference to maintain
+        the structure
+        
+        :return: A list of the MCNP_Input objects representing the file as it was read
+        :rtype: list
+        """
+        return self.__original_inputs
+
+    @property
+    def cells(self):
+        """
+        A list of the Cell objects in this problem.
+
+        :return: a list of the Cell objects, ordered by the order they were in the input file.
+        :rtype: list
+        """
+        return self.__cells
+
+    @property
+    def surfaces(self):
+        """
+        A list of the Surface objects in this problem.
+
+        :return: a list of the Surface objects, ordered by the order they were in the input file.
+        :rtype: list
+        """
+        return self.__surfaces
+
+    @property
+    def materials(self):
+        """
+        A list of the Material objects in this problem.
+
+        :return: a list of the Material objects, ordered by the order they were in the input file.
+        :rtype: list
+        """
+        return self.__materials
+    
+    @property
+    def data_cards(self):
+        """
+        A list of the DataCard objects in this problem.
+
+        :return: a list of the DataCard objects, ordered by the order they were in the input file.
+        :rtype: list
+        """
+        return self.__data_cards
+
+    @property
+    def input_file(self):
+        """
+        The file name of the original file name this problem was read from.
+
+        :rtype: str
+        """
+        return self.__input_file
+
+    def parse_input(self):
+        """
+
+        """
+        pass
