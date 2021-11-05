@@ -77,8 +77,24 @@ class MCNP_Problem:
         """
         return self.__input_file
 
-    def parse_input(self):
+    @property
+    def message(self):
         """
+        The Message object at the beginning of the problem if any.
+        
+        :rtype: Message
+        """
+        if hasattr(self, "__message"):
+            return self.__message
 
+    @property
+    def title(self):
         """
-        pass
+        The Title object for the title. 
+
+        :rtype: Title
+        """
+        return self.__title
+
+
+
