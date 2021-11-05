@@ -1,6 +1,5 @@
 name = "MCNPy"
 __version__='0.0.1'
 
-from .cell import Cell
-from .surface import Surface
+from .mcnp_problem import MCNP_Problem
 from .input_parser import read_input
