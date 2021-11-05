@@ -189,7 +189,7 @@ class Cell(MCNP_Card):
 
         :rtype: str
         """
-        if hasattribute(self, "__parameters_string"):
+        if hasattr(self, "__parameters_string"):
             return self.__parameters_string
 
     def update_pointers(self, material_dict, surface_dict):
