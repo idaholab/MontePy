@@ -1,4 +1,5 @@
 from .block_type import BlockType
+from .. import errors
 import itertools
 from .mcnp_input import Card, Comment, Message, Title
 import re
@@ -101,6 +102,8 @@ def read_data(fh):
                     is_in_comment = False
                     yield Comment(words)
                     words = []
+                if "#" in line[0:4]: 
+                    raise errors.UnsupportedFeature("Vertical Input format is not allowed")
                 #throw away comments
                 line = line.split("$")[0]
                 #removes continue card
