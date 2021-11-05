@@ -41,10 +41,10 @@ class DataCard(MCNP_Card):
         :return: the parsed DataCard object
         :rtype: DataCard
         """
-        identifier = input_card.words[0]
+        identifier = input_card.words[0].lower()
 
         #material finder
-        if "m" in identifier.lower():
+        if "m" in identifier and "mt" not in identifier:
             return Material(input_card, comment)
         else:
             return DataCard(input_card, comment)
