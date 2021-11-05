@@ -1,8 +1,9 @@
 from .cell import Cell
 from .data_card import DataCard
-from .input_parser import read_input_syntax, Card, Comment, Message, Title
+from .input_parser import read_input_syntax, BlockType, Card, Comment, Message, Title
 from .material import Material
 from .surface import Surface
+
 
 class MCNP_Problem:
     """
@@ -10,19 +11,22 @@ class MCNP_Problem:
     """
 
     def __init__(self, file_name):
-        """
-
-        """
+        """"""
         self.__input_file = file_name
+        self.__original_inputs = []
+        self.__cells = []
+        self.__surfaces = []
+        self.__data_cards = []
+        self.__materials = []
 
     @property
     def original_inputs(self):
         """
         A list of the MCNP_Inputs read from the original file.
-        
+
         This should not be mutated, and should be used a reference to maintain
         the structure
-        
+
         :return: A list of the MCNP_Input objects representing the file as it was read
         :rtype: list
         """
@@ -57,7 +61,7 @@ class MCNP_Problem:
         :rtype: list
         """
         return self.__materials
-    
+
     @property
     def data_cards(self):
         """
@@ -81,7 +85,7 @@ class MCNP_Problem:
     def message(self):
         """
         The Message object at the beginning of the problem if any.
-        
+
         :rtype: Message
         """
         if hasattr(self, "__message"):
@@ -90,11 +94,38 @@ class MCNP_Problem:
     @property
     def title(self):
         """
-        The Title object for the title. 
+        The Title object for the title.
 
         :rtype: Title
         """
         return self.__title
 
+    def parse_input(self):
+        """
+        Semantically parses the MCNP file provided to the constructor.
+        """
+        comment_queue = None
+        for i, input_card in enumerate(read_input_syntax(self.__input_file)):
+            self.__original_inputs.append(input_card)
+            if i == 0 and isinstance(input_card, Message):
+                self.__message = input_card
 
+            elif isinstance(input_card, Title) and not hasattr(self, "__title"):
+                self.__title = input_card
 
+            elif isinstance(input_card, Comment):
+                comment_queue = input_card
+
+            elif isinstance(input_card, Card):
+                if input_card.block_type == BlockType.CELL:
+                    cell = Cell(input_card, comment_queue)
+                    self.__cells.append(cell)
+                if input_card.block_type == BlockType.SURFACE:
+                    surface = Surface(input_card, comment_queue)
+                    self.__surfaces.append(surface)
+                if input_card.block_type == BlockType.DATA:
+                    data = DataCard.parse_data(input_card, comment_queue)
+                    self.__data_cards.append(data)
+                    if isinstance(data, Material):
+                        self.__materials.append(data)
+                comment_queue = None

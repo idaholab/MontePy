@@ -1,3 +1,4 @@
+from .block_type import BlockType 
 
 class MCNP_Input:
     """
