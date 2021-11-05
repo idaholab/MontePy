@@ -4,4 +4,6 @@ class Material(MCNP_Card):
     """
     A class to represent an MCNP material.
     """
-    pass
+    
+    def format_for_mcnp_input(self):
+        pass

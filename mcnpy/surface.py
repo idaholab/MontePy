@@ -4,4 +4,6 @@ class Surface(MCNP_Card):
     """
     Object to hold a single MCNP surface
     """
-    pass
+    
+    def format_for_mcnp_input(self):
+        pass

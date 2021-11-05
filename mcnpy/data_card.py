@@ -4,4 +4,7 @@ class DataCard(MCNP_Card):
     """
     Parent class to describe all MCNP data inputs.
     """
-    pass
+    
+
+    def format_for_mcnp_input(self):
+        pass

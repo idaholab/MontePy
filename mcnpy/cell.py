@@ -5,5 +5,7 @@ class Cell(MCNP_Card):
     Object to represent a single MCNP cell defined in CGS.
 
     """
-    pass
+    
+    def format_for_mcnp_input(self):
+        pass
 
