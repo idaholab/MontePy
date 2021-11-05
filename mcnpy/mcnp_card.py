@@ -6,6 +6,10 @@ class MCNP_Card(ABC):
     Abstract class for semantic representations of MCNP input cards.
     """
 
+    def __init__(self, comment = None):
+        if comment:
+            self.__comment = comment
+
     @abstractmethod
     def format_for_mcnp_input(self):
         """
@@ -16,3 +20,13 @@ class MCNP_Card(ABC):
         :rtype: list
         """
         pass
+
+    @property
+    def comment(self):
+        """
+        The preceding comment block to this card if any.
+
+        :rtype: Comment
+        """
+        if hasattribute(self, "__comment"):
+            return self.__comment
