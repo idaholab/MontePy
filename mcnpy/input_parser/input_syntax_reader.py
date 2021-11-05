@@ -71,13 +71,18 @@ def read_data(fh):
     commentFinder = re.compile("^\s{0,4}C\s",re.IGNORECASE)
     block_counter = 0
     block_type = BlockType.CELL
-    is_in_card = False
     is_in_comment = False
     continue_card = False
     words = []
     for line in fh:
         #transition to next block with blank line
         if not line.strip():
+            #flush current card
+            if is_in_comment:
+                yield Comment(words)
+            else:
+                yield Card(block_type, words)
+            words = []
             block_counter += 1
             if block_counter < 3:
                 block_type = BlockType(block_counter)
