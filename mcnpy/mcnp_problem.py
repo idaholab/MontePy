@@ -129,3 +129,12 @@ class MCNP_Problem:
                     if isinstance(data, Material):
                         self.__materials.append(data)
                 comment_queue = None
+        material_dict = {}
+        surface_dict = {}
+        for material in self.__materials:
+            material_dict[material.material_number] = material
+        for surface in self.__surfaces:
+            surface_dict[surface.surface_number] = surface
+
+        for cell in self.__cells:
+            cell.update_pointers(material_dict, surface_dict)

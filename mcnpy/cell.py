@@ -12,10 +12,15 @@ class Cell(MCNP_Card):
     """
 
     def __init__(self, input_card, comment=None):
-        """"""
+        """
+        :param input_card: the Card input for the cell definition
+        :type input_card: Card
+        :param comment: the Comment block that preceded this blog if any.
+        :type comment: Comment
+        """
         super().__init__(comment)
         self.__surfaces = []
-        self.__old_surface_numbers =[]
+        self.__old_surface_numbers = []
         words = input_card.words
         # cell number
         try:
@@ -30,7 +35,7 @@ class Cell(MCNP_Card):
             raise UnsupportedFeature(
                 "Currently the LIKE option in cell cards is unsupported"
             )
-        #material
+        # material
         try:
             mat_num = int(words[1])
             self.__old_mat_number = mat_num
@@ -39,7 +44,7 @@ class Cell(MCNP_Card):
             raise MalformedInputError(
                 input_card, f"{words[1]} can not be parsed as a material number."
             )
-        #density
+        # density
         if mat_num > 0:
             try:
                 density = float(words[2])
@@ -68,7 +73,7 @@ class Cell(MCNP_Card):
                     self.__old_surface_numbers.append(int(surface))
             self.__surface_logic_string = surface_string
         if param_found:
-            params_string = " ".join([word] + words[3 + i: 0])
+            params_string = " ".join([word] + words[3 + i : 0])
             self.__parameters_string = params_string
 
     @property
@@ -176,7 +181,7 @@ class Cell(MCNP_Card):
         :rtype: str
         """
         return self.__surface_logic_string
-    
+
     @property
     def parameters_string(self):
         """
@@ -186,6 +191,23 @@ class Cell(MCNP_Card):
         """
         if hasattribute(self, "__parameters_string"):
             return self.__parameters_string
+
+    def update_pointers(self, material_dict, surface_dict):
+        """
+        Attaches this object to the appropriate objects for surfaces and materials.
+
+        :param material_dict: a dictionary mapping the material number to the Material object.
+        :type material_dict: dict
+        :param surface_dict: a dictionary mapping the surface number to the Surface object.
+        :type surface_dict: dict
+        """
+        if self.__old_mat_number > 0:
+            self.__material = material_dict[self.__old_mat_number]
+        else:
+            self.__material = None
+
+        for surface_number in self.__old_surface_numbers:
+            self.__surfaces.append(surface_dict[surface_number])
 
     def format_for_mcnp_input(self):
         pass
