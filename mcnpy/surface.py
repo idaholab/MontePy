@@ -162,7 +162,7 @@ class Surface(MCNP_Card):
     def surface_number(self, number):
         assert isinstance(number, int)
         assert number > 0
-        return self.__surface_number = number
+        self.__surface_number = number
 
     def format_for_mcnp_input(self):
         pass
