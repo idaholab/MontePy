@@ -92,6 +92,7 @@ class Cell(MCNP_Card):
     @cell_number.setter
     def cell_number(self, number):
         assert isinstance(number, int)
+        assert number > 0
         self.__cell_number = number
 
     @property

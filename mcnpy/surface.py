@@ -17,6 +17,7 @@ class Surface(MCNP_Card):
                         preceding comment block.
         :type comment: Comment
         """
+        super().__init__()
         words = input_card.words
         i = 0
         # surface number
@@ -34,6 +35,8 @@ class Surface(MCNP_Card):
 
         try:
             surface_num = int(surface_num)
+            self.__surface_num = surface_num
+            self.__old_surface_num = surface_num
         except ValueError:
             raise MalformedInputError(
                 input_card, f"{words[i]} could not be parsed as a surface number."
@@ -138,6 +141,28 @@ class Surface(MCNP_Card):
         """
         if hasattribute(self, "__old_periodic_surface"):
             return self.__old_periodic_surface
+
+    @property
+    def old_surface_number(self):
+        """
+        The surface number that was used in the read file
+        :rtype: int
+        """
+        return self.__old_surface_number
+
+    @property
+    def surface_number(self):
+        """
+        The surface number to use.
+        :rtype: int
+        """
+        return self.__surface_number
+
+    @surface_number.setter
+    def surface_number(self, number):
+        assert isinstance(number, int)
+        assert number > 0
+        return self.__surface_number = number
 
     def format_for_mcnp_input(self):
         pass
