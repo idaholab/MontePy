@@ -1,12 +1,24 @@
+from abc import ABC, abstractmethod
 from .block_type import BlockType
 
 
-class MCNP_Input:
+class MCNP_Input(ABC):
     """
     Object to represent a single coherent MCNP input, such as a card.
     """
 
-    pass
+    @abstractmethod
+    def format_for_mcnp_input(self, mcnp_version):
+        """
+        Creates a string representation of this card that can be
+        written to file.
+
+        :param mcnp_version: The tuple for the MCNP version that must be exported to.
+        :type mcnp_version: tuple
+        :return: a list of strings for the lines that this card will occupy.
+        :rtype: list
+        """
+        pass
 
 
 class Card(MCNP_Input):
@@ -44,6 +56,9 @@ class Card(MCNP_Input):
         Enum representing which block of the MCNP input this came from
         """
         return self.__block_type
+
+    def format_for_mcnp_input(self, mcnp_version):
+        pass
 
 
 class Comment(MCNP_Input):
