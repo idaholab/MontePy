@@ -185,26 +185,27 @@ class MCNP_Problem:
         :param new_problem: the file name to write this problem to
         :type new_problem: str
         """
-        if self.message:
-            for line in self.message.format_for_mcnp_input(self.mcnp_version):
-                print(line)
-        lines = self.title.format_for_mcnp_input(self.mcnp_version)
-        print(lines[0])
-        for cell in self.cells:
-            for line in cell.format_for_mcnp_input(self.mcnp_version):
-                print(line)
-        # block terminator
-        print("")
-        for surface in self.surfaces:
-            for line in surface.format_for_mcnp_input(self.mcnp_version):
-                print(line)
-        print("")
+        with open(new_problem, "w") as fh:
+            if self.message:
+                for line in self.message.format_for_mcnp_input(self.mcnp_version):
+                    fh.write(line+"\n")
+            lines = self.title.format_for_mcnp_input(self.mcnp_version)
+            fh.write(lines[0]+"\n")
+            for cell in self.cells:
+                for line in cell.format_for_mcnp_input(self.mcnp_version):
+                    fh.write(line+"\n")
+            # block terminator
+            fh.write("\n")
+            for surface in self.surfaces:
+                for line in surface.format_for_mcnp_input(self.mcnp_version):
+                    fh.write(line+"\n")
+            fh.write("\n")
 
-        for card in self.data_cards:
-            for line in card.format_for_mcnp_input(self.mcnp_version):
-                print(line)
+            for card in self.data_cards:
+                for line in card.format_for_mcnp_input(self.mcnp_version):
+                    fh.write(line+"\n")
 
-        print("")
+            fh.write("\n")
 
     def __str__(self):
         ret = f"MCNP problem for: {self.__input_file}\n"
