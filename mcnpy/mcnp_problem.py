@@ -126,7 +126,7 @@ class MCNP_Problem:
 
         :rtype: Message
         """
-        if hasattr(self, "__message"):
+        if hasattr(self, "_MCNP_Problem__message"):
             return self.__message
 
     @property
@@ -148,7 +148,9 @@ class MCNP_Problem:
             if i == 0 and isinstance(input_card, Message):
                 self.__message = input_card
 
-            elif isinstance(input_card, Title) and not hasattr(self, "__title"):
+            elif isinstance(input_card, Title) and not hasattr(
+                self, "_MCNP_Problem__title"
+            ):
                 self.__title = input_card
 
             elif isinstance(input_card, Comment):
@@ -178,9 +180,9 @@ class MCNP_Problem:
 
     def __str__(self):
         ret = f"MCNP problem for: {self.__input_file}\n"
-        if self.__message:
+        if self.message:
             ret += str(self.__message) + "\n"
-        ret += str(self.__title)
+        ret += str(self.__title) + "\n"
         for cell in self.__cells:
             ret += str(cell) + "\n"
         for data_card in self.__data_cards:
