@@ -21,6 +21,7 @@ class MCNP_Problem:
         self.__surfaces = []
         self.__data_cards = []
         self.__materials = []
+        self.__mcnp_version = (6.2, 0)
 
     @property
     def original_inputs(self):
@@ -44,6 +45,30 @@ class MCNP_Problem:
         :rtype: list
         """
         return self.__cells
+
+    @property 
+    def mcnp_version(self):
+        """
+        The version of MCNP that this is intended for. 
+
+        MCNP versions prior to 6.2 aren't officially supported to avoid 
+        Export Control Restrictions. Documentation for MCNP 6.2 is public in report:
+            LA-UR-17-29981
+
+        The version is a tuple of the major and minor revisions combined.
+        6.2.0 would be represented as (6.2, 0)
+        :rtype: tuple
+        """
+        return self.__mcnp_version
+
+    @mcnp_version.setter
+    def mcnp_version(self, version):
+        """
+        :param version: the version tuple. Must be greater than 6.2.0
+        :type version: tuple
+        """
+        assert version >= (6.2, 0)
+        self.__mcnp_version = version
 
     @property
     def surfaces(self):
