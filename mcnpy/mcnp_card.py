@@ -12,15 +12,20 @@ class MCNP_Card(ABC):
             self.__comment = comment
 
     @abstractmethod
-    def format_for_mcnp_input(self):
+    def format_for_mcnp_input(self, mcnp_version):
         """
         Creates a string representation of this card that can be
         written to file.
 
+        :param mcnp_version: The tuple for the MCNP version that must be exported to.
+        :type mcnp_version: tuple
         :return: a list of strings for the lines that this card will occupy.
         :rtype: list
         """
-        pass
+        ret = []
+        if self.comment:
+            ret += self.comment.format_for_mcnp_input(mcnp_version)
+        return ret
 
     @property
     def comment(self):

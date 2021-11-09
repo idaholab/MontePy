@@ -26,8 +26,10 @@ class DataCard(MCNP_Card):
         """
         return self.__words
 
-    def format_for_mcnp_input(self):
-        pass
+    def format_for_mcnp_input(self, mcnp_version):
+        ret = super().format_for_mcnp_input(mcnp_version)
+        ret += DataCard.wrap_words_for_mcnp(self.words, mcnp_version, True)
+        return ret
 
     @staticmethod
     def parse_data(input_card, comment=None):

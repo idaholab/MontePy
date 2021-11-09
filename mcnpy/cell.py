@@ -209,8 +209,26 @@ class Cell(MCNP_Card):
         for surface_number in self.__old_surface_numbers:
             self.__surfaces.append(surface_dict[surface_number])
 
-    def format_for_mcnp_input(self):
-        pass
+    def format_for_mcnp_input(self, mcnp_version):
+        ret = super().format_for_mcnp_input(mcnp_version)
+        buffList = [str(self.cell_number)]
+        if self.material:
+            buffList.append(str(self.material.material_number))
+            dens = 0
+            if self.is_atom_dens:
+                dens = self.density
+            else:
+                dens = -self.density
+            buffList.append(f"{dens:.4g}")
+        else:
+            buffList.append("0")
+        ret += Cell.wrap_words_for_mcnp(buffList, mcnp_version, True)
+        ret += Cell.wrap_string_for_mcnp(self.surface_logic_string, mcnp_version, False)
+        if self.parameters_string:
+            ret += Cell.wrap_string_for_mcnp(
+                self.parameters_string, mcnp_version, False
+            )
+        return ret
 
     def __str__(self):
         ret = f"CELL: {self.__cell_number} \n"

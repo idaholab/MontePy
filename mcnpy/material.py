@@ -131,5 +131,15 @@ class Material(MCNP_Card):
 
         return ret
 
-    def format_for_mcnp_input(self):
-        pass
+    def format_for_mcnp_input(self, mcnp_version):
+        ret = super().format_for_mcnp_input(mcnp_version)
+        sorted_isotopes = sorted(list(self.material_components.keys()))
+        first_component = self.material_components[sorted_isotopes[0]]
+
+        ret.append(
+            f"m{self.material_number:<9}{str(first_component.isotope):>8}{first_component.fraction:>12.4g}"
+        )
+        for isotope in sorted_isotopes[1:]:  # skips the first
+            component = self.material_components[isotope]
+            ret.append(f"{str(component.isotope):>19}{component.fraction:>12.4g}")
+        return ret

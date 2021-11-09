@@ -17,7 +17,7 @@ class Surface(MCNP_Card):
                         preceding comment block.
         :type comment: Comment
         """
-        super().__init__()
+        super().__init__(comment)
         words = input_card.words
         i = 0
         # surface number
@@ -168,5 +168,25 @@ class Surface(MCNP_Card):
     def __str__(self):
         return f"SURFACE: {self.surface_number}, {self.surface_type}"
 
-    def format_for_mcnp_input(self):
-        pass
+    def format_for_mcnp_input(self, mcnp_version):
+        ret = super().format_for_mcnp_input(mcnp_version)
+        buffList = []
+        # surface number
+        if self.is_reflecting:
+            buffList.append(f"*{self.surface_number}")
+        elif self.is_white_boundary:
+            buffList.append(f"+{self.surface_number}")
+        else:
+            buffList.append(str(self.surface_number))
+
+        if self.old_periodic_surface:
+            buffList.append(str(-self.old_periodic_surface))
+        elif self.old_transform_number:
+            buffList.append(str(self.old_transform_number))
+
+        buffList.append(self.surface_type.name)
+
+        for constant in self.surface_constants:
+            buffList.append(str(constant))
+        ret += Surface.wrap_words_for_mcnp(buffList, mcnp_version, True)
+        return ret
