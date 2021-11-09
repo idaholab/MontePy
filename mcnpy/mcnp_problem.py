@@ -178,6 +178,34 @@ class MCNP_Problem:
         for cell in self.__cells:
             cell.update_pointers(material_dict, surface_dict)
 
+    def write_to_file(self, new_problem):
+        """
+        Writes the problem to a file.
+
+        :param new_problem: the file name to write this problem to
+        :type new_problem: str
+        """
+        if self.message:
+            for line in self.message.format_for_mcnp_input(self.mcnp_version):
+                print(line)
+        lines = self.title.format_for_mcnp_input(self.mcnp_version)
+        print(lines[0])
+        for cell in self.cells:
+            for line in cell.format_for_mcnp_input(self.mcnp_version):
+                print(line)
+        # block terminator
+        print("")
+        for surface in self.surfaces:
+            for line in surface.format_for_mcnp_input(self.mcnp_version):
+                print(line)
+        print("")
+
+        for card in self.data_cards:
+            for line in card.format_for_mcnp_input(self.mcnp_version):
+                print(line)
+
+        print("")
+
     def __str__(self):
         ret = f"MCNP problem for: {self.__input_file}\n"
         if self.message:
