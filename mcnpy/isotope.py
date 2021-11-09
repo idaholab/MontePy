@@ -44,5 +44,11 @@ class Isotope:
     def __str__(self):
         return f"{self.__ZAID}.{self.__library}"
 
+    def __repr__(self):
+        return self.__str__()
+
     def __hash__(self):
         return hash(self.__ZAID)
+
+    def __lt__(self, other):
+        return int(self.ZAID) < int(other.ZAID)
