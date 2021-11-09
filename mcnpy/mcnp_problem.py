@@ -46,12 +46,22 @@ class MCNP_Problem:
         """
         return self.__cells
 
-    @property 
+    def add_cells(self, cells):
+        """
+        Adds the given cells to the problem and all owned surfaces and materials as well.
+
+        This will guarantee there are no naming collisions. If a collison is detected an exception is thrown.
+        :param cells: The list of Cell objects to add to this problem.
+        :type cells: list
+        """
+        pass
+
+    @property
     def mcnp_version(self):
         """
-        The version of MCNP that this is intended for. 
+        The version of MCNP that this is intended for.
 
-        MCNP versions prior to 6.2 aren't officially supported to avoid 
+        MCNP versions prior to 6.2 aren't officially supported to avoid
         Export Control Restrictions. Documentation for MCNP 6.2 is public in report:
             LA-UR-17-29981
 
