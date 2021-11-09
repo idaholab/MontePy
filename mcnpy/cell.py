@@ -209,7 +209,26 @@ class Cell(MCNP_Card):
         for surface_number in self.__old_surface_numbers:
             self.__surfaces.append(surface_dict[surface_number])
 
+    def update_surface_logic_string(self):
+        """
+        Updates the surface logic string with new surface numbers.
+
+        This is a bit of a hacky temporary solution while true boolean logic is implemented.
+        """
+        # make sure all numbers are surrounded by non-digit chars
+        pad_string = " " + self.surface_logic_string + " "
+        for surface in self.surfaces:
+            old_num = surface.old_surface_number
+            new_num = surface.surface_number
+            pad_string = re.sub(
+                f"(\D){old_num}(\D)",
+                r"\g<1>{new_num}\g<2>".format(new_num=new_num),
+                pad_string,
+            )
+        self.__surface_logic_string = pad_string
+
     def format_for_mcnp_input(self, mcnp_version):
+        self.update_surface_logic_string()
         ret = super().format_for_mcnp_input(mcnp_version)
         buffList = [str(self.cell_number)]
         if self.material:
