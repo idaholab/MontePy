@@ -71,7 +71,7 @@ class Cell(MCNP_Card):
                 surface_string += word + " "
                 for surface in surface_finder.findall(word):
                     self.__old_surface_numbers.append(int(surface))
-            self.__surface_logic_string = surface_string
+        self.__surface_logic_string = surface_string
         if param_found:
             params_string = " ".join([word] + words[3 + i : 0])
             self.__parameters_string = params_string
@@ -189,7 +189,7 @@ class Cell(MCNP_Card):
 
         :rtype: str
         """
-        if hasattr(self, "__parameters_string"):
+        if hasattr(self, "_Cell__parameters_string"):
             return self.__parameters_string
 
     def update_pointers(self, material_dict, surface_dict):
@@ -215,7 +215,7 @@ class Cell(MCNP_Card):
     def __str__(self):
         ret = f"CELL: {self.__cell_number} \n"
         ret += str(self.__material) + "\n"
-        if hasattr(self, "__density"):
+        if hasattr(self, "_Cell__density"):
             ret += f"density: {self.__density} "
             if self.__is_atom_dens:
                 ret += "atom/b-cm"

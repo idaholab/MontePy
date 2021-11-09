@@ -129,9 +129,10 @@ class Surface(MCNP_Card):
         """
         The transformation number for this surface in the original file.
 
+        TODO connect and allow updates
         :rtype: int
         """
-        if hasattr(self, "__old_periodic_surface"):
+        if hasattr(self, "_Surface__old_periodic_surface"):
             return self.__old_transform_number
 
     @property
@@ -139,7 +140,7 @@ class Surface(MCNP_Card):
         """
         The surface number this is periodic with reference to in the original file.
         """
-        if hasattr(self, "__old_periodic_surface"):
+        if hasattr(self, "_Surface__old_periodic_surface"):
             return self.__old_periodic_surface
 
     @property

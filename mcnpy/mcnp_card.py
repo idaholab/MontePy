@@ -28,5 +28,5 @@ class MCNP_Card(ABC):
 
         :rtype: Comment
         """
-        if hasattribute(self, "__comment"):
+        if hasattr(self, "_MCNP_Card__comment"):
             return self.__comment

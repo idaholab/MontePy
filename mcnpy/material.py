@@ -116,7 +116,7 @@ class Material(MCNP_Card):
 
         :rtype: str
         """
-        if hasattr(self, "__parameter_string"):
+        if hasattr(self, "_Material__parameter_string"):
             return self.__parameter_string
 
     def __str__(self):
