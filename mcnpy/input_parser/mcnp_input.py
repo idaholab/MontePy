@@ -57,7 +57,10 @@ class Comment(MCNP_Input):
         :type lines: list
         """
         assert isinstance(lines, list)
-        self.__lines = lines
+        buff = []
+        for line in lines:
+            buff.append(line.rstrip())
+        self.__lines = buff
 
     def __str__(self):
         ret = "COMMENT:\n"
@@ -89,7 +92,10 @@ class Message(MCNP_Input):
         :type lines: list
         """
         assert isinstance(lines, list)
-        self.__lines = lines
+        buff = []
+        for line in lines:
+            buff.append(line.rstrip())
+        self.__lines = buff
 
     def __str__(self):
         ret = "MESSAGE:\n"
@@ -113,7 +119,7 @@ class Title(MCNP_Input):
     """
 
     def __init__(self, title):
-        self.__title = title
+        self.__title = title.rstrip()
 
     @property
     def title(self):
