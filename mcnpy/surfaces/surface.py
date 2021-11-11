@@ -1,5 +1,5 @@
-from .errors import *
-from .mcnp_card import MCNP_Card
+from .. import *
+from ..mcnp_card import MCNP_Card
 from .surface_type import SurfaceType
 import re
 

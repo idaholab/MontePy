@@ -2,7 +2,7 @@ from .cell import Cell
 from .data_card import DataCard
 from .input_parser import read_input_syntax, BlockType, Card, Comment, Message, Title
 from .material import Material
-from .surface import Surface
+from .surfaces import Surface
 
 
 class MCNP_Problem:

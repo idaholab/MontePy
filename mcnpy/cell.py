@@ -2,7 +2,7 @@ from .errors import *
 from .mcnp_card import MCNP_Card
 from .material import Material
 import re
-from .surface import Surface
+from .surfaces import Surface
 
 
 class Cell(MCNP_Card):
