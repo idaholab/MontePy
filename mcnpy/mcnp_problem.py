@@ -46,6 +46,13 @@ class MCNP_Problem:
         """
         return self.__cells
 
+    @cells.setter
+    def cells(self, cells):
+        assert isinstance(cells, list)
+        for cell in cells:
+            assert isinstance(cell, Cell)
+        self.__cells = cells
+
     def add_cells(self, cells):
         """
         Adds the given cells to the problem and all owned surfaces and materials as well.
