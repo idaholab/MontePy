@@ -1,16 +1,18 @@
-from .. import surface_type
-from .. import surface
+from .surface_type import SurfaceType
+from .surface import Surface
 
-class CylinderParAxis(surface.Surface):
+
+class CylinderParAxis(Surface):
     """
     Represents surfaces: C/X, C/Y, C/Z
     """
+
     def __init__(self, input_card, comment=None):
 
         COORDINATE_PAIRS = {
-            surface_type.SurfaceType.C_X: {0: "y", 1:"z"},
-
-
+            SurfaceType.C_X: {0: "y", 1: "z"},
+            SurfaceType.C_Y: {0: "x", 1: "z"},
+            SurfaceType.C_Z: {0: "x", 1: "y"},
         }
         """
         :param input_card: The Card object representing the input
@@ -31,7 +33,7 @@ class CylinderParAxis(surface.Surface):
     def coordinates(self):
         """
         The two coordinates for this cylinder to center on.
-        
+
         :rytpe: list
         """
         return self.__coordinates
