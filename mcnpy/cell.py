@@ -22,23 +22,26 @@ class Cell(MCNP_Card):
         self.__surfaces = []
         self.__old_surface_numbers = []
         words = input_card.words
+        i = 0
         # cell number
         try:
-            cell_num = int(words[0])
+            cell_num = int(words[i])
             self.__old_cell_number = cell_num
             self.__cell_number = cell_num
+            i += 1
         except ValueError:
             raise MalformedInputError(
                 input_card, f"{words[0]} can not be parsed as a cell number."
             )
-        if words[1].lower() == "like":
+        if words[i].lower() == "like":
             raise UnsupportedFeature(
                 "Currently the LIKE option in cell cards is unsupported"
             )
         # material
         try:
-            mat_num = int(words[1])
+            mat_num = int(words[i])
             self.__old_mat_number = mat_num
+            i += 1
 
         except ValueError:
             raise MalformedInputError(
@@ -47,8 +50,9 @@ class Cell(MCNP_Card):
         # density
         if mat_num > 0:
             try:
-                density = float(words[2])
+                density = float(words[i])
                 self.__density = abs(density)
+                i += 1
                 if density > 0:
                     self.__is_atom_dens = False
                 else:
@@ -63,7 +67,7 @@ class Cell(MCNP_Card):
         surface_finder = re.compile("\d+")
         surface_string = ""
         param_found = False
-        for i, word in enumerate(words[3:]):
+        for j, word in enumerate(words[i:]):
             if non_surface_finder.search(word):
                 param_found = True
                 break
@@ -73,7 +77,7 @@ class Cell(MCNP_Card):
                     self.__old_surface_numbers.append(int(surface))
         self.__surface_logic_string = surface_string
         if param_found:
-            params_string = " ".join([word] + words[3 + i : 0])
+            params_string = " ".join([word] + words[i + j : 0])
             self.__parameters_string = params_string
 
     @property
