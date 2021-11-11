@@ -22,12 +22,11 @@ class CylinderParAxis(Surface):
         :type comment: Comment
         """
         super().__init__(input_card, comment)
-        ST = surface_type.SurfaceType
-        assert self.surface_type in [ST.C_X, ST.C_Y, ST,C_Z]
-        assert len(self.constants) == 3
-        self.__coordinates = self.constants[0:2]
-        self.__radius = self.constant[2]
-
+        ST = SurfaceType
+        assert self.surface_type in [ST.C_X, ST.C_Y, ST.C_Z]
+        assert len(self.surface_constants) == 3
+        self.__coordinates = self.surface_constants[0:2]
+        self.__radius = self.surface_constants[2]
 
     @property
     def coordinates(self):
@@ -45,7 +44,7 @@ class CylinderParAxis(Surface):
         """
         assert len(coordinates) == 2
         self.__coordinates = coordinates
-        self.__constants[0:2] = coordinates
+        self.__surface_constants[0:2] = coordinates
 
     @property
     def radius(self):
@@ -55,11 +54,10 @@ class CylinderParAxis(Surface):
         :rtype: float
         """
         return self.__radius
-        
+
     @radius.setter
     def radius(self, radius):
         assert isinstance(radius, float)
         assert radius > 0
         self.__radius = radius
-        self.__constants[2] = radius
-
+        self.__surface_constants[2] = radius
