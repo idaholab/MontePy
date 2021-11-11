@@ -167,6 +167,9 @@ class Surface(MCNP_Card):
 
     def __str__(self):
         return f"SURFACE: {self.surface_number}, {self.surface_type}"
+    
+    def __repr__(self):
+        return self.__str__()
 
     def format_for_mcnp_input(self, mcnp_version):
         ret = super().format_for_mcnp_input(mcnp_version)

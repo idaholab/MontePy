@@ -269,3 +269,6 @@ class Cell(MCNP_Card):
             ret += str(surface) + "\n"
         ret += "\n"
         return ret
+    
+    def __repr__(self):
+        return self.__str__()
