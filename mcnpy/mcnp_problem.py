@@ -2,7 +2,7 @@ from .cell import Cell
 from .data_card import DataCard
 from .input_parser import read_input_syntax, BlockType, Card, Comment, Message, Title
 from .material import Material
-from .surfaces import Surface
+from .surfaces import surface_builder
 
 
 class MCNP_Problem:
@@ -161,7 +161,7 @@ class MCNP_Problem:
                     cell = Cell(input_card, comment_queue)
                     self.__cells.append(cell)
                 if input_card.block_type == BlockType.SURFACE:
-                    surface = Surface(input_card, comment_queue)
+                    surface = surface_builder(input_card, comment_queue)
                     self.__surfaces.append(surface)
                 if input_card.block_type == BlockType.DATA:
                     data = DataCard.parse_data(input_card, comment_queue)
