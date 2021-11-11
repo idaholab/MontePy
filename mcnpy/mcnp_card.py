@@ -1,4 +1,5 @@
 from abc import ABC, abstractmethod
+from .input_parser import Comment
 import textwrap
 
 
@@ -36,6 +37,11 @@ class MCNP_Card(ABC):
         """
         if hasattr(self, "_MCNP_Card__comment"):
             return self.__comment
+
+    @comment.setter
+    def comment(self, comment):
+        assert isinstance(comment, Comment)
+        self.__comment = comment
 
     @staticmethod
     def wrap_words_for_mcnp(words, mcnp_version, is_first_line):
