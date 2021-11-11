@@ -130,13 +130,16 @@ class Cell(MCNP_Card):
         return self.__density
 
     @density.setter
-    def density(self, density, is_atom_dens):
+    def density(self, density_tuple):
         """
-        :param density: the density of the material [a/b-cm] or [g/cc]
-        :type density: float
-        :param is_atom_dens: if True the density is atom density
-        :type is_atom_dens: bool
+        :param density_tuple: A tuple of the density, and is_atom_dens
+        :type density_tuple:
+            :param density: the density of the material [a/b-cm] or [g/cc]
+            :type density: float
+            :param is_atom_dens: if True the density is atom density
+            :type is_atom_dens: bool
         """
+        density, is_atom_dens = density_tuple
         assert isinstance(density, float)
         assert isinstance(is_atom_dens, bool)
         self.__density = density
