@@ -6,14 +6,13 @@ class CylinderParAxis(Surface):
     """
     Represents surfaces: C/X, C/Y, C/Z
     """
+    COORDINATE_PAIRS = {
+        SurfaceType.C_X: {0: "y", 1: "z"},
+        SurfaceType.C_Y: {0: "x", 1: "z"},
+        SurfaceType.C_Z: {0: "x", 1: "y"},
+    }
 
     def __init__(self, input_card, comment=None):
-
-        COORDINATE_PAIRS = {
-            SurfaceType.C_X: {0: "y", 1: "z"},
-            SurfaceType.C_Y: {0: "x", 1: "z"},
-            SurfaceType.C_Z: {0: "x", 1: "y"},
-        }
         """
         :param input_card: The Card object representing the input
         :type input_card: Card
