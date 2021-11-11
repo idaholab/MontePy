@@ -184,9 +184,9 @@ class Surface(MCNP_Card):
         elif self.old_transform_number:
             buffList.append(str(self.old_transform_number))
 
-        buffList.append(self.surface_type.name)
+        buffList.append(self.surface_type.value)
 
         for constant in self.surface_constants:
-            buffList.append(str(constant))
+            buffList.append(f"{constant:.6g}")
         ret += Surface.wrap_words_for_mcnp(buffList, mcnp_version, True)
         return ret
