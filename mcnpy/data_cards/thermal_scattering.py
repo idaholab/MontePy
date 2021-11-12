@@ -44,7 +44,7 @@ class ThermalScatteringLaw(DataCard):
         """
         The material number from the file
         """
-        return self.__material_number
+        return self.__old_material_number
 
     @property
     def parent_material(self):
