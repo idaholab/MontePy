@@ -76,8 +76,27 @@ class Cell(MCNP_Card):
                     self.__old_surface_numbers.append(int(surface))
         self.__surface_logic_string = surface_string
         if param_found:
-            params_string = " ".join([word] + words[i + j : 0])
-            self.__parameters_string = params_string
+            params_string = " ".join(words[i + j :])
+            self.__parameters = {}
+            fragments = params_string.split("=")
+            key = ""
+            next_key = ""
+            value = ""
+            for i, fragment in enumerate(fragments):
+                fragment = fragment.split()
+                if i == 0:
+                    key = fragment[0]
+                elif i == len(fragments) - 1:
+                    if next_key:
+                        key = next_key
+                    value = fragment[0]
+                else:
+                    if next_key:
+                        key = next_key
+                    value = fragment[0]
+                    next_key = fragment[1]
+                if key and value:
+                    self.__parameters[key] = value
 
     @property
     def old_cell_number(self):
@@ -189,19 +208,13 @@ class Cell(MCNP_Card):
         return self.__surface_logic_string
 
     @property
-    def parameters_string(self):
+    def parameters(self):
         """
-        The string of the cell parameters: e.g. IMP:N = 1 if set.
+        A dictionary of the additional parameters for the cell.
 
-        :rtype: str
+        e.g.: Universes, and imp:n
         """
-        if hasattr(self, "_Cell__parameters_string"):
-            return self.__parameters_string
-
-    @parameters_string.setter
-    def parameters_string(self, params):
-        assert isinstance(params, str)
-        self.__parameters_string = params
+        return self.__parameters
 
     def update_pointers(self, material_dict, surface_dict):
         """
@@ -254,10 +267,11 @@ class Cell(MCNP_Card):
             buffList.append("0")
         ret += Cell.wrap_words_for_mcnp(buffList, mcnp_version, True)
         ret += Cell.wrap_string_for_mcnp(self.surface_logic_string, mcnp_version, False)
-        if self.parameters_string:
-            ret += Cell.wrap_string_for_mcnp(
-                self.parameters_string, mcnp_version, False
-            )
+        if self.parameters:
+            strings = []
+            for key, value in self.parameters.items():
+                strings.append(f"{key}={value}")
+            ret += Cell.wrap_words_for_mcnp(strings, mcnp_version, False)
         return ret
 
     def __str__(self):
