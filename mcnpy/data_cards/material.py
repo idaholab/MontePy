@@ -138,6 +138,20 @@ class Material(data_card.DataCard):
             self.__thermal_scattering = thermal_scattering.ThermalScatteringLaw(material=self)
         self.__thermal_scattering.add_scattering_law(law)
 
+    def update_pointers(self, data_cards):
+        """
+        Updates pointer to the thermal scattering data
+
+        :param data_cards: a list of the data cards in the problem
+        :type data_cards: list
+        """
+        for card in data_cards:
+            if isinstance(card, thermal_scattering.ThermalScatteringLaw):
+                if card.old_material_number == self.material_number:
+                    self.__thermal_scattering = card
+                    card._ThermalScatteringLaw__parent_material = self
+
+
     def __str__(self):
         ret = f"MATERIAL: {self.material_number} fractions: "
         if self.is_atom_fraction:

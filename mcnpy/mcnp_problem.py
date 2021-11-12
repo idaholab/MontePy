@@ -187,7 +187,7 @@ class MCNP_Problem:
         for surface in self.__surfaces:
             surface.update_pointers(surface_dict, self.__data_cards)
         for card in self.__data_cards:
-            pass
+            card.update_pointers(self.__data_cards)
 
     def write_to_file(self, new_problem):
         """

@@ -30,26 +30,15 @@ class DataCard(MCNP_Card):
         ret = super().format_for_mcnp_input(mcnp_version)
         ret += DataCard.wrap_words_for_mcnp(self.words, mcnp_version, True)
         return ret
-
-    @staticmethod
-    def parse_data(input_card, comment=None):
+        
+    def update_pointers(self, data_cards):
         """
-        Parses the data card as the appropriate object if it is supported.
+        Connects data cards to each other
 
-        :param input_card: the Card object for this Data card
-        :type input_card: Card
-        :param comment: the Comment that may proceed this.
-        :type comment: Comment
-        :return: the parsed DataCard object
-        :rtype: DataCard
+        :param data_cards: a list of the data cards in the problem
+        :type data_cards: list
         """
-        identifier = input_card.words[0].lower()
-
-        # material finder
-        if "m" in identifier and "mt" not in identifier:
-            return Material(input_card, comment)
-        else:
-            return DataCard(input_card, comment)
+        pass
 
     def __str__(self):
         return f"DATA CARD: {self.__words}"
