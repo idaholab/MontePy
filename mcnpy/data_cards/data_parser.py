@@ -1,5 +1,5 @@
 from mcnpy.data_cards import data_card, material, thermal_scattering
-
+import re
 
 def parse_data(input_card, comment=None):
     """
@@ -15,9 +15,9 @@ def parse_data(input_card, comment=None):
     identifier = input_card.words[0].lower()
 
     # material finder
-    if "m" in identifier and "mt" not in identifier:
+    if re.match("m\d+",identifier):
         return material.Material(input_card, comment)
-    if "mt" in identifier:
+    if re.match("mt\d+", identifier):
         return thermal_scattering.ThermalScatteringLaw(
             input_card=input_card, comment=comment
         )
