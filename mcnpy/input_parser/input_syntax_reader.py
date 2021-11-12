@@ -128,3 +128,7 @@ def read_data(fh):
                     continue_card = True
                 else:
                     continue_card = False
+    if is_in_comment:
+        yield Comment(words)
+    else:
+        yield Card(block_type, words)
