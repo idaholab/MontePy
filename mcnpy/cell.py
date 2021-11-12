@@ -2,7 +2,6 @@ from mcnpy.errors import *
 from mcnpy.mcnp_card import MCNP_Card
 from mcnpy.data_cards.material import Material
 import re
-from mcnpy.surfaces import Surface
 
 
 class Cell(MCNP_Card):

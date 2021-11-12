@@ -1,12 +1,11 @@
-from .errors import *
-from .isotope import Isotope
+from mcnpy import mcnp_card
+from mcnpy.data_cards.isotope import Isotope
+from mcnpy.data_cards.material_component import MaterialComponent
+from mcnpy.errors import *
 import itertools
-from .material_component import MaterialComponent
-from .mcnp_card import MCNP_Card
 import re
 
-
-class Material(MCNP_Card):
+class Material(mcnp_card.MCNP_Card):
     """
     A class to represent an MCNP material.
     """

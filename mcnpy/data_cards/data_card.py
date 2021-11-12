@@ -1,5 +1,6 @@
-from .material import Material
-from .mcnp_card import MCNP_Card
+from mcnpy.data_cards.material import Material
+from mcnpy.errors import *
+from mcnpy.mcnp_card import MCNP_Card
 
 
 class DataCard(MCNP_Card):

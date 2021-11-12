@@ -1,4 +1,4 @@
-from .errors import *
+from mcnpy.errors import *
 
 
 class Isotope:

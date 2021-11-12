@@ -3,7 +3,6 @@ from mcnpy.surfaces import surface_builder
 from mcnpy.data_cards import material, data_card
 from mcnpy.input_parser import input_syntax_reader, block_type, mcnp_input
 
-
 class MCNP_Problem:
     """
     A class to represent an entire MCNP problem in a semantic way.
@@ -169,7 +168,7 @@ class MCNP_Problem:
                     cell = Cell(input_card, comment_queue)
                     self.__cells.append(cell)
                 if input_card.block_type == block_type.BlockType.SURFACE:
-                    surface = surface_builder(input_card, comment_queue)
+                    surface = surface_builder.surface_builder(input_card, comment_queue)
                     self.__surfaces.append(surface)
                 if input_card.block_type == block_type.BlockType.DATA:
                     data = data_card.DataCard.parse_data(input_card, comment_queue)
