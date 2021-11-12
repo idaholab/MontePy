@@ -1,4 +1,5 @@
-from mcnpy.data_cards import data_card, material
+from mcnpy.data_cards import data_card, material, thermal_scattering
+
 
 def parse_data(input_card, comment=None):
     """
@@ -16,8 +17,13 @@ def parse_data(input_card, comment=None):
     # material finder
     if "m" in identifier and "mt" not in identifier:
         return material.Material(input_card, comment)
+    if "mt" in identifier:
+        return thermal_scattering.ThermalScatteringLaw(
+            input_card=input_card, comment=comment
+        )
     else:
         return data_card.DataCard(input_card, comment)
+
 
 def __str__(self):
     return f"DATA CARD: {self.__words}"

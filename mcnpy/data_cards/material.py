@@ -135,7 +135,7 @@ class Material(data_card.DataCard):
         :type law: str
         """
         if not hasattr(self, "_Material__thermal_scattering"):
-            self.__thermal_scattering = thermal_scattering.ThermalScatteringLaw(self)
+            self.__thermal_scattering = thermal_scattering.ThermalScatteringLaw(material=self)
         self.__thermal_scattering.add_scattering_law(law)
 
     def __str__(self):

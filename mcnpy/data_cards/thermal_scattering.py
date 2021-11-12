@@ -8,7 +8,7 @@ def ThermalScatteringLaw(DataCard):
     Class to hold MT cards
     """
 
-    def __init__(self, input_card=None, comment=None, material=None):
+    def __init__(self, input_card="", comment=None, material=None):
         """
         This is designed to be called two ways.
 
@@ -37,11 +37,6 @@ def ThermalScatteringLaw(DataCard):
             self.__comment = comment
         elif material:
             self.__parent_material = material
-
-    def __init__(self, material, comment=None):
-        if comment:
-            self.__comment = comment
-        self.__parent_material = material
 
     @property
     def old_material_number(self):
