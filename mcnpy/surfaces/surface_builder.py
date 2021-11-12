@@ -1,7 +1,7 @@
-from .axis_plane import AxisPlane
-from .surface import Surface
-from .surface_type import SurfaceType
-from .cylinder_par_axis import CylinderParAxis
+from mcnpy.surfaces.axis_plane import AxisPlane
+from mcnpy.surfaces.surface import Surface
+from mcnpy.surfaces.surface_type import SurfaceType
+from mcnpy.surfaces.cylinder_par_axis import CylinderParAxis
 
 
 def surface_builder(input_card, comment = None):
