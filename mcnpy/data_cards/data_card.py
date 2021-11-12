@@ -1,4 +1,3 @@
-from mcnpy.data_cards.material import Material
 from mcnpy.errors import *
 from mcnpy.mcnp_card import MCNP_Card
 
