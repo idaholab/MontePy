@@ -3,7 +3,7 @@ from mcnpy import mcnp_card
 from mcnpy.errors import *
 
 
-def ThermalScatteringLaw(DataCard):
+class ThermalScatteringLaw(DataCard):
     """
     Class to hold MT cards
     """
@@ -24,6 +24,7 @@ def ThermalScatteringLaw(DataCard):
         if input_card:
             super().__init__(input_card, comment)
             assert "mt" in self.words[0].lower() 
+            words = self.words
             try:
                 num = int(words[0].lower().strip("mt"))
                 assert num > 0

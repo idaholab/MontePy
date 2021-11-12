@@ -185,7 +185,9 @@ class MCNP_Problem:
         for cell in self.__cells:
             cell.update_pointers(material_dict, surface_dict)
         for surface in self.__surfaces:
-            surface.update_pointers(surface_dict)
+            surface.update_pointers(surface_dict, self.__data_cards)
+        for card in self.__data_cards:
+            pass
 
     def write_to_file(self, new_problem):
         """
