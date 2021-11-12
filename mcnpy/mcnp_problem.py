@@ -1,8 +1,7 @@
-from .cell import Cell
-from .data_card import DataCard
-from .input_parser import read_input_syntax, BlockType, Card, Comment, Message, Title
-from .material import Material
-from .surfaces import surface_builder
+from mcnpy.cell import Cell
+from mcnpy.surfaces import surface_builder
+from mcnpy.data_cards import material, data_card
+from mcnpy.input_parser import input_syntax_reader, block_type, mcnp_input
 
 
 class MCNP_Problem:
@@ -150,36 +149,38 @@ class MCNP_Problem:
         Semantically parses the MCNP file provided to the constructor.
         """
         comment_queue = None
-        for i, input_card in enumerate(read_input_syntax(self.__input_file)):
+        for i, input_card in enumerate(
+            input_syntax_reader.read_input_syntax(self.__input_file)
+        ):
             self.__original_inputs.append(input_card)
-            if i == 0 and isinstance(input_card, Message):
+            if i == 0 and isinstance(input_card, mcnp_input.Message):
                 self.__message = input_card
 
-            elif isinstance(input_card, Title) and not hasattr(
+            elif isinstance(input_card, mcnp_input.Title) and not hasattr(
                 self, "_MCNP_Problem__title"
             ):
                 self.__title = input_card
 
-            elif isinstance(input_card, Comment):
+            elif isinstance(input_card, mcnp_input.Comment):
                 comment_queue = input_card
 
-            elif isinstance(input_card, Card):
-                if input_card.block_type == BlockType.CELL:
+            elif isinstance(input_card, mcnp_input.Card):
+                if input_card.block_type == block_type.BlockType.CELL:
                     cell = Cell(input_card, comment_queue)
                     self.__cells.append(cell)
-                if input_card.block_type == BlockType.SURFACE:
+                if input_card.block_type == block_type.BlockType.SURFACE:
                     surface = surface_builder(input_card, comment_queue)
                     self.__surfaces.append(surface)
-                if input_card.block_type == BlockType.DATA:
-                    data = DataCard.parse_data(input_card, comment_queue)
+                if input_card.block_type == block_type.BlockType.DATA:
+                    data = data_card.DataCard.parse_data(input_card, comment_queue)
                     self.__data_cards.append(data)
-                    if isinstance(data, Material):
+                    if isinstance(data, material.Material):
                         self.__materials.append(data)
                 comment_queue = None
         material_dict = {}
         surface_dict = {}
-        for material in self.__materials:
-            material_dict[material.material_number] = material
+        for mat in self.__materials:
+            material_dict[mat.material_number] = mat
         for surface in self.__surfaces:
             surface_dict[surface.surface_number] = surface
         for cell in self.__cells:

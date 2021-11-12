@@ -1,8 +1,8 @@
-from .errors import *
-from .mcnp_card import MCNP_Card
-from .material import Material
+from mcnpy.errors import *
+from mcnpy.mcnp_card import MCNP_Card
+from mcnpy.data_cards.material import Material
 import re
-from .surfaces import Surface
+from mcnpy.surfaces import Surface
 
 
 class Cell(MCNP_Card):
@@ -274,6 +274,6 @@ class Cell(MCNP_Card):
             ret += str(surface) + "\n"
         ret += "\n"
         return ret
-    
+
     def __repr__(self):
         return self.__str__()

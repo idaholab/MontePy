@@ -1,6 +1,6 @@
-from .. import *
-from ..mcnp_card import MCNP_Card
-from .surface_type import SurfaceType
+from mcnpy.errors import *
+from mcnpy.mcnp_card import MCNP_Card
+from mcnpy.surfaces.surface_type import SurfaceType
 import re
 
 

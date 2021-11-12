@@ -1,5 +1,5 @@
 from abc import ABC, abstractmethod
-from .input_parser import Comment
+from mcnpy.input_parser.mcnp_input import Comment
 import textwrap
 
 

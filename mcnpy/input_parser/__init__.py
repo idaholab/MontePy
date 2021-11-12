@@ -1,4 +1,4 @@
-from .block_type import BlockType
-from .input_reader import read_input
-from .input_syntax_reader import read_input_syntax
-from .mcnp_input import Card, Comment, Message, Title
+__name__ = "mcnpy.input_parser"
+from . import block_type
+from . import input_reader
+from . import mcnp_input
