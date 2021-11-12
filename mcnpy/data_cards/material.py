@@ -1,11 +1,12 @@
-from mcnpy import mcnp_card
+from mcnpy.data_cards import data_card, thermal_scattering
 from mcnpy.data_cards.isotope import Isotope
 from mcnpy.data_cards.material_component import MaterialComponent
+from mcnpy import mcnp_card
 from mcnpy.errors import *
 import itertools
 import re
 
-class Material(mcnp_card.MCNP_Card):
+class Material(data_card.DataCard):
     """
     A class to represent an MCNP material.
     """
@@ -17,9 +18,9 @@ class Material(mcnp_card.MCNP_Card):
         :param comment: The comment card that preceded this card if any.
         :type comment: Comment
         """
-        super().__init__(comment)
+        super().__init__(input_card, comment)
         self.__material_components = {}
-        words = input_card.words
+        words = self.words
         num = words[0].upper().strip("M")
         # material numbers
         try:
@@ -118,6 +119,25 @@ class Material(mcnp_card.MCNP_Card):
         if hasattr(self, "_Material__parameter_string"):
             return self.__parameter_string
 
+    @property
+    def thermal_scattering(self):
+        """
+        The thermal scattering law for this material
+        """
+        if hasattr(self,"_Material__thermal_scattering"):
+            return self.__thermal_scattering
+
+    def add_thermal_scattering(self, law):
+        """
+        Adds thermal scattering law to the material
+
+        :param law: the law that is mcnp formatted
+        :type law: str
+        """
+        if not hasattr(self, "_Material__thermal_scattering"):
+            self.__thermal_scattering = thermal_scattering.ThermalScatteringLaw(self)
+        self.__thermal_scattering.add_scattering_law(law)
+
     def __str__(self):
         ret = f"MATERIAL: {self.material_number} fractions: "
         if self.is_atom_fraction:
@@ -134,7 +154,7 @@ class Material(mcnp_card.MCNP_Card):
         return self.__str__()
 
     def format_for_mcnp_input(self, mcnp_version):
-        ret = super().format_for_mcnp_input(mcnp_version)
+        ret = mcnp_card.MCNP_Card.format_for_mcnp_input(self, mcnp_version)
         sorted_isotopes = sorted(list(self.material_components.keys()))
         first_component = self.material_components[sorted_isotopes[0]]
 
