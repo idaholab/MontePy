@@ -184,6 +184,8 @@ class MCNP_Problem:
             surface_dict[surface.surface_number] = surface
         for cell in self.__cells:
             cell.update_pointers(material_dict, surface_dict)
+        for surface in self.__surfaces:
+            surface.update_pointers(surface_dict)
 
     def write_to_file(self, new_problem):
         """

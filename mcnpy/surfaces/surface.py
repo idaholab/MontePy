@@ -144,6 +144,23 @@ class Surface(MCNP_Card):
             return self.__old_periodic_surface
 
     @property
+    def periodic_surface(self):
+        """
+        The surface that this surface is periodic with respect to
+        """
+        if hasattr(self, "_Surface__periodic_surface"):
+            return self.__periodic_surface
+
+    @periodic_surface.setter
+    def periodic_surface(self, periodic):
+        assert isinstance(periodic, Surface)
+        self.__periodic_surface = periodic
+
+    @periodic_surface.deleter
+    def periodic_surface(self):
+        self.__periodic_surface = None
+
+    @property
     def old_surface_number(self):
         """
         The surface number that was used in the read file
@@ -167,9 +184,26 @@ class Surface(MCNP_Card):
 
     def __str__(self):
         return f"SURFACE: {self.surface_number}, {self.surface_type}"
-    
+
     def __repr__(self):
         return self.__str__()
+
+    def update_pointers(self, surface_dict, data_cards):
+        """
+        Updates the internal pointers to the appropriate objects.
+
+        Right now only periodic surface links will be made.
+        Eventually transform pointers should be made.
+        """
+        if hasattr(self, "_Surface__old_periodic_surface"):
+            try:
+                self.__periodic_surface = surface_dict[self.__old_periodic_surface]
+            except KeyError:
+                raise MalformedInputError(
+                    "",
+                    f"Surface {self.surface_number}'s periodic surface {self.old_surface_number} could not be found.",
+                )
+        #TODO link to transforms
 
     def format_for_mcnp_input(self, mcnp_version):
         ret = super().format_for_mcnp_input(mcnp_version)
