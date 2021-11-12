@@ -3,6 +3,7 @@ from mcnpy.surfaces import surface_builder
 from mcnpy.data_cards import material, data_card, data_parser
 from mcnpy.input_parser import input_syntax_reader, block_type, mcnp_input
 
+
 class MCNP_Problem:
     """
     A class to represent an entire MCNP problem in a semantic way.
@@ -164,18 +165,21 @@ class MCNP_Problem:
                 comment_queue = input_card
 
             elif isinstance(input_card, mcnp_input.Card):
-                if input_card.block_type == block_type.BlockType.CELL:
-                    cell = Cell(input_card, comment_queue)
-                    self.__cells.append(cell)
-                if input_card.block_type == block_type.BlockType.SURFACE:
-                    surface = surface_builder.surface_builder(input_card, comment_queue)
-                    self.__surfaces.append(surface)
-                if input_card.block_type == block_type.BlockType.DATA:
-                    data = data_parser.parse_data(input_card, comment_queue)
-                    self.__data_cards.append(data)
-                    if isinstance(data, material.Material):
-                        self.__materials.append(data)
-                comment_queue = None
+                if len(input_card.words) > 0:
+                    if input_card.block_type == block_type.BlockType.CELL:
+                        cell = Cell(input_card, comment_queue)
+                        self.__cells.append(cell)
+                    if input_card.block_type == block_type.BlockType.SURFACE:
+                        surface = surface_builder.surface_builder(
+                            input_card, comment_queue
+                        )
+                        self.__surfaces.append(surface)
+                    if input_card.block_type == block_type.BlockType.DATA:
+                        data = data_parser.parse_data(input_card, comment_queue)
+                        self.__data_cards.append(data)
+                        if isinstance(data, material.Material):
+                            self.__materials.append(data)
+                    comment_queue = None
         material_dict = {}
         surface_dict = {}
         for mat in self.__materials:
