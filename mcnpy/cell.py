@@ -199,6 +199,11 @@ class Cell(MCNP_Card):
         if hasattr(self, "_Cell__parameters_string"):
             return self.__parameters_string
 
+    @parameters_string.setter
+    def parameters_string(self, params):
+        assert isinstance(params, str)
+        self.__parameters_string = params
+
     def update_pointers(self, material_dict, surface_dict):
         """
         Attaches this object to the appropriate objects for surfaces and materials.
