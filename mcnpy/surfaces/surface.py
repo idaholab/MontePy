@@ -1,4 +1,5 @@
 from mcnpy.errors import *
+from mcnpy.data_cards import transform
 from mcnpy.mcnp_card import MCNP_Card
 from mcnpy.surfaces.surface_type import SurfaceType
 import re
@@ -132,7 +133,7 @@ class Surface(MCNP_Card):
         TODO connect and allow updates
         :rtype: int
         """
-        if hasattr(self, "_Surface__old_periodic_surface"):
+        if hasattr(self, "_Surface__old_transform_number"):
             return self.__old_transform_number
 
     @property
@@ -159,6 +160,25 @@ class Surface(MCNP_Card):
     @periodic_surface.deleter
     def periodic_surface(self):
         self.__periodic_surface = None
+
+    @property
+    def transform(self):
+        """
+        The Transform object that translates this surface
+
+        :rtype:Transform
+        """
+        if hasattr(self,"_Surface__transform"):
+            return self.__transform
+
+    @transform.setter
+    def transform(self, tr):
+        assert isinstance(tr, transform.Transform)
+        self.__transform = tr
+
+    @transform.deleter
+    def transform(self):
+        self.__transform = None
 
     @property
     def old_surface_number(self):
@@ -203,7 +223,16 @@ class Surface(MCNP_Card):
                     "",
                     f"Surface {self.surface_number}'s periodic surface {self.old_surface_number} could not be found.",
                 )
-        #TODO link to transforms
+        if self.old_transform_number:
+            for card in data_cards:
+                if isinstance(card, transform.Transform):
+                    if card.transform_number == self.old_transform_number:
+                        self.__transform = card
+            if not self.transform:
+                raise MalformedInputError(
+                    "",
+                    f"Surface {self.surface_number}'s transform {self.old_transform_number} could not be found.",
+                )
 
     def format_for_mcnp_input(self, mcnp_version):
         ret = super().format_for_mcnp_input(mcnp_version)
@@ -217,9 +246,9 @@ class Surface(MCNP_Card):
             buffList.append(str(self.surface_number))
 
         if self.old_periodic_surface:
-            buffList.append(str(-self.old_periodic_surface))
+            buffList.append(str(-self.periodic_surface.surface_number))
         elif self.old_transform_number:
-            buffList.append(str(self.old_transform_number))
+            buffList.append(str(self.transform.transform_number))
 
         buffList.append(self.surface_type.value)
 

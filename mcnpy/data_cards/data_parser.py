@@ -1,4 +1,5 @@
 from mcnpy.data_cards import data_card, material, thermal_scattering
+from mcnpy.data_cards import transform
 import re
 
 def parse_data(input_card, comment=None):
@@ -21,6 +22,8 @@ def parse_data(input_card, comment=None):
         return thermal_scattering.ThermalScatteringLaw(
             input_card=input_card, comment=comment
         )
+    if re.match("\*?tr\d+", identifier):
+        return transform.Transform(input_card, comment) 
     else:
         return data_card.DataCard(input_card, comment)
 
