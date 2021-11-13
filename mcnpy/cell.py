@@ -214,7 +214,8 @@ class Cell(MCNP_Card):
 
         e.g.: Universes, and imp:n
         """
-        return self.__parameters
+        if hasattr(self, "_Cell__parameters"):
+            return self.__parameters
 
     def update_pointers(self, material_dict, surface_dict):
         """
