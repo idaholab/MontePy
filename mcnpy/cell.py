@@ -1,6 +1,7 @@
 from mcnpy.errors import *
 from mcnpy.mcnp_card import MCNP_Card
 from mcnpy.data_cards.material import Material
+from mcnpy.surfaces.surface import Surface
 import re
 
 
@@ -10,7 +11,7 @@ class Cell(MCNP_Card):
 
     """
 
-    def __init__(self, input_card, comment=None):
+    def __init__(self, input_card=None, comment=None):
         """
         :param input_card: the Card input for the cell definition
         :type input_card: Card
@@ -20,83 +21,85 @@ class Cell(MCNP_Card):
         super().__init__(comment)
         self.__surfaces = []
         self.__old_surface_numbers = []
-        words = input_card.words
-        i = 0
-        # cell number
-        try:
-            cell_num = int(words[i])
-            self.__old_cell_number = cell_num
-            self.__cell_number = cell_num
-            i += 1
-        except ValueError:
-            raise MalformedInputError(
-                input_card, f"{words[0]} can not be parsed as a cell number."
-            )
-        if words[i].lower() == "like":
-            raise UnsupportedFeature(
-                "Currently the LIKE option in cell cards is unsupported"
-            )
-        # material
-        try:
-            mat_num = int(words[i])
-            self.__old_mat_number = mat_num
-            i += 1
-
-        except ValueError:
-            raise MalformedInputError(
-                input_card, f"{words[1]} can not be parsed as a material number."
-            )
-        # density
-        if mat_num > 0:
+        self.__parameters = {}
+        if input_card:
+            words = input_card.words
+            i = 0
+            # cell number
             try:
-                density = float(words[i])
-                self.__density = abs(density)
+                cell_num = int(words[i])
+                self.__old_cell_number = cell_num
+                self.__cell_number = cell_num
                 i += 1
-                if density > 0:
-                    self.__is_atom_dens = False
-                else:
-                    self.__is_atom_dens = True
+            except ValueError:
+                raise MalformedInputError(
+                    input_card, f"{words[0]} can not be parsed as a cell number."
+                )
+            if words[i].lower() == "like":
+                raise UnsupportedFeature(
+                    "Currently the LIKE option in cell cards is unsupported"
+                )
+            # material
+            try:
+                mat_num = int(words[i])
+                self.__old_mat_number = mat_num
+                i += 1
 
             except ValueError:
                 raise MalformedInputError(
-                    input_card,
-                    f"{words[2]} can not be parsed as a material number.",
+                    input_card, f"{words[1]} can not be parsed as a material number."
                 )
-        non_surface_finder = re.compile("[a-zA-Z]")
-        surface_finder = re.compile("\d+")
-        surface_string = ""
-        param_found = False
-        for j, word in enumerate(words[i:]):
-            if non_surface_finder.search(word):
-                param_found = True
-                break
-            else:
-                surface_string += word + " "
-                for surface in surface_finder.findall(word):
-                    self.__old_surface_numbers.append(int(surface))
-        self.__surface_logic_string = surface_string
-        if param_found:
-            params_string = " ".join(words[i + j :])
-            self.__parameters = {}
-            fragments = params_string.split("=")
-            key = ""
-            next_key = ""
-            value = ""
-            for i, fragment in enumerate(fragments):
-                fragment = fragment.split()
-                if i == 0:
-                    key = fragment[0]
-                elif i == len(fragments) - 1:
-                    if next_key:
-                        key = next_key
-                    value = fragment[0]
+            # density
+            if mat_num > 0:
+                try:
+                    density = float(words[i])
+                    self.__density = abs(density)
+                    i += 1
+                    if density > 0:
+                        self.__is_atom_dens = True
+                    else:
+                        self.__is_atom_dens = False
+
+                except ValueError:
+                    raise MalformedInputError(
+                        input_card,
+                        f"{words[2]} can not be parsed as a material number.",
+                    )
+            non_surface_finder = re.compile("[a-zA-Z]")
+            surface_finder = re.compile("\d+")
+            surface_string = ""
+            param_found = False
+            for j, word in enumerate(words[i:]):
+                if non_surface_finder.search(word):
+                    param_found = True
+                    break
                 else:
-                    if next_key:
-                        key = next_key
-                    value = fragment[0]
-                    next_key = fragment[1]
-                if key and value:
-                    self.__parameters[key] = value
+                    surface_string += word + " "
+                    for surface in surface_finder.findall(word):
+                        self.__old_surface_numbers.append(int(surface))
+            self.__surface_logic_string = surface_string
+            if param_found:
+                params_string = " ".join(words[i + j :])
+                self.__parameters = {}
+                fragments = params_string.split("=")
+                key = ""
+                next_key = ""
+                value = ""
+                for i, fragment in enumerate(fragments):
+                    fragment = fragment.split()
+                    if i == 0:
+                        key = fragment[0]
+                    elif i == len(fragments) - 1:
+                        if next_key:
+                            key = next_key
+                        value = fragment[0]
+                    else:
+                        if next_key:
+                            key = next_key
+                        value = fragment[0]
+                        next_key = fragment[1]
+                    if key and value:
+                        self.__parameters[key] = value
 
     @property
     def old_cell_number(self):
@@ -189,6 +192,13 @@ class Cell(MCNP_Card):
         """
         return self.__surfaces
 
+    @surfaces.setter
+    def surfaces(self, surfs):
+        assert isinstance(surfs, list)
+        for surf in surfs:
+            assert isinstance(surf, Surface)
+        self.__surfaces = surfs
+
     @property
     def old_surface_numbers(self):
         """
@@ -206,6 +216,11 @@ class Cell(MCNP_Card):
         :rtype: str
         """
         return self.__surface_logic_string
+
+    @surface_logic_string.setter
+    def surface_logic_string(self, string):
+        assert isinstance(string, str)
+        self.__surface_logic_string = string
 
     @property
     def parameters(self):
