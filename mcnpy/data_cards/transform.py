@@ -175,12 +175,12 @@ class Transform(data_card.DataCard):
         else:
             buff_list.append(f"TR{self.transform_number}")
         for value in self.displacement_vector:
-            buff_list.append(f"{value:.6f}")
+            buff_list.append(f"{value}")
 
         ret += Transform.wrap_words_for_mcnp(buff_list, mcnp_version, True)
         buff_list = []
         for i, value in enumerate(self.rotation_matrix):
-            buff_list.append(f"{value:.6f}")
+            buff_list.append(f"{value}")
             if (i + 1)%3 == 0:
                 ret += Transform.wrap_words_for_mcnp(buff_list, mcnp_version, False)
                 buff_list = []
