@@ -21,6 +21,8 @@ class Cell(MCNP_Card):
         super().__init__(comment)
         self.__surfaces = []
         self.__old_surface_numbers = []
+        self.__complements = []
+        self.__old_complement_numbers = []
         self.__parameters = {}
         if input_card:
             words = input_card.words
@@ -65,19 +67,7 @@ class Cell(MCNP_Card):
                         input_card,
                         f"{words[2]} can not be parsed as a material number.",
                     )
-            non_surface_finder = re.compile("[a-zA-Z]")
-            surface_finder = re.compile("\d+")
-            surface_string = ""
-            param_found = False
-            for j, word in enumerate(words[i:]):
-                if non_surface_finder.search(word):
-                    param_found = True
-                    break
-                else:
-                    surface_string += word + " "
-                    for surface in surface_finder.findall(word):
-                        self.__old_surface_numbers.append(int(surface))
-            self.__surface_logic_string = surface_string
+            j, param_found = self.__parse_geometry(i, words)
             if param_found:
                 params_string = " ".join(words[i + j :])
                 self.__parameters = {}
@@ -100,6 +90,37 @@ class Cell(MCNP_Card):
                         next_key = fragment[1]
                     if key and value:
                         self.__parameters[key] = value
+
+    def __parse_geometry(self, i, words):
+        """
+        Parses the cell's geometry definition, and stores it
+
+        :param words: list of the input card words
+        :type words: list
+        :param i: the index of the first geometry word
+        :type i: int
+        :returns: a tuple of j, param_found, j+ i = the index of the first non-geometry word,
+                and param_found is True is cell parameter inputs are found
+        """
+        non_surface_finder = re.compile("[a-zA-Z]")
+        surface_finder = re.compile("[^#]*?(\d+)")
+        cell_finder = re.compile("#(\d+)")
+        geometry_string = ""
+        param_found = False
+        for j, word in enumerate(words[i:]):
+            if non_surface_finder.search(word):
+                param_found = True
+                break
+            else:
+                geometry_string += word + " "
+                match = cell_finder.match(word) 
+                if match:
+                    self.__old_complement_numbers.append(int(match.group(1)))
+                else:
+                    for surface in surface_finder.findall(word):
+                        self.__old_surface_numbers.append(int(surface))
+        self.__geometry_logic_string = geometry_string
+        return (j, param_found)
 
     @property
     def old_cell_number(self):
@@ -209,18 +230,27 @@ class Cell(MCNP_Card):
         return self.__old_surface_numbers
 
     @property
-    def surface_logic_string(self):
+    def old_complement_numbers(self):
+        """
+        List of the cell numbers that this is a complement of.
+
+        :rtype: list
+        """
+        return self.__old_complement_numbers
+
+    @property
+    def geometry_logic_string(self):
         """
         The original surface input for the cell
 
         :rtype: str
         """
-        return self.__surface_logic_string
+        return self.__geometry_logic_string
 
-    @surface_logic_string.setter
-    def surface_logic_string(self, string):
+    @geometry_logic_string.setter
+    def geometry_logic_string(self, string):
         assert isinstance(string, str)
-        self.__surface_logic_string = string
+        self.__geometry_logic_string = string
 
     @property
     def parameters(self):
@@ -232,7 +262,14 @@ class Cell(MCNP_Card):
         if hasattr(self, "_Cell__parameters"):
             return self.__parameters
 
-    def update_pointers(self, material_dict, surface_dict):
+    @property
+    def complements(self):
+        """
+        The Cell objects that this cell is a complement of
+        """
+        return self.__complements
+
+    def update_pointers(self, cell_dict, material_dict, surface_dict):
         """
         Attaches this object to the appropriate objects for surfaces and materials.
 
@@ -249,26 +286,37 @@ class Cell(MCNP_Card):
         for surface_number in self.__old_surface_numbers:
             self.__surfaces.append(surface_dict[surface_number])
 
-    def update_surface_logic_string(self):
+        for complement_number in self.__old_complement_numbers:
+            self.__complements.append(cell_dict[complement_number])
+
+    def update_geometry_logic_string(self):
         """
-        Updates the surface logic string with new surface numbers.
+        Updates the geometry logic string with new surface numbers.
 
         This is a bit of a hacky temporary solution while true boolean logic is implemented.
         """
         # make sure all numbers are surrounded by non-digit chars
-        pad_string = " " + self.surface_logic_string + " "
+        pad_string = " " + self.geometry_logic_string + " "
+        for complement in self.complements:
+            old_num = complement.old_cell_number
+            new_num = complement.cell_number
+            pad_string = re.sub(
+                f"#{old_num}(\D)",
+                r"#{new_num}\g<1>".format(new_num=new_num),
+                pad_string
+            )
         for surface in self.surfaces:
             old_num = surface.old_surface_number
             new_num = surface.surface_number
             pad_string = re.sub(
-                f"(\D){old_num}(\D)",
+                f"([^#\d]){old_num}(\D)",
                 r"\g<1>{new_num}\g<2>".format(new_num=new_num),
                 pad_string,
             )
-        self.__surface_logic_string = pad_string
+        self.__geometry_logic_string = pad_string
 
     def format_for_mcnp_input(self, mcnp_version):
-        self.update_surface_logic_string()
+        self.update_geometry_logic_string()
         ret = super().format_for_mcnp_input(mcnp_version)
         buffList = [str(self.cell_number)]
         if self.material:
@@ -282,7 +330,7 @@ class Cell(MCNP_Card):
         else:
             buffList.append("0")
         ret += Cell.wrap_words_for_mcnp(buffList, mcnp_version, True)
-        ret += Cell.wrap_string_for_mcnp(self.surface_logic_string, mcnp_version, False)
+        ret += Cell.wrap_string_for_mcnp(self.geometry_logic_string, mcnp_version, False)
         if self.parameters:
             strings = []
             for key, value in self.parameters.items():
