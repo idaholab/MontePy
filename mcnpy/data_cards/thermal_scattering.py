@@ -23,7 +23,7 @@ class ThermalScatteringLaw(DataCard):
         """
         if input_card:
             super().__init__(input_card, comment)
-            assert "mt" in self.words[0].lower() 
+            assert "mt" in self.words[0].lower()
             words = self.words
             try:
                 num = int(words[0].lower().strip("mt"))
@@ -54,7 +54,7 @@ class ThermalScatteringLaw(DataCard):
         """
         return self.__parent_material
 
-    @property 
+    @property
     def thermal_scattering_laws(self):
         """
         The thermal scattering laws to use for this material
@@ -75,9 +75,8 @@ class ThermalScatteringLaw(DataCard):
         """
         self.__scattering_laws.append(law)
 
-
     def format_for_mcnp_input(self, mcnp_version):
-        ret = mcnp_card.MCNP_Card.format_for_mcnp_input(self,mcnp_version)
+        ret = mcnp_card.MCNP_Card.format_for_mcnp_input(self, mcnp_version)
         buff_list = [f"MT{self.parent_material.material_number}"]
         buff_list += self.__scattering_laws
         ret += ThermalScatteringLaw.wrap_words_for_mcnp(buff_list, mcnp_version, True)

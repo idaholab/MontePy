@@ -5,7 +5,7 @@ from mcnpy.surfaces.cylinder_on_axis import CylinderOnAxis
 from mcnpy.surfaces.cylinder_par_axis import CylinderParAxis
 
 
-def surface_builder(input_card, comment = None):
+def surface_builder(input_card, comment=None):
     """
     Builds a Surface object for the type of Surface
 

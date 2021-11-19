@@ -6,6 +6,7 @@ class CylinderParAxis(Surface):
     """
     Represents surfaces: C/X, C/Y, C/Z
     """
+
     COORDINATE_PAIRS = {
         SurfaceType.C_X: {0: "y", 1: "z"},
         SurfaceType.C_Y: {0: "x", 1: "z"},

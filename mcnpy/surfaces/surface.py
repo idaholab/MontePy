@@ -168,7 +168,7 @@ class Surface(MCNP_Card):
 
         :rtype:Transform
         """
-        if hasattr(self,"_Surface__transform"):
+        if hasattr(self, "_Surface__transform"):
             return self.__transform
 
     @transform.setter

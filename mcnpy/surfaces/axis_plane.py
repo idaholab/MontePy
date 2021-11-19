@@ -1,15 +1,14 @@
 from .surface_type import SurfaceType
 from .surface import Surface
 
+
 class AxisPlane(Surface):
     """
     Represents PX, PY, PZ
     """
-    COORDINATE = {
-        SurfaceType.PX: "x",
-        SurfaceType.PY: "y",
-        SurfaceType.PZ: "z"
-    }
+
+    COORDINATE = {SurfaceType.PX: "x", SurfaceType.PY: "y", SurfaceType.PZ: "z"}
+
     def __init__(self, input_card, comment=None):
         """
         :param input_card: The Card object representing the input
@@ -23,7 +22,6 @@ class AxisPlane(Surface):
         assert self.surface_type in [ST.PX, ST.PY, ST.PZ]
         assert len(self.surface_constants) == 1
         self.__location = self.surface_constants[0]
-
 
     @property
     def location(self):

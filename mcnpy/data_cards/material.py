@@ -6,6 +6,7 @@ from mcnpy.errors import *
 import itertools
 import re
 
+
 class Material(data_card.DataCard):
     """
     A class to represent an MCNP material.
@@ -124,7 +125,7 @@ class Material(data_card.DataCard):
         """
         The thermal scattering law for this material
         """
-        if hasattr(self,"_Material__thermal_scattering"):
+        if hasattr(self, "_Material__thermal_scattering"):
             return self.__thermal_scattering
 
     def add_thermal_scattering(self, law):
@@ -135,7 +136,9 @@ class Material(data_card.DataCard):
         :type law: str
         """
         if not hasattr(self, "_Material__thermal_scattering"):
-            self.__thermal_scattering = thermal_scattering.ThermalScatteringLaw(material=self)
+            self.__thermal_scattering = thermal_scattering.ThermalScatteringLaw(
+                material=self
+            )
         self.__thermal_scattering.add_scattering_law(law)
 
     def update_pointers(self, data_cards):
@@ -150,7 +153,6 @@ class Material(data_card.DataCard):
                 if card.old_material_number == self.material_number:
                     self.__thermal_scattering = card
                     card._ThermalScatteringLaw__parent_material = self
-
 
     def __str__(self):
         ret = f"MATERIAL: {self.material_number} fractions: "

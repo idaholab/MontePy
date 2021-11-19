@@ -30,7 +30,7 @@ class DataCard(MCNP_Card):
         ret = super().format_for_mcnp_input(mcnp_version)
         ret += DataCard.wrap_words_for_mcnp(self.words, mcnp_version, True)
         return ret
-        
+
     def update_pointers(self, data_cards):
         """
         Connects data cards to each other

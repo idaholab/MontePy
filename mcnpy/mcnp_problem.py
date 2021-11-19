@@ -183,14 +183,14 @@ class MCNP_Problem:
         material_dict = {}
         surface_dict = {}
         cell_dict = {}
-        #build dicts
+        # build dicts
         for mat in self.__materials:
             material_dict[mat.material_number] = mat
         for surface in self.__surfaces:
             surface_dict[surface.surface_number] = surface
         for cell in self.__cells:
             cell_dict[cell.cell_number] = cell
-        #update links
+        # update links
         for cell in self.__cells:
             cell.update_pointers(cell_dict, material_dict, surface_dict)
         for surface in self.__surfaces:

@@ -167,9 +167,9 @@ class Transform(data_card.DataCard):
         ret += f"MAIN_TO_AUX: {self.is_main_to_aux}\n"
         return ret
 
-    def format_for_mcnp_input(self,mcnp_version):
+    def format_for_mcnp_input(self, mcnp_version):
         ret = mcnp_card.MCNP_Card.format_for_mcnp_input(self, mcnp_version)
-        buff_list =[]
+        buff_list = []
         if self.is_in_degrees:
             buff_list.append(f"*TR{self.transform_number}")
         else:
@@ -181,11 +181,9 @@ class Transform(data_card.DataCard):
         buff_list = []
         for i, value in enumerate(self.rotation_matrix):
             buff_list.append(f"{value}")
-            if (i + 1)%3 == 0:
+            if (i + 1) % 3 == 0:
                 ret += Transform.wrap_words_for_mcnp(buff_list, mcnp_version, False)
                 buff_list = []
         if i == 8 and not self.is_main_to_aux:
             ret += Transform.wrap_string_for_mcnp("-1", mcnp_version, False)
         return ret
-
-

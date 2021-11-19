@@ -114,7 +114,7 @@ class Cell(MCNP_Card):
                 break
             else:
                 geometry_string += word + " "
-                match = cell_finder.match(word) 
+                match = cell_finder.match(word)
                 if match:
                     self.__old_complement_numbers.append(int(match.group(1)))
                 else:
@@ -298,8 +298,8 @@ class Cell(MCNP_Card):
         """
         # make sure all numbers are surrounded by non-digit chars
         pad_string = " " + self.geometry_logic_string + " "
-        #need to move all numbers to outside of feasible numbers first, before moving numbers around
-        # it's possible when shifting numbers by a little to have an 
+        # need to move all numbers to outside of feasible numbers first, before moving numbers around
+        # it's possible when shifting numbers by a little to have an
         # overlap between the set of old and new numbers
         temp_numbers = itertools.count(start=int(1e8))
         temp_cells = {}
@@ -316,7 +316,7 @@ class Cell(MCNP_Card):
                 pad_string = re.sub(
                     f"#{old_num}(\D)",
                     r"#{new_num}\g<1>".format(new_num=new_num),
-                    pad_string
+                    pad_string,
                 )
             for surface in set(self.surfaces):
                 if is_final_pass:
@@ -348,7 +348,9 @@ class Cell(MCNP_Card):
         else:
             buffList.append("0")
         ret += Cell.wrap_words_for_mcnp(buffList, mcnp_version, True)
-        ret += Cell.wrap_string_for_mcnp(self.geometry_logic_string, mcnp_version, False)
+        ret += Cell.wrap_string_for_mcnp(
+            self.geometry_logic_string, mcnp_version, False
+        )
         if self.parameters:
             strings = []
             for key, value in self.parameters.items():

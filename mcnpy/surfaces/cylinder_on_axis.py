@@ -1,10 +1,12 @@
 from .surface_type import SurfaceType
 from .surface import Surface
 
+
 class CylinderOnAxis(Surface):
     """
     Represents surfaces: CX, CY, CZ
     """
+
     def __init__(self, input_card, comment=None):
         """
         :param input_card: The Card object representing the input
