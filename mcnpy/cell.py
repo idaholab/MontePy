@@ -299,7 +299,8 @@ class Cell(MCNP_Card):
         # make sure all numbers are surrounded by non-digit chars
         pad_string = " " + self.geometry_logic_string + " "
         #need to move all numbers to outside of feasible numbers first, before moving numbers around
-        # it's possible when shifting numbers by a little to have an overlap between the set of old and new numbers
+        # it's possible when shifting numbers by a little to have an 
+        # overlap between the set of old and new numbers
         temp_numbers = itertools.count(start=int(1e8))
         temp_cells = {}
         temp_surfaces = {}
