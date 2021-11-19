@@ -1,3 +1,4 @@
+import itertools
 from mcnpy.errors import *
 from mcnpy.mcnp_card import MCNP_Card
 from mcnpy.data_cards.material import Material
@@ -297,23 +298,41 @@ class Cell(MCNP_Card):
         """
         # make sure all numbers are surrounded by non-digit chars
         pad_string = " " + self.geometry_logic_string + " "
-        for complement in self.complements:
-            old_num = complement.old_cell_number
-            new_num = complement.cell_number
-            pad_string = re.sub(
-                f"#{old_num}(\D)",
-                r"#{new_num}\g<1>".format(new_num=new_num),
-                pad_string
-            )
-        for surface in set(self.surfaces):
-            old_num = surface.old_surface_number
-            new_num = surface.surface_number
-            pad_string = re.sub(
-                f"([^#\d]){old_num}(\D)",
-                r"\g<1>{new_num}\g<2>".format(new_num=new_num),
-                pad_string,
-            )
-        self.__geometry_logic_string = pad_string
+        #need to move all numbers to outside of feasible numbers first, before moving numbers around
+        # it's possible when shifting numbers by a little to have an overlap between the set of old and new numbers
+        temp_numbers = itertools.count(start=int(1e8))
+        temp_cells = {}
+        temp_surfaces = {}
+        for is_final_pass in [False, True]:
+            for complement in self.complements:
+                if is_final_pass:
+                    old_num = temp_cells[complement.cell_number]
+                    new_num = complement.cell_number
+                else:
+                    old_num = complement.old_cell_number
+                    new_num = next(temp_numbers)
+                    temp_cells[complement.cell_number] = new_num
+                pad_string = re.sub(
+                    f"#{old_num}(\D)",
+                    r"#{new_num}\g<1>".format(new_num=new_num),
+                    pad_string
+                )
+            for surface in set(self.surfaces):
+                if is_final_pass:
+                    old_num = temp_surfaces[surface.surface_number]
+                    new_num = surface.surface_number
+                else:
+                    old_num = surface.old_surface_number
+                    new_num = next(temp_numbers)
+                    temp_surfaces[surface.surface_number] = new_num
+                old_num = surface.old_surface_number
+                new_num = surface.surface_number
+                pad_string = re.sub(
+                    f"([^#\d]){old_num}(\D)",
+                    r"\g<1>{new_num}\g<2>".format(new_num=new_num),
+                    pad_string,
+                )
+            self.__geometry_logic_string = pad_string
 
     def format_for_mcnp_input(self, mcnp_version):
         self.update_geometry_logic_string()
