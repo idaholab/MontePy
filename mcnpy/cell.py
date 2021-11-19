@@ -325,14 +325,12 @@ class Cell(MCNP_Card):
                     old_num = surface.old_surface_number
                     new_num = next(temp_numbers)
                     temp_surfaces[surface.surface_number] = new_num
-                old_num = surface.old_surface_number
-                new_num = surface.surface_number
                 pad_string = re.sub(
                     f"([^#\d]){old_num}(\D)",
                     r"\g<1>{new_num}\g<2>".format(new_num=new_num),
                     pad_string,
                 )
-            self.__geometry_logic_string = pad_string
+        self.__geometry_logic_string = pad_string
 
     def format_for_mcnp_input(self, mcnp_version):
         self.update_geometry_logic_string()
