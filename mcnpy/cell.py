@@ -305,7 +305,7 @@ class Cell(MCNP_Card):
                 r"#{new_num}\g<1>".format(new_num=new_num),
                 pad_string
             )
-        for surface in self.surfaces:
+        for surface in set(self.surfaces):
             old_num = surface.old_surface_number
             new_num = surface.surface_number
             pad_string = re.sub(
