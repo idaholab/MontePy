@@ -37,3 +37,22 @@ class AxisPlane(Surface):
         assert isinstance(location, float)
         self.__location = location
         self.__surface_constants[0] = location
+
+    def find_duplicate_surfaces(self, surfaces, tolerance):
+        ret = []
+        # do not assume transform and periodic surfaces are the same.
+        if not self.old_transform_number and not self.old_periodic_surface:
+            for surface in surfaces:
+                if surface != self and surface.surface_type == self.surface_type:
+                    if (
+                        not surface.old_transform_number
+                        and not self.old_periodic_surface
+                    ):
+                        if (
+                            abs((self.location - surface.location) / self.location)
+                            < tolerance
+                        ):
+                            ret.append(surface)
+            return ret
+        else:
+            return []

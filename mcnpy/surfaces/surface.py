@@ -256,3 +256,15 @@ class Surface(MCNP_Card):
             buffList.append(f"{constant:.6g}")
         ret += Surface.wrap_words_for_mcnp(buffList, mcnp_version, True)
         return ret
+
+    def find_duplicate_surfaces(self, surfaces, tolerance):
+        """Finds all surfaces that are effectively the same as this one.
+
+        :param surfaces: a list of the surfaces to compare against this one.
+        :type surfaces: list
+        :param tolerance: the amount of relative error to allow
+        :type tolerance: float
+        :returns: A list of the surfaces that are identical
+        :rtype: list
+        """
+        return []
