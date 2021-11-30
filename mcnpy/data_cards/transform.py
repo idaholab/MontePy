@@ -15,7 +15,7 @@ class Transform(data_card.DataCard):
         words = self.words
         i = 0
         assert re.match("\*?tr\d+", words[i].lower())
-        assert len(words) >= 4
+        assert len(words) >= 3
         try:
             if "*" in words[i]:
                 self.__is_in_degrees = True
@@ -179,6 +179,7 @@ class Transform(data_card.DataCard):
 
         ret += Transform.wrap_words_for_mcnp(buff_list, mcnp_version, True)
         buff_list = []
+        i = 0
         for i, value in enumerate(self.rotation_matrix):
             buff_list.append(f"{value}")
             if (i + 1) % 3 == 0:
