@@ -70,27 +70,7 @@ class Cell(MCNP_Card):
                     )
             j, param_found = self.__parse_geometry(i, words)
             if param_found:
-                params_string = " ".join(words[i + j :])
-                self.__parameters = {}
-                fragments = params_string.split("=")
-                key = ""
-                next_key = ""
-                value = ""
-                for i, fragment in enumerate(fragments):
-                    fragment = fragment.split()
-                    if i == 0:
-                        key = fragment[0]
-                    elif i == len(fragments) - 1:
-                        if next_key:
-                            key = next_key
-                        value = fragment[0]
-                    else:
-                        if next_key:
-                            key = next_key
-                        value = fragment[0]
-                        next_key = fragment[1]
-                    if key and value:
-                        self.__parameters[key] = value
+                self.__parse_importance(i, j, words)
 
     def __parse_geometry(self, i, words):
         """
@@ -122,6 +102,29 @@ class Cell(MCNP_Card):
                         self.__old_surface_numbers.append(int(surface))
         self.__geometry_logic_string = geometry_string
         return (j, param_found)
+
+    def __parse_importance(self, i, j, words):
+        params_string = " ".join(words[i + j :])
+        self.__parameters = {}
+        fragments = params_string.split("=")
+        key = ""
+        next_key = ""
+        value = ""
+        for i, fragment in enumerate(fragments):
+            fragment = fragment.split()
+            if i == 0:
+                key = fragment[0]
+            elif i == len(fragments) - 1:
+                if next_key:
+                    key = next_key
+                value = fragment[0]
+            else:
+                if next_key:
+                    key = next_key
+                value = fragment[0:-1]
+                next_key = fragment[-1]
+            if key and value:
+                self.__parameters[key] = value
 
     @property
     def old_cell_number(self):
@@ -354,6 +357,8 @@ class Cell(MCNP_Card):
         if self.parameters:
             strings = []
             for key, value in self.parameters.items():
+                if isinstance(value, list):
+                    value = " ".join(value)
                 strings.append(f"{key}={value}")
             ret += Cell.wrap_words_for_mcnp(strings, mcnp_version, False)
         return ret
