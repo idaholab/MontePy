@@ -180,10 +180,14 @@ class MCNP_Problem:
                         if isinstance(data, material.Material):
                             self.__materials.append(data)
                     comment_queue = None
+        self.__update_internal_pointers()
+
+    def __update_internal_pointers(self):
+        """Updates the internal pointers between objects
+        """
         material_dict = {}
         surface_dict = {}
         cell_dict = {}
-        # build dicts
         for mat in self.__materials:
             material_dict[mat.material_number] = mat
         for surface in self.__surfaces:
