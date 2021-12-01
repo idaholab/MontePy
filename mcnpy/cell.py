@@ -282,6 +282,8 @@ class Cell(MCNP_Card):
         :param surface_dict: a dictionary mapping the surface number to the Surface object.
         :type surface_dict: dict
         """
+        self.__surfaces = []
+        self.__complements = []
         if self.__old_mat_number > 0:
             self.__material = material_dict[self.__old_mat_number]
         else:
@@ -293,11 +295,14 @@ class Cell(MCNP_Card):
         for complement_number in self.__old_complement_numbers:
             self.__complements.append(cell_dict[complement_number])
 
-    def update_geometry_logic_string(self):
+    def update_geometry_logic_string(self, update_to_new=True):
         """
         Updates the geometry logic string with new surface numbers.
 
         This is a bit of a hacky temporary solution while true boolean logic is implemented.
+
+        :param update_to_new: if true the surface numbers will be switched from old to new.
+        :type update_to_new: bool
         """
         # make sure all numbers are surrounded by non-digit chars
         pad_string = " " + self.geometry_logic_string + " "
@@ -324,9 +329,15 @@ class Cell(MCNP_Card):
             for surface in set(self.surfaces):
                 if is_final_pass:
                     old_num = temp_surfaces[surface.surface_number]
-                    new_num = surface.surface_number
+                    if update_to_new:
+                        new_num = surface.surface_number
+                    else:
+                        new_num = surface.old_surface_number
                 else:
-                    old_num = surface.old_surface_number
+                    if update_to_new:
+                        old_num = surface.old_surface_number
+                    else:
+                        old_num = surface.surface_number
                     new_num = next(temp_numbers)
                     temp_surfaces[surface.surface_number] = new_num
                 pad_string = re.sub(
@@ -335,6 +346,30 @@ class Cell(MCNP_Card):
                     pad_string,
                 )
         self.__geometry_logic_string = pad_string
+
+    def remove_duplicate_surfaces(self, deleting_dict):
+        """Updates old surface numbers to prepare for deleting surfaces.
+
+        Note: update_pointers must be ran again.
+        :param deleting_dict: a dict of the surfaces to delete.
+            The key is the old surface, and the value is the new one.
+        :type deleting_dict: dict
+        """
+        will_update = False
+        for dead_surface in deleting_dict:
+            if dead_surface.old_surface_number in self.old_surface_numbers:
+                will_update = True
+                break
+        if will_update:
+            self.update_geometry_logic_string(False)
+            for dead_surface in deleting_dict:
+                if dead_surface.old_surface_number in self.old_surface_numbers:
+                    old_old = dead_surface.old_surface_number
+                    new_old = deleting_dict[dead_surface].old_surface_number
+                    self.__old_surface_numbers = [
+                        new_old if item == old_old else item
+                        for item in self.__old_surface_numbers
+                    ]
 
     def format_for_mcnp_input(self, mcnp_version):
         self.update_geometry_logic_string()

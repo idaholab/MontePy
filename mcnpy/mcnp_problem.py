@@ -183,17 +183,16 @@ class MCNP_Problem:
         self.__update_internal_pointers()
 
     def __update_internal_pointers(self):
-        """Updates the internal pointers between objects
-        """
+        """Updates the internal pointers between objects"""
         material_dict = {}
         surface_dict = {}
         cell_dict = {}
         for mat in self.__materials:
-            material_dict[mat.material_number] = mat
+            material_dict[mat.old_material_number] = mat
         for surface in self.__surfaces:
-            surface_dict[surface.surface_number] = surface
+            surface_dict[surface.old_surface_number] = surface
         for cell in self.__cells:
-            cell_dict[cell.cell_number] = cell
+            cell_dict[cell.old_cell_number] = cell
         # update links
         for cell in self.__cells:
             cell.update_pointers(cell_dict, material_dict, surface_dict)
@@ -201,6 +200,28 @@ class MCNP_Problem:
             surface.update_pointers(surface_dict, self.__data_cards)
         for card in self.__data_cards:
             card.update_pointers(self.__data_cards)
+
+    def remove_duplicate_surfaces(self, tolerance):
+        """Finds duplicate surfaces in the problem, and remove them.
+
+        :param tolerance: The amount of relative error to consider two surfaces identical
+        :type tolerance: float
+        """
+        to_delete = set()
+        matching_map = {}
+        for surface in self.surfaces:
+            if surface not in to_delete:
+                matches = surface.find_duplicate_surfaces(self.surfaces, tolerance)
+                if matches:
+                    for match in matches:
+                        to_delete.add(match)
+                        matching_map[match] = surface
+
+        for cell in self.cells:
+            cell.remove_duplicate_surfaces(matching_map)
+        self.__update_internal_pointers()
+        for surface in to_delete:
+            self.__surfaces.remove(surface)
 
     def write_to_file(self, new_problem):
         """
