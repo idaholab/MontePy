@@ -273,6 +273,13 @@ class Cell(MCNP_Card):
         """
         return self.__complements
 
+    @complements.setter
+    def complements(self, complements):
+        assert isinstance(complements, list)
+        for cell in complements:
+            assert isinstance(cell, Cell)
+        self.__complements = complements
+
     def update_pointers(self, cell_dict, material_dict, surface_dict):
         """
         Attaches this object to the appropriate objects for surfaces and materials.
