@@ -370,15 +370,21 @@ class Cell(MCNP_Card):
                 will_update = True
                 break
         if will_update:
-            self.update_geometry_logic_string(False)
+            # force logic string to known state
+            self.update_geometry_logic_string()
+            matching_surfaces = {}
             for dead_surface in deleting_dict:
                 if dead_surface.old_surface_number in self.old_surface_numbers:
+                    matching_surfaces[dead_surface.surface_number] = deleting_dict[
+                        dead_surface
+                    ].surface_number
                     old_old = dead_surface.old_surface_number
                     new_old = deleting_dict[dead_surface].old_surface_number
                     self.__old_surface_numbers = [
                         new_old if item == old_old else item
                         for item in self.__old_surface_numbers
                     ]
+            self.__update_geometry_logic_by_map(matching_surfaces, {})
 
     def format_for_mcnp_input(self, mcnp_version):
         self.update_geometry_logic_string()
