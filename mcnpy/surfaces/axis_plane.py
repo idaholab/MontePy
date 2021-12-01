@@ -48,10 +48,7 @@ class AxisPlane(Surface):
                         not surface.old_transform_number
                         and not self.old_periodic_surface
                     ):
-                        if (
-                            abs((self.location - surface.location) / self.location)
-                            < tolerance
-                        ):
+                        if abs(self.location - surface.location) < tolerance:
                             ret.append(surface)
             return ret
         else:
