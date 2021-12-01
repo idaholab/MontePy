@@ -295,14 +295,29 @@ class Cell(MCNP_Card):
         for complement_number in self.__old_complement_numbers:
             self.__complements.append(cell_dict[complement_number])
 
-    def update_geometry_logic_string(self, update_to_new=True):
+    def update_geometry_logic_string(self):
         """
         Updates the geometry logic string with new surface numbers.
 
         This is a bit of a hacky temporary solution while true boolean logic is implemented.
+        """
+        matching_surfaces = {}
+        matching_complements = {}
+        for cell in self.complements:
+            matching_complements[cell.old_cell_number] = cell.cell_number
+        for surface in self.surfaces:
+            matching_surfaces[surface.old_surface_number] = surface.surface_number
+        self.__update_geometry_logic_by_map(matching_surfaces, matching_complements)
 
-        :param update_to_new: if true the surface numbers will be switched from old to new.
-        :type update_to_new: bool
+    def __update_geometry_logic_by_map(
+        self, mapping_surface_dict, mapping_complement_dict
+    ):
+        """Updates geometry logic string based on a map.
+
+        :param mapping_surface_dict: A dict mapping the old surface number to the new one. The key is the old one.
+        :type mapping_dict: dict
+        :param mapping_complement_dict: A dict mapping the old cell number to the new one. The key is the old one.
+        :type mapping_complement_dict: dict
         """
         # make sure all numbers are surrounded by non-digit chars
         pad_string = " " + self.geometry_logic_string + " "
@@ -313,33 +328,27 @@ class Cell(MCNP_Card):
         temp_cells = {}
         temp_surfaces = {}
         for is_final_pass in [False, True]:
-            for complement in self.complements:
+            for complement in mapping_complement_dict:
                 if is_final_pass:
-                    old_num = temp_cells[complement.cell_number]
-                    new_num = complement.cell_number
+                    old_num = temp_cells[complement]
+                    new_num = mapping_complement_dict[complement]
                 else:
-                    old_num = complement.old_cell_number
+                    old_num = complement
                     new_num = next(temp_numbers)
-                    temp_cells[complement.cell_number] = new_num
+                    temp_cells[complement] = new_num
                 pad_string = re.sub(
                     f"#{old_num}(\D)",
                     r"#{new_num}\g<1>".format(new_num=new_num),
                     pad_string,
                 )
-            for surface in set(self.surfaces):
+            for surface in mapping_surface_dict:
                 if is_final_pass:
-                    old_num = temp_surfaces[surface.surface_number]
-                    if update_to_new:
-                        new_num = surface.surface_number
-                    else:
-                        new_num = surface.old_surface_number
+                    old_num = temp_surfaces[surface]
+                    new_num = mapping_surface_dict[surface]
                 else:
-                    if update_to_new:
-                        old_num = surface.old_surface_number
-                    else:
-                        old_num = surface.surface_number
+                    old_num = surface
                     new_num = next(temp_numbers)
-                    temp_surfaces[surface.surface_number] = new_num
+                    temp_surfaces[surface] = new_num
                 pad_string = re.sub(
                     f"([^#\d]){old_num}(\D)",
                     r"\g<1>{new_num}\g<2>".format(new_num=new_num),
