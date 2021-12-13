@@ -3,6 +3,7 @@ from mcnpy.surfaces.surface import Surface
 from mcnpy.surfaces.surface_type import SurfaceType
 from mcnpy.surfaces.cylinder_on_axis import CylinderOnAxis
 from mcnpy.surfaces.cylinder_par_axis import CylinderParAxis
+from mcnpy.surfaces.general_plane import GeneralPlane
 
 
 def surface_builder(input_card, comment=None):
@@ -26,5 +27,7 @@ def surface_builder(input_card, comment=None):
         return CylinderOnAxis(input_card, comment)
     elif type_of_surface in [ST.PX, ST.PY, ST.PZ]:
         return AxisPlane(input_card, comment)
+    elif type_of_surface == ST.P:
+        return GeneralPlane(input_card, comment)
     else:
         return buffer_surface

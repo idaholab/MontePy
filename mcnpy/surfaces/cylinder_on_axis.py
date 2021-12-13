@@ -32,3 +32,23 @@ class CylinderOnAxis(Surface):
     def radius(self, radius):
         assert isinstance(radius, float)
         self.__radius = radius
+
+    def find_duplicate_surfaces(self, surfaces, tolerance):
+        ret = []
+        # do not assume transform and periodic surfaces are the same.
+        if not self.old_periodic_surface:
+            for surface in surfaces:
+                if surface != self and surface.surface_type == self.surface_type:
+                    if not self.old_periodic_surface:
+                        if abs(self.radius - surface.radius) < tolerance:
+                            if self.old_transform_number:
+                                if surface.old_transform_number:
+                                    if self.transform.equivalent(
+                                        surface.transform, tolerance
+                                    ):
+                                        ret.append(surface)
+                            else:
+                                ret.append(surface)
+            return ret
+        else:
+            return []

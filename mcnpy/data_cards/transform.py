@@ -188,3 +188,32 @@ class Transform(data_card.DataCard):
         if i == 8 and not self.is_main_to_aux:
             ret += Transform.wrap_string_for_mcnp("-1", mcnp_version, False)
         return ret
+
+    def equivalent(self, other, tolerance):
+        """Determines if this is effectively equivalent to another transformation
+
+        :param other: The transform to compare self again.
+        :type other: Transform
+        :param tolerance: the allowable difference in any attribute to still be considered equivalent.
+        :type tolerance: float
+        :returns: True iff all transform elements in both are within the tolerance of each other.
+        :rtype: bool
+        """
+
+        if self.is_in_degrees != other.is_in_degrees:
+            return False
+
+        if self.is_main_to_aux != other.is_main_to_aux:
+            return False
+
+        for i, component in enumerate(self.displacement_vector):
+            if abs(component - other.displacement_vector[i]) >= tolerance:
+                return False
+
+        if self.rotation_matrix:
+            if not other.rotation_matrix:
+                return False
+            for i, component in enumerate(self.rotation_matrix):
+                if abs(component - other.rotation_matrix[i]) >= tolerance:
+                    return False
+        return True

@@ -61,3 +61,29 @@ class CylinderParAxis(Surface):
         assert radius > 0
         self.__radius = radius
         self.__surface_constants[2] = radius
+
+    def find_duplicate_surfaces(self, surfaces, tolerance):
+        ret = []
+        # do not assume transform and periodic surfaces are the same.
+        if not self.old_periodic_surface:
+            for surface in surfaces:
+                if surface != self and surface.surface_type == self.surface_type:
+                    if not self.old_periodic_surface:
+                        match = True
+                        if abs(self.radius - surface.radius) >= tolerance:
+                            match = False
+                        for i, coordinate in enumerate(self.coordinates):
+                            if abs(coordinate - surface.coordinates[i]) >= tolerance:
+                                match = False
+                        if match:
+                            if self.old_transform_number:
+                                if surface.old_transform_number:
+                                    if self.transform.equivalent(
+                                        surface.transform, tolerance
+                                    ):
+                                        ret.append(surface)
+                            else:
+                                ret.append(surface)
+            return ret
+        else:
+            return []
