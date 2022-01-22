@@ -1,6 +1,7 @@
 from mcnpy import mcnp_card
 from mcnpy.data_cards import data_card
 from mcnpy.errors import *
+from mcnpy.utilities import *
 import numpy as np
 import re
 

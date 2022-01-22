@@ -1,10 +1,11 @@
 from .block_type import BlockType
 from .. import errors
 import itertools
-from .mcnp_input import Card, Comment, Message, Title
+from mcnpy.input_parser.mcnp_input import Card, Comment, Message, ReadCard, Title
 import re
 
 BLANK_SPACE_CONTINUE = 5
+
 
 def read_input_syntax(input_file):
     """
@@ -56,7 +57,7 @@ def read_front_matters(fh):
             break
 
 
-def read_data(fh):
+def read_data(fh, block_type=None):
     """
     Reads the bulk of an MCNP file for all of the MCNP data.
 
@@ -73,7 +74,8 @@ def read_data(fh):
     """
     commentFinder = re.compile(f"^\s{{0,{BLANK_SPACE_CONTINUE-1}}}C\s", re.IGNORECASE)
     block_counter = 0
-    block_type = BlockType.CELL
+    if block_type is None:
+        block_type = BlockType.CELL
     is_in_comment = False
     continue_card = False
     words = []
@@ -84,7 +86,7 @@ def read_data(fh):
             if is_in_comment:
                 yield Comment(words)
             else:
-                yield Card(block_type, words)
+                yield generate_card_object(block_type, words)
             words = []
             block_counter += 1
             if block_counter < 3:
@@ -97,7 +99,7 @@ def read_data(fh):
             if commentFinder.match(line):
                 if not is_in_comment:
                     if words:
-                        yield Card(block_type, words)
+                        yield generate_card_object(block_type, words)
                     # removes leading comment info
                     words = [commentFinder.split(line)[1]]
                     is_in_comment = True
@@ -121,7 +123,7 @@ def read_data(fh):
                 # if beginning a new card
                 if line[0:BLANK_SPACE_CONTINUE].strip() and not continue_card:
                     if words:
-                        yield Card(block_type, words)
+                        yield generate_card_object(block_type, words)
                     words = temp_words
                 else:
                     words = words + temp_words
@@ -132,4 +134,16 @@ def read_data(fh):
     if is_in_comment:
         yield Comment(words)
     else:
-        yield Card(block_type, words)
+        yield generate_card_object(block_type, words)
+
+
+def generate_card_object(block_type, words):
+    card = Card(block_type, words)
+    if card.words[0].lower() == "read":
+        card = ReadCard(card)
+        with open(card.file_name, "r") as fh:
+            for input_card in read_data(fh, block_type):
+                print(input_card)
+                return input_card
+    else:
+        return card

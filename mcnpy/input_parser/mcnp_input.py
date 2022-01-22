@@ -1,5 +1,6 @@
 from abc import ABC, abstractmethod
 from .block_type import BlockType
+import re
 
 
 class MCNP_Input(ABC):
@@ -59,6 +60,27 @@ class Card(MCNP_Input):
 
     def format_for_mcnp_input(self, mcnp_version):
         pass
+
+
+class ReadCard(Card):
+    """
+    A card for the read card that reads another input file
+    """
+
+    def __init__(self, card):
+        self.__words = card.words
+        self._Card__words = card.words
+        self.__block_type = card.block_type
+        self._Card__block_type = card.block_type
+        file_finder = re.compile("file=(?P<file>[\S]+)", re.IGNORECASE)
+        for word in card.words[1:]:
+            match = file_finder.match(word)
+            if match:
+                self.__file_name = match.group("file")
+
+    @property
+    def file_name(self):
+        return self.__file_name
 
 
 class Comment(MCNP_Input):
