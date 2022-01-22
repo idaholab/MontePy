@@ -5,6 +5,7 @@ from mcnpy.input_parser.mcnp_input import Card, Comment, Message, ReadCard, Titl
 import re
 
 BLANK_SPACE_CONTINUE = 5
+reading_queue = []
 
 
 def read_input_syntax(input_file):
@@ -57,7 +58,7 @@ def read_front_matters(fh):
             break
 
 
-def read_data(fh, block_type=None):
+def read_data(fh, block_type=None, recursion=False):
     """
     Reads the bulk of an MCNP file for all of the MCNP data.
 
@@ -135,15 +136,19 @@ def read_data(fh, block_type=None):
         yield Comment(words)
     else:
         yield generate_card_object(block_type, words)
+    
+    if not recursion:
+        for block_type, file_name in reading_queue:
+            with open(file_name, "r") as sub_fh:
+                for input_card in read_data(sub_fh, block_type, True):
+                    print(input_card)
+                    yield input_card
 
 
 def generate_card_object(block_type, words):
     card = Card(block_type, words)
     if card.words[0].lower() == "read":
         card = ReadCard(card)
-        with open(card.file_name, "r") as fh:
-            for input_card in read_data(fh, block_type):
-                print(input_card)
-                return input_card
+        reading_queue.append((block_type,card.file_name))
     else:
         return card
