@@ -3,6 +3,7 @@ from mcnpy.errors import *
 from mcnpy.mcnp_card import MCNP_Card
 from mcnpy.data_cards.material import Material
 from mcnpy.surfaces.surface import Surface
+from mcnpy.utilities import *
 import re
 
 
@@ -55,7 +56,7 @@ class Cell(MCNP_Card):
             # density
             if mat_num > 0:
                 try:
-                    density = float(words[i])
+                    density = fortran_float(words[i])
                     self.__density = abs(density)
                     i += 1
                     if density > 0:

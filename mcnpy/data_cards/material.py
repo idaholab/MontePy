@@ -3,6 +3,7 @@ from mcnpy.data_cards.isotope import Isotope
 from mcnpy.data_cards.material_component import MaterialComponent
 from mcnpy import mcnp_card
 from mcnpy.errors import *
+from mcnpy.utilities import *
 import itertools
 import re
 
@@ -40,7 +41,7 @@ class Material(data_card.DataCard):
             try:
                 isotope = Isotope(isotope_str)
                 fraction = next(words_iter)
-                fraction = float(fraction)
+                fraction = fortran_float(fraction)
             except MalformedInputError:
                 has_parameters = True
                 break
