@@ -217,9 +217,6 @@ class MCNP_Problem:
                         to_delete.add(match)
                         matching_map[match] = surface
 
-        for parent in matching_map:
-            print(parent.surface_number)
-            print("    " + str(matching_map[parent].surface_number))
         for cell in self.cells:
             cell.remove_duplicate_surfaces(matching_map)
         self.__update_internal_pointers()
