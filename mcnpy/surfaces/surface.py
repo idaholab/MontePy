@@ -2,6 +2,7 @@ from mcnpy.errors import *
 from mcnpy.data_cards import transform
 from mcnpy.mcnp_card import MCNP_Card
 from mcnpy.surfaces.surface_type import SurfaceType
+from mcnpy.utilities import *
 import re
 
 
@@ -64,7 +65,7 @@ class Surface(MCNP_Card):
         self.__surface_constants = []
         for entry in words[i + 1 :]:
             try:
-                self.__surface_constants.append(float(entry))
+                self.__surface_constants.append(fortran_float(entry))
             except ValueError:
                 raise MalformedInputError(
                     input_card,

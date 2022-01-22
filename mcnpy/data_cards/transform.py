@@ -34,7 +34,7 @@ class Transform(data_card.DataCard):
         try:
             values = []
             for j, word in enumerate(words[i:]):
-                values.append(float(word))
+                values.append(fortran_float(word))
                 i += 1
                 if j >= 2:
                     break
@@ -49,7 +49,7 @@ class Transform(data_card.DataCard):
         try:
             values = []
             for j, word in enumerate(words[i:]):
-                values.append(float(word))
+                values.append(fortran_float(word))
                 i += 1
                 if j >= 8:
                     break
