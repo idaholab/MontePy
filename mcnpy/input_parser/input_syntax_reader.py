@@ -4,6 +4,7 @@ import itertools
 from .mcnp_input import Card, Comment, Message, Title
 import re
 
+BLANK_SPACE_CONTINUE = 5
 
 def read_input_syntax(input_file):
     """
@@ -70,7 +71,7 @@ def read_data(fh):
     :rtype: MCNP_input
 
     """
-    commentFinder = re.compile("^\s{0,4}C\s", re.IGNORECASE)
+    commentFinder = re.compile(f"^\s{{0,{BLANK_SPACE_CONTINUE-1}}}C\s", re.IGNORECASE)
     block_counter = 0
     block_type = BlockType.CELL
     is_in_comment = False
@@ -109,7 +110,7 @@ def read_data(fh):
                     is_in_comment = False
                     yield Comment(words)
                     words = []
-                if "#" in line[0:4]:
+                if "#" in line[0:BLANK_SPACE_CONTINUE]:
                     raise errors.UnsupportedFeature(
                         "Vertical Input format is not allowed"
                     )
@@ -118,7 +119,7 @@ def read_data(fh):
                 # removes continue card
                 temp_words = line.replace(" &", "").split()
                 # if beginning a new card
-                if line[0:4].strip() and not continue_card:
+                if line[0:BLANK_SPACE_CONTINUE].strip() and not continue_card:
                     if words:
                         yield Card(block_type, words)
                     words = temp_words
