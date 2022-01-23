@@ -170,6 +170,9 @@ class Material(data_card.DataCard):
     def __repr__(self):
         return self.__str__()
 
+    def __lt__(self, other):
+        return self.material_number < other.material_number
+
     def format_for_mcnp_input(self, mcnp_version):
         ret = mcnp_card.MCNP_Card.format_for_mcnp_input(self, mcnp_version)
         sorted_isotopes = sorted(list(self.material_components.keys()))

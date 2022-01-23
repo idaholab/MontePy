@@ -258,6 +258,9 @@ class Surface(MCNP_Card):
         ret += Surface.wrap_words_for_mcnp(buffList, mcnp_version, True)
         return ret
 
+    def __lt__(self, other):
+        return self.surface_number < other.surface_number
+
     def find_duplicate_surfaces(self, surfaces, tolerance):
         """Finds all surfaces that are effectively the same as this one.
 

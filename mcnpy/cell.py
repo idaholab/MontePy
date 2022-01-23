@@ -435,5 +435,8 @@ class Cell(MCNP_Card):
         ret += "\n"
         return ret
 
+    def __lt__(self, other):
+        return self.cell_number < other.cell_number
+
     def __repr__(self):
         return self.__str__()
