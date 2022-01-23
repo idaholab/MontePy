@@ -230,6 +230,24 @@ class MCNP_Problem:
         for surface in to_delete:
             self.__surfaces.remove(surface)
 
+    def add_cell_children_to_problem(self):
+        """
+        Adds the surfaces and materials added to this problem to the 
+        internal lists to allow them to be written to file.
+
+        WARNING: this does not move transforms and complement cells, and probably others.
+        """
+        surfaces = set()
+        materials = set()
+        for cell in self.cells:
+            surfaces.update(set(cell.surfaces))
+            materials.add(cell.material)
+        surfaces = sorted(list(surfaces))
+        materials = sorted(list(materials))
+        self.__surfaces = self.__surfaces + surfaces
+        self.__materials = self.__materials + materials
+        self.__data_cards = self.__data_cards + materials
+
     def write_to_file(self, new_problem):
         """
         Writes the problem to a file.
