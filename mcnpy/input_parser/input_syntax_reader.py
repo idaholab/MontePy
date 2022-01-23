@@ -141,7 +141,6 @@ def read_data(fh, block_type=None, recursion=False):
         for block_type, file_name in reading_queue:
             with open(file_name, "r") as sub_fh:
                 for input_card in read_data(sub_fh, block_type, True):
-                    print(input_card)
                     yield input_card
 
 

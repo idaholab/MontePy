@@ -144,6 +144,13 @@ class MCNP_Problem:
         """
         return self.__title
 
+    @title.setter
+    def title(self, title):
+        """
+        :type title: The str for the title to be set to.
+        """
+        self.__title = mcnp_input.Title(title)
+
     def parse_input(self):
         """
         Semantically parses the MCNP file provided to the constructor.
