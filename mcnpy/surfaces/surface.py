@@ -179,7 +179,9 @@ class Surface(MCNP_Card):
 
     @transform.deleter
     def transform(self):
-        self.__transform = None
+        if hasattr(self, "_Surface__transform"):
+            del self.__transform
+            del self.__old_transform_number
 
     @property
     def old_surface_number(self):

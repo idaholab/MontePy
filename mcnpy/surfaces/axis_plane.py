@@ -36,7 +36,7 @@ class AxisPlane(Surface):
     def location(self, location):
         assert isinstance(location, float)
         self.__location = location
-        self.__surface_constants[0] = location
+        self._Surface__surface_constants[0] = location
 
     def find_duplicate_surfaces(self, surfaces, tolerance):
         ret = []
