@@ -19,12 +19,12 @@ class Transform(data_card.DataCard):
         assert len(words) >= 3
         try:
             if "*" in words[i]:
-                self.__is_in_degrees = True
+                self._is_in_degrees = True
             else:
-                self.__is_in_degrees = False
+                self._is_in_degrees = False
             num = words[i].lower().strip("*tr")
-            self.__transform_number = int(num)
-            self.__old_transform_number = self.__transform_number
+            self._transform_number = int(num)
+            self._old_transform_number = self._transform_number
             i += 1
 
         except ValueError:
@@ -39,7 +39,7 @@ class Transform(data_card.DataCard):
                 i += 1
                 if j >= 2:
                     break
-            self.__displacement_vector = np.array(values)
+            self._displacement_vector = np.array(values)
 
         except ValueError:
             raise MalformedInputError(
@@ -54,13 +54,13 @@ class Transform(data_card.DataCard):
                 i += 1
                 if j >= 8:
                     break
-            self.__rotation_matrix = np.array(values)
+            self._rotation_matrix = np.array(values)
         except ValueError:
             raise MalformedInputError(
                 input_card, f"{word} can't be parsed as a rotation matrix component"
             )
 
-        self.__is_main_to_aux = True
+        self._is_main_to_aux = True
         if len(values) == 9:
             try:
                 word = words[i]
@@ -68,7 +68,7 @@ class Transform(data_card.DataCard):
                 if word == "1":
                     pass
                 elif word == "-1":
-                    self.__is_main_to_aux = False
+                    self._is_main_to_aux = False
                 else:
                     raise MalformedInputError(
                         input_card, f"{word} can't be parsed as 1 or -1"
@@ -85,7 +85,7 @@ class Transform(data_card.DataCard):
 
         :rtype: bool
         """
-        return self.__is_in_degrees
+        return self._is_in_degrees
 
     @is_in_degrees.setter
     def is_in_degrees(self, in_deg):
@@ -93,7 +93,7 @@ class Transform(data_card.DataCard):
         Does not currently correct the rotation matrix for you
         """
         assert isinstance(in_deg, bool)
-        self.__is_in_degrees = in_deg
+        self._is_in_degrees = in_deg
 
     @property
     def transform_number(self):
@@ -102,19 +102,19 @@ class Transform(data_card.DataCard):
 
         :rtype: int
         """
-        return self.__transform_number
+        return self._transform_number
 
     @transform_number.setter
     def transform_number(self, num):
         assert isinstance(num, int)
-        self.__transform_number = num
+        self._transform_number = num
 
     @property
     def old_transform_number(self):
         """
         The transform number used in the original file
         """
-        return self.__old_transform_number
+        return self._old_transform_number
 
     @property
     def displacement_vector(self):
@@ -123,13 +123,13 @@ class Transform(data_card.DataCard):
 
         :rtype: numpy.array
         """
-        return self.__displacement_vector
+        return self._displacement_vector
 
     @displacement_vector.setter
     def displacement_vector(self, vector):
         assert isinstance(vector, np.array)
         assert len(vector) == 3
-        self.__displacement_vector = vector
+        self._displacement_vector = vector
 
     @property
     def rotation_matrix(self):
@@ -138,13 +138,13 @@ class Transform(data_card.DataCard):
 
         :rtype:np.array
         """
-        return self.__rotation_matrix
+        return self._rotation_matrix
 
     @rotation_matrix.setter
     def rotation_matrix(self, matrix):
         assert isinstance(matrix, np.array)
         assert len(matrix) >= 5
-        self.__rotation_matrix = matrix
+        self._rotation_matrix = matrix
 
     @property
     def is_main_to_aux(self):
@@ -154,12 +154,12 @@ class Transform(data_card.DataCard):
 
         :rtype: bool
         """
-        return self.__is_main_to_aux
+        return self._is_main_to_aux
 
     @is_main_to_aux.setter
     def is_main_to_aux(self, flag):
         assert isinstance(flag, bool)
-        self.__is_main_to_aux = flag
+        self._is_main_to_aux = flag
 
     def __str__(self):
         ret = f"TRANSFORM: {self.transform_number}\n"

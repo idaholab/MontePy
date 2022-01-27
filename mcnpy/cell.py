@@ -21,19 +21,21 @@ class Cell(MCNP_Card):
         :type comment: Comment
         """
         super().__init__(comment)
-        self.__surfaces = []
-        self.__old_surface_numbers = []
-        self.__complements = []
-        self.__old_complement_numbers = []
-        self.__parameters = {}
+        self._material = None
+        self._geometry_logic_string = None
+        self._surfaces = []
+        self._old_surface_numbers = []
+        self._complements = []
+        self._old_complement_numbers = []
+        self._parameters = {}
         if input_card:
             words = input_card.words
             i = 0
             # cell number
             try:
                 cell_num = int(words[i])
-                self.__old_cell_number = cell_num
-                self.__cell_number = cell_num
+                self._old_cell_number = cell_num
+                self._cell_number = cell_num
                 i += 1
             except ValueError:
                 raise MalformedInputError(
@@ -46,7 +48,7 @@ class Cell(MCNP_Card):
             # material
             try:
                 mat_num = int(words[i])
-                self.__old_mat_number = mat_num
+                self._old_mat_number = mat_num
                 i += 1
 
             except ValueError:
@@ -57,23 +59,23 @@ class Cell(MCNP_Card):
             if mat_num > 0:
                 try:
                     density = fortran_float(words[i])
-                    self.__density = abs(density)
+                    self._density = abs(density)
                     i += 1
                     if density > 0:
-                        self.__is_atom_dens = True
+                        self._is_atom_dens = True
                     else:
-                        self.__is_atom_dens = False
+                        self._is_atom_dens = False
 
                 except ValueError:
                     raise MalformedInputError(
                         input_card,
                         f"{words[2]} can not be parsed as a material number.",
                     )
-            j, param_found = self.__parse_geometry(i, words)
+            j, param_found = self._parse_geometry(i, words)
             if param_found:
-                self.__parse_importance(i, j, words)
+                self._parse_importance(i, j, words)
 
-    def __parse_geometry(self, i, words):
+    def _parse_geometry(self, i, words):
         """
         Parses the cell's geometry definition, and stores it
 
@@ -97,16 +99,16 @@ class Cell(MCNP_Card):
                 geometry_string += word + " "
                 match = cell_finder.match(word)
                 if match:
-                    self.__old_complement_numbers.append(int(match.group(1)))
+                    self._old_complement_numbers.append(int(match.group(1)))
                 else:
                     for surface in surface_finder.findall(word):
-                        self.__old_surface_numbers.append(int(surface))
-        self.__geometry_logic_string = geometry_string
+                        self._old_surface_numbers.append(int(surface))
+        self._geometry_logic_string = geometry_string
         return (j, param_found)
 
-    def __parse_importance(self, i, j, words):
+    def _parse_importance(self, i, j, words):
         params_string = " ".join(words[i + j :])
-        self.__parameters = {}
+        self._parameters = {}
         fragments = params_string.split("=")
         key = ""
         next_key = ""
@@ -125,7 +127,7 @@ class Cell(MCNP_Card):
                 value = fragment[0:-1]
                 next_key = fragment[-1]
             if key and value:
-                self.__parameters[key] = value
+                self._parameters[key] = value
 
     @property
     def old_cell_number(self):
@@ -134,7 +136,7 @@ class Cell(MCNP_Card):
 
         :rtype: int
         """
-        return self.__old_cell_number
+        return self._old_cell_number
 
     @property
     def cell_number(self):
@@ -143,13 +145,13 @@ class Cell(MCNP_Card):
 
         :rtype: int
         """
-        return self.__cell_number
+        return self._cell_number
 
     @cell_number.setter
     def cell_number(self, number):
         assert isinstance(number, int)
         assert number > 0
-        self.__cell_number = number
+        self._cell_number = number
 
     @property
     def material(self):
@@ -159,13 +161,13 @@ class Cell(MCNP_Card):
         If the material is None this is considered to be voided.
         :rtype: Material
         """
-        return self.__material
+        return self._material
 
     @material.setter
     def material(self, mat=None):
         if mat:
             assert isinstance(mat, Material)
-        self.__material = mat
+        self._material = mat
 
     @property
     def density(self):
@@ -174,7 +176,7 @@ class Cell(MCNP_Card):
 
         :rtype: float
         """
-        return self.__density
+        return self._density
 
     @density.setter
     def density(self, density_tuple):
@@ -189,8 +191,8 @@ class Cell(MCNP_Card):
         density, is_atom_dens = density_tuple
         assert isinstance(density, float)
         assert isinstance(is_atom_dens, bool)
-        self.__density = density
-        self.__is_atom_dens = is_atom_dens
+        self._density = density
+        self._is_atom_dens = is_atom_dens
 
     @property
     def is_atom_dens(self):
@@ -199,14 +201,14 @@ class Cell(MCNP_Card):
 
         True means it is in atom density, false means mass density [g/cc]
         """
-        return self.__is_atom_dens
+        return self._is_atom_dens
 
     @property
     def old_mat_number(self):
         """
         The material number provided in the original input file
         """
-        return self.__old_mat_number
+        return self._old_mat_number
 
     @property
     def surfaces(self):
@@ -216,14 +218,14 @@ class Cell(MCNP_Card):
         This list does not convey any of the CGS Boolean logic
         :rtype: list
         """
-        return self.__surfaces
+        return self._surfaces
 
     @surfaces.setter
     def surfaces(self, surfs):
         assert isinstance(surfs, list)
         for surf in surfs:
             assert isinstance(surf, Surface)
-        self.__surfaces = surfs
+        self._surfaces = surfs
 
     @property
     def old_surface_numbers(self):
@@ -232,7 +234,7 @@ class Cell(MCNP_Card):
 
         :rtype: list
         """
-        return self.__old_surface_numbers
+        return self._old_surface_numbers
 
     @property
     def old_complement_numbers(self):
@@ -241,7 +243,7 @@ class Cell(MCNP_Card):
 
         :rtype: list
         """
-        return self.__old_complement_numbers
+        return self._old_complement_numbers
 
     @property
     def geometry_logic_string(self):
@@ -250,12 +252,12 @@ class Cell(MCNP_Card):
 
         :rtype: str
         """
-        return self.__geometry_logic_string
+        return self._geometry_logic_string
 
     @geometry_logic_string.setter
     def geometry_logic_string(self, string):
         assert isinstance(string, str)
-        self.__geometry_logic_string = string
+        self._geometry_logic_string = string
 
     @property
     def parameters(self):
@@ -265,21 +267,21 @@ class Cell(MCNP_Card):
         e.g.: Universes, and imp:n
         """
         if hasattr(self, "_Cell__parameters"):
-            return self.__parameters
+            return self._parameters
 
     @property
     def complements(self):
         """
         The Cell objects that this cell is a complement of
         """
-        return self.__complements
+        return self._complements
 
     @complements.setter
     def complements(self, complements):
         assert isinstance(complements, list)
         for cell in complements:
             assert isinstance(cell, Cell)
-        self.__complements = complements
+        self._complements = complements
 
     def update_pointers(self, cell_dict, material_dict, surface_dict):
         """
@@ -290,18 +292,18 @@ class Cell(MCNP_Card):
         :param surface_dict: a dictionary mapping the surface number to the Surface object.
         :type surface_dict: dict
         """
-        self.__surfaces = []
-        self.__complements = []
-        if self.__old_mat_number > 0:
-            self.__material = material_dict[self.__old_mat_number]
+        self._surfaces = []
+        self._complements = []
+        if self._old_mat_number > 0:
+            self._material = material_dict[self._old_mat_number]
         else:
-            self.__material = None
+            self._material = None
 
-        for surface_number in self.__old_surface_numbers:
-            self.__surfaces.append(surface_dict[surface_number])
+        for surface_number in self._old_surface_numbers:
+            self._surfaces.append(surface_dict[surface_number])
 
-        for complement_number in self.__old_complement_numbers:
-            self.__complements.append(cell_dict[complement_number])
+        for complement_number in self._old_complement_numbers:
+            self._complements.append(cell_dict[complement_number])
 
     def update_geometry_logic_string(self):
         """
@@ -315,9 +317,9 @@ class Cell(MCNP_Card):
             matching_complements[cell.old_cell_number] = cell.cell_number
         for surface in self.surfaces:
             matching_surfaces[surface.old_surface_number] = surface.surface_number
-        self.__update_geometry_logic_by_map(matching_surfaces, matching_complements)
+        self._update_geometry_logic_by_map(matching_surfaces, matching_complements)
 
-    def __update_geometry_logic_by_map(
+    def _update_geometry_logic_by_map(
         self, mapping_surface_dict, mapping_complement_dict
     ):
         """Updates geometry logic string based on a map.
@@ -362,7 +364,7 @@ class Cell(MCNP_Card):
                     r"\g<1>{new_num}\g<2>".format(new_num=new_num),
                     pad_string,
                 )
-        self.__geometry_logic_string = pad_string
+        self._geometry_logic_string = pad_string
 
     def remove_duplicate_surfaces(self, deleting_dict):
         """Updates old surface numbers to prepare for deleting surfaces.
@@ -388,11 +390,11 @@ class Cell(MCNP_Card):
                     ].surface_number
                     old_old = dead_surface.old_surface_number
                     new_old = deleting_dict[dead_surface].old_surface_number
-                    self.__old_surface_numbers = [
+                    self._old_surface_numbers = [
                         new_old if item == old_old else item
-                        for item in self.__old_surface_numbers
+                        for item in self._old_surface_numbers
                     ]
-            self.__update_geometry_logic_by_map(matching_surfaces, {})
+            self._update_geometry_logic_by_map(matching_surfaces, {})
 
     def format_for_mcnp_input(self, mcnp_version):
         self.update_geometry_logic_string()
@@ -422,15 +424,15 @@ class Cell(MCNP_Card):
         return ret
 
     def __str__(self):
-        ret = f"CELL: {self.__cell_number} \n"
-        ret += str(self.__material) + "\n"
+        ret = f"CELL: {self._cell_number} \n"
+        ret += str(self._material) + "\n"
         if hasattr(self, "_Cell__density"):
-            ret += f"density: {self.__density} "
-            if self.__is_atom_dens:
+            ret += f"density: {self._density} "
+            if self._is_atom_dens:
                 ret += "atom/b-cm"
             else:
                 ret += "g/cc"
-        for surface in self.__surfaces:
+        for surface in self._surfaces:
             ret += str(surface) + "\n"
         ret += "\n"
         return ret

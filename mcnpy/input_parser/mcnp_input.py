@@ -36,11 +36,11 @@ class Card(MCNP_Input):
         :type words: list
         """
         assert isinstance(block_type, BlockType)
-        self.__words = words
-        self.__block_type = block_type
+        self._words = words
+        self._block_type = block_type
 
     def __str__(self):
-        return f"CARD: {self.__block_type}: {self.__words}"
+        return f"CARD: {self._block_type}: {self._words}"
 
     @property
     def words(self):
@@ -49,14 +49,14 @@ class Card(MCNP_Input):
 
         For example a material definition may contain: 'M10', '10001.70c', '0.1'
         """
-        return self.__words
+        return self._words
 
     @property
     def block_type(self):
         """
         Enum representing which block of the MCNP input this came from
         """
-        return self.__block_type
+        return self._block_type
 
     def format_for_mcnp_input(self, mcnp_version):
         pass
@@ -68,19 +68,16 @@ class ReadCard(Card):
     """
 
     def __init__(self, card):
-        self.__words = card.words
-        self._Card__words = card.words
-        self.__block_type = card.block_type
-        self._Card__block_type = card.block_type
+        super().__init__(card.block_type, card.words)
         file_finder = re.compile("file=(?P<file>[\S]+)", re.IGNORECASE)
         for word in card.words[1:]:
             match = file_finder.match(word)
             if match:
-                self.__file_name = match.group("file")
+                self._file_name = match.group("file")
 
     @property
     def file_name(self):
-        return self.__file_name
+        return self._file_name
 
 
 class Comment(MCNP_Input):
@@ -97,11 +94,11 @@ class Comment(MCNP_Input):
         buff = []
         for line in lines:
             buff.append(line.rstrip())
-        self.__lines = buff
+        self._lines = buff
 
     def __str__(self):
         ret = "COMMENT:\n"
-        for line in self.__lines:
+        for line in self._lines:
             ret = ret + line
         return ret
 
@@ -113,7 +110,7 @@ class Comment(MCNP_Input):
         Each entry is a string of that line in the message block.
         The comment beginning "C " has been stripped out
         """
-        return self.__lines
+        return self._lines
 
     def format_for_mcnp_input(self, mcnp_version):
         line_length = 0
@@ -141,11 +138,11 @@ class Message(MCNP_Input):
         buff = []
         for line in lines:
             buff.append(line.rstrip())
-        self.__lines = buff
+        self._lines = buff
 
     def __str__(self):
         ret = "MESSAGE:\n"
-        for line in self.__lines:
+        for line in self._lines:
             ret = ret + line
         return ret
 
@@ -156,7 +153,7 @@ class Message(MCNP_Input):
 
         Each entry is a string of that line in the message block
         """
-        return self.__lines
+        return self._lines
 
     def format_for_mcnp_input(self, mcnp_version):
         ret = []
@@ -178,15 +175,15 @@ class Title(MCNP_Input):
     """
 
     def __init__(self, title):
-        self.__title = title.rstrip()
+        self._title = title.rstrip()
 
     @property
     def title(self):
         "The string of the title set for this problem"
-        return self.__title
+        return self._title
 
     def __str__(self):
-        return f"TITLE: {self.__title}"
+        return f"TITLE: {self._title}"
 
     def format_for_mcnp_input(self, mcnp_version):
         line_length = 0
