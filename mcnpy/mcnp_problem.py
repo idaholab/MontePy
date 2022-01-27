@@ -1,6 +1,6 @@
 from mcnpy.cell import Cell
 from mcnpy.surfaces import surface_builder
-from mcnpy.data_cards import material, data_card, data_parser
+from mcnpy.data_cards import Material, parse_data
 from mcnpy.input_parser import input_syntax_reader, block_type, mcnp_input
 
 
@@ -175,9 +175,9 @@ class MCNP_Problem:
                         )
                         self.__surfaces.append(surface)
                     if input_card.block_type == block_type.BlockType.DATA:
-                        data = data_parser.parse_data(input_card, comment_queue)
+                        data = parse_data(input_card, comment_queue)
                         self.__data_cards.append(data)
-                        if isinstance(data, material.Material):
+                        if isinstance(data, Material):
                             self.__materials.append(data)
                     comment_queue = None
         self.__update_internal_pointers()
@@ -262,7 +262,7 @@ class MCNP_Problem:
         ret += str(self.__title) + "\n"
         for cell in self.__cells:
             ret += str(cell) + "\n"
-        for data_card in self.__data_cards:
-            if not isinstance(data_card, Material):
-                ret += str(data_card) + "\n"
+        for dc in self.__data_cards:
+            if not isinstance(dc, Material):
+                ret += str(dc) + "\n"
         return ret
