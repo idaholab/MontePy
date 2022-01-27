@@ -7,8 +7,7 @@ import mcnpy
 class TestSyntaxParsing(TestCase):
     def testMessageFinder(self):
         test_message = "this is a message"
-        test_string = """
-message: {test_message}
+        test_string = f"""message: {test_message}
 
 test title
 """
@@ -23,6 +22,67 @@ test title
                 card = next(generator)
                 self.assertIsInstance(card, mcnpy.input_parser.mcnp_input.Message)
                 self.assertEqual(card.lines[0], validator)
+                self.assertEqual(len(lines), 1)
 
     def testTitleFinder(self):
-        pass
+        test_title = "Richard Stallman writes GNU"
+        test_string = f"""{test_title}
+1 0 -1
+"""
+        for tester, validator in [
+            (test_string, test_title),
+            (test_string.upper(), test_title.upper()),
+        ]:
+            with StringIO(tester) as fh:
+                generator = mcnpy.input_parser.input_syntax_reader.read_front_matters(
+                    fh
+                )
+                card = next(generator)
+                self.assertIsInstance(card, mcnpy.input_parser.mcnp_input.Title)
+                self.assertEqual(card.title, validator)
+
+    def testCardFinder(self):
+        test_string = """1 0 -1
+     5"""
+        for i in range(5):
+            tester = " " * i + test_string
+            with StringIO(tester) as fh:
+                generator = mcnpy.input_parser.input_syntax_reader.read_data(fh)
+                card = next(generator)
+                self.assertIsInstance(card, mcnpy.input_parser.mcnp_input.Card)
+                answer = ["1", "0", "-1", "5"]
+                self.assertEqual(len(answer), len(card.words))
+                for i, word in enumerate(card.words):
+                    self.assertEqual(word, answer[i])
+                    self.assertEqual(
+                        card.block_type, mcnpy.input_parser.block_type.BlockType.CELL
+                    )
+
+    def testCommentFinder(self):
+        test_string = """c foo
+c bar"""
+        for i in range(5):
+            tester = " " * i + test_string
+            with StringIO(tester) as fh:
+                card = next(mcnpy.input_parser.input_syntax_reader.read_data(fh))
+                self.assertIsInstance(card, mcnpy.input_parser.mcnp_input.Comment)
+                self.assertEqual(len(card.lines), 2)
+                self.assertEqual(card.lines[0], "foo")
+                self.assertEqual(card.lines[1], "bar")
+
+    def testReadCardFinder(self):
+        test_string = "read file=foo.imcnp "
+        with StringIO(test_string) as fh:
+            card = next(mcnpy.input_parser.input_syntax_reader.read_data(fh))
+            self.assertIsNone(card)  # the read card is hidden from the user
+
+    def testBlockId(self):
+        test_string = "1 0 -1"
+
+        for i in range(3):
+            tester = "\n" * i + test_string
+            with StringIO(tester) as fh:
+                card = next(mcnpy.input_parser.input_syntax_reader.read_data(fh))
+                self.assertEqual(
+                    mcnpy.input_parser.block_type.BlockType(i), card.block_type
+                )
