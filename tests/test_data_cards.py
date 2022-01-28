@@ -3,6 +3,8 @@ from unittest import TestCase
 import mcnpy
 
 from mcnpy.data_cards.data_card import DataCard
+from mcnpy.data_cards import material, thermal_scattering, transform
+from mcnpy.data_cards.data_parser import parse_data
 from mcnpy.input_parser.mcnp_input import Card, Comment
 from mcnpy.input_parser.block_type import BlockType
 
@@ -41,3 +43,23 @@ class testDataCardClass(TestCase):
         data_card = DataCard(input_card)
         data_card.comment = comment
         self.assertEqual(comment, data_card.comment)
+
+    def test_data_parser(self):
+        identifiers = {
+            "m235": material.Material,
+            "mt235": thermal_scattering.ThermalScatteringLaw,
+            "tr601": transform.Transform,
+            "ksrc": DataCard,
+        }
+        words = {
+            "m235": ["m235", "1001.80c", "1.0"],
+            "mt235": ["mt235", "grph.29t"],
+            "tr601": ["tr601", "0.0", "0.0", "10."],
+            "ksrc": ["ksrc", "1.0", "0.0", "0.0"],
+        }
+
+        for identifier in identifiers:
+            for ident in [identifier, identifier.upper()]:
+                input_card = Card(BlockType.DATA, words[identifier])
+                card = parse_data(input_card)
+                self.assertIsInstance(card, identifiers[identifier])
