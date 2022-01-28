@@ -82,7 +82,8 @@ c bar"""
         for i in range(3):
             tester = "\n" * i + test_string
             with StringIO(tester) as fh:
-                card = next(mcnpy.input_parser.input_syntax_reader.read_data(fh))
+                for card in mcnpy.input_parser.input_syntax_reader.read_data(fh):
+                    pass
                 self.assertEqual(
                     mcnpy.input_parser.block_type.BlockType(i), card.block_type
                 )
