@@ -128,7 +128,7 @@ def read_data(fh, block_type=None, recursion=False):
                     words = temp_words
                 else:
                     words = words + temp_words
-                if line.endswith(" &"):
+                if line.endswith(" &\n"):
                     continue_card = True
                 else:
                     continue_card = False
