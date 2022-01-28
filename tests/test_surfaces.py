@@ -5,7 +5,12 @@ import mcnpy
 from mcnpy.errors import MalformedInputError
 from mcnpy.input_parser.block_type import BlockType
 from mcnpy.input_parser.mcnp_input import Card
+from mcnpy.surfaces.axis_plane import AxisPlane
+from mcnpy.surfaces.cylinder_on_axis import CylinderOnAxis
+from mcnpy.surfaces.cylinder_par_axis import CylinderParAxis
+from mcnpy.surfaces.general_plane import GeneralPlane
 from mcnpy.surfaces.surface import Surface
+from mcnpy.surfaces.surface_builder import surface_builder
 from mcnpy.surfaces.surface_type import SurfaceType
 
 
@@ -125,3 +130,51 @@ class testSurfaces(TestCase):
         card = Card(BlockType.SURFACE, ["+1", "PZ", "0.0"])
         surf = Surface(card)
         self.assertEqual(str(surf), "SURFACE: 1, PZ")
+
+    def test_surface_builder(self):
+        testers = [
+            (["1", "PZ", "0.0"], AxisPlane),
+            (["2", "Cx", "10.0"], CylinderOnAxis),
+            (["3", "C/Z", "4", "3", "5"], CylinderParAxis),
+            (["6", "p", "1", "2", "3", "4"], GeneralPlane),
+            (["7", "so", "5"], Surface),
+        ]
+        for words, surf_plane in testers:
+            card = Card(BlockType.SURFACE, words)
+            self.assertIsInstance(surface_builder(card), surf_plane)
+
+    def test_axis_plane_location_setter(self):
+        surf = surface_builder(Card(BlockType.SURFACE, ["1", "PZ", "0.0"]))
+        self.assertEqual(surf.location, 0.0)
+        surf.location = 10.0
+        self.assertEqual(surf.location, 10.0)
+        with self.assertRaises(AssertionError):
+            surf.location = "hi"
+
+    def test_cylinder_axis_radius_setter(self):
+        surf = surface_builder(Card(BlockType.SURFACE, ["1", "cZ", "5.0"]))
+        self.assertEqual(surf.radius, 5.0)
+        surf.radius = 3.0
+        self.assertEqual(surf.radius, 3.0)
+        with self.assertRaises(AssertionError):
+            surf.radius = "foo"
+
+    def test_cylinder_radius_setter(self):
+        surf = surface_builder(Card(BlockType.SURFACE, ["1", "c/Z", "3.0", "4.0", "5"]))
+        self.assertEqual(surf.radius, 5.0)
+        surf.radius = 3.0
+        self.assertEqual(surf.radius, 3.0)
+        with self.assertRaises(AssertionError):
+            surf.radius = "foo"
+
+    def test_cylinder_location_setter(self):
+        surf = surface_builder(Card(BlockType.SURFACE, ["1", "c/Z", "3.0", "4.0", "5"]))
+        self.assertEqual(surf.coordinates, [3.0, 4.0])
+        surf.coordinates = [1, 2]
+        self.assertEqual(surf.coordinates, [1, 2])
+        # test wrong type
+        with self.assertRaises(AssertionError):
+            surf.coordinates = "fo"
+        # test length issues
+        with self.assertRaises(AssertionError):
+            surf.coordinates = [3, 4, 5]
