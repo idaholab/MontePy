@@ -74,3 +74,13 @@ class TestCellClass(TestCase):
         cell.density = (1.5, True)
         self.assertEqual(cell.density, 1.5)
         self.assertTrue(cell.is_atom_dens)
+
+    def test_cell_sorting(self):
+        card = Card(BlockType.CELL, ["1", "1", "0.5", "2"])
+        cell1 = Cell(card)
+        card = Card(BlockType.CELL, ["2", "1", "0.5", "2"])
+        cell2 = Cell(card)
+        test_sort = sorted([cell2, cell1])
+        answer = [cell1, cell2]
+        for i, cell in enumerate(test_sort):
+            self.assertEqual(cell, answer[i])
