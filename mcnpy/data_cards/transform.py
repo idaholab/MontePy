@@ -211,8 +211,8 @@ class Transform(data_card.DataCard):
             if abs(component - other.displacement_vector[i]) >= tolerance:
                 return False
 
-        if self.rotation_matrix:
-            if not other.rotation_matrix:
+        if len(self.rotation_matrix) > 0:
+            if len(other.rotation_matrix) == 0:
                 return False
             for i, component in enumerate(self.rotation_matrix):
                 if abs(component - other.rotation_matrix[i]) >= tolerance:
