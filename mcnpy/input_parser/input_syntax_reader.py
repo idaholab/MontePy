@@ -146,7 +146,7 @@ def read_data(fh, block_type=None, recursion=False):
 
 def generate_card_object(block_type, words):
     card = Card(block_type, words)
-    if card.words[0].lower() == "read":
+    if len(card.words) > 0 and card.words[0].lower() == "read":
         card = ReadCard(block_type, words)
         reading_queue.append((block_type, card.file_name))
     else:
