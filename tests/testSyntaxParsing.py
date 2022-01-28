@@ -86,3 +86,64 @@ c bar"""
                 self.assertEqual(
                     mcnpy.input_parser.block_type.BlockType(i), card.block_type
                 )
+
+    def testCommentFormatInput(self):
+        card = mcnpy.input_parser.mcnp_input.Comment(["foo", "bar"])
+        output = card.format_for_mcnp_input((6.2, 0))
+        answer = ["C foo", "C bar"]
+        str_answer = """COMMENT:
+foo
+bar
+"""
+        self.assertEqual(str(card), str_answer)
+        self.assertEqual(len(answer), len(output))
+        for i, line in enumerate(output):
+            self.assertEqual(answer[i], line)
+
+    def testMessageFormatInput(self):
+        card = mcnpy.input_parser.mcnp_input.Message(["foo", "bar"])
+        answer = ["MESSAGE: foo", "bar", ""]
+        str_answer = """MESSAGE:
+foo
+bar"""
+        self.assertEqual(str_answer, str(card))
+        output = card.format_for_mcnp_input((6.2, 0))
+        self.assertEqual(len(answer), len(output))
+        for i, line in enumerate(output):
+            self.assertEqual(answer[i], line)
+
+    def testTitleFormatInput(self):
+        card = mcnpy.input_parser.mcnp_input.Title("foo")
+        answer = ["foo"]
+        str_answer = "TITLE: foo"
+        self.assertEqual(str(card), str_answer)
+        output = card.format_for_mcnp_input((6.2, 0))
+        self.assertEqual(len(answer), len(output))
+        for i, line in enumerate(output):
+            self.assertEqual(answer[i], line)
+
+    def testReadInput(self):
+        generator = mcnpy.input_parser.input_syntax_reader.read_input_syntax(
+            "tests/inputs/test.imcnp"
+        )
+        mcnp_in = mcnpy.input_parser.mcnp_input
+        input_order = [mcnp_in.Message, mcnp_in.Title, mcnp_in.Comment]
+        input_order += [mcnp_in.Card] * 4 + [mcnp_in.Comment]
+        input_order += [mcnp_in.Card] * 3 + [mcnp_in.Comment]
+        for i in range(2):
+            input_order += [mcnp_in.Card, mcnp_in.Comment]
+        input_order += [mcnp_in.Card, mcnp_in.Card, mcnp_in.Comment]
+        input_order += [mcnp_in.Card] * 4
+        for i, input in enumerate(generator):
+            self.assertIsInstance(input, input_order[i])
+
+    def testReadInputWithRead(self):
+        generator = mcnpy.input_parser.input_syntax_reader.read_input_syntax(
+            "tests/inputs/testRead.imcnp"
+        )
+        next(generator)  # skip title
+        next(generator)  # skip read none
+        card = next(generator)
+        answer = ["1", "0", "-1"]
+        for i, word in enumerate(card.words):
+            self.assertEqual(answer[i], word)
