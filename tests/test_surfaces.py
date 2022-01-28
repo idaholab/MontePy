@@ -41,6 +41,11 @@ class testSurfaces(TestCase):
             card = Card(BlockType.SURFACE, ["foo", "PZ", "0"])
             Surface(card)
 
+        # test bad surface type
+        with self.assertRaises(MalformedInputError):
+            card = Card(BlockType.SURFACE, ["1", "INL", "0"])
+            Surface(card)
+
         # test transform
         card = Card(BlockType.SURFACE, ["1", "5", "PZ", "0"])
         surf = Surface(card)
