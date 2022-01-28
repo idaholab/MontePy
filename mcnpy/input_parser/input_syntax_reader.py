@@ -42,9 +42,9 @@ def read_front_matters(fh):
     found_title = False
     lines = []
     for i, line in enumerate(fh):
-        if i == 0 and line.startswith("MESSAGE:"):
+        if i == 0 and line.upper().startswith("MESSAGE:"):
             is_in_message_block = True
-            lines.append(line.strip("MESSAGE: "))
+            lines.append(line[9:])  # removes "MESSAGE: "
         elif is_in_message_block:
             if line.strip():
                 lines.append(line)
@@ -136,7 +136,7 @@ def read_data(fh, block_type=None, recursion=False):
         yield Comment(words)
     else:
         yield generate_card_object(block_type, words)
-    
+
     if not recursion:
         for block_type, file_name in reading_queue:
             with open(file_name, "r") as sub_fh:
@@ -148,6 +148,6 @@ def generate_card_object(block_type, words):
     card = Card(block_type, words)
     if card.words[0].lower() == "read":
         card = ReadCard(block_type, words)
-        reading_queue.append((block_type,card.file_name))
+        reading_queue.append((block_type, card.file_name))
     else:
         return card

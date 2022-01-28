@@ -11,7 +11,7 @@ class TestSyntaxParsing(TestCase):
 
 test title
 """
-        for tester, validate in [
+        for tester, validator in [
             (test_string, test_message),
             (test_string.upper(), test_message.upper()),
         ]:
@@ -22,7 +22,7 @@ test title
                 card = next(generator)
                 self.assertIsInstance(card, mcnpy.input_parser.mcnp_input.Message)
                 self.assertEqual(card.lines[0], validator)
-                self.assertEqual(len(lines), 1)
+                self.assertEqual(len(card.lines), 1)
 
     def testTitleFinder(self):
         test_title = "Richard Stallman writes GNU"
