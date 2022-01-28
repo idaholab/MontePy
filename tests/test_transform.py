@@ -104,7 +104,7 @@ class testTransformClass(TestCase):
         transform.is_main_to_aux = False
         self.assertFalse(transform.is_main_to_aux)
         with self.assertRaises(AssertionError):
-            self.is_main_to_aux = "hi"
+            transform.is_main_to_aux = "hi"
 
     def test_transform_str(self):
         card = Card(BlockType.DATA, ["tr5"] + ["0.0"] * 3 + ["0.0"] * 9 + ["-1"])
@@ -139,20 +139,24 @@ MAIN_TO_AUX: False
         card = Card(BlockType.DATA, ["tr5"] + ["0.0"] * 3 + ["0.0"] * 9 + ["-1"])
         base = Transform(card)
         self.assertTrue(base.equivalent(base, 1e-6))
-        #test different degrees
+        # test different degrees
         card = Card(BlockType.DATA, ["*tr5"] + ["0.0"] * 3 + ["0.0"] * 9 + ["-1"])
         compare = Transform(card)
         self.assertFalse(base.equivalent(compare, 1e-3))
-        #test different main_aux
+        # test different main_aux
         card = Card(BlockType.DATA, ["tr5"] + ["0.0"] * 3 + ["0.0"] * 9)
         compare = Transform(card)
         self.assertFalse(base.equivalent(compare, 1e-3))
-        #test different displace
-        card = Card(BlockType.DATA, ["tr5"] + ["1.0"] * 3 +["0.0"] * 9 + ["-1"])
+        # test different displace
+        card = Card(BlockType.DATA, ["tr5"] + ["1.0"] * 3 + ["0.0"] * 9 + ["-1"])
         compare = Transform(card)
         self.assertFalse(base.equivalent(compare, 1e-3))
-        #test different rotation
-        card = Card(BlockType.DATA, ["*tr5"] + ["0.0"] * 3 + ["1.0"] * 9 + ["-1"])
+        # test different rotation
+        card = Card(BlockType.DATA, ["tr5"] + ["0.0"] * 3 + ["1.0"] * 9 + ["-1"])
         compare = Transform(card)
         self.assertFalse(base.equivalent(compare, 1e-3))
-
+        # test different rotation
+        card = Card(BlockType.DATA, ["tr5"] + ["0.0"] * 3)
+        compare = Transform(card)
+        compare.is_main_to_aux = False
+        self.assertFalse(base.equivalent(compare, 1e-3))
