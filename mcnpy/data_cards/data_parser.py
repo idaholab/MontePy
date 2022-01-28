@@ -28,6 +28,3 @@ def parse_data(input_card, comment=None):
     else:
         return data_card.DataCard(input_card, comment)
 
-
-def __str__(self):
-    return f"DATA CARD: {self.__words}"
