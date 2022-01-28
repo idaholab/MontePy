@@ -99,7 +99,7 @@ class Comment(MCNP_Input):
     def __str__(self):
         ret = "COMMENT:\n"
         for line in self.__lines:
-            ret = ret + line
+            ret += line + "\n"
         return ret
 
     @property
@@ -143,7 +143,7 @@ class Message(MCNP_Input):
     def __str__(self):
         ret = "MESSAGE:\n"
         for line in self.__lines:
-            ret = ret + line
+            ret += line + "\n"
         return ret
 
     @property

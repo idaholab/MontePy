@@ -106,7 +106,8 @@ bar
         answer = ["MESSAGE: foo", "bar", ""]
         str_answer = """MESSAGE:
 foo
-bar"""
+bar
+"""
         self.assertEqual(str_answer, str(card))
         output = card.format_for_mcnp_input((6.2, 0))
         self.assertEqual(len(answer), len(output))
