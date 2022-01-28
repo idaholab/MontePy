@@ -133,7 +133,7 @@ bar"""
         for i in range(2):
             input_order += [mcnp_in.Card, mcnp_in.Comment]
         input_order += [mcnp_in.Card, mcnp_in.Card, mcnp_in.Comment]
-        input_order += [mcnp_in.Card] * 4
+        input_order += [mcnp_in.Card] * 5
         for i, input in enumerate(generator):
             self.assertIsInstance(input, input_order[i])
 
@@ -155,3 +155,9 @@ bar"""
         next(generator)
         with self.assertRaises(mcnpy.errors.UnsupportedFeature):
             next(generator)
+
+    def testCardStringRepr(self):
+        card = mcnpy.input_parser.mcnp_input.Card(
+            mcnpy.input_parser.block_type.BlockType.CELL, ["1", "0", "-1"]
+        )
+        self.assertEqual(str(card), "CARD: BlockType.CELL: ['1', '0', '-1']")
