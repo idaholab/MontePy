@@ -66,7 +66,7 @@ class TestCellClass(TestCase):
             cell.cell_number = "5"
 
     def test_cell_density_setter(self):
-        card = Card(BlockType.CELL, ["1", "1", "0.5" "2"])
+        card = Card(BlockType.CELL, ["1", "1", "0.5", "2"])
         cell = Cell(card)
         cell.density = (1.5, False)
         self.assertEqual(cell.density, 1.5)
