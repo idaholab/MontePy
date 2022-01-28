@@ -71,7 +71,7 @@ class Cell(MCNP_Card):
                     )
             j, param_found = self.__parse_geometry(i, words)
             if param_found:
-                self.__parse_importance(i, j, words)
+                self.__parse_parameters(i, j, words)
 
     def __parse_geometry(self, i, words):
         """
@@ -104,7 +104,7 @@ class Cell(MCNP_Card):
         self.__geometry_logic_string = geometry_string
         return (j, param_found)
 
-    def __parse_importance(self, i, j, words):
+    def __parse_parameters(self, i, j, words):
         params_string = " ".join(words[i + j :])
         self.__parameters = {}
         fragments = params_string.split("=")
@@ -125,7 +125,7 @@ class Cell(MCNP_Card):
                 value = fragment[0:-1]
                 next_key = fragment[-1]
             if key and value:
-                self.__parameters[key] = value
+                self.__parameters[key.upper()] = "".join(value)
 
     @property
     def old_cell_number(self):
