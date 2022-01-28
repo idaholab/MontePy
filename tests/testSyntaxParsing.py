@@ -147,3 +147,11 @@ bar"""
         answer = ["1", "0", "-1"]
         for i, word in enumerate(card.words):
             self.assertEqual(answer[i], word)
+
+    def testReadInputWithVertMode(self):
+        generator = mcnp.input_parser.input_syntax_reader.read_input_syntax(
+            "tests/inputs/testVerticalMode.imcnp"
+        )
+        next(generator)
+        with self.assertRaises(mcnpy.errors.UnsupportedFeature):
+            next(generator)

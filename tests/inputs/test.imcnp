@@ -5,7 +5,7 @@ foo
 MCNP Test Model for MOAA
 C cells
 1 1 20
-      -1000
+      -1000  $ dollar comment
      imp:n,p=1 U=350 trcl=5
 2 2 8
       -1005
