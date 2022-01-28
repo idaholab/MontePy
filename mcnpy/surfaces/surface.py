@@ -37,9 +37,10 @@ class Surface(MCNP_Card):
 
         try:
             surface_num = int(surface_num)
+            assert surface_num > 0
             self.__surface_number = surface_num
             self.__old_surface_number = surface_num
-        except ValueError:
+        except (AssertionError, ValueError):
             raise MalformedInputError(
                 input_card, f"{words[i]} could not be parsed as a surface number."
             )
