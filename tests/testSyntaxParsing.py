@@ -149,7 +149,7 @@ bar"""
             self.assertEqual(answer[i], word)
 
     def testReadInputWithVertMode(self):
-        generator = mcnp.input_parser.input_syntax_reader.read_input_syntax(
+        generator = mcnpy.input_parser.input_syntax_reader.read_input_syntax(
             "tests/inputs/testVerticalMode.imcnp"
         )
         next(generator)
