@@ -127,7 +127,7 @@ class Transform(data_card.DataCard):
 
     @displacement_vector.setter
     def displacement_vector(self, vector):
-        assert isinstance(vector, np.array)
+        assert isinstance(vector, np.ndarray)
         assert len(vector) == 3
         self.__displacement_vector = vector
 
@@ -142,7 +142,7 @@ class Transform(data_card.DataCard):
 
     @rotation_matrix.setter
     def rotation_matrix(self, matrix):
-        assert isinstance(matrix, np.array)
+        assert isinstance(matrix, np.ndarray)
         assert len(matrix) >= 5
         self.__rotation_matrix = matrix
 
