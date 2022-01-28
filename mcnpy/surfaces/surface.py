@@ -69,10 +69,10 @@ class Surface(MCNP_Card):
                 f"{words[i]} could not be parsed as a surface type mnemonic.",
             )
         # parse the parameters
-        self.__surface_constants = []
+        self._surface_constants = []
         for entry in words[i + 1 :]:
             try:
-                self.__surface_constants.append(fortran_float(entry))
+                self._surface_constants.append(fortran_float(entry))
             except ValueError:
                 raise MalformedInputError(
                     input_card,
@@ -124,14 +124,14 @@ class Surface(MCNP_Card):
 
         :rtype: list
         """
-        return self.__surface_constants
+        return self._surface_constants
 
     @surface_constants.setter
     def surface_constants(self, constants):
         assert isinstance(constants, list)
         for constant in constants:
             assert isinstance(constant, float)
-        self.__surface_constants = constants
+        self._surface_constants = constants
 
     @property
     def old_transform_number(self):
