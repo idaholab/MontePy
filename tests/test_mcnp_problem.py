@@ -14,4 +14,4 @@ class testMCNP_problem(TestCase):
     def test_problem_str(self):
         file_name = "tests/inputs/test.imcnp"
         problem = MCNP_Problem(file_name)
-        self.assertTrue("MCNP problem for: {file_name}" in str(problem))
+        self.assertTrue(f"MCNP problem for: {file_name}" in str(problem))
