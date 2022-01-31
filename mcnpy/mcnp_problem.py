@@ -21,6 +21,7 @@ class MCNP_Problem:
         self.__data_cards = []
         self.__materials = []
         self.__title = None
+        self.__message = None
         self.__mcnp_version = (6.2, 0)
 
     @property
@@ -164,9 +165,7 @@ class MCNP_Problem:
             if i == 0 and isinstance(input_card, mcnp_input.Message):
                 self.__message = input_card
 
-            elif isinstance(input_card, mcnp_input.Title) and not hasattr(
-                self, "_MCNP_Problem__title"
-            ):
+            elif isinstance(input_card, mcnp_input.Title) and self.title is None:
                 self.__title = input_card
 
             elif isinstance(input_card, mcnp_input.Comment):
@@ -286,6 +285,6 @@ class MCNP_Problem:
         for cell in self.__cells:
             ret += str(cell) + "\n"
         for data_card in self.__data_cards:
-            if not isinstance(data_card, Material):
+            if not isinstance(data_card, material.Material):
                 ret += str(data_card) + "\n"
         return ret
