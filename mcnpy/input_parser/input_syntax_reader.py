@@ -1,4 +1,5 @@
 from .block_type import BlockType
+from collections import deque
 from .. import errors
 import itertools
 import io
@@ -22,7 +23,7 @@ def read_input_syntax(input_file):
     :type input_file: str
     """
     global reading_queue
-    reading_queue = []
+    reading_queue = deque()
     with open(input_file, "r") as fh:
         yield from read_front_matters(fh)
         yield from read_data(fh)
@@ -145,7 +146,8 @@ def read_data(fh, block_type=None, recursion=False):
         # ensure fh is a file reader, ignore StringIO
         if isinstance(fh, io.TextIOWrapper):
             path = os.path.dirname(fh.name)
-            for block_type, file_name in reading_queue:
+            while reading_queue:
+                block_type, file_name = reading_queue.popleft()
                 with open(os.path.join(path, file_name), "r") as sub_fh:
                     for input_card in read_data(sub_fh, block_type, True):
                         yield input_card
