@@ -84,12 +84,18 @@ class testFullFileIntegration(TestCase):
             self.simple_problem.write_to_file(out)
             test_problem = mcnpy.read_input(out)
             for i, cell in enumerate(self.simple_problem.cells):
-                self.assertEqual(cell, test_problem.cells[i])
+                self.assertEqual(cell.cell_number, test_problem.cells[i].cell_number)
             for i, surf in enumerate(self.simple_problem.surfaces):
-                self.assertEqual(surf, test_problem.surfaces[i])
+                self.assertEqual(
+                    surf.surface_number, test_problem.surfaces[i].surface_number
+                )
             for i, data in enumerate(self.simple_problem.data_cards):
-                self.assertEqual(data, test_problem.data_cards[i])
+                if isinstance(data, material.Material):
+                    self.assertEqual(
+                        data.material_number, test_problem.data_cards[i].material_number
+                    )
+                else:
+                    self.assertEqual(data.words, test_problem.data_cards[i].words)
         finally:
             if os.path.exists(out):
                 os.remove(out)
-         
