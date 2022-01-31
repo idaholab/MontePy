@@ -71,7 +71,7 @@ class testFullFileIntegration(TestCase):
         output = str(self.simple_problem)
         answer_part = [
             "MCNP problem for: tests/inputs/test.imcnp",
-            "MESSAGE: this is a message",
+            "MESSAGE:\nthis is a message",
             "it should show up at the beginning",
             "foo",
         ]
