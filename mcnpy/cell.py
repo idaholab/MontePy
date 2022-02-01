@@ -26,6 +26,7 @@ class Cell(MCNP_Card):
         self.__complements = []
         self.__old_complement_numbers = []
         self.__parameters = {}
+        self.__old_cell_number = None
         if input_card:
             words = input_card.words
             i = 0
@@ -312,9 +313,15 @@ class Cell(MCNP_Card):
         matching_surfaces = {}
         matching_complements = {}
         for cell in self.complements:
-            matching_complements[cell.old_cell_number] = cell.cell_number
+            if cell.old_cell_number:
+                matching_complements[cell.old_cell_number] = cell.cell_number
+            else:
+                matching_complements[cell.cell_number] = cell.cell_number
         for surface in self.surfaces:
-            matching_surfaces[surface.old_surface_number] = surface.surface_number
+            if surface.old_surface_number:
+                matching_surfaces[surface.old_surface_number] = surface.surface_number
+            else:
+                matching_surfaces[surface.surface_number] = surface.surface_number
         self.__update_geometry_logic_by_map(matching_surfaces, matching_complements)
 
     def __update_geometry_logic_by_map(
