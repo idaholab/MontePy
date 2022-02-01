@@ -313,7 +313,10 @@ class Cell(MCNP_Card):
         matching_surfaces = {}
         matching_complements = {}
         for cell in self.complements:
-            matching_complements[cell.old_cell_number] = cell.cell_number
+            if cell.old_cell_number:
+                matching_complements[cell.old_cell_number] = cell.cell_number
+            else:
+                matching_complements[cell.cell_number] = cell.cell_number
         for surface in self.surfaces:
             matching_surfaces[surface.old_surface_number] = surface.surface_number
         self._update_geometry_logic_by_map(matching_surfaces, matching_complements)
