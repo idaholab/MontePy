@@ -237,16 +237,17 @@ class MCNP_Problem:
 
         WARNING: this does not move transforms and complement cells, and probably others.
         """
-        surfaces = set()
-        materials = set()
+        surfaces = set(self.surfaces)
+        materials = set(self.materials)
         for cell in self.cells:
             surfaces.update(set(cell.surfaces))
-            materials.add(cell.material)
+            if cell.material:
+                materials.add(cell.material)
         surfaces = sorted(list(surfaces))
         materials = sorted(list(materials))
-        self.__surfaces = self.__surfaces + surfaces
-        self.__materials = self.__materials + materials
-        self.__data_cards = self.__data_cards + materials
+        self.__surfaces = surfaces
+        self.__materials =  materials
+        self.__data_cards = list(set(self.__data_cards + materials))
 
     def write_to_file(self, new_problem):
         """
