@@ -236,11 +236,12 @@ class MCNP_Problem:
 
         WARNING: this does not move transforms and complement cells, and probably others.
         """
-        surfaces = set()
-        materials = set()
+        surfaces = set(self.surfaces)
+        materials = set(self.materials)
         for cell in self.cells:
             surfaces.update(set(cell.surfaces))
-            materials.add(cell.material)
+            if cell.material:
+                materials.add(cell.material)
         surfaces = sorted(list(surfaces))
         materials = sorted(list(materials))
         self._surfaces += surfaces
