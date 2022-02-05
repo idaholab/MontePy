@@ -70,13 +70,62 @@ class Transform(data_card.DataCard):
                 elif word == "-1":
                     self._is_main_to_aux = False
                 else:
-                    raise MalformedInputError(
-                        input_card, f"{word} can't be parsed as 1 or -1"
-                    )
+                    self.__is_in_degrees = False
+                num = words[i].lower().strip("*tr")
+                self.__transform_number = int(num)
+                self.__old_transform_number = self.__transform_number
+                i += 1
 
-            # if no more words remain don't worry
-            except IndexError:
-                pass
+            except ValueError:
+                raise MalformedInputError(
+                    input_card, f"{words[0]} can't be parsed as transform number"
+                )
+            # parse displacement
+            try:
+                values = []
+                for j, word in enumerate(words[i:]):
+                    values.append(fortran_float(word))
+                    i += 1
+                    if j >= 2:
+                        break
+                self.__displacement_vector = np.array(values)
+
+            except ValueError:
+                raise MalformedInputError(
+                    input_card, f"{word} can't be parsed as a displacement vector component"
+                )
+
+            # parse rotation
+            try:
+                values = []
+                for j, word in enumerate(words[i:]):
+                    values.append(fortran_float(word))
+                    i += 1
+                    if j >= 8:
+                        break
+                self.__rotation_matrix = np.array(values)
+            except ValueError:
+                raise MalformedInputError(
+                    input_card, f"{word} can't be parsed as a rotation matrix component"
+                )
+
+            self.__is_main_to_aux = True
+            if len(values) == 9:
+                try:
+                    word = words[i]
+                    # if 1 it's the default value
+                    if word == "1":
+                        pass
+                    elif word == "-1":
+                        self.__is_main_to_aux = False
+                    else:
+                        raise MalformedInputError(
+                            input_card, f"{word} can't be parsed as 1 or -1"
+                        )
+
+                # if no more words remain don't worry
+                except IndexError:
+                    pass
 
     @property
     def is_in_degrees(self):
