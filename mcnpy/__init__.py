@@ -6,3 +6,5 @@ from . import input_parser
 from .input_parser.input_reader import read_input
 from mcnpy.cell import Cell
 from mcnpy.data_cards.material import Material
+from mcnpy.data_cards.transform import Transform
+from mcnpy.surfaces.surface_type import SurfaceType
