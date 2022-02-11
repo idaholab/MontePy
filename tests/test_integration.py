@@ -1,3 +1,4 @@
+import copy
 from unittest import TestCase
 import os
 
@@ -13,7 +14,7 @@ class testFullFileIntegration(TestCase):
 
     def test_original_input(self):
         cell_order = [Message, Title, Comment]
-        cell_order += [Card] * 4 + [Comment]
+        cell_order += [Card] * 5 + [Comment]
         cell_order += [Comment] + [Card] * 3
         cell_order += [Comment, Card] * 3
         cell_order += [Card, Comment] + [Card] * 5
@@ -41,16 +42,21 @@ class testFullFileIntegration(TestCase):
                 self.assertIsInstance(card, cards[i])
 
     def test_cells_parsing_linking(self):
-        cell_numbers = [1, 2, 3, 99]
+        cell_numbers = [1, 2, 3, 99, 5]
         mats = self.simple_problem.materials
-        mat_answer = [mats[0], mats[1], mats[2], None]
+        mat_answer = [mats[0], mats[1], mats[2], None, None]
         surfs = self.simple_problem.surfaces
-        surf_answer = [{surfs[0]}, {surfs[1]}, set(surfs), {surfs[2]}]
+        surf_answer = [{surfs[0]}, {surfs[1]}, set(surfs), {surfs[2]}, set()]
+        cells = self.simple_problem.cells
+        complements = [set()] * 4 + [{cells[3]}]
         for i, cell in enumerate(self.simple_problem.cells):
             self.assertEqual(cell.cell_number, cell_numbers[i])
             self.assertEqual(cell.material, mat_answer[i])
             surfaces = set(cell.surfaces)
             self.assertTrue(surfaces.union(surf_answer[i]) == surfaces)
+            self.assertTrue(
+                set(cell.complements).union(complements[i]) == complements[i]
+            )
 
     def test_message(self):
         lines = ["this is a message", "it should show up at the beginning", "foo"]
@@ -99,3 +105,92 @@ class testFullFileIntegration(TestCase):
         finally:
             if os.path.exists(out):
                 os.remove(out)
+
+    def test_cell_material_setter(self):
+        cell = self.simple_problem.cells[0]
+        mat = self.simple_problem.materials[0]
+        cell.material = mat
+        self.assertEqual(cell.material, mat)
+        cell.material = None
+        self.assertIsNone(cell.material)
+        with self.assertRaises(AssertionError):
+            cell.material = 5
+
+    def test_cell_surfaces_setter(self):
+        cell = self.simple_problem.cells[0]
+        surfaces = self.simple_problem.surfaces
+        with self.assertRaises(AssertionError):
+            cell.surfaces = 5
+        with self.assertRaises(AssertionError):
+            cell.surfaces = [5, 6]
+        with self.assertRaises(AssertionError):
+            cell.surfaces.append(5)
+        cell.surfaces = surfaces
+        self.assertEqual(cell.surfaces, surfaces)
+
+    def test_cell_complements_setter(self):
+        cell = self.simple_problem.cells[0]
+        complements = self.simple_problem.cells[1:]
+        with self.assertRaises(AssertionError):
+            cell.complements = 5
+        with self.assertRaises(AssertionError):
+            cell.complements = [5, 6]
+        with self.assertRaises(AssertionError):
+            cell.complements.append(5)
+        cell.complements = complements
+        self.assertEqual(cell.complements, complements)
+
+    def test_problem_cells_setter(self):
+        problem = copy.copy(self.simple_problem)
+        cells = self.simple_problem.cells[1:]
+        with self.assertRaises(AssertionError):
+            problem.cells = 5
+        with self.assertRaises(AssertionError):
+            problem.cells = [5]
+        with self.assertRaises(AssertionError):
+            problem.cells.append(5)
+        problem.cells = cells
+        self.assertEqual(problem.cells, cells)
+
+    def test_problem_test_setter(self):
+        problem = copy.copy(self.simple_problem)
+        sample_title = "This is a title"
+        problem.title = sample_title
+        self.assertEqual(problem.title.title, sample_title)
+        with self.assertRaises(AssertionError):
+            problem.title = 5
+
+    def test_problem_children_adder(self):
+        problem = copy.copy(self.simple_problem)
+        BT = mcnpy.input_parser.block_type.BlockType
+        card = mcnpy.input_parser.mcnp_input.Card(BT.SURFACE, ["5", "SO", "5.0"])
+        surf = mcnpy.surfaces.surface_builder.surface_builder(card)
+        card = mcnpy.input_parser.mcnp_input.Card(BT.DATA, ["M1", "6000.70c", "1.0"])
+        mat = mcnpy.data_cards.material.Material(card, None)
+        cell = mcnpy.Cell()
+        cell.material = mat
+        cell.surfaces = [surf]
+        cell.density = (1.0, False)
+        problem.cells.append(cell)
+        problem.add_cell_children_to_problem()
+        self.assertIn(surf, problem.surfaces)
+        self.assertIn(mat, problem.materials)
+        self.assertIn(mat, problem.data_cards)
+
+    def test_problem_mcnp_version_setter(self):
+        problem = copy.copy(self.simple_problem)
+        with self.assertRaises(AssertionError):
+            problem.mcnp_version = (5.5, 3)
+        problem.mcnp_version = (6.2, 5)
+        self.assertEqual(problem.mcnp_version, (6.2, 5))
+
+    def test_problem_duplicate_surface_remover(self):
+        problem = mcnpy.read_input("tests/inputs/test_redundant_surf.imcnp")
+        surfaces = problem.surfaces
+        survivors = surfaces[0:3] + surfaces[5:8] + [surfaces[9]]
+        problem.remove_duplicate_surfaces(1e-4)
+        self.assertEqual(problem.surfaces, survivors)
+        cell_surf_answer = "-1 3 -6"
+        self.assertIn(
+            cell_surf_answer, problem.cells[1].format_for_mcnp_input((6.2, 0))[1]
+        )

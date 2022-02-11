@@ -130,7 +130,7 @@ bar
         )
         mcnp_in = mcnpy.input_parser.mcnp_input
         input_order = [mcnp_in.Message, mcnp_in.Title, mcnp_in.Comment]
-        input_order += [mcnp_in.Card] * 4 + [mcnp_in.Comment] * 2
+        input_order += [mcnp_in.Card] * 5 + [mcnp_in.Comment] * 2
         input_order += [mcnp_in.Card] * 3 + [mcnp_in.Comment]
         for i in range(2):
             input_order += [mcnp_in.Card, mcnp_in.Comment]
