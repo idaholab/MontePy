@@ -48,10 +48,13 @@ class AxisPlane(Surface):
                         if abs(self.location - surface.location) < tolerance:
                             if self.transform:
                                 if surface.transform:
-                                    if self.transform.equivalent(surface.transform):
+                                    if self.transform.equivalent(
+                                        surface.transform, tolerance
+                                    ):
                                         ret.append(surface)
                             else:
-                                ret.append(surface)
+                                if surface.transform is None:
+                                    ret.append(surface)
             return ret
         else:
             return []
