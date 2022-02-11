@@ -17,6 +17,8 @@ Intentionally Redundant Surfaces
 16 C/Z 1.0 2.0 3.0
 17 C/Z 1.0 2.0 3.5
 18 C/Z 1.0 2.2 3.5
+19 1 C/Z 1.0 2.0 3.0
+25 2 C/Z 1.0 2.0 3.0
 20 2 CZ 0.5
 21 1 CZ 0.5
 
