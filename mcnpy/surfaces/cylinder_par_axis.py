@@ -77,14 +77,15 @@ class CylinderParAxis(Surface):
                             if abs(coordinate - surface.coordinates[i]) >= tolerance:
                                 match = False
                         if match:
-                            if self.old_transform_number:
-                                if surface.old_transform_number:
+                            if self.transform:
+                                if surface.transform:
                                     if self.transform.equivalent(
                                         surface.transform, tolerance
                                     ):
                                         ret.append(surface)
                             else:
-                                ret.append(surface)
+                                if surface.transform is None:
+                                    ret.append(surface)
             return ret
         else:
             return []
