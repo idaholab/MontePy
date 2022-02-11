@@ -27,6 +27,8 @@ class Cell(MCNP_Card):
         self.__old_complement_numbers = []
         self.__parameters = {}
         self.__old_cell_number = None
+        self.__old_mat_number = None
+        self.__material = None
         if input_card:
             words = input_card.words
             i = 0
@@ -293,16 +295,19 @@ class Cell(MCNP_Card):
         """
         self.__surfaces = []
         self.__complements = []
-        if self.__old_mat_number > 0:
-            self.__material = material_dict[self.__old_mat_number]
-        else:
-            self.__material = None
+        if self.__old_mat_number is not None:
+            if self.__old_mat_number > 0:
+                self.__material = material_dict[self.__old_mat_number]
+            else:
+                self.__material = None
 
-        for surface_number in self.__old_surface_numbers:
-            self.__surfaces.append(surface_dict[surface_number])
+        if self.__old_surface_numbers:
+            for surface_number in self.__old_surface_numbers:
+                self.__surfaces.append(surface_dict[surface_number])
 
-        for complement_number in self.__old_complement_numbers:
-            self.__complements.append(cell_dict[complement_number])
+        if self.__old_complement_numbers:
+            for complement_number in self.__old_complement_numbers:
+                self.__complements.append(cell_dict[complement_number])
 
     def update_geometry_logic_string(self):
         """

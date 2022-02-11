@@ -46,8 +46,8 @@ class AxisPlane(Surface):
                 if surface != self and surface.surface_type == self.surface_type:
                     if not self.old_periodic_surface:
                         if abs(self.location - surface.location) < tolerance:
-                            if self.old_transform_number:
-                                if surface.old_transform_number:
+                            if self.transform:
+                                if surface.transform:
                                     if self.transform.equivalent(surface.transform):
                                         ret.append(surface)
                             else:
