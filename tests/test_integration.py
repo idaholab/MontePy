@@ -192,6 +192,7 @@ class testFullFileIntegration(TestCase):
             + surfaces[5:8]
             + [surfaces[9]]
             + surfaces[11:13]
+            + [surfaces[20]]
             + [surfaces[-2]]
         )
         problem.remove_duplicate_surfaces(1e-4)
