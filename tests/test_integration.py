@@ -207,6 +207,7 @@ class testFullFileIntegration(TestCase):
         surf = problem.surfaces[0]
         periodic = problem.surfaces[1]
         self.assertEqual(surf.periodic_surface, periodic)
+        self.assertIn("1 -2 SO", surf.format_for_mcnp_input((6.2, 0))[0])
         surf.periodic_surface = problem.surfaces[2]
         self.assertEqual(surf.periodic_surface, problem.surfaces[2])
         del surf.periodic_surface
@@ -221,3 +222,12 @@ class testFullFileIntegration(TestCase):
         del surf.periodic_surface
         surf.transform = transform
         self.assertEqual(surf.transform, transform)
+        self.assertIn("1 1 SO", surf.format_for_mcnp_input((6.2, 0))[0])
+        del surf.transform
+        self.assertIsNone(surf.transform)
+
+    def test_surface_broken_link(self):
+        with self.assertRaises(mcnpy.errors.MalformedInputError):
+            mcnpy.read_input("tests/inputs/test_broken_surf_link.imcnp")
+        with self.assertRaises(mcnpy.errors.MalformedInputError):
+            mcnpy.read_input("tests/inputs/test_broken_transform_link.imcnp")
