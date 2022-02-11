@@ -187,7 +187,13 @@ class testFullFileIntegration(TestCase):
     def test_problem_duplicate_surface_remover(self):
         problem = mcnpy.read_input("tests/inputs/test_redundant_surf.imcnp")
         surfaces = problem.surfaces
-        survivors = surfaces[0:3] + surfaces[5:8] + [surfaces[9]] + [surfaces[11]]
+        survivors = (
+            surfaces[0:3]
+            + surfaces[5:8]
+            + [surfaces[9]]
+            + surfaces[11:13]
+            + [surfaces[-2]]
+        )
         problem.remove_duplicate_surfaces(1e-4)
         self.assertEqual(problem.surfaces, survivors)
         cell_surf_answer = "-1 3 -6"
