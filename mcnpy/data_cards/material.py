@@ -64,7 +64,9 @@ class Material(data_card.DataCard):
                         input_card,
                         "Material definitons cannot use atom and mass fraction at the same time",
                     )
-            self.__material_components[isotope] = MaterialComponent(isotope, abs(fraction))
+            self.__material_components[isotope] = MaterialComponent(
+                isotope, abs(fraction)
+            )
         param_str = ""
         if has_parameters:
             for string in itertools.chain([isotope_str], words_iter):

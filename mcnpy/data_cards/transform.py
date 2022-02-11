@@ -51,7 +51,8 @@ class Transform(data_card.DataCard):
 
             except ValueError:
                 raise MalformedInputError(
-                    input_card, f"{word} can't be parsed as a displacement vector component"
+                    input_card,
+                    f"{word} can't be parsed as a displacement vector component",
                 )
 
             # parse rotation
