@@ -192,7 +192,7 @@ class testFullFileIntegration(TestCase):
             + surfaces[5:8]
             + [surfaces[9]]
             + surfaces[11:13]
-            + [surfaces[20]]
+            + [surfaces[13]]
             + [surfaces[-2]]
         )
         problem.remove_duplicate_surfaces(1e-4)
@@ -201,3 +201,23 @@ class testFullFileIntegration(TestCase):
         self.assertIn(
             cell_surf_answer, problem.cells[1].format_for_mcnp_input((6.2, 0))[1]
         )
+
+    def test_surface_periodic(self):
+        problem = mcnpy.read_input("tests/inputs/test_surfaces.imcnp")
+        surf = problem.surfaces[0]
+        periodic = problem.surfaces[1]
+        self.assertEqual(surf.periodic_surface, periodic)
+        surf.periodic_surface = problem.surfaces[2]
+        self.assertEqual(surf.periodic_surface, problem.surfaces[2])
+        del surf.periodic_surface
+        self.assertIsNone(surf.periodic_surface)
+        with self.assertRaises(AssertionError):
+            surf.periodic_surface = 5
+
+    def test_surface_periodic(self):
+        problem = mcnpy.read_input("tests/inputs/test_surfaces.imcnp")
+        surf = problem.surfaces[0]
+        transform = problem.data_cards[0]
+        del surf.periodic_surface
+        surf.transform = transform
+        self.assertEqual(surf.transform, transform)
