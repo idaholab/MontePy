@@ -186,9 +186,8 @@ class Surface(MCNP_Card):
 
     @transform.deleter
     def transform(self):
-        if hasattr(self, "_Surface__transform"):
-            del self.__transform
-            del self.__old_transform_number
+        self.__transform = None
+        self.__old_transform_number = None
 
     @property
     def old_surface_number(self):
@@ -255,9 +254,9 @@ class Surface(MCNP_Card):
         else:
             buffList.append(str(self.surface_number))
 
-        if self.old_periodic_surface:
+        if self.periodic_surface:
             buffList.append(str(-self.periodic_surface.surface_number))
-        elif self.old_transform_number:
+        elif self.transform:
             buffList.append(str(self.transform.transform_number))
 
         buffList.append(self.surface_type.value)
