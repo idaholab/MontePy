@@ -378,7 +378,7 @@ class Cell(MCNP_Card):
         """
         will_update = False
         for dead_surface in deleting_dict:
-            if dead_surface.old_surface_number in self.old_surface_numbers:
+            if dead_surface in self.surfaces:
                 will_update = True
                 break
         if will_update:
@@ -386,7 +386,7 @@ class Cell(MCNP_Card):
             self.update_geometry_logic_string()
             matching_surfaces = {}
             for dead_surface in deleting_dict:
-                if dead_surface.old_surface_number in self.old_surface_numbers:
+                if dead_surface in self.surfaces:
                     matching_surfaces[dead_surface.surface_number] = deleting_dict[
                         dead_surface
                     ].surface_number
