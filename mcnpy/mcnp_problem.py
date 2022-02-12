@@ -223,7 +223,6 @@ class MCNP_Problem:
                     for match in matches:
                         to_delete.add(match)
                         matching_map[match] = surface
-
         for cell in self.cells:
             cell.remove_duplicate_surfaces(matching_map)
         self.__update_internal_pointers()
