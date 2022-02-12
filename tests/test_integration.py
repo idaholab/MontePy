@@ -215,7 +215,7 @@ class testFullFileIntegration(TestCase):
         with self.assertRaises(AssertionError):
             surf.periodic_surface = 5
 
-    def test_surface_periodic(self):
+    def test_surface_transform(self):
         problem = mcnpy.read_input("tests/inputs/test_surfaces.imcnp")
         surf = problem.surfaces[0]
         transform = problem.data_cards[0]
