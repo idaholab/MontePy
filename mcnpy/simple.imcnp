@@ -1,0 +1,36 @@
+MESSAGE: this is a message
+it should show up at the beginning
+foo
+
+MCNP Test Model for MOAA
+c cells
+1 1 20.0 -1      imp:n,p=1 U=350 trcl = 5
+2 2 8.0  -2      imp:n,p=1
+3 3 1.0   1 2 -3 imp:n,p=1
+99 0      3      imp:n,p=0
+
+c surfaces
+1 so 1
+2 rcc 0 1.5 -0.5  0 0 1 0.25
+3 so 3
+
+c data
+c materials
+c UO2 5 atpt enriched
+m1   92238.80c 95
+     92235.80c 5
+c Iron
+m2   26054.80c  5.85
+     26056.80c 91.75
+     26057.80c  2.12
+     26058.80c  0.28
+c water
+m3   1001.80c 2
+     8016.80c 1
+     GAS = 0
+mt3 lwtr.23t
+c execution
+ksrc 0 0 0
+kcode 100000 1.000 50 1050
+phys:p  j 1 2j 1
+mode n p
