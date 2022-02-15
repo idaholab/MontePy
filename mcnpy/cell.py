@@ -297,17 +297,32 @@ class Cell(MCNP_Card):
         self.__complements = []
         if self.__old_mat_number is not None:
             if self.__old_mat_number > 0:
-                self.__material = material_dict[self.__old_mat_number]
+                try:
+                    self.__material = material_dict[self.__old_mat_number]
+                except KeyError:
+                    raise BrokenObjectLinkError(
+                        "Cell", self.cell_number, "Material", self.old_material_number
+                    )
             else:
                 self.__material = None
 
         if self.__old_surface_numbers:
             for surface_number in self.__old_surface_numbers:
-                self.__surfaces.append(surface_dict[surface_number])
+                try:
+                    self.__surfaces.append(surface_dict[surface_number])
+                except KeyError:
+                    raise BrokenObjectLinkError(
+                        "Cell", self.cell_number, "Surface", surface_number
+                    )
 
         if self.__old_complement_numbers:
             for complement_number in self.__old_complement_numbers:
-                self.__complements.append(cell_dict[complement_number])
+                try:
+                    self.__complements.append(cell_dict[complement_number])
+                except KeyError:
+                    raise BrokenObjectLinkError(
+                        "Cell", self.cell_number, "Complement Cell", complement_number
+                    )
 
     def update_geometry_logic_string(self):
         """

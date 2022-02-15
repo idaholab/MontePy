@@ -228,9 +228,11 @@ class Surface(MCNP_Card):
             try:
                 self.__periodic_surface = surface_dict[self.__old_periodic_surface]
             except KeyError:
-                raise MalformedInputError(
-                    "",
-                    f"Surface {self.surface_number}'s periodic surface {self.old_surface_number} could not be found.",
+                raise BrokenObjectLinkError(
+                    "Surface",
+                    self.surface_number,
+                    "Periodic Surface",
+                    self.old_periodic_surface,
                 )
         if self.old_transform_number:
             for card in data_cards:
@@ -238,9 +240,11 @@ class Surface(MCNP_Card):
                     if card.transform_number == self.old_transform_number:
                         self.__transform = card
             if not self.transform:
-                raise MalformedInputError(
-                    "",
-                    f"Surface {self.surface_number}'s transform {self.old_transform_number} could not be found.",
+                raise BrokenObjectLinkError(
+                    "Surface",
+                    self.surface_number,
+                    "Transform",
+                    self.old_transform_number,
                 )
 
     def format_for_mcnp_input(self, mcnp_version):
