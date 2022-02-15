@@ -10,7 +10,7 @@ class GeneralPlane(Surface):
     def __init__(self, input_card, comment=None):
         super().__init__(input_card, comment)
         assert self.surface_type == SurfaceType.P
-        assert len(self.surface_constants) == 4
+        assert len(self.surface_constants) in {4, 9}
 
     def find_duplicate_surfaces(self, surfaces, tolerance):
         ret = []
