@@ -301,7 +301,7 @@ class Cell(MCNP_Card):
                     self.__material = material_dict[self.__old_mat_number]
                 except KeyError:
                     raise BrokenObjectLinkError(
-                        "Cell", self.cell_number, "Material", self.old_material_number
+                        "Cell", self.cell_number, "Material", self.old_mat_number
                     )
             else:
                 self.__material = None
