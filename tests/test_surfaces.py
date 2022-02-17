@@ -16,7 +16,8 @@ from mcnpy.surfaces.surface_type import SurfaceType
 
 class testSurfaces(TestCase):
     def test_surface_init(self):
-        card = Card(BlockType.SURFACE, ["1", "PZ", "0.0"])
+        in_str = "1 PZ 0.0"
+        card = Card([in_str], BlockType.SURFACE, in_str.split())
         surf = Surface(card)
         self.assertEqual(surf.surface_number, 1)
         self.assertEqual(surf.old_surface_number, 1)
@@ -30,47 +31,57 @@ class testSurfaces(TestCase):
         self.assertIsNone(surf.old_periodic_surface)
         self.assertIsNone(surf.periodic_surface)
         # test reflective
-        card = Card(BlockType.SURFACE, ["*1", "PZ", "0.0"])
+        in_str = "*1 PZ 0.0"
+        card = Card([in_str], BlockType.SURFACE, in_str.split())
         surf = Surface(card)
         self.assertTrue(surf.is_reflecting)
         # test white boundary
-        card = Card(BlockType.SURFACE, ["+1", "PZ", "0.0"])
+        in_str = "+1 PZ 0.0"
+        card = Card([in_str], BlockType.SURFACE, in_str.split())
         surf = Surface(card)
         self.assertTrue(surf.is_white_boundary)
         # test negative surface
         with self.assertRaises(MalformedInputError):
-            card = Card(BlockType.SURFACE, ["-1", "PZ", "0"])
+            in_str = "-1 PZ 0.0"
+            card = Card([in_str], BlockType.SURFACE, in_str.split())
             Surface(card)
         # test bad surface number
         with self.assertRaises(MalformedInputError):
-            card = Card(BlockType.SURFACE, ["foo", "PZ", "0"])
+            in_str = "foo PZ 0.0"
+            card = Card([in_str], BlockType.SURFACE, in_str.split())
             Surface(card)
 
         # test bad surface type
         with self.assertRaises(MalformedInputError):
-            card = Card(BlockType.SURFACE, ["1", "INL", "0"])
+            in_str = "1 INL 0.0"
+            card = Card([in_str], BlockType.SURFACE, in_str.split())
             Surface(card)
 
         # test transform
-        card = Card(BlockType.SURFACE, ["1", "5", "PZ", "0"])
+        in_str = "1 5 PZ 0"
+        card = Card([in_str], BlockType.SURFACE, in_str.split())
         surf = Surface(card)
         self.assertEqual(surf.old_transform_number, 5)
 
         # test periodic surface
-        card = Card(BlockType.SURFACE, ["1", "-5", "PZ", "0"])
+        in_str = "1 -5 PZ 0"
+        card = Card([in_str], BlockType.SURFACE, in_str.split())
         surf = Surface(card)
         self.assertEqual(surf.old_periodic_surface, 5)
 
         # test transform bad
-        card = Card(BlockType.SURFACE, ["1", "5foo", "PZ", "0"])
+        in_str = "1 5foo PZ 0"
+        card = Card([in_str], BlockType.SURFACE, in_str.split())
         with self.assertRaises(MalformedInputError):
             Surface(card)
-        card = Card(BlockType.SURFACE, ["+1", "PZ", "foo"])
+        in_str = "+1 PZ foo"
+        card = Card([in_str], BlockType.SURFACE, in_str.split())
         with self.assertRaises(MalformedInputError):
             Surface(card)
 
     def test_surface_is_reflecting_setter(self):
-        card = Card(BlockType.SURFACE, ["1", "PZ", "0.0"])
+        in_str = "1 PZ 0.0"
+        card = Card([in_str], BlockType.SURFACE, in_str.split())
         surf = Surface(card)
         surf.is_reflecting = True
         self.assertTrue(surf.is_reflecting)
@@ -78,7 +89,8 @@ class testSurfaces(TestCase):
             surf.is_reflecting = 1
 
     def test_surface_is_white_bound_setter(self):
-        card = Card(BlockType.SURFACE, ["1", "PZ", "0.0"])
+        in_str = "1 PZ 0.0"
+        card = Card([in_str], BlockType.SURFACE, in_str.split())
         surf = Surface(card)
         surf.is_white_boundary = True
         self.assertTrue(surf.is_white_boundary)
@@ -86,7 +98,8 @@ class testSurfaces(TestCase):
             surf.is_white_boundary = 1
 
     def test_surface_constants_setter(self):
-        card = Card(BlockType.SURFACE, ["1", "PZ", "0.0"])
+        in_str = "1 PZ 0.0"
+        card = Card([in_str], BlockType.SURFACE, in_str.split())
         surf = Surface(card)
         surf.surface_constants = [10.0]
         self.assertEqual(surf.surface_constants[0], 10.0)
@@ -94,7 +107,8 @@ class testSurfaces(TestCase):
             surf.surface_constants = "foo"
 
     def test_surface_number_setter(self):
-        card = Card(BlockType.SURFACE, ["1", "PZ", "0.0"])
+        in_str = "1 PZ 0.0"
+        card = Card([in_str], BlockType.SURFACE, in_str.split())
         surf = Surface(card)
         surf.surface_number = 20
         self.assertEqual(surf.surface_number, 20)
@@ -104,47 +118,54 @@ class testSurfaces(TestCase):
             surf.surface_number = -5
 
     def test_surface_ordering(self):
-        card = Card(BlockType.SURFACE, ["1", "PZ", "0.0"])
+        in_str = "1 PZ 0.0"
+        card = Card([in_str], BlockType.SURFACE, in_str.split())
         surf1 = Surface(card)
-        card = Card(BlockType.SURFACE, ["5", "PZ", "0.0"])
+        in_str = "5 PZ 0.0"
+        card = Card([in_str], BlockType.SURFACE, in_str.split())
         surf2 = Surface(card)
         sort_list = sorted([surf2, surf1])
         self.assertEqual(sort_list[0], surf1)
         self.assertEqual(sort_list[1], surf2)
 
     def test_surface_format_for_mcnp(self):
-        card = Card(BlockType.SURFACE, ["+1", "PZ", "0.0"])
+        in_str = "+1 PZ 0.0"
+        card = Card([in_str], BlockType.SURFACE, in_str.split())
         surf = Surface(card)
         answer = "+1 PZ 0"
         self.assertEqual(surf.format_for_mcnp_input((6.2, 0))[0], answer)
-        card = Card(BlockType.SURFACE, ["*1", "PZ", "0.0"])
+        in_str = "*1 PZ 0.0"
+        card = Card([in_str], BlockType.SURFACE, in_str.split())
         surf = Surface(card)
         answer = "*1 PZ 0"
         self.assertEqual(surf.format_for_mcnp_input((6.2, 0))[0], answer)
-        card = Card(BlockType.SURFACE, ["1", "PZ", "0.0"])
+        in_str = "1 PZ 0.0"
+        card = Card([in_str], BlockType.SURFACE, in_str.split())
         surf = Surface(card)
         answer = "1 PZ 0"
         self.assertEqual(surf.format_for_mcnp_input((6.2, 0))[0], answer)
 
     def test_surface_str(self):
-        card = Card(BlockType.SURFACE, ["+1", "PZ", "0.0"])
+        in_str = "+1 PZ 0.0"
+        card = Card([in_str], BlockType.SURFACE, in_str.split())
         surf = Surface(card)
         self.assertEqual(str(surf), "SURFACE: 1, PZ")
 
     def test_surface_builder(self):
         testers = [
-            (["1", "PZ", "0.0"], AxisPlane),
-            (["2", "Cx", "10.0"], CylinderOnAxis),
-            (["3", "C/Z", "4", "3", "5"], CylinderParAxis),
-            (["6", "p", "1", "2", "3", "4"], GeneralPlane),
-            (["7", "so", "5"], Surface),
+            ("1 PZ 0.0", AxisPlane),
+            ("2 Cx 10.0", CylinderOnAxis),
+            ("3 C/Z 4 3 5", CylinderParAxis),
+            ("6 p 1 2 3 4", GeneralPlane),
+            ("7 so 5", Surface),
         ]
-        for words, surf_plane in testers:
-            card = Card(BlockType.SURFACE, words)
+        for in_str, surf_plane in testers:
+            card = Card([in_str], BlockType.SURFACE, in_str.split())
             self.assertIsInstance(surface_builder(card), surf_plane)
 
     def test_axis_plane_location_setter(self):
-        surf = surface_builder(Card(BlockType.SURFACE, ["1", "PZ", "0.0"]))
+        in_str = "1 PZ 0.0"
+        surf = surface_builder(Card([in_str], BlockType.SURFACE, in_str.split()))
         self.assertEqual(surf.location, 0.0)
         surf.location = 10.0
         self.assertEqual(surf.location, 10.0)
@@ -152,7 +173,8 @@ class testSurfaces(TestCase):
             surf.location = "hi"
 
     def test_cylinder_axis_radius_setter(self):
-        surf = surface_builder(Card(BlockType.SURFACE, ["1", "cZ", "5.0"]))
+        in_str = "1 CZ 5.0"
+        surf = surface_builder(Card([in_str], BlockType.SURFACE, in_str.split()))
         self.assertEqual(surf.radius, 5.0)
         surf.radius = 3.0
         self.assertEqual(surf.radius, 3.0)
@@ -160,7 +182,8 @@ class testSurfaces(TestCase):
             surf.radius = "foo"
 
     def test_cylinder_radius_setter(self):
-        surf = surface_builder(Card(BlockType.SURFACE, ["1", "c/Z", "3.0", "4.0", "5"]))
+        in_str = "1 c/Z 3.0 4.0 5"
+        surf = surface_builder(Card([in_str], BlockType.SURFACE, in_str.split()))
         self.assertEqual(surf.radius, 5.0)
         surf.radius = 3.0
         self.assertEqual(surf.radius, 3.0)
@@ -168,7 +191,8 @@ class testSurfaces(TestCase):
             surf.radius = "foo"
 
     def test_cylinder_location_setter(self):
-        surf = surface_builder(Card(BlockType.SURFACE, ["1", "c/Z", "3.0", "4.0", "5"]))
+        in_str = "1 c/Z 3.0 4.0 5"
+        surf = surface_builder(Card([in_str], BlockType.SURFACE, in_str.split()))
         self.assertEqual(surf.coordinates, [3.0, 4.0])
         surf.coordinates = [1, 2]
         self.assertEqual(surf.coordinates, [1, 2])

@@ -11,24 +11,25 @@ from mcnpy.input_parser.block_type import BlockType
 
 class testDataCardClass(TestCase):
     def test_data_card_init(self):
-        words = ["m1", "1001.80c", "1.0"]
-        input_card = Card(BlockType.DATA, words)
-        comment = Comment(["foo", "bar"])
+        in_str = "m1 1001.80c 1.0"
+        input_card = Card([in_str], BlockType.DATA, in_str.split())
+        comment = Comment(["C foo", "c bar"], ["foo", "bar"])
         data_card = DataCard(input_card, comment)
+        words = in_str.split()
         for i, word in enumerate(data_card.words):
             self.assertEqual(word, words[i])
         self.assertEqual(comment, data_card.comment)
 
     def test_data_card_str(self):
-        words = ["m1", "1001.80c", "1.0"]
-        input_card = Card(BlockType.DATA, words)
+        in_str = "m1 1001.80c 1.0"
+        input_card = Card([in_str], BlockType.DATA, in_str.split())
         data_card = DataCard(input_card)
-        self.assertEqual(str(data_card), "DATA CARD: " + str(words))
+        self.assertEqual(str(data_card), "DATA CARD: " + str(in_str.split()))
 
     def test_data_card_format_mcnp(self):
-        words = ["m1", "1001.80c", "1.0"]
-        input_card = Card(BlockType.DATA, words)
-        comment = Comment(["foo", "bar"])
+        in_str = "m1 1001.80c 1.0"
+        input_card = Card([in_str], BlockType.DATA, in_str.split())
+        comment = Comment(["c foo", "c bar"], ["foo", "bar"])
         data_card = DataCard(input_card, comment)
         answer = ["C foo", "C bar", "m1 1001.80c 1.0"]
         output = data_card.format_for_mcnp_input((6.2, 0))
@@ -37,9 +38,9 @@ class testDataCardClass(TestCase):
             self.assertEqual(answer[i], line)
 
     def test_comment_setter(self):
-        words = ["m1", "1001.80c", "1.0"]
-        input_card = Card(BlockType.DATA, words)
-        comment = Comment(["foo", "bar"])
+        in_str = "m1 1001.80c 1.0"
+        input_card = Card([in_str], BlockType.DATA, in_str.split())
+        comment = Comment(["c foo", "c bar"], ["foo", "bar"])
         data_card = DataCard(input_card)
         data_card.comment = comment
         self.assertEqual(comment, data_card.comment)
@@ -51,15 +52,17 @@ class testDataCardClass(TestCase):
             "tr601": transform.Transform,
             "ksrc": DataCard,
         }
-        words = {
-            "m235": ["m235", "1001.80c", "1.0"],
-            "mt235": ["mt235", "grph.29t"],
-            "tr601": ["tr601", "0.0", "0.0", "10."],
-            "ksrc": ["ksrc", "1.0", "0.0", "0.0"],
+        in_strs = {
+            "m235": "m235 1001.80c 1.0",
+            "mt235": "mt235 grph.29t",
+            "tr601": "tr601 0.0 0.0 10.",
+            "ksrc": "ksrc 1.0 0.0 0.0",
         }
 
         for identifier in identifiers:
             for ident in [identifier, identifier.upper()]:
-                input_card = Card(BlockType.DATA, words[identifier])
+                input_card = Card(
+                    [in_strs[identifier]], BlockType.DATA, in_strs[identifier].split()
+                )
                 card = parse_data(input_card)
                 self.assertIsInstance(card, identifiers[identifier])

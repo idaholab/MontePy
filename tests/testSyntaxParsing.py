@@ -89,7 +89,8 @@ c bar"""
                 )
 
     def testCommentFormatInput(self):
-        card = mcnpy.input_parser.mcnp_input.Comment(["foo", "bar"])
+        in_strs = ["c foo", "c bar"]
+        card = mcnpy.input_parser.mcnp_input.Comment(in_strs, ["foo", "bar"])
         output = card.format_for_mcnp_input((6.2, 0))
         answer = ["C foo", "C bar"]
         str_answer = """COMMENT:
@@ -102,8 +103,8 @@ bar
             self.assertEqual(answer[i], line)
 
     def testMessageFormatInput(self):
-        card = mcnpy.input_parser.mcnp_input.Message(["foo", "bar"])
         answer = ["MESSAGE: foo", "bar", ""]
+        card = mcnpy.input_parser.mcnp_input.Message(answer, ["foo", "bar"])
         str_answer = """MESSAGE:
 foo
 bar
@@ -115,7 +116,7 @@ bar
             self.assertEqual(answer[i], line)
 
     def testTitleFormatInput(self):
-        card = mcnpy.input_parser.mcnp_input.Title("foo")
+        card = mcnpy.input_parser.mcnp_input.Title(["foo"], "foo")
         answer = ["foo"]
         str_answer = "TITLE: foo"
         self.assertEqual(str(card), str_answer)
@@ -159,7 +160,8 @@ bar
             next(generator)
 
     def testCardStringRepr(self):
+        in_str = "1 0 -1"
         card = mcnpy.input_parser.mcnp_input.Card(
-            mcnpy.input_parser.block_type.BlockType.CELL, ["1", "0", "-1"]
+            [in_str], mcnpy.input_parser.block_type.BlockType.CELL, in_str.split()
         )
         self.assertEqual(str(card), "CARD: BlockType.CELL: ['1', '0', '-1']")
