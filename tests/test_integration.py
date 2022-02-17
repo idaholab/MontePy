@@ -163,9 +163,11 @@ class testFullFileIntegration(TestCase):
     def test_problem_children_adder(self):
         problem = copy.copy(self.simple_problem)
         BT = mcnpy.input_parser.block_type.BlockType
-        card = mcnpy.input_parser.mcnp_input.Card(BT.SURFACE, ["5", "SO", "5.0"])
+        in_str = "5 SO 5.0"
+        card = mcnpy.input_parser.mcnp_input.Card([in_str], BT.SURFACE, in_str.split())
         surf = mcnpy.surfaces.surface_builder.surface_builder(card)
-        card = mcnpy.input_parser.mcnp_input.Card(BT.DATA, ["M1", "6000.70c", "1.0"])
+        in_str = "M1 6000.70c 1.0"
+        card = mcnpy.input_parser.mcnp_input.Card([in_str], BT.SURFACE, in_str.split())
         mat = mcnpy.data_cards.material.Material(card, None)
         cell = mcnpy.Cell()
         cell.material = mat
