@@ -21,7 +21,7 @@ class MCNP_Input(ABC):
 
     @property
     def input_lines(self):
-        """ The lines of the input read straight from the input file
+        """The lines of the input read straight from the input file
 
         :rtype: list
         """
@@ -29,8 +29,7 @@ class MCNP_Input(ABC):
 
     @property
     def mutated(self):
-        """If true this input has been mutated by the user, and needs to be formatted
-        """
+        """If true this input has been mutated by the user, and needs to be formatted"""
         return self._mutated
 
     @abstractmethod
@@ -52,7 +51,7 @@ class Card(MCNP_Input):
     Represents a single MCNP "card" e.g. a single cell definition.
     """
 
-    def __init__(self,input_lines, block_type, words):
+    def __init__(self, input_lines, block_type, words):
         """
         :param block_type: An enum showing which of three MCNP blocks this was inside of.
         :type block_type: BlockType
@@ -93,7 +92,7 @@ class ReadCard(Card):
     A card for the read card that reads another input file
     """
 
-    def __init__(self,input_lines, block_type, words):
+    def __init__(self, input_lines, block_type, words):
         super().__init__(input_lines, block_type, words)
         file_finder = re.compile("file=(?P<file>[\S]+)", re.IGNORECASE)
         for word in words[1:]:
@@ -111,7 +110,7 @@ class Comment(MCNP_Input):
     Object to represent a full line comment in an MCNP problem.
     """
 
-    def __init__(self,input_lines, lines):
+    def __init__(self, input_lines, lines):
         """
         :param lines: the strings of each line in this comment block
         :type lines: list
