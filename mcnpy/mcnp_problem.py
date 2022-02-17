@@ -151,7 +151,7 @@ class MCNP_Problem:
         """
         :type title: The str for the title to be set to.
         """
-        self.__title = mcnp_input.Title(title)
+        self.__title = mcnp_input.Title([title], title)
 
     def parse_input(self):
         """
