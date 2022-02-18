@@ -50,11 +50,11 @@ def read_front_matters(fh):
     for i, line in enumerate(fh):
         if i == 0 and line.upper().startswith("MESSAGE:"):
             is_in_message_block = True
-            raw_lines.append(line)
+            raw_lines.append(line.rstrip())
             lines.append(line[9:])  # removes "MESSAGE: "
         elif is_in_message_block:
             if line.strip():
-                raw_lines.append(line)
+                raw_lines.append(line.rstrip())
                 lines.append(line)
             # message block is terminated by a blank line
             else:
@@ -118,10 +118,10 @@ def read_data(fh, block_type=None, recursion=False):
                         yield generate_card_object(raw_lines, block_type, words)
                     # removes leading comment info
                     words = [commentFinder.split(line)[1]]
-                    raw_lines = [line]
+                    raw_lines = [line.rstrip()]
                     is_in_comment = True
                 else:
-                    raw_lines.append(line)
+                    raw_lines.append(line.rstrip())
                     words.append(commentFinder.split(line)[1])
             # if not a comment
             else:
@@ -144,10 +144,10 @@ def read_data(fh, block_type=None, recursion=False):
                     if words:
                         yield generate_card_object(raw_lines, block_type, words)
                     words = temp_words
-                    raw_lines = [line]
+                    raw_lines = [line.rstrip()]
                 else:
                     words = words + temp_words
-                    raw_lines.append(line)
+                    raw_lines.append(line.rstrip())
                 if line.endswith(" &\n"):
                     continue_card = True
                 else:
