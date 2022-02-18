@@ -14,7 +14,7 @@ class DataCard(MCNP_Card):
         :param comment: The Comment that may proceed this
         :type comment: Comment
         """
-        super().__init__(comment)
+        super().__init__(input_card, comment)
         self.__words = input_card.words
 
     @property
@@ -28,7 +28,10 @@ class DataCard(MCNP_Card):
 
     def format_for_mcnp_input(self, mcnp_version):
         ret = super().format_for_mcnp_input(mcnp_version)
-        ret += DataCard.wrap_words_for_mcnp(self.words, mcnp_version, True)
+        if self.mutated:
+            ret += DataCard.wrap_words_for_mcnp(self.words, mcnp_version, True)
+        else:
+            ret += self.input_lines
         return ret
 
     def update_pointers(self, data_cards):

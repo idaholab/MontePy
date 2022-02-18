@@ -68,6 +68,7 @@ class ThermalScatteringLaw(DataCard):
         assert isinstance(laws, list)
         for law in laws:
             assert isinstance(law, str)
+        self._mutated = True
         self.__scattering_laws = laws
 
     def add_scattering_law(self, law):
@@ -78,7 +79,12 @@ class ThermalScatteringLaw(DataCard):
 
     def format_for_mcnp_input(self, mcnp_version):
         ret = mcnp_card.MCNP_Card.format_for_mcnp_input(self, mcnp_version)
-        buff_list = [f"MT{self.parent_material.material_number}"]
-        buff_list += self.__scattering_laws
-        ret += ThermalScatteringLaw.wrap_words_for_mcnp(buff_list, mcnp_version, True)
+        if self.mutated:
+            buff_list = [f"MT{self.parent_material.material_number}"]
+            buff_list += self.__scattering_laws
+            ret += ThermalScatteringLaw.wrap_words_for_mcnp(
+                buff_list, mcnp_version, True
+            )
+        else:
+            ret += self.input_lines
         return ret

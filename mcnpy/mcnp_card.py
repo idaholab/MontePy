@@ -1,5 +1,6 @@
 from abc import ABC, abstractmethod
 from mcnpy.input_parser.mcnp_input import Comment
+import mcnpy
 import textwrap
 
 
@@ -8,9 +9,18 @@ class MCNP_Card(ABC):
     Abstract class for semantic representations of MCNP input cards.
     """
 
-    def __init__(self, comment=None):
+    def __init__(self, input_card, comment=None):
+        if input_card:
+            assert isinstance(input_card, mcnpy.input_parser.mcnp_input.Card)
+            self._input_lines = input_card.input_lines
+            self._mutated = False
+        else:
+            self._input_lines = []
+            self._mutated = True
         if comment:
             self.__comment = comment
+        else:
+            self.__comment = None
 
     @abstractmethod
     def format_for_mcnp_input(self, mcnp_version):
@@ -35,13 +45,23 @@ class MCNP_Card(ABC):
 
         :rtype: Comment
         """
-        if hasattr(self, "_MCNP_Card__comment"):
-            return self.__comment
+        return self.__comment
 
     @comment.setter
     def comment(self, comment):
         assert isinstance(comment, Comment)
+        self._mutated = True
         self.__comment = comment
+
+    @property
+    def input_lines(self):
+        """The raw input lines read from the input file"""
+        return self._input_lines
+
+    @property
+    def mutated(self):
+        """True if the user has changed a property of this card"""
+        return self._mutated
 
     @staticmethod
     def wrap_words_for_mcnp(words, mcnp_version, is_first_line):

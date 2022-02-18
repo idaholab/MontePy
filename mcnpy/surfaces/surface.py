@@ -19,7 +19,7 @@ class Surface(MCNP_Card):
                         preceding comment block.
         :type comment: Comment
         """
-        super().__init__(comment)
+        super().__init__(input_card, comment)
         words = input_card.words
         i = 0
         # surface number
@@ -101,6 +101,7 @@ class Surface(MCNP_Card):
     @is_reflecting.setter
     def is_reflecting(self, reflect):
         assert isinstance(reflect, bool)
+        self._mutated = True
         self.__is_reflecting = reflect
 
     @property
@@ -115,6 +116,7 @@ class Surface(MCNP_Card):
     @is_white_boundary.setter
     def is_white_boundary(self, white):
         assert isinstance(white, bool)
+        self._mutated = True
         self.__is_white_boundary = white
 
     @property
@@ -131,6 +133,7 @@ class Surface(MCNP_Card):
         assert isinstance(constants, list)
         for constant in constants:
             assert isinstance(constant, float)
+        self._mutated = True
         self._surface_constants = constants
 
     @property
@@ -163,10 +166,12 @@ class Surface(MCNP_Card):
     @periodic_surface.setter
     def periodic_surface(self, periodic):
         assert isinstance(periodic, Surface)
+        self._mutated = True
         self.__periodic_surface = periodic
 
     @periodic_surface.deleter
     def periodic_surface(self):
+        self._mutated = True
         self.__periodic_surface = None
 
     @property
@@ -182,10 +187,12 @@ class Surface(MCNP_Card):
     @transform.setter
     def transform(self, tr):
         assert isinstance(tr, transform.Transform)
+        self._mutated = True
         self.__transform = tr
 
     @transform.deleter
     def transform(self):
+        self._mutated = True
         self.__transform = None
         self.__old_transform_number = None
 
@@ -209,6 +216,7 @@ class Surface(MCNP_Card):
     def surface_number(self, number):
         assert isinstance(number, int)
         assert number > 0
+        self._mutated = True
         self.__surface_number = number
 
     def __str__(self):
@@ -249,25 +257,28 @@ class Surface(MCNP_Card):
 
     def format_for_mcnp_input(self, mcnp_version):
         ret = super().format_for_mcnp_input(mcnp_version)
-        buffList = []
-        # surface number
-        if self.is_reflecting:
-            buffList.append(f"*{self.surface_number}")
-        elif self.is_white_boundary:
-            buffList.append(f"+{self.surface_number}")
+        if self.mutated:
+            buffList = []
+            # surface number
+            if self.is_reflecting:
+                buffList.append(f"*{self.surface_number}")
+            elif self.is_white_boundary:
+                buffList.append(f"+{self.surface_number}")
+            else:
+                buffList.append(str(self.surface_number))
+
+            if self.periodic_surface:
+                buffList.append(str(-self.periodic_surface.surface_number))
+            elif self.transform:
+                buffList.append(str(self.transform.transform_number))
+
+            buffList.append(self.surface_type.value)
+
+            for constant in self.surface_constants:
+                buffList.append(f"{constant:.6g}")
+            ret += Surface.wrap_words_for_mcnp(buffList, mcnp_version, True)
         else:
-            buffList.append(str(self.surface_number))
-
-        if self.periodic_surface:
-            buffList.append(str(-self.periodic_surface.surface_number))
-        elif self.transform:
-            buffList.append(str(self.transform.transform_number))
-
-        buffList.append(self.surface_type.value)
-
-        for constant in self.surface_constants:
-            buffList.append(f"{constant:.6g}")
-        ret += Surface.wrap_words_for_mcnp(buffList, mcnp_version, True)
+            ret += self.input_lines
         return ret
 
     def __lt__(self, other):

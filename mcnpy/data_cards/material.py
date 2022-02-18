@@ -95,6 +95,7 @@ class Material(data_card.DataCard):
     def material_number(self, number):
         assert isinstance(number, int)
         assert number > 0
+        self._mutated = True
         self.__material_number = number
 
     @property
@@ -177,13 +178,16 @@ class Material(data_card.DataCard):
 
     def format_for_mcnp_input(self, mcnp_version):
         ret = mcnp_card.MCNP_Card.format_for_mcnp_input(self, mcnp_version)
-        sorted_isotopes = sorted(list(self.material_components.keys()))
-        first_component = self.material_components[sorted_isotopes[0]]
+        if self.mutated:
+            sorted_isotopes = sorted(list(self.material_components.keys()))
+            first_component = self.material_components[sorted_isotopes[0]]
 
-        ret.append(
-            f"m{self.material_number:<9}{str(first_component.isotope):>8}{first_component.fraction:>12.4g}"
-        )
-        for isotope in sorted_isotopes[1:]:  # skips the first
-            component = self.material_components[isotope]
-            ret.append(f"{str(component.isotope):>19}{component.fraction:>12.4g}")
+            ret.append(
+                f"m{self.material_number:<9}{str(first_component.isotope):>8}{first_component.fraction:>12.4g}"
+            )
+            for isotope in sorted_isotopes[1:]:  # skips the first
+                component = self.material_components[isotope]
+                ret.append(f"{str(component.isotope):>19}{component.fraction:>12.4g}")
+        else:
+            ret += self.input_lines
         return ret

@@ -20,7 +20,7 @@ class Cell(MCNP_Card):
         :param comment: the Comment block that preceded this blog if any.
         :type comment: Comment
         """
-        super().__init__(comment)
+        super().__init__(input_card, comment)
         self.__surfaces = []
         self.__old_surface_numbers = []
         self.__complements = []
@@ -152,6 +152,7 @@ class Cell(MCNP_Card):
     def cell_number(self, number):
         assert isinstance(number, int)
         assert number > 0
+        self._mutated = True
         self.__cell_number = number
 
     @property
@@ -168,6 +169,7 @@ class Cell(MCNP_Card):
     def material(self, mat=None):
         if mat:
             assert isinstance(mat, Material)
+        self._mutated = True
         self.__material = mat
 
     @property
@@ -192,6 +194,7 @@ class Cell(MCNP_Card):
         density, is_atom_dens = density_tuple
         assert isinstance(density, float)
         assert isinstance(is_atom_dens, bool)
+        self._mutated = True
         self.__density = density
         self.__is_atom_dens = is_atom_dens
 
@@ -226,6 +229,7 @@ class Cell(MCNP_Card):
         assert isinstance(surfs, list)
         for surf in surfs:
             assert isinstance(surf, Surface)
+        self._mutated = True
         self.__surfaces = surfs
 
     @property
@@ -258,6 +262,7 @@ class Cell(MCNP_Card):
     @geometry_logic_string.setter
     def geometry_logic_string(self, string):
         assert isinstance(string, str)
+        self._mutated = True
         self.__geometry_logic_string = string
 
     @property
@@ -282,6 +287,7 @@ class Cell(MCNP_Card):
         assert isinstance(complements, list)
         for cell in complements:
             assert isinstance(cell, Cell)
+        self._mutated = True
         self.__complements = complements
 
     def update_pointers(self, cell_dict, material_dict, surface_dict):
@@ -405,6 +411,7 @@ class Cell(MCNP_Card):
                 will_update = True
                 break
         if will_update:
+            self._mutated = True
             # force logic string to known state
             self.update_geometry_logic_string()
             matching_surfaces = {}
@@ -422,30 +429,41 @@ class Cell(MCNP_Card):
             self.__update_geometry_logic_by_map(matching_surfaces, {})
 
     def format_for_mcnp_input(self, mcnp_version):
-        self.update_geometry_logic_string()
+        mutated = self.mutated
+        if not mutated:
+            if self.material:
+                mutated = self.material.mutated
+            for surf in self.surfaces:
+                if surf.mutated:
+                    mutated = True
+                    break
         ret = super().format_for_mcnp_input(mcnp_version)
-        buffList = [str(self.cell_number)]
-        if self.material:
-            buffList.append(str(self.material.material_number))
-            dens = 0
-            if self.is_atom_dens:
-                dens = self.density
+        if mutated:
+            self.update_geometry_logic_string()
+            buffList = [str(self.cell_number)]
+            if self.material:
+                buffList.append(str(self.material.material_number))
+                dens = 0
+                if self.is_atom_dens:
+                    dens = self.density
+                else:
+                    dens = -self.density
+                buffList.append(f"{dens:.4g}")
             else:
-                dens = -self.density
-            buffList.append(f"{dens:.4g}")
+                buffList.append("0")
+            ret += Cell.wrap_words_for_mcnp(buffList, mcnp_version, True)
+            ret += Cell.wrap_string_for_mcnp(
+                self.geometry_logic_string, mcnp_version, False
+            )
+            if self.parameters:
+                strings = []
+                for key, value in self.parameters.items():
+                    if isinstance(value, list):
+                        value = " ".join(value)
+                    strings.append(f"{key}={value}")
+                ret += Cell.wrap_words_for_mcnp(strings, mcnp_version, False)
         else:
-            buffList.append("0")
-        ret += Cell.wrap_words_for_mcnp(buffList, mcnp_version, True)
-        ret += Cell.wrap_string_for_mcnp(
-            self.geometry_logic_string, mcnp_version, False
-        )
-        if self.parameters:
-            strings = []
-            for key, value in self.parameters.items():
-                if isinstance(value, list):
-                    value = " ".join(value)
-                strings.append(f"{key}={value}")
-            ret += Cell.wrap_words_for_mcnp(strings, mcnp_version, False)
+            ret += self.input_lines
         return ret
 
     def __str__(self):
