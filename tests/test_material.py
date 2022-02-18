@@ -90,7 +90,8 @@ class testMaterialClass(TestCase):
         in_str = "M20 1001.80c 0.5 8016.80c 0.5"
         input_card = Card([in_str], BlockType.DATA, in_str.split())
         material = Material(input_card, None)
-        answers = ["m20       1001.80c         0.5", "           8016.80c         0.5"]
+        material.material_number = 25
+        answers = ["m25       1001.80c         0.5", "           8016.80c         0.5"]
         output = material.format_for_mcnp_input((6.2, 0))
         self.assertEqual(len(answers), len(output))
         for i, line in enumerate(output):
@@ -165,5 +166,6 @@ class testMaterialClass(TestCase):
         input_card = Card([in_str], BlockType.DATA, in_str.split())
         material = Material(input_card, None)
         material.update_pointers([card])
+        material.thermal_scattering.thermal_scattering_laws = ["grph.20t"]
 
         self.assertEqual(card.format_for_mcnp_input((6.2, 0)), ["MT20 grph.20t"])
