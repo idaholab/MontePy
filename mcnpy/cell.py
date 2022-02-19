@@ -425,7 +425,7 @@ class Cell(MCNP_Card):
     def __str__(self):
         ret = f"CELL: {self._cell_number} \n"
         ret += str(self._material) + "\n"
-        if hasattr(self, "_Cell__density"):
+        if self.density:
             ret += f"density: {self._density} "
             if self._is_atom_dens:
                 ret += "atom/b-cm"
