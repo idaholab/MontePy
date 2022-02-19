@@ -1,0 +1,2 @@
+c Testing nested read cards
+read file=testReadTarget.imcnp

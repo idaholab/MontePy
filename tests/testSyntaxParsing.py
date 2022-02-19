@@ -140,8 +140,9 @@ bar
         generator = input_syntax_reader.read_input_syntax(
             "tests/inputs/testRead.imcnp"
         )
-        next(generator)  # skip title
-        next(generator)  # skip read none
+        for i in range(4):
+            # skip title, None, comment, None
+            next(generator)
         card = next(generator)
         answer = ["1", "0", "-1"]
         for i, word in enumerate(card.words):
