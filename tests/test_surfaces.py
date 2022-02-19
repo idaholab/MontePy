@@ -138,12 +138,12 @@ class testSurfaces(TestCase):
             (["3", "C/Z", "4", "3", "5"], CylinderParAxis),
             (["6", "p", "1", "2", "3", "4"], GeneralPlane),
             (["7", "so", "5"], Surface),
-	        (["10", "C/x", "25", "0", "-5"], CylinderParAxis),
-	        (["11", "c/Y", "25", "0", "-5"], CylinderParAxis),
-	        (["12", "CY", "3"], CylinderOnAxis),
-	        (["13", "cz", "0"], CylinderOnAxis),
-	        (["14", "px", "1.e-3"], AxisPlane),
-	        (["15", "PY", ".1"], AxisPlane),
+            (["10", "C/x", "25", "0", "-5"], CylinderParAxis),
+            (["11", "c/Y", "25", "0", "-5"], CylinderParAxis),
+            (["12", "CY", "3"], CylinderOnAxis),
+            (["13", "cz", "0"], CylinderOnAxis),
+            (["14", "px", "1.e-3"], AxisPlane),
+            (["15", "PY", ".1"], AxisPlane),
         ]
         for words, surf_plane in testers:
             card = Card(BlockType.SURFACE, words)
