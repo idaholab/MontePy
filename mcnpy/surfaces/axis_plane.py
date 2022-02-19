@@ -21,7 +21,7 @@ class AxisPlane(Surface):
         ST = SurfaceType
         assert self.surface_type in [ST.PX, ST.PY, ST.PZ]
         assert len(self.surface_constants) == 1
-        self.__location = self.surface_constants[0]
+        self._location = self.surface_constants[0]
 
     @property
     def location(self):
@@ -30,13 +30,13 @@ class AxisPlane(Surface):
 
         :rtype: float
         """
-        return self.__location
+        return self._location
 
     @location.setter
     def location(self, location):
         assert isinstance(location, float)
-        self.__location = location
-        self.__surface_constants[0] = location
+        self._location = location
+        self._surface_constants[0] = location
 
     def find_duplicate_surfaces(self, surfaces, tolerance):
         ret = []
