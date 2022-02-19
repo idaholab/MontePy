@@ -61,8 +61,6 @@ class testDataCardClass(TestCase):
 
         for identifier, w in words.items():
             for ident in [identifier, identifier.upper()]:
-                input_card = Card(
-                    [w], BlockType.DATA, w.split()
-                )
+                input_card = Card([w], BlockType.DATA, w.split())
                 card = parse_data(input_card)
                 self.assertIsInstance(card, identifiers[ident.lower()])
