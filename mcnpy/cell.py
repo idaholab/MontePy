@@ -266,8 +266,7 @@ class Cell(MCNP_Card):
 
         e.g.: Universes, and imp:n
         """
-        if hasattr(self, "_Cell__parameters"):
-            return self._parameters
+        return self._parameters
 
     @property
     def complements(self):

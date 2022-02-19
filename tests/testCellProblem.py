@@ -29,7 +29,7 @@ class TestCellClass(TestCase):
         cell = Cell(card)
         self.assertEqual(cell.old_cell_number, 1)
         self.assertEqual(cell.cell_number, 1)
-        # self.assertIsNone(cell.material)
+        self.assertIsNone(cell.material)
         self.assertEqual(cell.old_mat_number, 0)
         self.assertIn(2, cell.old_surface_numbers)
 
