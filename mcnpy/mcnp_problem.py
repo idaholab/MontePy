@@ -16,6 +16,7 @@ class MCNP_Problem:
         """
         self._input_file = file_name
         self._title = None
+        self._message = None
         self._original_inputs = []
         self._cells = []
         self._surfaces = []
