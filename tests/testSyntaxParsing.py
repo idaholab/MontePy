@@ -136,9 +136,7 @@ bar
             self.assertIsInstance(input, input_order[i])
 
     def testReadInputWithRead(self):
-        generator = input_syntax_reader.read_input_syntax(
-            "tests/inputs/testRead.imcnp"
-        )
+        generator = input_syntax_reader.read_input_syntax("tests/inputs/testRead.imcnp")
         next(generator)  # skip title
         next(generator)  # skip read none
         card = next(generator)
