@@ -52,12 +52,12 @@ class testSurfaces(TestCase):
             Surface(card)
 
         # test transform
-        card = Card(BlockType.SURFACE, ["1", "5", "Py", "0"])
+        card = Card(BlockType.SURFACE, ["1", "5", "PZ", "0"])
         surf = Surface(card)
         self.assertEqual(surf.old_transform_number, 5)
 
         # test periodic surface
-        card = Card(BlockType.SURFACE, ["1", "-5", "pX", "0"])
+        card = Card(BlockType.SURFACE, ["1", "-5", "PZ", "0"])
         surf = Surface(card)
         self.assertEqual(surf.old_periodic_surface, 5)
 
