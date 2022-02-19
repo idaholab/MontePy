@@ -21,6 +21,9 @@ class ThermalScatteringLaw(DataCard):
         :param material: the parent Material object that owns this
         :type material: Material
         """
+        self._old_material_number = None
+        self._parent_material = None
+        self._scattering_laws = None
         if input_card:
             super().__init__(input_card, comment)
             assert "mt" in self.words[0].lower()

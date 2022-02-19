@@ -153,7 +153,7 @@ class Material(data_card.DataCard):
             if isinstance(card, thermal_scattering.ThermalScatteringLaw):
                 if card.old_material_number == self.material_number:
                     self._thermal_scattering = card
-                    card._ThermalScatteringLaw__parent_material = self
+                    card._parent_material = self
 
     def __str__(self):
         ret = f"MATERIAL: {self.material_number} fractions: "
