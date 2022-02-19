@@ -25,6 +25,7 @@ class Cell(MCNP_Card):
         self._old_cell_number = None
         self._old_mat_number = None
         self._geometry_logic_string = None
+        self._density = None
         self._surfaces = []
         self._old_surface_numbers = []
         self._complements = []
