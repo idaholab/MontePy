@@ -243,9 +243,9 @@ class MCNP_Problem:
             materials.add(cell.material)
         surfaces = sorted(list(surfaces))
         materials = sorted(list(materials))
-        self._surfaces = self._surfaces + surfaces
-        self._materials = self._materials + materials
-        self._data_cards = self._data_cards + materials
+        self._surfaces += surfaces
+        self._materials += materials
+        self._data_cards += materials
 
     def write_to_file(self, new_problem):
         """
