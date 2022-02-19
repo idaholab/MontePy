@@ -1,8 +1,10 @@
 from .block_type import BlockType
 from .. import errors
 import itertools
+import io
 from mcnpy.input_parser.mcnp_input import Card, Comment, Message, ReadCard, Title
 import re
+import os
 
 BLANK_SPACE_CONTINUE = 5
 reading_queue = []
@@ -19,6 +21,8 @@ def read_input_syntax(input_file):
     :param input_file: the path to the input file to be read
     :type input_file: str
     """
+    global reading_queue
+    reading_queue = []
     with open(input_file, "r") as fh:
         yield from read_front_matters(fh)
         yield from read_data(fh)
@@ -42,9 +46,9 @@ def read_front_matters(fh):
     found_title = False
     lines = []
     for i, line in enumerate(fh):
-        if i == 0 and line.startswith("MESSAGE:"):
+        if i == 0 and line.upper().startswith("MESSAGE:"):
             is_in_message_block = True
-            lines.append(line.strip("MESSAGE: "))
+            lines.append(line[9:])  # removes "MESSAGE: "
         elif is_in_message_block:
             if line.strip():
                 lines.append(line)
@@ -128,7 +132,7 @@ def read_data(fh, block_type=None, recursion=False):
                     words = temp_words
                 else:
                     words = words + temp_words
-                if line.endswith(" &"):
+                if line.endswith(" &\n"):
                     continue_card = True
                 else:
                     continue_card = False
@@ -136,18 +140,21 @@ def read_data(fh, block_type=None, recursion=False):
         yield Comment(words)
     else:
         yield generate_card_object(block_type, words)
-    
+
     if not recursion:
-        for block_type, file_name in reading_queue:
-            with open(file_name, "r") as sub_fh:
-                for input_card in read_data(sub_fh, block_type, True):
-                    yield input_card
+        # ensure fh is a file reader, ignore StringIO
+        if isinstance(fh, io.TextIOWrapper):
+            path = os.path.dirname(fh.name)
+            for block_type, file_name in reading_queue:
+                with open(os.path.join(path, file_name), "r") as sub_fh:
+                    for input_card in read_data(sub_fh, block_type, True):
+                        yield input_card
 
 
 def generate_card_object(block_type, words):
     card = Card(block_type, words)
-    if card.words[0].lower() == "read":
-        card = ReadCard(card)
-        reading_queue.append((block_type,card.file_name))
+    if len(card.words) > 0 and card.words[0].lower() == "read":
+        card = ReadCard(block_type, words)
+        reading_queue.append((block_type, card.file_name))
     else:
         return card

@@ -67,7 +67,7 @@ class Cell(MCNP_Card):
                 except ValueError:
                     raise MalformedInputError(
                         input_card,
-                        f"{words[2]} can not be parsed as a material number.",
+                        f"{words[2]} can not be parsed as a material density.",
                     )
             j, param_found = self.__parse_geometry(i, words)
             if param_found:
