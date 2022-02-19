@@ -1,5 +1,5 @@
 __name__ = "mcnpy.data_cards"
-from . import data_card
-from . import data_parser
-from . import material
-from . import thermal_scattering
+from .data_card import DataCard
+from .material import Material
+from .thermal_scattering import ThermalScatteringLaw
+from .data_parser import parse_data

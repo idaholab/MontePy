@@ -58,8 +58,8 @@ class testDataCardClass(TestCase):
             "ksrc": ["ksrc", "1.0", "0.0", "0.0"],
         }
 
-        for identifier in identifiers:
+        for identifier, w in words.items():
             for ident in [identifier, identifier.upper()]:
-                input_card = Card(BlockType.DATA, words[identifier])
+                input_card = Card(BlockType.DATA, w)
                 card = parse_data(input_card)
-                self.assertIsInstance(card, identifiers[identifier])
+                self.assertIsInstance(card, identifiers[ident.lower()])
