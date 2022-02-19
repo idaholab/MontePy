@@ -2,6 +2,7 @@ from io import StringIO
 from unittest import TestCase
 
 import mcnpy
+from mcnpy.input_parser import input_syntax_reader
 
 
 class TestSyntaxParsing(TestCase):
@@ -16,9 +17,7 @@ test title
             (test_string.upper(), test_message.upper()),
         ]:
             with StringIO(tester) as fh:
-                generator = mcnpy.input_parser.input_syntax_reader.read_front_matters(
-                    fh
-                )
+                generator = input_syntax_reader.read_front_matters(fh)
                 card = next(generator)
                 self.assertIsInstance(card, mcnpy.input_parser.mcnp_input.Message)
                 self.assertEqual(card.lines[0], validator)
@@ -34,9 +33,7 @@ test title
             (test_string.upper(), test_title.upper()),
         ]:
             with StringIO(tester) as fh:
-                generator = mcnpy.input_parser.input_syntax_reader.read_front_matters(
-                    fh
-                )
+                generator = input_syntax_reader.read_front_matters(fh)
                 card = next(generator)
                 self.assertIsInstance(card, mcnpy.input_parser.mcnp_input.Title)
                 self.assertEqual(card.title, validator)
@@ -47,13 +44,13 @@ test title
         for i in range(5):
             tester = " " * i + test_string
             with StringIO(tester) as fh:
-                generator = mcnpy.input_parser.input_syntax_reader.read_data(fh)
+                generator = input_syntax_reader.read_data(fh)
                 card = next(generator)
                 self.assertIsInstance(card, mcnpy.input_parser.mcnp_input.Card)
                 answer = ["1", "0", "-1", "5"]
                 self.assertEqual(len(answer), len(card.words))
-                for i, word in enumerate(card.words):
-                    self.assertEqual(word, answer[i])
+                for j, word in enumerate(card.words):
+                    self.assertEqual(word, answer[j])
                     self.assertEqual(
                         card.block_type, mcnpy.input_parser.block_type.BlockType.CELL
                     )
@@ -64,7 +61,7 @@ c bar"""
         for i in range(5):
             tester = " " * i + test_string
             with StringIO(tester) as fh:
-                card = next(mcnpy.input_parser.input_syntax_reader.read_data(fh))
+                card = next(input_syntax_reader.read_data(fh))
                 self.assertIsInstance(card, mcnpy.input_parser.mcnp_input.Comment)
                 self.assertEqual(len(card.lines), 2)
                 self.assertEqual(card.lines[0], "foo")
@@ -73,7 +70,7 @@ c bar"""
     def testReadCardFinder(self):
         test_string = "read file=foo.imcnp "
         with StringIO(test_string) as fh:
-            card = next(mcnpy.input_parser.input_syntax_reader.read_data(fh))
+            card = next(input_syntax_reader.read_data(fh))
             self.assertIsNone(card)  # the read card is hidden from the user
 
     def testBlockId(self):
@@ -82,7 +79,7 @@ c bar"""
         for i in range(3):
             tester = "\n" * i + test_string
             with StringIO(tester) as fh:
-                for card in mcnpy.input_parser.input_syntax_reader.read_data(fh):
+                for card in input_syntax_reader.read_data(fh):
                     pass
                 self.assertEqual(
                     mcnpy.input_parser.block_type.BlockType(i), card.block_type
@@ -125,9 +122,7 @@ bar
             self.assertEqual(answer[i], line)
 
     def testReadInput(self):
-        generator = mcnpy.input_parser.input_syntax_reader.read_input_syntax(
-            "tests/inputs/test.imcnp"
-        )
+        generator = input_syntax_reader.read_input_syntax("tests/inputs/test.imcnp")
         mcnp_in = mcnpy.input_parser.mcnp_input
         input_order = [mcnp_in.Message, mcnp_in.Title, mcnp_in.Comment]
         input_order += [mcnp_in.Card] * 4 + [mcnp_in.Comment] * 2
@@ -140,7 +135,7 @@ bar
             self.assertIsInstance(input, input_order[i])
 
     def testReadInputWithRead(self):
-        generator = mcnpy.input_parser.input_syntax_reader.read_input_syntax(
+        generator = input_syntax_reader.read_input_syntax(
             "tests/inputs/testRead.imcnp"
         )
         next(generator)  # skip title
@@ -151,7 +146,7 @@ bar
             self.assertEqual(answer[i], word)
 
     def testReadInputWithVertMode(self):
-        generator = mcnpy.input_parser.input_syntax_reader.read_input_syntax(
+        generator = input_syntax_reader.read_input_syntax(
             "tests/inputs/testVerticalMode.imcnp"
         )
         next(generator)

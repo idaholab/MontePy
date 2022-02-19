@@ -10,7 +10,7 @@ class testFortranFloat(TestCase):
             self.assertAlmostEqual(fortran_float(test_string), tests[test_string])
 
     def test_stupid_float_parse(self):
-        tests = {"1.2+3": 1.2e3, "1.2-3": 1.2e-3}
+        tests = {"1.2+3": 1.2e3, "1.2-3": 1.2e-3, "-2-3": -2.0e-3}
         for test_string in tests:
             self.assertAlmostEqual(fortran_float(test_string), tests[test_string])
 
