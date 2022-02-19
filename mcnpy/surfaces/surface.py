@@ -55,9 +55,9 @@ class Surface(MCNP_Card):
             try:
                 num = int(words[i])
                 if num > 0:
-                    self._old_transform_number = num
+                    self._old_transform_number = abs(num)
                 elif num < 0:
-                    self._old_periodic_surface = num
+                    self._old_periodic_surface = abs(num)
                 i += 1
             except ValueError:
                 raise MalformedInputError(
