@@ -37,10 +37,11 @@ class ThermalScatteringLaw(DataCard):
                     input_card, f"{words[0]} could not be parsed as a material number"
                 )
             self._scattering_laws = self.words[1:]
-        elif comment:
-            self._comment = comment
-        elif material:
-            self._parent_material = material
+        else:
+            if comment:
+                self._comment = comment
+            if material:
+                self._parent_material = material
 
     @property
     def old_material_number(self):
