@@ -18,9 +18,9 @@ class MCNP_Card(ABC):
             self._input_lines = []
             self._mutated = True
         if comment:
-            self.__comment = comment
+            self._comment = comment
         else:
-            self.__comment = None
+            self._comment = None
 
     @abstractmethod
     def format_for_mcnp_input(self, mcnp_version):
@@ -45,13 +45,13 @@ class MCNP_Card(ABC):
 
         :rtype: Comment
         """
-        return self.__comment
+        return self._comment
 
     @comment.setter
     def comment(self, comment):
         assert isinstance(comment, Comment)
         self._mutated = True
-        self.__comment = comment
+        self._comment = comment
 
     @property
     def input_lines(self):

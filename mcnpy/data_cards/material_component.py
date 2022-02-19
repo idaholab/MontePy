@@ -12,10 +12,10 @@ class MaterialComponent:
         :param fraction: the fraction of this component in the material
         :type fraction: float
         """
-        self.__isotope = isotope
+        self._isotope = isotope
         assert isinstance(fraction, float)
         assert fraction > 0
-        self.__fraction = fraction
+        self._fraction = fraction
 
     @property
     def isotope(self):
@@ -23,7 +23,7 @@ class MaterialComponent:
         The isotope for this material_component
         :rtype: Isotope
         """
-        return self.__isotope
+        return self._isotope
 
     @property
     def fraction(self):
@@ -31,7 +31,7 @@ class MaterialComponent:
         The fraction of the isotope for this component
         :rtype: float
         """
-        return self.__fraction
+        return self._fraction
 
     def __str__(self):
         return f"{self.isotope} {self.fraction}"

@@ -21,15 +21,16 @@ class Material(data_card.DataCard):
         :type comment: Comment
         """
         super().__init__(input_card, comment)
-        self.__material_components = {}
+        self._material_components = {}
+        self._thermal_scattering = None
         words = self.words
         num = words[0].upper().strip("M")
         # material numbers
         try:
             num = int(num)
             assert num > 0
-            self.__old_material_number = num
-            self.__material_number = num
+            self._old_material_number = num
+            self._material_number = num
         except (ValueError, AssertionError) as e:
             raise MalformedInputError(
                 input_card, f"{words[0]} could not be parsed as a material number"
@@ -52,26 +53,26 @@ class Material(data_card.DataCard):
             if not set_atom_frac:
                 set_atom_frac = True
                 if fraction > 0:
-                    self.__is_atom_fraction = True
+                    self._is_atom_fraction = True
                 else:
-                    self.__is_atom_fraction = False
+                    self._is_atom_fraction = False
             else:
                 # if switching fraction formatting
-                if (fraction > 0 and not self.__is_atom_fraction) or (
-                    fraction < 0 and self.__is_atom_fraction
+                if (fraction > 0 and not self._is_atom_fraction) or (
+                    fraction < 0 and self._is_atom_fraction
                 ):
                     raise MalformedInputError(
                         input_card,
                         "Material definitons cannot use atom and mass fraction at the same time",
                     )
-            self.__material_components[isotope] = MaterialComponent(
+            self._material_components[isotope] = MaterialComponent(
                 isotope, abs(fraction)
             )
         param_str = ""
         if has_parameters:
             for string in itertools.chain([isotope_str], words_iter):
                 param_str += string + " "
-            self.__parameter_string = param_str
+            self._parameter_string = param_str
 
     @property
     def old_material_number(self):
@@ -80,7 +81,7 @@ class Material(data_card.DataCard):
 
         :rtype: int
         """
-        return self.__old_material_number
+        return self._old_material_number
 
     @property
     def material_number(self):
@@ -89,21 +90,21 @@ class Material(data_card.DataCard):
 
         :rtype: int
         """
-        return self.__material_number
+        return self._material_number
 
     @material_number.setter
     def material_number(self, number):
         assert isinstance(number, int)
         assert number > 0
         self._mutated = True
-        self.__material_number = number
+        self._material_number = number
 
     @property
     def is_atom_fraction(self):
         """
         If true this constituent is in atom fraction, not weight fraction.
         """
-        return self.__is_atom_fraction
+        return self._is_atom_fraction
 
     @property
     def material_components(self):
@@ -112,7 +113,7 @@ class Material(data_card.DataCard):
 
         :rtype: dict
         """
-        return self.__material_components
+        return self._material_components
 
     @property
     def parameter_string(self):
@@ -121,16 +122,14 @@ class Material(data_card.DataCard):
 
         :rtype: str
         """
-        if hasattr(self, "_Material__parameter_string"):
-            return self.__parameter_string
+        return self._parameter_string
 
     @property
     def thermal_scattering(self):
         """
         The thermal scattering law for this material
         """
-        if hasattr(self, "_Material__thermal_scattering"):
-            return self.__thermal_scattering
+        return self._thermal_scattering
 
     def add_thermal_scattering(self, law):
         """
@@ -139,11 +138,10 @@ class Material(data_card.DataCard):
         :param law: the law that is mcnp formatted
         :type law: str
         """
-        if not hasattr(self, "_Material__thermal_scattering"):
-            self.__thermal_scattering = thermal_scattering.ThermalScatteringLaw(
-                material=self
-            )
-        self.__thermal_scattering.add_scattering_law(law)
+        self._thermal_scattering = thermal_scattering.ThermalScatteringLaw(
+            material=self
+        )
+        self._thermal_scattering.add_scattering_law(law)
 
     def update_pointers(self, data_cards):
         """
@@ -155,8 +153,8 @@ class Material(data_card.DataCard):
         for card in data_cards:
             if isinstance(card, thermal_scattering.ThermalScatteringLaw):
                 if card.old_material_number == self.material_number:
-                    self.__thermal_scattering = card
-                    card._ThermalScatteringLaw__parent_material = self
+                    self._thermal_scattering = card
+                    card._parent_material = self
 
     def __str__(self):
         ret = f"MATERIAL: {self.material_number} fractions: "

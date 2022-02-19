@@ -61,11 +61,11 @@ class Card(MCNP_Input):
         """
         super().__init__(input_lines)
         assert isinstance(block_type, BlockType)
-        self.__words = words
-        self.__block_type = block_type
+        self._words = words
+        self._block_type = block_type
 
     def __str__(self):
-        return f"CARD: {self.__block_type}: {self.__words}"
+        return f"CARD: {self._block_type}: {self._words}"
 
     @property
     def words(self):
@@ -74,14 +74,14 @@ class Card(MCNP_Input):
 
         For example a material definition may contain: 'M10', '10001.70c', '0.1'
         """
-        return self.__words
+        return self._words
 
     @property
     def block_type(self):
         """
         Enum representing which block of the MCNP input this came from
         """
-        return self.__block_type
+        return self._block_type
 
     def format_for_mcnp_input(self, mcnp_version):
         pass
@@ -120,11 +120,11 @@ class Comment(MCNP_Input):
         buff = []
         for line in lines:
             buff.append(line.rstrip())
-        self.__lines = buff
+        self._lines = buff
 
     def __str__(self):
         ret = "COMMENT:\n"
-        for line in self.__lines:
+        for line in self._lines:
             ret += line + "\n"
         return ret
 
@@ -136,7 +136,7 @@ class Comment(MCNP_Input):
         Each entry is a string of that line in the message block.
         The comment beginning "C " has been stripped out
         """
-        return self.__lines
+        return self._lines
 
     def format_for_mcnp_input(self, mcnp_version):
         line_length = 0
@@ -165,11 +165,11 @@ class Message(MCNP_Input):
         buff = []
         for line in lines:
             buff.append(line.rstrip())
-        self.__lines = buff
+        self._lines = buff
 
     def __str__(self):
         ret = "MESSAGE:\n"
-        for line in self.__lines:
+        for line in self._lines:
             ret += line + "\n"
         return ret
 
@@ -180,7 +180,7 @@ class Message(MCNP_Input):
 
         Each entry is a string of that line in the message block
         """
-        return self.__lines
+        return self._lines
 
     def format_for_mcnp_input(self, mcnp_version):
         ret = []
@@ -204,15 +204,15 @@ class Title(MCNP_Input):
     def __init__(self, input_lines, title):
         super().__init__(input_lines)
         assert isinstance(title, str)
-        self.__title = title.rstrip()
+        self._title = title.rstrip()
 
     @property
     def title(self):
         "The string of the title set for this problem"
-        return self.__title
+        return self._title
 
     def __str__(self):
-        return f"TITLE: {self.__title}"
+        return f"TITLE: {self._title}"
 
     def format_for_mcnp_input(self, mcnp_version):
         line_length = 0
