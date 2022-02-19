@@ -98,13 +98,8 @@ class Comment(MCNP_Input):
 
     def __str__(self):
         ret = "COMMENT:\n"
-<<<<<<< HEAD
         for line in self._lines:
-            ret = ret + line
-=======
-        for line in self.__lines:
-            ret += line + "\n"
->>>>>>> issue5ReadCard
+            ret += line +"\n"
         return ret
 
     @property
@@ -147,13 +142,8 @@ class Message(MCNP_Input):
 
     def __str__(self):
         ret = "MESSAGE:\n"
-<<<<<<< HEAD
         for line in self._lines:
-            ret = ret + line
-=======
-        for line in self.__lines:
             ret += line + "\n"
->>>>>>> issue5ReadCard
         return ret
 
     @property
