@@ -49,8 +49,8 @@ test title
                 self.assertIsInstance(card, mcnpy.input_parser.mcnp_input.Card)
                 answer = ["1", "0", "-1", "5"]
                 self.assertEqual(len(answer), len(card.words))
-                for i, word in enumerate(card.words):
-                    self.assertEqual(word, answer[i])
+                for j, word in enumerate(card.words):
+                    self.assertEqual(word, answer[j])
                     self.assertEqual(
                         card.block_type, mcnpy.input_parser.block_type.BlockType.CELL
                     )
