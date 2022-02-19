@@ -62,4 +62,4 @@ class testDataCardClass(TestCase):
             for ident in [identifier, identifier.upper()]:
                 input_card = Card(BlockType.DATA, w)
                 card = parse_data(input_card)
-                self.assertIsInstance(card, identifiers[ident])
+                self.assertIsInstance(card, identifiers[ident.lower()])

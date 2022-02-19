@@ -122,9 +122,7 @@ bar
             self.assertEqual(answer[i], line)
 
     def testReadInput(self):
-        generator = input_syntax_reader.read_input_syntax(
-            "tests/inputs/test.imcnp"
-        )
+        generator = input_syntax_reader.read_input_syntax("tests/inputs/test.imcnp")
         mcnp_in = mcnpy.input_parser.mcnp_input
         input_order = [mcnp_in.Message, mcnp_in.Title, mcnp_in.Comment]
         input_order += [mcnp_in.Card] * 4 + [mcnp_in.Comment] * 2
