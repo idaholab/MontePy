@@ -22,6 +22,7 @@ class Surface(MCNP_Card):
         super().__init__(comment)
         words = input_card.words
         self._periodic_surface = None
+        self._old_periodic_surface = None
         self._transform = None
         self._old_transform_number = None
         i = 0
@@ -223,13 +224,14 @@ class Surface(MCNP_Card):
         Right now only periodic surface links will be made.
         Eventually transform pointers should be made.
         """
-        try:
-            self._periodic_surface = surface_dict[self._old_periodic_surface]
-        except KeyError:
-            raise MalformedInputError(
-                "",
-                f"Surface {self.surface_number}'s periodic surface {self.old_surface_number} could not be found.",
-            )
+        if self.old_periodic_surface:
+            try:
+                self._periodic_surface = surface_dict[self.old_periodic_surface]
+            except KeyError:
+                raise MalformedInputError(
+                    "",
+                    f"Surface {self.surface_number}'s periodic surface {self.old_surface_number} could not be found.",
+                )
         if self.old_transform_number:
             for card in data_cards:
                 if isinstance(card, transform.Transform):
