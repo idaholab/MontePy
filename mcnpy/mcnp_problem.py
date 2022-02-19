@@ -183,7 +183,7 @@ class MCNP_Problem:
                     if input_card.block_type == block_type.BlockType.DATA:
                         data = parse_data(input_card, comment_queue)
                         self._data_cards.append(data)
-                        if isinstance(data, material.Material):
+                        if isinstance(data, Material):
                             self._materials.append(data)
                     comment_queue = None
         self.__update_internal_pointers()
