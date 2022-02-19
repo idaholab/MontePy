@@ -8,7 +8,7 @@ class MalformedInputError(Exception):
         super().__init__(self.message)
 
 
-class UnsupportedFeature(Exception):
+class UnsupportedFeature(NotImplementedError):
     """
     Raised when MCNP syntax that is not supported is found
     """

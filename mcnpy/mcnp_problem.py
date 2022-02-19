@@ -1,8 +1,7 @@
-from .cell import Cell
-from .data_card import DataCard
-from .input_parser import read_input_syntax, BlockType, Card, Comment, Message, Title
-from .material import Material
-from .surface import Surface
+from mcnpy.cell import Cell
+from mcnpy.surfaces import surface_builder
+from mcnpy.data_cards import Material, parse_data
+from mcnpy.input_parser import input_syntax_reader, block_type, mcnp_input
 
 
 class MCNP_Problem:
@@ -15,13 +14,15 @@ class MCNP_Problem:
         :param file_name: the path to the file that will be read.
         :type file_name: str
         """
-        self.__input_file = file_name
-        self.__original_inputs = []
-        self.__cells = []
-        self.__surfaces = []
-        self.__data_cards = []
-        self.__materials = []
-        self.__mcnp_version = (6.2, 0)
+        self._input_file = file_name
+        self._title = None
+        self._message = None
+        self._original_inputs = []
+        self._cells = []
+        self._surfaces = []
+        self._data_cards = []
+        self._materials = []
+        self._mcnp_version = (6.2, 0)
 
     @property
     def original_inputs(self):
@@ -34,7 +35,7 @@ class MCNP_Problem:
         :return: A list of the MCNP_Input objects representing the file as it was read
         :rtype: list
         """
-        return self.__original_inputs
+        return self._original_inputs
 
     @property
     def cells(self):
@@ -44,7 +45,14 @@ class MCNP_Problem:
         :return: a list of the Cell objects, ordered by the order they were in the input file.
         :rtype: list
         """
-        return self.__cells
+        return self._cells
+
+    @cells.setter
+    def cells(self, cells):
+        assert isinstance(cells, list)
+        for cell in cells:
+            assert isinstance(cell, Cell)
+        self._cells = cells
 
     def add_cells(self, cells):
         """
@@ -69,7 +77,7 @@ class MCNP_Problem:
         6.2.0 would be represented as (6.2, 0)
         :rtype: tuple
         """
-        return self.__mcnp_version
+        return self._mcnp_version
 
     @mcnp_version.setter
     def mcnp_version(self, version):
@@ -78,7 +86,7 @@ class MCNP_Problem:
         :type version: tuple
         """
         assert version >= (6.2, 0)
-        self.__mcnp_version = version
+        self._mcnp_version = version
 
     @property
     def surfaces(self):
@@ -88,7 +96,7 @@ class MCNP_Problem:
         :return: a list of the Surface objects, ordered by the order they were in the input file.
         :rtype: list
         """
-        return self.__surfaces
+        return self._surfaces
 
     @property
     def materials(self):
@@ -98,7 +106,7 @@ class MCNP_Problem:
         :return: a list of the Material objects, ordered by the order they were in the input file.
         :rtype: list
         """
-        return self.__materials
+        return self._materials
 
     @property
     def data_cards(self):
@@ -108,7 +116,7 @@ class MCNP_Problem:
         :return: a list of the DataCard objects, ordered by the order they were in the input file.
         :rtype: list
         """
-        return self.__data_cards
+        return self._data_cards
 
     @property
     def input_file(self):
@@ -117,7 +125,7 @@ class MCNP_Problem:
 
         :rtype: str
         """
-        return self.__input_file
+        return self._input_file
 
     @property
     def message(self):
@@ -126,8 +134,7 @@ class MCNP_Problem:
 
         :rtype: Message
         """
-        if hasattr(self, "_MCNP_Problem__message"):
-            return self.__message
+        return self._message
 
     @property
     def title(self):
@@ -136,47 +143,109 @@ class MCNP_Problem:
 
         :rtype: Title
         """
-        return self.__title
+        return self._title
+
+    @title.setter
+    def title(self, title):
+        """
+        :type title: The str for the title to be set to.
+        """
+        self._title = mcnp_input.Title(title)
 
     def parse_input(self):
         """
         Semantically parses the MCNP file provided to the constructor.
         """
         comment_queue = None
-        for i, input_card in enumerate(read_input_syntax(self.__input_file)):
-            self.__original_inputs.append(input_card)
-            if i == 0 and isinstance(input_card, Message):
-                self.__message = input_card
+        for i, input_card in enumerate(
+            input_syntax_reader.read_input_syntax(self._input_file)
+        ):
+            self._original_inputs.append(input_card)
+            if i == 0 and isinstance(input_card, mcnp_input.Message):
+                self._message = input_card
 
-            elif isinstance(input_card, Title) and not hasattr(
-                self, "_MCNP_Problem__title"
-            ):
-                self.__title = input_card
+            elif isinstance(input_card, mcnp_input.Title) and not self._title:
+                self._title = input_card
 
-            elif isinstance(input_card, Comment):
+            elif isinstance(input_card, mcnp_input.Comment):
                 comment_queue = input_card
 
-            elif isinstance(input_card, Card):
-                if input_card.block_type == BlockType.CELL:
-                    cell = Cell(input_card, comment_queue)
-                    self.__cells.append(cell)
-                if input_card.block_type == BlockType.SURFACE:
-                    surface = Surface(input_card, comment_queue)
-                    self.__surfaces.append(surface)
-                if input_card.block_type == BlockType.DATA:
-                    data = DataCard.parse_data(input_card, comment_queue)
-                    self.__data_cards.append(data)
-                    if isinstance(data, Material):
-                        self.__materials.append(data)
-                comment_queue = None
+            elif isinstance(input_card, mcnp_input.Card):
+                if len(input_card.words) > 0:
+                    if input_card.block_type == block_type.BlockType.CELL:
+                        cell = Cell(input_card, comment_queue)
+                        self._cells.append(cell)
+                    if input_card.block_type == block_type.BlockType.SURFACE:
+                        surface = surface_builder.surface_builder(
+                            input_card, comment_queue
+                        )
+                        self._surfaces.append(surface)
+                    if input_card.block_type == block_type.BlockType.DATA:
+                        data = parse_data(input_card, comment_queue)
+                        self._data_cards.append(data)
+                        if isinstance(data, Material):
+                            self._materials.append(data)
+                    comment_queue = None
+        self.__update_internal_pointers()
+
+    def __update_internal_pointers(self):
+        """Updates the internal pointers between objects"""
         material_dict = {}
         surface_dict = {}
-        for material in self.__materials:
-            material_dict[material.material_number] = material
-        for surface in self.__surfaces:
-            surface_dict[surface.surface_number] = surface
-        for cell in self.__cells:
-            cell.update_pointers(material_dict, surface_dict)
+        cell_dict = {}
+        for mat in self._materials:
+            material_dict[mat.old_material_number] = mat
+        for surface in self._surfaces:
+            surface_dict[surface.old_surface_number] = surface
+        for cell in self._cells:
+            cell_dict[cell.old_cell_number] = cell
+        # update links
+        for cell in self._cells:
+            cell.update_pointers(cell_dict, material_dict, surface_dict)
+        for surface in self._surfaces:
+            surface.update_pointers(surface_dict, self._data_cards)
+        for card in self._data_cards:
+            card.update_pointers(self._data_cards)
+
+    def remove_duplicate_surfaces(self, tolerance):
+        """Finds duplicate surfaces in the problem, and remove them.
+
+        :param tolerance: The amount of relative error to consider two surfaces identical
+        :type tolerance: float
+        """
+        to_delete = set()
+        matching_map = {}
+        for surface in self.surfaces:
+            if surface not in to_delete:
+                matches = surface.find_duplicate_surfaces(self.surfaces, tolerance)
+                if matches:
+                    for match in matches:
+                        to_delete.add(match)
+                        matching_map[match] = surface
+
+        for cell in self.cells:
+            cell.remove_duplicate_surfaces(matching_map)
+        self.__update_internal_pointers()
+        for surface in to_delete:
+            self._surfaces.remove(surface)
+
+    def add_cell_children_to_problem(self):
+        """
+        Adds the surfaces and materials added to this problem to the
+        internal lists to allow them to be written to file.
+
+        WARNING: this does not move transforms and complement cells, and probably others.
+        """
+        surfaces = set()
+        materials = set()
+        for cell in self.cells:
+            surfaces.update(set(cell.surfaces))
+            materials.add(cell.material)
+        surfaces = sorted(list(surfaces))
+        materials = sorted(list(materials))
+        self._surfaces += surfaces
+        self._materials += materials
+        self._data_cards += materials
 
     def write_to_file(self, new_problem):
         """
@@ -188,33 +257,33 @@ class MCNP_Problem:
         with open(new_problem, "w") as fh:
             if self.message:
                 for line in self.message.format_for_mcnp_input(self.mcnp_version):
-                    fh.write(line+"\n")
+                    fh.write(line + "\n")
             lines = self.title.format_for_mcnp_input(self.mcnp_version)
-            fh.write(lines[0]+"\n")
+            fh.write(lines[0] + "\n")
             for cell in self.cells:
                 for line in cell.format_for_mcnp_input(self.mcnp_version):
-                    fh.write(line+"\n")
+                    fh.write(line + "\n")
             # block terminator
             fh.write("\n")
             for surface in self.surfaces:
                 for line in surface.format_for_mcnp_input(self.mcnp_version):
-                    fh.write(line+"\n")
+                    fh.write(line + "\n")
             fh.write("\n")
 
             for card in self.data_cards:
                 for line in card.format_for_mcnp_input(self.mcnp_version):
-                    fh.write(line+"\n")
+                    fh.write(line + "\n")
 
             fh.write("\n")
 
     def __str__(self):
-        ret = f"MCNP problem for: {self.__input_file}\n"
+        ret = f"MCNP problem for: {self._input_file}\n"
         if self.message:
-            ret += str(self.__message) + "\n"
-        ret += str(self.__title) + "\n"
-        for cell in self.__cells:
+            ret += str(self._message) + "\n"
+        ret += str(self._title) + "\n"
+        for cell in self._cells:
             ret += str(cell) + "\n"
-        for data_card in self.__data_cards:
+        for data_card in self._data_cards:
             if not isinstance(data_card, Material):
                 ret += str(data_card) + "\n"
         return ret

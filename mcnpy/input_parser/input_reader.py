@@ -1,4 +1,4 @@
-from .. import mcnp_problem
+from mcnpy import mcnp_problem
 
 
 def read_input(input_file):

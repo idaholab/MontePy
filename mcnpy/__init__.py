@@ -1,5 +1,6 @@
-name = "MCNPy"
-__version__ = "0.0.1"
+name = "mcnpy"
+__version__ = "0.0.2"
+__all__ = ["cell", "surface", "mcnp_card", "input_parser"]
 
-from .mcnp_problem import MCNP_Problem
-from .input_parser import read_input
+from . import input_parser
+from .input_parser.input_reader import read_input
