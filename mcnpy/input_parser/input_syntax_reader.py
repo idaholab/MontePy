@@ -1,10 +1,14 @@
 from .block_type import BlockType
 from .. import errors
 import itertools
-from .mcnp_input import Card, Comment, Message, Title
+import io
+from mcnpy.input_parser.mcnp_input import Card, Comment, Message, ReadCard, Title
 import re
+import os
 
 BLANK_SPACE_CONTINUE = 5
+reading_queue = []
+
 
 def read_input_syntax(input_file):
     """
@@ -17,6 +21,8 @@ def read_input_syntax(input_file):
     :param input_file: the path to the input file to be read
     :type input_file: str
     """
+    global reading_queue
+    reading_queue = []
     with open(input_file, "r") as fh:
         yield from read_front_matters(fh)
         yield from read_data(fh)
@@ -40,9 +46,9 @@ def read_front_matters(fh):
     found_title = False
     lines = []
     for i, line in enumerate(fh):
-        if i == 0 and line.startswith("MESSAGE:"):
+        if i == 0 and line.upper().startswith("MESSAGE:"):
             is_in_message_block = True
-            lines.append(line.strip("MESSAGE: "))
+            lines.append(line[9:])  # removes "MESSAGE: "
         elif is_in_message_block:
             if line.strip():
                 lines.append(line)
@@ -56,7 +62,7 @@ def read_front_matters(fh):
             break
 
 
-def read_data(fh):
+def read_data(fh, block_type=None, recursion=False):
     """
     Reads the bulk of an MCNP file for all of the MCNP data.
 
@@ -67,13 +73,19 @@ def read_data(fh):
 
     :param fh: The file handle of the input file.
     :type fh: io.TextIoWrapper
+    :param block_type: The type of block this file is in. This is only used with partial files read using the ReadCard.
+    :type block_type: BlockType
+    :param recusrion: Whether or not this is being called recursively. If True this has been called
+                         from read_data. This prevents the reading queue causing infinite recursion.
+    :type recursion: bool
     :return: MCNP_input instances, Card or Comment that represent the data in the MCNP input
     :rtype: MCNP_input
 
     """
     commentFinder = re.compile(f"^\s{{0,{BLANK_SPACE_CONTINUE-1}}}C\s", re.IGNORECASE)
     block_counter = 0
-    block_type = BlockType.CELL
+    if block_type is None:
+        block_type = BlockType.CELL
     is_in_comment = False
     continue_card = False
     words = []
@@ -84,7 +96,7 @@ def read_data(fh):
             if is_in_comment:
                 yield Comment(words)
             else:
-                yield Card(block_type, words)
+                yield generate_card_object(block_type, words)
             words = []
             block_counter += 1
             if block_counter < 3:
@@ -97,7 +109,7 @@ def read_data(fh):
             if commentFinder.match(line):
                 if not is_in_comment:
                     if words:
-                        yield Card(block_type, words)
+                        yield generate_card_object(block_type, words)
                     # removes leading comment info
                     words = [commentFinder.split(line)[1]]
                     is_in_comment = True
@@ -121,15 +133,33 @@ def read_data(fh):
                 # if beginning a new card
                 if line[0:BLANK_SPACE_CONTINUE].strip() and not continue_card:
                     if words:
-                        yield Card(block_type, words)
+                        yield generate_card_object(block_type, words)
                     words = temp_words
                 else:
                     words = words + temp_words
-                if line.endswith(" &"):
+                if line.endswith(" &\n"):
                     continue_card = True
                 else:
                     continue_card = False
     if is_in_comment:
         yield Comment(words)
     else:
-        yield Card(block_type, words)
+        yield generate_card_object(block_type, words)
+
+    if not recursion:
+        # ensure fh is a file reader, ignore StringIO
+        if isinstance(fh, io.TextIOWrapper):
+            path = os.path.dirname(fh.name)
+            for block_type, file_name in reading_queue:
+                with open(os.path.join(path, file_name), "r") as sub_fh:
+                    for input_card in read_data(sub_fh, block_type, True):
+                        yield input_card
+
+
+def generate_card_object(block_type, words):
+    card = Card(block_type, words)
+    if len(card.words) > 0 and card.words[0].lower() == "read":
+        card = ReadCard(block_type, words)
+        reading_queue.append((block_type, card.file_name))
+    else:
+        return card

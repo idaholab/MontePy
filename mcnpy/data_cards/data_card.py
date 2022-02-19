@@ -15,7 +15,7 @@ class DataCard(MCNP_Card):
         :type comment: Comment
         """
         super().__init__(comment)
-        self.__words = input_card.words
+        self._words = input_card.words
 
     @property
     def words(self):
@@ -24,7 +24,7 @@ class DataCard(MCNP_Card):
 
         :rtype: list
         """
-        return self.__words
+        return self._words
 
     def format_for_mcnp_input(self, mcnp_version):
         ret = super().format_for_mcnp_input(mcnp_version)
@@ -41,4 +41,4 @@ class DataCard(MCNP_Card):
         pass
 
     def __str__(self):
-        return f"DATA CARD: {self.__words}"
+        return f"DATA CARD: {self._words}"

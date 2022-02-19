@@ -19,19 +19,19 @@ class CylinderOnAxis(Surface):
         ST = SurfaceType
         assert self.surface_type in [ST.CX, ST.CY, ST.CZ]
         assert len(self.surface_constants) == 1
-        self.__radius = self.surface_constants[0]
+        self._radius = self.surface_constants[0]
 
     @property
     def radius(self):
         """
         The radius of the cylinder
         """
-        return self.__radius
+        return self._radius
 
     @radius.setter
     def radius(self, radius):
         assert isinstance(radius, float)
-        self.__radius = radius
+        self._radius = radius
 
     def find_duplicate_surfaces(self, surfaces, tolerance):
         ret = []

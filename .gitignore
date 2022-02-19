@@ -2,6 +2,5 @@ __pycache__/
 build/*
 dist/*
 *egg-info/*
-*.imcnp
 *.mcnp
 *.*.swp

@@ -30,4 +30,4 @@ def parse_data(input_card, comment=None):
 
 
 def __str__(self):
-    return f"DATA CARD: {self.__words}"
+    return f"DATA CARD: {self._words}"
