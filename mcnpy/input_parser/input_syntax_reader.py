@@ -73,6 +73,11 @@ def read_data(fh, block_type=None, recursion=False):
 
     :param fh: The file handle of the input file.
     :type fh: io.TextIoWrapper
+    :param block_type: The type of block this file is in. This is only used with partial files read using the ReadCard.
+    :type block_type: BlockType
+    :param recusrion: Whether or not this is being called recursively. If True this has been called
+                         from read_data. This prevents the reading queue causing infinite recursion.
+    :type recursion: bool
     :return: MCNP_input instances, Card or Comment that represent the data in the MCNP input
     :rtype: MCNP_input
 
