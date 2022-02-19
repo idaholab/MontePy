@@ -69,7 +69,7 @@ class Cell(MCNP_Card):
                 except ValueError:
                     raise MalformedInputError(
                         input_card,
-                        f"{words[2]} can not be parsed as a material number.",
+                        f"{words[2]} can not be parsed as a material density.",
                     )
             j, param_found = self._parse_geometry(i, words)
             if param_found:
@@ -127,7 +127,7 @@ class Cell(MCNP_Card):
                 value = fragment[0:-1]
                 next_key = fragment[-1]
             if key and value:
-                self._parameters[key] = value
+                self._parameters[key.upper()] = "".join(value)
 
     @property
     def old_cell_number(self):

@@ -42,6 +42,7 @@ class CylinderParAxis(Surface):
         """
         :param coordinates: the coordinates, must be 2 long.
         """
+        assert isinstance(coordinates, list)
         assert len(coordinates) == 2
         self._coordinates = coordinates
         self._surface_constants[0:2] = coordinates

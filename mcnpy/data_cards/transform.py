@@ -127,7 +127,7 @@ class Transform(data_card.DataCard):
 
     @displacement_vector.setter
     def displacement_vector(self, vector):
-        assert isinstance(vector, np.array)
+        assert isinstance(vector, np.ndarray)
         assert len(vector) == 3
         self._displacement_vector = vector
 
@@ -142,7 +142,7 @@ class Transform(data_card.DataCard):
 
     @rotation_matrix.setter
     def rotation_matrix(self, matrix):
-        assert isinstance(matrix, np.array)
+        assert isinstance(matrix, np.ndarray)
         assert len(matrix) >= 5
         self._rotation_matrix = matrix
 
@@ -211,8 +211,8 @@ class Transform(data_card.DataCard):
             if abs(component - other.displacement_vector[i]) >= tolerance:
                 return False
 
-        if self.rotation_matrix:
-            if not other.rotation_matrix:
+        if len(self.rotation_matrix) > 0:
+            if len(other.rotation_matrix) == 0:
                 return False
             for i, component in enumerate(self.rotation_matrix):
                 if abs(component - other.rotation_matrix[i]) >= tolerance:

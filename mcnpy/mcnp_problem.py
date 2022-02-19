@@ -15,7 +15,7 @@ class MCNP_Problem:
         :type file_name: str
         """
         self._input_file = file_name
-        self._title = ""
+        self._title = None
         self._original_inputs = []
         self._cells = []
         self._surfaces = []
@@ -230,7 +230,7 @@ class MCNP_Problem:
 
     def add_cell_children_to_problem(self):
         """
-        Adds the surfaces and materials added to this problem to the 
+        Adds the surfaces and materials added to this problem to the
         internal lists to allow them to be written to file.
 
         WARNING: this does not move transforms and complement cells, and probably others.

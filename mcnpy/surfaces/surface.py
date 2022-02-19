@@ -40,9 +40,10 @@ class Surface(MCNP_Card):
 
         try:
             surface_num = int(surface_num)
+            assert surface_num > 0
             self._surface_number = surface_num
             self._old_surface_number = surface_num
-        except ValueError:
+        except (AssertionError, ValueError):
             raise MalformedInputError(
                 input_card, f"{words[i]} could not be parsed as a surface number."
             )
@@ -50,12 +51,18 @@ class Surface(MCNP_Card):
         num_finder = re.compile("\d+")
         # handle N if specified
         if num_finder.search(words[i]):
-            num = int(words[i])
-            if num > 0:
-                self._old_transform_number = num
-            elif num < 0:
-                self._old_periodic_surface = num
-            i += 1
+            try:
+                num = int(words[i])
+                if num > 0:
+                    self._old_transform_number = num
+                elif num < 0:
+                    self._old_periodic_surface = num
+                i += 1
+            except ValueError:
+                raise MalformedInputError(
+                    input_card,
+                    f"{words[i]} could not be parsed as a periodic surface or a transform.",
+                )
         # parse surface mnemonic
         try:
             self._surface_type = SurfaceType(words[i].upper())

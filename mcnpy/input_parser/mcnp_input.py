@@ -67,10 +67,10 @@ class ReadCard(Card):
     A card for the read card that reads another input file
     """
 
-    def __init__(self, card):
-        super().__init__(card.block_type, card.words)
+    def __init__(self, block_type, words):
+        super().__init__(block_type, words)
         file_finder = re.compile("file=(?P<file>[\S]+)", re.IGNORECASE)
-        for word in card.words[1:]:
+        for word in words[1:]:
             match = file_finder.match(word)
             if match:
                 self._file_name = match.group("file")
@@ -98,8 +98,13 @@ class Comment(MCNP_Input):
 
     def __str__(self):
         ret = "COMMENT:\n"
+<<<<<<< HEAD
         for line in self._lines:
             ret = ret + line
+=======
+        for line in self.__lines:
+            ret += line + "\n"
+>>>>>>> issue5ReadCard
         return ret
 
     @property
@@ -142,8 +147,13 @@ class Message(MCNP_Input):
 
     def __str__(self):
         ret = "MESSAGE:\n"
+<<<<<<< HEAD
         for line in self._lines:
             ret = ret + line
+=======
+        for line in self.__lines:
+            ret += line + "\n"
+>>>>>>> issue5ReadCard
         return ret
 
     @property
