@@ -51,7 +51,8 @@ class Transform(data_card.DataCard):
 
             except ValueError:
                 raise MalformedInputError(
-                    input_card, f"{word} can't be parsed as a displacement vector component"
+                    input_card,
+                    f"{word} can't be parsed as a displacement vector component",
                 )
 
             # parse rotation
@@ -77,6 +78,13 @@ class Transform(data_card.DataCard):
                         pass
                     elif word == "-1":
                         self._is_main_to_aux = False
+                    else:
+                        raise MalformedInputError(
+                            input_card, f"{word} can't be parsed as 1 or -1"
+                        )
+                # if no more words remain don't worry
+                except IndexError:
+                    pass
 
     @property
     def is_in_degrees(self):
