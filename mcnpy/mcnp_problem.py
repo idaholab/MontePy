@@ -20,6 +20,7 @@ class MCNP_Problem:
         self.__surfaces = []
         self.__data_cards = []
         self.__materials = []
+        self.__title = None
         self.__mcnp_version = (6.2, 0)
 
     @property
@@ -232,7 +233,7 @@ class MCNP_Problem:
 
     def add_cell_children_to_problem(self):
         """
-        Adds the surfaces and materials added to this problem to the 
+        Adds the surfaces and materials added to this problem to the
         internal lists to allow them to be written to file.
 
         WARNING: this does not move transforms and complement cells, and probably others.

@@ -25,8 +25,8 @@ class CylinderParAxis(Surface):
         ST = SurfaceType
         assert self.surface_type in [ST.C_X, ST.C_Y, ST.C_Z]
         assert len(self.surface_constants) == 3
-        self.__coordinates = self.surface_constants[0:2]
-        self.__radius = self.surface_constants[2]
+        self._coordinates = self.surface_constants[0:2]
+        self._radius = self.surface_constants[2]
 
     @property
     def coordinates(self):
@@ -35,16 +35,17 @@ class CylinderParAxis(Surface):
 
         :rytpe: list
         """
-        return self.__coordinates
+        return self._coordinates
 
     @coordinates.setter
     def coordinates(self, coordinates):
         """
         :param coordinates: the coordinates, must be 2 long.
         """
+        assert isinstance(coordinates, list)
         assert len(coordinates) == 2
-        self.__coordinates = coordinates
-        self.__surface_constants[0:2] = coordinates
+        self._coordinates = coordinates
+        self._surface_constants[0:2] = coordinates
 
     @property
     def radius(self):
@@ -53,14 +54,14 @@ class CylinderParAxis(Surface):
 
         :rtype: float
         """
-        return self.__radius
+        return self._radius
 
     @radius.setter
     def radius(self, radius):
         assert isinstance(radius, float)
         assert radius > 0
-        self.__radius = radius
-        self.__surface_constants[2] = radius
+        self._radius = radius
+        self._surface_constants[2] = radius
 
     def find_duplicate_surfaces(self, surfaces, tolerance):
         ret = []

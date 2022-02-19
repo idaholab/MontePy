@@ -37,9 +37,10 @@ class Surface(MCNP_Card):
 
         try:
             surface_num = int(surface_num)
+            assert surface_num > 0
             self.__surface_number = surface_num
             self.__old_surface_number = surface_num
-        except ValueError:
+        except (AssertionError, ValueError):
             raise MalformedInputError(
                 input_card, f"{words[i]} could not be parsed as a surface number."
             )
@@ -47,12 +48,18 @@ class Surface(MCNP_Card):
         num_finder = re.compile("\d+")
         # handle N if specified
         if num_finder.search(words[i]):
-            num = int(words[i])
-            if num > 0:
-                self.__old_transform_number = num
-            elif num < 0:
-                self.__old_periodic_surface = num
-            i += 1
+            try:
+                num = int(words[i])
+                if num > 0:
+                    self.__old_transform_number = num
+                elif num < 0:
+                    self.__old_periodic_surface = abs(num)
+                i += 1
+            except ValueError:
+                raise MalformedInputError(
+                    input_card,
+                    f"{words[i]} could not be parsed as a periodic surface or a transform.",
+                )
         # parse surface mnemonic
         try:
             self.__surface_type = SurfaceType(words[i].upper())
@@ -62,10 +69,10 @@ class Surface(MCNP_Card):
                 f"{words[i]} could not be parsed as a surface type mnemonic.",
             )
         # parse the parameters
-        self.__surface_constants = []
+        self._surface_constants = []
         for entry in words[i + 1 :]:
             try:
-                self.__surface_constants.append(fortran_float(entry))
+                self._surface_constants.append(fortran_float(entry))
             except ValueError:
                 raise MalformedInputError(
                     input_card,
@@ -117,14 +124,14 @@ class Surface(MCNP_Card):
 
         :rtype: list
         """
-        return self.__surface_constants
+        return self._surface_constants
 
     @surface_constants.setter
     def surface_constants(self, constants):
         assert isinstance(constants, list)
         for constant in constants:
             assert isinstance(constant, float)
-        self.__surface_constants = constants
+        self._surface_constants = constants
 
     @property
     def old_transform_number(self):
