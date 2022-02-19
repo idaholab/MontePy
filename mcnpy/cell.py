@@ -23,6 +23,7 @@ class Cell(MCNP_Card):
         super().__init__(comment)
         self._material = None
         self._geometry_logic_string = None
+        self._density = None
         self._surfaces = []
         self._old_surface_numbers = []
         self._complements = []
