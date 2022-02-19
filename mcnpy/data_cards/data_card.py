@@ -15,7 +15,10 @@ class DataCard(MCNP_Card):
         :type comment: Comment
         """
         super().__init__(input_card, comment)
-        self.__words = input_card.words
+        if input_card:
+            self.__words = input_card.words
+        else:
+            self.__words = []
 
     @property
     def words(self):

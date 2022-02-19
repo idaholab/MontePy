@@ -12,6 +12,7 @@ class Transform(data_card.DataCard):
     """
 
     def __init__(self, input_card=None, comment=None):
+        super().__init__(input_card, comment)
         if input_card is None:
             self.__transform_number = -1
             self.__old_transform_number = -1
@@ -20,7 +21,6 @@ class Transform(data_card.DataCard):
             self.__is_in_degrees = False
             self.__is_main_to_aux = True
         else:
-            super().__init__(input_card, comment)
             words = self.words
             i = 0
             assert re.match("\*?tr\d+", words[i].lower())
