@@ -59,7 +59,7 @@ class testDataCardClass(TestCase):
             "ksrc": "ksrc 1.0 0.0 0.0",
         }
 
-        for identifier, w in words.items():
+        for identifier, w in in_strs.items():
             for ident in [identifier, identifier.upper()]:
                 input_card = Card([w], BlockType.DATA, w.split())
                 card = parse_data(input_card)
