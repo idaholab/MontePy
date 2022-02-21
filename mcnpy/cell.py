@@ -100,7 +100,7 @@ class Cell(MCNP_Card):
                 break
             else:
                 geometry_string += word + " "
-                match = cell_finder.match(word)
+                match = cell_finder.search(word)
                 if match:
                     self._old_complement_numbers.append(int(match.group(1)))
                 else:
