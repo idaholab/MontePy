@@ -1,4 +1,6 @@
 from mcnpy.cell import Cell
+from mcnpy.cells import Cells
+from mcnpy.errors import NumberConflictError
 from mcnpy.surfaces import surface_builder
 from mcnpy.data_cards import Material, parse_data
 from mcnpy.input_parser import input_syntax_reader, block_type, mcnp_input
@@ -18,7 +20,7 @@ class MCNP_Problem:
         self._title = None
         self._message = None
         self._original_inputs = []
-        self._cells = []
+        self._cells = Cells()
         self._surfaces = []
         self._data_cards = []
         self._materials = []
@@ -49,9 +51,11 @@ class MCNP_Problem:
 
     @cells.setter
     def cells(self, cells):
-        assert isinstance(cells, list)
-        for cell in cells:
-            assert isinstance(cell, Cell)
+        assert type(cells) in [Cells, list]
+        if isinstance(cells, list):
+            for cell in cells:
+                assert isinstance(cell, Cell)
+            cells = Cells(cells)
         self._cells = cells
 
     def add_cells(self, cells):
@@ -260,6 +264,15 @@ class MCNP_Problem:
                     fh.write(line + "\n")
             lines = self.title.format_for_mcnp_input(self.mcnp_version)
             fh.write(lines[0] + "\n")
+            cell_numbers = {}
+            if self.cells.check_redundant_numbers():
+                for cell in self.cells:
+                    if cell.cell_number in cell_numbers:
+                        raise NumberConflictError(
+                            f"The cells {cell}, and {cell_numbers[cell.cell_number]}"
+                            " have the same cell number"
+                        )
+                    cell_numbers[cell.cell_number] = cell
             for cell in self.cells:
                 for line in cell.format_for_mcnp_input(self.mcnp_version):
                     fh.write(line + "\n")
