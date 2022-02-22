@@ -145,8 +145,6 @@ class testFullFileIntegration(TestCase):
         cell.complements = complements
         self.assertEqual(cell.complements, complements)
 
-    # fixing this will take a lot of work
-    @unittest.expectedFailure
     def test_problem_cells_setter(self):
         problem = copy.copy(self.simple_problem)
         cells = self.simple_problem.cells[1:]
