@@ -2,6 +2,7 @@ from mcnpy.cell import Cell
 from mcnpy.cells import Cells
 from mcnpy.errors import NumberConflictError
 from mcnpy.surfaces import surface_builder
+from mcnpy.surface_collection import Surfaces
 from mcnpy.data_cards import Material, parse_data
 from mcnpy.input_parser import input_syntax_reader, block_type, mcnp_input
 
@@ -21,7 +22,7 @@ class MCNP_Problem:
         self._message = None
         self._original_inputs = []
         self._cells = Cells()
-        self._surfaces = []
+        self._surfaces = Surfaces()
         self._data_cards = []
         self._materials = []
         self._mcnp_version = (6.2, 0)
@@ -247,7 +248,7 @@ class MCNP_Problem:
                 materials.add(cell.material)
         surfaces = sorted(list(surfaces))
         materials = sorted(list(materials))
-        self._surfaces = surfaces
+        self._surfaces = Surfaces(surfaces)
         self._materials = materials
         self._data_cards = list(set(self._data_cards + materials))
 
@@ -278,6 +279,15 @@ class MCNP_Problem:
                     fh.write(line + "\n")
             # block terminator
             fh.write("\n")
+            surf_numbers = {}
+            if self.surfaces.check_redundant_numbers():
+                for surface in self.surfaces:
+                    if surface.surface_number in surf_numbers:
+                        raise NumberConflictError(
+                            f"The surfaces {surface}, and {surf_numbers[surface.surface_number]}"
+                            " have the same cell number"
+                        )
+                    surf_numbers[surface.surface_number] = surface
             for surface in self.surfaces:
                 for line in surface.format_for_mcnp_input(self.mcnp_version):
                     fh.write(line + "\n")

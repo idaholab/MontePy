@@ -1,8 +1,10 @@
 import itertools
+from mcnpy.cells import Cells
 from mcnpy.errors import *
 from mcnpy.mcnp_card import MCNP_Card
 from mcnpy.data_cards.material import Material
 from mcnpy.surfaces.surface import Surface
+from mcnpy.surface_collection import Surfaces
 from mcnpy.utilities import *
 import re
 
@@ -26,9 +28,9 @@ class Cell(MCNP_Card):
         self._old_mat_number = None
         self._geometry_logic_string = None
         self._density = None
-        self._surfaces = []
+        self._surfaces = Surfaces()
         self._old_surface_numbers = []
-        self._complements = []
+        self._complements = Cells()
         self._old_complement_numbers = []
         self._parameters = {}
         if input_card:
@@ -228,9 +230,11 @@ class Cell(MCNP_Card):
 
     @surfaces.setter
     def surfaces(self, surfs):
-        assert isinstance(surfs, list)
-        for surf in surfs:
-            assert isinstance(surf, Surface)
+        assert type(surfs) in [Surfaces, list]
+        if isinstance(surfs, list):
+            for surf in surfs:
+                assert isinstance(surf, Surface)
+            surfs = Surfaces(surfs)
         self._mutated = True
         self._surfaces = surfs
 
@@ -285,9 +289,11 @@ class Cell(MCNP_Card):
 
     @complements.setter
     def complements(self, complements):
-        assert isinstance(complements, list)
-        for cell in complements:
-            assert isinstance(cell, Cell)
+        assert type(complements) in (Cells, list)
+        if isinstance(complements, list):
+            for cell in complements:
+                assert isinstance(cell, Cell)
+            complements = Cells(complements)
         self._mutated = True
         self._complements = complements
 
@@ -300,8 +306,8 @@ class Cell(MCNP_Card):
         :param surface_dict: a dictionary mapping the surface number to the Surface object.
         :type surface_dict: dict
         """
-        self._surfaces = []
-        self._complements = []
+        self._surfaces = Surfaces()
+        self._complements = Cells()
         if self._old_mat_number is not None:
             if self._old_mat_number > 0:
                 try:
