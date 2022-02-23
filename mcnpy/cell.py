@@ -1,8 +1,10 @@
 import itertools
+from mcnpy.cells import Cells
 from mcnpy.errors import *
 from mcnpy.mcnp_card import MCNP_Card
 from mcnpy.data_cards.material import Material
 from mcnpy.surfaces.surface import Surface
+from mcnpy.surface_collection import Surfaces
 from mcnpy.utilities import *
 import re
 
@@ -24,9 +26,9 @@ class Cell(MCNP_Card):
         self._material = None
         self._geometry_logic_string = None
         self._density = None
-        self._surfaces = []
+        self._surfaces = Surfaces()
         self._old_surface_numbers = []
-        self._complements = []
+        self._complements = Cells()
         self._old_complement_numbers = []
         self._parameters = {}
         if input_card:
