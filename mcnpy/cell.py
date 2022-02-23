@@ -271,6 +271,12 @@ class Cell(MCNP_Card):
         """
         return self._parameters
 
+    @parameters.setter
+    def parameters(self, params):
+        assert isinstance(params, dict)
+        self._parameters = params
+        self._mutated = True
+
     @property
     def complements(self):
         """
