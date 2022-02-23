@@ -117,8 +117,6 @@ class testFullFileIntegration(TestCase):
         with self.assertRaises(AssertionError):
             cell.material = 5
 
-    # fixing this will take a lot of work
-    @unittest.expectedFailure
     def test_cell_surfaces_setter(self):
         cell = self.simple_problem.cells[0]
         surfaces = self.simple_problem.surfaces
@@ -131,8 +129,6 @@ class testFullFileIntegration(TestCase):
         cell.surfaces = surfaces
         self.assertEqual(cell.surfaces, surfaces)
 
-    # fixing this will take a lot of work
-    @unittest.expectedFailure
     def test_cell_complements_setter(self):
         cell = self.simple_problem.cells[0]
         complements = self.simple_problem.cells[1:]
