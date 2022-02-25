@@ -158,3 +158,25 @@ bar
             [in_str], mcnpy.input_parser.block_type.BlockType.CELL, in_str.split()
         )
         self.assertEqual(str(card), "CARD: BlockType.CELL: ['1', '0', '-1']")
+
+    def testShortcutExpansion(self):
+        tests = {
+            ("M", "1", "3M", "2r"): ["1", "3", "3", "3"],
+            ("M", "0.01", "2ILOG", "10"): ["0.01", "0.1", "1", "10"],
+            ("M", "1", "3M", "I", "4"): ["1", "3", "3.5", "4"],
+            ("M", "1", "3M", "3M"): ["1", "3", "9"],
+            ("M", "1", "2R", "2I", "2.5"): ["1", "1", "1", "1.5", "2", "2.5"],
+            ("M", "1", "R", "2m"): ["1", "1", "2"],
+            ("M", "1", "R", "R"): ["1", "1", "1"],
+            ("M", "1", "2i", "4", "3m"): ["1", "2", "3", "4", "12"],
+            ("M", "1", "2i", "4", "2i", "10"): ["1", "2", "3", "4", "6", "8", "10"],
+        }
+        invalid = [("3J", "4R"), ("1", "4I", "3M"), ("1", "4I", "J")]
+
+        parser = mcnpy.input_parser.mcnp_input.parse_card_shortcuts
+        for test, answer in tests.items():
+            parsed = parser(list(test))
+            self.assertEqual(parsed, answer)
+        for test in invalid:
+            with self.assertRaises(mcnpy.errors.MalformedInputError):
+                parser(list(test))
