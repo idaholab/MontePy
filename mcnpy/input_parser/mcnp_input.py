@@ -92,19 +92,22 @@ class Card(MCNP_Input):
 
 
 def parse_card_shortcuts(words, card=None):
-    number_parser = re.compile("([\d\.]+)")
+    number_parser = re.compile("(\d+\.*\d*[e\+\-]*\d*)")
     ret = []
     for i, word in enumerate(words):
         if i == 0:
+            ret.append(word)
             continue
         letters = "".join(c for c in word if c.isalpha()).lower()
         if len(letters) >= 1:
-            number = number_parser.match(word)
+            number = number_parser.search(word)
             if number:
                 number = float(number.group(1))
             if letters == "r":
                 try:
                     last_val = ret[-1]
+                    if last_val is None:
+                        raise IndexError
                     if number:
                         number = int(number)
                     else:
@@ -116,8 +119,13 @@ def parse_card_shortcuts(words, card=None):
                     )
             elif letters == "i":
                 try:
-                    begin = float(ret[-1])
-                    end = float(words[i + 1])
+
+                    begin = float(number_parser.search(ret[-1]).group(1))
+                    for char in ["i", "m", "r", "i", "log"]:
+                        if char in words[i + 1].lower():
+                            raise IndexError
+
+                    end = float(number_parser.search(words[i + 1]).group(1))
                     if number:
                         number = int(number)
                     else:
@@ -126,23 +134,23 @@ def parse_card_shortcuts(words, card=None):
                     for i in range(number):
                         new_val = begin + spacing * (i + 1)
                         ret.append(f"{new_val:g}")
-                except IndexError:
+                except (IndexError, TypeError, ValueError, AttributeError) as e:
                     raise MalformedInputError(
                         card,
                         "The interpolate shortcut must come between two values",
                     )
             elif letters == "m":
                 try:
-                    last_val = ret[-1]
+                    last_val = float(number_parser.search(ret[-1]).group(1))
                     if number is None:
                         raise MalformedInputError(
                             card,
                             "The multiply shortcut must have a multiplying value",
                         )
-                    new_val = number * float(last_val)
+                    new_val = number * last_val
                     ret.append(f"{new_val:g}")
 
-                except IndexError:
+                except (IndexError, TypeError, ValueError, AttributeError) as e:
                     raise MalformedInputError(
                         card, "The multiply shortcut must come after a value"
                     )
@@ -152,12 +160,13 @@ def parse_card_shortcuts(words, card=None):
                     number = int(number)
                 else:
                     number = 1
-
                 ret += [None] * number
             elif letters in {"ilog", "log"}:
                 try:
-                    begin = math.log(float(ret[-1]), 10)
-                    end = math.log(float(words[i + 1]), 10)
+                    begin = math.log(float(number_parser.search(ret[-1]).group(1)), 10)
+                    end = math.log(
+                        float(number_parser.search(words[i + 1]).group(1)), 10
+                    )
                     if number:
                         number = int(number)
                     else:
@@ -167,11 +176,13 @@ def parse_card_shortcuts(words, card=None):
                         new_val = 10 ** (begin + spacing * (i + 1))
                         ret.append(f"{new_val:g}")
 
-                except IndexError:
+                except (IndexError, TypeError, ValueError, AttributeError) as e:
                     raise MalformedInputError(
                         card,
                         "The log interpolation shortcut must come between two values",
                     )
+            else:
+                ret.append(word)
         else:
             ret.append(word)
     return ret
