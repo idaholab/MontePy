@@ -250,7 +250,7 @@ class MCNP_Problem:
         materials = sorted(list(materials))
         self._surfaces = Surfaces(surfaces)
         self._materials = materials
-        self._data_cards = list(set(self._data_cards + materials))
+        self._data_cards = sorted(list(set(self._data_cards + materials)))
 
     def write_to_file(self, new_problem):
         """

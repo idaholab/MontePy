@@ -48,3 +48,22 @@ class DataCard(MCNP_Card):
 
     def __str__(self):
         return f"DATA CARD: {self._words}"
+
+    def __split_name__(self):
+        name = self._words[0]
+        names = ["".join(c for c in name if c.isalpha()) or None,
+                "".join(c for c in name if c.isdigit()) or None]
+        if names[1]:
+            names[1] = int(names[1])
+        return names
+
+    def __lt__(self, other):
+        self_parts = self.__split_name__()
+        other_parts = other.__split_name__()
+        type_comp = self_parts[0] < other_parts[0]
+        if type_comp:
+            return type_comp
+        elif self_parts[0] > other_parts[0]:
+            return type_comp
+        else: #otherwise first part is equal
+            return self_parts[1] < other_parts[1]
