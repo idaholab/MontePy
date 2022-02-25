@@ -1,5 +1,7 @@
 from abc import ABC, abstractmethod
 from .block_type import BlockType
+import math
+from mcnpy.errors import *
 import re
 
 
@@ -85,6 +87,92 @@ class Card(MCNP_Input):
 
     def format_for_mcnp_input(self, mcnp_version):
         pass
+
+
+def parse_card_shortcuts(words, card=None):
+    number_parser = re.compile("([\d\.]+)")
+    ret = []
+    for i, word in enumerate(words):
+        if i == 0:
+            continue
+        letters = "".join(c for c in word if c.isalpha()).lower()
+        if len(letters) >= 1:
+            number = number_parser.match(word)
+            if number:
+                number = float(number.group(1))
+            if letters == "r":
+                try:
+                    last_val = ret[-1]
+                    if number:
+                        number = int(number)
+                    else:
+                        number = 1
+                    ret += [last_val] * number
+                except IndexError:
+                    raise MalformedInputError(
+                        card, "The repeat shortcut must come after a value"
+                    )
+            elif letters == "i":
+                try:
+                    begin = float(ret[-1])
+                    end = float(words[i + 1])
+                    if number:
+                        number = int(number)
+                    else:
+                        number = 1
+                    spacing = (end - begin) / (number + 1)
+                    for i in range(number):
+                        new_val = begin + spacing * (i + 1)
+                        ret.append(f"{new_val:g}")
+                except IndexError:
+                    raise MalformedInputError(
+                        card,
+                        "The interpolate shortcut must come between two values",
+                    )
+            elif letters == "m":
+                try:
+                    last_val = ret[-1]
+                    if number is None:
+                        raise MalformedInputError(
+                            card,
+                            "The multiply shortcut must have a multiplying value",
+                        )
+                    new_val = number * float(last_val)
+                    ret.append(f"{new_val:g}")
+
+                except IndexError:
+                    raise MalformedInputError(
+                        card, "The multiply shortcut must come after a value"
+                    )
+
+            elif letters == "j":
+                if number:
+                    number = int(number)
+                else:
+                    number = 1
+
+                ret += [None] * number
+            elif letters in {"ilog", "log"}:
+                try:
+                    begin = math.log(float(ret[-1]), 10)
+                    end = math.log(float(words[i + 1]), 10)
+                    if number:
+                        number = int(number)
+                    else:
+                        number = 1
+                    spacing = (end - begin) / (number + 1)
+                    for i in range(number):
+                        new_val = 10 ** (begin + spacing * (i + 1))
+                        ret.append(f"{new_val:g}")
+
+                except IndexError:
+                    raise MalformedInputError(
+                        card,
+                        "The log interpolation shortcut must come between two values",
+                    )
+        else:
+            ret.append(word)
+    return ret
 
 
 class ReadCard(Card):
