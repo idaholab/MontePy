@@ -63,8 +63,10 @@ class Card(MCNP_Input):
         """
         super().__init__(input_lines)
         assert isinstance(block_type, BlockType)
+        # setting twice so if error is found in parsing for convenient errors
         self._words = words
         self._block_type = block_type
+        self._words = parse_card_shortcuts(words, self)
 
     def __str__(self):
         return f"CARD: {self._block_type}: {self._words}"
