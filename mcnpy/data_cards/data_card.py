@@ -51,8 +51,10 @@ class DataCard(MCNP_Card):
 
     def __split_name__(self):
         name = self._words[0]
-        names = ["".join(c for c in name if c.isalpha()) or None,
-                "".join(c for c in name if c.isdigit()) or None]
+        names = [
+            "".join(c for c in name if c.isalpha()) or None,
+            "".join(c for c in name if c.isdigit()) or None,
+        ]
         if names[1]:
             names[1] = int(names[1])
         return names
@@ -65,5 +67,5 @@ class DataCard(MCNP_Card):
             return type_comp
         elif self_parts[0] > other_parts[0]:
             return type_comp
-        else: #otherwise first part is equal
+        else:  # otherwise first part is equal
             return self_parts[1] < other_parts[1]

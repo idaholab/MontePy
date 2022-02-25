@@ -171,7 +171,6 @@ class Material(data_card.DataCard):
     def __repr__(self):
         return self.__str__()
 
-
     def format_for_mcnp_input(self, mcnp_version):
         ret = mcnp_card.MCNP_Card.format_for_mcnp_input(self, mcnp_version)
         if self.mutated:
