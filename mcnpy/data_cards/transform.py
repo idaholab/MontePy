@@ -116,6 +116,9 @@ class Transform(data_card.DataCard):
     def transform_number(self, num):
         assert isinstance(num, int)
         self._transform_number = num
+        self._words = [f"TR{num}"]
+        self._mutated = True
+
 
     @property
     def old_transform_number(self):
