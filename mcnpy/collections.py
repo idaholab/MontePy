@@ -34,6 +34,22 @@ class Collection(ABC):
         """
         return len(self._objects) != len(set(self.numbers))
 
+    def pop(self, pos=1):
+        """
+        Pop the final items off of the collection
+
+        :param pos: The distance from the end of the list to remove.
+        :type pos: int
+        :return: the final element(s_
+        """
+        assert isinstance(pos, int)
+        assert pos > 0
+        return self._objects.pop(pos)
+
+    def extend(self, other_list):
+        assert isinstance(other_list, list)
+        self._objects.extend(other_list)
+
     def remove(self, delete):
         self._objects.remove(delete)
 
@@ -50,6 +66,9 @@ class Collection(ABC):
 
     def __getitem__(self, i):
         return self._objects[i]
+
+    def __delitem__(self, idx):
+        del self._objects[idx]
 
     def __len__(self):
         return len(self._objects)
