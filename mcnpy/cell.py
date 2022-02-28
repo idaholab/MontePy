@@ -117,7 +117,7 @@ class Cell(MCNP_Card):
         fragments = params_string.split("=")
         key = ""
         next_key = ""
-        value = ""
+        value = [""]
         for i, fragment in enumerate(fragments):
             fragment = fragment.split()
             if i == 0:
@@ -132,7 +132,7 @@ class Cell(MCNP_Card):
                 value = fragment[0:-1]
                 next_key = fragment[-1]
             if key and value:
-                self._parameters[key.upper()] = "".join(value)
+                self._parameters[key.upper()] = " ".join(value)
 
     @property
     def old_cell_number(self):
