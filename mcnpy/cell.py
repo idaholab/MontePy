@@ -470,7 +470,12 @@ class Cell(MCNP_Card):
             )
             if self.parameters:
                 strings = []
-                for key, value in self.parameters.items():
+                keys = list(self.parameters.keys())
+                if "FILL" in keys:
+                    keys.remove("FILL")
+                    keys.append("FILL")
+                for key in keys:
+                    value = self.parameters[key]
                     if isinstance(value, list):
                         value = " ".join(value)
                     strings.append(f"{key}={value}")
