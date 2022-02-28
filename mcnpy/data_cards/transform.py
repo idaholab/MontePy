@@ -119,7 +119,6 @@ class Transform(data_card.DataCard):
         self._words = [f"TR{num}"]
         self._mutated = True
 
-
     @property
     def old_transform_number(self):
         """

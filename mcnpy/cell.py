@@ -125,7 +125,7 @@ class Cell(MCNP_Card):
             elif i == len(fragments) - 1:
                 if next_key:
                     key = next_key
-                value = fragment[0]
+                value = fragment
             else:
                 if next_key:
                     key = next_key
