@@ -53,6 +53,10 @@ class MCNP_Card(ABC):
         self._mutated = True
         self._comment = comment
 
+    @comment.deleter
+    def comment(self):
+        self._comment = None
+
     @property
     def input_lines(self):
         """The raw input lines read from the input file"""
