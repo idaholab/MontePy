@@ -285,7 +285,7 @@ class MCNP_Problem:
                     if surface.surface_number in surf_numbers:
                         raise NumberConflictError(
                             f"The surfaces {surface}, and {surf_numbers[surface.surface_number]}"
-                            " have the same cell number"
+                            " have the same surface number"
                         )
                     surf_numbers[surface.surface_number] = surface
             for surface in self.surfaces:
