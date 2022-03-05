@@ -76,3 +76,6 @@ class Collection(ABC):
     @abstractmethod
     def __iadd__(self, other):
         pass
+
+    def __contains__(self, element):
+        return any(x is element for x in self._objects)
