@@ -32,7 +32,7 @@ class Collection(ABC):
         :returns: true if there are collisions of numbers
         :rtype: bool
         """
-        return len(self._objects) != len(set(self.numbers))
+        return len(self._objects) > len(set(self.numbers()))
 
     def pop(self, pos=1):
         """

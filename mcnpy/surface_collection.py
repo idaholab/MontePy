@@ -6,10 +6,8 @@ class Surfaces(Collection):
     def __init__(self, surfaces=None):
         super().__init__(Surface, surfaces)
 
-    @property
     def numbers(self):
-        for surf in self._objects:
-            yield surf.surface_number
+        return [s.surface_number for s in self._objects]
 
     def append(self, surface):
         assert isinstance(surface, Surface)

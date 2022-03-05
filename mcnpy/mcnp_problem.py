@@ -112,6 +112,13 @@ class MCNP_Problem:
         :rtype: list
         """
         return self._materials
+    
+    @materials.setter
+    def materials(self, mats):
+        assert isinstance(mats, list)
+        for mat in mats:
+            assert isinstance(mat, Material)
+        self._materials = mats
 
     @property
     def data_cards(self):
