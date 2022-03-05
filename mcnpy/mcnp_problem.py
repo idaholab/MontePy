@@ -112,7 +112,7 @@ class MCNP_Problem:
         :rtype: list
         """
         return self._materials
-    
+
     @materials.setter
     def materials(self, mats):
         assert isinstance(mats, list)

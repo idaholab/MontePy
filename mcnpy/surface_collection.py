@@ -6,6 +6,7 @@ class Surfaces(Collection):
     def __init__(self, surfaces=None):
         super().__init__(Surface, surfaces)
 
+    @property
     def numbers(self):
         return [s.surface_number for s in self._objects]
 
