@@ -8,7 +8,8 @@ class Surfaces(Collection):
 
     @property
     def numbers(self):
-        return [s.surface_number for s in self._objects]
+        for surf in self._objects:
+            yield s.surface_number
 
     def append(self, surface):
         assert isinstance(surface, Surface)
