@@ -9,7 +9,7 @@ class Surfaces(Collection):
     @property
     def numbers(self):
         for surf in self._objects:
-            yield s.surface_number
+            yield surf.surface_number
 
     def append(self, surface):
         assert isinstance(surface, Surface)
