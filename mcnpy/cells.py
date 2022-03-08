@@ -28,5 +28,8 @@ class Cells(Collection):
         assert type(other) in [Cells, list]
         for cell in other:
             assert isinstance(cell, mcnpy.Cell)
-        self._objects += other._objects
+        if isinstance(other, Cells):
+            self._objects += other._objects
+        else:
+            self._objects += other
         return self
