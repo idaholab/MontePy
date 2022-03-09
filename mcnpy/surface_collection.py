@@ -19,5 +19,8 @@ class Surfaces(Collection):
         assert type(other) in [Surfaces, list]
         for surface in other:
             assert isinstance(surface, Surface)
-        self._objects += other._objects
+        if isinstance(other, Surfaces):
+            self._objects += other._objects
+        else:
+            self._objects += other
         return self
