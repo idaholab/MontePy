@@ -302,7 +302,7 @@ class MCNP_Problem:
                             f"The Materials {mat}, and {mat_numbers[mat.material_number]}"
                             " have the same material number"
                         )
-                    mat_numbers[mat.material_number] = surface
+                    mat_numbers[mat.material_number] = mat
             for card in self.data_cards:
                 for line in card.format_for_mcnp_input(self.mcnp_version):
                     fh.write(line + "\n")
