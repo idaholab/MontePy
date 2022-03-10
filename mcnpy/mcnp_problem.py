@@ -1,6 +1,7 @@
 from mcnpy.cell import Cell
 from mcnpy.cells import Cells
 from mcnpy.errors import NumberConflictError
+from mcnpy.materials import Materials
 from mcnpy.surfaces import surface_builder
 from mcnpy.surface_collection import Surfaces
 from mcnpy.data_cards import Material, parse_data
@@ -24,7 +25,7 @@ class MCNP_Problem:
         self._cells = Cells()
         self._surfaces = Surfaces()
         self._data_cards = []
-        self._materials = []
+        self._materials = Materials()
         self._mcnp_version = (6.2, 0)
 
     @property
@@ -267,6 +268,7 @@ class MCNP_Problem:
             fh.write(lines[0] + "\n")
             cell_numbers = {}
             if self.cells.check_redundant_numbers():
+                # find the problem cells
                 for cell in self.cells:
                     if cell.cell_number in cell_numbers:
                         raise NumberConflictError(
@@ -285,14 +287,22 @@ class MCNP_Problem:
                     if surface.surface_number in surf_numbers:
                         raise NumberConflictError(
                             f"The surfaces {surface}, and {surf_numbers[surface.surface_number]}"
-                            " have the same cell number"
+                            " have the same surface number"
                         )
                     surf_numbers[surface.surface_number] = surface
             for surface in self.surfaces:
                 for line in surface.format_for_mcnp_input(self.mcnp_version):
                     fh.write(line + "\n")
             fh.write("\n")
-
+            mat_numbers = {}
+            if self.materials.check_redundant_numbers():
+                for mat in self.materials:
+                    if mat.material_number in mat_numbers:
+                        raise NumberConflictError(
+                            f"The Materials {mat}, and {mat_numbers[mat.material_number]}"
+                            " have the same material number"
+                        )
+                    mat_numbers[mat.material_number] = surface
             for card in self.data_cards:
                 for line in card.format_for_mcnp_input(self.mcnp_version):
                     fh.write(line + "\n")
