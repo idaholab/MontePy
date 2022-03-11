@@ -114,6 +114,13 @@ class MCNP_Problem:
         """
         return self._materials
 
+    @materials.setter
+    def materials(self, mats):
+        assert type(mats) in [list, Materials]
+        if isinstance(mats, list):
+            mats = Materials(mats)
+        self._materials = mats
+
     @property
     def data_cards(self):
         """
