@@ -75,7 +75,7 @@ class Material(data_card.DataCard):
             self._parameter_string = param_str
 
     @property
-    def old_material_number(self):
+    def old_number(self):
         """
         The material number that was used in the read file
 
@@ -84,7 +84,7 @@ class Material(data_card.DataCard):
         return self._old_material_number
 
     @property
-    def material_number(self):
+    def number(self):
         """
         The number to use to identify the material by
 
@@ -92,8 +92,8 @@ class Material(data_card.DataCard):
         """
         return self._material_number
 
-    @material_number.setter
-    def material_number(self, number):
+    @number.setter
+    def number(self, number):
         assert isinstance(number, int)
         assert number > 0
         self._mutated = True
@@ -152,12 +152,12 @@ class Material(data_card.DataCard):
         """
         for card in data_cards:
             if isinstance(card, thermal_scattering.ThermalScatteringLaw):
-                if card.old_material_number == self.material_number:
+                if card.old_number == self.number:
                     self._thermal_scattering = card
                     card._parent_material = self
 
     def __str__(self):
-        ret = f"MATERIAL: {self.material_number} fractions: "
+        ret = f"MATERIAL: {self.number} fractions: "
         if self.is_atom_fraction:
             ret += "atom\n"
         else:
@@ -178,7 +178,7 @@ class Material(data_card.DataCard):
             first_component = self.material_components[sorted_isotopes[0]]
 
             ret.append(
-                f"m{self.material_number:<9}{str(first_component.isotope):>8}{first_component.fraction:>12.4g}"
+                f"m{self.number:<9}{str(first_component.isotope):>8}{first_component.fraction:>12.4g}"
             )
             for isotope in sorted_isotopes[1:]:  # skips the first
                 component = self.material_components[isotope]
@@ -201,7 +201,7 @@ class Material(data_card.DataCard):
                 (temp_hash, str(isotope), self.material_components[isotope].fraction)
             )
 
-        return hash((temp_hash, self.material_number))
+        return hash((temp_hash, self.number))
 
     def __eq__(self, other):
         return hash(self) == hash(other)

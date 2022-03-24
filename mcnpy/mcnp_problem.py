@@ -207,11 +207,11 @@ class MCNP_Problem:
         surface_dict = {}
         cell_dict = {}
         for mat in self._materials:
-            material_dict[mat.old_material_number] = mat
+            material_dict[mat.old_number] = mat
         for surface in self._surfaces:
-            surface_dict[surface.old_surface_number] = surface
+            surface_dict[surface.old_number] = surface
         for cell in self._cells:
-            cell_dict[cell.old_cell_number] = cell
+            cell_dict[cell.old_number] = cell
         # update links
         for cell in self._cells:
             cell.update_pointers(cell_dict, material_dict, surface_dict)
@@ -277,12 +277,12 @@ class MCNP_Problem:
             if self.cells.check_redundant_numbers():
                 # find the problem cells
                 for cell in self.cells:
-                    if cell.cell_number in cell_numbers:
+                    if cell.number in cell_numbers:
                         raise NumberConflictError(
-                            f"The cells {cell}, and {cell_numbers[cell.cell_number]}"
+                            f"The cells {cell}, and {cell_numbers[cell.number]}"
                             " have the same cell number"
                         )
-                    cell_numbers[cell.cell_number] = cell
+                    cell_numbers[cell.number] = cell
             for cell in self.cells:
                 for line in cell.format_for_mcnp_input(self.mcnp_version):
                     fh.write(line + "\n")
@@ -291,12 +291,12 @@ class MCNP_Problem:
             surf_numbers = {}
             if self.surfaces.check_redundant_numbers():
                 for surface in self.surfaces:
-                    if surface.surface_number in surf_numbers:
+                    if surface.number in surf_numbers:
                         raise NumberConflictError(
-                            f"The surfaces {surface}, and {surf_numbers[surface.surface_number]}"
+                            f"The surfaces {surface}, and {surf_numbers[surface.number]}"
                             " have the same surface number"
                         )
-                    surf_numbers[surface.surface_number] = surface
+                    surf_numbers[surface.number] = surface
             for surface in self.surfaces:
                 for line in surface.format_for_mcnp_input(self.mcnp_version):
                     fh.write(line + "\n")
@@ -304,12 +304,12 @@ class MCNP_Problem:
             mat_numbers = {}
             if self.materials.check_redundant_numbers():
                 for mat in self.materials:
-                    if mat.material_number in mat_numbers:
+                    if mat.number in mat_numbers:
                         raise NumberConflictError(
-                            f"The Materials {mat}, and {mat_numbers[mat.material_number]}"
+                            f"The Materials {mat}, and {mat_numbers[mat.number]}"
                             " have the same material number"
                         )
-                    mat_numbers[mat.material_number] = mat
+                    mat_numbers[mat.number] = mat
             for card in self.data_cards:
                 for line in card.format_for_mcnp_input(self.mcnp_version):
                     fh.write(line + "\n")

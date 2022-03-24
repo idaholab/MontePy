@@ -135,7 +135,7 @@ class Cell(MCNP_Card):
                 self._parameters[key.upper()] = "".join(value)
 
     @property
-    def old_cell_number(self):
+    def old_number(self):
         """
         The original cell number provided in the input file
 
@@ -144,7 +144,7 @@ class Cell(MCNP_Card):
         return self._old_cell_number
 
     @property
-    def cell_number(self):
+    def number(self):
         """
         The current cell number that will be written out to a new input.
 
@@ -152,8 +152,8 @@ class Cell(MCNP_Card):
         """
         return self._cell_number
 
-    @cell_number.setter
-    def cell_number(self, number):
+    @number.setter
+    def number(self, number):
         assert isinstance(number, int)
         assert number > 0
         self._mutated = True
@@ -320,7 +320,7 @@ class Cell(MCNP_Card):
                     self._material = material_dict[self._old_mat_number]
                 except KeyError:
                     raise BrokenObjectLinkError(
-                        "Cell", self.cell_number, "Material", self.old_mat_number
+                        "Cell", self.number, "Material", self.old_mat_number
                     )
             else:
                 self._material = None
@@ -331,7 +331,7 @@ class Cell(MCNP_Card):
                     self._surfaces.append(surface_dict[surface_number])
                 except KeyError:
                     raise BrokenObjectLinkError(
-                        "Cell", self.cell_number, "Surface", surface_number
+                        "Cell", self.number, "Surface", surface_number
                     )
 
         if self._old_complement_numbers:
@@ -340,7 +340,7 @@ class Cell(MCNP_Card):
                     self._complements.append(cell_dict[complement_number])
                 except KeyError:
                     raise BrokenObjectLinkError(
-                        "Cell", self.cell_number, "Complement Cell", complement_number
+                        "Cell", self.number, "Complement Cell", complement_number
                     )
 
     def update_geometry_logic_string(self):
@@ -352,15 +352,15 @@ class Cell(MCNP_Card):
         matching_surfaces = {}
         matching_complements = {}
         for cell in self.complements:
-            if cell.old_cell_number:
-                matching_complements[cell.old_cell_number] = cell.cell_number
+            if cell.old_number:
+                matching_complements[cell.old_number] = cell.number
             else:
-                matching_complements[cell.cell_number] = cell.cell_number
+                matching_complements[cell.number] = cell.number
         for surface in self.surfaces:
-            if surface.old_surface_number:
-                matching_surfaces[surface.old_surface_number] = surface.surface_number
+            if surface.old_number:
+                matching_surfaces[surface.old_number] = surface.number
             else:
-                matching_surfaces[surface.surface_number] = surface.surface_number
+                matching_surfaces[surface.number] = surface.number
         self._update_geometry_logic_by_map(matching_surfaces, matching_complements)
 
     def _update_geometry_logic_by_map(
@@ -430,11 +430,11 @@ class Cell(MCNP_Card):
             matching_surfaces = {}
             for dead_surface in deleting_dict:
                 if dead_surface in self.surfaces:
-                    matching_surfaces[dead_surface.surface_number] = deleting_dict[
+                    matching_surfaces[dead_surface.number] = deleting_dict[
                         dead_surface
-                    ].surface_number
-                    old_old = dead_surface.old_surface_number
-                    new_old = deleting_dict[dead_surface].old_surface_number
+                    ].number
+                    old_old = dead_surface.old_number
+                    new_old = deleting_dict[dead_surface].old_number
                     self._old_surface_numbers = [
                         new_old if item == old_old else item
                         for item in self._old_surface_numbers
@@ -453,7 +453,7 @@ class Cell(MCNP_Card):
         ret = super().format_for_mcnp_input(mcnp_version)
         if mutated:
             self.update_geometry_logic_string()
-            buffList = [str(self.cell_number)]
+            buffList = [str(self.number)]
             if self.material:
                 buffList.append(str(self.material.material_number))
                 dens = 0
@@ -494,7 +494,7 @@ class Cell(MCNP_Card):
         return ret
 
     def __lt__(self, other):
-        return self.cell_number < other.cell_number
+        return self.number < other.number
 
     def __repr__(self):
         return self.__str__()
