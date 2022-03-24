@@ -25,12 +25,12 @@ class testFullFileIntegration(TestCase):
     def test_material_parsing(self):
         mat_numbers = [1, 2, 3]
         for i, mat in enumerate(self.simple_problem.materials):
-            self.assertEqual(mat.material_number, mat_numbers[i])
+            self.assertEqual(mat.number, mat_numbers[i])
 
     def test_surface_parsing(self):
         surf_numbers = [1000, 1005, 1010]
         for i, surf in enumerate(self.simple_problem.surfaces):
-            self.assertEqual(surf.surface_number, surf_numbers[i])
+            self.assertEqual(surf.number, surf_numbers[i])
 
     def test_data_card_parsing(self):
         M = material.Material
@@ -51,7 +51,7 @@ class testFullFileIntegration(TestCase):
         cells = self.simple_problem.cells
         complements = [set()] * 4 + [{cells[3]}]
         for i, cell in enumerate(self.simple_problem.cells):
-            self.assertEqual(cell.cell_number, cell_numbers[i])
+            self.assertEqual(cell.number, cell_numbers[i])
             self.assertEqual(cell.material, mat_answer[i])
             surfaces = set(cell.surfaces)
             self.assertTrue(surfaces.union(surf_answer[i]) == surfaces)
@@ -91,15 +91,15 @@ class testFullFileIntegration(TestCase):
             self.simple_problem.write_to_file(out)
             test_problem = mcnpy.read_input(out)
             for i, cell in enumerate(self.simple_problem.cells):
-                self.assertEqual(cell.cell_number, test_problem.cells[i].cell_number)
+                self.assertEqual(cell.number, test_problem.cells[i].number)
             for i, surf in enumerate(self.simple_problem.surfaces):
                 self.assertEqual(
-                    surf.surface_number, test_problem.surfaces[i].surface_number
+                    surf.number, test_problem.surfaces[i].number
                 )
             for i, data in enumerate(self.simple_problem.data_cards):
                 if isinstance(data, material.Material):
                     self.assertEqual(
-                        data.material_number, test_problem.data_cards[i].material_number
+                        data.number, test_problem.data_cards[i].number
                     )
                 else:
                     self.assertEqual(data.words, test_problem.data_cards[i].words)

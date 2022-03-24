@@ -24,8 +24,8 @@ class testMaterialClass(TestCase):
         in_str = "M20 1001.80c 0.5 8016.80c 0.5"
         input_card = Card([in_str], BlockType.DATA, in_str.split())
         material = Material(input_card, None)
-        self.assertEqual(material.material_number, 20)
-        self.assertEqual(material.old_material_number, 20)
+        self.assertEqual(material.number, 20)
+        self.assertEqual(material.old_number, 20)
         self.assertTrue(material.is_atom_fraction)
         for component in material.material_components:
             self.assertEqual(material.material_components[component].fraction, 0.5)
@@ -58,10 +58,10 @@ class testMaterialClass(TestCase):
         in_str = "M20 1001.80c 0.5 8016.80c 0.5"
         input_card = Card([in_str], BlockType.DATA, in_str.split())
         material = Material(input_card, None)
-        material.material_number = 30
-        self.assertEqual(material.material_number, 30)
+        material.number = 30
+        self.assertEqual(material.number, 30)
         with self.assertRaises(AssertionError):
-            material.material_number = "foo"
+            material.number = "foo"
 
     def test_material_str(self):
         in_str = "M20 1001.80c 0.5 8016.80c 0.5"
@@ -90,7 +90,7 @@ class testMaterialClass(TestCase):
         in_str = "M20 1001.80c 0.5 8016.80c 0.5"
         input_card = Card([in_str], BlockType.DATA, in_str.split())
         material = Material(input_card, None)
-        material.material_number = 25
+        material.number = 25
         answers = ["m25       1001.80c         0.5", "           8016.80c         0.5"]
         output = material.format_for_mcnp_input((6.2, 0))
         self.assertEqual(len(answers), len(output))
@@ -132,7 +132,7 @@ class testMaterialClass(TestCase):
 
         input_card = Card(["Mt20 grph.20t"], BlockType.DATA, ["Mt20", "grph.20t"])
         card = ThermalScatteringLaw(input_card)
-        self.assertEqual(card.old_material_number, 20)
+        self.assertEqual(card.old_number, 20)
         self.assertEqual(card.thermal_scattering_laws, ["grph.20t"])
 
         input_card = Card(["Mtfoo"], BlockType.DATA, ["Mtfoo"])

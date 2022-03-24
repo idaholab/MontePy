@@ -29,8 +29,8 @@ class testTransformClass(TestCase):
         in_str = "tr5 " + "1.0 " * 3 + "0.0 " * 9
         card = Card([in_str], BlockType.DATA, in_str.split())
         transform = Transform(card)
-        self.assertEqual(transform.transform_number, 5)
-        self.assertEqual(transform.old_transform_number, 5)
+        self.assertEqual(transform.number, 5)
+        self.assertEqual(transform.old_number, 5)
         self.assertFalse(transform.is_in_degrees)
         self.assertTrue(transform.is_main_to_aux)
         self.assertEqual(len(transform.displacement_vector), 3)
@@ -82,10 +82,10 @@ class testTransformClass(TestCase):
         in_str = "*tr5 " + "1.0 " * 3 + "0.0 " * 9 + " -1"
         card = Card([in_str], BlockType.DATA, in_str.split())
         transform = Transform(card)
-        transform.transform_number = 20
-        self.assertEqual(transform.transform_number, 20)
+        transform.number = 20
+        self.assertEqual(transform.number, 20)
         with self.assertRaises(AssertionError):
-            transform.transform_number = "hi"
+            transform.number = "hi"
 
     def test_transform_displace_setter(self):
         in_str = "*tr5 " + "1.0 " * 3 + "0.0 " * 9 + " -1"
