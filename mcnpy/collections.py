@@ -17,14 +17,13 @@ class Collection(ABC):
         else:
             self._objects = []
 
-    @abstractmethod
+    @property
     def numbers(self):
         """
         A generator of the numbers being used.
-
-        This should be a property
         """
-        pass
+        for obj in self._objects:
+            yield obj.number
 
     def check_redundant_numbers(self):
         """
