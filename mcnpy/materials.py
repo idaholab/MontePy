@@ -8,11 +8,6 @@ class Materials(Collection):
     def __init__(self, objects=None):
         super().__init__(Material, objects)
 
-    @property
-    def numbers(self):
-        for mat in self._objects:
-            yield mat.material_number
-
     def append(self, material):
         assert isinstance(material, Material)
         self._objects.append(material)

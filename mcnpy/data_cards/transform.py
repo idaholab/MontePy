@@ -104,7 +104,7 @@ class Transform(data_card.DataCard):
         self._is_in_degrees = in_deg
 
     @property
-    def transform_number(self):
+    def number(self):
         """
         The transform number for this transform
 
@@ -112,15 +112,15 @@ class Transform(data_card.DataCard):
         """
         return self._transform_number
 
-    @transform_number.setter
-    def transform_number(self, num):
+    @number.setter
+    def number(self, num):
         assert isinstance(num, int)
         self._transform_number = num
         self._words = [f"TR{num}"]
         self._mutated = True
 
     @property
-    def old_transform_number(self):
+    def old_number(self):
         """
         The transform number used in the original file
         """
@@ -172,7 +172,7 @@ class Transform(data_card.DataCard):
         self._is_main_to_aux = flag
 
     def __str__(self):
-        ret = f"TRANSFORM: {self.transform_number}\n"
+        ret = f"TRANSFORM: {self.number}\n"
         ret += f"DISPLACE: {self.displacement_vector}\n"
         ret += f"ROTATE: {self.rotation_matrix}\n"
         ret += f"MAIN_TO_AUX: {self.is_main_to_aux}\n"
@@ -182,9 +182,9 @@ class Transform(data_card.DataCard):
         ret = mcnp_card.MCNP_Card.format_for_mcnp_input(self, mcnp_version)
         buff_list = []
         if self.is_in_degrees:
-            buff_list.append(f"*TR{self.transform_number}")
+            buff_list.append(f"*TR{self.number}")
         else:
-            buff_list.append(f"TR{self.transform_number}")
+            buff_list.append(f"TR{self.number}")
         for value in self.displacement_vector:
             buff_list.append(f"{value}")
 

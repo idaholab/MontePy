@@ -34,8 +34,8 @@ class TestCellClass(TestCase):
         in_str = "1 0 2"
         card = Card([in_str], BlockType.CELL, in_str.split())
         cell = Cell(card)
-        self.assertEqual(cell.old_cell_number, 1)
-        self.assertEqual(cell.cell_number, 1)
+        self.assertEqual(cell.old_number, 1)
+        self.assertEqual(cell.number, 1)
         self.assertIsNone(cell.material)
         self.assertEqual(cell.old_mat_number, 0)
         self.assertIn(2, cell.old_surface_numbers)
@@ -67,14 +67,14 @@ class TestCellClass(TestCase):
         with self.assertRaises(AssertionError):
             cell.geometry_logic_string = 1
 
-    def test_cell_number_setter(self):
+    def test_number_setter(self):
         in_str = "1 0 2"
         card = Card([in_str], BlockType.CELL, in_str.split())
         cell = Cell(card)
-        cell.cell_number = 5
-        self.assertEqual(cell.cell_number, 5)
+        cell.number = 5
+        self.assertEqual(cell.number, 5)
         with self.assertRaises(AssertionError):
-            cell.cell_number = "5"
+            cell.number = "5"
 
     def test_cell_density_setter(self):
         in_str = "1 1 0.5 2"

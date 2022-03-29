@@ -12,14 +12,6 @@ class Cells(Collection):
         """
         super().__init__(mcnpy.Cell, cells)
 
-    @property
-    def numbers(self):
-        """
-        A generator of the cell numbers being used
-        """
-        for cell in self._objects:
-            yield cell.cell_number
-
     def append(self, cell):
         assert isinstance(cell, mcnpy.Cell)
         self._objects.append(cell)

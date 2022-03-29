@@ -19,8 +19,8 @@ class testSurfaces(TestCase):
         in_str = "1 PZ 0.0"
         card = Card([in_str], BlockType.SURFACE, in_str.split())
         surf = Surface(card)
-        self.assertEqual(surf.surface_number, 1)
-        self.assertEqual(surf.old_surface_number, 1)
+        self.assertEqual(surf.number, 1)
+        self.assertEqual(surf.old_number, 1)
         self.assertEqual(len(surf.surface_constants), 1)
         self.assertEqual(surf.surface_constants[0], 0.0)
         self.assertEqual(surf.surface_type, SurfaceType.PZ)
@@ -110,12 +110,12 @@ class testSurfaces(TestCase):
         in_str = "1 PZ 0.0"
         card = Card([in_str], BlockType.SURFACE, in_str.split())
         surf = Surface(card)
-        surf.surface_number = 20
-        self.assertEqual(surf.surface_number, 20)
+        surf.number = 20
+        self.assertEqual(surf.number, 20)
         with self.assertRaises(AssertionError):
-            surf.surface_number = "foo"
+            surf.number = "foo"
         with self.assertRaises(AssertionError):
-            surf.surface_number = -5
+            surf.number = -5
 
     def test_surface_ordering(self):
         in_str = "1 PZ 0.0"
@@ -132,19 +132,19 @@ class testSurfaces(TestCase):
         in_str = "+1 PZ 0.0"
         card = Card([in_str], BlockType.SURFACE, in_str.split())
         surf = Surface(card)
-        surf.surface_number = 2
+        surf.number = 2
         answer = "+2 PZ 0"
         self.assertEqual(surf.format_for_mcnp_input((6.2, 0))[0], answer)
         in_str = "*1 PZ 0.0"
         card = Card([in_str], BlockType.SURFACE, in_str.split())
         surf = Surface(card)
-        surf.surface_number = 2
+        surf.number = 2
         answer = "*2 PZ 0"
         self.assertEqual(surf.format_for_mcnp_input((6.2, 0))[0], answer)
         in_str = "1 PZ 0.0"
         card = Card([in_str], BlockType.SURFACE, in_str.split())
         surf = Surface(card)
-        surf.surface_number = 2
+        surf.number = 2
         answer = "2 PZ 0"
         self.assertEqual(surf.format_for_mcnp_input((6.2, 0))[0], answer)
 
