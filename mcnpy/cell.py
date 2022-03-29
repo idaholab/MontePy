@@ -455,7 +455,7 @@ class Cell(MCNP_Card):
             self.update_geometry_logic_string()
             buffList = [str(self.number)]
             if self.material:
-                buffList.append(str(self.material.material_number))
+                buffList.append(str(self.material.number))
                 dens = 0
                 if self.is_atom_dens:
                     dens = self.density
