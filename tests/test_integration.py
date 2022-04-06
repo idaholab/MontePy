@@ -93,14 +93,10 @@ class testFullFileIntegration(TestCase):
             for i, cell in enumerate(self.simple_problem.cells):
                 self.assertEqual(cell.number, test_problem.cells[i].number)
             for i, surf in enumerate(self.simple_problem.surfaces):
-                self.assertEqual(
-                    surf.number, test_problem.surfaces[i].number
-                )
+                self.assertEqual(surf.number, test_problem.surfaces[i].number)
             for i, data in enumerate(self.simple_problem.data_cards):
                 if isinstance(data, material.Material):
-                    self.assertEqual(
-                        data.number, test_problem.data_cards[i].number
-                    )
+                    self.assertEqual(data.number, test_problem.data_cards[i].number)
                 else:
                     self.assertEqual(data.words, test_problem.data_cards[i].words)
         finally:
@@ -139,7 +135,7 @@ class testFullFileIntegration(TestCase):
         with self.assertRaises(AssertionError):
             cell.complements.append(5)
         cell.complements = complements
-        self.assertEqual(cell.complements, complements)
+        self.assertEqual(list(cell.complements), complements)
 
     def test_problem_cells_setter(self):
         problem = copy.copy(self.simple_problem)
@@ -151,7 +147,7 @@ class testFullFileIntegration(TestCase):
         with self.assertRaises(AssertionError):
             problem.cells.append(5)
         problem.cells = cells
-        self.assertEqual(problem.cells, cells)
+        self.assertEqual(list(problem.cells), cells)
 
     def test_problem_test_setter(self):
         problem = copy.copy(self.simple_problem)
@@ -199,7 +195,7 @@ class testFullFileIntegration(TestCase):
             + [surfaces[-2]]
         )
         problem.remove_duplicate_surfaces(1e-4)
-        self.assertEqual(problem.surfaces, survivors)
+        self.assertEqual(list(problem.surfaces), survivors)
         cell_surf_answer = "-1 3 -6"
         self.assertIn(
             cell_surf_answer, problem.cells[1].format_for_mcnp_input((6.2, 0))[1]
