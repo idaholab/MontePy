@@ -150,7 +150,7 @@ class testFullFileIntegration(TestCase):
         with self.assertRaises(AssertionError):
             problem.cells.append(5)
         problem.cells = cells
-        self.assertEqual(list(problem.cells), cells)
+        self.assertEqual(problem.cells, cells)
 
     def test_problem_test_setter(self):
         problem = copy.copy(self.simple_problem)
