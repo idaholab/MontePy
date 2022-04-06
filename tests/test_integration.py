@@ -45,9 +45,9 @@ class testFullFileIntegration(TestCase):
     def test_cells_parsing_linking(self):
         cell_numbers = [1, 2, 3, 99, 5]
         mats = self.simple_problem.materials
-        mat_answer = [mats[0], mats[1], mats[2], None, None]
+        mat_answer = [mats[1], mats[2], mats[3], None, None]
         surfs = self.simple_problem.surfaces
-        surf_answer = [{surfs[0]}, {surfs[1]}, set(surfs), {surfs[2]}, set()]
+        surf_answer = [{surfs[1000]}, {surfs[1005]}, set(surfs), {surfs[1010]}, set()]
         cells = self.simple_problem.cells
         complements = [set()] * 4 + [{cells[5]}]
         for i, cell in enumerate(self.simple_problem.cells):
