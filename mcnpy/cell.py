@@ -471,6 +471,18 @@ class Cell(MCNP_Card):
             if self.parameters:
                 strings = []
                 keys = list(self.parameters.keys())
+                """
+                Yes this is hacky voodoo.
+                We don't know if it's necessary, but are too scared to remove it.
+                The goal is to make sure that the FILL parameter is always the last 
+                one on a cell card.
+
+                This is based on a superstition that MCNP is less likely to crash when 
+                data is given this way; but we just don't know.
+                You've used MCNP are you that surprised we had to do this?
+
+                MCNP giveth, and MCNP taketh. 
+                """
                 if "FILL" in keys:
                     keys.remove("FILL")
                     keys.append("FILL")
