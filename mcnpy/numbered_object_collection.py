@@ -9,10 +9,12 @@ class NumberedObjectCollection(ABC):
         :param cells: the list of cells to start with if needed
         :type cells: list
         """
+        self.__num_cache = {}
         if objects:
             assert isinstance(objects, list)
             for obj in objects:
                 assert isinstance(obj, obj_class)
+                self.__num_cache[obj.number] = obj
             self._objects = objects
         else:
             self._objects = []
@@ -43,7 +45,9 @@ class NumberedObjectCollection(ABC):
         """
         assert isinstance(pos, int)
         assert pos > 0
-        return self._objects.pop(pos)
+        obj = self._objects.pop(pos)
+        self.__num_cache.pop(obj.number, None)
+        return obj
 
     def extend(self, other_list):
         assert isinstance(other_list, list)
@@ -64,7 +68,23 @@ class NumberedObjectCollection(ABC):
         pass
 
     def __getitem__(self, i):
-        return self._objects[i]
+        find_manually = False
+        try:
+            ret = self.__num_cache[i]
+            if ret.number != i:
+                ret = None
+                find_manually = True
+        except KeyError:
+            find_manually = True
+        if find_manually:
+            ret = None
+            for obj in self._objects:
+                if obj.number == i:
+                    ret = obj
+                    break
+            if ret is None:
+                raise KeyError(f"Object with number {i} not found")
+        return ret
 
     def __delitem__(self, idx):
         del self._objects[idx]
