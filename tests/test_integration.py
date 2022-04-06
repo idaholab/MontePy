@@ -49,7 +49,7 @@ class testFullFileIntegration(TestCase):
         surfs = self.simple_problem.surfaces
         surf_answer = [{surfs[0]}, {surfs[1]}, set(surfs), {surfs[2]}, set()]
         cells = self.simple_problem.cells
-        complements = [set()] * 4 + [{cells[3]}]
+        complements = [set()] * 4 + [{cells[5]}]
         for i, cell in enumerate(self.simple_problem.cells):
             self.assertEqual(cell.number, cell_numbers[i])
             self.assertEqual(cell.material, mat_answer[i])
@@ -91,9 +91,11 @@ class testFullFileIntegration(TestCase):
             self.simple_problem.write_to_file(out)
             test_problem = mcnpy.read_input(out)
             for i, cell in enumerate(self.simple_problem.cells):
-                self.assertEqual(cell.number, test_problem.cells[i].number)
+                num = cell.number
+                self.assertEqual(num, test_problem.cells[num].number)
             for i, surf in enumerate(self.simple_problem.surfaces):
-                self.assertEqual(surf.number, test_problem.surfaces[i].number)
+                num = surf.number
+                self.assertEqual(surf.number, test_problem.surfaces[num].number)
             for i, data in enumerate(self.simple_problem.data_cards):
                 if isinstance(data, material.Material):
                     self.assertEqual(data.number, test_problem.data_cards[i].number)
@@ -104,8 +106,8 @@ class testFullFileIntegration(TestCase):
                 os.remove(out)
 
     def test_cell_material_setter(self):
-        cell = self.simple_problem.cells[0]
-        mat = self.simple_problem.materials[0]
+        cell = self.simple_problem.cells[1]
+        mat = self.simple_problem.materials[2]
         cell.material = mat
         self.assertEqual(cell.material, mat)
         cell.material = None
@@ -114,7 +116,7 @@ class testFullFileIntegration(TestCase):
             cell.material = 5
 
     def test_cell_surfaces_setter(self):
-        cell = self.simple_problem.cells[0]
+        cell = self.simple_problem.cells[1]
         surfaces = self.simple_problem.surfaces
         with self.assertRaises(AssertionError):
             cell.surfaces = 5
@@ -126,7 +128,7 @@ class testFullFileIntegration(TestCase):
         self.assertEqual(cell.surfaces, surfaces)
 
     def test_cell_complements_setter(self):
-        cell = self.simple_problem.cells[0]
+        cell = self.simple_problem.cells[1]
         complements = self.simple_problem.cells[1:]
         with self.assertRaises(AssertionError):
             cell.complements = 5
@@ -139,7 +141,8 @@ class testFullFileIntegration(TestCase):
 
     def test_problem_cells_setter(self):
         problem = copy.copy(self.simple_problem)
-        cells = self.simple_problem.cells[1:]
+        cells = self.simple_problem.cells
+        cells.remove(cells[1])
         with self.assertRaises(AssertionError):
             problem.cells = 5
         with self.assertRaises(AssertionError):
@@ -186,29 +189,25 @@ class testFullFileIntegration(TestCase):
     def test_problem_duplicate_surface_remover(self):
         problem = mcnpy.read_input("tests/inputs/test_redundant_surf.imcnp")
         surfaces = problem.surfaces
+        nums = list(problem.surfaces.numbers)
         survivors = (
-            surfaces[0:3]
-            + surfaces[5:8]
-            + [surfaces[9]]
-            + surfaces[11:13]
-            + [surfaces[13]]
-            + [surfaces[-2]]
+            nums[0:3] + nums[5:8] + [nums[9]] + nums[11:13] + [nums[13]] + [nums[-2]]
         )
         problem.remove_duplicate_surfaces(1e-4)
-        self.assertEqual(list(problem.surfaces), survivors)
+        self.assertEqual(list(problem.surfaces.numbers), survivors)
         cell_surf_answer = "-1 3 -6"
         self.assertIn(
-            cell_surf_answer, problem.cells[1].format_for_mcnp_input((6.2, 0))[1]
+            cell_surf_answer, problem.cells[2].format_for_mcnp_input((6.2, 0))[1]
         )
 
     def test_surface_periodic(self):
         problem = mcnpy.read_input("tests/inputs/test_surfaces.imcnp")
-        surf = problem.surfaces[0]
-        periodic = problem.surfaces[1]
+        surf = problem.surfaces[1]
+        periodic = problem.surfaces[2]
         self.assertEqual(surf.periodic_surface, periodic)
         self.assertIn("1 -2 SO", surf.format_for_mcnp_input((6.2, 0))[0])
-        surf.periodic_surface = problem.surfaces[2]
-        self.assertEqual(surf.periodic_surface, problem.surfaces[2])
+        surf.periodic_surface = problem.surfaces[3]
+        self.assertEqual(surf.periodic_surface, problem.surfaces[3])
         del surf.periodic_surface
         self.assertIsNone(surf.periodic_surface)
         with self.assertRaises(AssertionError):
@@ -216,7 +215,7 @@ class testFullFileIntegration(TestCase):
 
     def test_surface_transform(self):
         problem = mcnpy.read_input("tests/inputs/test_surfaces.imcnp")
-        surf = problem.surfaces[0]
+        surf = problem.surfaces[1]
         transform = problem.data_cards[0]
         del surf.periodic_surface
         surf.transform = transform
