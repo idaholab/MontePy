@@ -1,8 +1,8 @@
 import mcnpy
-from mcnpy.collections import Collection
+from mcnpy.numbered_object_collection import NumberedObjectCollection
 
 
-class Cells(Collection):
+class Cells(NumberedObjectCollection):
     """A collections of cells."""
 
     def __init__(self, cells=None):

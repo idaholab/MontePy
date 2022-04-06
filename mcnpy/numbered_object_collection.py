@@ -1,7 +1,7 @@
 from abc import ABC, abstractmethod
 
 
-class Collection(ABC):
+class NumberedObjectCollection(ABC):
     """A collections of cells."""
 
     def __init__(self, obj_class, objects=None):
