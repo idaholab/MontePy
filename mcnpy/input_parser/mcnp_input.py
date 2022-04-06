@@ -175,6 +175,7 @@ class Title(MCNP_Input):
     """
 
     def __init__(self, title):
+        assert isinstance(title, str)
         self._title = title.rstrip()
 
     @property

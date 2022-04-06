@@ -164,7 +164,7 @@ class MCNP_Problem:
             if i == 0 and isinstance(input_card, mcnp_input.Message):
                 self._message = input_card
 
-            elif isinstance(input_card, mcnp_input.Title) and not self._title:
+            elif isinstance(input_card, mcnp_input.Title) and self._title is None:
                 self._title = input_card
 
             elif isinstance(input_card, mcnp_input.Comment):
@@ -222,7 +222,6 @@ class MCNP_Problem:
                     for match in matches:
                         to_delete.add(match)
                         matching_map[match] = surface
-
         for cell in self.cells:
             cell.remove_duplicate_surfaces(matching_map)
         self.__update_internal_pointers()
@@ -236,16 +235,17 @@ class MCNP_Problem:
 
         WARNING: this does not move transforms and complement cells, and probably others.
         """
-        surfaces = set()
-        materials = set()
+        surfaces = set(self.surfaces)
+        materials = set(self.materials)
         for cell in self.cells:
             surfaces.update(set(cell.surfaces))
-            materials.add(cell.material)
+            if cell.material:
+                materials.add(cell.material)
         surfaces = sorted(list(surfaces))
         materials = sorted(list(materials))
-        self._surfaces += surfaces
-        self._materials += materials
-        self._data_cards += materials
+        self._surfaces = surfaces
+        self._materials = materials
+        self._data_cards = list(set(self._data_cards + materials))
 
     def write_to_file(self, new_problem):
         """

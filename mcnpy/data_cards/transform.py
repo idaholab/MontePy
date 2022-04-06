@@ -11,72 +11,80 @@ class Transform(data_card.DataCard):
     Card to represent a transform card (TR)
     """
 
-    def __init__(self, input_card, comment=None):
-        super().__init__(input_card, comment)
-        words = self.words
-        i = 0
-        assert re.match("\*?tr\d+", words[i].lower())
-        assert len(words) >= 3
-        try:
-            if "*" in words[i]:
-                self._is_in_degrees = True
-            else:
-                self._is_in_degrees = False
-            num = words[i].lower().strip("*tr")
-            self._transform_number = int(num)
-            self._old_transform_number = self._transform_number
-            i += 1
-
-        except ValueError:
-            raise MalformedInputError(
-                input_card, f"{words[0]} can't be parsed as transform number"
-            )
-        # parse displacement
-        try:
-            values = []
-            for j, word in enumerate(words[i:]):
-                values.append(fortran_float(word))
-                i += 1
-                if j >= 2:
-                    break
-            self._displacement_vector = np.array(values)
-
-        except ValueError:
-            raise MalformedInputError(
-                input_card, f"{word} can't be parsed as a displacement vector component"
-            )
-
-        # parse rotation
-        try:
-            values = []
-            for j, word in enumerate(words[i:]):
-                values.append(fortran_float(word))
-                i += 1
-                if j >= 8:
-                    break
-            self._rotation_matrix = np.array(values)
-        except ValueError:
-            raise MalformedInputError(
-                input_card, f"{word} can't be parsed as a rotation matrix component"
-            )
-
-        self._is_main_to_aux = True
-        if len(values) == 9:
+    def __init__(self, input_card=None, comment=None):
+        if input_card is None:
+            self._transform_number = -1
+            self._old_transform_number = -1
+            self._displacement_vector = np.array([])
+            self._rotation_matrix = np.array([])
+            self._is_in_degrees = False
+            self._is_main_to_aux = True
+        else:
+            super().__init__(input_card, comment)
+            words = self.words
+            i = 0
+            assert re.match("\*?tr\d+", words[i].lower())
+            assert len(words) >= 3
             try:
-                word = words[i]
-                # if 1 it's the default value
-                if word == "1":
-                    pass
-                elif word == "-1":
-                    self._is_main_to_aux = False
+                if "*" in words[i]:
+                    self._is_in_degrees = True
                 else:
-                    raise MalformedInputError(
-                        input_card, f"{word} can't be parsed as 1 or -1"
-                    )
+                    self._is_in_degrees = False
+                num = words[i].lower().strip("*tr")
+                self._transform_number = int(num)
+                self._old_transform_number = self._transform_number
+                i += 1
 
-            # if no more words remain don't worry
-            except IndexError:
-                pass
+            except ValueError:
+                raise MalformedInputError(
+                    input_card, f"{words[0]} can't be parsed as transform number"
+                )
+            # parse displacement
+            try:
+                values = []
+                for j, word in enumerate(words[i:]):
+                    values.append(fortran_float(word))
+                    i += 1
+                    if j >= 2:
+                        break
+                self._displacement_vector = np.array(values)
+
+            except ValueError:
+                raise MalformedInputError(
+                    input_card,
+                    f"{word} can't be parsed as a displacement vector component",
+                )
+
+            # parse rotation
+            try:
+                values = []
+                for j, word in enumerate(words[i:]):
+                    values.append(fortran_float(word))
+                    i += 1
+                    if j >= 8:
+                        break
+                self._rotation_matrix = np.array(values)
+            except ValueError:
+                raise MalformedInputError(
+                    input_card, f"{word} can't be parsed as a rotation matrix component"
+                )
+
+            self._is_main_to_aux = True
+            if len(values) == 9:
+                try:
+                    word = words[i]
+                    # if 1 it's the default value
+                    if word == "1":
+                        pass
+                    elif word == "-1":
+                        self._is_main_to_aux = False
+                    else:
+                        raise MalformedInputError(
+                            input_card, f"{word} can't be parsed as 1 or -1"
+                        )
+                # if no more words remain don't worry
+                except IndexError:
+                    pass
 
     @property
     def is_in_degrees(self):

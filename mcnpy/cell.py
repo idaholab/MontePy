@@ -22,7 +22,10 @@ class Cell(MCNP_Card):
         """
         super().__init__(comment)
         self._material = None
+        self._old_cell_number = None
+        self._old_mat_number = None
         self._geometry_logic_string = None
+        self._density = None
         self._surfaces = []
         self._old_surface_numbers = []
         self._complements = []
@@ -293,16 +296,34 @@ class Cell(MCNP_Card):
         """
         self._surfaces = []
         self._complements = []
-        if self._old_mat_number > 0:
-            self._material = material_dict[self._old_mat_number]
-        else:
-            self._material = None
+        if self._old_mat_number is not None:
+            if self._old_mat_number > 0:
+                try:
+                    self._material = material_dict[self._old_mat_number]
+                except KeyError:
+                    raise BrokenObjectLinkError(
+                        "Cell", self.cell_number, "Material", self.old_mat_number
+                    )
+            else:
+                self._material = None
 
-        for surface_number in self._old_surface_numbers:
-            self._surfaces.append(surface_dict[surface_number])
+        if self._old_surface_numbers:
+            for surface_number in self._old_surface_numbers:
+                try:
+                    self._surfaces.append(surface_dict[surface_number])
+                except KeyError:
+                    raise BrokenObjectLinkError(
+                        "Cell", self.cell_number, "Surface", surface_number
+                    )
 
-        for complement_number in self._old_complement_numbers:
-            self._complements.append(cell_dict[complement_number])
+        if self._old_complement_numbers:
+            for complement_number in self._old_complement_numbers:
+                try:
+                    self._complements.append(cell_dict[complement_number])
+                except KeyError:
+                    raise BrokenObjectLinkError(
+                        "Cell", self.cell_number, "Complement Cell", complement_number
+                    )
 
     def update_geometry_logic_string(self):
         """
@@ -313,9 +334,15 @@ class Cell(MCNP_Card):
         matching_surfaces = {}
         matching_complements = {}
         for cell in self.complements:
-            matching_complements[cell.old_cell_number] = cell.cell_number
+            if cell.old_cell_number:
+                matching_complements[cell.old_cell_number] = cell.cell_number
+            else:
+                matching_complements[cell.cell_number] = cell.cell_number
         for surface in self.surfaces:
-            matching_surfaces[surface.old_surface_number] = surface.surface_number
+            if surface.old_surface_number:
+                matching_surfaces[surface.old_surface_number] = surface.surface_number
+            else:
+                matching_surfaces[surface.surface_number] = surface.surface_number
         self._update_geometry_logic_by_map(matching_surfaces, matching_complements)
 
     def _update_geometry_logic_by_map(
@@ -375,7 +402,7 @@ class Cell(MCNP_Card):
         """
         will_update = False
         for dead_surface in deleting_dict:
-            if dead_surface.old_surface_number in self.old_surface_numbers:
+            if dead_surface in self.surfaces:
                 will_update = True
                 break
         if will_update:
@@ -383,7 +410,7 @@ class Cell(MCNP_Card):
             self.update_geometry_logic_string()
             matching_surfaces = {}
             for dead_surface in deleting_dict:
-                if dead_surface.old_surface_number in self.old_surface_numbers:
+                if dead_surface in self.surfaces:
                     matching_surfaces[dead_surface.surface_number] = deleting_dict[
                         dead_surface
                     ].surface_number
