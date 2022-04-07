@@ -49,7 +49,7 @@ class testFullFileIntegration(TestCase):
         surfs = self.simple_problem.surfaces
         surf_answer = [{surfs[1000]}, {surfs[1005]}, set(surfs), {surfs[1010]}, set()]
         cells = self.simple_problem.cells
-        complements = [set()] * 4 + [{cells[5]}]
+        complements = [set()] * 4 + [{cells[99]}]
         for i, cell in enumerate(self.simple_problem.cells):
             self.assertEqual(cell.number, cell_numbers[i])
             self.assertEqual(cell.material, mat_answer[i])
@@ -129,7 +129,10 @@ class testFullFileIntegration(TestCase):
 
     def test_cell_complements_setter(self):
         cell = self.simple_problem.cells[1]
-        complements = self.simple_problem.cells[1:]
+        complement_numbers = list(self.simple_problem.cells.numbers)[1:]
+        complements = []
+        for num in complement_numbers:
+            complements.append(self.simple_problem.cells[num])
         with self.assertRaises(AssertionError):
             cell.complements = 5
         with self.assertRaises(AssertionError):
