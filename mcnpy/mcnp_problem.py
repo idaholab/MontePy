@@ -205,20 +205,10 @@ class MCNP_Problem:
 
     def __update_internal_pointers(self):
         """Updates the internal pointers between objects"""
-        material_dict = {}
-        surface_dict = {}
-        cell_dict = {}
-        for mat in self._materials:
-            material_dict[mat.old_number] = mat
-        for surface in self._surfaces:
-            surface_dict[surface.old_number] = surface
         for cell in self._cells:
-            cell_dict[cell.old_number] = cell
-        # update links
-        for cell in self._cells:
-            cell.update_pointers(cell_dict, material_dict, surface_dict)
+            cell.update_pointers(self.cells, self.materials, self.surfaces)
         for surface in self._surfaces:
-            surface.update_pointers(surface_dict, self._data_cards)
+            surface.update_pointers(self.surfaces, self._data_cards)
         for card in self._data_cards:
             card.update_pointers(self._data_cards)
 
