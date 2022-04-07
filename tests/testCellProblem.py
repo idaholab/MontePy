@@ -98,3 +98,18 @@ class TestCellClass(TestCase):
         answer = [cell1, cell2]
         for i, cell in enumerate(test_sort):
             self.assertEqual(cell, answer[i])
+
+    def test_cell_fill_parsing(self):
+        test_fill_strs = ["6600 (610)", "6600 (0.0 0.0 10.0)"]
+        for ending in ["IMP:N=1", ""]:
+            for in_fill in test_fill_strs:
+                in_str = f"1 0 -1 FILL={in_fill} {ending}"
+                card = Card([in_str], BlockType.CELL, in_str.split())
+                cell = Cell(card)
+                self.assertEqual(cell.parameters["FILL"], in_fill)
+                cell.cell_number = 2
+                output = cell.format_for_mcnp_input((6.2, 0))
+                self.assertIn(in_fill, output[2])
+                parts = output[2].split("=")
+                # ensure that fill is final entry
+                self.assertIn("FILL", parts[-2])

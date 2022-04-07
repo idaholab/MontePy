@@ -118,7 +118,7 @@ class Cell(MCNP_Card):
         fragments = params_string.split("=")
         key = ""
         next_key = ""
-        value = ""
+        value = [""]
         for i, fragment in enumerate(fragments):
             fragment = fragment.split()
             if i == 0:
@@ -126,14 +126,14 @@ class Cell(MCNP_Card):
             elif i == len(fragments) - 1:
                 if next_key:
                     key = next_key
-                value = fragment[0]
+                value = fragment
             else:
                 if next_key:
                     key = next_key
                 value = fragment[0:-1]
                 next_key = fragment[-1]
             if key and value:
-                self._parameters[key.upper()] = "".join(value)
+                self._parameters[key.upper()] = " ".join(value)
 
     @property
     def old_number(self):
@@ -471,7 +471,24 @@ class Cell(MCNP_Card):
             )
             if self.parameters:
                 strings = []
-                for key, value in self.parameters.items():
+                keys = list(self.parameters.keys())
+                """
+                Yes this is hacky voodoo.
+                We don't know if it's necessary, but are too scared to remove it.
+                The goal is to make sure that the FILL parameter is always the last 
+                one on a cell card.
+
+                This is based on a superstition that MCNP is less likely to crash when 
+                data is given this way; but we just don't know.
+                You've used MCNP are you that surprised we had to do this?
+
+                MCNP giveth, and MCNP taketh. 
+                """
+                if "FILL" in keys:
+                    keys.remove("FILL")
+                    keys.append("FILL")
+                for key in keys:
+                    value = self.parameters[key]
                     if isinstance(value, list):
                         value = " ".join(value)
                     strings.append(f"{key}={value}")
