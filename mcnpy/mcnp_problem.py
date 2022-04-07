@@ -295,11 +295,7 @@ class MCNP_Problem:
                 for surface in self.surfaces:
                     if surface.number in surf_numbers:
                         raise NumberConflictError(
-<<<<<<< HEAD
                             f"The surfaces {surface}, and {surf_numbers[surface.number]}"
-=======
-                            f"The surfaces {surface}, and {surf_numbers[surface.surface_number]}"
->>>>>>> issue21Fill
                             " have the same surface number"
                         )
                     surf_numbers[surface.number] = surface

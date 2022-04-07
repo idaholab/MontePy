@@ -302,7 +302,7 @@ class Surface(MCNP_Card):
 
     def __eq__(self, other):
         return (
-            self.surface_number == other.surface_number
+            self.number == other.number
             and self.surface_type == other.surface_type
             and self.is_reflecting == other.is_reflecting
             and self.is_white_boundary == other.is_white_boundary
@@ -313,7 +313,7 @@ class Surface(MCNP_Card):
         return not self == other
 
     def __hash__(self):
-        return hash((self.surface_number, str(self.surface_type)))
+        return hash((self.number, str(self.surface_type)))
 
     def find_duplicate_surfaces(self, surfaces, tolerance):
         """Finds all surfaces that are effectively the same as this one.
