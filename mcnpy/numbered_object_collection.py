@@ -103,6 +103,7 @@ class NumberedObjectCollection(ABC):
         self._objects.append(obj)
 
     def __getitem__(self, i):
+        assert isinstance(i, int)
         find_manually = False
         try:
             ret = self.__num_cache[i]
@@ -123,10 +124,15 @@ class NumberedObjectCollection(ABC):
         return ret
 
     def __delitem__(self, idx):
+        assert isinstance(idx, int)
         obj = self[idx]
         self.__num_cache.pop(obj.number, None)
         idx = self._objects[obj]
         del self._objects[idx]
+
+    def __setitem__(self, key, newvalue):
+        assert isinstance(key, int)
+        self.append(newvalue)
 
     def __len__(self):
         return len(self._objects)
