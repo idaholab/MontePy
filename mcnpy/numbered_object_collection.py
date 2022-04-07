@@ -37,6 +37,16 @@ class NumberedObjectCollection(ABC):
         """
         return len(self._objects) != len(set(self.numbers))
 
+    @property
+    def objects(self):
+        """
+        Returns a shallow copy of the internal objects list.
+
+        The list object is a new instance, but the underlying objects
+        are the same.
+        """
+        return self._objects[:]
+
     def pop(self, pos=1):
         """
         Pop the final items off of the collection
