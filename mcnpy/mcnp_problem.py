@@ -189,14 +189,17 @@ class MCNP_Problem:
                 if len(input_card.words) > 0:
                     if input_card.block_type == block_type.BlockType.CELL:
                         cell = Cell(input_card, comment_queue)
+                        cell.link_to_problem(self)
                         self._cells.append(cell)
                     if input_card.block_type == block_type.BlockType.SURFACE:
                         surface = surface_builder.surface_builder(
                             input_card, comment_queue
                         )
+                        surface.link_to_problem(self)
                         self._surfaces.append(surface)
                     if input_card.block_type == block_type.BlockType.DATA:
                         data = parse_data(input_card, comment_queue)
+                        data.link_to_problem(self)
                         self._data_cards.append(data)
                         if isinstance(data, Material):
                             self._materials.append(data)

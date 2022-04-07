@@ -10,6 +10,7 @@ class MCNP_Card(ABC):
     """
 
     def __init__(self, input_card, comment=None):
+        self._problem = None
         if input_card:
             assert isinstance(input_card, mcnpy.input_parser.mcnp_input.Card)
             self._input_lines = input_card.input_lines
@@ -122,3 +123,14 @@ class MCNP_Card(ABC):
             subsequent_indent=" " * indent_length,
         )
         return wrapper.wrap(string)
+
+    def link_to_problem(self, problem):
+        """Links the card to the parent problem for this card.
+
+        This is done so that cards can find links to other objects.
+
+        :param problem: The problem to link this card to.
+        :type type: MCNP_Problem
+        """
+        assert isinstance(problem, mcnpy.mcnp_problem.MCNP_Problem)
+        self._problem = problem
