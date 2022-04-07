@@ -29,9 +29,9 @@ class Cell(MCNP_Card):
         self._geometry_logic_string = None
         self._density = None
         self._surfaces = Surfaces()
-        self._old_surface_numbers = []
+        self._old_surface_numbers = set()
         self._complements = Cells()
-        self._old_complement_numbers = []
+        self._old_complement_numbers = set()
         self._parameters = {}
         self._cell_number = -1
         if input_card:
@@ -105,10 +105,10 @@ class Cell(MCNP_Card):
                 geometry_string += word + " "
                 match = cell_finder.search(word)
                 if match:
-                    self._old_complement_numbers.append(int(match.group(1)))
+                    self._old_complement_numbers.add(int(match.group(1)))
                 else:
                     for surface in surface_finder.findall(word):
-                        self._old_surface_numbers.append(int(surface))
+                        self._old_surface_numbers.add(int(surface))
         self._geometry_logic_string = geometry_string
         return (j, param_found)
 
