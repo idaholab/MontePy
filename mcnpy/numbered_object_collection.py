@@ -63,9 +63,23 @@ class NumberedObjectCollection(ABC):
 
     def extend(self, other_list):
         assert isinstance(other_list, list)
+        for obj in other_list:
+            assert isinstance(obj, self._obj_class)
+            if obj.number in self.__num_cache:
+                if obj.number in self.numbers:
+                    raise NumberConflictError(
+                        (
+                            f"When adding to {type(self)} there was a number collision due to "
+                            f"adding {obj} which conflicts with {self[obj.number]}"
+                        )
+                    )
+                # if this number is a ghost; remove it.
+                else:
+                    self.__num_cache.pop(obj.number, None)
         self._objects.extend(other_list)
 
     def remove(self, delete):
+        self.__num_cache.pop(delete.number, None)
         self._objects.remove(delete)
 
     def __iter__(self):
