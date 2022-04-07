@@ -3,7 +3,10 @@ from mcnpy.errors import *
 
 
 class NumberedObjectCollection(ABC):
-    """A collections of cells."""
+    """A collections of MCNP objects.
+
+    It quicks like a dict, it acts like a dict, but is a list.
+    """
 
     def __init__(self, obj_class, objects=None):
         """

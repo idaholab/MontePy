@@ -4,6 +4,12 @@ from mcnpy.numbered_object_collection import NumberedObjectCollection
 
 
 class SurfacesGenerator:
+    """A class for a Descriptor for the Surfaces collection.
+
+    This is meant to make it possible to get a generator at
+    surfaces.pz
+    """
+
     def __set_name__(self, owner, name):
         self._surfs = owner
         self.surf_type = name
