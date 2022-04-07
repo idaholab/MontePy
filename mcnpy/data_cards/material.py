@@ -23,6 +23,7 @@ class Material(data_card.DataCard):
         super().__init__(input_card, comment)
         self._material_components = {}
         self._thermal_scattering = None
+        self._material_number = -1
         words = self.words
         num = words[0].upper().strip("M")
         # material numbers

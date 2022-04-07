@@ -33,6 +33,7 @@ class Cell(MCNP_Card):
         self._complements = Cells()
         self._old_complement_numbers = []
         self._parameters = {}
+        self._cell_number = -1
         if input_card:
             words = input_card.words
             i = 0

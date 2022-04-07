@@ -25,6 +25,7 @@ class Surface(MCNP_Card):
         self._old_periodic_surface = None
         self._transform = None
         self._old_transform_number = None
+        self._surface_number = -1
         i = 0
         # surface number
         surface_num = words[i]
