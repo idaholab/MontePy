@@ -1,4 +1,5 @@
 from abc import ABC, abstractmethod
+from mcnpy.errors import *
 
 
 class NumberedObjectCollection(ABC):
@@ -10,6 +11,7 @@ class NumberedObjectCollection(ABC):
         :type cells: list
         """
         self.__num_cache = {}
+        self._obj_class = obj_class
         if objects:
             assert isinstance(objects, list)
             for obj in objects:
@@ -63,9 +65,18 @@ class NumberedObjectCollection(ABC):
     def __next__(self):
         return self._iter.__next__()
 
-    @abstractmethod
-    def append(self, cell):
-        pass
+    def append(self, obj):
+        assert isinstance(obj, self._obj_class)
+        if obj.number in self.__num_cache and obj.number in self.numbers:
+            raise NumberConflictError(
+                (
+                    "There was a numbering conflict when attempting to add "
+                    f"{obj} to {type(self)}. Conflict was with {self[obj.number]}"
+                )
+            )
+        else:
+            self.__num_cache[obj.number] = obj
+        self._objects.append(obj)
 
     def __getitem__(self, i):
         find_manually = False
@@ -81,20 +92,41 @@ class NumberedObjectCollection(ABC):
             for obj in self._objects:
                 if obj.number == i:
                     ret = obj
+                    self.__num_cache[i] = obj
                     break
             if ret is None:
-                raise KeyError(f"Object with number {i} not found")
+                raise KeyError(f"Object with number {i} not found in {type(self)}")
         return ret
 
     def __delitem__(self, idx):
+        obj = self[idx]
+        self.__num_cache.pop(obj.number, None)
+        idx = self._objects[obj]
         del self._objects[idx]
 
     def __len__(self):
         return len(self._objects)
 
-    @abstractmethod
     def __iadd__(self, other):
-        pass
+        assert isinstance(other, (type(self), list))
+        for obj in other:
+            assert isinstance(cell, self._obj_class)
+        if isinstance(other, type(self)):
+            other_list = other.objects
+        else:
+            other_list = other
+        for obj in other_list:
+            if obj.number in self.__num_cache and obj.number in self.numbers:
+                raise NumberConflictError(
+                    (
+                        "There was a numbering conflict when attempting to add "
+                        f"{obj} to {type(self)}. Conflict was with {self[obj.number]}"
+                    )
+                )
+            else:
+                self.__num_cache[obj.number] = obj
+        self.objects += other_list
+        return self
 
     def __contains__(self, element):
         return any(x is element for x in self._objects)
