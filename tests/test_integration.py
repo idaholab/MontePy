@@ -127,7 +127,6 @@ class testFullFileIntegration(TestCase):
         cell.surfaces = surfaces
         self.assertEqual(cell.surfaces, surfaces)
 
-    @expectedFailure
     def test_cell_complements_setter(self):
         cell = self.simple_problem.cells[1]
         complement_numbers = list(self.simple_problem.cells.numbers)[1:]
@@ -143,7 +142,6 @@ class testFullFileIntegration(TestCase):
         cell.complements = complements
         self.assertEqual(list(cell.complements), complements)
 
-    @expectedFailure
     def test_problem_cells_setter(self):
         problem = copy.copy(self.simple_problem)
         cells = self.simple_problem.cells
@@ -191,7 +189,6 @@ class testFullFileIntegration(TestCase):
         problem.mcnp_version = (6.2, 5)
         self.assertEqual(problem.mcnp_version, (6.2, 5))
 
-    @expectedFailure
     def test_problem_duplicate_surface_remover(self):
         problem = mcnpy.read_input("tests/inputs/test_redundant_surf.imcnp")
         surfaces = problem.surfaces

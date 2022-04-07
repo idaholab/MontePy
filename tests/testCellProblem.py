@@ -107,7 +107,7 @@ class TestCellClass(TestCase):
                 card = Card([in_str], BlockType.CELL, in_str.split())
                 cell = Cell(card)
                 self.assertEqual(cell.parameters["FILL"], in_fill)
-                cell.cell_number = 2
+                cell.number = 2
                 output = cell.format_for_mcnp_input((6.2, 0))
                 self.assertIn(in_fill, output[2])
                 parts = output[2].split("=")

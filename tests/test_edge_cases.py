@@ -11,7 +11,7 @@ class EdgeCaseTests(TestCase):
 
     def test_surface_edge_case(self):
         capsule = mcnpy.read_input("tests/inputs/test_complement_edge.imcnp")
-        problem_cell = capsule.cells[3]
+        problem_cell = capsule.cells[61441]
         self.assertEqual(len(set(problem_cell.surfaces)), 6)
 
     def test_interp_surface_edge_case(self):
