@@ -75,17 +75,16 @@ class NumberedObjectCollection(ABC):
         assert isinstance(other_list, list)
         for obj in other_list:
             assert isinstance(obj, self._obj_class)
-            if obj.number in self.__num_cache:
-                if obj.number in self.numbers:
-                    raise NumberConflictError(
-                        (
-                            f"When adding to {type(self)} there was a number collision due to "
-                            f"adding {obj} which conflicts with {self[obj.number]}"
-                        )
+            if obj.number in self.numbers:
+                raise NumberConflictError(
+                    (
+                        f"When adding to {type(self)} there was a number collision due to "
+                        f"adding {obj} which conflicts with {self[obj.number]}"
                     )
-                # if this number is a ghost; remove it.
-                else:
-                    self.__num_cache.pop(obj.number, None)
+                )
+            # if this number is a ghost; remove it.
+            else:
+                self.__num_cache.pop(obj.number, None)
         self._objects.extend(other_list)
 
     def remove(self, delete):
@@ -107,7 +106,7 @@ class NumberedObjectCollection(ABC):
         :raises: NumberConflictError: if this object has a number that is already in use.
         """
         assert isinstance(obj, self._obj_class)
-        if obj.number in self.__num_cache and obj.number in self.numbers:
+        if obj.number in self.numbers:
             raise NumberConflictError(
                 (
                     "There was a numbering conflict when attempting to add "
@@ -219,7 +218,7 @@ class NumberedObjectCollection(ABC):
         else:
             other_list = other
         for obj in other_list:
-            if obj.number in self.__num_cache and obj.number in self.numbers:
+            if obj.number in self.numbers:
                 raise NumberConflictError(
                     (
                         "There was a numbering conflict when attempting to add "
