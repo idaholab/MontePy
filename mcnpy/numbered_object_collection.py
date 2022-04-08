@@ -145,10 +145,22 @@ class NumberedObjectCollection(ABC):
         :returns: an available number
         :rtype: int
         """
+        assert isinstance(start_num, int)
+        assert isinstance(step, int)
         number = start_num
         while number in self.numbers:
             number += step
         return number
+
+    def next_number(self, step=1):
+        """Get the next available number, based on the maximum number.
+
+        This works by finding the current maximum number, and then adding the
+        stepsize to it.
+        """
+        assert isinstance(step, int)
+        assert step > 0
+        return max(self.numbers) + step
 
     def __getitem__(self, i):
         assert isinstance(i, int)
