@@ -105,6 +105,51 @@ class NumberedObjectCollection(ABC):
             self.__num_cache[obj.number] = obj
         self._objects.append(obj)
 
+    def append_renumber(self, obj, step=1):
+        """Appends the object, but will renumber the object if collision occurs.
+
+        This behaves like append, except if there is a number collision the object will
+        be renumbered to an available number. The number will be incremented by step
+        until an available number is found.
+
+        :param obj: The MCNP object being added to the collection.
+        :type obj: MCNP_Card
+        :param step: the incrementing step to use to find a new number.
+        :type step: int
+        :return: the number for the object.
+        :rtype: int
+        """
+        assert isinstance(obj, self._obj_class)
+        assert isinstance(step, int)
+        number = obj.number
+        try:
+            self.append(obj)
+        except NumberConflictError:
+            number = self.request_number(number, step)
+            obj.number = number
+            self.append(obj)
+
+        return number
+
+    def request_number(self, start_num=1, step=1):
+        """Requests a new available number.
+
+        This method does not "reserve" this number. Objects
+        should be immediately added to avoid possible collisions
+        caused by shifting numbers of other objects in the collection.
+
+        :param start_num: the starting number to check.
+        :type start_num: int
+        :param step: the increment to jump by to find new numbers.
+        :type step: int
+        :returns: an available number
+        :rtype: int
+        """
+        number = start_num
+        while number in self.numbers:
+            number += step
+        return number
+
     def __getitem__(self, i):
         assert isinstance(i, int)
         find_manually = False
