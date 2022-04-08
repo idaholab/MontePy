@@ -118,12 +118,6 @@ class testFullFileIntegration(TestCase):
     def test_cell_surfaces_setter(self):
         cell = self.simple_problem.cells[1]
         surfaces = self.simple_problem.surfaces
-        with self.assertRaises(AssertionError):
-            cell.surfaces = 5
-        with self.assertRaises(AssertionError):
-            cell.surfaces = [5, 6]
-        with self.assertRaises(AssertionError):
-            cell.surfaces.append(5)
         cell.surfaces = surfaces
         self.assertEqual(cell.surfaces, surfaces)
 
@@ -143,7 +137,7 @@ class testFullFileIntegration(TestCase):
         self.assertEqual(list(cell.complements), complements)
 
     def test_problem_cells_setter(self):
-        problem = copy.copy(self.simple_problem)
+        problem = copy.deepcopy(self.simple_problem)
         cells = self.simple_problem.cells
         cells.remove(cells[1])
         with self.assertRaises(AssertionError):
