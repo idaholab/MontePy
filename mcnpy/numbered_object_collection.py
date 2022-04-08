@@ -73,16 +73,15 @@ class NumberedObjectCollection(ABC):
         """
         return self._objects[:]
 
-    def pop(self, pos=1):
+    def pop(self, pos=-1):
         """
         Pop the final items off of the collection
 
-        :param pos: The distance from the end of the list to remove.
+        :param pos: The index of the element to pop from the internal list.
         :type pos: int
-        :return: the final element(s_
+        :return: the final elements
         """
         assert isinstance(pos, int)
-        assert pos > 0
         obj = self._objects.pop(pos)
         self.__num_cache.pop(obj.number, None)
         return obj
@@ -222,7 +221,7 @@ class NumberedObjectCollection(ABC):
         assert isinstance(idx, int)
         obj = self[idx]
         self.__num_cache.pop(obj.number, None)
-        idx = self._objects[obj]
+        idx = self._objects.index(obj)
         del self._objects[idx]
 
     def __setitem__(self, key, newvalue):
@@ -235,7 +234,7 @@ class NumberedObjectCollection(ABC):
     def __iadd__(self, other):
         assert isinstance(other, (type(self), list))
         for obj in other:
-            assert isinstance(cell, self._obj_class)
+            assert isinstance(obj, self._obj_class)
         if isinstance(other, type(self)):
             other_list = other.objects
         else:
@@ -250,7 +249,7 @@ class NumberedObjectCollection(ABC):
                 )
             else:
                 self.__num_cache[obj.number] = obj
-        self.objects += other_list
+        self._objects += other_list
         return self
 
     def __contains__(self, element):
