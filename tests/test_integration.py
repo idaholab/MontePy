@@ -227,6 +227,30 @@ class testFullFileIntegration(TestCase):
         del surf.transform
         self.assertIsNone(surf.transform)
 
+    def test_materials_setter(self):
+        problem = copy.deepcopy(self.simple_problem)
+        with self.assertRaises(AssertionError):
+            problem.materials = 5
+        with self.assertRaises(AssertionError):
+            problem.materials = [5]
+        size = len(problem.materials)
+        problem.materials = list(problem.materials)
+        self.assertEqual(len(problem.materials), size)
+        problem.materials = problem.materials
+        self.assertEqual(len(problem.materials), size)
+
+    def test_reverse_pointers(self):
+        problem = self.simple_problem
+        complements = list(problem.cells[99].cells_complementing_this)
+        self.assertIn(problem.cells[5], complements)
+        self.assertEqual(len(complements), 1)
+        cells = list(problem.materials[1].cells)
+        self.assertIn(problem.cells[1], cells)
+        self.assertEqual(len(cells), 1)
+        cells = list(problem.surfaces[1005].cells)
+        self.assertIn(problem.cells[2], problem.surfaces[1005].cells)
+        self.assertEqual(len(cells), 2)
+
     def test_surface_broken_link(self):
         with self.assertRaises(mcnpy.errors.MalformedInputError):
             mcnpy.read_input("tests/inputs/test_broken_surf_link.imcnp")
