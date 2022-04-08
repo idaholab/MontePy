@@ -222,6 +222,13 @@ class Surface(MCNP_Card):
         self._mutated = True
         self._surface_number = number
 
+    @property
+    def cells(self):
+        if self._problem:
+            for cell in self._problem.cells:
+                if self in cell.surfaces:
+                    yield cell
+
     def __str__(self):
         return f"SURFACE: {self.number}, {self.surface_type}"
 

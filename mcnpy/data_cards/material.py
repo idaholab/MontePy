@@ -134,6 +134,14 @@ class Material(data_card.DataCard):
         """
         return self._thermal_scattering
 
+    @property
+    def cells(self):
+        """"""
+        if self._problem:
+            for cell in self._problem.cells:
+                if cell.material == self:
+                    yield cell
+
     def add_thermal_scattering(self, law):
         """
         Adds thermal scattering law to the material

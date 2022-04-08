@@ -306,6 +306,18 @@ class Cell(MCNP_Card):
         self._mutated = True
         self._complements = complements
 
+    @property
+    def cells_complementing_this(self):
+        """The cells which are a complement of this cell.
+
+        This returns a generator.
+        """
+        if self._problem:
+            for cell in self._problem.cells:
+                if cell != self:
+                    if self in cell.complements:
+                        yield cell
+
     def update_pointers(self, cell_dict, material_dict, surface_dict):
         """
         Attaches this object to the appropriate objects for surfaces and materials.
