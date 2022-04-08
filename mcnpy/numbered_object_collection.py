@@ -65,6 +65,13 @@ class NumberedObjectCollection(ABC):
         return obj
 
     def extend(self, other_list):
+        """
+        Extends this collection with another list.
+
+        :param other_list: the list of objects to add.
+        :type other_list: list
+        :raises: NumberConflictError if these items conflict with existing elements.
+        """
         assert isinstance(other_list, list)
         for obj in other_list:
             assert isinstance(obj, self._obj_class)
@@ -93,6 +100,12 @@ class NumberedObjectCollection(ABC):
         return self._iter.__next__()
 
     def append(self, obj):
+        """Appends the given object to the end of this collection.
+
+        :param obj: the object to add.
+        :type obj: MCNP_Card
+        :raises: NumberConflictError: if this object has a number that is already in use.
+        """
         assert isinstance(obj, self._obj_class)
         if obj.number in self.__num_cache and obj.number in self.numbers:
             raise NumberConflictError(
