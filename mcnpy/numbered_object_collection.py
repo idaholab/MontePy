@@ -43,6 +43,19 @@ class NumberedObjectCollection(ABC):
         """
         return len(self._objects) != len(set(self.numbers))
 
+    def check_number(self, number):
+        """Checks if the number is already in use, and if so raises an error.
+
+        :param number: The number to check.
+        :type number: int
+        :raises: NumberConflictError: if this number is in use.
+        """
+        assert isinstance(number, int)
+        if number in self.numbers:
+            raise NumberConflictError(
+                f"Number {number} is already in use for the collection: {type(self)}"
+            )
+
     @property
     def objects(self):
         """

@@ -157,6 +157,8 @@ class Cell(MCNP_Card):
     def number(self, number):
         assert isinstance(number, int)
         assert number > 0
+        if self._problem:
+            self._problem.cells.check_number(number)
         self._mutated = True
         self._cell_number = number
 

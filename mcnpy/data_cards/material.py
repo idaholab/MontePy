@@ -97,6 +97,8 @@ class Material(data_card.DataCard):
     def number(self, number):
         assert isinstance(number, int)
         assert number > 0
+        if self._problem:
+            self._problem.materials.check_number(number)
         self._mutated = True
         self._material_number = number
 

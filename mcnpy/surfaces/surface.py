@@ -217,6 +217,8 @@ class Surface(MCNP_Card):
     def number(self, number):
         assert isinstance(number, int)
         assert number > 0
+        if self._problem:
+            self._problem.surfaces.check_number(number)
         self._mutated = True
         self._surface_number = number
 
