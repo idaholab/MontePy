@@ -29,7 +29,10 @@ class NumberedObjectCollection(ABC):
         """
         A generator of the numbers being used.
         """
+        self.__num_cache
         for obj in self._objects:
+            # update cache every time we go through all objects
+            self.__num_cache[obj.number] = obj
             yield obj.number
 
     def check_redundant_numbers(self):
