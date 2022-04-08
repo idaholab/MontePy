@@ -113,6 +113,7 @@ class Material(data_card.DataCard):
 
         :rtype: dict
         """
+        #TODO allow detecting mutation of components
         return self._material_components
 
     @property

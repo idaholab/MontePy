@@ -269,3 +269,11 @@ class testFullFileIntegration(TestCase):
         cell = new_prob.cells[0]
         output = cell.format_for_mcnp_input((6.2, 0))
         self.assertEqual(int(output[1].split()[1]), 5)
+
+    def test_thermal_scattering_pass_through(self):
+        problem = copy.deepcopy(self.simple_problem)
+        # TODO
+        mat = problem.materials[2]
+        therm = mat.thermal_scattering
+        mat.material_number = 5
+        self.assertEqual(therm.format_for_mcnp_input((6.2, 0)), ["MT5 lwtr.23t"])
