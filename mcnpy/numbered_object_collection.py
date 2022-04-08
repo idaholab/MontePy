@@ -19,6 +19,13 @@ class NumberedObjectCollection(ABC):
             assert isinstance(objects, list)
             for obj in objects:
                 assert isinstance(obj, obj_class)
+                if obj.number in self.__num_cache:
+                    raise NumberConflictError(
+                        (
+                            f"When building {self} there was a numbering conflict between: "
+                            f"{obj} and {self[obj.number]}"
+                        )
+                    )
                 self.__num_cache[obj.number] = obj
             self._objects = objects
         else:
