@@ -114,7 +114,7 @@ class Comment(MCNP_Input):
 
     def format_for_mcnp_input(self, mcnp_version):
         line_length = 0
-        if mcnp_version[0] == 6.2:
+        if mcnp_version[:2] == (6, 2):
             line_length = 128
         ret = []
         for line in self.lines:
@@ -158,7 +158,7 @@ class Message(MCNP_Input):
     def format_for_mcnp_input(self, mcnp_version):
         ret = []
         line_length = 0
-        if mcnp_version[0] == 6.2:
+        if mcnp_version[:2] == (6, 2):
             line_length = 128
         for i, line in enumerate(self.lines):
             if i == 0:
@@ -188,6 +188,6 @@ class Title(MCNP_Input):
 
     def format_for_mcnp_input(self, mcnp_version):
         line_length = 0
-        if mcnp_version[0] == 6.2:
+        if mcnp_version[:2] == (6, 2):
             line_length = 128
         return [self.title[0 : line_length - 1]]
