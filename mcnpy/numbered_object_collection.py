@@ -60,7 +60,7 @@ class NumberedObjectCollection(ABC):
         assert isinstance(number, int)
         if number in self.numbers:
             raise NumberConflictError(
-                f"Number {number} is already in use for the collection: {type(self)}"
+                f"Number {number} is already in use for the collection: {type(self)} by {self[number]}"
             )
 
     @property
@@ -196,6 +196,16 @@ class NumberedObjectCollection(ABC):
         assert step > 0
         return max(self.numbers) + step
 
+    def replace(self, old, new):
+        assert isinstance(old, self._obj_class)
+        assert isinstance(new, self._obj_class)
+        if old.number != new.number:
+            self.check_number(new.number)
+        self.__num_cache.pop(old.number, None)
+        self.__num_cache[new.number] = new
+        self._objects.remove(old)
+        self.append(new)
+
     def __getitem__(self, i):
         assert isinstance(i, int)
         find_manually = False
@@ -252,5 +262,6 @@ class NumberedObjectCollection(ABC):
         self._objects += other_list
         return self
 
-    def __contains__(self, element):
-        return any(x is element for x in self._objects)
+    def __contains__(self, other):
+        #return any(other is x for x in self._objects or other == x for x in self._objects)
+        return other in self._objects

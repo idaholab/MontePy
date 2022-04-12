@@ -162,3 +162,17 @@ class TestNumberedObjectCollection(unittest.TestCase):
         self.assertEqual(len(answer_num), len(spheres))
         for i, sphere in enumerate(spheres):
             self.assertEqual(answer_num[i], sphere.number)
+
+    def test_number_adding_concurancy(self):
+        surfaces = copy.deepcopy(self.simple_problem.surfaces)
+        new_surf =  copy.deepcopy(surfaces[1005])
+        new_surf.number = 5
+        surfaces.append(new_surf)
+        size = len(surfaces)
+        new_surf = copy.deepcopy(new_surf)
+        with self.assertRaises(NumberConflictError):
+            surfaces.append(new_surf)
+        surfaces.append_renumber(new_surf)
+        self.assertEqual(len(surfaces), size + 1)
+        self.assertEqual(new_surf.number, 6)
+

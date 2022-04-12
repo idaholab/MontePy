@@ -24,7 +24,7 @@ import mcnpy
 foo = mcnpy.read_input("foo.imcnp")
 i = 9500
 for cell in foo.cells:
-  cell.cell_number = i
+  cell.number = i
   i = i + 5
   
 foo.write_to_file("foo_update.imcnp")
