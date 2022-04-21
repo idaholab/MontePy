@@ -116,15 +116,15 @@ class testSurfaces(TestCase):
         card = Card(BlockType.SURFACE, ["+1", "PZ", "0.0"])
         surf = Surface(card)
         answer = "+1 PZ 0"
-        self.assertEqual(surf.format_for_mcnp_input((6.2, 0))[0], answer)
+        self.assertEqual(surf.format_for_mcnp_input((6, 2, 0))[0], answer)
         card = Card(BlockType.SURFACE, ["*1", "PZ", "0.0"])
         surf = Surface(card)
         answer = "*1 PZ 0"
-        self.assertEqual(surf.format_for_mcnp_input((6.2, 0))[0], answer)
+        self.assertEqual(surf.format_for_mcnp_input((6, 2, 0))[0], answer)
         card = Card(BlockType.SURFACE, ["1", "PZ", "0.0"])
         surf = Surface(card)
         answer = "1 PZ 0"
-        self.assertEqual(surf.format_for_mcnp_input((6.2, 0))[0], answer)
+        self.assertEqual(surf.format_for_mcnp_input((6, 2, 0))[0], answer)
 
     def test_surface_str(self):
         card = Card(BlockType.SURFACE, ["+1", "PZ", "0.0"])

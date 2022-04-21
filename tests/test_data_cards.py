@@ -31,7 +31,7 @@ class testDataCardClass(TestCase):
         comment = Comment(["foo", "bar"])
         data_card = DataCard(input_card, comment)
         answer = ["C foo", "C bar", "m1 1001.80c 1.0"]
-        output = data_card.format_for_mcnp_input((6.2, 0))
+        output = data_card.format_for_mcnp_input((6, 2, 0))
         self.assertEqual(len(answer), len(output))
         for i, line in enumerate(output):
             self.assertEqual(answer[i], line)

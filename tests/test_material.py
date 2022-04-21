@@ -87,7 +87,7 @@ class testMaterialClass(TestCase):
         input_card = Card(BlockType.DATA, ["M20", "1001.80c", "0.5", "8016.80c", "0.5"])
         material = Material(input_card, None)
         answers = ["m20       1001.80c         0.5", "           8016.80c         0.5"]
-        output = material.format_for_mcnp_input((6.2, 0))
+        output = material.format_for_mcnp_input((6, 2, 0))
         self.assertEqual(len(answers), len(output))
         for i, line in enumerate(output):
             self.assertEqual(line, answers[i])
@@ -158,4 +158,4 @@ class testMaterialClass(TestCase):
         material = Material(input_card, None)
         material.update_pointers([card])
 
-        self.assertEqual(card.format_for_mcnp_input((6.2, 0)), ["MT20 grph.20t"])
+        self.assertEqual(card.format_for_mcnp_input((6, 2, 0)), ["MT20 grph.20t"])

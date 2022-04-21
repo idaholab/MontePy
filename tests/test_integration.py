@@ -162,9 +162,9 @@ class testFullFileIntegration(TestCase):
     def test_problem_mcnp_version_setter(self):
         problem = copy.copy(self.simple_problem)
         with self.assertRaises(AssertionError):
-            problem.mcnp_version = (5.5, 3)
-        problem.mcnp_version = (6.2, 5)
-        self.assertEqual(problem.mcnp_version, (6.2, 5))
+            problem.mcnp_version = (5, 5, 3)
+        problem.mcnp_version = (6, 2, 5)
+        self.assertEqual(problem.mcnp_version, (6, 2, 5))
 
     def test_problem_duplicate_surface_remover(self):
         problem = mcnpy.read_input("tests/inputs/test_redundant_surf.imcnp")
@@ -181,7 +181,7 @@ class testFullFileIntegration(TestCase):
         self.assertEqual(problem.surfaces, survivors)
         cell_surf_answer = "-1 3 -6"
         self.assertIn(
-            cell_surf_answer, problem.cells[1].format_for_mcnp_input((6.2, 0))[1]
+            cell_surf_answer, problem.cells[1].format_for_mcnp_input((6, 2, 0))[1]
         )
 
     def test_surface_periodic(self):
@@ -189,7 +189,7 @@ class testFullFileIntegration(TestCase):
         surf = problem.surfaces[0]
         periodic = problem.surfaces[1]
         self.assertEqual(surf.periodic_surface, periodic)
-        self.assertIn("1 -2 SO", surf.format_for_mcnp_input((6.2, 0))[0])
+        self.assertIn("1 -2 SO", surf.format_for_mcnp_input((6, 2, 0))[0])
         surf.periodic_surface = problem.surfaces[2]
         self.assertEqual(surf.periodic_surface, problem.surfaces[2])
         del surf.periodic_surface
@@ -204,7 +204,7 @@ class testFullFileIntegration(TestCase):
         del surf.periodic_surface
         surf.transform = transform
         self.assertEqual(surf.transform, transform)
-        self.assertIn("1 1 SO", surf.format_for_mcnp_input((6.2, 0))[0])
+        self.assertIn("1 1 SO", surf.format_for_mcnp_input((6, 2, 0))[0])
         del surf.transform
         self.assertIsNone(surf.transform)
 
