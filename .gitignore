@@ -4,3 +4,4 @@ dist/*
 *egg-info/*
 *.mcnp
 *.*.swp
+doc/build/*
