@@ -396,8 +396,10 @@ class Cell(MCNP_Card):
         """Updates old surface numbers to prepare for deleting surfaces.
 
         Note: update_pointers must be ran again.
-        :param deleting_dict: a dict of the surfaces to delete.
-            The key is the old surface, and the value is the new one.
+        For the deleting_dict the key is the old surface, 
+        and the value is the new one.
+
+        :param deleting_dict: a dict of the surfaces to delete. 
         :type deleting_dict: dict
         """
         will_update = False
