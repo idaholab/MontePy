@@ -108,7 +108,7 @@ class TestCellClass(TestCase):
                 cell = Cell(card)
                 self.assertEqual(cell.parameters["FILL"], in_fill)
                 cell.number = 2
-                output = cell.format_for_mcnp_input((6.2, 0))
+                output = cell.format_for_mcnp_input((6, 2, 0))
                 self.assertIn(in_fill, output[2])
                 parts = output[2].split("=")
                 # ensure that fill is final entry

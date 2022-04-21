@@ -26,7 +26,7 @@ class MCNP_Problem:
         self._surfaces = Surfaces()
         self._data_cards = []
         self._materials = Materials()
-        self._mcnp_version = (6.2, 0)
+        self._mcnp_version = (6, 2, 0)
 
     @property
     def original_inputs(self):
@@ -79,8 +79,8 @@ class MCNP_Problem:
         Export Control Restrictions. Documentation for MCNP 6.2 is public in report:
             LA-UR-17-29981
 
-        The version is a tuple of the major and minor revisions combined.
-        6.2.0 would be represented as (6.2, 0)
+        The version is a tuple of major, minor, revision.
+        6.2.0 would be represented as (6, 2, 0)
         :rtype: tuple
         """
         return self._mcnp_version
@@ -91,7 +91,7 @@ class MCNP_Problem:
         :param version: the version tuple. Must be greater than 6.2.0
         :type version: tuple
         """
-        assert version >= (6.2, 0)
+        assert version >= (6, 2, 0)
         self._mcnp_version = version
 
     @property

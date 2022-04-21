@@ -135,7 +135,7 @@ MAIN_TO_AUX: False
         in_str = "tr5 " + "0.0 " * 3 + "0.0 " * 9 + " -1"
         card = Card([in_str], BlockType.DATA, in_str.split())
         transform = Transform(card)
-        output = transform.format_for_mcnp_input((6.2, 0))
+        output = transform.format_for_mcnp_input((6, 2, 0))
         answers = [
             "TR5 0.0 0.0 0.0",
             "     0.0 0.0 0.0",
@@ -149,7 +149,7 @@ MAIN_TO_AUX: False
         in_str = "*tr5 " + "0.0 " * 3 + "0.0 " * 9 + " -1"
         card = Card([in_str], BlockType.DATA, in_str.split())
         transform = Transform(card)
-        output = transform.format_for_mcnp_input((6.2, 0))
+        output = transform.format_for_mcnp_input((6, 2, 0))
         self.assertEqual(output[0], "*TR5 0.0 0.0 0.0")
 
     def test_transform_equivalent(self):

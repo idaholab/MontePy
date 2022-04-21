@@ -89,6 +89,7 @@ c bar"""
         in_strs = ["c foo", "c bar"]
         card = mcnpy.input_parser.mcnp_input.Comment(in_strs, ["foo", "bar"])
         output = card.format_for_mcnp_input((6.2, 0))
+        output = card.format_for_mcnp_input((6, 2, 0))
         answer = ["C foo", "C bar"]
         str_answer = """COMMENT:
 foo
@@ -107,7 +108,7 @@ foo
 bar
 """
         self.assertEqual(str_answer, str(card))
-        output = card.format_for_mcnp_input((6.2, 0))
+        output = card.format_for_mcnp_input((6, 2, 0))
         self.assertEqual(len(answer), len(output))
         for i, line in enumerate(output):
             self.assertEqual(answer[i], line)
@@ -117,7 +118,7 @@ bar
         answer = ["foo"]
         str_answer = "TITLE: foo"
         self.assertEqual(str(card), str_answer)
-        output = card.format_for_mcnp_input((6.2, 0))
+        output = card.format_for_mcnp_input((6, 2, 0))
         self.assertEqual(len(answer), len(output))
         for i, line in enumerate(output):
             self.assertEqual(answer[i], line)
