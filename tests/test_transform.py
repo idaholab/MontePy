@@ -145,7 +145,7 @@ MAIN_TO_AUX: False
         ]
         self.assertEqual(output[0], in_str)
         transform.transform_number = 2
-        output = transform.format_for_mcnp_input((6.2, 0))
+        output = transform.format_for_mcnp_input((6, 2, 0))
         self.assertEqual(len(output), len(answers))
         for i, line in enumerate(output):
             self.assertEqual(line, answers[i])

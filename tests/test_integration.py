@@ -217,26 +217,26 @@ class testFullFileIntegration(TestCase):
         surf = problem.surfaces[0]
         # Test card pass through
         answer = ["1 -2 SO -5"]
-        self.assertEqual(surf.format_for_mcnp_input((6.2, 0)), answer)
+        self.assertEqual(surf.format_for_mcnp_input((6, 2, 0)), answer)
         # Test changing periodic surface
         new_prob = copy.deepcopy(problem)
         # TODO
         surf = new_prob.surfaces[0]
         new_prob.surfaces[1].surface_number = 5
-        self.assertEqual(int(surf.format_for_mcnp_input((6.2, 0))[0].split()[1]), -5)
+        self.assertEqual(int(surf.format_for_mcnp_input((6, 2, 0))[0].split()[1]), -5)
         # Test changing transform
         new_prob = copy.deepcopy(problem)
         # TODO
         surf = new_prob.surfaces[3]
         surf.transform.transform_number = 5
-        self.assertEqual(int(surf.format_for_mcnp_input((6.2, 0))[0].split()[1]), 5)
+        self.assertEqual(int(surf.format_for_mcnp_input((6, 2, 0))[0].split()[1]), 5)
         # test changing surface constants
         new_prob = copy.deepcopy(problem)
         # TODO
         surf = new_prob.surfaces[3]
         surf.location = 2.5
         self.assertEqual(
-            float(surf.format_for_mcnp_input((6.2, 0))[0].split()[-1]), 2.5
+            float(surf.format_for_mcnp_input((6, 2, 0))[0].split()[-1]), 2.5
         )
 
     def test_surface_broken_link(self):
@@ -251,14 +251,14 @@ class testFullFileIntegration(TestCase):
         cell = problem.cells[0]
         # test card pass-through
         answer = ["C cells", "1 1 20", "         -1000", "     imp:n,p=1 U=350 trcl=5"]
-        self.assertEqual(cell.format_for_mcnp_input((6.2, 0)), answer)
+        self.assertEqual(cell.format_for_mcnp_input((6, 2, 0)), answer)
         # test surface change
         new_prob = copy.deepcopy(problem)
         # TODO
         new_prob.surfaces[0].surface_number = 5
         # TODO
         cell = new_prob.cells[0]
-        output = cell.format_for_mcnp_input((6.2, 0))
+        output = cell.format_for_mcnp_input((6, 2, 0))
         self.assertEqual(int(output[2]), -5)
         # ensure that surface number updated
         # Test material number change
@@ -267,7 +267,7 @@ class testFullFileIntegration(TestCase):
         new_prob.materials[0].material_number = 5
         # TODO
         cell = new_prob.cells[0]
-        output = cell.format_for_mcnp_input((6.2, 0))
+        output = cell.format_for_mcnp_input((6, 2, 0))
         self.assertEqual(int(output[1].split()[1]), 5)
 
     def test_thermal_scattering_pass_through(self):
@@ -276,4 +276,4 @@ class testFullFileIntegration(TestCase):
         mat = problem.materials[2]
         therm = mat.thermal_scattering
         mat.material_number = 5
-        self.assertEqual(therm.format_for_mcnp_input((6.2, 0)), ["MT5 lwtr.23t"])
+        self.assertEqual(therm.format_for_mcnp_input((6, 2, 0)), ["MT5 lwtr.23t"])
