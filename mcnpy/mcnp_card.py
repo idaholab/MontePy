@@ -10,6 +10,12 @@ class MCNP_Card(ABC):
     """
 
     def __init__(self, input_card, comment=None):
+        """
+        :param input_card: The Card syntax object this will wrap and parse.
+        :type input_card: Card
+        :param comment: The Comment that proceeded this card if any
+        :type Comment: Comment
+        """
         if input_card:
             assert isinstance(input_card, mcnpy.input_parser.mcnp_input.Card)
             self._input_lines = input_card.input_lines
@@ -55,12 +61,18 @@ class MCNP_Card(ABC):
 
     @property
     def input_lines(self):
-        """The raw input lines read from the input file"""
+        """The raw input lines read from the input file
+
+        :rtype: list
+        """
         return self._input_lines
 
     @property
     def mutated(self):
-        """True if the user has changed a property of this card"""
+        """True if the user has changed a property of this card
+
+        :rtype: bool
+        """
         return self._mutated
 
     @staticmethod
