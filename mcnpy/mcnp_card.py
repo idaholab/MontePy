@@ -105,7 +105,7 @@ class MCNP_Card(ABC):
         """
         line_length = 0
         indent_length = 0
-        if mcnp_version[0] == 6.2:
+        if mcnp_version[:2] == (6, 2):
             line_length = 128
             indent_length = 5
         if is_first_line:
