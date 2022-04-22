@@ -7,7 +7,7 @@ Welcome to OpenMCNPy's documentation!
 =====================================
 
 .. toctree::
-   :maxdepth: 3
+   :maxdepth: 2
    :caption: Contents:
 
    starting
@@ -18,7 +18,9 @@ Welcome to OpenMCNPy's documentation!
 
 See Also
 ========
-`MCNPy Gitlab Repository <https://hpcgitlab.hpc.inl.gov/experiment_analysis/mcnpy/>`_ 
+
+* `MCNPy Gitlab Repository <https://hpcgitlab.hpc.inl.gov/experiment_analysis/mcnpy/>`_ 
+* `MCNP 6.2 User Manual <https://laws.lanl.gov/vhosts/mcnp.lanl.gov/pdf_files/la-ur-17-29981.pdf>`_
 
 Indices and tables
 ==================
