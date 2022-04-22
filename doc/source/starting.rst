@@ -100,7 +100,8 @@ Information Lost
    It will then read these extra files and append their contents to the appropriate block.
    So If you were to write out a problem that used the read card in the surface block the surface
    cards in that file will appear at the end of the new surface block.
-
+#. MCNP shortcuts for numbers. The shortcuts like: ``1 9r`` will be expanded to its meaning, and will not be
+   recompressed.
 
 What a Problem Looks Like
 -------------------------
