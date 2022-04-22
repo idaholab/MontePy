@@ -1,5 +1,9 @@
 from mcnpy.cell import Cell
+from mcnpy.cells import Cells
+from mcnpy.errors import NumberConflictError
+from mcnpy.materials import Materials
 from mcnpy.surfaces import surface_builder
+from mcnpy.surface_collection import Surfaces
 from mcnpy.data_cards import Material, parse_data
 from mcnpy.input_parser import input_syntax_reader, block_type, mcnp_input
 
@@ -18,10 +22,10 @@ class MCNP_Problem:
         self._title = None
         self._message = None
         self._original_inputs = []
-        self._cells = []
-        self._surfaces = []
+        self._cells = Cells()
+        self._surfaces = Surfaces()
         self._data_cards = []
-        self._materials = []
+        self._materials = Materials()
         self._mcnp_version = (6, 2, 0)
 
     @property
@@ -49,9 +53,11 @@ class MCNP_Problem:
 
     @cells.setter
     def cells(self, cells):
-        assert isinstance(cells, list)
-        for cell in cells:
-            assert isinstance(cell, Cell)
+        assert type(cells) in [Cells, list]
+        if isinstance(cells, list):
+            for cell in cells:
+                assert isinstance(cell, Cell)
+            cells = Cells(cells)
         self._cells = cells
 
     def add_cells(self, cells):
@@ -109,6 +115,15 @@ class MCNP_Problem:
         """
         return self._materials
 
+    @materials.setter
+    def materials(self, mats):
+        assert type(mats) in [list, Materials]
+        for mat in mats:
+            assert isinstance(mat, Material)
+        if isinstance(mats, list):
+            mats = Materials(mats)
+        self._materials = mats
+
     @property
     def data_cards(self):
         """
@@ -151,7 +166,7 @@ class MCNP_Problem:
         """
         :type title: The str for the title to be set to.
         """
-        self._title = mcnp_input.Title(title)
+        self._title = mcnp_input.Title([title], title)
 
     def parse_input(self):
         """
@@ -175,14 +190,17 @@ class MCNP_Problem:
                 if len(input_card.words) > 0:
                     if input_card.block_type == block_type.BlockType.CELL:
                         cell = Cell(input_card, comment_queue)
+                        cell.link_to_problem(self)
                         self._cells.append(cell)
                     if input_card.block_type == block_type.BlockType.SURFACE:
                         surface = surface_builder.surface_builder(
                             input_card, comment_queue
                         )
+                        surface.link_to_problem(self)
                         self._surfaces.append(surface)
                     if input_card.block_type == block_type.BlockType.DATA:
                         data = parse_data(input_card, comment_queue)
+                        data.link_to_problem(self)
                         self._data_cards.append(data)
                         if isinstance(data, Material):
                             self._materials.append(data)
@@ -191,20 +209,10 @@ class MCNP_Problem:
 
     def __update_internal_pointers(self):
         """Updates the internal pointers between objects"""
-        material_dict = {}
-        surface_dict = {}
-        cell_dict = {}
-        for mat in self._materials:
-            material_dict[mat.old_material_number] = mat
-        for surface in self._surfaces:
-            surface_dict[surface.old_surface_number] = surface
         for cell in self._cells:
-            cell_dict[cell.old_cell_number] = cell
-        # update links
-        for cell in self._cells:
-            cell.update_pointers(cell_dict, material_dict, surface_dict)
+            cell.update_pointers(self.cells, self.materials, self.surfaces)
         for surface in self._surfaces:
-            surface.update_pointers(surface_dict, self._data_cards)
+            surface.update_pointers(self.surfaces, self._data_cards)
         for card in self._data_cards:
             card.update_pointers(self._data_cards)
 
@@ -244,9 +252,9 @@ class MCNP_Problem:
                 materials.add(cell.material)
         surfaces = sorted(list(surfaces))
         materials = sorted(list(materials))
-        self._surfaces = surfaces
-        self._materials = materials
-        self._data_cards = list(set(self._data_cards + materials))
+        self._surfaces = Surfaces(surfaces)
+        self._materials = Materials(materials)
+        self._data_cards = sorted(list(set(self._data_cards + materials)))
 
     def write_to_file(self, new_problem):
         """
@@ -261,16 +269,43 @@ class MCNP_Problem:
                     fh.write(line + "\n")
             lines = self.title.format_for_mcnp_input(self.mcnp_version)
             fh.write(lines[0] + "\n")
+            cell_numbers = {}
+            if self.cells.check_redundant_numbers():
+                # find the problem cells
+                for cell in self.cells:
+                    if cell.number in cell_numbers:
+                        raise NumberConflictError(
+                            f"The cells {cell}, and {cell_numbers[cell.number]}"
+                            " have the same cell number"
+                        )
+                    cell_numbers[cell.number] = cell
             for cell in self.cells:
                 for line in cell.format_for_mcnp_input(self.mcnp_version):
                     fh.write(line + "\n")
             # block terminator
             fh.write("\n")
+            surf_numbers = {}
+            if self.surfaces.check_redundant_numbers():
+                for surface in self.surfaces:
+                    if surface.number in surf_numbers:
+                        raise NumberConflictError(
+                            f"The surfaces {surface}, and {surf_numbers[surface.number]}"
+                            " have the same surface number"
+                        )
+                    surf_numbers[surface.number] = surface
             for surface in self.surfaces:
                 for line in surface.format_for_mcnp_input(self.mcnp_version):
                     fh.write(line + "\n")
             fh.write("\n")
-
+            mat_numbers = {}
+            if self.materials.check_redundant_numbers():
+                for mat in self.materials:
+                    if mat.number in mat_numbers:
+                        raise NumberConflictError(
+                            f"The Materials {mat}, and {mat_numbers[mat.number]}"
+                            " have the same material number"
+                        )
+                    mat_numbers[mat.number] = mat
             for card in self.data_cards:
                 for line in card.format_for_mcnp_input(self.mcnp_version):
                     fh.write(line + "\n")

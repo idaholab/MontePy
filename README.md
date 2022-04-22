@@ -24,7 +24,7 @@ import mcnpy
 foo = mcnpy.read_input("foo.imcnp")
 i = 9500
 for cell in foo.cells:
-  cell.cell_number = i
+  cell.number = i
   i = i + 5
   
 foo.write_to_file("foo_update.imcnp")
@@ -39,10 +39,6 @@ Here a few of the known bugs and limitations:
 * Cannot handle vertical input mode.
 	
 * Cannot handle c  comments inside of a card
-	
-* The API is a bit verbose sometimes. In release 0.0.5 this will be changed. So if you use it now be warned that backwards compatibility will likely be lost. I'll provide info on how to make the transition.
-	
-* Find cell say 1000 is a bit tedious right now this is slotted to change in 0.0.5
 
  
 

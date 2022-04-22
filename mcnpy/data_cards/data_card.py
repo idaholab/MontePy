@@ -14,8 +14,11 @@ class DataCard(MCNP_Card):
         :param comment: The Comment that may proceed this
         :type comment: Comment
         """
-        super().__init__(comment)
-        self._words = input_card.words
+        super().__init__(input_card, comment)
+        if input_card:
+            self._words = input_card.words
+        else:
+            self._words = []
 
     @property
     def words(self):
@@ -28,7 +31,10 @@ class DataCard(MCNP_Card):
 
     def format_for_mcnp_input(self, mcnp_version):
         ret = super().format_for_mcnp_input(mcnp_version)
-        ret += DataCard.wrap_words_for_mcnp(self.words, mcnp_version, True)
+        if self.mutated:
+            ret += DataCard.wrap_words_for_mcnp(self.words, mcnp_version, True)
+        else:
+            ret += self.input_lines
         return ret
 
     def update_pointers(self, data_cards):
@@ -42,3 +48,24 @@ class DataCard(MCNP_Card):
 
     def __str__(self):
         return f"DATA CARD: {self._words}"
+
+    def __split_name__(self):
+        name = self._words[0]
+        names = [
+            "".join(c for c in name if c.isalpha()) or None,
+            "".join(c for c in name if c.isdigit()) or None,
+        ]
+        if names[1]:
+            names[1] = int(names[1])
+        return names
+
+    def __lt__(self, other):
+        self_parts = self.__split_name__()
+        other_parts = other.__split_name__()
+        type_comp = self_parts[0] < other_parts[0]
+        if type_comp:
+            return type_comp
+        elif self_parts[0] > other_parts[0]:
+            return type_comp
+        else:  # otherwise first part is equal
+            return self_parts[1] < other_parts[1]

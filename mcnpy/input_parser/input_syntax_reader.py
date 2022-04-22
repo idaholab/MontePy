@@ -46,20 +46,23 @@ def read_front_matters(fh):
     is_in_message_block = False
     found_title = False
     lines = []
+    raw_lines = []
     for i, line in enumerate(fh):
         if i == 0 and line.upper().startswith("MESSAGE:"):
             is_in_message_block = True
+            raw_lines.append(line.rstrip())
             lines.append(line[9:])  # removes "MESSAGE: "
         elif is_in_message_block:
             if line.strip():
+                raw_lines.append(line.rstrip())
                 lines.append(line)
             # message block is terminated by a blank line
             else:
-                yield Message(lines)
+                yield Message(raw_lines, lines)
                 is_in_message_block = False
         # title always follows complete message, or is first
         else:
-            yield Title(line)
+            yield Title([line], line)
             break
 
 
@@ -89,16 +92,18 @@ def read_data(fh, block_type=None, recursion=False):
         block_type = BlockType.CELL
     is_in_comment = False
     continue_card = False
+    raw_lines = []
     words = []
     for line in fh:
         # transition to next block with blank line
         if not line.strip():
             # flush current card
             if is_in_comment:
-                yield Comment(words)
+                yield Comment(raw_lines, words)
             else:
-                yield generate_card_object(block_type, words)
+                yield generate_card_object(raw_lines, block_type, words)
             words = []
+            raw_lines = []
             block_counter += 1
             if block_counter < 3:
                 block_type = BlockType(block_counter)
@@ -110,19 +115,22 @@ def read_data(fh, block_type=None, recursion=False):
             if commentFinder.match(line):
                 if not is_in_comment:
                     if words:
-                        yield generate_card_object(block_type, words)
+                        yield generate_card_object(raw_lines, block_type, words)
                     # removes leading comment info
                     words = [commentFinder.split(line)[1]]
+                    raw_lines = [line.rstrip()]
                     is_in_comment = True
                 else:
+                    raw_lines.append(line.rstrip())
                     words.append(commentFinder.split(line)[1])
             # if not a comment
             else:
                 # terminate comment
                 if is_in_comment:
                     is_in_comment = False
-                    yield Comment(words)
+                    yield Comment(raw_lines, words)
                     words = []
+                    raw_lines = []
                 if "#" in line[0:BLANK_SPACE_CONTINUE]:
                     raise errors.UnsupportedFeature(
                         "Vertical Input format is not allowed"
@@ -134,18 +142,20 @@ def read_data(fh, block_type=None, recursion=False):
                 # if beginning a new card
                 if line[0:BLANK_SPACE_CONTINUE].strip() and not continue_card:
                     if words:
-                        yield generate_card_object(block_type, words)
+                        yield generate_card_object(raw_lines, block_type, words)
                     words = temp_words
+                    raw_lines = [line.rstrip()]
                 else:
                     words = words + temp_words
+                    raw_lines.append(line.rstrip())
                 if line.endswith(" &\n"):
                     continue_card = True
                 else:
                     continue_card = False
     if is_in_comment:
-        yield Comment(words)
+        yield Comment(raw_lines, words)
     else:
-        yield generate_card_object(block_type, words)
+        yield generate_card_object(raw_lines, block_type, words)
 
     if not recursion:
         # ensure fh is a file reader, ignore StringIO
@@ -158,10 +168,10 @@ def read_data(fh, block_type=None, recursion=False):
                         yield input_card
 
 
-def generate_card_object(block_type, words):
-    card = Card(block_type, words)
+def generate_card_object(raw_lines, block_type, words):
+    card = Card(raw_lines, block_type, words)
     if len(card.words) > 0 and card.words[0].lower() == "read":
-        card = ReadCard(block_type, words)
+        card = ReadCard(raw_lines, block_type, words)
         reading_queue.append((block_type, card.file_name))
     else:
         return card

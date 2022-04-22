@@ -1,5 +1,6 @@
 from abc import ABC, abstractmethod
 from mcnpy.input_parser.mcnp_input import Comment
+import mcnpy
 import textwrap
 
 
@@ -8,7 +9,15 @@ class MCNP_Card(ABC):
     Abstract class for semantic representations of MCNP input cards.
     """
 
-    def __init__(self, comment=None):
+    def __init__(self, input_card, comment=None):
+        self._problem = None
+        if input_card:
+            assert isinstance(input_card, mcnpy.input_parser.mcnp_input.Card)
+            self._input_lines = input_card.input_lines
+            self._mutated = False
+        else:
+            self._input_lines = []
+            self._mutated = True
         if comment:
             self._comment = comment
         else:
@@ -42,7 +51,22 @@ class MCNP_Card(ABC):
     @comment.setter
     def comment(self, comment):
         assert isinstance(comment, Comment)
+        self._mutated = True
         self._comment = comment
+
+    @comment.deleter
+    def comment(self):
+        self._comment = None
+
+    @property
+    def input_lines(self):
+        """The raw input lines read from the input file"""
+        return self._input_lines
+
+    @property
+    def mutated(self):
+        """True if the user has changed a property of this card"""
+        return self._mutated
 
     @staticmethod
     def wrap_words_for_mcnp(words, mcnp_version, is_first_line):
@@ -99,3 +123,14 @@ class MCNP_Card(ABC):
             subsequent_indent=" " * indent_length,
         )
         return wrapper.wrap(string)
+
+    def link_to_problem(self, problem):
+        """Links the card to the parent problem for this card.
+
+        This is done so that cards can find links to other objects.
+
+        :param problem: The problem to link this card to.
+        :type type: MCNP_Problem
+        """
+        assert isinstance(problem, mcnpy.mcnp_problem.MCNP_Problem)
+        self._problem = problem
