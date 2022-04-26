@@ -86,7 +86,7 @@ class ThermalScatteringLaw(DataCard):
         if not mutated:
             mutated = self.parent_material.mutated
         if mutated:
-            buff_list = [f"MT{self.parent_material.material_number}"]
+            buff_list = [f"MT{self.parent_material.number}"]
             buff_list += self._scattering_laws
             ret += ThermalScatteringLaw.wrap_words_for_mcnp(
                 buff_list, mcnp_version, True

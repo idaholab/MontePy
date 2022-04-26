@@ -188,9 +188,9 @@ class Transform(data_card.DataCard):
         if self.mutated:
             buff_list = []
             if self.is_in_degrees:
-                buff_list.append(f"*TR{self.transform_number}")
+                buff_list.append(f"*TR{self.number}")
             else:
-                buff_list.append(f"TR{self.transform_number}")
+                buff_list.append(f"TR{self.number}")
             for value in self.displacement_vector:
                 buff_list.append(f"{value}")
 
