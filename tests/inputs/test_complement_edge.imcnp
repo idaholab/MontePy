@@ -1,0 +1,22 @@
+Edge case of complement inside of an or
+61440 0
+      -1 IMP:N=1
+C Steel dummy spacer above and below outer capsule
+61461 0
+      2 -3 (4 : -5)
+     U=6000 IMP:N=1
+C Bounding water outer capsule
+61482 0
+      ( 6 #61440 ) : (#61461 ( 7: -8))
+     U=6000 IMP:N=1
+
+1 SO 5.0
+2 PZ 0.0
+3 PZ 0.1
+4 PZ 0.2
+5 PZ 0.4
+6 PZ 0.5
+7 PZ 0.6
+8 PZ 0.8
+
+

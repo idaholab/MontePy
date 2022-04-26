@@ -31,6 +31,7 @@ class CylinderOnAxis(Surface):
     @radius.setter
     def radius(self, radius):
         assert isinstance(radius, float)
+        self._mutated = True
         self._radius = radius
 
     def find_duplicate_surfaces(self, surfaces, tolerance):

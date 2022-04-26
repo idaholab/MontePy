@@ -35,6 +35,7 @@ class AxisPlane(Surface):
     @location.setter
     def location(self, location):
         assert isinstance(location, float)
+        self._mutated = True
         self._location = location
         self._surface_constants[0] = location
 

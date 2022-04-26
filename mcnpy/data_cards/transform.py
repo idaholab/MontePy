@@ -12,6 +12,7 @@ class Transform(data_card.DataCard):
     """
 
     def __init__(self, input_card=None, comment=None):
+        super().__init__(input_card, comment)
         if input_card is None:
             self._transform_number = -1
             self._old_transform_number = -1
@@ -20,7 +21,6 @@ class Transform(data_card.DataCard):
             self._is_in_degrees = False
             self._is_main_to_aux = True
         else:
-            super().__init__(input_card, comment)
             words = self.words
             i = 0
             assert re.match("\*?tr\d+", words[i].lower())
@@ -101,6 +101,7 @@ class Transform(data_card.DataCard):
         Does not currently correct the rotation matrix for you
         """
         assert isinstance(in_deg, bool)
+        self._mutated = True
         self._is_in_degrees = in_deg
 
     @property
@@ -115,6 +116,7 @@ class Transform(data_card.DataCard):
     @transform_number.setter
     def transform_number(self, num):
         assert isinstance(num, int)
+        self._mutated = True
         self._transform_number = num
 
     @property
@@ -137,6 +139,7 @@ class Transform(data_card.DataCard):
     def displacement_vector(self, vector):
         assert isinstance(vector, np.ndarray)
         assert len(vector) == 3
+        self._mutated = True
         self._displacement_vector = vector
 
     @property
@@ -152,6 +155,7 @@ class Transform(data_card.DataCard):
     def rotation_matrix(self, matrix):
         assert isinstance(matrix, np.ndarray)
         assert len(matrix) >= 5
+        self._mutated = True
         self._rotation_matrix = matrix
 
     @property
@@ -167,6 +171,7 @@ class Transform(data_card.DataCard):
     @is_main_to_aux.setter
     def is_main_to_aux(self, flag):
         assert isinstance(flag, bool)
+        self._mutated = True
         self._is_main_to_aux = flag
 
     def __str__(self):
@@ -178,24 +183,27 @@ class Transform(data_card.DataCard):
 
     def format_for_mcnp_input(self, mcnp_version):
         ret = mcnp_card.MCNP_Card.format_for_mcnp_input(self, mcnp_version)
-        buff_list = []
-        if self.is_in_degrees:
-            buff_list.append(f"*TR{self.transform_number}")
-        else:
-            buff_list.append(f"TR{self.transform_number}")
-        for value in self.displacement_vector:
-            buff_list.append(f"{value}")
+        if self.mutated:
+            buff_list = []
+            if self.is_in_degrees:
+                buff_list.append(f"*TR{self.transform_number}")
+            else:
+                buff_list.append(f"TR{self.transform_number}")
+            for value in self.displacement_vector:
+                buff_list.append(f"{value}")
 
-        ret += Transform.wrap_words_for_mcnp(buff_list, mcnp_version, True)
-        buff_list = []
-        i = 0
-        for i, value in enumerate(self.rotation_matrix):
-            buff_list.append(f"{value}")
-            if (i + 1) % 3 == 0:
-                ret += Transform.wrap_words_for_mcnp(buff_list, mcnp_version, False)
-                buff_list = []
-        if i == 8 and not self.is_main_to_aux:
-            ret += Transform.wrap_string_for_mcnp("-1", mcnp_version, False)
+            ret += Transform.wrap_words_for_mcnp(buff_list, mcnp_version, True)
+            buff_list = []
+            i = 0
+            for i, value in enumerate(self.rotation_matrix):
+                buff_list.append(f"{value}")
+                if (i + 1) % 3 == 0:
+                    ret += Transform.wrap_words_for_mcnp(buff_list, mcnp_version, False)
+                    buff_list = []
+            if i == 8 and not self.is_main_to_aux:
+                ret += Transform.wrap_string_for_mcnp("-1", mcnp_version, False)
+        else:
+            ret += self.input_lines
         return ret
 
     def equivalent(self, other, tolerance):
