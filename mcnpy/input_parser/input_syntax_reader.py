@@ -169,6 +169,19 @@ def read_data(fh, block_type=None, recursion=False):
 
 
 def generate_card_object(raw_lines, block_type, words):
+    """Creates a new card object.
+
+    If the card is a read card, it is not returned, and the file to be read
+    is added to reading_queue.
+    :param raw_lines: the raw lines of input from the file.
+    :type raw_lines: list
+    :param block_type: the type of block this card was taken from
+    :type block_type: BlockType
+    :param words: the Chunked input for the card with space separated inputs.
+    :type words: list
+    :returns: A new Card object for this card.
+    :rtype: Card or None
+    """
     card = Card(raw_lines, block_type, words)
     if len(card.words) > 0 and card.words[0].lower() == "read":
         card = ReadCard(raw_lines, block_type, words)
