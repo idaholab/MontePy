@@ -60,16 +60,6 @@ class MCNP_Problem:
             cells = Cells(cells)
         self._cells = cells
 
-    def add_cells(self, cells):
-        """
-        Adds the given cells to the problem and all owned surfaces and materials as well.
-
-        This will guarantee there are no naming collisions. If a collison is detected an exception is thrown.
-        :param cells: The list of Cell objects to add to this problem.
-        :type cells: list
-        """
-        pass
-
     @property
     def mcnp_version(self):
         """
@@ -81,7 +71,7 @@ class MCNP_Problem:
 
         The version is a tuple of major, minor, revision.
         6.2.0 would be represented as (6, 2, 0)
-       
+
         :rtype: tuple
         """
         return self._mcnp_version

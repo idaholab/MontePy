@@ -54,6 +54,7 @@ class ThermalScatteringLaw(DataCard):
     def parent_material(self):
         """
         The Material object this is tied to.
+
         :rtype: Material
         """
         return self._parent_material
@@ -62,6 +63,7 @@ class ThermalScatteringLaw(DataCard):
     def thermal_scattering_laws(self):
         """
         The thermal scattering laws to use for this material
+
         :rtype: list
         """
         return self._scattering_laws

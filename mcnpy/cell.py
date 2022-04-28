@@ -168,6 +168,7 @@ class Cell(MCNP_Card):
         The Material object for the cell.
 
         If the material is None this is considered to be voided.
+
         :rtype: Material
         """
         return self._material
@@ -429,10 +430,10 @@ class Cell(MCNP_Card):
         """Updates old surface numbers to prepare for deleting surfaces.
 
         Note: update_pointers must be ran again.
-        For the deleting_dict the key is the old surface, 
+        For the deleting_dict the key is the old surface,
         and the value is the new one.
 
-        :param deleting_dict: a dict of the surfaces to delete. 
+        :param deleting_dict: a dict of the surfaces to delete.
         :type deleting_dict: dict
         """
         will_update = False

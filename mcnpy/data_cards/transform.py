@@ -146,7 +146,7 @@ class Transform(data_card.DataCard):
         """
         The rotation matrix
 
-        :rtype:np.array
+        :rtype: np.array
         """
         return self._rotation_matrix
 
@@ -207,6 +207,7 @@ class Transform(data_card.DataCard):
         :type other: Transform
         :param tolerance: the allowable difference in any attribute to still be considered equivalent.
         :type tolerance: float
+
         :returns: True iff all transform elements in both are within the tolerance of each other.
         :rtype: bool
         """
