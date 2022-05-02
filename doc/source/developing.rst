@@ -13,7 +13,7 @@ Top Level
 The top level of the package is reserved for only a select few objects.
 All children of :class:`mcnpy.numbered_object_collection.NumberedObjectCollection` can live here.
 The other allowed classes are: ``Exceptions``, :class:`mcnpy.mcnp_card.MCNP_Card`, :class:`mcnpy.mcnp_problem.MCNP_Problem`,
-:class:`mcnpy.cell.Cell`.
+and :class:`mcnpy.cell.Cell`.
 Utility functions are allowed at this level as well.
 
 
@@ -49,7 +49,13 @@ Design Philosophy
 #. Document all functions.
 #. Expect everything to mutate at any time.
 #. Avoid relative imports when possible. Use top level ones instead: e.g., ``import mcnpy.cell.Cell``.
+#. Defer to vanilla python, and only use the standard library. Currently there are no extra dependencies to install for MCNPy to work. 
+   There must be good justification for breaking from this convention and complicating things for the user.
 
+Style Guide
+-----------
+#. Use ``black`` to autoformat all code.
+#. Spaces for indentation, tabs for alignment. Use spaces to build python syntax (4 spaces per level), and tabs for aligning text inside of docstrings.
 
 Inheritance
 -----------
@@ -64,7 +70,7 @@ For example: some children are: :class:`mcnpy.cell.Cell`, :class:`mcnpy.surfaces
 
 How to __init__
 """""""""""""""
-Your function call should be: ``def __init__(self, input_card=None, comment=None)``.
+Your init function signature should be: ``def __init__(self, input_card=None, comment=None)``.
 You should the immediately call ``super().__init__(input_card, comment)``.
 This will then populate the parameters: ``input_card``, ``words``, and ``comment``.
 Now you should (inside an in if block checking ``input_card``) parse 
@@ -85,11 +91,12 @@ All children must implement this abstract method.
 This is the method for how :func:`mcnpy.mcnp_problem.MCNP_Problem.write_to_file` writes
 this class to the file.
 It must return a list of strings that faithfully represent this objects state.
+Each string in the list represents one line in the MCNP input file to be written.
 
 First if ``self._mutated = False`` the ``input_lines`` must be parroted out.
 Note you must check if any of the objects that affect this one are mutated as well.
 For example a cell must check if its surfaces has changed, because it's likely that
-it's number has changed.
+the surface's number has changed.
 
 You have three helper functions to achieve this end goal. 
 You should not try to count the number of characters in a line!
@@ -102,7 +109,7 @@ If you don't care about the formatting just create a list of strings,
 representing each word in order that MCNP requires, 
 and pass this to ``self.wrap_words_for_mcnp``.
 If you care more about formatting create the string for each line you desire.
-Then pass these strings through `self.wrap_string_for_mcnp`,
+Then pass these strings through ``self.wrap_string_for_mcnp``,
 which will then wrap any long lines to ensure it doesn't break MCNP.
 
 Collection: :class:`mcnpy.numbered_object_collection.NumberedObjectCollection`
@@ -110,10 +117,11 @@ Collection: :class:`mcnpy.numbered_object_collection.NumberedObjectCollection`
 This should be subclassed for any collection of objects that will are numbered.
 For example: cells, surfaces, materials, tallies, etc.
 By default you need to do almost nothing.
+The class that will be added to this collection must have the property ``obj.number``.
 
 How to __init__
 """""""""""""""
-Your init signature should be ``def __init__(self, objects=None_)``
+Your init signature should be ``def __init__(self, objects=None)``
 All you need to then do is call super, 
 with the class this will wrap.
 For example the init function for ``Cells`` ::
@@ -125,7 +133,7 @@ Surface: :class:`mcnpy.surfaces.surface.Surface`
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 This is the parent class for all Surface classes.
 You will also need to update :func:`mcnpy.surfaces.surface_builder.surface_builder`.
-You should expose clear parameters such as ``radius`` or ``location.
+You should expose clear parameters such as ``radius`` or ``location``.
 ``format_for_mcnp_input()`` is handled by default.
 
 How to __init__
@@ -178,7 +186,8 @@ The parent class provides a system to link to a problem via ``self._problem``.
 Note this field can be ``None``. 
 When setting a number you must check for numbering collisions with the method:
 :func:`mcnpy.numbered_object_collection.NumberedObjectCollection.check_number`.
-For example the ``Surface`` number setter looks like:::
+This function returns nothing, but will raise an error when a number collision occurs.
+For example the ``Surface`` number setter looks like::
         
     @number.setter
     def number(self, number):
@@ -227,11 +236,15 @@ In general we should default to MCNP.
 So a cell borrows a surface because a cell card in MCNP 
 references surface numbers, 
 and not vice versa.
+The exception to this is the case of cards that modify another object.
+For example the ``MT`` card modifies its parent ``M`` card.
+In general the parent object should own its children modifiers.
+This is an area of new development, and this may change.
 
 So how do we get a surface to know about the cells it uses? 
 With generators!
-First, one effectively bi-directional pointer is allowed,
-pointing to the parent problem.
+First, one effectively bi-directional pointer is allowed;
+cards are allowed to point to the parent problem.
 This is provided through ``self._problem``, and
 is established by: :func:`mcnpy.mcnp_card.MCNP_Card.link_to_problem`.
 With this the surface can find its cells by::
