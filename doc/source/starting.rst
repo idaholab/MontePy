@@ -3,11 +3,11 @@ Getting Started with MCNPy
 
 MCNPy is a python API for reading, editing, and writing MCNP input files.
 It does not run MCNP nor does it parse MCNP output files.
-The library provides a semantic interface for working with input files, or problems.
+The library provides a semantic interface for working with input files, or our preferred terminology: problems.
 It understands that the second entry on a cell card is the material number,
 and will link the cell with its material object.
 
-Note: Due to export control restrictions MCNPy only supports MCNP 6.2 currently.
+Note: Due to a conservative approach to export control restrictions MCNPy only supports MCNP 6.2 currently.
 
 Reading a File
 --------------
@@ -23,13 +23,13 @@ It will read the specified MCNP input file, and return an MCNPy :class:`mcnpy.mc
 Writing a File
 --------------
 
-The :class:`mcnpy.mcnp_problem.MCNP_Problem` object has the method :func:`mcnpy.mcnp_problem.MCNP_Problem.write_to_file`, which write the problem's current 
-state as a valid MCNP input file.
+The :class:`mcnpy.mcnp_problem.MCNP_Problem` object has the method :func:`mcnpy.mcnp_problem.MCNP_Problem.write_to_file`, which writes the problem's current 
+state to a valid MCNP input file.
 
 >>> problem.write_to_file("bar.imcnp")
 
 If no changes are made to the problem in MCNPy the entire file will be just parroted out as it was in the original file.
-However any objects (e.g., a  cell) that were changed (mutated) will have their original formatting discarded,
+However any objects (e.g., two cells) that were changed (mutated) will have their original formatting discarded,
 and MCNPy will decide how to format that object in the input file.
 
 For example say we have this simple MCNP input file (saved as foo.imcnp) ::
@@ -75,7 +75,8 @@ This new file we can see is now reformatted according to MCNPy's preferences for
         TR1 0.0 0.0 1.0
         TR2 0.0 0.0 1.00001
 
-Also notice that definition for cell 5 was automatically updated to reference the new surface number.
+In addition to the reformatting of cell 5,
+notice that the geometry definition for cell 5 was automatically updated to reference the new surface number.
 MCNPy links objects together and will automatically update "pointers" in the file for you.
 
 What Information is Kept
@@ -89,25 +90,25 @@ Information Kept
 ^^^^^^^^^^^^^^^^
 #. The optional message block at the beginning of the problem (it's a niche feature checkout section 2.4 of the user manual)
 #. The problem title
-#. ``C`` style comments (e.g., ``C this is a bannanna``)
-#. (Almost) all MCNP inputs (cards)
+#. ``C`` style comments (e.g., ``C this is a banana``)
+#. (Almost) all MCNP inputs (cards). Only the read card is discarded.
 
 Information Lost
 ^^^^^^^^^^^^^^^^
-#. Dollar sign comments (e.g., ``1 0 $ this is a bannanna``)
+#. Dollar sign comments (e.g., ``1 0 $ this is a banana``)
 #. Read cards. These are handled properly, but when written out these cards themselves will disappear. 
-   When MCNPy encounters a read card it note the file in the card, and then discard the card. 
+   When MCNPy encounters a read card it notes the file in the card, and then discard the card. 
    It will then read these extra files and append their contents to the appropriate block.
    So If you were to write out a problem that used the read card in the surface block the surface
-   cards in that file will appear at the end of the new surface block.
+   cards in that file from the read card will appear at the end of the new surface block in the newly written file.
 #. MCNP shortcuts for numbers. The shortcuts like: ``1 9r`` will be expanded to its meaning, and will not be
-   recompressed.
+   recompressed. The jump (e.g, ``2j``) shortcut isn't currently expanded.
 
 What a Problem Looks Like
 -------------------------
 
-The :class:`mcnpy.mcnp_problem.MCNP_Problem` is the base problem object that represents an MCNP input file/problem.
-The meet of the Problem is its collections, such as ``cells``, ``surfaces``, and ``materials``. 
+The :class:`mcnpy.mcnp_problem.MCNP_Problem` is the object that represents an MCNP input file/problem.
+The meat of the Problem is its collections, such as ``cells``, ``surfaces``, and ``materials``. 
 Technically these are :class:`mcnpy.numbered_object_collection.NumberedObjectCollection`, 
 but it looks like a ``dict``, walks like a ``dict``, and quacks like ``dict``, so most users can just treat it like that.
 
@@ -116,7 +117,7 @@ Collections are Accessible by Number
 
 As mentioned before :class:`mcnpy.numbered_object_collection.NumberedObjectCollection` 
 looks like a ``dict``, walks like a ``dict``, and quacks like ``dict``.
-This mainly means you can quickly get an object (:class:`mcnpy.cell.Cell`, :class:`mcnpy.surfaces.surface.Surface`, :class:`mcnpy.data_cards.material.Material`) 
+This mainly means you can quickly get an object (e.g., :class:`mcnpy.cell.Cell`, :class:`mcnpy.surfaces.surface.Surface`, :class:`mcnpy.data_cards.material.Material`) 
 by its number.
 
 So say you want to access cell 6005 from a problem it is accessible quickly by:
@@ -142,7 +143,7 @@ This can be done quickly with a for loop::
 Number Collisions (should) be Impossible
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-The ``NumberedObjectCollection`` has a various mechanisms internally to avoid number collisions 
+The ``NumberedObjectCollection`` has various mechanisms internally to avoid number collisions 
 (two objects having the same number).
 
 >>> import mcnpy
@@ -171,10 +172,10 @@ SURFACE: 6, PZ
 There are a number of tools to avoid this though:
 
 #. :func:`mcnpy.numbered_object_collection.NumberedObjectCollection.append_renumber` politely 
-   renumber the added object if their is a number conflict.
+   renumbers the added object if there is a number conflict.
 #. :func:`mcnpy.numbered_object_collection.NumberedObjectCollection.request_number` will give you the
    number you requested. If that's not possible it will find a nearby number that works.
-   Note you should immediately use this number, and append to the Collection, 
+   Note you should immediately use this number, and append the object to the Collection, 
    because this number could become stale.
 #. :func:`mcnpy.numbered_object_collection.NumberedObjectCollection.next_number` will find the next 
    number available by taking the highest number used and increasing it.
@@ -186,7 +187,7 @@ Note that using this property has some perils that will be covered in the next s
 Beware the Generators!
 ^^^^^^^^^^^^^^^^^^^^^^
 
-The Collections offer many generators. 
+The Collections ( ``cells``, ``surfaces``, ``materials``, etc.) offer many generators. 
 First, what is a generator? 
 Basically they are iterators that are dynamically created.
 They don't hold any information until you ask for it.
@@ -212,7 +213,7 @@ True
 >>> 1000 in problem.cells.numbers
 False
 
-Using the generators in this way just not cause any issues, but there are ways to cause issues
+Using the generators in this way does not cause any issues, but there are ways to cause issues
 by making "stale" information.
 This can be done by making a copy of it with ``list()``. 
 
@@ -231,7 +232,7 @@ False
 
 Oh no! When we made a list of the numbers we broke the link, and the new list won't update when the numbers of the cells change, 
 and you can cause issues this way.
-The simple solution is access generators directly; don't try to make copies for your own use.
+The simple solution is to just access the generators directly; don't try to make copies for your own use.
 
 Surfaces
 --------
@@ -244,7 +245,7 @@ By default all surfaces are an instance of :class:`mcnpy.surfaces.surface.Surfac
 They will always have the properties: ``surface_type``, and ``surface_constants``.
 If you need to modify the surface you can do so through the ``surface_constants`` list.
 But for some of our favorite surfaces 
-(``CX``, ``CY``, ``CZ``, ``C\X``, ``C\Y``, ``C\Z``, ``PX``, ``PX``, ``PY``, ``PZ``),
+(``CX``, ``CY``, ``CZ``, ``C\X``, ``C\Y``, ``C\Z``, ``PX``, ``PY``, ``PZ``),
 these will be a special subclass of ``Surface``, 
 that will truly understand surface constants for what the mean.
 See :mod:`mcnpy.surfaces` for specific classes, and their documentation.
@@ -261,23 +262,23 @@ These describe their single surface constant.
 Getting Surfaces by Type the easy way
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 So there is a convenient way to update a surface, but how do you easily get the surfaces you want?
-For instance what if you want to shift a cell up in Z by 10 cm. 
-It would be horrible to have to get each surface by their number.
+For instance what if you want to shift a cell up in Z by 10 cm? 
+It would be horrible to have to get each surface by their number, and hoping you don't change the numbers along the way.
 
-One way you might: oh let's just filter the surfaces by their type?::
+One way you might think of is: oh let's just filter the surfaces by their type?::
 
   for surface in cell.surfaces:
     if surface.surface_type == mcnpy.surfaces.surface_type.SurfaceType.PZ:
       surface.location += 10
 
-Wow that's rather difficult. 
+Wow that's rather verbose. 
 This was the only way to do this with the API for awhile.
 But MCNPy 0.0.5 fixed this with: you guessed it: generators.
 
-The ``surfaces`` collection has a generator for every type of surface in MCNP.
+The :class:`mcnpy.surface_collection.Surfaces` collection has a generator for every type of surface in MCNP.
 These are very easy to find: they are just the lower case version of the 
 MCNP surface mnemonic. 
-This previous code is much simpler now:::
+This previous code is much simpler now::
 
   for surface in cell.surfaces.pz:
     surface.location += 10
@@ -292,7 +293,7 @@ MCNP supports both atom density, and mass density.
 So when you access ``cell.density`` on its own,
 the result is ambiguous, 
 because it could be in g/cm3 or atom/b-cm.
-No MCNPy does not support negative density; it doesn't exist!
+No; MCNPy does not support negative density; it doesn't exist!
 
 To remove this ambiguity you need to check ``cell.is_atom_dens``.
 As the name suggests it will return ``True`` if the density is an atom density,
