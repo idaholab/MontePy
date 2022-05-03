@@ -21,6 +21,7 @@ class MaterialComponent:
     def isotope(self):
         """
         The isotope for this material_component
+
         :rtype: Isotope
         """
         return self._isotope
@@ -29,6 +30,7 @@ class MaterialComponent:
     def fraction(self):
         """
         The fraction of the isotope for this component
+
         :rtype: float
         """
         return self._fraction

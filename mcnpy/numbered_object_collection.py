@@ -55,7 +55,7 @@ class NumberedObjectCollection(ABC):
 
         :param number: The number to check.
         :type number: int
-        :raises: NumberConflictError: if this number is in use.
+        :raises: NumberConflictError : if this number is in use.
         """
         assert isinstance(number, int)
         if number in self.numbers:

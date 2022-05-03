@@ -67,10 +67,11 @@ class MCNP_Problem:
 
         MCNP versions prior to 6.2 aren't officially supported to avoid
         Export Control Restrictions. Documentation for MCNP 6.2 is public in report:
-            LA-UR-17-29981
+        LA-UR-17-29981
 
         The version is a tuple of major, minor, revision.
         6.2.0 would be represented as (6, 2, 0)
+
         :rtype: tuple
         """
         return self._mcnp_version
