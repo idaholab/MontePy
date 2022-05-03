@@ -61,9 +61,6 @@ class Card(MCNP_Input):
         :type input_lines: list
         :param block_type: An enum showing which of three MCNP blocks this was inside of.
         :type block_type: BlockType
-        :param words: a list of the string representation of the words for the card definition
-                        for example a material definition may contain: 'M10', '10001.70c', '0.1'
-        :type words: list
         """
         super().__init__(input_lines)
         assert isinstance(block_type, BlockType)

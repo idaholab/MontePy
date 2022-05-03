@@ -3,11 +3,10 @@ from collections import deque
 from .. import errors
 import itertools
 import io
+from mcnpy.input_parser.constants import BLANK_SPACE_CONTINUE
 from mcnpy.input_parser.mcnp_input import Card, Comment, Message, ReadCard, Title
-import re
 import os
 
-BLANK_SPACE_CONTINUE = 5
 reading_queue = []
 
 
@@ -86,76 +85,72 @@ def read_data(fh, block_type=None, recursion=False):
     :rtype: MCNP_input
 
     """
-    commentFinder = re.compile(f"^\s{{0,{BLANK_SPACE_CONTINUE-1}}}C\s", re.IGNORECASE)
     block_counter = 0
     if block_type is None:
         block_type = BlockType.CELL
     is_in_comment = False
     continue_card = False
-    raw_lines = []
-    words = []
+    comment_raw_lines = []
+    card_raw_lines = []
+
+    def flush_block():
+        nonlocal block_counter
+        if is_in_comment:
+            yield from flush_comment()
+        if card_raw_lines:
+            yield from flush_card()
+        block_counter += 1
+        if block_counter < 3:
+            block_type = BlockType(block_counter)
+
+    def flush_comment():
+        nonlocal comment_raw_lines
+        words = []
+        yield Comment(comment_raw_lines, len(card_raw_lines))
+        comment_raw_lines = []
+        is_in_comment = False
+
+    def flush_card():
+        nonlocal card_raw_lines
+        card = Card(card_raw_lines, block_type)
+        if len(card.words) > 0 and card.words[0].lower() == "read":
+            card = ReadCard(card_raw_lines, block_type)
+            reading_queue.append((block_type, card.file_name))
+            yield None
+        else:
+            yield card
+        continue_card = False
+        card_raw_lines = []
+
     for line in fh:
         # transition to next block with blank line
         if not line.strip():
-            # flush current card
-            if is_in_comment:
-                yield Comment(raw_lines, words)
-            else:
-                yield generate_card_object(raw_lines, block_type, words)
-            words = []
-            raw_lines = []
-            block_counter += 1
-            if block_counter < 3:
-                block_type = BlockType(block_counter)
-            # if reached the final input block
-            else:
-                break
-        # if not a new block
+            yield from flush_block()
+            continue
+        # if it's a C comment
+        if "C " in line[
+            0:BLANK_SPACE_CONTINUE
+        ].upper() and line.lstrip().upper().startswith("C "):
+            comment_raw_lines.append(line.rstrip())
+            is_in_comment = True
+        # if it's part of a card
         else:
-            if commentFinder.match(line):
-                if not is_in_comment:
-                    if words:
-                        yield generate_card_object(raw_lines, block_type, words)
-                    # removes leading comment info
-                    words = [commentFinder.split(line)[1]]
-                    raw_lines = [line.rstrip()]
-                    is_in_comment = True
-                else:
-                    raw_lines.append(line.rstrip())
-                    words.append(commentFinder.split(line)[1])
-            # if not a comment
+            # just terminated a comment
+            if is_in_comment:
+                yield from flush_comment()
+            # if a new card
+            if line[0:BLANK_SPACE_CONTINUE].strip() and not continue_card:
+                yield from flush_card()
+            # die if it is a vertical syntax format
+            if "#" in line[0:BLANK_SPACE_CONTINUE]:
+                raise errors.UnsupportedFeature("Vertical Input format is not allowed")
+            # throw away comments
+            line = line.split("$")[0]
+            if line.endswith(" &\n"):
+                continue_card = True
             else:
-                # terminate comment
-                if is_in_comment:
-                    is_in_comment = False
-                    yield Comment(raw_lines, words)
-                    words = []
-                    raw_lines = []
-                if "#" in line[0:BLANK_SPACE_CONTINUE]:
-                    raise errors.UnsupportedFeature(
-                        "Vertical Input format is not allowed"
-                    )
-                # throw away comments
-                line = line.split("$")[0]
-                # removes continue card
-                temp_words = line.replace(" &", "").split()
-                # if beginning a new card
-                if line[0:BLANK_SPACE_CONTINUE].strip() and not continue_card:
-                    if words:
-                        yield generate_card_object(raw_lines, block_type, words)
-                    words = temp_words
-                    raw_lines = [line.rstrip()]
-                else:
-                    words = words + temp_words
-                    raw_lines.append(line.rstrip())
-                if line.endswith(" &\n"):
-                    continue_card = True
-                else:
-                    continue_card = False
-    if is_in_comment:
-        yield Comment(raw_lines, words)
-    else:
-        yield generate_card_object(raw_lines, block_type, words)
+                continue_card = False
+            card_raw_lines.append(line.rstrip())
 
     if not recursion:
         # ensure fh is a file reader, ignore StringIO
@@ -182,9 +177,3 @@ def generate_card_object(raw_lines, block_type, words):
     :returns: A new Card object for this card.
     :rtype: Card or None
     """
-    card = Card(raw_lines, block_type, words)
-    if len(card.words) > 0 and card.words[0].lower() == "read":
-        card = ReadCard(raw_lines, block_type, words)
-        reading_queue.append((block_type, card.file_name))
-    else:
-        return card
