@@ -1,5 +1,6 @@
 from abc import ABC, abstractmethod
-from .block_type import BlockType
+from mcnpy.input_parser.block_type import BlockType
+from mcnpy.input_parser.constants import BLANK_SPACE_CONTINUE
 import re
 
 
@@ -54,7 +55,7 @@ class Card(MCNP_Input):
     Represents a single MCNP "card" e.g. a single cell definition.
     """
 
-    def __init__(self, input_lines, block_type, words):
+    def __init__(self, input_lines, block_type):
         """
         :param input_lines: the lines read straight from the input file.
         :type input_lines: list
@@ -66,6 +67,10 @@ class Card(MCNP_Input):
         """
         super().__init__(input_lines)
         assert isinstance(block_type, BlockType)
+        words = []
+        for line in input_lines:
+            line = line.split("$")[0]
+            words += line.replace(" &", "").split()
         self._words = words
         self._block_type = block_type
 
@@ -99,8 +104,8 @@ class ReadCard(Card):
     A card for the read card that reads another input file
     """
 
-    def __init__(self, input_lines, block_type, words):
-        super().__init__(input_lines, block_type, words)
+    def __init__(self, input_lines, block_type):
+        super().__init__(input_lines, block_type)
         file_finder = re.compile("file=(?P<file>[\S]+)", re.IGNORECASE)
         for word in words[1:]:
             match = file_finder.match(word)
@@ -121,18 +126,19 @@ class Comment(MCNP_Input):
     Object to represent a full line comment in an MCNP problem.
     """
 
-    def __init__(self, input_lines, lines):
+    def __init__(self, input_lines, card_line=0):
         """
         :param input_lines: the lines read straight from the input file.
         :type input_lines: list
-        :param lines: the strings of each line in this comment block without comment markers ('c ')
-        :type lines: list
+        :param card_line: The line number in a parent input card where this Comment appeared
+        :type card_line: int
         """
         super().__init__(input_lines)
-        assert isinstance(lines, list)
         buff = []
-        for line in lines:
-            buff.append(line.rstrip())
+        for line in input_lines:
+            buff.append(
+                re.split(f"^\s{{0,{BLANK_SPACE_CONTINUE-1}}}C\s", line)[0].rstrip()
+            )
         self._lines = buff
         self._cutting = False
         self._card_line = card_line
