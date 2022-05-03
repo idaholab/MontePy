@@ -39,14 +39,16 @@ class Material(data_card.DataCard):
                 )
             words_iter = iter(words[1:])
             set_atom_frac = False
-            has_parameters = False
+            self._parameter_string = ""
             for isotope_str in words_iter:
                 try:
                     isotope = Isotope(isotope_str)
                     fraction = next(words_iter)
                     fraction = fortran_float(fraction)
                 except MalformedInputError:
-                    has_parameters = True
+                    self._parameter_string += " ".join(
+                        itertools.chain([isotope_str], words_iter)
+                    )
                     break
                 except ValueError:
                     raise MalformedInputError(
@@ -71,11 +73,6 @@ class Material(data_card.DataCard):
                 self._material_components[isotope] = MaterialComponent(
                     isotope, abs(fraction)
                 )
-            param_str = ""
-            if has_parameters:
-                for string in itertools.chain([isotope_str], words_iter):
-                    param_str += string + " "
-                self._parameter_string = param_str
 
     @property
     def old_number(self):
