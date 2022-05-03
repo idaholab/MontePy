@@ -103,8 +103,8 @@ class ReadCard(Card):
 
     def __init__(self, input_lines, block_type):
         super().__init__(input_lines, block_type)
-        file_finder = re.compile("file=(?P<file>[\S]+)", re.IGNORECASE)
-        for word in words[1:]:
+        file_finder = re.compile("file=(?P<file>[\S]+)", re.I)
+        for word in self.words[1:]:
             match = file_finder.match(word)
             if match:
                 self._file_name = match.group("file")
@@ -134,7 +134,9 @@ class Comment(MCNP_Input):
         buff = []
         for line in input_lines:
             buff.append(
-                re.split(f"^\s{{0,{BLANK_SPACE_CONTINUE-1}}}C\s", line)[0].rstrip()
+                re.split(f"^\s{{0,{BLANK_SPACE_CONTINUE-1}}}C\s", line, re.I)[
+                    0
+                ].rstrip()
             )
         self._lines = buff
         self._cutting = False
