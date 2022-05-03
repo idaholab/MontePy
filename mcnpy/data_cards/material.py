@@ -13,7 +13,7 @@ class Material(data_card.DataCard):
     A class to represent an MCNP material.
     """
 
-    def __init__(self, input_card, comment):
+    def __init__(self, input_card=None, comment=None):
         """
         :param input_card: the input card that contains the data
         :type input_card: Card
@@ -24,56 +24,58 @@ class Material(data_card.DataCard):
         self._material_components = {}
         self._thermal_scattering = None
         self._material_number = -1
-        words = self.words
-        num = words[0].upper().strip("M")
-        # material numbers
-        try:
-            num = int(num)
-            assert num > 0
-            self._old_material_number = num
-            self._material_number = num
-        except (ValueError, AssertionError) as e:
-            raise MalformedInputError(
-                input_card, f"{words[0]} could not be parsed as a material number"
-            )
-        words_iter = iter(words[1:])
-        set_atom_frac = False
-        has_parameters = False
-        for isotope_str in words_iter:
+        if input_card:
+            words = self.words
+            num = words[0].upper().strip("M")
+            # material numbers
             try:
-                isotope = Isotope(isotope_str)
-                fraction = next(words_iter)
-                fraction = fortran_float(fraction)
-            except MalformedInputError:
-                has_parameters = True
-                break
-            except ValueError:
+                num = int(num)
+                assert num > 0
+                self._old_material_number = num
+                self._material_number = num
+            except (ValueError, AssertionError) as e:
                 raise MalformedInputError(
-                    input_card, f"{fraction} could not be parsed as a material fraction"
+                    input_card, f"{words[0]} could not be parsed as a material number"
                 )
-            if not set_atom_frac:
-                set_atom_frac = True
-                if fraction > 0:
-                    self._is_atom_fraction = True
-                else:
-                    self._is_atom_fraction = False
-            else:
-                # if switching fraction formatting
-                if (fraction > 0 and not self._is_atom_fraction) or (
-                    fraction < 0 and self._is_atom_fraction
-                ):
+            words_iter = iter(words[1:])
+            set_atom_frac = False
+            has_parameters = False
+            for isotope_str in words_iter:
+                try:
+                    isotope = Isotope(isotope_str)
+                    fraction = next(words_iter)
+                    fraction = fortran_float(fraction)
+                except MalformedInputError:
+                    has_parameters = True
+                    break
+                except ValueError:
                     raise MalformedInputError(
                         input_card,
-                        "Material definitons cannot use atom and mass fraction at the same time",
+                        f"{fraction} could not be parsed as a material fraction",
                     )
-            self._material_components[isotope] = MaterialComponent(
-                isotope, abs(fraction)
-            )
-        param_str = ""
-        if has_parameters:
-            for string in itertools.chain([isotope_str], words_iter):
-                param_str += string + " "
-            self._parameter_string = param_str
+                if not set_atom_frac:
+                    set_atom_frac = True
+                    if fraction > 0:
+                        self._is_atom_fraction = True
+                    else:
+                        self._is_atom_fraction = False
+                else:
+                    # if switching fraction formatting
+                    if (fraction > 0 and not self._is_atom_fraction) or (
+                        fraction < 0 and self._is_atom_fraction
+                    ):
+                        raise MalformedInputError(
+                            input_card,
+                            "Material definitons cannot use atom and mass fraction at the same time",
+                        )
+                self._material_components[isotope] = MaterialComponent(
+                    isotope, abs(fraction)
+                )
+            param_str = ""
+            if has_parameters:
+                for string in itertools.chain([isotope_str], words_iter):
+                    param_str += string + " "
+                self._parameter_string = param_str
 
     @property
     def old_number(self):
