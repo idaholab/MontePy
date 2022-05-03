@@ -13,7 +13,7 @@ class MCNP_Input(ABC):
     def __init__(self, input_lines):
         """
         :param input_lines: the lines read straight from the input file.
-        :type input_lins: list
+        :type input_lines: list
         """
         assert isinstance(input_lines, list)
         for line in input_lines:
@@ -31,7 +31,10 @@ class MCNP_Input(ABC):
 
     @property
     def mutated(self):
-        """If true this input has been mutated by the user, and needs to be formatted"""
+        """If true this input has been mutated by the user, and needs to be formatted
+
+        :rtype: bool
+        """
         return self._mutated
 
     @abstractmethod
@@ -55,6 +58,8 @@ class Card(MCNP_Input):
 
     def __init__(self, input_lines, block_type, words):
         """
+        :param input_lines: the lines read straight from the input file.
+        :type input_lines: list
         :param block_type: An enum showing which of three MCNP blocks this was inside of.
         :type block_type: BlockType
         :param words: a list of the string representation of the words for the card definition
@@ -77,6 +82,7 @@ class Card(MCNP_Input):
         A list of the string representation of the words for the card definition.
 
         For example a material definition may contain: 'M10', '10001.70c', '0.1'
+        :rtype: list
         """
         return self._words
 
@@ -84,6 +90,7 @@ class Card(MCNP_Input):
     def block_type(self):
         """
         Enum representing which block of the MCNP input this came from
+        :rtype: BlockType
         """
         return self._block_type
 
@@ -203,6 +210,10 @@ class ReadCard(Card):
 
     @property
     def file_name(self):
+        """
+        The relative path to the filename specified in this read card.
+        :rtype: str
+        """
         return self._file_name
 
 
@@ -213,7 +224,9 @@ class Comment(MCNP_Input):
 
     def __init__(self, input_lines, lines):
         """
-        :param lines: the strings of each line in this comment block
+        :param input_lines: the lines read straight from the input file.
+        :type input_lines: list
+        :param lines: the strings of each line in this comment block without comment markers ('c ')
         :type lines: list
         """
         super().__init__(input_lines)
@@ -236,6 +249,7 @@ class Comment(MCNP_Input):
 
         Each entry is a string of that line in the message block.
         The comment beginning "C " has been stripped out
+        :rtype: list
         """
         return self._lines
 
@@ -258,6 +272,8 @@ class Message(MCNP_Input):
 
     def __init__(self, input_lines, lines):
         """
+        :param input_lines: the lines read straight from the input file.
+        :type input_lines: list
         :param lines: the strings of each line in the message block
         :type lines: list
         """
@@ -280,6 +296,7 @@ class Message(MCNP_Input):
         The lines of input for the message block.
 
         Each entry is a string of that line in the message block
+        :rtype: list
         """
         return self._lines
 
@@ -303,13 +320,21 @@ class Title(MCNP_Input):
     """
 
     def __init__(self, input_lines, title):
+        """
+        :param input_lines: the lines read straight from the input file.
+        :type input_lines: list
+        :param title: The string for the title of the problem.
+        :type title: str
+        """
         super().__init__(input_lines)
         assert isinstance(title, str)
         self._title = title.rstrip()
 
     @property
     def title(self):
-        "The string of the title set for this problem"
+        """The string of the title set for this problem
+        :rtype: str
+        """
         return self._title
 
     def __str__(self):

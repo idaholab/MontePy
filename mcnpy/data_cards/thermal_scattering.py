@@ -84,7 +84,10 @@ class ThermalScatteringLaw(DataCard):
 
     def format_for_mcnp_input(self, mcnp_version):
         ret = mcnp_card.MCNP_Card.format_for_mcnp_input(self, mcnp_version)
-        if self.mutated:
+        mutated = self.mutated
+        if not mutated:
+            mutated = self.parent_material.mutated
+        if mutated:
             buff_list = [f"MT{self.parent_material.number}"]
             buff_list += self._scattering_laws
             ret += ThermalScatteringLaw.wrap_words_for_mcnp(

@@ -244,9 +244,60 @@ class testFullFileIntegration(TestCase):
         cells = list(problem.surfaces[1005].cells)
         self.assertIn(problem.cells[2], problem.surfaces[1005].cells)
         self.assertEqual(len(cells), 2)
+    
+    def test_surface_card_pass_through(self):
+        problem = mcnpy.read_input("tests/inputs/test_surfaces.imcnp")
+        surf = problem.surfaces[1]
+        # Test card pass through
+        answer = ["1 -2 SO -5"]
+        self.assertEqual(surf.format_for_mcnp_input((6, 2, 0)), answer)
+        # Test changing periodic surface
+        new_prob = copy.deepcopy(problem)
+        surf = new_prob.surfaces[1]
+        new_prob.surfaces[2].number = 5
+        self.assertEqual(int(surf.format_for_mcnp_input((6, 2, 0))[0].split()[1]), -5)
+        # Test changing transform
+        new_prob = copy.deepcopy(problem)
+        surf = new_prob.surfaces[4]
+        surf.transform.number = 5
+        self.assertEqual(int(surf.format_for_mcnp_input((6, 2, 0))[0].split()[1]), 5)
+        # test changing surface constants
+        new_prob = copy.deepcopy(problem)
+        surf = new_prob.surfaces[4]
+        surf.location = 2.5
+        self.assertEqual(
+            float(surf.format_for_mcnp_input((6, 2, 0))[0].split()[-1]), 2.5
+        )
 
     def test_surface_broken_link(self):
         with self.assertRaises(mcnpy.errors.MalformedInputError):
             mcnpy.read_input("tests/inputs/test_broken_surf_link.imcnp")
         with self.assertRaises(mcnpy.errors.MalformedInputError):
             mcnpy.read_input("tests/inputs/test_broken_transform_link.imcnp")
+
+    def test_cell_card_pass_through(self):
+        problem = copy.deepcopy(self.simple_problem)
+        cell = problem.cells[1]
+        # test card pass-through
+        answer = ["C cells", "1 1 20", "         -1000", "     imp:n,p=1 U=350 trcl=5"]
+        self.assertEqual(cell.format_for_mcnp_input((6, 2, 0)), answer)
+        # test surface change
+        new_prob = copy.deepcopy(problem)
+        new_prob.surfaces[1000].number = 5
+        cell = new_prob.cells[1]
+        output = cell.format_for_mcnp_input((6, 2, 0))
+        self.assertEqual(int(output[2]), -5)
+        # ensure that surface number updated
+        # Test material number change
+        new_prob = copy.deepcopy(problem)
+        new_prob.materials[1].number = 5
+        cell = new_prob.cells[1]
+        output = cell.format_for_mcnp_input((6, 2, 0))
+        self.assertEqual(int(output[1].split()[1]), 5)
+
+    def test_thermal_scattering_pass_through(self):
+        problem = copy.deepcopy(self.simple_problem)
+        mat = problem.materials[3]
+        therm = mat.thermal_scattering
+        mat.number = 5
+        self.assertEqual(therm.format_for_mcnp_input((6, 2, 0)), ["MT5 lwtr.23t"])

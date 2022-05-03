@@ -263,5 +263,4 @@ class NumberedObjectCollection(ABC):
         return self
 
     def __contains__(self, other):
-        # return any(other is x for x in self._objects or other == x for x in self._objects)
         return other in self._objects

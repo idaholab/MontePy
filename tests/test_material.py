@@ -167,5 +167,12 @@ class testMaterialClass(TestCase):
         material = Material(input_card, None)
         material.update_pointers([card])
         material.thermal_scattering.thermal_scattering_laws = ["grph.20t"]
-
         self.assertEqual(card.format_for_mcnp_input((6, 2, 0)), ["MT20 grph.20t"])
+
+    def test_material_card_pass_through(self):
+        in_str = "M20 1001.80c 0.5 8016.80c 0.5"
+        input_card = Card([in_str], BlockType.DATA, in_str.split())
+        material = Material(input_card, None)
+        self.assertEqual(material.format_for_mcnp_input((6, 2, 0)), [in_str])
+        material.number = 5
+        self.assertNotIn("8016", material.format_for_mcnp_input((6, 2, 0)))

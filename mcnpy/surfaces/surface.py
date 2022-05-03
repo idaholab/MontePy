@@ -271,7 +271,13 @@ class Surface(MCNP_Card):
 
     def format_for_mcnp_input(self, mcnp_version):
         ret = super().format_for_mcnp_input(mcnp_version)
-        if self.mutated:
+        mutated = self.mutated
+        if not mutated:
+            for obj in [self.periodic_surface, self.transform]:
+                if obj and obj.mutated:
+                    mutated = True
+                    break
+        if mutated:
             buffList = []
             # surface number
             if self.is_reflecting:
