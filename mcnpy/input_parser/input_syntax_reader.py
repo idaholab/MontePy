@@ -94,11 +94,11 @@ def read_data(fh, block_type=None, recursion=False):
     card_raw_lines = []
 
     def flush_block():
-        nonlocal block_counter
+        nonlocal block_counter, block_type
+        if len(card_raw_lines) > 0:
+            yield from flush_card()
         if is_in_comment:
             yield from flush_comment()
-        if card_raw_lines:
-            yield from flush_card()
         block_counter += 1
         if block_counter < 3:
             block_type = BlockType(block_counter)
@@ -136,10 +136,14 @@ def read_data(fh, block_type=None, recursion=False):
         # if it's part of a card
         else:
             # just terminated a comment
-            if is_in_comment:
+            if is_in_comment and comment_raw_lines:
                 yield from flush_comment()
             # if a new card
-            if line[0:BLANK_SPACE_CONTINUE].strip() and not continue_card:
+            if (
+                line[0:BLANK_SPACE_CONTINUE].strip()
+                and not continue_card
+                and card_raw_lines
+            ):
                 yield from flush_card()
             # die if it is a vertical syntax format
             if "#" in line[0:BLANK_SPACE_CONTINUE]:
@@ -151,6 +155,7 @@ def read_data(fh, block_type=None, recursion=False):
             else:
                 continue_card = False
             card_raw_lines.append(line.rstrip())
+    yield from flush_block()
 
     if not recursion:
         # ensure fh is a file reader, ignore StringIO
