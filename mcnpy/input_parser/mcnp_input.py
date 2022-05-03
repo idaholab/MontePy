@@ -134,6 +134,8 @@ class Comment(MCNP_Input):
         for line in lines:
             buff.append(line.rstrip())
         self._lines = buff
+        self._cutting = False
+        self._card_line = card_line
 
     def __str__(self):
         ret = "COMMENT:\n"
@@ -160,6 +162,19 @@ class Comment(MCNP_Input):
         for line in self.lines:
             ret.append("C " + line[0 : line_length - 3])
         return ret
+
+    @property
+    def is_cutting_comment(self):
+        """
+        Whether or not this Comment "cuts" an input card.
+        """
+        return self._cutting
+
+    def snip(self):
+        """
+        Set this Comment to be a cutting comment
+        """
+        self._cutting = True
 
 
 class Message(MCNP_Input):
