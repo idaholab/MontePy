@@ -75,7 +75,6 @@ c bar"""
 
     def testBlockId(self):
         test_string = "1 0 -1"
-
         for i in range(3):
             tester = "\n" * i + test_string
             with StringIO(tester) as fh:
@@ -148,6 +147,7 @@ bar
         generator = input_syntax_reader.read_input_syntax(
             "tests/inputs/testVerticalMode.imcnp"
         )
+        next(generator)
         next(generator)
         with self.assertRaises(mcnpy.errors.UnsupportedFeature):
             next(generator)
