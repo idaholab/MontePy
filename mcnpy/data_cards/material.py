@@ -190,11 +190,11 @@ class Material(data_card.DataCard):
             first_component = self.material_components[sorted_isotopes[0]]
 
             ret.append(
-                f"m{self.number:<9}{str(first_component.isotope):>8}{first_component.fraction:>12.4g}"
+                f"m{self.number:<8} {first_component.isotope:>8} {first_component.fraction:>11.4g}"
             )
             for isotope in sorted_isotopes[1:]:  # skips the first
                 component = self.material_components[isotope]
-                ret.append(f"{str(component.isotope):>19}{component.fraction:>12.4g}")
+                ret.append(f"{component.isotope:>18} {component.fraction:>11.4g}")
         else:
             ret += self.input_lines
         return ret
