@@ -52,7 +52,7 @@ class testMaterialClass(TestCase):
         input_card = Card([in_str], BlockType.DATA, in_str.split())
         material = Material(input_card, None)
 
-        self.assertEqual(material.parameter_string, "Gas=1 ")
+        self.assertEqual(material.parameter_string, "Gas=1")
 
     def test_material_setter(self):
         in_str = "M20 1001.80c 0.5 8016.80c 0.5"
