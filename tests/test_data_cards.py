@@ -18,7 +18,7 @@ class testDataCardClass(TestCase):
         words = in_str.split()
         for i, word in enumerate(data_card.words):
             self.assertEqual(word, words[i])
-        self.assertEqual(comment, data_card.comment)
+        self.assertEqual(comment, data_card.comments[0])
 
     def test_data_card_str(self):
         in_str = "m1 1001.80c 1.0"

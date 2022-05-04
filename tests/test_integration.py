@@ -277,3 +277,36 @@ class testFullFileIntegration(TestCase):
         therm = mat.thermal_scattering
         mat.material_number = 5
         self.assertEqual(therm.format_for_mcnp_input((6, 2, 0)), ["MT5 lwtr.23t"])
+
+    def test_cutting_comments_parse(self):
+        problem = mcnpy.read_input("tests/inputs/breaking_comments.imcnp")
+        # TODO 
+        comments = problem.cells[0].comments
+        self.assertEqual(len(comments), 2)
+        self.assertIn("this is a cutting comment", comments[1].lines[0])
+        # TODO
+        comments = problem.materials[0].comments
+        self.assertEqual(len(comments), 2)
+
+    def test_cutting_comments_print_no_mutate(self):
+        problem = mcnpy.read_input("tests/inputs/breaking_comments.imcnp")
+        # TODO
+        cell = problem.cells[0]
+        output = cell.format_for_mcnp_input((6, 2, 0))
+        self.assertEqual(len(output), 5)
+        self.assertEqual("c this is a cutting comment", output[3])
+        # TODO
+        material = problem.materials[0]
+        output = material.format_for_mcnp_input((6, 2, 0))
+        self.assertEqual(len(output), 5)
+        self.assertEqual("c          26057.80c        2.12", output[3])
+        # TODO 
+        surface = problem.surfaces[0]
+        output = surface.format_for_mcnp_input((6, 2, 0))
+        self.assertEqual(len(output), 3)
+        self.assertEqual("c hi", output[1])
+
+
+    def test_cutting_comments_print_mutate(self):
+        # TODO 
+        pass
