@@ -13,13 +13,13 @@ class TestCellClass(TestCase):
         card = Card([in_str], BlockType.CELL)
         with self.assertRaises(mcnpy.errors.MalformedInputError):
             in_str = "foo bar"
-            cell = Cell(card, Comment(["c "+in_str]))
+            cell = Cell(card, Comment(["c " + in_str]))
         # test like feature unsupported
         in_str = "1 like 2"
         card = Card([in_str], BlockType.CELL)
         with self.assertRaises(mcnpy.errors.UnsupportedFeature):
             in_str = "foo bar"
-            cell = Cell(card, Comment(["c "+in_str]))
+            cell = Cell(card, Comment(["c " + in_str]))
         # test invalid material number
         in_str = "1 foo"
         card = Card([in_str], BlockType.CELL)

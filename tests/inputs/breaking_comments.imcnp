@@ -6,8 +6,6 @@ c this is a cutting comment
      imp:n,p=1 U=350 trcl=5
 
 1000 SO 1
-c hi
-     gas=0
 
 c Iron
 m2        26054.80c        5.85
