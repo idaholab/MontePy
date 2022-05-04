@@ -294,12 +294,12 @@ class testFullFileIntegration(TestCase):
         cell = problem.cells[0]
         output = cell.format_for_mcnp_input((6, 2, 0))
         self.assertEqual(len(output), 5)
-        self.assertEqual("c this is a cutting comment", output[3])
+        self.assertEqual("C this is a cutting comment", output[3])
         # TODO
         material = problem.materials[0]
         output = material.format_for_mcnp_input((6, 2, 0))
         self.assertEqual(len(output), 5)
-        self.assertEqual("c          26057.80c        2.12", output[3])
+        self.assertEqual("C          26057.80c        2.12", output[3])
 
     def test_cutting_comments_print_mutate(self):
         problem = mcnpy.read_input("tests/inputs/breaking_comments.imcnp")
