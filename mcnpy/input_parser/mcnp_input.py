@@ -134,8 +134,8 @@ class Comment(MCNP_Input):
         buff = []
         for line in input_lines:
             buff.append(
-                re.split(f"^\s{{0,{BLANK_SPACE_CONTINUE-1}}}C\s", line, re.I)[
-                    0
+                re.split(f"^\s{{0,{BLANK_SPACE_CONTINUE-1}}}C\s", line, flags=re.I)[
+                    1
                 ].rstrip()
             )
         self._lines = buff
