@@ -438,8 +438,8 @@ class Cell(MCNP_Card):
                 if surf.mutated:
                     mutated = True
                     break
-        ret = super().format_for_mcnp_input(mcnp_version)
         if mutated:
+            ret = super().format_for_mcnp_input(mcnp_version)
             self.update_geometry_logic_string()
             buffList = [str(self.cell_number)]
             if self.material:
@@ -464,7 +464,7 @@ class Cell(MCNP_Card):
                     strings.append(f"{key}={value}")
                 ret += Cell.wrap_words_for_mcnp(strings, mcnp_version, False)
         else:
-            ret += self.input_lines
+            ret = self._format_for_mcnp_unmutated(mcnp_version)
         return ret
 
     def __str__(self):

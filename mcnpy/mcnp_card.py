@@ -54,6 +54,31 @@ class MCNP_Card(ABC):
                     ret += comment.format_for_mcnp_input(mcnp_version)
         return ret
 
+    def _format_for_mcnp_unmutated(self, mcnp_version):
+        """
+        Creates a string representation of this card that can be
+        written to file when the card did not mutate.
+
+        TODO add to developer's guide.
+
+        :param mcnp_version: The tuple for the MCNP version that must be exported to.
+        :type mcnp_version: tuple
+        :return: a list of strings for the lines that this card will occupy.
+        :rtype: list
+        """
+        ret = []
+        comments_dict = {}
+        if self.comments:
+            for comment in self.comments:
+                if comment.is_cutting_comment:
+                    comments_dict[comment.card_line] = comment
+            ret += self.comments[0].format_for_mcnp_input(mcnp_version)
+        for i, line in enumerate(self.input_lines):
+            if i in comments_dict:
+                ret += comments_dict[i].format_for_mcnp_input(mcnp_version)
+            ret.append(line)
+        return ret
+
     @property
     def comments(self):
         """

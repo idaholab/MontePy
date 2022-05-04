@@ -92,5 +92,5 @@ class ThermalScatteringLaw(DataCard):
                 buff_list, mcnp_version, True
             )
         else:
-            ret += self.input_lines
+            ret = self._format_for_mcnp_unmutated(mcnp_version)
         return ret

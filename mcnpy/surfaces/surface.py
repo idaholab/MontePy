@@ -256,7 +256,6 @@ class Surface(MCNP_Card):
                 )
 
     def format_for_mcnp_input(self, mcnp_version):
-        ret = super().format_for_mcnp_input(mcnp_version)
         mutated = self.mutated
         if not mutated:
             for obj in [self.periodic_surface, self.transform]:
@@ -264,6 +263,7 @@ class Surface(MCNP_Card):
                     mutated = True
                     break
         if mutated:
+            ret = super().format_for_mcnp_input(mcnp_version)
             buffList = []
             # surface number
             if self.is_reflecting:
@@ -284,7 +284,7 @@ class Surface(MCNP_Card):
                 buffList.append(f"{constant:.6g}")
             ret += Surface.wrap_words_for_mcnp(buffList, mcnp_version, True)
         else:
-            ret += self.input_lines
+            ret = self._format_for_mcnp_unmutated(mcnp_version)
         return ret
 
     def __lt__(self, other):
