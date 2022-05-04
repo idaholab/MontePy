@@ -175,6 +175,13 @@ class Comment(MCNP_Input):
         """
         return self._cutting
 
+    @property
+    def card_line(self):
+        """
+        Which line of the parent card this comment came from.
+        """
+        return self._card_line
+
     def snip(self):
         """
         Set this Comment to be a cutting comment
