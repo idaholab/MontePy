@@ -135,9 +135,6 @@ def read_data(fh, block_type=None, recursion=False):
             is_in_comment = True
         # if it's part of a card
         else:
-            # just terminated a comment
-            if is_in_comment and comment_raw_lines:
-                yield from flush_comment()
             # if a new card
             if (
                 line[0:BLANK_SPACE_CONTINUE].strip()
@@ -145,6 +142,9 @@ def read_data(fh, block_type=None, recursion=False):
                 and card_raw_lines
             ):
                 yield from flush_card()
+            # just terminated a comment
+            if is_in_comment and comment_raw_lines:
+                yield from flush_comment()
             # die if it is a vertical syntax format
             if "#" in line[0:BLANK_SPACE_CONTINUE]:
                 raise errors.UnsupportedFeature("Vertical Input format is not allowed")
