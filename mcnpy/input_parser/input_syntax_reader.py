@@ -94,10 +94,10 @@ def read_data(fh, block_type=None, recursion=False):
     card_raw_lines = []
 
     def flush_block():
-        nonlocal block_counter, block_type
+        nonlocal block_counter, block_type, comment_raw_lines
         if len(card_raw_lines) > 0:
             yield from flush_card()
-        if is_in_comment:
+        if is_in_comment and comment_raw_lines:
             yield from flush_comment()
         block_counter += 1
         if block_counter < 3:
