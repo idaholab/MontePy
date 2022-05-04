@@ -155,6 +155,6 @@ bar
     def testCardStringRepr(self):
         in_str = "1 0 -1"
         card = mcnpy.input_parser.mcnp_input.Card(
-            [in_str], mcnpy.input_parser.block_type.BlockType.CELL, in_str.split()
+            [in_str], mcnpy.input_parser.block_type.BlockType.CELL
         )
         self.assertEqual(str(card), "CARD: BlockType.CELL: ['1', '0', '-1']")

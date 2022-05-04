@@ -12,7 +12,7 @@ from mcnpy.input_parser.block_type import BlockType
 class testDataCardClass(TestCase):
     def test_data_card_init(self):
         in_str = "m1 1001.80c 1.0"
-        input_card = Card([in_str], BlockType.DATA, in_str.split())
+        input_card = Card([in_str], BlockType.DATA)
         comment = Comment(["C foo", "c bar"], ["foo", "bar"])
         data_card = DataCard(input_card, comment)
         words = in_str.split()
@@ -22,13 +22,13 @@ class testDataCardClass(TestCase):
 
     def test_data_card_str(self):
         in_str = "m1 1001.80c 1.0"
-        input_card = Card([in_str], BlockType.DATA, in_str.split())
+        input_card = Card([in_str], BlockType.DATA)
         data_card = DataCard(input_card)
         self.assertEqual(str(data_card), "DATA CARD: " + str(in_str.split()))
 
     def test_data_card_format_mcnp(self):
         in_str = "m1 1001.80c 1.0"
-        input_card = Card([in_str], BlockType.DATA, in_str.split())
+        input_card = Card([in_str], BlockType.DATA)
         comment = Comment(["c foo", "c bar"], ["foo", "bar"])
         data_card = DataCard(input_card, comment)
         answer = ["C foo", "C bar", "m1 1001.80c 1.0"]
@@ -39,7 +39,7 @@ class testDataCardClass(TestCase):
 
     def test_comment_setter(self):
         in_str = "m1 1001.80c 1.0"
-        input_card = Card([in_str], BlockType.DATA, in_str.split())
+        input_card = Card([in_str], BlockType.DATA)
         comment = Comment(["c foo", "c bar"], ["foo", "bar"])
         data_card = DataCard(input_card)
         data_card.comment = comment
@@ -61,6 +61,6 @@ class testDataCardClass(TestCase):
 
         for identifier, w in in_strs.items():
             for ident in [identifier, identifier.upper()]:
-                input_card = Card([w], BlockType.DATA, w.split())
+                input_card = Card([w], BlockType.DATA)
                 card = parse_data(input_card)
                 self.assertIsInstance(card, identifiers[ident.lower()])

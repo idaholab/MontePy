@@ -147,10 +147,10 @@ class testFullFileIntegration(TestCase):
         problem = copy.copy(self.simple_problem)
         BT = mcnpy.input_parser.block_type.BlockType
         in_str = "5 SO 5.0"
-        card = mcnpy.input_parser.mcnp_input.Card([in_str], BT.SURFACE, in_str.split())
+        card = mcnpy.input_parser.mcnp_input.Card([in_str], BT.SURFACE)
         surf = mcnpy.surfaces.surface_builder.surface_builder(card)
         in_str = "M1 6000.70c 1.0"
-        card = mcnpy.input_parser.mcnp_input.Card([in_str], BT.SURFACE, in_str.split())
+        card = mcnpy.input_parser.mcnp_input.Card([in_str], BT.SURFACE)
         mat = mcnpy.data_cards.material.Material(card, None)
         cell = mcnpy.Cell()
         cell.material = mat
