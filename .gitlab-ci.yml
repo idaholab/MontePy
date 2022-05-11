@@ -16,7 +16,6 @@ install:
 
 unit_test:
   stage: test
-  coverage: ''
   script:
     - echo "Executing unit tests"
     - python -m unittest discover
