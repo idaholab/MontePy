@@ -43,3 +43,7 @@ pages:
   artifacts:
     paths:
       - public
+  only:
+    - master
+    - develop
+    - doc
