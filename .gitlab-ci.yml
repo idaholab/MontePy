@@ -17,7 +17,7 @@ unit_test:
   stage: test
   script:
     - echo "Executing unit tests"
-    - python -m unnittest
+    - python -m unittest
 
 
 deploy1:
