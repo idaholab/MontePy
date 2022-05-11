@@ -1,0 +1,49 @@
+image: python:latest
+
+before_script:
+  - python --version
+  - export PATH="~/.local/bin:$PATH"
+
+
+install:
+  stage: build
+  script:
+    - echo "Installing dependencies"
+    - pip install -r requirements/dev.txt
+    - python setup.py bdist_wheel
+    - pip install dist/*.whl --force-reinstall
+
+
+unit_test:
+  stage: test
+  coverage: '/TOTAL.+ ([0-9]{1,3}%)/'
+  script:
+    - echo "Executing unit tests"
+    - coverage run -m unittest discover
+    - coverage report -m
+    - coverage-badge
+
+
+deploy1:
+  stage: deploy
+  script:
+    - echo "No deploy required for the moment"
+
+
+pages:
+  stage: deploy
+  script:
+    - echo "Building documentation with Sphinx."
+    - cd doc/
+    - make html
+    - cd ..
+    - mv doc/build/html public
+    - python setup.py bdist_wheel
+    - mv dist/ public/dist
+  artifacts:
+    paths:
+      - public
+  only:
+    - master
+    - develop
+    - doc

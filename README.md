@@ -2,6 +2,10 @@
 
 A python library to parse and modify MCNP input files. 
 
+[![Latest Release](https://hpcgitlab.hpc.inl.gov/experiment_analysis/mcnpy/-/badges/release.svg)](https://hpcgitlab.hpc.inl.gov/experiment_analysis/mcnpy/-/releases)
+[![pipeline status](https://hpcgitlab.hpc.inl.gov/experiment_analysis/mcnpy/badges/develop/pipeline.svg)](https://hpcgitlab.hpc.inl.gov/experiment_analysis/mcnpy/-/commits/develop)
+[![pipeline status](https://hpcgitlab.hpc.inl.gov/experiment_analysis/mcnpy/badges/develop/coverage.svg)](https://hpcgitlab.hpc.inl.gov/experiment_analysis/mcnpy/-/commits/develop)
+
 ## Installing
 
 Go to the packages page and download a wheel or a tar ball. Run `pip install --user mcnpy.XXXXXX.tar.gz`
