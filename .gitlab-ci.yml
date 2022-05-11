@@ -30,20 +30,4 @@ deploy1:
     - echo "No deploy required for the moment"
 
 
-pages:
-  stage: deploy
-  script:
-    - echo "Building documentation with Sphinx."
-    - cd doc/
-    - make html
-    - cd ..
-    - mv doc/build/html public
-    - python setup.py bdist_wheel
-    - mv dist/ public/dist
-  artifacts:
-    paths:
-      - public
-  only:
-    - master
-    - develop
-    - doc
+
