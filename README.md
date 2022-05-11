@@ -5,7 +5,10 @@ A python library to parse and modify MCNP input files.
 ## Installing
 
 Go to the packages page and download a wheel or a tar ball. Run `pip install --user mcnpy.XXXXXX.tar.gz`
- 
+
+## User Documentation
+
+MCNPy has a [sphinx website](https://experiment_analysis.pages.hpc.inl.gov/mcnpy). 
 
 ## Features
 	
