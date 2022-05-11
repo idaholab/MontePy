@@ -18,7 +18,7 @@ unit_test:
   stage: test
   script:
     - echo "Executing unit tests"
-    - python -m unittest discover
+    - coverage run -m unittest discover
     - coverage report -m
     - coverage-badge
 
