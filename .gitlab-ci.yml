@@ -9,7 +9,6 @@ install:
   stage: build
   script:
     - echo "Installing dependencies"
-    - pip install -r requirements/common.txt
     - pip install -r requirements/dev.txt
     - python setup.py bdist_wheel
     - pip install dist/*.whl --force-reinstall
@@ -17,9 +16,12 @@ install:
 
 unit_test:
   stage: test
+  coverage: ''
   script:
     - echo "Executing unit tests"
-    - python -m unittest
+    - python -m unittest discover
+    - coverage report -m
+    - coverage-badge
 
 
 deploy1:
