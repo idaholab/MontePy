@@ -330,4 +330,15 @@ class testFullFileIntegration(TestCase):
         self.assertEqual("C          26057.80c        2.12", output[1])
 
     def test_comments_setter(self):
-        pass
+        # TODO
+        cell = copy.deepcopy(self.simple_problem.cells[0])
+        # TODO
+        comment = self.simple_problem.surfaces[0].comments[0]
+        cell.comments = [comment]
+        self.assertEqual(cell.comments[0], comment)
+        with self.assertRaises(AssertionError):
+            cell.comments = comment
+        with self.assertRaises(AssertionError):
+            cell.comments = [5]
+        with self.assertRaises(AssertionError):
+            cell.comments = 5
