@@ -13,7 +13,7 @@ class Material(data_card.DataCard):
     A class to represent an MCNP material.
     """
 
-    def __init__(self, input_card, comment):
+    def __init__(self, input_card=None, comment=None):
         """
         :param input_card: the input card that contains the data
         :type input_card: Card
@@ -150,6 +150,7 @@ class Material(data_card.DataCard):
         :param law: the law that is mcnp formatted
         :type law: str
         """
+        assert isinstance(law, str)
         self._thermal_scattering = thermal_scattering.ThermalScatteringLaw(
             material=self
         )

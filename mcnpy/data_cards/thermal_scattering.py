@@ -23,7 +23,7 @@ class ThermalScatteringLaw(DataCard):
         """
         self._old_material_number = None
         self._parent_material = None
-        self._scattering_laws = None
+        self._scattering_laws = []
         if input_card:
             super().__init__(input_card, comment)
             assert "mt" in self.words[0].lower()
