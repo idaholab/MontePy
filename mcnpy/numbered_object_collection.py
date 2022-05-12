@@ -188,16 +188,6 @@ class NumberedObjectCollection(ABC):
         assert step > 0
         return max(self.numbers) + step
 
-    def replace(self, old, new):
-        assert isinstance(old, self._obj_class)
-        assert isinstance(new, self._obj_class)
-        if old.number != new.number:
-            self.check_number(new.number)
-        self.__num_cache.pop(old.number, None)
-        self.__num_cache[new.number] = new
-        self._objects.remove(old)
-        self.append(new)
-
     def __getitem__(self, i):
         assert isinstance(i, int)
         find_manually = False
