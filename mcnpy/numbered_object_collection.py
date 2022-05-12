@@ -42,14 +42,6 @@ class NumberedObjectCollection(ABC):
             self.__num_cache[obj.number] = obj
             yield obj.number
 
-    def check_redundant_numbers(self):
-        """
-        Checks if there are any redundant  numbers.
-        :returns: true if there are collisions of numbers
-        :rtype: bool
-        """
-        return len(self._objects) != len(set(self.numbers))
-
     def check_number(self, number):
         """Checks if the number is already in use, and if so raises an error.
 

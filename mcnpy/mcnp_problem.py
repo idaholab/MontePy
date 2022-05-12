@@ -261,43 +261,15 @@ class MCNP_Problem:
                     fh.write(line + "\n")
             lines = self.title.format_for_mcnp_input(self.mcnp_version)
             fh.write(lines[0] + "\n")
-            cell_numbers = {}
-            if self.cells.check_redundant_numbers():
-                # find the problem cells
-                for cell in self.cells:
-                    if cell.number in cell_numbers:
-                        raise NumberConflictError(
-                            f"The cells {cell}, and {cell_numbers[cell.number]}"
-                            " have the same cell number"
-                        )
-                    cell_numbers[cell.number] = cell
             for cell in self.cells:
                 for line in cell.format_for_mcnp_input(self.mcnp_version):
                     fh.write(line + "\n")
             # block terminator
             fh.write("\n")
-            surf_numbers = {}
-            if self.surfaces.check_redundant_numbers():
-                for surface in self.surfaces:
-                    if surface.number in surf_numbers:
-                        raise NumberConflictError(
-                            f"The surfaces {surface}, and {surf_numbers[surface.number]}"
-                            " have the same surface number"
-                        )
-                    surf_numbers[surface.number] = surface
             for surface in self.surfaces:
                 for line in surface.format_for_mcnp_input(self.mcnp_version):
                     fh.write(line + "\n")
             fh.write("\n")
-            mat_numbers = {}
-            if self.materials.check_redundant_numbers():
-                for mat in self.materials:
-                    if mat.number in mat_numbers:
-                        raise NumberConflictError(
-                            f"The Materials {mat}, and {mat_numbers[mat.number]}"
-                            " have the same material number"
-                        )
-                    mat_numbers[mat.number] = mat
             for card in self.data_cards:
                 for line in card.format_for_mcnp_input(self.mcnp_version):
                     fh.write(line + "\n")
