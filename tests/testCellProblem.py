@@ -104,7 +104,7 @@ class TestCellClass(TestCase):
         for ending in ["IMP:N=1", ""]:
             for in_fill in test_fill_strs:
                 in_str = f"1 0 -1 FILL={in_fill} {ending}"
-                card = Card([in_str], BlockType.CELL, in_str.split())
+                card = Card([in_str], BlockType.CELL)
                 cell = Cell(card)
                 self.assertEqual(cell.parameters["FILL"], in_fill)
                 cell.number = 2

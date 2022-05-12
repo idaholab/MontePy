@@ -163,7 +163,7 @@ class testFullFileIntegration(TestCase):
         in_str = "5 SO 5.0"
         card = mcnpy.input_parser.mcnp_input.Card([in_str], BT.SURFACE)
         surf = mcnpy.surfaces.surface_builder.surface_builder(card)
-        in_str = "M1 6000.70c 1.0"
+        in_str = "M5 6000.70c 1.0"
         card = mcnpy.input_parser.mcnp_input.Card([in_str], BT.SURFACE)
         mat = mcnpy.data_cards.material.Material(card, None)
         cell = mcnpy.Cell()
@@ -300,8 +300,7 @@ class testFullFileIntegration(TestCase):
         self.assertEqual(int(output[1].split()[1]), 5)
 
     def test_cell_fill_formatting(self):
-        # TODO
-        cell = copy.deepcopy(self.simple_problem.cells[0])
+        cell = copy.deepcopy(self.simple_problem.cells[1])
         cell._mutated = True
         cell.parameters["FILL"] = ["5", "(4)"]
         output = cell.format_for_mcnp_input((6, 2, 0))
@@ -316,48 +315,39 @@ class testFullFileIntegration(TestCase):
 
     def test_cutting_comments_parse(self):
         problem = mcnpy.read_input("tests/inputs/breaking_comments.imcnp")
-        # TODO
-        comments = problem.cells[0].comments
+        comments = problem.cells[1].comments
         self.assertEqual(len(comments), 2)
         self.assertIn("this is a cutting comment", comments[1].lines[0])
-        # TODO
-        comments = problem.materials[0].comments
+        comments = problem.materials[2].comments
         self.assertEqual(len(comments), 2)
 
     def test_cutting_comments_print_no_mutate(self):
         problem = mcnpy.read_input("tests/inputs/breaking_comments.imcnp")
-        # TODO
-        cell = problem.cells[0]
+        cell = problem.cells[1]
         output = cell.format_for_mcnp_input((6, 2, 0))
         self.assertEqual(len(output), 5)
         self.assertEqual("C this is a cutting comment", output[3])
-        # TODO
-        material = problem.materials[0]
+        material = problem.materials[2]
         output = material.format_for_mcnp_input((6, 2, 0))
         self.assertEqual(len(output), 5)
         self.assertEqual("C          26057.80c        2.12", output[3])
 
     def test_cutting_comments_print_mutate(self):
         problem = mcnpy.read_input("tests/inputs/breaking_comments.imcnp")
-        # TODO
-        cell = problem.cells[0]
-        # TODO
-        cell.cell_number = 5
+        cell = problem.cells[1]
+        cell.number = 8
         output = cell.format_for_mcnp_input((6, 2, 0))
         self.assertEqual(len(output), 5)
         self.assertEqual("C this is a cutting comment", output[1])
-        # TODO
-        material = problem.materials[0]
-        material.material_number = 5
+        material = problem.materials[2]
+        material.number = 5
         output = material.format_for_mcnp_input((6, 2, 0))
         self.assertEqual(len(output), 5)
         self.assertEqual("C          26057.80c        2.12", output[1])
 
     def test_comments_setter(self):
-        # TODO
-        cell = copy.deepcopy(self.simple_problem.cells[0])
-        # TODO
-        comment = self.simple_problem.surfaces[0].comments[0]
+        cell = copy.deepcopy(self.simple_problem.cells[1])
+        comment = self.simple_problem.surfaces[1000].comments[0]
         cell.comments = [comment]
         self.assertEqual(cell.comments[0], comment)
         with self.assertRaises(AssertionError):
