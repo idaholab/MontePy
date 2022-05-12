@@ -205,7 +205,7 @@ class Transform(data_card.DataCard):
             if i == 8 and not self.is_main_to_aux:
                 ret += Transform.wrap_string_for_mcnp("-1", mcnp_version, False)
         else:
-            ret += self.input_lines
+            ret = self._format_for_mcnp_unmutated(mcnp_version)
         return ret
 
     def equivalent(self, other, tolerance):

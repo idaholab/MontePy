@@ -42,7 +42,7 @@ class DataCard(MCNP_Card):
         if self.mutated:
             ret += DataCard.wrap_words_for_mcnp(self.words, mcnp_version, True)
         else:
-            ret += self.input_lines
+            ret = self._format_for_mcnp_unmutated(mcnp_version)
         return ret
 
     def update_pointers(self, data_cards):

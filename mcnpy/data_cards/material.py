@@ -196,7 +196,7 @@ class Material(data_card.DataCard):
                 component = self.material_components[isotope]
                 ret.append(f"{component.isotope:>18} {component.fraction:>11.4g}")
         else:
-            ret += self.input_lines
+            ret = self._format_for_mcnp_unmutated(mcnp_version)
         return ret
 
     def __hash__(self):
