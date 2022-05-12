@@ -90,6 +90,7 @@ class Surface(MCNP_Card):
         The mnemonic for the type of surface.
 
         E.g. CY, PX, etc.
+
         :rtype: SurfaceType
         """
         return self._surface_type
@@ -147,6 +148,7 @@ class Surface(MCNP_Card):
         The transformation number for this surface in the original file.
 
         TODO connect and allow updates
+
         :rtype: int
         """
         return self._old_transform_number
@@ -181,7 +183,7 @@ class Surface(MCNP_Card):
         """
         The Transform object that translates this surface
 
-        :rtype:Transform
+        :rtype: Transform
         """
         return self._transform
 
@@ -201,6 +203,7 @@ class Surface(MCNP_Card):
     def old_number(self):
         """
         The surface number that was used in the read file
+
         :rtype: int
         """
         return self._old_surface_number
@@ -209,6 +212,7 @@ class Surface(MCNP_Card):
     def number(self):
         """
         The surface number to use.
+
         :rtype: int
         """
         return self._surface_number
@@ -266,7 +270,6 @@ class Surface(MCNP_Card):
                 )
 
     def format_for_mcnp_input(self, mcnp_version):
-        ret = super().format_for_mcnp_input(mcnp_version)
         mutated = self.mutated
         if not mutated:
             for obj in [self.periodic_surface, self.transform]:
@@ -274,6 +277,7 @@ class Surface(MCNP_Card):
                     mutated = True
                     break
         if mutated:
+            ret = super().format_for_mcnp_input(mcnp_version)
             buffList = []
             # surface number
             if self.is_reflecting:
@@ -294,7 +298,7 @@ class Surface(MCNP_Card):
                 buffList.append(f"{constant:.6g}")
             ret += Surface.wrap_words_for_mcnp(buffList, mcnp_version, True)
         else:
-            ret += self.input_lines
+            ret = self._format_for_mcnp_unmutated(mcnp_version)
         return ret
 
     def __lt__(self, other):
@@ -337,6 +341,7 @@ class Surface(MCNP_Card):
         :type surfaces: list
         :param tolerance: the amount of relative error to allow
         :type tolerance: float
+
         :returns: A list of the surfaces that are identical
         :rtype: list
         """

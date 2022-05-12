@@ -168,6 +168,7 @@ class Cell(MCNP_Card):
         The Material object for the cell.
 
         If the material is None this is considered to be voided.
+
         :rtype: Material
         """
         return self._material
@@ -429,8 +430,10 @@ class Cell(MCNP_Card):
         """Updates old surface numbers to prepare for deleting surfaces.
 
         Note: update_pointers must be ran again.
+        For the deleting_dict the key is the old surface,
+        and the value is the new one.
+
         :param deleting_dict: a dict of the surfaces to delete.
-            The key is the old surface, and the value is the new one.
         :type deleting_dict: dict
         """
         will_update = False
@@ -465,8 +468,8 @@ class Cell(MCNP_Card):
                 if surf.mutated:
                     mutated = True
                     break
-        ret = super().format_for_mcnp_input(mcnp_version)
         if mutated:
+            ret = super().format_for_mcnp_input(mcnp_version)
             self.update_geometry_logic_string()
             buffList = [str(self.number)]
             if self.material:
@@ -508,7 +511,7 @@ class Cell(MCNP_Card):
                     strings.append(f"{key}={value}")
                 ret += Cell.wrap_words_for_mcnp(strings, mcnp_version, False)
         else:
-            ret += self.input_lines
+            ret = self._format_for_mcnp_unmutated(mcnp_version)
         return ret
 
     def __str__(self):

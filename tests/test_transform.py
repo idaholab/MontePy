@@ -12,22 +12,20 @@ class testTransformClass(TestCase):
     def test_transform_init(self):
         # test wrong ID finder
         with self.assertRaises(AssertionError):
-            card = Card(["M20"], BlockType.DATA, ["M20"])
+            card = Card(["M20"], BlockType.DATA)
             Transform(card)
         # test that the minimum word requirement is set
         with self.assertRaises(AssertionError):
-            card = Card(["TR5"], BlockType.DATA, ["TR5"])
+            card = Card(["TR5"], BlockType.DATA)
             Transform(card)
         # test that the transform is a valid number
         with self.assertRaises(MalformedInputError):
-            card = Card(
-                ["TR1foo 0.0 0.0 0.0"], BlockType.DATA, ["TR1foo"] + ["0.0"] * 3
-            )
+            card = Card(["TR1foo 0.0 0.0 0.0"], BlockType.DATA)
             Transform(card)
 
         # test vanilla case
         in_str = "tr5 " + "1.0 " * 3 + "0.0 " * 9
-        card = Card([in_str], BlockType.DATA, in_str.split())
+        card = Card([in_str], BlockType.DATA)
         transform = Transform(card)
         self.assertEqual(transform.number, 5)
         self.assertEqual(transform.old_number, 5)
@@ -41,37 +39,37 @@ class testTransformClass(TestCase):
             self.assertEqual(component, 0.0)
         # Test in degrees form
         in_str = "*tr5 " + "1.0 " * 3 + "0.0 " * 9
-        card = Card([in_str], BlockType.DATA, in_str.split())
+        card = Card([in_str], BlockType.DATA)
         transform = Transform(card)
         self.assertTrue(transform.is_in_degrees)
         # test bad displace
         in_str = "*tr5 " + "de " * 3
-        card = Card([in_str], BlockType.DATA, in_str.split())
+        card = Card([in_str], BlockType.DATA)
         with self.assertRaises(MalformedInputError):
             Transform(card)
         # test bad rotation
         in_str = "*tr5 " + "1.0 " * 3 + "foo "
-        card = Card([in_str], BlockType.DATA, in_str.split())
+        card = Card([in_str], BlockType.DATA)
         with self.assertRaises(MalformedInputError):
             Transform(card)
 
         # test main to aux
         in_str = "*tr5 " + "1.0 " * 3 + "0.0 " * 9 + " -1"
-        card = Card([in_str], BlockType.DATA, in_str.split())
+        card = Card([in_str], BlockType.DATA)
         transform = Transform(card)
         self.assertFalse(transform.is_main_to_aux)
         in_str = "*tr5 " + "1.0 " * 3 + "0.0 " * 9 + " 1"
-        card = Card([in_str], BlockType.DATA, in_str.split())
+        card = Card([in_str], BlockType.DATA)
         transform = Transform(card)
         self.assertTrue(transform.is_main_to_aux)
         in_str = "*tr5 " + "1.0 " * 3 + "0.0 " * 9 + " foo"
-        card = Card([in_str], BlockType.DATA, in_str.split())
+        card = Card([in_str], BlockType.DATA)
         with self.assertRaises(MalformedInputError):
             Transform(card)
 
     def test_transform_degrees_setter(self):
         in_str = "*tr5 " + "1.0 " * 3 + "0.0 " * 9 + " -1"
-        card = Card([in_str], BlockType.DATA, in_str.split())
+        card = Card([in_str], BlockType.DATA)
         transform = Transform(card)
         transform.is_in_degrees = False
         self.assertFalse(transform.is_in_degrees)
@@ -80,7 +78,7 @@ class testTransformClass(TestCase):
 
     def test_transform_number_setter(self):
         in_str = "*tr5 " + "1.0 " * 3 + "0.0 " * 9 + " -1"
-        card = Card([in_str], BlockType.DATA, in_str.split())
+        card = Card([in_str], BlockType.DATA)
         transform = Transform(card)
         transform.number = 20
         self.assertEqual(transform.number, 20)
@@ -89,7 +87,7 @@ class testTransformClass(TestCase):
 
     def test_transform_displace_setter(self):
         in_str = "*tr5 " + "1.0 " * 3 + "0.0 " * 9 + " -1"
-        card = Card([in_str], BlockType.DATA, in_str.split())
+        card = Card([in_str], BlockType.DATA)
         transform = Transform(card)
         transform.displacement_vector = np.array([1.0, 1.0, 1.0])
         for component in transform.displacement_vector:
@@ -101,7 +99,7 @@ class testTransformClass(TestCase):
 
     def test_tranform_rotation_setter(self):
         in_str = "*tr5 " + "1.0 " * 3 + "0.0 " * 9 + " -1"
-        card = Card([in_str], BlockType.DATA, in_str.split())
+        card = Card([in_str], BlockType.DATA)
         transform = Transform(card)
         transform.rotation_matrix = np.array([1.0] * 5)
         for component in transform.rotation_matrix:
@@ -113,7 +111,7 @@ class testTransformClass(TestCase):
 
     def test_is_main_aux_setter(self):
         in_str = "*tr5 " + "1.0 " * 3 + "0.0 " * 9
-        card = Card([in_str], BlockType.DATA, in_str.split())
+        card = Card([in_str], BlockType.DATA)
         transform = Transform(card)
         transform.is_main_to_aux = False
         self.assertFalse(transform.is_main_to_aux)
@@ -122,7 +120,7 @@ class testTransformClass(TestCase):
 
     def test_transform_str(self):
         in_str = "*tr5 " + "0.0 " * 3 + "0.0 " * 9 + " -1"
-        card = Card([in_str], BlockType.DATA, in_str.split())
+        card = Card([in_str], BlockType.DATA)
         transform = Transform(card)
         answer = """TRANSFORM: 5
 DISPLACE: [0. 0. 0.]
@@ -133,7 +131,7 @@ MAIN_TO_AUX: False
 
     def test_transform_print_mcnp(self):
         in_str = "tr5 " + "0.0 " * 3 + "0.0 " * 9 + " -1"
-        card = Card([in_str], BlockType.DATA, in_str.split())
+        card = Card([in_str], BlockType.DATA)
         transform = Transform(card)
         output = transform.format_for_mcnp_input((6, 2, 0))
         answers = [
@@ -150,7 +148,7 @@ MAIN_TO_AUX: False
         for i, line in enumerate(output):
             self.assertEqual(line, answers[i])
         in_str = "*tr5 " + "0.0 " * 3 + "0.0 " * 9 + " -1"
-        card = Card([in_str], BlockType.DATA, in_str.split())
+        card = Card([in_str], BlockType.DATA)
         transform = Transform(card)
         transform.number = 2
         output = transform.format_for_mcnp_input((6, 2, 0))
@@ -158,31 +156,31 @@ MAIN_TO_AUX: False
 
     def test_transform_equivalent(self):
         in_str = "tr5 " + "0.0 " * 3 + "0.0 " * 9 + " -1"
-        card = Card([in_str], BlockType.DATA, in_str.split())
+        card = Card([in_str], BlockType.DATA)
         base = Transform(card)
         self.assertTrue(base.equivalent(base, 1e-6))
         # test different degrees
         in_str = "*tr5 " + "0.0 " * 3 + "0.0 " * 9 + " -1"
-        card = Card([in_str], BlockType.DATA, in_str.split())
+        card = Card([in_str], BlockType.DATA)
         compare = Transform(card)
         self.assertFalse(base.equivalent(compare, 1e-3))
         # test different main_aux
         in_str = "tr5 " + "0.0 " * 3 + "0.0 " * 9
-        card = Card([in_str], BlockType.DATA, in_str.split())
+        card = Card([in_str], BlockType.DATA)
         self.assertFalse(base.equivalent(compare, 1e-3))
         # test different displace
         in_str = "tr5 " + "1.0 " * 3 + "0.0 " * 9
-        card = Card([in_str], BlockType.DATA, in_str.split())
+        card = Card([in_str], BlockType.DATA)
         compare = Transform(card)
         self.assertFalse(base.equivalent(compare, 1e-3))
         # test different rotation
         in_str = "tr5 " + "0.0 " * 3 + "1.0 " * 9
-        card = Card([in_str], BlockType.DATA, in_str.split())
+        card = Card([in_str], BlockType.DATA)
         compare = Transform(card)
         self.assertFalse(base.equivalent(compare, 1e-3))
         # test different rotation
         in_str = "tr5 " + "0.0 " * 3
-        card = Card([in_str], BlockType.DATA, in_str.split())
+        card = Card([in_str], BlockType.DATA)
         compare = Transform(card)
         compare.is_main_to_aux = False
         self.assertFalse(base.equivalent(compare, 1e-3))

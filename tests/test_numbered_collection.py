@@ -165,7 +165,7 @@ class TestNumberedObjectCollection(unittest.TestCase):
 
     def test_number_adding_concurancy(self):
         surfaces = copy.deepcopy(self.simple_problem.surfaces)
-        new_surf =  copy.deepcopy(surfaces[1005])
+        new_surf = copy.deepcopy(surfaces[1005])
         new_surf.number = 5
         surfaces.append(new_surf)
         size = len(surfaces)
@@ -175,4 +175,3 @@ class TestNumberedObjectCollection(unittest.TestCase):
         surfaces.append_renumber(new_surf)
         self.assertEqual(len(surfaces), size + 1)
         self.assertEqual(new_surf.number, 6)
-

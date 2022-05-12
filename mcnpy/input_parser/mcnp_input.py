@@ -1,7 +1,8 @@
 from abc import ABC, abstractmethod
-from .block_type import BlockType
 import math
 from mcnpy.errors import *
+from mcnpy.input_parser.block_type import BlockType
+from mcnpy.input_parser.constants import BLANK_SPACE_CONTINUE
 import re
 
 
@@ -56,19 +57,19 @@ class Card(MCNP_Input):
     Represents a single MCNP "card" e.g. a single cell definition.
     """
 
-    def __init__(self, input_lines, block_type, words):
+    def __init__(self, input_lines, block_type):
         """
         :param input_lines: the lines read straight from the input file.
         :type input_lines: list
         :param block_type: An enum showing which of three MCNP blocks this was inside of.
         :type block_type: BlockType
-        :param words: a list of the string representation of the words for the card definition
-                        for example a material definition may contain: 'M10', '10001.70c', '0.1'
-        :type words: list
         """
         super().__init__(input_lines)
         assert isinstance(block_type, BlockType)
-        # setting twice so if error is found in parsing for convenient errors
+        words = []
+        for line in input_lines:
+            line = line.split("$")[0]
+            words += line.replace(" &", "").split()
         self._words = words
         self._block_type = block_type
         self._words = parse_card_shortcuts(words, self)
@@ -200,10 +201,10 @@ class ReadCard(Card):
     A card for the read card that reads another input file
     """
 
-    def __init__(self, input_lines, block_type, words):
-        super().__init__(input_lines, block_type, words)
-        file_finder = re.compile("file=(?P<file>[\S]+)", re.IGNORECASE)
-        for word in words[1:]:
+    def __init__(self, input_lines, block_type):
+        super().__init__(input_lines, block_type)
+        file_finder = re.compile("file=(?P<file>[\S]+)", re.I)
+        for word in self.words[1:]:
             match = file_finder.match(word)
             if match:
                 self._file_name = match.group("file")
@@ -222,19 +223,24 @@ class Comment(MCNP_Input):
     Object to represent a full line comment in an MCNP problem.
     """
 
-    def __init__(self, input_lines, lines):
+    def __init__(self, input_lines, card_line=0):
         """
         :param input_lines: the lines read straight from the input file.
         :type input_lines: list
-        :param lines: the strings of each line in this comment block without comment markers ('c ')
-        :type lines: list
+        :param card_line: The line number in a parent input card where this Comment appeared
+        :type card_line: int
         """
         super().__init__(input_lines)
-        assert isinstance(lines, list)
         buff = []
-        for line in lines:
-            buff.append(line.rstrip())
+        for line in input_lines:
+            buff.append(
+                re.split(f"^\s{{0,{BLANK_SPACE_CONTINUE-1}}}C\s", line, flags=re.I)[
+                    1
+                ].rstrip()
+            )
         self._lines = buff
+        self._cutting = False
+        self._card_line = card_line
 
     def __str__(self):
         ret = "COMMENT:\n"
@@ -261,6 +267,26 @@ class Comment(MCNP_Input):
         for line in self.lines:
             ret.append("C " + line[0 : line_length - 3])
         return ret
+
+    @property
+    def is_cutting_comment(self):
+        """
+        Whether or not this Comment "cuts" an input card.
+        """
+        return self._cutting
+
+    @property
+    def card_line(self):
+        """
+        Which line of the parent card this comment came from.
+        """
+        return self._card_line
+
+    def snip(self):
+        """
+        Set this Comment to be a cutting comment
+        """
+        self._cutting = True
 
 
 class Message(MCNP_Input):
