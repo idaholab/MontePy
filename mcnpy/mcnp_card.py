@@ -97,9 +97,9 @@ class MCNP_Card(ABC):
         self._mutated = True
         self._comments = comments
 
-    @comment.deleter
-    def comment(self):
-        self._comment = None
+    @comments.deleter
+    def comments(self):
+        self._comment = []
 
     @property
     def input_lines(self):
