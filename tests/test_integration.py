@@ -260,6 +260,10 @@ class testFullFileIntegration(TestCase):
         cell = new_prob.cells[0]
         output = cell.format_for_mcnp_input((6, 2, 0))
         self.assertEqual(int(output[2]), -5)
+        # test mass density printer
+        cell.density = (10.0, False)
+        output = cell.format_for_mcnp_input((6, 2, 0))
+        self.assertAlmostEqual(float(output[1].split()[2]), -10)
         # ensure that surface number updated
         # Test material number change
         new_prob = copy.deepcopy(problem)
