@@ -148,6 +148,8 @@ class testFullFileIntegration(TestCase):
             problem.cells.append(5)
         problem.cells = cells
         self.assertEqual(problem.cells, cells)
+        problem.cells = list(cells)
+        self.assertEqual(problem.cells[2], cells[2])
 
     def test_problem_test_setter(self):
         problem = copy.copy(self.simple_problem)
