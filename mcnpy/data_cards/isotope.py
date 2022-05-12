@@ -54,3 +54,6 @@ class Isotope:
 
     def __lt__(self, other):
         return int(self.ZAID) < int(other.ZAID)
+
+    def __format__(self, format_str):
+        return str(self).__format__(format_str)

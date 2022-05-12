@@ -91,7 +91,7 @@ class testMaterialClass(TestCase):
         input_card = Card([in_str], BlockType.DATA, in_str.split())
         material = Material(input_card, None)
         material.number = 25
-        answers = ["m25       1001.80c         0.5", "           8016.80c         0.5"]
+        answers = ["m25       1001.80c         0.5", "          8016.80c         0.5"]
         output = material.format_for_mcnp_input((6, 2, 0))
         self.assertEqual(len(answers), len(output))
         for i, line in enumerate(output):

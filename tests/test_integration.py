@@ -244,7 +244,7 @@ class testFullFileIntegration(TestCase):
         cells = list(problem.surfaces[1005].cells)
         self.assertIn(problem.cells[2], problem.surfaces[1005].cells)
         self.assertEqual(len(cells), 2)
-    
+
     def test_surface_card_pass_through(self):
         problem = mcnpy.read_input("tests/inputs/test_surfaces.imcnp")
         surf = problem.surfaces[1]
