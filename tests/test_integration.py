@@ -275,6 +275,18 @@ class testFullFileIntegration(TestCase):
         with self.assertRaises(mcnpy.errors.MalformedInputError):
             mcnpy.read_input("tests/inputs/test_broken_transform_link.imcnp")
 
+    def test_material_broken_link(self):
+        with self.assertRaises(mcnpy.errors.BrokenObjectLinkError):
+            problem = mcnpy.read_input("tests/inputs/test_broken_mat_link.imcnp")
+
+    def test_cell_surf_broken_link(self):
+        with self.assertRaises(mcnpy.errors.BrokenObjectLinkError):
+            problem = mcnpy.read_input("tests/inputs/test_broken_cell_surf_link.imcnp")
+
+    def test_cell_complement_broken_link(self):
+        with self.assertRaises(mcnpy.errors.BrokenObjectLinkError):
+            problem = mcnpy.read_input("tests/inputs/test_broken_complement.imcnp")
+
     def test_cell_card_pass_through(self):
         problem = copy.deepcopy(self.simple_problem)
         cell = problem.cells[1]
