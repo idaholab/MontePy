@@ -29,6 +29,14 @@ class DataCard(MCNP_Card):
         """
         return self._words
 
+    @words.setter
+    def words(self, words):
+        assert isinstance(words, list)
+        for word in words:
+            assert isinstance(word, str)
+        self._mutated = True
+        self._words = words
+
     def format_for_mcnp_input(self, mcnp_version):
         ret = super().format_for_mcnp_input(mcnp_version)
         if self.mutated:

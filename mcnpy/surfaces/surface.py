@@ -90,6 +90,7 @@ class Surface(MCNP_Card):
         The mnemonic for the type of surface.
 
         E.g. CY, PX, etc.
+
         :rtype: SurfaceType
         """
         return self._surface_type
@@ -147,6 +148,7 @@ class Surface(MCNP_Card):
         The transformation number for this surface in the original file.
 
         TODO connect and allow updates
+
         :rtype: int
         """
         return self._old_transform_number
@@ -181,7 +183,7 @@ class Surface(MCNP_Card):
         """
         The Transform object that translates this surface
 
-        :rtype:Transform
+        :rtype: Transform
         """
         return self._transform
 
@@ -201,6 +203,7 @@ class Surface(MCNP_Card):
     def old_number(self):
         """
         The surface number that was used in the read file
+
         :rtype: int
         """
         return self._old_surface_number
@@ -209,6 +212,7 @@ class Surface(MCNP_Card):
     def number(self):
         """
         The surface number to use.
+
         :rtype: int
         """
         return self._surface_number
@@ -337,6 +341,7 @@ class Surface(MCNP_Card):
         :type surfaces: list
         :param tolerance: the amount of relative error to allow
         :type tolerance: float
+
         :returns: A list of the surfaces that are identical
         :rtype: list
         """

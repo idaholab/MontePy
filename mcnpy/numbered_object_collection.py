@@ -55,7 +55,7 @@ class NumberedObjectCollection(ABC):
 
         :param number: The number to check.
         :type number: int
-        :raises: NumberConflictError: if this number is in use.
+        :raises: NumberConflictError : if this number is in use.
         """
         assert isinstance(number, int)
         if number in self.numbers:
@@ -263,5 +263,4 @@ class NumberedObjectCollection(ABC):
         return self
 
     def __contains__(self, other):
-        #return any(other is x for x in self._objects or other == x for x in self._objects)
         return other in self._objects
