@@ -274,6 +274,14 @@ class testFullFileIntegration(TestCase):
         output = cell.format_for_mcnp_input((6, 2, 0))
         self.assertEqual(int(output[1].split()[1]), 5)
 
+    def test_cell_fill_formatting(self):
+        # TODO
+        cell = copy.deepcopy(self.simple_problem.cells[0])
+        cell._mutated = True
+        cell.parameters["FILL"] = ["5", "(4)"]
+        output = cell.format_for_mcnp_input((6, 2, 0))
+        self.assertIn("FILL=5 (4)", output[3])
+
     def test_thermal_scattering_pass_through(self):
         problem = copy.deepcopy(self.simple_problem)
         # TODO
@@ -320,3 +328,6 @@ class testFullFileIntegration(TestCase):
         output = material.format_for_mcnp_input((6, 2, 0))
         self.assertEqual(len(output), 5)
         self.assertEqual("C          26057.80c        2.12", output[1])
+
+    def test_comments_setter(self):
+        pass
