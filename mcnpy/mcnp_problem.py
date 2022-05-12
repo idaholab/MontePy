@@ -156,7 +156,7 @@ class MCNP_Problem:
         """
         Semantically parses the MCNP file provided to the constructor.
         """
-        comment_queue = None
+        comment_queue = []
         for i, input_card in enumerate(
             input_syntax_reader.read_input_syntax(self._input_file)
         ):
@@ -168,7 +168,9 @@ class MCNP_Problem:
                 self._title = input_card
 
             elif isinstance(input_card, mcnp_input.Comment):
-                comment_queue = input_card
+                if len(comment_queue) > 0:
+                    input_card.snip()
+                comment_queue.append(input_card)
 
             elif isinstance(input_card, mcnp_input.Card):
                 if len(input_card.words) > 0:
@@ -185,7 +187,7 @@ class MCNP_Problem:
                         self._data_cards.append(data)
                         if isinstance(data, Material):
                             self._materials.append(data)
-                    comment_queue = None
+                    comment_queue = []
         self.__update_internal_pointers()
 
     def __update_internal_pointers(self):

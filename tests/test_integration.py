@@ -147,10 +147,10 @@ class testFullFileIntegration(TestCase):
         problem = copy.copy(self.simple_problem)
         BT = mcnpy.input_parser.block_type.BlockType
         in_str = "5 SO 5.0"
-        card = mcnpy.input_parser.mcnp_input.Card([in_str], BT.SURFACE, in_str.split())
+        card = mcnpy.input_parser.mcnp_input.Card([in_str], BT.SURFACE)
         surf = mcnpy.surfaces.surface_builder.surface_builder(card)
         in_str = "M1 6000.70c 1.0"
-        card = mcnpy.input_parser.mcnp_input.Card([in_str], BT.SURFACE, in_str.split())
+        card = mcnpy.input_parser.mcnp_input.Card([in_str], BT.SURFACE)
         mat = mcnpy.data_cards.material.Material(card, None)
         cell = mcnpy.Cell()
         cell.material = mat
@@ -260,6 +260,10 @@ class testFullFileIntegration(TestCase):
         cell = new_prob.cells[0]
         output = cell.format_for_mcnp_input((6, 2, 0))
         self.assertEqual(int(output[2]), -5)
+        # test mass density printer
+        cell.density = (10.0, False)
+        output = cell.format_for_mcnp_input((6, 2, 0))
+        self.assertAlmostEqual(float(output[1].split()[2]), -10)
         # ensure that surface number updated
         # Test material number change
         new_prob = copy.deepcopy(problem)
@@ -270,6 +274,14 @@ class testFullFileIntegration(TestCase):
         output = cell.format_for_mcnp_input((6, 2, 0))
         self.assertEqual(int(output[1].split()[1]), 5)
 
+    def test_cell_fill_formatting(self):
+        # TODO
+        cell = copy.deepcopy(self.simple_problem.cells[0])
+        cell._mutated = True
+        cell.parameters["FILL"] = ["5", "(4)"]
+        output = cell.format_for_mcnp_input((6, 2, 0))
+        self.assertIn("FILL=5 (4)", output[3])
+
     def test_thermal_scattering_pass_through(self):
         problem = copy.deepcopy(self.simple_problem)
         # TODO
@@ -277,3 +289,56 @@ class testFullFileIntegration(TestCase):
         therm = mat.thermal_scattering
         mat.material_number = 5
         self.assertEqual(therm.format_for_mcnp_input((6, 2, 0)), ["MT5 lwtr.23t"])
+
+    def test_cutting_comments_parse(self):
+        problem = mcnpy.read_input("tests/inputs/breaking_comments.imcnp")
+        # TODO
+        comments = problem.cells[0].comments
+        self.assertEqual(len(comments), 2)
+        self.assertIn("this is a cutting comment", comments[1].lines[0])
+        # TODO
+        comments = problem.materials[0].comments
+        self.assertEqual(len(comments), 2)
+
+    def test_cutting_comments_print_no_mutate(self):
+        problem = mcnpy.read_input("tests/inputs/breaking_comments.imcnp")
+        # TODO
+        cell = problem.cells[0]
+        output = cell.format_for_mcnp_input((6, 2, 0))
+        self.assertEqual(len(output), 5)
+        self.assertEqual("C this is a cutting comment", output[3])
+        # TODO
+        material = problem.materials[0]
+        output = material.format_for_mcnp_input((6, 2, 0))
+        self.assertEqual(len(output), 5)
+        self.assertEqual("C          26057.80c        2.12", output[3])
+
+    def test_cutting_comments_print_mutate(self):
+        problem = mcnpy.read_input("tests/inputs/breaking_comments.imcnp")
+        # TODO
+        cell = problem.cells[0]
+        # TODO
+        cell.cell_number = 5
+        output = cell.format_for_mcnp_input((6, 2, 0))
+        self.assertEqual(len(output), 5)
+        self.assertEqual("C this is a cutting comment", output[1])
+        # TODO
+        material = problem.materials[0]
+        material.material_number = 5
+        output = material.format_for_mcnp_input((6, 2, 0))
+        self.assertEqual(len(output), 5)
+        self.assertEqual("C          26057.80c        2.12", output[1])
+
+    def test_comments_setter(self):
+        # TODO
+        cell = copy.deepcopy(self.simple_problem.cells[0])
+        # TODO
+        comment = self.simple_problem.surfaces[0].comments[0]
+        cell.comments = [comment]
+        self.assertEqual(cell.comments[0], comment)
+        with self.assertRaises(AssertionError):
+            cell.comments = comment
+        with self.assertRaises(AssertionError):
+            cell.comments = [5]
+        with self.assertRaises(AssertionError):
+            cell.comments = 5

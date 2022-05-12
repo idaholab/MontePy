@@ -9,24 +9,30 @@ class MCNP_Card(ABC):
     Abstract class for semantic representations of MCNP input cards.
     """
 
-    def __init__(self, input_card, comment=None):
+    def __init__(self, input_card, comments=None):
         """
         :param input_card: The Card syntax object this will wrap and parse.
         :type input_card: Card
-        :param comment: The Comment that proceeded this card if any
-        :type Comment: Comment
+        :param comment: The Comments that proceeded this card or were inside of this if any
+        :type Comment: list
         """
         if input_card:
             assert isinstance(input_card, mcnpy.input_parser.mcnp_input.Card)
+            assert isinstance(comments, (list, Comment, type(None)))
+            if isinstance(comments, list):
+                for comment in comments:
+                    assert isinstance(comment, Comment)
+            elif isinstance(comments, Comment):
+                comments = [comments]
             self._input_lines = input_card.input_lines
             self._mutated = False
         else:
             self._input_lines = []
             self._mutated = True
-        if comment:
-            self._comment = comment
+        if comments:
+            self._comments = comments
         else:
-            self._comment = None
+            self._comments = []
 
     @abstractmethod
     def format_for_mcnp_input(self, mcnp_version):
@@ -40,24 +46,55 @@ class MCNP_Card(ABC):
         :rtype: list
         """
         ret = []
-        if self.comment:
-            ret += self.comment.format_for_mcnp_input(mcnp_version)
+        if self.comments:
+            if not self.mutated:
+                ret += self.comments[0].format_for_mcnp_input(mcnp_version)
+            else:
+                for comment in self.comments:
+                    ret += comment.format_for_mcnp_input(mcnp_version)
+        return ret
+
+    def _format_for_mcnp_unmutated(self, mcnp_version):
+        """
+        Creates a string representation of this card that can be
+        written to file when the card did not mutate.
+
+        TODO add to developer's guide.
+
+        :param mcnp_version: The tuple for the MCNP version that must be exported to.
+        :type mcnp_version: tuple
+        :return: a list of strings for the lines that this card will occupy.
+        :rtype: list
+        """
+        ret = []
+        comments_dict = {}
+        if self.comments:
+            for comment in self.comments:
+                if comment.is_cutting_comment:
+                    comments_dict[comment.card_line] = comment
+            ret += self.comments[0].format_for_mcnp_input(mcnp_version)
+        for i, line in enumerate(self.input_lines):
+            if i in comments_dict:
+                ret += comments_dict[i].format_for_mcnp_input(mcnp_version)
+            ret.append(line)
         return ret
 
     @property
-    def comment(self):
+    def comments(self):
         """
         The preceding comment block to this card if any.
 
         :rtype: Comment
         """
-        return self._comment
+        return self._comments
 
-    @comment.setter
-    def comment(self, comment):
-        assert isinstance(comment, Comment)
+    @comments.setter
+    def comments(self, comments):
+        assert isinstance(comments, list)
+        for comment in comments:
+            assert isinstance(comment, Comment)
         self._mutated = True
-        self._comment = comment
+        self._comments = comments
 
     @property
     def input_lines(self):

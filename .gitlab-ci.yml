@@ -19,7 +19,7 @@ unit_test:
   coverage: '/TOTAL.+ ([0-9]{1,3}%)/'
   script:
     - echo "Executing unit tests"
-    - coverage run -m unittest discover
+    - coverage run --source mcnpy -m unittest discover
     - coverage report -m
     - coverage-badge
 

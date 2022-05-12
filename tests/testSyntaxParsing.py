@@ -75,7 +75,6 @@ c bar"""
 
     def testBlockId(self):
         test_string = "1 0 -1"
-
         for i in range(3):
             tester = "\n" * i + test_string
             with StringIO(tester) as fh:
@@ -149,12 +148,13 @@ bar
             "tests/inputs/testVerticalMode.imcnp"
         )
         next(generator)
+        next(generator)
         with self.assertRaises(mcnpy.errors.UnsupportedFeature):
             next(generator)
 
     def testCardStringRepr(self):
         in_str = "1 0 -1"
         card = mcnpy.input_parser.mcnp_input.Card(
-            [in_str], mcnpy.input_parser.block_type.BlockType.CELL, in_str.split()
+            [in_str], mcnpy.input_parser.block_type.BlockType.CELL
         )
         self.assertEqual(str(card), "CARD: BlockType.CELL: ['1', '0', '-1']")
