@@ -233,11 +233,14 @@ class Comment(MCNP_Input):
         super().__init__(input_lines)
         buff = []
         for line in input_lines:
-            buff.append(
-                re.split(f"^\s{{0,{BLANK_SPACE_CONTINUE-1}}}C\s", line, flags=re.I)[
-                    1
-                ].rstrip()
+            fragments = re.split(
+                f"^\s{{0,{BLANK_SPACE_CONTINUE-1}}}C\s", line, flags=re.I
             )
+            if len(fragments) > 1:
+                comment_line = fragments[1].rstrip()
+            else:
+                comment_line = ""
+            buff.append(comment_line)
         self._lines = buff
         self._cutting = False
         self._card_line = card_line
