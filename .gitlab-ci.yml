@@ -13,8 +13,8 @@ install:
     - python setup.py sdist bdist_wheel
     - pip install dist/*.whl --force-reinstall
       # test the extras installation
-    - python setup.py install easy_install mcnpy[test]
-    - python setup.py install easy_install mcnpy[doc]
+    - python setup.py install easy_install --user mcnpy[test]
+    - python setup.py install easy_install --user mcnpy[doc]
 
 
 unit_test:
