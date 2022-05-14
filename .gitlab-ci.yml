@@ -10,8 +10,11 @@ install:
   script:
     - echo "Installing dependencies"
     - pip install -r requirements/dev.txt
-    - python setup.py bdist_wheel
+    - python setup.py sdist bdist_wheel
     - pip install dist/*.whl --force-reinstall
+      # test the extras installation
+    - python setup.py install easy_install mcnpy[test]
+    - python setup.py install easy_install mcnpy[doc]
 
 
 unit_test:
