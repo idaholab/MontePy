@@ -166,8 +166,13 @@ class Material(data_card.DataCard):
         for card in data_cards:
             if isinstance(card, thermal_scattering.ThermalScatteringLaw):
                 if card.old_number == self.number:
-                    self._thermal_scattering = card
-                    card._parent_material = self
+                    if not self._thermal_scattering:
+                        self._thermal_scattering = card
+                        card._parent_material = self
+                    else:
+                        raise MalformedInputError(
+                            self, "Multiple MT inputs were specified for this material."
+                        )
 
     def __str__(self):
         ret = f"MATERIAL: {self.number} fractions: "
