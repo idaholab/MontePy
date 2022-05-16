@@ -57,15 +57,18 @@ test title
 
     def testCommentFinder(self):
         test_string = """c foo
-c bar"""
+c bar
+c
+c bop"""
         for i in range(5):
             tester = " " * i + test_string
             with StringIO(tester) as fh:
                 card = next(input_syntax_reader.read_data(fh))
                 self.assertIsInstance(card, mcnpy.input_parser.mcnp_input.Comment)
-                self.assertEqual(len(card.lines), 2)
+                self.assertEqual(len(card.lines), 4)
                 self.assertEqual(card.lines[0], "foo")
                 self.assertEqual(card.lines[1], "bar")
+                self.assertEqual(card.lines[1], "bop")
 
     def testReadCardFinder(self):
         test_string = "read file=foo.imcnp "
