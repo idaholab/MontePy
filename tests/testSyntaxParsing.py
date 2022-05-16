@@ -68,7 +68,7 @@ c bop"""
                 self.assertEqual(len(card.lines), 4)
                 self.assertEqual(card.lines[0], "foo")
                 self.assertEqual(card.lines[1], "bar")
-                self.assertEqual(card.lines[1], "bop")
+                self.assertEqual(card.lines[3], "bop")
 
     def testReadCardFinder(self):
         test_string = "read file=foo.imcnp "
