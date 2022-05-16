@@ -22,6 +22,16 @@ class testFullFileIntegration(TestCase):
         for i, input_ob in enumerate(self.simple_problem.original_inputs):
             self.assertIsInstance(input_ob, cell_order[i])
 
+    def test_original_input_dos(self):
+        problem = mcnpy.read_input(os.path.join("tests", "inputs", "test_dos.imcnp"))
+        cell_order = [Message, Title, Comment]
+        cell_order += [Card] * 5 + [Comment]
+        cell_order += [Comment] + [Card] * 3
+        cell_order += [Comment, Card] * 3
+        cell_order += [Card, Comment] + [Card] * 5
+        for i, input_ob in enumerate(problem.original_inputs):
+            self.assertIsInstance(input_ob, cell_order[i])
+
     def test_material_parsing(self):
         mat_numbers = [1, 2, 3]
         for i, mat in enumerate(self.simple_problem.materials):
