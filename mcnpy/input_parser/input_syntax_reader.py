@@ -123,10 +123,11 @@ def read_data(fh, block_type=None, recursion=False):
         card_raw_lines = []
 
     def is_comment(line):
-        blank_comment = "C\n" == line.upper() or "C\r\n" == line.upper()
-        non_blank_comment = line[
-            0 : BLANK_SPACE_CONTINUE + 1
-        ].upper() and line.lstrip().upper().startswith("C ")
+        upper_start = line[0 : BLANK_SPACE_CONTINUE + 1].upper()
+        non_blank_comment = upper_start and line.lstrip().upper().startswith("C ")
+        if non_blank_comment:
+            return True
+        blank_comment = "C\n" == upper_start.lstrip() or "C\r\n" == upper_start.lstrip()
         return blank_comment or non_blank_comment
 
     for line in fh:
