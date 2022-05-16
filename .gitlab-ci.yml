@@ -16,7 +16,7 @@ install:
 
 unit_test:
   stage: test
-  coverage: '/TOTAL.+ ([0-9]{1,3}%)/'
+  coverage: '/TOTAL.+ ([0-9\.]{1,5}%)/'
   script:
     - echo "Executing unit tests"
     - coverage run --source mcnpy -m unittest discover
