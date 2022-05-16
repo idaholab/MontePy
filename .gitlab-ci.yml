@@ -20,7 +20,7 @@ unit_test:
   script:
     - echo "Executing unit tests"
     - coverage run --source mcnpy -m unittest discover
-    - coverage report -m
+    - coverage report -m --precision=2
     - coverage-badge
 
 
