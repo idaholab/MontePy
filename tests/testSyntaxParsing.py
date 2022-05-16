@@ -59,13 +59,15 @@ test title
         test_string = """c foo
 c bar
 c
-c bop"""
+c bop
+ c
+"""
         for i in range(5):
             tester = " " * i + test_string
             with StringIO(tester) as fh:
                 card = next(input_syntax_reader.read_data(fh))
                 self.assertIsInstance(card, mcnpy.input_parser.mcnp_input.Comment)
-                self.assertEqual(len(card.lines), 4)
+                self.assertEqual(len(card.lines), 5)
                 self.assertEqual(card.lines[0], "foo")
                 self.assertEqual(card.lines[1], "bar")
                 self.assertEqual(card.lines[3], "bop")
