@@ -21,7 +21,13 @@ unit_test:
     - echo "Executing unit tests"
     - coverage run --source mcnpy -m unittest discover
     - coverage report -m --precision=2
+    - coverage xml
     - coverage-badge
+  artifacts:
+    reports:
+      coverage_report:
+         coverage_format: cobertura
+         path: coverage.xml
 
 
 deploy1:
