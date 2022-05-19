@@ -19,12 +19,12 @@ unit_test:
   coverage: '/TOTAL.+ ([0-9\.]{1,5}%)/'
   script:
     - echo "Executing unit tests"
-    - coverage run --source mcnpy -m unittest discover
+    - coverage run --source cafe -m pytest --junitxml=test_report.xml
     - coverage report -m --precision=2
     - coverage xml
-    - coverage-badge
   artifacts:
     reports:
+      junit: test_report.xml
       coverage_report:
          coverage_format: cobertura
          path: coverage.xml
