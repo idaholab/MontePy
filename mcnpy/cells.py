@@ -3,7 +3,8 @@ from mcnpy.numbered_object_collection import NumberedObjectCollection
 
 
 class Cells(NumberedObjectCollection):
-    """A collections of cells."""
+    """A collections of multiple :class:`mcnpy.cell.Cell` objects.
+    """
 
     def __init__(self, cells=None):
         """
