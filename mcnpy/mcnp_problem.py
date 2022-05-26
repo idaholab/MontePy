@@ -47,7 +47,7 @@ class MCNP_Problem:
         A list of the Cell objects in this problem.
 
         :return: a list of the Cell objects, ordered by the order they were in the input file.
-        :rtype: list
+        :rtype: Cells
         """
         return self._cells
 
@@ -91,7 +91,7 @@ class MCNP_Problem:
         A list of the Surface objects in this problem.
 
         :return: a list of the Surface objects, ordered by the order they were in the input file.
-        :rtype: list
+        :rtype: Surfaces
         """
         return self._surfaces
 
@@ -101,7 +101,7 @@ class MCNP_Problem:
         A list of the Material objects in this problem.
 
         :return: a list of the Material objects, ordered by the order they were in the input file.
-        :rtype: list
+        :rtype: Materials
         """
         return self._materials
 

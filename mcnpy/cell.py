@@ -228,7 +228,7 @@ class Cell(MCNP_Card):
         List of the Surface objects associated with this cell.
 
         This list does not convey any of the CGS Boolean logic
-        :rtype: list
+        :rtype: Surfaces
         """
         return self._surfaces
 
@@ -294,6 +294,8 @@ class Cell(MCNP_Card):
     def complements(self):
         """
         The Cell objects that this cell is a complement of
+
+        :rytpe: Cells
         """
         return self._complements
 
