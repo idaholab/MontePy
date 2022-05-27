@@ -1,5 +1,25 @@
+""" MCNPy is a library for reading, editing, and writing MCNP input files.
+
+This creates a semantic understanding of the MCNP input file.
+start by running mcnpy.read_input().
+
+You will receive an MCNP_Problem object that you will interact with.
+"""
+
+__author__ = "Micah Gale, Travis Labossiere-Hickman"
+__copyright__ = "Copyright 2021 – 2022, Battelle Energy Alliance, LLC."
+__credits__ = [
+    "Micah Gale",
+    "Travis Labossiere-Hickman",
+    "Austin Carter",
+    "Andrew Bascom",
+]
+
 name = "mcnpy"
-__version__ = "0.0.2"
+__version__ = "0.0.5"
+__maintainer__ = "Micah Gale"
+__email__ = "micah.gale@inl.gov"
+__status__ = "Development"
 __all__ = ["cell", "surface", "mcnp_card", "input_parser"]
 
 from . import input_parser
