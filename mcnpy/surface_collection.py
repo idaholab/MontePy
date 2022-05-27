@@ -21,6 +21,18 @@ class SurfacesGenerator:
 
 
 class Surfaces(NumberedObjectCollection):
+    """A collection of multiple :class:`mcnpy.surfaces.surface.Surface` instances.
+
+    This collection has a generator for every supported type of MCNP surface.
+    These are accessed by the for lower case version of the MCNP mnemonic.
+    For example you can access all planes normal to the z-axis through .pz
+
+    This example will shift all PZ surfaces up by 10 cm.
+
+    >>> for surface in problem.surfaces.pz:
+    >>>    surface.location += 10
+
+    """
     pz = SurfacesGenerator()
 
     def __init__(self, surfaces=None):

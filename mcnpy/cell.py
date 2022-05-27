@@ -185,20 +185,39 @@ class Cell(MCNP_Card):
         """
         The density of the material in the cell.
 
+        To set this value you must provide a tuple only. The density and
+        is_atom_dens parameters below are the elements of the tuple.
+
+        >>> cell.density = 5.0
+        TypeError                                 Traceback (most recent call last)
+        <ipython-input-5-92aa54bef16b> in <module>
+        ----> 1 problem.cells[1].density = 5.0
+        ~/dev/mcnpy/mcnpy/cell.py in density(self, density_tuple)
+            218             :type is_atom_dens: bool
+            219         ""
+        --> 220         density, is_atom_dens = density_tuple
+            221         assert isinstance(density, float)
+            222         assert isinstance(is_atom_dens, bool)
+        TypeError: cannot unpack non-iterable float object
+        >>> cell.density = (5.0, False)
+        >>> cell.density
+        5.0
+        >>> cell.is_atom_dens
+        False
+
+
+        :param density_tuple: A tuple of the density, and is_atom_dens
+        :type density_tuple:
+        :param density: the density of the material [a/b-cm] or [g/cc]
+        :type density: float
+        :param is_atom_dens: if True the density is atom density
+        :type is_atom_dens: bool
         :rtype: float
         """
         return self._density
 
     @density.setter
     def density(self, density_tuple):
-        """
-        :param density_tuple: A tuple of the density, and is_atom_dens
-        :type density_tuple:
-            :param density: the density of the material [a/b-cm] or [g/cc]
-            :type density: float
-            :param is_atom_dens: if True the density is atom density
-            :type is_atom_dens: bool
-        """
         density, is_atom_dens = density_tuple
         assert isinstance(density, float)
         assert isinstance(is_atom_dens, bool)
@@ -228,7 +247,7 @@ class Cell(MCNP_Card):
         List of the Surface objects associated with this cell.
 
         This list does not convey any of the CGS Boolean logic
-        :rtype: list
+        :rtype: Surfaces
         """
         return self._surfaces
 
@@ -294,6 +313,8 @@ class Cell(MCNP_Card):
     def complements(self):
         """
         The Cell objects that this cell is a complement of
+
+        :rytpe: Cells
         """
         return self._complements
 

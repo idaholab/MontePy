@@ -42,14 +42,6 @@ class NumberedObjectCollection(ABC):
             self.__num_cache[obj.number] = obj
             yield obj.number
 
-    def check_redundant_numbers(self):
-        """
-        Checks if there are any redundant  numbers.
-        :returns: true if there are collisions of numbers
-        :rtype: bool
-        """
-        return len(self._objects) != len(set(self.numbers))
-
     def check_number(self, number):
         """Checks if the number is already in use, and if so raises an error.
 
@@ -195,16 +187,6 @@ class NumberedObjectCollection(ABC):
         assert isinstance(step, int)
         assert step > 0
         return max(self.numbers) + step
-
-    def replace(self, old, new):
-        assert isinstance(old, self._obj_class)
-        assert isinstance(new, self._obj_class)
-        if old.number != new.number:
-            self.check_number(new.number)
-        self.__num_cache.pop(old.number, None)
-        self.__num_cache[new.number] = new
-        self._objects.remove(old)
-        self.append(new)
 
     def __getitem__(self, i):
         assert isinstance(i, int)

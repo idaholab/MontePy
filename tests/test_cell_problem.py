@@ -113,3 +113,13 @@ class TestCellClass(TestCase):
                 parts = output[2].split("=")
                 # ensure that fill is final entry
                 self.assertIn("FILL", parts[-2])
+
+    def test_cell_parameters_setting(self):
+        in_str = "1 1 0.5 2"
+        card = Card([in_str], BlockType.CELL)
+        cell = Cell(card)
+        params = {"FILL": "5"}
+        cell.parameters = params
+        self.assertEqual(params, cell.parameters)
+        with self.assertRaises(AssertionError):
+            cell.parameters = []

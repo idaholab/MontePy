@@ -7,7 +7,7 @@ class DataCard(MCNP_Card):
     Parent class to describe all MCNP data inputs.
     """
 
-    def __init__(self, input_card, comment=None):
+    def __init__(self, input_card=None, comment=None):
         """
         :param input_card: the Card object representing this data card
         :type input_card: Card

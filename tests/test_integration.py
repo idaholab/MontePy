@@ -22,6 +22,16 @@ class testFullFileIntegration(TestCase):
         for i, input_ob in enumerate(self.simple_problem.original_inputs):
             self.assertIsInstance(input_ob, cell_order[i])
 
+    def test_original_input_dos(self):
+        problem = mcnpy.read_input(os.path.join("tests", "inputs", "test_dos.imcnp"))
+        cell_order = [Message, Title, Comment]
+        cell_order += [Card] * 5 + [Comment]
+        cell_order += [Comment] + [Card] * 3
+        cell_order += [Comment, Card] * 3
+        cell_order += [Card, Comment] + [Card] * 5
+        for i, input_ob in enumerate(problem.original_inputs):
+            self.assertIsInstance(input_ob, cell_order[i])
+
     def test_material_parsing(self):
         mat_numbers = [1, 2, 3]
         for i, mat in enumerate(self.simple_problem.materials):
@@ -148,6 +158,8 @@ class testFullFileIntegration(TestCase):
             problem.cells.append(5)
         problem.cells = cells
         self.assertEqual(problem.cells, cells)
+        problem.cells = list(cells)
+        self.assertEqual(problem.cells[2], cells[2])
 
     def test_problem_test_setter(self):
         problem = copy.copy(self.simple_problem)
@@ -275,36 +287,54 @@ class testFullFileIntegration(TestCase):
         with self.assertRaises(mcnpy.errors.MalformedInputError):
             mcnpy.read_input("tests/inputs/test_broken_transform_link.imcnp")
 
+    def test_material_broken_link(self):
+        with self.assertRaises(mcnpy.errors.BrokenObjectLinkError):
+            problem = mcnpy.read_input("tests/inputs/test_broken_mat_link.imcnp")
+
+    def test_cell_surf_broken_link(self):
+        with self.assertRaises(mcnpy.errors.BrokenObjectLinkError):
+            problem = mcnpy.read_input("tests/inputs/test_broken_cell_surf_link.imcnp")
+
+    def test_cell_complement_broken_link(self):
+        with self.assertRaises(mcnpy.errors.BrokenObjectLinkError):
+            problem = mcnpy.read_input("tests/inputs/test_broken_complement.imcnp")
+
     def test_cell_card_pass_through(self):
         problem = copy.deepcopy(self.simple_problem)
         cell = problem.cells[1]
         # test card pass-through
-        answer = ["C cells", "1 1 20", "         -1000", "     imp:n,p=1 U=350 trcl=5"]
+        answer = [
+            "C cells",
+            "C ",
+            "1 1 20",
+            "         -1000",
+            "     imp:n,p=1 U=350 trcl=5",
+        ]
         self.assertEqual(cell.format_for_mcnp_input((6, 2, 0)), answer)
         # test surface change
         new_prob = copy.deepcopy(problem)
         new_prob.surfaces[1000].number = 5
         cell = new_prob.cells[1]
         output = cell.format_for_mcnp_input((6, 2, 0))
-        self.assertEqual(int(output[2]), -5)
+        self.assertEqual(int(output[3]), -5)
         # test mass density printer
         cell.density = (10.0, False)
         output = cell.format_for_mcnp_input((6, 2, 0))
-        self.assertAlmostEqual(float(output[1].split()[2]), -10)
+        self.assertAlmostEqual(float(output[2].split()[2]), -10)
         # ensure that surface number updated
         # Test material number change
         new_prob = copy.deepcopy(problem)
         new_prob.materials[1].number = 5
         cell = new_prob.cells[1]
         output = cell.format_for_mcnp_input((6, 2, 0))
-        self.assertEqual(int(output[1].split()[1]), 5)
+        self.assertEqual(int(output[2].split()[1]), 5)
 
     def test_cell_fill_formatting(self):
         cell = copy.deepcopy(self.simple_problem.cells[1])
         cell._mutated = True
         cell.parameters["FILL"] = ["5", "(4)"]
         output = cell.format_for_mcnp_input((6, 2, 0))
-        self.assertIn("FILL=5 (4)", output[3])
+        self.assertIn("FILL=5 (4)", output[4])
 
     def test_thermal_scattering_pass_through(self):
         problem = copy.deepcopy(self.simple_problem)

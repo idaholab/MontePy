@@ -1,6 +1,7 @@
 from mcnpy.data_cards.data_card import DataCard
 from mcnpy import mcnp_card
 from mcnpy.errors import *
+import mcnpy
 
 
 class ThermalScatteringLaw(DataCard):
@@ -23,7 +24,7 @@ class ThermalScatteringLaw(DataCard):
         """
         self._old_material_number = None
         self._parent_material = None
-        self._scattering_laws = None
+        self._scattering_laws = []
         if input_card:
             super().__init__(input_card, comment)
             assert "mt" in self.words[0].lower()
@@ -85,6 +86,10 @@ class ThermalScatteringLaw(DataCard):
     def format_for_mcnp_input(self, mcnp_version):
         ret = mcnp_card.MCNP_Card.format_for_mcnp_input(self, mcnp_version)
         mutated = self.mutated
+        if not self.parent_material:
+            raise MalformedInputError(
+                self, "MT input is detached from a parent material"
+            )
         if not mutated:
             mutated = self.parent_material.mutated
         if mutated:
@@ -96,3 +101,21 @@ class ThermalScatteringLaw(DataCard):
         else:
             ret = self._format_for_mcnp_unmutated(mcnp_version)
         return ret
+
+    def update_pointers(self, data_cards):
+        """
+        Updates pointer to the thermal scattering data
+
+        :param data_cards: a list of the data cards in the problem
+        :type data_cards: list
+        """
+        found = False
+        for card in data_cards:
+            if isinstance(card, mcnpy.data_cards.material.Material):
+                if card.number == self.old_number:
+                    found = True
+
+        if not found:
+            raise MalformedInputError(
+                self, "MT input is detached from a parent material"
+            )

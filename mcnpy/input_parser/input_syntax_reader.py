@@ -122,15 +122,21 @@ def read_data(fh, block_type=None, recursion=False):
         continue_card = False
         card_raw_lines = []
 
+    def is_comment(line):
+        upper_start = line[0 : BLANK_SPACE_CONTINUE + 1].upper()
+        non_blank_comment = upper_start and line.lstrip().upper().startswith("C ")
+        if non_blank_comment:
+            return True
+        blank_comment = "C\n" == upper_start.lstrip() or "C\r\n" == upper_start.lstrip()
+        return blank_comment or non_blank_comment
+
     for line in fh:
         # transition to next block with blank line
         if not line.strip():
             yield from flush_block()
             continue
         # if it's a C comment
-        if "C " in line[
-            0 : BLANK_SPACE_CONTINUE + 1
-        ].upper() and line.lstrip().upper().startswith("C "):
+        if is_comment(line):
             comment_raw_lines.append(line.rstrip())
             is_in_comment = True
         # if it's part of a card
