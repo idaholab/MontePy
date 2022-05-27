@@ -3,4 +3,6 @@ build/*
 dist/*
 *egg-info/*
 *.mcnp
-*.*.swp
+*.*.sw*
+doc/build/*
+doc/source/api/*

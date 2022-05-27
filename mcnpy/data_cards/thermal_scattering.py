@@ -44,7 +44,7 @@ class ThermalScatteringLaw(DataCard):
                 self._parent_material = material
 
     @property
-    def old_material_number(self):
+    def old_number(self):
         """
         The material number from the file
         """
@@ -54,6 +54,7 @@ class ThermalScatteringLaw(DataCard):
     def parent_material(self):
         """
         The Material object this is tied to.
+
         :rtype: Material
         """
         return self._parent_material
@@ -62,6 +63,7 @@ class ThermalScatteringLaw(DataCard):
     def thermal_scattering_laws(self):
         """
         The thermal scattering laws to use for this material
+
         :rtype: list
         """
         return self._scattering_laws
@@ -86,7 +88,7 @@ class ThermalScatteringLaw(DataCard):
         if not mutated:
             mutated = self.parent_material.mutated
         if mutated:
-            buff_list = [f"MT{self.parent_material.material_number}"]
+            buff_list = [f"MT{self.parent_material.number}"]
             buff_list += self._scattering_laws
             ret += ThermalScatteringLaw.wrap_words_for_mcnp(
                 buff_list, mcnp_version, True

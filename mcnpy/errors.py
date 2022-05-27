@@ -8,6 +8,15 @@ class MalformedInputError(Exception):
         super().__init__(self.message)
 
 
+class NumberConflictError(Exception):
+    """
+    Raised when there is a conflict in number spaces
+    """
+
+    def __init__(self, message):
+        super().__init__(message)
+
+
 class BrokenObjectLinkError(MalformedInputError):
     """Raised when the referenced object does not exist in the input file."""
 

@@ -25,6 +25,7 @@ class Surface(MCNP_Card):
         self._old_periodic_surface = None
         self._transform = None
         self._old_transform_number = None
+        self._surface_number = -1
         i = 0
         # surface number
         surface_num = words[i]
@@ -89,6 +90,7 @@ class Surface(MCNP_Card):
         The mnemonic for the type of surface.
 
         E.g. CY, PX, etc.
+
         :rtype: SurfaceType
         """
         return self._surface_type
@@ -146,6 +148,7 @@ class Surface(MCNP_Card):
         The transformation number for this surface in the original file.
 
         TODO connect and allow updates
+
         :rtype: int
         """
         return self._old_transform_number
@@ -180,7 +183,7 @@ class Surface(MCNP_Card):
         """
         The Transform object that translates this surface
 
-        :rtype:Transform
+        :rtype: Transform
         """
         return self._transform
 
@@ -197,30 +200,41 @@ class Surface(MCNP_Card):
         self._old_transform_number = None
 
     @property
-    def old_surface_number(self):
+    def old_number(self):
         """
         The surface number that was used in the read file
+
         :rtype: int
         """
         return self._old_surface_number
 
     @property
-    def surface_number(self):
+    def number(self):
         """
         The surface number to use.
+
         :rtype: int
         """
         return self._surface_number
 
-    @surface_number.setter
-    def surface_number(self, number):
+    @number.setter
+    def number(self, number):
         assert isinstance(number, int)
         assert number > 0
+        if self._problem:
+            self._problem.surfaces.check_number(number)
         self._mutated = True
         self._surface_number = number
 
+    @property
+    def cells(self):
+        if self._problem:
+            for cell in self._problem.cells:
+                if self in cell.surfaces:
+                    yield cell
+
     def __str__(self):
-        return f"SURFACE: {self.surface_number}, {self.surface_type}"
+        return f"SURFACE: {self.number}, {self.surface_type}"
 
     def __repr__(self):
         return self.__str__()
@@ -238,19 +252,19 @@ class Surface(MCNP_Card):
             except KeyError:
                 raise BrokenObjectLinkError(
                     "Surface",
-                    self.surface_number,
+                    self.number,
                     "Periodic Surface",
                     self.old_periodic_surface,
                 )
         if self.old_transform_number:
             for card in data_cards:
                 if isinstance(card, transform.Transform):
-                    if card.transform_number == self.old_transform_number:
+                    if card.number == self.old_transform_number:
                         self._transform = card
             if not self.transform:
                 raise BrokenObjectLinkError(
                     "Surface",
-                    self.surface_number,
+                    self.number,
                     "Transform",
                     self.old_transform_number,
                 )
@@ -267,16 +281,16 @@ class Surface(MCNP_Card):
             buffList = []
             # surface number
             if self.is_reflecting:
-                buffList.append(f"*{self.surface_number}")
+                buffList.append(f"*{self.number}")
             elif self.is_white_boundary:
-                buffList.append(f"+{self.surface_number}")
+                buffList.append(f"+{self.number}")
             else:
-                buffList.append(str(self.surface_number))
+                buffList.append(str(self.number))
 
             if self.periodic_surface:
-                buffList.append(str(-self.periodic_surface.surface_number))
+                buffList.append(str(-self.periodic_surface.number))
             elif self.transform:
-                buffList.append(str(self.transform.transform_number))
+                buffList.append(str(self.transform.number))
 
             buffList.append(self.surface_type.value)
 
@@ -288,7 +302,37 @@ class Surface(MCNP_Card):
         return ret
 
     def __lt__(self, other):
-        return self.surface_number < other.surface_number
+        return self.number < other.number
+
+    def __eq__(self, other):
+        return (
+            self.number == other.number
+            and self.surface_type == other.surface_type
+            and self.is_reflecting == other.is_reflecting
+            and self.is_white_boundary == other.is_white_boundary
+            and self.surface_constants == other.surface_constants
+        )
+
+    def __ne__(self, other):
+        return not self == other
+
+    def __hash__(self):
+        return hash((self.number, str(self.surface_type)))
+
+    def __eq__(self, other):
+        return (
+            self.number == other.number
+            and self.surface_type == other.surface_type
+            and self.is_reflecting == other.is_reflecting
+            and self.is_white_boundary == other.is_white_boundary
+            and self.surface_constants == other.surface_constants
+        )
+
+    def __ne__(self, other):
+        return not self == other
+
+    def __hash__(self):
+        return hash((self.number, str(self.surface_type)))
 
     def find_duplicate_surfaces(self, surfaces, tolerance):
         """Finds all surfaces that are effectively the same as this one.
@@ -297,6 +341,7 @@ class Surface(MCNP_Card):
         :type surfaces: list
         :param tolerance: the amount of relative error to allow
         :type tolerance: float
+
         :returns: A list of the surfaces that are identical
         :rtype: list
         """

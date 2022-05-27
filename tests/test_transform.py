@@ -27,8 +27,8 @@ class testTransformClass(TestCase):
         in_str = "tr5 " + "1.0 " * 3 + "0.0 " * 9
         card = Card([in_str], BlockType.DATA)
         transform = Transform(card)
-        self.assertEqual(transform.transform_number, 5)
-        self.assertEqual(transform.old_transform_number, 5)
+        self.assertEqual(transform.number, 5)
+        self.assertEqual(transform.old_number, 5)
         self.assertFalse(transform.is_in_degrees)
         self.assertTrue(transform.is_main_to_aux)
         self.assertEqual(len(transform.displacement_vector), 3)
@@ -80,10 +80,10 @@ class testTransformClass(TestCase):
         in_str = "*tr5 " + "1.0 " * 3 + "0.0 " * 9 + " -1"
         card = Card([in_str], BlockType.DATA)
         transform = Transform(card)
-        transform.transform_number = 20
-        self.assertEqual(transform.transform_number, 20)
+        transform.number = 20
+        self.assertEqual(transform.number, 20)
         with self.assertRaises(AssertionError):
-            transform.transform_number = "hi"
+            transform.number = "hi"
 
     def test_transform_displace_setter(self):
         in_str = "*tr5 " + "1.0 " * 3 + "0.0 " * 9 + " -1"
@@ -142,7 +142,7 @@ MAIN_TO_AUX: False
             "     -1",
         ]
         self.assertEqual(output[0], in_str)
-        transform.transform_number = 2
+        transform.number = 2
         output = transform.format_for_mcnp_input((6, 2, 0))
         self.assertEqual(len(output), len(answers))
         for i, line in enumerate(output):
@@ -150,7 +150,7 @@ MAIN_TO_AUX: False
         in_str = "*tr5 " + "0.0 " * 3 + "0.0 " * 9 + " -1"
         card = Card([in_str], BlockType.DATA)
         transform = Transform(card)
-        transform.transform_number = 2
+        transform.number = 2
         output = transform.format_for_mcnp_input((6, 2, 0))
         self.assertEqual(output[0], "*TR2 0.0 0.0 0.0")
 

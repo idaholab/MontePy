@@ -16,6 +16,7 @@ class MCNP_Card(ABC):
         :param comment: The Comments that proceeded this card or were inside of this if any
         :type Comment: list
         """
+        self._problem = None
         if input_card:
             assert isinstance(input_card, mcnpy.input_parser.mcnp_input.Card)
             assert isinstance(comments, (list, Comment, type(None)))
@@ -96,6 +97,10 @@ class MCNP_Card(ABC):
         self._mutated = True
         self._comments = comments
 
+    @comments.deleter
+    def comments(self):
+        self._comment = []
+
     @property
     def input_lines(self):
         """The raw input lines read from the input file
@@ -167,3 +172,14 @@ class MCNP_Card(ABC):
             subsequent_indent=" " * indent_length,
         )
         return wrapper.wrap(string)
+
+    def link_to_problem(self, problem):
+        """Links the card to the parent problem for this card.
+
+        This is done so that cards can find links to other objects.
+
+        :param problem: The problem to link this card to.
+        :type type: MCNP_Problem
+        """
+        assert isinstance(problem, mcnpy.mcnp_problem.MCNP_Problem)
+        self._problem = problem
