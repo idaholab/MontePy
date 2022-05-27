@@ -1,6 +1,7 @@
 from mcnpy.data_cards.data_card import DataCard
 from mcnpy import mcnp_card
 from mcnpy.errors import *
+import mcnpy
 
 
 class ThermalScatteringLaw(DataCard):
@@ -23,7 +24,7 @@ class ThermalScatteringLaw(DataCard):
         """
         self._old_material_number = None
         self._parent_material = None
-        self._scattering_laws = None
+        self._scattering_laws = []
         if input_card:
             super().__init__(input_card, comment)
             assert "mt" in self.words[0].lower()
@@ -44,7 +45,7 @@ class ThermalScatteringLaw(DataCard):
                 self._parent_material = material
 
     @property
-    def old_material_number(self):
+    def old_number(self):
         """
         The material number from the file
         """
@@ -54,6 +55,7 @@ class ThermalScatteringLaw(DataCard):
     def parent_material(self):
         """
         The Material object this is tied to.
+
         :rtype: Material
         """
         return self._parent_material
@@ -62,6 +64,7 @@ class ThermalScatteringLaw(DataCard):
     def thermal_scattering_laws(self):
         """
         The thermal scattering laws to use for this material
+
         :rtype: list
         """
         return self._scattering_laws
@@ -71,6 +74,7 @@ class ThermalScatteringLaw(DataCard):
         assert isinstance(laws, list)
         for law in laws:
             assert isinstance(law, str)
+        self._mutated = True
         self._scattering_laws = laws
 
     def add_scattering_law(self, law):
@@ -81,7 +85,37 @@ class ThermalScatteringLaw(DataCard):
 
     def format_for_mcnp_input(self, mcnp_version):
         ret = mcnp_card.MCNP_Card.format_for_mcnp_input(self, mcnp_version)
-        buff_list = [f"MT{self.parent_material.material_number}"]
-        buff_list += self._scattering_laws
-        ret += ThermalScatteringLaw.wrap_words_for_mcnp(buff_list, mcnp_version, True)
+        mutated = self.mutated
+        if not self.parent_material:
+            raise MalformedInputError(
+                self, "MT input is detached from a parent material"
+            )
+        if not mutated:
+            mutated = self.parent_material.mutated
+        if mutated:
+            buff_list = [f"MT{self.parent_material.number}"]
+            buff_list += self._scattering_laws
+            ret += ThermalScatteringLaw.wrap_words_for_mcnp(
+                buff_list, mcnp_version, True
+            )
+        else:
+            ret = self._format_for_mcnp_unmutated(mcnp_version)
         return ret
+
+    def update_pointers(self, data_cards):
+        """
+        Updates pointer to the thermal scattering data
+
+        :param data_cards: a list of the data cards in the problem
+        :type data_cards: list
+        """
+        found = False
+        for card in data_cards:
+            if isinstance(card, mcnpy.data_cards.material.Material):
+                if card.number == self.old_number:
+                    found = True
+
+        if not found:
+            raise MalformedInputError(
+                self, "MT input is detached from a parent material"
+            )

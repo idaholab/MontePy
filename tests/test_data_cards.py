@@ -11,35 +11,40 @@ from mcnpy.input_parser.block_type import BlockType
 
 class testDataCardClass(TestCase):
     def test_data_card_init(self):
-        words = ["m1", "1001.80c", "1.0"]
-        input_card = Card(BlockType.DATA, words)
-        comment = Comment(["foo", "bar"])
+        in_str = "m1 1001.80c 1.0"
+        input_card = Card([in_str], BlockType.DATA)
+        comment = Comment(["C foo", "c bar"], ["foo", "bar"])
         data_card = DataCard(input_card, comment)
+        words = in_str.split()
         for i, word in enumerate(data_card.words):
             self.assertEqual(word, words[i])
-        self.assertEqual(comment, data_card.comment)
+        self.assertEqual(comment, data_card.comments[0])
+
+    def test_data_card_empty_constructor(self):
+        card = DataCard()
+        self.assertIsInstance(card.words, list)
 
     def test_data_card_str(self):
-        words = ["m1", "1001.80c", "1.0"]
-        input_card = Card(BlockType.DATA, words)
+        in_str = "m1 1001.80c 1.0"
+        input_card = Card([in_str], BlockType.DATA)
         data_card = DataCard(input_card)
-        self.assertEqual(str(data_card), "DATA CARD: " + str(words))
+        self.assertEqual(str(data_card), "DATA CARD: " + str(in_str.split()))
 
     def test_data_card_format_mcnp(self):
-        words = ["m1", "1001.80c", "1.0"]
-        input_card = Card(BlockType.DATA, words)
-        comment = Comment(["foo", "bar"])
+        in_str = "m1 1001.80c 1.0"
+        input_card = Card([in_str], BlockType.DATA)
+        comment = Comment(["c foo", "c bar"], ["foo", "bar"])
         data_card = DataCard(input_card, comment)
         answer = ["C foo", "C bar", "m1 1001.80c 1.0"]
-        output = data_card.format_for_mcnp_input((6.2, 0))
+        output = data_card.format_for_mcnp_input((6, 2, 0))
         self.assertEqual(len(answer), len(output))
         for i, line in enumerate(output):
             self.assertEqual(answer[i], line)
 
     def test_comment_setter(self):
-        words = ["m1", "1001.80c", "1.0"]
-        input_card = Card(BlockType.DATA, words)
-        comment = Comment(["foo", "bar"])
+        in_str = "m1 1001.80c 1.0"
+        input_card = Card([in_str], BlockType.DATA)
+        comment = Comment(["c foo", "c bar"], ["foo", "bar"])
         data_card = DataCard(input_card)
         data_card.comment = comment
         self.assertEqual(comment, data_card.comment)
@@ -51,15 +56,35 @@ class testDataCardClass(TestCase):
             "tr601": transform.Transform,
             "ksrc": DataCard,
         }
-        words = {
-            "m235": ["m235", "1001.80c", "1.0"],
-            "mt235": ["mt235", "grph.29t"],
-            "tr601": ["tr601", "0.0", "0.0", "10."],
-            "ksrc": ["ksrc", "1.0", "0.0", "0.0"],
+        in_strs = {
+            "m235": "m235 1001.80c 1.0",
+            "mt235": "mt235 grph.29t",
+            "tr601": "tr601 0.0 0.0 10.",
+            "ksrc": "ksrc 1.0 0.0 0.0",
         }
 
-        for identifier, w in words.items():
+        for identifier, w in in_strs.items():
             for ident in [identifier, identifier.upper()]:
-                input_card = Card(BlockType.DATA, w)
+                input_card = Card([w], BlockType.DATA)
                 card = parse_data(input_card)
                 self.assertIsInstance(card, identifiers[ident.lower()])
+
+    def test_data_card_words_setter(self):
+        in_str = "IMP:N 1 1"
+        input_card = Card([in_str], BlockType.DATA)
+        input_card = DataCard(input_card)
+        new_words = input_card.words + ["0"]
+        input_card.words = new_words
+        self.assertEqual(new_words, input_card.words)
+        with self.assertRaises(AssertionError):
+            input_card.words = 5
+        with self.assertRaises(AssertionError):
+            input_card.words = [5]
+
+    def test_data_card_mutate_print(self):
+        in_str = "IMP:N 1 1"
+        input_card = Card([in_str], BlockType.DATA)
+        input_card = DataCard(input_card)
+        input_card._mutated = True
+        output = input_card.format_for_mcnp_input((6, 2, 0))
+        self.assertEqual(output, [in_str])

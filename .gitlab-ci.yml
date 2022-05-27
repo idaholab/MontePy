@@ -1,0 +1,58 @@
+image: python:latest
+
+before_script:
+  - python --version
+  - export PATH="~/.local/bin:$PATH"
+
+
+install:
+  stage: build
+  script:
+    - echo "Installing dependencies"
+    - pip install -r requirements/dev.txt
+    - python setup.py sdist bdist_wheel
+    - pip install dist/*.whl --force-reinstall
+      # test the extras installation
+    - python setup.py install easy_install --user mcnpy[test]
+    - python setup.py install easy_install --user mcnpy[doc]
+
+
+unit_test:
+  stage: test
+  coverage: '/TOTAL.+ ([0-9\.]{1,5}%)/'
+  script:
+    - echo "Executing unit tests"
+    - coverage run --source mcnpy -m pytest --junitxml=test_report.xml
+    - coverage report -m --precision=2
+    - coverage xml
+  artifacts:
+    reports:
+      junit: test_report.xml
+      coverage_report:
+         coverage_format: cobertura
+         path: coverage.xml
+
+
+deploy1:
+  stage: deploy
+  script:
+    - echo "No deploy required for the moment"
+
+
+pages:
+  stage: deploy
+  script:
+    - echo "Building documentation with Sphinx."
+    - cd doc/
+    - make html
+    - cd ..
+    - mv doc/build/html public
+    - python setup.py bdist_wheel
+    - mv dist/ public/dist
+  artifacts:
+    paths:
+      - public
+  only:
+    - master
+    - develop
+    - doc

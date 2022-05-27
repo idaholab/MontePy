@@ -1,0 +1,5 @@
+-r common.txt
+sphinx~=4.3
+sphinxcontrib-apidoc
+sphinx_rtd_theme
+coverage>=6.3.2

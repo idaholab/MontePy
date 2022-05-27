@@ -1,12 +1,12 @@
 from .block_type import BlockType
+from collections import deque
 from .. import errors
 import itertools
 import io
+from mcnpy.input_parser.constants import BLANK_SPACE_CONTINUE
 from mcnpy.input_parser.mcnp_input import Card, Comment, Message, ReadCard, Title
-import re
 import os
 
-BLANK_SPACE_CONTINUE = 5
 reading_queue = []
 
 
@@ -22,7 +22,7 @@ def read_input_syntax(input_file):
     :type input_file: str
     """
     global reading_queue
-    reading_queue = []
+    reading_queue = deque()
     with open(input_file, "r") as fh:
         yield from read_front_matters(fh)
         yield from read_data(fh)
@@ -45,20 +45,23 @@ def read_front_matters(fh):
     is_in_message_block = False
     found_title = False
     lines = []
+    raw_lines = []
     for i, line in enumerate(fh):
         if i == 0 and line.upper().startswith("MESSAGE:"):
             is_in_message_block = True
+            raw_lines.append(line.rstrip())
             lines.append(line[9:])  # removes "MESSAGE: "
         elif is_in_message_block:
             if line.strip():
+                raw_lines.append(line.rstrip())
                 lines.append(line)
             # message block is terminated by a blank line
             else:
-                yield Message(lines)
+                yield Message(raw_lines, lines)
                 is_in_message_block = False
         # title always follows complete message, or is first
         else:
-            yield Title(line)
+            yield Title([line], line)
             break
 
 
@@ -82,84 +85,90 @@ def read_data(fh, block_type=None, recursion=False):
     :rtype: MCNP_input
 
     """
-    commentFinder = re.compile(f"^\s{{0,{BLANK_SPACE_CONTINUE-1}}}C\s", re.IGNORECASE)
     block_counter = 0
     if block_type is None:
         block_type = BlockType.CELL
     is_in_comment = False
     continue_card = False
-    words = []
+    comment_raw_lines = []
+    card_raw_lines = []
+
+    def flush_block():
+        nonlocal block_counter, block_type, comment_raw_lines
+        if len(card_raw_lines) > 0:
+            yield from flush_card()
+        if is_in_comment and comment_raw_lines:
+            yield from flush_comment()
+        block_counter += 1
+        if block_counter < 3:
+            block_type = BlockType(block_counter)
+
+    def flush_comment():
+        nonlocal comment_raw_lines
+        words = []
+        yield Comment(comment_raw_lines, len(card_raw_lines))
+        comment_raw_lines = []
+        is_in_comment = False
+
+    def flush_card():
+        nonlocal card_raw_lines
+        card = Card(card_raw_lines, block_type)
+        if len(card.words) > 0 and card.words[0].lower() == "read":
+            card = ReadCard(card_raw_lines, block_type)
+            reading_queue.append((block_type, card.file_name))
+            yield None
+        else:
+            yield card
+        continue_card = False
+        card_raw_lines = []
+
+    def is_comment(line):
+        upper_start = line[0 : BLANK_SPACE_CONTINUE + 1].upper()
+        non_blank_comment = upper_start and line.lstrip().upper().startswith("C ")
+        if non_blank_comment:
+            return True
+        blank_comment = "C\n" == upper_start.lstrip() or "C\r\n" == upper_start.lstrip()
+        return blank_comment or non_blank_comment
+
     for line in fh:
         # transition to next block with blank line
         if not line.strip():
-            # flush current card
-            if is_in_comment:
-                yield Comment(words)
-            else:
-                yield generate_card_object(block_type, words)
-            words = []
-            block_counter += 1
-            if block_counter < 3:
-                block_type = BlockType(block_counter)
-            # if reached the final input block
-            else:
-                break
-        # if not a new block
+            yield from flush_block()
+            continue
+        # if it's a C comment
+        if is_comment(line):
+            comment_raw_lines.append(line.rstrip())
+            is_in_comment = True
+        # if it's part of a card
         else:
-            if commentFinder.match(line):
-                if not is_in_comment:
-                    if words:
-                        yield generate_card_object(block_type, words)
-                    # removes leading comment info
-                    words = [commentFinder.split(line)[1]]
-                    is_in_comment = True
-                else:
-                    words.append(commentFinder.split(line)[1])
-            # if not a comment
+            # if a new card
+            if (
+                line[0:BLANK_SPACE_CONTINUE].strip()
+                and not continue_card
+                and card_raw_lines
+            ):
+                yield from flush_card()
+            # just terminated a comment
+            if is_in_comment and comment_raw_lines:
+                yield from flush_comment()
+            # die if it is a vertical syntax format
+            if "#" in line[0:BLANK_SPACE_CONTINUE]:
+                raise errors.UnsupportedFeature("Vertical Input format is not allowed")
+            # throw away comments
+            line = line.split("$")[0]
+            if line.endswith(" &\n"):
+                continue_card = True
             else:
-                # terminate comment
-                if is_in_comment:
-                    is_in_comment = False
-                    yield Comment(words)
-                    words = []
-                if "#" in line[0:BLANK_SPACE_CONTINUE]:
-                    raise errors.UnsupportedFeature(
-                        "Vertical Input format is not allowed"
-                    )
-                # throw away comments
-                line = line.split("$")[0]
-                # removes continue card
-                temp_words = line.replace(" &", "").split()
-                # if beginning a new card
-                if line[0:BLANK_SPACE_CONTINUE].strip() and not continue_card:
-                    if words:
-                        yield generate_card_object(block_type, words)
-                    words = temp_words
-                else:
-                    words = words + temp_words
-                if line.endswith(" &\n"):
-                    continue_card = True
-                else:
-                    continue_card = False
-    if is_in_comment:
-        yield Comment(words)
-    else:
-        yield generate_card_object(block_type, words)
+                continue_card = False
+            card_raw_lines.append(line.rstrip())
+    yield from flush_block()
 
     if not recursion:
         # ensure fh is a file reader, ignore StringIO
         if isinstance(fh, io.TextIOWrapper):
             path = os.path.dirname(fh.name)
-            for block_type, file_name in reading_queue:
+            while reading_queue:
+                block_type, file_name = reading_queue.popleft()
                 with open(os.path.join(path, file_name), "r") as sub_fh:
                     for input_card in read_data(sub_fh, block_type, True):
                         yield input_card
-
-
-def generate_card_object(block_type, words):
-    card = Card(block_type, words)
-    if len(card.words) > 0 and card.words[0].lower() == "read":
-        card = ReadCard(block_type, words)
-        reading_queue.append((block_type, card.file_name))
-    else:
-        return card

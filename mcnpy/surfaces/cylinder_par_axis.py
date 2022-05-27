@@ -44,6 +44,7 @@ class CylinderParAxis(Surface):
         """
         assert isinstance(coordinates, list)
         assert len(coordinates) == 2
+        self._mutated = True
         self._coordinates = coordinates
         self._surface_constants[0:2] = coordinates
 
@@ -60,6 +61,7 @@ class CylinderParAxis(Surface):
     def radius(self, radius):
         assert isinstance(radius, float)
         assert radius > 0
+        self._mutated = True
         self._radius = radius
         self._surface_constants[2] = radius
 
@@ -77,14 +79,15 @@ class CylinderParAxis(Surface):
                             if abs(coordinate - surface.coordinates[i]) >= tolerance:
                                 match = False
                         if match:
-                            if self.old_transform_number:
-                                if surface.old_transform_number:
+                            if self.transform:
+                                if surface.transform:
                                     if self.transform.equivalent(
                                         surface.transform, tolerance
                                     ):
                                         ret.append(surface)
                             else:
-                                ret.append(surface)
+                                if surface.transform is None:
+                                    ret.append(surface)
             return ret
         else:
             return []
