@@ -1,8 +1,10 @@
 import itertools
+from mcnpy.cells import Cells
 from mcnpy.errors import *
 from mcnpy.mcnp_card import MCNP_Card
 from mcnpy.data_cards.material import Material
 from mcnpy.surfaces.surface import Surface
+from mcnpy.surface_collection import Surfaces
 from mcnpy.utilities import *
 import re
 
@@ -26,11 +28,12 @@ class Cell(MCNP_Card):
         self._old_mat_number = None
         self._geometry_logic_string = None
         self._density = None
-        self._surfaces = []
-        self._old_surface_numbers = []
-        self._complements = []
-        self._old_complement_numbers = []
+        self._surfaces = Surfaces()
+        self._old_surface_numbers = set()
+        self._complements = Cells()
+        self._old_complement_numbers = set()
         self._parameters = {}
+        self._cell_number = -1
         if input_card:
             words = input_card.words
             i = 0
@@ -102,10 +105,10 @@ class Cell(MCNP_Card):
                 geometry_string += word + " "
                 match = cell_finder.search(word)
                 if match:
-                    self._old_complement_numbers.append(int(match.group(1)))
+                    self._old_complement_numbers.add(int(match.group(1)))
                 else:
                     for surface in surface_finder.findall(word):
-                        self._old_surface_numbers.append(int(surface))
+                        self._old_surface_numbers.add(int(surface))
         self._geometry_logic_string = geometry_string
         return (j, param_found)
 
@@ -115,7 +118,7 @@ class Cell(MCNP_Card):
         fragments = params_string.split("=")
         key = ""
         next_key = ""
-        value = ""
+        value = [""]
         for i, fragment in enumerate(fragments):
             fragment = fragment.split()
             if i == 0:
@@ -123,17 +126,17 @@ class Cell(MCNP_Card):
             elif i == len(fragments) - 1:
                 if next_key:
                     key = next_key
-                value = fragment[0]
+                value = fragment
             else:
                 if next_key:
                     key = next_key
                 value = fragment[0:-1]
                 next_key = fragment[-1]
             if key and value:
-                self._parameters[key.upper()] = "".join(value)
+                self._parameters[key.upper()] = " ".join(value)
 
     @property
-    def old_cell_number(self):
+    def old_number(self):
         """
         The original cell number provided in the input file
 
@@ -142,7 +145,7 @@ class Cell(MCNP_Card):
         return self._old_cell_number
 
     @property
-    def cell_number(self):
+    def number(self):
         """
         The current cell number that will be written out to a new input.
 
@@ -150,10 +153,12 @@ class Cell(MCNP_Card):
         """
         return self._cell_number
 
-    @cell_number.setter
-    def cell_number(self, number):
+    @number.setter
+    def number(self, number):
         assert isinstance(number, int)
         assert number > 0
+        if self._problem:
+            self._problem.cells.check_number(number)
         self._mutated = True
         self._cell_number = number
 
@@ -163,6 +168,7 @@ class Cell(MCNP_Card):
         The Material object for the cell.
 
         If the material is None this is considered to be voided.
+
         :rtype: Material
         """
         return self._material
@@ -179,20 +185,39 @@ class Cell(MCNP_Card):
         """
         The density of the material in the cell.
 
+        To set this value you must provide a tuple only. The density and
+        is_atom_dens parameters below are the elements of the tuple.
+
+        >>> cell.density = 5.0
+        TypeError                                 Traceback (most recent call last)
+        <ipython-input-5-92aa54bef16b> in <module>
+        ----> 1 problem.cells[1].density = 5.0
+        ~/dev/mcnpy/mcnpy/cell.py in density(self, density_tuple)
+            218             :type is_atom_dens: bool
+            219         ""
+        --> 220         density, is_atom_dens = density_tuple
+            221         assert isinstance(density, float)
+            222         assert isinstance(is_atom_dens, bool)
+        TypeError: cannot unpack non-iterable float object
+        >>> cell.density = (5.0, False)
+        >>> cell.density
+        5.0
+        >>> cell.is_atom_dens
+        False
+
+
+        :param density_tuple: A tuple of the density, and is_atom_dens
+        :type density_tuple:
+        :param density: the density of the material [a/b-cm] or [g/cc]
+        :type density: float
+        :param is_atom_dens: if True the density is atom density
+        :type is_atom_dens: bool
         :rtype: float
         """
         return self._density
 
     @density.setter
     def density(self, density_tuple):
-        """
-        :param density_tuple: A tuple of the density, and is_atom_dens
-        :type density_tuple:
-            :param density: the density of the material [a/b-cm] or [g/cc]
-            :type density: float
-            :param is_atom_dens: if True the density is atom density
-            :type is_atom_dens: bool
-        """
         density, is_atom_dens = density_tuple
         assert isinstance(density, float)
         assert isinstance(is_atom_dens, bool)
@@ -222,15 +247,17 @@ class Cell(MCNP_Card):
         List of the Surface objects associated with this cell.
 
         This list does not convey any of the CGS Boolean logic
-        :rtype: list
+        :rtype: Surfaces
         """
         return self._surfaces
 
     @surfaces.setter
     def surfaces(self, surfs):
-        assert isinstance(surfs, list)
-        for surf in surfs:
-            assert isinstance(surf, Surface)
+        assert type(surfs) in [Surfaces, list]
+        if isinstance(surfs, list):
+            for surf in surfs:
+                assert isinstance(surf, Surface)
+            surfs = Surfaces(surfs)
         self._mutated = True
         self._surfaces = surfs
 
@@ -276,20 +303,42 @@ class Cell(MCNP_Card):
         """
         return self._parameters
 
+    @parameters.setter
+    def parameters(self, params):
+        assert isinstance(params, dict)
+        self._parameters = params
+        self._mutated = True
+
     @property
     def complements(self):
         """
         The Cell objects that this cell is a complement of
+
+        :rytpe: Cells
         """
         return self._complements
 
     @complements.setter
     def complements(self, complements):
-        assert isinstance(complements, list)
-        for cell in complements:
-            assert isinstance(cell, Cell)
+        assert type(complements) in (Cells, list)
+        if isinstance(complements, list):
+            for cell in complements:
+                assert isinstance(cell, Cell)
+            complements = Cells(complements)
         self._mutated = True
         self._complements = complements
+
+    @property
+    def cells_complementing_this(self):
+        """The cells which are a complement of this cell.
+
+        This returns a generator.
+        """
+        if self._problem:
+            for cell in self._problem.cells:
+                if cell != self:
+                    if self in cell.complements:
+                        yield cell
 
     def update_pointers(self, cell_dict, material_dict, surface_dict):
         """
@@ -300,15 +349,15 @@ class Cell(MCNP_Card):
         :param surface_dict: a dictionary mapping the surface number to the Surface object.
         :type surface_dict: dict
         """
-        self._surfaces = []
-        self._complements = []
+        self._surfaces = Surfaces()
+        self._complements = Cells()
         if self._old_mat_number is not None:
             if self._old_mat_number > 0:
                 try:
                     self._material = material_dict[self._old_mat_number]
                 except KeyError:
                     raise BrokenObjectLinkError(
-                        "Cell", self.cell_number, "Material", self.old_mat_number
+                        "Cell", self.number, "Material", self.old_mat_number
                     )
             else:
                 self._material = None
@@ -319,7 +368,7 @@ class Cell(MCNP_Card):
                     self._surfaces.append(surface_dict[surface_number])
                 except KeyError:
                     raise BrokenObjectLinkError(
-                        "Cell", self.cell_number, "Surface", surface_number
+                        "Cell", self.number, "Surface", surface_number
                     )
 
         if self._old_complement_numbers:
@@ -328,7 +377,7 @@ class Cell(MCNP_Card):
                     self._complements.append(cell_dict[complement_number])
                 except KeyError:
                     raise BrokenObjectLinkError(
-                        "Cell", self.cell_number, "Complement Cell", complement_number
+                        "Cell", self.number, "Complement Cell", complement_number
                     )
 
     def update_geometry_logic_string(self):
@@ -340,15 +389,15 @@ class Cell(MCNP_Card):
         matching_surfaces = {}
         matching_complements = {}
         for cell in self.complements:
-            if cell.old_cell_number:
-                matching_complements[cell.old_cell_number] = cell.cell_number
+            if cell.old_number:
+                matching_complements[cell.old_number] = cell.number
             else:
-                matching_complements[cell.cell_number] = cell.cell_number
+                matching_complements[cell.number] = cell.number
         for surface in self.surfaces:
-            if surface.old_surface_number:
-                matching_surfaces[surface.old_surface_number] = surface.surface_number
+            if surface.old_number:
+                matching_surfaces[surface.old_number] = surface.number
             else:
-                matching_surfaces[surface.surface_number] = surface.surface_number
+                matching_surfaces[surface.number] = surface.number
         self._update_geometry_logic_by_map(matching_surfaces, matching_complements)
 
     def _update_geometry_logic_by_map(
@@ -402,8 +451,10 @@ class Cell(MCNP_Card):
         """Updates old surface numbers to prepare for deleting surfaces.
 
         Note: update_pointers must be ran again.
+        For the deleting_dict the key is the old surface,
+        and the value is the new one.
+
         :param deleting_dict: a dict of the surfaces to delete.
-            The key is the old surface, and the value is the new one.
         :type deleting_dict: dict
         """
         will_update = False
@@ -418,11 +469,11 @@ class Cell(MCNP_Card):
             matching_surfaces = {}
             for dead_surface in deleting_dict:
                 if dead_surface in self.surfaces:
-                    matching_surfaces[dead_surface.surface_number] = deleting_dict[
+                    matching_surfaces[dead_surface.number] = deleting_dict[
                         dead_surface
-                    ].surface_number
-                    old_old = dead_surface.old_surface_number
-                    new_old = deleting_dict[dead_surface].old_surface_number
+                    ].number
+                    old_old = dead_surface.old_number
+                    new_old = deleting_dict[dead_surface].old_number
                     self._old_surface_numbers = [
                         new_old if item == old_old else item
                         for item in self._old_surface_numbers
@@ -441,9 +492,9 @@ class Cell(MCNP_Card):
         if mutated:
             ret = super().format_for_mcnp_input(mcnp_version)
             self.update_geometry_logic_string()
-            buffList = [str(self.cell_number)]
+            buffList = [str(self.number)]
             if self.material:
-                buffList.append(str(self.material.material_number))
+                buffList.append(str(self.material.number))
                 dens = 0
                 if self.is_atom_dens:
                     dens = self.density
@@ -458,7 +509,24 @@ class Cell(MCNP_Card):
             )
             if self.parameters:
                 strings = []
-                for key, value in self.parameters.items():
+                keys = list(self.parameters.keys())
+                """
+                Yes this is hacky voodoo.
+                We don't know if it's necessary, but are too scared to remove it.
+                The goal is to make sure that the FILL parameter is always the last 
+                one on a cell card.
+
+                This is based on a superstition that MCNP is less likely to crash when 
+                data is given this way; but we just don't know.
+                You've used MCNP are you that surprised we had to do this?
+
+                MCNP giveth, and MCNP taketh. 
+                """
+                if "FILL" in keys:
+                    keys.remove("FILL")
+                    keys.append("FILL")
+                for key in keys:
+                    value = self.parameters[key]
                     if isinstance(value, list):
                         value = " ".join(value)
                     strings.append(f"{key}={value}")
@@ -482,7 +550,7 @@ class Cell(MCNP_Card):
         return ret
 
     def __lt__(self, other):
-        return self.cell_number < other.cell_number
+        return self.number < other.number
 
     def __repr__(self):
         return self.__str__()

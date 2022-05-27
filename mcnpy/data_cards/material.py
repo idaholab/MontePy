@@ -13,7 +13,7 @@ class Material(data_card.DataCard):
     A class to represent an MCNP material.
     """
 
-    def __init__(self, input_card, comment):
+    def __init__(self, input_card=None, comment=None):
         """
         :param input_card: the input card that contains the data
         :type input_card: Card
@@ -23,59 +23,59 @@ class Material(data_card.DataCard):
         super().__init__(input_card, comment)
         self._material_components = {}
         self._thermal_scattering = None
-        words = self.words
-        num = words[0].upper().strip("M")
-        # material numbers
-        try:
-            num = int(num)
-            assert num > 0
-            self._old_material_number = num
-            self._material_number = num
-        except (ValueError, AssertionError) as e:
-            raise MalformedInputError(
-                input_card, f"{words[0]} could not be parsed as a material number"
-            )
-        words_iter = iter(words[1:])
-        set_atom_frac = False
-        has_parameters = False
-        for isotope_str in words_iter:
+        self._material_number = -1
+        if input_card:
+            words = self.words
+            num = words[0].upper().strip("M")
+            # material numbers
             try:
-                isotope = Isotope(isotope_str)
-                fraction = next(words_iter)
-                fraction = fortran_float(fraction)
-            except MalformedInputError:
-                has_parameters = True
-                break
-            except ValueError:
+                num = int(num)
+                assert num > 0
+                self._old_material_number = num
+                self._material_number = num
+            except (ValueError, AssertionError) as e:
                 raise MalformedInputError(
-                    input_card, f"{fraction} could not be parsed as a material fraction"
+                    input_card, f"{words[0]} could not be parsed as a material number"
                 )
-            if not set_atom_frac:
-                set_atom_frac = True
-                if fraction > 0:
-                    self._is_atom_fraction = True
-                else:
-                    self._is_atom_fraction = False
-            else:
-                # if switching fraction formatting
-                if (fraction > 0 and not self._is_atom_fraction) or (
-                    fraction < 0 and self._is_atom_fraction
-                ):
+            words_iter = iter(words[1:])
+            set_atom_frac = False
+            self._parameter_string = ""
+            for isotope_str in words_iter:
+                try:
+                    isotope = Isotope(isotope_str)
+                    fraction = next(words_iter)
+                    fraction = fortran_float(fraction)
+                except MalformedInputError:
+                    self._parameter_string += " ".join(
+                        itertools.chain([isotope_str], words_iter)
+                    )
+                    break
+                except ValueError:
                     raise MalformedInputError(
                         input_card,
-                        "Material definitons cannot use atom and mass fraction at the same time",
+                        f"{fraction} could not be parsed as a material fraction",
                     )
-            self._material_components[isotope] = MaterialComponent(
-                isotope, abs(fraction)
-            )
-        param_str = ""
-        if has_parameters:
-            for string in itertools.chain([isotope_str], words_iter):
-                param_str += string + " "
-            self._parameter_string = param_str
+                if not set_atom_frac:
+                    set_atom_frac = True
+                    if fraction > 0:
+                        self._is_atom_fraction = True
+                    else:
+                        self._is_atom_fraction = False
+                else:
+                    # if switching fraction formatting
+                    if (fraction > 0 and not self._is_atom_fraction) or (
+                        fraction < 0 and self._is_atom_fraction
+                    ):
+                        raise MalformedInputError(
+                            input_card,
+                            "Material definitons cannot use atom and mass fraction at the same time",
+                        )
+                self._material_components[isotope] = MaterialComponent(
+                    isotope, abs(fraction)
+                )
 
     @property
-    def old_material_number(self):
+    def old_number(self):
         """
         The material number that was used in the read file
 
@@ -84,7 +84,7 @@ class Material(data_card.DataCard):
         return self._old_material_number
 
     @property
-    def material_number(self):
+    def number(self):
         """
         The number to use to identify the material by
 
@@ -92,10 +92,12 @@ class Material(data_card.DataCard):
         """
         return self._material_number
 
-    @material_number.setter
-    def material_number(self, number):
+    @number.setter
+    def number(self, number):
         assert isinstance(number, int)
         assert number > 0
+        if self._problem:
+            self._problem.materials.check_number(number)
         self._mutated = True
         self._material_number = number
 
@@ -132,6 +134,14 @@ class Material(data_card.DataCard):
         """
         return self._thermal_scattering
 
+    @property
+    def cells(self):
+        """"""
+        if self._problem:
+            for cell in self._problem.cells:
+                if cell.material == self:
+                    yield cell
+
     def add_thermal_scattering(self, law):
         """
         Adds thermal scattering law to the material
@@ -139,6 +149,7 @@ class Material(data_card.DataCard):
         :param law: the law that is mcnp formatted
         :type law: str
         """
+        assert isinstance(law, str)
         self._thermal_scattering = thermal_scattering.ThermalScatteringLaw(
             material=self
         )
@@ -153,12 +164,17 @@ class Material(data_card.DataCard):
         """
         for card in data_cards:
             if isinstance(card, thermal_scattering.ThermalScatteringLaw):
-                if card.old_material_number == self.material_number:
-                    self._thermal_scattering = card
-                    card._parent_material = self
+                if card.old_number == self.number:
+                    if not self._thermal_scattering:
+                        self._thermal_scattering = card
+                        card._parent_material = self
+                    else:
+                        raise MalformedInputError(
+                            self, "Multiple MT inputs were specified for this material."
+                        )
 
     def __str__(self):
-        ret = f"MATERIAL: {self.material_number} fractions: "
+        ret = f"MATERIAL: {self.number} fractions: "
         if self.is_atom_fraction:
             ret += "atom\n"
         else:
@@ -172,9 +188,6 @@ class Material(data_card.DataCard):
     def __repr__(self):
         return self.__str__()
 
-    def __lt__(self, other):
-        return self.material_number < other.material_number
-
     def format_for_mcnp_input(self, mcnp_version):
         ret = mcnp_card.MCNP_Card.format_for_mcnp_input(self, mcnp_version)
         if self.mutated:
@@ -182,11 +195,30 @@ class Material(data_card.DataCard):
             first_component = self.material_components[sorted_isotopes[0]]
 
             ret.append(
-                f"m{self.material_number:<9}{str(first_component.isotope):>8}{first_component.fraction:>12.4g}"
+                f"m{self.number:<8} {first_component.isotope:>8} {first_component.fraction:>11.4g}"
             )
             for isotope in sorted_isotopes[1:]:  # skips the first
                 component = self.material_components[isotope]
-                ret.append(f"{str(component.isotope):>19}{component.fraction:>12.4g}")
+                ret.append(f"{component.isotope:>18} {component.fraction:>11.4g}")
         else:
             ret = self._format_for_mcnp_unmutated(mcnp_version)
         return ret
+
+    def __hash__(self):
+        """WARNING: this is a temporary solution to make sets remove duplicate materials.
+
+        This should be fixed in the future to avoid issues with object mutation:
+            <https://eng.lyft.com/hashing-and-equality-in-python-2ea8c738fb9d>
+
+        """
+        temp_hash = ""
+        sorted_isotopes = sorted(list(self.material_components.keys()))
+        for isotope in sorted_isotopes:
+            temp_hash = hash(
+                (temp_hash, str(isotope), self.material_components[isotope].fraction)
+            )
+
+        return hash((temp_hash, self.number))
+
+    def __eq__(self, other):
+        return hash(self) == hash(other)

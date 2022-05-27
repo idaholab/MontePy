@@ -2,14 +2,13 @@
 
 A python library to parse and modify MCNP input files. 
 
-[![Latest Release](https://hpcgitlab.hpc.inl.gov/experiment_analysis/mcnpy/-/badges/release.svg)](https://hpcgitlab.hpc.inl.gov/experiment_analysis/mcnpy/-/releases)
-[![pipeline status](https://hpcgitlab.hpc.inl.gov/experiment_analysis/mcnpy/badges/develop/pipeline.svg)](https://hpcgitlab.hpc.inl.gov/experiment_analysis/mcnpy/-/commits/develop)
-[![pipeline status](https://hpcgitlab.hpc.inl.gov/experiment_analysis/mcnpy/badges/develop/coverage.svg)](https://hpcgitlab.hpc.inl.gov/experiment_analysis/mcnpy/-/commits/develop)
-
 ## Installing
 
 Go to the packages page and download a wheel or a tar ball. Run `pip install --user mcnpy.XXXXXX.tar.gz`
- 
+
+## User Documentation
+
+MCNPy has a [sphinx website](https://experiment_analysis.pages.hpc.inl.gov/mcnpy). 
 
 ## Features
 	
@@ -18,7 +17,7 @@ Go to the packages page and download a wheel or a tar ball. Run `pip install --u
 * Can parse the following surfaces exactly P(X|Y|Z), C(X|Y|Z), C/(X|Y|Z) (I mean it can do PX, and PY, etc.)
 * Can read in all other cards but not understand them	
 * Can write out full MCNP problem even if it doesn't fully understand a card.	
-* Has 62 test cases right now (the bleeding edge has > 80 tests and around 97% code coverage).
+* Has 110 test cases right now 
 
  
 Quick example for renumbering all of the cells in a problem:
@@ -28,7 +27,7 @@ import mcnpy
 foo = mcnpy.read_input("foo.imcnp")
 i = 9500
 for cell in foo.cells:
-  cell.cell_number = i
+  cell.number = i
   i = i + 5
   
 foo.write_to_file("foo_update.imcnp")
@@ -42,14 +41,6 @@ Here a few of the known bugs and limitations:
 	
 * Cannot handle vertical input mode.
 	
-* Cannot handle c  comments inside of a card
-	
-* The API is a bit verbose sometimes. In release 0.0.5 this will be changed. So if you use it now be warned that backwards compatibility will likely be lost. I'll provide info on how to make the transition.
-	
-* Find cell say 1000 is a bit tedious right now this is slotted to change in 0.0.5
-
- 
-
 ## Bugs, Requests and Development
 
 So MCNPy doesn't do what you want? Reasonable; I started writing it in November so it's pretty young. Right now I'm doing what I call Just-In-Time development, as in features are added JIT for me to use them on my current projects. If there's a feature you want add an issue on gitlab with the feature request tag. If you want to add a feature on your own talk to me (but still add the issue). The system is very modular and you should be able to develop it pretty quickly, just guides on how to do this are a bit lacking.

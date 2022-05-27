@@ -57,15 +57,20 @@ test title
 
     def testCommentFinder(self):
         test_string = """c foo
-c bar"""
+c bar
+c
+c bop
+ c
+"""
         for i in range(5):
             tester = " " * i + test_string
             with StringIO(tester) as fh:
                 card = next(input_syntax_reader.read_data(fh))
                 self.assertIsInstance(card, mcnpy.input_parser.mcnp_input.Comment)
-                self.assertEqual(len(card.lines), 2)
+                self.assertEqual(len(card.lines), 5)
                 self.assertEqual(card.lines[0], "foo")
                 self.assertEqual(card.lines[1], "bar")
+                self.assertEqual(card.lines[3], "bop")
 
     def testReadCardFinder(self):
         test_string = "read file=foo.imcnp "
@@ -87,6 +92,7 @@ c bar"""
     def testCommentFormatInput(self):
         in_strs = ["c foo", "c bar"]
         card = mcnpy.input_parser.mcnp_input.Comment(in_strs, ["foo", "bar"])
+        output = card.format_for_mcnp_input((6.2, 0))
         output = card.format_for_mcnp_input((6, 2, 0))
         answer = ["C foo", "C bar"]
         str_answer = """COMMENT:
@@ -158,3 +164,46 @@ bar
             [in_str], mcnpy.input_parser.block_type.BlockType.CELL
         )
         self.assertEqual(str(card), "CARD: BlockType.CELL: ['1', '0', '-1']")
+
+    def testShortcutExpansion(self):
+        tests = {
+            ("M", "1", "3M", "2r"): ["M", "1", "3", "3", "3"],
+            ("M", "0.01", "2ILOG", "10"): ["M", "0.01", "0.1", "1", "10"],
+            ("M", "1", "3M", "I", "4"): ["M", "1", "3", "3.5", "4"],
+            ("M", "1", "3M", "3M"): ["M", "1", "3", "9"],
+            ("M", "1", "2R", "2I", "2.5"): ["M", "1", "1", "1", "1.5", "2", "2.5"],
+            ("M", "1", "R", "2m"): ["M", "1", "1", "2"],
+            ("M", "1", "R", "R"): ["M", "1", "1", "1"],
+            ("M", "1", "2i", "4", "3m"): ["M", "1", "2", "3", "4", "12"],
+            ("M", "1", "2i", "4", "2i", "10"): [
+                "M",
+                "1",
+                "2",
+                "3",
+                "4",
+                "6",
+                "8",
+                "10",
+            ],
+            (
+                "M",
+                "1",
+                "2j",
+                "4",
+            ): ["M", "1", None, None, "4"],
+        }
+        invalid = [
+            ("M", "3J", "4R"),
+            ("M", "1", "4I", "3M"),
+            ("M", "1", "4I", "J"),
+            ("M", "1", "2Ilog", "J"),
+            ("M", "3J", "2M"),
+        ]
+
+        parser = mcnpy.input_parser.mcnp_input.parse_card_shortcuts
+        for test, answer in tests.items():
+            parsed = parser(list(test))
+            self.assertEqual(parsed, answer)
+        for test in invalid:
+            with self.assertRaises(mcnpy.errors.MalformedInputError):
+                parser(list(test))

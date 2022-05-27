@@ -1,4 +1,6 @@
 from abc import ABC, abstractmethod
+import math
+from mcnpy.errors import *
 from mcnpy.input_parser.block_type import BlockType
 from mcnpy.input_parser.constants import BLANK_SPACE_CONTINUE
 import re
@@ -70,6 +72,7 @@ class Card(MCNP_Input):
             words += line.replace(" &", "").split()
         self._words = words
         self._block_type = block_type
+        self._words = parse_card_shortcuts(words, self)
 
     def __str__(self):
         return f"CARD: {self._block_type}: {self._words}"
@@ -94,6 +97,103 @@ class Card(MCNP_Input):
 
     def format_for_mcnp_input(self, mcnp_version):
         pass
+
+
+def parse_card_shortcuts(words, card=None):
+    number_parser = re.compile("(\d+\.*\d*[e\+\-]*\d*)")
+    ret = []
+    for i, word in enumerate(words):
+        if i == 0:
+            ret.append(word)
+            continue
+        letters = "".join(c for c in word if c.isalpha()).lower()
+        if len(letters) >= 1:
+            number = number_parser.search(word)
+            if number:
+                number = float(number.group(1))
+            if letters == "r":
+                try:
+                    last_val = ret[-1]
+                    if last_val is None:
+                        raise IndexError
+                    if number:
+                        number = int(number)
+                    else:
+                        number = 1
+                    ret += [last_val] * number
+                except IndexError:
+                    raise MalformedInputError(
+                        card, "The repeat shortcut must come after a value"
+                    )
+            elif letters == "i":
+                try:
+
+                    begin = float(number_parser.search(ret[-1]).group(1))
+                    for char in ["i", "m", "r", "i", "log"]:
+                        if char in words[i + 1].lower():
+                            raise IndexError
+
+                    end = float(number_parser.search(words[i + 1]).group(1))
+                    if number:
+                        number = int(number)
+                    else:
+                        number = 1
+                    spacing = (end - begin) / (number + 1)
+                    for i in range(number):
+                        new_val = begin + spacing * (i + 1)
+                        ret.append(f"{new_val:g}")
+                except (IndexError, TypeError, ValueError, AttributeError) as e:
+                    raise MalformedInputError(
+                        card,
+                        "The interpolate shortcut must come between two values",
+                    )
+            elif letters == "m":
+                try:
+                    last_val = float(number_parser.search(ret[-1]).group(1))
+                    if number is None:
+                        raise MalformedInputError(
+                            card,
+                            "The multiply shortcut must have a multiplying value",
+                        )
+                    new_val = number * last_val
+                    ret.append(f"{new_val:g}")
+
+                except (IndexError, TypeError, ValueError, AttributeError) as e:
+                    raise MalformedInputError(
+                        card, "The multiply shortcut must come after a value"
+                    )
+
+            elif letters == "j":
+                if number:
+                    number = int(number)
+                else:
+                    number = 1
+                ret += [None] * number
+            elif letters in {"ilog", "log"}:
+                try:
+                    begin = math.log(float(number_parser.search(ret[-1]).group(1)), 10)
+                    end = math.log(
+                        float(number_parser.search(words[i + 1]).group(1)), 10
+                    )
+                    if number:
+                        number = int(number)
+                    else:
+                        number = 1
+                    spacing = (end - begin) / (number + 1)
+                    for i in range(number):
+                        new_val = 10 ** (begin + spacing * (i + 1))
+                        ret.append(f"{new_val:g}")
+
+                except (IndexError, TypeError, ValueError, AttributeError) as e:
+                    raise MalformedInputError(
+                        card,
+                        "The log interpolation shortcut must come between two values",
+                    )
+            else:
+                ret.append(word)
+        else:
+            ret.append(word)
+    return ret
 
 
 class ReadCard(Card):
@@ -133,11 +233,14 @@ class Comment(MCNP_Input):
         super().__init__(input_lines)
         buff = []
         for line in input_lines:
-            buff.append(
-                re.split(f"^\s{{0,{BLANK_SPACE_CONTINUE-1}}}C\s", line, flags=re.I)[
-                    1
-                ].rstrip()
+            fragments = re.split(
+                f"^\s{{0,{BLANK_SPACE_CONTINUE-1}}}C\s", line, flags=re.I
             )
+            if len(fragments) > 1:
+                comment_line = fragments[1].rstrip()
+            else:
+                comment_line = ""
+            buff.append(comment_line)
         self._lines = buff
         self._cutting = False
         self._card_line = card_line

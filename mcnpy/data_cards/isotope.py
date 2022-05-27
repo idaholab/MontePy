@@ -24,6 +24,7 @@ class Isotope:
     def ZAID(self):
         """
         The ZZZAAA identifier following MCNP convention
+
         :rtype: str
         """
         return self._ZAID
@@ -31,7 +32,8 @@ class Isotope:
     @property
     def library(self):
         """
-        The MCNP library identifier e.g. 80c
+         The MCNP library identifier e.g. 80c
+
         :rtype: str
         """
         return self._library
@@ -52,3 +54,6 @@ class Isotope:
 
     def __lt__(self, other):
         return int(self.ZAID) < int(other.ZAID)
+
+    def __format__(self, format_str):
+        return str(self).__format__(format_str)

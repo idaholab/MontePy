@@ -1,0 +1,9 @@
+Test case for specifying too many MTs
+c cells
+
+c surfaces
+
+c data
+M1 1001.80c 1.0
+MT1 lwtr.01t
+MT1 lwtr.01t

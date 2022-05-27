@@ -20,6 +20,10 @@ class testDataCardClass(TestCase):
             self.assertEqual(word, words[i])
         self.assertEqual(comment, data_card.comments[0])
 
+    def test_data_card_empty_constructor(self):
+        card = DataCard()
+        self.assertIsInstance(card.words, list)
+
     def test_data_card_str(self):
         in_str = "m1 1001.80c 1.0"
         input_card = Card([in_str], BlockType.DATA)
@@ -64,3 +68,23 @@ class testDataCardClass(TestCase):
                 input_card = Card([w], BlockType.DATA)
                 card = parse_data(input_card)
                 self.assertIsInstance(card, identifiers[ident.lower()])
+
+    def test_data_card_words_setter(self):
+        in_str = "IMP:N 1 1"
+        input_card = Card([in_str], BlockType.DATA)
+        input_card = DataCard(input_card)
+        new_words = input_card.words + ["0"]
+        input_card.words = new_words
+        self.assertEqual(new_words, input_card.words)
+        with self.assertRaises(AssertionError):
+            input_card.words = 5
+        with self.assertRaises(AssertionError):
+            input_card.words = [5]
+
+    def test_data_card_mutate_print(self):
+        in_str = "IMP:N 1 1"
+        input_card = Card([in_str], BlockType.DATA)
+        input_card = DataCard(input_card)
+        input_card._mutated = True
+        output = input_card.format_for_mcnp_input((6, 2, 0))
+        self.assertEqual(output, [in_str])
