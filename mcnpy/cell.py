@@ -92,9 +92,9 @@ class Cell(MCNP_Card):
         :returns: a tuple of j, param_found, j+ i = the index of the first non-geometry word,
                 and param_found is True is cell parameter inputs are found
         """
-        non_surface_finder = re.compile("[a-zA-Z]")
-        surface_finder = re.compile("[^#]*?(\d+)")
-        cell_finder = re.compile("#(\d+)")
+        non_surface_finder = re.compile(r"[a-zA-Z]")
+        surface_finder = re.compile(r"[^#]*?(\d+)")
+        cell_finder = re.compile(r"#(\d+)")
         geometry_string = ""
         param_found = False
         for j, word in enumerate(words[i:]):
@@ -428,7 +428,7 @@ class Cell(MCNP_Card):
                     new_num = next(temp_numbers)
                     temp_cells[complement] = new_num
                 pad_string = re.sub(
-                    f"#{old_num}(\D)",
+                    fr"#{old_num}(\D)",
                     r"#{new_num}\g<1>".format(new_num=new_num),
                     pad_string,
                 )
@@ -441,7 +441,7 @@ class Cell(MCNP_Card):
                     new_num = next(temp_numbers)
                     temp_surfaces[surface] = new_num
                 pad_string = re.sub(
-                    f"([^#\d]){old_num}(\D)",
+                    fr"([^#\d]){old_num}(\D)",
                     r"\g<1>{new_num}\g<2>".format(new_num=new_num),
                     pad_string,
                 )
