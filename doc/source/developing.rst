@@ -49,7 +49,7 @@ Design Philosophy
 #. Document all functions.
 #. Expect everything to mutate at any time.
 #. Avoid relative imports when possible. Use top level ones instead: e.g., ``import mcnpy.cell.Cell``.
-#. Defer to vanilla python, and only use the standard library. Currently there are no extra dependencies to install for MCNPy to work. 
+#. Defer to vanilla python, and only use the standard library. Currently the only dependency is ``numpy``. 
    There must be good justification for breaking from this convention and complicating things for the user.
 
 Style Guide
