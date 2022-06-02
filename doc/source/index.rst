@@ -12,6 +12,8 @@ Welcome to OpenMCNPy's documentation!
 
    starting
 
+   tricks
+
    developing
 
    api/modules
