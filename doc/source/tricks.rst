@@ -40,3 +40,28 @@ Similar to before you can use this method to find cylinders by their radius:
 
 >>> max(surfaces.cz, key = lambda x: x.radius)
 surface: 10 CZ
+
+Translating Cells
+-----------------
+
+Translating experiment axially
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+For some problems you can quickly move a whole problem axially (in z) with a simple loop like:
+
+>>> for surface in problem.surfaces.pz:
+>>>     surface.location += 10
+
+.. note::
+   This only works for problems that are infinite in Z, with "cutting" PZ planes, such as a fuel rod.
+   This is because only the PZ surfaces are moving. If you had a sphere in the problem for instance,
+   this would break the problem geometry then as the sphere would not move as well.
+
+.. note::
+   Make sure you loop over all the surfaces in the problem, and not over all the cells. For instance:
+   
+   >>> for cell in problem.cells:
+   >>>     for surface in cell.surfaces:
+   >>>         surface.location += 10
+
+   will cause geometry errors. Surfaces are commonly used by multiple cells so each surface may be translated repeatedly.
