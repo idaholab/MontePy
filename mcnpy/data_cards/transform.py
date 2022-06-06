@@ -23,7 +23,7 @@ class Transform(data_card.DataCard):
         else:
             words = self.words
             i = 0
-            assert re.match("\*?tr\d+", words[i].lower())
+            assert re.match(r"\*?tr\d+", words[i].lower())
             assert len(words) >= 3
             try:
                 if "*" in words[i]:
