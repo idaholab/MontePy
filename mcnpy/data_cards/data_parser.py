@@ -17,13 +17,13 @@ def parse_data(input_card, comment=None):
     identifier = input_card.words[0].lower()
 
     # material finder
-    if re.match("m\d+", identifier):
+    if re.match(r"m\d+", identifier):
         return material.Material(input_card, comment)
-    if re.match("mt\d+", identifier):
+    if re.match(r"mt\d+", identifier):
         return thermal_scattering.ThermalScatteringLaw(
             input_card=input_card, comment=comment
         )
-    if re.match("\*?tr\d+", identifier):
+    if re.match(r"\*?tr\d+", identifier):
         return transform.Transform(input_card, comment)
     else:
         return data_card.DataCard(input_card, comment)

@@ -50,7 +50,7 @@ class Surface(MCNP_Card):
                 input_card, f"{words[i]} could not be parsed as a surface number."
             )
         i += 1
-        num_finder = re.compile("\d+")
+        num_finder = re.compile(r"\d+")
         # handle N if specified
         if num_finder.search(words[i]):
             try:

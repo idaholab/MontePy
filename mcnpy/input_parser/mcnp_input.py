@@ -100,7 +100,7 @@ class Card(MCNP_Input):
 
 
 def parse_card_shortcuts(words, card=None):
-    number_parser = re.compile("(\d+\.*\d*[e\+\-]*\d*)")
+    number_parser = re.compile(r"(\d+\.*\d*[e\+\-]*\d*)")
     ret = []
     for i, word in enumerate(words):
         if i == 0:
@@ -203,7 +203,7 @@ class ReadCard(Card):
 
     def __init__(self, input_lines, block_type):
         super().__init__(input_lines, block_type)
-        file_finder = re.compile("file=(?P<file>[\S]+)", re.I)
+        file_finder = re.compile(r"file=(?P<file>[\S]+)", re.I)
         for word in self.words[1:]:
             match = file_finder.match(word)
             if match:
@@ -234,7 +234,7 @@ class Comment(MCNP_Input):
         buff = []
         for line in input_lines:
             fragments = re.split(
-                f"^\s{{0,{BLANK_SPACE_CONTINUE-1}}}C\s", line, flags=re.I
+                fr"^\s{{0,{BLANK_SPACE_CONTINUE-1}}}C\s", line, flags=re.I
             )
             if len(fragments) > 1:
                 comment_line = fragments[1].rstrip()
@@ -362,6 +362,7 @@ class Title(MCNP_Input):
     @property
     def title(self):
         """The string of the title set for this problem
+
         :rtype: str
         """
         return self._title

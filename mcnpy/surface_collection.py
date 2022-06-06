@@ -33,6 +33,7 @@ class Surfaces(NumberedObjectCollection):
     >>>    surface.location += 10
 
     """
+
     pz = SurfacesGenerator()
 
     def __init__(self, surfaces=None):
