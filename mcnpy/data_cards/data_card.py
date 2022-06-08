@@ -17,6 +17,7 @@ class DataCard(MCNP_Card):
         super().__init__(input_card, comment)
         if input_card:
             self._words = input_card.words
+            self.__split_name()
         else:
             self._words = []
 
@@ -36,6 +37,16 @@ class DataCard(MCNP_Card):
             assert isinstance(word, str)
         self._mutated = True
         self._words = words
+
+    @property
+    def prefix(self):
+        """The text part of the card identifier.
+
+        For example: for a material like: m20 the prefix is 'm'
+
+        this will always be lower case
+        """
+        return self._prefix.lower()
 
     def format_for_mcnp_input(self, mcnp_version):
         ret = super().format_for_mcnp_input(mcnp_version)
@@ -57,25 +68,23 @@ class DataCard(MCNP_Card):
     def __str__(self):
         return f"DATA CARD: {self._words}"
 
-    def __split_name__(self):
+    def __split_name(self):
         name = self._words[0]
         prefix_extras = [":"]
         number_extras = ["-"]
-        names = [
+        prefix, number = [
             "".join(c for c in name if c.isalpha() or c in prefix_extras) or None,
             "".join(c for c in name if c.isdigit() or c in number_extras) or None,
         ]
-        if names[1]:
-            names[1] = int(names[1])
-        return names
+        if number:
+            self._input_number = int(number)
+        self._prefix = prefix
 
     def __lt__(self, other):
-        self_parts = self.__split_name__()
-        other_parts = other.__split_name__()
-        type_comp = self_parts[0] < other_parts[0]
+        type_comp = self.prefix < other.prefix
         if type_comp:
             return type_comp
-        elif self_parts[0] > other_parts[0]:
+        elif self.prefix > other.prefix:
             return type_comp
         else:  # otherwise first part is equal
-            return self_parts[1] < other_parts[1]
+            return self._input_number < other._input_number

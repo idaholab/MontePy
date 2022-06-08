@@ -22,8 +22,7 @@ def parse_data(input_card, comment=None):
     """
 
     base_card = data_card.DataCard(input_card, comment)
-    prefix, number = base_card.__split_name__()
-    prefix = prefix.lower()
+    prefix = base_card.prefix
 
     for match, data_class in PREFIX_MATCHES.items():
         if prefix == match:

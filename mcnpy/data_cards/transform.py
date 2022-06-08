@@ -22,11 +22,11 @@ class Transform(data_card.DataCard):
             self._is_main_to_aux = True
         else:
             words = self.words
-            prefix, num = self.__split_name__()
+            num = self._input_number
             i = 0
             assert len(words) >= 3
             try:
-                assert prefix.lower() == "tr"
+                assert self.prefix == "tr"
                 if "*" in words[i]:
                     self._is_in_degrees = True
                 else:
