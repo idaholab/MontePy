@@ -22,20 +22,21 @@ class Transform(data_card.DataCard):
             self._is_main_to_aux = True
         else:
             words = self.words
+            prefix, num = self.__split_name__()
             i = 0
-            assert re.match(r"\*?tr\d+", words[i].lower())
             assert len(words) >= 3
             try:
+                assert prefix.lower() == "tr"
                 if "*" in words[i]:
                     self._is_in_degrees = True
                 else:
                     self._is_in_degrees = False
-                num = words[i].lower().strip("*tr")
-                self._transform_number = int(num)
+                assert num is not None
+                self._transform_number = num
                 self._old_transform_number = self._transform_number
                 i += 1
 
-            except ValueError:
+            except (ValueError, AssertionError) as e:
                 raise MalformedInputError(
                     input_card, f"{words[0]} can't be parsed as transform number"
                 )

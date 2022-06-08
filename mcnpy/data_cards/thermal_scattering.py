@@ -27,10 +27,11 @@ class ThermalScatteringLaw(DataCard):
         self._scattering_laws = []
         if input_card:
             super().__init__(input_card, comment)
-            assert "mt" in self.words[0].lower()
+            prefix, num = self.__split_name__()
             words = self.words
             try:
-                num = int(words[0].lower().strip("mt"))
+                assert "mt" == prefix.lower()
+                assert num is not None
                 assert num > 0
                 self._old_material_number = num
             except (ValueError, AssertionError) as e:

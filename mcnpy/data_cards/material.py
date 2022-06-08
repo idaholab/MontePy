@@ -26,10 +26,11 @@ class Material(data_card.DataCard):
         self._material_number = -1
         if input_card:
             words = self.words
-            num = words[0].upper().strip("M")
+            prefix, num = self.__split_name__()
             # material numbers
             try:
-                num = int(num)
+                assert prefix.lower() == "m"
+                assert num is not None
                 assert num > 0
                 self._old_material_number = num
                 self._material_number = num
