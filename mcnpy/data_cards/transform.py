@@ -12,7 +12,12 @@ class Transform(data_card.DataCard):
     """
 
     def __init__(self, input_card=None, comment=None):
-        super().__init__(input_card, comment)
+        try:
+            super().__init__(input_card, comment)
+        except AssertionError:
+            raise MalformedInputError(
+                input_card, f"{self.words[0]} can't be parsed as transform number"
+            )
         if input_card is None:
             self._transform_number = -1
             self._old_transform_number = -1
@@ -26,7 +31,7 @@ class Transform(data_card.DataCard):
             i = 0
             assert len(words) >= 3
             try:
-                assert self.prefix == "tr"
+                assert "tr" in self.prefix
                 if "*" in words[i]:
                     self._is_in_degrees = True
                 else:

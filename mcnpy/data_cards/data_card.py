@@ -70,13 +70,18 @@ class DataCard(MCNP_Card):
 
     def __split_name(self):
         name = self._words[0]
-        prefix_extras = [":"]
+        prefix_extras = [":", "*"]
         number_extras = ["-"]
-        prefix, number = [
-            "".join(c for c in name if c.isalpha() or c in prefix_extras) or None,
-            "".join(c for c in name if c.isdigit() or c in number_extras) or None,
-        ]
+        is_digit = [(c.isdigit() or c in number_extras) for c in name]
+        if True in is_digit:
+            i = is_digit.index(True)
+            prefix, number = name[:i], name[i:]
+        else:
+            prefix = name
+            number = None
+        assert all(c.isalpha() or c in prefix_extras for c in prefix)
         if number:
+            assert all(c.isdigit() or c in number_extras for c in number)
             self._input_number = int(number)
         self._prefix = prefix
 
