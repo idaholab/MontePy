@@ -57,6 +57,8 @@ class Card(MCNP_Input):
     Represents a single MCNP "card" e.g. a single cell definition.
     """
 
+    SPECIAL_COMMENT_PREFIXES = ["fc", "sc"]
+
     def __init__(self, input_lines, block_type):
         """
         :param input_lines: the lines read straight from the input file.
@@ -72,7 +74,12 @@ class Card(MCNP_Input):
             words += line.replace(" &", "").split()
         self._words = words
         self._block_type = block_type
-        self._words = parse_card_shortcuts(words, self)
+        found = False
+        for prefix in self.SPECIAL_COMMENT_PREFIXES:
+            if prefix in words[0].lower():
+                found = True
+        if not found:
+            self._words = parse_card_shortcuts(words, self)
 
     def __str__(self):
         return f"CARD: {self._block_type}: {self._words}"
