@@ -44,3 +44,10 @@ class EdgeCaseTests(TestCase):
             if os.path.exists("out"):
                 pass
                 os.remove("out")
+
+    def test_shortcuts_in_special_comment(self):
+        in_str = "fc247 experiment in I24 Cell Specific Heating"
+        card = mcnpy.input_parser.mcnp_input.Card(
+            [in_str], mcnpy.input_parser.block_type.BlockType.DATA
+        )
+        self.assertEqual(card.words, in_str.split())
