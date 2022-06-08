@@ -67,6 +67,14 @@ class testTransformClass(TestCase):
         with self.assertRaises(MalformedInputError):
             Transform(card)
 
+        # test blank init
+        transform = Transform()
+        self.assertEqual(transform.number, -1)
+        self.assertEqual(len(transform.displacement_vector), 0)
+        self.assertEqual(len(transform.rotation_matrix), 0)
+        self.assertTrue(not transform.is_in_degrees)
+        self.assertTrue(transform.is_main_to_aux)
+
     def test_transform_degrees_setter(self):
         in_str = "*tr5 " + "1.0 " * 3 + "0.0 " * 9 + " -1"
         card = Card([in_str], BlockType.DATA)
