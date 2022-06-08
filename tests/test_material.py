@@ -127,7 +127,7 @@ class testMaterialClass(TestCase):
     def test_thermal_scattering_init(self):
         # test wrong card type assertion
         input_card = Card(["M20"], BlockType.DATA)
-        with self.assertRaises(AssertionError):
+        with self.assertRaises(MalformedInputError):
             ThermalScatteringLaw(input_card)
 
         input_card = Card(["Mt20 grph.20t"], BlockType.DATA)
