@@ -51,3 +51,8 @@ class EdgeCaseTests(TestCase):
             [in_str], mcnpy.input_parser.block_type.BlockType.DATA
         )
         self.assertEqual(card.words, in_str.split())
+        in_str = in_str.replace("fc247", "sc247")
+        card = mcnpy.input_parser.mcnp_input.Card(
+            [in_str], mcnpy.input_parser.block_type.BlockType.DATA
+        )
+        self.assertEqual(card.words, in_str.split())
