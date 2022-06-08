@@ -59,9 +59,11 @@ class DataCard(MCNP_Card):
 
     def __split_name__(self):
         name = self._words[0]
+        prefix_extras = [":"]
+        number_extras = ["-"]
         names = [
-            "".join(c for c in name if c.isalpha()) or None,
-            "".join(c for c in name if c.isdigit()) or None,
+            "".join(c for c in name if c.isalpha() or c in prefix_extras) or None,
+            "".join(c for c in name if c.isdigit() or c in number_extras) or None,
         ]
         if names[1]:
             names[1] = int(names[1])
