@@ -94,7 +94,6 @@ class DataCard(MCNP_Card):
         match = self._NAME_PARSER.match(name)
         assert match is not None
         match_dict = match.groupdict()
-        print(match, match_dict)
         number = match_dict["number"]
         if number:
             self._input_number = int(number)
