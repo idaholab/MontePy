@@ -207,3 +207,19 @@ bar
         for test in invalid:
             with self.assertRaises(mcnpy.errors.MalformedInputError):
                 parser(list(test))
+
+    def testDataCardNameParsing(self):
+        tests = {
+            "kcOde": {"prefix": "kcode", "number": None, "classifier": None},
+            "M300": {"prefix": "m", "number": 300, "classifier": None},
+            "IMP:N,P,E": {"prefix": "imp", "number": None, "classifier": ":n,p,e"},
+            "F1004:n,P": {"prefix": "f", "number": 1004, "classifier": ":n,p"},
+        }
+        for in_str, answer in tests.items():
+            card = mcnpy.input_parser.mcnp_input.Card(
+                [in_str], mcnpy.input_parser.block_type.BlockType.DATA
+            )
+            data_card = mcnpy.data_cards.data_card.DataCard(card)
+            self.assertEqual(data_card.prefix, answer["prefix"])
+            self.assertEqual(data_card._input_number, answer["number"])
+            self.assertEqual(data_card.particle_classifier, answer["classifier"])
