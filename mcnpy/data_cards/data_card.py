@@ -48,6 +48,14 @@ class DataCard(MCNP_Card):
         """
         return self._prefix.lower()
 
+    @property
+    def particle_classifier(self):
+        """The particle class part of the card identifier.
+
+        For example: the classifier for `F7:n` is `:n`, and `imp:n,p` is `:n,p`
+        """
+        return self._classifier.lower()
+
     def format_for_mcnp_input(self, mcnp_version):
         ret = super().format_for_mcnp_input(mcnp_version)
         if self.mutated:
@@ -70,9 +78,11 @@ class DataCard(MCNP_Card):
 
     def __split_name(self):
         name = self._words[0]
-        prefix_extras = [":", "*"]
+        prefix_extras = ["*"]
         number_extras = ["-"]
-        is_digit = [(c.isdigit() or c in number_extras) for c in name]
+        classifier_extras = [":",","]
+        is_digit = [(c.isdigit() or c in number_extras or c in classifier_extras) for c in name]
+        classifier = None
         if True in is_digit:
             i = is_digit.index(True)
             prefix, number = name[:i], name[i:]
@@ -81,9 +91,15 @@ class DataCard(MCNP_Card):
             number = None
         assert all(c.isalpha() or c in prefix_extras for c in prefix)
         if number:
-            assert all(c.isdigit() or c in number_extras for c in number)
-            self._input_number = int(number)
+            is_classifier = [(c.isalpha() or c in classifier_extras) for c in number]
+            if True in is_classifier:
+                i = is_classifier.index(True)
+                number, classifier = number[:i],name[i:]
+            if number:
+                assert all(c.isdigit() or c in number_extras for c in number)
+                self._input_number = int(number)
         self._prefix = prefix
+        self._classifier = classifier
 
     def __lt__(self, other):
         type_comp = self.prefix < other.prefix
