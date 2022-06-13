@@ -1,11 +1,24 @@
 from mcnpy.errors import *
 from mcnpy.mcnp_card import MCNP_Card
+import re
 
 
 class DataCard(MCNP_Card):
     """
     Parent class to describe all MCNP data inputs.
     """
+
+    _PREFIX_EXTRAS = ["*"]
+    _NUMBER_EXTRAS = [r"\-"]
+    _CLASSIFIER_EXTRAS = [":", ","]
+    _NAME_PARSER = re.compile(
+        (
+            rf"^(?P<prefix>[a-z{''.join(_PREFIX_EXTRAS)}]+)"
+            rf"(?P<number>[\d{''.join(_NUMBER_EXTRAS)}]+)*"
+            rf"(?P<classifier>:[a-z{''.join(_CLASSIFIER_EXTRAS)}]+)*$"
+        ),
+        re.I,
+    )
 
     def __init__(self, input_card=None, comment=None):
         """
@@ -78,28 +91,17 @@ class DataCard(MCNP_Card):
 
     def __split_name(self):
         name = self._words[0]
-        prefix_extras = ["*"]
-        number_extras = ["-"]
-        classifier_extras = [":",","]
-        is_digit = [(c.isdigit() or c in number_extras or c in classifier_extras) for c in name]
-        classifier = None
-        if True in is_digit:
-            i = is_digit.index(True)
-            prefix, number = name[:i], name[i:]
-        else:
-            prefix = name
-            number = None
-        assert all(c.isalpha() or c in prefix_extras for c in prefix)
+        match = self._NAME_PARSER.match(name)
+        assert match is not None
+        match_dict = match.groupdict()
+        print(match, match_dict)
+        number = match_dict["number"]
         if number:
-            is_classifier = [(c.isalpha() or c in classifier_extras) for c in number]
-            if True in is_classifier:
-                i = is_classifier.index(True)
-                number, classifier = number[:i],name[i:]
-            if number:
-                assert all(c.isdigit() or c in number_extras for c in number)
-                self._input_number = int(number)
-        self._prefix = prefix
-        self._classifier = classifier
+            self._input_number = int(number)
+        else:
+            self._input_number = None
+        self._prefix = match_dict["prefix"]
+        self._classifier = match_dict["classifier"]
 
     def __lt__(self, other):
         type_comp = self.prefix < other.prefix
