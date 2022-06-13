@@ -67,7 +67,9 @@ class DataCard(MCNP_Card):
 
         For example: the classifier for `F7:n` is `:n`, and `imp:n,p` is `:n,p`
         """
-        return self._classifier.lower()
+        if self._classifier:
+            return self._classifier.lower()
+        return None
 
     def format_for_mcnp_input(self, mcnp_version):
         ret = super().format_for_mcnp_input(mcnp_version)
