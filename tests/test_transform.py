@@ -22,6 +22,10 @@ class testTransformClass(TestCase):
         with self.assertRaises(MalformedInputError):
             card = Card(["TR1foo 0.0 0.0 0.0"], BlockType.DATA)
             Transform(card)
+        # test that the transform has a number
+        with self.assertRaises(MalformedInputError):
+            card = Card(["*TR 0.0 0.0 0.0"], BlockType.DATA)
+            Transform(card)
 
         # test vanilla case
         in_str = "tr5 " + "1.0 " * 3 + "0.0 " * 9
