@@ -26,6 +26,10 @@ class testTransformClass(TestCase):
         with self.assertRaises(MalformedInputError):
             card = Card(["*TR 0.0 0.0 0.0"], BlockType.DATA)
             Transform(card)
+        # test that the transform doesn't have a particle
+        with self.assertRaises(MalformedInputError):
+            card = Card(["TR5:n,p 0.0 0.0 0.0"], BlockType.DATA)
+            Transform(card)
 
         # test vanilla case
         in_str = "tr5 " + "1.0 " * 3 + "0.0 " * 9
