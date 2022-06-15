@@ -9,12 +9,13 @@ class DataCardAbstract(MCNP_Card):
     Parent class to describe all MCNP data inputs.
     """
 
-    _PREFIX_EXTRAS = ["*"]
+    _MODIFIERS = [r"\*"]
     _NUMBER_EXTRAS = [r"\-"]
     _CLASSIFIER_EXTRAS = [":", ","]
     _NAME_PARSER = re.compile(
         (
-            rf"^(?P<prefix>[a-z{''.join(_PREFIX_EXTRAS)}]+)"
+            rf"^(?P<modifier>[{''.join(_MODIFIERS)}]+)*"
+            rf"(?P<prefix>[a-z]+)"
             rf"(?P<number>[\d{''.join(_NUMBER_EXTRAS)}]+)*"
             rf"(?P<classifier>:[a-z{''.join(_CLASSIFIER_EXTRAS)}]+)*$"
         ),
@@ -112,8 +113,18 @@ class DataCardAbstract(MCNP_Card):
         For example: for a material like: m20 the prefix is 'm'
 
         this will always be lower case
+        :rtype: str
         """
         return self._prefix.lower()
+
+    @property
+    def prefix_modifier(self):
+        """The modifier to a name prefix.
+
+        For example: for a transform: *tr5 the modifier is *
+        :rtype: str
+        """
+        return self._modifier
 
     def format_for_mcnp_input(self, mcnp_version):
         ret = super().format_for_mcnp_input(mcnp_version)
