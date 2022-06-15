@@ -58,7 +58,7 @@ class DataCardAbstract(MCNP_Card):
     def class_prefix(self):
         """The text part of the card identifier.
 
-        For example: for a material the prefix is 'm'
+        For example: for a material the prefix is ``m``
 
         this must be lower case
 
@@ -72,7 +72,7 @@ class DataCardAbstract(MCNP_Card):
     def has_number(self):
         """Whether or not this class supports numbering.
 
-        For example: `kcode` doesn't allow numbers but tallies do allow it e.g.: `f7`
+        For example: ``kcode`` doesn't allow numbers but tallies do allow it e.g.: ``f7``
 
         :returns: True if this class allows numbers
         :rtype: bool
@@ -84,11 +84,11 @@ class DataCardAbstract(MCNP_Card):
     def has_classifier(self):
         """Whether or not this class supports particle classifiers.
 
-        For example: `kcode` doesn't allow numbers but tallies do allow it e.g.: `f7:n`
+        For example: ``kcode`` doesn't allow numbers but tallies do allow it e.g.: ``f7:n``
 
-        0 : not allowed
-        1 : is optional
-        2 : is mandatory
+        * 0 : not allowed
+        * 1 : is optional
+        * 2 : is mandatory
 
         :returns: True if this class particle classifiers
         :rtype: int
@@ -99,7 +99,7 @@ class DataCardAbstract(MCNP_Card):
     def particle_classifier(self):
         """The particle class part of the card identifier.
 
-        For example: the classifier for `F7:n` is `:n`, and `imp:n,p` is `:n,p`
+        For example: the classifier for ``F7:n`` is ``:n``, and ``imp:n,p`` is ``:n,p``
         :rtype: str
         """
         if self._classifier:
@@ -121,7 +121,8 @@ class DataCardAbstract(MCNP_Card):
     def prefix_modifier(self):
         """The modifier to a name prefix.
 
-        For example: for a transform: *tr5 the modifier is *
+        For example: for a transform: ``*tr5`` the modifier is ``*``
+
         :rtype: str
         """
         return self._modifier

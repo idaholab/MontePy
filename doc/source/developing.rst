@@ -155,14 +155,25 @@ Things to consider.
    being a white surface. To say that two surfaces are duplicate all of these factors must be considered. 
 
 
-Data Cards: :class:`mcnpy.data_cards.data_card.DataCard`
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Data Cards: :class:`mcnpy.data_cards.data_card.DataCardAbstract`
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 This class is the parent for all cards that show up in the data block. 
 When adding a child you will also need to update the 
 :func:`mcnpy.data_cards.data_parser.parse_data` function.
 In general first comply with standards for this class's parent: :class:`mcnpy.mcnp_card.MCNP_Card`.
 In addition you will need to implement :func:`mcnpy.data_cards.data_card.DataCard.update_pointers` 
 if you need it.
+
+During init the cards' "name word" (e.g., ``M3``, ``kcode``, ``f7:n``) is validated and parsed.
+Conceptually these names can contain up to four sections.
+
+#. A ``prefix_modifier`` this modifies the whole card with a special character such as ``*tr5`` 
+#. A ``Prefix``, which is a series of letters that identifies the type such as ``m``
+#. A number, which numbers it. These must be positive.
+#. A particle classifier such as ``:n,p``.
+
+You control the parsing behavior through three parameters: ``class_prefix``, ``has_number``, and ``has_classifier``.
+See the documentation for how to set these.
 
 Syntax Objects: :class:`mcnpy.input_parser.mcnp_input.MCNP_Input`
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
