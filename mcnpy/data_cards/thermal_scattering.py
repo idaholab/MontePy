@@ -55,7 +55,7 @@ class ThermalScatteringLaw(DataCardAbstract):
 
     @property
     def has_classifier(self):
-        return False
+        return 0
 
     @property
     def old_number(self):

@@ -184,7 +184,7 @@ class Material(data_card.DataCardAbstract):
 
     @property
     def has_classifier(self):
-        return False
+        return 0
 
     def __str__(self):
         ret = f"MATERIAL: {self.number} fractions: "

@@ -85,8 +85,12 @@ class DataCardAbstract(MCNP_Card):
 
         For example: `kcode` doesn't allow numbers but tallies do allow it e.g.: `f7:n`
 
+        0 : not allowed
+        1 : is optional
+        2 : is mandatory
+
         :returns: True if this class particle classifiers
-        :rtype: bool
+        :rtype: int
         """
         pass
 
@@ -95,6 +99,7 @@ class DataCardAbstract(MCNP_Card):
         """The particle class part of the card identifier.
 
         For example: the classifier for `F7:n` is `:n`, and `imp:n,p` is `:n,p`
+        :rtype: str
         """
         if self._classifier:
             return self._classifier.lower()

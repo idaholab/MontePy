@@ -102,7 +102,7 @@ class Transform(data_card.DataCardAbstract):
 
     @property
     def has_classifier(self):
-        return False
+        return 0
 
     @property
     def is_in_degrees(self):
