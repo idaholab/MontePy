@@ -183,7 +183,6 @@ class DataCardAbstract(MCNP_Card):
         :type match_dict: dict
         :raises MalformedInputError: if the name is invalid for this DataCard
         """
-        print(match_dict)
         if self.class_prefix:
             if match_dict["prefix"].lower() != self.class_prefix:
                 raise MalformedInputError(
@@ -191,8 +190,9 @@ class DataCardAbstract(MCNP_Card):
                 )
             if self.has_number:
                 try:
-                    int(match_dict["number"])
-                except (ValueError, TypeError) as e:
+                    num = int(match_dict["number"])
+                    assert num > 0
+                except (AssertionError, ValueError, TypeError) as e:
                     raise MalformedInputError(
                         self.words, f"{self.words[0]} does not contain a valid number"
                     )
