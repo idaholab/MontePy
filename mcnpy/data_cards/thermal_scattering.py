@@ -28,16 +28,7 @@ class ThermalScatteringLaw(DataCardAbstract):
         if input_card:
             super().__init__(input_card, comment)
             words = self.words
-            try:
-                assert "mt" == self.prefix
-                num = self._input_number
-                assert num is not None
-                assert num > 0
-                self._old_material_number = num
-            except (ValueError, AssertionError) as e:
-                raise MalformedInputError(
-                    input_card, f"{words[0]} could not be parsed as a material number"
-                )
+            self._old_material_number = self._input_number
             self._scattering_laws = self.words[1:]
         else:
             if comment:

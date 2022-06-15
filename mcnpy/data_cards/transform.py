@@ -12,12 +12,7 @@ class Transform(data_card.DataCardAbstract):
     """
 
     def __init__(self, input_card=None, comment=None):
-        try:
-            super().__init__(input_card, comment)
-        except AssertionError:
-            raise MalformedInputError(
-                input_card, f"{self.words[0]} can't be parsed as transform number"
-            )
+        super().__init__(input_card, comment)
         if input_card is None:
             self._transform_number = -1
             self._old_transform_number = -1
@@ -27,24 +22,16 @@ class Transform(data_card.DataCardAbstract):
             self._is_main_to_aux = True
         else:
             words = self.words
-            num = self._input_number
             i = 0
             assert len(words) >= 3
-            try:
-                assert "tr" in self.prefix
-                if "*" in words[i]:
-                    self._is_in_degrees = True
-                else:
-                    self._is_in_degrees = False
-                assert num is not None
-                self._transform_number = num
-                self._old_transform_number = self._transform_number
-                i += 1
+            if self.prefix_modifier and "*" in self.prefix_modifier:
+                self._is_in_degrees = True
+            else:
+                self._is_in_degrees = False
+            self._transform_number = self._input_number
+            self._old_transform_number = self._transform_number
+            i += 1
 
-            except (ValueError, AssertionError) as e:
-                raise MalformedInputError(
-                    input_card, f"{words[0]} can't be parsed as transform number"
-                )
             # parse displacement
             try:
                 values = []

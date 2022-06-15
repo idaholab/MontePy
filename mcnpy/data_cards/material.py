@@ -27,17 +27,9 @@ class Material(data_card.DataCardAbstract):
         if input_card:
             words = self.words
             # material numbers
-            try:
-                assert self.prefix == "m"
-                num = self._input_number
-                assert num is not None
-                assert num > 0
-                self._old_material_number = num
-                self._material_number = num
-            except (ValueError, AssertionError) as e:
-                raise MalformedInputError(
-                    input_card, f"{words[0]} could not be parsed as a material number"
-                )
+            num = self._input_number
+            self._old_material_number = num
+            self._material_number = num
             words_iter = iter(words[1:])
             set_atom_frac = False
             self._parameter_string = ""
