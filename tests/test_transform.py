@@ -11,7 +11,7 @@ from mcnpy.input_parser.mcnp_input import Card
 class testTransformClass(TestCase):
     def test_transform_init(self):
         # test wrong ID finder
-        with self.assertRaises(AssertionError):
+        with self.assertRaises(MalformedInputError):
             card = Card(["M20"], BlockType.DATA)
             Transform(card)
         # test that the minimum word requirement is set
