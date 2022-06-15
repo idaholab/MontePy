@@ -6,7 +6,7 @@ import numpy as np
 import re
 
 
-class Transform(data_card.DataCard):
+class Transform(data_card.DataCardAbstract):
     """
     Card to represent a transform card (TR)
     """
@@ -91,6 +91,18 @@ class Transform(data_card.DataCard):
                 # if no more words remain don't worry
                 except IndexError:
                     pass
+
+    @property
+    def class_prefix(self):
+        return "tr"
+
+    @property
+    def has_number(self):
+        return True
+
+    @property
+    def has_classifier(self):
+        return False
 
     @property
     def is_in_degrees(self):

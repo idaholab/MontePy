@@ -1,9 +1,10 @@
+from abc import abstractmethod
 from mcnpy.errors import *
 from mcnpy.mcnp_card import MCNP_Card
 import re
 
 
-class DataCard(MCNP_Card):
+class DataCardAbstract(MCNP_Card):
     """
     Parent class to describe all MCNP data inputs.
     """
@@ -52,14 +53,42 @@ class DataCard(MCNP_Card):
         self._words = words
 
     @property
-    def prefix(self):
+    @abstractmethod
+    def class_prefix(self):
         """The text part of the card identifier.
 
-        For example: for a material like: m20 the prefix is 'm'
+        For example: for a material the prefix is 'm'
 
-        this will always be lower case
+        this must be lower case
+
+        :returns: the string of the prefix that identifies a card of this class.
+        :rtype: str
         """
-        return self._prefix.lower()
+        pass
+
+    @property
+    @abstractmethod
+    def has_number(self):
+        """Whether or not this class supports numbering.
+
+        For example: `kcode` doesn't allow numbers but tallies do allow it e.g.: `f7`
+
+        :returns: True if this class allows numbers
+        :rtype: bool
+        """
+        pass
+
+    @property
+    @abstractmethod
+    def has_classifier(self):
+        """Whether or not this class supports particle classifiers.
+
+        For example: `kcode` doesn't allow numbers but tallies do allow it e.g.: `f7:n`
+
+        :returns: True if this class particle classifiers
+        :rtype: bool
+        """
+        pass
 
     @property
     def particle_classifier(self):
@@ -70,6 +99,16 @@ class DataCard(MCNP_Card):
         if self._classifier:
             return self._classifier.lower()
         return None
+
+    @property
+    def prefix(self):
+        """The text part of the card identifier.
+
+        For example: for a material like: m20 the prefix is 'm'
+
+        this will always be lower case
+        """
+        return self._prefix.lower()
 
     def format_for_mcnp_input(self, mcnp_version):
         ret = super().format_for_mcnp_input(mcnp_version)
@@ -104,6 +143,9 @@ class DataCard(MCNP_Card):
         self._prefix = match_dict["prefix"]
         self._classifier = match_dict["classifier"]
 
+    def __enforce_name(self):
+        pass
+
     def __lt__(self, other):
         type_comp = self.prefix < other.prefix
         if type_comp:
@@ -112,3 +154,17 @@ class DataCard(MCNP_Card):
             return type_comp
         else:  # otherwise first part is equal
             return self._input_number < other._input_number
+
+
+class DataCard(DataCardAbstract):
+    @property
+    def class_prefix(self):
+        return None
+
+    @property
+    def has_number(self):
+        return None
+
+    @property
+    def has_classifier(self):
+        return None

@@ -8,7 +8,7 @@ import itertools
 import re
 
 
-class Material(data_card.DataCard):
+class Material(data_card.DataCardAbstract):
     """
     A class to represent an MCNP material.
     """
@@ -173,6 +173,18 @@ class Material(data_card.DataCard):
                         raise MalformedInputError(
                             self, "Multiple MT inputs were specified for this material."
                         )
+
+    @property
+    def class_prefix(self):
+        return "m"
+
+    @property
+    def has_number(self):
+        return True
+
+    @property
+    def has_classifier(self):
+        return False
 
     def __str__(self):
         ret = f"MATERIAL: {self.number} fractions: "
