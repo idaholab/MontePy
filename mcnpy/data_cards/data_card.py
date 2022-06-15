@@ -147,10 +147,25 @@ class DataCardAbstract(MCNP_Card):
         return f"DATA CARD: {self._words}"
 
     def __split_name(self):
+        """
+        Parses the name of the data card as a prefix, number, and a particle classifier.
+
+        This populates the properties:
+            prefix
+            _input_number
+            classifier
+
+        :raises MalformedInputError: if the name is invalid for this DataCard
+
+        """
         name = self._words[0]
         match = self._NAME_PARSER.match(name)
-        assert match is not None
+        if match is None:
+            raise MalformedInputError(
+                self.words, f"{self.words[0]} is not a valid starting word"
+            )
         match_dict = match.groupdict()
+        self.__enforce_name(match_dict)
         number = match_dict["number"]
         if number:
             self._input_number = int(number)
@@ -158,9 +173,43 @@ class DataCardAbstract(MCNP_Card):
             self._input_number = None
         self._prefix = match_dict["prefix"]
         self._classifier = match_dict["classifier"]
+        self._modifier = match_dict["modifier"]
 
-    def __enforce_name(self):
-        pass
+    def __enforce_name(self, match_dict):
+        """
+        Checks that the name is valid.
+
+        :param match_dict: the matching dictionary from the parsing regex.
+        :type match_dict: dict
+        :raises MalformedInputError: if the name is invalid for this DataCard
+        """
+        print(match_dict)
+        if self.class_prefix:
+            if match_dict["prefix"].lower() != self.class_prefix:
+                raise MalformedInputError(
+                    self.words, f"{self.words[0]} has the wrong prefix for {type(self)}"
+                )
+            if self.has_number:
+                try:
+                    int(match_dict["number"])
+                except (ValueError, TypeError) as e:
+                    raise MalformedInputError(
+                        self.words, f"{self.words[0]} does not contain a valid number"
+                    )
+            if not self.has_number and match_dict["number"] is not None:
+                raise MalformedInputError(
+                    self.words, f"{self.words[0]} cannot have a number for {type(self)}"
+                )
+            if self.has_classifier == 2 and match_dict["classifier"] is None:
+                raise MalformedInputError(
+                    self.words,
+                    f"{self.words[0]} doesn't have a particle classifier for {type(self)}",
+                )
+            if self.has_classifier == 0 and match_dict["classifier"] is not None:
+                raise MalformedInputError(
+                    self.words,
+                    f"{self.words[0]} cannot have a particle classifier for {type(self)}",
+                )
 
     def __lt__(self, other):
         type_comp = self.prefix < other.prefix
