@@ -230,6 +230,7 @@ bar
             "kcOde5": {"prefix": "kcode", "number": False, "classifier": 0},
             "M-300": {"prefix": "m", "number": True, "classifier": 0},
             "M": {"prefix": "m", "number": True, "classifier": 0},
+            "f4m": {"prefix": "fm", "number": True, "classifier": 1},
             "IMP:N,P,E": {"prefix": "imp", "number": False, "classifier": 0},
             "IMP": {"prefix": "imp", "number": False, "classifier": 2},
         }
@@ -237,16 +238,19 @@ bar
             "IMP:N,P,E": {"prefix": "imp", "number": False, "classifier": 2},
             "F1004:n,P": {"prefix": "f", "number": True, "classifier": 1},
         }
+        # tests invalid names
         for in_str, answer in tests.items():
-            card = mcnpy.input_parser.mcnp_input.Card(
-                [in_str], mcnpy.input_parser.block_type.BlockType.DATA
-            )
-            card = DataCardTestFixture(card)
-            card._class_prefix = answer["prefix"]
-            card._has_number = answer["number"]
-            card._has_classifier = answer["classifier"]
             with self.assertRaises(mcnpy.errors.MalformedInputError):
+                card = mcnpy.input_parser.mcnp_input.Card(
+                    [in_str], mcnpy.input_parser.block_type.BlockType.DATA
+                )
+                card = DataCardTestFixture(card)
+                card._class_prefix = answer["prefix"]
+                card._has_number = answer["number"]
+                card._has_classifier = answer["classifier"]
                 card._DataCardAbstract__split_name()
+
+        # tests valid names
         for in_str, answer in valid.items():
             card = mcnpy.input_parser.mcnp_input.Card(
                 [in_str], mcnpy.input_parser.block_type.BlockType.DATA
