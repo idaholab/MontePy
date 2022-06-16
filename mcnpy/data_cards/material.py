@@ -8,7 +8,7 @@ import itertools
 import re
 
 
-class Material(data_card.DataCard):
+class Material(data_card.DataCardAbstract):
     """
     A class to represent an MCNP material.
     """
@@ -26,17 +26,10 @@ class Material(data_card.DataCard):
         self._material_number = -1
         if input_card:
             words = self.words
-            num = words[0].upper().strip("M")
             # material numbers
-            try:
-                num = int(num)
-                assert num > 0
-                self._old_material_number = num
-                self._material_number = num
-            except (ValueError, AssertionError) as e:
-                raise MalformedInputError(
-                    input_card, f"{words[0]} could not be parsed as a material number"
-                )
+            num = self._input_number
+            self._old_material_number = num
+            self._material_number = num
             words_iter = iter(words[1:])
             set_atom_frac = False
             self._parameter_string = ""
@@ -172,6 +165,18 @@ class Material(data_card.DataCard):
                         raise MalformedInputError(
                             self, "Multiple MT inputs were specified for this material."
                         )
+
+    @property
+    def class_prefix(self):
+        return "m"
+
+    @property
+    def has_number(self):
+        return True
+
+    @property
+    def has_classifier(self):
+        return 0
 
     def __str__(self):
         ret = f"MATERIAL: {self.number} fractions: "

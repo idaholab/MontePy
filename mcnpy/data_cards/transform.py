@@ -6,7 +6,7 @@ import numpy as np
 import re
 
 
-class Transform(data_card.DataCard):
+class Transform(data_card.DataCardAbstract):
     """
     Card to represent a transform card (TR)
     """
@@ -23,22 +23,15 @@ class Transform(data_card.DataCard):
         else:
             words = self.words
             i = 0
-            assert re.match(r"\*?tr\d+", words[i].lower())
             assert len(words) >= 3
-            try:
-                if "*" in words[i]:
-                    self._is_in_degrees = True
-                else:
-                    self._is_in_degrees = False
-                num = words[i].lower().strip("*tr")
-                self._transform_number = int(num)
-                self._old_transform_number = self._transform_number
-                i += 1
+            if self.prefix_modifier and "*" in self.prefix_modifier:
+                self._is_in_degrees = True
+            else:
+                self._is_in_degrees = False
+            self._transform_number = self._input_number
+            self._old_transform_number = self._transform_number
+            i += 1
 
-            except ValueError:
-                raise MalformedInputError(
-                    input_card, f"{words[0]} can't be parsed as transform number"
-                )
             # parse displacement
             try:
                 values = []
@@ -85,6 +78,18 @@ class Transform(data_card.DataCard):
                 # if no more words remain don't worry
                 except IndexError:
                     pass
+
+    @property
+    def class_prefix(self):
+        return "tr"
+
+    @property
+    def has_number(self):
+        return True
+
+    @property
+    def has_classifier(self):
+        return 0
 
     @property
     def is_in_degrees(self):

@@ -207,3 +207,82 @@ bar
         for test in invalid:
             with self.assertRaises(mcnpy.errors.MalformedInputError):
                 parser(list(test))
+
+    def testDataCardNameParsing(self):
+        tests = {
+            "kcOde": {"prefix": "kcode", "number": None, "classifier": None},
+            "M300": {"prefix": "m", "number": 300, "classifier": None},
+            "IMP:N,P,E": {"prefix": "imp", "number": None, "classifier": ":n,p,e"},
+            "F1004:n,P": {"prefix": "f", "number": 1004, "classifier": ":n,p"},
+        }
+        for in_str, answer in tests.items():
+            # Testing parsing the names
+            card = mcnpy.input_parser.mcnp_input.Card(
+                [in_str], mcnpy.input_parser.block_type.BlockType.DATA
+            )
+            data_card = mcnpy.data_cards.data_card.DataCard(card)
+            self.assertEqual(data_card.prefix, answer["prefix"])
+            self.assertEqual(data_card._input_number, answer["number"])
+            self.assertEqual(data_card.particle_classifier, answer["classifier"])
+
+    def testDataCardNameEnforcement(self):
+        tests = {
+            "kcOde5": {"prefix": "kcode", "number": False, "classifier": 0},
+            "M-300": {"prefix": "m", "number": True, "classifier": 0},
+            "M": {"prefix": "m", "number": True, "classifier": 0},
+            "f4m": {"prefix": "fm", "number": True, "classifier": 1},
+            "IMP:N,P,E": {"prefix": "imp", "number": False, "classifier": 0},
+            "IMP": {"prefix": "imp", "number": False, "classifier": 2},
+        }
+        valid = {
+            "IMP:N,P,E": {"prefix": "imp", "number": False, "classifier": 2},
+            "F1004:n,P": {"prefix": "f", "number": True, "classifier": 1},
+        }
+        # tests invalid names
+        for in_str, answer in tests.items():
+            with self.assertRaises(mcnpy.errors.MalformedInputError):
+                card = mcnpy.input_parser.mcnp_input.Card(
+                    [in_str], mcnpy.input_parser.block_type.BlockType.DATA
+                )
+                card = DataCardTestFixture(card)
+                card._class_prefix = answer["prefix"]
+                card._has_number = answer["number"]
+                card._has_classifier = answer["classifier"]
+                card._DataCardAbstract__split_name()
+
+        # tests valid names
+        for in_str, answer in valid.items():
+            card = mcnpy.input_parser.mcnp_input.Card(
+                [in_str], mcnpy.input_parser.block_type.BlockType.DATA
+            )
+            card = DataCardTestFixture(card)
+            card._class_prefix = answer["prefix"]
+            card._has_number = answer["number"]
+            card._has_classifier = answer["classifier"]
+            card._DataCardAbstract__split_name()
+
+
+class DataCardTestFixture(mcnpy.data_cards.data_card.DataCardAbstract):
+    def __init__(self, input_card=None, comment=None):
+        """
+        :param input_card: the Card object representing this data card
+        :type input_card: Card
+        :param comment: The Comment that may proceed this
+        :type comment: Comment
+        """
+        self._class_prefix = None
+        self._has_number = None
+        self._has_classifier = None
+        super().__init__(input_card, comment)
+
+    @property
+    def class_prefix(self):
+        return self._class_prefix
+
+    @property
+    def has_number(self):
+        return self._has_number
+
+    @property
+    def has_classifier(self):
+        return self._has_classifier

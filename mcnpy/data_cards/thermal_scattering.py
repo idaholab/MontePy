@@ -1,10 +1,10 @@
-from mcnpy.data_cards.data_card import DataCard
+from mcnpy.data_cards.data_card import DataCardAbstract
 from mcnpy import mcnp_card
 from mcnpy.errors import *
 import mcnpy
 
 
-class ThermalScatteringLaw(DataCard):
+class ThermalScatteringLaw(DataCardAbstract):
     """
     Class to hold MT cards
     """
@@ -27,22 +27,26 @@ class ThermalScatteringLaw(DataCard):
         self._scattering_laws = []
         if input_card:
             super().__init__(input_card, comment)
-            assert "mt" in self.words[0].lower()
             words = self.words
-            try:
-                num = int(words[0].lower().strip("mt"))
-                assert num > 0
-                self._old_material_number = num
-            except (ValueError, AssertionError) as e:
-                raise MalformedInputError(
-                    input_card, f"{words[0]} could not be parsed as a material number"
-                )
+            self._old_material_number = self._input_number
             self._scattering_laws = self.words[1:]
         else:
             if comment:
                 self._comment = comment
             if material:
                 self._parent_material = material
+
+    @property
+    def class_prefix(self):
+        return "mt"
+
+    @property
+    def has_number(self):
+        return True
+
+    @property
+    def has_classifier(self):
+        return 0
 
     @property
     def old_number(self):

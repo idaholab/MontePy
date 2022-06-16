@@ -11,7 +11,7 @@ from mcnpy.input_parser.mcnp_input import Card
 class testTransformClass(TestCase):
     def test_transform_init(self):
         # test wrong ID finder
-        with self.assertRaises(AssertionError):
+        with self.assertRaises(MalformedInputError):
             card = Card(["M20"], BlockType.DATA)
             Transform(card)
         # test that the minimum word requirement is set
@@ -21,6 +21,14 @@ class testTransformClass(TestCase):
         # test that the transform is a valid number
         with self.assertRaises(MalformedInputError):
             card = Card(["TR1foo 0.0 0.0 0.0"], BlockType.DATA)
+            Transform(card)
+        # test that the transform has a number
+        with self.assertRaises(MalformedInputError):
+            card = Card(["*TR 0.0 0.0 0.0"], BlockType.DATA)
+            Transform(card)
+        # test that the transform doesn't have a particle
+        with self.assertRaises(MalformedInputError):
+            card = Card(["TR5:n,p 0.0 0.0 0.0"], BlockType.DATA)
             Transform(card)
 
         # test vanilla case
@@ -66,6 +74,14 @@ class testTransformClass(TestCase):
         card = Card([in_str], BlockType.DATA)
         with self.assertRaises(MalformedInputError):
             Transform(card)
+
+        # test blank init
+        transform = Transform()
+        self.assertEqual(transform.number, -1)
+        self.assertEqual(len(transform.displacement_vector), 0)
+        self.assertEqual(len(transform.rotation_matrix), 0)
+        self.assertTrue(not transform.is_in_degrees)
+        self.assertTrue(transform.is_main_to_aux)
 
     def test_transform_degrees_setter(self):
         in_str = "*tr5 " + "1.0 " * 3 + "0.0 " * 9 + " -1"
