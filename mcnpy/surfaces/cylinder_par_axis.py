@@ -23,8 +23,12 @@ class CylinderParAxis(Surface):
         """
         super().__init__(input_card, comment)
         ST = SurfaceType
-        assert self.surface_type in [ST.C_X, ST.C_Y, ST.C_Z]
-        assert len(self.surface_constants) == 3
+        if self.surface_type not in [ST.C_X, ST.C_Y, ST.C_Z]:
+            raise ValueError(
+                "CylinderParAxis must be a surface of types: C/X, C/Y, C/Z"
+            )
+        if len(self.surface_constants) != 3:
+            raise ValueError("CylinderParAxis must have exactly 3 surface_constants")
         self._coordinates = self.surface_constants[0:2]
         self._radius = self.surface_constants[2]
 
@@ -42,8 +46,10 @@ class CylinderParAxis(Surface):
         """
         :param coordinates: the coordinates, must be 2 long.
         """
-        assert isinstance(coordinates, list)
-        assert len(coordinates) == 2
+        if not isinstance(coordinates, list):
+            raise TypeError("coordinates must be a list")
+        if len(coordinates) != 2:
+            raise ValueError("coordinates must have exactly two elements")
         self._mutated = True
         self._coordinates = coordinates
         self._surface_constants[0:2] = coordinates
@@ -59,8 +65,10 @@ class CylinderParAxis(Surface):
 
     @radius.setter
     def radius(self, radius):
-        assert isinstance(radius, float)
-        assert radius > 0
+        if not isinstance(radius, float):
+            raise TypeError("radius must be a float")
+        if radius <= 0.0:
+            raise ValueError("radius must be greater than 0")
         self._mutated = True
         self._radius = radius
         self._surface_constants[2] = radius

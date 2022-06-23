@@ -142,7 +142,9 @@ class Surface(MCNP_Card):
             raise TypeError("surface_constants must be a list")
         for constant in constants:
             if not isinstance(constant, float):
-                raise TypeError(f"The surface constant provided: {constant} must be a float")
+                raise TypeError(
+                    f"The surface constant provided: {constant} must be a float"
+                )
         self._mutated = True
         self._surface_constants = constants
 
@@ -227,7 +229,7 @@ class Surface(MCNP_Card):
     def number(self, number):
         if not isinstance(number, int):
             raise TypeError("The number must be an int")
-        if  number <= 0:
+        if number <= 0:
             raise ValueError("The number be greater than 0")
         if self._problem:
             self._problem.surfaces.check_number(number)
