@@ -219,7 +219,7 @@ class testFullFileIntegration(TestCase):
         self.assertEqual(surf.periodic_surface, problem.surfaces[3])
         del surf.periodic_surface
         self.assertIsNone(surf.periodic_surface)
-        with self.assertRaises(AssertionError):
+        with self.assertRaises(TypeError):
             surf.periodic_surface = 5
 
     def test_surface_transform(self):
