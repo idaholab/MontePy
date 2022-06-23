@@ -1,6 +1,7 @@
 from mcnpy.cell import Cell
 from mcnpy.cells import Cells
 from mcnpy.errors import NumberConflictError
+from mcnpy.input_parser.constants import DEFAULT_VERSION
 from mcnpy.materials import Materials
 from mcnpy.surfaces import surface_builder
 from mcnpy.surface_collection import Surfaces
@@ -26,7 +27,7 @@ class MCNP_Problem:
         self._surfaces = Surfaces()
         self._data_cards = []
         self._materials = Materials()
-        self._mcnp_version = (6, 2, 0)
+        self._mcnp_version = DEFAULT_VERSION
 
     @property
     def original_inputs(self):
@@ -82,7 +83,7 @@ class MCNP_Problem:
         :param version: the version tuple. Must be greater than 6.2.0
         :type version: tuple
         """
-        assert version >= (6, 2, 0)
+        assert version >= (5, 1, 60)
         self._mcnp_version = version
 
     @property
@@ -164,7 +165,7 @@ class MCNP_Problem:
         """
         comment_queue = []
         for i, input_card in enumerate(
-            input_syntax_reader.read_input_syntax(self._input_file)
+            input_syntax_reader.read_input_syntax(self._input_file, self.mcnp_version)
         ):
             self._original_inputs.append(input_card)
             if i == 0 and isinstance(input_card, mcnp_input.Message):

@@ -1,3 +1,12 @@
+class LineOverRunWarning(UserWarning):
+    """
+    Raised when non-comment inputs exceed the allowed line length in an input.
+    """
+
+    def __init__(self, message):
+        self.message = message
+
+
 class MalformedInputError(Exception):
     """
     Raised when there is an error parsing the MCNP input
