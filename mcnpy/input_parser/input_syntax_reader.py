@@ -173,9 +173,10 @@ def read_data(fh, mcnp_version, block_type=None, recursion=False):
             # cut line down to allowed length
             old_line = line
             line = line[:line_length]
-            if line != line:
+            if len(old_line) != len(line):
                 warnings.warn(
-                    f"The line: {line} exceeded the allowed line length of: {line_length} for MCNP {mcnp_version}"
+                    f"The line: {old_line} exceeded the allowed line length of: {line_length} for MCNP {mcnp_version}",
+                    errors.LineOverRunWarning,
                 )
             if line.endswith(" &\n"):
                 continue_card = True

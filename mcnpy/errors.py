@@ -3,7 +3,7 @@ class LineOverRunWarning(UserWarning):
     Raised when non-comment inputs exceed the allowed line length in an input.
     """
 
-    def __init__(self, message, mcnp_version):
+    def __init__(self, message):
         self.message = message
 
 
