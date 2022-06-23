@@ -1,6 +1,7 @@
 from mcnpy.cell import Cell
 from mcnpy.cells import Cells
 from mcnpy.errors import NumberConflictError
+from mcnpy.input_parser.constants import DEFAULT_VERSION
 from mcnpy.materials import Materials
 from mcnpy.surfaces import surface_builder
 from mcnpy.surface_collection import Surfaces
@@ -26,7 +27,7 @@ class MCNP_Problem:
         self._surfaces = Surfaces()
         self._data_cards = []
         self._materials = Materials()
-        self._mcnp_version = (6, 2, 0)
+        self._mcnp_version = DEFAULT_VERSION
 
     @property
     def original_inputs(self):

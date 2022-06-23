@@ -1,4 +1,5 @@
 from abc import ABC, abstractmethod
+from mcnpy.input_parser.constants import BLANK_SPACE_CONTINE, get_max_line_length
 from mcnpy.input_parser.mcnp_input import Comment
 import mcnpy
 import textwrap
@@ -157,11 +158,8 @@ class MCNP_Card(ABC):
         :returns: A list of strings that can be written to an input file, one item to a line.
         :rtype: list
         """
-        line_length = 0
-        indent_length = 0
-        if mcnp_version[:2] == (6, 2):
-            line_length = 128
-            indent_length = 5
+        line_length = get_max_line_length(mcnp_version)
+        indent_length = BLANK_SPACE_CONTINUE
         if is_first_line:
             initial_indent = 0
         else:

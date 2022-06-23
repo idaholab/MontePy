@@ -2,7 +2,7 @@ from abc import ABC, abstractmethod
 import math
 from mcnpy.errors import *
 from mcnpy.input_parser.block_type import BlockType
-from mcnpy.input_parser.constants import BLANK_SPACE_CONTINUE
+from mcnpy.input_parser.constants import BLANK_SPACE_CONTINUE, get_max_line_length
 import re
 
 
@@ -270,9 +270,7 @@ class Comment(MCNP_Input):
         return self._lines
 
     def format_for_mcnp_input(self, mcnp_version):
-        line_length = 0
-        if mcnp_version[:2] == (6, 2):
-            line_length = 128
+        line_length = get_max_line_length(mcnp_version)
         ret = []
         for line in self.lines:
             ret.append("C " + line[0 : line_length - 3])
@@ -338,9 +336,7 @@ class Message(MCNP_Input):
 
     def format_for_mcnp_input(self, mcnp_version):
         ret = []
-        line_length = 0
-        if mcnp_version[:2] == (6, 2):
-            line_length = 128
+        line_length = get_max_line_length(mcnp_version)
         for i, line in enumerate(self.lines):
             if i == 0:
                 ret.append("MESSAGE: " + line[0 : line_length - 10])
@@ -379,6 +375,5 @@ class Title(MCNP_Input):
 
     def format_for_mcnp_input(self, mcnp_version):
         line_length = 0
-        if mcnp_version[:2] == (6, 2):
-            line_length = 128
+        line_length = get_max_line_length(mcnp_version)
         return [self.title[0 : line_length - 1]]
