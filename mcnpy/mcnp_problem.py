@@ -83,7 +83,7 @@ class MCNP_Problem:
         :param version: the version tuple. Must be greater than 6.2.0
         :type version: tuple
         """
-        assert version >= (6, 2, 0)
+        assert version >= (5, 1, 60)
         self._mcnp_version = version
 
     @property

@@ -191,7 +191,7 @@ class testFullFileIntegration(TestCase):
     def test_problem_mcnp_version_setter(self):
         problem = copy.copy(self.simple_problem)
         with self.assertRaises(AssertionError):
-            problem.mcnp_version = (5, 5, 3)
+            problem.mcnp_version = (4, 5, 3)
         problem.mcnp_version = (6, 2, 5)
         self.assertEqual(problem.mcnp_version, (6, 2, 5))
 
