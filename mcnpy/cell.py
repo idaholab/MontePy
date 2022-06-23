@@ -32,7 +32,6 @@ class Cell(MCNP_Card):
         self._old_surface_numbers = set()
         self._complements = Cells()
         self._old_complement_numbers = set()
-        self._parameters = {}
         self._cell_number = -1
         if input_card:
             words = input_card.words
@@ -77,9 +76,7 @@ class Cell(MCNP_Card):
                         input_card,
                         f"{words[2]} can not be parsed as a material density.",
                     )
-            j, param_found = self._parse_geometry(i, words)
-            if param_found:
-                self._parse_importance(i, j, words)
+            self._parse_geometry(i, words)
 
     def _parse_geometry(self, i, words):
         """
@@ -96,10 +93,8 @@ class Cell(MCNP_Card):
         surface_finder = re.compile(r"[^#]*?(\d+)")
         cell_finder = re.compile(r"#(\d+)")
         geometry_string = ""
-        param_found = False
         for j, word in enumerate(words[i:]):
             if non_surface_finder.search(word):
-                param_found = True
                 break
             else:
                 geometry_string += word + " "
@@ -110,30 +105,29 @@ class Cell(MCNP_Card):
                     for surface in surface_finder.findall(word):
                         self._old_surface_numbers.add(int(surface))
         self._geometry_logic_string = geometry_string
-        return (j, param_found)
 
-    def _parse_importance(self, i, j, words):
-        params_string = " ".join(words[i + j :])
-        self._parameters = {}
-        fragments = params_string.split("=")
-        key = ""
-        next_key = ""
-        value = [""]
-        for i, fragment in enumerate(fragments):
-            fragment = fragment.split()
-            if i == 0:
-                key = fragment[0]
-            elif i == len(fragments) - 1:
-                if next_key:
-                    key = next_key
-                value = fragment
-            else:
-                if next_key:
-                    key = next_key
-                value = fragment[0:-1]
-                next_key = fragment[-1]
-            if key and value:
-                self._parameters[key.upper()] = " ".join(value)
+    @property
+    def allowed_keywords(self):
+        return {
+            "IMP",
+            "VOL",
+            "PWT",
+            "EXT",
+            "FCL",
+            "WWN",
+            "DXC",
+            "NONU",
+            "PD",
+            "TMP",
+            "U",
+            "TRCL",
+            "LAT",
+            "FILL",
+            "ELPT",
+            "COSY",
+            "BFLCL",
+            "UNC",
+        }
 
     @property
     def old_number(self):
