@@ -1,5 +1,5 @@
 from abc import ABC, abstractmethod
-from mcnpy.input_parser.constants import BLANK_SPACE_CONTINE, get_max_line_length
+from mcnpy.input_parser.constants import BLANK_SPACE_CONTINUE, get_max_line_length
 from mcnpy.input_parser.mcnp_input import Comment
 import mcnpy
 import textwrap
