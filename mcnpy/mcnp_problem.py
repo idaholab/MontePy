@@ -165,7 +165,7 @@ class MCNP_Problem:
         """
         comment_queue = []
         for i, input_card in enumerate(
-            input_syntax_reader.read_input_syntax(self._input_file)
+            input_syntax_reader.read_input_syntax(self._input_file, self.mcnp_version)
         ):
             self._original_inputs.append(input_card)
             if i == 0 and isinstance(input_card, mcnp_input.Message):
