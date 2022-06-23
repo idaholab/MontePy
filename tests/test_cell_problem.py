@@ -64,7 +64,7 @@ class TestCellClass(TestCase):
         cell = Cell(card)
         cell.geometry_logic_string = "1 2"
         self.assertEqual(cell.geometry_logic_string, "1 2")
-        with self.assertRaises(AssertionError):
+        with self.assertRaises(TypeError):
             cell.geometry_logic_string = 1
 
     def test_number_setter(self):
@@ -73,7 +73,7 @@ class TestCellClass(TestCase):
         cell = Cell(card)
         cell.number = 5
         self.assertEqual(cell.number, 5)
-        with self.assertRaises(AssertionError):
+        with self.assertRaises(TypeError):
             cell.number = "5"
 
     def test_cell_density_setter(self):
@@ -121,5 +121,5 @@ class TestCellClass(TestCase):
         params = {"FILL": "5"}
         cell.parameters = params
         self.assertEqual(params, cell.parameters)
-        with self.assertRaises(AssertionError):
+        with self.assertRaises(TypeError):
             cell.parameters = []
