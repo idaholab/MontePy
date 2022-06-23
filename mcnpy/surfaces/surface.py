@@ -106,7 +106,8 @@ class Surface(MCNP_Card):
 
     @is_reflecting.setter
     def is_reflecting(self, reflect):
-        assert isinstance(reflect, bool)
+        if not isinstance(reflect, bool):
+            raise TypeError("is_reflecting must be set to a bool")
         self._mutated = True
         self._is_reflecting = reflect
 
@@ -121,7 +122,8 @@ class Surface(MCNP_Card):
 
     @is_white_boundary.setter
     def is_white_boundary(self, white):
-        assert isinstance(white, bool)
+        if not isinstance(white, bool):
+            raise TypeError("is_white_boundary must be set to a bool")
         self._mutated = True
         self._is_white_boundary = white
 
@@ -136,9 +138,11 @@ class Surface(MCNP_Card):
 
     @surface_constants.setter
     def surface_constants(self, constants):
-        assert isinstance(constants, list)
+        if not isinstance(constants, list):
+            raise TypeError("surface_constants must be a list")
         for constant in constants:
-            assert isinstance(constant, float)
+            if not isinstance(constant, float):
+                raise TypeError(f"The surface constant provided: {constant} must be a float")
         self._mutated = True
         self._surface_constants = constants
 
@@ -169,7 +173,8 @@ class Surface(MCNP_Card):
 
     @periodic_surface.setter
     def periodic_surface(self, periodic):
-        assert isinstance(periodic, Surface)
+        if not isinstance(periodic, Surface):
+            raise TypeError("The periodic_surface must be a surface")
         self._mutated = True
         self._periodic_surface = periodic
 
@@ -189,7 +194,8 @@ class Surface(MCNP_Card):
 
     @transform.setter
     def transform(self, tr):
-        assert isinstance(tr, transform.Transform)
+        if not isinstance(tr, transform.Transform):
+            raise TypeError("The transform for this surface must be a Transform")
         self._mutated = True
         self._transform = tr
 
@@ -219,8 +225,10 @@ class Surface(MCNP_Card):
 
     @number.setter
     def number(self, number):
-        assert isinstance(number, int)
-        assert number > 0
+        if not isinstance(number, int):
+            raise TypeError("The number must be an int")
+        if  number <= 0:
+            raise ValueError("The number be greater than 0")
         if self._problem:
             self._problem.surfaces.check_number(number)
         self._mutated = True
