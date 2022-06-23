@@ -85,7 +85,7 @@ class testSurfaces(TestCase):
         surf = Surface(card)
         surf.is_reflecting = True
         self.assertTrue(surf.is_reflecting)
-        with self.assertRaises(AssertionError):
+        with self.assertRaises(TypeError):
             surf.is_reflecting = 1
 
     def test_surface_is_white_bound_setter(self):
@@ -94,7 +94,7 @@ class testSurfaces(TestCase):
         surf = Surface(card)
         surf.is_white_boundary = True
         self.assertTrue(surf.is_white_boundary)
-        with self.assertRaises(AssertionError):
+        with self.assertRaises(TypeError):
             surf.is_white_boundary = 1
 
     def test_surface_constants_setter(self):
@@ -103,8 +103,10 @@ class testSurfaces(TestCase):
         surf = Surface(card)
         surf.surface_constants = [10.0]
         self.assertEqual(surf.surface_constants[0], 10.0)
-        with self.assertRaises(AssertionError):
+        with self.assertRaises(TypeError):
             surf.surface_constants = "foo"
+        with self.assertRaises(TypeError):
+            surf.surface_constants = [1, "foo"]
 
     def test_surface_number_setter(self):
         in_str = "1 PZ 0.0"
@@ -112,9 +114,9 @@ class testSurfaces(TestCase):
         surf = Surface(card)
         surf.number = 20
         self.assertEqual(surf.number, 20)
-        with self.assertRaises(AssertionError):
+        with self.assertRaises(TypeError):
             surf.number = "foo"
-        with self.assertRaises(AssertionError):
+        with self.assertRaises(ValueError):
             surf.number = -5
 
     def test_surface_ordering(self):
@@ -178,7 +180,7 @@ class testSurfaces(TestCase):
         self.assertEqual(surf.location, 0.0)
         surf.location = 10.0
         self.assertEqual(surf.location, 10.0)
-        with self.assertRaises(AssertionError):
+        with self.assertRaises(TypeError):
             surf.location = "hi"
 
     def test_cylinder_axis_radius_setter(self):
@@ -187,8 +189,10 @@ class testSurfaces(TestCase):
         self.assertEqual(surf.radius, 5.0)
         surf.radius = 3.0
         self.assertEqual(surf.radius, 3.0)
-        with self.assertRaises(AssertionError):
+        with self.assertRaises(TypeError):
             surf.radius = "foo"
+        with self.assertRaises(ValueError):
+            surf.radius = -5.0
 
     def test_cylinder_radius_setter(self):
         in_str = "1 c/Z 3.0 4.0 5"
@@ -196,7 +200,7 @@ class testSurfaces(TestCase):
         self.assertEqual(surf.radius, 5.0)
         surf.radius = 3.0
         self.assertEqual(surf.radius, 3.0)
-        with self.assertRaises(AssertionError):
+        with self.assertRaises(TypeError):
             surf.radius = "foo"
 
     def test_cylinder_location_setter(self):
@@ -206,8 +210,8 @@ class testSurfaces(TestCase):
         surf.coordinates = [1, 2]
         self.assertEqual(surf.coordinates, [1, 2])
         # test wrong type
-        with self.assertRaises(AssertionError):
+        with self.assertRaises(TypeError):
             surf.coordinates = "fo"
         # test length issues
-        with self.assertRaises(AssertionError):
+        with self.assertRaises(ValueError):
             surf.coordinates = [3, 4, 5]
