@@ -1,3 +1,5 @@
+from mcnpy.errors import UnsupportedFeature
+
 BLANK_SPACE_CONTINUE = 5
 
 """
