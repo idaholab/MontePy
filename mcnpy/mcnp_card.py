@@ -19,11 +19,16 @@ class MCNP_Card(ABC):
         """
         self._problem = None
         if input_card:
-            assert isinstance(input_card, mcnpy.input_parser.mcnp_input.Card)
-            assert isinstance(comments, (list, Comment, type(None)))
+            if not isinstance(input_card, mcnpy.input_parser.mcnp_input.Card):
+                raise TypeError("input_card must be a Card")
+            if not isinstance(comments, (list, Comment, type(None))):
+                raise TypeError("comments must be either a Comment, a list, or None")
             if isinstance(comments, list):
                 for comment in comments:
-                    assert isinstance(comment, Comment)
+                    if not isinstance(comment, Comment):
+                        raise TypeError(
+                            f"object {comment} in comments is not a Comment"
+                        )
             elif isinstance(comments, Comment):
                 comments = [comments]
             self._input_lines = input_card.input_lines
@@ -92,9 +97,11 @@ class MCNP_Card(ABC):
 
     @comments.setter
     def comments(self, comments):
-        assert isinstance(comments, list)
+        if not isinstance(comments, list):
+            raise TypeError("comments must be a list")
         for comment in comments:
-            assert isinstance(comment, Comment)
+            if not isinstance(comment, Comment):
+                raise TypeError(f"Element {comment} in comments is not a Comment")
         self._mutated = True
         self._comments = comments
 
@@ -179,5 +186,6 @@ class MCNP_Card(ABC):
         :param problem: The problem to link this card to.
         :type type: MCNP_Problem
         """
-        assert isinstance(problem, mcnpy.mcnp_problem.MCNP_Problem)
+        if not isinstance(problem, mcnpy.mcnp_problem.MCNP_Problem):
+            raise TypeError("problem must be an MCNP_Problem")
         self._problem = problem
