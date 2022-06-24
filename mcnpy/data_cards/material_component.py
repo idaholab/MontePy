@@ -13,8 +13,10 @@ class MaterialComponent:
         :type fraction: float
         """
         self._isotope = isotope
-        assert isinstance(fraction, float)
-        assert fraction > 0
+        if not isinstance(fraction, float):
+            raise TypeError("fraction must be a float")
+        if fraction <= 0:
+            raise ValueError("fraction must be > 0.0")
         self._fraction = fraction
 
     @property

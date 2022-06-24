@@ -101,11 +101,11 @@ class testMaterialClass(TestCase):
 
     def test_material_comp_init(self):
         # test fraction test
-        with self.assertRaises(AssertionError):
+        with self.assertRaises(ValueError):
             MaterialComponent(Isotope("1001.80c"), -0.1)
 
         # test bad fraction
-        with self.assertRaises(AssertionError):
+        with self.assertRaises(TypeError):
             MaterialComponent(Isotope("1001.80c"), "hi")
 
     def test_isotope_init(self):
