@@ -7,6 +7,15 @@ from mcnpy.input_parser.mcnp_input import Card, Comment
 
 
 class TestCellClass(TestCase):
+    def test_bad_init(self):
+        with self.assertRaises(TypeError):
+            Cell("5")
+        card = Card(["foo"], BlockType.CELL)
+        with self.assertRaises(TypeError):
+            Cell(card, "5")
+        with self.assertRaises(TypeError):
+            Cell(card, ["5"])
+
     def test_init(self):
         # test invalid cell number
         in_str = "foo"
