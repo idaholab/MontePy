@@ -13,8 +13,11 @@ class Isotope:
         """
         if "." in ZAID:
             parts = ZAID.split(".")
-            assert len(parts) == 2
-            int(parts[0])
+            try:
+                assert len(parts) == 2
+                int(parts[0])
+            except (AssertionError, ValueError) as e:
+                raise ValueError(f"ZAID: {ZAID} could not be parsed as a valid isotope")
             self._ZAID = parts[0]
             self._library = parts[1]
         else:
@@ -40,7 +43,8 @@ class Isotope:
 
     @library.setter
     def library(self, library):
-        assert isinstance(library, str)
+        if not isinstance(library, str):
+            raise TypeError("library must be a string")
         self._library = library
 
     def __str__(self):
