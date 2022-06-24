@@ -2,6 +2,7 @@ from unittest import TestCase
 
 import mcnpy
 from mcnpy.cell import Cell
+from mcnpy.errors import NumberUnallowedError
 from mcnpy.input_parser.block_type import BlockType
 from mcnpy.input_parser.mcnp_input import Card, Comment
 
@@ -39,6 +40,11 @@ class TestCellClass(TestCase):
         card = Card([in_str], BlockType.CELL)
         with self.assertRaises(mcnpy.errors.MalformedInputError):
             cell = Cell(card)
+        # test invalid cell number
+        in_str = f"{int(1e9)} 0 2"
+        card = Card([in_str], BlockType.CELL)
+        with self.assertRaises(ValueError):
+            Cell(card)
         # tests void cell
         in_str = "1 0 2"
         card = Card([in_str], BlockType.CELL)
@@ -84,8 +90,10 @@ class TestCellClass(TestCase):
         self.assertEqual(cell.number, 5)
         with self.assertRaises(TypeError):
             cell.number = "5"
-        with self.assertRaises(ValueError):
+        with self.assertRaises(NumberUnallowedError):
             cell.number = -5
+        with self.assertRaises(NumberUnallowedError):
+            cell.number = int(1e9)
 
     def test_cell_density_setter(self):
         in_str = "1 1 0.5 2"
