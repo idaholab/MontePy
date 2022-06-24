@@ -8,6 +8,10 @@ class TestNumberedObjectCollection(unittest.TestCase):
     def setUp(self):
         self.simple_problem = mcnpy.read_input("tests/inputs/test.imcnp")
 
+    def test_bad_init(self):
+        with self.assertRaises(TypeError):
+            mcnpy.cells.Cells(5)
+
     def test_numbers(self):
         cell_numbers = [1, 2, 3, 99, 5]
         surf_numbers = [1000, 1005, 1010]
@@ -26,6 +30,8 @@ class TestNumberedObjectCollection(unittest.TestCase):
     def test_check_number(self):
         with self.assertRaises(NumberConflictError):
             self.simple_problem.cells.check_number(1)
+        with self.assertRaises(TypeError):
+            self.simple_problem.cells.check_number("5")
         # testing a number that shouldn't conflict to ensure error isn't raised
         self.simple_problem.cells.check_number(20)
 
@@ -41,6 +47,8 @@ class TestNumberedObjectCollection(unittest.TestCase):
         popped = cells.pop()
         self.assertEqual(target, popped)
         self.assertEqual(size - 1, len(cells))
+        with self.assertRaises(TypeError):
+            cells.pop("hi")
 
     def test_extend(self):
         surfaces = copy.deepcopy(self.simple_problem.surfaces)
@@ -61,6 +69,10 @@ class TestNumberedObjectCollection(unittest.TestCase):
         surfaces[1000].number = 1
         surfaces.extend(extender)
         self.assertEqual(len(surfaces), size + 4)
+        with self.assertRaises(TypeError):
+            surfaces.extend(5)
+        with self.assertRaises(TypeError):
+            surfaces.extend([5])
 
     def test_iter(self):
         size = len(self.simple_problem.cells)
@@ -90,6 +102,8 @@ class TestNumberedObjectCollection(unittest.TestCase):
         self.assertEqual(len(cells), size + 1)
         with self.assertRaises(TypeError):
             cells.append_renumber(5)
+        with self.assertRaises(TypeError):
+            cells.append_renumber(cell, "hi")
         cell = copy.deepcopy(cell)
         cell.number = 1
         cells.append_renumber(cell)
@@ -101,11 +115,19 @@ class TestNumberedObjectCollection(unittest.TestCase):
         self.assertEqual(cells.request_number(6), 6)
         self.assertEqual(cells.request_number(1), 4)
         self.assertEqual(cells.request_number(99, 6), 105)
+        with self.assertRaises(TypeError):
+            cells.request_number("5")
+        with self.assertRaises(TypeError):
+            cells.request_number(1, "5")
 
     def test_next_number(self):
         cells = self.simple_problem.cells
         self.assertEqual(cells.next_number(), 100)
         self.assertEqual(cells.next_number(6), 105)
+        with self.assertRaises(TypeError):
+            cells.next_number("5")
+        with self.assertRaises(ValueError):
+            cells.next_number(-1)
 
     def test_getitem(self):
         cells = self.simple_problem.cells
@@ -117,12 +139,16 @@ class TestNumberedObjectCollection(unittest.TestCase):
             cells[1]
         # force cache miss
         self.assertEqual(cells[20], list_version[0])
+        with self.assertRaises(TypeError):
+            cells["5"]
 
     def test_delete(self):
         cells = copy.deepcopy(self.simple_problem.cells)
         size = len(cells)
         del cells[1]
         self.assertEqual(size - 1, len(cells))
+        with self.assertRaises(TypeError):
+            del cells["5"]
 
     def test_setitem(self):
         cells = copy.deepcopy(self.simple_problem.cells)
@@ -132,6 +158,8 @@ class TestNumberedObjectCollection(unittest.TestCase):
             cells[1] = cell
         with self.assertRaises(TypeError):
             cells[1] = 5
+        with self.assertRaises(TypeError):
+            cells["1"] = cell
         cell = copy.deepcopy(cell)
         cell.number = 20
         cells[50] = cell
