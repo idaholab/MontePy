@@ -386,9 +386,9 @@ class testFullFileIntegration(TestCase):
         comment = self.simple_problem.surfaces[1000].comments[0]
         cell.comments = [comment]
         self.assertEqual(cell.comments[0], comment)
-        with self.assertRaises(AssertionError):
+        with self.assertRaises(TypeError):
             cell.comments = comment
-        with self.assertRaises(AssertionError):
+        with self.assertRaises(TypeError):
             cell.comments = [5]
-        with self.assertRaises(AssertionError):
+        with self.assertRaises(TypeError):
             cell.comments = 5
