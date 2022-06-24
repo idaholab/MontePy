@@ -237,7 +237,7 @@ class NumberedObjectCollection(ABC):
 
     def __setitem__(self, key, newvalue):
         if not isinstance(key, int):
-            raise TypeErorr("index must be an int")
+            raise TypeError("index must be an int")
         self.append(newvalue)
 
     def __len__(self):
