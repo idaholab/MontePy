@@ -170,7 +170,7 @@ class testFullFileIntegration(TestCase):
         sample_title = "This is a title"
         problem.title = sample_title
         self.assertEqual(problem.title.title, sample_title)
-        with self.assertRaises(AssertionError):
+        with self.assertRaises(TypeError):
             problem.title = 5
 
     def test_problem_children_adder(self):
