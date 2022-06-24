@@ -182,6 +182,30 @@ class testSurfaces(TestCase):
                     Card([bad_input], BlockType.SURFACE)
                 )
 
+    def test_cylinder_on_axis_init(self):
+        bad_inputs = ["1 P 0.0", "1 CZ 0.0 10.0"]
+        for bad_input in bad_inputs:
+            with self.assertRaises(ValueError):
+                surf = mcnpy.surfaces.cylinder_on_axis.CylinderOnAxis(
+                    Card([bad_input], BlockType.SURFACE)
+                )
+
+    def test_cylinder_par_axis_init(self):
+        bad_inputs = ["1 P 0.0", "1 C/Z 0.0"]
+        for bad_input in bad_inputs:
+            with self.assertRaises(ValueError):
+                surf = mcnpy.surfaces.cylinder_par_axis.CylinderParAxis(
+                    Card([bad_input], BlockType.SURFACE)
+                )
+
+    def test_gen_plane_init(self):
+        bad_inputs = ["1 PZ 0.0", "1 P 0.0"]
+        for bad_input in bad_inputs:
+            with self.assertRaises(ValueError):
+                surf = mcnpy.surfaces.general_plane.GeneralPlane(
+                    Card([bad_input], BlockType.SURFACE)
+                )
+
     def test_axis_plane_location_setter(self):
         in_str = "1 PZ 0.0"
         surf = surface_builder(Card([in_str], BlockType.SURFACE))
@@ -210,6 +234,8 @@ class testSurfaces(TestCase):
         self.assertEqual(surf.radius, 3.0)
         with self.assertRaises(TypeError):
             surf.radius = "foo"
+        with self.assertRaises(ValueError):
+            surf.radius = -5.0
 
     def test_cylinder_location_setter(self):
         in_str = "1 c/Z 3.0 4.0 5"

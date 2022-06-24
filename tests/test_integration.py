@@ -232,6 +232,8 @@ class testFullFileIntegration(TestCase):
         self.assertIn("1 1 SO", surf.format_for_mcnp_input((6, 2, 0))[0])
         del surf.transform
         self.assertIsNone(surf.transform)
+        with self.assertRaises(TypeError):
+            surf.transform = 5
 
     def test_materials_setter(self):
         problem = copy.deepcopy(self.simple_problem)
