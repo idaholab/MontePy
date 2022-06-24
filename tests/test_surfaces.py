@@ -174,6 +174,14 @@ class testSurfaces(TestCase):
             card = Card([in_str], BlockType.SURFACE)
             self.assertIsInstance(surface_builder(card), surf_plane)
 
+    def test_axis_plane_init(self):
+        bad_inputs = ["1 P 0.0", "1 PZ 0.0 10.0"]
+        for bad_input in bad_inputs:
+            with self.assertRaises(ValueError):
+                surf = mcnpy.surfaces.axis_plane.AxisPlane(
+                    Card([bad_input], BlockType.SURFACE)
+                )
+
     def test_axis_plane_location_setter(self):
         in_str = "1 PZ 0.0"
         surf = surface_builder(Card([in_str], BlockType.SURFACE))
