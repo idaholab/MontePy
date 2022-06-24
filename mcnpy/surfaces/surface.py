@@ -85,6 +85,10 @@ class Surface(MCNP_Card):
                 )
 
     @property
+    def allowed_keywords(self):
+        return set()
+
+    @property
     def surface_type(self):
         """
         The mnemonic for the type of surface.

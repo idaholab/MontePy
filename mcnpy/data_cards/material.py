@@ -68,6 +68,27 @@ class Material(data_card.DataCardAbstract):
                 )
 
     @property
+    def allowed_keywords(self):
+        return {
+            "GAS",
+            "ESTEP",
+            "HSTEP",
+            "NLIB",
+            "PLIB",
+            "PNLIB",
+            "ELIB",
+            "HLIB",
+            "ALIB",
+            "SLIB",
+            "TLIB",
+            "DLIB",
+            "COND",
+            "REFI",
+            "REFC",
+            "REFS",
+        }
+
+    @property
     def old_number(self):
         """
         The material number that was used in the read file
