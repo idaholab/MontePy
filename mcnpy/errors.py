@@ -17,13 +17,24 @@ class MalformedInputError(ValueError):
         super().__init__(self.message)
 
 
-class NumberConflictError(Exception):
+class NumberConflictError(ValueError):
     """
     Raised when there is a conflict in number spaces
     """
 
     def __init__(self, message):
         super().__init__(message)
+
+
+class NumberUnallowedError(ValueError):
+    """
+    Raised when a number is set to an unallowed value
+    """
+
+    def __init__(self, object_type, number):
+        super().__init__(
+            f"The specified number: {number} is not allowed for: {object_type}"
+        )
 
 
 class BrokenObjectLinkError(MalformedInputError):
