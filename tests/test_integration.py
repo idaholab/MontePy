@@ -392,3 +392,8 @@ class testFullFileIntegration(TestCase):
             cell.comments = [5]
         with self.assertRaises(TypeError):
             cell.comments = 5
+
+    def test_problem_linker(self):
+        cell = mcnpy.Cell()
+        with self.assertRaises(TypeError):
+            cell.link_to_problem(5)
