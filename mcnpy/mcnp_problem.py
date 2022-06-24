@@ -82,7 +82,8 @@ class MCNP_Problem:
         :param version: the version tuple. Must be greater than 6.2.0
         :type version: tuple
         """
-        assert version >= (5, 1, 60)
+        if version < (5, 1, 60):
+            raise ValueError(f"The mcnp_version {version} is not supported by MCNPy")
         self._mcnp_version = version
 
     @property
@@ -107,9 +108,8 @@ class MCNP_Problem:
 
     @materials.setter
     def materials(self, mats):
-        assert type(mats) in [list, Materials]
-        for mat in mats:
-            assert isinstance(mat, Material)
+        if not isinstance(mats, (list, Materials)):
+            raise TypeError("materials must be of type list and Materials")
         if isinstance(mats, list):
             mats = Materials(mats)
         self._materials = mats
