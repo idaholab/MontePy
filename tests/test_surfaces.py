@@ -62,6 +62,17 @@ class testSurfaces(TestCase):
         card = Card([in_str], BlockType.SURFACE)
         surf = Surface(card)
         self.assertEqual(surf.old_transform_number, 5)
+        # test too large a number with a transform
+        in_str = "1000 5 PZ 0"
+        card = Card([in_str], BlockType.SURFACE)
+        with self.assertRaises(ValueError):
+            surf = Surface(card)
+
+        # test too large a number with
+        in_str = f"{int(1e9)} PZ 0"
+        card = Card([in_str], BlockType.SURFACE)
+        with self.assertRaises(ValueError):
+            surf = Surface(card)
 
         # test periodic surface
         in_str = "1 -5 PZ 0"
@@ -118,6 +129,12 @@ class testSurfaces(TestCase):
             surf.number = "foo"
         with self.assertRaises(ValueError):
             surf.number = -5
+        with self.assertRaises(ValueError):
+            surf.number = int(1e9)
+        transform = mcnpy.data_cards.transform.Transform()
+        surf.transform = transform
+        with self.assertRaises(ValueError):
+            surf.number = int(1e3)
 
     def test_surface_ordering(self):
         in_str = "1 PZ 0.0"

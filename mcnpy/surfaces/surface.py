@@ -1,6 +1,7 @@
 from mcnpy.errors import *
 from mcnpy.data_cards import transform
 from mcnpy.mcnp_card import MCNP_Card
+from mcnpy.num_limits import SURFACE_MAX_NUM, SURFACE_WITH_TRANSFORM_MAX_NUM
 from mcnpy.surfaces.surface_type import SurfaceType
 from mcnpy.utilities import *
 import re
@@ -65,6 +66,7 @@ class Surface(MCNP_Card):
                     input_card,
                     f"{words[i]} could not be parsed as a periodic surface or a transform.",
                 )
+        Surface._check_number(self.number, self.old_transform_number is not None)
         # parse surface mnemonic
         try:
             self._surface_type = SurfaceType(words[i].upper())
@@ -200,6 +202,7 @@ class Surface(MCNP_Card):
 
     @transform.setter
     def transform(self, tr):
+        Surface._check_number(self.number, True)
         if not isinstance(tr, transform.Transform):
             raise TypeError("The transform for this surface must be a Transform")
         self._mutated = True
@@ -231,14 +234,24 @@ class Surface(MCNP_Card):
 
     @number.setter
     def number(self, number):
-        if not isinstance(number, int):
-            raise TypeError("The number must be an int")
-        if number <= 0:
-            raise ValueError("The number be greater than 0")
+        Surface._check_number(number, self.transform is not None)
         if self._problem:
             self._problem.surfaces.check_number(number)
         self._mutated = True
         self._surface_number = number
+
+    @classmethod
+    def _check_number(cls, number, is_transformed):
+        if not isinstance(number, int):
+            raise TypeError("The number must be an int")
+        if is_transformed:
+            max_num = SURFACE_WITH_TRANSFORM_MAX_NUM
+            obj_type = "Surface with transform"
+        else:
+            max_num = SURFACE_MAX_NUM
+            obj_type = "Surface"
+        if number <= 0 or number > max_num:
+            raise NumberUnallowedError(obj_type, number)
 
     @property
     def cells(self):
