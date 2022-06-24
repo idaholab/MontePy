@@ -75,7 +75,7 @@ class TestNumberedObjectCollection(unittest.TestCase):
         size = len(cells)
         with self.assertRaises(NumberConflictError):
             cells.append(cell)
-        with self.assertRaises(AssertionError):
+        with self.assertRaises(TypeError):
             cells.append(5)
         cell.number = 20
         cells.append(cell)
@@ -88,7 +88,7 @@ class TestNumberedObjectCollection(unittest.TestCase):
         cell.number = 20
         cells.append_renumber(cell)
         self.assertEqual(len(cells), size + 1)
-        with self.assertRaises(AssertionError):
+        with self.assertRaises(TypeError):
             cells.append_renumber(5)
         cell = copy.deepcopy(cell)
         cell.number = 1
@@ -130,7 +130,7 @@ class TestNumberedObjectCollection(unittest.TestCase):
         size = len(cells)
         with self.assertRaises(NumberConflictError):
             cells[1] = cell
-        with self.assertRaises(AssertionError):
+        with self.assertRaises(TypeError):
             cells[1] = 5
         cell = copy.deepcopy(cell)
         cell.number = 20
@@ -146,9 +146,9 @@ class TestNumberedObjectCollection(unittest.TestCase):
         with self.assertRaises(NumberConflictError):
             cells += mcnpy.cells.Cells(list_cells)
 
-        with self.assertRaises(AssertionError):
+        with self.assertRaises(TypeError):
             cells += 5
-        with self.assertRaises(AssertionError):
+        with self.assertRaises(TypeError):
             cells += [5]
 
         list_cells = [copy.deepcopy(cells[1])]
