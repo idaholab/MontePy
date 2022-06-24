@@ -190,7 +190,7 @@ class testFullFileIntegration(TestCase):
 
     def test_problem_mcnp_version_setter(self):
         problem = copy.copy(self.simple_problem)
-        with self.assertRaises(AssertionError):
+        with self.assertRaises(ValueError):
             problem.mcnp_version = (4, 5, 3)
         problem.mcnp_version = (6, 2, 5)
         self.assertEqual(problem.mcnp_version, (6, 2, 5))
@@ -235,9 +235,9 @@ class testFullFileIntegration(TestCase):
 
     def test_materials_setter(self):
         problem = copy.deepcopy(self.simple_problem)
-        with self.assertRaises(AssertionError):
+        with self.assertRaises(TypeError):
             problem.materials = 5
-        with self.assertRaises(AssertionError):
+        with self.assertRaises(TypeError):
             problem.materials = [5]
         size = len(problem.materials)
         problem.materials = list(problem.materials)
