@@ -76,9 +76,9 @@ class testDataCardClass(TestCase):
         new_words = input_card.words + ["0"]
         input_card.words = new_words
         self.assertEqual(new_words, input_card.words)
-        with self.assertRaises(AssertionError):
+        with self.assertRaises(TypeError):
             input_card.words = 5
-        with self.assertRaises(AssertionError):
+        with self.assertRaises(TypeError):
             input_card.words = [5]
 
     def test_data_card_mutate_print(self):
