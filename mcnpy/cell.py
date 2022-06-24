@@ -263,7 +263,7 @@ class Cell(MCNP_Card):
     @surfaces.setter
     def surfaces(self, surfs):
         if type(surfs) not in [Surfaces, list]:
-            return TypeError("surfaces must be an instance of list or Surfaces")
+            raise TypeError("surfaces must be an instance of list or Surfaces")
         if isinstance(surfs, list):
             for surf in surfs:
                 if not isinstance(surf, Surface):
