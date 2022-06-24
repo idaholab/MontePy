@@ -3,6 +3,7 @@ from mcnpy.cells import Cells
 from mcnpy.errors import *
 from mcnpy.mcnp_card import MCNP_Card
 from mcnpy.data_cards.material import Material
+from mcnpy.num_limits import CELL_MAX_NUM
 from mcnpy.surfaces.surface import Surface
 from mcnpy.surface_collection import Surfaces
 from mcnpy.utilities import *
@@ -39,6 +40,7 @@ class Cell(MCNP_Card):
             # cell number
             try:
                 cell_num = int(words[i])
+                Cell._check_number(cell_num)
                 self._old_cell_number = cell_num
                 self._cell_number = cell_num
                 i += 1
@@ -149,14 +151,18 @@ class Cell(MCNP_Card):
 
     @number.setter
     def number(self, number):
-        if not isinstance(number, int):
-            raise TypeError("number must be an int")
-        if number <= 0:
-            raise ValueError("number must be > 0")
+        Cell._check_number(number)
         if self._problem:
             self._problem.cells.check_number(number)
         self._mutated = True
         self._cell_number = number
+
+    @classmethod
+    def _check_number(cls, number):
+        if not isinstance(number, int):
+            raise TypeError("number must be an int")
+        if number <= 0 or number > CELL_MAX_NUM:
+            raise NumberUnallowedError("Cell", number)
 
     @property
     def material(self):
