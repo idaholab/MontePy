@@ -54,7 +54,8 @@ class MCNP_Problem:
 
     @cells.setter
     def cells(self, cells):
-        assert type(cells) in [Cells, list]
+        if not isinstance(cells, (Cells, list)):
+            raise TypeError("cells must be an instance of list or Cells")
         if isinstance(cells, list):
             cells = Cells(cells)
         self._cells = cells
