@@ -3,9 +3,29 @@ from unittest import TestCase
 
 import mcnpy
 from mcnpy.input_parser import input_syntax_reader
+from mcnpy.input_parser.mcnp_input import Card, Message, Title
+from mcnpy.input_parser.block_type import BlockType
 
 
 class TestSyntaxParsing(TestCase):
+    def testCardInit(self):
+        with self.assertRaises(TypeError):
+            Card("5", BlockType.CELL)
+        with self.assertRaises(TypeError):
+            Card([5], BlockType.CELL)
+        with self.assertRaises(TypeError):
+            Card(["5"], "5")
+
+    def testMessageInit(self):
+        with self.assertRaises(TypeError):
+            Message(["hi"], "5")
+        with self.assertRaises(TypeError):
+            Message(["hi"], [5])
+
+    def testTitleInit(self):
+        with self.assertRaises(TypeError):
+            Title(["hi"], 5)
+
     def testMessageFinder(self):
         test_message = "this is a message"
         test_string = f"""message: {test_message}
@@ -175,6 +195,8 @@ bar
             ("M", "1", "R", "2m"): ["M", "1", "1", "2"],
             ("M", "1", "R", "R"): ["M", "1", "1", "1"],
             ("M", "1", "2i", "4", "3m"): ["M", "1", "2", "3", "4", "12"],
+            ("M", "1", "i", "3"): ["M", "1", "2", "3"],
+            ("M", "1", "ilog", "100"): ["M", "1", "10", "100"],
             ("M", "1", "2i", "4", "2i", "10"): [
                 "M",
                 "1",
@@ -198,6 +220,7 @@ bar
             ("M", "1", "4I", "J"),
             ("M", "1", "2Ilog", "J"),
             ("M", "3J", "2M"),
+            ("M", "10", "M"),
         ]
 
         parser = mcnpy.input_parser.mcnp_input.parse_card_shortcuts

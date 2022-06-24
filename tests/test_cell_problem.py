@@ -7,6 +7,15 @@ from mcnpy.input_parser.mcnp_input import Card, Comment
 
 
 class TestCellClass(TestCase):
+    def test_bad_init(self):
+        with self.assertRaises(TypeError):
+            Cell("5")
+        card = Card(["foo"], BlockType.CELL)
+        with self.assertRaises(TypeError):
+            Cell(card, "5")
+        with self.assertRaises(TypeError):
+            Cell(card, ["5"])
+
     def test_init(self):
         # test invalid cell number
         in_str = "foo"
@@ -64,7 +73,7 @@ class TestCellClass(TestCase):
         cell = Cell(card)
         cell.geometry_logic_string = "1 2"
         self.assertEqual(cell.geometry_logic_string, "1 2")
-        with self.assertRaises(AssertionError):
+        with self.assertRaises(TypeError):
             cell.geometry_logic_string = 1
 
     def test_number_setter(self):
@@ -73,8 +82,10 @@ class TestCellClass(TestCase):
         cell = Cell(card)
         cell.number = 5
         self.assertEqual(cell.number, 5)
-        with self.assertRaises(AssertionError):
+        with self.assertRaises(TypeError):
             cell.number = "5"
+        with self.assertRaises(ValueError):
+            cell.number = -5
 
     def test_cell_density_setter(self):
         in_str = "1 1 0.5 2"
@@ -86,6 +97,14 @@ class TestCellClass(TestCase):
         cell.density = (1.5, True)
         self.assertEqual(cell.density, 1.5)
         self.assertTrue(cell.is_atom_dens)
+        with self.assertRaises(TypeError):
+            cell.density = 5
+        with self.assertRaises(TypeError):
+            cell.density = (bool, 5)
+        with self.assertRaises(TypeError):
+            cell.density = (5.0, 10)
+        with self.assertRaises(ValueError):
+            cell.density = (-1.5, True)
 
     def test_cell_sorting(self):
         in_str = "1 1 0.5 2"
@@ -121,5 +140,5 @@ class TestCellClass(TestCase):
         params = {"FILL": "5"}
         cell.parameters = params
         self.assertEqual(params, cell.parameters)
-        with self.assertRaises(AssertionError):
+        with self.assertRaises(TypeError):
             cell.parameters = []

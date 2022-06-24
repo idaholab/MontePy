@@ -51,9 +51,11 @@ class DataCardAbstract(MCNP_Card):
 
     @words.setter
     def words(self, words):
-        assert isinstance(words, list)
+        if not isinstance(words, list):
+            raise TypeError("words must be a list")
         for word in words:
-            assert isinstance(word, str)
+            if not isinstance(word, str):
+                raise TypeError(f"element in words: {word} is not a string")
         self._mutated = True
         self._words = words
 

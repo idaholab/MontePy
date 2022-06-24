@@ -108,8 +108,10 @@ class Material(data_card.DataCardAbstract):
 
     @number.setter
     def number(self, number):
-        assert isinstance(number, int)
-        assert number > 0
+        if not isinstance(number, int):
+            raise TypeError("number must be an int")
+        if number <= 0:
+            raise ValueError("number must be > 0")
         if self._problem:
             self._problem.materials.check_number(number)
         self._mutated = True
@@ -163,7 +165,8 @@ class Material(data_card.DataCardAbstract):
         :param law: the law that is mcnp formatted
         :type law: str
         """
-        assert isinstance(law, str)
+        if not isinstance(law, str):
+            raise TypeError("Thermal Scattering law must be a string")
         self._thermal_scattering = thermal_scattering.ThermalScatteringLaw(
             material=self
         )

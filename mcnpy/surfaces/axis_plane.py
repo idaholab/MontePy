@@ -19,8 +19,10 @@ class AxisPlane(Surface):
         """
         super().__init__(input_card, comment)
         ST = SurfaceType
-        assert self.surface_type in [ST.PX, ST.PY, ST.PZ]
-        assert len(self.surface_constants) == 1
+        if self.surface_type not in [ST.PX, ST.PY, ST.PZ]:
+            raise ValueError("AxisPlane must be a surface of type: PX, PY, or PZ")
+        if len(self.surface_constants) != 1:
+            raise ValueError("AxisPlane must have exactly 1 surface constant")
         self._location = self.surface_constants[0]
 
     @property
@@ -34,7 +36,8 @@ class AxisPlane(Surface):
 
     @location.setter
     def location(self, location):
-        assert isinstance(location, float)
+        if not isinstance(location, float):
+            raise TypeError("location must be a float")
         self._mutated = True
         self._location = location
         self._surface_constants[0] = location

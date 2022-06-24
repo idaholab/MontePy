@@ -16,9 +16,13 @@ class NumberedObjectCollection(ABC):
         self.__num_cache = {}
         self._obj_class = obj_class
         if objects:
-            assert isinstance(objects, list)
+            if not isinstance(objects, list):
+                raise TypeError("NumberedObjectCollection must be built from a list")
             for obj in objects:
-                assert isinstance(obj, obj_class)
+                if not isinstance(obj, obj_class):
+                    raise TypeError(
+                        f"The object: {obj} being added to a NumberedObjectCollection is not of type {obj_class}"
+                    )
                 if obj.number in self.__num_cache:
                     raise NumberConflictError(
                         (
@@ -49,7 +53,8 @@ class NumberedObjectCollection(ABC):
         :type number: int
         :raises: NumberConflictError : if this number is in use.
         """
-        assert isinstance(number, int)
+        if not isinstance(number, int):
+            raise TypeError("The number must be an int")
         if number in self.numbers:
             raise NumberConflictError(
                 f"Number {number} is already in use for the collection: {type(self)} by {self[number]}"
@@ -73,7 +78,8 @@ class NumberedObjectCollection(ABC):
         :type pos: int
         :return: the final elements
         """
-        assert isinstance(pos, int)
+        if not isinstance(pos, int):
+            raise TypeError("The index for popping must be an int")
         obj = self._objects.pop(pos)
         self.__num_cache.pop(obj.number, None)
         return obj
@@ -86,9 +92,13 @@ class NumberedObjectCollection(ABC):
         :type other_list: list
         :raises: NumberConflictError if these items conflict with existing elements.
         """
-        assert isinstance(other_list, list)
+        if not isinstance(other_list, list):
+            raise TypeError("The extending list must be a list")
         for obj in other_list:
-            assert isinstance(obj, self._obj_class)
+            if not isinstance(obj, self._obj_class):
+                raise TypeError(
+                    "The object in the list {obj} is not of type: {self._obj_class}"
+                )
             if obj.number in self.numbers:
                 raise NumberConflictError(
                     (
@@ -119,7 +129,8 @@ class NumberedObjectCollection(ABC):
         :type obj: MCNP_Card
         :raises: NumberConflictError: if this object has a number that is already in use.
         """
-        assert isinstance(obj, self._obj_class)
+        if not isinstance(obj, self._obj_class):
+            raise TypeError(f"object being appended must be of type: {self._obj_class}")
         if obj.number in self.numbers:
             raise NumberConflictError(
                 (
@@ -145,8 +156,10 @@ class NumberedObjectCollection(ABC):
         :return: the number for the object.
         :rtype: int
         """
-        assert isinstance(obj, self._obj_class)
-        assert isinstance(step, int)
+        if not isinstance(obj, self._obj_class):
+            raise TypeError(f"object being appended must be of type: {self._obj_class}")
+        if not isinstance(step, int):
+            raise TypeError("The step number must be an int")
         number = obj.number
         try:
             self.append(obj)
@@ -171,8 +184,10 @@ class NumberedObjectCollection(ABC):
         :returns: an available number
         :rtype: int
         """
-        assert isinstance(start_num, int)
-        assert isinstance(step, int)
+        if not isinstance(start_num, int):
+            raise TypeError("start_num must be an int")
+        if not isinstance(step, int):
+            raise TypeError("step must be an int")
         number = start_num
         while number in self.numbers:
             number += step
@@ -184,12 +199,15 @@ class NumberedObjectCollection(ABC):
         This works by finding the current maximum number, and then adding the
         stepsize to it.
         """
-        assert isinstance(step, int)
-        assert step > 0
+        if not isinstance(step, int):
+            raise TypeError("step must be an int")
+        if step <= 0:
+            raise ValueError("step must be > 0")
         return max(self.numbers) + step
 
     def __getitem__(self, i):
-        assert isinstance(i, int)
+        if not isinstance(i, int):
+            raise TypeError("index must be an int")
         find_manually = False
         try:
             ret = self.__num_cache[i]
@@ -210,23 +228,29 @@ class NumberedObjectCollection(ABC):
         return ret
 
     def __delitem__(self, idx):
-        assert isinstance(idx, int)
+        if not isinstance(idx, int):
+            raise TypeError("index must be an int")
         obj = self[idx]
         self.__num_cache.pop(obj.number, None)
         idx = self._objects.index(obj)
         del self._objects[idx]
 
     def __setitem__(self, key, newvalue):
-        assert isinstance(key, int)
+        if not isinstance(key, int):
+            raise TypeError("index must be an int")
         self.append(newvalue)
 
     def __len__(self):
         return len(self._objects)
 
     def __iadd__(self, other):
-        assert isinstance(other, (type(self), list))
+        if not isinstance(other, (type(self), list)):
+            raise TypeError(f"Appended item must be a list or of type {type(self)}")
         for obj in other:
-            assert isinstance(obj, self._obj_class)
+            if not isinstance(obj, self._obj_class):
+                raise TypeError(
+                    f"Appended object {obj} must be of type: {self._obj_class}"
+                )
         if isinstance(other, type(self)):
             other_list = other.objects
         else:

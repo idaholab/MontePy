@@ -16,9 +16,11 @@ class MCNP_Input(ABC):
         :param input_lines: the lines read straight from the input file.
         :type input_lines: list
         """
-        assert isinstance(input_lines, list)
+        if not isinstance(input_lines, list):
+            raise TypeError("input_lines must be a list")
         for line in input_lines:
-            assert isinstance(line, str)
+            if not isinstance(line, str):
+                raise TypeError(f"element: {line} in input_lines must be a string")
         self._input_lines = input_lines
         self._mutated = False
 
@@ -67,7 +69,8 @@ class Card(MCNP_Input):
         :type block_type: BlockType
         """
         super().__init__(input_lines)
-        assert isinstance(block_type, BlockType)
+        if not isinstance(block_type, BlockType):
+            raise TypeError("block_type must be BlockType")
         words = []
         for line in input_lines:
             line = line.split("$")[0]
@@ -312,7 +315,11 @@ class Message(MCNP_Input):
         :type lines: list
         """
         super().__init__(input_lines)
-        assert isinstance(lines, list)
+        if not isinstance(lines, list):
+            raise TypeError("lines must be a list")
+        for line in lines:
+            if not isinstance(line, str):
+                raise TypeError(f"line {line} in lines must be a string")
         buff = []
         for line in lines:
             buff.append(line.rstrip())
@@ -359,7 +366,8 @@ class Title(MCNP_Input):
         :type title: str
         """
         super().__init__(input_lines)
-        assert isinstance(title, str)
+        if not isinstance(title, str):
+            raise TypeError("title must be a string")
         self._title = title.rstrip()
 
     @property

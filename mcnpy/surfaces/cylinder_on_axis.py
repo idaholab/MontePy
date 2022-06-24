@@ -17,8 +17,10 @@ class CylinderOnAxis(Surface):
         """
         super().__init__(input_card, comment)
         ST = SurfaceType
-        assert self.surface_type in [ST.CX, ST.CY, ST.CZ]
-        assert len(self.surface_constants) == 1
+        if self.surface_type not in [ST.CX, ST.CY, ST.CZ]:
+            raise ValueError("CylinderOnAxis must be of surface_type: CX, CY, CZ")
+        if len(self.surface_constants) != 1:
+            raise ValueError("CylinderOnAxis only accepts one surface_constant")
         self._radius = self.surface_constants[0]
 
     @property
@@ -30,7 +32,10 @@ class CylinderOnAxis(Surface):
 
     @radius.setter
     def radius(self, radius):
-        assert isinstance(radius, float)
+        if not isinstance(radius, float):
+            raise TypeError("radius must be a float")
+        if radius <= 0.0:
+            raise ValueError("radius must be larger than 0")
         self._mutated = True
         self._radius = radius
 

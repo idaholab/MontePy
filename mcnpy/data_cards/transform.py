@@ -23,7 +23,10 @@ class Transform(data_card.DataCardAbstract):
         else:
             words = self.words
             i = 0
-            assert len(words) >= 3
+            if len(words) < 3:
+                raise MalformedInputError(
+                    input_card, f"Not enough entries were provided"
+                )
             if self.prefix_modifier and "*" in self.prefix_modifier:
                 self._is_in_degrees = True
             else:
@@ -105,7 +108,8 @@ class Transform(data_card.DataCardAbstract):
         """
         Does not currently correct the rotation matrix for you
         """
-        assert isinstance(in_deg, bool)
+        if not isinstance(in_deg, bool):
+            raise TypeError("in_deg must be a bool")
         self._mutated = True
         self._is_in_degrees = in_deg
 
@@ -120,7 +124,10 @@ class Transform(data_card.DataCardAbstract):
 
     @number.setter
     def number(self, num):
-        assert isinstance(num, int)
+        if not isinstance(num, int):
+            raise TypeError("number must be an int")
+        if num <= 0:
+            raise ValueError("number must be > 0")
         self._mutated = True
         self._transform_number = num
         self._words = [f"TR{num}"]
@@ -144,8 +151,10 @@ class Transform(data_card.DataCardAbstract):
 
     @displacement_vector.setter
     def displacement_vector(self, vector):
-        assert isinstance(vector, np.ndarray)
-        assert len(vector) == 3
+        if not isinstance(vector, np.ndarray):
+            raise TypeError("displacement_vector must be a numpy array")
+        if len(vector) != 3:
+            raise ValueError("displacement_vector must have three components")
         self._mutated = True
         self._displacement_vector = vector
 
@@ -160,8 +169,10 @@ class Transform(data_card.DataCardAbstract):
 
     @rotation_matrix.setter
     def rotation_matrix(self, matrix):
-        assert isinstance(matrix, np.ndarray)
-        assert len(matrix) >= 5
+        if not isinstance(matrix, np.ndarray):
+            raise TypeError("rotation_matrix must be a numpy array")
+        if len(matrix) < 5 or len(matrix) > 9:
+            raise ValueError("rotation_matrix must have between 5 and 9 components.")
         self._mutated = True
         self._rotation_matrix = matrix
 
@@ -177,7 +188,8 @@ class Transform(data_card.DataCardAbstract):
 
     @is_main_to_aux.setter
     def is_main_to_aux(self, flag):
-        assert isinstance(flag, bool)
+        if not isinstance(flag, bool):
+            raise TypeError("is_main_to_aux must be a bool")
         self._mutated = True
         self._is_main_to_aux = flag
 

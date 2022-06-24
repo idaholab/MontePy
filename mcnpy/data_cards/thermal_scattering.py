@@ -75,9 +75,13 @@ class ThermalScatteringLaw(DataCardAbstract):
 
     @thermal_scattering_laws.setter
     def thermal_scattering_laws(self, laws):
-        assert isinstance(laws, list)
+        if not isinstance(laws, list):
+            raise TypeError("thermal_scattering_laws must be a list")
         for law in laws:
-            assert isinstance(law, str)
+            if not isinstance(law, str):
+                raise TypeError(
+                    f"element {law} in thermal_scattering_laws must be a string"
+                )
         self._mutated = True
         self._scattering_laws = laws
 

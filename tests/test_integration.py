@@ -122,7 +122,7 @@ class testFullFileIntegration(TestCase):
         self.assertEqual(cell.material, mat)
         cell.material = None
         self.assertIsNone(cell.material)
-        with self.assertRaises(AssertionError):
+        with self.assertRaises(TypeError):
             cell.material = 5
 
     def test_cell_surfaces_setter(self):
@@ -130,6 +130,10 @@ class testFullFileIntegration(TestCase):
         surfaces = self.simple_problem.surfaces
         cell.surfaces = surfaces
         self.assertEqual(cell.surfaces, surfaces)
+        with self.assertRaises(TypeError):
+            cell.surfaces = 5
+        with self.assertRaises(TypeError):
+            cell.surfaces = [5]
 
     def test_cell_complements_setter(self):
         cell = self.simple_problem.cells[1]
@@ -137,11 +141,11 @@ class testFullFileIntegration(TestCase):
         complements = []
         for num in complement_numbers:
             complements.append(self.simple_problem.cells[num])
-        with self.assertRaises(AssertionError):
+        with self.assertRaises(TypeError):
             cell.complements = 5
-        with self.assertRaises(AssertionError):
+        with self.assertRaises(TypeError):
             cell.complements = [5, 6]
-        with self.assertRaises(AssertionError):
+        with self.assertRaises(TypeError):
             cell.complements.append(5)
         cell.complements = complements
         self.assertEqual(list(cell.complements), complements)
@@ -150,11 +154,11 @@ class testFullFileIntegration(TestCase):
         problem = copy.deepcopy(self.simple_problem)
         cells = self.simple_problem.cells
         cells.remove(cells[1])
-        with self.assertRaises(AssertionError):
+        with self.assertRaises(TypeError):
             problem.cells = 5
-        with self.assertRaises(AssertionError):
+        with self.assertRaises(TypeError):
             problem.cells = [5]
-        with self.assertRaises(AssertionError):
+        with self.assertRaises(TypeError):
             problem.cells.append(5)
         problem.cells = cells
         self.assertEqual(problem.cells, cells)
@@ -166,7 +170,7 @@ class testFullFileIntegration(TestCase):
         sample_title = "This is a title"
         problem.title = sample_title
         self.assertEqual(problem.title.title, sample_title)
-        with self.assertRaises(AssertionError):
+        with self.assertRaises(TypeError):
             problem.title = 5
 
     def test_problem_children_adder(self):
@@ -190,7 +194,7 @@ class testFullFileIntegration(TestCase):
 
     def test_problem_mcnp_version_setter(self):
         problem = copy.copy(self.simple_problem)
-        with self.assertRaises(AssertionError):
+        with self.assertRaises(ValueError):
             problem.mcnp_version = (4, 5, 3)
         problem.mcnp_version = (6, 2, 5)
         self.assertEqual(problem.mcnp_version, (6, 2, 5))
@@ -219,7 +223,7 @@ class testFullFileIntegration(TestCase):
         self.assertEqual(surf.periodic_surface, problem.surfaces[3])
         del surf.periodic_surface
         self.assertIsNone(surf.periodic_surface)
-        with self.assertRaises(AssertionError):
+        with self.assertRaises(TypeError):
             surf.periodic_surface = 5
 
     def test_surface_transform(self):
@@ -232,12 +236,14 @@ class testFullFileIntegration(TestCase):
         self.assertIn("1 1 SO", surf.format_for_mcnp_input((6, 2, 0))[0])
         del surf.transform
         self.assertIsNone(surf.transform)
+        with self.assertRaises(TypeError):
+            surf.transform = 5
 
     def test_materials_setter(self):
         problem = copy.deepcopy(self.simple_problem)
-        with self.assertRaises(AssertionError):
+        with self.assertRaises(TypeError):
             problem.materials = 5
-        with self.assertRaises(AssertionError):
+        with self.assertRaises(TypeError):
             problem.materials = [5]
         size = len(problem.materials)
         problem.materials = list(problem.materials)
@@ -380,9 +386,14 @@ class testFullFileIntegration(TestCase):
         comment = self.simple_problem.surfaces[1000].comments[0]
         cell.comments = [comment]
         self.assertEqual(cell.comments[0], comment)
-        with self.assertRaises(AssertionError):
+        with self.assertRaises(TypeError):
             cell.comments = comment
-        with self.assertRaises(AssertionError):
+        with self.assertRaises(TypeError):
             cell.comments = [5]
-        with self.assertRaises(AssertionError):
+        with self.assertRaises(TypeError):
             cell.comments = 5
+
+    def test_problem_linker(self):
+        cell = mcnpy.Cell()
+        with self.assertRaises(TypeError):
+            cell.link_to_problem(5)

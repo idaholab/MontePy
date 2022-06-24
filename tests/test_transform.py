@@ -15,7 +15,7 @@ class testTransformClass(TestCase):
             card = Card(["M20"], BlockType.DATA)
             Transform(card)
         # test that the minimum word requirement is set
-        with self.assertRaises(AssertionError):
+        with self.assertRaises(MalformedInputError):
             card = Card(["TR5"], BlockType.DATA)
             Transform(card)
         # test that the transform is a valid number
@@ -89,7 +89,7 @@ class testTransformClass(TestCase):
         transform = Transform(card)
         transform.is_in_degrees = False
         self.assertFalse(transform.is_in_degrees)
-        with self.assertRaises(AssertionError):
+        with self.assertRaises(TypeError):
             transform.is_in_degrees = 1
 
     def test_transform_number_setter(self):
@@ -98,8 +98,10 @@ class testTransformClass(TestCase):
         transform = Transform(card)
         transform.number = 20
         self.assertEqual(transform.number, 20)
-        with self.assertRaises(AssertionError):
+        with self.assertRaises(TypeError):
             transform.number = "hi"
+        with self.assertRaises(ValueError):
+            transform.number = -5
 
     def test_transform_displace_setter(self):
         in_str = "*tr5 " + "1.0 " * 3 + "0.0 " * 9 + " -1"
@@ -108,10 +110,12 @@ class testTransformClass(TestCase):
         transform.displacement_vector = np.array([1.0, 1.0, 1.0])
         for component in transform.displacement_vector:
             self.assertEqual(component, 1.0)
-        with self.assertRaises(AssertionError):
+        with self.assertRaises(TypeError):
             transform.displacement_vector = [1, 2]
-        with self.assertRaises(AssertionError):
+        with self.assertRaises(ValueError):
             transform.displacement_vector = np.array([1.0])
+        with self.assertRaises(ValueError):
+            transform.displacement_vector = np.array([1.0] * 10)
 
     def test_tranform_rotation_setter(self):
         in_str = "*tr5 " + "1.0 " * 3 + "0.0 " * 9 + " -1"
@@ -120,10 +124,12 @@ class testTransformClass(TestCase):
         transform.rotation_matrix = np.array([1.0] * 5)
         for component in transform.rotation_matrix:
             self.assertEqual(component, 1.0)
-        with self.assertRaises(AssertionError):
+        with self.assertRaises(TypeError):
             transform.rotation_matrix = [1, 2]
-        with self.assertRaises(AssertionError):
+        with self.assertRaises(ValueError):
             transform.rotation_matrix = np.array([1.0])
+        with self.assertRaises(ValueError):
+            transform.displacement_vector = np.array([1.0] * 10)
 
     def test_is_main_aux_setter(self):
         in_str = "*tr5 " + "1.0 " * 3 + "0.0 " * 9
@@ -131,7 +137,7 @@ class testTransformClass(TestCase):
         transform = Transform(card)
         transform.is_main_to_aux = False
         self.assertFalse(transform.is_main_to_aux)
-        with self.assertRaises(AssertionError):
+        with self.assertRaises(TypeError):
             transform.is_main_to_aux = "hi"
 
     def test_transform_str(self):

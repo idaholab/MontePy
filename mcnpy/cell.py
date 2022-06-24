@@ -149,8 +149,10 @@ class Cell(MCNP_Card):
 
     @number.setter
     def number(self, number):
-        assert isinstance(number, int)
-        assert number > 0
+        if not isinstance(number, int):
+            raise TypeError("number must be an int")
+        if number <= 0:
+            raise ValueError("number must be > 0")
         if self._problem:
             self._problem.cells.check_number(number)
         self._mutated = True
@@ -170,7 +172,8 @@ class Cell(MCNP_Card):
     @material.setter
     def material(self, mat=None):
         if mat:
-            assert isinstance(mat, Material)
+            if not isinstance(mat, Material):
+                raise TypeError("material must be a Material instance")
         self._mutated = True
         self._material = mat
 
@@ -182,23 +185,18 @@ class Cell(MCNP_Card):
         To set this value you must provide a tuple only. The density and
         is_atom_dens parameters below are the elements of the tuple.
 
-        >>> cell.density = 5.0
+        >>> In [3]: cell.density = 5.0
+        ---------------------------------------------------------------------------
         TypeError                                 Traceback (most recent call last)
-        <ipython-input-5-92aa54bef16b> in <module>
-        ----> 1 problem.cells[1].density = 5.0
+        <ipython-input-3-983d65c1b094> in <module>
+        ----> 1 cell.density = 5.0
         ~/dev/mcnpy/mcnpy/cell.py in density(self, density_tuple)
-            218             :type is_atom_dens: bool
-            219         ""
-        --> 220         density, is_atom_dens = density_tuple
-            221         assert isinstance(density, float)
-            222         assert isinstance(is_atom_dens, bool)
-        TypeError: cannot unpack non-iterable float object
-        >>> cell.density = (5.0, False)
-        >>> cell.density
-        5.0
-        >>> cell.is_atom_dens
-        False
-
+            223     def density(self, density_tuple):
+            224         if not isinstance(density_tuple, tuple):
+        --> 225             raise TypeError("density must be set as a tuple")
+            226         density, is_atom_dens = density_tuple
+            227         if not isinstance(density, float):
+        TypeError: density must be set as a tuple
 
         :param density_tuple: A tuple of the density, and is_atom_dens
         :type density_tuple:
@@ -212,9 +210,15 @@ class Cell(MCNP_Card):
 
     @density.setter
     def density(self, density_tuple):
+        if not isinstance(density_tuple, tuple):
+            raise TypeError("density must be set as a tuple")
         density, is_atom_dens = density_tuple
-        assert isinstance(density, float)
-        assert isinstance(is_atom_dens, bool)
+        if not isinstance(density, float):
+            raise TypeError("first element of density tuple must be a float")
+        if density <= 0:
+            raise ValueError("density must be > 0.0")
+        if not isinstance(is_atom_dens, bool):
+            raise TypeError("second element of density tuple must be a bool")
         self._mutated = True
         self._density = density
         self._is_atom_dens = is_atom_dens
@@ -247,10 +251,12 @@ class Cell(MCNP_Card):
 
     @surfaces.setter
     def surfaces(self, surfs):
-        assert type(surfs) in [Surfaces, list]
+        if type(surfs) not in [Surfaces, list]:
+            raise TypeError("surfaces must be an instance of list or Surfaces")
         if isinstance(surfs, list):
             for surf in surfs:
-                assert isinstance(surf, Surface)
+                if not isinstance(surf, Surface):
+                    raise TypeError(f"the surfaces element {surf} is not a Surface")
             surfs = Surfaces(surfs)
         self._mutated = True
         self._surfaces = surfs
@@ -284,7 +290,8 @@ class Cell(MCNP_Card):
 
     @geometry_logic_string.setter
     def geometry_logic_string(self, string):
-        assert isinstance(string, str)
+        if not isinstance(string, str):
+            raise TypeError("geometry_logic_string must a string")
         self._mutated = True
         self._geometry_logic_string = string
 
@@ -299,7 +306,8 @@ class Cell(MCNP_Card):
 
     @parameters.setter
     def parameters(self, params):
-        assert isinstance(params, dict)
+        if not isinstance(params, dict):
+            raise TypeError("parameters must be a dict")
         self._parameters = params
         self._mutated = True
 
@@ -314,10 +322,12 @@ class Cell(MCNP_Card):
 
     @complements.setter
     def complements(self, complements):
-        assert type(complements) in (Cells, list)
+        if type(complements) not in (Cells, list):
+            raise TypeError("complements must be an instance of list or Cells")
         if isinstance(complements, list):
             for cell in complements:
-                assert isinstance(cell, Cell)
+                if not isinstance(cell, Cell):
+                    raise TypeError(f"complements component {cell} is not a Cell")
             complements = Cells(complements)
         self._mutated = True
         self._complements = complements

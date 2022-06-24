@@ -7,7 +7,7 @@ class LineOverRunWarning(UserWarning):
         self.message = message
 
 
-class MalformedInputError(Exception):
+class MalformedInputError(ValueError):
     """
     Raised when there is an error parsing the MCNP input
     """
