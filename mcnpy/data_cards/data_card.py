@@ -51,7 +51,7 @@ class DataCardAbstract(MCNP_Card):
             raise TypeError("words must be a list")
         for word in words:
             if not isinstance(word, str):
-                raise TypeError(f"element in words: {word} is not a string}")
+                raise TypeError(f"element in words: {word} is not a string")
         self._mutated = True
         self._words = words
 
