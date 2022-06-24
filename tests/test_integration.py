@@ -130,6 +130,10 @@ class testFullFileIntegration(TestCase):
         surfaces = self.simple_problem.surfaces
         cell.surfaces = surfaces
         self.assertEqual(cell.surfaces, surfaces)
+        with self.assertRaises(TypeError):
+            cell.surfaces = 5
+        with self.assertRaises(TypeError):
+            cell.surfaces = [5]
 
     def test_cell_complements_setter(self):
         cell = self.simple_problem.cells[1]
