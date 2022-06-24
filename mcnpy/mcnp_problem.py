@@ -56,8 +56,6 @@ class MCNP_Problem:
     def cells(self, cells):
         assert type(cells) in [Cells, list]
         if isinstance(cells, list):
-            for cell in cells:
-                assert isinstance(cell, Cell)
             cells = Cells(cells)
         self._cells = cells
 
