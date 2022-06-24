@@ -37,6 +37,10 @@ class DataCardAbstract(MCNP_Card):
             self._words = []
 
     @property
+    def allowed_keywords(self):
+        return set()
+
+    @property
     def words(self):
         """
         The words of the data card, not parsed.

@@ -18,11 +18,14 @@ class MCNP_Card(ABC):
         :type Comment: list
         """
         self._problem = None
+        self._parameters = {}
         if input_card:
             if not isinstance(input_card, mcnpy.input_parser.mcnp_input.Card):
                 raise TypeError("input_card must be a Card")
             if not isinstance(comments, (list, Comment, type(None))):
                 raise TypeError("comments must be either a Comment, a list, or None")
+            self._words = input_card.words
+            self._parse_key_value_pairs()
             if isinstance(comments, list):
                 for comment in comments:
                     if not isinstance(comment, Comment):
@@ -40,6 +43,43 @@ class MCNP_Card(ABC):
             self._comments = comments
         else:
             self._comments = []
+
+    def _parse_key_value_pairs(self):
+        if self.allowed_keywords:
+            for i, word in enumerate(self.words):
+                if "=" in word:
+                    break
+            params_string = " ".join(self.words[i:])
+            #cut out these words from further parsing
+            self._words = self.words[:i]
+            fragments = params_string.split("=")
+            key = ""
+            next_key = ""
+            value = [""]
+            for i, fragment in enumerate(fragments):
+                fragment = fragment.split()
+                if i == 0:
+                    key = fragment[0]
+                elif i == len(fragments) - 1:
+                    if next_key:
+                        key = next_key
+                    value = fragment
+                else:
+                    if next_key:
+                        key = next_key
+                    value = fragment[0:-1]
+                    next_key = fragment[-1]
+                if key and value and key.upper().split(":")[0] in self.allowed_keywords:
+                    self._parameters[key.upper()] = " ".join(value)
+
+    @property
+    def parameters(self):
+        """
+        A dictionary of the additional parameters for the cell.
+
+        e.g.: Universes, and imp:n
+        """
+        return self._parameters
 
     @abstractmethod
     def format_for_mcnp_input(self, mcnp_version):
@@ -125,6 +165,19 @@ class MCNP_Card(ABC):
         """
         return self._mutated
 
+    @property
+    @abstractmethod
+    def allowed_keywords(self):
+        """
+        The allowed keywords for this class of MCNP_Card.
+
+        The allowed keywords need to be in upper case.
+
+        :returns: A set of the allowed keywords. If there are none this should return the empty set.
+        :rtype: set
+        """
+        pass
+
     @staticmethod
     def wrap_words_for_mcnp(words, mcnp_version, is_first_line):
         """
@@ -177,6 +230,14 @@ class MCNP_Card(ABC):
             subsequent_indent=" " * indent_length,
         )
         return wrapper.wrap(string)
+
+    @property
+    def words(self):
+        """
+        The words from the input file for this card.
+
+        """
+        return self._words
 
     def link_to_problem(self, problem):
         """Links the card to the parent problem for this card.
