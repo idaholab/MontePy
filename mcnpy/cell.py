@@ -191,23 +191,18 @@ class Cell(MCNP_Card):
         To set this value you must provide a tuple only. The density and
         is_atom_dens parameters below are the elements of the tuple.
 
-        >>> cell.density = 5.0
+        >>> In [3]: cell.density = 5.0
+        ---------------------------------------------------------------------------
         TypeError                                 Traceback (most recent call last)
-        <ipython-input-5-92aa54bef16b> in <module>
-        ----> 1 problem.cells[1].density = 5.0
+        <ipython-input-3-983d65c1b094> in <module>
+        ----> 1 cell.density = 5.0
         ~/dev/mcnpy/mcnpy/cell.py in density(self, density_tuple)
-            218             :type is_atom_dens: bool
-            219         ""
-        --> 220         density, is_atom_dens = density_tuple
-            221         assert isinstance(density, float)
-            222         assert isinstance(is_atom_dens, bool)
-        TypeError: cannot unpack non-iterable float object
-        >>> cell.density = (5.0, False)
-        >>> cell.density
-        5.0
-        >>> cell.is_atom_dens
-        False
-
+            223     def density(self, density_tuple):
+            224         if not isinstance(density_tuple, tuple):
+        --> 225             raise TypeError("density must be set as a tuple")
+            226         density, is_atom_dens = density_tuple
+            227         if not isinstance(density, float):
+        TypeError: density must be set as a tuple
 
         :param density_tuple: A tuple of the density, and is_atom_dens
         :type density_tuple:
