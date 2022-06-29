@@ -270,3 +270,15 @@ class NumberedObjectCollection(ABC):
 
     def __contains__(self, other):
         return other in self._objects
+
+    def keys(self):
+        for o in self._objects:
+            yield o.number
+
+    def values(self):
+        for o in self._objects:
+            yield o
+
+    def items(self):
+        for o in self._objects:
+            yield o.number, o
