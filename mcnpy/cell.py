@@ -191,14 +191,13 @@ class Cell(MCNP_Card):
 
     @atom_density.setter
     def atom_density(self, density: float):
-        if density:
-            if not isinstance(density, numbers.Number):
-                raise TypeError("Atom density must be a number.")
-            elif density < 0:
-                raise ValueError("Atom density must be a positive number.")
+        if not isinstance(density, numbers.Number):
+            raise TypeError("Atom density must be a number.")
+        elif density < 0:
+            raise ValueError("Atom density must be a positive number.")
         self._mutated = True
         self._is_atom_dens = True
-        self._density = density
+        self._density = float(density)
 
     @property
     def mass_density(self) -> float:
@@ -213,14 +212,13 @@ class Cell(MCNP_Card):
 
     @mass_density.setter
     def mass_density(self, density: float):
-        if density:
-            if not isinstance(density, numbers.Number):
-                raise TypeError("Mass density must be a number.")
-            elif density < 0:
-                raise ValueError("Mass density must be a positive number.")
+        if not isinstance(density, numbers.Number):
+            raise TypeError("Mass density must be a number.")
+        elif density < 0:
+            raise ValueError("Mass density must be a positive number.")
         self._mutated = True
         self._is_atom_dens = False
-        self._density = density
+        self._density = float(density)
 
     @property
     def is_atom_dens(self):
