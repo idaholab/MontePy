@@ -303,8 +303,6 @@ class MCNP_Problem:
                     )
                 setattr(self, cards_to_property[type(card)], card)
                 cards_loaded.add(type(card))
-        print(self.mode.particles)
-        assert False
 
     def __str__(self):
         ret = f"MCNP problem for: {self._input_file}\n"
