@@ -1,5 +1,6 @@
 from abc import abstractmethod
 from mcnpy.errors import *
+from mcnpy.particle import Particle
 from mcnpy.mcnp_card import MCNP_Card
 import re
 
@@ -120,14 +121,16 @@ class DataCardAbstract(MCNP_Card):
         pass
 
     @property
-    def particle_classifier(self):
-        """The particle class part of the card identifier.
+    def particle_classifiers(self):
+        """The particle class part of the card identifier as a parsed list
 
         For example: the classifier for ``F7:n`` is ``:n``, and ``imp:n,p`` is ``:n,p``
-        :rtype: str
+        This will be parsed as a list: ``[<Particle.NEUTRON: 'N'>, <Particle.PHOTON: 'P'>]``.
+
+        :rtype: list
         """
-        if self._classifier:
-            return self._classifier.lower()
+        if self._classifiers:
+            return self._classifiers
         return None
 
     @property
