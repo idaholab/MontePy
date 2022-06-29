@@ -36,7 +36,7 @@ doc_test:
    stage: test
    script:
       - echo "Executing Sphinx build to detect syntax errors"
-      - sphinx-build source/ build/ -W --keep-going -E
+      - sphinx-build doc/source/ doc/build/ -W --keep-going -E
 
 
 deploy1:
