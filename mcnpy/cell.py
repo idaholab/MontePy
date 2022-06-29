@@ -7,6 +7,7 @@ from mcnpy.surfaces.surface import Surface
 from mcnpy.surface_collection import Surfaces
 from mcnpy.utilities import *
 import re
+import numbers
 
 
 class Cell(MCNP_Card):
@@ -190,6 +191,11 @@ class Cell(MCNP_Card):
 
     @atom_density.setter
     def atom_density(self, density: float):
+        if density:
+            if not isinstance(density, numbers.Number):
+                raise TypeError("Atom density must be a number.")
+            elif density < 0:
+                raise ValueError("Atom density must be a positive number.")
         self._mutated = True
         self._is_atom_dens = True
         self._density = density
@@ -207,6 +213,11 @@ class Cell(MCNP_Card):
 
     @mass_density.setter
     def mass_density(self, density: float):
+        if density:
+            if not isinstance(density, numbers.Number):
+                raise TypeError("Mass density must be a number.")
+            elif density < 0:
+                raise ValueError("Mass density must be a positive number.")
         self._mutated = True
         self._is_atom_dens = False
         self._density = density
