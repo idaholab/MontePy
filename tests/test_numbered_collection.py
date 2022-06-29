@@ -184,6 +184,26 @@ class TestNumberedObjectCollection(unittest.TestCase):
         cells += list_cells
         self.assertEqual(len(cells), size + 1)
 
+    def test_keys(self):
+        cell_nums = []
+        for c in self.simple_problem.cells:
+            cell_nums.append(c.number)
+        cell_keys = []
+        for k in self.simple_problem.cells.keys():
+            cell_keys.append(k)
+        self.assertEqual(cell_nums, cell_keys)
+
+    def test_values(self):
+        list_cells = list(self.simple_problem.cells)
+        list_values = list(self.simple_problem.cells.values())
+        self.assertEqual(list_cells, list_values)
+
+    def test_items(self):
+        zipped = zip(self.simple_problem.cells.keys(),
+                     self.simple_problem.cells.values())
+        cell_items = self.simple_problem.cells.items()
+        self.assertTupleEqual(tuple(zipped), tuple(cell_items))
+
     def test_surface_generators(self):
         answer_num = [1000, 1010]
         spheres = list(self.simple_problem.surfaces.so)
