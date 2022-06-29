@@ -94,6 +94,7 @@ It must return a list of strings that faithfully represent this objects state.
 Each string in the list represents one line in the MCNP input file to be written.
 
 First if ``self._mutated = False`` the ``input_lines`` must be parroted out.
+This can be mostly handled by the helper: ``self._format_for_mcnp_unmutated(mcnp_version)``.
 Note you must check if any of the objects that affect this one are mutated as well.
 For example a cell must check if its surfaces has changed, because it's likely that
 the surface's number has changed.
@@ -111,6 +112,22 @@ and pass this to ``self.wrap_words_for_mcnp``.
 If you care more about formatting create the string for each line you desire.
 Then pass these strings through ``self.wrap_string_for_mcnp``,
 which will then wrap any long lines to ensure it doesn't break MCNP.
+
+Example taken from :class:`mcnpy.data_cards.mode.Mode`
+
+.. code-block:: python
+
+    def format_for_mcnp_input(self, mcnp_version):
+        if self._mutated:
+            ret = super().format_for_mcnp_input(mcnp_version)
+            ret.append("MODE")
+            for particle in self.particles:
+                ret.append(particle.value)
+        else:
+            ret = self._format_for_mcnp_unmutated(mcnp_version)
+
+        return ret
+
 
 Collection: :class:`mcnpy.numbered_object_collection.NumberedObjectCollection`
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
