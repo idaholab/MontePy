@@ -11,7 +11,25 @@ class DataCardAbstract(MCNP_Card):
 
     _MODIFIERS = [r"\*"]
     _NUMBER_EXTRAS = [r"\-"]
-    _CLASSIFIER_EXTRAS = [":", ","]
+    _CLASSIFIER_EXTRAS = [
+        ":",
+        ",",
+        "|",
+        "+",
+        "-",
+        "!",
+        "<",
+        ">",
+        "/",
+        "%",
+        "^",
+        "_",
+        "~",
+        "@",
+        "*",
+        "?",
+        "#",
+    ]
     _NAME_PARSER = re.compile(
         (
             rf"^(?P<modifier>[{''.join(_MODIFIERS)}]+)*"
