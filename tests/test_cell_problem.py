@@ -55,7 +55,10 @@ class TestCellClass(TestCase):
             card = Card([in_str], BlockType.CELL)
             cell = Cell(card)
             self.assertEqual(cell.old_mat_number, 1)
-            self.assertAlmostEqual(cell.density, 0.5)
+            if atom_dens:
+                self.assertAlmostEqual(cell.atom_density, 0.5)
+            else:
+                self.assertAlmostEqual(cell.mass_density, 0.5)
             self.assertTrue(atom_dens == cell.is_atom_dens)
 
         # test parameter input
@@ -91,20 +94,26 @@ class TestCellClass(TestCase):
         in_str = "1 1 0.5 2"
         card = Card([in_str], BlockType.CELL)
         cell = Cell(card)
-        cell.density = (1.5, False)
-        self.assertEqual(cell.density, 1.5)
+        cell.mass_density = 1.5
+        self.assertEqual(cell._density, 1.5)
+        self.assertEqual(cell.mass_density, 1.5)
         self.assertFalse(cell.is_atom_dens)
-        cell.density = (1.5, True)
-        self.assertEqual(cell.density, 1.5)
+        with self.assertRaises(TypeError):
+            _ = cell.atom_density
+        cell.atom_density = 1.6
+        self.assertEqual(cell._density, 1.6)
+        self.assertEqual(cell.atom_density, 1.6)
         self.assertTrue(cell.is_atom_dens)
         with self.assertRaises(TypeError):
-            cell.density = 5
+            _ = cell.mass_density
         with self.assertRaises(TypeError):
-            cell.density = (bool, 5)
+            cell.atom_density = (5, True)
         with self.assertRaises(TypeError):
-            cell.density = (5.0, 10)
+            cell.mass_density = "five"
         with self.assertRaises(ValueError):
-            cell.density = (-1.5, True)
+            cell.atom_density = -1.5
+        with self.assertRaises(ValueError):
+            cell.mass_density = -5
 
     def test_cell_sorting(self):
         in_str = "1 1 0.5 2"

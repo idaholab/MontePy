@@ -185,7 +185,7 @@ class testFullFileIntegration(TestCase):
         cell = mcnpy.Cell()
         cell.material = mat
         cell.surfaces = [surf]
-        cell.density = (1.0, False)
+        cell.mass_density = 1.0
         problem.cells.append(cell)
         problem.add_cell_children_to_problem()
         self.assertIn(surf, problem.surfaces)
@@ -324,7 +324,7 @@ class testFullFileIntegration(TestCase):
         output = cell.format_for_mcnp_input((6, 2, 0))
         self.assertEqual(int(output[3]), -5)
         # test mass density printer
-        cell.density = (10.0, False)
+        cell.mass_density = 10.0
         output = cell.format_for_mcnp_input((6, 2, 0))
         self.assertAlmostEqual(float(output[2].split()[2]), -10)
         # ensure that surface number updated
