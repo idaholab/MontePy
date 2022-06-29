@@ -178,50 +178,38 @@ class Cell(MCNP_Card):
         self._material = mat
 
     @property
-    def density(self):
+    def atom_density(self) -> float:
         """
-        The density of the material in the cell.
+        The atom density of the material in the cell, in a/b-cm.
 
-        To set this value you must provide a tuple only. The density and
-        is_atom_dens parameters below are the elements of the tuple.
-
-        >>> In [3]: cell.density = 5.0
-        ---------------------------------------------------------------------------
-        TypeError                                 Traceback (most recent call last)
-        <ipython-input-3-983d65c1b094> in <module>
-        ----> 1 cell.density = 5.0
-        ~/dev/mcnpy/mcnpy/cell.py in density(self, density_tuple)
-            223     def density(self, density_tuple):
-            224         if not isinstance(density_tuple, tuple):
-        --> 225             raise TypeError("density must be set as a tuple")
-            226         density, is_atom_dens = density_tuple
-            227         if not isinstance(density, float):
-        TypeError: density must be set as a tuple
-
-        :param density_tuple: A tuple of the density, and is_atom_dens
-        :type density_tuple:
-        :param density: the density of the material [a/b-cm] or [g/cc]
-        :type density: float
-        :param is_atom_dens: if True the density is atom density
-        :type is_atom_dens: bool
         :rtype: float
         """
+        if self._density and not self._is_atom_dens:
+            raise TypeError(f"Cell {self.number} is in mass density.")
         return self._density
 
-    @density.setter
-    def density(self, density_tuple):
-        if not isinstance(density_tuple, tuple):
-            raise TypeError("density must be set as a tuple")
-        density, is_atom_dens = density_tuple
-        if not isinstance(density, float):
-            raise TypeError("first element of density tuple must be a float")
-        if density <= 0:
-            raise ValueError("density must be > 0.0")
-        if not isinstance(is_atom_dens, bool):
-            raise TypeError("second element of density tuple must be a bool")
+    @atom_density.setter
+    def atom_density(self, density: float):
         self._mutated = True
+        self._is_atom_dens = True
         self._density = density
-        self._is_atom_dens = is_atom_dens
+
+    @property
+    def mass_density(self) -> float:
+        """
+        The mass density of the material in the cell, in g/cc.
+
+        :rtype: float
+        """
+        if self._density and self._is_atom_dens:
+            raise TypeError(f"Cell {self.number} is in atom density.")
+        return self._density
+
+    @mass_density.setter
+    def mass_density(self, density: float):
+        self._mutated = True
+        self._is_atom_dens = False
+        self._density = density
 
     @property
     def is_atom_dens(self):
@@ -499,11 +487,10 @@ class Cell(MCNP_Card):
             buffList = [str(self.number)]
             if self.material:
                 buffList.append(str(self.material.number))
-                dens = 0
                 if self.is_atom_dens:
-                    dens = self.density
+                    dens = self.atom_density
                 else:
-                    dens = -self.density
+                    dens = -self.mass_density
                 buffList.append(f"{dens:.4g}")
             else:
                 buffList.append("0")
@@ -542,7 +529,7 @@ class Cell(MCNP_Card):
     def __str__(self):
         ret = f"CELL: {self._cell_number} \n"
         ret += str(self._material) + "\n"
-        if self.density:
+        if self._density:
             ret += f"density: {self._density} "
             if self._is_atom_dens:
                 ret += "atom/b-cm"
