@@ -42,6 +42,7 @@ class Mode(DataCardAbstract):
             # error catching not needed
             # enum will raise ValueError "foo is not a valid Particle"
             particle = Particle(particle)
+        self._mutated = True
         self._particles.add(particle)
 
     def remove(self, particle):
@@ -52,6 +53,7 @@ class Mode(DataCardAbstract):
             raise TypeError("particle must be a Particle instance")
         if isinstance(particle, str):
             particle = Particle(particle)
+        self._mutated = True
         self._particles.remove(particle)
 
     def __contains__(self, obj):
@@ -68,3 +70,15 @@ class Mode(DataCardAbstract):
     @property
     def has_classifier(self):
         return 0
+
+    def format_for_mcnp_input(self, mcnp_version):
+        if self.mutated:
+            words = ["MODE"]
+            for particle in self.particles:
+                words.append(particle.value)
+            self.words = words
+            ret = super().format_for_mcnp_input(mcnp_version)
+        else:
+            ret = self._format_for_mcnp_unmutated(mcnp_version)
+
+        return ret
