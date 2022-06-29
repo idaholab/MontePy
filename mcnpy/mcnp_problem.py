@@ -205,6 +205,7 @@ class MCNP_Problem:
             cell.update_pointers(self.cells, self.materials, self.surfaces)
         for surface in self._surfaces:
             surface.update_pointers(self.surfaces, self._data_cards)
+        self.__load_data_cards_to_object(self._data_cards)
         for card in self._data_cards:
             card.update_pointers(self._data_cards)
 
@@ -275,6 +276,26 @@ class MCNP_Problem:
                     fh.write(line + "\n")
 
             fh.write("\n")
+
+    def __load_data_cards_to_object(self, data_cards):
+        """
+        Loads data cards into their appropriate problem attribute.
+
+        Problem-level cards should be loaded this way like: mode and kcode.
+        """
+        cards_to_property = {mode.Mode: "_mode"}
+        cards_loaded = set()
+        for card in data_cards:
+            if type(card) in cards_to_property:
+                if type(card) in cards_loaded:
+                    raise MalformedInputError(
+                        card,
+                        f"The card: {type(card)} is only allowed once in a problem",
+                    )
+                setattr(self, cards_to_property[type(card)], card)
+                cards_loaded.add(type(card))
+        print(self.mode.particles)
+        assert False
 
     def __str__(self):
         ret = f"MCNP problem for: {self._input_file}\n"
