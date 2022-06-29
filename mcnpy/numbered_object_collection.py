@@ -1,4 +1,6 @@
 from abc import ABC, abstractmethod
+import typing
+from mcnpy.mcnp_card import MCNP_Card
 from mcnpy.errors import *
 
 
@@ -271,14 +273,31 @@ class NumberedObjectCollection(ABC):
     def __contains__(self, other):
         return other in self._objects
 
-    def keys(self):
+    def keys(self) -> typing.Generator[int, None, None]:
+        """
+        Get iterator of the collection's numbers.
+
+        :rtype: int
+        """
         for o in self._objects:
             yield o.number
 
-    def values(self):
+    def values(self) -> typing.Generator[MCNP_Card, None, None]:
+        """
+        Get iterator of the collection's objects.
+
+        :rtype: MCNP_Card
+        """
         for o in self._objects:
             yield o
 
-    def items(self):
+    def items(self) -> typing.Generator[
+        typing.Tuple[int, MCNP_Card], None, None
+    ]:
+        """
+        Get iterator of the collections (number, object) pairs.
+
+        :rtype: tuple(int, MCNP_Card)
+        """
         for o in self._objects:
             yield o.number, o
