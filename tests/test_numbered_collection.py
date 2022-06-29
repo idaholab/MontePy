@@ -199,8 +199,9 @@ class TestNumberedObjectCollection(unittest.TestCase):
         self.assertEqual(list_cells, list_values)
 
     def test_items(self):
-        zipped = zip(self.simple_problem.cells.keys(),
-                     self.simple_problem.cells.values())
+        zipped = zip(
+            self.simple_problem.cells.keys(), self.simple_problem.cells.values()
+        )
         cell_items = self.simple_problem.cells.items()
         self.assertTupleEqual(tuple(zipped), tuple(cell_items))
 
