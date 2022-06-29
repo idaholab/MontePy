@@ -50,7 +50,7 @@ class MCNP_Card(ABC):
                 if "=" in word:
                     break
             params_string = " ".join(self.words[i:])
-            #cut out these words from further parsing
+            # cut out these words from further parsing
             self._words = self.words[:i]
             fragments = params_string.split("=")
             key = ""
