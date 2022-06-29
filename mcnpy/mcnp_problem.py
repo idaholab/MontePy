@@ -1,3 +1,4 @@
+from mcnpy.data_cards import mode
 from mcnpy.cell import Cell
 from mcnpy.cells import Cells
 from mcnpy.errors import NumberConflictError
@@ -28,6 +29,7 @@ class MCNP_Problem:
         self._data_cards = []
         self._materials = Materials()
         self._mcnp_version = DEFAULT_VERSION
+        self._mode = mode.Mode()
 
     @property
     def original_inputs(self):
@@ -59,6 +61,13 @@ class MCNP_Problem:
         if isinstance(cells, list):
             cells = Cells(cells)
         self._cells = cells
+
+    @property
+    def mode(self):
+        """
+        The mode of particles being used for the problem.
+        """
+        return self._mode
 
     @property
     def mcnp_version(self):
