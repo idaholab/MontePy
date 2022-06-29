@@ -1,5 +1,6 @@
 import itertools
 from mcnpy.cells import Cells
+from mcnpy.data_cards.importance import Importance
 from mcnpy.errors import *
 from mcnpy.mcnp_card import MCNP_Card
 from mcnpy.data_cards.material import Material
@@ -78,6 +79,10 @@ class Cell(MCNP_Card):
                         f"{words[2]} can not be parsed as a material density.",
                     )
             self._parse_geometry(i, words)
+            # TODO
+            for key, value in self._parameters.items():
+                if "IMP" in key:
+                    imp = Importance(in_cell_block=True, key=key, value=value)
 
     def _parse_geometry(self, i, words):
         """
