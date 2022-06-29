@@ -186,7 +186,7 @@ class Cell(MCNP_Card):
         :rtype: float
         """
         if self._density and not self._is_atom_dens:
-            raise TypeError(f"Cell {self.number} is in mass density.")
+            raise AttributeError(f"Cell {self.number} is in mass density.")
         return self._density
 
     @atom_density.setter
@@ -207,7 +207,7 @@ class Cell(MCNP_Card):
         :rtype: float
         """
         if self._density and self._is_atom_dens:
-            raise TypeError(f"Cell {self.number} is in atom density.")
+            raise AttributeError(f"Cell {self.number} is in atom density.")
         return self._density
 
     @mass_density.setter

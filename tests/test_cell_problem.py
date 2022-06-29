@@ -98,13 +98,13 @@ class TestCellClass(TestCase):
         self.assertEqual(cell._density, 1.5)
         self.assertEqual(cell.mass_density, 1.5)
         self.assertFalse(cell.is_atom_dens)
-        with self.assertRaises(TypeError):
+        with self.assertRaises(AttributeError):
             _ = cell.atom_density
         cell.atom_density = 1.6
         self.assertEqual(cell._density, 1.6)
         self.assertEqual(cell.atom_density, 1.6)
         self.assertTrue(cell.is_atom_dens)
-        with self.assertRaises(TypeError):
+        with self.assertRaises(AttributeError):
             _ = cell.mass_density
         with self.assertRaises(TypeError):
             cell.atom_density = (5, True)
