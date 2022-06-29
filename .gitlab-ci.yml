@@ -32,6 +32,12 @@ unit_test:
          coverage_format: cobertura
          path: coverage.xml
 
+doc_test:
+   stage: test
+   script:
+      - echo "Executing Sphinx build to detect syntax errors"
+      - sphinx-build source/ build/ -W --keep-going -E
+
 
 deploy1:
   stage: deploy
