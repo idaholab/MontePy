@@ -48,17 +48,16 @@ class CellModifierCard(DataCardAbstract):
         """
         return self._in_cell_block
 
-    @property
     @abstractmethod
-    def _define_problem_level_method_map(self):
-        """"""
+    def merge(self, card):
+        """
+        Merges the data from another card of same type into this one.
+        """
         pass
 
-    @property
     @abstractmethod
-    def _define_cell_level_method_map(self):
-        """"""
-        pass
-
-    def _remove_excess_methods(self):
+    def push_to_cells(self):
+        """
+        After being linked to the problem update all cells attributes with this data.
+        """
         pass
