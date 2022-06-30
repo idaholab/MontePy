@@ -41,7 +41,7 @@ class Mode(DataCardAbstract):
         if isinstance(particle, str):
             # error catching not needed
             # enum will raise ValueError "foo is not a valid Particle"
-            particle = Particle(particle)
+            particle = Particle(particle.upper())
         self._mutated = True
         self._particles.add(particle)
 
