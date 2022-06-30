@@ -12,7 +12,7 @@ class CellModifierCard(DataCardAbstract):
     """
 
     def __init__(
-        self, input_card=None, comments=None, in_cell_block=True, key=None, value=None
+        self, input_card=None, comments=None, in_cell_block=False, key=None, value=None
     ):
         """
         :param input_card: the Card object representing this data card
