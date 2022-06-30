@@ -43,10 +43,10 @@ class Importance(CellModifierCard):
                 try:
                     value = float(word)
                     values.append(value)
-                    assert value >= 0 and value <= 1
+                    assert value >= 0
                 except (ValueError, AssertionError) as e:
                     raise MalformedInputError(
-                        input_card, f"Importances must be in [0,1] value: {word} given"
+                        input_card, f"Importances must be ≥ 0 value: {word} given"
                     )
             for particle in self.particle_classifiers:
                 self._particle_importances = values
@@ -91,8 +91,8 @@ def __create_importance_setter(particle_type):
     def closure(obj, value):
         if not isinstance(value, numbers.Number):
             raise TypeError("importance must be a number")
-        if value < 0 or value > 1:
-            raise ValueError("importance must be in [0,1]")
+        if value < 0:
+            raise ValueError("importance must be ≥ 0")
         obj._particle_importances[particle_type] = value
 
     return closure
