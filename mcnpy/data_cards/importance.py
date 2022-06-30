@@ -1,4 +1,5 @@
 from mcnpy.data_cards.cell_modifier import CellModifierCard
+from mcnpy.errors import *
 from mcnpy.particle import Particle
 import numbers
 
@@ -24,7 +25,6 @@ class Importance(CellModifierCard):
         :type key: str
         """
         super().__init__(input_card, comments, in_cell_block, key, value)
-        self._remove_excess_methods()
         if self.in_cell_block:
             self._particle_importances = {}
             if key:
@@ -37,6 +37,19 @@ class Importance(CellModifierCard):
                     )
                 for particle in self.particle_classifiers:
                     self._particle_importances[particle] = value
+        elif input_card:
+            values = []
+            for word in self.words[1:]:
+                try:
+                    value = float(word)
+                    values.append(value)
+                    assert value >= 0 and value <= 1
+                except (ValueError, AssertionError) as e:
+                    raise MalformedInputError(
+                        input_card, f"Importances must be in [0,1] value: {word} given"
+                    )
+            for particle in self.particle_classifiers:
+                self._particle_importances = values
 
     @property
     def class_prefix(self):
@@ -50,18 +63,16 @@ class Importance(CellModifierCard):
     def has_classifier(self):
         return 2
 
-    def merge_importance(self, other):
+    def merge(self, other):
         pass
+
+    def push_to_cells(self):
+        if self._problem:
+            pass
 
     @property
     def all(self):
         pass
-
-    def _define_problem_level_method_map(self):
-        return set()
-
-    def _define_cell_level_method_map(self):
-        return set()
 
 
 def __create_importance_getter(particle_type):
