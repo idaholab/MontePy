@@ -74,6 +74,10 @@ class Importance(CellModifierCard):
     def all(self):
         pass
 
+    def _clear_data(self):
+        if not self.in_cell_block:
+            self._particle_importances = {}
+
 
 def __create_importance_getter(particle_type):
     def closure(obj, objtype=None):

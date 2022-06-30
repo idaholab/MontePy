@@ -61,3 +61,10 @@ class CellModifierCard(DataCardAbstract):
         After being linked to the problem update all cells attributes with this data.
         """
         pass
+
+    @abstractmethod
+    def _clear_data(self):
+        """
+        After data being pushed to cells delete internal data to avoid inadvertent editing.
+        """
+        pass

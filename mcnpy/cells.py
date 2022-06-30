@@ -38,4 +38,4 @@ class Cells(NumberedObjectCollection):
         for attr, foo in cards_to_property.values():
             if hasattr(self, attr):
                 getattr(self, attr).push_to_cells()
-                getattr(self, attr).clear_data()
+                getattr(self, attr)._clear_data()
