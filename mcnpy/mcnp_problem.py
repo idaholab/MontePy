@@ -210,8 +210,9 @@ class MCNP_Problem:
 
     def __update_internal_pointers(self):
         """Updates the internal pointers between objects"""
-        for cell in self._cells:
-            cell.update_pointers(self.cells, self.materials, self.surfaces)
+        self._cells.update_pointers(
+            self.cells, self.materials, self.surfaces, self._data_cards, self
+        )
         for surface in self._surfaces:
             surface.update_pointers(self.surfaces, self._data_cards)
         self.__load_data_cards_to_object(self._data_cards)
