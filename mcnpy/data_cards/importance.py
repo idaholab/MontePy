@@ -25,8 +25,8 @@ class Importance(CellModifierCard):
         :type key: str
         """
         super().__init__(input_card, comments, in_cell_block, key, value)
+        self._particle_importances = {}
         if self.in_cell_block:
-            self._particle_importances = {}
             if key:
                 try:
                     value = float(value)
@@ -49,7 +49,7 @@ class Importance(CellModifierCard):
                         input_card, f"Importances must be ≥ 0 value: {word} given"
                     )
             for particle in self.particle_classifiers:
-                self._particle_importances = values
+                self._particle_importances[particle] = values
 
     @property
     def class_prefix(self):
@@ -68,7 +68,10 @@ class Importance(CellModifierCard):
 
     def push_to_cells(self):
         if self._problem:
-            pass
+            for particle in self._particle_importances:
+                for i, cell in enumerate(self._problem.cells):
+                    value = self._particle_importances[particle][i]
+                    cell.importance._particle_importances[particle] = value
 
     @property
     def all(self):

@@ -27,6 +27,7 @@ class Cell(MCNP_Card):
         super().__init__(input_card, comment)
         self._material = None
         self._old_cell_number = None
+        self._importance = Importance()
         self._old_mat_number = None
         self._geometry_logic_string = None
         self._density = None
@@ -82,7 +83,7 @@ class Cell(MCNP_Card):
             # TODO
             for key, value in self._parameters.items():
                 if "IMP" in key:
-                    imp = Importance(in_cell_block=True, key=key, value=value)
+                    self._importance = Importance(in_cell_block=True, key=key, value=value)
 
     def _parse_geometry(self, i, words):
         """
@@ -134,6 +135,10 @@ class Cell(MCNP_Card):
             "BFLCL",
             "UNC",
         }
+
+    @property 
+    def importance(self):
+        return self._importance
 
     @property
     def old_number(self):
