@@ -117,6 +117,63 @@ class Importance(CellModifierCard):
                     f"Particle type: {particle_type} not included in problem mode."
                 )
 
+    def _combine_importances(self):
+        ret = {}
+        inverse = {}
+        mod_threshold = 1e6
+        for particle, value in self._particle_importances.items():
+            round_val = int(value * mod_threshold)
+            if round_val in inverse:
+                inverse[round_val].append(particle)
+            else:
+                inverse[round_val] = [particle]
+        for value, particles in inverser.items():
+            part_tuple = tuple(sorted(particles))
+            ret[part_tuple] = value / mod_threshold
+        return ret
+
+    def _format_data_input_particle(self, particle):
+        values = []
+        for cell in self._problem.cells:
+            values.append(cell.importance[particle])
+        return self.compress_repeat_values(values)
+
+    def format_for_mcnp_input(self, mcnp_version):
+        if self.mutated:
+            if self.in_cell_block:
+                combined_values = self._combine_importances()
+                for particles, value in combined_values:
+                    particles_short = ",".join([part.value for part in particles])
+                    ret.append(
+                        self.wrap_string_for_mnp(
+                            f"IMP:{particles_short}={value}", False
+                        )
+                    )
+            else:
+                ret = super().format_for_mcnp(mcnp_version)
+                part_value = {}
+                for particle in self._problem.mode:
+                    value = tuple(self._format_data_input_particle(particle))
+                    if value in part_value:
+                        part_value.append(particle)
+                    else:
+                        part_value[value] = [particle]
+                for value, particles in part_value.items():
+                    particles_short = ",".join(
+                        [part.value for part in sorted(particles)]
+                    )
+                    ret.append(
+                        self.wrap_words_for_mcnp(
+                            [f"IMP:{particles_short}"] + list(value)
+                        )
+                    )
+
+        elif not self.in_cell_block:
+            ret = self._format_for_mcnp_unmutated(mcnp_version)
+        else:
+            ret = []
+        return ret
+
 
 def __create_importance_getter(particle_type):
     def closure(obj, objtype=None):
@@ -137,6 +194,7 @@ def __create_importance_setter(particle_type):
             raise TypeError("importance must be a number")
         if value < 0:
             raise ValueError("importance must be ≥ 0")
+        obj._mutated = True
         obj._particle_importances[particle_type] = value
 
     return closure
@@ -144,6 +202,7 @@ def __create_importance_setter(particle_type):
 
 def __create_importance_deleter(particle_type):
     def closure(obj):
+        obj._mutated = True
         del obj._particle_importances[particle_type]
 
     return closure

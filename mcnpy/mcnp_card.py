@@ -2,6 +2,7 @@ from abc import ABC, abstractmethod
 from mcnpy.input_parser.constants import BLANK_SPACE_CONTINUE, get_max_line_length
 from mcnpy.input_parser.mcnp_input import Comment
 import mcnpy
+import numpy as np
 import textwrap
 
 
@@ -230,6 +231,38 @@ class MCNP_Card(ABC):
             subsequent_indent=" " * indent_length,
         )
         return wrapper.wrap(string)
+
+    @staticmethod
+    def compress_repeat_values(values, threshold=1e-6):
+        """
+        Takes a list of floats, and tries to compress it using repeats.
+
+        E.g., 1 1 1 1 would compress to 1 3R
+
+        :param values: a list of float values to try to compress
+        :type values: list
+        :param threshold: the minimum threshold to consider two values different
+        :type threshold: float
+        :returns: a list of MCNP word strings that have repeat compression
+        :rtype: list
+        """
+        ret = []
+        last_value = None
+        for value in values:
+            if last_value:
+                if np.isclose(value, last_value, atol=threshold):
+                    repeat_counter += 1
+                else:
+                    ret.append(f"{repeat_counter}R")
+                    repeat_counter = 0
+                    ret.append(value)
+                    last_value = vale
+            else:
+                ret.append(str(value))
+                last_value = value
+                repeat_counter = 0
+
+        return ret
 
     @property
     def words(self):
