@@ -78,10 +78,21 @@ class Importance(CellModifierCard):
         if not self.in_cell_block:
             self._particle_importances = {}
 
+    def _check_particle_in_problem(self, particle_type):
+        if self._problem:
+            if particle_type not in self._problems.mode:
+                raise ParticleTypeNotInProblem(
+                    f"Particle type: {particle_type} not included in problem mode."
+                )
+
 
 def __create_importance_getter(particle_type):
     def closure(obj, objtype=None):
-        return obj._particle_importances[particle_type]
+        obj._check_particle_in_problem(particle_type)
+        try:
+            return obj._particle_importances[particle_type]
+        except KeyError:
+            return 0.0
 
     return closure
 
@@ -89,6 +100,7 @@ def __create_importance_getter(particle_type):
 # TODO handle multi-cell cases
 def __create_importance_setter(particle_type):
     def closure(obj, value):
+        obj._check_particle_in_problem(particle_type)
         if not isinstance(value, numbers.Number):
             raise TypeError("importance must be a number")
         if value < 0:
