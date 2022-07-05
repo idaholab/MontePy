@@ -72,7 +72,20 @@ class Importance(CellModifierCard):
 
     @property
     def all(self):
-        pass
+        """
+        Setter for setting importance for all particle types in problem at once.
+        """
+        return None
+
+    @all.setter
+    def all(self, value):
+        if not isinstance(value, float):
+            raise TypeError("All importance must be a float")
+        if value < 0.0:
+            raise ValueError("Importance must be ≥ 0.0")
+        if self._problem:
+            for particle in self._problem.mode:
+                self._particle_importances[particle] = value
 
     def _clear_data(self):
         if not self.in_cell_block:
