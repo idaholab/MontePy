@@ -77,7 +77,7 @@ class Importance(CellModifierCard):
                 )
 
     def __iter__(self):
-        return self._particle_importances.keys()
+        return iter(self._particle_importances.keys())
 
     def __contains__(self, value):
         return value in self._particle_importances
@@ -116,7 +116,7 @@ class Importance(CellModifierCard):
 
     def _check_particle_in_problem(self, particle_type):
         if self._problem:
-            if particle_type not in self._problems.mode:
+            if particle_type not in self._problem.mode:
                 raise ParticleTypeNotInProblem(
                     f"Particle type: {particle_type} not included in problem mode."
                 )
