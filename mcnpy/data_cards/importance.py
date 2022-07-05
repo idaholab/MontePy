@@ -64,7 +64,22 @@ class Importance(CellModifierCard):
         return 2
 
     def merge(self, other):
-        pass
+        if not isinstance(other, type(self)):
+            raise TypeError("Can only be merged with other Importance object")
+        if self.in_cell_block != other.in_cell_block:
+            raise ValueError("Can not mix cell-level and data-level Importance objects")
+        for particle in other:
+            if particle not in self:
+                self._particle_importances[particle] = other[particle]
+
+    def __iter__(self):
+        return self._particle_importances.keys()
+
+    def __contains__(self, value):
+        return value in self._particle_importances
+
+    def __getitem__(self, particle):
+        return self._particle_importances[particle]
 
     def push_to_cells(self):
         if self._problem:
@@ -87,6 +102,7 @@ class Importance(CellModifierCard):
         if value < 0.0:
             raise ValueError("Importance must be ≥ 0.0")
         if self._problem:
+            self._mutated = True
             for particle in self._problem.mode:
                 self._particle_importances[particle] = value
 
