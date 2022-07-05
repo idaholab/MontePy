@@ -71,6 +71,10 @@ class Importance(CellModifierCard):
         for particle in other:
             if particle not in self:
                 self._particle_importances[particle] = other[particle]
+            else:
+                raise MalformedInputError(
+                    other, "Cannot have two importance cards for the same particle type"
+                )
 
     def __iter__(self):
         return self._particle_importances.keys()
