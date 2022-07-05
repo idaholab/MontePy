@@ -547,6 +547,10 @@ class Cell(MCNP_Card):
             ret = self._format_for_mcnp_unmutated(mcnp_version)
         return ret
 
+    def link_to_problem(self, problem):
+        super().link_to_problem(problem)
+        self._importance.link_to_problem(problem)
+
     def __str__(self):
         ret = f"CELL: {self._cell_number} \n"
         ret += str(self._material) + "\n"
