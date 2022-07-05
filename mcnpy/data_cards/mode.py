@@ -59,6 +59,9 @@ class Mode(DataCardAbstract):
     def __contains__(self, obj):
         return obj in self._particles
 
+    def __iter__(self):
+        return iter(self._particles)
+
     @property
     def class_prefix(self):
         return "mode"
