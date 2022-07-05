@@ -83,7 +83,9 @@ class Cell(MCNP_Card):
             # TODO
             for key, value in self._parameters.items():
                 if "IMP" in key:
-                    self._importance = Importance(in_cell_block=True, key=key, value=value)
+                    self._importance = Importance(
+                        in_cell_block=True, key=key, value=value
+                    )
 
     def _parse_geometry(self, i, words):
         """
@@ -136,7 +138,7 @@ class Cell(MCNP_Card):
             "UNC",
         }
 
-    @property 
+    @property
     def importance(self):
         return self._importance
 

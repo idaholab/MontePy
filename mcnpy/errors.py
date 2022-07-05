@@ -45,13 +45,16 @@ class BrokenObjectLinkError(MalformedInputError):
             f"{child_type} {child_number} is missing from the input from the definition of: {parent_type} {parent_number}",
         )
 
+
 class ParticleTypeNotInProblem(ValueError):
     """
     Raised when data are set for a particle type not in
     the problem's mode.
     """
+
     def __init__(self, message):
         super().__init__(message)
+
 
 class UnsupportedFeature(NotImplementedError):
     """
