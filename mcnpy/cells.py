@@ -24,10 +24,6 @@ class Cells(NumberedObjectCollection):
         :param vacuum_cells: the cells that are the vacuum boundary with 0 importance
         :type vacuum_cells: list
         """
-        if not isinstance(importance, float):
-            raise TypeError("Importance must be a float")
-        if importance <= 0.0:
-            raise ValueError("Importance must be > 0.0")
         if not isinstance(vacuum_cells, (list, set)):
             raise TypeError("vacuum_cells must be a list or set")
         cells_buff = set()
@@ -41,9 +37,9 @@ class Cells(NumberedObjectCollection):
         vacuum_cells = cells_buff
         for cell in self:
             if cell not in vacuum_cells:
-                cell.all = importance
+                cell.importance.all = importance
         for cell in vacuum_cells:
-            cell.all = 0.0
+            cell.importance.all = 0.0
 
     def update_pointers(self, cells, materials, surfaces, data_cards, problem):
         cards_to_property = mcnpy.Cell._CARDS_TO_PROPERTY
