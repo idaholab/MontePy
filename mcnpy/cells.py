@@ -26,7 +26,6 @@ class Cells(NumberedObjectCollection):
                         f"The card: {type(card)} is only allowed once in a problem",
                     )
                 if not hasattr(self, attr):
-                    print(attr)
                     setattr(self, attr, card)
                     card.link_to_problem(problem)
                 else:

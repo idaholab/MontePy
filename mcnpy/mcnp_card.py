@@ -248,17 +248,21 @@ class MCNP_Card(ABC):
         """
         ret = []
         last_value = None
+        float_formatter = "{:n}"
         for value in values:
             if last_value:
                 if np.isclose(value, last_value, atol=threshold):
                     repeat_counter += 1
                 else:
-                    ret.append(f"{repeat_counter}R")
-                    repeat_counter = 0
-                    ret.append(value)
-                    last_value = vale
+                    if repeat_counter >= 2:
+                        ret.append(f"{repeat_counter}R")
+                        repeat_counter = 0
+                    elif repeat_counter == 1:
+                        ret.append(float_formatter.format(last_value))
+                    ret.append(float_formatter.format(value))
+                    last_value = value
             else:
-                ret.append(str(value))
+                ret.append(float_formatter.format(value))
                 last_value = value
                 repeat_counter = 0
 

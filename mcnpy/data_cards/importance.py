@@ -1,5 +1,6 @@
 from mcnpy.data_cards.cell_modifier import CellModifierCard
 from mcnpy.errors import *
+from mcnpy.mcnp_card import MCNP_Card
 from mcnpy.particle import Particle
 import numbers
 
@@ -68,6 +69,7 @@ class Importance(CellModifierCard):
             raise TypeError("Can only be merged with other Importance object")
         if self.in_cell_block != other.in_cell_block:
             raise ValueError("Can not mix cell-level and data-level Importance objects")
+        self._input_lines.extend(other._input_lines)
         for particle in other:
             if particle not in self:
                 self._particle_importances[particle] = other[particle]
@@ -143,35 +145,43 @@ class Importance(CellModifierCard):
         return self.compress_repeat_values(values)
 
     def format_for_mcnp_input(self, mcnp_version):
-        if self.mutated:
+        mutated = self.mutated
+        if not mutated:
+            for cell in self._problem.cells:
+                if cell.importance.mutated:
+                    print(cell)
+                    mutated = True
+                    break
+        print(mutated)
+        if mutated:
             if self.in_cell_block:
                 combined_values = self._combine_importances()
                 for particles, value in combined_values:
                     particles_short = ",".join([part.value for part in particles])
-                    ret.append(
+                    ret.extend(
                         self.wrap_string_for_mnp(
                             f"IMP:{particles_short}={value}", False
                         )
                     )
             else:
-                ret = super().format_for_mcnp(mcnp_version)
+                ret = MCNP_Card.format_for_mcnp_input(self, mcnp_version)
                 part_value = {}
-                for particle in self._problem.mode:
+                for particle in sorted(self._problem.mode):
                     value = tuple(self._format_data_input_particle(particle))
                     if value in part_value:
-                        part_value.append(particle)
+                        part_value[value].append(particle)
                     else:
                         part_value[value] = [particle]
                 for value, particles in part_value.items():
                     particles_short = ",".join(
                         [part.value for part in sorted(particles)]
                     )
-                    ret.append(
+                    ret.extend(
                         self.wrap_words_for_mcnp(
-                            [f"IMP:{particles_short}"] + list(value)
+                            [f"IMP:{particles_short}"] + list(value), mcnp_version, True
                         )
                     )
-
+        # if not mutated
         elif not self.in_cell_block:
             ret = self._format_for_mcnp_unmutated(mcnp_version)
         else:
