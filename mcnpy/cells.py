@@ -45,8 +45,8 @@ class Cells(NumberedObjectCollection):
         for cell in vacuum_cells:
             cell.all = 0.0
 
-    def update_pointers(self, cells, materials, surfaces, data_cards):
-        cards_to_property = {importance.Importance: ("_importance", False)}
+    def update_pointers(self, cells, materials, surfaces, data_cards, problem):
+        cards_to_property = mcnpy.Cell._CARDS_TO_PROPERTY
         cards_loaded = set()
         # make a copy of the list
         for card in list(data_cards):
@@ -60,6 +60,7 @@ class Cells(NumberedObjectCollection):
                     )
                 if not hasattr(self, attr):
                     setattr(self, attr, card)
+                    problem.print_in_data_block[card.class_prefix] = True
                 else:
                     getattr(self, attr).merge(card)
                     data_cards.remove(card)
