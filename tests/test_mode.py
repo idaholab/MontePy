@@ -91,3 +91,11 @@ class TestMode(TestCase):
         self.assertEqual(len(mode), 2)
         for part in particles:
             self.assertIn(part, mode)
+        with self.assertRaises(TypeError):
+            mode.set(5)
+        with self.assertRaises(TypeError):
+            mode.set([5])
+        with self.assertRaises(ValueError):
+            mode.set(["n", Particle.PHOTON])
+        with self.assertRaises(ValueError):
+            mode.set([Particle.PHOTON, "n"])
