@@ -46,3 +46,6 @@ class Particle(Enum):
     NEGATIVE_PION = "*"
     NEGATIVE_KAON = "?"
     HEAVY_ION = "#"
+
+    def __lt__(self, other):
+        return self.value < other.value
