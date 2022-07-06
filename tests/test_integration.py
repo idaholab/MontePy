@@ -6,6 +6,7 @@ import os
 import mcnpy
 from mcnpy.data_cards import material, thermal_scattering
 from mcnpy.input_parser.mcnp_input import Card, Comment, Message, Title, ReadCard
+from mcnpy.particle import Particle
 
 
 class testFullFileIntegration(TestCase):

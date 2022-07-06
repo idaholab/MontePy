@@ -69,7 +69,10 @@ class TestMode(TestCase):
         output = mode.format_for_mcnp_input((6, 2, 0))
         print(output)
         self.assertEqual(len(output), 1)
-        self.assertEqual(output[0], "MODE N E P")
+        self.assertIn("MODE", output[0])
+        self.assertIn("N", output[0])
+        self.assertIn("P", output[0])
+        self.assertIn("E", output[0])
 
     def test_set_mode(self):
         particles = {Particle.ELECTRON, Particle.PHOTON}
