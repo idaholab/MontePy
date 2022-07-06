@@ -72,6 +72,10 @@ class MCNP_Problem:
         """
         return self._mode
 
+    def set_mode(self, particles):
+        """"""
+        self._mode.set(particles)
+
     @property
     def mcnp_version(self):
         """
