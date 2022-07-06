@@ -241,8 +241,8 @@ class DataCardAbstract(MCNP_Card):
                     f"{self.words[0]} cannot have a particle classifier for {type(self)}",
                 )
 
-    @classmethod
-    def _parse_particle_classifiers(cls, classifier_str):
+    @staticmethod
+    def _parse_particle_classifiers(classifier_str):
         """
         Parses a particle classifier string.
 

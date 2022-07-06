@@ -52,7 +52,7 @@ class Mode(DataCardAbstract):
         if not isinstance(particle, (Particle, str)):
             raise TypeError("particle must be a Particle instance")
         if isinstance(particle, str):
-            particle = Particle(particle)
+            particle = Particle(particle.upper())
         self._mutated = True
         self._particles.remove(particle)
 
@@ -61,6 +61,9 @@ class Mode(DataCardAbstract):
 
     def __iter__(self):
         return iter(self._particles)
+
+    def __len__(self):
+        return len(self._particles)
 
     @property
     def class_prefix(self):
