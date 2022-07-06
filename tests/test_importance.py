@@ -8,13 +8,6 @@ import os
 
 
 class TestImportance(TestCase):
-
-    # TODO move to integration
-    def test_data_imp_card(self):
-        problem = mcnpy.read_input(
-            os.path.join("tests", "inputs", "test_importance.imcnp")
-        )
-
     def test_importance_init_cell(self):
         # test_normal cell init
         in_str = "1 0 -1 IMP:N,P=1"
@@ -52,6 +45,21 @@ class TestImportance(TestCase):
         card = mcnp_input.Card([in_str], block_type.BlockType.CELL)
         with self.assertRaises(ValueError):
             imp = Importance(card)
+        # test bad in_cell_block
+        in_str = "IMP:N,P 1 2"
+        card = mcnp_input.Card([in_str], block_type.BlockType.CELL)
+        with self.assertRaises(TypeError):
+            imp = Importance(card, in_cell_block=1)
+        # test bad key
+        in_str = "IMP:N,P 1 2"
+        card = mcnp_input.Card([in_str], block_type.BlockType.CELL)
+        with self.assertRaises(TypeError):
+            imp = Importance(card, key=1)
+        # test bad value
+        in_str = "IMP:N,P 1 2"
+        card = mcnp_input.Card([in_str], block_type.BlockType.CELL)
+        with self.assertRaises(TypeError):
+            imp = Importance(card, value=1)
 
     def test_importance_iter_getter_in(self):
         in_str = "1 0 -1 IMP:N,P=1"

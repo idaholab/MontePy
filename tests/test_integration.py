@@ -12,6 +12,9 @@ class testFullFileIntegration(TestCase):
     def setUp(self):
         file_name = "tests/inputs/test.imcnp"
         self.simple_problem = mcnpy.read_input(file_name)
+        self.importance_problem = mcnpy.read_input(
+            os.path.join("tests", "inputs", "test_importance.imcnp")
+        )
 
     def test_original_input(self):
         cell_order = [Message, Title, Comment]
@@ -397,3 +400,27 @@ class testFullFileIntegration(TestCase):
         cell = mcnpy.Cell()
         with self.assertRaises(TypeError):
             cell.link_to_problem(5)
+
+    def test_importance_parsing(self):
+        problem = self.importance_problem
+        cell = problem.cells[1]
+        self.assertEqual(cell.importance.neutron, 1.0)
+        self.assertEqual(cell.importance.photon, 1.0)
+        self.assertEqual(cell.importance.electron, 0.0)
+
+    def test_importance_format_unmutated(self):
+        imp = self.importance_problem.cells._importance
+        output = imp.format_for_mcnp_input((6, 2, 0))
+        print(output)
+        self.assertEqual(len(output), 2)
+        self.assertEqual("imp:n,p 1 1 1 0 3", output[0])
+        self.assertEqual("imp:e   0 0 0 1 2", output[1])
+
+    def test_importance_format_mutated(self):
+        problem = copy.deepcopy(self.importance_problem)
+        imp = problem.cells._importance
+        problem.cells[1].importance.neutron = 0.5
+        output = imp.format_for_mcnp_input((6, 2, 0))
+        print(output)
+        self.assertEqual(len(output), 3)
+        self.assertEqual("IMP:N 0.5 1 1 0 3", output[1])

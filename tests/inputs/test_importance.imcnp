@@ -41,7 +41,8 @@ MT3 lwtr.23t
 C execution
 ksrc 0 0 0
 imp:n,p 1 1 1 0 3
+imp:e   0 0 0 1 2
 kcode 100000 1.000 50 1050
 phys:p j 1 2j 1
-mode n p
+mode n p e
 
