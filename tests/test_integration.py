@@ -496,3 +496,11 @@ class testFullFileIntegration(TestCase):
                 os.remove(out_file)
             except FileNotFoundError:
                 pass
+
+    def test_set_mode(self):
+        problem = copy.deepcopy(self.importance_problem)
+        problem.set_mode("e p")
+        particles = {Particle.ELECTRON, Particle.PHOTON}
+        self.assertEqual(len(problem.mode), 2)
+        for part in particles:
+            self.assertIn(part, problem.mode)
