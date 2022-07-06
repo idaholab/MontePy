@@ -93,6 +93,7 @@ class Importance(CellModifierCard):
                 for i, cell in enumerate(self._problem.cells):
                     value = self._particle_importances[particle][i]
                     cell.importance._particle_importances[particle] = value
+                    cell.importance._mutated = False
 
     @property
     def all(self):
@@ -149,10 +150,8 @@ class Importance(CellModifierCard):
         if not mutated:
             for cell in self._problem.cells:
                 if cell.importance.mutated:
-                    print(cell)
                     mutated = True
                     break
-        print(mutated)
         if mutated:
             if self.in_cell_block:
                 combined_values = self._combine_importances()
@@ -200,7 +199,6 @@ def __create_importance_getter(particle_type):
     return closure
 
 
-# TODO handle multi-cell cases
 def __create_importance_setter(particle_type):
     def closure(obj, value):
         obj._check_particle_in_problem(particle_type)
