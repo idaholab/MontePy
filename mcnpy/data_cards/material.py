@@ -7,6 +7,12 @@ from mcnpy.utilities import *
 import itertools
 import re
 
+"""
+TODO
+-only consume cards that are consumed
+-How to handle cells
+"""
+
 
 class Material(data_card.DataCardAbstract):
     """
@@ -179,12 +185,13 @@ class Material(data_card.DataCardAbstract):
         :param data_cards: a list of the data cards in the problem
         :type data_cards: list
         """
-        for card in data_cards:
+        for card in list(data_cards):
             if isinstance(card, thermal_scattering.ThermalScatteringLaw):
                 if card.old_number == self.number:
                     if not self._thermal_scattering:
                         self._thermal_scattering = card
                         card._parent_material = self
+                        data_cards.remove(card)
                     else:
                         raise MalformedInputError(
                             self, "Multiple MT inputs were specified for this material."
@@ -211,6 +218,8 @@ class Material(data_card.DataCardAbstract):
 
         for component in self.material_components:
             ret += str(self.material_components[component]) + "\n"
+        if self.thermal_scattering:
+            ret += f"Thermal Scattering: {self.thermal_scattering}"
 
         return ret
 
@@ -231,6 +240,8 @@ class Material(data_card.DataCardAbstract):
                 ret.append(f"{component.isotope:>18} {component.fraction:>11.4g}")
         else:
             ret = self._format_for_mcnp_unmutated(mcnp_version)
+        if self.thermal_scattering:
+            ret += self.thermal_scattering.format_for_mcnp_input(mcnp_version)
         return ret
 
     def __hash__(self):

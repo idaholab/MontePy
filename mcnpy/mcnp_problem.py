@@ -1,3 +1,4 @@
+import itertools
 from mcnpy.data_cards import mode
 from mcnpy.cell import Cell
 from mcnpy.cells import Cells
@@ -202,16 +203,16 @@ class MCNP_Problem:
                     if input_card.block_type == block_type.BlockType.DATA:
                         data = parse_data(input_card, comment_queue)
                         data.link_to_problem(self)
-                        self._data_cards.append(data)
                         if isinstance(data, Material):
                             self._materials.append(data)
+                        self._data_cards.append(data)
                     comment_queue = []
         self.__update_internal_pointers()
 
     def __update_internal_pointers(self):
         """Updates the internal pointers between objects"""
         self._cells.update_pointers(
-            self.cells, self.materials, self.surfaces, self._data_cards, self
+            self.cells, self.materials, self.surfaces, self._data_cards
         )
         for surface in self._surfaces:
             surface.update_pointers(self.surfaces, self._data_cards)
