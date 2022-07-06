@@ -62,11 +62,10 @@ class TestCellClass(TestCase):
             self.assertTrue(atom_dens == cell.is_atom_dens)
 
         # test parameter input
-        in_str = "1 0 #2 imp:n=1 u= 5 vol=20"
+        in_str = "1 0 #2 u= 5 vol=20"
         card = Card([in_str], BlockType.CELL)
         cell = Cell(card)
         self.assertIn(2, cell.old_complement_numbers)
-        self.assertEqual(cell.parameters["IMP:N"], "1")
         self.assertEqual(cell.parameters["U"], "5")
         self.assertEqual(cell.parameters["VOL"], "20")
 
