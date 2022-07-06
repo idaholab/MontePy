@@ -47,13 +47,14 @@ class testFullFileIntegration(TestCase):
 
     def test_data_card_parsing(self):
         M = material.Material
-        MT = thermal_scattering.ThermalScatteringLaw
-        cards = [M, M, M, MT, "KSRC", "KCODE", "PHYS:P", "MODE"]
+        cards = [M, M, M, "KSRC", "KCODE", "PHYS:P", "MODE"]
         for i, card in enumerate(self.simple_problem.data_cards):
             if isinstance(cards[i], str):
                 self.assertEqual(card.words[0].upper(), cards[i])
             else:
                 self.assertIsInstance(card, cards[i])
+            if i == 2:
+                self.assertTrue(card.thermal_scattering is not None)
 
     def test_cells_parsing_linking(self):
         cell_numbers = [1, 2, 3, 99, 5]
@@ -85,7 +86,7 @@ class testFullFileIntegration(TestCase):
         problem = mcnpy.read_input("tests/inputs/testReadRec1.imcnp")
         self.assertEqual(len(problem.cells), 1)
         self.assertEqual(len(problem.surfaces), 1)
-        self.assertEqual(len(problem.data_cards), 1)
+        self.assertIn(mcnpy.particle.Particle.PHOTON, problem.mode)
 
     def test_problem_str(self):
         output = str(self.simple_problem)
@@ -407,6 +408,10 @@ class testFullFileIntegration(TestCase):
         self.assertEqual(cell.importance.neutron, 1.0)
         self.assertEqual(cell.importance.photon, 1.0)
         self.assertEqual(cell.importance.electron, 0.0)
+        problem = self.simple_problem
+        cell = problem.cells[1]
+        self.assertEqual(cell.importance.neutron, 1.0)
+        self.assertEqual(cell.importance.photon, 1.0)
 
     def test_importance_format_unmutated(self):
         imp = self.importance_problem.cells._importance
@@ -424,3 +429,70 @@ class testFullFileIntegration(TestCase):
         print(output)
         self.assertEqual(len(output), 3)
         self.assertEqual("IMP:N 0.5 1 1 0 3", output[1])
+
+    def test_importance_write_unmutated(self):
+        out_file = "test_import_unmute"
+        try:
+            self.importance_problem.write_to_file(out_file)
+            found_np = False
+            found_e = False
+            with open(out_file, "r") as fh:
+                for line in fh:
+                    print(line.rstrip())
+                    if "imp:n,p 1" in line:
+                        found_np = True
+                    elif "imp:e" in line:
+                        found_e = True
+            self.assertTrue(found_np)
+            self.assertTrue(found_e)
+        finally:
+            try:
+                os.remove(out_file)
+            except FileNotFoundError:
+                pass
+
+    def test_importance_write_mutated(self):
+        out_file = "test_import_mute"
+        problem = copy.deepcopy(self.importance_problem)
+        problem.cells[1].importance.neutron = 0.5
+        try:
+            problem.write_to_file(out_file)
+            found_n = False
+            found_e = False
+            with open(out_file, "r") as fh:
+                for line in fh:
+                    print(line.rstrip())
+                    if "IMP:N 0.5" in line:
+                        found_n = True
+                    elif "IMP:E" in line:
+                        found_e = True
+            self.assertTrue(found_n)
+            self.assertTrue(found_e)
+        finally:
+            try:
+                os.remove(out_file)
+            except FileNotFoundError:
+                pass
+
+    def test_importance_write_cell(self):
+        out_file = "test_import_cell"
+        problem = copy.deepcopy(self.importance_problem)
+        problem.print_in_data_block["importance"] = False
+        try:
+            problem.write_to_file(out_file)
+            found_np = False
+            found_e = False
+            with open(out_file, "r") as fh:
+                for line in fh:
+                    print(line.rstrip())
+                    if "IMP:N,P=1" in line:
+                        found_np = True
+                    elif "IMP:E=1" in line:
+                        found_e = True
+            self.assertTrue(found_np)
+            self.assertTrue(found_e)
+        finally:
+            try:
+                os.remove(out_file)
+            except FileNotFoundError:
+                pass
