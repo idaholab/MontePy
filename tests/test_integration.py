@@ -377,7 +377,7 @@ class testFullFileIntegration(TestCase):
         cell = problem.cells[1]
         cell.number = 8
         output = cell.format_for_mcnp_input((6, 2, 0))
-        self.assertEqual(len(output), 5)
+        self.assertEqual(len(output), 6)
         self.assertEqual("C this is a cutting comment", output[1])
         material = problem.materials[2]
         material.number = 5
