@@ -35,6 +35,10 @@ class CellModifierCard(DataCardAbstract):
             raise TypeError("key must be a str")
         if value and not isinstance(value, str):
             raise TypeError("value must be a str")
+        if key and in_cell_block:
+            self._set_in_cell_block = True
+        else:
+            self._set_in_cell_block = False
         self._in_cell_block = in_cell_block
         self._in_key = key
         self._in_value = value
@@ -47,6 +51,30 @@ class CellModifierCard(DataCardAbstract):
         :rtype: bool
         """
         return self._in_cell_block
+
+    @property
+    def set_in_cell_block(self):
+        """
+        True if this data were set in the cell block in the input
+        """
+        return self._set_in_cell_block
+
+    @property
+    def has_changed_print_style(self):
+        """
+        returns true if the printing style for this modifier has changed
+        from cell block to data block, or vice versa.
+
+        :returns: true if the printing style for this modifier has changed
+        :rtype: bool
+        """
+        if self._problem:
+            print_in_cell_block = not self._problem.print_in_data_block[
+                self.class_prefix
+            ]
+            return print_in_cell_block ^ self.set_in_cell_block
+        else:
+            return False
 
     @abstractmethod
     def merge(self, card):
