@@ -477,7 +477,7 @@ class testFullFileIntegration(TestCase):
     def test_importance_write_cell(self):
         out_file = "test_import_cell"
         problem = copy.deepcopy(self.importance_problem)
-        problem.print_in_data_block["importance"] = False
+        problem.print_in_data_block["imp"] = False
         try:
             problem.write_to_file(out_file)
             found_np = False
