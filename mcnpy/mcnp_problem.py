@@ -1,4 +1,5 @@
 import itertools
+from mcnpy.cell_data_control import CellDataPrintController
 from mcnpy.data_cards import mode
 from mcnpy.cell import Cell
 from mcnpy.cells import Cells
@@ -24,6 +25,7 @@ class MCNP_Problem:
         self._input_file = file_name
         self._title = None
         self._message = None
+        self._print_in_data_block = CellDataPrintController()
         self._original_inputs = []
         self._cells = Cells()
         self._surfaces = Surfaces()
@@ -125,6 +127,13 @@ class MCNP_Problem:
         self._materials = mats
 
     @property
+    def print_in_data_block(self):
+        """
+        Controls whether or not the specific card gets printed in the cell block or the data block.
+        """
+        return self._print_in_data_block
+
+    @property
     def data_cards(self):
         """
         A list of the DataCard objects in this problem.
@@ -212,7 +221,7 @@ class MCNP_Problem:
     def __update_internal_pointers(self):
         """Updates the internal pointers between objects"""
         self._cells.update_pointers(
-            self.cells, self.materials, self.surfaces, self._data_cards
+            self.cells, self.materials, self.surfaces, self._data_cards, self
         )
         for surface in self._surfaces:
             surface.update_pointers(self.surfaces, self._data_cards)
