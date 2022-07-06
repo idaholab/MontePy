@@ -13,10 +13,43 @@ class Cells(NumberedObjectCollection):
         """
         super().__init__(mcnpy.Cell, cells)
 
-    def update_pointers(self, cells, materials, surfaces, data_cards, problem):
+    def set_equal_importance(self, importance, vacuum_cells=[]):
+        """
+        Sets all cells except the vacuum cells to the same importance using importance.all.
+
+        The vacuum cells will be set to 0.0. You can specify cell numbers or cell objects.
+
+        :param importance: the importance to apply to all cells
+        :type importance: float
+        :param vacuum_cells: the cells that are the vacuum boundary with 0 importance
+        :type vacuum_cells: list
+        """
+        if not isinstance(importance, float):
+            raise TypeError("Importance must be a float")
+        if importance <= 0.0:
+            raise ValueError("Importance must be > 0.0")
+        if not isinstance(vacuum_cells, (list, set)):
+            raise TypeError("vacuum_cells must be a list or set")
+        cells_buff = set()
+        for cell in vacuum_cells:
+            if not isinstance(cell, (mcnpy.Cell, int)):
+                raise TypeError("vacuum cell must be a Cell or a cell number")
+            if isinstance(cell, int):
+                cells_buff.add(self[cell])
+            else:
+                cells_buff.add(cell)
+        vacuum_cells = cells_buff
+        for cell in self:
+            if cell not in vacuum_cells:
+                cell.all = importance
+        for cell in vacuum_cells:
+            cell.all = 0.0
+
+    def update_pointers(self, cells, materials, surfaces, data_cards):
         cards_to_property = {importance.Importance: ("_importance", False)}
         cards_loaded = set()
-        for card in data_cards:
+        # make a copy of the list
+        for card in list(data_cards):
             if type(card) in cards_to_property:
                 card_class = type(card)
                 attr, cant_repeat = cards_to_property[card_class]
@@ -27,9 +60,9 @@ class Cells(NumberedObjectCollection):
                     )
                 if not hasattr(self, attr):
                     setattr(self, attr, card)
-                    card.link_to_problem(problem)
                 else:
                     getattr(self, attr).merge(card)
+                    data_cards.remove(card)
                 if cant_repeat:
                     cards_loaded.add(type(card))
         for cell in self:
