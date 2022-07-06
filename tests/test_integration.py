@@ -505,3 +505,30 @@ class testFullFileIntegration(TestCase):
         self.assertEqual(len(problem.mode), 2)
         for part in particles:
             self.assertIn(part, problem.mode)
+
+    def test_set_equal_importance(self):
+        problem = copy.deepcopy(self.importance_problem)
+        problem.cells.set_equal_importance(0.5, [5])
+        for cell in problem.cells:
+            for particle in problem.mode:
+                if cell.number != 5:
+                    print(cell.number, particle)
+                    self.assertEqual(cell.importance[particle], 0.5)
+        for particle in problem.mode:
+            self.assertEqual(problem.cells[5].importance.neutron, 0.0)
+        problem.cells.set_equal_importance(0.75, [problem.cells[99]])
+        for cell in problem.cells:
+            for particle in problem.mode:
+                if cell.number != 99:
+                    print(cell.number, particle)
+                    self.assertEqual(cell.importance[particle], 0.75)
+        for particle in problem.mode:
+            self.assertEqual(problem.cells[99].importance.neutron, 0.0)
+        with self.assertRaises(TypeError):
+            problem.cells.set_equal_importance("5", [5])
+        with self.assertRaises(ValueError):
+            problem.cells.set_equal_importance(-0.5, [5])
+        with self.assertRaises(TypeError):
+            problem.cells.set_equal_importance(5, "a")
+        with self.assertRaises(TypeError):
+            problem.cells.set_equal_importance(5, ["a"])
