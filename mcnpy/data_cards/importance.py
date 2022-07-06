@@ -134,7 +134,7 @@ class Importance(CellModifierCard):
                 inverse[round_val].append(particle)
             else:
                 inverse[round_val] = [particle]
-        for value, particles in inverser.items():
+        for value, particles in inverse.items():
             part_tuple = tuple(sorted(particles))
             ret[part_tuple] = value / mod_threshold
         return ret
@@ -146,23 +146,26 @@ class Importance(CellModifierCard):
         return self.compress_repeat_values(values)
 
     def format_for_mcnp_input(self, mcnp_version):
-        mutated = self.mutated
-        if not mutated:
-            for cell in self._problem.cells:
-                if cell.importance.mutated:
-                    mutated = True
-                    break
-        if mutated:
-            if self.in_cell_block:
+        ret = []
+        if self.in_cell_block:
+            if self._particle_importances:
                 combined_values = self._combine_importances()
-                for particles, value in combined_values:
+                for particles, value in combined_values.items():
                     particles_short = ",".join([part.value for part in particles])
                     ret.extend(
-                        self.wrap_string_for_mnp(
-                            f"IMP:{particles_short}={value}", False
+                        self.wrap_string_for_mcnp(
+                            f"IMP:{particles_short}={value}", mcnp_version, False
                         )
                     )
-            else:
+        else:
+            mutated = self.mutated
+            if not mutated:
+                mutated = self.has_changed_print_style
+                for cell in self._problem.cells:
+                    if cell.importance.mutated:
+                        mutated = True
+                        break
+            if mutated:
                 ret = MCNP_Card.format_for_mcnp_input(self, mcnp_version)
                 part_value = {}
                 for particle in sorted(self._problem.mode):
@@ -180,11 +183,9 @@ class Importance(CellModifierCard):
                             [f"IMP:{particles_short}"] + list(value), mcnp_version, True
                         )
                     )
-        # if not mutated
-        elif not self.in_cell_block:
-            ret = self._format_for_mcnp_unmutated(mcnp_version)
-        else:
-            ret = []
+            # if not mutated
+            else:
+                ret = self._format_for_mcnp_unmutated(mcnp_version)
         return ret
 
 
