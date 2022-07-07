@@ -85,6 +85,9 @@ class Importance(CellModifierCard):
         return value in self._particle_importances
 
     def __getitem__(self, particle):
+        if not isinstance(particle, Particle):
+            raise TypeError("Key must be a particle")
+        self._check_particle_in_problem(particle)
         return self._particle_importances[particle]
 
     def push_to_cells(self):

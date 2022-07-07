@@ -72,6 +72,8 @@ class TestImportance(TestCase):
             self.assertAlmostEqual(imp[particle], 1.0)
         for particle in particles:
             self.assertIn(particle, imp)
+        with self.assertRaises(TypeError):
+            imp["hi"]
 
     def test_importance_all_setter(self):
         in_str = "1 0 -1 IMP:N,P=1"
