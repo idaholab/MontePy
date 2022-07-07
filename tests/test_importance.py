@@ -143,3 +143,9 @@ class TestImportance(TestCase):
         imp2 = Importance(card)
         with self.assertRaises(MalformedInputError):
             imp1.merge(imp2)
+
+    def tests_redundant_importance(self):
+        with self.assertRaises(MalformedInputError):
+            mcnpy.read_input(
+                os.path.join("tests", "inputs", "test_imp_redundant.imcnp")
+            )
