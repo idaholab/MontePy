@@ -83,6 +83,11 @@ class CellModifierCard(DataCardAbstract):
         """
         pass
 
+    def link_to_problem(self, problem):
+        super().link_to_problem(problem)
+        if self.set_in_cell_block:
+            self._problem.print_in_data_block[self.class_prefix] = False
+
     @abstractmethod
     def push_to_cells(self):
         """
