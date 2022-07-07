@@ -87,6 +87,11 @@ class CellModifierCard(DataCardAbstract):
     def push_to_cells(self):
         """
         After being linked to the problem update all cells attributes with this data.
+
+        This needs to also check that none of the cells had data provided in the cell block
+        (check that ``set_in_cell_block`` isn't set).
+
+        :raises MalformedInputError: When data are given in the cell block and the data block.
         """
         pass
 

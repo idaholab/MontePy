@@ -93,9 +93,14 @@ class Importance(CellModifierCard):
         return self._particle_importances[particle]
 
     def push_to_cells(self):
-        if self._problem:
+        if self._problem and not self.in_cell_block:
             for particle in self._particle_importances:
                 for i, cell in enumerate(self._problem.cells):
+                    if cell.importance.set_in_cell_block:
+                        raise MalformedInputError(
+                            self,
+                            f"Cell: {cell.number} provided IMP data when those data were in the data block",
+                        )
                     value = self._particle_importances[particle][i]
                     cell.importance._particle_importances[particle] = value
                     cell.importance._mutated = False
