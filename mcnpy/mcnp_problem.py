@@ -298,6 +298,10 @@ class MCNP_Problem:
             for card in self.data_cards:
                 for line in card.format_for_mcnp_input(self.mcnp_version):
                     fh.write(line + "\n")
+            for line in self.cells._run_children_format_for_mcnp(
+                self.data_cards, self.mcnp_version
+            ):
+                fh.write(line + "\n")
 
             fh.write("\n")
 
