@@ -79,6 +79,41 @@ In addition to the reformatting of cell 5,
 notice that the geometry definition for cell 5 was automatically updated to reference the new surface number.
 MCNPy links objects together and will automatically update "pointers" in the file for you.
 
+Setting Cell Importances
+------------------------
+All cells have an importance that can be modified. 
+This is generally accessed through ``cell.importance``. 
+You can access the importance for a specific particle type by its name.
+For example: ``cell.importance.neutron`` or ``cell.importance.photon``.
+
+You can also quickly get the information by :class:`mcnpy.particle.Particle`.
+For example: ::
+    
+    for particle in problem.mode:
+        print(cell[particle])
+
+There's also a lot of convenient ways to do bulk modifications.
+There is the ``all`` property that lets you set the importance for all particles in the problem at once.
+For example: ::
+
+    problem.set_mode("n p")
+    cell.importance.all = 2.0
+
+This will set the importances for the neutron and photon. 
+
+There is also the method: :func:`mcnpy.cells.Cells.set_equal_importance`.
+This method sets all of the cells for all particles in the problem to the same importance,
+except for the vacuum boundary cells.
+
+Setting How Cell Data Gets displayed in the Input file
+------------------------------------------------------
+
+Much of the cell data can show up in the cell block or the data block, like the importance card.
+You can change how this happens with :func:`mcnpy.mcnp_problem.MCNP_Problem.print_in_data_block`.
+This acts like a dictionary where the key is the MCNP card name.
+So to make cell importance data show up in the cell block just run:
+``problem.print_in_data_block["imp"] = False``.
+
 What Information is Kept
 ------------------------
 
