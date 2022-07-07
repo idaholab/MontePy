@@ -70,6 +70,8 @@ class Importance(CellModifierCard):
         if self.in_cell_block != other.in_cell_block:
             raise ValueError("Can not mix cell-level and data-level Importance objects")
         self._input_lines.extend(other._input_lines)
+        if other.set_in_cell_block:
+            self._set_in_cell_block = True
         for particle in other:
             if particle not in self:
                 self._particle_importances[particle] = other[particle]
