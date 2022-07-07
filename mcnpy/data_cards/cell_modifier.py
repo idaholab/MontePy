@@ -1,4 +1,5 @@
 from abc import abstractmethod
+import mcnpy
 from mcnpy.data_cards.data_card import DataCardAbstract
 from mcnpy.input_parser.block_type import BlockType
 from mcnpy.input_parser.mcnp_input import Card
@@ -69,10 +70,17 @@ class CellModifierCard(DataCardAbstract):
         :rtype: bool
         """
         if self._problem:
+            if not self.in_cell_block:
+                for cell in self._problem.cells:
+                    attr = mcnpy.Cell._CARDS_TO_PROPERTY[type(self)][0]
+                    set_in_cell_block = getattr(cell, attr).set_in_cell_block
+                    break
+            else:
+                set_in_cell_block = self.set_in_cell_block
             print_in_cell_block = not self._problem.print_in_data_block[
                 self.class_prefix
             ]
-            return print_in_cell_block ^ self.set_in_cell_block
+            return print_in_cell_block ^ set_in_cell_block
         else:
             return False
 
