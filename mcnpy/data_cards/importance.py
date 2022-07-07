@@ -198,6 +198,11 @@ class Importance(CellModifierCard):
                 ret = self._format_for_mcnp_unmutated(mcnp_version)
         return ret
 
+    def link_to_problem(self, problem):
+        super().link_to_problem(problem)
+        if self.set_in_cell_block:
+            self._problem.print_in_data_block[self.class_prefix] = False
+
 
 def __create_importance_getter(particle_type):
     def closure(obj, objtype=None):
