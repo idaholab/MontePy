@@ -583,7 +583,13 @@ class Cell(MCNP_Card):
                 ret += Cell.wrap_words_for_mcnp(strings, mcnp_version, False)
             for attr, foo in Cell._CARDS_TO_PROPERTY.values():
                 if hasattr(self, attr):
-                    ret += getattr(self, attr).format_for_mcnp_input(mcnp_version)
+                    if (
+                        self._problem
+                        and not self._problem.print_in_data_block[
+                            getattr(self, attr).class_prefix
+                        ]
+                    ):
+                        ret += getattr(self, attr).format_for_mcnp_input(mcnp_version)
         else:
             ret = self._format_for_mcnp_unmutated(mcnp_version)
         return ret

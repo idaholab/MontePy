@@ -175,7 +175,7 @@ class Importance(CellModifierCard):
                     if cell.importance.mutated:
                         mutated = True
                         break
-            if mutated:
+            if mutated and self._problem.print_in_data_block["IMP"]:
                 ret = MCNP_Card.format_for_mcnp_input(self, mcnp_version)
                 part_value = {}
                 for particle in sorted(self._problem.mode):
