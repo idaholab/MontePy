@@ -498,6 +498,29 @@ class testFullFileIntegration(TestCase):
             except FileNotFoundError:
                 pass
 
+    def test_importance_write_data(self):
+        out_file = "test_import_data"
+        problem = copy.deepcopy(self.simple_problem)
+        problem.print_in_data_block["imp"] = True
+        try:
+            problem.write_to_file(out_file)
+            found_np = False
+            found_e = False
+            with open(out_file, "r") as fh:
+                for line in fh:
+                    print(line.rstrip())
+                    if "IMP:N,P 1" in line:
+                        found_np = True
+                    elif "IMP:E 1" in line:
+                        found_e = True
+            self.assertTrue(found_np)
+            self.assertTrue(found_e)
+        finally:
+            try:
+                os.remove(out_file)
+            except FileNotFoundError:
+                pass
+
     def test_set_mode(self):
         problem = copy.deepcopy(self.importance_problem)
         problem.set_mode("e p")
