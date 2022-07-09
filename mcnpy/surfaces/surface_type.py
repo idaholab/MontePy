@@ -7,7 +7,6 @@ class SurfaceType(str, Enum):
         obj = str.__new__(cls, value)
         obj._value_ = value
         obj.description = description
-        print(description)
         return obj
 
     # planes
