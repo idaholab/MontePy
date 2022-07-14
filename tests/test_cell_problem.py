@@ -66,8 +66,8 @@ class TestCellClass(TestCase):
         card = Card([in_str], BlockType.CELL)
         cell = Cell(card)
         self.assertIn(2, cell.old_complement_numbers)
-        self.assertEqual(cell.parameters["U"], "5")
-        self.assertEqual(cell.parameters["VOL"], "20")
+        self.assertEqual(cell.parameters["U"].strip(), "5")
+        self.assertEqual(cell.parameters["VOL"].strip(), "20")
 
     def test_geometry_logic_string_setter(self):
         in_str = "1 0 2"
@@ -133,7 +133,7 @@ class TestCellClass(TestCase):
                 in_str = f"1 0 -1 FILL={in_fill} {ending}"
                 card = Card([in_str], BlockType.CELL)
                 cell = Cell(card)
-                self.assertEqual(cell.parameters["FILL"], in_fill)
+                self.assertEqual(cell.parameters["FILL"].strip(), in_fill.strip())
                 cell.number = 2
                 output = cell.format_for_mcnp_input((6, 2, 0))
                 self.assertIn(in_fill, output[2])
@@ -150,3 +150,12 @@ class TestCellClass(TestCase):
         self.assertEqual(params, cell.parameters)
         with self.assertRaises(TypeError):
             cell.parameters = []
+
+    def test_cell_paremeters_no_eq(self):
+        test_fill_strs = ["6600 (610)", "6600 (0.0 0.0 10.0)"]
+        for ending in ["IMP:N 1", ""]:
+            for in_fill in test_fill_strs:
+                in_str = f"1 0 -1 FILL {in_fill} {ending}"
+                card = Card([in_str], BlockType.CELL)
+                cell = Cell(card)
+                self.assertEqual(cell.parameters["FILL"], in_fill)
