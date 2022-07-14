@@ -291,9 +291,7 @@ class NumberedObjectCollection(ABC):
         for o in self._objects:
             yield o
 
-    def items(self) -> typing.Generator[
-        typing.Tuple[int, MCNP_Card], None, None
-    ]:
+    def items(self) -> typing.Generator[typing.Tuple[int, MCNP_Card], None, None]:
         """
         Get iterator of the collections (number, object) pairs.
 
