@@ -1,6 +1,6 @@
 import itertools
 from mcnpy.cells import Cells
-from mcnpy.data_cards import importance
+from mcnpy.data_cards import importance, volume
 from mcnpy.data_cards.data_parser import PREFIX_MATCHES
 from mcnpy.errors import *
 from mcnpy.mcnp_card import MCNP_Card
@@ -38,7 +38,10 @@ class Cell(MCNP_Card):
         "BFLCL",
         "UNC",
     }
-    _CARDS_TO_PROPERTY = {importance.Importance: ("_importance", False)}
+    _CARDS_TO_PROPERTY = {
+        importance.Importance: ("_importance", False),
+        volume.Volume: ("_volume", True),
+    }
 
     def __init__(self, input_card=None, comment=None):
         """
@@ -50,7 +53,7 @@ class Cell(MCNP_Card):
         super().__init__(input_card, comment)
         self._material = None
         self._old_cell_number = None
-        self._importance = importance.Importance(in_cell_block=True)
+        self._load_blank_modifiers()
         self._old_mat_number = None
         self._geometry_logic_string = None
         self._density = None
@@ -161,6 +164,13 @@ class Cell(MCNP_Card):
                                 f"Can't repeat the card for type {card_class}",
                             )
 
+    def _load_blank_modifiers(self):
+        """
+        Goes through and populates all the modifier attributes
+        """
+        for card_class, (attr, foo) in self._CARDS_TO_PROPERTY.items():
+            setattr(self, attr, card_class(in_cell_block=True))
+
     @property
     def allowed_keywords(self):
         return Cell._ALLOWED_KEYWORDS
@@ -168,6 +178,18 @@ class Cell(MCNP_Card):
     @property
     def importance(self):
         return self._importance
+
+    @property
+    def volume(self):
+        return self._volume.volume
+
+    @volume.setter
+    def volume(self, value):
+        self._volume.volume = value
+
+    @volume.deleter
+    def volume(self):
+        del self._volume.volume
 
     @property
     def old_number(self):
