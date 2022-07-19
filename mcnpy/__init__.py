@@ -13,6 +13,7 @@ __credits__ = [
     "Travis Labossiere-Hickman",
     "Austin Carter",
     "Andrew Bascom",
+    "Roberto Fairhurst Agosta",
 ]
 
 name = "mcnpy"
