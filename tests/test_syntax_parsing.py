@@ -213,7 +213,7 @@ bar
                 "1",
                 "2j",
                 "4",
-            ): ["M", "1", None, None, "4"],
+            ): ["M", "1", mcnpy.Default(), mcnpy.Default(), "4"],
         }
         invalid = [
             ("M", "3J", "4R"),
@@ -226,9 +226,11 @@ bar
 
         parser = mcnpy.input_parser.mcnp_input.parse_card_shortcuts
         for test, answer in tests.items():
+            print(test)
             parsed = parser(list(test))
             self.assertEqual(parsed, answer)
         for test in invalid:
+            print(test)
             with self.assertRaises(mcnpy.errors.MalformedInputError):
                 parser(list(test))
 
