@@ -34,7 +34,7 @@ class Importance(CellModifierCard):
                     assert value >= 0
                 except (ValueError, AssertionError) as e:
                     raise ValueError(
-                        f"Cell importance must be a number >= 0. {value} was given"
+                        f"Cell importance must be a number ≥ 0. {value} was given"
                     )
                 for particle in self.particle_classifiers:
                     self._particle_importances[particle] = value
