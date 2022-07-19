@@ -6,6 +6,21 @@ from mcnpy.input_parser.constants import BLANK_SPACE_CONTINUE, get_max_line_leng
 import re
 
 
+class Default:
+    """
+    Class to represent a default entry represented by a "jump".
+    """
+
+    def __str__(self):
+        return "J"
+
+    def __bool__(self):
+        return False
+
+    def __eq__(self, other):
+        return type(self) == type(other)
+
+
 class MCNP_Input(ABC):
     """
     Object to represent a single coherent MCNP input, such as a card.
@@ -124,6 +139,7 @@ def parse_card_shortcuts(words, card=None):
             if letters == "r":
                 try:
                     last_val = ret[-1]
+                    assert last_val  # force last_val to be truthy
                     if last_val is None:
                         raise IndexError
                     if number:
@@ -131,7 +147,7 @@ def parse_card_shortcuts(words, card=None):
                     else:
                         number = 1
                     ret += [last_val] * number
-                except IndexError:
+                except (IndexError, AssertionError) as e:
                     raise MalformedInputError(
                         card, "The repeat shortcut must come after a value"
                     )
@@ -178,7 +194,7 @@ def parse_card_shortcuts(words, card=None):
                     number = int(number)
                 else:
                     number = 1
-                ret += [None] * number
+                ret += [Default()] * number
             elif letters in {"ilog", "log"}:
                 try:
                     begin = math.log(float(number_parser.search(ret[-1]).group(1)), 10)
