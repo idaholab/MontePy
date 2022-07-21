@@ -1,5 +1,4 @@
 import mcnpy
-from mcnpy.data_cards import importance
 from mcnpy.numbered_object_collection import NumberedObjectCollection
 
 
