@@ -90,7 +90,7 @@ You can also quickly get the information by :class:`mcnpy.particle.Particle`.
 For example: ::
     
     for particle in problem.mode:
-        print(cell[particle])
+        print(cell.importance[particle])
 
 There's also a lot of convenient ways to do bulk modifications.
 There is the ``all`` property that lets you set the importance for all particles in the problem at once.
