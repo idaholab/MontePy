@@ -213,7 +213,7 @@ bar
                 "1",
                 "2j",
                 "4",
-            ): ["M", "1", mcnpy.Default(), mcnpy.Default(), "4"],
+            ): ["M", "1", mcnpy.Jump(), mcnpy.Jump(), "4"],
         }
         invalid = [
             ("M", "3J", "4R"),
