@@ -68,7 +68,7 @@ class Cells(NumberedObjectCollection):
             if prop is None:
                 continue
             prop.push_to_cells()
-            prop.clear_data()
+            prop._clear_data()
         for card_class, (attr, _) in cards_to_property.items():
             if not hasattr(self, attr):
                 card = card_class()

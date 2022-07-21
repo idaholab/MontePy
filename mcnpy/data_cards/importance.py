@@ -1,5 +1,6 @@
 from mcnpy.data_cards.cell_modifier import CellModifierCard
 from mcnpy.errors import *
+from mcnpy.input_parser.constants import DEFAULT_VERSION
 from mcnpy.mcnp_card import MCNP_Card
 from mcnpy.particle import Particle
 import numbers
@@ -108,13 +109,25 @@ class Importance(CellModifierCard):
             raise TypeError("Key must be a particle")
         del self._particle_importances[particle]
 
+    def __str__(self):
+        if not self.in_cell_block and self._problem is None:
+            return " ".join(self.input_lines)
+        return "".join(self.format_for_mcnp_input(DEFAULT_VERSION))
+
+    def __repr__(self):
+        return (
+            f"Importance: in_cell_block: {self.in_cell_block},"
+            f" set_in_cell_block {self.set_in_cell_block},"
+            f"\n{self._particle_importances}"
+        )
+
     def push_to_cells(self):
         if self._problem and not self.in_cell_block:
             for particle in self._particle_importances:
                 for i, cell in enumerate(self._problem.cells):
                     if cell.importance.set_in_cell_block:
                         raise MalformedInputError(
-                            self,
+                            cell.importance,
                             f"Cell: {cell.number} provided IMP data when those data were in the data block",
                         )
                     value = self._particle_importances[particle][i]
