@@ -13,7 +13,7 @@ def __create_surface_generator(surf_type):
     This closure is then passed to ``property()`` to create a property
     """
 
-    def closure(obj, objtype=None):
+    def closure(obj):
         for surf in obj.objects:
             if surf.surface_type == surf_type:
                 yield surf

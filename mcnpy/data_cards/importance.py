@@ -216,7 +216,7 @@ class Importance(CellModifierCard):
 
 
 def __create_importance_getter(particle_type):
-    def closure(obj, objtype=None):
+    def closure(obj):
         obj._check_particle_in_problem(particle_type)
         try:
             return obj._particle_importances[particle_type]
