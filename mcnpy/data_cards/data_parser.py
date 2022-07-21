@@ -1,4 +1,11 @@
-from mcnpy.data_cards import data_card, importance, material, mode, thermal_scattering
+from mcnpy.data_cards import (
+    data_card,
+    importance,
+    material,
+    mode,
+    thermal_scattering,
+    volume,
+)
 from mcnpy.data_cards import transform
 import re
 
@@ -8,6 +15,7 @@ PREFIX_MATCHES = {
     "mode": mode.Mode,
     "mt": thermal_scattering.ThermalScatteringLaw,
     "tr": transform.Transform,
+    "vol": volume.Volume,
 }
 
 
