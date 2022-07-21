@@ -63,11 +63,13 @@ class Cells(NumberedObjectCollection):
                     cards_loaded.add(type(card))
         for cell in self:
             cell.update_pointers(cells, materials, surfaces)
-        for attr, foo in cards_to_property.values():
-            if hasattr(self, attr):
-                getattr(self, attr).push_to_cells()
-                getattr(self, attr)._clear_data()
-        for card_class, (attr, foo) in cards_to_property.items():
+        for attr, _ in cards_to_property.values():
+            prop = getattr(self, attr, None)
+            if prop is None:
+                continue
+            prop.push_to_cells()
+            prop.clear_data()
+        for card_class, (attr, _) in cards_to_property.items():
             if not hasattr(self, attr):
                 card = card_class()
                 card.link_to_problem(problem)
@@ -76,7 +78,7 @@ class Cells(NumberedObjectCollection):
 
     def _run_children_format_for_mcnp(self, data_cards, mcnp_version):
         ret = []
-        for attr, foo in mcnpy.Cell._CARDS_TO_PROPERTY.values():
+        for attr, _ in mcnpy.Cell._CARDS_TO_PROPERTY.values():
             if getattr(self, attr) not in data_cards:
                 ret += getattr(self, attr).format_for_mcnp_input(mcnp_version)
         return ret
