@@ -13,7 +13,7 @@ class Cells(NumberedObjectCollection):
         """
         super().__init__(mcnpy.Cell, cells)
 
-    def set_equal_importance(self, importance, vacuum_cells=[]):
+    def set_equal_importance(self, importance, vacuum_cells=tuple()):
         """
         Sets all cells except the vacuum cells to the same importance using importance.all.
 
@@ -24,7 +24,7 @@ class Cells(NumberedObjectCollection):
         :param vacuum_cells: the cells that are the vacuum boundary with 0 importance
         :type vacuum_cells: list
         """
-        if not isinstance(vacuum_cells, (list, set)):
+        if not isinstance(vacuum_cells, (list, tuple, set)):
             raise TypeError("vacuum_cells must be a list or set")
         cells_buff = set()
         for cell in vacuum_cells:
