@@ -92,6 +92,22 @@ class Importance(CellModifierCard):
         self._check_particle_in_problem(particle)
         return self._particle_importances[particle]
 
+    def __setitem__(self, particle, value):
+        if not isinstance(particle, Particle):
+            raise TypeError("Key must be a particle")
+        self._check_particle_in_problem(particle)
+        if not isinstance(value, numbers.Number):
+            raise TypeError("importance must be a number")
+        if value < 0:
+            raise ValueError("importance must be ≥ 0")
+        self._mutated = True
+        self._particle_importances[particle] = value
+
+    def __delitem__(self, particle):
+        if not isinstance(particle, Particle):
+            raise TypeError("Key must be a particle")
+        del self._particle_importances[particle]
+
     def push_to_cells(self):
         if self._problem and not self.in_cell_block:
             for particle in self._particle_importances:
@@ -102,7 +118,7 @@ class Importance(CellModifierCard):
                             f"Cell: {cell.number} provided IMP data when those data were in the data block",
                         )
                     value = self._particle_importances[particle][i]
-                    cell.importance._particle_importances[particle] = value
+                    cell.importance[particle] = value
                     cell.importance._mutated = False
 
     @property
