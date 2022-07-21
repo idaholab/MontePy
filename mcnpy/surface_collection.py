@@ -3,7 +3,7 @@ from mcnpy.surfaces.surface_type import SurfaceType
 from mcnpy.numbered_object_collection import NumberedObjectCollection
 
 
-def _create_surface_generator(surf_type):
+def __create_surface_generator(surf_type):
     """A function for a Descriptor for the Surfaces collection.
 
     This is meant to make it possible to get a generator at
@@ -39,7 +39,11 @@ class Surfaces(NumberedObjectCollection):
         super().__init__(Surface, surfaces)
 
 
-for surf_type in SurfaceType:
-    doc = f"Generator for getting all surfaces of type *{surf_type.description}* or ``{surf_type.value}``"
-    getter = property(_create_surface_generator(surf_type), doc=doc)
-    setattr(Surfaces, surf_type.name.lower(), getter)
+def __setup_surfaces_generators():
+    for surf_type in SurfaceType:
+        doc = f"Generator for getting all surfaces of type *{surf_type.description}* or ``{surf_type.value}``"
+        getter = property(__create_surface_generator(surf_type), doc=doc)
+        setattr(Surfaces, surf_type.name.lower(), getter)
+
+
+__setup_surfaces_generators()

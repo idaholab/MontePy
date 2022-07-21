@@ -235,10 +235,14 @@ def __create_particle_imp_doc(particle_type):
     return f"Importance for particles of type *{particle_type.name.lower()}*"
 
 
-for particle in Particle:
-    getter = __create_importance_getter(particle)
-    setter = __create_importance_setter(particle)
-    deleter = __create_importance_deleter(particle)
-    doc = __create_particle_imp_doc(particle)
-    prop = property(getter, setter, deleter, doc=doc)
-    setattr(Importance, particle.name.lower(), prop)
+def __setup_importances():
+    for particle in Particle:
+        getter = __create_importance_getter(particle)
+        setter = __create_importance_setter(particle)
+        deleter = __create_importance_deleter(particle)
+        doc = __create_particle_imp_doc(particle)
+        prop = property(getter, setter, deleter, doc=doc)
+        setattr(Importance, particle.name.lower(), prop)
+
+
+__setup_importances()
