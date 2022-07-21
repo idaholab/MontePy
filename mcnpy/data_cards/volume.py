@@ -1,8 +1,10 @@
 from mcnpy.data_cards.cell_modifier import CellModifierCard
 from mcnpy.errors import *
+from mcnpy.input_parser.mcnp_input import Jump
 
 
-#TODO: handle defaults!
+# TODO: handle defaults!
+
 
 class Volume(CellModifierCard):
     """
@@ -33,13 +35,20 @@ class Volume(CellModifierCard):
                 self.calc_by_mcnp = False
                 words = self.words[2:]
             for word in words:
-                try:
-                    value = float(word)
-                    assert value >= 0
-                    self._volume.append(value)
-                except (ValueError, AssertionError) as e:
-                    raise MalformedInputError(
-                        input_card, f"Cell volumes by a number ≥ 0.0: {word} given"
+                if isinstance(word, str):
+                    try:
+                        value = float(word)
+                        assert value >= 0
+                        self._volume.append(value)
+                    except (ValueError, AssertionError) as e:
+                        raise MalformedInputError(
+                            input_card, f"Cell volumes by a number ≥ 0.0: {word} given"
+                        )
+                elif isinstance(word, Jump):
+                    self._volume.append(word)
+                else:
+                    raise TypeError(
+                        f"Word: {word} cannot be parsed as a volume as a str, or Jump"
                     )
 
     @property
@@ -66,10 +75,12 @@ class Volume(CellModifierCard):
         if value < 0.0:
             raise ValueError("Volume must be set to a number ≥ 0")
         self._volume = volume
+        self._mutated = True
 
     @volume.deleter
     def volume(self):
         self._volume = None
+        self._mutated = True
 
     @property
     def is_mcnp_calculated(self):
@@ -82,6 +93,9 @@ class Volume(CellModifierCard):
 
     @property
     def set(self):
+        """
+        If this volume is set.
+        """
         if self._volume is not None:
             return True
 
@@ -91,10 +105,32 @@ class Volume(CellModifierCard):
         )
 
     def push_to_cells(self):
-        pass
+        if not self.in_cell_block and self._problem and self._volume:
+            cells = self._problem.cells
+            for i, cell in enumerate(cells):
+                vol = self._volume[i]
+                if cell._volume.set_in_cell_block:
+                    raise MalformedInputError(
+                        self,
+                        f"Cell: {cell.number} provided IMP data when those data were in the data block",
+                    )
+                if not isinstance(vol, Jump):
+                    cell.volume = vol
 
     def _clear_data(self):
         del self._volume
 
     def format_for_mcnp_input(self, mcnp_version):
-        return [""]
+        ret = []
+        if self.in_cell_block:
+            if self._volume:
+                ret.extend(self.wrap_string_for_mcnp(f"VOL={self.volume}", mcnp_version, False))
+        else:
+            mutated = self.mutated
+            if not mutated:
+                mutated = self.has_changed_print_style
+                for cell in self._problem.cells:
+                    if cell._volume.mutated:
+                        mutated = True
+                        break
+        return ret
