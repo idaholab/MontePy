@@ -4,7 +4,7 @@ from unittest import TestCase, expectedFailure
 import os
 
 import mcnpy
-from mcnpy.data_cards import material, thermal_scattering
+from mcnpy.data_cards import material, thermal_scattering, volume
 from mcnpy.input_parser.mcnp_input import Card, Comment, Message, Title, ReadCard
 from mcnpy.particle import Particle
 
@@ -48,7 +48,8 @@ class testFullFileIntegration(TestCase):
 
     def test_data_card_parsing(self):
         M = material.Material
-        cards = [M, M, M, "KSRC", "KCODE", "PHYS:P", "MODE"]
+        V = volume.Volume
+        cards = [M, M, M, "KSRC", "KCODE", "PHYS:P", "MODE", V]
         for i, card in enumerate(self.simple_problem.data_cards):
             if isinstance(cards[i], str):
                 self.assertEqual(card.words[0].upper(), cards[i])
