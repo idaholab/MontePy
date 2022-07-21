@@ -15,8 +15,8 @@ class MCNP_Card(ABC):
         """
         :param input_card: The Card syntax object this will wrap and parse.
         :type input_card: Card
-        :param comment: The Comments that proceeded this card or were inside of this if any
-        :type Comment: list
+        :param comments: The Comments that proceeded this card or were inside of this if any
+        :type Comments: list
         """
         self._problem = None
         self._parameters = {}

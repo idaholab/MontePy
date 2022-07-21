@@ -41,14 +41,14 @@ class DataCardAbstract(MCNP_Card):
         re.I,
     )
 
-    def __init__(self, input_card=None, comment=None):
+    def __init__(self, input_card=None, comments=None):
         """
         :param input_card: the Card object representing this data card
         :type input_card: Card
-        :param comment: The Comment that may proceed this
-        :type comment: Comment
+        :param comments: The list of Comments that may proceed this or be entwined with it.
+        :type comments: list
         """
-        super().__init__(input_card, comment)
+        super().__init__(input_card, comments)
         if input_card:
             self._words = input_card.words
             self.__split_name()
