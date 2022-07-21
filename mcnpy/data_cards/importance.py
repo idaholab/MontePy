@@ -143,8 +143,9 @@ class Importance(CellModifierCard):
 
     @all.setter
     def all(self, value):
-        if not isinstance(value, float):
+        if not isinstance(value, numbers.Number):
             raise TypeError("All importance must be a float")
+        value = float(value)
         if value < 0.0:
             raise ValueError("Importance must be ≥ 0.0")
         if self._problem:
@@ -244,6 +245,7 @@ def __create_importance_setter(particle_type):
         obj._check_particle_in_problem(particle_type)
         if not isinstance(value, numbers.Number):
             raise TypeError("importance must be a number")
+        value = float(value)
         if value < 0:
             raise ValueError("importance must be ≥ 0")
         obj._mutated = True
