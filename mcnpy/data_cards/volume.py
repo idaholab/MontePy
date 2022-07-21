@@ -72,7 +72,7 @@ class Volume(CellModifierCard):
             raise TypeError("Volume must be set to a float")
         if value < 0.0:
             raise ValueError("Volume must be set to a number ≥ 0")
-        self._volume = volume
+        self._volume = value
         self._mutated = True
 
     @volume.deleter

@@ -151,7 +151,7 @@ class Cell(MCNP_Card):
                     card = card_class(in_cell_block=True, key=key, value=value)
                     if self._problem:
                         card.link_to_problem(self._problem)
-                    if not hasattr(self, attr):
+                    if not getattr(self, attr).set_in_cell_block:
                         setattr(self, attr, card)
                     else:
                         if not ban_repeat:
