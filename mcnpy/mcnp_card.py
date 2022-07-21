@@ -269,6 +269,30 @@ class MCNP_Card(ABC):
 
         return ret
 
+    @staticmethod
+    def compress_jump_values(values):
+        """
+        Takes a list of strings and jump values and combines repeated jump values.
+
+        e.g., 1 1 J J 3 J becomes 11 2J 3 J
+        :param values: a list of string and Jump values to try to compress
+        :type values: list
+        :returns: a list of MCNP word strings that have repeat compression
+        :rtype: list
+        """
+        ret = []
+        jump_counter = 0
+        for value in values:
+            if isinstance(value, mcnpy.input_parser.mcnp_input.Jump):
+                jump_counter += 1
+            else:
+                if jump_counter == 1:
+                    ret.append("J")
+                elif jump_counter >= 1:
+                    ret.append(f"{jump_counter}J")
+                jump_counter = 0
+                ret.append(value)
+
     @property
     def words(self):
         """

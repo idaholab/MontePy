@@ -1,9 +1,7 @@
 from mcnpy.data_cards.cell_modifier import CellModifierCard
 from mcnpy.errors import *
 from mcnpy.input_parser.mcnp_input import Jump
-
-
-# TODO: handle defaults!
+from mcnpy.mcnp_card import MCNP_Card
 
 
 class Volume(CellModifierCard):
@@ -32,7 +30,7 @@ class Volume(CellModifierCard):
             self._volume = []
             words = self.words[1:]
             if self.words[1].lower() == "no":
-                self.calc_by_mcnp = False
+                self._calc_by_mcnp = False
                 words = self.words[2:]
             for word in words:
                 if isinstance(word, str):
@@ -124,7 +122,9 @@ class Volume(CellModifierCard):
         ret = []
         if self.in_cell_block:
             if self._volume:
-                ret.extend(self.wrap_string_for_mcnp(f"VOL={self.volume}", mcnp_version, False))
+                ret.extend(
+                    self.wrap_string_for_mcnp(f"VOL={self.volume}", mcnp_version, False)
+                )
         else:
             mutated = self.mutated
             if not mutated:
@@ -133,4 +133,20 @@ class Volume(CellModifierCard):
                     if cell._volume.mutated:
                         mutated = True
                         break
+            if mutated and self._problem.print_in_data_block["VOL"]:
+                ret = MCNP_Card.format_for_mcnp_input(self, mcnp_version)
+
+            else:
+                ret = self._format_for_mcnp_unmutated(mcnp_version)
+                ret_strs = ["VOL"]
+                if not self.calc_by_mcnp:
+                    ret_strs.append("NO")
+                volumes = []
+                for cell in self._problem.cells:
+                    if cell.volume:
+                        volumes.append(f"{cell.volume}")
+                    else:
+                        volumes.append(Jump())
+                ret_strs.extend(self.compress_jump_values(volumes))
+                ret.extend(self.wrap_words_for_mcnp(mcnp_version))
         return ret

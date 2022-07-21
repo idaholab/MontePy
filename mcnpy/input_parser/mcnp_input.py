@@ -139,7 +139,9 @@ def parse_card_shortcuts(words, card=None):
             if letters == "r":
                 try:
                     last_val = ret[-1]
-                    assert not isinstance(last_val, Jump) and last_val  # force last_val to be truthy
+                    assert (
+                        not isinstance(last_val, Jump) and last_val
+                    )  # force last_val to be truthy
                     if last_val is None:
                         raise IndexError
                     if number:
