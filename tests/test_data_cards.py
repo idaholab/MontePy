@@ -2,6 +2,7 @@ from unittest import TestCase
 
 import mcnpy
 
+from mcnpy.cell_data_control import CellDataPrintController
 from mcnpy.data_cards.data_card import DataCard
 from mcnpy.data_cards import material, thermal_scattering, transform
 from mcnpy.data_cards.data_parser import parse_data
@@ -88,3 +89,19 @@ class testDataCardClass(TestCase):
         input_card._mutated = True
         output = input_card.format_for_mcnp_input((6, 2, 0))
         self.assertEqual(output, [in_str])
+
+    def test_print_in_data_block(self):
+        cell_controller = CellDataPrintController()
+        cell_controller["imp"] = True
+        cell_controller["Imp"] = True
+        self.assertTrue(cell_controller["IMP"])
+        with self.assertRaises(TypeError):
+            cell_controller[5] = True
+        with self.assertRaises(TypeError):
+            cell_controller["imp"] = 5
+        with self.assertRaises(TypeError):
+            cell_controller[5]
+        with self.assertRaises(KeyError):
+            cell_controller["a"] = True
+        with self.assertRaises(KeyError):
+            cell_controller["a"]

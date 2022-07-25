@@ -5,6 +5,7 @@ import mcnpy
 from mcnpy.input_parser import input_syntax_reader
 from mcnpy.input_parser.mcnp_input import Card, Message, Title
 from mcnpy.input_parser.block_type import BlockType
+from mcnpy.particle import Particle
 
 
 class TestSyntaxParsing(TestCase):
@@ -235,8 +236,16 @@ bar
         tests = {
             "kcOde": {"prefix": "kcode", "number": None, "classifier": None},
             "M300": {"prefix": "m", "number": 300, "classifier": None},
-            "IMP:N,P,E": {"prefix": "imp", "number": None, "classifier": ":n,p,e"},
-            "F1004:n,P": {"prefix": "f", "number": 1004, "classifier": ":n,p"},
+            "IMP:N,P,E": {
+                "prefix": "imp",
+                "number": None,
+                "classifier": [Particle.NEUTRON, Particle.PHOTON, Particle.ELECTRON],
+            },
+            "F1004:n,P": {
+                "prefix": "f",
+                "number": 1004,
+                "classifier": [Particle.NEUTRON, Particle.PHOTON],
+            },
         }
         for in_str, answer in tests.items():
             # Testing parsing the names
@@ -246,7 +255,7 @@ bar
             data_card = mcnpy.data_cards.data_card.DataCard(card)
             self.assertEqual(data_card.prefix, answer["prefix"])
             self.assertEqual(data_card._input_number, answer["number"])
-            self.assertEqual(data_card.particle_classifier, answer["classifier"])
+            self.assertEqual(data_card.particle_classifiers, answer["classifier"])
 
     def testDataCardNameEnforcement(self):
         tests = {

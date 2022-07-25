@@ -1,6 +1,9 @@
+import itertools
+from mcnpy.cell_data_control import CellDataPrintController
+from mcnpy.data_cards import mode
 from mcnpy.cell import Cell
 from mcnpy.cells import Cells
-from mcnpy.errors import NumberConflictError
+from mcnpy.errors import *
 from mcnpy.input_parser.constants import DEFAULT_VERSION
 from mcnpy.materials import Materials
 from mcnpy.surfaces import surface_builder
@@ -22,12 +25,14 @@ class MCNP_Problem:
         self._input_file = file_name
         self._title = None
         self._message = None
+        self._print_in_data_block = CellDataPrintController()
         self._original_inputs = []
         self._cells = Cells()
         self._surfaces = Surfaces()
         self._data_cards = []
         self._materials = Materials()
         self._mcnp_version = DEFAULT_VERSION
+        self._mode = mode.Mode()
 
     @property
     def original_inputs(self):
@@ -59,6 +64,17 @@ class MCNP_Problem:
         if isinstance(cells, list):
             cells = Cells(cells)
         self._cells = cells
+
+    @property
+    def mode(self):
+        """
+        The mode of particles being used for the problem.
+        """
+        return self._mode
+
+    def set_mode(self, particles):
+        """"""
+        self._mode.set(particles)
 
     @property
     def mcnp_version(self):
@@ -113,6 +129,13 @@ class MCNP_Problem:
         if isinstance(mats, list):
             mats = Materials(mats)
         self._materials = mats
+
+    @property
+    def print_in_data_block(self):
+        """
+        Controls whether or not the specific card gets printed in the cell block or the data block.
+        """
+        return self._print_in_data_block
 
     @property
     def data_cards(self):
@@ -193,16 +216,18 @@ class MCNP_Problem:
                     if input_card.block_type == block_type.BlockType.DATA:
                         data = parse_data(input_card, comment_queue)
                         data.link_to_problem(self)
-                        self._data_cards.append(data)
                         if isinstance(data, Material):
                             self._materials.append(data)
+                        self._data_cards.append(data)
                     comment_queue = []
         self.__update_internal_pointers()
 
     def __update_internal_pointers(self):
         """Updates the internal pointers between objects"""
-        for cell in self._cells:
-            cell.update_pointers(self.cells, self.materials, self.surfaces)
+        self.__load_data_cards_to_object(self._data_cards)
+        self._cells.update_pointers(
+            self.cells, self.materials, self.surfaces, self._data_cards, self
+        )
         for surface in self._surfaces:
             surface.update_pointers(self.surfaces, self._data_cards)
         for card in self._data_cards:
@@ -273,8 +298,30 @@ class MCNP_Problem:
             for card in self.data_cards:
                 for line in card.format_for_mcnp_input(self.mcnp_version):
                     fh.write(line + "\n")
+            for line in self.cells._run_children_format_for_mcnp(
+                self.data_cards, self.mcnp_version
+            ):
+                fh.write(line + "\n")
 
             fh.write("\n")
+
+    def __load_data_cards_to_object(self, data_cards):
+        """
+        Loads data cards into their appropriate problem attribute.
+
+        Problem-level cards should be loaded this way like: mode and kcode.
+        """
+        cards_to_property = {mode.Mode: "_mode"}
+        cards_loaded = set()
+        for card in data_cards:
+            if type(card) in cards_to_property:
+                if type(card) in cards_loaded:
+                    raise MalformedInputError(
+                        card,
+                        f"The card: {type(card)} is only allowed once in a problem",
+                    )
+                setattr(self, cards_to_property[type(card)], card)
+                cards_loaded.add(type(card))
 
     def __str__(self):
         ret = f"MCNP problem for: {self._input_file}\n"

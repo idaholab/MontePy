@@ -1,5 +1,7 @@
 import itertools
 from mcnpy.cells import Cells
+from mcnpy.data_cards import importance
+from mcnpy.data_cards.data_parser import PREFIX_MATCHES
 from mcnpy.errors import *
 from mcnpy.mcnp_card import MCNP_Card
 from mcnpy.data_cards.material import Material
@@ -16,6 +18,28 @@ class Cell(MCNP_Card):
 
     """
 
+    _ALLOWED_KEYWORDS = {
+        "IMP",
+        "VOL",
+        "PWT",
+        "EXT",
+        "FCL",
+        "WWN",
+        "DXC",
+        "NONU",
+        "PD",
+        "TMP",
+        "U",
+        "TRCL",
+        "LAT",
+        "FILL",
+        "ELPT",
+        "COSY",
+        "BFLCL",
+        "UNC",
+    }
+    _CARDS_TO_PROPERTY = {importance.Importance: ("_importance", False)}
+
     def __init__(self, input_card=None, comment=None):
         """
         :param input_card: the Card input for the cell definition
@@ -26,6 +50,7 @@ class Cell(MCNP_Card):
         super().__init__(input_card, comment)
         self._material = None
         self._old_cell_number = None
+        self._importance = importance.Importance(in_cell_block=True)
         self._old_mat_number = None
         self._geometry_logic_string = None
         self._density = None
@@ -78,6 +103,7 @@ class Cell(MCNP_Card):
                         f"{words[2]} can not be parsed as a material density.",
                     )
             self._parse_geometry(i, words)
+            self._parse_keyword_modifiers()
 
     def _parse_geometry(self, i, words):
         """
@@ -107,28 +133,41 @@ class Cell(MCNP_Card):
                         self._old_surface_numbers.add(int(surface))
         self._geometry_logic_string = geometry_string
 
+    def _parse_keyword_modifiers(self):
+        """
+        Parses the parameters to make the object and load as an attribute
+        """
+        for key, value in dict(self._parameters).items():
+            for prefix, card_class in PREFIX_MATCHES.items():
+                if (
+                    card_class in Cell._CARDS_TO_PROPERTY
+                    and prefix.upper() in key.upper()
+                ):
+                    attr, ban_repeat = Cell._CARDS_TO_PROPERTY[card_class]
+                    del self._parameters[key]
+                    card = card_class(in_cell_block=True, key=key, value=value)
+                    if self._problem:
+                        card.link_to_problem(self._problem)
+                    if not hasattr(self, attr):
+                        setattr(self, attr, card)
+                    else:
+                        if not ban_repeat:
+                            getattr(self, attr).merge(
+                                card_class(in_cell_block=True, key=key, value=value)
+                            )
+                        else:
+                            raise MalformedInputError(
+                                f"{key}={value}",
+                                f"Can't repeat the card for type {card_class}",
+                            )
+
     @property
     def allowed_keywords(self):
-        return {
-            "IMP",
-            "VOL",
-            "PWT",
-            "EXT",
-            "FCL",
-            "WWN",
-            "DXC",
-            "NONU",
-            "PD",
-            "TMP",
-            "U",
-            "TRCL",
-            "LAT",
-            "FILL",
-            "ELPT",
-            "COSY",
-            "BFLCL",
-            "UNC",
-        }
+        return Cell._ALLOWED_KEYWORDS
+
+    @property
+    def importance(self):
+        return self._importance
 
     @property
     def old_number(self):
@@ -481,6 +520,14 @@ class Cell(MCNP_Card):
                     ]
             self._update_geometry_logic_by_map(matching_surfaces, {})
 
+    @property
+    def modifier_block_print_changed(self):
+        for attr, _ in Cell._CARDS_TO_PROPERTY.values():
+            if hasattr(self, attr):
+                if getattr(self, attr).has_changed_print_style:
+                    return True
+        return False
+
     def format_for_mcnp_input(self, mcnp_version):
         mutated = self.mutated
         if not mutated:
@@ -490,6 +537,9 @@ class Cell(MCNP_Card):
                 if surf.mutated:
                     mutated = True
                     break
+        if not mutated:
+            mutated = self.modifier_block_print_changed
+
         if mutated:
             ret = super().format_for_mcnp_input(mcnp_version)
             self.update_geometry_logic_string()
@@ -531,9 +581,22 @@ class Cell(MCNP_Card):
                         value = " ".join(value)
                     strings.append(f"{key}={value}")
                 ret += Cell.wrap_words_for_mcnp(strings, mcnp_version, False)
+            for attr, _ in Cell._CARDS_TO_PROPERTY.values():
+                if hasattr(self, attr):
+                    if (
+                        self._problem
+                        and not self._problem.print_in_data_block[
+                            getattr(self, attr).class_prefix
+                        ]
+                    ):
+                        ret += getattr(self, attr).format_for_mcnp_input(mcnp_version)
         else:
             ret = self._format_for_mcnp_unmutated(mcnp_version)
         return ret
+
+    def link_to_problem(self, problem):
+        super().link_to_problem(problem)
+        self._importance.link_to_problem(problem)
 
     def __str__(self):
         ret = f"CELL: {self._cell_number} \n"

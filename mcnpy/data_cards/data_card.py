@@ -1,5 +1,6 @@
 from abc import abstractmethod
 from mcnpy.errors import *
+from mcnpy.particle import Particle
 from mcnpy.mcnp_card import MCNP_Card
 import re
 
@@ -11,7 +12,25 @@ class DataCardAbstract(MCNP_Card):
 
     _MODIFIERS = [r"\*"]
     _NUMBER_EXTRAS = [r"\-"]
-    _CLASSIFIER_EXTRAS = [":", ","]
+    _CLASSIFIER_EXTRAS = [
+        r":",
+        r",",
+        r"|",
+        r"\+",
+        r"\-",
+        r"!",
+        r"<",
+        r">",
+        r"/",
+        r"%",
+        r"\^",
+        r"_",
+        r"~",
+        r"@",
+        r"*",
+        r"?",
+        r"#",
+    ]
     _NAME_PARSER = re.compile(
         (
             rf"^(?P<modifier>[{''.join(_MODIFIERS)}]+)*"
@@ -22,14 +41,14 @@ class DataCardAbstract(MCNP_Card):
         re.I,
     )
 
-    def __init__(self, input_card=None, comment=None):
+    def __init__(self, input_card=None, comments=None):
         """
         :param input_card: the Card object representing this data card
         :type input_card: Card
-        :param comment: The Comment that may proceed this
-        :type comment: Comment
+        :param comments: The list of Comments that may proceed this or be entwined with it.
+        :type comments: list
         """
-        super().__init__(input_card, comment)
+        super().__init__(input_card, comments)
         if input_card:
             self._words = input_card.words
             self.__split_name()
@@ -102,14 +121,16 @@ class DataCardAbstract(MCNP_Card):
         pass
 
     @property
-    def particle_classifier(self):
-        """The particle class part of the card identifier.
+    def particle_classifiers(self):
+        """The particle class part of the card identifier as a parsed list
 
         For example: the classifier for ``F7:n`` is ``:n``, and ``imp:n,p`` is ``:n,p``
-        :rtype: str
+        This will be parsed as a list: ``[<Particle.NEUTRON: 'N'>, <Particle.PHOTON: 'P'>]``.
+
+        :rtype: list
         """
-        if self._classifier:
-            return self._classifier.lower()
+        if self._classifiers:
+            return self._classifiers
         return None
 
     @property
@@ -179,7 +200,9 @@ class DataCardAbstract(MCNP_Card):
         else:
             self._input_number = None
         self._prefix = match_dict["prefix"]
-        self._classifier = match_dict["classifier"]
+        self._classifiers = DataCardAbstract._parse_particle_classifiers(
+            match_dict["classifier"]
+        )
         self._modifier = match_dict["modifier"]
 
     def __enforce_name(self, match_dict):
@@ -217,6 +240,26 @@ class DataCardAbstract(MCNP_Card):
                     self.words,
                     f"{self.words[0]} cannot have a particle classifier for {type(self)}",
                 )
+
+    @staticmethod
+    def _parse_particle_classifiers(classifier_str):
+        """
+        Parses a particle classifier string.
+
+        Interprets ``:n,p`` (from ``imp:n,p``) as:
+            ``[<Particle.NEUTRON: 'N'>, <Particle.PHOTON: 'P'>]``
+
+        :param classifier_str: the input classifier string from the card name.
+        :type classifier_str: str
+        :returns: a list of the ParticleTypes in the classifier
+        :rtype: list
+        """
+        if classifier_str:
+            classifier_chunks = classifier_str.replace(":", "").split(",")
+            ret = []
+            for chunk in classifier_chunks:
+                ret.append(Particle(chunk.upper()))
+            return ret
 
     def __lt__(self, other):
         type_comp = self.prefix < other.prefix
