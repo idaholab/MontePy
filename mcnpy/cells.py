@@ -1,5 +1,4 @@
 import mcnpy
-from mcnpy.data_cards import importance
 from mcnpy.numbered_object_collection import NumberedObjectCollection
 
 
@@ -13,7 +12,7 @@ class Cells(NumberedObjectCollection):
         """
         super().__init__(mcnpy.Cell, cells)
 
-    def set_equal_importance(self, importance, vacuum_cells=[]):
+    def set_equal_importance(self, importance, vacuum_cells=tuple()):
         """
         Sets all cells except the vacuum cells to the same importance using importance.all.
 
@@ -24,7 +23,7 @@ class Cells(NumberedObjectCollection):
         :param vacuum_cells: the cells that are the vacuum boundary with 0 importance
         :type vacuum_cells: list
         """
-        if not isinstance(vacuum_cells, (list, set)):
+        if not isinstance(vacuum_cells, (list, tuple, set)):
             raise TypeError("vacuum_cells must be a list or set")
         cells_buff = set()
         for cell in vacuum_cells:
@@ -64,11 +63,13 @@ class Cells(NumberedObjectCollection):
                     cards_loaded.add(type(card))
         for cell in self:
             cell.update_pointers(cells, materials, surfaces)
-        for attr, foo in cards_to_property.values():
-            if hasattr(self, attr):
-                getattr(self, attr).push_to_cells()
-                getattr(self, attr)._clear_data()
-        for card_class, (attr, foo) in cards_to_property.items():
+        for attr, _ in cards_to_property.values():
+            prop = getattr(self, attr, None)
+            if prop is None:
+                continue
+            prop.push_to_cells()
+            prop._clear_data()
+        for card_class, (attr, _) in cards_to_property.items():
             if not hasattr(self, attr):
                 card = card_class()
                 card.link_to_problem(problem)
@@ -77,7 +78,7 @@ class Cells(NumberedObjectCollection):
 
     def _run_children_format_for_mcnp(self, data_cards, mcnp_version):
         ret = []
-        for attr, foo in mcnpy.Cell._CARDS_TO_PROPERTY.values():
+        for attr, _ in mcnpy.Cell._CARDS_TO_PROPERTY.values():
             if getattr(self, attr) not in data_cards:
                 ret += getattr(self, attr).format_for_mcnp_input(mcnp_version)
         return ret

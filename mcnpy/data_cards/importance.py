@@ -1,5 +1,6 @@
 from mcnpy.data_cards.cell_modifier import CellModifierCard
 from mcnpy.errors import *
+from mcnpy.input_parser.constants import DEFAULT_VERSION
 from mcnpy.mcnp_card import MCNP_Card
 from mcnpy.particle import Particle
 import numbers
@@ -16,8 +17,8 @@ class Importance(CellModifierCard):
         """
         :param input_card: the Card object representing this data card
         :type input_card: Card
-        :param comment: The Comment that may proceed this
-        :type comment: Comment
+        :param comments: The list of Comments that may proceed this or be entwined with it.
+        :type comments: list
         :param in_cell_block: if this card came from the cell block of an input file.
         :type in_cell_block: bool
         :param key: the key from the key-value pair in a cell
@@ -34,7 +35,7 @@ class Importance(CellModifierCard):
                     assert value >= 0
                 except (ValueError, AssertionError) as e:
                     raise ValueError(
-                        f"Cell importance must be a number >= 0. {value} was given"
+                        f"Cell importance must be a number ≥ 0. {value} was given"
                     )
                 for particle in self.particle_classifiers:
                     self._particle_importances[particle] = value
@@ -92,17 +93,45 @@ class Importance(CellModifierCard):
         self._check_particle_in_problem(particle)
         return self._particle_importances[particle]
 
+    def __setitem__(self, particle, value):
+        if not isinstance(particle, Particle):
+            raise TypeError("Key must be a particle")
+        self._check_particle_in_problem(particle)
+        if not isinstance(value, numbers.Number):
+            raise TypeError("importance must be a number")
+        if value < 0:
+            raise ValueError("importance must be ≥ 0")
+        self._mutated = True
+        self._particle_importances[particle] = value
+
+    def __delitem__(self, particle):
+        if not isinstance(particle, Particle):
+            raise TypeError("Key must be a particle")
+        del self._particle_importances[particle]
+
+    def __str__(self):
+        if not self.in_cell_block and self._problem is None:
+            return " ".join(self.input_lines)
+        return "".join(self.format_for_mcnp_input(DEFAULT_VERSION))
+
+    def __repr__(self):
+        return (
+            f"Importance: in_cell_block: {self.in_cell_block},"
+            f" set_in_cell_block {self.set_in_cell_block},"
+            f"\n{self._particle_importances}"
+        )
+
     def push_to_cells(self):
         if self._problem and not self.in_cell_block:
             for particle in self._particle_importances:
                 for i, cell in enumerate(self._problem.cells):
                     if cell.importance.set_in_cell_block:
                         raise MalformedInputError(
-                            self,
+                            cell.importance,
                             f"Cell: {cell.number} provided IMP data when those data were in the data block",
                         )
                     value = self._particle_importances[particle][i]
-                    cell.importance._particle_importances[particle] = value
+                    cell.importance[particle] = value
                     cell.importance._mutated = False
 
     @property
@@ -114,8 +143,9 @@ class Importance(CellModifierCard):
 
     @all.setter
     def all(self, value):
-        if not isinstance(value, float):
+        if not isinstance(value, numbers.Number):
             raise TypeError("All importance must be a float")
+        value = float(value)
         if value < 0.0:
             raise ValueError("Importance must be ≥ 0.0")
         if self._problem:
@@ -200,7 +230,7 @@ class Importance(CellModifierCard):
 
 
 def __create_importance_getter(particle_type):
-    def closure(obj, objtype=None):
+    def closure(obj):
         obj._check_particle_in_problem(particle_type)
         try:
             return obj._particle_importances[particle_type]
@@ -215,6 +245,7 @@ def __create_importance_setter(particle_type):
         obj._check_particle_in_problem(particle_type)
         if not isinstance(value, numbers.Number):
             raise TypeError("importance must be a number")
+        value = float(value)
         if value < 0:
             raise ValueError("importance must be ≥ 0")
         obj._mutated = True
@@ -235,10 +266,14 @@ def __create_particle_imp_doc(particle_type):
     return f"Importance for particles of type *{particle_type.name.lower()}*"
 
 
-for particle in Particle:
-    getter = __create_importance_getter(particle)
-    setter = __create_importance_setter(particle)
-    deleter = __create_importance_deleter(particle)
-    doc = __create_particle_imp_doc(particle)
-    prop = property(getter, setter, deleter, doc=doc)
-    setattr(Importance, particle.name.lower(), prop)
+def __setup_importances():
+    for particle in Particle:
+        getter = __create_importance_getter(particle)
+        setter = __create_importance_setter(particle)
+        deleter = __create_importance_deleter(particle)
+        doc = __create_particle_imp_doc(particle)
+        prop = property(getter, setter, deleter, doc=doc)
+        setattr(Importance, particle.name.lower(), prop)
+
+
+__setup_importances()

@@ -1,6 +1,7 @@
 from unittest import TestCase
 import mcnpy
 from mcnpy.cell import Cell
+from mcnpy.particle import Particle
 from mcnpy.data_cards.importance import Importance
 from mcnpy.errors import *
 from mcnpy.input_parser import mcnp_input, block_type
@@ -112,12 +113,25 @@ class TestImportance(TestCase):
         with self.assertRaises(ValueError):
             cell.importance.neutron = -0.5
 
+        cell.importance[Particle.NEUTRON] = 3
+        self.assertEqual(cell.importance.neutron, 3.0)
+        with self.assertRaises(TypeError):
+            cell.importance[""] = 5
+        with self.assertRaises(TypeError):
+            cell.importance[Particle.NEUTRON] = ""
+        with self.assertRaises(ValueError):
+            cell.importance[Particle.NEUTRON] = -1.0
+
     def test_importance_deleter(self):
         in_str = "1 0 -1 IMP:N,P=1"
         card = mcnp_input.Card([in_str], block_type.BlockType.CELL)
         cell = Cell(card)
         del cell.importance.neutron
         self.assertAlmostEqual(cell.importance.neutron, 0.0)
+        del cell.importance[Particle.PHOTON]
+        self.assertAlmostEqual(cell.importance.photon, 0.0)
+        with self.assertRaises(TypeError):
+            del cell.importance[""]
 
     def test_importance_merge(self):
         in_str = "IMP:N,P 1 0"

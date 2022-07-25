@@ -544,7 +544,7 @@ class Cell(MCNP_Card):
 
     @property
     def modifier_block_print_changed(self):
-        for attr, foo in Cell._CARDS_TO_PROPERTY.values():
+        for attr, _ in Cell._CARDS_TO_PROPERTY.values():
             if hasattr(self, attr):
                 if getattr(self, attr).has_changed_print_style:
                     return True
@@ -603,7 +603,7 @@ class Cell(MCNP_Card):
                         value = " ".join(value)
                     strings.append(f"{key}={value}")
                 ret += Cell.wrap_words_for_mcnp(strings, mcnp_version, False)
-            for attr, foo in Cell._CARDS_TO_PROPERTY.values():
+            for attr, _ in Cell._CARDS_TO_PROPERTY.values():
                 if hasattr(self, attr):
                     if (
                         self._problem
