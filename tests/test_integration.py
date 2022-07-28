@@ -4,7 +4,7 @@ from unittest import TestCase, expectedFailure
 import os
 
 import mcnpy
-from mcnpy.data_cards import material, thermal_scattering
+from mcnpy.data_cards import material, thermal_scattering, DataCard
 from mcnpy.input_parser.mcnp_input import Card, Comment, Message, Title, ReadCard
 from mcnpy.particle import Particle
 
@@ -511,6 +511,30 @@ class testFullFileIntegration(TestCase):
                     if "IMP:N,P 1" in line:
                         found_np = True
             self.assertTrue(found_np)
+        finally:
+            try:
+                os.remove(out_file)
+            except FileNotFoundError:
+                pass
+
+    def test_write_data_from_lines(self):
+        out_file = "test_direct_data"
+        problem = copy.deepcopy(self.simple_problem)
+        verbatim_line = " ".join(["lorem ipsum dolor sit amet"]*5)
+        com = Comment(["c Custom data card passed through directly"])
+        user_card = DataCard.fromLines([verbatim_line], comments=[com], verbatim=True)
+        problem.append_data_card(user_card)
+        try:
+            problem.write_to_file(out_file)
+            found = False
+            with open(out_file, "r") as fh:
+                for line in fh:
+                    line = line.rstrip()
+                    print(line)
+                    if line == verbatim_line:
+                        found = True
+                        break
+            self.assertTrue(found)
         finally:
             try:
                 os.remove(out_file)
