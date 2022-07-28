@@ -2,6 +2,7 @@ from abc import abstractmethod
 from mcnpy.errors import *
 from mcnpy.particle import Particle
 from mcnpy.mcnp_card import MCNP_Card
+from mcnpy.input_parser.block_type import BlockType
 import re
 
 
@@ -58,6 +59,10 @@ class DataCardAbstract(MCNP_Card):
     @property
     def allowed_keywords(self):
         return set()
+
+    @property
+    def block_type(self):
+        return BlockType.DATA
 
     @property
     def words(self):

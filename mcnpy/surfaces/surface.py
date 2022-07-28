@@ -1,6 +1,7 @@
 from mcnpy.errors import *
 from mcnpy.data_cards import transform
 from mcnpy.mcnp_card import MCNP_Card
+from mcnpy.input_parser.block_type import BlockType
 from mcnpy.surfaces.surface_type import SurfaceType
 from mcnpy.utilities import *
 import re
@@ -87,6 +88,10 @@ class Surface(MCNP_Card):
     @property
     def allowed_keywords(self):
         return set()
+
+    @property
+    def block_type(self):
+        return BlockType.SURFACE
 
     @property
     def surface_type(self):

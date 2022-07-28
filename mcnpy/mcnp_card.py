@@ -180,6 +180,17 @@ class MCNP_Card(ABC):
         """
         pass
 
+    @property
+    @abstractmethod
+    def block_type(self):
+        """
+        The block type for this class of MCNP_Card.
+
+        :returns: The BlockType: CELL, SURFACE, or DATA.
+        :rtype: mcnpy.input_parser.block_type.BlockType
+        """
+        pass
+
     @staticmethod
     def wrap_words_for_mcnp(words, mcnp_version, is_first_line):
         """

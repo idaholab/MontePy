@@ -4,6 +4,7 @@ from mcnpy.data_cards import importance
 from mcnpy.data_cards.data_parser import PREFIX_MATCHES
 from mcnpy.errors import *
 from mcnpy.mcnp_card import MCNP_Card
+from mcnpy.input_parser.block_type import BlockType
 from mcnpy.data_cards.material import Material
 from mcnpy.surfaces.surface import Surface
 from mcnpy.surface_collection import Surfaces
@@ -164,6 +165,10 @@ class Cell(MCNP_Card):
     @property
     def allowed_keywords(self):
         return Cell._ALLOWED_KEYWORDS
+
+    @property
+    def block_type(self):
+        return BlockType.CELL
 
     @property
     def importance(self):
