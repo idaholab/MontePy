@@ -12,6 +12,8 @@ class Surface(MCNP_Card):
     Object to hold a single MCNP surface
     """
 
+    block_type = BlockType.SURFACE
+
     def __init__(self, input_card, comment=None):
         """
         :param input_card: The Card object representing the input
@@ -88,10 +90,6 @@ class Surface(MCNP_Card):
     @property
     def allowed_keywords(self):
         return set()
-
-    @property
-    def block_type(self):
-        return BlockType.SURFACE
 
     @property
     def surface_type(self):

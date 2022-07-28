@@ -11,6 +11,8 @@ class MCNP_Card(ABC):
     Abstract class for semantic representations of MCNP input cards.
     """
 
+    block_type = None
+
     def __init__(self, input_card, comments=None):
         """
         :param input_card: The Card syntax object this will wrap and parse.
@@ -177,17 +179,6 @@ class MCNP_Card(ABC):
 
         :returns: A set of the allowed keywords. If there are none this should return the empty set.
         :rtype: set
-        """
-        pass
-
-    @property
-    @abstractmethod
-    def block_type(self):
-        """
-        The block type for this class of MCNP_Card.
-
-        :returns: The BlockType: CELL, SURFACE, or DATA.
-        :rtype: mcnpy.input_parser.block_type.BlockType
         """
         pass
 

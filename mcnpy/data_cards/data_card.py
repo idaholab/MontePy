@@ -41,6 +41,7 @@ class DataCardAbstract(MCNP_Card):
         ),
         re.I,
     )
+    block_type = BlockType.DATA
 
     def __init__(self, input_card=None, comments=None):
         """
@@ -59,10 +60,6 @@ class DataCardAbstract(MCNP_Card):
     @property
     def allowed_keywords(self):
         return set()
-
-    @property
-    def block_type(self):
-        return BlockType.DATA
 
     @property
     def words(self):

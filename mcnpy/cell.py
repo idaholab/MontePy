@@ -40,6 +40,7 @@ class Cell(MCNP_Card):
         "UNC",
     }
     _CARDS_TO_PROPERTY = {importance.Importance: ("_importance", False)}
+    block_type = BlockType.CELL
 
     def __init__(self, input_card=None, comment=None):
         """
@@ -165,10 +166,6 @@ class Cell(MCNP_Card):
     @property
     def allowed_keywords(self):
         return Cell._ALLOWED_KEYWORDS
-
-    @property
-    def block_type(self):
-        return BlockType.CELL
 
     @property
     def importance(self):
