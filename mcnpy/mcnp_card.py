@@ -48,10 +48,17 @@ class MCNP_Card(ABC):
             self._comments = []
 
     @classmethod
-    def fromLines(cls, input_lines, comments=None):
+    def fromLines(cls, input_lines, comments=None, verbatim=False):
         """
         Create an MCNP card directly from a list of input lines.
         Useful for forcing specific lines to be written to your output.
+
+        :param input_lines: the lines read straight from the input file.
+        :type input_lines: list
+        :param comments: The comments that proceeded this card or were inside this, if any
+        :type comments: list
+        :param verbatim: Whether to keep the lines as-is, without wrapping or t
+        :type verbatim: bool
 
         :return: an MCNP card of the appropriate type made from the lines given
         :rtype: MCNP_Card
@@ -60,8 +67,10 @@ class MCNP_Card(ABC):
             raise TypeError(
                 f"Can't instantiate abstract class {cls.__name__} with abstract block_type."
             )
-        fake_card = Card(input_lines, cls.block_type)
-        return cls(fake_card, comments)
+        card = cls(Card(input_lines, cls.block_type), comments)
+        if not verbatim:
+            card._mutated = True
+        return card
 
     def _parse_key_value_pairs(self):
         if self.allowed_keywords:
