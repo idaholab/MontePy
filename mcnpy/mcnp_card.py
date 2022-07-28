@@ -1,6 +1,6 @@
 from abc import ABC, abstractmethod
 from mcnpy.input_parser.constants import BLANK_SPACE_CONTINUE, get_max_line_length
-from mcnpy.input_parser.mcnp_input import Comment
+from mcnpy.input_parser.mcnp_input import Comment, Card
 import mcnpy
 import numpy as np
 import textwrap
@@ -18,7 +18,7 @@ class MCNP_Card(ABC):
         :param input_card: The Card syntax object this will wrap and parse.
         :type input_card: Card
         :param comments: The Comments that proceeded this card or were inside of this if any
-        :type Comments: list
+        :type comments: list
         """
         self._problem = None
         self._parameters = {}
@@ -46,6 +46,22 @@ class MCNP_Card(ABC):
             self._comments = comments
         else:
             self._comments = []
+
+    @classmethod
+    def fromLines(cls, input_lines, comments=None):
+        """
+        Create an MCNP card directly from a list of input lines.
+        Useful for forcing specific lines to be written to your output.
+
+        :return: an MCNP card of the appropriate type made from the lines given
+        :rtype: MCNP_Card
+        """
+        if cls.block_type is None:
+            raise TypeError(
+                f"Can't instantiate abstract class {cls.__name__} with abstract block_type."
+            )
+        fake_card = Card(input_lines, cls.block_type)
+        return cls(fake_card, comments)
 
     def _parse_key_value_pairs(self):
         if self.allowed_keywords:
