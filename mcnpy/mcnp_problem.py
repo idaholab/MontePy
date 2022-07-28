@@ -8,6 +8,7 @@ from mcnpy.input_parser.constants import DEFAULT_VERSION
 from mcnpy.materials import Materials
 from mcnpy.surfaces import surface_builder
 from mcnpy.surface_collection import Surfaces
+from mcnpy.data_cards.data_card import DataCardAbstract
 from mcnpy.data_cards import Material, parse_data
 from mcnpy.input_parser import input_syntax_reader, block_type, mcnp_input
 
@@ -215,10 +216,7 @@ class MCNP_Problem:
                         self._surfaces.append(surface)
                     if input_card.block_type == block_type.BlockType.DATA:
                         data = parse_data(input_card, comment_queue)
-                        data.link_to_problem(self)
-                        if isinstance(data, Material):
-                            self._materials.append(data)
-                        self._data_cards.append(data)
+                        self.append_data_card(data)
                     comment_queue = []
         self.__update_internal_pointers()
 
@@ -253,6 +251,22 @@ class MCNP_Problem:
         self.__update_internal_pointers()
         for surface in to_delete:
             self._surfaces.remove(surface)
+
+    def append_data_card(self, card):
+        """Append a DataCard to the problem
+
+        Any type of DataCard is permitted.
+
+        :param card: Card to append and link to the problem
+        :type card: DataCard
+        """
+        assert isinstance(
+            card, DataCardAbstract
+        ), f"Card {card.input_lines} (type {type(card)}) is not a DataCard."
+        if isinstance(card, Material):
+            self._materials.append(card)
+        card.link_to_problem(self)
+        self._data_cards.append(card)
 
     def add_cell_children_to_problem(self):
         """
