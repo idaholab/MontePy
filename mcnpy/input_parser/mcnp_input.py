@@ -140,10 +140,8 @@ def parse_card_shortcuts(words, card=None):
                 try:
                     last_val = ret[-1]
                     assert (
-                        not isinstance(last_val, Jump) and last_val
+                        not isinstance(last_val, Jump) and last_val and len(ret) > 1
                     )  # force last_val to be truthy
-                    if last_val is None:
-                        raise IndexError
                     if number:
                         number = int(number)
                     else:
