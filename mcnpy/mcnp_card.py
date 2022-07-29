@@ -285,16 +285,22 @@ class MCNP_Card(ABC):
         """
         ret = []
         jump_counter = 0
+
+        def flush_jumps():
+            nonlocal jump_counter, ret
+            if jump_counter == 1:
+                ret.append("J")
+            elif jump_counter >= 1:
+                ret.append(f"{jump_counter}J")
+            jump_counter = 0
+
         for value in values:
             if isinstance(value, mcnpy.input_parser.mcnp_input.Jump):
                 jump_counter += 1
             else:
-                if jump_counter == 1:
-                    ret.append("J")
-                elif jump_counter >= 1:
-                    ret.append(f"{jump_counter}J")
-                jump_counter = 0
+                flush_jumps()
                 ret.append(value)
+        flush_jumps()
         return ret
 
     @property

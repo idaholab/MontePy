@@ -144,7 +144,6 @@ def read_data(fh, mcnp_version, block_type=None, recursion=False):
         return blank_comment or non_blank_comment
 
     for line in fh:
-
         # transition to next block with blank line
         if not line.strip():
             yield from flush_block()
