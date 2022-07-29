@@ -2,6 +2,7 @@ from abc import ABC, abstractmethod
 from mcnpy.input_parser.constants import BLANK_SPACE_CONTINUE, get_max_line_length
 from mcnpy.input_parser.mcnp_input import Comment
 import mcnpy
+import numpy as np
 import textwrap
 
 
@@ -14,8 +15,8 @@ class MCNP_Card(ABC):
         """
         :param input_card: The Card syntax object this will wrap and parse.
         :type input_card: Card
-        :param comment: The Comments that proceeded this card or were inside of this if any
-        :type Comment: list
+        :param comments: The Comments that proceeded this card or were inside of this if any
+        :type Comments: list
         """
         self._problem = None
         self._parameters = {}
@@ -47,30 +48,31 @@ class MCNP_Card(ABC):
     def _parse_key_value_pairs(self):
         if self.allowed_keywords:
             for i, word in enumerate(self.words):
-                if "=" in word:
+                if any([char.isalpha() for char in word]):
                     break
-            params_string = " ".join(self.words[i:])
+            fragments = []
+            for word in self.words[i:]:
+                fragments.extend(word.split("="))
             # cut out these words from further parsing
             self._words = self.words[:i]
-            fragments = params_string.split("=")
             key = ""
-            next_key = ""
-            value = [""]
+            value = []
+
+            def flush_pair(key, value):
+                self._parameters[key.upper()] = " ".join(value)
+
             for i, fragment in enumerate(fragments):
-                fragment = fragment.split()
-                if i == 0:
-                    key = fragment[0]
-                elif i == len(fragments) - 1:
-                    if next_key:
-                        key = next_key
-                    value = fragment
+                keyword = fragment.split(":")[0].upper()
+                if keyword in self.allowed_keywords:
+                    if i != 0:
+                        flush_pair(key, value)
+                        value = []
+                    key = fragment
                 else:
-                    if next_key:
-                        key = next_key
-                    value = fragment[0:-1]
-                    next_key = fragment[-1]
-                if key and value and key.upper().split(":")[0] in self.allowed_keywords:
-                    self._parameters[key.upper()] = " ".join(value)
+                    value.append(fragment)
+                if i == len(fragments) - 1:
+                    if key and value:
+                        flush_pair(key, value)
 
     @property
     def parameters(self):
@@ -230,6 +232,42 @@ class MCNP_Card(ABC):
             subsequent_indent=" " * indent_length,
         )
         return wrapper.wrap(string)
+
+    @staticmethod
+    def compress_repeat_values(values, threshold=1e-6):
+        """
+        Takes a list of floats, and tries to compress it using repeats.
+
+        E.g., 1 1 1 1 would compress to 1 3R
+
+        :param values: a list of float values to try to compress
+        :type values: list
+        :param threshold: the minimum threshold to consider two values different
+        :type threshold: float
+        :returns: a list of MCNP word strings that have repeat compression
+        :rtype: list
+        """
+        ret = []
+        last_value = None
+        float_formatter = "{:n}"
+        for value in values:
+            if last_value:
+                if np.isclose(value, last_value, atol=threshold):
+                    repeat_counter += 1
+                else:
+                    if repeat_counter >= 2:
+                        ret.append(f"{repeat_counter}R")
+                        repeat_counter = 0
+                    elif repeat_counter == 1:
+                        ret.append(float_formatter.format(last_value))
+                    ret.append(float_formatter.format(value))
+                    last_value = value
+            else:
+                ret.append(float_formatter.format(value))
+                last_value = value
+                repeat_counter = 0
+
+        return ret
 
     @property
     def words(self):

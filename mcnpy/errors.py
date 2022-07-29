@@ -57,6 +57,16 @@ class BrokenObjectLinkError(MalformedInputError):
         )
 
 
+class ParticleTypeNotInProblem(ValueError):
+    """
+    Raised when data are set for a particle type not in
+    the problem's mode.
+    """
+
+    def __init__(self, message):
+        super().__init__(message)
+
+
 class UnsupportedFeature(NotImplementedError):
     """
     Raised when MCNP syntax that is not supported is found

@@ -6,12 +6,16 @@ import os
 import mcnpy
 from mcnpy.data_cards import material, thermal_scattering
 from mcnpy.input_parser.mcnp_input import Card, Comment, Message, Title, ReadCard
+from mcnpy.particle import Particle
 
 
 class testFullFileIntegration(TestCase):
     def setUp(self):
         file_name = "tests/inputs/test.imcnp"
         self.simple_problem = mcnpy.read_input(file_name)
+        self.importance_problem = mcnpy.read_input(
+            os.path.join("tests", "inputs", "test_importance.imcnp")
+        )
 
     def test_original_input(self):
         cell_order = [Message, Title, Comment]
@@ -44,13 +48,14 @@ class testFullFileIntegration(TestCase):
 
     def test_data_card_parsing(self):
         M = material.Material
-        MT = thermal_scattering.ThermalScatteringLaw
-        cards = [M, M, M, MT, "KSRC", "KCODE", "PHYS:P", "MODE"]
+        cards = [M, M, M, "KSRC", "KCODE", "PHYS:P", "MODE"]
         for i, card in enumerate(self.simple_problem.data_cards):
             if isinstance(cards[i], str):
                 self.assertEqual(card.words[0].upper(), cards[i])
             else:
                 self.assertIsInstance(card, cards[i])
+            if i == 2:
+                self.assertTrue(card.thermal_scattering is not None)
 
     def test_cells_parsing_linking(self):
         cell_numbers = [1, 2, 3, 99, 5]
@@ -82,7 +87,7 @@ class testFullFileIntegration(TestCase):
         problem = mcnpy.read_input("tests/inputs/testReadRec1.imcnp")
         self.assertEqual(len(problem.cells), 1)
         self.assertEqual(len(problem.surfaces), 1)
-        self.assertEqual(len(problem.data_cards), 1)
+        self.assertIn(mcnpy.particle.Particle.PHOTON, problem.mode)
 
     def test_problem_str(self):
         output = str(self.simple_problem)
@@ -373,7 +378,7 @@ class testFullFileIntegration(TestCase):
         cell = problem.cells[1]
         cell.number = 8
         output = cell.format_for_mcnp_input((6, 2, 0))
-        self.assertEqual(len(output), 5)
+        self.assertEqual(len(output), 6)
         self.assertEqual("C this is a cutting comment", output[1])
         material = problem.materials[2]
         material.number = 5
@@ -397,3 +402,152 @@ class testFullFileIntegration(TestCase):
         cell = mcnpy.Cell()
         with self.assertRaises(TypeError):
             cell.link_to_problem(5)
+
+    def test_importance_parsing(self):
+        problem = self.importance_problem
+        cell = problem.cells[1]
+        self.assertEqual(cell.importance.neutron, 1.0)
+        self.assertEqual(cell.importance.photon, 1.0)
+        self.assertEqual(cell.importance.electron, 0.0)
+        problem = self.simple_problem
+        cell = problem.cells[1]
+        self.assertEqual(cell.importance.neutron, 1.0)
+        self.assertEqual(cell.importance.photon, 1.0)
+
+    def test_importance_format_unmutated(self):
+        imp = self.importance_problem.cells._importance
+        output = imp.format_for_mcnp_input((6, 2, 0))
+        print(output)
+        self.assertEqual(len(output), 2)
+        self.assertEqual("imp:n,p 1 1 1 0 3", output[0])
+        self.assertEqual("imp:e   0 0 0 1 2", output[1])
+
+    def test_importance_format_mutated(self):
+        problem = copy.deepcopy(self.importance_problem)
+        imp = problem.cells._importance
+        problem.cells[1].importance.neutron = 0.5
+        output = imp.format_for_mcnp_input((6, 2, 0))
+        print(output)
+        self.assertEqual(len(output), 3)
+        self.assertEqual("IMP:N 0.5 1 1 0 3", output[1])
+
+    def test_importance_write_unmutated(self):
+        out_file = "test_import_unmute"
+        try:
+            self.importance_problem.write_to_file(out_file)
+            found_np = False
+            found_e = False
+            with open(out_file, "r") as fh:
+                for line in fh:
+                    print(line.rstrip())
+                    if "imp:n,p 1" in line:
+                        found_np = True
+                    elif "imp:e" in line:
+                        found_e = True
+            self.assertTrue(found_np)
+            self.assertTrue(found_e)
+        finally:
+            try:
+                os.remove(out_file)
+            except FileNotFoundError:
+                pass
+
+    def test_importance_write_mutated(self):
+        out_file = "test_import_mute"
+        problem = copy.deepcopy(self.importance_problem)
+        problem.cells[1].importance.neutron = 0.5
+        try:
+            problem.write_to_file(out_file)
+            found_n = False
+            found_e = False
+            with open(out_file, "r") as fh:
+                for line in fh:
+                    print(line.rstrip())
+                    if "IMP:N 0.5" in line:
+                        found_n = True
+                    elif "IMP:E" in line:
+                        found_e = True
+            self.assertTrue(found_n)
+            self.assertTrue(found_e)
+        finally:
+            try:
+                os.remove(out_file)
+            except FileNotFoundError:
+                pass
+
+    def test_importance_write_cell(self):
+        out_file = "test_import_cell"
+        problem = copy.deepcopy(self.importance_problem)
+        problem.print_in_data_block["imp"] = False
+        try:
+            problem.write_to_file(out_file)
+            found_np = False
+            found_e = False
+            with open(out_file, "r") as fh:
+                for line in fh:
+                    print(line.rstrip())
+                    if "IMP:N,P=1" in line:
+                        found_np = True
+                    elif "IMP:E=1" in line:
+                        found_e = True
+            self.assertTrue(found_np)
+            self.assertTrue(found_e)
+        finally:
+            try:
+                os.remove(out_file)
+            except FileNotFoundError:
+                pass
+
+    def test_importance_write_data(self):
+        out_file = "test_import_data"
+        problem = copy.deepcopy(self.simple_problem)
+        problem.print_in_data_block["imp"] = True
+        try:
+            problem.write_to_file(out_file)
+            found_np = False
+            with open(out_file, "r") as fh:
+                for line in fh:
+                    print(line.rstrip())
+                    if "IMP:N,P 1" in line:
+                        found_np = True
+            self.assertTrue(found_np)
+        finally:
+            try:
+                os.remove(out_file)
+            except FileNotFoundError:
+                pass
+
+    def test_set_mode(self):
+        problem = copy.deepcopy(self.importance_problem)
+        problem.set_mode("e p")
+        particles = {Particle.ELECTRON, Particle.PHOTON}
+        self.assertEqual(len(problem.mode), 2)
+        for part in particles:
+            self.assertIn(part, problem.mode)
+
+    def test_set_equal_importance(self):
+        problem = copy.deepcopy(self.importance_problem)
+        problem.cells.set_equal_importance(0.5, [5])
+        for cell in problem.cells:
+            for particle in problem.mode:
+                if cell.number != 5:
+                    print(cell.number, particle)
+                    self.assertEqual(cell.importance[particle], 0.5)
+        for particle in problem.mode:
+            self.assertEqual(problem.cells[5].importance.neutron, 0.0)
+        problem.cells.set_equal_importance(0.75, [problem.cells[99]])
+        for cell in problem.cells:
+            for particle in problem.mode:
+                if cell.number != 99:
+                    print(cell.number, particle)
+                    self.assertEqual(cell.importance[particle], 0.75)
+        for particle in problem.mode:
+            self.assertEqual(problem.cells[99].importance.neutron, 0.0)
+        with self.assertRaises(TypeError):
+            problem.cells.set_equal_importance("5", [5])
+        with self.assertRaises(ValueError):
+            problem.cells.set_equal_importance(-0.5, [5])
+        with self.assertRaises(TypeError):
+            problem.cells.set_equal_importance(5, "a")
+        with self.assertRaises(TypeError):
+            problem.cells.set_equal_importance(5, ["a"])
