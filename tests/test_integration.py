@@ -115,6 +115,8 @@ class testFullFileIntegration(TestCase):
             for i, data in enumerate(self.simple_problem.data_cards):
                 if isinstance(data, material.Material):
                     self.assertEqual(data.number, test_problem.data_cards[i].number)
+                elif isinstance(data, volume.Volume):
+                    self.assertEqual(str(data), str(test_problem.data_cards[i]))
                 else:
                     self.assertEqual(data.words, test_problem.data_cards[i].words)
         finally:
