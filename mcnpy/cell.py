@@ -192,6 +192,10 @@ class Cell(MCNP_Card):
         del self._volume.volume
 
     @property
+    def volume_mcnp_calc(self):
+        return self._volume.is_mcnp_calculated
+
+    @property
     def old_number(self):
         """
         The original cell number provided in the input file
@@ -618,7 +622,10 @@ class Cell(MCNP_Card):
 
     def link_to_problem(self, problem):
         super().link_to_problem(problem)
-        self._importance.link_to_problem(problem)
+        for attr, _ in Cell._CARDS_TO_PROPERTY.values():
+            card = getattr(self, attr, None)
+            if card:
+                card.link_to_problem(problem)
 
     def __str__(self):
         ret = f"CELL: {self._cell_number} \n"

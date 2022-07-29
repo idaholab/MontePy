@@ -26,7 +26,7 @@ class Volume(CellModifierCard):
                         f"Cell volume must be a number ≥ 0.0. {value} was given"
                     )
                 self._volume = value
-                self._calc_by_mcnp = False
+                self._calc_by_mcnp = True
         elif input_card:
             self._volume = []
             words = self.words[1:]
@@ -126,12 +126,13 @@ class Volume(CellModifierCard):
         self._mutated = mutated
         return ret
 
-    def __reper__(self):
+    def __repr__(self):
         ret = (
             f"VOLUME: in_cell: {self._in_cell_block}, calc_by_mcnp: {self.is_mcnp_calculated},"
             f" set_in_block: {self.set_in_cell_block}, "
-            f"Volume : f{self._volume}"
+            f"Volume : {self._volume}"
         )
+        return ret
 
     def format_for_mcnp_input(self, mcnp_version):
         ret = []
