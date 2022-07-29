@@ -108,6 +108,21 @@ class CellModifierCard(DataCardAbstract):
         """
         pass
 
+    def _check_redundant_definitions(self):
+        """
+        Checks that data wasn't given in data block and the cell block.
+        """
+        attr, _ = mcnpy.Cell._CARDS_TO_PROPERTY[type(self)]
+        if not self._in_cell_block and self._problem:
+            cells = self._problem.cells
+            for cell in cells:
+                if getattr(cell, attr).set_in_cell_block:
+                    raise mcnpy.errors.MalformedInputError(
+                        cell,
+                        f"Cell: {cell.number} provided {self.class_prefix.upper()}"
+                        "data when those data were in the data block",
+                    )
+
     @abstractmethod
     def _clear_data(self):
         """

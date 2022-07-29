@@ -13,10 +13,11 @@ __credits__ = [
     "Travis Labossiere-Hickman",
     "Austin Carter",
     "Andrew Bascom",
+    "Roberto Fairhurst Agosta",
 ]
 
 name = "mcnpy"
-__version__ = "0.0.5"
+__version__ = "0.1.0.dev2"
 __maintainer__ = "Micah Gale"
 __email__ = "micah.gale@inl.gov"
 __status__ = "Development"
@@ -28,4 +29,5 @@ from mcnpy.cell import Cell
 from mcnpy.data_cards.material import Material
 from mcnpy.data_cards.transform import Transform
 from mcnpy.input_parser.mcnp_input import Comment
+from mcnpy.input_parser.mcnp_input import Jump
 from mcnpy.surfaces.surface_type import SurfaceType

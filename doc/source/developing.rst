@@ -326,6 +326,7 @@ There should be a ``self.in_cell_block`` guard.
 
 You need to check that there was no double specifying of data in both the cell and data block.
 This should raise :class:`mcnpy.errors.MalformedInputError`.
+This is checking and error handling is handled by the method ``self._check_redundant_definitions()``.
 
 ``_clear_data``
 """"""""""""""""
