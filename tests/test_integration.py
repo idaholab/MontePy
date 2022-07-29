@@ -105,6 +105,9 @@ class testFullFileIntegration(TestCase):
         out = "foo.imcnp"
         try:
             self.simple_problem.write_to_file(out)
+            with open(out, "r") as fh:
+                for line in fh:
+                    print(line.rstrip())
             test_problem = mcnpy.read_input(out)
             for i, cell in enumerate(self.simple_problem.cells):
                 num = cell.number
@@ -576,6 +579,7 @@ class testFullFileIntegration(TestCase):
     def test_enable_mcnp_vol_calc(self):
         problem = copy.deepcopy(self.simple_problem)
         problem.cells.allow_mcnp_volume_calc = True
+        self.assertTrue(problem.cells.allow_mcnp_volume_calc)
         self.assertNotIn("NO", str(problem.cells._volume))
         problem.cells.allow_mcnp_volume_calc = False
         self.assertIn("NO", str(problem.cells._volume))
