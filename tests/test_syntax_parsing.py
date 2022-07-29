@@ -3,7 +3,7 @@ from unittest import TestCase
 
 import mcnpy
 from mcnpy.input_parser import input_syntax_reader
-from mcnpy.input_parser.mcnp_input import Card, Message, Title
+from mcnpy.input_parser.mcnp_input import Card, Jump, Message, Title
 from mcnpy.input_parser.block_type import BlockType
 from mcnpy.particle import Particle
 
@@ -213,7 +213,7 @@ bar
                 "1",
                 "2j",
                 "4",
-            ): ["M", "1", None, None, "4"],
+            ): ["M", "1", mcnpy.Jump(), mcnpy.Jump(), "4"],
         }
         invalid = [
             ("M", "3J", "4R"),
@@ -222,13 +222,19 @@ bar
             ("M", "1", "2Ilog", "J"),
             ("M", "3J", "2M"),
             ("M", "10", "M"),
+            (
+                "M5",
+                "2R",
+            ),
         ]
 
         parser = mcnpy.input_parser.mcnp_input.parse_card_shortcuts
         for test, answer in tests.items():
+            print(test)
             parsed = parser(list(test))
             self.assertEqual(parsed, answer)
         for test in invalid:
+            print(test)
             with self.assertRaises(mcnpy.errors.MalformedInputError):
                 parser(list(test))
 
@@ -308,6 +314,14 @@ bar
             )
         with self.assertRaises(mcnpy.errors.UnsupportedFeature):
             mcnpy.input_parser.constants.get_max_line_length((5, 1, 38))
+
+    def test_jump(self):
+        jump = Jump()
+        self.assertEqual("J", str(jump))
+        jump2 = Jump()
+        self.assertEqual(jump, jump2)
+        with self.assertRaises(TypeError):
+            bool(jump)
 
 
 class DataCardTestFixture(mcnpy.data_cards.data_card.DataCardAbstract):
