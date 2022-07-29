@@ -292,6 +292,7 @@ class MCNP_Card(ABC):
                     ret.append(f"{jump_counter}J")
                 jump_counter = 0
                 ret.append(value)
+        return ret
 
     @property
     def words(self):
