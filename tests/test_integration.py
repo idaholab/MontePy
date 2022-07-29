@@ -554,3 +554,12 @@ class testFullFileIntegration(TestCase):
             problem.cells.set_equal_importance(5, "a")
         with self.assertRaises(TypeError):
             problem.cells.set_equal_importance(5, ["a"])
+
+    def test_check_volume_calculated(self):
+        self.assertTrue(not self.simple_problem.cells[1].volume_mcnp_calc)
+
+    def test_redundant_volume(self):
+        with self.assertRaises(mcnpy.errors.MalformedInputError):
+            mcnpy.read_input(
+                os.path.join("tests", "inputs", "test_vol_redundant.imcnp")
+            )

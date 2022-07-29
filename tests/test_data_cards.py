@@ -4,9 +4,10 @@ import mcnpy
 
 from mcnpy.cell_data_control import CellDataPrintController
 from mcnpy.data_cards.data_card import DataCard
-from mcnpy.data_cards import material, thermal_scattering, transform
+from mcnpy.data_cards import material, thermal_scattering, transform, volume
 from mcnpy.data_cards.data_parser import parse_data
-from mcnpy.input_parser.mcnp_input import Card, Comment
+from mcnpy.errors import *
+from mcnpy.input_parser.mcnp_input import Card, Comment, Jump
 from mcnpy.input_parser.block_type import BlockType
 
 
@@ -105,3 +106,69 @@ class testDataCardClass(TestCase):
             cell_controller["a"] = True
         with self.assertRaises(KeyError):
             cell_controller["a"]
+
+    def test_volume_init_cell(self):
+        vol = 1.0
+        card = volume.Volume(key="VoL", value=str(vol), in_cell_block=True)
+        self.assertEqual(card.volume, vol)
+        self.assertTrue(card.in_cell_block)
+        self.assertTrue(card.set_in_cell_block)
+        self.assertTrue(card.is_mcnp_calculated)
+        self.assertTrue(card.set)
+        with self.assertRaises(ValueError):
+            card = volume.Volume(key="VoL", value="s", in_cell_block=True)
+        with self.assertRaises(ValueError):
+            card = volume.Volume(key="VoL", value="-1", in_cell_block=True)
+
+    def test_volume_init_data(self):
+        in_str = "VOL 1 1 2J 0"
+        input_card = Card([in_str], BlockType.DATA)
+        vol_card = parse_data(input_card)
+        answers = [1.0, 1.0, Jump, Jump, 0.0]
+        for i, vol in enumerate(vol_card._volume):
+            if isinstance(answers[i], float):
+                self.assertAlmostEqual(vol, answers[i])
+            else:
+                self.assertIsInstance(vol, Jump)
+        in_str = "VOL NO 1 1 2J 0"
+        input_card = Card([in_str], BlockType.DATA)
+        vol_card = parse_data(input_card)
+        self.assertTrue(not vol_card.is_mcnp_calculated)
+        # invalid number
+        in_str = "VOL NO s 1 2J 0"
+        input_card = Card([in_str], BlockType.DATA)
+        with self.assertRaises(MalformedInputError):
+            vol_card = parse_data(input_card)
+        # negative volume
+        in_str = "VOL NO -1 1 2J 0"
+        input_card = Card([in_str], BlockType.DATA)
+        with self.assertRaises(MalformedInputError):
+            vol_card = parse_data(input_card)
+
+    def test_volume_setter(self):
+        vol = 1.0
+        card = volume.Volume(key="VoL", value=str(vol), in_cell_block=True)
+        card.volume = 5.0
+        self.assertEqual(card.volume, 5.0)
+        with self.assertRaises(TypeError):
+            card.volume = "hi"
+        with self.assertRaises(ValueError):
+            card.volume = -5.0
+
+    def test_volume_deleter(self):
+        vol = 1.0
+        card = volume.Volume(key="VoL", value=str(vol), in_cell_block=True)
+        del card.volume
+        self.assertIsNone(card.volume)
+
+    def test_volume_merge(self):
+        vol = 1.0
+        card = volume.Volume(key="VoL", value=str(vol), in_cell_block=True)
+        card2 = volume.Volume(key="VoL", value=str(vol), in_cell_block=True)
+        with self.assertRaises(MalformedInputError):
+            card.merge(card2)
+
+    def test_volume_repr(self):
+        vol = 1.0
+        card = volume.Volume(key="VoL", value=str(vol), in_cell_block=True)
+        self.assertIn("VOLUME", repr(card))
