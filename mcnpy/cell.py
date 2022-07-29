@@ -181,6 +181,14 @@ class Cell(MCNP_Card):
 
     @property
     def volume(self):
+        """
+        The volume for the cell.
+
+        Will only return a number if the volume has been manually set.
+
+        :returns: the volume that has been manually set or None.
+        :rtype: float
+        """
         return self._volume.volume
 
     @volume.setter
@@ -193,7 +201,28 @@ class Cell(MCNP_Card):
 
     @property
     def volume_mcnp_calc(self):
+        """
+        Indicates whether or not the cell volume will attempt to be calculated by MCNP.
+
+        This can be disabled by either manually setting the volume or disabling
+        this calculation globally.
+        This does not guarantee that MCNP will able to do so.
+        Complex geometries may make this impossible.
+
+        :returns: True iff MCNP will try to calculate the volume for this cell.
+        :rtype: bool
+        """
         return self._volume.is_mcnp_calculated
+
+    @property
+    def volume_is_set(self):
+        """
+        Whether or not the volume for this cell has been set.
+
+        :returns: true if the volume is manually set.
+        :rtype: bool
+        """
+        return self._volume.set
 
     @property
     def old_number(self):

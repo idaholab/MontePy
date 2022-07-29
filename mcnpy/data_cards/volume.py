@@ -64,6 +64,16 @@ class Volume(CellModifierCard):
 
     @property
     def volume(self):
+        """
+        The actual cell volume.
+
+        Only available at the cell level.
+
+        :param value: the new volume
+        :type value: float
+        :returns: the cell volume iff this is for a single cell
+        :rtype: float
+        """
         if self.in_cell_block:
             return self._volume
 
@@ -83,17 +93,36 @@ class Volume(CellModifierCard):
 
     @property
     def is_mcnp_calculated(self):
-        """"""
+        """
+        Indicates whether or not the cell volume will attempt to be calculated by MCNP.
+
+        This can be disabled by either manually setting the volume or disabling
+        this calculation globally.
+        This does not guarantee that MCNP will able to do so.
+        Complex geometries may make this impossible.
+
+        :returns: True iff MCNP will try to calculate the volume for this cell.
+        :rtype: bool
+        """
         if self._problem and self.in_cell_block:
             # TODO need nice way to interact with "NO" as user
             if not self._problem.cells._volume.is_mcnp_calculated:
                 return False
         return self._calc_by_mcnp
 
+    @is_mcnp_calculated.setter
+    def is_mcnp_calculated(self, value):
+        if not self.in_cell_block:
+            self._calc_by_mcnp = value
+            self._mutated = True
+
     @property
     def set(self):
         """
         If this volume is set.
+
+        :returns: true if the volume is manually set.
+        :rtype: bool
         """
         if self._volume is not None:
             return True
