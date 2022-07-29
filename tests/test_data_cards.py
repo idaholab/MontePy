@@ -113,8 +113,10 @@ class testDataCardClass(TestCase):
         self.assertEqual(card.volume, vol)
         self.assertTrue(card.in_cell_block)
         self.assertTrue(card.set_in_cell_block)
-        self.assertTrue(card.is_mcnp_calculated)
+        self.assertTrue(not card.is_mcnp_calculated)
         self.assertTrue(card.set)
+        card = volume.Volume(in_cell_block=True)
+        self.assertTrue(card.is_mcnp_calculated)
         with self.assertRaises(ValueError):
             card = volume.Volume(key="VoL", value="s", in_cell_block=True)
         with self.assertRaises(ValueError):

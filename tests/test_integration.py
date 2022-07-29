@@ -563,3 +563,12 @@ class testFullFileIntegration(TestCase):
             mcnpy.read_input(
                 os.path.join("tests", "inputs", "test_vol_redundant.imcnp")
             )
+
+    def test_enable_mcnp_vol_calc(self):
+        problem = copy.deepcopy(self.simple_problem)
+        problem.cells.allow_mcnp_volume_calc = True
+        self.assertNotIn("NO", str(problem.cells._volume))
+        problem.cells.allow_mcnp_volume_calc = False
+        self.assertIn("NO", str(problem.cells._volume))
+        with self.assertRaises(TypeError):
+            problem.cells.allow_mcnp_volume_calc = 5
