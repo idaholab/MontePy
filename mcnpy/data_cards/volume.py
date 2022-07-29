@@ -134,14 +134,10 @@ class Volume(CellModifierCard):
 
     def push_to_cells(self):
         if not self.in_cell_block and self._problem and self._volume:
+            self._check_redundant_definitions()
             cells = self._problem.cells
             for i, cell in enumerate(cells):
                 vol = self._volume[i]
-                if cell._volume.set_in_cell_block:
-                    raise MalformedInputError(
-                        self,
-                        f"Cell: {cell.number} provided IMP data when those data were in the data block",
-                    )
                 if not isinstance(vol, Jump):
                     cell.volume = vol
 
