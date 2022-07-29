@@ -1,4 +1,5 @@
 from abc import ABC, abstractmethod
+from mcnpy.errors import *
 from mcnpy.input_parser.constants import BLANK_SPACE_CONTINUE, get_max_line_length
 from mcnpy.input_parser.mcnp_input import Comment
 import mcnpy
@@ -59,6 +60,8 @@ class MCNP_Card(ABC):
             value = []
 
             def flush_pair(key, value):
+                if key.upper() in self._parameters:
+                    raise ValueError(f"Multiple values given for parameter {key}")
                 self._parameters[key.upper()] = " ".join(value)
 
             for i, fragment in enumerate(fragments):

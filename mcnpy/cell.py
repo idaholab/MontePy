@@ -149,19 +149,12 @@ class Cell(MCNP_Card):
                     attr, ban_repeat = Cell._CARDS_TO_PROPERTY[card_class]
                     del self._parameters[key]
                     card = card_class(in_cell_block=True, key=key, value=value)
-                    if self._problem:
-                        card.link_to_problem(self._problem)
                     if not getattr(self, attr).set_in_cell_block:
                         setattr(self, attr, card)
                     else:
                         if not ban_repeat:
                             getattr(self, attr).merge(
                                 card_class(in_cell_block=True, key=key, value=value)
-                            )
-                        else:
-                            raise MalformedInputError(
-                                f"{key}={value}",
-                                f"Can't repeat the card for type {card_class}",
                             )
 
     def _load_blank_modifiers(self):
