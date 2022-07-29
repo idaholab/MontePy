@@ -55,7 +55,16 @@ If there's a feature you want add an issue here with the feature request tag.
 If you want to add a feature on your own talk to Micah Gale (but still add the issue). 
 The system is very modular and you should be able to develop it pretty quickly.
 Also read the [developer's guide](https://experiment_analysis.pages.hpc.inl.gov/mcnpy/developing.html).
- 
+
+# Version Numbering Scheme
+
+First, versions are only official once they are on the main branch, have a release tag assigned,
+and distribution packages have been created.
+Once these are completed there is a guarantee that this release will not change without a version number increment.
+While on develop and other branches these guarantees do not exist.
+These versions will generally be designated as `dev` e.g., `0.1.0.dev2`,
+and may change as features and bug fixes are implemented.
+
 
  
 Finally: make objects not regexs!
