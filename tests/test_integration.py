@@ -507,13 +507,17 @@ class testFullFileIntegration(TestCase):
         problem.print_in_data_block["imp"] = True
         try:
             problem.write_to_file(out_file)
-            found_np = False
+            found_n = False
+            found_p = False
             with open(out_file, "r") as fh:
                 for line in fh:
                     print(line.rstrip())
-                    if "IMP:N,P 1" in line:
-                        found_np = True
-            self.assertTrue(found_np)
+                    if "IMP:N 1 2R" in line:
+                        found_n = True
+                    if "IMP:P 1 0.5" in line:
+                        found_p = True
+            self.assertTrue(found_n)
+            self.assertTrue(found_p)
         finally:
             try:
                 os.remove(out_file)
@@ -564,6 +568,11 @@ class testFullFileIntegration(TestCase):
                 os.path.join("tests", "inputs", "test_vol_redundant.imcnp")
             )
 
+    def test_delete_vol(self):
+        problem = copy.deepcopy(self.simple_problem)
+        del problem.cells[1].volume
+        self.assertTrue(not problem.cells[1].volume_is_set)
+
     def test_enable_mcnp_vol_calc(self):
         problem = copy.deepcopy(self.simple_problem)
         problem.cells.allow_mcnp_volume_calc = True
@@ -572,3 +581,10 @@ class testFullFileIntegration(TestCase):
         self.assertIn("NO", str(problem.cells._volume))
         with self.assertRaises(TypeError):
             problem.cells.allow_mcnp_volume_calc = 5
+
+    def test_cell_multi_volume(self):
+        in_str = "1 0 -1 VOL=1 VOL 5"
+        with self.assertRaises(ValueError):
+            cell = mcnpy.Cell(
+                Card([in_str], mcnpy.input_parser.block_type.BlockType.CELL)
+            )
