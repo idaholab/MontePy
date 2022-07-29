@@ -26,7 +26,7 @@ class Volume(CellModifierCard):
                         f"Cell volume must be a number ≥ 0.0. {value} was given"
                     )
                 self._volume = value
-                self._calc_by_mcnp = True
+                self._calc_by_mcnp = False
         elif input_card:
             self._volume = []
             words = self.words[1:]
