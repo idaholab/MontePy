@@ -117,15 +117,14 @@ class Volume(CellModifierCard):
             self._mutated = True
 
     @property
-    def set(self):
+    def set(self) -> bool:
         """
         If this volume is set.
 
         :returns: true if the volume is manually set.
         :rtype: bool
         """
-        if self._volume is not None:
-            return True
+        return self._volume is not None
 
     def merge(self, other):
         raise MalformedInputError(
