@@ -137,6 +137,8 @@ class Volume(CellModifierCard):
             self._check_redundant_definitions()
             cells = self._problem.cells
             for i, cell in enumerate(cells):
+                if i >= len(self._volume):
+                    return
                 vol = self._volume[i]
                 if not isinstance(vol, Jump):
                     cell.volume = vol
