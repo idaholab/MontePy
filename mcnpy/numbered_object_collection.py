@@ -12,8 +12,10 @@ class NumberedObjectCollection(ABC):
 
     def __init__(self, obj_class, objects=None):
         """
-        :param cells: the list of cells to start with if needed
-        :type cells: list
+        :param obj_class: the class of numbered objects being collected
+        :type obj_class: type
+        :param objects: the list of cells to start with if needed
+        :type objects: list
         """
         self.__num_cache = {}
         self._obj_class = obj_class

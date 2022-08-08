@@ -317,7 +317,7 @@ class MCNP_Card(ABC):
         This is done so that cards can find links to other objects.
 
         :param problem: The problem to link this card to.
-        :type type: MCNP_Problem
+        :type problem: MCNP_Problem
         """
         if not isinstance(problem, mcnpy.mcnp_problem.MCNP_Problem):
             raise TypeError("problem must be an MCNP_Problem")

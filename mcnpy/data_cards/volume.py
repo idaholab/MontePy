@@ -69,8 +69,6 @@ class Volume(CellModifierCard):
 
         Only available at the cell level.
 
-        :param value: the new volume
-        :type value: float
         :returns: the cell volume iff this is for a single cell
         :rtype: float
         """
