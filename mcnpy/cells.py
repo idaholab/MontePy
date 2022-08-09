@@ -1,5 +1,6 @@
 import mcnpy
 from mcnpy.numbered_object_collection import NumberedObjectCollection
+from mcnpy.errors import MalformedInputError
 
 
 class Cells(NumberedObjectCollection):
