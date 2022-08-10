@@ -7,7 +7,7 @@ from mcnpy.errors import *
 class NumberedObjectCollection(ABC):
     """A collections of MCNP objects.
 
-    It quicks like a dict, it acts like a dict, but is a list.
+    It quacks like a dict, it acts like a dict, but is a list.
     """
 
     def __init__(self, obj_class, objects=None):
@@ -211,12 +211,28 @@ class NumberedObjectCollection(ABC):
 
     def __getitem__(self, i):
         if isinstance(i, slice):
+            rstep = i.step if i.step is not None else 1
+            rstart = i.start
+            rstop = i.stop
+            if rstep < 0:  # Backwards
+                if rstart is None:
+                    rstart = max(self.numbers)
+                if rstop is None:
+                    rstop = min(self.numbers)
+                rstop -= 1
+            else:  # Forwards
+                if rstart is None:
+                    rstart = 0
+                if rstop is None:
+                    rstop = max(self.numbers)
+                rstop += 1
             numbered_objects = []
-            for num in range(i.start, i.stop, i.step):
+            for num in range(rstart, rstop, rstep):
                 obj = self.get(num)
                 if obj is not None:
                     numbered_objects.append(obj)
-            return type(self)(obj_class=self._obj_class, objects=numbered_objects)
+            # obj_class is always implemented in child classes.
+            return type(self)(numbered_objects)
         elif not isinstance(i, int):
             raise TypeError("index must be an int or slice")
         find_manually = False
