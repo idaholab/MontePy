@@ -2,6 +2,7 @@ from mcnpy.data_cards import data_card, thermal_scattering
 from mcnpy.data_cards.isotope import Isotope
 from mcnpy.data_cards.material_component import MaterialComponent
 from mcnpy import mcnp_card
+from mcnpy.numbered_mcnp_card import Numbered_MCNP_Card
 from mcnpy.errors import *
 from mcnpy.utilities import *
 import itertools
@@ -14,7 +15,7 @@ TODO
 """
 
 
-class Material(data_card.DataCardAbstract):
+class Material(data_card.DataCardAbstract, Numbered_MCNP_Card):
     """
     A class to represent an MCNP material.
     """

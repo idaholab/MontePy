@@ -1,6 +1,7 @@
 from abc import ABC, abstractmethod
 import typing
 from mcnpy.mcnp_card import MCNP_Card
+from mcnpy.numbered_mcnp_card import Numbered_MCNP_Card
 from mcnpy.errors import *
 
 
@@ -18,6 +19,7 @@ class NumberedObjectCollection(ABC):
         :type objects: list
         """
         self.__num_cache = {}
+        assert issubclass(obj_class, Numbered_MCNP_Card)
         self._obj_class = obj_class
         if objects:
             if not isinstance(objects, list):

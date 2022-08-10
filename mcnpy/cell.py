@@ -3,7 +3,7 @@ from mcnpy.cells import Cells
 from mcnpy.data_cards import importance, volume
 from mcnpy.data_cards.data_parser import PREFIX_MATCHES
 from mcnpy.errors import *
-from mcnpy.mcnp_card import MCNP_Card
+from mcnpy.numbered_mcnp_card import Numbered_MCNP_Card
 from mcnpy.data_cards.material import Material
 from mcnpy.surfaces.surface import Surface
 from mcnpy.surface_collection import Surfaces
@@ -12,7 +12,7 @@ import re
 import numbers
 
 
-class Cell(MCNP_Card):
+class Cell(Numbered_MCNP_Card):
     """
     Object to represent a single MCNP cell defined in CGS.
 
@@ -516,7 +516,7 @@ class Cell(MCNP_Card):
                     new_num = next(temp_numbers)
                     temp_cells[complement] = new_num
                 pad_string = re.sub(
-                    fr"#{old_num}(\D)",
+                    rf"#{old_num}(\D)",
                     r"#{new_num}\g<1>".format(new_num=new_num),
                     pad_string,
                 )
@@ -529,7 +529,7 @@ class Cell(MCNP_Card):
                     new_num = next(temp_numbers)
                     temp_surfaces[surface] = new_num
                 pad_string = re.sub(
-                    fr"([^#\d]){old_num}(\D)",
+                    rf"([^#\d]){old_num}(\D)",
                     r"\g<1>{new_num}\g<2>".format(new_num=new_num),
                     pad_string,
                 )

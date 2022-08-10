@@ -272,7 +272,7 @@ class Comment(MCNP_Input):
         buff = []
         for line in input_lines:
             fragments = re.split(
-                fr"^\s{{0,{BLANK_SPACE_CONTINUE-1}}}C\s", line, flags=re.I
+                rf"^\s{{0,{BLANK_SPACE_CONTINUE-1}}}C\s", line, flags=re.I
             )
             if len(fragments) > 1:
                 comment_line = fragments[1].rstrip()
