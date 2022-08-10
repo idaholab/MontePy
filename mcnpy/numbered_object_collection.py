@@ -305,7 +305,7 @@ class NumberedObjectCollection(ABC):
         :param i: number of the object to get
         :type i: int
         :param default: value to return if not found
-        :type i: object
+        :type default: object
 
         :rtype: MCNP_Card
         """
