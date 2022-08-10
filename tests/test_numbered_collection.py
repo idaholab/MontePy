@@ -184,6 +184,14 @@ class TestNumberedObjectCollection(unittest.TestCase):
         cells += list_cells
         self.assertEqual(len(cells), size + 1)
 
+    def test_get(self):
+        cell_found = self.simple_problem.cells.get(1)
+        self.assertEqual(self.simple_problem.cells[1], cell_found)
+        surf_notfound = self.simple_problem.surfaces.get(39)  # 39 buried, 0 found
+        self.assertEqual(surf_notfound, None)
+        default_mat = self.simple_problem.materials[3]
+        self.assertEqual(self.simple_problem.materials.get(42, default_mat), default_mat)
+
     def test_keys(self):
         cell_nums = []
         for c in self.simple_problem.cells:
