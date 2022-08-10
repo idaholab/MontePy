@@ -69,8 +69,6 @@ class Volume(CellModifierCard):
 
         Only available at the cell level.
 
-        :param value: the new volume
-        :type value: float
         :returns: the cell volume iff this is for a single cell
         :rtype: float
         """
@@ -117,15 +115,14 @@ class Volume(CellModifierCard):
             self._mutated = True
 
     @property
-    def set(self):
+    def set(self) -> bool:
         """
         If this volume is set.
 
         :returns: true if the volume is manually set.
         :rtype: bool
         """
-        if self._volume is not None:
-            return True
+        return self._volume is not None
 
     def merge(self, other):
         raise MalformedInputError(
@@ -137,6 +134,8 @@ class Volume(CellModifierCard):
             self._check_redundant_definitions()
             cells = self._problem.cells
             for i, cell in enumerate(cells):
+                if i >= len(self._volume):
+                    return
                 vol = self._volume[i]
                 if not isinstance(vol, Jump):
                     cell.volume = vol

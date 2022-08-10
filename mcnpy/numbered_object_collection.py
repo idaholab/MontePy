@@ -7,13 +7,15 @@ from mcnpy.errors import *
 class NumberedObjectCollection(ABC):
     """A collections of MCNP objects.
 
-    It quicks like a dict, it acts like a dict, but is a list.
+    It quacks like a dict, it acts like a dict, but is a list.
     """
 
     def __init__(self, obj_class, objects=None):
         """
-        :param cells: the list of cells to start with if needed
-        :type cells: list
+        :param obj_class: the class of numbered objects being collected
+        :type obj_class: type
+        :param objects: the list of cells to start with if needed
+        :type objects: list
         """
         self.__num_cache = {}
         self._obj_class = obj_class
@@ -207,26 +209,49 @@ class NumberedObjectCollection(ABC):
             raise ValueError("step must be > 0")
         return max(self.numbers) + step
 
+    def __get_slice(self, i: slice):
+        """Get a new NumberedObjectCollection over a slice of numbers
+
+        This method implements usage like:
+            >>> NumberedObjectCollection[1:49:12]
+            [1, 13, 25, 37, 49]
+
+        Any ``slice`` object may be passed.
+        The indices are the object numbers.
+        Because MCNP numbered objects start at 1, so do the indices.
+        They are effectively 1-based and endpoint-inclusive.
+        """
+        rstep = i.step if i.step is not None else 1
+        rstart = i.start
+        rstop = i.stop
+        if rstep < 0:  # Backwards
+            if rstart is None:
+                rstart = max(self.numbers)
+            if rstop is None:
+                rstop = min(self.numbers)
+            rstop -= 1
+        else:  # Forwards
+            if rstart is None:
+                rstart = 0
+            if rstop is None:
+                rstop = max(self.numbers)
+            rstop += 1
+        numbered_objects = []
+        for num in range(rstart, rstop, rstep):
+            obj = self.get(num)
+            if obj is not None:
+                numbered_objects.append(obj)
+        # obj_class is always implemented in child classes.
+        return type(self)(numbered_objects)
+
     def __getitem__(self, i):
-        if not isinstance(i, int):
-            raise TypeError("index must be an int")
-        find_manually = False
-        try:
-            ret = self.__num_cache[i]
-            if ret.number != i:
-                ret = None
-                find_manually = True
-        except KeyError:
-            find_manually = True
-        if find_manually:
-            ret = None
-            for obj in self._objects:
-                if obj.number == i:
-                    ret = obj
-                    self.__num_cache[i] = obj
-                    break
-            if ret is None:
-                raise KeyError(f"Object with number {i} not found in {type(self)}")
+        if isinstance(i, slice):
+            return self.__get_slice(i)
+        elif not isinstance(i, int):
+            raise TypeError("index must be an int or slice")
+        ret = self.get(i)
+        if ret is None:
+            raise KeyError(f"Object with number {i} not found in {type(self)}")
         return ret
 
     def __delitem__(self, idx):
@@ -272,6 +297,29 @@ class NumberedObjectCollection(ABC):
 
     def __contains__(self, other):
         return other in self._objects
+
+    def get(self, i: int, default=None) -> (MCNP_Card, None):
+        """
+        Get ``i`` if possible, or else return ``default``.
+
+        :param i: number of the object to get
+        :type i: int
+        :param default: value to return if not found
+        :type default: object
+
+        :rtype: MCNP_Card
+        """
+        try:
+            ret = self.__num_cache[i]
+            if ret.number == i:
+                return ret
+        except KeyError:
+            pass
+        for obj in self._objects:
+            if obj.number == i:
+                self.__num_cache[i] = obj
+                return obj
+        return default
 
     def keys(self) -> typing.Generator[int, None, None]:
         """
