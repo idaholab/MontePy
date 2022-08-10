@@ -249,23 +249,9 @@ class NumberedObjectCollection(ABC):
             return self.__get_slice(i)
         elif not isinstance(i, int):
             raise TypeError("index must be an int or slice")
-        find_manually = False
-        try:
-            ret = self.__num_cache[i]
-            if ret.number != i:
-                ret = None
-                find_manually = True
-        except KeyError:
-            find_manually = True
-        if find_manually:
-            ret = None
-            for obj in self._objects:
-                if obj.number == i:
-                    ret = obj
-                    self.__num_cache[i] = obj
-                    break
-            if ret is None:
-                raise KeyError(f"Object with number {i} not found in {type(self)}")
+        ret = self.get(i)
+        if ret is None:
+            raise KeyError(f"Object with number {i} not found in {type(self)}")
         return ret
 
     def __delitem__(self, idx):
@@ -316,15 +302,23 @@ class NumberedObjectCollection(ABC):
         """
         Get ``i`` if possible, or else return ``default``.
 
-        :param i: index to get
+        :param i: number of the object to get
         :type i: int
         :param default: value to return if not found
         :type i: object
 
         :rtype: MCNP_Card
         """
-        if i in self.numbers:
-            return self[i]
+        try:
+            ret = self.__num_cache[i]
+            if ret.number == i:
+                return ret
+        except KeyError:
+            pass
+        for obj in self._objects:
+            if obj.number == i:
+                self.__num_cache[i] = obj
+                return obj
         return default
 
     def keys(self) -> typing.Generator[int, None, None]:
