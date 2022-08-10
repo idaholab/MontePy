@@ -189,6 +189,8 @@ class TestNumberedObjectCollection(unittest.TestCase):
         self.assertEqual([1, 2, 3, 5], test_numbers)
         test_numbers = [c.number for c in self.simple_problem.cells[2:]]
         self.assertEqual([2, 3, 5, 99], test_numbers)
+        test_numbers = [c.number for c in self.simple_problem.cells[::-3]]
+        self.assertEqual([99, 3], test_numbers)
         test_numbers = [c.number for c in self.simple_problem.cells[:6:3]]
         self.assertEqual([3], test_numbers)
         test_numbers = [c.number for c in self.simple_problem.cells[5::-1]]
