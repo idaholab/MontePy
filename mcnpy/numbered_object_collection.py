@@ -210,8 +210,15 @@ class NumberedObjectCollection(ABC):
         return max(self.numbers) + step
 
     def __getitem__(self, i):
-        if not isinstance(i, int):
-            raise TypeError("index must be an int")
+        if isinstance(i, slice):
+            numbered_objects = []
+            for num in range(i.start, i.stop, i.step):
+                obj = self.get(num)
+                if obj is not None:
+                    numbered_objects.append(obj)
+            return type(self)(obj_class=self._obj_class, objects=numbered_objects)
+        elif not isinstance(i, int):
+            raise TypeError("index must be an int or slice")
         find_manually = False
         try:
             ret = self.__num_cache[i]
