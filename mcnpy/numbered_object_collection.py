@@ -275,6 +275,21 @@ class NumberedObjectCollection(ABC):
     def __contains__(self, other):
         return other in self._objects
 
+    def get(self, i: int, default=None) -> (MCNP_Card, None):
+        """
+        Get ``i`` if possible, or else return ``default``.
+
+        :param i: index to get
+        :type i: int
+        :param default: value to return if not found
+        :type i: object
+
+        :rtype: MCNP_Card
+        """
+        if i in self.numbers:
+            return self[i]
+        return default
+
     def keys(self) -> typing.Generator[int, None, None]:
         """
         Get iterator of the collection's numbers.
