@@ -209,30 +209,44 @@ class NumberedObjectCollection(ABC):
             raise ValueError("step must be > 0")
         return max(self.numbers) + step
 
+    def __get_slice(self, i: slice):
+        """Get a new NumberedObjectCollection over a slice of numbers
+
+        This method implements usage like:
+            >>> NumberedObjectCollection[1:49:12]
+            [1, 13, 25, 37, 49]
+
+        Any ``slice`` object may be passed.
+        The indices are the object numbers.
+        Because MCNP numbered objects start at 1, so do the indices.
+        They are effectively 1-based and endpoint-inclusive.
+        """
+        rstep = i.step if i.step is not None else 1
+        rstart = i.start
+        rstop = i.stop
+        if rstep < 0:  # Backwards
+            if rstart is None:
+                rstart = max(self.numbers)
+            if rstop is None:
+                rstop = min(self.numbers)
+            rstop -= 1
+        else:  # Forwards
+            if rstart is None:
+                rstart = 0
+            if rstop is None:
+                rstop = max(self.numbers)
+            rstop += 1
+        numbered_objects = []
+        for num in range(rstart, rstop, rstep):
+            obj = self.get(num)
+            if obj is not None:
+                numbered_objects.append(obj)
+        # obj_class is always implemented in child classes.
+        return type(self)(numbered_objects)
+
     def __getitem__(self, i):
         if isinstance(i, slice):
-            rstep = i.step if i.step is not None else 1
-            rstart = i.start
-            rstop = i.stop
-            if rstep < 0:  # Backwards
-                if rstart is None:
-                    rstart = max(self.numbers)
-                if rstop is None:
-                    rstop = min(self.numbers)
-                rstop -= 1
-            else:  # Forwards
-                if rstart is None:
-                    rstart = 0
-                if rstop is None:
-                    rstop = max(self.numbers)
-                rstop += 1
-            numbered_objects = []
-            for num in range(rstart, rstop, rstep):
-                obj = self.get(num)
-                if obj is not None:
-                    numbered_objects.append(obj)
-            # obj_class is always implemented in child classes.
-            return type(self)(numbered_objects)
+            return self.__get_slice(i)
         elif not isinstance(i, int):
             raise TypeError("index must be an int or slice")
         find_manually = False
