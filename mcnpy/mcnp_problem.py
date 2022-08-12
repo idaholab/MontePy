@@ -10,6 +10,7 @@ from mcnpy.surfaces import surface_builder
 from mcnpy.surface_collection import Surfaces
 from mcnpy.data_cards import Material, parse_data
 from mcnpy.input_parser import input_syntax_reader, block_type, mcnp_input
+from mcnpy.universes import Universes
 
 
 class MCNP_Problem:
@@ -29,6 +30,7 @@ class MCNP_Problem:
         self._original_inputs = []
         self._cells = Cells()
         self._surfaces = Surfaces()
+        self._universes = Universes()
         self._data_cards = []
         self._materials = Materials()
         self._mcnp_version = DEFAULT_VERSION
@@ -180,6 +182,13 @@ class MCNP_Problem:
         :type title: The str for the title to be set to.
         """
         self._title = mcnp_input.Title([title], title)
+
+    @property
+    def universes(self):
+        """
+        The Universes object holding all problem universes.
+        """
+        return self._universes
 
     def parse_input(self):
         """
