@@ -1,0 +1,115 @@
+from mcnpy.data_cards.cell_modifier import CellModifierCard
+from mcnpy.errors import *
+from mcnpy.input_parser.constants import DEFAULT_VERSION
+from mcnpy.input_parser.mcnp_input import Jump
+from mcnpy.mcnp_card import MCNP_Card
+from mcnpy.universe import Universe
+
+
+class UniverseCard(CellModifierCard):
+    """
+    Object to actually handle the ``U`` card in cells
+    and data blocks.
+    """
+
+    def __init__(
+        self, input_card=None, comments=None, in_cell_block=False, key=None, value=None
+    ):
+        """
+        :param input_card: the Card object representing this data card
+        :type input_card: Card
+        :param comments: The list of Comments that may proceed this or be entwined with it.
+        :type comments: list
+        :param in_cell_block: if this card came from the cell block of an input file.
+        :type in_cell_block: bool
+        :param key: the key from the key-value pair in a cell
+        :type key: str
+        :param key: the value from the key-value pair in a cell
+        :type key: str
+        """
+        super().__init__(input_card, comments, in_cell_block, key, value)
+        self._universe = None
+        if self.in_cell_block:
+            self._old_number = None
+            if key:
+                try:
+                    value = int(value)
+                    assert value >= 0
+                except (ValueError, AssertionError) as e:
+                    raise ValueError(
+                        f"Cell universe must be an integer ≥ 0. {value} was given"
+                    )
+                self._old_number = value
+        elif input_card:
+            self._universe = []
+            words = self.words[1:]
+            for word in words:
+                if isinstance(word, str):
+                    try:
+                        value = int(word)
+                        assert value >= 0
+                        self._universe.append(value)
+                    except (ValueError, AssertionError) as e:
+                        raise MalformedInputError(
+                            input_card,
+                            f"Cell universes must be an integer ≥ 0. {word} was given",
+                        )
+                elif isinstance(word, Jump):
+                    self._universe.append(word)
+                else:
+                    raise TypeError(
+                        f"Word: {word} cannot be parsed as a volume as a str, or Jump"
+                    )
+
+    @property
+    def class_prefix(self):
+        return "u"
+
+    @property
+    def has_number(self):
+        return False
+
+    @property
+    def has_classifier(self):
+        return 0
+
+    @property
+    def old_number(self):
+        if self.in_cell_block:
+            return self._old_number
+
+    @property
+    def universe(self):
+        if self.in_cell_block:
+            return self._universe
+
+    def merge(self, other):
+        raise MalformedInputError(
+            other, "Cannot have two universe inputs for the problem"
+        )
+
+    def push_to_cells(self):
+        if not self.in_cell_block and self._problem:
+            cells = self._problem.cells
+            if self._universe:
+                self._check_redundant_definitions()
+                for i, cell in enumerate(cells):
+                    if i >= len(self._universe):
+                        break
+                    uni_number = self._universe[i]
+                    if not isinstance(uni_number, Jump):
+                        cell.universe._old_number = uni_number
+            universes = self._problem.universes
+            for cell in cells:
+                uni_num = cell.universe.old_number
+                if uni_num is None:
+                    uni_num = 0
+                if uni_num not in universes.numbers:
+                    universe = Universe(uni_num)
+                    universes.append(universe)
+                else:
+                    universe = universes[uni_num]
+                cell.universe = universe
+
+    def _clear_data(self):
+        del self._universe

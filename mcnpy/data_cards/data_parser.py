@@ -4,6 +4,7 @@ from mcnpy.data_cards import (
     material,
     mode,
     thermal_scattering,
+    universe_card,
     volume,
 )
 from mcnpy.data_cards import transform
@@ -16,6 +17,7 @@ PREFIX_MATCHES = {
     "mt": thermal_scattering.ThermalScatteringLaw,
     "tr": transform.Transform,
     "vol": volume.Volume,
+    "u": universe_card.UniverseCard,
 }
 
 
