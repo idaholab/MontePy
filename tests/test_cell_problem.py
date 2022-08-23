@@ -62,11 +62,12 @@ class TestCellClass(TestCase):
             self.assertTrue(atom_dens == cell.is_atom_dens)
 
         # test parameter input
-        in_str = "1 0 #2 u= 5 vol=20"
+        in_str = "1 0 #2 u= 5 vol=20 trcl=5"
         card = Card([in_str], BlockType.CELL)
         cell = Cell(card)
         self.assertIn(2, cell.old_complement_numbers)
-        self.assertEqual(cell.parameters["U"].strip(), "5")
+        self.assertAlmostEqual(cell.volume, 20)
+        self.assertEqual(cell.parameters["TRCL"].strip(), "5")
 
     def test_geometry_logic_string_setter(self):
         in_str = "1 0 2"
