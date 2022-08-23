@@ -22,3 +22,21 @@ class Universe(Numbered_MCNP_Card):
             for cell in self._problem.cells:
                 if cell.universe == self:
                     yield cell
+
+    @property
+    def number(self):
+        return self._number
+
+    @property
+    def old_number(self):
+        return self._number
+
+    @property
+    def class_prefix(self):
+        return "u"
+
+    def format_for_mcnp_input(self, mcnp_version):
+        pass
+
+    def allowed_keywords(self):
+        return set()
