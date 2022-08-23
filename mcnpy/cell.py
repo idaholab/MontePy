@@ -7,6 +7,7 @@ from mcnpy.numbered_mcnp_card import Numbered_MCNP_Card
 from mcnpy.data_cards.material import Material
 from mcnpy.surfaces.surface import Surface
 from mcnpy.surface_collection import Surfaces
+from mcnpy.universe import Universe
 from mcnpy.utilities import *
 import re
 import numbers
@@ -172,6 +173,19 @@ class Cell(Numbered_MCNP_Card):
     @property
     def importance(self):
         return self._importance
+
+    @property
+    def universe(self):
+        """
+
+        """
+        return self._universe
+
+    @universe.setter
+    def universe(self, value):
+        if not isinstance(value, Universe):
+            raise TypeError("universe must be set to a Universe")
+        self._universe = value
 
     @property
     def volume(self):
