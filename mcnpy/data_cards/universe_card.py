@@ -83,6 +83,13 @@ class UniverseCard(CellModifierCard):
         if self.in_cell_block:
             return self._universe
 
+    @universe.setter
+    def universe(self, value):
+        if not isinstance(value, Universe):
+            raise TypeError("universe must be set to a Universe")
+        self._mutated = True
+        self._universe = value
+
     def merge(self, other):
         raise MalformedInputError(
             other, "Cannot have two universe inputs for the problem"
@@ -101,7 +108,7 @@ class UniverseCard(CellModifierCard):
                         cell.universe._old_number = uni_number
             universes = self._problem.universes
             for cell in cells:
-                uni_num = cell.universe.old_number
+                uni_num = cell.old_universe_number
                 if uni_num is None:
                     uni_num = 0
                 if uni_num not in universes.numbers:
@@ -109,7 +116,36 @@ class UniverseCard(CellModifierCard):
                     universes.append(universe)
                 else:
                     universe = universes[uni_num]
-                cell.universe = universe
+                cell._universe._universe = universe
 
     def _clear_data(self):
         del self._universe
+
+    def format_for_mcnp_input(self, mcnp_version):
+        ret = []
+        if self.in_cell_block:
+            if self.universe and self.universe.number != 0:
+                ret.extend(
+                    self.wrap_string_for_mcnp(
+                        f"U={self.universe.number}", mcnp_version, False
+                    )
+                )
+        else:
+            mutated = self.mutated
+            if not mutated:
+                mutated = self.has_changed_print_style
+                for cell in self._problem.cells:
+                    if cell._universe.mutated:
+                        mutated = True
+                        break
+            if mutated and self._problem.print_in_data_block["U"]:
+                ret = MCNP_Card.format_for_mcnp_input(self, mcnp_version)
+                ret_strs = ["VOL"]
+                unis = []
+                for cell in self._problem.cells:
+                    unis.append(cell.universe.number)
+                ret_strs.extend(self.compress_repeat_values(unis, 1e-1))
+                ret.extend(self.wrap_for_mcnp(ret_strs, mcnp_version, True))
+            else:
+                ret = self._format_for_mcnp_unmutated(mcnp_version)
+        return ret
