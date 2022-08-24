@@ -179,13 +179,21 @@ class Cell(Numbered_MCNP_Card):
         """
 
         """
-        return self._universe
+        return self._universe.universe
 
     @universe.setter
     def universe(self, value):
         if not isinstance(value, Universe):
             raise TypeError("universe must be set to a Universe")
-        self._universe = value
+        self._mutated = True
+        self._universe.universe = value
+
+    @property
+    def old_universe_number(self):
+        """
+
+        """
+        return self._universe.old_number
 
     @property
     def volume(self):
