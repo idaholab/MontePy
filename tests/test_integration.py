@@ -592,3 +592,19 @@ class testFullFileIntegration(TestCase):
             cell = mcnpy.Cell(
                 Card([in_str], mcnpy.input_parser.block_type.BlockType.CELL)
             )
+
+    def test_universe_cell_parsing(self):
+        problem = self.simple_problem
+        answers = [350] + [0] * 4
+        for cell, answer in zip(problem.cells, answers):
+            print(cell, answer)
+            self.assertEqual(cell.universe.number, answer)
+
+    def test_universe_data_parsing(self):
+        problem = mcnpy.read_input(
+            os.path.join("tests", "inputs", "test_universe_data.imcnp")
+        )
+        answers = [350, 0, 0, 1]
+        for cell, answer in zip(problem.cells, answers):
+            print(cell, answer)
+            self.assertEqual(cell.universe.number, answer)
