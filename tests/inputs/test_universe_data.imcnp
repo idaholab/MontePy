@@ -27,7 +27,7 @@ C surfaces
 C data
 C materials
 C UO2 5 atpt enriched
-U 350 2J 1 
+U 350 2J -1 
 m1        92235.80c           5 &
 92238.80c          95
 C Iron

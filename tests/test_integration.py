@@ -608,3 +608,9 @@ class testFullFileIntegration(TestCase):
         for cell, answer in zip(problem.cells, answers):
             print(cell, answer)
             self.assertEqual(cell.universe.number, answer)
+        for cell in problem.cells:
+            print(cell)
+            if cell.number != 99:
+                self.assertTrue(not cell.not_truncated_by_parent)
+            else:
+                self.assertTrue(cell.not_truncated_by_parent)

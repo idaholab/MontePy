@@ -13,6 +13,7 @@ class TestUniverseCard(TestCase):
     def test_universe_init(self):
         card = UniverseCard(in_cell_block=True, key="U", value="5")
         self.assertEqual(card.old_number, 5)
+        self.assertTrue(not card.not_truncated_by_parent)
         # test bad float
         with self.assertRaises(ValueError):
             card = UniverseCard(in_cell_block=True, key="U", value="5.5")
@@ -22,8 +23,10 @@ class TestUniverseCard(TestCase):
             card = UniverseCard(in_cell_block=True, key="U", value="hi")
 
         # test negative universe
-        with self.assertRaises(ValueError):
-            card = UniverseCard(in_cell_block=True, key="U", value="-3")
+        card = UniverseCard(in_cell_block=True, key="U", value="-3")
+        self.assertEqual(card.old_number, 3)
+        self.assertTrue(card.not_truncated_by_parent)
+
         universes = [1, 2, 3]
         card = Card(["U " + " ".join(list(map(str, universes)))], BlockType.DATA)
         uni_card = UniverseCard(card)
@@ -45,9 +48,8 @@ class TestUniverseCard(TestCase):
             uni_card = UniverseCard(card)
 
         # test bad negative
-        with self.assertRaises(MalformedInputError):
-            card = Card(["U -2"], BlockType.DATA)
-            uni_card = UniverseCard(card)
+        card = Card(["U -2"], BlockType.DATA)
+        uni_card = UniverseCard(card)
 
     def test_str(self):
         card = UniverseCard(in_cell_block=True, key="U", value="5")
