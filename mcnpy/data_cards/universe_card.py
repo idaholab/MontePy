@@ -1,3 +1,4 @@
+import itertools
 from mcnpy.data_cards.cell_modifier import CellModifierCard
 from mcnpy.errors import *
 from mcnpy.input_parser.constants import DEFAULT_VERSION
@@ -11,6 +12,8 @@ class UniverseCard(CellModifierCard):
     Object to actually handle the ``U`` card in cells
     and data blocks.
     """
+
+    # TODO handle negative universes
 
     def __init__(
         self, input_card=None, comments=None, in_cell_block=False, key=None, value=None
@@ -96,16 +99,16 @@ class UniverseCard(CellModifierCard):
         )
 
     def push_to_cells(self):
-        if not self.in_cell_block and self._problem:
-            cells = self._problem.cells
-            if self._universe:
-                self._check_redundant_definitions()
-                for i, cell in enumerate(cells):
-                    if i >= len(self._universe):
-                        break
-                    uni_number = self._universe[i]
-                    if not isinstance(uni_number, Jump):
-                        cell.universe._old_number = uni_number
+        if self._problem:
+            if not self.in_cell_block:
+                cells = self._problem.cells
+                if self._universe:
+                    self._check_redundant_definitions()
+                    for cell, uni_number in itertools.zip_longest(
+                        cells, self._universe, fillvalue=None
+                    ):
+                        if not isinstance(uni_number, (Jump, type(None))):
+                            cell._universe._old_number = uni_number
             universes = self._problem.universes
             for cell in cells:
                 uni_num = cell.old_universe_number

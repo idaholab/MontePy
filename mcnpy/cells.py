@@ -90,6 +90,8 @@ class Cells(NumberedObjectCollection):
             if not hasattr(self, attr):
                 card = card_class()
                 card.link_to_problem(problem)
+                if attr == "_universe":
+                    card.push_to_cells()
                 card._mutated = False
                 setattr(self, attr, card)
 
