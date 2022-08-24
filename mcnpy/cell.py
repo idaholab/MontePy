@@ -189,6 +189,23 @@ class Cell(Numbered_MCNP_Card):
         self._universe.universe = value
 
     @property
+    def not_truncated_by_parent(self):
+        """
+        """
+        if self.universe.number == 0:
+            return False
+        return self._universe.not_truncated_by_parent
+
+    @not_truncated_by_parent.setter
+    def not_truncated_by_parent(self, value):
+        if not isinstance(value, bool):
+            raise TypeError("not_truncated_by_parent must be a bool")
+        if self.universe.number == 0 and value:
+            raise TypeError("can't specify if cell is truncated for universe 0")
+        self._mutated = True
+        self._universe._not_truncated = value
+
+    @property
     def old_universe_number(self):
         """
 

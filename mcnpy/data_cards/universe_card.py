@@ -13,8 +13,6 @@ class UniverseCard(CellModifierCard):
     and data blocks.
     """
 
-    # TODO handle negative universes
-
     def __init__(
         self, input_card=None, comments=None, in_cell_block=False, key=None, value=None
     ):
@@ -32,15 +30,19 @@ class UniverseCard(CellModifierCard):
         """
         super().__init__(input_card, comments, in_cell_block, key, value)
         self._universe = None
+        self._not_truncated = False
         if self.in_cell_block:
             self._old_number = None
             if key:
                 try:
                     value = int(value)
+                    if value < 0:
+                        self._not_truncated = True
+                    value = abs(value)
                     assert value >= 0
-                except (ValueError, AssertionError) as e:
+                except (ValueError) as e:
                     raise ValueError(
-                        f"Cell universe must be an integer ≥ 0. {value} was given"
+                        f"Cell universe must be an integer {value} was given"
                     )
                 self._old_number = value
         elif input_card:
@@ -50,9 +52,8 @@ class UniverseCard(CellModifierCard):
                 if isinstance(word, str):
                     try:
                         value = int(word)
-                        assert value >= 0
                         self._universe.append(value)
-                    except (ValueError, AssertionError) as e:
+                    except (ValueError) as e:
                         raise MalformedInputError(
                             input_card,
                             f"Cell universes must be an integer ≥ 0. {word} was given",
@@ -86,6 +87,19 @@ class UniverseCard(CellModifierCard):
         if self.in_cell_block:
             return self._universe
 
+    @property
+    def not_truncated_by_parent(self):
+        """
+        """
+        return self._not_truncated
+
+    @not_truncated_by_parent.setter
+    def not_truncated_by_parent(self, value):
+        if not isinstance(value, bool):
+            raise TypeError("truncated_by_parent must be a bool")
+        self._mutated = True
+        self._not_truncated = value
+
     @universe.setter
     def universe(self, value):
         if not isinstance(value, Universe):
@@ -108,7 +122,9 @@ class UniverseCard(CellModifierCard):
                         cells, self._universe, fillvalue=None
                     ):
                         if not isinstance(uni_number, (Jump, type(None))):
-                            cell._universe._old_number = uni_number
+                            cell._universe._old_number = abs(uni_number)
+                            if uni_number < 0:
+                                cell._universe._not_truncated = True
             universes = self._problem.universes
             for cell in cells:
                 uni_num = cell.old_universe_number
@@ -139,13 +155,21 @@ class UniverseCard(CellModifierCard):
         )
         return ret
 
+    @staticmethod
+    def _get_print_number(number, not_truncating):
+        if not_truncating:
+            number = -number
+        return number
+
     def format_for_mcnp_input(self, mcnp_version):
         ret = []
         if self.in_cell_block:
             if self.universe and self.universe.number != 0:
                 ret.extend(
                     self.wrap_string_for_mcnp(
-                        f"U={self.universe.number}", mcnp_version, False
+                        f"U={UniverseCard._get_print_number(self.universe.number, self.not_truncated_by_parent)}",
+                        mcnp_version,
+                        False,
                     )
                 )
         else:
@@ -161,7 +185,11 @@ class UniverseCard(CellModifierCard):
                 ret_strs = ["VOL"]
                 unis = []
                 for cell in self._problem.cells:
-                    unis.append(cell.universe.number)
+                    unis.append(
+                        UniverseCard._get_print_number(
+                            cell.universe.number, cell.not_truncated_by_parent
+                        )
+                    )
                 ret_strs.extend(self.compress_repeat_values(unis, 1e-1))
                 ret.extend(self.wrap_for_mcnp(ret_strs, mcnp_version, True))
             else:
