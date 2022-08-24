@@ -76,7 +76,12 @@ class TestUniverseCard(TestCase):
 
 
 class TestUniverse(TestCase):
-    pass
+    def test_init(self):
+        universe = Universe(5)
+        self.assertEqual(universe.number, 5)
+        self.assertEqual(universe.old_number, 5)
+        self.assertEqual(universe.class_prefix, "u")
+        self.assertEqual(universe.allowed_keywords(), set())
 
 
 class TestLattice(TestCase):
