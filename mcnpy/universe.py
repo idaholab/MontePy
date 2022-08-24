@@ -40,3 +40,6 @@ class Universe(Numbered_MCNP_Card):
 
     def allowed_keywords(self):
         return set()
+
+    def __str__(self):
+        return f"Universe({self.number})"

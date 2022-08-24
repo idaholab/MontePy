@@ -121,6 +121,21 @@ class UniverseCard(CellModifierCard):
     def _clear_data(self):
         del self._universe
 
+    def __str__(self):
+        mutated = self.mutated
+        self._mutated = True
+        ret = "\n".join(self.format_for_mcnp_input(DEFAULT_VERSION))
+        self._mutated = mutated
+        return ret
+
+    def __repr__(self):
+        ret = (
+            f"UNIVERSE: in_cell: {self._in_cell_block}"
+            f" set_in_block: {self.set_in_cell_block}, "
+            f"Universe : {self._universe}"
+        )
+        return ret
+
     def format_for_mcnp_input(self, mcnp_version):
         ret = []
         if self.in_cell_block:
