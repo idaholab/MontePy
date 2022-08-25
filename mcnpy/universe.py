@@ -27,6 +27,15 @@ class Universe(Numbered_MCNP_Card):
     def number(self):
         return self._number
 
+    @number.setter
+    def number(self, number):
+        assert isinstance(number, int)
+        assert number > 0
+        if self._problem:
+            self._problem.universes.check_number(number)
+        self._mutated = True
+        self._number = number
+
     @property
     def old_number(self):
         return self._number
