@@ -614,3 +614,53 @@ class testFullFileIntegration(TestCase):
                 self.assertTrue(not cell.not_truncated_by_parent)
             else:
                 self.assertTrue(cell.not_truncated_by_parent)
+        self.assertTrue(problem.cells[99].not_truncated_by_parent)
+
+    def test_universe_cells(self):
+        answers = {350: [1], 0: [2, 3, 5], 1: [99]}
+        problem = mcnpy.read_input(
+            os.path.join("tests", "inputs", "test_universe_data.imcnp")
+        )
+        for uni_number, cell_answers in answers.items():
+            for cell, answer in zip(problem.universes[uni_number].cells, cell_answers):
+                self.assertEqual(cell.number, answer)
+
+    def test_cell_not_truncate_setter(self):
+        problem = copy.deepcopy(self.simple_problem)
+        cell = problem.cells[1]
+        cell.not_truncated_by_parent = True
+        self.assertTrue(cell.not_truncated_by_parent)
+        with self.assertRaises(ValueError):
+            cell = problem.cells[2]
+            cell.not_truncated_by_parent = True
+
+    def test_universe_setter(self):
+        problem = copy.deepcopy(self.simple_problem)
+        universe = problem.universes[350]
+        cell = problem.cells[3]
+        cell.universe = universe
+        self.assertEqual(cell.universe, universe)
+        self.assertEqual(cell.universe.number, 350)
+        with self.assertRaises(TypeError):
+            cell.universe = 5
+
+    def test_universe_cell_formatter(self):
+        problem = copy.deepcopy(self.simple_problem)
+        universe = problem.universes[350]
+        cell = problem.cells[3]
+        cell.universe = universe
+        cell.not_truncated_by_parent = True
+        output = cell.format_for_mcnp_input((6, 2, 0))
+        self.assertIn("U=-350", " ".join(output))
+
+    def test_universe_data_formatter(self):
+        problem = mcnpy.read_input(
+            os.path.join("tests", "inputs", "test_universe_data.imcnp")
+        )
+        universe = problem.universes[350]
+        cell = problem.cells[3]
+        cell.universe = universe
+        cell.not_truncated_by_parent = True
+        output = problem.cells._universe.format_for_mcnp_input((6, 2, 0))
+        print(output)
+        self.assertIn("U 350 J -350 -1 J", output)
