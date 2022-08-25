@@ -320,7 +320,6 @@ This previous code is much simpler now::
 
 Cells 
 -----
-
 Density
 ^^^^^^^
 This gets a bit more complicated.
@@ -329,46 +328,42 @@ So when you access ``cell.density`` on its own,
 the result is ambiguous, 
 because it could be in g/cm3 or atom/b-cm.
 No; MCNPy does not support negative density; it doesn't exist!
+For this reason ``cell.density`` is deprecated.
+Instead there is now ``cell.atom_density`` and ``cell.mass_density``. 
 
-To remove this ambiguity you need to check ``cell.is_atom_dens``.
-As the name suggests it will return ``True`` if the density is an atom density,
-and ``False`` if it is a mass density.
+``cell.atom_density`` is in units of atomcs/b-cm,
+and ``cell.mass_density`` is in units of g/cm3.
+Both will never return a valid number simultaneously.
+If the cell density is set to a mass density ``cell.atom_density`` will return ``None``.
+Setting the value for one of these densities will change the density mode.
+MCNPy does not convert mass density to atom density and vice versa.
 
-To avoid this ambiguity when setting ``cell.density`` you cannot set it to just a number.
-Instead you must set it using a tuple. 
-This tuple must contain a ``float``, and ``bool``.
-The number is the density,
-and the boolean indicates whether or not the density 
-is in atom density.
-``True`` means it is an atom density,
-and ``False`` means it is a mass density.
+>>> cell.mass_density
+9.8
+>>> cell.atom_density 
+None
+>>> cell.atom_density = 0.5
+>>> cell.mass_density
+None
 
-Trying to set the density as a float will fail:
 
->>> cell.density = 5.0
----------------------------------------------------------------------------
-TypeError                                 Traceback (most recent call last)
-<ipython-input-3-8bc0463ae415> in <module>
-----> 1 prob.cells[1].density = 5
-~/dev/mcnpy/doc/mcnpy/cell.py in density(self, density_tuple)
-    199             :type is_atom_dens: bool
-    200         """
---> 201         density, is_atom_dens = density_tuple
-    202         assert isinstance(density, float)
-    203         assert isinstance(is_atom_dens, bool)
-TypeError: cannot unpack non-iterable int object
+Universes
+---------
+MCNPy supports MCNP universes as well.
+``problem.universes`` will contain all universes in a problem.
+If a cell is not assigned to any universe it will be assigned to Universe 0, while reading in the input file.
+To change what cells are in a universe you must set this at the cell level.
+This is done to prevent a cell from being assigned to multiple universes::
 
-Instead you must specify what density type you are providing:
+    universe = problem.universes[350]
+    for cell_num in {1,2,3,4,5}:
+        cell = problem.cells[cell_num]
+        cell.universe = universe
+    
+We can confirm this worked with the generator ``universe.cells``:
 
->>> cell.density = (5.0, False)
->>> cell.density
-5.0
->>> cell.is_atom_dens
-False
->>> cell.density = (0.01, True)
->>> cell.density
-0.01
->>> cell.is_atom_dens
-True
+>>> list(universe.cells.numbers)
+[1, 2, 3, 4, 5]
 
 Remember: make objects, not regexs!
+===================================
