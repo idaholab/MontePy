@@ -183,7 +183,7 @@ class UniverseCard(CellModifierCard):
                         break
             if mutated and self._problem.print_in_data_block["U"]:
                 ret = MCNP_Card.format_for_mcnp_input(self, mcnp_version)
-                ret_strs = ["VOL"]
+                ret_strs = ["U"]
                 unis = []
                 for cell in self._problem.cells:
                     unis.append(
@@ -191,8 +191,10 @@ class UniverseCard(CellModifierCard):
                             cell.universe.number, cell.not_truncated_by_parent
                         )
                     )
-                ret_strs.extend(self.compress_repeat_values(unis, 1e-1))
-                ret.extend(self.wrap_for_mcnp(ret_strs, mcnp_version, True))
+                ret_strs.extend(
+                    self.compress_jump_values(self.compress_repeat_values(unis, 1e-1))
+                )
+                ret.extend(self.wrap_words_for_mcnp(ret_strs, mcnp_version, True))
             else:
                 ret = self._format_for_mcnp_unmutated(mcnp_version)
         return ret
