@@ -76,6 +76,14 @@ class TestUniverseCard(TestCase):
         with self.assertRaises(TypeError):
             card.universe = 5
 
+    def test_universe_truncate_setter(self):
+        card = UniverseCard(in_cell_block=True, key="U", value="5")
+        self.assertTrue(not card.not_truncated_by_parent)
+        card.not_truncated_by_parent = True
+        self.assertTrue(card.not_truncated_by_parent)
+        with self.assertRaises(TypeError):
+            card.not_truncated_by_parent = 5
+
 
 class TestUniverse(TestCase):
     def test_init(self):
