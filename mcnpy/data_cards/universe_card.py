@@ -132,6 +132,7 @@ class UniverseCard(CellModifierCard):
                     uni_num = 0
                 if uni_num not in universes.numbers:
                     universe = Universe(uni_num)
+                    universe.link_to_problem(self._problem)
                     universes.append(universe)
                 else:
                     universe = universes[uni_num]
