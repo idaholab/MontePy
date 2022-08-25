@@ -90,6 +90,12 @@ class UniverseCard(CellModifierCard):
     @property
     def not_truncated_by_parent(self):
         """
+        Indicates if this cell has been marked as not being truncated for optimization.
+
+        See Note 1 from section 3.3.1.5.1 of the user manual (LA-UR-17-29981).
+
+        :rtype: bool
+        :returns: True if this cell has been marked as not being truncated by the parent filled cell.
         """
         return self._not_truncated
 
@@ -158,6 +164,18 @@ class UniverseCard(CellModifierCard):
 
     @staticmethod
     def _get_print_number(number, not_truncating):
+        """
+        Prepares the universe number for printing. 
+        
+        This handles the whole negative sign for not being truncated by the parent.
+
+        :param number: the universe number.
+        :type number: int
+        :param not_truncating: True if this cell isn't truncated by the parent cell
+        :type not_truncating: bool
+        :returns: the number properly formatted or a Jump if the number is 0.
+        :rtype: int or Jump
+        """
         if number == 0:
             return Jump()
         if not_truncating:

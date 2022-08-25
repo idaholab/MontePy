@@ -177,7 +177,10 @@ class Cell(Numbered_MCNP_Card):
     @property
     def universe(self):
         """
+        The Universe that this cell is in.
 
+        :returns: the Universe the cell is in.
+        :rtype: Universe
         """
         return self._universe.universe
 
@@ -191,6 +194,14 @@ class Cell(Numbered_MCNP_Card):
     @property
     def not_truncated_by_parent(self):
         """
+        Indicates if this cell has been marked as not being truncated for optimization.
+
+        See Note 1 from section 3.3.1.5.1 of the user manual (LA-UR-17-29981).
+
+        Note this can be set to True iff that this cell is not in Universe 0.
+
+        :rtype: bool
+        :returns: True if this cell has been marked as not being truncated by the parent filled cell.
         """
         if self.universe.number == 0:
             return False
@@ -208,7 +219,10 @@ class Cell(Numbered_MCNP_Card):
     @property
     def old_universe_number(self):
         """
+        The original universe number read in from the input file.
 
+        :returns: the number of the Universe for the cell in the input file.
+        :rtype: int
         """
         return self._universe.old_number
 
