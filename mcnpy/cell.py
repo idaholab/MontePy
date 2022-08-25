@@ -201,7 +201,7 @@ class Cell(Numbered_MCNP_Card):
         if not isinstance(value, bool):
             raise TypeError("not_truncated_by_parent must be a bool")
         if self.universe.number == 0 and value:
-            raise TypeError("can't specify if cell is truncated for universe 0")
+            raise ValueError("can't specify if cell is truncated for universe 0")
         self._mutated = True
         self._universe._not_truncated = value
 
