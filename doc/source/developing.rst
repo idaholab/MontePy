@@ -211,6 +211,26 @@ To add a problem level data Object you need to
 1. Add it ``cards_to_property``. The key will be the object class, and the value will be a string for the attribute it should be loaded to.
 1. Add a property that exposes this attribute in a desirable way.
 
+Making a numbered Object :class:`mcnpy.numbered_mcnp_card.Numbered_MCNP_Card`
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+MCNP allows many types of number objects like cells, surfaces, and tallies. 
+First you need to provide the property ``number``, and ``old_number``.
+The parent class provides a system to link to a problem via ``self._problem``.
+Note this field can be ``None``. 
+When setting a number you must check for numbering collisions with the method:
+:func:`mcnpy.numbered_object_collection.NumberedObjectCollection.check_number`.
+This function returns nothing, but will raise an error when a number collision occurs.
+For example the ``Surface`` number setter looks like::
+        
+    @number.setter
+    def number(self, number):
+        assert isinstance(number, int)
+        assert number > 0
+        if self._problem:
+            self._problem.surfaces.check_number(number)
+        self._mutated = True
+        self._surface_number = number
+
 Data Cards that Modify Cells :class:`mcnpy.data_cards.cell_modifier.CellModifierCard`
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 This is a subclass of ``DataCardAbstract`` that is meant to handle data cards that specify information about,
@@ -360,25 +380,6 @@ How to __init__
 You need to call ``super().__init__(input_lines)``,
 and this will provide by ``self.input_lines``.
 
-Making a numbered Object
-------------------------
-MCNP allows many types of number objects like cells, surfaces, and tallies. 
-First you need to provide the property ``number``. 
-The parent class provides a system to link to a problem via ``self._problem``.
-Note this field can be ``None``. 
-When setting a number you must check for numbering collisions with the method:
-:func:`mcnpy.numbered_object_collection.NumberedObjectCollection.check_number`.
-This function returns nothing, but will raise an error when a number collision occurs.
-For example the ``Surface`` number setter looks like::
-        
-    @number.setter
-    def number(self, number):
-        assert isinstance(number, int)
-        assert number > 0
-        if self._problem:
-            self._problem.surfaces.check_number(number)
-        self._mutated = True
-        self._surface_number = number
 
 On the use of Pointers and Generator
 ------------------------------------
