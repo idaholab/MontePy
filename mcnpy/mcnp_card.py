@@ -254,7 +254,10 @@ class MCNP_Card(ABC):
         last_value = None
         float_formatter = "{:n}"
         for value in values:
-            if last_value:
+            if isinstance(value, mcnpy.input_parser.mcnp_input.Jump):
+                ret.append(value)
+                last_value = None
+            elif last_value:
                 if np.isclose(value, last_value, atol=threshold):
                     repeat_counter += 1
                 else:

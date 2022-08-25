@@ -158,6 +158,8 @@ class UniverseCard(CellModifierCard):
 
     @staticmethod
     def _get_print_number(number, not_truncating):
+        if number == 0:
+            return Jump()
         if not_truncating:
             number = -number
         return number
