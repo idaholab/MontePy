@@ -664,3 +664,13 @@ class testFullFileIntegration(TestCase):
         output = problem.cells._universe.format_for_mcnp_input((6, 2, 0))
         print(output)
         self.assertIn("U 350 J -350 -1 J", output)
+
+    def test_universe_number_collision(self):
+        problem = mcnpy.read_input(
+            os.path.join("tests", "inputs", "test_universe_data.imcnp")
+        )
+        with self.assertRaises(mcnpy.errors.NumberConflictError):
+            problem.universes[0].number = 350
+
+        with self.assertRaises(ValueError):
+            problem.universes[350].number = 0

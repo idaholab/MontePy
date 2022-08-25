@@ -91,7 +91,16 @@ class TestUniverse(TestCase):
         self.assertEqual(universe.number, 5)
         self.assertEqual(universe.old_number, 5)
         self.assertEqual(universe.class_prefix, "u")
-        self.assertEqual(universe.allowed_keywords(), set())
+        self.assertEqual(universe.allowed_keywords, set())
+
+    def test_number_setter(self):
+        universe = Universe(5)
+        universe.number = 10
+        self.assertEqual(universe.number, 10)
+        with self.assertRaises(TypeError):
+            universe.number = "hi"
+        with self.assertRaises(ValueError):
+            universe.number = -1
 
 
 class TestLattice(TestCase):
