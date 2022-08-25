@@ -31,3 +31,4 @@ from mcnpy.data_cards.transform import Transform
 from mcnpy.input_parser.mcnp_input import Comment
 from mcnpy.input_parser.mcnp_input import Jump
 from mcnpy.surfaces.surface_type import SurfaceType
+from mcnpy.universe import Universe
