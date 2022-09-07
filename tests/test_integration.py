@@ -5,7 +5,7 @@ import os
 
 import mcnpy
 from mcnpy.data_cards import material, thermal_scattering, volume
-from mcnpy.input_parser.mcnp_input import Card, Comment, Message, Title, ReadCard
+from mcnpy.input_parser.mcnp_input import Card, Comment, Jump, Message, Title, ReadCard
 from mcnpy.particle import Particle
 
 
@@ -681,3 +681,29 @@ class testFullFileIntegration(TestCase):
         self.assertIn("Number: 0", output)
         self.assertIn("Problem: set", output)
         self.assertIn("Cells: [2", output)
+
+    def test_lattice_format_data(self):
+        problem = copy.deepcopy(self.simple_problem)
+        cells = problem.cells
+        cells[1].lattice = 1
+        cells[99].lattice = 2
+        answer = "LAT 1 2J 2"
+        output = cells._lattice.format_for_mcnp_input((6, 2, 0))
+        self.assertIn(answer, output[0])
+
+    def test_lattice_push_to_cells(self):
+        problem = copy.deepcopy(self.simple_problem)
+        lattices = [1, 2, Jump(), Jump()]
+        card = Card(
+            ["Lat " + " ".join(list(map(str, lattices)))],
+            mcnpy.input_parser.block_type.BlockType.DATA,
+        )
+        lattice = mcnpy.data_cards.lattice_card.LatticeCard(card)
+        lattice.link_to_problem(problem)
+        lattice.push_to_cells()
+        for cell, answer in zip(problem.cells, lattices):
+            print(cell.number, answer)
+            if isinstance(answer, int):
+                self.assertEqual(cell.lattice.value, answer)
+            else:
+                self.assertIsNone(cell.lattice)
