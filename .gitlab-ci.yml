@@ -39,8 +39,9 @@ doc_test:
       - sphinx-build doc/source/ doc/build/ -W --keep-going -E
    artifacts:
      expose_as: 'Updated Documentation'
-     paths: ['public/']
-     expires_in: 1 day
+     paths: 
+       - public
+     expire_in: 1 day
 
 
 deploy1:
