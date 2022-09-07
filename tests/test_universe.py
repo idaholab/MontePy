@@ -1,11 +1,14 @@
 from unittest import TestCase
 
+from mcnpy.input_parser.constants import DEFAULT_VERSION
 import mcnpy
 from mcnpy.cell import Cell
 from mcnpy.errors import *
 from mcnpy.input_parser.block_type import BlockType
 from mcnpy.input_parser.mcnp_input import Card, Comment, Jump
 from mcnpy.universe import Universe
+from mcnpy.data_cards.lattice import Lattice
+from mcnpy.data_cards.lattice_card import LatticeCard
 from mcnpy.data_cards.universe_card import UniverseCard
 
 
@@ -104,7 +107,59 @@ class TestUniverse(TestCase):
 
 
 class TestLattice(TestCase):
-    pass
+    def test_lattice_init(self):
+        lattice = LatticeCard(in_cell_block=True, key="lat", value="1")
+        self.assertEqual(lattice.lattice, Lattice(1))
+        with self.assertRaises(ValueError):
+            lattice = LatticeCard(in_cell_block=True, key="lat", value="hi")
+        with self.assertRaises(ValueError):
+            lattice = LatticeCard(in_cell_block=True, key="lat", value="5")
+        lattices = [1, 2, Jump(), Jump()]
+        card = Card(["Lat " + " ".join(list(map(str, lattices)))], BlockType.DATA)
+        lattice = LatticeCard(card)
+        for answer, lattice in zip(lattices, lattice._lattice):
+            if isinstance(answer, int):
+                self.assertEqual(answer, lattice.value)
+            else:
+                self.assertEqual(answer, lattice)
+        with self.assertRaises(MalformedInputError):
+            card = Card(["Lat 3"], BlockType.DATA)
+            LatticeCard(card)
+        with self.assertRaises(MalformedInputError):
+            card = Card(["Lat str"], BlockType.DATA)
+            LatticeCard(card)
+
+    def test_lattice_setter(self):
+        lattice = LatticeCard(in_cell_block=True, key="lat", value="1")
+        lattice.lattice = Lattice(2)
+        self.assertEqual(Lattice(2), lattice.lattice)
+        lattice.lattice = 1
+        self.assertEqual(Lattice(1), lattice.lattice)
+        lattice.lattice = None
+        self.assertIsNone(lattice.lattice)
+        with self.assertRaises(TypeError):
+            lattice.lattice = "hi"
+
+        with self.assertRaises(ValueError):
+            lattice.lattice = -1
+
+    def test_lattice_deleter(self):
+        lattice = LatticeCard(in_cell_block=True, key="lat", value="1")
+        del lattice.lattice
+        self.assertIsNone(lattice.lattice)
+
+    def test_lattice_merge(self):
+        lattice = LatticeCard(in_cell_block=True, key="lat", value="1")
+        with self.assertRaises(MalformedInputError):
+            lattice.merge(lattice)
+
+    def test_lattice_cell_format(self):
+        lattice = LatticeCard(in_cell_block=True, key="lat", value="1")
+        output = lattice.format_for_mcnp_input(DEFAULT_VERSION)
+        self.assertIn("LAT=1", output[0])
+        lattice.lattice = None
+        output = lattice.format_for_mcnp_input(DEFAULT_VERSION)
+        self.assertEqual(output, [])
 
 
 class TestFill(TestCase):
