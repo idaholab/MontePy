@@ -12,8 +12,11 @@ class Universe(Numbered_MCNP_Card):
 
     def __init__(self, number):
         super().__init__(Card(["U"], BlockType.DATA))
-        self._number = None
-        self.number = number
+        if not isinstance(number, int):
+            raise TypeError("number must be int")
+        if number < 0:
+            raise ValueError("Universe number must be ≥ 0")
+        self._number = number
 
     @property
     def cells(self):
@@ -36,7 +39,7 @@ class Universe(Numbered_MCNP_Card):
         if not isinstance(number, int):
             raise TypeError("number must be int")
         if number <= 0:
-            raise ValueError("Universe number must be ≥ 0")
+            raise ValueError("Universe number must be > 0")
         if self._problem:
             self._problem.universes.check_number(number)
         self._mutated = True
