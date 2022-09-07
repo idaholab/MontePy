@@ -1,6 +1,6 @@
 import itertools
 from mcnpy.cells import Cells
-from mcnpy.data_cards import importance, lattice_card, universe_card, volume
+from mcnpy.data_cards import fill, importance, lattice_card, universe_card, volume
 from mcnpy.data_cards.data_parser import PREFIX_MATCHES
 from mcnpy.errors import *
 from mcnpy.numbered_mcnp_card import Numbered_MCNP_Card
@@ -44,6 +44,7 @@ class Cell(Numbered_MCNP_Card):
         volume.Volume: ("_volume", True),
         universe_card.UniverseCard: ("_universe", True),
         lattice_card.LatticeCard: ("_lattice", True),
+        fill.Fill: ("_fill", True),
     }
 
     def __init__(self, input_card=None, comment=None):
