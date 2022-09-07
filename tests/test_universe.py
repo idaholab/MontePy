@@ -161,6 +161,13 @@ class TestLattice(TestCase):
         output = lattice.format_for_mcnp_input(DEFAULT_VERSION)
         self.assertEqual(output, [])
 
+    def test_lattice_repr(self):
+        lattice = LatticeCard(in_cell_block=True, key="lat", value="1")
+        out = repr(lattice)
+        self.assertIn("in_cell: True", out)
+        self.assertIn("set_in_block: True", out)
+        self.assertIn("Lattice_values : Lattice.HEXAHEDRA", out)
+
 
 class TestFill(TestCase):
     pass

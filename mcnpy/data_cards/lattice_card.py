@@ -116,10 +116,15 @@ class LatticeCard(CellModifierCard):
         del self._lattice
 
     def __str__(self):
-        return ""
+        return "Lattice: {self.lattice}"
 
     def __repr__(self):
-        return ""
+        ret = (
+            f"Lattice: in_cell: {self._in_cell_block}"
+            f" set_in_block: {self.set_in_cell_block}, "
+            f"Lattice_values : {self._lattice}"
+        )
+        return ret
 
     def format_for_mcnp_input(self, mcnp_version):
         ret = []
