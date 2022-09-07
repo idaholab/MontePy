@@ -12,7 +12,8 @@ class Universe(Numbered_MCNP_Card):
 
     def __init__(self, number):
         super().__init__(Card(["U"], BlockType.DATA))
-        self._number = number
+        self._number = None
+        self.number = number
 
     @property
     def cells(self):
