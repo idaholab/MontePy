@@ -62,7 +62,7 @@ class UniverseCard(CellModifierCard):
                     self._universe.append(word)
                 else:
                     raise TypeError(
-                        f"Word: {word} cannot be parsed as a volume as a str, or Jump"
+                        f"Word: {word} cannot be parsed as an universe as a str, or Jump"
                     )
 
     @property
