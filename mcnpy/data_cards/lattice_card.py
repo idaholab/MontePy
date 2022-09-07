@@ -36,7 +36,7 @@ class LatticeCard(CellModifierCard):
                     value = Lattice(value)
                 except (ValueError) as e:
                     raise ValueError("Cell Lattice must be 1 or 2")
-                self._lattice = lattice
+                self._lattice = value
         elif input_card:
             self._lattice = []
             words = self.words[1:]
@@ -83,7 +83,7 @@ class LatticeCard(CellModifierCard):
             raise TypeError(
                 "lattice must be set to a Lattice, or an integer, {value} given"
             )
-        if isinstance(value, integer):
+        if isinstance(value, int):
             try:
                 value = Lattice(value)
             except ValueError:
@@ -107,7 +107,7 @@ class LatticeCard(CellModifierCard):
                     if not isinstance(lattice, (Jump, type(None))):
                         cell.lattice = lattice
 
-    def merge(self):
+    def merge(self, other):
         raise MalformedInputError(
             other, "Cannot have two lattice inputs for the problem"
         )
@@ -116,10 +116,10 @@ class LatticeCard(CellModifierCard):
         del self._lattice
 
     def __str__(self):
-        pass
+        return ""
 
     def __repr__(self):
-        pass
+        return ""
 
     def format_for_mcnp_input(self, mcnp_version):
         ret = []
