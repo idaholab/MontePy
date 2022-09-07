@@ -674,3 +674,10 @@ class testFullFileIntegration(TestCase):
 
         with self.assertRaises(ValueError):
             problem.universes[350].number = 0
+
+    def test_universe_repr(self):
+        uni = self.simple_problem.universes[0]
+        output = repr(uni)
+        self.assertIn("Number: 0", output)
+        self.assertIn("Problem: set", output)
+        self.assertIn("Cells: [2", output)
