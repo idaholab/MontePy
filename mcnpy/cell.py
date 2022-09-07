@@ -192,7 +192,7 @@ class Cell(Numbered_MCNP_Card):
         self._universe.universe = value
 
     @property
-    def not_truncated_by_parent(self):
+    def not_truncated(self):
         """
         Indicates if this cell has been marked as not being truncated for optimization.
 
@@ -205,10 +205,10 @@ class Cell(Numbered_MCNP_Card):
         """
         if self.universe.number == 0:
             return False
-        return self._universe.not_truncated_by_parent
+        return self._universe.not_truncated
 
-    @not_truncated_by_parent.setter
-    def not_truncated_by_parent(self, value):
+    @not_truncated.setter
+    def not_truncated(self, value):
         if not isinstance(value, bool):
             raise TypeError("not_truncated_by_parent must be a bool")
         if self.universe.number == 0 and value:

@@ -88,7 +88,7 @@ class UniverseCard(CellModifierCard):
             return self._universe
 
     @property
-    def not_truncated_by_parent(self):
+    def not_truncated(self):
         """
         Indicates if this cell has been marked as not being truncated for optimization.
 
@@ -99,8 +99,8 @@ class UniverseCard(CellModifierCard):
         """
         return self._not_truncated
 
-    @not_truncated_by_parent.setter
-    def not_truncated_by_parent(self, value):
+    @not_truncated.setter
+    def not_truncated(self, value):
         if not isinstance(value, bool):
             raise TypeError("truncated_by_parent must be a bool")
         self._mutated = True
@@ -188,7 +188,7 @@ class UniverseCard(CellModifierCard):
             if self.universe and self.universe.number != 0:
                 ret.extend(
                     self.wrap_string_for_mcnp(
-                        f"U={UniverseCard._get_print_number(self.universe.number, self.not_truncated_by_parent)}",
+                        f"U={UniverseCard._get_print_number(self.universe.number, self.not_truncated)}",
                         mcnp_version,
                         False,
                     )
@@ -208,7 +208,7 @@ class UniverseCard(CellModifierCard):
                 for cell in self._problem.cells:
                     unis.append(
                         UniverseCard._get_print_number(
-                            cell.universe.number, cell.not_truncated_by_parent
+                            cell.universe.number, cell.not_truncated
                         )
                     )
                 ret_strs.extend(

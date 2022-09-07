@@ -611,10 +611,10 @@ class testFullFileIntegration(TestCase):
         for cell in problem.cells:
             print(cell)
             if cell.number != 99:
-                self.assertTrue(not cell.not_truncated_by_parent)
+                self.assertTrue(not cell.not_truncated)
             else:
-                self.assertTrue(cell.not_truncated_by_parent)
-        self.assertTrue(problem.cells[99].not_truncated_by_parent)
+                self.assertTrue(cell.not_truncated)
+        self.assertTrue(problem.cells[99].not_truncated)
 
     def test_universe_cells(self):
         answers = {350: [1], 0: [2, 3, 5], 1: [99]}
@@ -628,11 +628,11 @@ class testFullFileIntegration(TestCase):
     def test_cell_not_truncate_setter(self):
         problem = copy.deepcopy(self.simple_problem)
         cell = problem.cells[1]
-        cell.not_truncated_by_parent = True
-        self.assertTrue(cell.not_truncated_by_parent)
+        cell.not_truncated = True
+        self.assertTrue(cell.not_truncated)
         with self.assertRaises(ValueError):
             cell = problem.cells[2]
-            cell.not_truncated_by_parent = True
+            cell.not_truncated = True
 
     def test_universe_setter(self):
         problem = copy.deepcopy(self.simple_problem)
@@ -649,7 +649,7 @@ class testFullFileIntegration(TestCase):
         universe = problem.universes[350]
         cell = problem.cells[3]
         cell.universe = universe
-        cell.not_truncated_by_parent = True
+        cell.not_truncated = True
         output = cell.format_for_mcnp_input((6, 2, 0))
         self.assertIn("U=-350", " ".join(output))
 
@@ -660,7 +660,7 @@ class testFullFileIntegration(TestCase):
         universe = problem.universes[350]
         cell = problem.cells[3]
         cell.universe = universe
-        cell.not_truncated_by_parent = True
+        cell.not_truncated = True
         output = problem.cells._universe.format_for_mcnp_input((6, 2, 0))
         print(output)
         self.assertIn("U 350 J -350 -1 J", output)
