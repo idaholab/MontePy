@@ -186,7 +186,7 @@ Conceptually these names can contain up to four sections.
 
 #. A ``prefix_modifier`` this modifies the whole card with a special character such as ``*tr5`` 
 #. A ``Prefix``, which is a series of letters that identifies the type such as ``m``
-#. A number, which numbers it. These must be positive.
+#. A ``number``, which numbers it. These must be an unsigned integer.
 #. A particle classifier such as ``:n,p``.
 
 You control the parsing behavior through three parameters: ``class_prefix``, ``has_number``, and ``has_classifier``.

@@ -147,6 +147,14 @@ The meat of the Problem is its collections, such as ``cells``, ``surfaces``, and
 Technically these are :class:`mcnpy.numbered_object_collection.NumberedObjectCollection`, 
 but it looks like a ``dict``, walks like a ``dict``, and quacks like ``dict``, so most users can just treat it like that.
 
+.. note::
+   Though these collections are based on a dict, they don't behave exactly like a dict.
+   For a dict the iteration (e.g., ``for key in dict:``) iterates over the keys.
+   Also when you check if an item is in a dict (e.g., ``if key in dict:``) it checks if the item is a key.
+   For :class:`mcnpy.numbered_object_collection.NumberedObjectCollection` this is reversed.
+   When iterating it is done over the items of the collection (e.g., ``for cell in cells:``).
+   Similar checking will be done for the object being in the collection (e.g., ``if cell in cells:``).
+
 Collections are Accessible by Number
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
