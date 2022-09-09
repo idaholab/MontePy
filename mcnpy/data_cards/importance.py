@@ -3,6 +3,7 @@ from mcnpy.errors import *
 from mcnpy.input_parser.constants import DEFAULT_VERSION
 from mcnpy.mcnp_card import MCNP_Card
 from mcnpy.particle import Particle
+from mcnpy.utilities import *
 import numbers
 
 
@@ -31,7 +32,7 @@ class Importance(CellModifierCard):
         if self.in_cell_block:
             if key:
                 try:
-                    value = float(value)
+                    value = fortran_float(value)
                     assert value >= 0
                 except (ValueError, AssertionError) as e:
                     raise ValueError(
@@ -43,7 +44,7 @@ class Importance(CellModifierCard):
             values = []
             for word in self.words[1:]:
                 try:
-                    value = float(word)
+                    value = fortran_float(word)
                     values.append(value)
                     assert value >= 0
                 except (ValueError, AssertionError) as e:
