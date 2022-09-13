@@ -1,7 +1,9 @@
 from mcnpy.data_cards.cell_modifier import CellModifierCard
+from mcnpy.data_cards.transform import Transform
 from mcnpy.errors import *
+from mcnpy.input_parser.block_type import BlockType
 from mcnpy.input_parser.constants import DEFAULT_VERSION
-from mcnpy.input_parser.mcnp_input import Jump
+from mcnpy.input_parser.mcnp_input import Card, Jump
 from mcnpy.mcnp_card import MCNP_Card
 
 
@@ -31,9 +33,11 @@ class Fill(CellModifierCard):
         self._old_number = None
         self._universe = None
         self._transform = None
+        self._hidden_transform = None
+        self._old_transform_number = None
         if self.in_cell_block:
             if key:
-                self._parse_cell_input(value)
+                self._parse_cell_input(key, value)
         elif input_card:
             self._old_number = []
             words = self.words[1:]
@@ -55,12 +59,13 @@ class Fill(CellModifierCard):
                         f"Word: {word} cannot be parsed as a lattice as a str, or Jump"
                     )
 
-    def _parse_cell_input(self, value):
+    def _parse_cell_input(self, key, value):
         def get_universe(value):
             words = value.split()
             try:
                 value = int(words[0])
                 assert value > 0
+                self._old_number = value
             except (ValueError, AssertionError) as e:
                 raise ValueError(
                     f"The fill universe must be a valid integer, {words[0]} was given"
@@ -74,14 +79,30 @@ class Fill(CellModifierCard):
                 try:
                     transform = int(words[0])
                     assert transform > 0
+                    self._hidden_transform = False
+                    self._old_transform_number = transform
                 except (ValueError, AssertionError) as e:
                     raise ValueError(
                         "Transform number must be a positive integer. {words[0]} was given."
                     )
+            elif len(words) > 1:
+                if "*" in key:
+                    in_key = "*TR1"
+                else:
+                    in_key = "TR1"
+                input_card = Card([in_key + " " + parens_contents], BlockType.DATA)
+                self._transform = Transform(input_card, pass_through=True)
+                self._hidden_transform = True
+
         elif ":" in value:
-            pass
+            self._parse_matrix(value)
         else:
             get_universe(value)
+
+    def _parse_matrix(self, value):
+        """
+        """
+        pass
 
     @property
     def class_prefix(self):
@@ -94,6 +115,26 @@ class Fill(CellModifierCard):
     @property
     def has_classifier(self):
         return 0
+
+    @property
+    def universe(self):
+        return self._universe
+
+    @property
+    def old_universe_number(self):
+        return self._old_number
+
+    @property
+    def hidden_transform(self):
+        return self._hidden_transform
+
+    @property
+    def transform(self):
+        return self._transform
+
+    @property
+    def old_transform_number(self):
+        return self._old_transform_number
 
     def merge(self, other):
         raise MalformedInputError(
