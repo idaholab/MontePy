@@ -7,6 +7,7 @@ from mcnpy.errors import *
 from mcnpy.input_parser.block_type import BlockType
 from mcnpy.input_parser.mcnp_input import Card, Comment, Jump
 from mcnpy.universe import Universe
+from mcnpy.data_cards.fill import Fill
 from mcnpy.data_cards.lattice import Lattice
 from mcnpy.data_cards.lattice_card import LatticeCard
 from mcnpy.data_cards.universe_card import UniverseCard
@@ -170,4 +171,13 @@ class TestLattice(TestCase):
 
 
 class TestFill(TestCase):
-    pass
+    def test_complex_transform_fill_init(self):
+        fill = Fill(in_cell_block=True, key="*fill", value="1 (1.5 0.0 0.0)")
+        self.assertTrue(fill.hidden_transform)
+        self.assertEqual(fill.old_universe_number, 1)
+        self.assertEqual(len(fill.transform.displacement_vector), 3)
+        self.assertTrue(fill.transform.is_in_degrees)
+        fill = Fill(in_cell_block=True, key="fill", value="5 (3)")
+        self.assertTrue(not fill.hidden_transform)
+        self.assertEqual(fill.old_universe_number, 5)
+        self.assertEqual(fill.old_transform_number, 3)
