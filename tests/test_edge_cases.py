@@ -33,8 +33,7 @@ class EdgeCaseTests(TestCase):
     def test_orphaning_mt(self):
         problem = mcnpy.read_input(os.path.join("tests", "inputs", "test.imcnp"))
         card = mcnpy.input_parser.mcnp_input.Card(
-            ["MT5 lwtr.01t"],
-            mcnpy.input_parser.block_type.BlockType.DATA,
+            ["MT5 lwtr.01t"], mcnpy.input_parser.block_type.BlockType.DATA,
         )
         problem.data_cards.append(mcnpy.data_cards.data_parser.parse_data(card))
         try:
