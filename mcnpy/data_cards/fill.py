@@ -13,7 +13,7 @@ class Fill(CellModifierCard):
     Object to handle the ``FILL`` card in cell and data blocks.
     """
 
-    DIMENSIONS: {"x": 0, "y": 1, "z": 2}
+    DIMENSIONS = {"x": 0, "y": 1, "z": 2}
 
     def __init__(
         self, input_card=None, comments=None, in_cell_block=False, key=None, value=None
@@ -109,9 +109,10 @@ class Fill(CellModifierCard):
         """
         self._multi_universe = True
         words = iter(value.split())
+        next(words)
         self._min_index = np.zeros((3, 1))
         self._max_index = np.zeros((3, 1))
-        for axis, limits in zip(DIMENSIONS.values(), words):
+        for axis, limits in zip(Fill.DIMENSIONS.values(), words):
             values = limits.split(":")
             for val, limit_holder in zip(values, (self._min_index, self._max_index)):
                 try:
@@ -121,8 +122,22 @@ class Fill(CellModifierCard):
                     raise ValueError(
                         f"The lattice limits must be an integer. {val} was given"
                     )
-        for universe in words:
-            print(universe)
+        sizes = []
+        for axis in Fill.DIMENSIONS.values():
+            sizes.append(int(self._max_index[axis] - self._min_index[axis] + 1))
+        self._universe = np.zeros(sizes)
+        for i in range(sizes[0]):
+            for j in range(sizes[1]):
+                for k in range(sizes[2]):
+                    val = next(words)
+                    try:
+                        val = int(val)
+                        assert val >= 0
+                        self._universe[i][j][k] = val
+                    except (ValueError, AssertionError) as e:
+                        raise ValueError(
+                            "Values provided must be valid universes. {val} given."
+                        )
 
     @property
     def class_prefix(self):
