@@ -253,23 +253,28 @@ class MCNP_Card(ABC):
         ret = []
         last_value = None
         float_formatter = "{:n}"
+
+        def flush_repeats():
+            nonlocal repeat_counter, ret
+            if repeat_counter >= 2:
+                ret.append(f"{repeat_counter}R")
+            elif repeat_counter == 1:
+                ret.append(float_formatter.format(last_value))
+            repeat_counter = 0
+
         for value in values:
             if last_value:
                 if np.isclose(value, last_value, atol=threshold):
                     repeat_counter += 1
                 else:
-                    if repeat_counter >= 2:
-                        ret.append(f"{repeat_counter}R")
-                        repeat_counter = 0
-                    elif repeat_counter == 1:
-                        ret.append(float_formatter.format(last_value))
+                    flush_repeats()
                     ret.append(float_formatter.format(value))
                     last_value = value
             else:
                 ret.append(float_formatter.format(value))
                 last_value = value
                 repeat_counter = 0
-
+        flush_repeats()
         return ret
 
     @staticmethod
