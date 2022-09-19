@@ -186,4 +186,3 @@ class TestFill(TestCase):
         fill = Fill(
             in_cell_block=True, key="fill", value="1 0:1 0:1 0:1 1 2 3 4 5 6 7 8"
         )
-        assert False

@@ -5,6 +5,7 @@ from mcnpy.input_parser.block_type import BlockType
 from mcnpy.input_parser.constants import DEFAULT_VERSION
 from mcnpy.input_parser.mcnp_input import Card, Jump
 from mcnpy.mcnp_card import MCNP_Card
+from mcnpy.universe import Universe
 import numpy as np
 
 
@@ -31,7 +32,6 @@ class Fill(CellModifierCard):
         :type key: str
         """
 
-        # TODO support *FILL
         super().__init__(input_card, comments, in_cell_block, key, value)
         self._old_number = None
         self._universe = None
@@ -125,7 +125,7 @@ class Fill(CellModifierCard):
         sizes = []
         for axis in Fill.DIMENSIONS.values():
             sizes.append(int(self._max_index[axis] - self._min_index[axis] + 1))
-        self._universe = np.zeros(sizes)
+        self._old_number = np.zeros(sizes)
         for i in range(sizes[0]):
             for j in range(sizes[1]):
                 for k in range(sizes[2]):
@@ -133,7 +133,7 @@ class Fill(CellModifierCard):
                     try:
                         val = int(val)
                         assert val >= 0
-                        self._universe[i][j][k] = val
+                        self._old_number[i][j][k] = val
                     except (ValueError, AssertionError) as e:
                         raise ValueError(
                             "Values provided must be valid universes. {val} given."
@@ -154,6 +154,17 @@ class Fill(CellModifierCard):
     @property
     def universe(self):
         return self._universe
+
+    @universe.setter
+    def universe(self, value):
+        if not isinstance(value, Universe):
+            raise TypeError("Universe must be set to a Universe. {value} given.")
+        self._mutated = True
+        self._universe = Universe
+
+    @property
+    def multiple_universes(self):
+        return self._multi_universe
 
     @property
     def old_universe_number(self):
@@ -177,7 +188,29 @@ class Fill(CellModifierCard):
         )
 
     def push_to_cells(self):
-        pass
+        def get_universe(number):
+            return self._problem.transforms[number]
+
+        if self.in_cell_block:
+            if self.old_transform_number:
+                self._transform = get_universe(self.old_transform_number)
+            if self.multiple_universes:
+                print(get_universe(self.old_universe_number))
+            elif self.old_universe_number:
+                self._universe = self._problem.universes[self.old_universe_number]
+        else:
+            if not self.set_in_cell_block:
+                for cell, old_number in zip(
+                    self._problem.cells, self.old_universe_number
+                ):
+                    cell._fill._old_number = old_number
+            for cell in self._problem.cells:
+                cell._fill.push_to_cells()
 
     def _clear_data(self):
         pass
+
+    def format_for_mcnp_input(self, mcnp_version):
+        ret = []
+
+        return ret

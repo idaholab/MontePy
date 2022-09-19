@@ -709,3 +709,8 @@ class testFullFileIntegration(TestCase):
                 self.assertEqual(cell.lattice.value, answer)
             else:
                 self.assertIsNone(cell.lattice)
+
+    def test_universe_problem_parsing(self):
+        problem = mcnpy.read_input(
+            os.path.join("tests", "inputs", "test_universe.imcnp")
+        )
