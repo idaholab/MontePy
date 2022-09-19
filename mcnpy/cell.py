@@ -174,6 +174,12 @@ class Cell(Numbered_MCNP_Card):
 
     @property
     def importance(self):
+        """
+        The cell importance.
+
+        :returns: the importance for the Cell.
+        :rtype: Importance
+        """
         return self._importance
 
     @property

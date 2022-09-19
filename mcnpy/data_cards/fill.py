@@ -5,12 +5,15 @@ from mcnpy.input_parser.block_type import BlockType
 from mcnpy.input_parser.constants import DEFAULT_VERSION
 from mcnpy.input_parser.mcnp_input import Card, Jump
 from mcnpy.mcnp_card import MCNP_Card
+import numpy as np
 
 
 class Fill(CellModifierCard):
     """
     Object to handle the ``FILL`` card in cell and data blocks.
     """
+
+    DIMENSIONS: {"x": 0, "y": 1, "z": 2}
 
     def __init__(
         self, input_card=None, comments=None, in_cell_block=False, key=None, value=None
@@ -35,6 +38,7 @@ class Fill(CellModifierCard):
         self._transform = None
         self._hidden_transform = None
         self._old_transform_number = None
+        self._multi_universe = False
         if self.in_cell_block:
             if key:
                 self._parse_cell_input(key, value)
@@ -61,15 +65,18 @@ class Fill(CellModifierCard):
 
     def _parse_cell_input(self, key, value):
         def get_universe(value):
-            words = value.split()
-            try:
-                value = int(words[0])
-                assert value > 0
-                self._old_number = value
-            except (ValueError, AssertionError) as e:
-                raise ValueError(
-                    f"The fill universe must be a valid integer, {words[0]} was given"
-                )
+            if ":" in value:
+                self._parse_matrix(value)
+            else:
+                words = value.split()
+                try:
+                    value = int(words[0])
+                    assert value > 0
+                    self._old_number = value
+                except (ValueError, AssertionError) as e:
+                    raise ValueError(
+                        f"The fill universe must be a valid integer, {words[0]} was given"
+                    )
 
         if "(" in value:
             get_universe(value)
@@ -94,15 +101,28 @@ class Fill(CellModifierCard):
                 self._transform = Transform(input_card, pass_through=True)
                 self._hidden_transform = True
 
-        elif ":" in value:
-            self._parse_matrix(value)
         else:
             get_universe(value)
 
     def _parse_matrix(self, value):
         """
         """
-        pass
+        self._multi_universe = True
+        words = iter(value.split())
+        self._min_index = np.zeros((3, 1))
+        self._max_index = np.zeros((3, 1))
+        for axis, limits in zip(DIMENSIONS.values(), words):
+            values = limits.split(":")
+            for val, limit_holder in zip(values, (self._min_index, self._max_index)):
+                try:
+                    val = int(val)
+                    limit_holder[axis] = val
+                except (ValueError) as e:
+                    raise ValueError(
+                        f"The lattice limits must be an integer. {val} was given"
+                    )
+        for universe in words:
+            print(universe)
 
     @property
     def class_prefix(self):
