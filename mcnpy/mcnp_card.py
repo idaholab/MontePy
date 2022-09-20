@@ -253,6 +253,7 @@ class MCNP_Card(ABC):
         ret = []
         last_value = None
         float_formatter = "{:n}"
+        repeat_counter = 0
 
         def flush_repeats():
             nonlocal repeat_counter, ret
