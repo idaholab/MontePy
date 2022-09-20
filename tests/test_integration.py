@@ -714,3 +714,14 @@ class testFullFileIntegration(TestCase):
         problem = mcnpy.read_input(
             os.path.join("tests", "inputs", "test_universe.imcnp")
         )
+    
+    def test_importance_end_repeat(self):
+        problem = copy.deepcopy(self.simple_problem)
+        for cell in problem.cells:
+            if cell.number in {99, 5}:
+                cell.importance.photon = 1.0
+            else:
+                cell.importance.photon = 0.0
+        problem.print_in_data_block["IMP"] = True
+        output = problem.cells._importance.format_for_mcnp_input((6, 2, 0))
+        self.assertIn("IMP:P 0 0 0 1 1", output)
