@@ -195,11 +195,11 @@ class Fill(CellModifierCard):
             if self.old_transform_number:
                 self._transform = get_universe(self.old_transform_number)
             if self.multiple_universes:
-                print(get_universe(self.old_universe_number))
+                self._universe = get_universe(self.old_universe_number)
             elif self.old_universe_number:
                 self._universe = self._problem.universes[self.old_universe_number]
         else:
-            if not self.set_in_cell_block:
+            if not self.set_in_cell_block and self.old_universe_number:
                 for cell, old_number in zip(
                     self._problem.cells, self.old_universe_number
                 ):
@@ -212,5 +212,8 @@ class Fill(CellModifierCard):
 
     def format_for_mcnp_input(self, mcnp_version):
         ret = []
+        if self.in_cell_block:
+            if self.universe:
+                pass
 
         return ret

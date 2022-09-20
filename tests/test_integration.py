@@ -101,7 +101,6 @@ class testFullFileIntegration(TestCase):
         for line in answer_part:
             self.assertIn(line, output)
 
-    @expectedFailure
     def test_write_to_file(self):
         out = "foo.imcnp"
         try:
@@ -714,7 +713,7 @@ class testFullFileIntegration(TestCase):
         problem = mcnpy.read_input(
             os.path.join("tests", "inputs", "test_universe.imcnp")
         )
-    
+
     def test_importance_end_repeat(self):
         problem = copy.deepcopy(self.simple_problem)
         for cell in problem.cells:
