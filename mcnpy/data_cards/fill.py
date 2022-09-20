@@ -122,13 +122,11 @@ class Fill(CellModifierCard):
                     raise ValueError(
                         f"The lattice limits must be an integer. {val} was given"
                     )
-        sizes = []
-        for axis in Fill.DIMENSIONS.values():
-            sizes.append(int(self._max_index[axis] - self._min_index[axis] + 1))
-        self._old_number = np.zeros(sizes)
-        for i in range(sizes[0]):
-            for j in range(sizes[1]):
-                for k in range(sizes[2]):
+        # TODO ensure max > min
+        self._old_number = np.zeros(self._sizes)
+        for i in self._axis_range(0):
+            for j in self._axis_range(1):
+                for k in self._axis_range(2):
                     val = next(words)
                     try:
                         val = int(val)
@@ -161,6 +159,18 @@ class Fill(CellModifierCard):
             raise TypeError("Universe must be set to a Universe. {value} given.")
         self._mutated = True
         self._universe = Universe
+
+    @property
+    def min_index(self):
+        """
+        """
+        return self._min_index
+
+    @property
+    def max_index(self):
+        """
+        """
+        return self._max_index
 
     @property
     def multiple_universes(self):
@@ -210,10 +220,77 @@ class Fill(CellModifierCard):
     def _clear_data(self):
         pass
 
+    def _prepare_transform_string(self, mcnp_version):
+        """
+        Gets the fill transform string ready.
+
+        E.g., (5) or ( 0 0 10)...
+
+        :returns: a tuple of (bool: if true is in degrees and needs *FILL, list of strings) 
+                the strings are already properly formatted for MCNP
+        :rtype: tuple
+        """
+        if self.hidden_transform:
+            in_deg, lines = self.transform._generate_inputs(mcnp_version, False, True)
+            lines[0] = "(" + lines[0]
+            lines[-1] = lines[-1] + ")"
+            return in_deg, lines
+        else:
+            return (False, f"({self.transform.number})")
+
+    def _generate_complex_fill_string(self, mcnp_version):
+        ret = []
+        buff_str = ""
+        for axis in self.DIMENSIONS.values():
+            buff_str += f"{self.min_index[axis]}:{self.max_index[axis]}"
+        ret.append(self.wrap_string_for_mcnp(buff_str, mcnp_version, False))
+        buff_str = ""
+        for i in self._axis_range(0):
+            for j in self._axis_range(1):
+                for k in self_axis_range(2):
+                    buff_str += f" {self.universe[i][j][k].number}"
+                ret.append(self.wrap_string_for_mcnp(buff_str, mcnp_version, False))
+                buff_str = ""
+        return ret
+
+    def _axis_range(self, axis):
+        return range(self._axis_size(axis))
+
+    def _axis_size(self, axis):
+        return int(self.max_index[axis] - self.min_index[axis]) + 1
+
+    @property
+    def _sizes(self):
+        return (self._axis_size(0), self._axis_size(1), self._axis_size(2))
+
     def format_for_mcnp_input(self, mcnp_version):
         ret = []
         if self.in_cell_block:
+            key = "FILL"
+            value = ""
+            in_deg = False
+            transform_lines = [""]
             if self.universe:
-                pass
+                if self.transform:
+                    in_deg, transform_lines = self._prepare_transform_string(
+                        mcnp_version
+                    )
+                if in_deg:
+                    key = "*" + key
+                lines_iter = iter(transform_lines)
+                if isinstance(self.universe, Universe):
+                    value = f"{self.universe.number} {next(lines_iter)}"
+                elif isinstance(self.universe, np.ndarray):
+                    complex_lines = self._generate_complex_fill_string(mcnp_version)
+                    value = complex_lines[0]
+
+                ret.append(
+                    self.wrap_string_for_mcnp(f"{key}={value}", mcnp_version, False)
+                )
+                if isinstance(self.universe, np.ndarray):
+                    for line in complex_lines[1:]:
+                        ret.append(self.wrap_string_for_mcnp(line, mcnp_version, False))
+                for line in lines_iter:
+                    ret.append(self.wrap_string_for_mcnp(line, mcnp_version, False))
 
         return ret
