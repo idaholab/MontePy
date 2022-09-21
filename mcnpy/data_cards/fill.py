@@ -109,7 +109,6 @@ class Fill(CellModifierCard):
         """
         self._multi_universe = True
         words = iter(value.split())
-        next(words)
         self._min_index = np.zeros((3, 1))
         self._max_index = np.zeros((3, 1))
         for axis, limits in zip(Fill.DIMENSIONS.values(), words):
@@ -123,6 +122,12 @@ class Fill(CellModifierCard):
                         f"The lattice limits must be an integer. {val} was given"
                     )
         # TODO ensure max > min
+        for min_val, max_val in zip(self.min_index, self.max_index):
+            if min_val > max_val:
+                raise ValueError(
+                    "The minimum value must be smaller than the max value."
+                    f"Min: {min_val}, Max: {max_val}, Input: {value}"
+                )
         self._old_number = np.zeros(self._sizes)
         for i in self._axis_range(0):
             for j in self._axis_range(1):
