@@ -11,6 +11,7 @@ from mcnpy.data_cards.fill import Fill
 from mcnpy.data_cards.lattice import Lattice
 from mcnpy.data_cards.lattice_card import LatticeCard
 from mcnpy.data_cards.universe_card import UniverseCard
+import numpy as np
 
 
 class TestUniverseCard(TestCase):
@@ -181,8 +182,43 @@ class TestFill(TestCase):
         self.assertTrue(not fill.hidden_transform)
         self.assertEqual(fill.old_universe_number, 5)
         self.assertEqual(fill.old_transform_number, 3)
+        # test bad string
+        with self.assertRaises(ValueError):
+            fill = Fill(in_cell_block=True, key="fill", value="hi")
+        with self.assertRaises(ValueError):
+            fill = Fill(in_cell_block=True, key="fill", value="1 (hi)")
+        # test negative universe
+        with self.assertRaises(ValueError):
+            fill = Fill(in_cell_block=True, key="fill", value="-5")
+        with self.assertRaises(ValueError):
+            fill = Fill(in_cell_block=True, key="fill", value="5 (-5)")
+        # test bad transform
+        # TODO check if this is actually invalid
+        # with self.assertRaises(MalformedInputError):
+        #    fill = Fill(in_cell_block=True, key="*fill", value="1 (1.5 0.0)")
 
     def test_complicated_lattice_fill_init(self):
-        fill = Fill(
-            in_cell_block=True, key="fill", value="1 0:1 0:1 0:1 1 2 3 4 5 6 7 8"
-        )
+        fill = Fill(in_cell_block=True, key="fill", value="0:1 0:1 0:1 1 2 3 4 5 6 7 8")
+        self.assertEqual(fill.min_index[0], 0)
+        self.assertEqual(fill.max_index[2], 1)
+        answer = np.array([[[1, 2], [3, 4]], [[5, 6], [7, 8]]])
+        self.assertTrue((fill.old_universe_number == answer).all())
+
+    def test_data_fill_init(self):
+        card = Card(["FiLl 1 2 3 4"], BlockType.DATA)
+        fill = Fill(card)
+        answer = [1, 2, 3, 4]
+        self.assertEqual(fill.old_universe_number, answer)
+        # jump
+        card = Card(["FiLl 1 2J 4"], BlockType.DATA)
+        fill = Fill(card)
+        answer = [1, Jump(), Jump(), 4]
+        self.assertEqual(fill.old_universe_number, answer)
+        # test negative universe
+        with self.assertRaises(MalformedInputError):
+            card = Card(["FiLl 1 -2 3 4"], BlockType.DATA)
+            fill = Fill(card)
+        # test string universe
+        with self.assertRaises(MalformedInputError):
+            card = Card(["FiLl 1 foo"], BlockType.DATA)
+            fill = Fill(card)
