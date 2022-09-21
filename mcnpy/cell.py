@@ -192,6 +192,13 @@ class Cell(Numbered_MCNP_Card):
         """
         return self._universe.universe
 
+    @property
+    def fill(self):
+        """
+
+        """
+        return self._fill
+
     @universe.setter
     def universe(self, value):
         if not isinstance(value, Universe):

@@ -292,5 +292,35 @@ class Fill(CellModifierCard):
                         ret.append(self.wrap_string_for_mcnp(line, mcnp_version, False))
                 for line in lines_iter:
                     ret.append(self.wrap_string_for_mcnp(line, mcnp_version, False))
+        else:
+            mutated = self.mutated
+            if not mutated:
+                mutated = self.has_changed_print_style
+                for cell in self._problem.cells:
+                    if cell.fill.mutated:
+                        mutated = True
+                        break
+            if mutated and self._problem.print_in_data_block["FILL"]:
+                ret = MCNP_Card.format_for_mcnp_input(self, mcnp_version)
+                words = ["FILL"]
+                universes = []
+                for cell in self._problem.cells:
+                    fill = cell.fill
+                    if fill.transform or fill.multiple_universes:
+                        raise ValueError(
+                            f"Fill can not be in the data block if"
+                            " fill transforms and other complex inputs are used."
+                            f" Cell {cell.number} used these"
+                        )
+                    if fill.universe:
+                        universes.append(fill.universe)
+                    else:
+                        universes.append(Jump())
+                words.append(
+                    self.compress_jump_values(
+                        self.compress_repeat_values(universes, 1e-1)
+                    )
+                )
+                ret += self.wrap_words_for_mcnp(words, mcnp_version, False)
 
         return ret
