@@ -96,6 +96,13 @@ class Transform(data_card.DataCardAbstract):
         return 0
 
     @property
+    def hidden_transform(self):
+        """
+
+        """
+        return self._pass_through
+
+    @property
     def is_in_degrees(self):
         """
         The rotation matrix is in degrees and not in cosines

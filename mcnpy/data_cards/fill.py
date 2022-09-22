@@ -121,7 +121,6 @@ class Fill(CellModifierCard):
                     raise ValueError(
                         f"The lattice limits must be an integer. {val} was given"
                     )
-        # TODO ensure max > min
         for min_val, max_val in zip(self.min_index, self.max_index):
             if min_val > max_val:
                 raise ValueError(
@@ -192,6 +191,14 @@ class Fill(CellModifierCard):
     @property
     def transform(self):
         return self._transform
+
+    @transform.setter
+    def transform(self, value):
+        if not isinstance(value, mcnpy.Transform):
+            raise TypeError("Transform must be set to a Transform.")
+        self._mutated = True
+        self._transform = transform
+        self._hidden_transform = transform.hidden_transform
 
     @property
     def old_transform_number(self):
