@@ -70,12 +70,17 @@ class Fill(CellModifierCard):
             else:
                 words = value.split()
                 try:
-                    value = int(words[0])
-                    assert value > 0
-                    self._old_number = value
+                    val = int(words[0])
+                    assert val > 0
+                    self._old_number = val
                 except (ValueError, AssertionError) as e:
                     raise ValueError(
                         f"The fill universe must be a valid integer, {words[0]} was given"
+                    )
+                # ensure only one universe is given
+                if len(words) >= 2 and "(" not in words[1]:
+                    raise ValueError(
+                        f"Fill cannot have two universes in this format. {value} given"
                     )
 
         if "(" in value:

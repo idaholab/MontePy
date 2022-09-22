@@ -194,6 +194,8 @@ class TestFill(TestCase):
             fill = Fill(in_cell_block=True, key="fill", value="-5")
         with self.assertRaises(ValueError):
             fill = Fill(in_cell_block=True, key="fill", value="5 (-5)")
+        with self.assertRaises(ValueError):
+            fill = Fill(in_cell_block=True, key="fill", value="5 1 0 0")
 
     def test_complicated_lattice_fill_init(self):
         fill = Fill(in_cell_block=True, key="fill", value="0:1 0:1 0:1 1 2 3 4 5 6 7 8")
