@@ -19,7 +19,7 @@ c
      imp:n,p=0
 5 0 
       #99
-      imp:n,p=3 fill=5 1 0 0 
+      imp:n,p=3 fill=5 (1 0 0 )
 c foo end comment
 
 C surfaces
