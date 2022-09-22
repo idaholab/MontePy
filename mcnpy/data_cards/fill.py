@@ -162,7 +162,7 @@ class Fill(CellModifierCard):
         if not isinstance(value, Universe):
             raise TypeError("Universe must be set to a Universe. {value} given.")
         self._mutated = True
-        self._universe = Universe
+        self._universe = value
 
     @property
     def min_index(self):

@@ -178,6 +178,8 @@ class TestFill(TestCase):
         self.assertEqual(fill.old_universe_number, 1)
         self.assertEqual(len(fill.transform.displacement_vector), 3)
         self.assertTrue(fill.transform.is_in_degrees)
+        fill = Fill(in_cell_block=True, key="fill", value="1 (1.5 0.0 0.0)")
+        self.assertTrue(not fill.transform.is_in_degrees)
         fill = Fill(in_cell_block=True, key="fill", value="5 (3)")
         self.assertTrue(not fill.hidden_transform)
         self.assertEqual(fill.old_universe_number, 5)
@@ -192,10 +194,6 @@ class TestFill(TestCase):
             fill = Fill(in_cell_block=True, key="fill", value="-5")
         with self.assertRaises(ValueError):
             fill = Fill(in_cell_block=True, key="fill", value="5 (-5)")
-        # test bad transform
-        # TODO check if this is actually invalid
-        # with self.assertRaises(MalformedInputError):
-        #    fill = Fill(in_cell_block=True, key="*fill", value="1 (1.5 0.0)")
 
     def test_complicated_lattice_fill_init(self):
         fill = Fill(in_cell_block=True, key="fill", value="0:1 0:1 0:1 1 2 3 4 5 6 7 8")
@@ -203,6 +201,20 @@ class TestFill(TestCase):
         self.assertEqual(fill.max_index[2], 1)
         answer = np.array([[[1, 2], [3, 4]], [[5, 6], [7, 8]]])
         self.assertTrue((fill.old_universe_number == answer).all())
+        # test string universe
+        with self.assertRaises(ValueError):
+            fill = Fill(in_cell_block=True, key="fill", value="0:1 0:1 0:1 hi")
+        # test string index
+        with self.assertRaises(ValueError):
+            fill = Fill(in_cell_block=True, key="fill", value="0:1 hi:1 0:1 hi")
+        # test negative universe
+        with self.assertRaises(ValueError):
+            fill = Fill(in_cell_block=True, key="fill", value="0:1 0:1 0:1 -1")
+        # test inverted bounds
+        with self.assertRaises(ValueError):
+            fill = Fill(
+                in_cell_block=True, key="fill", value="1:0 0:1 0:1 1 2 3 4 5 6 7 8"
+            )
 
     def test_data_fill_init(self):
         card = Card(["FiLl 1 2 3 4"], BlockType.DATA)
@@ -222,3 +234,19 @@ class TestFill(TestCase):
         with self.assertRaises(MalformedInputError):
             card = Card(["FiLl 1 foo"], BlockType.DATA)
             fill = Fill(card)
+
+    def test_fill_universe_setter(self):
+        fill = Fill(in_cell_block=True, key="fill", value="5")
+        uni = mcnpy.Universe(6)
+        fill.universe = uni
+        self.assertEqual(fill.universe.number, uni.number)
+        self.assertTrue(fill.mutated)
+        with self.assertRaises(TypeError):
+            fill.universe = "hi"
+
+    def test_fill_merge(self):
+        card = Card(["FiLl 1 2 3 4"], BlockType.DATA)
+        fill1 = Fill(card)
+        fill2 = Fill(card)
+        with self.assertRaises(MalformedInputError):
+            fill1.merge(fill2)
