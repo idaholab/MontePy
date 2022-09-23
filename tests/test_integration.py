@@ -758,3 +758,13 @@ class testFullFileIntegration(TestCase):
                 self.assertEqual(cell.fill.transform, problem.transforms[5])
             else:
                 self.assertEqual(cell.fill.universe.number, answer)
+
+    def test_fill_transform_setter(self):
+        problem = copy.deepcopy(self.universe_problem)
+        transform = problem.transforms[5]
+        cell = problem.cells[5]
+        cell.fill.transform = transform
+        self.assertEqual(cell.fill.transform, transform)
+        self.assertTrue(not cell.fill.hidden_transform)
+        with self.assertRaises(TypeError):
+            cell.fill.transform = "hi"
