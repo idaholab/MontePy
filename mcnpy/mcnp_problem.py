@@ -308,6 +308,7 @@ class MCNP_Problem:
             fh.write(lines[0] + "\n")
             for cell in self.cells:
                 for line in cell.format_for_mcnp_input(self.mcnp_version):
+                    print(line)
                     fh.write(line + "\n")
             # block terminator
             fh.write("\n")

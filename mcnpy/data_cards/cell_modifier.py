@@ -70,20 +70,16 @@ class CellModifierCard(DataCardAbstract):
         :rtype: bool
         """
         if self._problem:
-            print_in_cell_block = not self._problem.print_in_data_block[
-                self.class_prefix
-            ]
-            set_in_cell_block = print_in_cell_block
             if not self.in_cell_block:
                 for cell in self._problem.cells:
                     attr = mcnpy.Cell._CARDS_TO_PROPERTY[type(self)][0]
-                    modifier = getattr(cell, attr)
-                    if modifier.has_information:
-                        set_in_cell_block = modifier.set_in_cell_block
+                    set_in_cell_block = getattr(cell, attr).set_in_cell_block
                     break
             else:
-                if self.has_information:
-                    set_in_cell_block = self.set_in_cell_block
+                set_in_cell_block = self.set_in_cell_block
+            print_in_cell_block = not self._problem.print_in_data_block[
+                self.class_prefix
+            ]
             return print_in_cell_block ^ set_in_cell_block
         else:
             return False
@@ -109,16 +105,6 @@ class CellModifierCard(DataCardAbstract):
         (check that ``set_in_cell_block`` isn't set).
 
         :raises MalformedInputError: When data are given in the cell block and the data block.
-        """
-        pass
-
-    @property
-    @abstractmethod
-    def has_information(self):
-        """
-        For a cell instance returns True iff there is information here worth printing out.
-
-        e.g., a manually set volume for a cell
         """
         pass
 

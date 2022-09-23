@@ -83,11 +83,6 @@ class UniverseCard(CellModifierCard):
             return self._old_number
 
     @property
-    def has_information(self):
-        if self.in_cell_block:
-            return self.universe.number != 0
-
-    @property
     def universe(self):
         if self.in_cell_block:
             return self._universe

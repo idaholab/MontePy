@@ -24,6 +24,7 @@ unit_test:
     - echo "Executing unit tests"
     - coverage run --source mcnpy --branch -m pytest --junitxml=test_report.xml
     - coverage report -m --precision=2
+    - coverage xml
   artifacts:
     reports:
       junit: test_report.xml
