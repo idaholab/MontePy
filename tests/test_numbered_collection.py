@@ -184,6 +184,36 @@ class TestNumberedObjectCollection(unittest.TestCase):
         cells += list_cells
         self.assertEqual(len(cells), size + 1)
 
+    def test_slice(self):
+        test_numbers = [c.number for c in self.simple_problem.cells[1:5]]
+        self.assertEqual([1, 2, 3, 5], test_numbers)
+        test_numbers = [c.number for c in self.simple_problem.cells[2:]]
+        self.assertEqual([2, 3, 5, 99], test_numbers)
+        test_numbers = [c.number for c in self.simple_problem.cells[::-3]]
+        self.assertEqual([99, 3], test_numbers)
+        test_numbers = [c.number for c in self.simple_problem.cells[:6:3]]
+        self.assertEqual([3], test_numbers)
+        test_numbers = [c.number for c in self.simple_problem.cells[5::-1]]
+        self.assertEqual([5, 3, 2, 1], test_numbers)
+        test_numbers = [s.number for s in self.simple_problem.surfaces[1000::10]]
+        self.assertEqual([1000, 1010], test_numbers)
+        test_numbers = [s.number for s in self.simple_problem.surfaces[:]]
+        self.assertEqual([1000, 1005, 1010], test_numbers)
+        test_numbers = [m.number for m in self.simple_problem.materials[:2]]
+        self.assertEqual([1, 2], test_numbers)
+        test_numbers = [m.number for m in self.simple_problem.materials[::2]]
+        self.assertEqual([2], test_numbers)
+
+    def test_get(self):
+        cell_found = self.simple_problem.cells.get(1)
+        self.assertEqual(self.simple_problem.cells[1], cell_found)
+        surf_not_found = self.simple_problem.surfaces.get(39)  # 39 buried, 0 found
+        self.assertIsNone(surf_not_found)
+        default_mat = self.simple_problem.materials[3]
+        self.assertEqual(
+            self.simple_problem.materials.get(42, default_mat), default_mat
+        )
+
     def test_keys(self):
         cell_nums = []
         for c in self.simple_problem.cells:

@@ -6,6 +6,33 @@ from mcnpy.input_parser.constants import BLANK_SPACE_CONTINUE, get_max_line_leng
 import re
 
 
+class Jump:
+    """
+    Class to represent a default entry represented by a "jump".
+
+    I get up and nothing gets me down
+    You got it tough, I've seen the toughest around
+    And I know, baby, just how you feel
+    You gotta roll with the punches to get to what's real
+
+    Oh, can't you see me standing here?
+    I got my back against the record machine
+    I ain't the worst that you've seen
+    Oh, can't you see what I mean?
+
+    Ah, might as well ...
+    """
+
+    def __str__(self):
+        return "J"
+
+    def __bool__(self):
+        raise TypeError("Jump doesn't have a truthiness or falsiness")
+
+    def __eq__(self, other):
+        return type(self) == type(other)
+
+
 class MCNP_Input(ABC):
     """
     Object to represent a single coherent MCNP input, such as a card.
@@ -124,14 +151,15 @@ def parse_card_shortcuts(words, card=None):
             if letters == "r":
                 try:
                     last_val = ret[-1]
-                    if last_val is None:
-                        raise IndexError
+                    assert (
+                        not isinstance(last_val, Jump) and last_val and len(ret) > 1
+                    )  # force last_val to be truthy
                     if number:
                         number = int(number)
                     else:
                         number = 1
                     ret += [last_val] * number
-                except IndexError:
+                except (IndexError, AssertionError) as e:
                     raise MalformedInputError(
                         card, "The repeat shortcut must come after a value"
                     )
@@ -178,7 +206,7 @@ def parse_card_shortcuts(words, card=None):
                     number = int(number)
                 else:
                     number = 1
-                ret += [None] * number
+                ret += [Jump()] * number
             elif letters in {"ilog", "log"}:
                 try:
                     begin = math.log(float(number_parser.search(ret[-1]).group(1)), 10)

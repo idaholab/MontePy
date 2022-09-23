@@ -90,7 +90,7 @@ def read_data(fh, mcnp_version, block_type=None, recursion=False):
     :type mcnp_version: tuple
     :param block_type: The type of block this file is in. This is only used with partial files read using the ReadCard.
     :type block_type: BlockType
-    :param recusrion: Whether or not this is being called recursively. If True this has been called
+    :param recursion: Whether or not this is being called recursively. If True this has been called
                          from read_data. This prevents the reading queue causing infinite recursion.
     :type recursion: bool
     :return: MCNP_input instances, Card or Comment that represent the data in the MCNP input
@@ -144,7 +144,6 @@ def read_data(fh, mcnp_version, block_type=None, recursion=False):
         return blank_comment or non_blank_comment
 
     for line in fh:
-
         # transition to next block with blank line
         if not line.strip():
             yield from flush_block()

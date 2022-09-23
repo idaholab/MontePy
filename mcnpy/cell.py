@@ -1,6 +1,6 @@
 import itertools
 from mcnpy.cells import Cells
-from mcnpy.data_cards import importance
+from mcnpy.data_cards import importance, volume
 from mcnpy.data_cards.data_parser import PREFIX_MATCHES
 from mcnpy.errors import *
 from mcnpy.mcnp_card import MCNP_Card
@@ -39,7 +39,10 @@ class Cell(MCNP_Card):
         "BFLCL",
         "UNC",
     }
-    _CARDS_TO_PROPERTY = {importance.Importance: ("_importance", False)}
+    _CARDS_TO_PROPERTY = {
+        importance.Importance: ("_importance", False),
+        volume.Volume: ("_volume", True),
+    }
     block_type = BlockType.CELL
 
     def __init__(self, input_card=None, comment=None):
@@ -52,7 +55,7 @@ class Cell(MCNP_Card):
         super().__init__(input_card, comment)
         self._material = None
         self._old_cell_number = None
-        self._importance = importance.Importance(in_cell_block=True)
+        self._load_blank_modifiers()
         self._old_mat_number = None
         self._geometry_logic_string = None
         self._density = None
@@ -148,20 +151,20 @@ class Cell(MCNP_Card):
                     attr, ban_repeat = Cell._CARDS_TO_PROPERTY[card_class]
                     del self._parameters[key]
                     card = card_class(in_cell_block=True, key=key, value=value)
-                    if self._problem:
-                        card.link_to_problem(self._problem)
-                    if not hasattr(self, attr):
+                    if not getattr(self, attr).set_in_cell_block:
                         setattr(self, attr, card)
                     else:
                         if not ban_repeat:
                             getattr(self, attr).merge(
                                 card_class(in_cell_block=True, key=key, value=value)
                             )
-                        else:
-                            raise MalformedInputError(
-                                f"{key}={value}",
-                                f"Can't repeat the card for type {card_class}",
-                            )
+
+    def _load_blank_modifiers(self):
+        """
+        Goes through and populates all the modifier attributes
+        """
+        for card_class, (attr, foo) in self._CARDS_TO_PROPERTY.items():
+            setattr(self, attr, card_class(in_cell_block=True))
 
     @property
     def allowed_keywords(self):
@@ -170,6 +173,51 @@ class Cell(MCNP_Card):
     @property
     def importance(self):
         return self._importance
+
+    @property
+    def volume(self):
+        """
+        The volume for the cell.
+
+        Will only return a number if the volume has been manually set.
+
+        :returns: the volume that has been manually set or None.
+        :rtype: float
+        """
+        return self._volume.volume
+
+    @volume.setter
+    def volume(self, value):
+        self._volume.volume = value
+
+    @volume.deleter
+    def volume(self):
+        del self._volume.volume
+
+    @property
+    def volume_mcnp_calc(self):
+        """
+        Indicates whether or not the cell volume will attempt to be calculated by MCNP.
+
+        This can be disabled by either manually setting the volume or disabling
+        this calculation globally.
+        This does not guarantee that MCNP will able to do so.
+        Complex geometries may make this impossible.
+
+        :returns: True iff MCNP will try to calculate the volume for this cell.
+        :rtype: bool
+        """
+        return self._volume.is_mcnp_calculated
+
+    @property
+    def volume_is_set(self):
+        """
+        Whether or not the volume for this cell has been set.
+
+        :returns: true if the volume is manually set.
+        :rtype: bool
+        """
+        return self._volume.set
 
     @property
     def old_number(self):
@@ -598,7 +646,10 @@ class Cell(MCNP_Card):
 
     def link_to_problem(self, problem):
         super().link_to_problem(problem)
-        self._importance.link_to_problem(problem)
+        for attr, _ in Cell._CARDS_TO_PROPERTY.values():
+            card = getattr(self, attr, None)
+            if card:
+                card.link_to_problem(problem)
 
     def __str__(self):
         ret = f"CELL: {self._cell_number} \n"

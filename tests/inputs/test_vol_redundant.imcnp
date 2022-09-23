@@ -7,20 +7,17 @@ C cells
 c
 1 1 20
          -1000  $ dollar comment
-     imp:n,p=1 U=350 trcl=5
+     U=350 trcl=5
+     vol=1 
 2 2 8
       -1005
-     imp:n=1
-     imp:p=0.5
 3 3 -1
       1000 1005 -1010
-     imp:n,p=1
 99 0
       1010
-     imp:n,p=0
 5 0 
       #99
-      imp:n,p=3 fill=5 1 0 0 
+      fill=5 1 0 0 
 c foo end comment
 
 C surfaces
@@ -44,9 +41,10 @@ m3        1001.80c           2
 MT3 lwtr.23t
 C execution
 ksrc 0 0 0
+imp:n,p 1 1 1 0 3
+imp:e   0 0 0 1 2
 kcode 100000 1.000 50 1050
 phys:p j 1 2j 1
-mode n p
-vol NO 2J 1 1.5 J
-
+mode n p e
+vol NO 2J 1 1.5 0.5
 

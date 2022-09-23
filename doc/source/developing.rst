@@ -186,7 +186,7 @@ Conceptually these names can contain up to four sections.
 
 #. A ``prefix_modifier`` this modifies the whole card with a special character such as ``*tr5`` 
 #. A ``Prefix``, which is a series of letters that identifies the type such as ``m``
-#. A number, which numbers it. These must be positive.
+#. A ``number``, which numbers it. These must be an unsigned integer.
 #. A particle classifier such as ``:n,p``.
 
 You control the parsing behavior through three parameters: ``class_prefix``, ``has_number``, and ``has_classifier``.
@@ -326,6 +326,7 @@ There should be a ``self.in_cell_block`` guard.
 
 You need to check that there was no double specifying of data in both the cell and data block.
 This should raise :class:`mcnpy.errors.MalformedInputError`.
+This is checking and error handling is handled by the method ``self._check_redundant_definitions()``.
 
 ``_clear_data``
 """"""""""""""""

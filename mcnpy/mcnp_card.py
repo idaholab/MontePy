@@ -1,4 +1,5 @@
 from abc import ABC, abstractmethod
+from mcnpy.errors import *
 from mcnpy.input_parser.constants import BLANK_SPACE_CONTINUE, get_max_line_length
 from mcnpy.input_parser.mcnp_input import Comment, Card
 import mcnpy
@@ -86,6 +87,8 @@ class MCNP_Card(ABC):
             value = []
 
             def flush_pair(key, value):
+                if key.upper() in self._parameters:
+                    raise ValueError(f"Multiple values given for parameter {key}")
                 self._parameters[key.upper()] = " ".join(value)
 
             for i, fragment in enumerate(fragments):
@@ -277,23 +280,59 @@ class MCNP_Card(ABC):
         ret = []
         last_value = None
         float_formatter = "{:n}"
+
+        def flush_repeats():
+            nonlocal repeat_counter, ret
+            if repeat_counter >= 2:
+                ret.append(f"{repeat_counter}R")
+            elif repeat_counter == 1:
+                ret.append(float_formatter.format(last_value))
+            repeat_counter = 0
+
         for value in values:
             if last_value:
                 if np.isclose(value, last_value, atol=threshold):
                     repeat_counter += 1
                 else:
-                    if repeat_counter >= 2:
-                        ret.append(f"{repeat_counter}R")
-                        repeat_counter = 0
-                    elif repeat_counter == 1:
-                        ret.append(float_formatter.format(last_value))
+                    flush_repeats()
                     ret.append(float_formatter.format(value))
                     last_value = value
             else:
                 ret.append(float_formatter.format(value))
                 last_value = value
                 repeat_counter = 0
+        flush_repeats()
+        return ret
 
+    @staticmethod
+    def compress_jump_values(values):
+        """
+        Takes a list of strings and jump values and combines repeated jump values.
+
+        e.g., 1 1 J J 3 J becomes 11 2J 3 J
+        :param values: a list of string and Jump values to try to compress
+        :type values: list
+        :returns: a list of MCNP word strings that have repeat compression
+        :rtype: list
+        """
+        ret = []
+        jump_counter = 0
+
+        def flush_jumps():
+            nonlocal jump_counter, ret
+            if jump_counter == 1:
+                ret.append("J")
+            elif jump_counter >= 1:
+                ret.append(f"{jump_counter}J")
+            jump_counter = 0
+
+        for value in values:
+            if isinstance(value, mcnpy.input_parser.mcnp_input.Jump):
+                jump_counter += 1
+            else:
+                flush_jumps()
+                ret.append(value)
+        flush_jumps()
         return ret
 
     @property
@@ -310,7 +349,7 @@ class MCNP_Card(ABC):
         This is done so that cards can find links to other objects.
 
         :param problem: The problem to link this card to.
-        :type type: MCNP_Problem
+        :type problem: MCNP_Problem
         """
         if not isinstance(problem, mcnpy.mcnp_problem.MCNP_Problem):
             raise TypeError("problem must be an MCNP_Problem")

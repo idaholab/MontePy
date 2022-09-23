@@ -4,7 +4,7 @@ from unittest import TestCase, expectedFailure
 import os
 
 import mcnpy
-from mcnpy.data_cards import material, thermal_scattering, DataCard
+from mcnpy.data_cards import material, thermal_scattering, volume, DataCard
 from mcnpy.input_parser.mcnp_input import Card, Comment, Message, Title, ReadCard
 from mcnpy.particle import Particle
 
@@ -48,7 +48,8 @@ class testFullFileIntegration(TestCase):
 
     def test_data_card_parsing(self):
         M = material.Material
-        cards = [M, M, M, "KSRC", "KCODE", "PHYS:P", "MODE"]
+        V = volume.Volume
+        cards = [M, M, M, "KSRC", "KCODE", "PHYS:P", "MODE", V]
         for i, card in enumerate(self.simple_problem.data_cards):
             if isinstance(cards[i], str):
                 self.assertEqual(card.words[0].upper(), cards[i])
@@ -104,6 +105,9 @@ class testFullFileIntegration(TestCase):
         out = "foo.imcnp"
         try:
             self.simple_problem.write_to_file(out)
+            with open(out, "r") as fh:
+                for line in fh:
+                    print(line.rstrip())
             test_problem = mcnpy.read_input(out)
             for i, cell in enumerate(self.simple_problem.cells):
                 num = cell.number
@@ -114,6 +118,8 @@ class testFullFileIntegration(TestCase):
             for i, data in enumerate(self.simple_problem.data_cards):
                 if isinstance(data, material.Material):
                     self.assertEqual(data.number, test_problem.data_cards[i].number)
+                elif isinstance(data, volume.Volume):
+                    self.assertEqual(str(data), str(test_problem.data_cards[i]))
                 else:
                     self.assertEqual(data.words, test_problem.data_cards[i].words)
         finally:
@@ -504,13 +510,17 @@ class testFullFileIntegration(TestCase):
         problem.print_in_data_block["imp"] = True
         try:
             problem.write_to_file(out_file)
-            found_np = False
+            found_n = False
+            found_p = False
             with open(out_file, "r") as fh:
                 for line in fh:
                     print(line.rstrip())
-                    if "IMP:N,P 1" in line:
-                        found_np = True
-            self.assertTrue(found_np)
+                    if "IMP:N 1 2R" in line:
+                        found_n = True
+                    if "IMP:P 1 0.5" in line:
+                        found_p = True
+            self.assertTrue(found_n)
+            self.assertTrue(found_p)
         finally:
             try:
                 os.remove(out_file)
@@ -575,3 +585,45 @@ class testFullFileIntegration(TestCase):
             problem.cells.set_equal_importance(5, "a")
         with self.assertRaises(TypeError):
             problem.cells.set_equal_importance(5, ["a"])
+
+    def test_check_volume_calculated(self):
+        self.assertTrue(not self.simple_problem.cells[1].volume_mcnp_calc)
+
+    def test_redundant_volume(self):
+        with self.assertRaises(mcnpy.errors.MalformedInputError):
+            mcnpy.read_input(
+                os.path.join("tests", "inputs", "test_vol_redundant.imcnp")
+            )
+
+    def test_delete_vol(self):
+        problem = copy.deepcopy(self.simple_problem)
+        del problem.cells[1].volume
+        self.assertTrue(not problem.cells[1].volume_is_set)
+
+    def test_enable_mcnp_vol_calc(self):
+        problem = copy.deepcopy(self.simple_problem)
+        problem.cells.allow_mcnp_volume_calc = True
+        self.assertTrue(problem.cells.allow_mcnp_volume_calc)
+        self.assertNotIn("NO", str(problem.cells._volume))
+        problem.cells.allow_mcnp_volume_calc = False
+        self.assertIn("NO", str(problem.cells._volume))
+        with self.assertRaises(TypeError):
+            problem.cells.allow_mcnp_volume_calc = 5
+
+    def test_cell_multi_volume(self):
+        in_str = "1 0 -1 VOL=1 VOL 5"
+        with self.assertRaises(ValueError):
+            cell = mcnpy.Cell(
+                Card([in_str], mcnpy.input_parser.block_type.BlockType.CELL)
+            )
+
+    def test_importance_end_repeat(self):
+        problem = copy.deepcopy(self.simple_problem)
+        for cell in problem.cells:
+            if cell.number in {99, 5}:
+                cell.importance.photon = 1.0
+            else:
+                cell.importance.photon = 0.0
+        problem.print_in_data_block["IMP"] = True
+        output = problem.cells._importance.format_for_mcnp_input((6, 2, 0))
+        self.assertIn("IMP:P 0 0 0 1 1", output)

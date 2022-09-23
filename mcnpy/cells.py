@@ -1,5 +1,6 @@
 import mcnpy
 from mcnpy.numbered_object_collection import NumberedObjectCollection
+from mcnpy.errors import MalformedInputError
 
 
 class Cells(NumberedObjectCollection):
@@ -39,6 +40,22 @@ class Cells(NumberedObjectCollection):
                 cell.importance.all = importance
         for cell in vacuum_cells:
             cell.importance.all = 0.0
+
+    @property
+    def allow_mcnp_volume_calc(self):
+        """
+        Whether or not MCNP is allowed to automatically calculate cell volumes.
+
+        :returns: true if MCNP will attempt to calculate cell volumes
+        :rtype: bool
+        """
+        return self._volume.is_mcnp_calculated
+
+    @allow_mcnp_volume_calc.setter
+    def allow_mcnp_volume_calc(self, value):
+        if not isinstance(value, bool):
+            raise TypeError("allow_mcnp_volume_calc must be set to a bool")
+        self._volume.is_mcnp_calculated = value
 
     def update_pointers(self, cells, materials, surfaces, data_cards, problem):
         cards_to_property = mcnpy.Cell._CARDS_TO_PROPERTY
