@@ -66,6 +66,11 @@ class Importance(CellModifierCard):
     def has_classifier(self):
         return 2
 
+    @property
+    def has_information(self):
+        if self.in_cell_block:
+            return True
+
     def merge(self, other):
         if not isinstance(other, type(self)):
             raise TypeError("Can only be merged with other Importance object")

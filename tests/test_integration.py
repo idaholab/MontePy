@@ -320,7 +320,6 @@ class testFullFileIntegration(TestCase):
         with self.assertRaises(mcnpy.errors.BrokenObjectLinkError):
             problem = mcnpy.read_input("tests/inputs/test_broken_complement.imcnp")
 
-    @expectedFailure
     def test_cell_card_pass_through(self):
         problem = copy.deepcopy(self.simple_problem)
         cell = problem.cells[1]

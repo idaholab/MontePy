@@ -116,6 +116,11 @@ class Volume(CellModifierCard):
             self._mutated = True
 
     @property
+    def has_information(self):
+        if self.in_cell_block:
+            return self.set
+
+    @property
     def set(self) -> bool:
         """
         If this volume is set.
