@@ -740,7 +740,7 @@ class testFullFileIntegration(TestCase):
 
     def test_fill_parsing(self):
         problem = self.universe_problem
-        answers = [None, np.array([[[1], [0]], [[0], [1]]]), None, None, 1]
+        answers = [None, np.array([[[1], [0]], [[0], [1]]]), None, 1, 1]
         for cell, answer in zip(problem.cells, answers):
             if answer is None:
                 self.assertIsNone(cell.fill.universe)
