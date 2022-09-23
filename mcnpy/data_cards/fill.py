@@ -266,7 +266,7 @@ class Fill(CellModifierCard):
             for j in self._axis_range(1):
                 for k in self_axis_range(2):
                     buff_str += f" {self.universe[i][j][k].number}"
-                ret.append(self.wrap_string_for_mcnp(buff_str, mcnp_version, False))
+                ret.extend(self.wrap_string_for_mcnp(buff_str, mcnp_version, False))
                 buff_str = ""
         return ret
 
@@ -301,14 +301,14 @@ class Fill(CellModifierCard):
                     complex_lines = self._generate_complex_fill_string(mcnp_version)
                     value = complex_lines[0]
 
-                ret.append(
+                ret.extend(
                     self.wrap_string_for_mcnp(f"{key}={value}", mcnp_version, False)
                 )
                 if isinstance(self.universe, np.ndarray):
                     for line in complex_lines[1:]:
-                        ret.append(self.wrap_string_for_mcnp(line, mcnp_version, False))
+                        ret.extend(self.wrap_string_for_mcnp(line, mcnp_version, False))
                 for line in lines_iter:
-                    ret.append(self.wrap_string_for_mcnp(line, mcnp_version, False))
+                    ret.extend(self.wrap_string_for_mcnp(line, mcnp_version, False))
         else:
             mutated = self.mutated
             if not mutated:
@@ -333,11 +333,10 @@ class Fill(CellModifierCard):
                         universes.append(fill.universe)
                     else:
                         universes.append(Jump())
-                words.append(
+                words.extend(
                     self.compress_jump_values(
                         self.compress_repeat_values(universes, 1e-1)
                     )
                 )
                 ret += self.wrap_words_for_mcnp(words, mcnp_version, False)
-
         return ret
