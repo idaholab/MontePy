@@ -59,6 +59,7 @@ class Cells(NumberedObjectCollection):
 
     def update_pointers(self, cells, materials, surfaces, data_cards, problem):
         cards_to_property = mcnpy.Cell._CARDS_TO_PROPERTY
+        cards_to_always_update = {"_universe", "_fill"}
         cards_loaded = set()
         # make a copy of the list
         for card in list(data_cards):
@@ -90,7 +91,7 @@ class Cells(NumberedObjectCollection):
             if not hasattr(self, attr):
                 card = card_class()
                 card.link_to_problem(problem)
-                if attr == "_universe":
+                if attr in cards_to_always_update:
                     card.push_to_cells()
                 card._mutated = False
                 setattr(self, attr, card)
