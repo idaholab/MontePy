@@ -274,23 +274,23 @@ class Fill(CellModifierCard):
         :rtype: tuple
         """
         if self.hidden_transform:
-            in_deg, lines = self.transform._generate_inputs(mcnp_version, False, True)
+            in_deg, lines = self.transform._generate_inputs(mcnp_version, True, True)
             lines[0] = "(" + lines[0]
             lines[-1] = lines[-1] + ")"
             return in_deg, lines
         else:
-            return (False, f"({self.transform.number})")
+            return (False, [f"({self.transform.number})"])
 
     def _generate_complex_fill_string(self, mcnp_version):
         ret = []
         buff_str = ""
         for axis in self.DIMENSIONS.values():
-            buff_str += f"{self.min_index[axis]}:{self.max_index[axis]}"
-        ret.append(self.wrap_string_for_mcnp(buff_str, mcnp_version, False))
+            buff_str += f" {self.min_index[axis]}:{self.max_index[axis]}"
+        ret.extend(self.wrap_string_for_mcnp(buff_str, mcnp_version, True))
         buff_str = ""
         for i in self._axis_range(0):
             for j in self._axis_range(1):
-                for k in self_axis_range(2):
+                for k in self._axis_range(2):
                     buff_str += f" {self.universe[i][j][k].number}"
                 ret.extend(self.wrap_string_for_mcnp(buff_str, mcnp_version, False))
                 buff_str = ""
@@ -313,7 +313,7 @@ class Fill(CellModifierCard):
             value = ""
             in_deg = False
             transform_lines = [""]
-            if self.universe:
+            if self.universe is not None:
                 if self.transform:
                     in_deg, transform_lines = self._prepare_transform_string(
                         mcnp_version
@@ -323,7 +323,7 @@ class Fill(CellModifierCard):
                 lines_iter = iter(transform_lines)
                 if isinstance(self.universe, Universe):
                     value = f"{self.universe.number} {next(lines_iter)}"
-                elif isinstance(self.universe, np.ndarray):
+                else:
                     complex_lines = self._generate_complex_fill_string(mcnp_version)
                     value = complex_lines[0]
 
@@ -336,13 +336,11 @@ class Fill(CellModifierCard):
                 for line in lines_iter:
                     ret.extend(self.wrap_string_for_mcnp(line, mcnp_version, False))
         else:
-            mutated = self.mutated
-            if not mutated:
-                mutated = self.has_changed_print_style
-                for cell in self._problem.cells:
-                    if cell.fill.mutated:
-                        mutated = True
-                        break
+            mutated = self.has_changed_print_style
+            for cell in self._problem.cells:
+                if cell.fill.mutated:
+                    mutated = True
+                    break
             if mutated and self._problem.print_in_data_block["FILL"]:
                 ret = MCNP_Card.format_for_mcnp_input(self, mcnp_version)
                 words = ["FILL"]
@@ -356,7 +354,7 @@ class Fill(CellModifierCard):
                             f" Cell {cell.number} used these"
                         )
                     if fill.universe:
-                        universes.append(fill.universe)
+                        universes.append(fill.universe.number)
                     else:
                         universes.append(Jump())
                 words.extend(
