@@ -773,3 +773,44 @@ class testFullFileIntegration(TestCase):
         del cell.fill.transform
         self.assertIsNone(cell.fill.transform)
 
+    def test_fill_cell_format(self):
+        problem = copy.deepcopy(self.universe_problem)
+        fill = problem.cells[5].fill
+        output = fill.format_for_mcnp_input((6, 2, 0))
+        answer = "     FILL=1 (1.0 0.0 0.0)"
+        self.assertEqual(output[0], answer)
+        # test *fill
+        fill.transform.is_in_degrees = True
+        output = fill.format_for_mcnp_input((6, 2, 0))
+        answer = "     *FILL=1 (1.0 0.0 0.0)"
+        self.assertEqual(output[0], answer)
+        # test without transform
+        fill.transform = None
+        answer = "     FILL=1"
+        output = fill.format_for_mcnp_input((6, 2, 0))
+        self.assertEqual(output[0], answer)
+        # test with no fill
+        fill.universe = None
+        output = fill.format_for_mcnp_input((6, 2, 0))
+        self.assertEqual(len(output), 0)
+        # test with complex universe lattice fill
+        fill = problem.cells[2].fill
+        output = fill.format_for_mcnp_input((6, 2, 0))
+        answers = [
+            "     FILL= 0:1 0:1 0:0",
+            "           1",
+            "           0",
+            "           0",
+            "           1",
+            "     (5)",
+        ]
+        self.assertEqual(output, answers)
+        problem.print_in_data_block["FILL"] = True
+        # test that complex fill is not printed in data block
+        with self.assertRaises(ValueError):
+            output = problem.cells._fill.format_for_mcnp_input((6, 2, 0))
+        problem = copy.deepcopy(self.simple_problem)
+        problem.cells[5].fill.transform = None
+        problem.print_in_data_block["FILL"] = True
+        output = problem.cells._fill.format_for_mcnp_input((6, 2, 0))
+        self.assertEqual(output, ["     FILL 4J 350"])
