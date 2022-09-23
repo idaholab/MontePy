@@ -7,6 +7,7 @@ import mcnpy
 from mcnpy.data_cards import material, thermal_scattering, volume
 from mcnpy.input_parser.mcnp_input import Card, Comment, Jump, Message, Title, ReadCard
 from mcnpy.particle import Particle
+import numpy as np
 
 
 class testFullFileIntegration(TestCase):
@@ -601,7 +602,7 @@ class testFullFileIntegration(TestCase):
             print(cell, answer)
             self.assertEqual(cell.universe.number, answer)
 
-    def test_universe_data_parsing(self):
+    def test_universe_fill_data_parsing(self):
         problem = mcnpy.read_input(
             os.path.join("tests", "inputs", "test_universe_data.imcnp")
         )
@@ -616,6 +617,13 @@ class testFullFileIntegration(TestCase):
             else:
                 self.assertTrue(cell.not_truncated)
         self.assertTrue(problem.cells[99].not_truncated)
+        answers = [None, None, 350, None, None]
+        for cell, answer in zip(problem.cells, answers):
+            print(cell.number, cell.fill.universe, answer)
+            if answer is None:
+                self.assertIsNone(cell.fill.universe)
+            else:
+                self.assertTrue(cell.fill.universe, answer)
 
     def test_universe_cells(self):
         answers = {350: [1], 0: [2, 3, 5], 1: [99]}
@@ -713,6 +721,11 @@ class testFullFileIntegration(TestCase):
         problem = mcnpy.read_input(
             os.path.join("tests", "inputs", "test_universe.imcnp")
         )
+        for cell in problem.cells:
+            if cell.number == 1:
+                self.assertEqual(cell.universe.number, 1)
+            else:
+                self.assertEqual(cell.universe.number, 0)
 
     def test_importance_end_repeat(self):
         problem = copy.deepcopy(self.simple_problem)
@@ -724,3 +737,25 @@ class testFullFileIntegration(TestCase):
         problem.print_in_data_block["IMP"] = True
         output = problem.cells._importance.format_for_mcnp_input((6, 2, 0))
         self.assertIn("IMP:P 0 0 0 1 1", output)
+
+    def test_fill_parsing(self):
+        problem = mcnpy.read_input(
+            os.path.join("tests", "inputs", "test_universe.imcnp")
+        )
+        answers = [None, np.array([[[1], [0]], [[0], [1]]]), None, None, 1]
+        for cell, answer in zip(problem.cells, answers):
+            if answer is None:
+                self.assertIsNone(cell.fill.universe)
+            elif isinstance(answer, np.ndarray):
+                self.assertTrue(cell.fill.multiple_universes)
+                self.assertTrue(
+                    (cell.fill.min_index == np.array([0.0, 0.0, 0.0])).all()
+                )
+                self.assertTrue(
+                    (cell.fill.max_index == np.array([1.0, 1.0, 0.0])).all()
+                )
+                self.assertEqual(cell.fill.universe[0][0][0].number, answer[0][0][0])
+                self.assertEqual(cell.fill.universe[1][1][0].number, answer[1][1][0])
+                self.assertEqual(cell.fill.transform, problem.transforms[5])
+            else:
+                self.assertEqual(cell.fill.universe.number, answer)
