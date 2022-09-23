@@ -69,6 +69,11 @@ class LatticeCard(CellModifierCard):
         return 0
 
     @property
+    def has_information(self):
+        if self.in_cell_block:
+            return self.lattice is not None
+
+    @property
     def lattice(self):
         """
         The type of lattice being used.

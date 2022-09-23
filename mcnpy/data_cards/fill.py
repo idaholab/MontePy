@@ -194,6 +194,11 @@ class Fill(CellModifierCard):
         return self._hidden_transform
 
     @property
+    def has_information(self):
+        if self.in_cell_block:
+            return self.universe is not None
+
+    @property
     def transform(self):
         return self._transform
 
