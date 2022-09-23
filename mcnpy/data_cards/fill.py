@@ -114,8 +114,8 @@ class Fill(CellModifierCard):
         """
         self._multi_universe = True
         words = iter(value.split())
-        self._min_index = np.zeros((3, 1))
-        self._max_index = np.zeros((3, 1))
+        self._min_index = np.zeros((3,), dtype=np.dtype(int))
+        self._max_index = np.zeros((3,), dtype=np.dtype(int))
         for axis, limits in zip(Fill.DIMENSIONS.values(), words):
             values = limits.split(":")
             for val, limit_holder in zip(values, (self._min_index, self._max_index)):
@@ -132,7 +132,7 @@ class Fill(CellModifierCard):
                     "The minimum value must be smaller than the max value."
                     f"Min: {min_val}, Max: {max_val}, Input: {value}"
                 )
-        self._old_number = np.zeros(self._sizes)
+        self._old_number = np.zeros(self._sizes, dtype=np.dtype(int))
         for i in self._axis_range(0):
             for j in self._axis_range(1):
                 for k in self._axis_range(2):
@@ -216,21 +216,29 @@ class Fill(CellModifierCard):
 
     def push_to_cells(self):
         def get_universe(number):
-            return self._problem.transforms[number]
+            return self._problem.universes[number]
 
         if self.in_cell_block:
             if self.old_transform_number:
-                self._transform = get_universe(self.old_transform_number)
-            if self.multiple_universes:
-                self._universe = get_universe(self.old_universe_number)
-            elif self.old_universe_number:
-                self._universe = self._problem.universes[self.old_universe_number]
+                self._transform = self._problem.transforms[self.old_transform_number]
+            if self.old_universe_number is not None:
+                if isinstance(self.old_universe_number, np.ndarray):
+                    self._universe = np.empty_like(self.old_universe_number, dtype="O")
+                    for i in self._axis_range(0):
+                        for j in self._axis_range(1):
+                            for k in self._axis_range(2):
+                                self._universe[i][j][k] = get_universe(
+                                    self.old_universe_number[i][j][k].item()
+                                )
+                else:
+                    self._universe = get_universe(self.old_universe_number)
         else:
             if not self.set_in_cell_block and self.old_universe_number:
                 for cell, old_number in zip(
                     self._problem.cells, self.old_universe_number
                 ):
-                    cell._fill._old_number = old_number
+                    if not isinstance(old_number, Jump):
+                        cell._fill._old_number = old_number
             for cell in self._problem.cells:
                 cell._fill.push_to_cells()
 
