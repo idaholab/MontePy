@@ -243,6 +243,11 @@ class TestFill(TestCase):
         fill.universe = uni
         self.assertEqual(fill.universe.number, uni.number)
         self.assertTrue(fill.mutated)
+        fill.universe = None
+        self.assertIsNone(fill.universe)
+        fill.universe = uni
+        del fill.universe
+        self.assertIsNone(fill.universe)
         with self.assertRaises(TypeError):
             fill.universe = "hi"
 

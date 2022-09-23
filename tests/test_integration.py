@@ -765,5 +765,11 @@ class testFullFileIntegration(TestCase):
         cell.fill.transform = transform
         self.assertEqual(cell.fill.transform, transform)
         self.assertTrue(not cell.fill.hidden_transform)
+        cell.fill.transform = None
+        self.assertIsNone(cell.fill.transform)
         with self.assertRaises(TypeError):
             cell.fill.transform = "hi"
+        cell.fill.transform = transform
+        del cell.fill.transform
+        self.assertIsNone(cell.fill.transform)
+
