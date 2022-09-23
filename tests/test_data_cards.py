@@ -149,7 +149,9 @@ class testDataCardClass(TestCase):
             vol_card = parse_data(input_card)
 
     def test_volumes_for_only_some_cells(self):
-        cells = [mcnpy.Cell(Card([f"{i + 1} 0 u=3"], BlockType.CELL)) for i in range(10)]
+        cells = [
+            mcnpy.Cell(Card([f"{i + 1} 0 u=3"], BlockType.CELL)) for i in range(10)
+        ]
         prob = MCNP_Problem(None)
         prob.cells = cells
         vol_card = Card(["VOL 1 1 2 3 5"], BlockType.DATA)
@@ -157,7 +159,7 @@ class testDataCardClass(TestCase):
         vol_data.link_to_problem(prob)
         vol_data.push_to_cells()
         is_set = [cell.volume_is_set for cell in cells]
-        reference = [True]*5 + [False]*5
+        reference = [True] * 5 + [False] * 5
         self.assertListEqual(is_set, reference)
 
     def test_volume_setter(self):

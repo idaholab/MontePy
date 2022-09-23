@@ -210,7 +210,9 @@ class TestNumberedObjectCollection(unittest.TestCase):
         surf_not_found = self.simple_problem.surfaces.get(39)  # 39 buried, 0 found
         self.assertIsNone(surf_not_found)
         default_mat = self.simple_problem.materials[3]
-        self.assertEqual(self.simple_problem.materials.get(42, default_mat), default_mat)
+        self.assertEqual(
+            self.simple_problem.materials.get(42, default_mat), default_mat
+        )
 
     def test_keys(self):
         cell_nums = []
