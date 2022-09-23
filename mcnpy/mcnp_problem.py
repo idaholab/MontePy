@@ -1,6 +1,6 @@
 import itertools
 from mcnpy.cell_data_control import CellDataPrintController
-from mcnpy.data_cards import mode
+from mcnpy.data_cards import mode, transform
 from mcnpy.cell import Cell
 from mcnpy.cells import Cells
 from mcnpy.errors import *
@@ -11,6 +11,7 @@ from mcnpy.surface_collection import Surfaces
 from mcnpy.data_cards import Material, parse_data
 from mcnpy.input_parser import input_syntax_reader, block_type, mcnp_input
 from mcnpy.universes import Universes
+from mcnpy.transforms import Transforms
 
 
 class MCNP_Problem:
@@ -31,6 +32,7 @@ class MCNP_Problem:
         self._cells = Cells()
         self._surfaces = Surfaces()
         self._universes = Universes()
+        self._transforms = Transforms()
         self._data_cards = []
         self._materials = Materials()
         self._mcnp_version = DEFAULT_VERSION
@@ -190,6 +192,13 @@ class MCNP_Problem:
         """
         return self._universes
 
+    @property
+    def transforms(self):
+        """
+        The transform objects in this problem.
+        """
+        return self._transforms
+
     def parse_input(self):
         """
         Semantically parses the MCNP file provided to the constructor.
@@ -227,6 +236,8 @@ class MCNP_Problem:
                         data.link_to_problem(self)
                         if isinstance(data, Material):
                             self._materials.append(data)
+                        if isinstance(data, transform.Transform):
+                            self._transforms.append(data)
                         self._data_cards.append(data)
                     comment_queue = []
         self.__update_internal_pointers()
@@ -297,6 +308,7 @@ class MCNP_Problem:
             fh.write(lines[0] + "\n")
             for cell in self.cells:
                 for line in cell.format_for_mcnp_input(self.mcnp_version):
+                    print(line)
                     fh.write(line + "\n")
             # block terminator
             fh.write("\n")

@@ -1,12 +1,13 @@
 from mcnpy import mcnp_card
 from mcnpy.data_cards import data_card
 from mcnpy.errors import *
+from mcnpy.numbered_mcnp_card import Numbered_MCNP_Card
 from mcnpy.utilities import *
 import numpy as np
 import re
 
 
-class Transform(data_card.DataCardAbstract):
+class Transform(data_card.DataCardAbstract, Numbered_MCNP_Card):
     """
     Card to represent a transform card (TR)
     """

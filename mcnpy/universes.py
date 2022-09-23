@@ -4,7 +4,7 @@ from mcnpy.universe import Universe
 
 class Universes(NumberedObjectCollection):
     """
-    A container of multiple :class:`mcnpy.data_cards.material.Material` instances.
+    A container of multiple :class:`mcnpy.universe.Universe` instances.
     """
 
     def __init__(self, objects=None):
