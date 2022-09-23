@@ -199,11 +199,11 @@ class Fill(CellModifierCard):
 
     @transform.setter
     def transform(self, value):
-        if not isinstance(value, mcnpy.Transform):
+        if not isinstance(value, Transform):
             raise TypeError("Transform must be set to a Transform.")
         self._mutated = True
-        self._transform = transform
-        self._hidden_transform = transform.hidden_transform
+        self._transform = value
+        self._hidden_transform = value.hidden_transform
 
     @property
     def old_transform_number(self):
