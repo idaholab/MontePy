@@ -17,6 +17,9 @@ class testFullFileIntegration(TestCase):
         self.importance_problem = mcnpy.read_input(
             os.path.join("tests", "inputs", "test_importance.imcnp")
         )
+        self.universe_problem = mcnpy.read_input(
+            os.path.join("tests", "inputs", "test_universe.imcnp")
+        )
 
     def test_original_input(self):
         cell_order = [Message, Title, Comment]
@@ -718,9 +721,7 @@ class testFullFileIntegration(TestCase):
                 self.assertIsNone(cell.lattice)
 
     def test_universe_problem_parsing(self):
-        problem = mcnpy.read_input(
-            os.path.join("tests", "inputs", "test_universe.imcnp")
-        )
+        problem = self.universe_problem
         for cell in problem.cells:
             if cell.number == 1:
                 self.assertEqual(cell.universe.number, 1)
@@ -728,7 +729,7 @@ class testFullFileIntegration(TestCase):
                 self.assertEqual(cell.universe.number, 0)
 
     def test_importance_end_repeat(self):
-        problem = copy.deepcopy(self.simple_problem)
+        problem = self.universe_problem
         for cell in problem.cells:
             if cell.number in {99, 5}:
                 cell.importance.photon = 1.0
@@ -739,9 +740,7 @@ class testFullFileIntegration(TestCase):
         self.assertIn("IMP:P 0 0 0 1 1", output)
 
     def test_fill_parsing(self):
-        problem = mcnpy.read_input(
-            os.path.join("tests", "inputs", "test_universe.imcnp")
-        )
+        problem = self.universe_problem
         answers = [None, np.array([[[1], [0]], [[0], [1]]]), None, None, 1]
         for cell, answer in zip(problem.cells, answers):
             if answer is None:
