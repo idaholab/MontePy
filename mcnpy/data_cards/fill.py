@@ -12,9 +12,23 @@ import numpy as np
 class Fill(CellModifierCard):
     """
     Object to handle the ``FILL`` card in cell and data blocks.
+        
+    :param input_card: the Card object representing this data card
+    :type input_card: Card
+    :param comments: The list of Comments that may proceed this or be entwined with it.
+    :type comments: list
+    :param in_cell_block: if this card came from the cell block of an input file.
+    :type in_cell_block: bool
+    :param key: the key from the key-value pair in a cell
+    :type key: str
+    :param key: the value from the key-value pair in a cell
+    :type key: str
     """
 
-    DIMENSIONS = {"x": 0, "y": 1, "z": 2}
+    DIMENSIONS = {"i": 0, "j": 1, "k": 2}
+    """
+    Maps the dimension to its axis number
+    """
 
     def __init__(
         self, input_card=None, comments=None, in_cell_block=False, key=None, value=None
@@ -64,6 +78,15 @@ class Fill(CellModifierCard):
                     )
 
     def _parse_cell_input(self, key, value):
+        """
+        Parses the information provided in the cell input.
+
+        :param key: The key given in the cell
+        :type key: str
+        :param value: the value given in the cell
+        :type value: str
+        """
+
         def get_universe(value):
             if ":" in value:
                 self._parse_matrix(value)
@@ -111,6 +134,10 @@ class Fill(CellModifierCard):
 
     def _parse_matrix(self, value):
         """
+        Parses a matrix fill of universes.
+
+        :param value: the value in the cell
+        :type value: str
         """
         self._multi_universe = True
         words = iter(value.split())
@@ -160,6 +187,12 @@ class Fill(CellModifierCard):
 
     @property
     def universe(self):
+        """
+        The universe that this cell will be filled with.
+
+        :returns: the universe that the cell will be filled with.
+        :rtype: Universe
+        """
         return self._universe
 
     @universe.setter
@@ -177,25 +210,58 @@ class Fill(CellModifierCard):
     @property
     def min_index(self):
         """
+        The minimum indices of the matrix in each dimension.
+
+        For the order of the indices see: ``DIMENSIONS``.
+
+        :returns: the minimum indices of the matrix for complex fills
+        :rtype: :class:`numpy.ndarry`
         """
         return self._min_index
 
     @property
     def max_index(self):
         """
+        The maximum indices of the matrix in each dimension.
+
+        For the order of the indices see: ``DIMENSIONS``.
+
+        :returns: the maximum indices of the matrix for complex fills
+        :rtype: :class:`numpy.ndarry`
         """
         return self._max_index
 
     @property
     def multiple_universes(self):
+        """
+        Whether or not this cell is filled with multiple universes in a matrix.
+
+        :return: True if this cell contains multiple universes
+        :rtype: bool
+        """
         return self._multi_universe
 
     @property
     def old_universe_number(self):
+        """
+        The number(s) of the universe(s) that this is filled by taken from the input.
+
+        :returns: the old universe number
+        :type: int or :class:`numpy.ndarray`
+        """
         return self._old_number
 
     @property
     def hidden_transform(self):
+        """
+        Whether or not the transform used is hidden.
+
+        This is true when an unnumbered transform is used
+        e.g., ``FILL=1 (1.0 2.0 3.0)``.
+
+        :returns: True iff the transform used is hidden
+        :rtype: bool
+        """
         return self._hidden_transform
 
     @property
@@ -205,6 +271,12 @@ class Fill(CellModifierCard):
 
     @property
     def transform(self):
+        """
+        The transform for this fill (if any). 
+
+        :returns: the transform for the filling universe for this cell.
+        :rtype: Transform
+        """
         return self._transform
 
     @transform.setter
@@ -225,6 +297,12 @@ class Fill(CellModifierCard):
 
     @property
     def old_transform_number(self):
+        """
+        The number of the transform specified in the input.
+
+        :returns: the original number for the transform from the input.
+        :rtype: int
+        """
         return self._old_transform_number
 
     def merge(self, other):
@@ -261,7 +339,8 @@ class Fill(CellModifierCard):
                 cell._fill.push_to_cells()
 
     def _clear_data(self):
-        pass
+        self._old_number = None
+        self._universe = None
 
     def _prepare_transform_string(self, mcnp_version):
         """
@@ -282,6 +361,14 @@ class Fill(CellModifierCard):
             return (False, [f"({self.transform.number})"])
 
     def _generate_complex_fill_string(self, mcnp_version):
+        """
+        Generates the matrix fill string.
+
+        handles: the index ranging, the universe lists, and formatting for MCNP.
+
+        :returns: a list of properly formatted strings.
+        :rtype: list
+        """
         ret = []
         buff_str = ""
         for axis in self.DIMENSIONS.values():
@@ -297,13 +384,34 @@ class Fill(CellModifierCard):
         return ret
 
     def _axis_range(self, axis):
+        """
+        Returns an iterator for iterating over the given axis.
+
+        :param axis: the number of the axis to iterate over
+        :type axis: int
+        :returns: range
+        """
         return range(self._axis_size(axis))
 
     def _axis_size(self, axis):
+        """
+        Get the length of the given axis.
+
+        :param axis: the axis to probe into.
+        :type axis: int
+        :returns: the length of the given axis of the universe matrix.
+        :rtype: int
+        """
         return int(self.max_index[axis] - self.min_index[axis]) + 1
 
     @property
     def _sizes(self):
+        """
+        The axis sizes of the matrix.
+
+        :returns: a tuple of the matrix shape.
+        :rtype: tuple
+        """
         return (self._axis_size(0), self._axis_size(1), self._axis_size(2))
 
     def format_for_mcnp_input(self, mcnp_version):

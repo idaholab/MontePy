@@ -89,9 +89,13 @@ class CellModifierCard(DataCardAbstract):
             return False
 
     @abstractmethod
-    def merge(self, card):
+    def merge(self, other):
         """
         Merges the data from another card of same type into this one.
+
+        :param other: The other object to merge into this object.
+        :type other: self
+        :raises MalformedInputError: if two objects cannot be merged. 
         """
         pass
 
@@ -116,9 +120,12 @@ class CellModifierCard(DataCardAbstract):
     @abstractmethod
     def has_information(self):
         """
-        For a cell instance returns True iff there is information here worth printing out.
+        For a cell instance of :class:`mcnpy.data_cards.cell_modifier.CellModifierCard` returns True iff there is information here worth printing out.
 
         e.g., a manually set volume for a cell
+
+        :returns: True if this instance has information worth printing.
+        :rtype: bool
         """
         pass
 
