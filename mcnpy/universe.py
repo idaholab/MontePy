@@ -62,10 +62,6 @@ class Universe(Numbered_MCNP_Card):
         """
         return self._number
 
-    @property
-    def class_prefix(self):
-        return "u"
-
     def format_for_mcnp_input(self, mcnp_version):
         pass
 

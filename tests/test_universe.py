@@ -95,7 +95,6 @@ class TestUniverse(TestCase):
         universe = Universe(5)
         self.assertEqual(universe.number, 5)
         self.assertEqual(universe.old_number, 5)
-        self.assertEqual(universe.class_prefix, "u")
         self.assertEqual(universe.allowed_keywords, set())
 
     def test_number_setter(self):
