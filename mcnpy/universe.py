@@ -8,6 +8,9 @@ class Universe(Numbered_MCNP_Card):
     """
     Class to represent an MCNP universe, but not handle the input
     directly.
+
+    :param number: The number for the universe, must be ≥ 0
+    :type number: int
     """
 
     def __init__(self, number):
@@ -21,9 +24,10 @@ class Universe(Numbered_MCNP_Card):
     @property
     def cells(self):
         """
-        A list of the cell objects in this universe.
+        A generator of the cell objects in this universe.
 
-        :return: a `Cells` object
+        :return: a generator returning every cell in this universe.
+        :rtype: Generator
         """
         if self._problem:
             for cell in self._problem.cells:
@@ -32,6 +36,12 @@ class Universe(Numbered_MCNP_Card):
 
     @property
     def number(self):
+        """
+        The number for this Universe.
+
+        Universe 0 is protected, and a Universe cannot be set 0,
+        if it is not already Universe 0.
+        """
         return self._number
 
     @number.setter
@@ -47,6 +57,9 @@ class Universe(Numbered_MCNP_Card):
 
     @property
     def old_number(self):
+        """
+        Original universe number from the input file.
+        """
         return self._number
 
     @property

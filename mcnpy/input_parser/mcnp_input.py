@@ -36,6 +36,9 @@ class Jump:
 class MCNP_Input(ABC):
     """
     Object to represent a single coherent MCNP input, such as a card.
+
+    :param input_lines: the lines read straight from the input file.
+    :type input_lines: list
     """
 
     def __init__(self, input_lines):
@@ -84,6 +87,11 @@ class MCNP_Input(ABC):
 class Card(MCNP_Input):
     """
     Represents a single MCNP "card" e.g. a single cell definition.
+
+    :param input_lines: the lines read straight from the input file.
+    :type input_lines: list
+    :param block_type: An enum showing which of three MCNP blocks this was inside of.
+    :type block_type: BlockType
     """
 
     SPECIAL_COMMENT_PREFIXES = ["fc", "sc"]
@@ -137,6 +145,19 @@ class Card(MCNP_Input):
 
 
 def parse_card_shortcuts(words, card=None):
+    """
+    Parses MCNP input shortcuts.
+
+    E.g., ``2R``, ``1 10I 100``, ``2J``
+
+    Returns a list of strings with all shortcuts decompressed or changed out.
+    Jumps will be changed to :class:`mcnpy.input_parser.mcnp_input.Jump`.
+
+    :param words: the list of strings or "words".
+    :type words: list
+    :returns: modified version of words with all compressions expanded.
+    :rtype: list
+    """
     number_parser = re.compile(r"(\d+\.*\d*[e\+\-]*\d*)")
     ret = []
     for i, word in enumerate(words):
@@ -235,6 +256,11 @@ def parse_card_shortcuts(words, card=None):
 class ReadCard(Card):
     """
     A card for the read card that reads another input file
+    
+    :param input_lines: the lines read straight from the input file.
+    :type input_lines: list
+    :param block_type: An enum showing which of three MCNP blocks this was inside of.
+    :type block_type: BlockType
     """
 
     def __init__(self, input_lines, block_type):
@@ -257,6 +283,13 @@ class ReadCard(Card):
 class Comment(MCNP_Input):
     """
     Object to represent a full line comment in an MCNP problem.
+
+    This represents only ``C `` style comments and not ``$`` style comments.
+
+    :param input_lines: the lines read straight from the input file.
+    :type input_lines: list
+    :param card_line: The line number in a parent input card where this Comment appeared
+    :type card_line: int
     """
 
     def __init__(self, input_lines, card_line=0):
@@ -331,6 +364,11 @@ class Message(MCNP_Input):
     Object to represent an MCNP message.
 
     These are blocks at the beginning of an input that are printed in the output.
+        
+    :param input_lines: the lines read straight from the input file.
+    :type input_lines: list
+    :param lines: the strings of each line in the message block
+    :type lines: list
     """
 
     def __init__(self, input_lines, lines):
@@ -382,6 +420,11 @@ class Message(MCNP_Input):
 class Title(MCNP_Input):
     """
     Object to represent the title for an MCNP problem
+        
+    :param input_lines: the lines read straight from the input file.
+    :type input_lines: list
+    :param title: The string for the title of the problem.
+    :type title: str
     """
 
     def __init__(self, input_lines, title):

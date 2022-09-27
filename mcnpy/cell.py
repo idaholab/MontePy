@@ -17,6 +17,10 @@ class Cell(Numbered_MCNP_Card):
     """
     Object to represent a single MCNP cell defined in CGS.
 
+    :param input_card: the Card input for the cell definition
+    :type input_card: Card
+    :param comments: the Comments block that preceded and are in the cell block if any.
+    :type comment: list
     """
 
     _ALLOWED_KEYWORDS = {
@@ -51,8 +55,8 @@ class Cell(Numbered_MCNP_Card):
         """
         :param input_card: the Card input for the cell definition
         :type input_card: Card
-        :param comment: the Comment block that preceded this blog if any.
-        :type comment: Comment
+        :param comments: the Comments block that preceded and are in the cell block if any.
+        :type comment: list
         """
         super().__init__(input_card, comment)
         self._material = None
@@ -176,6 +180,9 @@ class Cell(Numbered_MCNP_Card):
     def importance(self):
         """
         The cell importance.
+
+        Each particle's importance is a property of Importance.
+        e.g., ``cell.importance.photon = 1.0``.
 
         :returns: the importance for the Cell.
         :rtype: Importance

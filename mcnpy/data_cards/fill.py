@@ -21,8 +21,8 @@ class Fill(CellModifierCard):
     :type in_cell_block: bool
     :param key: the key from the key-value pair in a cell
     :type key: str
-    :param key: the value from the key-value pair in a cell
-    :type key: str
+    :param value: the value from the key-value pair in a cell
+    :type value: str
     """
 
     DIMENSIONS = {"i": 0, "j": 1, "k": 2}
@@ -42,8 +42,8 @@ class Fill(CellModifierCard):
         :type in_cell_block: bool
         :param key: the key from the key-value pair in a cell
         :type key: str
-        :param key: the value from the key-value pair in a cell
-        :type key: str
+        :param value: the value from the key-value pair in a cell
+        :type value: str
         """
 
         super().__init__(input_card, comments, in_cell_block, key, value)
