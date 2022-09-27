@@ -814,3 +814,26 @@ class testFullFileIntegration(TestCase):
         problem.print_in_data_block["FILL"] = True
         output = problem.cells._fill.format_for_mcnp_input((6, 2, 0))
         self.assertEqual(output, ["     FILL 4J 350"])
+
+    def test_universe_cells_claim(self):
+        problem = copy.deepcopy(self.universe_problem)
+        universe = problem.universes[1]
+        universe.claim(problem.cells[2])
+        self.assertEqual(problem.cells[2].universe, universe)
+        universe = mcnpy.Universe(5)
+        problem.universes.append(universe)
+        universe.claim(problem.cells)
+        for cell in problem.cells:
+            self.assertEqual(cell.universe, universe)
+        with self.assertRaises(TypeError):
+            universe.claim("hi")
+        with self.assertRaises(TypeError):
+            universe.claim(["hi"])
+
+    def test_universe_cells(self):
+        problem = self.universe_problem
+        answers = [1]
+        universe = problem.universes[1]
+        self.assertEqual(len(answers), len(list(universe.cells)))
+        for cell, answer in zip(universe.cells, answers):
+            self.assertEqual(cell.number, answer)

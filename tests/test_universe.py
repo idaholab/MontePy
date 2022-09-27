@@ -15,7 +15,7 @@ import numpy as np
 
 
 class TestUniverseCard(TestCase):
-    def test_universe_init(self):
+    def test_universe_card_init(self):
         card = UniverseCard(in_cell_block=True, key="U", value="5")
         self.assertEqual(card.old_number, 5)
         self.assertTrue(not card.not_truncated)
@@ -55,6 +55,14 @@ class TestUniverseCard(TestCase):
         # test bad negative
         card = Card(["U -2"], BlockType.DATA)
         uni_card = UniverseCard(card)
+
+    def test_universe_init(self):
+        uni = Universe(5)
+        self.assertEqual(uni.number, 5)
+        with self.assertRaises(TypeError):
+            Universe("hi")
+        with self.assertRaises(ValueError):
+            Universe(-1)
 
     def test_str(self):
         card = UniverseCard(in_cell_block=True, key="U", value="5")

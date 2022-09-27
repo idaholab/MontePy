@@ -1,3 +1,4 @@
+import mcnpy
 from mcnpy.cells import Cells
 from mcnpy.input_parser.mcnp_input import Card
 from mcnpy.input_parser.block_type import BlockType
@@ -33,6 +34,26 @@ class Universe(Numbered_MCNP_Card):
             for cell in self._problem.cells:
                 if cell.universe == self:
                     yield cell
+
+    def claim(self, cells):
+        """
+        Take the given cells and move them into this universe, and out of their original univere.
+
+        Can be given a single Cell, a list of cells, or a Cells object.
+
+        :param cells: the cell(s) to be claimed
+        :type cells: Cell, list, or Cells
+        :raises TypeError: if bad parameter is given.
+        """
+        if not isinstance(cells, (mcnpy.Cell, list, Cells)):
+            raise TypeError(f"Cells being claimed must be a Cell, list, or Cells")
+        if isinstance(cells, list):
+            cells = Cells(cells)
+        if isinstance(cells, mcnpy.Cell):
+            cells = Cells([cells])
+
+        for cell in cells:
+            cell.universe = self
 
     @property
     def number(self):
