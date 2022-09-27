@@ -202,7 +202,13 @@ class Cell(Numbered_MCNP_Card):
     @property
     def fill(self):
         """
+        the Fill object representing how this cell is filled.
 
+        This not only describes the universe that is filling this,
+        but more complex things like transformations, and matrix fills.
+
+        :returns: The Fill object of how this cell is to be filled.
+        :rtype: Fill
         """
         return self._fill
 
@@ -253,8 +259,8 @@ class Cell(Numbered_MCNP_Card):
         """
         The type of lattice being used by the cell.
 
-        :rtype: Lattice
         :returns: the type of lattice being used
+        :rtype: Lattice
         """
         return self._lattice.lattice
 
@@ -462,6 +468,7 @@ class Cell(Numbered_MCNP_Card):
         """
         The original surface input for the cell
 
+        :returns: the geometry logic string for this cell.
         :rtype: str
         """
         return self._geometry_logic_string

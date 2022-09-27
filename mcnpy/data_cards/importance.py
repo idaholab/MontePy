@@ -265,7 +265,7 @@ def __create_importance_deleter(particle_type):
 
 
 def __create_particle_imp_doc(particle_type):
-    return f"Importance for particles of type *{particle_type.name.lower()}*"
+    return f"Importance for particles of type *{particle_type.name.lower()}*.\n\n Can only be set if this particle is used in the problem mode."
 
 
 def __setup_importances():
