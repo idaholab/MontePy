@@ -227,6 +227,16 @@ class Cell(Numbered_MCNP_Card):
         See Note 1 from section 3.3.1.5.1 of the user manual (LA-UR-17-29981).
 
         Note this can be set to True iff that this cell is not in Universe 0.
+            
+            Note 1. A problem will run faster by preceding the U card entry with a minus sign for any
+            cell that is not truncated by the boundary of any higher-level cell. (The minus sign indicates
+            that calculating distances to boundary in higher-level cells can be omitted.) Use this
+            capability with EXTREME CAUTION; MCNP6 cannot detect errors in this feature because
+            the logic that enables detection is omitted by the presence of the negative universe. Extremely
+            wrong answers can be quietly calculated. Plot several views of the geometry or run with the
+            VOID card to check for errors.
+
+            -- LA-UR-17-29981.
 
         :rtype: bool
         :returns: True if this cell has been marked as not being truncated by the parent filled cell.

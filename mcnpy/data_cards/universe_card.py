@@ -11,6 +11,17 @@ class UniverseCard(CellModifierCard):
     """
     Object to actually handle the ``U`` card in cells
     and data blocks.
+        
+    :param input_card: the Card object representing this data card
+    :type input_card: Card
+    :param comments: The list of Comments that may proceed this or be entwined with it.
+    :type comments: list
+    :param in_cell_block: if this card came from the cell block of an input file.
+    :type in_cell_block: bool
+    :param key: the key from the key-value pair in a cell
+    :type key: str
+    :param value: the value from the key-value pair in a cell
+    :type value: str
     """
 
     def __init__(
@@ -25,8 +36,8 @@ class UniverseCard(CellModifierCard):
         :type in_cell_block: bool
         :param key: the key from the key-value pair in a cell
         :type key: str
-        :param key: the value from the key-value pair in a cell
-        :type key: str
+        :param value: the value from the key-value pair in a cell
+        :type value: str
         """
         super().__init__(input_card, comments, in_cell_block, key, value)
         self._universe = None
@@ -98,6 +109,16 @@ class UniverseCard(CellModifierCard):
         Indicates if this cell has been marked as not being truncated for optimization.
 
         See Note 1 from section 3.3.1.5.1 of the user manual (LA-UR-17-29981).
+
+            Note 1. A problem will run faster by preceding the U card entry with a minus sign for any
+            cell that is not truncated by the boundary of any higher-level cell. (The minus sign indicates
+            that calculating distances to boundary in higher-level cells can be omitted.) Use this
+            capability with EXTREME CAUTION; MCNP6 cannot detect errors in this feature because
+            the logic that enables detection is omitted by the presence of the negative universe. Extremely
+            wrong answers can be quietly calculated. Plot several views of the geometry or run with the
+            VOID card to check for errors.
+
+            -- LA-UR-17-29981.
 
         :rtype: bool
         :returns: True if this cell has been marked as not being truncated by the parent filled cell.
