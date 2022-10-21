@@ -294,7 +294,7 @@ class Comment(MCNP_Input):
         self._card_line = card_line
 
     def __str__(self):
-        ret = f"COMMENT: {len(self._lines)} lines"
+        return f"COMMENT: {len(self._lines)} lines"
 
     def __repr__(self):
         ret = "COMMENT:\n"
@@ -367,7 +367,7 @@ class Message(MCNP_Input):
         self._lines = buff
 
     def __str__(self):
-        ret = f"MESSAGE: {len(self._lines)} lines"
+        return f"MESSAGE: {len(self._lines)} lines"
 
     def __repr__(self):
         ret = "MESSAGE:\n"

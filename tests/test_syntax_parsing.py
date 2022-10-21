@@ -120,7 +120,8 @@ c bop
 foo
 bar
 """
-        self.assertEqual(str(card), str_answer)
+        self.assertEqual(repr(card), str_answer)
+        self.assertEqual("COMMENT: 2 lines", str(card))
         self.assertEqual(len(answer), len(output))
         for i, line in enumerate(output):
             self.assertEqual(answer[i], line)
@@ -132,7 +133,8 @@ bar
 foo
 bar
 """
-        self.assertEqual(str_answer, str(card))
+        self.assertEqual(str_answer, repr(card))
+        self.assertEqual("MESSAGE: 2 lines", str(card))
         output = card.format_for_mcnp_input((6, 2, 0))
         self.assertEqual(len(answer), len(output))
         for i, line in enumerate(output):
@@ -184,7 +186,8 @@ bar
         card = mcnpy.input_parser.mcnp_input.Card(
             [in_str], mcnpy.input_parser.block_type.BlockType.CELL
         )
-        self.assertEqual(str(card), "CARD: BlockType.CELL: ['1', '0', '-1']")
+        self.assertEqual(str(card), "CARD: BlockType.CELL")
+        self.assertEqual(repr(card), "CARD: BlockType.CELL: ['1', '0', '-1']")
 
     def testShortcutExpansion(self):
         tests = {

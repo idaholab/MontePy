@@ -94,9 +94,7 @@ class testFullFileIntegration(TestCase):
         output = str(self.simple_problem)
         answer_part = [
             "MCNP problem for: tests/inputs/test.imcnp",
-            "MESSAGE:\nthis is a message",
-            "it should show up at the beginning",
-            "foo",
+            "MESSAGE: 3 lines",
         ]
         for line in answer_part:
             self.assertIn(line, output)
