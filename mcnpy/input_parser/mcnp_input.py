@@ -26,6 +26,9 @@ class Jump:
     def __str__(self):
         return "J"
 
+    def __repr__(self):
+        return f"Jump: {hex(id(self))}"
+
     def __bool__(self):
         raise TypeError("Jump doesn't have a truthiness or falsiness")
 
@@ -112,6 +115,9 @@ class Card(MCNP_Input):
             self._words = parse_card_shortcuts(words, self)
 
     def __str__(self):
+        return f"CARD: {self._block_type}"
+
+    def __repr__(self):
         return f"CARD: {self._block_type}: {self._words}"
 
     @property
@@ -182,16 +188,14 @@ def parse_card_shortcuts(words, card=None):
                         ret.append(f"{new_val:g}")
                 except (IndexError, TypeError, ValueError, AttributeError) as e:
                     raise MalformedInputError(
-                        card,
-                        "The interpolate shortcut must come between two values",
+                        card, "The interpolate shortcut must come between two values",
                     )
             elif letters == "m":
                 try:
                     last_val = float(number_parser.search(ret[-1]).group(1))
                     if number is None:
                         raise MalformedInputError(
-                            card,
-                            "The multiply shortcut must have a multiplying value",
+                            card, "The multiply shortcut must have a multiplying value",
                         )
                     new_val = number * last_val
                     ret.append(f"{new_val:g}")
@@ -255,6 +259,12 @@ class ReadCard(Card):
         """
         return self._file_name
 
+    def __str__(self):
+        return f"READ CARD: Block_Type: {self.block_type}"
+
+    def __repr__(self):
+        return f"READ CARD: {self._block_type}: {self._words}"
+
 
 class Comment(MCNP_Input):
     """
@@ -284,6 +294,9 @@ class Comment(MCNP_Input):
         self._card_line = card_line
 
     def __str__(self):
+        ret = f"COMMENT: {len(self._lines)} lines"
+
+    def __repr__(self):
         ret = "COMMENT:\n"
         for line in self._lines:
             ret += line + "\n"
@@ -354,6 +367,9 @@ class Message(MCNP_Input):
         self._lines = buff
 
     def __str__(self):
+        ret = f"MESSAGE: {len(self._lines)} lines"
+
+    def __repr__(self):
         ret = "MESSAGE:\n"
         for line in self._lines:
             ret += line + "\n"
