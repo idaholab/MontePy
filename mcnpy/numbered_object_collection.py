@@ -19,6 +19,7 @@ class NumberedObjectCollection(ABC):
         """
         self.__num_cache = {}
         self._obj_class = obj_class
+        self._objects = []
         if objects:
             if not isinstance(objects, list):
                 raise TypeError("NumberedObjectCollection must be built from a list")
@@ -36,8 +37,6 @@ class NumberedObjectCollection(ABC):
                     )
                 self.__num_cache[obj.number] = obj
             self._objects = objects
-        else:
-            self._objects = []
 
     @property
     def numbers(self):
