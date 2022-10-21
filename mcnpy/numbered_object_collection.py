@@ -126,6 +126,18 @@ class NumberedObjectCollection(ABC):
     def __next__(self):
         return self._iter.__next__()
 
+    def __str__(self):
+        base_class_name = self.__class__.__name__
+        numbers = list(self.numbers)
+        return f"{base_class_name}: {numbers}"
+
+    def __repr__(self):
+        return (
+            f"Numbered_object_collection: obj_class: {self._obj_class}\n"
+            f"Objects: {self._objects}\n"
+            f"Number cache: {self.__num_cache}"
+        )
+
     def append(self, obj):
         """Appends the given object to the end of this collection.
 
