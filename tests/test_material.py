@@ -73,8 +73,10 @@ class testMaterialClass(TestCase):
 1001.80c 0.5
 8016.80c 0.5
 """
-        output = str(material)
+        output = repr(material)
         self.assertEqual(output, answers)
+        output = str(material)
+        self.assertEqual(output, "MATERIAL: 20, ['hydrogen', 'oxygen']")
 
     def test_material_sort(self):
         in_str = "M20 1001.80c 0.5 8016.80c 0.5"
