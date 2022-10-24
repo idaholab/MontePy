@@ -200,8 +200,9 @@ class Element:
         118: "Og",
     }
     __SYMBOL_TO_Z = {}
-    for Z, symbol in __Z_TO_SYMBOL.items():
-        __SYMBOL_TO_Z[symbol] = Z
+    for __Z, __symbol in __Z_TO_SYMBOL.items():
+        __SYMBOL_TO_Z[__symbol] = __Z
+    del __Z, __symbol
     __ELEMENT_NAMES = {
         "H": "hydrogen",
         "He": "helium",
@@ -323,5 +324,6 @@ class Element:
     }
 
     __NAMES_TO_SYMBOLS = {}
-    for symbol, name in __ELEMENT_NAMES.items():
-        __NAMES_TO_SYMBOLS[name] = symbol
+    for __symbol, __name in __ELEMENT_NAMES.items():
+        __NAMES_TO_SYMBOLS[__name] = __symbol
+    del __symbol, __name
