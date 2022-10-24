@@ -1,3 +1,4 @@
+from mcnpy.data_cards.element import Element
 from mcnpy.errors import *
 
 
@@ -19,6 +20,10 @@ class Isotope:
             except (AssertionError, ValueError) as e:
                 raise ValueError(f"ZAID: {ZAID} could not be parsed as a valid isotope")
             self._ZAID = parts[0]
+            ZAID = int(parts[0])
+            self._Z = int(ZAID / 1000)
+            self._element = Element(self.Z)
+            self._A = int(ZAID % 1000)
             self._library = parts[1]
         else:
             raise MalformedInputError(ZAID, "Not a valid isotope identifier.")
@@ -31,6 +36,36 @@ class Isotope:
         :rtype: str
         """
         return self._ZAID
+
+    @property
+    def Z(self):
+        """
+        The Z number for this isotope.
+
+        :returns: the atomic number.
+        :rtype: int
+        """
+        return self._Z
+
+    @property
+    def A(self):
+        """
+        The A number for this isotope.
+
+        :returns: the isotope's mass.
+        :rtype: int
+        """
+        return self._A
+
+    @property
+    def element(self):
+        """
+        The base element for this isotope.
+
+        :returns: The element for this isotope.
+        :rtype: Element
+        """
+        return self._element
 
     @property
     def library(self):

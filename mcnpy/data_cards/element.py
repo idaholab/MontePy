@@ -4,7 +4,80 @@
 class Element:
     """
     Class to represent an element e.g., Aluminum.
+
+    :param Z: the Z number of the element
+    :type Z: int
+    :raises: UnknownElement if there is no element with that Z number.
     """
+
+    def __init__(self, Z):
+        self._Z = Z
+        if Z not in self.__Z_TO_SYMBOL:
+            raise UnknownELement(f"Z={Z}")
+
+    @property
+    def symbol(self):
+        """
+        The atomic symbol for this Element.
+
+        :returns: the atomic symbol
+        :rtype: str
+        """
+        return self.__Z_TO_SYMBOL[self.Z]
+
+    @property
+    def Z(self):
+        """
+        The atomic number for this Element.
+
+        :returns: the atomic number
+        :rtype: int
+        """
+        return self._Z
+
+    @property
+    def name(self):
+        """
+        The name of the element.
+
+        :returns: the element's name.
+        :rtype: str
+        """
+        return self.__ELEMENT_NAMES[self.symbol]
+
+    @staticmethod
+    def get_by_symbol(cls, symbol):
+        """
+        Get an element by it's symbol.
+
+        E.g., get the element with Z=1 from "H".
+
+        :returns: the element with this symbol
+        :rtype: Element
+        :raises: UnknownElement if there is no element with that symbol.
+        """
+        try:
+            Z = cls.__SYMBOL_TO_Z[symbol]
+            return cls(Z)
+        except KeyError:
+            raise UnknownElement(f"The symbol: {symbol}")
+
+    @staticmethod
+    def get_by_name(cls, name):
+        """
+        Get an element by it's name.
+
+        E.g., get the element with Z=1 from "hydrogen".
+
+        :returns: the element with this name
+        :rtype: Element
+        :raises: UnknownElement if there is no element with that name.
+        """
+        try:
+            symbol = cls.__NAMES_TO_SYMBOLS[name]
+            return cls.get_by_symbol(symbol)
+        except KeyError:
+            raise UnknownElement(f"The name: {name}")
 
     __Z_TO_SYMBOL = {
         1: "H",
