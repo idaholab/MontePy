@@ -85,6 +85,17 @@ class Isotope:
     def __str__(self):
         return f"{self.element.symbol}-{self.A}.{self._library}"
 
+    def mcnp_str(self):
+        """
+        Returns an MCNP formatted representation.
+
+        E.g., 1001.80c
+
+        :returns: a string that can be used in MCNP
+        :rtype: str
+        """
+        return f"{self.ZAID}.{self.library}"
+
     def __repr__(self):
         return f"ZAID={self.ZAID}, Z={self.Z}, A={self.A}, element={self.element}, library={self.library}"
 

@@ -70,8 +70,8 @@ class testMaterialClass(TestCase):
         input_card = Card([in_str], BlockType.DATA)
         material = Material(input_card, None)
         answers = """MATERIAL: 20 fractions: atom
-1001.80c 0.5
-8016.80c 0.5
+H-1.80c 0.5
+O-16.80c 0.5
 """
         output = repr(material)
         self.assertEqual(output, answers)

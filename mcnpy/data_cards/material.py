@@ -248,11 +248,13 @@ class Material(data_card.DataCardAbstract):
             first_component = self.material_components[sorted_isotopes[0]]
 
             ret.append(
-                f"m{self.number:<8} {first_component.isotope:>8} {first_component.fraction:>11.4g}"
+                f"m{self.number:<8} {first_component.isotope.mcnp_str():>8} {first_component.fraction:>11.4g}"
             )
             for isotope in sorted_isotopes[1:]:  # skips the first
                 component = self.material_components[isotope]
-                ret.append(f"{component.isotope:>18} {component.fraction:>11.4g}")
+                ret.append(
+                    f"{component.isotope.mcnp_str():>18} {component.fraction:>11.4g}"
+                )
         else:
             ret = self._format_for_mcnp_unmutated(mcnp_version)
         if self.thermal_scattering:
