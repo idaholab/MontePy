@@ -2,11 +2,12 @@ from unittest import TestCase
 
 import mcnpy
 
+from mcnpy.data_cards.element import Element
 from mcnpy.data_cards.isotope import Isotope
 from mcnpy.data_cards.material import Material
 from mcnpy.data_cards.material_component import MaterialComponent
 from mcnpy.data_cards.thermal_scattering import ThermalScatteringLaw
-from mcnpy.errors import MalformedInputError
+from mcnpy.errors import MalformedInputError, UnknownElement
 from mcnpy.input_parser.block_type import BlockType
 from mcnpy.input_parser.mcnp_input import Card, Comment
 
@@ -206,3 +207,44 @@ O-16.80c 0.5
         self.assertEqual(material.format_for_mcnp_input((6, 2, 0)), [in_str])
         material.number = 5
         self.assertNotIn("8016", material.format_for_mcnp_input((6, 2, 0)))
+
+
+class TestElement(TestCase):
+    def test_element_init(self):
+        for Z in range(1, 119):
+            element = Element(Z)
+            self.assertEqual(element.Z, Z)
+
+        with self.assertRaises(UnknownElement):
+            Element(119)
+
+        spot_check = {
+            1: ("H", "hydrogen"),
+            40: ("Zr", "zirconium"),
+            92: ("U", "uranium"),
+            94: ("Pu", "plutonium"),
+            29: ("Cu", "copper"),
+            13: ("Al", "aluminum"),
+        }
+        for z, (symbol, name) in spot_check.items():
+            element = Element(z)
+            self.assertEqual(z, element.Z)
+            self.assertEqual(symbol, element.symbol)
+            self.assertEqual(name, element.name)
+
+    def test_element_str(self):
+        element = Element(1)
+        self.assertEqual(str(element), "hydrogen")
+        self.assertEqual(repr(element), "Z=1, symbol=H, name=hydrogen")
+
+    def test_get_by_symbol(self):
+        element = Element.get_by_symbol("Hg")
+        self.assertEqual(element.name, "mercury")
+        with self.assertRaises(UnknownElement):
+            Element.get_by_symbol("Hi")
+
+    def test_get_by_name(self):
+        element = Element.get_by_name("mercury")
+        self.assertEqual(element.symbol, "Hg")
+        with self.assertRaises(UnknownElement):
+            Element.get_by_name("hudrogen")
