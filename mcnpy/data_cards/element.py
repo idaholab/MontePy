@@ -1,4 +1,4 @@
-# from mcnpy.errors import *
+from mcnpy.errors import *
 
 
 class Element:
@@ -13,7 +13,7 @@ class Element:
     def __init__(self, Z):
         self._Z = Z
         if Z not in self.__Z_TO_SYMBOL:
-            raise UnknownELement(f"Z={Z}")
+            raise UnknownElement(f"Z={Z}")
 
     @property
     def symbol(self):
@@ -51,7 +51,7 @@ class Element:
     def __repr__(self):
         return f"Z={self.Z}, symbol={self.symbol}, name={self.name}"
 
-    @staticmethod
+    @classmethod
     def get_by_symbol(cls, symbol):
         """
         Get an element by it's symbol.
@@ -68,7 +68,7 @@ class Element:
         except KeyError:
             raise UnknownElement(f"The symbol: {symbol}")
 
-    @staticmethod
+    @classmethod
     def get_by_name(cls, name):
         """
         Get an element by it's name.
