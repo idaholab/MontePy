@@ -273,3 +273,9 @@ class TestElement(TestCase):
         self.assertEqual(element.symbol, "Hg")
         with self.assertRaises(UnknownElement):
             Element.get_by_name("hudrogen")
+
+
+class TestParticle(TestCase):
+    def test_particle_str(self):
+        part = mcnpy.Particle("N")
+        self.assertEqual(str(part), "neutron")
