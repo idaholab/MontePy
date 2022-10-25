@@ -83,10 +83,10 @@ class Isotope:
         self._library = library
 
     def __str__(self):
-        return f"{self._ZAID}.{self._library}"
+        return f"{self.element.symbol}-{self.A}.{self._library}"
 
     def __repr__(self):
-        return self.__str__()
+        return f"ZAID={self.ZAID}, Z={self.Z}, A={self.A}, element={self.element}, library={self.library}"
 
     def __hash__(self):
         return hash(self._ZAID)
