@@ -83,7 +83,7 @@ class Isotope:
         self._library = library
 
     def __str__(self):
-        return f"{self.element.symbol}-{self.A}.{self._library}"
+        return f"{self.element.symbol:>2}-{self.A:<3} ({self._library})"
 
     def mcnp_str(self):
         """
