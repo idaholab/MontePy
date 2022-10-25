@@ -111,9 +111,22 @@ O-16.80c 0.5
         with self.assertRaises(TypeError):
             MaterialComponent(Isotope("1001.80c"), "hi")
 
+    def test_material_card_pass_through(self):
+        in_str = "M20 1001.80c 0.5 8016.80c 0.5"
+        input_card = Card([in_str], BlockType.DATA)
+        material = Material(input_card, None)
+        self.assertEqual(material.format_for_mcnp_input((6, 2, 0)), [in_str])
+        material.number = 5
+        self.assertNotIn("8016", material.format_for_mcnp_input((6, 2, 0)))
+
+
+class TestIsotope(TestCase):
     def test_isotope_init(self):
         isotope = Isotope("1001.80c")
         self.assertEqual(isotope.ZAID, "1001")
+        self.assertEqual(isotope.Z, 1)
+        self.assertEqual(isotope.A, 1)
+        self.assertEqual(isotope.element.Z, 1)
         self.assertEqual(isotope.library, "80c")
 
         with self.assertRaises(ValueError):
@@ -131,6 +144,16 @@ O-16.80c 0.5
         with self.assertRaises(TypeError):
             isotope.library = 1
 
+    def test_isotope_str(self):
+        isotope = Isotope("1001.80c")
+        self.assertEqual(isotope.mcnp_str(), "1001.80c")
+        self.assertEqual(str(isotope), "H-1.80c")
+        self.assertEqual(
+            repr(isotope), "ZAID=1001, Z=1, A=1, element=hydrogen, library=80c"
+        )
+
+
+class TestThermalScattering(TestCase):
     def test_thermal_scattering_init(self):
         # test wrong card type assertion
         input_card = Card(["M20"], BlockType.DATA)
@@ -199,14 +222,6 @@ O-16.80c 0.5
         material.update_pointers([card])
         material.thermal_scattering.thermal_scattering_laws = ["grph.20t"]
         self.assertEqual(card.format_for_mcnp_input((6, 2, 0)), ["MT20 grph.20t"])
-
-    def test_material_card_pass_through(self):
-        in_str = "M20 1001.80c 0.5 8016.80c 0.5"
-        input_card = Card([in_str], BlockType.DATA)
-        material = Material(input_card, None)
-        self.assertEqual(material.format_for_mcnp_input((6, 2, 0)), [in_str])
-        material.number = 5
-        self.assertNotIn("8016", material.format_for_mcnp_input((6, 2, 0)))
 
 
 class TestElement(TestCase):
