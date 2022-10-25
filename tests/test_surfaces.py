@@ -155,6 +155,10 @@ class testSurfaces(TestCase):
         card = Card([in_str], BlockType.SURFACE)
         surf = Surface(card)
         self.assertEqual(str(surf), "SURFACE: 1, PZ")
+        self.assertEqual(
+            repr(surf),
+            "SURFACE: 1, PZ, periodic surface: None, transform: None, constants: [0.0]",
+        )
 
     def test_surface_builder(self):
         testers = [
