@@ -122,9 +122,6 @@ class NumberedObjectCollection(ABC):
         self._iter = self._objects.__iter__()
         return self._iter
 
-    def __next__(self):
-        return self._iter.__next__()
-
     def __str__(self):
         base_class_name = self.__class__.__name__
         numbers = list(self.numbers)
