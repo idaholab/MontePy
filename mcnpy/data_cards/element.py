@@ -51,6 +51,12 @@ class Element:
     def __repr__(self):
         return f"Z={self.Z}, symbol={self.symbol}, name={self.name}"
 
+    def __hash__(self):
+        return hash(self.Z)
+
+    def __eq__(self, other):
+        return self.Z == other.Z
+
     @classmethod
     def get_by_symbol(cls, symbol):
         """
