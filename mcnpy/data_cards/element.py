@@ -45,6 +45,12 @@ class Element:
         """
         return self.__ELEMENT_NAMES[self.symbol]
 
+    def __str__(self):
+        return self.name
+
+    def __repr__(self):
+        return f"Z={self.Z}, symbol={self.symbol}, name={self.name}"
+
     @staticmethod
     def get_by_symbol(cls, symbol):
         """
