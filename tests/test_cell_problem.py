@@ -136,6 +136,15 @@ class TestCellClass(TestCase):
         with self.assertRaises(TypeError):
             cell.parameters = []
 
+    def test_cell_str(self):
+        in_str = "1 1 0.5 2"
+        card = Card([in_str], BlockType.CELL)
+        cell = Cell(card)
+        self.assertEqual(str(cell), "CELL: 1, mat: 0, DENS: 0.5 g/cm3")
+        self.assertEqual(
+            repr(cell), "CELL: 1 \nVoid material \ndensity: 0.5 atom/b-cm\n\n"
+        )
+
     def test_cell_paremeters_no_eq(self):
         in_str = f"1 0 -1 PWT 1.0"
         card = Card([in_str], BlockType.CELL)

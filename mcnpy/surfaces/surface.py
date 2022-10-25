@@ -250,7 +250,12 @@ class Surface(Numbered_MCNP_Card):
         return f"SURFACE: {self.number}, {self.surface_type}"
 
     def __repr__(self):
-        return self.__str__()
+        return (
+            f"SURFACE: {self.number}, {self.surface_type}, "
+            f"periodic surface: {self.periodic_surface}, "
+            f"transform: {self.transform}, "
+            f"constants: {self.surface_constants}"
+        )
 
     def update_pointers(self, surface_dict, data_cards):
         """

@@ -210,7 +210,7 @@ class Material(data_card.DataCardAbstract, Numbered_MCNP_Card):
     def has_classifier(self):
         return 0
 
-    def __str__(self):
+    def __repr__(self):
         ret = f"MATERIAL: {self.number} fractions: "
         if self.is_atom_fraction:
             ret += "atom\n"
@@ -224,8 +224,23 @@ class Material(data_card.DataCardAbstract, Numbered_MCNP_Card):
 
         return ret
 
-    def __repr__(self):
-        return self.__str__()
+    def __str__(self):
+        elements = self._get_material_elements()
+        return f"MATERIAL: {self.number}, {elements}"
+
+    def _get_material_elements(self):
+        sortable_components = [
+            (iso, component.fraction)
+            for iso, component in self.material_components.items()
+        ]
+        sorted_comps = sorted(sortable_components)
+        elements_set = set()
+        elements = []
+        for isotope, _ in sorted_comps:
+            if isotope.element not in elements_set:
+                elements_set.add(isotope.element)
+                elements.append(isotope.element.name)
+        return elements
 
     def format_for_mcnp_input(self, mcnp_version):
         ret = mcnp_card.MCNP_Card.format_for_mcnp_input(self, mcnp_version)
@@ -234,11 +249,13 @@ class Material(data_card.DataCardAbstract, Numbered_MCNP_Card):
             first_component = self.material_components[sorted_isotopes[0]]
 
             ret.append(
-                f"m{self.number:<8} {first_component.isotope:>8} {first_component.fraction:>11.4g}"
+                f"m{self.number:<8} {first_component.isotope.mcnp_str():>8} {first_component.fraction:>11.4g}"
             )
             for isotope in sorted_isotopes[1:]:  # skips the first
                 component = self.material_components[isotope]
-                ret.append(f"{component.isotope:>18} {component.fraction:>11.4g}")
+                ret.append(
+                    f"{component.isotope.mcnp_str():>18} {component.fraction:>11.4g}"
+                )
         else:
             ret = self._format_for_mcnp_unmutated(mcnp_version)
         if self.thermal_scattering:

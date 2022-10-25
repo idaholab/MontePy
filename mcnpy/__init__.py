@@ -17,7 +17,7 @@ __credits__ = [
 ]
 
 name = "mcnpy"
-__version__ = "0.1.0.dev5"
+__version__ = "0.1.0.dev8"
 __maintainer__ = "Micah Gale"
 __email__ = "micah.gale@inl.gov"
 __status__ = "Development"
@@ -30,5 +30,6 @@ from mcnpy.data_cards.material import Material
 from mcnpy.data_cards.transform import Transform
 from mcnpy.input_parser.mcnp_input import Comment
 from mcnpy.input_parser.mcnp_input import Jump
+from mcnpy.particle import Particle
 from mcnpy.surfaces.surface_type import SurfaceType
 from mcnpy.universe import Universe
