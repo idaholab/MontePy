@@ -223,6 +223,16 @@ class TestThermalScattering(TestCase):
         material.thermal_scattering.thermal_scattering_laws = ["grph.20t"]
         self.assertEqual(card.format_for_mcnp_input((6, 2, 0)), ["MT20 grph.20t"])
 
+    def test_thermal_str(self):
+        in_str = "Mt20 grph.20t"
+        input_card = Card([in_str], BlockType.DATA)
+        card = ThermalScatteringLaw(input_card)
+        self.assertEqual(str(card), "THERMAL SCATTER: ['grph.20t']")
+        self.assertEqual(
+            repr(card),
+            "THERMAL SCATTER: material: None, old_num: 20, scatter: ['grph.20t']",
+        )
+
 
 class TestElement(TestCase):
     def test_element_init(self):
