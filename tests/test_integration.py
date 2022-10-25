@@ -94,9 +94,7 @@ class testFullFileIntegration(TestCase):
         output = str(self.simple_problem)
         answer_part = [
             "MCNP problem for: tests/inputs/test.imcnp",
-            "MESSAGE:\nthis is a message",
-            "it should show up at the beginning",
-            "foo",
+            "MESSAGE: 3 lines",
         ]
         for line in answer_part:
             self.assertIn(line, output)
@@ -603,3 +601,9 @@ class testFullFileIntegration(TestCase):
         problem.print_in_data_block["IMP"] = True
         output = problem.cells._importance.format_for_mcnp_input((6, 2, 0))
         self.assertIn("IMP:P 0 0 0 1 1", output)
+
+    def test_data_print_control_str(self):
+        self.assertEqual(
+            str(self.simple_problem.print_in_data_block),
+            "Print data in data block: {'imp': False, 'vol': True}",
+        )

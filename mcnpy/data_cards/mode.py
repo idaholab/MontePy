@@ -101,6 +101,9 @@ class Mode(DataCardAbstract):
     def __len__(self):
         return len(self._particles)
 
+    def __str__(self):
+        return f"Mode: {self.particles}"
+
     @property
     def class_prefix(self):
         return "mode"

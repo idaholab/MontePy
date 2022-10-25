@@ -25,3 +25,6 @@ class CellDataPrintController:
             self._print_data[key.lower()] = value
         else:
             raise KeyError(f"{key} is not a supported cell modifier in MCNP")
+
+    def __str__(self):
+        return f"Print data in data block: {self._print_data}"

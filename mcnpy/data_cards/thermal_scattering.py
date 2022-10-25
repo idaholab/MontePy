@@ -127,3 +127,9 @@ class ThermalScatteringLaw(DataCardAbstract):
             raise MalformedInputError(
                 self, "MT input is detached from a parent material"
             )
+
+    def __str__(self):
+        return f"THERMAL SCATTER: {self.thermal_scattering_laws}"
+
+    def __repr__(self):
+        return f"THERMAL SCATTER: material: {self.parent_material}, old_num: {self.old_number}, scatter: {self.thermal_scattering_laws}"

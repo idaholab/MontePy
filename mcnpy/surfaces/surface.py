@@ -80,8 +80,7 @@ class Surface(MCNP_Card):
                 self._surface_constants.append(fortran_float(entry))
             except ValueError:
                 raise MalformedInputError(
-                    input_card,
-                    f"{entry} could not be parsed as a surface constant.",
+                    input_card, f"{entry} could not be parsed as a surface constant.",
                 )
 
     @property
@@ -251,7 +250,12 @@ class Surface(MCNP_Card):
         return f"SURFACE: {self.number}, {self.surface_type}"
 
     def __repr__(self):
-        return self.__str__()
+        return (
+            f"SURFACE: {self.number}, {self.surface_type}, "
+            f"periodic surface: {self.periodic_surface}, "
+            f"transform: {self.transform}, "
+            f"constants: {self.surface_constants}"
+        )
 
     def update_pointers(self, surface_dict, data_cards):
         """
@@ -277,10 +281,7 @@ class Surface(MCNP_Card):
                         self._transform = card
             if not self.transform:
                 raise BrokenObjectLinkError(
-                    "Surface",
-                    self.number,
-                    "Transform",
-                    self.old_transform_number,
+                    "Surface", self.number, "Transform", self.old_transform_number,
                 )
 
     def format_for_mcnp_input(self, mcnp_version):
