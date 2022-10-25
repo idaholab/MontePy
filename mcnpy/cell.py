@@ -576,6 +576,15 @@ class Cell(MCNP_Card):
                     return True
         return False
 
+    def validate(self):
+        """
+        Validates that the cell is in a usable state.
+
+        :raises:
+        """
+        if self._density and self.material is None:
+            raise IllegalState(f"Cell {self.number} has a density set but no material")
+
     def format_for_mcnp_input(self, mcnp_version):
         mutated = self.mutated
         if not mutated:
