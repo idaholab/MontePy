@@ -3,7 +3,7 @@ from unittest import TestCase
 
 import mcnpy
 from mcnpy.input_parser import input_syntax_reader
-from mcnpy.input_parser.mcnp_input import Card, Jump, Message, Title
+from mcnpy.input_parser.mcnp_input import Card, Jump, Message, ReadCard, Title
 from mcnpy.input_parser.block_type import BlockType
 from mcnpy.particle import Particle
 
@@ -43,6 +43,13 @@ test title
                 self.assertIsInstance(card, mcnpy.input_parser.mcnp_input.Message)
                 self.assertEqual(card.lines[0], validator)
                 self.assertEqual(len(card.lines), 1)
+
+    def testReadCardStr(self):
+        card = ReadCard(["Read file=hi.imcnp"], BlockType.CELL)
+        self.assertEqual(str(card), "READ CARD: Block_Type: BlockType.CELL")
+        self.assertEqual(
+            repr(card), "READ CARD: BlockType.CELL: ['Read', 'file=hi.imcnp']"
+        )
 
     def testTitleFinder(self):
         test_title = "Richard Stallman writes GNU"
