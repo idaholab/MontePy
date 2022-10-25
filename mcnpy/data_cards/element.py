@@ -290,7 +290,7 @@ class Element:
         "Hf": "hafnium",
         "Ta": "tantalum",
         "W": "tungsten",
-        "Re": "Rhenium",
+        "Re": "rhenium",
         "Os": "osmium",
         "Ir": "iridium",
         "Pt": "platinum",
