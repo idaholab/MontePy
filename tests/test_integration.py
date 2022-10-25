@@ -835,9 +835,9 @@ class testFullFileIntegration(TestCase):
         self.assertEqual(len(answers), len(list(universe.cells)))
         for cell, answer in zip(universe.cells, answers):
             self.assertEqual(cell.number, answer)
-    
+
     def test_data_print_control_str(self):
         self.assertEqual(
             str(self.simple_problem.print_in_data_block),
-            "Print data in data block: {'imp': False, 'vol': True}",
+            "Print data in data block: {'imp': False, 'u': False, 'fill': False, 'vol': True}",
         )
