@@ -28,6 +28,3 @@ class CellDataPrintController:
 
     def __str__(self):
         return f"Print data in data block: {self._print_data}"
-
-    def __repr__(self):
-        return f"CellDataPrintController: {self._print_data}"

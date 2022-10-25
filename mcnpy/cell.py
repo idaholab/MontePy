@@ -683,6 +683,3 @@ class Cell(MCNP_Card):
 
     def __lt__(self, other):
         return self.number < other.number
-
-    def __repr__(self):
-        return self.__str__()
