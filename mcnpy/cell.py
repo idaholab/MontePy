@@ -580,13 +580,24 @@ class Cell(MCNP_Card):
         """
         Validates that the cell is in a usable state.
 
-        :raises:
+        :raises: IllegalState if any condition exists that make the object incomplete.
         """
         if self._density and self.material is None:
             raise IllegalState(f"Cell {self.number} has a density set but no material")
+        if self.material is not None and not self._density:
+            raise IllegalState(
+                f"Cell {self.number} has a non-void material but no density"
+            )
+        if len(self.surfaces) == 0 and len(self.complements) == 0:
+            raise IllegalState(
+                f"Cell {self.number} has no surfaces nor complemented cells attached to it"
+            )
+        if len(self.geometry_logic_string) == 0:
+            raise IllegalState(f"Cell {self.number} has no geometry defined")
 
     def format_for_mcnp_input(self, mcnp_version):
         mutated = self.mutated
+        self.validate()
         if not mutated:
             if self.material:
                 mutated = self.material.mutated
@@ -617,21 +628,6 @@ class Cell(MCNP_Card):
             if self.parameters:
                 strings = []
                 keys = list(self.parameters.keys())
-                """
-                Yes this is hacky voodoo.
-                We don't know if it's necessary, but are too scared to remove it.
-                The goal is to make sure that the FILL parameter is always the last 
-                one on a cell card.
-
-                This is based on a superstition that MCNP is less likely to crash when 
-                data is given this way; but we just don't know.
-                You've used MCNP are you that surprised we had to do this?
-
-                MCNP giveth, and MCNP taketh. 
-                """
-                if "FILL" in keys:
-                    keys.remove("FILL")
-                    keys.append("FILL")
                 for key in keys:
                     value = self.parameters[key]
                     if isinstance(value, list):
