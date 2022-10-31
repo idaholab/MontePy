@@ -130,14 +130,31 @@ class TestIsotope(TestCase):
         self.assertEqual(isotope.A, 1)
         self.assertEqual(isotope.element.Z, 1)
         self.assertEqual(isotope.library, "80c")
-
         with self.assertRaises(ValueError):
             Isotope("1001.80c.5")
         with self.assertRaises(ValueError):
             Isotope("hi.80c")
-
         with self.assertRaises(MalformedInputError):
             Isotope("1001")
+
+    def test_isotope_metastable_init(self):
+        isotope = Isotope("13426.02c")
+        self.assertEqual(isotope.ZAID, "13426")
+        self.assertEqual(isotope.Z, 13)
+        self.assertEqual(isotope.A, 26)
+        self.assertTrue(isotope.is_metastable)
+        self.assertEqual(isotope.meta_state, 1)
+        isotope = Isotope("92635.02c")
+        self.assertEqual(isotope.A, 235)
+        self.assertEqual(isotope.meta_state, 1)
+        isotope = Isotope("92935.02c")
+        self.assertEqual(isotope.A, 235)
+        self.assertEqual(isotope.meta_state, 4)
+        self.assertEqual(isotope.mcnp_str(), "92935.02c")
+
+    def test_isotope_get_base_zaid(self):
+        isotope = Isotope("92635.02c")
+        self.assertEqual(isotope.get_base_zaid(), 92235)
 
     def test_isotope_library_setter(self):
         isotope = Isotope("1001.80c")
