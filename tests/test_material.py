@@ -151,6 +151,8 @@ class TestIsotope(TestCase):
         self.assertEqual(isotope.A, 235)
         self.assertEqual(isotope.meta_state, 4)
         self.assertEqual(isotope.mcnp_str(), "92935.02c")
+        with self.assertRaises(ValueError):
+            isotope = Isotope("13826.02c")
 
     def test_isotope_get_base_zaid(self):
         isotope = Isotope("92635.02c")
