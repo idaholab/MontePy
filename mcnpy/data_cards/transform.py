@@ -203,7 +203,14 @@ class Transform(data_card.DataCardAbstract):
         ret += f"MAIN_TO_AUX: {self.is_main_to_aux}\n"
         return ret
 
+    def validate(self):
+        if not self.displacement_vector or len(self.displacement_vector) != 3:
+            raise IllegalState(
+                f"Transform: {self.number} does not have a valid displacement Vector"
+            )
+
     def format_for_mcnp_input(self, mcnp_version):
+        self.validate()
         ret = mcnp_card.MCNP_Card.format_for_mcnp_input(self, mcnp_version)
         if self.mutated:
             buff_list = []
