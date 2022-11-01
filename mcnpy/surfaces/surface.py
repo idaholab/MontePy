@@ -284,8 +284,15 @@ class Surface(MCNP_Card):
                     "Surface", self.number, "Transform", self.old_transform_number,
                 )
 
+    def validate(self):
+        if not self.surface_type:
+            raise IllegalState(
+                f"Surface: {self.number} does not have a surface type set."
+            )
+
     def format_for_mcnp_input(self, mcnp_version):
         mutated = self.mutated
+        self.validate()
         if not mutated:
             for obj in [self.periodic_surface, self.transform]:
                 if obj and obj.mutated:

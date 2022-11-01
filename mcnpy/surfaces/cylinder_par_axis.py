@@ -1,5 +1,6 @@
 from .surface_type import SurfaceType
 from .surface import Surface
+from mcnpy.errors import *
 
 
 class CylinderParAxis(Surface):
@@ -72,6 +73,13 @@ class CylinderParAxis(Surface):
         self._mutated = True
         self._radius = radius
         self._surface_constants[2] = radius
+
+    def validate(self):
+        super().validate()
+        if not self.radius:
+            raise IllegalState(f"Surface: {self.number} does not have a radius set.")
+        if not self.coordinates:
+            raise IllegalState(f"Surface: {self.number} does not have coordinates set.")
 
     def find_duplicate_surfaces(self, surfaces, tolerance):
         ret = []

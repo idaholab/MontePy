@@ -1,5 +1,6 @@
 from .surface_type import SurfaceType
 from .surface import Surface
+from mcnpy.errors import *
 
 
 class CylinderOnAxis(Surface):
@@ -38,6 +39,11 @@ class CylinderOnAxis(Surface):
             raise ValueError("radius must be larger than 0")
         self._mutated = True
         self._radius = radius
+
+    def validate(self):
+        super().validate()
+        if not self.radius:
+            raise IllegalState(f"Surface: {self.number} does not have a radius set.")
 
     def find_duplicate_surfaces(self, surfaces, tolerance):
         ret = []

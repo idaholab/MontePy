@@ -1,5 +1,6 @@
 from .surface_type import SurfaceType
 from .surface import Surface
+from mcnpy.errors import *
 
 
 class AxisPlane(Surface):
@@ -41,6 +42,10 @@ class AxisPlane(Surface):
         self._mutated = True
         self._location = location
         self._surface_constants[0] = location
+
+    def validate(self):
+        if not self.location:
+            raise IllegalState(f"Surface: {self.number} does not have a location set.")
 
     def find_duplicate_surfaces(self, surfaces, tolerance):
         ret = []
