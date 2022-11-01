@@ -132,6 +132,14 @@ class TestCellClass(TestCase):
                 in_str = f"1 0 -1 FILL={in_fill} {ending}"
                 card = Card([in_str], BlockType.CELL)
                 cell = Cell(card)
+                cell.surfaces.append(
+                    mcnpy.surfaces.surface.Surface(
+                        mcnpy.input_parser.mcnp_input.Card(
+                            ["6600 PZ 1.0"],
+                            mcnpy.input_parser.block_type.BlockType.SURFACE,
+                        )
+                    )
+                )
                 self.assertEqual(cell.parameters["FILL"].strip(), in_fill.strip())
                 cell.number = 2
                 output = cell.format_for_mcnp_input((6, 2, 0))
