@@ -204,7 +204,7 @@ class Transform(data_card.DataCardAbstract):
         return ret
 
     def validate(self):
-        if not self.displacement_vector or len(self.displacement_vector) != 3:
+        if self.displacement_vector is None or len(self.displacement_vector) != 3:
             raise IllegalState(
                 f"Transform: {self.number} does not have a valid displacement Vector"
             )
