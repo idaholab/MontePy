@@ -4,4 +4,3 @@ sphinxcontrib-apidoc
 sphinx_rtd_theme
 coverage>=6.3.2
 pytest
-Flask==2.1.0
