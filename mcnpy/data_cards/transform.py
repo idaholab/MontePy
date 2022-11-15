@@ -194,6 +194,9 @@ class Transform(data_card.DataCardAbstract):
         self._is_main_to_aux = flag
 
     def __str__(self):
+        return f"TRANSFORM: {self.number}"
+
+    def __repr__(self):
         ret = f"TRANSFORM: {self.number}\n"
         ret += f"DISPLACE: {self.displacement_vector}\n"
         ret += f"ROTATE: {self.rotation_matrix}\n"

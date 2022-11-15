@@ -64,3 +64,13 @@ class UnsupportedFeature(NotImplementedError):
     def __init__(self, message):
         self.message = message
         super().__init__(self.message)
+
+
+class UnknownElement(ValueError):
+    """
+    Raised when an undefined element is used.
+    """
+
+    def __init__(self, missing_val):
+        self.message = f"An element identified by: {missing_val} is unknown to MCNPy."
+        super().__init__(self.message)

@@ -19,6 +19,7 @@ class NumberedObjectCollection(ABC):
         """
         self.__num_cache = {}
         self._obj_class = obj_class
+        self._objects = []
         if objects:
             if not isinstance(objects, list):
                 raise TypeError("NumberedObjectCollection must be built from a list")
@@ -36,8 +37,6 @@ class NumberedObjectCollection(ABC):
                     )
                 self.__num_cache[obj.number] = obj
             self._objects = objects
-        else:
-            self._objects = []
 
     @property
     def numbers(self):
@@ -123,8 +122,17 @@ class NumberedObjectCollection(ABC):
         self._iter = self._objects.__iter__()
         return self._iter
 
-    def __next__(self):
-        return self._iter.__next__()
+    def __str__(self):
+        base_class_name = self.__class__.__name__
+        numbers = list(self.numbers)
+        return f"{base_class_name}: {numbers}"
+
+    def __repr__(self):
+        return (
+            f"Numbered_object_collection: obj_class: {self._obj_class}\n"
+            f"Objects: {self._objects}\n"
+            f"Number cache: {self.__num_cache}"
+        )
 
     def append(self, obj):
         """Appends the given object to the end of this collection.
