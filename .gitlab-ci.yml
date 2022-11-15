@@ -9,12 +9,16 @@ install:
   stage: build
   script:
     - echo "Installing dependencies"
-    - pip install --user -r requirements/dev.txt
+    - which python
+    - which pip
+      python -m pip install --user -r requirements/dev.txt
     - python setup.py sdist bdist_wheel
-    - pip install --user dist/*.whl --force-reinstall
+    - python -m pip install --user dist/*.whl --force-reinstall
       # test the extras installation
     - python setup.py install easy_install --user mcnpy[test]
     - python setup.py install easy_install --user mcnpy[doc]
+    - python -m pip freeze
+
 
 
 unit_test:
@@ -22,6 +26,9 @@ unit_test:
   coverage: '/TOTAL.+ ([0-9\.]{1,5}%)/'
   script:
     - echo "Executing unit tests"
+    - which python
+    - which coverage
+    - python -m pip freeze
     - coverage run --source mcnpy -m pytest --junitxml=test_report.xml
     - coverage report -m --precision=2
     - coverage xml
