@@ -1,13 +1,16 @@
 image: python:latest
 
-before_script:
-  - python --version
-  - export PATH="~/.local/bin:$PATH"
+#before_script:
+#  - python --version
+#  - export PATH="~/.local/bin:$PATH"
 
 
 install:
   stage: build
   script:
+    - echo "setting up conda"
+    - conda create -n experiment_analysis_mcnpy python
+    - conda activate experiment_analysis_mcnpy
     - echo "Installing dependencies"
     - which python
     - which pip
@@ -25,6 +28,8 @@ unit_test:
   stage: test
   coverage: '/TOTAL.+ ([0-9\.]{1,5}%)/'
   script:
+    - echo "setting up conda"
+    - conda activate experiment_analysis_mcnpy
     - echo "Executing unit tests"
     - which python
     - which coverage
