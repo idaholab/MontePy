@@ -32,11 +32,10 @@ unit_test:
     - conda activate experiment_analysis_mcnpy
     - echo "Executing unit tests"
     - which python
-    - which coverage
     - python -m pip freeze
-    - coverage run --source mcnpy -m pytest --junitxml=test_report.xml
-    - coverage report -m --precision=2
-    - coverage xml
+    - python -m coverage run --source mcnpy -m pytest --junitxml=test_report.xml
+    - python -m coverage report -m --precision=2
+    - python -m coverage xml
   artifacts:
     reports:
       junit: test_report.xml
