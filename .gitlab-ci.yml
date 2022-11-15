@@ -1,30 +1,41 @@
 image: python:latest
 
-before_script:
-  - python --version
-  - export PATH="~/.local/bin:$PATH"
+#before_script:
+#  - python --version
+#  - export PATH="~/.local/bin:$PATH"
 
 
 install:
   stage: build
   script:
+    - echo "setting up conda"
+    - conda create -n experiment_analysis_mcnpy python
+    - conda activate experiment_analysis_mcnpy
     - echo "Installing dependencies"
-    - pip install --user -r requirements/dev.txt
+    - which python
+    - which pip
+    - python -m pip install --user -r requirements/dev.txt
     - python setup.py sdist bdist_wheel
-    - pip install --user dist/*.whl --force-reinstall
+    - python -m pip install --user dist/*.whl --force-reinstall
       # test the extras installation
     - python setup.py install easy_install --user mcnpy[test]
     - python setup.py install easy_install --user mcnpy[doc]
+    - python -m pip freeze
+
 
 
 unit_test:
   stage: test
   coverage: '/TOTAL.+ ([0-9\.]{1,5}%)/'
   script:
+    - echo "setting up conda"
+    - conda activate experiment_analysis_mcnpy
     - echo "Executing unit tests"
-    - coverage run --source mcnpy -m pytest --junitxml=test_report.xml
-    - coverage report -m --precision=2
-    - coverage xml
+    - which python
+    - python -m pip freeze
+    - python -m coverage run --source mcnpy -m pytest --junitxml=test_report.xml
+    - python -m coverage report -m --precision=2
+    - python -m coverage xml
   artifacts:
     reports:
       junit: test_report.xml
