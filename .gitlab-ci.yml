@@ -49,6 +49,13 @@ doc_test:
       - echo "Executing Sphinx build to detect syntax errors"
       - sphinx-build doc/source/ doc/build/ -W --keep-going -E
 
+format_test:
+  stage: test
+  script: 
+    - echo "Testing if anything is unformatted"
+    - echo "If error occurs changes were not formatted using black"
+    - black --check mcnpy/ tests/
+
 
 deploy1:
   stage: deploy
