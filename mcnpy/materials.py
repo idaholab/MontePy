@@ -6,7 +6,7 @@ Material = mcnpy.data_inputs.material.Material
 
 class Materials(NumberedObjectCollection):
     """
-    A container of multiple :class:`mcnpy.data_cards.material.Material` instances.
+    A container of multiple :class:`mcnpy.data_inputs.material.Material` instances.
     """
 
     def __init__(self, objects=None):
