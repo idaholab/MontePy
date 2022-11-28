@@ -70,6 +70,8 @@ deploy1:
 pages:
   stage: deploy
   script:
+    - echo "setting up conda"
+    - conda activate experiment_analysis_mcnpy
     - echo "Building documentation with Sphinx."
     - cd doc/
     - make html
