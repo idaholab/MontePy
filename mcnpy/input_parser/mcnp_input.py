@@ -188,14 +188,16 @@ def parse_card_shortcuts(words, card=None):
                         ret.append(f"{new_val:g}")
                 except (IndexError, TypeError, ValueError, AttributeError) as e:
                     raise MalformedInputError(
-                        card, "The interpolate shortcut must come between two values",
+                        card,
+                        "The interpolate shortcut must come between two values",
                     )
             elif letters == "m":
                 try:
                     last_val = float(number_parser.search(ret[-1]).group(1))
                     if number is None:
                         raise MalformedInputError(
-                            card, "The multiply shortcut must have a multiplying value",
+                            card,
+                            "The multiply shortcut must have a multiplying value",
                         )
                     new_val = number * last_val
                     ret.append(f"{new_val:g}")
@@ -282,7 +284,7 @@ class Comment(MCNP_Input):
         buff = []
         for line in input_lines:
             fragments = re.split(
-                fr"^\s{{0,{BLANK_SPACE_CONTINUE-1}}}C\s", line, flags=re.I
+                rf"^\s{{0,{BLANK_SPACE_CONTINUE-1}}}C\s", line, flags=re.I
             )
             if len(fragments) > 1:
                 comment_line = fragments[1].rstrip()

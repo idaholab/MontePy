@@ -516,7 +516,7 @@ class Cell(MCNP_Card):
                     new_num = next(temp_numbers)
                     temp_cells[complement] = new_num
                 pad_string = re.sub(
-                    fr"#{old_num}(\D)",
+                    rf"#{old_num}(\D)",
                     r"#{new_num}\g<1>".format(new_num=new_num),
                     pad_string,
                 )
@@ -529,7 +529,7 @@ class Cell(MCNP_Card):
                     new_num = next(temp_numbers)
                     temp_surfaces[surface] = new_num
                 pad_string = re.sub(
-                    fr"([^#\d]){old_num}(\D)",
+                    rf"([^#\d]){old_num}(\D)",
                     r"\g<1>{new_num}\g<2>".format(new_num=new_num),
                     pad_string,
                 )
