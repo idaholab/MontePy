@@ -151,8 +151,14 @@ class TestIsotope(TestCase):
         self.assertEqual(isotope.A, 235)
         self.assertEqual(isotope.meta_state, 4)
         self.assertEqual(isotope.mcnp_str(), "92935.02c")
-        be_edge_cases = [("4412", 4, 12, 1), ("4413", 4, 13, 1), ("4414", 4, 14, 1)]
-        for ZA, Z_ans, A_ans, isomer_ans in be_edge_cases:
+        edge_cases = [
+            ("4412", 4, 12, 1),
+            ("4413", 4, 13, 1),
+            ("4414", 4, 14, 1),
+            ("36569", 36, 69, 2),
+            ("77764", 77, 164, 3)
+        ]
+        for ZA, Z_ans, A_ans, isomer_ans in edge_cases:
             isotope = Isotope(ZA + ".80c")
             self.assertEqual(isotope.Z, Z_ans)
             self.assertEqual(isotope.A, A_ans)
