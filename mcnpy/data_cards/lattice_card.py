@@ -10,7 +10,7 @@ from mcnpy.mcnp_card import MCNP_Card
 class LatticeCard(CellModifierCard):
     """
     Object to handle the inputs from ``LAT``.
-        
+
     :param input_card: the Card object representing this data card
     :type input_card: Card
     :param comments: The list of Comments that may proceed this or be entwined with it.
@@ -148,7 +148,9 @@ class LatticeCard(CellModifierCard):
             if self.lattice:
                 ret.extend(
                     self.wrap_string_for_mcnp(
-                        f"LAT={self.lattice.value}", mcnp_version, False,
+                        f"LAT={self.lattice.value}",
+                        mcnp_version,
+                        False,
                     )
                 )
         else:

@@ -264,7 +264,7 @@ def parse_card_shortcuts(words, card=None):
 class ReadCard(Card):
     """
     A card for the read card that reads another input file
-    
+
     :param input_lines: the lines read straight from the input file.
     :type input_lines: list
     :param block_type: An enum showing which of three MCNP blocks this was inside of.
@@ -381,7 +381,7 @@ class Message(MCNP_Input):
     Object to represent an MCNP message.
 
     These are blocks at the beginning of an input that are printed in the output.
-        
+
     :param input_lines: the lines read straight from the input file.
     :type input_lines: list
     :param lines: the strings of each line in the message block
@@ -440,7 +440,7 @@ class Message(MCNP_Input):
 class Title(MCNP_Input):
     """
     Object to represent the title for an MCNP problem
-        
+
     :param input_lines: the lines read straight from the input file.
     :type input_lines: list
     :param title: The string for the title of the problem.

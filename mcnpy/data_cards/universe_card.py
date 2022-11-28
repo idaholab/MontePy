@@ -11,7 +11,7 @@ class UniverseCard(CellModifierCard):
     """
     Object to actually handle the ``U`` card in cells
     and data blocks.
-        
+
     :param input_card: the Card object representing this data card
     :type input_card: Card
     :param comments: The list of Comments that may proceed this or be entwined with it.
@@ -191,8 +191,8 @@ class UniverseCard(CellModifierCard):
     @staticmethod
     def _get_print_number(number, not_truncating):
         """
-        Prepares the universe number for printing. 
-        
+        Prepares the universe number for printing.
+
         This handles the whole negative sign for not being truncated by the parent.
 
         :param number: the universe number.

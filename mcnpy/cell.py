@@ -227,7 +227,7 @@ class Cell(Numbered_MCNP_Card):
         See Note 1 from section 3.3.1.5.1 of the user manual (LA-UR-17-29981).
 
         Note this can be set to True iff that this cell is not in Universe 0.
-            
+
             Note 1. A problem will run faster by preceding the U card entry with a minus sign for any
             cell that is not truncated by the boundary of any higher-level cell. (The minus sign indicates
             that calculating distances to boundary in higher-level cells can be omitted.) Use this

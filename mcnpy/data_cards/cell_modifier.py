@@ -95,7 +95,7 @@ class CellModifierCard(DataCardAbstract):
 
         :param other: The other object to merge into this object.
         :type other: self
-        :raises MalformedInputError: if two objects cannot be merged. 
+        :raises MalformedInputError: if two objects cannot be merged.
         """
         pass
 

@@ -98,9 +98,7 @@ class Transform(data_card.DataCardAbstract, Numbered_MCNP_Card):
 
     @property
     def hidden_transform(self):
-        """
-
-        """
+        """ """
         return self._pass_through
 
     @property

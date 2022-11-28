@@ -12,7 +12,7 @@ import numpy as np
 class Fill(CellModifierCard):
     """
     Object to handle the ``FILL`` card in cell and data blocks.
-        
+
     :param input_card: the Card object representing this data card
     :type input_card: Card
     :param comments: The list of Comments that may proceed this or be entwined with it.
@@ -272,7 +272,7 @@ class Fill(CellModifierCard):
     @property
     def transform(self):
         """
-        The transform for this fill (if any). 
+        The transform for this fill (if any).
 
         :returns: the transform for the filling universe for this cell.
         :rtype: Transform
@@ -348,7 +348,7 @@ class Fill(CellModifierCard):
 
         E.g., (5) or ( 0 0 10)...
 
-        :returns: a tuple of (bool: if true is in degrees and needs *FILL, list of strings) 
+        :returns: a tuple of (bool: if true is in degrees and needs *FILL, list of strings)
                 the strings are already properly formatted for MCNP
         :rtype: tuple
         """
