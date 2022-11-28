@@ -54,7 +54,7 @@ format_test:
   script: 
     - echo "Testing if anything is unformatted"
     - echo "If error occurs changes were not formatted using black"
-    - black --check mcnpy/ tests/
+    - python -m black --check mcnpy/ tests/
 
 
 deploy1:
