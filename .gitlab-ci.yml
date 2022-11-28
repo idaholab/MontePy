@@ -1,8 +1,9 @@
 image: python:latest
 
-#before_script:
-#  - python --version
-#  - export PATH="~/.local/bin:$PATH"
+before_script:
+  - python --version
+  - export PATH="/data/gitlab-runner/.conda/envs/experiment_analysis_mcnpy:$PATH"
+  - conda activate experiment_analysis_mcnpy
 
 
 install:
@@ -10,7 +11,6 @@ install:
   script:
     - echo "setting up conda"
     - conda create -n experiment_analysis_mcnpy python
-    - conda activate experiment_analysis_mcnpy
     - echo "Installing dependencies"
     - which python
     - which pip
@@ -32,8 +32,8 @@ unit_test:
     - conda activate experiment_analysis_mcnpy
     - echo "Executing unit tests"
     - which python
-    - python -m pip freeze
-    - python -m coverage run --source mcnpy -m pytest --junitxml=test_report.xml
+    - pip freeze
+    - coverage run --source mcnpy -m pytest --junitxml=test_report.xml
     - python -m coverage report -m --precision=2
     - python -m coverage xml
   artifacts:
@@ -85,3 +85,4 @@ pages:
   only:
     - master
     - doc
+    - blackTesting
