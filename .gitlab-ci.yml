@@ -3,8 +3,6 @@ image: python:latest
 before_script:
   - python --version
   - export PATH="/data/gitlab-runner/.conda/envs/experiment_analysis_mcnpy/bin:$PATH"
-  - echo $PATH
-  - ls /data/gitlab-runner/.conda/envs/experiment_analysis_mcnpy/bin
   - conda activate experiment_analysis_mcnpy
 
 
@@ -23,6 +21,8 @@ install:
     - python setup.py install easy_install --user mcnpy[test]
     - python setup.py install easy_install --user mcnpy[doc]
     - python -m pip freeze
+    - ls /data/gitlab-runner/.conda/envs/experiment_analysis_mcnpy/bin
+    - echo $PYTHONPATH
 
 
 
