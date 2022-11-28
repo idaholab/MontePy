@@ -12,8 +12,6 @@ install:
   stage: build
   script:
     - echo "setting up conda"
-    - conda deactivate
-    - conda env remove -n experiment_analysis_mcnpy
     - conda create -n experiment_analysis_mcnpy python
     - echo "Installing dependencies"
     - which python
