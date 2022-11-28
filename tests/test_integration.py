@@ -4,7 +4,7 @@ from unittest import TestCase, expectedFailure
 import os
 
 import mcnpy
-from mcnpy.data_cards import material, thermal_scattering, volume
+from mcnpy.data_inputs import material, thermal_scattering, volume
 from mcnpy.input_parser.mcnp_input import Input, Comment, Message, Title, ReadInput
 from mcnpy.particle import Particle
 

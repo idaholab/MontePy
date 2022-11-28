@@ -1,7 +1,7 @@
 from unittest import TestCase
 
 import mcnpy
-from mcnpy.data_cards.mode import Mode
+from mcnpy.data_inputs.mode import Mode
 from mcnpy.input_parser.mcnp_input import Input
 from mcnpy.input_parser.block_type import BlockType
 from mcnpy.particle import Particle

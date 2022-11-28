@@ -2,7 +2,7 @@ from unittest import TestCase
 import mcnpy
 from mcnpy.cell import Cell
 from mcnpy.particle import Particle
-from mcnpy.data_cards.importance import Importance
+from mcnpy.data_inputs.importance import Importance
 from mcnpy.errors import *
 from mcnpy.input_parser import mcnp_input, block_type
 import os

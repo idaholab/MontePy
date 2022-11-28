@@ -1,12 +1,12 @@
-from mcnpy.data_cards import (
-    data_card,
+from mcnpy.data_inputs import (
+    data_input,
     importance,
     material,
     mode,
     thermal_scattering,
     volume,
 )
-from mcnpy.data_cards import transform
+from mcnpy.data_inputs import transform
 import re
 
 PREFIX_MATCHES = {
@@ -31,7 +31,7 @@ def parse_data(input_card, comment=None):
     :rtype: DataCard
     """
 
-    base_card = data_card.DataCard(input_card, comment)
+    base_card = data_input.DataCard(input_card, comment)
     prefix = base_card.prefix
 
     for match, data_class in PREFIX_MATCHES.items():

@@ -1,5 +1,5 @@
 from mcnpy.errors import *
-from mcnpy.data_cards import transform
+from mcnpy.data_inputs import transform
 from mcnpy.mcnp_input import MCNP_Input
 from mcnpy.surfaces.surface_type import SurfaceType
 from mcnpy.utilities import *

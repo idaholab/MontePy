@@ -1,4 +1,4 @@
-from mcnpy.data_cards.element import Element
+from mcnpy.data_inputs.element import Element
 from mcnpy.errors import *
 
 

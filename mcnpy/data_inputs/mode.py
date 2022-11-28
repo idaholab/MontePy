@@ -1,4 +1,4 @@
-from mcnpy.data_cards.data_card import DataInputAbstract
+from mcnpy.data_inputs.data_input import DataInputAbstract
 from mcnpy.particle import Particle
 
 

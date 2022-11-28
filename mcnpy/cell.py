@@ -1,10 +1,10 @@
 import itertools
 from mcnpy.cells import Cells
-from mcnpy.data_cards import importance, volume
-from mcnpy.data_cards.data_parser import PREFIX_MATCHES
+from mcnpy.data_inputs import importance, volume
+from mcnpy.data_inputs.data_parser import PREFIX_MATCHES
 from mcnpy.errors import *
 from mcnpy.mcnp_input import MCNP_Input
-from mcnpy.data_cards.material import Material
+from mcnpy.data_inputs.material import Material
 from mcnpy.surfaces.surface import Surface
 from mcnpy.surface_collection import Surfaces
 from mcnpy.utilities import *

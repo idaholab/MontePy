@@ -268,10 +268,10 @@ bar
             card = mcnpy.input_parser.mcnp_input.Input(
                 [in_str], mcnpy.input_parser.block_type.BlockType.DATA
             )
-            data_card = mcnpy.data_cards.data_card.DataCard(card)
-            self.assertEqual(data_card.prefix, answer["prefix"])
-            self.assertEqual(data_card._input_number, answer["number"])
-            self.assertEqual(data_card.particle_classifiers, answer["classifier"])
+            data_input = mcnpy.data_inputs.data_input.DataCard(card)
+            self.assertEqual(data_input.prefix, answer["prefix"])
+            self.assertEqual(data_input._input_number, answer["number"])
+            self.assertEqual(data_input.particle_classifiers, answer["classifier"])
 
     def testDataCardNameEnforcement(self):
         tests = {
@@ -334,7 +334,7 @@ bar
             bool(jump)
 
 
-class DataCardTestFixture(mcnpy.data_cards.data_card.DataInputAbstract):
+class DataCardTestFixture(mcnpy.data_inputs.data_input.DataInputAbstract):
     def __init__(self, input_card=None, comment=None):
         """
         :param input_card: the Card object representing this data card

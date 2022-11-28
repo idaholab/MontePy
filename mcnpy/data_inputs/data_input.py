@@ -271,7 +271,7 @@ class DataInputAbstract(MCNP_Input):
             return self._input_number < other._input_number
 
 
-class DataCard(DataInputAbstract):
+class DataInput(DataInputAbstract):
     @property
     def class_prefix(self):
         return None

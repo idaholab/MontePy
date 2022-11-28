@@ -2,7 +2,7 @@ from unittest import TestCase
 
 import numpy as np
 import mcnpy
-from mcnpy.data_cards.transform import Transform
+from mcnpy.data_inputs.transform import Transform
 from mcnpy.errors import MalformedInputError
 from mcnpy.input_parser.block_type import BlockType
 from mcnpy.input_parser.mcnp_input import Input

@@ -1,7 +1,7 @@
 import mcnpy
 from mcnpy.numbered_object_collection import NumberedObjectCollection
 
-Material = mcnpy.data_cards.material.Material
+Material = mcnpy.data_inputs.material.Material
 
 
 class Materials(NumberedObjectCollection):

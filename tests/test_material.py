@@ -2,11 +2,11 @@ from unittest import TestCase
 
 import mcnpy
 
-from mcnpy.data_cards.element import Element
-from mcnpy.data_cards.isotope import Isotope
-from mcnpy.data_cards.material import Material
-from mcnpy.data_cards.material_component import MaterialComponent
-from mcnpy.data_cards.thermal_scattering import ThermalScatteringLaw
+from mcnpy.data_inputs.element import Element
+from mcnpy.data_inputs.isotope import Isotope
+from mcnpy.data_inputs.material import Material
+from mcnpy.data_inputs.material_component import MaterialComponent
+from mcnpy.data_inputs.thermal_scattering import ThermalScatteringLaw
 from mcnpy.errors import MalformedInputError, UnknownElement
 from mcnpy.input_parser.block_type import BlockType
 from mcnpy.input_parser.mcnp_input import Input, Comment
