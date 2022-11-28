@@ -121,7 +121,7 @@ class Isotope:
         number is decided by who made the ACE file for this, and not quantum mechanics.
         Convention states that the isomers should be numbered from lowest to highest energy.
 
-        :returns: the metastable isomeric state of this "isotope" in the range [1,4], or None 
+        :returns: the metastable isomeric state of this "isotope" in the range [1,4], or None
                 if this is a ground state isomer.
         :rtype: int
         """
