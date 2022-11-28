@@ -156,7 +156,7 @@ class TestIsotope(TestCase):
             ("4413", 4, 13, 1),
             ("4414", 4, 14, 1),
             ("36569", 36, 69, 2),
-            ("77764", 77, 164, 3)
+            ("77764", 77, 164, 3),
         ]
         for ZA, Z_ans, A_ans, isomer_ans in edge_cases:
             isotope = Isotope(ZA + ".80c")
