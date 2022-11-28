@@ -16,13 +16,11 @@ install:
     - which pip
     - pip install -r requirements/dev.txt
     - python setup.py sdist bdist_wheel
-    - python -m pip install --user dist/*.whl --force-reinstall
+    - pip install --user dist/*.whl --force-reinstall
       # test the extras installation
     - python setup.py install easy_install --user mcnpy[test]
     - python setup.py install easy_install --user mcnpy[doc]
-    - python -m pip freeze
-    - ls /data/gitlab-runner/.conda/envs/experiment_analysis_mcnpy/bin
-    - echo $PYTHONPATH
+    - pip freeze
 
 
 
@@ -36,8 +34,8 @@ unit_test:
     - which python
     - pip freeze
     - coverage run --source mcnpy -m pytest --junitxml=test_report.xml
-    - python -m coverage report -m --precision=2
-    - python -m coverage xml
+    - coverage report -m --precision=2
+    - coverage xml
   artifacts:
     reports:
       junit: test_report.xml
@@ -60,7 +58,7 @@ format_test:
     - conda activate experiment_analysis_mcnpy
     - echo "Testing if anything is unformatted"
     - echo "If error occurs changes were not formatted using black"
-    - python -m black --check mcnpy/ tests/
+    - black --check mcnpy/ tests/
 
 
 deploy1:
