@@ -7,6 +7,12 @@ class Isotope:
     A class to represent an MCNP isotope
     """
 
+    #                    Br-101    Os-203      Lv-294
+    _BOUNDING_CURVE = [(35, 101), (76, 203), (116, 294)]
+    """
+    Points on bounding curve for determining if "valid" isotope
+    """
+
     def __init__(self, ZAID):
         """
         :param ZAID: the MCNP isotope identifier
@@ -32,20 +38,32 @@ class Isotope:
         See Table 3-32 of LA-UR-17-29881
 
         """
+
+        def is_probably_an_isotope(Z, A):
+            for lim_Z, lim_A in self._BOUNDING_CURVE:
+                if Z <= lim_Z:
+                    if A <= lim_A:
+                        return True
+                    else:
+                        return False
+                else:
+                    continue
+            # if you are above Lv it's probably legit.
+            return True
+
         ZAID = int(self._ZAID)
         self._Z = int(ZAID / 1000)
         self._element = Element(self.Z)
         A = int(ZAID % 1000)
-        if A > 300:
+        if not is_probably_an_isotope(self.Z, A):
             self._is_metastable = True
-            optimal_A = self.Z * 2
             true_A = A - 300
             # only m1,2,3,4 allowed
             found = False
             for i in range(1, 5):
                 true_A -= 100
                 # assumes that can only vary 40% from A = 2Z
-                if abs(true_A - optimal_A) / optimal_A < 0.40:
+                if is_probably_an_isotope(self.Z, true_A):
                     found = True
                     break
             if found:
