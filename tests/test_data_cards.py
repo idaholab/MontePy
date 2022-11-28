@@ -7,7 +7,7 @@ from mcnpy.data_cards.data_card import DataCard
 from mcnpy.data_cards import material, thermal_scattering, transform, volume
 from mcnpy.data_cards.data_parser import parse_data
 from mcnpy.errors import *
-from mcnpy.input_parser.mcnp_input import Card, Comment, Jump
+from mcnpy.input_parser.mcnp_input import Input, Comment, Jump
 from mcnpy.input_parser.block_type import BlockType
 from mcnpy.mcnp_problem import MCNP_Problem
 
@@ -15,7 +15,7 @@ from mcnpy.mcnp_problem import MCNP_Problem
 class testDataCardClass(TestCase):
     def test_data_card_init(self):
         in_str = "m1 1001.80c 1.0"
-        input_card = Card([in_str], BlockType.DATA)
+        input_card = Input([in_str], BlockType.DATA)
         comment = Comment(["C foo", "c bar"], ["foo", "bar"])
         data_card = DataCard(input_card, comment)
         words = in_str.split()
@@ -29,13 +29,13 @@ class testDataCardClass(TestCase):
 
     def test_data_card_str(self):
         in_str = "m1 1001.80c 1.0"
-        input_card = Card([in_str], BlockType.DATA)
+        input_card = Input([in_str], BlockType.DATA)
         data_card = DataCard(input_card)
         self.assertEqual(str(data_card), "DATA CARD: " + str(in_str.split()))
 
     def test_data_card_format_mcnp(self):
         in_str = "m1 1001.80c 1.0"
-        input_card = Card([in_str], BlockType.DATA)
+        input_card = Input([in_str], BlockType.DATA)
         comment = Comment(["c foo", "c bar"], ["foo", "bar"])
         data_card = DataCard(input_card, comment)
         answer = ["C foo", "C bar", "m1 1001.80c 1.0"]
@@ -46,7 +46,7 @@ class testDataCardClass(TestCase):
 
     def test_comment_setter(self):
         in_str = "m1 1001.80c 1.0"
-        input_card = Card([in_str], BlockType.DATA)
+        input_card = Input([in_str], BlockType.DATA)
         comment = Comment(["c foo", "c bar"], ["foo", "bar"])
         data_card = DataCard(input_card)
         data_card.comment = comment
@@ -68,13 +68,13 @@ class testDataCardClass(TestCase):
 
         for identifier, w in in_strs.items():
             for ident in [identifier, identifier.upper()]:
-                input_card = Card([w], BlockType.DATA)
+                input_card = Input([w], BlockType.DATA)
                 card = parse_data(input_card)
                 self.assertIsInstance(card, identifiers[ident.lower()])
 
     def test_data_card_words_setter(self):
         in_str = "IMP:N 1 1"
-        input_card = Card([in_str], BlockType.DATA)
+        input_card = Input([in_str], BlockType.DATA)
         input_card = DataCard(input_card)
         new_words = input_card.words + ["0"]
         input_card.words = new_words
@@ -86,7 +86,7 @@ class testDataCardClass(TestCase):
 
     def test_data_card_mutate_print(self):
         in_str = "IMP:N 1 1"
-        input_card = Card([in_str], BlockType.DATA)
+        input_card = Input([in_str], BlockType.DATA)
         input_card = DataCard(input_card)
         input_card._mutated = True
         output = input_card.format_for_mcnp_input((6, 2, 0))
@@ -125,7 +125,7 @@ class testDataCardClass(TestCase):
 
     def test_volume_init_data(self):
         in_str = "VOL 1 1 2J 0"
-        input_card = Card([in_str], BlockType.DATA)
+        input_card = Input([in_str], BlockType.DATA)
         vol_card = parse_data(input_card)
         answers = [1.0, 1.0, Jump, Jump, 0.0]
         for i, vol in enumerate(vol_card._volume):
@@ -134,27 +134,27 @@ class testDataCardClass(TestCase):
             else:
                 self.assertIsInstance(vol, Jump)
         in_str = "VOL NO 1 1 2J 0"
-        input_card = Card([in_str], BlockType.DATA)
+        input_card = Input([in_str], BlockType.DATA)
         vol_card = parse_data(input_card)
         self.assertTrue(not vol_card.is_mcnp_calculated)
         # invalid number
         in_str = "VOL NO s 1 2J 0"
-        input_card = Card([in_str], BlockType.DATA)
+        input_card = Input([in_str], BlockType.DATA)
         with self.assertRaises(MalformedInputError):
             vol_card = parse_data(input_card)
         # negative volume
         in_str = "VOL NO -1 1 2J 0"
-        input_card = Card([in_str], BlockType.DATA)
+        input_card = Input([in_str], BlockType.DATA)
         with self.assertRaises(MalformedInputError):
             vol_card = parse_data(input_card)
 
     def test_volumes_for_only_some_cells(self):
         cells = [
-            mcnpy.Cell(Card([f"{i + 1} 0 u=3"], BlockType.CELL)) for i in range(10)
+            mcnpy.Cell(Input([f"{i + 1} 0 u=3"], BlockType.CELL)) for i in range(10)
         ]
         prob = MCNP_Problem(None)
         prob.cells = cells
-        vol_card = Card(["VOL 1 1 2 3 5"], BlockType.DATA)
+        vol_card = Input(["VOL 1 1 2 3 5"], BlockType.DATA)
         vol_data = volume.Volume(vol_card, in_cell_block=False)
         vol_data.link_to_problem(prob)
         vol_data.push_to_cells()

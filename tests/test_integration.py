@@ -5,7 +5,7 @@ import os
 
 import mcnpy
 from mcnpy.data_cards import material, thermal_scattering, volume
-from mcnpy.input_parser.mcnp_input import Card, Comment, Message, Title, ReadCard
+from mcnpy.input_parser.mcnp_input import Input, Comment, Message, Title, ReadInput
 from mcnpy.particle import Particle
 
 
@@ -19,20 +19,20 @@ class testFullFileIntegration(TestCase):
 
     def test_original_input(self):
         cell_order = [Message, Title, Comment]
-        cell_order += [Card] * 5 + [Comment]
-        cell_order += [Comment] + [Card] * 3
-        cell_order += [Comment, Card] * 3
-        cell_order += [Card, Comment] + [Card] * 5
+        cell_order += [Input] * 5 + [Comment]
+        cell_order += [Comment] + [Input] * 3
+        cell_order += [Comment, Input] * 3
+        cell_order += [Input, Comment] + [Input] * 5
         for i, input_ob in enumerate(self.simple_problem.original_inputs):
             self.assertIsInstance(input_ob, cell_order[i])
 
     def test_original_input_dos(self):
         problem = mcnpy.read_input(os.path.join("tests", "inputs", "test_dos.imcnp"))
         cell_order = [Message, Title, Comment]
-        cell_order += [Card] * 5 + [Comment]
-        cell_order += [Comment] + [Card] * 3
-        cell_order += [Comment, Card] * 3
-        cell_order += [Card, Comment] + [Card] * 5
+        cell_order += [Input] * 5 + [Comment]
+        cell_order += [Comment] + [Input] * 3
+        cell_order += [Comment, Input] * 3
+        cell_order += [Input, Comment] + [Input] * 5
         for i, input_ob in enumerate(problem.original_inputs):
             self.assertIsInstance(input_ob, cell_order[i])
 
@@ -186,10 +186,10 @@ class testFullFileIntegration(TestCase):
         problem = copy.copy(self.simple_problem)
         BT = mcnpy.input_parser.block_type.BlockType
         in_str = "5 SO 5.0"
-        card = mcnpy.input_parser.mcnp_input.Card([in_str], BT.SURFACE)
+        card = mcnpy.input_parser.mcnp_input.Input([in_str], BT.SURFACE)
         surf = mcnpy.surfaces.surface_builder.surface_builder(card)
         in_str = "M5 6000.70c 1.0"
-        card = mcnpy.input_parser.mcnp_input.Card([in_str], BT.SURFACE)
+        card = mcnpy.input_parser.mcnp_input.Input([in_str], BT.SURFACE)
         mat = mcnpy.data_cards.material.Material(card, None)
         cell = mcnpy.Cell()
         cell.material = mat
@@ -588,7 +588,7 @@ class testFullFileIntegration(TestCase):
         in_str = "1 0 -1 VOL=1 VOL 5"
         with self.assertRaises(ValueError):
             cell = mcnpy.Cell(
-                Card([in_str], mcnpy.input_parser.block_type.BlockType.CELL)
+                Input([in_str], mcnpy.input_parser.block_type.BlockType.CELL)
             )
 
     def test_importance_end_repeat(self):

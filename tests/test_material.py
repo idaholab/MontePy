@@ -9,21 +9,21 @@ from mcnpy.data_cards.material_component import MaterialComponent
 from mcnpy.data_cards.thermal_scattering import ThermalScatteringLaw
 from mcnpy.errors import MalformedInputError, UnknownElement
 from mcnpy.input_parser.block_type import BlockType
-from mcnpy.input_parser.mcnp_input import Card, Comment
+from mcnpy.input_parser.mcnp_input import Input, Comment
 
 
 class testMaterialClass(TestCase):
     def test_material_init(self):
         # test invalid material number
-        input_card = Card(["Mfoo"], BlockType.DATA)
+        input_card = Input(["Mfoo"], BlockType.DATA)
         with self.assertRaises(MalformedInputError):
             Material(input_card, None)
-        input_card = Card(["M-20"], BlockType.DATA)
+        input_card = Input(["M-20"], BlockType.DATA)
         with self.assertRaises(MalformedInputError):
             Material(input_card, None)
 
         in_str = "M20 1001.80c 0.5 8016.80c 0.5"
-        input_card = Card([in_str], BlockType.DATA)
+        input_card = Input([in_str], BlockType.DATA)
         material = Material(input_card, None)
         self.assertEqual(material.number, 20)
         self.assertEqual(material.old_number, 20)
@@ -32,7 +32,7 @@ class testMaterialClass(TestCase):
             self.assertEqual(material.material_components[component].fraction, 0.5)
 
         in_str = "M20 1001.80c -0.5 8016.80c -0.5"
-        input_card = Card([in_str], BlockType.DATA)
+        input_card = Input([in_str], BlockType.DATA)
         material = Material(input_card, None)
         self.assertFalse(material.is_atom_fraction)
         for component in material.material_components:
@@ -40,24 +40,24 @@ class testMaterialClass(TestCase):
 
         # test bad fraction
         in_str = "M20 1001.80c foo"
-        input_card = Card([in_str], BlockType.DATA)
+        input_card = Input([in_str], BlockType.DATA)
         with self.assertRaises(MalformedInputError):
             material = Material(input_card, None)
         # test mismatch fraction
         in_str = "M20 1001.80c 0.5 8016.80c -0.5"
-        input_card = Card([in_str], BlockType.DATA)
+        input_card = Input([in_str], BlockType.DATA)
         with self.assertRaises(MalformedInputError):
             material = Material(input_card, None)
         # test parameters
         in_str = "M20 1001.80c 0.5 8016.80c 0.5 Gas=1"
-        input_card = Card([in_str], BlockType.DATA)
+        input_card = Input([in_str], BlockType.DATA)
         material = Material(input_card, None)
 
         self.assertEqual(material.parameter_string, "Gas=1")
 
     def test_material_setter(self):
         in_str = "M20 1001.80c 0.5 8016.80c 0.5"
-        input_card = Card([in_str], BlockType.DATA)
+        input_card = Input([in_str], BlockType.DATA)
         material = Material(input_card, None)
         material.number = 30
         self.assertEqual(material.number, 30)
@@ -68,7 +68,7 @@ class testMaterialClass(TestCase):
 
     def test_material_str(self):
         in_str = "M20 1001.80c 0.5 8016.80c 0.4 94239.80c 0.1"
-        input_card = Card([in_str], BlockType.DATA)
+        input_card = Input([in_str], BlockType.DATA)
         material = Material(input_card, None)
         answers = """MATERIAL: 20 fractions: atom
  H-1   (80c) 0.5
@@ -83,10 +83,10 @@ Pu-239 (80c) 0.1
 
     def test_material_sort(self):
         in_str = "M20 1001.80c 0.5 8016.80c 0.5"
-        input_card = Card([in_str], BlockType.DATA)
+        input_card = Input([in_str], BlockType.DATA)
         material1 = Material(input_card, None)
         in_str = "M30 1001.80c 0.5 8016.80c 0.5"
-        input_card = Card([in_str], BlockType.DATA)
+        input_card = Input([in_str], BlockType.DATA)
         material2 = Material(input_card, None)
         sort_list = sorted([material2, material1])
         answers = [material1, material2]
@@ -95,7 +95,7 @@ Pu-239 (80c) 0.1
 
     def test_material_format_mcnp(self):
         in_str = "M20 1001.80c 0.5 8016.80c 0.5"
-        input_card = Card([in_str], BlockType.DATA)
+        input_card = Input([in_str], BlockType.DATA)
         material = Material(input_card, None)
         material.number = 25
         answers = ["m25       1001.80c         0.5", "          8016.80c         0.5"]
@@ -115,7 +115,7 @@ Pu-239 (80c) 0.1
 
     def test_material_card_pass_through(self):
         in_str = "M20 1001.80c 0.5 8016.80c 0.5"
-        input_card = Card([in_str], BlockType.DATA)
+        input_card = Input([in_str], BlockType.DATA)
         material = Material(input_card, None)
         self.assertEqual(material.format_for_mcnp_input((6, 2, 0)), [in_str])
         material.number = 5
@@ -161,23 +161,23 @@ class TestIsotope(TestCase):
 class TestThermalScattering(TestCase):
     def test_thermal_scattering_init(self):
         # test wrong card type assertion
-        input_card = Card(["M20"], BlockType.DATA)
+        input_card = Input(["M20"], BlockType.DATA)
         with self.assertRaises(MalformedInputError):
             ThermalScatteringLaw(input_card)
 
-        input_card = Card(["Mt20 grph.20t"], BlockType.DATA)
+        input_card = Input(["Mt20 grph.20t"], BlockType.DATA)
         card = ThermalScatteringLaw(input_card)
         self.assertEqual(card.old_number, 20)
         self.assertEqual(card.thermal_scattering_laws, ["grph.20t"])
 
-        input_card = Card(["Mtfoo"], BlockType.DATA)
+        input_card = Input(["Mtfoo"], BlockType.DATA)
         with self.assertRaises(MalformedInputError):
             ThermalScatteringLaw(input_card, None)
-        input_card = Card(["Mt-20"], BlockType.DATA)
+        input_card = Input(["Mt-20"], BlockType.DATA)
         with self.assertRaises(MalformedInputError):
             ThermalScatteringLaw(input_card, None)
         in_str = "M20 1001.80c 0.5 8016.80c 0.5"
-        input_card = Card([in_str], BlockType.DATA)
+        input_card = Input([in_str], BlockType.DATA)
         material = Material(input_card, None)
         comment = Comment(["c foo"], ["foo"])
         card = ThermalScatteringLaw(comment=comment, material=material)
@@ -185,7 +185,7 @@ class TestThermalScattering(TestCase):
 
     def test_thermal_scattering_add(self):
         in_str = "Mt20 grph.20t"
-        input_card = Card([in_str], BlockType.DATA)
+        input_card = Input([in_str], BlockType.DATA)
         card = ThermalScatteringLaw(input_card)
         card.add_scattering_law("grph.21t")
         self.assertEqual(len(card.thermal_scattering_laws), 2)
@@ -195,7 +195,7 @@ class TestThermalScattering(TestCase):
 
     def test_thermal_scattering_setter(self):
         in_str = "Mt20 grph.20t"
-        input_card = Card([in_str], BlockType.DATA)
+        input_card = Input([in_str], BlockType.DATA)
         card = ThermalScatteringLaw(input_card)
         laws = ["grph.21t"]
         card.thermal_scattering_laws = laws
@@ -207,7 +207,7 @@ class TestThermalScattering(TestCase):
 
     def test_thermal_scattering_material_add(self):
         in_str = "M20 1001.80c 1.0"
-        input_card = Card([in_str], BlockType.DATA)
+        input_card = Input([in_str], BlockType.DATA)
         card = Material(input_card)
         card.add_thermal_scattering("grph.21t")
         self.assertEqual(len(card.thermal_scattering.thermal_scattering_laws), 1)
@@ -219,10 +219,10 @@ class TestThermalScattering(TestCase):
 
     def test_thermal_scattering_format_mcnp(self):
         in_str = "Mt20 grph.20t"
-        input_card = Card([in_str], BlockType.DATA)
+        input_card = Input([in_str], BlockType.DATA)
         card = ThermalScatteringLaw(input_card)
         in_str = "M20 1001.80c 0.5 8016.80c 0.5"
-        input_card = Card([in_str], BlockType.DATA)
+        input_card = Input([in_str], BlockType.DATA)
         material = Material(input_card, None)
         material.update_pointers([card])
         material.thermal_scattering.thermal_scattering_laws = ["grph.20t"]
@@ -230,7 +230,7 @@ class TestThermalScattering(TestCase):
 
     def test_thermal_str(self):
         in_str = "Mt20 grph.20t"
-        input_card = Card([in_str], BlockType.DATA)
+        input_card = Input([in_str], BlockType.DATA)
         card = ThermalScatteringLaw(input_card)
         self.assertEqual(str(card), "THERMAL SCATTER: ['grph.20t']")
         self.assertEqual(

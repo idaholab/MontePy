@@ -201,7 +201,7 @@ class MCNP_Problem:
                     input_card.snip()
                 comment_queue.append(input_card)
 
-            elif isinstance(input_card, mcnp_input.Card):
+            elif isinstance(input_card, mcnp_input.Input):
                 if len(input_card.words) > 0:
                     if input_card.block_type == block_type.BlockType.CELL:
                         cell = Cell(input_card, comment_queue)

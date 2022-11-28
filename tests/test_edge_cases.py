@@ -32,7 +32,7 @@ class EdgeCaseTests(TestCase):
 
     def test_orphaning_mt(self):
         problem = mcnpy.read_input(os.path.join("tests", "inputs", "test.imcnp"))
-        card = mcnpy.input_parser.mcnp_input.Card(
+        card = mcnpy.input_parser.mcnp_input.Input(
             ["MT5 lwtr.01t"],
             mcnpy.input_parser.block_type.BlockType.DATA,
         )
@@ -47,12 +47,12 @@ class EdgeCaseTests(TestCase):
 
     def test_shortcuts_in_special_comment(self):
         in_str = "fc247 experiment in I24 Cell Specific Heating"
-        card = mcnpy.input_parser.mcnp_input.Card(
+        card = mcnpy.input_parser.mcnp_input.Input(
             [in_str], mcnpy.input_parser.block_type.BlockType.DATA
         )
         self.assertEqual(card.words, in_str.split())
         in_str = in_str.replace("fc247", "sc247")
-        card = mcnpy.input_parser.mcnp_input.Card(
+        card = mcnpy.input_parser.mcnp_input.Input(
             [in_str], mcnpy.input_parser.block_type.BlockType.DATA
         )
         self.assertEqual(card.words, in_str.split())

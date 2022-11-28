@@ -2,7 +2,7 @@ from unittest import TestCase
 
 import mcnpy
 from mcnpy.data_cards.mode import Mode
-from mcnpy.input_parser.mcnp_input import Card
+from mcnpy.input_parser.mcnp_input import Input
 from mcnpy.input_parser.block_type import BlockType
 from mcnpy.particle import Particle
 
@@ -10,17 +10,17 @@ from mcnpy.particle import Particle
 class TestMode(TestCase):
     def test_mode_init(self):
         in_str = "mode n p"
-        mode = Mode(Card([in_str], BlockType.CELL))
+        mode = Mode(Input([in_str], BlockType.CELL))
         self.assertEqual(len(mode), 2)
         self.assertIn(Particle.NEUTRON, mode)
         self.assertIn(Particle.PHOTON, mode.particles)
         # test bad input
         in_str = "kcode"
         with self.assertRaises(mcnpy.errors.MalformedInputError):
-            mode = Mode(Card([in_str], BlockType.CELL))
+            mode = Mode(Input([in_str], BlockType.CELL))
         in_str = "mode 1"
         with self.assertRaises(ValueError):
-            mode = Mode(Card([in_str], BlockType.CELL))
+            mode = Mode(Input([in_str], BlockType.CELL))
         mode = Mode()
         self.assertEqual(len(mode), 1)
         self.assertIn(Particle.NEUTRON, mode)

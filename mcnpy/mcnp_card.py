@@ -22,7 +22,7 @@ class MCNP_Card(ABC):
         self._problem = None
         self._parameters = {}
         if input_card:
-            if not isinstance(input_card, mcnpy.input_parser.mcnp_input.Card):
+            if not isinstance(input_card, mcnpy.input_parser.mcnp_input.Input):
                 raise TypeError("input_card must be a Card")
             if not isinstance(comments, (list, Comment, type(None))):
                 raise TypeError("comments must be either a Comment, a list, or None")

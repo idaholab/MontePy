@@ -4,7 +4,7 @@ from .. import errors
 import itertools
 import io
 from mcnpy.input_parser.constants import *
-from mcnpy.input_parser.mcnp_input import Card, Comment, Message, ReadCard, Title
+from mcnpy.input_parser.mcnp_input import Input, Comment, Message, ReadInput, Title
 import os
 import warnings
 
@@ -125,9 +125,9 @@ def read_data(fh, mcnp_version, block_type=None, recursion=False):
 
     def flush_card():
         nonlocal card_raw_lines
-        card = Card(card_raw_lines, block_type)
+        card = Input(card_raw_lines, block_type)
         if len(card.words) > 0 and card.words[0].lower() == "read":
-            card = ReadCard(card_raw_lines, block_type)
+            card = ReadInput(card_raw_lines, block_type)
             reading_queue.append((block_type, card.file_name))
             yield None
         else:

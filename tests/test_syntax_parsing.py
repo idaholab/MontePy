@@ -3,7 +3,7 @@ from unittest import TestCase
 
 import mcnpy
 from mcnpy.input_parser import input_syntax_reader
-from mcnpy.input_parser.mcnp_input import Card, Jump, Message, ReadCard, Title
+from mcnpy.input_parser.mcnp_input import Input, Jump, Message, ReadInput, Title
 from mcnpy.input_parser.block_type import BlockType
 from mcnpy.particle import Particle
 
@@ -11,11 +11,11 @@ from mcnpy.particle import Particle
 class TestSyntaxParsing(TestCase):
     def testCardInit(self):
         with self.assertRaises(TypeError):
-            Card("5", BlockType.CELL)
+            Input("5", BlockType.CELL)
         with self.assertRaises(TypeError):
-            Card([5], BlockType.CELL)
+            Input([5], BlockType.CELL)
         with self.assertRaises(TypeError):
-            Card(["5"], "5")
+            Input(["5"], "5")
 
     def testMessageInit(self):
         with self.assertRaises(TypeError):
@@ -45,7 +45,7 @@ test title
                 self.assertEqual(len(card.lines), 1)
 
     def testReadCardStr(self):
-        card = ReadCard(["Read file=hi.imcnp"], BlockType.CELL)
+        card = ReadInput(["Read file=hi.imcnp"], BlockType.CELL)
         self.assertEqual(str(card), "READ CARD: Block_Type: BlockType.CELL")
         self.assertEqual(
             repr(card), "READ CARD: BlockType.CELL: ['Read', 'file=hi.imcnp']"
@@ -74,7 +74,7 @@ test title
             with StringIO(tester) as fh:
                 generator = input_syntax_reader.read_data(fh, (6, 2, 0))
                 card = next(generator)
-                self.assertIsInstance(card, mcnpy.input_parser.mcnp_input.Card)
+                self.assertIsInstance(card, mcnpy.input_parser.mcnp_input.Input)
                 answer = ["1", "0", "-1", "5"]
                 self.assertEqual(len(answer), len(card.words))
                 for j, word in enumerate(card.words):
@@ -161,12 +161,12 @@ bar
         generator = input_syntax_reader.read_input_syntax("tests/inputs/test.imcnp")
         mcnp_in = mcnpy.input_parser.mcnp_input
         input_order = [mcnp_in.Message, mcnp_in.Title, mcnp_in.Comment]
-        input_order += [mcnp_in.Card] * 5 + [mcnp_in.Comment] * 2
-        input_order += [mcnp_in.Card] * 3 + [mcnp_in.Comment]
+        input_order += [mcnp_in.Input] * 5 + [mcnp_in.Comment] * 2
+        input_order += [mcnp_in.Input] * 3 + [mcnp_in.Comment]
         for i in range(2):
-            input_order += [mcnp_in.Card, mcnp_in.Comment]
-        input_order += [mcnp_in.Card, mcnp_in.Card, mcnp_in.Comment]
-        input_order += [mcnp_in.Card] * 5
+            input_order += [mcnp_in.Input, mcnp_in.Comment]
+        input_order += [mcnp_in.Input, mcnp_in.Input, mcnp_in.Comment]
+        input_order += [mcnp_in.Input] * 5
         for i, input in enumerate(generator):
             self.assertIsInstance(input, input_order[i])
 
@@ -190,7 +190,7 @@ bar
 
     def testCardStringRepr(self):
         in_str = "1 0 -1"
-        card = mcnpy.input_parser.mcnp_input.Card(
+        card = mcnpy.input_parser.mcnp_input.Input(
             [in_str], mcnpy.input_parser.block_type.BlockType.CELL
         )
         self.assertEqual(str(card), "CARD: BlockType.CELL")
@@ -265,7 +265,7 @@ bar
         }
         for in_str, answer in tests.items():
             # Testing parsing the names
-            card = mcnpy.input_parser.mcnp_input.Card(
+            card = mcnpy.input_parser.mcnp_input.Input(
                 [in_str], mcnpy.input_parser.block_type.BlockType.DATA
             )
             data_card = mcnpy.data_cards.data_card.DataCard(card)
@@ -289,7 +289,7 @@ bar
         # tests invalid names
         for in_str, answer in tests.items():
             with self.assertRaises(mcnpy.errors.MalformedInputError):
-                card = mcnpy.input_parser.mcnp_input.Card(
+                card = mcnpy.input_parser.mcnp_input.Input(
                     [in_str], mcnpy.input_parser.block_type.BlockType.DATA
                 )
                 card = DataCardTestFixture(card)
@@ -300,7 +300,7 @@ bar
 
         # tests valid names
         for in_str, answer in valid.items():
-            card = mcnpy.input_parser.mcnp_input.Card(
+            card = mcnpy.input_parser.mcnp_input.Input(
                 [in_str], mcnpy.input_parser.block_type.BlockType.DATA
             )
             card = DataCardTestFixture(card)
@@ -338,7 +338,7 @@ class DataCardTestFixture(mcnpy.data_cards.data_card.DataCardAbstract):
     def __init__(self, input_card=None, comment=None):
         """
         :param input_card: the Card object representing this data card
-        :type input_card: Card
+        :type input_card: Input
         :param comment: The Comment that may proceed this
         :type comment: Comment
         """

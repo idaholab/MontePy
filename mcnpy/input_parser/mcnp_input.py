@@ -36,7 +36,7 @@ class Jump:
         return type(self) == type(other)
 
 
-class MCNP_Input(ABC):
+class SyntaxNode(ABC):
     """
     Object to represent a single coherent MCNP input, such as a card.
     """
@@ -84,7 +84,7 @@ class MCNP_Input(ABC):
         pass
 
 
-class Card(MCNP_Input):
+class Input(SyntaxNode):
     """
     Represents a single MCNP "card" e.g. a single cell definition.
     """
@@ -240,7 +240,7 @@ def parse_card_shortcuts(words, card=None):
     return ret
 
 
-class ReadCard(Card):
+class ReadInput(Input):
     """
     A card for the read card that reads another input file
     """
@@ -268,7 +268,7 @@ class ReadCard(Card):
         return f"READ CARD: {self._block_type}: {self._words}"
 
 
-class Comment(MCNP_Input):
+class Comment(SyntaxNode):
     """
     Object to represent a full line comment in an MCNP problem.
     """
@@ -343,7 +343,7 @@ class Comment(MCNP_Input):
         self._cutting = True
 
 
-class Message(MCNP_Input):
+class Message(SyntaxNode):
     """
     Object to represent an MCNP message.
 
@@ -399,7 +399,7 @@ class Message(MCNP_Input):
         return ret
 
 
-class Title(MCNP_Input):
+class Title(SyntaxNode):
     """
     Object to represent the title for an MCNP problem
     """
