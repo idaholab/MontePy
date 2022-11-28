@@ -218,7 +218,12 @@ bar
                 "8",
                 "10",
             ],
-            ("M", "1", "2j", "4",): ["M", "1", mcnpy.Jump(), mcnpy.Jump(), "4"],
+            (
+                "M",
+                "1",
+                "2j",
+                "4",
+            ): ["M", "1", mcnpy.Jump(), mcnpy.Jump(), "4"],
         }
         invalid = [
             ("M", "3J", "4R"),
@@ -227,7 +232,10 @@ bar
             ("M", "1", "2Ilog", "J"),
             ("M", "3J", "2M"),
             ("M", "10", "M"),
-            ("M5", "2R",),
+            (
+                "M5",
+                "2R",
+            ),
         ]
 
         parser = mcnpy.input_parser.mcnp_input.parse_card_shortcuts
