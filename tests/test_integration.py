@@ -50,7 +50,7 @@ class testFullFileIntegration(TestCase):
         M = material.Material
         V = volume.Volume
         cards = [M, M, M, "KSRC", "KCODE", "PHYS:P", "MODE", V]
-        for i, card in enumerate(self.simple_problem.data_cards):
+        for i, card in enumerate(self.simple_problem.data_inputs):
             if isinstance(cards[i], str):
                 self.assertEqual(card.words[0].upper(), cards[i])
             else:
@@ -113,13 +113,13 @@ class testFullFileIntegration(TestCase):
             for i, surf in enumerate(self.simple_problem.surfaces):
                 num = surf.number
                 self.assertEqual(surf.number, test_problem.surfaces[num].number)
-            for i, data in enumerate(self.simple_problem.data_cards):
+            for i, data in enumerate(self.simple_problem.data_inputs):
                 if isinstance(data, material.Material):
-                    self.assertEqual(data.number, test_problem.data_cards[i].number)
+                    self.assertEqual(data.number, test_problem.data_inputs[i].number)
                 elif isinstance(data, volume.Volume):
-                    self.assertEqual(str(data), str(test_problem.data_cards[i]))
+                    self.assertEqual(str(data), str(test_problem.data_inputs[i]))
                 else:
-                    self.assertEqual(data.words, test_problem.data_cards[i].words)
+                    self.assertEqual(data.words, test_problem.data_inputs[i].words)
         finally:
             if os.path.exists(out):
                 os.remove(out)
@@ -199,7 +199,7 @@ class testFullFileIntegration(TestCase):
         problem.add_cell_children_to_problem()
         self.assertIn(surf, problem.surfaces)
         self.assertIn(mat, problem.materials)
-        self.assertIn(mat, problem.data_cards)
+        self.assertIn(mat, problem.data_inputs)
 
     def test_problem_mcnp_version_setter(self):
         problem = copy.copy(self.simple_problem)
@@ -238,7 +238,7 @@ class testFullFileIntegration(TestCase):
     def test_surface_transform(self):
         problem = mcnpy.read_input("tests/inputs/test_surfaces.imcnp")
         surf = problem.surfaces[1]
-        transform = problem.data_cards[0]
+        transform = problem.data_inputs[0]
         del surf.periodic_surface
         surf.transform = transform
         self.assertEqual(surf.transform, transform)

@@ -133,16 +133,16 @@ class MCNP_Problem:
     @property
     def print_in_data_block(self):
         """
-        Controls whether or not the specific card gets printed in the cell block or the data block.
+        Controls whether or not the specific input gets printed in the cell block or the data block.
         """
         return self._print_in_data_block
 
     @property
     def data_inputs(self):
         """
-        A list of the DataCard objects in this problem.
+        A list of the DataInput objects in this problem.
 
-        :return: a list of the DataCard objects, ordered by the order they were in the input file.
+        :return: a list of the DataInput objects, ordered by the order they were in the input file.
         :rtype: list
         """
         return self._data_inputs
@@ -186,35 +186,33 @@ class MCNP_Problem:
         Semantically parses the MCNP file provided to the constructor.
         """
         comment_queue = []
-        for i, input_card in enumerate(
+        for i, input in enumerate(
             input_syntax_reader.read_input_syntax(self._input_file, self.mcnp_version)
         ):
-            self._original_inputs.append(input_card)
-            if i == 0 and isinstance(input_card, mcnp_input.Message):
-                self._message = input_card
+            self._original_inputs.append(input)
+            if i == 0 and isinstance(input, mcnp_input.Message):
+                self._message = input
 
-            elif isinstance(input_card, mcnp_input.Title) and self._title is None:
-                self._title = input_card
+            elif isinstance(input, mcnp_input.Title) and self._title is None:
+                self._title = input
 
-            elif isinstance(input_card, mcnp_input.Comment):
+            elif isinstance(input, mcnp_input.Comment):
                 if len(comment_queue) > 0:
-                    input_card.snip()
-                comment_queue.append(input_card)
+                    input.snip()
+                comment_queue.append(input)
 
-            elif isinstance(input_card, mcnp_input.Input):
-                if len(input_card.words) > 0:
-                    if input_card.block_type == block_type.BlockType.CELL:
-                        cell = Cell(input_card, comment_queue)
+            elif isinstance(input, mcnp_input.Input):
+                if len(input.words) > 0:
+                    if input.block_type == block_type.BlockType.CELL:
+                        cell = Cell(input, comment_queue)
                         cell.link_to_problem(self)
                         self._cells.append(cell)
-                    if input_card.block_type == block_type.BlockType.SURFACE:
-                        surface = surface_builder.surface_builder(
-                            input_card, comment_queue
-                        )
+                    if input.block_type == block_type.BlockType.SURFACE:
+                        surface = surface_builder.surface_builder(input, comment_queue)
                         surface.link_to_problem(self)
                         self._surfaces.append(surface)
-                    if input_card.block_type == block_type.BlockType.DATA:
-                        data = parse_data(input_card, comment_queue)
+                    if input.block_type == block_type.BlockType.DATA:
+                        data = parse_data(input, comment_queue)
                         data.link_to_problem(self)
                         if isinstance(data, Material):
                             self._materials.append(data)
@@ -224,14 +222,14 @@ class MCNP_Problem:
 
     def __update_internal_pointers(self):
         """Updates the internal pointers between objects"""
-        self.__load_data_cards_to_object(self._data_inputs)
+        self.__load_data_inputs_to_object(self._data_inputs)
         self._cells.update_pointers(
             self.cells, self.materials, self.surfaces, self._data_inputs, self
         )
         for surface in self._surfaces:
             surface.update_pointers(self.surfaces, self._data_inputs)
-        for card in self._data_inputs:
-            card.update_pointers(self._data_inputs)
+        for input in self._data_inputs:
+            input.update_pointers(self._data_inputs)
 
     def remove_duplicate_surfaces(self, tolerance):
         """Finds duplicate surfaces in the problem, and remove them.
@@ -295,8 +293,8 @@ class MCNP_Problem:
                 for line in surface.format_for_mcnp_input(self.mcnp_version):
                     fh.write(line + "\n")
             fh.write("\n")
-            for card in self.data_inputs:
-                for line in card.format_for_mcnp_input(self.mcnp_version):
+            for input in self.data_inputs:
+                for line in input.format_for_mcnp_input(self.mcnp_version):
                     fh.write(line + "\n")
             for line in self.cells._run_children_format_for_mcnp(
                 self.data_inputs, self.mcnp_version
@@ -305,23 +303,23 @@ class MCNP_Problem:
 
             fh.write("\n")
 
-    def __load_data_cards_to_object(self, data_cards):
+    def __load_data_inputs_to_object(self, data_inputs):
         """
-        Loads data cards into their appropriate problem attribute.
+        Loads data input into their appropriate problem attribute.
 
-        Problem-level cards should be loaded this way like: mode and kcode.
+        Problem-level input should be loaded this way like: mode and kcode.
         """
-        cards_to_property = {mode.Mode: "_mode"}
-        cards_loaded = set()
-        for card in data_cards:
-            if type(card) in cards_to_property:
-                if type(card) in cards_loaded:
+        inputs_to_property = {mode.Mode: "_mode"}
+        inputs_loaded = set()
+        for input in data_inputs:
+            if type(input) in inputs_to_property:
+                if type(input) in inputs_loaded:
                     raise MalformedInputError(
-                        card,
-                        f"The card: {type(card)} is only allowed once in a problem",
+                        input,
+                        f"The input: {type(input)} is only allowed once in a problem",
                     )
-                setattr(self, cards_to_property[type(card)], card)
-                cards_loaded.add(type(card))
+                setattr(self, inputs_to_property[type(input)], input)
+                inputs_loaded.add(type(input))
 
     def __str__(self):
         ret = f"MCNP problem for: {self._input_file}\n"
@@ -330,7 +328,7 @@ class MCNP_Problem:
         ret += str(self._title) + "\n"
         for cell in self._cells:
             ret += str(cell) + "\n"
-        for data_card in self._data_inputs:
-            if not isinstance(data_card, Material):
-                ret += str(data_card) + "\n"
+        for input in self._data_inputs:
+            if not isinstance(input, Material):
+                ret += str(input) + "\n"
         return ret

@@ -36,7 +36,7 @@ class EdgeCaseTests(TestCase):
             ["MT5 lwtr.01t"],
             mcnpy.input_parser.block_type.BlockType.DATA,
         )
-        problem.data_cards.append(mcnpy.data_inputs.data_parser.parse_data(card))
+        problem.data_inputs.append(mcnpy.data_inputs.data_parser.parse_data(card))
         try:
             with self.assertRaises(MalformedInputError):
                 problem.write_to_file("out")
