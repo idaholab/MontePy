@@ -46,12 +46,16 @@ unit_test:
 doc_test:
    stage: test
    script:
-      - echo "Executing Sphinx build to detect syntax errors"
-      - sphinx-build doc/source/ doc/build/ -W --keep-going -E
+    - echo "setting up conda"
+    - conda activate experiment_analysis_mcnpy
+    - echo "Executing Sphinx build to detect syntax errors"
+    - sphinx-build doc/source/ doc/build/ -W --keep-going -E
 
 format_test:
   stage: test
   script: 
+    - echo "setting up conda"
+    - conda activate experiment_analysis_mcnpy
     - echo "Testing if anything is unformatted"
     - echo "If error occurs changes were not formatted using black"
     - python -m black --check mcnpy/ tests/
