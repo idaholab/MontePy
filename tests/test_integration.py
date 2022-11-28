@@ -528,7 +528,7 @@ class testFullFileIntegration(TestCase):
     def test_write_data_from_lines(self):
         out_file = "test_direct_data"
         problem = copy.deepcopy(self.simple_problem)
-        verbatim_line = " ".join(["lorem ipsum dolor sit amet"]*5)
+        verbatim_line = " ".join(["lorem ipsum dolor sit amet"] * 5)
         com = Comment(["c Custom data card passed through directly"])
         user_card = DataCard.fromLines([verbatim_line], comments=[com], verbatim=True)
         problem.append_data_card(user_card)

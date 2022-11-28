@@ -117,8 +117,8 @@ class testDataCardClass(TestCase):
         self.assertListEqual(lines, input_card.format_for_mcnp_input((6, 2, 0)))
 
     def test_mutated_data_card_from_long_lines(self):
-        lines = [" yee"*75]
-        words = ["yee"]*75
+        lines = [" yee" * 75]
+        words = ["yee"] * 75
         input_card = DataCard.fromLines(lines)
         wrapped_lines = input_card.format_for_mcnp_input((5, 1, 60))
         self.assertListEqual(words, input_card._words)
@@ -131,7 +131,7 @@ class testDataCardClass(TestCase):
         input_card = DataCard.fromLines(lines, verbatim=True)
         self.assertListEqual(words, input_card._words)
         self.assertListEqual(lines, input_card.format_for_mcnp_input((5, 1, 60)))
-    
+
     def test_volume_init_cell(self):
         vol = 1.0
         card = volume.Volume(key="VoL", value=str(vol), in_cell_block=True)
