@@ -29,7 +29,7 @@ class MCNP_Problem:
         self._original_inputs = []
         self._cells = Cells()
         self._surfaces = Surfaces()
-        self._data_cards = []
+        self._data_inputs = []
         self._materials = Materials()
         self._mcnp_version = DEFAULT_VERSION
         self._mode = mode.Mode()
@@ -138,14 +138,14 @@ class MCNP_Problem:
         return self._print_in_data_block
 
     @property
-    def data_cards(self):
+    def data_inputs(self):
         """
         A list of the DataCard objects in this problem.
 
         :return: a list of the DataCard objects, ordered by the order they were in the input file.
         :rtype: list
         """
-        return self._data_cards
+        return self._data_inputs
 
     @property
     def input_file(self):
@@ -218,20 +218,20 @@ class MCNP_Problem:
                         data.link_to_problem(self)
                         if isinstance(data, Material):
                             self._materials.append(data)
-                        self._data_cards.append(data)
+                        self._data_inputs.append(data)
                     comment_queue = []
         self.__update_internal_pointers()
 
     def __update_internal_pointers(self):
         """Updates the internal pointers between objects"""
-        self.__load_data_cards_to_object(self._data_cards)
+        self.__load_data_cards_to_object(self._data_inputs)
         self._cells.update_pointers(
-            self.cells, self.materials, self.surfaces, self._data_cards, self
+            self.cells, self.materials, self.surfaces, self._data_inputs, self
         )
         for surface in self._surfaces:
-            surface.update_pointers(self.surfaces, self._data_cards)
-        for card in self._data_cards:
-            card.update_pointers(self._data_cards)
+            surface.update_pointers(self.surfaces, self._data_inputs)
+        for card in self._data_inputs:
+            card.update_pointers(self._data_inputs)
 
     def remove_duplicate_surfaces(self, tolerance):
         """Finds duplicate surfaces in the problem, and remove them.
@@ -271,7 +271,7 @@ class MCNP_Problem:
         materials = sorted(list(materials))
         self._surfaces = Surfaces(surfaces)
         self._materials = Materials(materials)
-        self._data_cards = sorted(list(set(self._data_cards + materials)))
+        self._data_inputs = sorted(list(set(self._data_inputs + materials)))
 
     def write_to_file(self, new_problem):
         """
@@ -295,11 +295,11 @@ class MCNP_Problem:
                 for line in surface.format_for_mcnp_input(self.mcnp_version):
                     fh.write(line + "\n")
             fh.write("\n")
-            for card in self.data_cards:
+            for card in self.data_inputs:
                 for line in card.format_for_mcnp_input(self.mcnp_version):
                     fh.write(line + "\n")
             for line in self.cells._run_children_format_for_mcnp(
-                self.data_cards, self.mcnp_version
+                self.data_inputs, self.mcnp_version
             ):
                 fh.write(line + "\n")
 
@@ -330,7 +330,7 @@ class MCNP_Problem:
         ret += str(self._title) + "\n"
         for cell in self._cells:
             ret += str(cell) + "\n"
-        for data_card in self._data_cards:
+        for data_card in self._data_inputs:
             if not isinstance(data_card, Material):
                 ret += str(data_card) + "\n"
         return ret
