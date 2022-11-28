@@ -13,11 +13,11 @@ class CellModifierCard(DataInputAbstract):
     """
 
     def __init__(
-        self, input_card=None, comments=None, in_cell_block=False, key=None, value=None
+        self, input=None, comments=None, in_cell_block=False, key=None, value=None
     ):
         """
-        :param input_card: the Card object representing this data card
-        :type input_card: Input
+        :param input: the Card object representing this data card
+        :type input: Input
         :param comments: The list of Comments that may proceed this or be entwined with it.
         :type comments: list
         :param in_cell_block: if this card came from the cell block of an input file.
@@ -28,8 +28,8 @@ class CellModifierCard(DataInputAbstract):
         :type key: str
         """
         if key and value:
-            input_card = Input([f"{key} {value}"], BlockType.DATA)
-        super().__init__(input_card, comments)
+            input = Input([f"{key} {value}"], BlockType.DATA)
+        super().__init__(input, comments)
         if not isinstance(in_cell_block, bool):
             raise TypeError("in_cell_block must be a bool")
         if key and not isinstance(key, str):

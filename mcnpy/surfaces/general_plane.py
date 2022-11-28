@@ -7,8 +7,8 @@ class GeneralPlane(Surface):
     Represents P
     """
 
-    def __init__(self, input_card, comment=None):
-        super().__init__(input_card, comment)
+    def __init__(self, input, comment=None):
+        super().__init__(input, comment)
         if self.surface_type != SurfaceType.P:
             raise ValueError("A GeneralPlane must be a surface of type P")
         if len(self.surface_constants) not in {4, 9}:

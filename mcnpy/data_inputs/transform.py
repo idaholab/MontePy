@@ -11,9 +11,9 @@ class Transform(data_input.DataInputAbstract):
     Card to represent a transform card (TR)
     """
 
-    def __init__(self, input_card=None, comment=None):
-        super().__init__(input_card, comment)
-        if input_card is None:
+    def __init__(self, input=None, comment=None):
+        super().__init__(input, comment)
+        if input is None:
             self._transform_number = -1
             self._old_transform_number = -1
             self._displacement_vector = np.array([])
@@ -24,9 +24,7 @@ class Transform(data_input.DataInputAbstract):
             words = self.words
             i = 0
             if len(words) < 3:
-                raise MalformedInputError(
-                    input_card, f"Not enough entries were provided"
-                )
+                raise MalformedInputError(input, f"Not enough entries were provided")
             if self.prefix_modifier and "*" in self.prefix_modifier:
                 self._is_in_degrees = True
             else:
@@ -47,7 +45,7 @@ class Transform(data_input.DataInputAbstract):
 
             except ValueError:
                 raise MalformedInputError(
-                    input_card,
+                    input,
                     f"{word} can't be parsed as a displacement vector component",
                 )
 
@@ -62,7 +60,7 @@ class Transform(data_input.DataInputAbstract):
                 self._rotation_matrix = np.array(values)
             except ValueError:
                 raise MalformedInputError(
-                    input_card, f"{word} can't be parsed as a rotation matrix component"
+                    input, f"{word} can't be parsed as a rotation matrix component"
                 )
 
             self._is_main_to_aux = True
@@ -76,7 +74,7 @@ class Transform(data_input.DataInputAbstract):
                         self._is_main_to_aux = False
                     else:
                         raise MalformedInputError(
-                            input_card, f"{word} can't be parsed as 1 or -1"
+                            input, f"{word} can't be parsed as 1 or -1"
                         )
                 # if no more words remain don't worry
                 except IndexError:

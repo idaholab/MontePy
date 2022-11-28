@@ -9,24 +9,24 @@ import textwrap
 
 class MCNP_Input(ABC):
     """
-    Abstract class for semantic representations of MCNP input cards.
+    Abstract class for semantic representations of MCNP inputs.
     """
 
-    def __init__(self, input_card, comments=None):
+    def __init__(self, input, comments=None):
         """
-        :param input_card: The Card syntax object this will wrap and parse.
-        :type input_card: Card
-        :param comments: The Comments that proceeded this card or were inside of this if any
+        :param input: The Input syntax object this will wrap and parse.
+        :type input: Input
+        :param comments: The Comments that proceeded this input or were inside of this if any
         :type Comments: list
         """
         self._problem = None
         self._parameters = {}
-        if input_card:
-            if not isinstance(input_card, mcnpy.input_parser.mcnp_input.Input):
-                raise TypeError("input_card must be a Card")
+        if input:
+            if not isinstance(input, mcnpy.input_parser.mcnp_input.Input):
+                raise TypeError("input must be an Input")
             if not isinstance(comments, (list, Comment, type(None))):
                 raise TypeError("comments must be either a Comment, a list, or None")
-            self._words = input_card.words
+            self._words = input.words
             self._parse_key_value_pairs()
             if isinstance(comments, list):
                 for comment in comments:
@@ -36,7 +36,7 @@ class MCNP_Input(ABC):
                         )
             elif isinstance(comments, Comment):
                 comments = [comments]
-            self._input_lines = input_card.input_lines
+            self._input_lines = input.input_lines
             self._mutated = False
         else:
             self._input_lines = []
@@ -89,12 +89,12 @@ class MCNP_Input(ABC):
     @abstractmethod
     def format_for_mcnp_input(self, mcnp_version):
         """
-        Creates a string representation of this card that can be
+        Creates a string representation of this MCNP_Input that can be
         written to file.
 
         :param mcnp_version: The tuple for the MCNP version that must be exported to.
         :type mcnp_version: tuple
-        :return: a list of strings for the lines that this card will occupy.
+        :return: a list of strings for the lines that this input will occupy.
         :rtype: list
         """
         ret = []
@@ -108,14 +108,14 @@ class MCNP_Input(ABC):
 
     def _format_for_mcnp_unmutated(self, mcnp_version):
         """
-        Creates a string representation of this card that can be
-        written to file when the card did not mutate.
+        Creates a string representation of this input that can be
+        written to file when the input did not mutate.
 
         TODO add to developer's guide.
 
         :param mcnp_version: The tuple for the MCNP version that must be exported to.
         :type mcnp_version: tuple
-        :return: a list of strings for the lines that this card will occupy.
+        :return: a list of strings for the lines that this input will occupy.
         :rtype: list
         """
         ret = []
@@ -123,7 +123,7 @@ class MCNP_Input(ABC):
         if self.comments:
             for comment in self.comments:
                 if comment.is_cutting_comment:
-                    comments_dict[comment.card_line] = comment
+                    comments_dict[comment.input_line_num] = comment
             ret += self.comments[0].format_for_mcnp_input(mcnp_version)
         for i, line in enumerate(self.input_lines):
             if i in comments_dict:
@@ -134,7 +134,7 @@ class MCNP_Input(ABC):
     @property
     def comments(self):
         """
-        The preceding comment block to this card if any.
+        The preceding comment block to this input if any.
 
         :rtype: Comment
         """
@@ -164,7 +164,7 @@ class MCNP_Input(ABC):
 
     @property
     def mutated(self):
-        """True if the user has changed a property of this card
+        """True if the user has changed a property of this input
 
         :rtype: bool
         """
@@ -174,7 +174,7 @@ class MCNP_Input(ABC):
     @abstractmethod
     def allowed_keywords(self):
         """
-        The allowed keywords for this class of MCNP_Card.
+        The allowed keywords for this class of MCNP_Input.
 
         The allowed keywords need to be in upper case.
 
@@ -188,15 +188,15 @@ class MCNP_Input(ABC):
         """
         Wraps the list of the words to be a well formed MCNP input.
 
-        multi-line cards will be handled by using the indentation format,
+        multi-line inputs will be handled by using the indentation format,
         and not the "&" method.
 
-        :param words: A list of the "words" or data-grams that needed to added to this card.
+        :param words: A list of the "words" or data-grams that needed to added to this input.
                       Each word will be separated by at least one space.
         :type words: list
         :param mcnp_version: the tuple for the MCNP that must be formatted for.
         :type mcnp_version: tuple
-        :param is_first_line: If true this will be the beginning of an MCNP card.
+        :param is_first_line: If true this will be the beginning of an MCNP Input.
                              The first line will not be indented.
         :type is_first_line: bool
         :returns: A list of strings that can be written to an input file, one item to a line.
@@ -210,14 +210,14 @@ class MCNP_Input(ABC):
         """
         Wraps the list of the words to be a well formed MCNP input.
 
-        multi-line cards will be handled by using the indentation format,
+        multi-line inputs will be handled by using the indentation format,
         and not the "&" method.
 
         :param string: A long string that needs to be chunked appropriately for MCNP inputs
         :type string: str
         :param mcnp_version: the tuple for the MCNP that must be formatted for.
         :type mcnp_version: tuple
-        :param is_first_line: If true this will be the beginning of an MCNP card.
+        :param is_first_line: If true this will be the beginning of an MCNP input.
                              The first line will not be indented.
         :type is_first_line: bool
         :returns: A list of strings that can be written to an input file, one item to a line.
@@ -311,17 +311,17 @@ class MCNP_Input(ABC):
     @property
     def words(self):
         """
-        The words from the input file for this card.
+        The words from the input file for this input.
 
         """
         return self._words
 
     def link_to_problem(self, problem):
-        """Links the card to the parent problem for this card.
+        """Links the input to the parent problem for this input.
 
-        This is done so that cards can find links to other objects.
+        This is done so that inputs can find links to other objects.
 
-        :param problem: The problem to link this card to.
+        :param problem: The problem to link this input to.
         :type problem: MCNP_Problem
         """
         if not isinstance(problem, mcnpy.mcnp_problem.MCNP_Problem):

@@ -7,15 +7,15 @@ class Mode(DataInputAbstract):
     Class for the particle mode for a problem.
     """
 
-    def __init__(self, input_card=None, comments=None):
+    def __init__(self, input=None, comments=None):
         """
-        :param input_card: the Card object representing this data card
-        :type input_card: Card
+        :param input: the Card object representing this data card
+        :type input: Card
         :param comments: The Comment that may proceed this
         :type comments: Comment
         """
-        super().__init__(input_card, comments)
-        if input_card:
+        super().__init__(input, comments)
+        if input:
             self._particles = set()
             self._parse_and_override_particle_modes(self.words[1:])
         else:

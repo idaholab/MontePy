@@ -19,18 +19,18 @@ class Material(data_input.DataInputAbstract):
     A class to represent an MCNP material.
     """
 
-    def __init__(self, input_card=None, comment=None):
+    def __init__(self, input=None, comment=None):
         """
-        :param input_card: the input card that contains the data
-        :type input_card: Card
+        :param input: the input card that contains the data
+        :type input: Card
         :param comment: The comment card that preceded this card if any.
         :type comment: Comment
         """
-        super().__init__(input_card, comment)
+        super().__init__(input, comment)
         self._material_components = {}
         self._thermal_scattering = None
         self._material_number = -1
-        if input_card:
+        if input:
             words = self.words
             # material numbers
             num = self._input_number
@@ -51,7 +51,7 @@ class Material(data_input.DataInputAbstract):
                     break
                 except ValueError:
                     raise MalformedInputError(
-                        input_card,
+                        input,
                         f"{fraction} could not be parsed as a material fraction",
                     )
                 if not set_atom_frac:
@@ -66,7 +66,7 @@ class Material(data_input.DataInputAbstract):
                         fraction < 0 and self._is_atom_fraction
                     ):
                         raise MalformedInputError(
-                            input_card,
+                            input,
                             "Material definitons cannot use atom and mass fraction at the same time",
                         )
                 self._material_components[isotope] = MaterialComponent(

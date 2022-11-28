@@ -7,15 +7,15 @@ class CylinderOnAxis(Surface):
     Represents surfaces: CX, CY, CZ
     """
 
-    def __init__(self, input_card, comment=None):
+    def __init__(self, input, comment=None):
         """
-        :param input_card: The Card object representing the input
-        :type input_card: Card
+        :param input: The Card object representing the input
+        :type input: Card
         :param comment: the Comment object representing the
                         preceding comment block.
         :type comment: Comment
         """
-        super().__init__(input_card, comment)
+        super().__init__(input, comment)
         ST = SurfaceType
         if self.surface_type not in [ST.CX, ST.CY, ST.CZ]:
             raise ValueError("CylinderOnAxis must be of surface_type: CX, CY, CZ")

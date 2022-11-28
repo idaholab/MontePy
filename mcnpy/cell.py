@@ -43,14 +43,14 @@ class Cell(MCNP_Input):
         volume.Volume: ("_volume", True),
     }
 
-    def __init__(self, input_card=None, comment=None):
+    def __init__(self, input=None, comment=None):
         """
-        :param input_card: the Card input for the cell definition
-        :type input_card: Card
+        :param input: the Card input for the cell definition
+        :type input: Card
         :param comment: the Comment block that preceded this blog if any.
         :type comment: Comment
         """
-        super().__init__(input_card, comment)
+        super().__init__(input, comment)
         self._material = None
         self._old_cell_number = None
         self._load_blank_modifiers()
@@ -62,8 +62,8 @@ class Cell(MCNP_Input):
         self._complements = Cells()
         self._old_complement_numbers = set()
         self._cell_number = -1
-        if input_card:
-            words = input_card.words
+        if input:
+            words = input.words
             i = 0
             # cell number
             try:
@@ -73,7 +73,7 @@ class Cell(MCNP_Input):
                 i += 1
             except ValueError:
                 raise MalformedInputError(
-                    input_card, f"{words[0]} can not be parsed as a cell number."
+                    input, f"{words[0]} can not be parsed as a cell number."
                 )
             if words[i].lower() == "like":
                 raise UnsupportedFeature(
@@ -87,7 +87,7 @@ class Cell(MCNP_Input):
 
             except ValueError:
                 raise MalformedInputError(
-                    input_card, f"{words[1]} can not be parsed as a material number."
+                    input, f"{words[1]} can not be parsed as a material number."
                 )
             # density
             if mat_num > 0:
@@ -102,7 +102,7 @@ class Cell(MCNP_Input):
 
                 except ValueError:
                     raise MalformedInputError(
-                        input_card,
+                        input,
                         f"{words[2]} can not be parsed as a material density.",
                     )
             self._parse_geometry(i, words)

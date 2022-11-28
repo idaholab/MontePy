@@ -273,12 +273,12 @@ class Comment(SyntaxNode):
     Object to represent a full line comment in an MCNP problem.
     """
 
-    def __init__(self, input_lines, card_line=0):
+    def __init__(self, input_lines, input_line_num=0):
         """
         :param input_lines: the lines read straight from the input file.
         :type input_lines: list
-        :param card_line: The line number in a parent input card where this Comment appeared
-        :type card_line: int
+        :param input_line_num: The line number in a parent input card where this Comment appeared
+        :type input_line_num: int
         """
         super().__init__(input_lines)
         buff = []
@@ -293,7 +293,7 @@ class Comment(SyntaxNode):
             buff.append(comment_line)
         self._lines = buff
         self._cutting = False
-        self._card_line = card_line
+        self._input_line_num = input_line_num
 
     def __str__(self):
         return f"COMMENT: {len(self._lines)} lines"
@@ -330,11 +330,11 @@ class Comment(SyntaxNode):
         return self._cutting
 
     @property
-    def card_line(self):
+    def input_line_num(self):
         """
-        Which line of the parent card this comment came from.
+        Which line of the parent input this comment came from.
         """
-        return self._card_line
+        return self._input_line_num
 
     def snip(self):
         """

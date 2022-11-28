@@ -41,16 +41,16 @@ class DataInputAbstract(MCNP_Input):
         re.I,
     )
 
-    def __init__(self, input_card=None, comments=None):
+    def __init__(self, input=None, comments=None):
         """
-        :param input_card: the Card object representing this data card
-        :type input_card: Card
+        :param input: the Card object representing this data card
+        :type input: Card
         :param comments: The list of Comments that may proceed this or be entwined with it.
         :type comments: list
         """
-        super().__init__(input_card, comments)
-        if input_card:
-            self._words = input_card.words
+        super().__init__(input, comments)
+        if input:
+            self._words = input.words
             self.__split_name()
         else:
             self._words = []

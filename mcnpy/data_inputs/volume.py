@@ -11,9 +11,9 @@ class Volume(CellModifierCard):
     """
 
     def __init__(
-        self, input_card=None, comments=None, in_cell_block=False, key=None, value=None
+        self, input=None, comments=None, in_cell_block=False, key=None, value=None
     ):
-        super().__init__(input_card, comments, in_cell_block, key, value)
+        super().__init__(input, comments, in_cell_block, key, value)
         self._volume = None
         self._calc_by_mcnp = True
         if self.in_cell_block:
@@ -27,7 +27,7 @@ class Volume(CellModifierCard):
                     )
                 self._volume = value
                 self._calc_by_mcnp = False
-        elif input_card:
+        elif input:
             self._volume = []
             words = self.words[1:]
             if self.words[1].lower() == "no":
@@ -41,7 +41,7 @@ class Volume(CellModifierCard):
                         self._volume.append(value)
                     except (ValueError, AssertionError) as e:
                         raise MalformedInputError(
-                            input_card, f"Cell volumes by a number ≥ 0.0: {word} given"
+                            input, f"Cell volumes by a number ≥ 0.0: {word} given"
                         )
                 elif isinstance(word, Jump):
                     self._volume.append(word)

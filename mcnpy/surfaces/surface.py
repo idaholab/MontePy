@@ -11,16 +11,16 @@ class Surface(MCNP_Input):
     Object to hold a single MCNP surface
     """
 
-    def __init__(self, input_card, comment=None):
+    def __init__(self, input, comment=None):
         """
-        :param input_card: The Card object representing the input
-        :type input_card: Card
+        :param input: The Card object representing the input
+        :type input: Card
         :param comment: the Comment object representing the
                         preceding comment block.
         :type comment: Comment
         """
-        super().__init__(input_card, comment)
-        words = input_card.words
+        super().__init__(input, comment)
+        words = input.words
         self._periodic_surface = None
         self._old_periodic_surface = None
         self._transform = None
@@ -47,7 +47,7 @@ class Surface(MCNP_Input):
             self._old_surface_number = surface_num
         except (AssertionError, ValueError):
             raise MalformedInputError(
-                input_card, f"{words[i]} could not be parsed as a surface number."
+                input, f"{words[i]} could not be parsed as a surface number."
             )
         i += 1
         num_finder = re.compile(r"\d+")
@@ -62,7 +62,7 @@ class Surface(MCNP_Input):
                 i += 1
             except ValueError:
                 raise MalformedInputError(
-                    input_card,
+                    input,
                     f"{words[i]} could not be parsed as a periodic surface or a transform.",
                 )
         # parse surface mnemonic
@@ -70,7 +70,7 @@ class Surface(MCNP_Input):
             self._surface_type = SurfaceType(words[i].upper())
         except ValueError:
             raise MalformedInputError(
-                input_card,
+                input,
                 f"{words[i]} could not be parsed as a surface type mnemonic.",
             )
         # parse the parameters
@@ -80,7 +80,7 @@ class Surface(MCNP_Input):
                 self._surface_constants.append(fortran_float(entry))
             except ValueError:
                 raise MalformedInputError(
-                    input_card,
+                    input,
                     f"{entry} could not be parsed as a surface constant.",
                 )
 

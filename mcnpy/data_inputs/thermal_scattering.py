@@ -9,14 +9,14 @@ class ThermalScatteringLaw(DataInputAbstract):
     Class to hold MT cards
     """
 
-    def __init__(self, input_card="", comment=None, material=None):
+    def __init__(self, input="", comment=None, material=None):
         """
         This is designed to be called two ways.
 
         The first is with a read input file using input_card, comment
         The second is after a read with a material and a comment (using named inputs)
-        :param input_card: the Card object representing this data card
-        :type input_card: Card
+        :param input: the Card object representing this data card
+        :type input: Card
         :param comment: The Comment that may proceed this
         :type comment: Comment
         :param material: the parent Material object that owns this
@@ -25,8 +25,8 @@ class ThermalScatteringLaw(DataInputAbstract):
         self._old_material_number = None
         self._parent_material = None
         self._scattering_laws = []
-        if input_card:
-            super().__init__(input_card, comment)
+        if input:
+            super().__init__(input, comment)
             words = self.words
             self._old_material_number = self._input_number
             self._scattering_laws = self.words[1:]
