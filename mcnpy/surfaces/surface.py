@@ -80,7 +80,8 @@ class Surface(MCNP_Card):
                 self._surface_constants.append(fortran_float(entry))
             except ValueError:
                 raise MalformedInputError(
-                    input_card, f"{entry} could not be parsed as a surface constant.",
+                    input_card,
+                    f"{entry} could not be parsed as a surface constant.",
                 )
 
     @property
@@ -281,7 +282,10 @@ class Surface(MCNP_Card):
                         self._transform = card
             if not self.transform:
                 raise BrokenObjectLinkError(
-                    "Surface", self.number, "Transform", self.old_transform_number,
+                    "Surface",
+                    self.number,
+                    "Transform",
+                    self.old_transform_number,
                 )
 
     def validate(self):
