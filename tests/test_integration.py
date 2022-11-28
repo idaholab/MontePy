@@ -190,7 +190,7 @@ class testFullFileIntegration(TestCase):
         surf = mcnpy.surfaces.surface_builder.surface_builder(card)
         in_str = "M5 6000.70c 1.0"
         card = mcnpy.input_parser.mcnp_input.Input([in_str], BT.SURFACE)
-        mat = mcnpy.data_cards.material.Material(card, None)
+        mat = mcnpy.data_inputs.material.Material(card, None)
         cell = mcnpy.Cell()
         cell.material = mat
         cell.surfaces = [surf]

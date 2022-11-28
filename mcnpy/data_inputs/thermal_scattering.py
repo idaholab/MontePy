@@ -119,7 +119,7 @@ class ThermalScatteringLaw(DataInputAbstract):
         """
         found = False
         for card in data_cards:
-            if isinstance(card, mcnpy.data_cards.material.Material):
+            if isinstance(card, mcnpy.data_inputs.material.Material):
                 if card.number == self.old_number:
                     found = True
 

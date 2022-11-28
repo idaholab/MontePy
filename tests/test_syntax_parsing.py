@@ -248,7 +248,7 @@ bar
             with self.assertRaises(mcnpy.errors.MalformedInputError):
                 parser(list(test))
 
-    def testDataCardNameParsing(self):
+    def testDataInputNameParsing(self):
         tests = {
             "kcOde": {"prefix": "kcode", "number": None, "classifier": None},
             "M300": {"prefix": "m", "number": 300, "classifier": None},
@@ -268,12 +268,12 @@ bar
             card = mcnpy.input_parser.mcnp_input.Input(
                 [in_str], mcnpy.input_parser.block_type.BlockType.DATA
             )
-            data_input = mcnpy.data_inputs.data_input.DataCard(card)
+            data_input = mcnpy.data_inputs.data_input.DataInput(card)
             self.assertEqual(data_input.prefix, answer["prefix"])
             self.assertEqual(data_input._input_number, answer["number"])
             self.assertEqual(data_input.particle_classifiers, answer["classifier"])
 
-    def testDataCardNameEnforcement(self):
+    def testDataInputNameEnforcement(self):
         tests = {
             "kcOde5": {"prefix": "kcode", "number": False, "classifier": 0},
             "M-300": {"prefix": "m", "number": True, "classifier": 0},
@@ -292,7 +292,7 @@ bar
                 card = mcnpy.input_parser.mcnp_input.Input(
                     [in_str], mcnpy.input_parser.block_type.BlockType.DATA
                 )
-                card = DataCardTestFixture(card)
+                card = DataInputTestFixture(card)
                 card._class_prefix = answer["prefix"]
                 card._has_number = answer["number"]
                 card._has_classifier = answer["classifier"]
@@ -303,7 +303,7 @@ bar
             card = mcnpy.input_parser.mcnp_input.Input(
                 [in_str], mcnpy.input_parser.block_type.BlockType.DATA
             )
-            card = DataCardTestFixture(card)
+            card = DataInputTestFixture(card)
             card._class_prefix = answer["prefix"]
             card._has_number = answer["number"]
             card._has_classifier = answer["classifier"]
@@ -334,7 +334,7 @@ bar
             bool(jump)
 
 
-class DataCardTestFixture(mcnpy.data_inputs.data_input.DataInputAbstract):
+class DataInputTestFixture(mcnpy.data_inputs.data_input.DataInputAbstract):
     def __init__(self, input_card=None, comment=None):
         """
         :param input_card: the Card object representing this data card

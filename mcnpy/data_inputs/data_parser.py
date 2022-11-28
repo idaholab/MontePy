@@ -31,7 +31,7 @@ def parse_data(input_card, comment=None):
     :rtype: DataCard
     """
 
-    base_card = data_input.DataCard(input_card, comment)
+    base_card = data_input.DataInput(input_card, comment)
     prefix = base_card.prefix
 
     for match, data_class in PREFIX_MATCHES.items():

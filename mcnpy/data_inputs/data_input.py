@@ -157,7 +157,7 @@ class DataInputAbstract(MCNP_Input):
     def format_for_mcnp_input(self, mcnp_version):
         ret = super().format_for_mcnp_input(mcnp_version)
         if self.mutated:
-            ret += DataCard.wrap_words_for_mcnp(self.words, mcnp_version, True)
+            ret += DataInput.wrap_words_for_mcnp(self.words, mcnp_version, True)
         else:
             ret = self._format_for_mcnp_unmutated(mcnp_version)
         return ret
