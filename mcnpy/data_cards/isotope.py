@@ -7,8 +7,8 @@ class Isotope:
     A class to represent an MCNP isotope
     """
 
-    #                    Br-101   Cl-52     Xe-150      Os-203    Cm-251     Og-296
-    _BOUNDING_CURVE = [(35, 101), (17, 52), (54, 150), (76, 203), (96, 251), (118, 296)]
+    #                   Cl-52      Br-101     Xe-150      Os-203    Cm-251     Og-296
+    _BOUNDING_CURVE = [(17, 52), (35, 101), (54, 150), (76, 203), (96, 251), (118, 296)]
     """
     Points on bounding curve for determining if "valid" isotope
     """
