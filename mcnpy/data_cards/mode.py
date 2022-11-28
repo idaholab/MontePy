@@ -1,8 +1,8 @@
-from mcnpy.data_cards.data_card import DataCardAbstract
+from mcnpy.data_cards.data_card import DataInputAbstract
 from mcnpy.particle import Particle
 
 
-class Mode(DataCardAbstract):
+class Mode(DataInputAbstract):
     """
     Class for the particle mode for a problem.
     """

@@ -1,4 +1,4 @@
-from mcnpy import mcnp_card
+from mcnpy import mcnp_input
 from mcnpy.data_cards import data_card
 from mcnpy.errors import *
 from mcnpy.utilities import *
@@ -6,7 +6,7 @@ import numpy as np
 import re
 
 
-class Transform(data_card.DataCardAbstract):
+class Transform(data_card.DataInputAbstract):
     """
     Card to represent a transform card (TR)
     """
@@ -204,7 +204,7 @@ class Transform(data_card.DataCardAbstract):
         return ret
 
     def format_for_mcnp_input(self, mcnp_version):
-        ret = mcnp_card.MCNP_Card.format_for_mcnp_input(self, mcnp_version)
+        ret = mcnp_input.MCNP_Input.format_for_mcnp_input(self, mcnp_version)
         if self.mutated:
             buff_list = []
             if self.is_in_degrees:

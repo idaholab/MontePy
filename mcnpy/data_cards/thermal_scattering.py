@@ -1,10 +1,10 @@
-from mcnpy.data_cards.data_card import DataCardAbstract
-from mcnpy import mcnp_card
+from mcnpy.data_cards.data_card import DataInputAbstract
+from mcnpy import mcnp_input
 from mcnpy.errors import *
 import mcnpy
 
 
-class ThermalScatteringLaw(DataCardAbstract):
+class ThermalScatteringLaw(DataInputAbstract):
     """
     Class to hold MT cards
     """
@@ -92,7 +92,7 @@ class ThermalScatteringLaw(DataCardAbstract):
         self._scattering_laws.append(law)
 
     def format_for_mcnp_input(self, mcnp_version):
-        ret = mcnp_card.MCNP_Card.format_for_mcnp_input(self, mcnp_version)
+        ret = mcnp_input.MCNP_Input.format_for_mcnp_input(self, mcnp_version)
         mutated = self.mutated
         if not self.parent_material:
             raise MalformedInputError(

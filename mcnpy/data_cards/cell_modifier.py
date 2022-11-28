@@ -1,11 +1,11 @@
 from abc import abstractmethod
 import mcnpy
-from mcnpy.data_cards.data_card import DataCardAbstract
+from mcnpy.data_cards.data_card import DataInputAbstract
 from mcnpy.input_parser.block_type import BlockType
 from mcnpy.input_parser.mcnp_input import Input
 
 
-class CellModifierCard(DataCardAbstract):
+class CellModifierCard(DataInputAbstract):
     """
     Abstract Parent class for Data Cards that modify cells/ geometry.
 

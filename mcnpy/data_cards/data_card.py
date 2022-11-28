@@ -1,11 +1,11 @@
 from abc import abstractmethod
 from mcnpy.errors import *
 from mcnpy.particle import Particle
-from mcnpy.mcnp_card import MCNP_Card
+from mcnpy.mcnp_input import MCNP_Input
 import re
 
 
-class DataCardAbstract(MCNP_Card):
+class DataInputAbstract(MCNP_Input):
     """
     Parent class to describe all MCNP data inputs.
     """
@@ -200,7 +200,7 @@ class DataCardAbstract(MCNP_Card):
         else:
             self._input_number = None
         self._prefix = match_dict["prefix"]
-        self._classifiers = DataCardAbstract._parse_particle_classifiers(
+        self._classifiers = DataInputAbstract._parse_particle_classifiers(
             match_dict["classifier"]
         )
         self._modifier = match_dict["modifier"]
@@ -271,7 +271,7 @@ class DataCardAbstract(MCNP_Card):
             return self._input_number < other._input_number
 
 
-class DataCard(DataCardAbstract):
+class DataCard(DataInputAbstract):
     @property
     def class_prefix(self):
         return None

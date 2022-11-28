@@ -1,12 +1,12 @@
 from mcnpy.errors import *
 from mcnpy.data_cards import transform
-from mcnpy.mcnp_card import MCNP_Card
+from mcnpy.mcnp_input import MCNP_Input
 from mcnpy.surfaces.surface_type import SurfaceType
 from mcnpy.utilities import *
 import re
 
 
-class Surface(MCNP_Card):
+class Surface(MCNP_Input):
     """
     Object to hold a single MCNP surface
     """

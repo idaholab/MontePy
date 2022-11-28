@@ -2,7 +2,7 @@ from mcnpy.data_cards.cell_modifier import CellModifierCard
 from mcnpy.errors import *
 from mcnpy.input_parser.constants import DEFAULT_VERSION
 from mcnpy.input_parser.mcnp_input import Jump
-from mcnpy.mcnp_card import MCNP_Card
+from mcnpy.mcnp_input import MCNP_Input
 
 
 class Volume(CellModifierCard):
@@ -174,7 +174,7 @@ class Volume(CellModifierCard):
                         mutated = True
                         break
             if mutated and self._problem.print_in_data_block["VOL"]:
-                ret = MCNP_Card.format_for_mcnp_input(self, mcnp_version)
+                ret = MCNP_Input.format_for_mcnp_input(self, mcnp_version)
                 ret_strs = ["VOL"]
                 if not self.is_mcnp_calculated:
                     ret_strs.append("NO")

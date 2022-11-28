@@ -3,7 +3,7 @@ from mcnpy.cells import Cells
 from mcnpy.data_cards import importance, volume
 from mcnpy.data_cards.data_parser import PREFIX_MATCHES
 from mcnpy.errors import *
-from mcnpy.mcnp_card import MCNP_Card
+from mcnpy.mcnp_input import MCNP_Input
 from mcnpy.data_cards.material import Material
 from mcnpy.surfaces.surface import Surface
 from mcnpy.surface_collection import Surfaces
@@ -12,7 +12,7 @@ import re
 import numbers
 
 
-class Cell(MCNP_Card):
+class Cell(MCNP_Input):
     """
     Object to represent a single MCNP cell defined in CGS.
 

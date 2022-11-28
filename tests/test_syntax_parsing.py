@@ -296,7 +296,7 @@ bar
                 card._class_prefix = answer["prefix"]
                 card._has_number = answer["number"]
                 card._has_classifier = answer["classifier"]
-                card._DataCardAbstract__split_name()
+                card._DataInputAbstract__split_name()
 
         # tests valid names
         for in_str, answer in valid.items():
@@ -307,7 +307,7 @@ bar
             card._class_prefix = answer["prefix"]
             card._has_number = answer["number"]
             card._has_classifier = answer["classifier"]
-            card._DataCardAbstract__split_name()
+            card._DataInputAbstract__split_name()
 
     def test_get_line_numbers(self):
         answers = {
@@ -334,7 +334,7 @@ bar
             bool(jump)
 
 
-class DataCardTestFixture(mcnpy.data_cards.data_card.DataCardAbstract):
+class DataCardTestFixture(mcnpy.data_cards.data_card.DataInputAbstract):
     def __init__(self, input_card=None, comment=None):
         """
         :param input_card: the Card object representing this data card

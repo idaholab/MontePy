@@ -7,7 +7,7 @@ import numpy as np
 import textwrap
 
 
-class MCNP_Card(ABC):
+class MCNP_Input(ABC):
     """
     Abstract class for semantic representations of MCNP input cards.
     """
@@ -203,7 +203,7 @@ class MCNP_Card(ABC):
         :rtype: list
         """
         string = " ".join(words)
-        return MCNP_Card.wrap_string_for_mcnp(string, mcnp_version, is_first_line)
+        return MCNP_Input.wrap_string_for_mcnp(string, mcnp_version, is_first_line)
 
     @staticmethod
     def wrap_string_for_mcnp(string, mcnp_version, is_first_line):
