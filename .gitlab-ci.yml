@@ -3,6 +3,8 @@ image: python:latest
 before_script:
   - python --version
   - export PATH="/data/gitlab-runner/.conda/envs/experiment_analysis_mcnpy/bin:$PATH"
+  - echo $PATH
+  - ls /data/gitlab-runner/.conda/envs/experiment_analysis_mcnpy/bin
   - conda activate experiment_analysis_mcnpy
 
 
