@@ -72,7 +72,7 @@ class CellModifierCard(DataInputAbstract):
         if self._problem:
             if not self.in_cell_block:
                 for cell in self._problem.cells:
-                    attr = mcnpy.Cell._CARDS_TO_PROPERTY[type(self)][0]
+                    attr = mcnpy.Cell._INPUTS_TO_PROPERTY[type(self)][0]
                     set_in_cell_block = getattr(cell, attr).set_in_cell_block
                     break
             else:
@@ -112,7 +112,7 @@ class CellModifierCard(DataInputAbstract):
         """
         Checks that data wasn't given in data block and the cell block.
         """
-        attr, _ = mcnpy.Cell._CARDS_TO_PROPERTY[type(self)]
+        attr, _ = mcnpy.Cell._INPUTS_TO_PROPERTY[type(self)]
         if not self._in_cell_block and self._problem:
             cells = self._problem.cells
             for cell in cells:

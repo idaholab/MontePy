@@ -58,7 +58,7 @@ class Cells(NumberedObjectCollection):
         self._volume.is_mcnp_calculated = value
 
     def update_pointers(self, cells, materials, surfaces, data_inputs, problem):
-        inputs_to_property = mcnpy.Cell._CARDS_TO_PROPERTY
+        inputs_to_property = mcnpy.Cell._INPUTS_TO_PROPERTY
         inputs_loaded = set()
         # make a copy of the list
         for input in list(data_inputs):
@@ -95,7 +95,7 @@ class Cells(NumberedObjectCollection):
 
     def _run_children_format_for_mcnp(self, data_inputs, mcnp_version):
         ret = []
-        for attr, _ in mcnpy.Cell._CARDS_TO_PROPERTY.values():
+        for attr, _ in mcnpy.Cell._INPUTS_TO_PROPERTY.values():
             if getattr(self, attr) not in data_inputs:
                 ret += getattr(self, attr).format_for_mcnp_input(mcnp_version)
         return ret

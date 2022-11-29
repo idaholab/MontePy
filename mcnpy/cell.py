@@ -38,15 +38,15 @@ class Cell(MCNP_Input):
         "BFLCL",
         "UNC",
     }
-    _CARDS_TO_PROPERTY = {
+    _INPUTS_TO_PROPERTY = {
         importance.Importance: ("_importance", False),
         volume.Volume: ("_volume", True),
     }
 
     def __init__(self, input=None, comment=None):
         """
-        :param input: the Card input for the cell definition
-        :type input: Card
+        :param input: the input for the cell definition
+        :type input: Input
         :param comment: the Comment block that preceded this blog if any.
         :type comment: Comment
         """
@@ -77,7 +77,7 @@ class Cell(MCNP_Input):
                 )
             if words[i].lower() == "like":
                 raise UnsupportedFeature(
-                    "Currently the LIKE option in cell cards is unsupported"
+                    "Currently the LIKE option in cell inputs is unsupported"
                 )
             # material
             try:
@@ -112,7 +112,7 @@ class Cell(MCNP_Input):
         """
         Parses the cell's geometry definition, and stores it
 
-        :param words: list of the input card words
+        :param words: list of the input words
         :type words: list
         :param i: the index of the first geometry word
         :type i: int
@@ -141,28 +141,28 @@ class Cell(MCNP_Input):
         Parses the parameters to make the object and load as an attribute
         """
         for key, value in dict(self._parameters).items():
-            for prefix, card_class in PREFIX_MATCHES.items():
+            for prefix, input_class in PREFIX_MATCHES.items():
                 if (
-                    card_class in Cell._CARDS_TO_PROPERTY
+                    input_class in Cell._INPUTS_TO_PROPERTY
                     and prefix.upper() in key.upper()
                 ):
-                    attr, ban_repeat = Cell._CARDS_TO_PROPERTY[card_class]
+                    attr, ban_repeat = Cell._INPUTS_TO_PROPERTY[input_class]
                     del self._parameters[key]
-                    card = card_class(in_cell_block=True, key=key, value=value)
+                    input = input_class(in_cell_block=True, key=key, value=value)
                     if not getattr(self, attr).set_in_cell_block:
-                        setattr(self, attr, card)
+                        setattr(self, attr, input)
                     else:
                         if not ban_repeat:
                             getattr(self, attr).merge(
-                                card_class(in_cell_block=True, key=key, value=value)
+                                input_class(in_cell_block=True, key=key, value=value)
                             )
 
     def _load_blank_modifiers(self):
         """
         Goes through and populates all the modifier attributes
         """
-        for card_class, (attr, foo) in self._CARDS_TO_PROPERTY.items():
-            setattr(self, attr, card_class(in_cell_block=True))
+        for input_class, (attr, foo) in self._INPUTS_TO_PROPERTY.items():
+            setattr(self, attr, input_class(in_cell_block=True))
 
     @property
     def allowed_keywords(self):
@@ -570,7 +570,7 @@ class Cell(MCNP_Input):
 
     @property
     def modifier_block_print_changed(self):
-        for attr, _ in Cell._CARDS_TO_PROPERTY.values():
+        for attr, _ in Cell._INPUTS_TO_PROPERTY.values():
             if hasattr(self, attr):
                 if getattr(self, attr).has_changed_print_style:
                     return True
@@ -612,7 +612,7 @@ class Cell(MCNP_Input):
                 Yes this is hacky voodoo.
                 We don't know if it's necessary, but are too scared to remove it.
                 The goal is to make sure that the FILL parameter is always the last 
-                one on a cell card.
+                one on a cell input.
 
                 This is based on a superstition that MCNP is less likely to crash when 
                 data is given this way; but we just don't know.
@@ -629,7 +629,7 @@ class Cell(MCNP_Input):
                         value = " ".join(value)
                     strings.append(f"{key}={value}")
                 ret += Cell.wrap_words_for_mcnp(strings, mcnp_version, False)
-            for attr, _ in Cell._CARDS_TO_PROPERTY.values():
+            for attr, _ in Cell._INPUTS_TO_PROPERTY.values():
                 if hasattr(self, attr):
                     if (
                         self._problem
@@ -644,10 +644,10 @@ class Cell(MCNP_Input):
 
     def link_to_problem(self, problem):
         super().link_to_problem(problem)
-        for attr, _ in Cell._CARDS_TO_PROPERTY.values():
-            card = getattr(self, attr, None)
-            if card:
-                card.link_to_problem(problem)
+        for attr, _ in Cell._INPUTS_TO_PROPERTY.values():
+            input = getattr(self, attr, None)
+            if input:
+                input.link_to_problem(problem)
 
     def __str__(self):
         if self.material:
