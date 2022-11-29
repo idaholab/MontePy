@@ -12,8 +12,8 @@ class MalformedInputError(ValueError):
     Raised when there is an error parsing the MCNP input
     """
 
-    def __init__(self, card, message):
-        self.message = message + "\n the full input: \n " + str(card)
+    def __init__(self, input, message):
+        self.message = message + "\n the full input: \n " + str(input)
         super().__init__(self.message)
 
 
