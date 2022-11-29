@@ -211,8 +211,8 @@ To add a problem level data Object you need to
 1. Add it ``cards_to_property``. The key will be the object class, and the value will be a string for the attribute it should be loaded to.
 1. Add a property that exposes this attribute in a desirable way.
 
-Data Cards that Modify Cells :class:`mcnpy.data_cards.cell_modifier.CellModifierInput`
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Data Cards that Modify Cells :class:`mcnpy.data_inputs.cell_modifier.CellModifierInput`
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 This is a subclass of ``DataCardAbstract`` that is meant to handle data cards that specify information about,
 and modify cells.
 For example ``IMP`` changes the importance of a cell and ``VOL`` specifies its volume.
