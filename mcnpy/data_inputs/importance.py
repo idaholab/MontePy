@@ -1,4 +1,4 @@
-from mcnpy.data_inputs.cell_modifier import CellModifierCard
+from mcnpy.data_inputs.cell_modifier import CellModifierInput
 from mcnpy.errors import *
 from mcnpy.input_parser.constants import DEFAULT_VERSION
 from mcnpy.mcnp_input import MCNP_Input
@@ -6,7 +6,7 @@ from mcnpy.particle import Particle
 import numbers
 
 
-class Importance(CellModifierCard):
+class Importance(CellModifierInput):
     """
     A data input that sets the importance for a cell(s).
     """

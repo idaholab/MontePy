@@ -5,9 +5,9 @@ from mcnpy.input_parser.block_type import BlockType
 from mcnpy.input_parser.mcnp_input import Input
 
 
-class CellModifierCard(DataInputAbstract):
+class CellModifierInput(DataInputAbstract):
     """
-    Abstract Parent class for Data Cards that modify cells/ geometry.
+    Abstract Parent class for Data Inputs that modify cells/ geometry.
 
     Examples: IMP, VOL, etc.
     """
@@ -16,11 +16,11 @@ class CellModifierCard(DataInputAbstract):
         self, input=None, comments=None, in_cell_block=False, key=None, value=None
     ):
         """
-        :param input: the Card object representing this data card
+        :param input: the Input object representing this data input
         :type input: Input
         :param comments: The list of Comments that may proceed this or be entwined with it.
         :type comments: list
-        :param in_cell_block: if this card came from the cell block of an input file.
+        :param in_cell_block: if this input came from the cell block of an input file.
         :type in_cell_block: bool
         :param key: the key from the key-value pair in a cell
         :type key: str
@@ -85,9 +85,9 @@ class CellModifierCard(DataInputAbstract):
             return False
 
     @abstractmethod
-    def merge(self, card):
+    def merge(self, input):
         """
-        Merges the data from another card of same type into this one.
+        Merges the data from another input of same type into this one.
         """
         pass
 

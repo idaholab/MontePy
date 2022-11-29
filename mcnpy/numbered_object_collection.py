@@ -351,7 +351,7 @@ class NumberedObjectCollection(ABC):
         """
         Get iterator of the collections (number, object) pairs.
 
-        :rtype: tuple(int, MCNP_Card)
+        :rtype: tuple(int, MCNP_Input)
         """
         for o in self._objects:
             yield o.number, o

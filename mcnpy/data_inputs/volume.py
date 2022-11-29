@@ -1,11 +1,11 @@
-from mcnpy.data_inputs.cell_modifier import CellModifierCard
+from mcnpy.data_inputs.cell_modifier import CellModifierInput
 from mcnpy.errors import *
 from mcnpy.input_parser.constants import DEFAULT_VERSION
 from mcnpy.input_parser.mcnp_input import Jump
 from mcnpy.mcnp_input import MCNP_Input
 
 
-class Volume(CellModifierCard):
+class Volume(CellModifierInput):
     """
     Class for the data input that modifies cell volumes; ``VOL``.
     """
