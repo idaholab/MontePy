@@ -7,12 +7,6 @@ from mcnpy.utilities import *
 import itertools
 import re
 
-"""
-TODO
--only consume cards that are consumed
--How to handle cells
-"""
-
 
 class Material(data_input.DataInputAbstract):
     """
@@ -21,9 +15,9 @@ class Material(data_input.DataInputAbstract):
 
     def __init__(self, input=None, comment=None):
         """
-        :param input: the input card that contains the data
-        :type input: Card
-        :param comment: The comment card that preceded this card if any.
+        :param input: the input that contains the data
+        :type input: Input
+        :param comment: The comment  that preceded this input if any.
         :type comment: Comment
         """
         super().__init__(input, comment)
@@ -178,20 +172,20 @@ class Material(data_input.DataInputAbstract):
         )
         self._thermal_scattering.add_scattering_law(law)
 
-    def update_pointers(self, data_cards):
+    def update_pointers(self, data_inputs):
         """
         Updates pointer to the thermal scattering data
 
-        :param data_cards: a list of the data cards in the problem
-        :type data_cards: list
+        :param data_inputs: a list of the data inputs in the problem
+        :type data_inputs: list
         """
-        for card in list(data_cards):
-            if isinstance(card, thermal_scattering.ThermalScatteringLaw):
-                if card.old_number == self.number:
+        for input in list(data_inputs):
+            if isinstance(input, thermal_scattering.ThermalScatteringLaw):
+                if input.old_number == self.number:
                     if not self._thermal_scattering:
-                        self._thermal_scattering = card
-                        card._parent_material = self
-                        data_cards.remove(card)
+                        self._thermal_scattering = input
+                        input._parent_material = self
+                        data_inputs.remove(input)
                     else:
                         raise MalformedInputError(
                             self, "Multiple MT inputs were specified for this material."

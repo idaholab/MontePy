@@ -19,22 +19,22 @@ PREFIX_MATCHES = {
 }
 
 
-def parse_data(input_card, comment=None):
+def parse_data(input, comment=None):
     """
-    Parses the data card as the appropriate object if it is supported.
+    Parses the data input as the appropriate object if it is supported.
 
-    :param input_card: the Card object for this Data card
-    :type input_card: Card
+    :param input: the Input object for this Data input
+    :type input: Input
     :param comment: the Comment that may proceed this.
     :type comment: Comment
-    :return: the parsed DataCard object
-    :rtype: DataCard
+    :return: the parsed DataInput object
+    :rtype: DataInput
     """
 
-    base_card = data_input.DataInput(input_card, comment)
-    prefix = base_card.prefix
+    base_input = data_input.DataInput(input, comment)
+    prefix = base_input.prefix
 
     for match, data_class in PREFIX_MATCHES.items():
         if prefix == match:
-            return data_class(input_card, comment)
-    return base_card
+            return data_class(input, comment)
+    return base_input

@@ -9,8 +9,8 @@ class Mode(DataInputAbstract):
 
     def __init__(self, input=None, comments=None):
         """
-        :param input: the Card object representing this data card
-        :type input: Card
+        :param input: the Input object representing this data input
+        :type input: Input
         :param comments: The Comment that may proceed this
         :type comments: Comment
         """

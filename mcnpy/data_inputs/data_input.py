@@ -43,8 +43,8 @@ class DataInputAbstract(MCNP_Input):
 
     def __init__(self, input=None, comments=None):
         """
-        :param input: the Card object representing this data card
-        :type input: Card
+        :param input: the Input object representing this data input
+        :type input: Input
         :param comments: The list of Comments that may proceed this or be entwined with it.
         :type comments: list
         """
@@ -62,7 +62,7 @@ class DataInputAbstract(MCNP_Input):
     @property
     def words(self):
         """
-        The words of the data card, not parsed.
+        The words of the data input, not parsed.
 
         :rtype: list
         """
@@ -81,13 +81,13 @@ class DataInputAbstract(MCNP_Input):
     @property
     @abstractmethod
     def class_prefix(self):
-        """The text part of the card identifier.
+        """The text part of the input identifier.
 
         For example: for a material the prefix is ``m``
 
         this must be lower case
 
-        :returns: the string of the prefix that identifies a card of this class.
+        :returns: the string of the prefix that identifies a input of this class.
         :rtype: str
         """
         pass
@@ -122,7 +122,7 @@ class DataInputAbstract(MCNP_Input):
 
     @property
     def particle_classifiers(self):
-        """The particle class part of the card identifier as a parsed list
+        """The particle class part of the input identifier as a parsed list
 
         For example: the classifier for ``F7:n`` is ``:n``, and ``imp:n,p`` is ``:n,p``
         This will be parsed as a list: ``[<Particle.NEUTRON: 'N'>, <Particle.PHOTON: 'P'>]``.
@@ -135,7 +135,7 @@ class DataInputAbstract(MCNP_Input):
 
     @property
     def prefix(self):
-        """The text part of the card identifier.
+        """The text part of the input identifier.
 
         For example: for a material like: m20 the prefix is 'm'
 
@@ -162,28 +162,28 @@ class DataInputAbstract(MCNP_Input):
             ret = self._format_for_mcnp_unmutated(mcnp_version)
         return ret
 
-    def update_pointers(self, data_cards):
+    def update_pointers(self, data_inputs):
         """
-        Connects data cards to each other
+        Connects data inputs to each other
 
-        :param data_cards: a list of the data cards in the problem
-        :type data_cards: list
+        :param data_inputs: a list of the data inputs in the problem
+        :type data_inputs: list
         """
         pass
 
     def __str__(self):
-        return f"DATA CARD: {self._words}"
+        return f"DATA INPUT: {self._words}"
 
     def __split_name(self):
         """
-        Parses the name of the data card as a prefix, number, and a particle classifier.
+        Parses the name of the data input as a prefix, number, and a particle classifier.
 
         This populates the properties:
             prefix
             _input_number
             classifier
 
-        :raises MalformedInputError: if the name is invalid for this DataCard
+        :raises MalformedInputError: if the name is invalid for this DataInput
 
         """
         name = self._words[0]
@@ -211,7 +211,7 @@ class DataInputAbstract(MCNP_Input):
 
         :param match_dict: the matching dictionary from the parsing regex.
         :type match_dict: dict
-        :raises MalformedInputError: if the name is invalid for this DataCard
+        :raises MalformedInputError: if the name is invalid for this DataInput
         """
         if self.class_prefix:
             if match_dict["prefix"].lower() != self.class_prefix:
@@ -249,7 +249,7 @@ class DataInputAbstract(MCNP_Input):
         Interprets ``:n,p`` (from ``imp:n,p``) as:
             ``[<Particle.NEUTRON: 'N'>, <Particle.PHOTON: 'P'>]``
 
-        :param classifier_str: the input classifier string from the card name.
+        :param classifier_str: the input classifier string from the input name.
         :type classifier_str: str
         :returns: a list of the ParticleTypes in the classifier
         :rtype: list

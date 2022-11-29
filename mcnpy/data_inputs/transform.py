@@ -8,7 +8,7 @@ import re
 
 class Transform(data_input.DataInputAbstract):
     """
-    Card to represent a transform card (TR)
+    Input to represent a transform input (TR)
     """
 
     def __init__(self, input=None, comment=None):

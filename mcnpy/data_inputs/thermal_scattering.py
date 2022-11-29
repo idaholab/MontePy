@@ -6,7 +6,7 @@ import mcnpy
 
 class ThermalScatteringLaw(DataInputAbstract):
     """
-    Class to hold MT cards
+    Class to hold MT Inputs
     """
 
     def __init__(self, input="", comment=None, material=None):
@@ -15,8 +15,8 @@ class ThermalScatteringLaw(DataInputAbstract):
 
         The first is with a read input file using input, comment
         The second is after a read with a material and a comment (using named inputs)
-        :param input: the Card object representing this data card
-        :type input: Card
+        :param input: the Input object representing this data input
+        :type input: Input
         :param comment: The Comment that may proceed this
         :type comment: Comment
         :param material: the parent Material object that owns this
@@ -110,17 +110,17 @@ class ThermalScatteringLaw(DataInputAbstract):
             ret = self._format_for_mcnp_unmutated(mcnp_version)
         return ret
 
-    def update_pointers(self, data_cards):
+    def update_pointers(self, data_inputs):
         """
         Updates pointer to the thermal scattering data
 
-        :param data_cards: a list of the data cards in the problem
-        :type data_cards: list
+        :param data_inputs: a list of the data inputs in the problem
+        :type data_inputs: list
         """
         found = False
-        for card in data_cards:
-            if isinstance(card, mcnpy.data_inputs.material.Material):
-                if card.number == self.old_number:
+        for input in data_inputs:
+            if isinstance(input, mcnpy.data_inputs.material.Material):
+                if input.number == self.old_number:
                     found = True
 
         if not found:

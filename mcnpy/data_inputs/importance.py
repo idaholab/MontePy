@@ -15,11 +15,11 @@ class Importance(CellModifierInput):
         self, input=None, comments=None, in_cell_block=False, key=None, value=None
     ):
         """
-        :param input: the Card object representing this data card
-        :type input: Card
+        :param input: the input object representing this data input
+        :type input: Input
         :param comments: The list of Comments that may proceed this or be entwined with it.
         :type comments: list
-        :param in_cell_block: if this card came from the cell block of an input file.
+        :param in_cell_block: if this Input came from the cell block of an input file.
         :type in_cell_block: bool
         :param key: the key from the key-value pair in a cell
         :type key: str
@@ -78,7 +78,8 @@ class Importance(CellModifierInput):
                 self._particle_importances[particle] = other[particle]
             else:
                 raise MalformedInputError(
-                    other, "Cannot have two importance cards for the same particle type"
+                    other,
+                    "Cannot have two importance inputs for the same particle type",
                 )
 
     def __iter__(self):
