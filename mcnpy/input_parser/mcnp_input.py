@@ -38,7 +38,7 @@ class Jump:
 
 class SyntaxNode(ABC):
     """
-    Object to represent a single coherent MCNP input, such as a card.
+    Object to represent a single coherent MCNP input, such as an input.
     """
 
     def __init__(self, input_lines):
@@ -73,12 +73,12 @@ class SyntaxNode(ABC):
     @abstractmethod
     def format_for_mcnp_input(self, mcnp_version):
         """
-        Creates a string representation of this card that can be
+        Creates a string representation of this input that can be
         written to file.
 
         :param mcnp_version: The tuple for the MCNP version that must be exported to.
         :type mcnp_version: tuple
-        :return: a list of strings for the lines that this card will occupy.
+        :return: a list of strings for the lines that this input will occupy.
         :rtype: list
         """
         pass
@@ -86,7 +86,7 @@ class SyntaxNode(ABC):
 
 class Input(SyntaxNode):
     """
-    Represents a single MCNP "card" e.g. a single cell definition.
+    Represents a single MCNP "Input" e.g. a single cell definition.
     """
 
     SPECIAL_COMMENT_PREFIXES = ["fc", "sc"]
@@ -112,18 +112,18 @@ class Input(SyntaxNode):
             if prefix in words[0].lower():
                 found = True
         if not found:
-            self._words = parse_card_shortcuts(words, self)
+            self._words = parse_input_shortcuts(words, self)
 
     def __str__(self):
-        return f"CARD: {self._block_type}"
+        return f"INPUT: {self._block_type}"
 
     def __repr__(self):
-        return f"CARD: {self._block_type}: {self._words}"
+        return f"INPUT: {self._block_type}: {self._words}"
 
     @property
     def words(self):
         """
-        A list of the string representation of the words for the card definition.
+        A list of the string representation of the words for the input definition.
 
         For example a material definition may contain: 'M10', '10001.70c', '0.1'
         :rtype: list
@@ -142,7 +142,7 @@ class Input(SyntaxNode):
         pass
 
 
-def parse_card_shortcuts(words, card=None):
+def parse_input_shortcuts(words, input=None):
     number_parser = re.compile(r"(\d+\.*\d*[e\+\-]*\d*)")
     ret = []
     for i, word in enumerate(words):
@@ -167,7 +167,7 @@ def parse_card_shortcuts(words, card=None):
                     ret += [last_val] * number
                 except (IndexError, AssertionError) as e:
                     raise MalformedInputError(
-                        card, "The repeat shortcut must come after a value"
+                        input, "The repeat shortcut must come after a value"
                     )
             elif letters == "i":
                 try:
@@ -188,7 +188,7 @@ def parse_card_shortcuts(words, card=None):
                         ret.append(f"{new_val:g}")
                 except (IndexError, TypeError, ValueError, AttributeError) as e:
                     raise MalformedInputError(
-                        card,
+                        input,
                         "The interpolate shortcut must come between two values",
                     )
             elif letters == "m":
@@ -196,7 +196,7 @@ def parse_card_shortcuts(words, card=None):
                     last_val = float(number_parser.search(ret[-1]).group(1))
                     if number is None:
                         raise MalformedInputError(
-                            card,
+                            input,
                             "The multiply shortcut must have a multiplying value",
                         )
                     new_val = number * last_val
@@ -204,7 +204,7 @@ def parse_card_shortcuts(words, card=None):
 
                 except (IndexError, TypeError, ValueError, AttributeError) as e:
                     raise MalformedInputError(
-                        card, "The multiply shortcut must come after a value"
+                        input, "The multiply shortcut must come after a value"
                     )
 
             elif letters == "j":
@@ -230,7 +230,7 @@ def parse_card_shortcuts(words, card=None):
 
                 except (IndexError, TypeError, ValueError, AttributeError) as e:
                     raise MalformedInputError(
-                        card,
+                        input,
                         "The log interpolation shortcut must come between two values",
                     )
             else:
@@ -242,7 +242,7 @@ def parse_card_shortcuts(words, card=None):
 
 class ReadInput(Input):
     """
-    A card for the read card that reads another input file
+    A input for the read input that reads another input file
     """
 
     def __init__(self, input_lines, block_type):
@@ -256,16 +256,16 @@ class ReadInput(Input):
     @property
     def file_name(self):
         """
-        The relative path to the filename specified in this read card.
+        The relative path to the filename specified in this read input.
         :rtype: str
         """
         return self._file_name
 
     def __str__(self):
-        return f"READ CARD: Block_Type: {self.block_type}"
+        return f"READ INPUT: Block_Type: {self.block_type}"
 
     def __repr__(self):
-        return f"READ CARD: {self._block_type}: {self._words}"
+        return f"READ INPUT: {self._block_type}: {self._words}"
 
 
 class Comment(SyntaxNode):
@@ -277,7 +277,7 @@ class Comment(SyntaxNode):
         """
         :param input_lines: the lines read straight from the input file.
         :type input_lines: list
-        :param input_line_num: The line number in a parent input card where this Comment appeared
+        :param input_line_num: The line number in a parent input input where this Comment appeared
         :type input_line_num: int
         """
         super().__init__(input_lines)
@@ -325,7 +325,7 @@ class Comment(SyntaxNode):
     @property
     def is_cutting_comment(self):
         """
-        Whether or not this Comment "cuts" an input card.
+        Whether or not this Comment "cuts" an input input.
         """
         return self._cutting
 

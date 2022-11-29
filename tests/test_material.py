@@ -160,7 +160,7 @@ class TestIsotope(TestCase):
 
 class TestThermalScattering(TestCase):
     def test_thermal_scattering_init(self):
-        # test wrong card type assertion
+        # test wrong input type assertion
         input_card = Input(["M20"], BlockType.DATA)
         with self.assertRaises(MalformedInputError):
             ThermalScatteringLaw(input_card)

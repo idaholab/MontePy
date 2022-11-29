@@ -275,7 +275,7 @@ class testFullFileIntegration(TestCase):
     def test_surface_card_pass_through(self):
         problem = mcnpy.read_input("tests/inputs/test_surfaces.imcnp")
         surf = problem.surfaces[1]
-        # Test card pass through
+        # Test input pass through
         answer = ["1 -2 SO -5"]
         self.assertEqual(surf.format_for_mcnp_input((6, 2, 0)), answer)
         # Test changing periodic surface
@@ -317,7 +317,7 @@ class testFullFileIntegration(TestCase):
     def test_cell_card_pass_through(self):
         problem = copy.deepcopy(self.simple_problem)
         cell = problem.cells[1]
-        # test card pass-through
+        # test input pass-through
         answer = [
             "C cells",
             "C ",

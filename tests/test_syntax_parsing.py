@@ -104,7 +104,7 @@ c bop
         test_string = "read file=foo.imcnp "
         with StringIO(test_string) as fh:
             card = next(input_syntax_reader.read_data(fh, (6, 2, 0)))
-            self.assertIsNone(card)  # the read card is hidden from the user
+            self.assertIsNone(card)  # the read input is hidden from the user
 
     def testBlockId(self):
         test_string = "1 0 -1"
@@ -238,7 +238,7 @@ bar
             ),
         ]
 
-        parser = mcnpy.input_parser.mcnp_input.parse_card_shortcuts
+        parser = mcnpy.input_parser.mcnp_input.parse_input_shortcuts
         for test, answer in tests.items():
             print(test)
             parsed = parser(list(test))
@@ -337,7 +337,7 @@ bar
 class DataInputTestFixture(mcnpy.data_inputs.data_input.DataInputAbstract):
     def __init__(self, input_card=None, comment=None):
         """
-        :param input_card: the Card object representing this data card
+        :param input_card: the Card object representing this data input
         :type input_card: Input
         :param comment: The Comment that may proceed this
         :type comment: Comment
