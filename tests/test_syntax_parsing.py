@@ -46,9 +46,9 @@ test title
 
     def testReadCardStr(self):
         card = ReadInput(["Read file=hi.imcnp"], BlockType.CELL)
-        self.assertEqual(str(card), "READ CARD: Block_Type: BlockType.CELL")
+        self.assertEqual(str(card), "READ INPUT: Block_Type: BlockType.CELL")
         self.assertEqual(
-            repr(card), "READ CARD: BlockType.CELL: ['Read', 'file=hi.imcnp']"
+            repr(card), "READ INPUT: BlockType.CELL: ['Read', 'file=hi.imcnp']"
         )
 
     def testTitleFinder(self):
@@ -193,8 +193,8 @@ bar
         card = mcnpy.input_parser.mcnp_input.Input(
             [in_str], mcnpy.input_parser.block_type.BlockType.CELL
         )
-        self.assertEqual(str(card), "CARD: BlockType.CELL")
-        self.assertEqual(repr(card), "CARD: BlockType.CELL: ['1', '0', '-1']")
+        self.assertEqual(str(card), "INPUT: BlockType.CELL")
+        self.assertEqual(repr(card), "INPUT: BlockType.CELL: ['1', '0', '-1']")
 
     def testShortcutExpansion(self):
         tests = {
