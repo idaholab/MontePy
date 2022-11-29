@@ -13,7 +13,7 @@ reading_queue = []
 
 def read_input_syntax(input_file, mcnp_version=DEFAULT_VERSION):
     """
-    Creates a generator function to return a new MCNP input card for
+    Creates a generator function to return a new MCNP input for
     every new one that is encountered.
 
     This is meant to just handle the MCNP input syntax, it does not
@@ -88,12 +88,12 @@ def read_data(fh, mcnp_version, block_type=None, recursion=False):
     :type fh: io.TextIoWrapper
     :param mcnp_version: The version of MCNP that the input is intended for.
     :type mcnp_version: tuple
-    :param block_type: The type of block this file is in. This is only used with partial files read using the ReadCard.
+    :param block_type: The type of block this file is in. This is only used with partial files read using the ReadInput.
     :type block_type: BlockType
     :param recursion: Whether or not this is being called recursively. If True this has been called
                          from read_data. This prevents the reading queue causing infinite recursion.
     :type recursion: bool
-    :return: MCNP_input instances, Card or Comment that represent the data in the MCNP input
+    :return: MCNP_input instances, Input or Comment that represent the data in the MCNP input
     :rtype: MCNP_input
 
     """
@@ -102,14 +102,14 @@ def read_data(fh, mcnp_version, block_type=None, recursion=False):
     if block_type is None:
         block_type = BlockType.CELL
     is_in_comment = False
-    continue_card = False
+    continue_input = False
     comment_raw_lines = []
-    card_raw_lines = []
+    input_raw_lines = []
 
     def flush_block():
         nonlocal block_counter, block_type, comment_raw_lines
-        if len(card_raw_lines) > 0:
-            yield from flush_card()
+        if len(input_raw_lines) > 0:
+            yield from flush_input()
         if is_in_comment and comment_raw_lines:
             yield from flush_comment()
         block_counter += 1
@@ -119,21 +119,21 @@ def read_data(fh, mcnp_version, block_type=None, recursion=False):
     def flush_comment():
         nonlocal comment_raw_lines
         words = []
-        yield Comment(comment_raw_lines, len(card_raw_lines))
+        yield Comment(comment_raw_lines, len(input_raw_lines))
         comment_raw_lines = []
         is_in_comment = False
 
-    def flush_card():
-        nonlocal card_raw_lines
-        card = Input(card_raw_lines, block_type)
-        if len(card.words) > 0 and card.words[0].lower() == "read":
-            card = ReadInput(card_raw_lines, block_type)
-            reading_queue.append((block_type, card.file_name))
+    def flush_input():
+        nonlocal input_raw_lines
+        input = Input(input_raw_lines, block_type)
+        if len(input.words) > 0 and input.words[0].lower() == "read":
+            input = ReadInput(input_raw_lines, block_type)
+            reading_queue.append((block_type, input.file_name))
             yield None
         else:
-            yield card
-        continue_card = False
-        card_raw_lines = []
+            yield input
+        continue_input = False
+        input_raw_lines = []
 
     def is_comment(line):
         upper_start = line[0 : BLANK_SPACE_CONTINUE + 1].upper()
@@ -152,15 +152,15 @@ def read_data(fh, mcnp_version, block_type=None, recursion=False):
         if is_comment(line):
             comment_raw_lines.append(line.rstrip()[:line_length])
             is_in_comment = True
-        # if it's part of a card
+        # if it's part of an input
         else:
-            # if a new card
+            # if a new input
             if (
                 line[0:BLANK_SPACE_CONTINUE].strip()
-                and not continue_card
-                and card_raw_lines
+                and not continue_input
+                and input_raw_lines
             ):
-                yield from flush_card()
+                yield from flush_input()
             # just terminated a comment
             if is_in_comment and comment_raw_lines:
                 yield from flush_comment()
@@ -178,10 +178,10 @@ def read_data(fh, mcnp_version, block_type=None, recursion=False):
                     errors.LineOverRunWarning,
                 )
             if line.endswith(" &\n"):
-                continue_card = True
+                continue_input = True
             else:
-                continue_card = False
-            card_raw_lines.append(line.rstrip())
+                continue_input = False
+            input_raw_lines.append(line.rstrip())
     yield from flush_block()
 
     if not recursion:
@@ -191,5 +191,5 @@ def read_data(fh, mcnp_version, block_type=None, recursion=False):
             while reading_queue:
                 block_type, file_name = reading_queue.popleft()
                 with open(os.path.join(path, file_name), "r") as sub_fh:
-                    for input_card in read_data(sub_fh, mcnp_version, block_type, True):
-                        yield input_card
+                    for input in read_data(sub_fh, mcnp_version, block_type, True):
+                        yield input
