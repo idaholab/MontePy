@@ -13,8 +13,8 @@ class Surface(MCNP_Input):
 
     def __init__(self, input, comment=None):
         """
-        :param input: The Card object representing the input
-        :type input: Card
+        :param input: The Input object representing the input
+        :type input: Input
         :param comment: the Comment object representing the
                         preceding comment block.
         :type comment: Comment
@@ -258,7 +258,7 @@ class Surface(MCNP_Input):
             f"constants: {self.surface_constants}"
         )
 
-    def update_pointers(self, surface_dict, data_cards):
+    def update_pointers(self, surface_dict, data_inputs):
         """
         Updates the internal pointers to the appropriate objects.
 
@@ -276,10 +276,10 @@ class Surface(MCNP_Input):
                     self.old_periodic_surface,
                 )
         if self.old_transform_number:
-            for card in data_cards:
-                if isinstance(card, transform.Transform):
-                    if card.number == self.old_transform_number:
-                        self._transform = card
+            for input in data_inputs:
+                if isinstance(input, transform.Transform):
+                    if input.number == self.old_transform_number:
+                        self._transform = input
             if not self.transform:
                 raise BrokenObjectLinkError(
                     "Surface",

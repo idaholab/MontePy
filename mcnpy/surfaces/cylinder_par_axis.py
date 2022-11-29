@@ -15,8 +15,8 @@ class CylinderParAxis(Surface):
 
     def __init__(self, input, comment=None):
         """
-        :param input: The Card object representing the input
-        :type input: Card
+        :param input: The Input object representing the input
+        :type input: Input
         :param comment: the Comment object representing the
                         preceding comment block.
         :type comment: Comment
