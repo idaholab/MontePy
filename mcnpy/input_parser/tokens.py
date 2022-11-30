@@ -13,23 +13,26 @@ class ParseStatus(Enum):
 
 
 def tokenize(input):
-    _TOKEN_ORDER = [DataToken, SeperatorToken, CommentToken]
-    class_iter = itertools.cycle(_TOKEN_ORDER)
+    _TOKEN_ORDER = [CommentToken, DataToken, SeperatorToken]
+    class_iter = iter(_TOKEN_ORDER)
     current_token = None
     letters = deque(input)
     while True:
         try:
             char = letters.popleft()
-        except StopIteration:
+        except IndexError:
             break
         if current_token is None:
             current_token = next(class_iter)()
         status, overflow = current_token.matches(char)
         if status in {ParseStatus.COMPLETE, ParseStatus.FAILED}:
             if status == ParseStatus.COMPLETE:
+                class_iter = iter(_TOKEN_ORDER)
                 yield current_token
             current_token = next(class_iter)()
-            letters.appendleft(overflow)
+            if len(overflow) > 0:
+                for char in overflow[::-1]:
+                    letters.appendleft(char)
 
 
 class Token(SyntaxNode):
@@ -84,7 +87,7 @@ class DataToken(Token):
             return (ParseStatus.INCOMPLETE, "")
         elif len(self._buffer) > 0 and char in self._ALLOWED_SECOND_CHAR:
             return (ParseStatus.INCOMPLETE, "")
-        elif char.isspace() or char in self._TERMINATORS:
+        elif len(self._buffer) > 1 and (char.isspace() or char in self._TERMINATORS):
             self._original_input = self._buffer[:-1]
             del self._buffer
             return (ParseStatus.COMPLETE, char)
@@ -119,7 +122,39 @@ class LiteralToken(DataToken):
 
 
 class SeperatorToken(Token):
-    pass
+    _SEPERATOR_CHAR = {"(", ":", ")"}
+
+    def parse(self):
+        pass
+
+    def format(self):
+        pass
+
+    def matches(self, char):
+        self._buffer += char
+
+        def flush_complete(char):
+            self._original_input = self._buffer[:-1]
+            del self._buffer
+            return (ParseStatus.COMPLETE, char)
+
+        if char.isspace():
+            if self._buffer.isspace():
+                return (ParseStatus.INCOMPLETE, "")
+            elif len(self._buffer) > 0:
+                return flush_complete(char)
+            else:
+                return (ParseStatus.FAILED, self._buffer)
+        elif char in self._SEPERATOR_CHAR:
+            if len(self._buffer) == 0:
+                return (ParseStatus.COMPLETE, "")
+            else:
+                return flush_complete(char)
+        else:
+            if len(self._buffer) > 1:
+                return flush_complete(char)
+            else:
+                return (ParseStatus.FAILED, self._buffer)
 
 
 class CommentToken(Token):
@@ -127,4 +162,38 @@ class CommentToken(Token):
     Class to represent a token in a comment.
     """
 
-    pass
+    _COMMENT_STARTER = {"$", "c ", "c\n", "c\t"}
+    _LINE_TERMINATOR = "\n"
+
+    def __init__(self):
+        super().__init__()
+        self._started = False
+
+    def parse(self):
+        pass
+
+    def format(self):
+        pass
+
+    def matches(self, char):
+        self._buffer += char
+        if not self._started:
+            if self._buffer.lower() in self._COMMENT_STARTER:
+                self._started = True
+                if self._buffer.lower() == "c\n":
+                    self._original_input = self._buffer[:]
+                    del self._buffer
+                    return (ParseStatus.COMPLETE, "")
+                return (ParseStatus.INCOMPLETE, "")
+            elif (self._buffer + " ").lower() in self._COMMENT_STARTER:
+                return (ParseStatus.INCOMPLETE, "")
+            else:
+                return (ParseStatus.FAILED, self._buffer)
+        else:
+            if char == self._LINE_TERMINATOR:
+                # actually consumes new line
+                self._original_input = self._buffer[:]
+                del self._buffer
+                return (ParseStatus.COMPLETE, "")
+            else:
+                return (ParseStatus.INCOMPLETE, "")
