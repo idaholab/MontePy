@@ -152,7 +152,7 @@ class InputIterator:
         self._iter = self.get_next_line()
 
     def get_next_line(self):
-        return iter(next(self._line_iter))
+        return iter(next(self._line_iter) + "\n")
 
     def __next__(self):
         try:
