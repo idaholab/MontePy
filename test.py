@@ -1,19 +1,30 @@
 import mcnpy
+from mcnpy.input_parser.node_parser import NodeParser, TokenParser
+from mcnpy.input_parser.tokens import (
+    CommentToken,
+    DataToken,
+    IdentifierToken,
+    LiteralToken,
+    SeperatorToken,
+    Token,
+    tokenize,
+)
 
 Input = mcnpy.input_parser.mcnp_input.Input
-tokens = mcnpy.input_parser.tokens
 
 input = Input(
     [
-        "line 1",
-        "line  2",
-        "     line 3 $ hi",
+        "5 10 -0.5",
         "C this is a comment",
-        "cnot comment",
-        "c",
     ],
     mcnpy.input_parser.block_type.BlockType.CELL,
 )
-print(input.input_lines)
-for token in tokens.tokenize(input):
-    print(type(token), token.original_input.encode())
+cell_parser = NodeParser(
+    [1],
+    children=[
+        TokenParser(IdentifierToken, "_old_number"),
+        TokenParser(IdentifierToken, "_material"),
+        NodeParser({0, 1}, [TokenParser(LiteralToken, "_density")]),
+    ],
+)
+cell_parser.parse(input)
