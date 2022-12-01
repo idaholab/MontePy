@@ -75,6 +75,11 @@ class DataToken(Token):
     _ALLOWED_SECOND_CHAR = {":"}
     _TERMINATORS = {" ", "\n"}
 
+    def __init__(self, token=None):
+        super().__init__()
+        if token:
+            self._original_input = token.original_input
+
     def format():
         pass
 
@@ -102,7 +107,12 @@ class IdentifierToken(DataToken):
     Object identifiers (an object number).
     """
 
-    pass
+    def parse(self):
+        try:
+            self._value = int(self.original_input)
+            return True
+        except ValueError:
+            return False
 
 
 class LiteralToken(DataToken):
@@ -111,7 +121,11 @@ class LiteralToken(DataToken):
     """
 
     def parse(self):
-        self._value = fortran_float(self.original_input)
+        try:
+            self._value = fortran_float(self.original_input)
+            return True
+        except ValueError:
+            return False
 
     def matches(self):
         try:
@@ -125,7 +139,8 @@ class SeperatorToken(Token):
     _SEPERATOR_CHAR = {"(", ":", ")"}
 
     def parse(self):
-        pass
+        self._value = self.original_input
+        return True
 
     def format(self):
         pass
