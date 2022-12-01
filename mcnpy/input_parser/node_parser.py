@@ -38,19 +38,39 @@ class NodeParser(ABC):
         self._unodered = unordered_children
         self._branches = branches
         self._matches = 0
+        self._token_buffer = []
 
-    def parse(self, token=None, input=None):
+    @property
+    def children(self):
+        return self._children
+
+    def parse(self, input=None, token=None):
         if input:
             for token in tokenize(input):
+                print(token)
                 self._parse_token(token)
         elif token:
             self._parse_token(token)
 
     def _parse_token(self, token):
-        if children:
+        self._token_buffer.append(token)
+        if self.children:
             while True:
-                status = self._current_child.parse(token)
+                status = self._current_child.parse(token=token)
+                if status == True:
+                    if isinstance(self._current_child, NodeParser):
+                        if self._current_child.is_allowed_number_matches():
+                            pass
                 # TODO check that matches is right
+                print(status)
+                break
+
+    @property
+    def matches(self):
+        return self._matches
+
+    def is_allowed_number_matches(self):
+        return self.matches in self._allowed_occur
 
 
 class TokenParser(NodeParser):
@@ -64,13 +84,24 @@ class TokenParser(NodeParser):
         self._allowed_values = allowed_values
 
     def parse(self, token):
-        if isinstance(token, self._token_class):
-            token.parse()
+        if isinstance(token, self._token_class) or issubclass(
+            self._token_class, type(token)
+        ):
+            if isinstance(token, self._token_class):
+                test_token = token
+            else:
+                test_token = self._token_class(token)
+            if not test_token.parse():
+                return False
             if self._allowed_values:
+                if self._token_class == SeperatorToken:
+                    if not self._allowed_values and not self.value.isspace():
+                        return False
                 if token.value not in self._allowed_values:
                     return False
             if self._map_to:
                 setattr(self, self._map_to, token.value)
+            return True
         else:
             return False
 

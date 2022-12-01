@@ -23,7 +23,9 @@ cell_parser = NodeParser(
     [1],
     children=[
         TokenParser(IdentifierToken, "_old_number"),
+        TokenParser(SeperatorToken),
         TokenParser(IdentifierToken, "_material"),
+        TokenParser(SeperatorToken),
         NodeParser({0, 1}, [TokenParser(LiteralToken, "_density")]),
     ],
 )
