@@ -1,5 +1,14 @@
 from abc import ABC, abstractmethod
 from itertools import count
+from mcnpy.input_parser.tokens import (
+    CommentToken,
+    DataToken,
+    IdentifierToken,
+    LiteralToken,
+    SeperatorToken,
+    Token,
+    tokenize,
+)
 
 
 class NodeParser(ABC):
@@ -23,18 +32,28 @@ class NodeParser(ABC):
                 "Can only specify one of: children, unordered_children, or branches"
             )
         self._children = children
+        if self._children:
+            self._child_iterator = iter(self._children)
+            self._current_child = next(self._child_iterator)
         self._unodered = unordered_children
         self._branches = branches
+        self._matches = 0
 
-    def parse(self, input):
-        input_iter = iter(input)
+    def parse(self, token=None, input=None):
+        if input:
+            for token in tokenize(input):
+                self._parse_token(token)
+        elif token:
+            self._parse_token(token)
+
+    def _parse_token(self, token):
         if children:
-            for child in children:
-                # todo check that stuff matches and what not
-                child.parse(input_iter)
+            while True:
+                status = self._current_child.parse(token)
+                # TODO check that matches is right
 
 
-class TokeParser(NodeParser):
+class TokenParser(NodeParser):
     def __init__(self, token_class, map_to=None, allowed_values=None):
         if not issubclass(token_class, Token):
             raise TypeError("Token_class must be a subclass of Token")
@@ -44,10 +63,19 @@ class TokeParser(NodeParser):
         self._map_to = map_to
         self._allowed_values = allowed_values
 
-    def parse():
-        pass
+    def parse(self, token):
+        if isinstance(token, self._token_class):
+            token.parse()
+            if self._allowed_values:
+                if token.value not in self._allowed_values:
+                    return False
+            if self._map_to:
+                setattr(self, self._map_to, token.value)
+        else:
+            return False
 
 
+"""
 genericKeyValueParser = NodeParser(
     {1},
     children=[
@@ -85,3 +113,4 @@ cell_parser = NodeParser(
         ),
     ],
 )
+"""
