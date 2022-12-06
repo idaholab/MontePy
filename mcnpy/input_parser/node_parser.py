@@ -73,7 +73,13 @@ class NodeParser(ABC):
     def parse(self, input=None, token=None):
         if input:
             for token in tokenize(input):
-                self._parse_token(token)
+                result = self._parse_token(token)
+                if not result.parsed:
+                    print("AAAHHHH")
+                    print(result)
+            print(token, result)
+            if result.complete:
+                return self._node
         elif token:
             return self._parse_token(token)
 
@@ -81,37 +87,54 @@ class NodeParser(ABC):
         self._token_buffer.append(token)
         if self.children:
             valid_match = False
-            while True:
-                status = self._current_child.parse(token=token)
-                if status == True:
-                    if not isinstance(self._current_child, TokenParser):
-                        if self._current_child.is_allowed_number_matches():
-                            valid_match = True
-                            break
-                        else:
-                            continue
-                    else:
-                        valid_match = True
-                        break
-                else:
-                    if isinstance(self._current_child, TokenParser) and isinstance(
-                        token, CommentToken
-                    ):
-                        comment_parser = TokenParser(CommentToken)
-                        if comment_parser.parse(token):
-                            self._nodes.append(comment_parser)
-                    break
+            print()
+            print(self.name, token, token.original_input)
+            parse_res = self._current_child.parse(token=token)
+            print(f"Parent: {self.name}", parse_res)
+            if parse_res.parsed == True:
+                valid_match = True
+            else:
+                # TODO break out
+                if isinstance(self._current_child, TokenParser) and isinstance(
+                    token, CommentToken
+                ):
+                    comment_parser = TokenParser(CommentToken)
+                    if comment_parser.parse(token):
+                        self._node.append(comment_parser)
+                        return ParseResult(True, False)
 
             if valid_match:
-                self._nodes.append(self._current_child)
-                try:
-                    self._increment_child()
-                except StopIteration:
-                    self._loop_increment_child()
-                    self._matches += 1
-                    self._token_buffer = []
-                return True
-            return False
+                print(self.name, self._matches)
+                print(self.is_allowed_number_matches())
+                if parse_res.complete:
+                    if parse_res.parse_results:
+                        self._node.append(parse_res.parse_results)
+                    try:
+                        print(f"incremented {self.name}")
+                        self._increment_child()
+                        return ParseResult(True, False)
+                    except StopIteration:
+                        return self._flush_complete_node()
+                else:
+                    return ParseResult(True, False)
+            elif self.is_allowed_number_matches():
+                return ParseResult(True, True, None)
+            else:
+                print("invalid match", self.name)
+                return ParseResult(False, False, failed_tokens=self._token_buffer)
+
+    def _flush_complete_node(self):
+        self._loop_increment_child()
+        self._matches += 1
+        new_node = self._node
+        self._node = self._node_class(self.name)
+        buffer = self._token_buffer
+        self._token_buffer = []
+        if self.is_allowed_number_matches():
+            return ParseResult(True, True, new_node)
+        else:
+            print(self.name)
+            return ParseResult(False, failed_tokens=buffer)
 
     @property
     def matches(self):
