@@ -185,7 +185,7 @@ class CommentToken(Token):
         self._started = False
 
     def parse(self):
-        pass
+        return True
 
     def format(self):
         pass
