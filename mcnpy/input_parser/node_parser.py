@@ -24,7 +24,7 @@ class NodeParser(ABC):
         self,
         allowed_occurences=count(0),
         name="",
-        node_class = SemanticNode,
+        node_class=SemanticNode,
         children=[],
         unordered_children=set(),
         branches=[],
@@ -50,7 +50,7 @@ class NodeParser(ABC):
         self._branches = branches
         self._matches = 0
         self._token_buffer = []
-        self._nodes = self._node_class(self.name)
+        self._node = self._node_class(self.name)
 
     def _increment_child(self):
         self._current_index, self._current_child = next(self._child_iterator)
@@ -120,17 +120,10 @@ class NodeParser(ABC):
     def is_allowed_number_matches(self):
         return self.matches in self._allowed_occur
 
-    def print_nodes(self):
-        ret = []
-        for node in self._nodes:
-            ret.append(node.print_nodes())
-        return f"N: {self.name} ({', '.join(ret)})"
-
 
 class TokenParser(NodeParser):
-    def __init__(self, token_class, node_class = SemanticLeaf, map_to=None, allowed_values=None):
+    def __init__(self, token_class, map_to=None, allowed_values=None):
         self._name = ""
-        self._node_class = node_class
         if not issubclass(token_class, Token):
             raise TypeError("Token_class must be a subclass of Token")
         self._token_class = token_class
@@ -138,7 +131,6 @@ class TokenParser(NodeParser):
             raise TypeError("Map_to must be a str")
         self._map_to = map_to
         self._allowed_values = allowed_values
-        self._nodes = self._node_class()
 
     def parse(self, token):
         if isinstance(token, self._token_class) or issubclass(
@@ -149,63 +141,29 @@ class TokenParser(NodeParser):
             else:
                 test_token = self._token_class(token)
             if not test_token.parse():
-                return False
+                return ParseResult(
+                    False,
+                )
             if self._allowed_values:
                 if self._token_class == SeperatorToken:
                     if not self._allowed_values and not self.value.isspace():
-                        return False
+                        return ParseResult(
+                            False,
+                        )
                 if token.value not in self._allowed_values:
-                    return False
-            self._nodes.append( test_token)
+                    return ParseResult(
+                        False,
+                    )
             if self._map_to:
                 setattr(self, self._map_to, token.value)
-            return True
+            return ParseResult(True, True, test_token)
         else:
-            return False
+            return ParseResult(
+                False,
+            )
 
     def __str__(self):
         return f"TokenParser {self._token_class}"
 
-    def print_nodes(self):
-        return f"T: {self._nodes.original_input}"
-
-
-"""
-genericKeyValueParser = NodeParser(
-    {1},
-    children=[
-        TokenParser(IdentifierToken, "_key"),
-        TokeParser(SeperaterToken, allowed_values={"=", " "}),
-        NodeParser(
-            count(1),
-            unordered_children={
-                TokenParser(LiteralToken),
-                TokenParser(SeperatorToken),
-                TokenParser(IdentifierToken),
-            },
-            map_to="_value",
-        ),
-    ],
-)
-
-# TODO Delete prototype
-cell_parser = NodeParser(
-    [1],
-    children=[
-        TokenParser(IdentifierToken, "_old_number"),
-        TokenParser(IdentifierToken, "_material"),
-        NodeParser({0, 1}, TokenParser(LiteralToken, "_density")),
-        SurfacePaser(),
-        NodeParser(
-            count(0),
-            unorderd_children={
-                genericKeyValueParser,
-                VolumeCellParser,
-                ImportanceParser,
-                FillParser,
-                UniverseParser,
-            },
-        ),
-    ],
-)
-"""
+    def print_node(self):
+        return f"T: {self._node.original_input}"
