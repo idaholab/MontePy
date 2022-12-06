@@ -69,9 +69,12 @@ class Token(SyntaxNode):
     def format_for_mcnp_input(self, mcnp_version):
         pass
 
+    def print_nodes(self):
+        return f"T: {self.original_input}"
+
 
 class DataToken(Token):
-    _ALLOWED_CHAR = {"-","."}
+    _ALLOWED_CHAR = {"-", "."}
     _ALLOWED_SECOND_CHAR = {":"}
     _TERMINATORS = {" ", "\n"}
 
