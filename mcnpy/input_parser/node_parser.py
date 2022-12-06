@@ -1,6 +1,7 @@
 from abc import ABC, abstractmethod
+from collections import namedtuple
 from itertools import count
-from mcnpy.input_parser.semantic_node import SemanticNode, IdentifierNode, SemanticLeaf
+from mcnpy.input_parser.semantic_node import SemanticNode, IdentifierNode
 from mcnpy.input_parser.tokens import (
     CommentToken,
     DataToken,
@@ -9,6 +10,12 @@ from mcnpy.input_parser.tokens import (
     SeperatorToken,
     Token,
     tokenize,
+)
+
+ParseResult = namedtuple(
+    "ParseResult",
+    ["parsed", "complete", "parse_results", "failed_tokens"],
+    defaults=[False, None, None],
 )
 
 
