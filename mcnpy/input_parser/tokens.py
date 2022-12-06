@@ -71,7 +71,7 @@ class Token(SyntaxNode):
 
 
 class DataToken(Token):
-    _ALLOWED_CHAR = set()
+    _ALLOWED_CHAR = {"-","."}
     _ALLOWED_SECOND_CHAR = {":"}
     _TERMINATORS = {" ", "\n"}
 
