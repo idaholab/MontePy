@@ -19,6 +19,11 @@ ParseResult = namedtuple(
 )
 
 
+# TODO distinguish between whitespacer and seperators in tokenization
+# TODO handle implicit whitespace and comments
+# TODO make sure that comments get added to the right node
+
+
 class NodeParser(ABC):
     def __init__(
         self,
@@ -76,7 +81,6 @@ class NodeParser(ABC):
                 result = self._parse_token(token)
                 if not result.parsed:
                     print("AAAHHHH")
-                    print(result)
             print(token, result)
             if result.complete:
                 return self._node
@@ -120,7 +124,6 @@ class NodeParser(ABC):
             elif self.is_allowed_number_matches():
                 return ParseResult(True, True, None)
             else:
-                print("invalid match", self.name)
                 return ParseResult(False, False, failed_tokens=self._token_buffer)
 
     def _flush_complete_node(self):
@@ -133,7 +136,6 @@ class NodeParser(ABC):
         if self.is_allowed_number_matches():
             return ParseResult(True, True, new_node)
         else:
-            print(self.name)
             return ParseResult(False, failed_tokens=buffer)
 
     @property

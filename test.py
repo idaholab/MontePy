@@ -15,8 +15,8 @@ Input = mcnpy.input_parser.mcnp_input.Input
 input = Input(
     [
         "5  $foo 10 -0.5",
-        "    10 -0.5",
-        "C this is a comment",
+        "10 -0.5",
+        # "C this is a comment",
     ],
     mcnpy.input_parser.block_type.BlockType.CELL,
 )
@@ -50,5 +50,5 @@ cell_parser = NodeParser(
         ),
     ],
 )
-cell_parser.parse(input)
-print(cell_parser.print_nodes())
+cell_node = cell_parser.parse(input)
+print(cell_node.print_nodes())
