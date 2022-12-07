@@ -8,19 +8,18 @@ from mcnpy.input_parser.tokens import (
     IdentifierToken,
     LiteralToken,
     SeperatorToken,
+    SpaceToken,
     Token,
     tokenize,
 )
 
 ParseResult = namedtuple(
     "ParseResult",
-    ["parsed", "complete", "parse_results", "failed_tokens"],
-    defaults=[False, None, None],
+    ["parsed", "complete", "could_complete", "parse_results", "failed_tokens"],
+    defaults=[False, False, None, None],
 )
 
 
-# TODO distinguish between whitespacer and seperators in tokenization
-# TODO handle implicit whitespace and comments
 # TODO make sure that comments get added to the right node
 
 
@@ -56,6 +55,7 @@ class NodeParser(ABC):
         self._matches = 0
         self._token_buffer = []
         self._node = self._node_class(self.name)
+        self._end_of_tape = False
 
     def _increment_child(self):
         self._current_index, self._current_child = next(self._child_iterator)
@@ -82,7 +82,7 @@ class NodeParser(ABC):
                 if not result.parsed:
                     print("AAAHHHH")
             print(token, result)
-            if result.complete:
+            if result.complete or result.could_complete:
                 return self._node
         elif token:
             return self._parse_token(token)
@@ -90,51 +90,64 @@ class NodeParser(ABC):
     def _parse_token(self, token):
         self._token_buffer.append(token)
         if self.children:
-            valid_match = False
-            print()
-            print(self.name, token, token.original_input)
+            # get rid of implicit tokens (spaces, and comments) first
+            if isinstance(self._current_child, TokenParser) and isinstance(
+                token, (CommentToken, SpaceToken)
+            ):
+                return self._handle_implicit_tokens(token)
+            if self._end_of_tape:
+                raise ValueError("end of tape")
+            print(self.name, self._current_child, token.original_input)
             parse_res = self._current_child.parse(token=token)
-            print(f"Parent: {self.name}", parse_res)
+            print(self.name, parse_res)
             if parse_res.parsed == True:
-                valid_match = True
-            else:
-                # TODO break out
-                if isinstance(self._current_child, TokenParser) and isinstance(
-                    token, CommentToken
-                ):
-                    comment_parser = TokenParser(CommentToken)
-                    if comment_parser.parse(token):
-                        self._node.append(comment_parser)
-                        return ParseResult(True, False)
-
-            if valid_match:
-                print(self.name, self._matches)
-                print(self.is_allowed_number_matches())
                 if parse_res.complete:
                     if parse_res.parse_results:
                         self._node.append(parse_res.parse_results)
                     try:
-                        print(f"incremented {self.name}")
                         self._increment_child()
                         return ParseResult(True, False)
                     except StopIteration:
                         return self._flush_complete_node()
                 else:
-                    return ParseResult(True, False)
+                    return ParseResult(True, False, parse_res.could_complete)
             elif self.is_allowed_number_matches():
-                return ParseResult(True, True, None)
+                return ParseResult(True, True, parse_results=None)
+        else:
+            return ParseResult(False, False, failed_tokens=self._token_buffer)
+
+    def _handle_implicit_tokens(self, token):
+        valid_match = False
+        if isinstance(token, CommentToken):
+            comment_parser = TokenParser(CommentToken)
+            parse_res = comment_parser.parse(token)
+            if parse_res.parsed:
+                self._node.append(parse_res.parse_results)
+                valid_match = True
+        if isinstance(token, SpaceToken):
+            space_parser = TokenParser(SpaceToken)
+            parse_res = space_parser.parse(token)
+            if parse_res.parsed:
+                self._node.append(parse_res.parse_results)
+                valid_match = True
+        if valid_match:
+            if self._current_index == len(self._children) - 1:
+                return ParseResult(True, False, True, self._node)
             else:
-                return ParseResult(False, False, failed_tokens=self._token_buffer)
+                return ParseResult(True, False)
 
     def _flush_complete_node(self):
-        self._loop_increment_child()
         self._matches += 1
+        if self.is_allowed_number_matches(self.matches + 1):
+            self._loop_increment_child()
+        else:
+            self._end_of_tape = True
         new_node = self._node
         self._node = self._node_class(self.name)
         buffer = self._token_buffer
         self._token_buffer = []
         if self.is_allowed_number_matches():
-            return ParseResult(True, True, new_node)
+            return ParseResult(True, True, parse_results=new_node)
         else:
             return ParseResult(False, failed_tokens=buffer)
 
@@ -142,8 +155,10 @@ class NodeParser(ABC):
     def matches(self):
         return self._matches
 
-    def is_allowed_number_matches(self):
-        return self.matches in self._allowed_occur
+    def is_allowed_number_matches(self, matches=None):
+        if matches is None:
+            matches = self.matches
+        return matches in self._allowed_occur
 
 
 class TokenParser(NodeParser):
@@ -179,9 +194,9 @@ class TokenParser(NodeParser):
                     return ParseResult(
                         False,
                     )
-            if self._map_to:
-                setattr(self, self._map_to, token.value)
-            return ParseResult(True, True, test_token)
+            # if self._map_to:
+            #    setattr(self, self._map_to, token.value)
+            return ParseResult(True, True, parse_results=test_token)
         else:
             return ParseResult(
                 False,

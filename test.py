@@ -5,6 +5,7 @@ from mcnpy.input_parser.tokens import (
     DataToken,
     IdentifierToken,
     LiteralToken,
+    SpaceToken,
     SeperatorToken,
     Token,
     tokenize,
@@ -16,7 +17,7 @@ input = Input(
     [
         "5  $foo 10 -0.5",
         "10 -0.5",
-        # "C this is a comment",
+        "C this is a comment",
     ],
     mcnpy.input_parser.block_type.BlockType.CELL,
 )
@@ -29,7 +30,7 @@ cell_parser = NodeParser(
             "cell number",
             children=[
                 TokenParser(IdentifierToken, map_to="_old_number"),
-                TokenParser(SeperatorToken),
+                TokenParser(SpaceToken),
             ],
         ),
         NodeParser(
@@ -37,7 +38,7 @@ cell_parser = NodeParser(
             "material",
             children=[
                 TokenParser(IdentifierToken, map_to="_material"),
-                TokenParser(SeperatorToken),
+                TokenParser(SpaceToken),
             ],
         ),
         NodeParser(
@@ -45,7 +46,7 @@ cell_parser = NodeParser(
             "density",
             children=[
                 TokenParser(LiteralToken, map_to="_density"),
-                TokenParser(SeperatorToken),
+                TokenParser(SpaceToken),
             ],
         ),
     ],
