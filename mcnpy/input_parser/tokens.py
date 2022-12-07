@@ -13,7 +13,7 @@ class ParseStatus(Enum):
 
 
 def tokenize(input):
-    _TOKEN_ORDER = [CommentToken, DataToken, SeperatorToken]
+    _TOKEN_ORDER = [CommentToken, DataToken, SpaceToken, SeperatorToken]
     class_iter = iter(_TOKEN_ORDER)
     current_token = None
     letters = deque(input)
@@ -138,6 +138,28 @@ class LiteralToken(DataToken):
             return False
 
 
+class SpaceToken(Token):
+    def parse(self):
+        self._value = self.original_input
+        return True
+
+    def format(self):
+        pass
+
+    def matches(self, char):
+        self._buffer += char
+
+        if char.isspace():
+            return (ParseStatus.INCOMPLETE, "")
+        else:
+            if self._buffer[:-1].isspace():
+                self._original_input = self._buffer[:-1]
+                del self._buffer
+                return (ParseStatus.COMPLETE, char)
+            else:
+                return (ParseStatus.FAILED, self._buffer)
+
+
 class SeperatorToken(Token):
     _SEPERATOR_CHAR = {"(", ":", ")"}
 
@@ -156,17 +178,8 @@ class SeperatorToken(Token):
             del self._buffer
             return (ParseStatus.COMPLETE, char)
 
-        if char.isspace():
-            if self._buffer.isspace():
-                return (ParseStatus.INCOMPLETE, "")
-            elif len(self._buffer) > 0:
-                return flush_complete(char)
-            else:
-                return (ParseStatus.FAILED, self._buffer)
-        elif char in self._SEPERATOR_CHAR:
-            if len(self._buffer) == 0:
-                return (ParseStatus.COMPLETE, "")
-            else:
+        if char in self._SEPERATOR_CHAR:
+            if len(self._buffer) > 0:
                 return flush_complete(char)
         else:
             if len(self._buffer) > 1:
