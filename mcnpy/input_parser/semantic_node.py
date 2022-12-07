@@ -10,6 +10,11 @@ class SemanticNode(ABC):
         # todo type checking
         self._nodes.append(node)
 
+    def has_leaves(self):
+        for node in self.nodes:
+            pass
+        return False
+
     def print_nodes(self):
         ret = []
         for node in self._nodes:
