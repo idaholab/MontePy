@@ -30,7 +30,6 @@ cell_parser = NodeParser(
             "cell number",
             children=[
                 TokenParser(IdentifierToken, map_to="_old_number"),
-                TokenParser(SpaceToken),
             ],
         ),
         NodeParser(
@@ -38,7 +37,6 @@ cell_parser = NodeParser(
             "material",
             children=[
                 TokenParser(IdentifierToken, map_to="_material"),
-                TokenParser(SpaceToken),
             ],
         ),
         NodeParser(
@@ -46,7 +44,6 @@ cell_parser = NodeParser(
             "density",
             children=[
                 TokenParser(LiteralToken, map_to="_density"),
-                TokenParser(SpaceToken),
             ],
         ),
     ],

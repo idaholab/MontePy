@@ -77,6 +77,7 @@ class NodeParser(ABC):
 
     def parse(self, input=None, token=None):
         if input:
+            # TODO make rewindable deque
             for token in tokenize(input):
                 result = self._parse_token(token)
                 if not result.parsed:
@@ -91,11 +92,10 @@ class NodeParser(ABC):
         self._token_buffer.append(token)
         if self.children:
             # get rid of implicit tokens (spaces, and comments) first
-            if isinstance(self._current_child, TokenParser) and isinstance(
-                token, (CommentToken, SpaceToken)
-            ):
-                return self._handle_implicit_tokens(token)
-            if self._end_of_tape:
+            if isinstance(token, (CommentToken, SpaceToken)):
+                if isinstance(self._current_child, TokenParser):
+                    return self._handle_implicit_tokens(token)
+            elif self._end_of_tape:
                 raise ValueError("end of tape")
             print(self.name, self._current_child, token.original_input)
             parse_res = self._current_child.parse(token=token)
@@ -114,6 +114,7 @@ class NodeParser(ABC):
             elif self.is_allowed_number_matches():
                 return ParseResult(True, True, parse_results=None)
         else:
+
             return ParseResult(False, False, failed_tokens=self._token_buffer)
 
     def _handle_implicit_tokens(self, token):
@@ -143,7 +144,7 @@ class NodeParser(ABC):
         else:
             self._end_of_tape = True
         new_node = self._node
-        self._node = self._node_class(self.name)
+        #self._node = self._node_class(self.name)
         buffer = self._token_buffer
         self._token_buffer = []
         if self.is_allowed_number_matches():
