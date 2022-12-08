@@ -23,6 +23,27 @@ ParseResult = namedtuple(
 
 
 class NodeParser(ABC):
+    """
+    A class to parse a node in ultimate semantic tree.
+
+    The parser itself forms a tree structure. All objects passed describing the
+    tree structure should be a NodeParser class.
+
+    :param allowed_occurences: a container that supports "in" of the allowed number of occurences
+    :type allowed_occurences: iterator
+    :param name: name of this node, and the semantic node it parses
+    :type name: str
+    :param node_class: the class of the SemanticNode this will generate
+    :type node_class: class
+    :param children: A list of the children parsers of this node. They must match in order
+    :type children: list
+    :param unordered_children: children nodes that can match in any order or not at all. List order establishes match
+                                priority
+    :type unordered_children: list
+    :param branches: Mutually exclusive possible matching nodes. Only one branch may match. List order is match order.
+    :type branches: list
+    """
+
     def __init__(
         self,
         allowed_occurences=count(0),
@@ -57,14 +78,23 @@ class NodeParser(ABC):
         self._end_of_tape = False
 
     def _increment_child(self):
+        """
+        Moves the child iterator ahead by one.
+        """
         self._current_index, self._current_child = next(self._child_iterator)
 
     def _loop_increment_child(self):
+        """
+        Moves the child iterator back to the beginning.
+        """
         self._child_iterator = enumerate(self._children)
         self._increment_child()
 
     @property
     def name(self):
+        """
+        This node's name.
+        """
         return self._name
 
     def __str__(self):
@@ -75,6 +105,16 @@ class NodeParser(ABC):
         return self._children
 
     def parse(self, input=None, token=None):
+        """
+        Parses the specified information.
+
+        :param input: the input object to parse by the root node.
+        :type input: Input
+        :param token: the token to parse from the Input iterator.
+        :type token: Token
+        :returns: a ParseResult describing how it went.
+        :rtype: ParseResult
+        """
         if input:
             tokens = deque(tokenize(input))
             while True:
@@ -89,51 +129,67 @@ class NodeParser(ABC):
                     for token in result.failed_tokens[::-1]:
                         tokens.appendleft(token)
             if result.complete or result.could_complete:
-                return self._node
+                return ParseResult(True, True, parese_results=self._node)
         elif token:
             return self._parse_token(token)
 
     def _parse_token(self, token):
+        """
+        Parses an individual token.
+        """
         self._token_buffer.append(token)
         if self.children:
-            # get rid of implicit tokens (spaces, and comments) first
-            if isinstance(token, (CommentToken, SpaceToken)):
-                if isinstance(self._current_child, TokenParser):
-                    return self._handle_implicit_tokens(token)
-                else:
-                    parse_res = self._current_child.parse(token=token)
-                    if not parse_res.parsed:
-                        last_leaf_parent = self._node.get_last_leaf_parent()
-                        if last_leaf_parent:
-                            last_leaf_parent.append(token)
-                            return ParseResult(
-                                True, False, True, parse_results=last_leaf_parent
-                            )
-                        else:
-                            return ParseResult(False, False, failed_tokens=[token])
-                    else:
-                        return parse_res
-            elif self._end_of_tape:
-                raise ValueError("end of tape")
-            parse_res = self._current_child.parse(token=token)
-            if parse_res.parsed == True:
-                if parse_res.complete:
-                    if parse_res.parse_results:
-                        self._node.append(parse_res.parse_results)
-                    try:
-                        self._increment_child()
-                        return ParseResult(True, False)
-                    except StopIteration:
-                        return self._flush_complete_node()
-                else:
-                    return ParseResult(True, False, parse_res.could_complete)
-            elif self.is_allowed_number_matches():
-                return ParseResult(True, True, parse_results=None)
+            return self._parse_token_with_children(token)
+        elif self.branches:
+            return self._parse_token_with_branches(token)
         else:
-
             return ParseResult(False, False, failed_tokens=self._token_buffer)
 
+    def _parse_token_with_children(self, token):
+        # get rid of implicit tokens (spaces, and comments) first
+        if isinstance(token, (CommentToken, SpaceToken)):
+            if isinstance(self._current_child, TokenParser):
+                return self._handle_implicit_tokens(token)
+            else:
+                parse_res = self._current_child.parse(token=token)
+                if not parse_res.parsed:
+                    last_leaf_parent = self._node.get_last_leaf_parent()
+                    if last_leaf_parent:
+                        last_leaf_parent.append(token)
+                        return ParseResult(
+                            True, False, True, parse_results=last_leaf_parent
+                        )
+                    else:
+                        return ParseResult(False, False, failed_tokens=[token])
+                else:
+                    return parse_res
+        elif self._end_of_tape:
+            raise ValueError("end of tape")
+        parse_res = self._current_child.parse(token=token)
+        if parse_res.parsed == True:
+            if parse_res.complete:
+                if parse_res.parse_results:
+                    self._node.append(parse_res.parse_results)
+                try:
+                    self._increment_child()
+                    return ParseResult(True, False)
+                except StopIteration:
+                    return self._flush_complete_node()
+            else:
+                return ParseResult(True, False, parse_res.could_complete)
+        elif self.is_allowed_number_matches():
+            return ParseResult(True, True, parse_results=None)
+
+    def _parse_token_with_branches(self, token):
+        """
+        Parses the given token with the branches given.
+        """
+        pass
+
     def _handle_implicit_tokens(self, token):
+        """
+        Parses the implicit tokens: SpaceToken, and CommentToken
+        """
         valid_match = False
         if isinstance(token, CommentToken):
             comment_parser = TokenParser(CommentToken)
