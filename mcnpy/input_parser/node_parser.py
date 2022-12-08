@@ -20,15 +20,6 @@ ParseResult = namedtuple(
 )
 
 # TODO implement clear function
-# TODO fix double comment
-"""
-N: cell (N: cell number (T: 5, T:   , T: $foo 10 -0.5
-), N: material (T: 10, T:  ), N: density (T: -0.5, T:
-, T:
-, T: C this is a comment
-, T: C this is a comment
-))
-"""
 
 
 class NodeParser(ABC):
@@ -105,14 +96,17 @@ class NodeParser(ABC):
                     return self._handle_implicit_tokens(token)
                 else:
                     parse_res = self._current_child.parse(token=token)
-                    last_leaf_parent = self._node.get_last_leaf_parent()
-                    if last_leaf_parent:
-                        last_leaf_parent.append(token)
-                        return ParseResult(
-                            True, False, True, parse_results=last_leaf_parent
-                        )
+                    if not parse_res.parsed:
+                        last_leaf_parent = self._node.get_last_leaf_parent()
+                        if last_leaf_parent:
+                            last_leaf_parent.append(token)
+                            return ParseResult(
+                                True, False, True, parse_results=last_leaf_parent
+                            )
+                        else:
+                            return ParseResult(False, False, failed_tokens=[token])
                     else:
-                        return ParseResult(False, False, failed_tokens=[token])
+                        return parse_res
             elif self._end_of_tape:
                 raise ValueError("end of tape")
             parse_res = self._current_child.parse(token=token)
