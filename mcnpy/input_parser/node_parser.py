@@ -19,8 +19,16 @@ ParseResult = namedtuple(
     defaults=[False, False, None, None],
 )
 
-
-# TODO make sure that comments get added to the right node
+# TODO implement clear function
+# TODO fix double comment
+"""
+N: cell (N: cell number (T: 5, T:   , T: $foo 10 -0.5
+), N: material (T: 10, T:  ), N: density (T: -0.5, T:
+, T:
+, T: C this is a comment
+, T: C this is a comment
+))
+"""
 
 
 class NodeParser(ABC):
@@ -95,11 +103,19 @@ class NodeParser(ABC):
             if isinstance(token, (CommentToken, SpaceToken)):
                 if isinstance(self._current_child, TokenParser):
                     return self._handle_implicit_tokens(token)
+                else:
+                    parse_res = self._current_child.parse(token=token)
+                    last_leaf_parent = self._node.get_last_leaf_parent()
+                    if last_leaf_parent:
+                        last_leaf_parent.append(token)
+                        return ParseResult(
+                            True, False, True, parse_results=last_leaf_parent
+                        )
+                    else:
+                        return ParseResult(False, False, failed_tokens=[token])
             elif self._end_of_tape:
                 raise ValueError("end of tape")
-            print(self.name, self._current_child, token.original_input)
             parse_res = self._current_child.parse(token=token)
-            print(self.name, parse_res)
             if parse_res.parsed == True:
                 if parse_res.complete:
                     if parse_res.parse_results:
@@ -123,19 +139,21 @@ class NodeParser(ABC):
             comment_parser = TokenParser(CommentToken)
             parse_res = comment_parser.parse(token)
             if parse_res.parsed:
-                self._node.append(parse_res.parse_results)
                 valid_match = True
         if isinstance(token, SpaceToken):
             space_parser = TokenParser(SpaceToken)
             parse_res = space_parser.parse(token)
             if parse_res.parsed:
-                self._node.append(parse_res.parse_results)
                 valid_match = True
         if valid_match:
-            if self._current_index == len(self._children) - 1:
-                return ParseResult(True, False, True, self._node)
+            if len(self._node) > 0:
+                self._node.append(parse_res.parse_results)
+                if self._current_index == len(self._children) - 1:
+                    return ParseResult(True, False, True, self._node)
+                else:
+                    return ParseResult(True, False)
             else:
-                return ParseResult(True, False)
+                return ParseResult(False, False, failed_tokens=[token])
 
     def _flush_complete_node(self):
         self._matches += 1
@@ -144,7 +162,6 @@ class NodeParser(ABC):
         else:
             self._end_of_tape = True
         new_node = self._node
-        #self._node = self._node_class(self.name)
         buffer = self._token_buffer
         self._token_buffer = []
         if self.is_allowed_number_matches():
