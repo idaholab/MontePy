@@ -34,19 +34,44 @@ cell_parser = NodeParser(
         ),
         NodeParser(
             [1],
-            "material",
-            children=[
-                TokenParser(IdentifierToken, map_to="_material"),
-            ],
-        ),
-        NodeParser(
-            {0, 1},
-            "density",
-            children=[
-                TokenParser(LiteralToken, map_to="_density"),
+            "material info",
+            branches=[
+                NodeParser(
+                    [1],
+                    "material density",
+                    children=[
+                        NodeParser(
+                            [1],
+                            "material",
+                            children=[
+                                TokenParser(
+                                    IdentifierToken,
+                                    allowed_values=range(1, int(1e9)),
+                                    map_to="_material",
+                                ),
+                            ],
+                        ),
+                        NodeParser(
+                            [1],
+                            "density",
+                            children=[
+                                TokenParser(LiteralToken, map_to="_density"),
+                            ],
+                        ),
+                    ],
+                ),
+                NodeParser(
+                    [1],
+                    " void material",
+                    children=[
+                        TokenParser(
+                            IdentifierToken, allowed_values=[0], map_to="_material"
+                        ),
+                    ],
+                ),
             ],
         ),
     ],
 )
 cell_node = cell_parser.parse(input)
-print(cell_node.print_nodes())
+print(cell_node.parse_results.print_nodes())

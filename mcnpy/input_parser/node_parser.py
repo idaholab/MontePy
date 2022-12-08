@@ -104,6 +104,10 @@ class NodeParser(ABC):
     def children(self):
         return self._children
 
+    @property
+    def branches(self):
+        return self._branches
+
     def parse(self, input=None, token=None):
         """
         Parses the specified information.
@@ -129,7 +133,7 @@ class NodeParser(ABC):
                     for token in result.failed_tokens[::-1]:
                         tokens.appendleft(token)
             if result.complete or result.could_complete:
-                return ParseResult(True, True, parese_results=self._node)
+                return ParseResult(True, True, parse_results=self._node)
         elif token:
             return self._parse_token(token)
 
