@@ -1,5 +1,5 @@
 from abc import ABC, abstractmethod
-from collections import namedtuple
+from collections import deque, namedtuple
 from itertools import count
 from mcnpy.input_parser.semantic_node import SemanticNode, IdentifierNode
 from mcnpy.input_parser.tokens import (
@@ -76,12 +76,18 @@ class NodeParser(ABC):
 
     def parse(self, input=None, token=None):
         if input:
-            # TODO make rewindable deque
-            for token in tokenize(input):
+            tokens = deque(tokenize(input))
+            while True:
+                # get next token
+                try:
+                    token = tokens.popleft()
+                except IndexError:
+                    break
                 result = self._parse_token(token)
+                # save failed tokens
                 if not result.parsed:
-                    print("AAAHHHH")
-            print(token, result)
+                    for token in result.failed_tokens[::-1]:
+                        tokens.appendleft(token)
             if result.complete or result.could_complete:
                 return self._node
         elif token:
