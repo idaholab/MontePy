@@ -307,12 +307,7 @@ class TokenParser(NodeParser):
                     False,
                 )
             if self._allowed_values:
-                if self._token_class == SeperatorToken:
-                    if not self._allowed_values and not self.value.isspace():
-                        return ParseResult(
-                            False,
-                        )
-                if token.value not in self._allowed_values:
+                if test_token.value not in self._allowed_values:
                     return ParseResult(
                         False,
                     )
