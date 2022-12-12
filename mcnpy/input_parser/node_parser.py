@@ -72,6 +72,8 @@ class NodeParser(ABC):
             self._loop_increment_child()
         self._unodered = unordered_children
         self._branches = branches
+        if self._branches:
+            self._loop_increment_branch()
         self._matches = 0
         self._token_buffer = []
         self._node = self._node_class(self.name)
@@ -89,6 +91,13 @@ class NodeParser(ABC):
         """
         self._child_iterator = enumerate(self._children)
         self._increment_child()
+
+    def _increment_branch(self):
+        self._current_index, self._current_branch = next(self._branch_iterator)
+
+    def _loop_increment_branch(self):
+        self._branch_iterator = enumerate(self._branches)
+        self._increment_branch()
 
     @property
     def name(self):
@@ -188,7 +197,42 @@ class NodeParser(ABC):
         """
         Parses the given token with the branches given.
         """
-        pass
+        if isinstance(token, (CommentToken, SpaceToken)):
+            if isinstance(self._current_branch, TokenParser):
+                return self._handle_implicit_tokens(token)
+            else:
+                parse_res = self._current_branch.parse(token=token)
+                if not parse_res.parsed:
+                    last_leaf_parent = self._node.get_last_leaf_parent()
+                    if last_leaf_parent:
+                        last_leaf_parent.append(token)
+                        return ParseResult(
+                            True, False, True, parse_results=last_leaf_parent
+                        )
+                    else:
+                        return ParseResult(False, False, failed_tokens=[token])
+                else:
+                    return parse_res
+        parse_res = self._current_branch.parse(token=token)
+        if parse_res.parsed == True:
+            if parse_res.complete:
+                self._matches += 1
+                if self.is_allowed_number_matches():
+                    return parse_res
+                else:
+                    old_tokens = self._token_buffer
+                    self._token_buffer = []
+                    return ParseResult(False, False, failed_tokens=old_tokens)
+            return parse_res
+        else:
+            try:
+                self._increment_branch()
+            except StopIteration:
+                pass
+                # self._loop_increment_branch()
+            old_tokens = self._token_buffer
+            self._token_buffer = []
+            return ParseResult(False, False, failed_tokens=[old_tokens])
 
     def _handle_implicit_tokens(self, token):
         """
