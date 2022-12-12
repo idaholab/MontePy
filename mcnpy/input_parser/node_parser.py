@@ -19,8 +19,6 @@ ParseResult = namedtuple(
     defaults=[False, False, None, None],
 )
 
-# TODO implement clear function
-
 
 class NodeParser(ABC):
     """
@@ -78,6 +76,20 @@ class NodeParser(ABC):
         self._token_buffer = []
         self._node = self._node_class(self.name)
         self._end_of_tape = False
+
+    def clear(self):
+        self._matches = 0
+        self._token_buffer = []
+        self._node = self._node_class(self.name)
+        self._end_of_tape = False
+        if self._children:
+            self._loop_increment_child()
+            for child in self._children:
+                child.clear()
+        if self._branches:
+            self._loop_increment_branch()
+            for branch in self._branches:
+                branch.clear()
 
     def _increment_child(self):
         """
@@ -293,6 +305,9 @@ class TokenParser(NodeParser):
             raise TypeError("Map_to must be a str")
         self._map_to = map_to
         self._allowed_values = allowed_values
+
+    def clear(self):
+        pass
 
     def parse(self, token):
         if isinstance(token, self._token_class) or issubclass(

@@ -83,5 +83,6 @@ input = Input(
     ],
     mcnpy.input_parser.block_type.BlockType.CELL,
 )
+cell_parser.clear()
 cell_node = cell_parser.parse(input)
 print(cell_node.parse_results.print_nodes())
