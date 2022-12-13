@@ -62,7 +62,7 @@ cell_parser = NodeParser(
                 ),
                 NodeParser(
                     [1],
-                    " void material",
+                    "void material",
                     children=[
                         TokenParser(
                             IdentifierToken, allowed_values=[0], map_to="_material"
