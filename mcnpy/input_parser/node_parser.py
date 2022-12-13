@@ -281,13 +281,14 @@ class NodeParser(ABC):
 
 
 class TokenParser(NodeParser):
-    def __init__(self, token_class, map_to=None, allowed_values=None):
+    def __init__(self, token_class, validator=None, map_to=None, allowed_values=None):
         self._name = ""
         if not issubclass(token_class, Token):
             raise TypeError("Token_class must be a subclass of Token")
         self._token_class = token_class
         if not isinstance(map_to, (str, type(None))):
             raise TypeError("Map_to must be a str")
+        self._validator = validator
         self._map_to = map_to
         self._allowed_values = allowed_values
 
@@ -302,7 +303,7 @@ class TokenParser(NodeParser):
                 test_token = token
             else:
                 test_token = self._token_class(token)
-            if not test_token.parse():
+            if not test_token.parse(self._validator):
                 return ParseResult(False, failed_tokens=[token])
             if self._allowed_values:
                 if test_token.value not in self._allowed_values:

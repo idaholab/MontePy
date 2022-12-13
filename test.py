@@ -21,6 +21,7 @@ input = Input(
     ],
     mcnpy.input_parser.block_type.BlockType.CELL,
 )
+positive = lambda x: x > 0
 cell_parser = NodeParser(
     [1],
     "cell",
@@ -29,7 +30,7 @@ cell_parser = NodeParser(
             [1],
             "cell number",
             children=[
-                TokenParser(IdentifierToken, map_to="_old_number"),
+                TokenParser(IdentifierToken, map_to="_old_number", validator=positive),
             ],
         ),
         NodeParser(
@@ -47,6 +48,7 @@ cell_parser = NodeParser(
                                 TokenParser(
                                     IdentifierToken,
                                     allowed_values=range(1, int(1e9)),
+                                    validator=positive,
                                     map_to="_material",
                                 ),
                             ],

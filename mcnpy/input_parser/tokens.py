@@ -59,7 +59,7 @@ class Token(SyntaxNode):
         pass
 
     @abstractmethod
-    def parse(self):
+    def parse(self, validator=None):
         pass
 
     @abstractmethod
@@ -86,7 +86,7 @@ class DataToken(Token):
     def format():
         pass
 
-    def parse(self):
+    def parse(self, validator=None):
         pass
 
     def matches(self, char):
@@ -110,11 +110,13 @@ class IdentifierToken(DataToken):
     Object identifiers (an object number).
     """
 
-    def parse(self):
+    def parse(self, validator=None):
         try:
             self._value = int(self.original_input)
+            if validator:
+                assert validator(self.value)
             return True
-        except ValueError:
+        except (ValueError, AssertionError) as e:
             return False
 
 
@@ -123,11 +125,13 @@ class LiteralToken(DataToken):
     Class to represent a literal token providing data.
     """
 
-    def parse(self):
+    def parse(self, validator=None):
         try:
             self._value = fortran_float(self.original_input)
+            if validator:
+                assert validator(self.value)
             return True
-        except ValueError:
+        except (ValueError, AssertionError) as e:
             return False
 
     def matches(self):
@@ -139,7 +143,7 @@ class LiteralToken(DataToken):
 
 
 class SpaceToken(Token):
-    def parse(self):
+    def parse(self, validator=None):
         self._value = self.original_input
         return True
 
@@ -163,7 +167,7 @@ class SpaceToken(Token):
 class SeperatorToken(Token):
     _SEPERATOR_CHAR = {"(", ":", ")"}
 
-    def parse(self):
+    def parse(self, validator=None):
         self._value = self.original_input
         return True
 
@@ -200,7 +204,7 @@ class CommentToken(Token):
         super().__init__()
         self._started = False
 
-    def parse(self):
+    def parse(self, validator=None):
         return True
 
     def format(self):
