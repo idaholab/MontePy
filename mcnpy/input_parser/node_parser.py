@@ -242,11 +242,10 @@ class NodeParser(ABC):
             try:
                 self._increment_branch()
             except StopIteration:
-                pass
-                # self._loop_increment_branch()
+                self._loop_increment_branch()
             old_tokens = self._token_buffer
             self._token_buffer = []
-            return ParseResult(False, False, failed_tokens=[old_tokens])
+            return ParseResult(False, False, failed_tokens=old_tokens)
 
     def _handle_implicit_tokens(self, token):
         """
@@ -320,21 +319,15 @@ class TokenParser(NodeParser):
             else:
                 test_token = self._token_class(token)
             if not test_token.parse():
-                return ParseResult(
-                    False,
-                )
+                return ParseResult(False, failed_tokens=[token])
             if self._allowed_values:
                 if test_token.value not in self._allowed_values:
-                    return ParseResult(
-                        False,
-                    )
+                    return ParseResult(False, failed_tokens=[token])
             # if self._map_to:
             #    setattr(self, self._map_to, token.value)
             return ParseResult(True, True, parse_results=test_token)
         else:
-            return ParseResult(
-                False,
-            )
+            return ParseResult(False, failed_tokens=[token])
 
     def __str__(self):
         return f"TokenParser {self._token_class}"
