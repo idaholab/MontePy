@@ -204,6 +204,8 @@ class NodeParser(ABC):
                 return ParseResult(True, False, parse_res.could_complete)
         elif self.is_allowed_number_matches():
             return ParseResult(True, True, parse_results=None)
+        else:
+            return parse_res
 
     def _parse_token_with_branches(self, token):
         """
