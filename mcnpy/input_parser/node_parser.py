@@ -211,22 +211,6 @@ class NodeParser(ABC):
         """
         Parses the given token with the branches given.
         """
-        if isinstance(token, (CommentToken, SpaceToken)):
-            if isinstance(self._current_branch, TokenParser):
-                return self._handle_implicit_tokens(token)
-            else:
-                parse_res = self._current_branch.parse(token=token)
-                if not parse_res.parsed:
-                    last_leaf_parent = self._node.get_last_leaf_parent()
-                    if last_leaf_parent:
-                        last_leaf_parent.append(token)
-                        return ParseResult(
-                            True, False, True, parse_results=last_leaf_parent
-                        )
-                    else:
-                        return ParseResult(False, False, failed_tokens=[token])
-                else:
-                    return parse_res
         parse_res = self._current_branch.parse(token=token)
         if parse_res.parsed == True:
             if parse_res.complete:
