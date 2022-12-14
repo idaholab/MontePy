@@ -1,3 +1,4 @@
+import itertools
 import mcnpy
 from mcnpy.input_parser.node_parser import NodeParser, TokenParser
 from mcnpy.input_parser.tokens import (
@@ -12,7 +13,7 @@ from mcnpy.input_parser.tokens import (
 )
 
 Input = mcnpy.input_parser.mcnp_input.Input
-
+"""
 input = Input(
     [
         "5  $foo 10 -0.5",
@@ -21,7 +22,45 @@ input = Input(
     ],
     mcnpy.input_parser.block_type.BlockType.CELL,
 )
+"""
+input = Input(
+    [
+        "(5)",
+    ],
+    mcnpy.input_parser.block_type.BlockType.CELL,
+)
 positive = lambda x: x > 0
+MAX_NUM = 1e9
+surface_parser = NodeParser(
+    itertools.count(1),
+    "surface geometry",
+    branches=[
+        NodeParser(
+            itertools.count(0),
+            "atomic ident",
+            children=[
+                TokenParser(
+                    IdentifierToken,
+                    allowed_values=itertools.chain(
+                        range(1, int(MAX_NUM)), range(-1, int(MAX_NUM), -1)
+                    ),
+                )
+            ],
+        )
+    ],
+)
+surface_parser._branches.append(
+    NodeParser(
+        itertools.count(0),
+        "surface parentheses",
+        children=[
+            TokenParser(SeperatorToken, allowed_values="("),
+            surface_parser,
+            TokenParser(SeperatorToken, allowed_values=")"),
+        ],
+    )
+)
+surface_parser.parse(input)
 cell_parser = NodeParser(
     [1],
     "cell",
@@ -75,6 +114,7 @@ cell_parser = NodeParser(
         ),
     ],
 )
+"""
 cell_node = cell_parser.parse(input)
 print(cell_node.parse_results.print_nodes())
 input = Input(
@@ -88,3 +128,4 @@ input = Input(
 cell_parser.clear()
 cell_node = cell_parser.parse(input)
 print(cell_node.parse_results.print_nodes())
+"""
