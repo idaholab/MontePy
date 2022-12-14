@@ -76,7 +76,7 @@ class Token(SyntaxNode):
 class DataToken(Token):
     _ALLOWED_CHAR = {"-", "."}
     _ALLOWED_SECOND_CHAR = {":"}
-    _TERMINATORS = {" ", "\n"}
+    _TERMINATORS = {"(", ")", " ", "\n"}
 
     def __init__(self, token=None):
         super().__init__()
@@ -183,13 +183,10 @@ class SeperatorToken(Token):
             return (ParseStatus.COMPLETE, char)
 
         if char in self._SEPERATOR_CHAR:
-            if len(self._buffer) > 0:
-                return flush_complete(char)
+            self._original_input = self._buffer
+            return (ParseStatus.COMPLETE, "")
         else:
-            if len(self._buffer) > 1:
-                return flush_complete(char)
-            else:
-                return (ParseStatus.FAILED, self._buffer)
+            return (ParseStatus.FAILED, self._buffer)
 
 
 class CommentToken(Token):
