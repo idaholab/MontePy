@@ -226,7 +226,8 @@ class NodeParser(ABC):
             try:
                 self._increment_branch()
             except StopIteration:
-                self._loop_increment_branch()
+                pass
+                # self._loop_increment_branch()
             old_tokens = self._token_buffer
             self._token_buffer = []
             return ParseResult(False, False, failed_tokens=old_tokens)
