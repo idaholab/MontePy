@@ -1,5 +1,6 @@
 from abc import ABC, abstractmethod
 from collections import deque, namedtuple
+import inspect
 from itertools import count
 from mcnpy.input_parser.semantic_node import SemanticNode, IdentifierNode
 from mcnpy.input_parser.tokens import (
@@ -96,6 +97,8 @@ class NodeParser(ABC):
         Moves the child iterator ahead by one.
         """
         self._current_index, self._current_child = next(self._child_iterator)
+        if inspect.isclass(self._current_child):
+            self._current_child = self._current_child()
 
     def _loop_increment_child(self):
         """
@@ -226,8 +229,7 @@ class NodeParser(ABC):
             try:
                 self._increment_branch()
             except StopIteration:
-                pass
-                # self._loop_increment_branch()
+                self._loop_increment_branch()
             old_tokens = self._token_buffer
             self._token_buffer = []
             return ParseResult(False, False, failed_tokens=old_tokens)
