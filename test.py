@@ -31,36 +31,51 @@ input = Input(
 )
 positive = lambda x: x > 0
 MAX_NUM = 1e9
-surface_parser = NodeParser(
-    itertools.count(1),
-    "surface geometry",
-    branches=[
-        NodeParser(
-            itertools.count(0),
-            "atomic ident",
-            children=[
-                TokenParser(
-                    IdentifierToken,
-                    allowed_values=itertools.chain(
-                        range(1, int(MAX_NUM)), range(-1, int(MAX_NUM), -1)
-                    ),
+
+
+class MinIter:
+    def __init__(self, min_val):
+        self._min = min_val
+
+    def __contains__(self, val):
+        return val >= self._min
+
+
+class SurfaceParser(NodeParser):
+    def __init__(self):
+        super().__init__(
+            MinIter(1),
+            "surface geometry",
+            branches=[
+                NodeParser(
+                    MinIter(0),
+                    "atomic ident",
+                    children=[
+                        TokenParser(
+                            IdentifierToken,
+                            allowed_values=itertools.chain(
+                                range(1, int(MAX_NUM)), range(-1, int(MAX_NUM), -1)
+                            ),
+                        )
+                    ],
                 )
             ],
         )
-    ],
-)
-surface_parser._branches.append(
-    NodeParser(
-        itertools.count(0),
-        "surface parentheses",
-        children=[
-            TokenParser(SeperatorToken, allowed_values="("),
-            surface_parser,
-            TokenParser(SeperatorToken, allowed_values=")"),
-        ],
-    )
-)
-surface_parser.parse(input)
+        self._branches.append(
+            NodeParser(
+                MinIter(0),
+                "surface parentheses",
+                children=[
+                    TokenParser(SeperatorToken, allowed_values="("),
+                    SurfaceParser,
+                    TokenParser(SeperatorToken, allowed_values=")"),
+                ],
+            )
+        )
+
+
+value = SurfaceParser().parse(input)
+print(value.parse_results.print_nodes())
 cell_parser = NodeParser(
     [1],
     "cell",
