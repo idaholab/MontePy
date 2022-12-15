@@ -52,6 +52,7 @@ class NodeParser(ABC):
         unordered_children=set(),
         branches=[],
         map_to=None,
+        pass_through=False,
     ):
         self._allowed_occur = allowed_occurences
         self._name = name
@@ -77,6 +78,7 @@ class NodeParser(ABC):
         self._token_buffer = []
         self._node = self._node_class(self.name)
         self._end_of_tape = False
+        self._pass_through = pass_through
 
     def clear(self):
         self._matches = 0
@@ -202,7 +204,7 @@ class NodeParser(ABC):
                     self._increment_child()
                     return ParseResult(True, False)
                 except StopIteration:
-                    return self._flush_complete_node()
+                    return self._flush_complete_node(self._loop_increment_child)
             else:
                 return ParseResult(True, False, parse_res.could_complete)
         elif self.is_allowed_number_matches():
@@ -219,7 +221,12 @@ class NodeParser(ABC):
             if parse_res.complete:
                 self._matches += 1
                 if self.is_allowed_number_matches():
-                    return parse_res
+                    if not self._pass_through:
+                        if parse_res.parse_results:
+                            self._node.append(parse_res.parse_results)
+                        return self._flush_complete_node(self._loop_increment_branch)
+                    else:
+                        return parse_res
                 else:
                     old_tokens = self._token_buffer
                     self._token_buffer = []
@@ -259,10 +266,10 @@ class NodeParser(ABC):
             else:
                 return ParseResult(False, False, failed_tokens=[token])
 
-    def _flush_complete_node(self):
+    def _flush_complete_node(self, looper_func):
         self._matches += 1
         if self.is_allowed_number_matches(self.matches + 1):
-            self._loop_increment_child()
+            looper_func()
         else:
             self._end_of_tape = True
         new_node = self._node

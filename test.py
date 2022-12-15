@@ -25,7 +25,7 @@ input = Input(
 """
 input = Input(
     [
-        "(5)",
+        "(5) ",
     ],
     mcnpy.input_parser.block_type.BlockType.CELL,
 )
@@ -90,6 +90,7 @@ cell_parser = NodeParser(
         NodeParser(
             [1],
             "material info",
+            pass_through=True,
             branches=[
                 NodeParser(
                     [1],
