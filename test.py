@@ -47,17 +47,11 @@ class SurfaceParser(NodeParser):
             MinIter(1),
             "surface geometry",
             branches=[
-                NodeParser(
-                    MinIter(0),
-                    "atomic ident",
-                    children=[
-                        TokenParser(
-                            IdentifierToken,
-                            allowed_values=itertools.chain(
-                                range(1, int(MAX_NUM)), range(-1, int(MAX_NUM), -1)
-                            ),
-                        )
-                    ],
+                TokenParser(
+                    IdentifierToken,
+                    allowed_values=itertools.chain(
+                        range(1, int(MAX_NUM)), range(-1, int(MAX_NUM), -1)
+                    ),
                 )
             ],
         )
@@ -133,6 +127,7 @@ cell_parser = NodeParser(
 """
 cell_node = cell_parser.parse(input)
 print(cell_node.parse_results.print_nodes())
+"""
 input = Input(
     [
         "5  $foo 10 -0.5",
@@ -144,4 +139,3 @@ input = Input(
 cell_parser.clear()
 cell_node = cell_parser.parse(input)
 print(cell_node.parse_results.print_nodes())
-"""
