@@ -38,7 +38,7 @@ class SemanticNode(ABC):
         ret = []
         for node in self._nodes:
             ret.append(node.print_nodes())
-        return f"N: {self._name} ({', '.join(ret)})"
+        return f"N: {self._name} {{{', '.join(ret)}}}"
 
 
 class IdentifierNode(SemanticNode):
