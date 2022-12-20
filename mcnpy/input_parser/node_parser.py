@@ -153,6 +153,7 @@ class NodeParser(ABC):
                     token = tokens.popleft()
                 except IndexError:
                     break
+                print(tokens)
                 result = self._parse_token(token)
                 # save failed tokens
                 if not result.parsed:
@@ -177,6 +178,7 @@ class NodeParser(ABC):
 
     def _parse_token_with_children(self, token):
         # get rid of implicit tokens (spaces, and comments) first
+        # TODO offload even more
         if isinstance(token, (CommentToken, SpaceToken)):
             if isinstance(self._current_child, TokenParser):
                 return self._handle_implicit_tokens(token)
@@ -195,7 +197,11 @@ class NodeParser(ABC):
                     return parse_res
         elif self._end_of_tape:
             raise ValueError("end of tape")
+        print(
+            "parent", self, "child", self._current_child, "Token:", token.original_input
+        )
         parse_res = self._current_child.parse(token=token)
+        print("parent", self, "child", parse_res)
         if parse_res.parsed == True:
             if parse_res.complete:
                 if parse_res.parse_results:
@@ -216,7 +222,16 @@ class NodeParser(ABC):
         """
         Parses the given token with the branches given.
         """
+        print(
+            "parent",
+            self,
+            "branch",
+            self._current_branch,
+            "Token:",
+            token.original_input,
+        )
         parse_res = self._current_branch.parse(token=token)
+        print("parent", self, "branch", parse_res)
         if parse_res.parsed == True:
             if parse_res.complete:
                 self._matches += 1
