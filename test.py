@@ -25,7 +25,7 @@ input = Input(
 """
 input = Input(
     [
-        "(5) ",
+        "((5))",
     ],
     mcnpy.input_parser.block_type.BlockType.CELL,
 )
@@ -57,7 +57,7 @@ class SurfaceParser(NodeParser):
         )
         self._branches.append(
             NodeParser(
-                MinIter(0),
+                MinIter(1),
                 "surface parentheses",
                 children=[
                     TokenParser(SeperatorToken, allowed_values="("),
@@ -127,7 +127,7 @@ cell_parser = NodeParser(
 """
 cell_node = cell_parser.parse(input)
 print(cell_node.parse_results.print_nodes())
-"""
+""
 input = Input(
     [
         "5  $foo 10 -0.5",
@@ -139,3 +139,4 @@ input = Input(
 cell_parser.clear()
 cell_node = cell_parser.parse(input)
 print(cell_node.parse_results.print_nodes())
+"""
