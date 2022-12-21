@@ -16,8 +16,15 @@ from mcnpy.input_parser.tokens import (
 
 ParseResult = namedtuple(
     "ParseResult",
-    ["parsed", "complete", "could_complete", "parse_results", "failed_tokens"],
-    defaults=[False, False, None, None],
+    [
+        "parsed",
+        "complete",
+        "could_complete",
+        "branch_failure",
+        "parse_results",
+        "failed_tokens",
+    ],
+    defaults=[False, False, False, None, None],
 )
 
 
@@ -153,7 +160,6 @@ class NodeParser(ABC):
                     token = tokens.popleft()
                 except IndexError:
                     break
-                print(tokens)
                 result = self._parse_token(token)
                 # save failed tokens
                 if not result.parsed:
@@ -197,11 +203,7 @@ class NodeParser(ABC):
                     return parse_res
         elif self._end_of_tape:
             raise ValueError("end of tape")
-        print(
-            "parent", self, "child", self._current_child, "Token:", token.original_input
-        )
         parse_res = self._current_child.parse(token=token)
-        print("parent", self, "child", parse_res)
         if parse_res.parsed == True:
             if parse_res.complete:
                 if parse_res.parse_results:
@@ -213,6 +215,8 @@ class NodeParser(ABC):
                     return self._flush_complete_node(self._loop_increment_child)
             else:
                 return ParseResult(True, False, parse_res.could_complete)
+        elif parse_res.branch_failure:
+            return parse_res
         elif self.is_allowed_number_matches():
             return ParseResult(True, True, parse_results=None)
         else:
@@ -222,16 +226,7 @@ class NodeParser(ABC):
         """
         Parses the given token with the branches given.
         """
-        print(
-            "parent",
-            self,
-            "branch",
-            self._current_branch,
-            "Token:",
-            token.original_input,
-        )
         parse_res = self._current_branch.parse(token=token)
-        print("parent", self, "branch", parse_res)
         if parse_res.parsed == True:
             if parse_res.complete:
                 self._matches += 1
@@ -245,16 +240,22 @@ class NodeParser(ABC):
                 else:
                     old_tokens = self._token_buffer
                     self._token_buffer = []
-                    return ParseResult(False, False, failed_tokens=old_tokens)
+                    return ParseResult(
+                        False, False, branch_failure=True, failed_tokens=old_tokens
+                    )
             return parse_res
         else:
+            if parse_res.branch_failure:
+                return parse_res
             try:
                 self._increment_branch()
             except StopIteration:
                 self._loop_increment_branch()
             old_tokens = self._token_buffer
             self._token_buffer = []
-            return ParseResult(False, False, failed_tokens=old_tokens)
+            return ParseResult(
+                False, False, branch_failure=True, failed_tokens=old_tokens
+            )
 
     def _handle_implicit_tokens(self, token):
         """
