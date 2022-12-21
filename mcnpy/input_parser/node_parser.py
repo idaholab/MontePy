@@ -60,6 +60,7 @@ class NodeParser(ABC):
         branches=[],
         map_to=None,
         pass_through=False,
+        allow_implicit_space=True,
     ):
         self._allowed_occur = allowed_occurences
         self._name = name
@@ -86,6 +87,7 @@ class NodeParser(ABC):
         self._node = self._node_class(self.name)
         self._end_of_tape = False
         self._pass_through = pass_through
+        self._allow_imp_space = allow_implicit_space
 
     def clear(self):
         self._matches = 0
@@ -185,7 +187,9 @@ class NodeParser(ABC):
     def _parse_token_with_children(self, token):
         # get rid of implicit tokens (spaces, and comments) first
         # TODO offload even more
-        if isinstance(token, (CommentToken, SpaceToken)):
+        if isinstance(token, CommentToken) or (
+            isinstance(token, SpaceToken) and self._allow_imp_space
+        ):
             if isinstance(self._current_child, TokenParser):
                 return self._handle_implicit_tokens(token)
             else:
