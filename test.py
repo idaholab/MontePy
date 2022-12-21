@@ -25,7 +25,7 @@ input = Input(
 """
 input = Input(
     [
-        "((5))",
+        "5 (3 4)",
     ],
     mcnpy.input_parser.block_type.BlockType.CELL,
 )
@@ -46,6 +46,7 @@ class SurfaceParser(NodeParser):
         super().__init__(
             MinIter(1),
             "surface geometry",
+            allow_implicit_space=False,
             branches=[
                 TokenParser(
                     IdentifierToken,
@@ -55,17 +56,24 @@ class SurfaceParser(NodeParser):
                 )
             ],
         )
-        self._branches.append(
+        self._branches += [
             NodeParser(
                 MinIter(1),
                 "surface parentheses",
+                allow_implicit_space=False,
                 children=[
                     TokenParser(SeperatorToken, allowed_values="("),
                     SurfaceParser,
                     TokenParser(SeperatorToken, allowed_values=")"),
                 ],
-            )
-        )
+            ),
+            NodeParser(
+                MinIter(1),
+                "Surface and",
+                allow_implicit_space=False,
+                children=[SurfaceParser, TokenParser(SpaceToken), SurfaceParser],
+            ),
+        ]
 
 
 value = SurfaceParser().parse(input)
