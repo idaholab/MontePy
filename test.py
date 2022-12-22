@@ -25,7 +25,7 @@ input = Input(
 """
 input = Input(
     [
-        "5 (3 4)",
+        "5 4",
     ],
     mcnpy.input_parser.block_type.BlockType.CELL,
 )
@@ -76,6 +76,7 @@ class SurfaceParser(NodeParser):
         ]
 
 
+SurfaceParser()
 value = SurfaceParser().parse(input)
 print(value.parse_results.print_nodes())
 cell_parser = NodeParser(
