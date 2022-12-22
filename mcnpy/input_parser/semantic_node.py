@@ -1,5 +1,6 @@
 from abc import ABC, abstractmethod
-from mcnpy.input_parser.tokens import Token
+
+# from mcnpy.input_parser.tokens import Token
 
 
 class SemanticNode(ABC):
