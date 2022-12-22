@@ -107,9 +107,13 @@ class NodeParser(ABC):
         """
         Moves the child iterator ahead by one.
         """
-        self._current_index, self._current_child = next(self._child_iterator)
-        if inspect.isclass(self._current_child):
-            self._current_child = self._current_child()
+        self._current_index, self.__current_child = next(self._child_iterator)
+
+    @property
+    def _current_child(self):
+        if inspect.isclass(self.__current_child):
+            self.__current_child = self.__current_child()
+        return self.__current_child
 
     def _loop_increment_child(self):
         """
