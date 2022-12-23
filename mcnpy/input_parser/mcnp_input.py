@@ -63,6 +63,10 @@ class SyntaxNode(ABC):
         return self._input_lines
 
     @property
+    def input_text(self):
+        return "\n".join(self.input_lines)
+
+    @property
     def mutated(self):
         """If true this input has been mutated by the user, and needs to be formatted
 
@@ -140,26 +144,6 @@ class Input(SyntaxNode):
 
     def format_for_mcnp_input(self, mcnp_version):
         pass
-
-    def __iter__(self):
-        return InputIterator(self.input_lines)
-
-
-class InputIterator:
-    def __init__(self, lines):
-        self._lines = lines
-        self._line_iter = iter(self._lines)
-        self._iter = self.get_next_line()
-
-    def get_next_line(self):
-        return iter(next(self._line_iter) + "\n")
-
-    def __next__(self):
-        try:
-            return next(self._iter)
-        except StopIteration:
-            self._iter = self.get_next_line()
-            return next(self._iter)
 
 
 def parse_input_shortcuts(words, input=None):
