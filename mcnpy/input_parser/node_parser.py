@@ -43,6 +43,10 @@ class MCNP_Parser(Parser, metaclass=MetaBuilder):
     def float_phrase(self, p):
         return p
 
+    @_("NULL padding")
+    def null_phrase(self, p):
+        return p
+
     @_("SPACE")
     def padding(self, p):
         return p
@@ -59,20 +63,40 @@ class MCNP_Parser(Parser, metaclass=MetaBuilder):
     def padding(self, p):
         return p
 
-    @_("padding #")
+    @_('padding "&"')
     def padding(self, p):
         return p
 
 
 class CellParser(MCNP_Parser):
-    @_("int_phrase material")
+    @_("int_phrase material geometry")
     def cell(self, p):
         return p
 
-    @_("NULL SPACE")
+    @_("null_phrase")
     def material(self, p):
         return p
 
     @_("int_phrase float_phrase")
     def material(self, p):
+        return p
+
+    @_("INT")
+    def geometry(self, p):
+        return p
+
+    @_("geometry SPACE geometry")
+    def geometry(self, p):
+        return p
+
+    @_('geometry ":" geometry')
+    def geometry(self, p):
+        return p
+
+    @_('"#" geometry')
+    def geometry(self, p):
+        return p
+
+    @_('"(" geometry ")"')
+    def geometry(self, p):
         return p

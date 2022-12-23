@@ -59,17 +59,17 @@ class MCNP_Lexer(Lexer):
         self.lineno += t.value.count("\n")
         return t
 
-    @_(r"[0-9]*\.[0-9]+[eE]?[+\-]?[0-9]*")
+    @_(r"[+\-]?[0-9]*\.[0-9]+[eE]?[+\-]?[0-9]*")
     def FLOAT(self, t):
         t.value = fortran_float(t.value)
         return t
 
-    @_(r"[0-9]*[1-9]+[0-9]*")
+    @_(r"[+\-]?[0-9]*[1-9]+[0-9]*")
     def INT(self, t):
         t.value = int(t.value)
         return t
 
-    @_(r"0+")
+    @_(r"[+\-]?0+")
     def NULL(self, t):
         t.value = 0
         return t
