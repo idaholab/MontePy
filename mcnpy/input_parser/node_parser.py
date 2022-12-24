@@ -69,7 +69,9 @@ class MCNP_Parser(Parser, metaclass=MetaBuilder):
 
 
 class CellParser(MCNP_Parser):
-    @_("int_phrase material geometry")
+    debugfile = "parser.out"
+
+    @_("int_phrase material geometry_expr")
     def cell(self, p):
         return p
 
@@ -81,22 +83,30 @@ class CellParser(MCNP_Parser):
     def material(self, p):
         return p
 
+    @_('geometry_expr ":" geometry_term')
+    def geometry_expr(self, p):
+        return p
+
+    @_("geometry_term")
+    def geometry_expr(self, p):
+        return p
+
+    @_("geometry_term SPACE geometry_factor")
+    def geometry_term(self, p):
+        return p
+
+    @_("geometry_factor")
+    def geometry_term(self, p):
+        return p
+
+    @_('"#" geometry_factor')
+    def geometry_term(self, p):
+        return p
+
     @_("INT")
-    def geometry(self, p):
+    def geometry_factor(self, p):
         return p
 
-    @_("geometry SPACE geometry")
-    def geometry(self, p):
-        return p
-
-    @_('geometry ":" geometry')
-    def geometry(self, p):
-        return p
-
-    @_('"#" geometry')
-    def geometry(self, p):
-        return p
-
-    @_('"(" geometry ")"')
-    def geometry(self, p):
+    @_('"(" geometry_expr ")"')
+    def geometry_factor(self, p):
         return p
