@@ -89,7 +89,7 @@ class CellParser(MCNP_Parser):
 
     @_("geometry_term")
     def geometry_expr(self, p):
-        return p
+        return p.geometry_term
 
     @_("geometry_term SPACE geometry_factor")
     def geometry_term(self, p):
@@ -97,16 +97,20 @@ class CellParser(MCNP_Parser):
 
     @_("geometry_factor")
     def geometry_term(self, p):
-        return p
+        return p.geometry_factor
 
-    @_('"#" geometry_factor')
-    def geometry_term(self, p):
+    @_("geometry_factory")
+    def geometry_factor(self, p):
+        return p.geometry_factory
+
+    @_('"#" geometry_factory')
+    def geometry_factor(self, p):
         return p
 
     @_("INT")
-    def geometry_factor(self, p):
+    def geometry_factory(self, p):
         return p
 
     @_('"(" geometry_expr ")"')
-    def geometry_factor(self, p):
+    def geometry_factory(self, p):
         return p
