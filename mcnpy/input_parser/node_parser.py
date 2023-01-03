@@ -139,7 +139,7 @@ class CellParser(MCNP_Parser):
         return p
 
     @_("parameters padding parameter")
-    def paramaters(self, p):
+    def parameters(self, p):
         return p
 
     @_('KEYWORD "=" int_phrase')
