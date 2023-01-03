@@ -7,8 +7,9 @@ Input = mcnpy.input_parser.mcnp_input.Input
 input = Input(
     [
         "5  $foo 10 -0.5",
-        "     1 -0.5 -1 2 : 3 #(4 5)",
-        # "     u=1"
+        "     1 -0.5 -1 2 : 3 #(4 5) ",
+        "     u=1 ",
+        "     Imp:n=1 ",
         # "C this is a comment",
     ],
     mcnpy.input_parser.block_type.BlockType.CELL,
