@@ -9,6 +9,7 @@ class MCNP_Lexer(Lexer):
         COMMENT,
         SOURCE_COMMENT,
         TALLY_COMMENT,
+        COMPLEMENT,
         INT,
         FLOAT,
         NULL,
@@ -19,9 +20,13 @@ class MCNP_Lexer(Lexer):
         INTERPOLATE,
         JUMP,
         LOG_INTERPOLATE,
+        PARTICLE_DESIGNATOR,
+        KEYWORD,
     }
 
-    literals = {"(", ":", ")", "&", "#"}
+    literals = {"(", ":", ")", "&", "#", "="}
+
+    COMPLEMENT = r"\#"
 
     reflags = re.IGNORECASE | re.VERBOSE
 
@@ -72,9 +77,10 @@ class MCNP_Lexer(Lexer):
         t.value = int(t.value)
         return t
 
-    @_(r"[+\-]?0+")
-    def NULL(self, t):
-        t.value = 0
+    NULL = r"0+"
+
+    @_(r":[npe|quvfhl+\-xyo!<>g/zk%^b_~cw@dtsa\*\?\#,]+")
+    def PARTICLE_DESIGNATOR(self, t):
         return t
 
     @_(r"MESSAGE:.*\s")

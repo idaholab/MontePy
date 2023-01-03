@@ -119,7 +119,7 @@ class CellParser(MCNP_Parser):
     def geometry_factor(self, p):
         return p.geometry_factory
 
-    @_('"#" geometry_factory')
+    @_("COMPLEMENT geometry_factory")
     def geometry_factor(self, p):
         return p
 
