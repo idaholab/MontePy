@@ -71,6 +71,10 @@ class MCNP_Parser(Parser, metaclass=MetaBuilder):
 class CellParser(MCNP_Parser):
     debugfile = "parser.out"
 
+    @_("int_phrase material geometry_expr parameters")
+    def cell(self, p):
+        return p
+
     @_("int_phrase material geometry_expr")
     def cell(self, p):
         return p
@@ -129,4 +133,20 @@ class CellParser(MCNP_Parser):
 
     @_('"(" geometry_expr ")"')
     def geometry_factory(self, p):
+        return p
+
+    @_("parameter")
+    def parameters(self, p):
+        return p
+
+    @_("parameters padding parameter")
+    def paramaters(self, p):
+        return p
+
+    @_('KEYWORD "=" int_phrase')
+    def parameter(self, p):
+        return p
+
+    @_('KEYWORD PARTICLE_DESIGNATOR "=" int_phrase')
+    def parameter(self, p):
         return p
