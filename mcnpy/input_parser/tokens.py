@@ -72,9 +72,11 @@ class MCNP_Lexer(Lexer):
         t.value = fortran_float(t.value)
         return t
 
-    @_(r"[+\-]?[0-9]*[1-9]+[0-9]*")
+    @_(r"[+\-]?[0-9]+")
     def INT(self, t):
         t.value = int(t.value)
+        if t.value == 0:
+            t.type = "NULL"
         return t
 
     NULL = r"0+"
@@ -86,6 +88,30 @@ class MCNP_Lexer(Lexer):
     @_(r"MESSAGE:.*\s")
     def MESSAGE(self, t):
         self.lineno += t.value.count("\n")
+        return t
+
+    @_(
+        r"""
+       imp|
+       vol|
+       pwt|
+       ext|
+       fcl|
+       wwn|
+       dxc|
+       nonu|
+       pd|
+       tmp|
+       u|
+       trcl|
+       lat|
+       fill|
+       elpt|
+       cosy|
+       bflcl|
+       unc"""
+    )
+    def KEYWORD(self, t):
         return t
 
     @_(r"\d*R")
