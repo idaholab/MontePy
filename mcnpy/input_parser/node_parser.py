@@ -25,7 +25,6 @@ class MetaBuilder(sly.yacc.ParserMeta):
                     not attr_name.startswith("_")
                     and attr_name not in MetaBuilder.protected_names
                 ):
-                    print(attr_name)
                     func = getattr(MCNP_Parser, attr_name)
                     attributes[attr_name] = func
         cls = super().__new__(meta, classname, bases, attributes)
