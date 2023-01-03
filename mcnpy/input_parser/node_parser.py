@@ -83,7 +83,19 @@ class CellParser(MCNP_Parser):
     def material(self, p):
         return p
 
-    @_('geometry_expr ":" geometry_term')
+    @_('":"')
+    def union(self, p):
+        return p
+
+    @_("union padding")
+    def union(self, p):
+        return p
+
+    @_("geometry_expr union geometry_term")
+    def geometry_expr(self, p):
+        return p
+
+    @_("geometry_expr padding")
     def geometry_expr(self, p):
         return p
 
@@ -91,7 +103,11 @@ class CellParser(MCNP_Parser):
     def geometry_expr(self, p):
         return p.geometry_term
 
-    @_("geometry_term SPACE geometry_factor")
+    @_("geometry_term padding geometry_factor")
+    def geometry_term(self, p):
+        return p
+
+    @_("geometry_term padding")
     def geometry_term(self, p):
         return p
 
