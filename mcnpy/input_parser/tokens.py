@@ -1,4 +1,5 @@
 from mcnpy.utilities import fortran_float
+import re
 from sly import Lexer
 
 
@@ -22,12 +23,14 @@ class MCNP_Lexer(Lexer):
 
     literals = {"(", ":", ")", "&", "#"}
 
+    reflags = re.IGNORECASE | re.VERBOSE
+
     @_(r"\$.*\s?")
     def DOLLAR_COMMENT(self, t):
         self.lineno += t.value.count("\n")
         return t
 
-    @_(r"[cC]\s.*")
+    @_(r"C\s.*")
     def COMMENT(self, t):
         self.lineno += t.value.count("\n")
         start = find_column(self.text, t)
@@ -36,7 +39,7 @@ class MCNP_Lexer(Lexer):
         else:
             raise ValueError("Comment not allowed here")
 
-    @_(r"[sS][cC]\d+.*")
+    @_(r"SC\d+.*")
     def SOURCE_COMMENT(self, t):
         self.lineno += t.value.count("\n")
         start = find_column(self.text, t)
@@ -45,7 +48,7 @@ class MCNP_Lexer(Lexer):
         else:
             raise ValueError("Comment not allowed here")
 
-    @_(r"[fF][cC]\d+.*")
+    @_(r"FC\d+.*")
     def TALLY_COMMENT(self, t):
         self.lineno += t.value.count("\n")
         start = find_column(self.text, t)
@@ -59,7 +62,7 @@ class MCNP_Lexer(Lexer):
         self.lineno += t.value.count("\n")
         return t
 
-    @_(r"[+\-]?[0-9]*\.[0-9]+[eE]?[+\-]?[0-9]*")
+    @_(r"[+\-]?[0-9]*\.[0-9]+E?[+\-]?[0-9]*")
     def FLOAT(self, t):
         t.value = fortran_float(t.value)
         return t
@@ -74,12 +77,12 @@ class MCNP_Lexer(Lexer):
         t.value = 0
         return t
 
-    @_(r"(MESSAGE|message):.*\s")
+    @_(r"MESSAGE:.*\s")
     def MESSAGE(self, t):
         self.lineno += t.value.count("\n")
         return t
 
-    @_(r"\d*[rR]")
+    @_(r"\d*R")
     def REPEAT(self, t):
         try:
             t.repeat_num = int(t.value.lower().replace("r", ""))
@@ -87,7 +90,7 @@ class MCNP_Lexer(Lexer):
             t.repeat_num = 1
         return t
 
-    @_(r"\d*[mM]")
+    @_(r"\d*M")
     def MULTIPLY(self, t):
         try:
             t.multiply_num = int(t.value.lower().replace("m", ""))
@@ -95,7 +98,7 @@ class MCNP_Lexer(Lexer):
             t.multiply_num = 1
         return t
 
-    @_(r"\d*[iI]")
+    @_(r"\d*I")
     def INTERPOLATE(self, t):
         try:
             t.interp_num = int(t.value.lower().replace("i", ""))
@@ -103,7 +106,7 @@ class MCNP_Lexer(Lexer):
             t.interp_num = 1
         return t
 
-    @_(r"\d*[jJ]")
+    @_(r"\d*J")
     def JUMP(self, t):
         try:
             t.jump_num = int(t.value.lower().replace("i", ""))
@@ -111,7 +114,7 @@ class MCNP_Lexer(Lexer):
             t.jump_num = 1
         return t
 
-    @_(r"\d*(log|LOG|ilog|ILOG)")
+    @_(r"\d*I?LOG")
     def LOG_INTERPOLATE(self, t):
         try:
             t.jump_num = int(t.value.lower().replace("i", ""))
