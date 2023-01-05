@@ -15,7 +15,7 @@ input = Input(
     mcnpy.input_parser.block_type.BlockType.CELL,
 )
 lexer = mcnpy.input_parser.tokens.MCNP_Lexer()
-parser = mcnpy.input_parser.node_parser.CellParser()
+parser = mcnpy.input_parser.cell_parser.CellParser()
 for token in lexer.tokenize(input.input_text):
     print(token)
 print(parser.parse(lexer.tokenize(input.input_text)))
