@@ -136,17 +136,9 @@ class CellParser(MCNP_Parser):
 
     @_("parameter")
     def parameters(self, p):
-        print("parameters -> parameter")
-        print(p._stack)
-        print(self.statestack)
-        print(self.state)
         return p
 
-    @_("parameters error parameter")
-    def parameters(self, p):
-        return p
-
-    @_("parameter padding parameter")
+    @_("parameters parameter")
     def parameters(self, p):
         return p
 
