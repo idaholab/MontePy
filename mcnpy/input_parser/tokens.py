@@ -10,8 +10,7 @@ class MCNP_Lexer(Lexer):
         SOURCE_COMMENT,
         TALLY_COMMENT,
         COMPLEMENT,
-        INT,
-        FLOAT,
+        NUMBER,
         NULL,
         SPACE,
         MESSAGE,
@@ -67,14 +66,9 @@ class MCNP_Lexer(Lexer):
         self.lineno += t.value.count("\n")
         return t
 
-    @_(r"[+\-]?[0-9]*\.[0-9]+E?[+\-]?[0-9]*")
-    def FLOAT(self, t):
+    @_(r"[+\-]?[0-9]+\.?[0-9]*E?[+\-]?[0-9]*")
+    def NUMBER(self, t):
         t.value = fortran_float(t.value)
-        return t
-
-    @_(r"[+\-]?[0-9]+")
-    def INT(self, t):
-        t.value = int(t.value)
         if t.value == 0:
             t.type = "NULL"
         return t

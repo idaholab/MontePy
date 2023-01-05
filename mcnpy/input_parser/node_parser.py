@@ -34,12 +34,8 @@ class MetaBuilder(sly.yacc.ParserMeta):
 class MCNP_Parser(Parser, metaclass=MetaBuilder):
     tokens = MCNP_Lexer.tokens
 
-    @_("INT padding")
-    def int_phrase(self, p):
-        return p
-
-    @_("FLOAT padding")
-    def float_phrase(self, p):
+    @_("NUMBER padding")
+    def number_phrase(self, p):
         return p
 
     @_("NULL padding")
@@ -70,11 +66,11 @@ class MCNP_Parser(Parser, metaclass=MetaBuilder):
 class CellParser(MCNP_Parser):
     debugfile = "parser.out"
 
-    @_("int_phrase material geometry_expr parameters")
+    @_("number_phrase material geometry_expr parameters")
     def cell(self, p):
         return p
 
-    @_("int_phrase material geometry_expr")
+    @_("number_phrase material geometry_expr")
     def cell(self, p):
         return p
 
@@ -82,7 +78,7 @@ class CellParser(MCNP_Parser):
     def material(self, p):
         return p
 
-    @_("int_phrase float_phrase")
+    @_("number_phrase number_phrase")
     def material(self, p):
         return p
 
@@ -126,7 +122,7 @@ class CellParser(MCNP_Parser):
     def geometry_factor(self, p):
         return p
 
-    @_("INT")
+    @_("NUMBER")
     def geometry_factory(self, p):
         return p
 
@@ -142,10 +138,10 @@ class CellParser(MCNP_Parser):
     def parameters(self, p):
         return p
 
-    @_('KEYWORD "=" int_phrase')
+    @_('KEYWORD "=" number_phrase')
     def parameter(self, p):
         return p
 
-    @_('KEYWORD PARTICLE_DESIGNATOR "=" int_phrase')
+    @_('KEYWORD PARTICLE_DESIGNATOR "=" number_phrase')
     def parameter(self, p):
         return p
