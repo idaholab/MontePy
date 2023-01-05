@@ -64,7 +64,6 @@ class MCNP_Parser(Parser, metaclass=MetaBuilder):
 
 
 class CellParser(MCNP_Parser):
-    debugfile = "parser.out"
 
     @_("number_phrase material geometry_expr parameters")
     def cell(self, p):

@@ -3,6 +3,8 @@ build/*
 dist/*
 *egg-info/*
 *.mcnp
+.coverage
+.idea/*
 *.*.sw*
 doc/build/*
 doc/source/api/*
