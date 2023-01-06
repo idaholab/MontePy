@@ -5,17 +5,11 @@ Input = mcnpy.input_parser.mcnp_input.Input
 
 ""
 input = Input(
-    [
-        "5  $foo 10 -0.5",
-        "     1 -0.5 -1 2 : 3 #(4 5) ",
-        "     u=1 ",
-        "     Imp:n=1 ",
-        # "C this is a comment",
-    ],
+    ["5 CZ 5.0 3.0"],
     mcnpy.input_parser.block_type.BlockType.CELL,
 )
 lexer = mcnpy.input_parser.tokens.MCNP_Lexer()
-parser = mcnpy.input_parser.cell_parser.CellParser()
+parser = mcnpy.input_parser.surface_parser.SurfaceParser()
 for token in lexer.tokenize(input.input_text):
     print(token)
 print(parser.parse(lexer.tokenize(input.input_text)))
