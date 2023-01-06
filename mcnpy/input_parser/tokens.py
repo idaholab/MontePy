@@ -87,7 +87,7 @@ class MCNP_Lexer(Lexer):
         "arb",
     }
 
-    literals = {"(", ":", ")", "&", "#", "="}
+    literals = {"(", ":", ")", "&", "#", "=", "*", "+"}
 
     COMPLEMENT = r"\#"
 
