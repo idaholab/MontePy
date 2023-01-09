@@ -1,231 +1,240 @@
-from abc import ABC, abstractmethod
-from collections import deque
-from enum import auto, Enum
-import itertools
-from mcnpy.input_parser.mcnp_input import SyntaxNode
 from mcnpy.utilities import fortran_float
+import re
+from sly import Lexer
 
 
-class ParseStatus(Enum):
-    COMPLETE = auto()
-    INCOMPLETE = auto()
-    FAILED = auto()
+class MCNP_Lexer(Lexer):
+    tokens = {
+        COMMENT,
+        COMPLEMENT,
+        DOLLAR_COMMENT,
+        INTERPOLATE,
+        JUMP,
+        KEYWORD,
+        LOG_INTERPOLATE,
+        MESSAGE,
+        MULTIPLY,
+        NUMBER,
+        NULL,
+        PARTICLE_DESIGNATOR,
+        REPEAT,
+        SOURCE_COMMENT,
+        SPACE,
+        SURFACE_TYPE,
+        TALLY_COMMENT,
+        TEXT,
+        ZAID,
+    }
 
+    _KEYWORDS = {
+        # read
+        "read",
+        "noecho",
+        "file",
+        "decode",
+        "encode",
+        # Cells
+        "imp",
+        "vol",
+        "pwt",
+        "ext",
+        "fcl",
+        "wwn",
+        "dxc",
+        "nonu",
+        "pd",
+        "tmp",
+        "u",
+        "trcl",
+        "lat",
+        "fill",
+        "elpt",
+        "cosy",
+        "bflcl",
+        "unc",
+        # materials
+        "gas",
+        "estep",
+        "hstep",
+        "nlib",
+        "plib",
+        "pnlib",
+        "elib",
+        "hlib",
+        "alib",
+        "slib",
+        "tlib",
+        "dlib",
+        "cond",
+        "refi",
+        "refc",
+        "refs",
+    }
 
-def tokenize(input):
-    _TOKEN_ORDER = [CommentToken, DataToken, SpaceToken, SeperatorToken]
-    class_iter = iter(_TOKEN_ORDER)
-    current_token = None
-    letters = deque(input)
-    while True:
-        try:
-            char = letters.popleft()
-        except IndexError:
-            break
-        if current_token is None:
-            current_token = next(class_iter)()
-        status, overflow = current_token.matches(char)
-        if status in {ParseStatus.COMPLETE, ParseStatus.FAILED}:
-            if status == ParseStatus.COMPLETE:
-                class_iter = iter(_TOKEN_ORDER)
-                yield current_token
-            current_token = next(class_iter)()
-            if len(overflow) > 0:
-                for char in overflow[::-1]:
-                    letters.appendleft(char)
+    _SURFACE_TYPES = {
+        "p",
+        "px",
+        "py",
+        "pz",
+        "so",
+        "s",
+        "sx",
+        "sy",
+        "sz",
+        "c/x",
+        "c/y",
+        "c/z",
+        "cx",
+        "cy",
+        "cz",
+        "k/x",
+        "k/y",
+        "k/z",
+        "kx",
+        "ky",
+        "kz",
+        "sq",
+        "gq",
+        "tx",
+        "ty",
+        "tz",
+        "x",
+        "y",
+        "z",
+        "box",
+        "rpp",
+        "sph",
+        "rcc",
+        "rhp",
+        "hex",
+        "rec",
+        "trc",
+        "ell",
+        "wed",
+        "arb",
+    }
 
+    literals = {"(", ":", ")", "&", "#", "=", "*", "+"}
 
-class Token(SyntaxNode):
-    """
-    Class to represent a syntax Token
+    COMPLEMENT = r"\#"
 
-    """
+    reflags = re.IGNORECASE | re.VERBOSE
 
-    def __init__(self):
-        self._original_input = None
-        self._value = None
-        self._buffer = ""
+    @_(r"\$.*\s?")
+    def DOLLAR_COMMENT(self, t):
+        self.lineno += t.value.count("\n")
+        return t
 
-    @property
-    def original_input(self):
-        return self._original_input
-
-    @property
-    def value(self):
-        return self._value
-
-    @abstractmethod
-    def format(self):
-        pass
-
-    @abstractmethod
-    def parse(self, validator=None):
-        pass
-
-    @abstractmethod
-    def matches(self, char):
-        pass
-
-    def format_for_mcnp_input(self, mcnp_version):
-        pass
-
-    def print_nodes(self):
-        return f"T: {self.original_input}"
-
-
-class DataToken(Token):
-    _ALLOWED_CHAR = {"-", "."}
-    _ALLOWED_SECOND_CHAR = {":"}
-    _TERMINATORS = {"(", ")", " ", "\n"}
-
-    def __init__(self, token=None):
-        super().__init__()
-        if token:
-            self._original_input = token.original_input
-
-    def format():
-        pass
-
-    def parse(self, validator=None):
-        pass
-
-    def matches(self, char):
-        self._buffer += char
-        if char.isalnum() or char in self._ALLOWED_CHAR:
-            return (ParseStatus.INCOMPLETE, "")
-        elif len(self._buffer) > 0 and char in self._ALLOWED_SECOND_CHAR:
-            return (ParseStatus.INCOMPLETE, "")
-        elif len(self._buffer) > 1 and (char.isspace() or char in self._TERMINATORS):
-            self._original_input = self._buffer[:-1]
-            del self._buffer
-            return (ParseStatus.COMPLETE, char)
+    @_(r"C\s.*")
+    def COMMENT(self, t):
+        self.lineno += t.value.count("\n")
+        start = find_column(self.text, t)
+        if start <= 5:
+            return t
         else:
-            return (ParseStatus.FAILED, self._buffer)
+            raise ValueError("Comment not allowed here")
 
+    @_(r"SC\d+.*")
+    def SOURCE_COMMENT(self, t):
+        self.lineno += t.value.count("\n")
+        start = find_column(self.text, t)
+        if start <= 5:
+            return t
+        else:
+            raise ValueError("Comment not allowed here")
 
-class IdentifierToken(DataToken):
-    """
-    Class to represent a Identifier Token.
+    @_(r"FC\d+.*")
+    def TALLY_COMMENT(self, t):
+        self.lineno += t.value.count("\n")
+        start = find_column(self.text, t)
+        if start <= 5:
+            return t
+        else:
+            raise ValueError("Comment not allowed here")
 
-    Object identifiers (an object number).
-    """
+    @_(r"\s+")
+    def SPACE(self, t):
+        self.lineno += t.value.count("\n")
+        return t
 
-    def parse(self, validator=None):
+    @_(r"\d{4,6}\.\d{2,3}[a-z]")
+    def ZAID(self, t):
+        return t
+
+    @_(r"[+\-]?[0-9]+\.?[0-9]*E?[+\-]?[0-9]*")
+    def NUMBER(self, t):
+        t.value = fortran_float(t.value)
+        if t.value == 0:
+            t.type = "NULL"
+        return t
+
+    NULL = r"0+"
+
+    @_(r":[npe|quvfhl+\-xyo!<>g/zk%^b_~cw@dtsa\*\?\#,]+")
+    def PARTICLE_DESIGNATOR(self, t):
+        return t
+
+    @_(r"MESSAGE:.*\s")
+    def MESSAGE(self, t):
+        self.lineno += t.value.count("\n")
+        return t
+
+    @_(r"\d*R\s")
+    def REPEAT(self, t):
         try:
-            self._value = int(self.original_input)
-            if validator:
-                assert validator(self.value)
-            return True
-        except (ValueError, AssertionError) as e:
-            return False
-
-
-class LiteralToken(DataToken):
-    """
-    Class to represent a literal token providing data.
-    """
-
-    def parse(self, validator=None):
-        try:
-            self._value = fortran_float(self.original_input)
-            if validator:
-                assert validator(self.value)
-            return True
-        except (ValueError, AssertionError) as e:
-            return False
-
-    def matches(self):
-        try:
-            self.parse()
-            return True
+            t.repeat_num = int(t.value.lower().replace("r", ""))
         except ValueError:
-            return False
+            t.repeat_num = 1
+        return t
+
+    @_(r"\d*M\s")
+    def MULTIPLY(self, t):
+        try:
+            t.multiply_num = int(t.value.lower().replace("m", ""))
+        except ValueError:
+            t.multiply_num = 1
+        return t
+
+    @_(r"\d*I\s")
+    def INTERPOLATE(self, t):
+        try:
+            t.interp_num = int(t.value.lower().replace("i", ""))
+        except ValueError:
+            t.interp_num = 1
+        return t
+
+    @_(r"\d*J\s")
+    def JUMP(self, t):
+        try:
+            t.jump_num = int(t.value.lower().replace("i", ""))
+        except ValueError:
+            t.jump_num = 1
+        return t
+
+    @_(r"\d*I?LOG\s")
+    def LOG_INTERPOLATE(self, t):
+        try:
+            t.jump_num = int(t.value.lower().replace("i", ""))
+        except ValueError:
+            t.jump_num = 1
+        return t
+
+    @_(r"[a-z/\.]+")
+    def TEXT(self, t):
+        if t.value.lower() in self._KEYWORDS:
+            t.type = "KEYWORD"
+        elif t.value.lower() in self._SURFACE_TYPES:
+            t.type = "SURFACE_TYPE"
+        return t
+
+    KEYWORD = r"imp"
+
+    SURFACE_TYPE = r"pz"
 
 
-class SpaceToken(Token):
-    def parse(self, validator=None):
-        self._value = self.original_input
-        return True
-
-    def format(self):
-        pass
-
-    def matches(self, char):
-        self._buffer += char
-
-        if char.isspace():
-            return (ParseStatus.INCOMPLETE, "")
-        else:
-            if self._buffer[:-1].isspace():
-                self._original_input = self._buffer[:-1]
-                del self._buffer
-                return (ParseStatus.COMPLETE, char)
-            else:
-                return (ParseStatus.FAILED, self._buffer)
-
-
-class SeperatorToken(Token):
-    _SEPERATOR_CHAR = {"(", ":", ")"}
-
-    def parse(self, validator=None):
-        self._value = self.original_input
-        return True
-
-    def format(self):
-        pass
-
-    def matches(self, char):
-        self._buffer += char
-
-        def flush_complete(char):
-            self._original_input = self._buffer[:-1]
-            del self._buffer
-            return (ParseStatus.COMPLETE, char)
-
-        if char in self._SEPERATOR_CHAR:
-            self._original_input = self._buffer
-            return (ParseStatus.COMPLETE, "")
-        else:
-            return (ParseStatus.FAILED, self._buffer)
-
-
-class CommentToken(Token):
-    """
-    Class to represent a token in a comment.
-    """
-
-    _COMMENT_STARTER = {"$", "c ", "c\n", "c\t"}
-    _LINE_TERMINATOR = "\n"
-
-    def __init__(self):
-        super().__init__()
-        self._started = False
-
-    def parse(self, validator=None):
-        return True
-
-    def format(self):
-        pass
-
-    def matches(self, char):
-        self._buffer += char
-        if not self._started:
-            if self._buffer.lower() in self._COMMENT_STARTER:
-                self._started = True
-                if self._buffer.lower() == "c\n":
-                    self._original_input = self._buffer[:]
-                    del self._buffer
-                    return (ParseStatus.COMPLETE, "")
-                return (ParseStatus.INCOMPLETE, "")
-            elif (self._buffer + " ").lower() in self._COMMENT_STARTER:
-                return (ParseStatus.INCOMPLETE, "")
-            else:
-                return (ParseStatus.FAILED, self._buffer)
-        else:
-            if char == self._LINE_TERMINATOR:
-                # actually consumes new line
-                self._original_input = self._buffer[:]
-                del self._buffer
-                return (ParseStatus.COMPLETE, "")
-            else:
-                return (ParseStatus.INCOMPLETE, "")
+def find_column(text, token):
+    last_cr = text.rfind("\n", 0, token.index)
+    if last_cr < 0:
+        last_cr = 0
+    column = token.index - last_cr
+    return column
