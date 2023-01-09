@@ -13,7 +13,11 @@ setup(
     url="https://hpcgitlab.hpc.inl.gov/experiment_analysis/mcnpy/",
     install_requires=[
         "numpy",
+        "sly",
     ],
+    # needs f string formatting
+    # needs insertion ordered dicts
+    python_requires=">=3.7",
     extras_require={
         "doc": ["sphinx", "sphinxcontrib-apidoc", "sphinx_rtd_theme"],
         "test": ["coverage"],
