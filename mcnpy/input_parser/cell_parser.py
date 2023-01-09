@@ -74,10 +74,6 @@ class CellParser(MCNP_Parser):
     def parameters(self, p):
         return p
 
-    @_('KEYWORD "=" number_phrase')
-    def parameter(self, p):
-        return p
-
-    @_('KEYWORD PARTICLE_DESIGNATOR "=" number_phrase')
+    @_("KEYWORD PARTICLE_DESIGNATOR param_seperator number_phrase")
     def parameter(self, p):
         return p

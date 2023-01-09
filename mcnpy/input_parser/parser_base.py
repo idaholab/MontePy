@@ -65,3 +65,14 @@ class MCNP_Parser(Parser, metaclass=MetaBuilder):
     @_('padding "&"')
     def padding(self, p):
         return p
+
+    @_('"="', "SPACE")
+    def param_seperator(self, p):
+        return p
+
+    @_(
+        "KEYWORD param_seperator number_sequence",
+        "KEYWORD param_seperator number_sequence",
+    )
+    def parameter(self, p):
+        return p
