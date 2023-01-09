@@ -25,7 +25,9 @@ class MCNP_Lexer(Lexer):
         TEXT,
         ZAID,
     }
+
     _KEYWORDS = {
+        # Cells
         "imp",
         "vol",
         "pwt",
@@ -44,6 +46,23 @@ class MCNP_Lexer(Lexer):
         "cosy",
         "bflcl",
         "unc",
+        # materials
+        "gas",
+        "estep",
+        "hstep",
+        "nlib",
+        "plib",
+        "pnlib",
+        "elib",
+        "hlib",
+        "alib",
+        "slib",
+        "tlib",
+        "dlib",
+        "cond",
+        "refi",
+        "refc",
+        "refs",
     }
 
     _SURFACE_TYPES = {
