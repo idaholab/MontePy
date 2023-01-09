@@ -66,14 +66,6 @@ class CellParser(MCNP_Parser):
     def geometry_factory(self, p):
         return p
 
-    @_("parameter")
-    def parameters(self, p):
-        return p
-
-    @_("parameters parameter")
-    def parameters(self, p):
-        return p
-
     @_("KEYWORD PARTICLE_DESIGNATOR param_seperator number_phrase")
     def parameter(self, p):
         return p

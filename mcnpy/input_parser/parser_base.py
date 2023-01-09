@@ -76,3 +76,7 @@ class MCNP_Parser(Parser, metaclass=MetaBuilder):
     )
     def parameter(self, p):
         return p
+
+    @_("parameter", "parameters parameter")
+    def parameters(self, p):
+        return p
