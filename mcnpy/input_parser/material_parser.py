@@ -23,6 +23,6 @@ class MaterialParser(MCNP_Parser):
     def isotope_fractions(self, p):
         return p
 
-    @_("KEYWORD param_seperator NUMBER TEXT padding")
+    @_("KEYWORD param_seperator NUMBER text_phrase")
     def parameter(self, p):
         return p
