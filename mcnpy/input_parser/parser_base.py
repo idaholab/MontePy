@@ -1,4 +1,5 @@
 from mcnpy.input_parser.tokens import MCNP_Lexer
+from mcnpy.input_parser import semantic_node
 from sly import Parser
 import sly
 
@@ -36,39 +37,36 @@ class MCNP_Parser(Parser, metaclass=MetaBuilder):
 
     @_("NUMBER", "NUMBER padding")
     def number_phrase(self, p):
-        return p
+        if len(p) > 1:
+            padding = p[1]
+        else:
+            padding = None
+        return semantic_node.ValueNode(p[0], padding)
 
     @_("number_phrase", "number_sequence number_phrase")
     def number_sequence(self, p):
         return p
 
-    @_("TEXT", "NULL padding")
+    @_("NULL", "NULL padding")
     def null_phrase(self, p):
         return p
 
     @_("TEXT", "TEXT padding")
     def text_phrase(self, p):
-        return p
+        if len(p) > 1:
+            padding = p[1]
+        else:
+            padding = None
+        return semantic_node.ValueNode(p[0], padding)
 
     @_("SPACE")
     def padding(self, p):
-        return p
+        return semantic_node.PaddingNode(p.SPACE)
 
-    @_("padding SPACE")
+    @_("padding SPACE", "padding DOLLAR_COMMENT", "padding COMMENT", 'padding "&"')
     def padding(self, p):
-        return p
-
-    @_("padding DOLLAR_COMMENT")
-    def padding(self, p):
-        return p
-
-    @_("padding COMMENT")
-    def padding(self, p):
-        return p
-
-    @_('padding "&"')
-    def padding(self, p):
-        return p
+        p[0].append(p[1])
+        return p[0]
 
     @_('"="', "SPACE")
     def param_seperator(self, p):
@@ -83,4 +81,11 @@ class MCNP_Parser(Parser, metaclass=MetaBuilder):
 
     @_("parameter", "parameters parameter")
     def parameters(self, p):
-        return p
+        if len(p) == 1:
+            params = semantic_node.ParametersNode()
+            param = p[0]
+        else:
+            params = p[0]
+            param = p[1]
+        params.append(*param[1:])
+        return params

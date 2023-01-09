@@ -41,7 +41,63 @@ class SemanticNode(ABC):
             ret.append(node.print_nodes())
         return f"N: {self._name} {{{', '.join(ret)}}}"
 
+    @property
+    def name(self):
+        return self._name
+
+    @name.setter
+    def name(self, name):
+        if isinstance(name, str):
+            raise TypeError("Name must be a string")
+        self._name = name
+
+
+class PaddingNode(SemanticNode):
+    def __init__(self, token):
+        super().__init__("padding")
+        self._nodes = [token]
+
+    def __str__(self):
+        return f"(Padding, {self._nodes})"
+
+    def __repr__(self):
+        return str(self)
+
+
+class ValueNode(SemanticNode):
+    def __init__(self, token, padding=None):
+        super().__init__("")
+        self._value = token
+        self._padding = padding
+
+    def __str__(self):
+        return f"(Value, {self._value}, padding: {self._padding}"
+
+    def __repr__(self):
+        return str(self)
+
+    @property
+    def value(self):
+        return self._value
+
+
+class ParametersNode(SemanticNode):
+    def __init__(self):
+        super().__init__("parameters")
+        self._params = {}
+
+    def append(self, key, seperator, value):
+        self._params[key.lower()] = (value, key, seperator)
+
+    def get_value(self, key):
+        return self._params[key][0].value
+
+    def __str__(self):
+        return f"(Parameters, {self._params})"
+
+    def __repr__(self):
+        return str(self)
+
 
 class IdentifierNode(SemanticNode):
-
     pass
