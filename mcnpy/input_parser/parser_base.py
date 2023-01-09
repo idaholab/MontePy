@@ -76,6 +76,7 @@ class MCNP_Parser(Parser, metaclass=MetaBuilder):
 
     @_(
         "KEYWORD param_seperator number_sequence",
+        "KEYWORD param_seperator text_phrase",
     )
     def parameter(self, p):
         return p
