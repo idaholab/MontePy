@@ -5,6 +5,7 @@ import itertools
 import io
 from mcnpy.input_parser.constants import *
 from mcnpy.input_parser.mcnp_input import Input, Comment, Message, ReadInput, Title
+from mcnpy.input_parser.read_parser import ReadParser
 import os
 import warnings
 
@@ -103,11 +104,10 @@ def read_data(fh, mcnp_version, block_type=None, recursion=False):
         block_type = BlockType.CELL
     is_in_comment = False
     continue_input = False
-    comment_raw_lines = []
     input_raw_lines = []
 
     def flush_block():
-        nonlocal block_counter, block_type, comment_raw_lines
+        nonlocal block_counter, block_type
         if len(input_raw_lines) > 0:
             yield from flush_input()
         if is_in_comment and comment_raw_lines:
@@ -116,72 +116,46 @@ def read_data(fh, mcnp_version, block_type=None, recursion=False):
         if block_counter < 3:
             block_type = BlockType(block_counter)
 
-    def flush_comment():
-        nonlocal comment_raw_lines
-        words = []
-        yield Comment(comment_raw_lines, len(input_raw_lines))
-        comment_raw_lines = []
-        is_in_comment = False
-
     def flush_input():
         nonlocal input_raw_lines
         input = Input(input_raw_lines, block_type)
-        if len(input.words) > 0 and input.words[0].lower() == "read":
-            input = ReadInput(input_raw_lines, block_type)
+        try:
+            read_input = ReadInput(input_raw_lines, block_type)
             reading_queue.append((block_type, input.file_name))
             yield None
-        else:
+        except ValueError:
             yield input
         continue_input = False
         input_raw_lines = []
-
-    def is_comment(line):
-        upper_start = line[0 : BLANK_SPACE_CONTINUE + 1].upper()
-        non_blank_comment = upper_start and line.lstrip().upper().startswith("C ")
-        if non_blank_comment:
-            return True
-        blank_comment = "C\n" == upper_start.lstrip() or "C\r\n" == upper_start.lstrip()
-        return blank_comment or non_blank_comment
 
     for line in fh:
         # transition to next block with blank line
         if not line.strip():
             yield from flush_block()
             continue
-        # if it's a C comment
-        if is_comment(line):
-            comment_raw_lines.append(line.rstrip()[:line_length])
-            is_in_comment = True
-        # if it's part of an input
+        # if a new input
+        if (
+            line[0:BLANK_SPACE_CONTINUE].strip()
+            and not continue_input
+            and input_raw_lines
+        ):
+            yield from flush_input()
+        # die if it is a vertical syntax format
+        if "#" in line[0:BLANK_SPACE_CONTINUE]:
+            raise errors.UnsupportedFeature("Vertical Input format is not allowed")
+        # cut line down to allowed length
+        old_line = line
+        line = line[:line_length]
+        if len(old_line) != len(line):
+            warnings.warn(
+                f"The line: {old_line} exceeded the allowed line length of: {line_length} for MCNP {mcnp_version}",
+                errors.LineOverRunWarning,
+            )
+        if line.endswith(" &\n"):
+            continue_input = True
         else:
-            # if a new input
-            if (
-                line[0:BLANK_SPACE_CONTINUE].strip()
-                and not continue_input
-                and input_raw_lines
-            ):
-                yield from flush_input()
-            # just terminated a comment
-            if is_in_comment and comment_raw_lines:
-                yield from flush_comment()
-            # die if it is a vertical syntax format
-            if "#" in line[0:BLANK_SPACE_CONTINUE]:
-                raise errors.UnsupportedFeature("Vertical Input format is not allowed")
-            # throw away comments
-            line = line.split("$")[0]
-            # cut line down to allowed length
-            old_line = line
-            line = line[:line_length]
-            if len(old_line) != len(line):
-                warnings.warn(
-                    f"The line: {old_line} exceeded the allowed line length of: {line_length} for MCNP {mcnp_version}",
-                    errors.LineOverRunWarning,
-                )
-            if line.endswith(" &\n"):
-                continue_input = True
-            else:
-                continue_input = False
-            input_raw_lines.append(line.rstrip())
+            continue_input = False
+        input_raw_lines.append(line.rstrip())
     yield from flush_block()
 
     if not recursion:
