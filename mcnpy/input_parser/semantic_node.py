@@ -3,7 +3,7 @@ from abc import ABC, abstractmethod
 # from mcnpy.input_parser.tokens import Token
 
 
-class SemanticNode(ABC):
+class SemanticNodeBase(ABC):
     def __init__(self, name):
         self._name = name
         self._nodes = []
@@ -20,7 +20,7 @@ class SemanticNode(ABC):
         if any([isinstance(x, Token) for x in self.nodes]):
             return True
         for node in self.nodes:
-            if isinstance(node, SemanticNode):
+            if isinstance(node, SemanticNodeBase):
                 if node.has_leaves:
                     return True
         return False
@@ -52,7 +52,13 @@ class SemanticNode(ABC):
         self._name = name
 
 
-class PaddingNode(SemanticNode):
+class SemanticNode(SemanticNodeBase):
+    def __init__(self, name, parse_dict):
+        self._name = name
+        self._tree = parse_dict
+
+
+class PaddingNode(SemanticNodeBase):
     def __init__(self, token):
         super().__init__("padding")
         self._nodes = [token]
@@ -64,7 +70,7 @@ class PaddingNode(SemanticNode):
         return str(self)
 
 
-class ValueNode(SemanticNode):
+class ValueNode(SemanticNodeBase):
     def __init__(self, token, padding=None):
         super().__init__("")
         self._value = token
@@ -81,7 +87,7 @@ class ValueNode(SemanticNode):
         return self._value
 
 
-class ParametersNode(SemanticNode):
+class ParametersNode(SemanticNodeBase):
     def __init__(self):
         super().__init__("parameters")
         self._params = {}
@@ -97,7 +103,3 @@ class ParametersNode(SemanticNode):
 
     def __repr__(self):
         return str(self)
-
-
-class IdentifierNode(SemanticNode):
-    pass
