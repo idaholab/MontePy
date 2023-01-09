@@ -3,6 +3,7 @@ import math
 from mcnpy.errors import *
 from mcnpy.input_parser.block_type import BlockType
 from mcnpy.input_parser.constants import BLANK_SPACE_CONTINUE, get_max_line_length
+from mcnpy.input_parser.read_parser import ReadParser
 from mcnpy.input_parser.tokens import MCNP_Lexer
 import re
 
@@ -234,13 +235,15 @@ class ReadInput(Input):
     A input for the read input that reads another input file
     """
 
+    _parser = ReadParser()
+
     def __init__(self, input_lines, block_type):
         super().__init__(input_lines, block_type)
-        file_finder = re.compile(r"file=(?P<file>[\S]+)", re.I)
-        for word in self.words[1:]:
-            match = file_finder.match(word)
-            if match:
-                self._file_name = match.group("file")
+        parse_result = self._parser.parse(self.tokenize())
+        if not parse_result:
+            raise ValueError("Not a valid Read Input")
+        self._tree = parse_result
+        self._parameters = self._tree[3]
 
     @property
     def file_name(self):
@@ -248,7 +251,7 @@ class ReadInput(Input):
         The relative path to the filename specified in this read input.
         :rtype: str
         """
-        return self._file_name
+        return self._parameters["file"]
 
     def __str__(self):
         return f"READ INPUT: Block_Type: {self.block_type}"
