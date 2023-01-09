@@ -42,8 +42,12 @@ class MCNP_Parser(Parser, metaclass=MetaBuilder):
     def number_sequence(self, p):
         return p
 
-    @_("NULL padding")
+    @_("TEXT", "NULL padding")
     def null_phrase(self, p):
+        return p
+
+    @_("TEXT", "TEXT padding")
+    def text_phrase(self, p):
         return p
 
     @_("SPACE")
@@ -71,7 +75,6 @@ class MCNP_Parser(Parser, metaclass=MetaBuilder):
         return p
 
     @_(
-        "KEYWORD param_seperator number_sequence",
         "KEYWORD param_seperator number_sequence",
     )
     def parameter(self, p):
