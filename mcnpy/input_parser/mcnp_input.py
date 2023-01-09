@@ -3,6 +3,7 @@ import math
 from mcnpy.errors import *
 from mcnpy.input_parser.block_type import BlockType
 from mcnpy.input_parser.constants import BLANK_SPACE_CONTINUE, get_max_line_length
+from mcnpy.input_parser.tokens import MCNP_Lexer
 import re
 
 
@@ -144,6 +145,11 @@ class Input(SyntaxNode):
 
     def format_for_mcnp_input(self, mcnp_version):
         pass
+
+    def tokenize(self):
+        lexer = MCNP_Lexer()
+        for token in lexer.tokenize(self.input_lines):
+            yield token
 
 
 def parse_input_shortcuts(words, input=None):
