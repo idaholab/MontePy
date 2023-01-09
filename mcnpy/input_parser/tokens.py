@@ -132,6 +132,10 @@ class MCNP_Lexer(Lexer):
         self.lineno += t.value.count("\n")
         return t
 
+    @_(r"\d{4,6}\.\d{2,3}[a-z]")
+    def ZAID(self, t):
+        return t
+
     @_(r"[+\-]?[0-9]+\.?[0-9]*E?[+\-]?[0-9]*")
     def NUMBER(self, t):
         t.value = fortran_float(t.value)
