@@ -106,34 +106,13 @@ class Input(SyntaxNode):
         super().__init__(input_lines)
         if not isinstance(block_type, BlockType):
             raise TypeError("block_type must be BlockType")
-        words = []
-        for line in input_lines:
-            line = line.split("$")[0]
-            words += line.replace(" &", "").split()
-        self._words = words
         self._block_type = block_type
-        found = False
-        for prefix in self.SPECIAL_COMMENT_PREFIXES:
-            if prefix in words[0].lower():
-                found = True
-        if not found:
-            self._words = parse_input_shortcuts(words, self)
 
     def __str__(self):
         return f"INPUT: {self._block_type}"
 
     def __repr__(self):
         return f"INPUT: {self._block_type}: {self._words}"
-
-    @property
-    def words(self):
-        """
-        A list of the string representation of the words for the input definition.
-
-        For example a material definition may contain: 'M10', '10001.70c', '0.1'
-        :rtype: list
-        """
-        return self._words
 
     @property
     def block_type(self):
