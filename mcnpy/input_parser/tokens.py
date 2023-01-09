@@ -27,6 +27,12 @@ class MCNP_Lexer(Lexer):
     }
 
     _KEYWORDS = {
+        # read
+        "read",
+        "noecho",
+        "file",
+        "decode",
+        "encode",
         # Cells
         "imp",
         "vol",
@@ -213,7 +219,7 @@ class MCNP_Lexer(Lexer):
             t.jump_num = 1
         return t
 
-    @_(r"[a-z/]+")
+    @_(r"[a-z/\.]+")
     def TEXT(self, t):
         if t.value.lower() in self._KEYWORDS:
             t.type = "KEYWORD"
