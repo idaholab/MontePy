@@ -26,8 +26,6 @@ class MCNP_Input(ABC):
                 raise TypeError("input must be an Input")
             if not isinstance(comments, (list, Comment, type(None))):
                 raise TypeError("comments must be either a Comment, a list, or None")
-            self._words = input.words
-            self._parse_key_value_pairs()
             if isinstance(comments, list):
                 for comment in comments:
                     if not isinstance(comment, Comment):
@@ -37,7 +35,6 @@ class MCNP_Input(ABC):
             elif isinstance(comments, Comment):
                 comments = [comments]
             self._input_lines = input.input_lines
-            self._mutated = False
         else:
             self._input_lines = []
             self._mutated = True
@@ -45,37 +42,6 @@ class MCNP_Input(ABC):
             self._comments = comments
         else:
             self._comments = []
-
-    def _parse_key_value_pairs(self):
-        if self.allowed_keywords:
-            for i, word in enumerate(self.words):
-                if any([char.isalpha() for char in word]):
-                    break
-            fragments = []
-            for word in self.words[i:]:
-                fragments.extend(word.split("="))
-            # cut out these words from further parsing
-            self._words = self.words[:i]
-            key = ""
-            value = []
-
-            def flush_pair(key, value):
-                if key.upper() in self._parameters:
-                    raise ValueError(f"Multiple values given for parameter {key}")
-                self._parameters[key.upper()] = " ".join(value)
-
-            for i, fragment in enumerate(fragments):
-                keyword = fragment.split(":")[0].upper()
-                if keyword in self.allowed_keywords:
-                    if i != 0:
-                        flush_pair(key, value)
-                        value = []
-                    key = fragment
-                else:
-                    value.append(fragment)
-                if i == len(fragments) - 1:
-                    if key and value:
-                        flush_pair(key, value)
 
     @property
     def parameters(self):
@@ -307,14 +273,6 @@ class MCNP_Input(ABC):
                 ret.append(value)
         flush_jumps()
         return ret
-
-    @property
-    def words(self):
-        """
-        The words from the input file for this input.
-
-        """
-        return self._words
 
     def link_to_problem(self, problem):
         """Links the input to the parent problem for this input.
