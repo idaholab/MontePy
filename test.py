@@ -1,11 +1,21 @@
 import itertools
 import mcnpy
 
-ReadInput = mcnpy.input_parser.mcnp_input.ReadInput
+Input = mcnpy.input_parser.mcnp_input.Input
 
-input = ReadInput(
-    ["read $hi", "    file=foo.imcnp encode=hi"],
+""
+input = Input(
+    [
+        "5  $foo 10 -0.5",
+        "     1 -0.5 -1 2 : 3 #(4 5) ",
+        "     u=1 ",
+        "     Imp:n=1 ",
+        # "C this is a comment",
+    ],
     mcnpy.input_parser.block_type.BlockType.CELL,
 )
-
-print(repr(input))
+lexer = mcnpy.input_parser.tokens.MCNP_Lexer()
+parser = mcnpy.input_parser.cell_parser.CellParser()
+for token in lexer.tokenize(input.input_text):
+    print(token)
+print(parser.parse(lexer.tokenize(input.input_text)))
