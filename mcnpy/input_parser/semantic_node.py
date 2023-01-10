@@ -60,6 +60,13 @@ class SemanticNode(SemanticNodeBase):
     def __getitem__(self, key):
         return self.nodes[key]
 
+    def get_value(self, key):
+        temp = self.nodes[key]
+        if isinstance(temp, ValueNode):
+            return temp.value
+        else:
+            raise KeyError(f"{key} is not a value leaf node")
+
 
 class PaddingNode(SemanticNodeBase):
     def __init__(self, token):
