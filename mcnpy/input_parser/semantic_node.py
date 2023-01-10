@@ -17,7 +17,7 @@ class SemanticNodeBase(ABC):
         return self._nodes
 
     def has_leaves(self):
-        if any([isinstance(x, Token) for x in self.nodes]):
+        if any([isinstance(x, ValueNode) for x in self.nodes]):
             return True
         for node in self.nodes:
             if isinstance(node, SemanticNodeBase):
