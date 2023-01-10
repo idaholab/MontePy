@@ -57,7 +57,6 @@ class Cell(MCNP_Input):
         self._old_number = None
         self._load_blank_modifiers()
         self._old_mat_number = None
-        self._geometry_logic_string = None
         self._density = None
         self._surfaces = Surfaces()
         self._old_surface_numbers = set()
@@ -75,34 +74,19 @@ class Cell(MCNP_Input):
             if self._old_mat_number != 0:
                 self._density = abs(mat_tree.get_value("density"))
                 self._is_atom_dens = mat_tree.get_value("density") >= 0
+            self._parse_geometry
 
-    def _parse_geometry(self, i, words):
+    def _parse_geometry(self):
         """
         Parses the cell's geometry definition, and stores it
 
-        :param words: list of the input words
-        :type words: list
-        :param i: the index of the first geometry word
-        :type i: int
         :returns: a tuple of j, param_found, j+ i = the index of the first non-geometry word,
                 and param_found is True is cell parameter inputs are found
         """
-        non_surface_finder = re.compile(r"[a-zA-Z]")
-        surface_finder = re.compile(r"[^#]*?(\d+)")
-        cell_finder = re.compile(r"#(\d+)")
-        geometry_string = ""
-        for j, word in enumerate(words[i:]):
-            if non_surface_finder.search(word):
-                break
-            else:
-                geometry_string += word + " "
-                match = cell_finder.search(word)
-                if match:
-                    self._old_complement_numbers.add(int(match.group(1)))
-                else:
-                    for surface in surface_finder.findall(word):
-                        self._old_surface_numbers.add(int(surface))
-        self._geometry_logic_string = geometry_string
+        geometry = self._tree["geometry"]
+        surfs, cells = geometry.get_geometry_identifiers()
+        self._old_surface_numbers = surfs
+        self._old_complement_numbers = cells
 
     def _parse_keyword_modifiers(self):
         """

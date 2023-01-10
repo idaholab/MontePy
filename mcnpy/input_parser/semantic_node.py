@@ -89,6 +89,22 @@ class GeometryTree(SemanticNodeBase):
     def __repr__(self):
         return str(self)
 
+    def get_geometry_identifiers(self):
+        surfaces = []
+        cells = []
+        for node in self.nodes:
+            if isinstance(node, type(self)):
+                child_surf, child_cell = node.get_geometry_identifiers()
+                surfaces += child_surf
+                cells += child_cell
+            elif isinstance(node, ValueNode):
+                identifier = abs(int(node.value))
+                if self._operator == Operator.COMPLEMENT:
+                    cells.append(identifier)
+                else:
+                    surfaces.append(identifier)
+        return (surfaces, cells)
+
 
 class PaddingNode(SemanticNodeBase):
     def __init__(self, token):
