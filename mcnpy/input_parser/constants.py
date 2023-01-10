@@ -15,6 +15,8 @@ LINE_LENGTH = {(5, 1, 60): 80, (6, 1, 0): 80, (6, 2, 0): 128}
 
 DEFAULT_VERSION = (6, 2, 0)
 
+TABSIZE = 8
+
 
 def get_max_line_length(mcnp_version=DEFAULT_VERSION):
     """

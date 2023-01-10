@@ -1,3 +1,4 @@
+from mcnpy.input_parser import constants
 from mcnpy.utilities import fortran_float
 import re
 from sly import Lexer
@@ -154,6 +155,7 @@ class MCNP_Lexer(Lexer):
 
     @_(r"\s+")
     def SPACE(self, t):
+        t.value = t.value.expandtabs(constants.TABSIZE)
         self.lineno += t.value.count("\n")
         return t
 
