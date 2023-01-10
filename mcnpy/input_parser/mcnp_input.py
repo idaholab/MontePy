@@ -243,7 +243,7 @@ class ReadInput(Input):
         if not parse_result:
             raise ValueError("Not a valid Read Input")
         self._tree = parse_result
-        self._parameters = self._tree[3]
+        self._parameters = self._tree["parameters"]
 
     @property
     def file_name(self):
@@ -257,7 +257,7 @@ class ReadInput(Input):
         return f"READ INPUT: Block_Type: {self.block_type}"
 
     def __repr__(self):
-        return f"READ INPUT: {self._block_type}: {self._words}"
+        return f"READ INPUT: {self._block_type}: {self._tree.nodes}"
 
 
 class Comment(SyntaxNode):
