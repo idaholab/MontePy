@@ -128,7 +128,7 @@ class Input(SyntaxNode):
 
     def tokenize(self):
         lexer = MCNP_Lexer()
-        for token in lexer.tokenize(self.input_lines):
+        for token in lexer.tokenize(self.input_text):
             yield token
 
 
