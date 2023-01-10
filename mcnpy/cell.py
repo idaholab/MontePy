@@ -54,7 +54,7 @@ class Cell(MCNP_Input):
         """
         super().__init__(input, comment)
         self._material = None
-        self._old_cell_number = None
+        self._old_number = None
         self._load_blank_modifiers()
         self._old_mat_number = None
         self._geometry_logic_string = None
@@ -63,7 +63,7 @@ class Cell(MCNP_Input):
         self._old_surface_numbers = set()
         self._complements = Cells()
         self._old_complement_numbers = set()
-        self._cell_number = -1
+        self._number = -1
         if input:
             self._tree = self._parser.parse(input.tokenize())
             if self._tree is None:
@@ -192,7 +192,7 @@ class Cell(MCNP_Input):
 
         :rtype: int
         """
-        return self._old_cell_number
+        return self._old_number
 
     @property
     def number(self):
@@ -201,7 +201,7 @@ class Cell(MCNP_Input):
 
         :rtype: int
         """
-        return self._cell_number
+        return self._number
 
     @number.setter
     def number(self, number):
@@ -212,7 +212,7 @@ class Cell(MCNP_Input):
         if self._problem:
             self._problem.cells.check_number(number)
         self._mutated = True
-        self._cell_number = number
+        self._number = number
 
     @property
     def material(self):
@@ -633,7 +633,7 @@ class Cell(MCNP_Input):
         return f"CELL: {self.number}, mat: {mat_num}, {dens_str}"
 
     def __repr__(self):
-        ret = f"CELL: {self._cell_number} \n"
+        ret = f"CELL: {self._number} \n"
         if self.material:
             ret += str(self.material) + "\n"
         else:
