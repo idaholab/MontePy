@@ -163,8 +163,7 @@ class MCNP_Lexer(Lexer):
 
     @_(r"[+\-]?[0-9]+\.?[0-9]*E?[+\-]?[0-9]*")
     def NUMBER(self, t):
-        t.value = fortran_float(t.value)
-        if t.value == 0:
+        if fortran_float(t.value) == 0:
             t.type = "NULL"
         return t
 

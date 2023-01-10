@@ -37,11 +37,7 @@ class MCNP_Parser(Parser, metaclass=MetaBuilder):
 
     @_("NUMBER", "NUMBER padding")
     def number_phrase(self, p):
-        if len(p) > 1:
-            padding = p[1]
-        else:
-            padding = None
-        return semantic_node.ValueNode(p[0], padding)
+        return self._flush_phrase(p, float)
 
     @_("number_phrase", "number_sequence number_phrase")
     def number_sequence(self, p):
@@ -49,15 +45,18 @@ class MCNP_Parser(Parser, metaclass=MetaBuilder):
 
     @_("NULL", "NULL padding")
     def null_phrase(self, p):
-        return p
+        return self._flush_phrase(p, float)
 
     @_("TEXT", "TEXT padding")
     def text_phrase(self, p):
+        return self._flush_phrase(p, str)
+
+    def _flush_phrase(self, p, token_type):
         if len(p) > 1:
             padding = p[1]
         else:
             padding = None
-        return semantic_node.ValueNode(p[0], padding)
+        return semantic_node.ValueNode(p[0], token_type, padding)
 
     @_("SPACE")
     def padding(self, p):

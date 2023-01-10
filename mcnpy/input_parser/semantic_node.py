@@ -1,6 +1,5 @@
 from abc import ABC, abstractmethod
-
-# from mcnpy.input_parser.tokens import Token
+from mcnpy.utilities import fortran_float
 
 
 class SemanticNodeBase(ABC):
@@ -75,9 +74,14 @@ class PaddingNode(SemanticNodeBase):
 
 
 class ValueNode(SemanticNodeBase):
-    def __init__(self, token, padding=None):
+    def __init__(self, token, token_type, padding=None):
         super().__init__("")
-        self._value = token
+        self._token = token
+        self._type = token_type
+        if token_type == float:
+            self._value = fortran_float(token)
+        else:
+            self._value = token
         self._padding = padding
 
     def __str__(self):
