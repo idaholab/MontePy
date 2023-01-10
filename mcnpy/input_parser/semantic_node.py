@@ -103,16 +103,16 @@ class ListNode(SemanticNodeBase):
 class ParametersNode(SemanticNodeBase):
     def __init__(self):
         super().__init__("parameters")
-        self._params = {}
+        self._nodes = {}
 
     def append(self, key, seperator, value):
-        self._params[key.lower()] = (value, key, seperator)
+        self._nodes[key.lower()] = (value, key, seperator)
 
     def get_value(self, key):
-        return self._params[key][0].value
+        return self._params[key.lower()][0].value
 
     def __str__(self):
-        return f"(Parameters, {self._params})"
+        return f"(Parameters, {self.nodes})"
 
     def __repr__(self):
         return str(self)
