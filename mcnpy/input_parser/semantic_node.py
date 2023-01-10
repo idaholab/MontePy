@@ -145,8 +145,18 @@ class ParametersNode(SemanticNodeBase):
         super().__init__("parameters")
         self._nodes = {}
 
-    def append(self, key, seperator, value):
-        self._nodes[key.lower()] = (value, key, seperator)
+    def append(self, *argv):
+        if len(argv) == 3:
+            key, seperator, value = argv
+            self._nodes[key.lower()] = (value, key, seperator)
+        elif len(argv) == 4:
+            key, particle, seperator, value = argv
+            self._nodes[key.lower() + particle.lower()] = (
+                value,
+                key,
+                particle,
+                seperator,
+            )
 
     def get_value(self, key):
         return self._params[key.lower()][0].value
