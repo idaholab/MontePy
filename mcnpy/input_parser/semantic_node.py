@@ -54,8 +54,12 @@ class SemanticNodeBase(ABC):
 
 class SemanticNode(SemanticNodeBase):
     def __init__(self, name, parse_dict):
+        super().__init__(name)
         self._name = name
-        self._tree = parse_dict
+        self._nodes = parse_dict
+
+    def __getitem__(self, key):
+        return self.nodes[key]
 
 
 class PaddingNode(SemanticNodeBase):
