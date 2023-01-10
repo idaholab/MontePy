@@ -113,6 +113,14 @@ class ValueNode(SemanticNodeBase):
             self._value = token
         self._padding = padding
 
+    @property
+    def padding(self):
+        return self._padding
+
+    @padding.setter
+    def padding(self, pad):
+        self._padding = pad
+
     def __str__(self):
         return f"(Value, {self._value}, padding: {self._padding}"
 
