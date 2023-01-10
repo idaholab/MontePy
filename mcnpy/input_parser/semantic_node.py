@@ -1,4 +1,5 @@
 from abc import ABC, abstractmethod
+from mcnpy.geometry_operators import Operator
 from mcnpy.utilities import fortran_float
 
 
@@ -66,6 +67,27 @@ class SemanticNode(SemanticNodeBase):
             return temp.value
         else:
             raise KeyError(f"{key} is not a value leaf node")
+
+    def __str__(self):
+        return f"(Node: {self.name}: {self.nodes})"
+
+    def __repr__(self):
+        return str(self)
+
+
+class GeometryTree(SemanticNodeBase):
+    def __init__(self, name, tokens, op, left, right=None):
+        super().__init__(name)
+        self._nodes = tokens
+        self._operator = Operator(op)
+        self._left_side = left
+        self._right_side = right
+
+    def __str__(self):
+        return f"Geometry: {self._left_side} {self._operator} {self._right_side}"
+
+    def __repr__(self):
+        return str(self)
 
 
 class PaddingNode(SemanticNodeBase):
