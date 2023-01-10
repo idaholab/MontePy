@@ -134,7 +134,10 @@ class ValueNode(SemanticNodeBase):
 
 class ListNode(SemanticNodeBase):
     def __init__(self, name):
-        super.__init__(name)
+        super().__init__(name)
+
+    def __repr__(self):
+        return f"(list: {self.name}, {self.nodes})"
 
 
 class ParametersNode(SemanticNodeBase):
