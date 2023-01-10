@@ -71,8 +71,8 @@ class Cell(MCNP_Input):
             self._old_number = int(self._tree.get_value("cell_num"))
             self._number = self._old_number
             mat_tree = self._tree["material"]
-            self._old_material_number = int(mat_tree.get_value("mat_number"))
-            if self._old_material_number != 0:
+            self._old_mat_number = int(mat_tree.get_value("mat_number"))
+            if self._old_mat_number != 0:
                 self._density = abs(mat_tree.get_value("density"))
                 self._is_atom_dens = mat_tree.get_value("density") >= 0
 
