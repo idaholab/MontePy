@@ -95,6 +95,11 @@ class ValueNode(SemanticNodeBase):
         return self._value
 
 
+class ListNode(SemanticNodeBase):
+    def __init__(self, name):
+        super.__init__(name)
+
+
 class ParametersNode(SemanticNodeBase):
     def __init__(self):
         super().__init__("parameters")

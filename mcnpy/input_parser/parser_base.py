@@ -41,7 +41,12 @@ class MCNP_Parser(Parser, metaclass=MetaBuilder):
 
     @_("number_phrase", "number_sequence number_phrase")
     def number_sequence(self, p):
-        return p
+        if len(p) == 1:
+            sequence = semantic_node.ListNode("number sequence")
+        else:
+            sequence = p.number_sequence
+        sequence.append(p.number_phrase)
+        return sequence
 
     @_("NULL", "NULL padding")
     def null_phrase(self, p):
