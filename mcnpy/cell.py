@@ -2,6 +2,7 @@ import itertools
 from mcnpy.cells import Cells
 from mcnpy.data_inputs import importance, volume
 from mcnpy.data_inputs.data_parser import PREFIX_MATCHES
+from mcnpy.input_parser.cell_parser import CellParser
 from mcnpy.errors import *
 from mcnpy.mcnp_input import MCNP_Input
 from mcnpy.data_inputs.material import Material
@@ -42,6 +43,7 @@ class Cell(MCNP_Input):
         importance.Importance: ("_importance", False),
         volume.Volume: ("_volume", True),
     }
+    _parser = CellParser()
 
     def __init__(self, input=None, comment=None):
         """
@@ -63,50 +65,16 @@ class Cell(MCNP_Input):
         self._old_complement_numbers = set()
         self._cell_number = -1
         if input:
-            words = input.words
-            i = 0
-            # cell number
-            try:
-                cell_num = int(words[i])
-                self._old_cell_number = cell_num
-                self._cell_number = cell_num
-                i += 1
-            except ValueError:
-                raise MalformedInputError(
-                    input, f"{words[0]} can not be parsed as a cell number."
-                )
-            if words[i].lower() == "like":
-                raise UnsupportedFeature(
-                    "Currently the LIKE option in cell inputs is unsupported"
-                )
-            # material
-            try:
-                mat_num = int(words[i])
-                self._old_mat_number = mat_num
-                i += 1
-
-            except ValueError:
-                raise MalformedInputError(
-                    input, f"{words[1]} can not be parsed as a material number."
-                )
-            # density
-            if mat_num > 0:
-                try:
-                    density = fortran_float(words[i])
-                    self._density = abs(density)
-                    i += 1
-                    if density > 0:
-                        self._is_atom_dens = True
-                    else:
-                        self._is_atom_dens = False
-
-                except ValueError:
-                    raise MalformedInputError(
-                        input,
-                        f"{words[2]} can not be parsed as a material density.",
-                    )
-            self._parse_geometry(i, words)
-            self._parse_keyword_modifiers()
+            self._tree = self._parser.parse(input.tokenize())
+            if self._tree is None:
+                raise ValueError("")
+            self._old_number = int(self._tree.get_value("cell_num"))
+            self._number = self._old_number
+            mat_tree = self._tree["material"]
+            self._old_material_number = int(mat_tree.get_value("mat_number"))
+            if self._old_material_number != 0:
+                self._density = abs(mat_tree.get_value("density"))
+                self._is_atom_dens = mat_tree.get_value("density") >= 0
 
     def _parse_geometry(self, i, words):
         """
