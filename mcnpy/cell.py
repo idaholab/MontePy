@@ -66,7 +66,9 @@ class Cell(MCNP_Input):
         if input:
             self._tree = self._parser.parse(input.tokenize())
             if self._tree is None:
-                raise ValueError("")
+                raise MalformedInputError(
+                    input, "There is a syntax error with the input."
+                )
             self._old_number = int(self._tree.get_value("cell_num"))
             self._number = self._old_number
             mat_tree = self._tree["material"]
