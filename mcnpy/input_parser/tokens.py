@@ -35,6 +35,8 @@ class MCNP_Lexer(Lexer):
         "decode",
         "encode",
         # Cells
+        "like",
+        "but",
         "imp",
         "vol",
         "pwt",

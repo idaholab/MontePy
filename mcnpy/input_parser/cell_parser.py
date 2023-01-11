@@ -1,3 +1,4 @@
+from mcnpy.errors import *
 from mcnpy.input_parser.parser_base import MCNP_Parser
 from mcnpy.input_parser import semantic_node
 
@@ -16,6 +17,11 @@ class CellParser(MCNP_Parser):
         if len(p) == 4:
             dict_tree["parameters"] = p.parameters
         return semantic_node.SemanticNode("cell", dict_tree)
+
+    @_("number_phrase KEYWORD")
+    def cell(self, p):
+        if p.KEYWORD.lower() == "like":
+            raise UnsupportedFeature("The like but feature is not supported")
 
     @_("null_phrase", "number_phrase number_phrase")
     def material(self, p):
