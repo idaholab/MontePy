@@ -104,6 +104,17 @@ class CellParser(MCNP_Parser):
         ret.append(p[2])
         return ret
 
+    # support for fill card wierdness
+    @_(
+        'number_sequence "(" number_sequence ")"',
+        'number_sequence "(" number_sequence ")" padding',
+    )
+    def number_sequence(self, p):
+        sequence = p[0]
+        for node in p[1:]:
+            sequence.append(node)
+        return sequence
+
     @_("KEYWORD PARTICLE_DESIGNATOR param_seperator number_phrase")
     def parameter(self, p):
         return p
