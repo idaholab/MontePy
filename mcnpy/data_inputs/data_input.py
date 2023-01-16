@@ -1,5 +1,6 @@
 from abc import abstractmethod
 from mcnpy.errors import *
+from mcnpy.input_parser.data_parser import DataParser
 from mcnpy.particle import Particle
 from mcnpy.mcnp_input import MCNP_Input
 import re
@@ -41,6 +42,8 @@ class DataInputAbstract(MCNP_Input):
         re.I,
     )
 
+    _parser = DataParser()
+
     def __init__(self, input=None, comments=None):
         """
         :param input: the Input object representing this data input
@@ -48,7 +51,7 @@ class DataInputAbstract(MCNP_Input):
         :param comments: The list of Comments that may proceed this or be entwined with it.
         :type comments: list
         """
-        super().__init__(input, comments)
+        super().__init__(input, self._parser, comments)
         if input:
             self._words = input.words
             self.__split_name()
