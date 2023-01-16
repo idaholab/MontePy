@@ -68,14 +68,7 @@ class TestCellClass(TestCase):
         self.assertIn(2, cell.old_complement_numbers)
         self.assertEqual(cell.parameters.get_value("u"), "5.0")
 
-    def test_geometry_logic_string_setter(self):
-        in_str = "1 0 2"
-        card = Input([in_str], BlockType.CELL)
-        cell = Cell(card)
-        cell.geometry_logic_string = "1 2"
-        self.assertEqual(cell.geometry_logic_string, "1 2")
-        with self.assertRaises(TypeError):
-            cell.geometry_logic_string = 1
+    # TODO test updating cell geometry once done
 
     def test_number_setter(self):
         in_str = "1 0 2"

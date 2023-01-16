@@ -313,22 +313,6 @@ class Cell(MCNP_Input):
         return self._old_complement_numbers
 
     @property
-    def geometry_logic_string(self):
-        """
-        The original surface input for the cell
-
-        :rtype: str
-        """
-        return self._geometry_logic_string
-
-    @geometry_logic_string.setter
-    def geometry_logic_string(self, string):
-        if not isinstance(string, str):
-            raise TypeError("geometry_logic_string must a string")
-        self._mutated = True
-        self._geometry_logic_string = string
-
-    @property
     def parameters(self):
         """
         A dictionary of the additional parameters for the cell.
@@ -416,73 +400,6 @@ class Cell(MCNP_Input):
                     raise BrokenObjectLinkError(
                         "Cell", self.number, "Complement Cell", complement_number
                     )
-
-    def update_geometry_logic_string(self):
-        """
-        Updates the geometry logic string with new surface numbers.
-
-        This is a bit of a hacky temporary solution while true boolean logic is implemented.
-        """
-        matching_surfaces = {}
-        matching_complements = {}
-        for cell in self.complements:
-            if cell.old_number:
-                matching_complements[cell.old_number] = cell.number
-            else:
-                matching_complements[cell.number] = cell.number
-        for surface in self.surfaces:
-            if surface.old_number:
-                matching_surfaces[surface.old_number] = surface.number
-            else:
-                matching_surfaces[surface.number] = surface.number
-        self._update_geometry_logic_by_map(matching_surfaces, matching_complements)
-
-    def _update_geometry_logic_by_map(
-        self, mapping_surface_dict, mapping_complement_dict
-    ):
-        """Updates geometry logic string based on a map.
-
-        :param mapping_surface_dict: A dict mapping the old surface number to the new one. The key is the old one.
-        :type mapping_dict: dict
-        :param mapping_complement_dict: A dict mapping the old cell number to the new one. The key is the old one.
-        :type mapping_complement_dict: dict
-        """
-        # make sure all numbers are surrounded by non-digit chars
-        pad_string = " " + self.geometry_logic_string + " "
-        # need to move all numbers to outside of feasible numbers first, before moving numbers around
-        # it's possible when shifting numbers by a little to have an
-        # overlap between the set of old and new numbers
-        temp_numbers = itertools.count(start=int(1e8))
-        temp_cells = {}
-        temp_surfaces = {}
-        for is_final_pass in [False, True]:
-            for complement in mapping_complement_dict:
-                if is_final_pass:
-                    old_num = temp_cells[complement]
-                    new_num = mapping_complement_dict[complement]
-                else:
-                    old_num = complement
-                    new_num = next(temp_numbers)
-                    temp_cells[complement] = new_num
-                pad_string = re.sub(
-                    rf"#{old_num}(\D)",
-                    r"#{new_num}\g<1>".format(new_num=new_num),
-                    pad_string,
-                )
-            for surface in mapping_surface_dict:
-                if is_final_pass:
-                    old_num = temp_surfaces[surface]
-                    new_num = mapping_surface_dict[surface]
-                else:
-                    old_num = surface
-                    new_num = next(temp_numbers)
-                    temp_surfaces[surface] = new_num
-                pad_string = re.sub(
-                    rf"([^#\d]){old_num}(\D)",
-                    r"\g<1>{new_num}\g<2>".format(new_num=new_num),
-                    pad_string,
-                )
-        self._geometry_logic_string = pad_string
 
     def remove_duplicate_surfaces(self, deleting_dict):
         """Updates old surface numbers to prepare for deleting surfaces.
