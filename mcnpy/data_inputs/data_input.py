@@ -53,7 +53,6 @@ class DataInputAbstract(MCNP_Input):
         """
         super().__init__(input, self._parser, comments)
         if input:
-            self._words = input.words
             self.__split_name()
         else:
             self._words = []
@@ -190,12 +189,6 @@ class DataInputAbstract(MCNP_Input):
 
         """
         name = self._words[0]
-        match = self._NAME_PARSER.match(name)
-        if match is None:
-            raise MalformedInputError(
-                self.words, f"{self.words[0]} is not a valid starting word"
-            )
-        match_dict = match.groupdict()
         self.__enforce_name(match_dict)
         number = match_dict["number"]
         if number:
