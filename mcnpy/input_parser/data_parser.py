@@ -15,10 +15,10 @@ class DataParser(MCNP_Parser, metaclass=MetaBuilder):
             ret.nodes["parameters"] = p.parameters
         else:
             ret = semantic_node.SemanticNode("data input", {})
-        if "classifier" in p:
+        if hasattr(p, "classifier"):
             ret.nodes["classifier"] = p.classifier
             ret.nodes["data"] = p[1]
-        return p
+        return ret
 
     @_(
         "modifier TEXT",
@@ -28,18 +28,18 @@ class DataParser(MCNP_Parser, metaclass=MetaBuilder):
         "classifier padding",
     )
     def classifier(self, p):
-        if "classifier" in p:
+        if hasattr(p, "classifier"):
             classifier = p.classifier
         else:
             classifier = semantic_node.ClassifierNode()
 
-        if "modifier" in p:
+        if hasattr(p, "modifier"):
             classifier.modifier = semantic_node.ValueNode(p.modifier, str)
         if "TEXT" in p:
             classifier.prefix = semantic_node.ValueNode(p.TEXT, str)
         if "NUMBER" in p:
             classifier.number = semantic_node.ValueNode(p.NUMBER, int)
-        if "PARTICLE_DESIGNATOR" in p:
+        if hasattr(p, "PARTICLE_DESIGNATOR"):
             classifier.particles = semantic_node.ParticleNode(
                 "data particles", p.PARTICLE_DESIGNATOR
             )
