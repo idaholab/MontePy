@@ -37,15 +37,15 @@ class ThermalScatteringLaw(DataInputAbstract):
                 self._parent_material = material
 
     @property
-    def class_prefix(self):
+    def _class_prefix(self):
         return "mt"
 
     @property
-    def has_number(self):
+    def _has_number(self):
         return True
 
     @property
-    def has_classifier(self):
+    def _has_classifier(self):
         return 0
 
     @property

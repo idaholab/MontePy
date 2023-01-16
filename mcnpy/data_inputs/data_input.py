@@ -82,7 +82,7 @@ class DataInputAbstract(MCNP_Input):
 
     @property
     @abstractmethod
-    def class_prefix(self):
+    def _class_prefix(self):
         """The text part of the input identifier.
 
         For example: for a material the prefix is ``m``
@@ -96,7 +96,7 @@ class DataInputAbstract(MCNP_Input):
 
     @property
     @abstractmethod
-    def has_number(self):
+    def _has_number(self):
         """Whether or not this class supports numbering.
 
         For example: ``kcode`` doesn't allow numbers but tallies do allow it e.g.: ``f7``
@@ -108,7 +108,7 @@ class DataInputAbstract(MCNP_Input):
 
     @property
     @abstractmethod
-    def has_classifier(self):
+    def _has_classifier(self):
         """Whether or not this class supports particle classifiers.
 
         For example: ``kcode`` doesn't allow numbers but tallies do allow it e.g.: ``f7:n``
@@ -209,12 +209,12 @@ class DataInputAbstract(MCNP_Input):
         :type match_dict: dict
         :raises MalformedInputError: if the name is invalid for this DataInput
         """
-        if self.class_prefix:
-            if match_dict["prefix"].lower() != self.class_prefix:
+        if self._class_prefix:
+            if match_dict["prefix"].lower() != self._class_prefix:
                 raise MalformedInputError(
                     self.words, f"{self.words[0]} has the wrong prefix for {type(self)}"
                 )
-            if self.has_number:
+            if self._has_number:
                 try:
                     num = int(match_dict["number"])
                     assert num > 0
@@ -222,16 +222,16 @@ class DataInputAbstract(MCNP_Input):
                     raise MalformedInputError(
                         self.words, f"{self.words[0]} does not contain a valid number"
                     )
-            if not self.has_number and match_dict["number"] is not None:
+            if not self._has_number and match_dict["number"] is not None:
                 raise MalformedInputError(
                     self.words, f"{self.words[0]} cannot have a number for {type(self)}"
                 )
-            if self.has_classifier == 2 and match_dict["classifier"] is None:
+            if self._has_classifier == 2 and match_dict["classifier"] is None:
                 raise MalformedInputError(
                     self.words,
                     f"{self.words[0]} doesn't have a particle classifier for {type(self)}",
                 )
-            if self.has_classifier == 0 and match_dict["classifier"] is not None:
+            if self._has_classifier == 0 and match_dict["classifier"] is not None:
                 raise MalformedInputError(
                     self.words,
                     f"{self.words[0]} cannot have a particle classifier for {type(self)}",
@@ -269,13 +269,13 @@ class DataInputAbstract(MCNP_Input):
 
 class DataInput(DataInputAbstract):
     @property
-    def class_prefix(self):
+    def _class_prefix(self):
         return None
 
     @property
-    def has_number(self):
+    def _has_number(self):
         return None
 
     @property
-    def has_classifier(self):
+    def _has_classifier(self):
         return None

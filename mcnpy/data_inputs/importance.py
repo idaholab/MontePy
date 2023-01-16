@@ -54,15 +54,15 @@ class Importance(CellModifierInput):
                 self._particle_importances[particle] = values
 
     @property
-    def class_prefix(self):
+    def _class_prefix(self):
         return "imp"
 
     @property
-    def has_number(self):
+    def _has_number(self):
         return False
 
     @property
-    def has_classifier(self):
+    def _has_classifier(self):
         return 2
 
     def merge(self, other):

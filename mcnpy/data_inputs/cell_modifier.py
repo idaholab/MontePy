@@ -78,7 +78,7 @@ class CellModifierInput(DataInputAbstract):
             else:
                 set_in_cell_block = self.set_in_cell_block
             print_in_cell_block = not self._problem.print_in_data_block[
-                self.class_prefix
+                self._class_prefix
             ]
             return print_in_cell_block ^ set_in_cell_block
         else:
@@ -94,7 +94,7 @@ class CellModifierInput(DataInputAbstract):
     def link_to_problem(self, problem):
         super().link_to_problem(problem)
         if self.set_in_cell_block:
-            self._problem.print_in_data_block[self.class_prefix] = False
+            self._problem.print_in_data_block[self._class_prefix] = False
 
     @abstractmethod
     def push_to_cells(self):
@@ -119,7 +119,7 @@ class CellModifierInput(DataInputAbstract):
                 if getattr(cell, attr).set_in_cell_block:
                     raise mcnpy.errors.MalformedInputError(
                         cell,
-                        f"Cell: {cell.number} provided {self.class_prefix.upper()}"
+                        f"Cell: {cell.number} provided {self._class_prefix.upper()}"
                         "data when those data were in the data block",
                     )
 

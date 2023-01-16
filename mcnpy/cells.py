@@ -72,7 +72,7 @@ class Cells(NumberedObjectCollection):
                     )
                 if not hasattr(self, attr):
                     setattr(self, attr, input)
-                    problem.print_in_data_block[input.class_prefix] = True
+                    problem.print_in_data_block[input._class_prefix] = True
                 else:
                     getattr(self, attr).merge(input)
                     data_inputs.remove(input)

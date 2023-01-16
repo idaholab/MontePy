@@ -192,15 +192,15 @@ class Material(data_input.DataInputAbstract):
                         )
 
     @property
-    def class_prefix(self):
+    def _class_prefix(self):
         return "m"
 
     @property
-    def has_number(self):
+    def _has_number(self):
         return True
 
     @property
-    def has_classifier(self):
+    def _has_classifier(self):
         return 0
 
     def __repr__(self):

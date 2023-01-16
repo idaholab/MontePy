@@ -105,15 +105,15 @@ class Mode(DataInputAbstract):
         return f"Mode: {self.particles}"
 
     @property
-    def class_prefix(self):
+    def _class_prefix(self):
         return "mode"
 
     @property
-    def has_number(self):
+    def _has_number(self):
         return False
 
     @property
-    def has_classifier(self):
+    def _has_classifier(self):
         return 0
 
     def format_for_mcnp_input(self, mcnp_version):

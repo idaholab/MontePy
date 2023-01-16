@@ -500,7 +500,7 @@ class Cell(MCNP_Input):
                     if (
                         self._problem
                         and not self._problem.print_in_data_block[
-                            getattr(self, attr).class_prefix
+                            getattr(self, attr)._class_prefix
                         ]
                     ):
                         ret += getattr(self, attr).format_for_mcnp_input(mcnp_version)
