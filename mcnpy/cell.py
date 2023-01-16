@@ -52,7 +52,7 @@ class Cell(MCNP_Input):
         :param comment: the Comment block that preceded this blog if any.
         :type comment: Comment
         """
-        super().__init__(input, comment)
+        super().__init__(input, self._parser, comment)
         self._material = None
         self._old_number = None
         self._load_blank_modifiers()
@@ -64,11 +64,6 @@ class Cell(MCNP_Input):
         self._old_complement_numbers = set()
         self._number = -1
         if input:
-            self._tree = self._parser.parse(input.tokenize())
-            if self._tree is None:
-                raise MalformedInputError(
-                    input, "There is a syntax error with the input."
-                )
             self._old_number = int(self._tree.get_value("cell_num"))
             self._number = self._old_number
             mat_tree = self._tree["material"]

@@ -61,6 +61,9 @@ class SemanticNode(SemanticNodeBase):
     def __getitem__(self, key):
         return self.nodes[key]
 
+    def __contains__(self, key):
+        return key in self.nodes
+
     def get_value(self, key):
         temp = self.nodes[key]
         if isinstance(temp, ValueNode):
@@ -176,10 +179,16 @@ class ParametersNode(SemanticNodeBase):
             )
 
     def get_value(self, key):
-        return self._params[key.lower()][0].value
+        return self.nodes[key.lower()][0].value
 
     def __str__(self):
         return f"(Parameters, {self.nodes})"
 
     def __repr__(self):
         return str(self)
+
+    def __getitem__(self, key):
+        return self.nodes[key.lower()]
+
+    def __contains__(self, key):
+        return key.lower() in self.nodes

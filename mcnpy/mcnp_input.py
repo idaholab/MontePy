@@ -12,7 +12,7 @@ class MCNP_Input(ABC):
     Abstract class for semantic representations of MCNP inputs.
     """
 
-    def __init__(self, input, comments=None):
+    def __init__(self, input, parser, comments=None):
         """
         :param input: The Input syntax object this will wrap and parse.
         :type input: Input
@@ -35,6 +35,13 @@ class MCNP_Input(ABC):
             elif isinstance(comments, Comment):
                 comments = [comments]
             self._input_lines = input.input_lines
+            self._tree = parser.parse(input.tokenize())
+            if self._tree is None:
+                raise MalformedInputError(
+                    input, "There is a syntax error with the input."
+                )
+            if "parameters" in self._tree:
+                self._parameters = self._tree["parameters"]
         else:
             self._input_lines = []
             self._mutated = True
