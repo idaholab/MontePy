@@ -11,37 +11,6 @@ class DataInputAbstract(MCNP_Input):
     Parent class to describe all MCNP data inputs.
     """
 
-    _MODIFIERS = [r"\*"]
-    _NUMBER_EXTRAS = [r"\-"]
-    _CLASSIFIER_EXTRAS = [
-        r":",
-        r",",
-        r"|",
-        r"\+",
-        r"\-",
-        r"!",
-        r"<",
-        r">",
-        r"/",
-        r"%",
-        r"\^",
-        r"_",
-        r"~",
-        r"@",
-        r"*",
-        r"?",
-        r"#",
-    ]
-    _NAME_PARSER = re.compile(
-        (
-            rf"^(?P<modifier>[{''.join(_MODIFIERS)}]+)*"
-            rf"(?P<prefix>[a-z]+)"
-            rf"(?P<number>[\d{''.join(_NUMBER_EXTRAS)}]+)*"
-            rf"(?P<classifier>:[a-z{''.join(_CLASSIFIER_EXTRAS)}]+)*$"
-        ),
-        re.I,
-    )
-
     _parser = DataParser()
 
     def __init__(self, input=None, comments=None):
@@ -188,50 +157,43 @@ class DataInputAbstract(MCNP_Input):
         :raises MalformedInputError: if the name is invalid for this DataInput
 
         """
-        name = self._words[0]
+        self._classifier = self._tree["classifier"]
         self.__enforce_name(match_dict)
-        number = match_dict["number"]
-        if number:
-            self._input_number = int(number)
-        else:
-            self._input_number = None
-        self._prefix = match_dict["prefix"]
-        self._classifiers = DataInputAbstract._parse_particle_classifiers(
-            match_dict["classifier"]
-        )
-        self._modifier = match_dict["modifier"]
+        self._input_number = self._classifier.number
+        self._prefix = self._classifier._prefix.value
+        self._classifiers = self._classifier.particles.particles
+        self._modifier = self._classifier.modifier
 
-    def __enforce_name(self, match_dict):
+    def __enforce_name(self):
         """
         Checks that the name is valid.
 
-        :param match_dict: the matching dictionary from the parsing regex.
-        :type match_dict: dict
         :raises MalformedInputError: if the name is invalid for this DataInput
         """
+        classifier = self._classifier
         if self._class_prefix:
-            if match_dict["prefix"].lower() != self._class_prefix:
+            if classifier.prefix.value.lower() != self._class_prefix:
                 raise MalformedInputError(
                     self.words, f"{self.words[0]} has the wrong prefix for {type(self)}"
                 )
             if self._has_number:
                 try:
-                    num = int(match_dict["number"])
+                    num = classifier.number.value
                     assert num > 0
-                except (AssertionError, ValueError, TypeError) as e:
+                except (AssertionError) as e:
                     raise MalformedInputError(
                         self.words, f"{self.words[0]} does not contain a valid number"
                     )
-            if not self._has_number and match_dict["number"] is not None:
+            if not self._has_number and classifier.number is not None:
                 raise MalformedInputError(
                     self.words, f"{self.words[0]} cannot have a number for {type(self)}"
                 )
-            if self._has_classifier == 2 and match_dict["classifier"] is None:
+            if self._has_classifier == 2 and classifier.particles is None:
                 raise MalformedInputError(
                     self.words,
                     f"{self.words[0]} doesn't have a particle classifier for {type(self)}",
                 )
-            if self._has_classifier == 0 and match_dict["classifier"] is not None:
+            if self._has_classifier == 0 and classifier.particles is not None:
                 raise MalformedInputError(
                     self.words,
                     f"{self.words[0]} cannot have a particle classifier for {type(self)}",
