@@ -21,8 +21,9 @@ class DataParser(MCNP_Parser, metaclass=MetaBuilder):
         return ret
 
     @_(
-        "modifier TEXT",
+        "modifier classifier",
         "TEXT",
+        "KEYWORD",
         "classifier NUMBER",
         "classifier PARTICLE_DESIGNATOR",
         "classifier padding",
@@ -35,9 +36,13 @@ class DataParser(MCNP_Parser, metaclass=MetaBuilder):
 
         if hasattr(p, "modifier"):
             classifier.modifier = semantic_node.ValueNode(p.modifier, str)
-        if "TEXT" in p:
-            classifier.prefix = semantic_node.ValueNode(p.TEXT, str)
-        if "NUMBER" in p:
+        if hasattr(p, "TEXT") or hasattr(p, "KEYWORD"):
+            if hasattr(p, "TEXT"):
+                text = p.TEXT
+            else:
+                text = p.KEYWORD
+            classifier.prefix = semantic_node.ValueNode(text, str)
+        if hasattr(p, "NUMBER"):
             classifier.number = semantic_node.ValueNode(p.NUMBER, int)
         if hasattr(p, "PARTICLE_DESIGNATOR"):
             classifier.particles = semantic_node.ParticleNode(
