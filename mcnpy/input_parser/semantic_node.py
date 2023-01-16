@@ -159,6 +159,10 @@ class ListNode(SemanticNodeBase):
     def __repr__(self):
         return f"(list: {self.name}, {self.nodes})"
 
+    @property
+    def value(self):
+        return " ".join([str(node.value) for node in self.nodes])
+
 
 class ParametersNode(SemanticNodeBase):
     def __init__(self):
