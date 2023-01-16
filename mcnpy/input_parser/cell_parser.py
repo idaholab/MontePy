@@ -58,7 +58,10 @@ class CellParser(MCNP_Parser):
 
     @_("geometry_term")
     def geometry_expr(self, p):
-        return p.geometry_term
+        term = p.geometry_term
+        if isinstance(term, semantic_node.ValueNode):
+            term = semantic_node.GeometryTree("shift", [term], ">", term)
+        return term
 
     @_("geometry_term padding geometry_factor")
     def geometry_term(self, p):

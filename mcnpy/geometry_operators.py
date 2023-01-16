@@ -5,3 +5,4 @@ class Operator(Enum):
     INTERSECTION = "*"
     UNION = ":"
     COMPLEMENT = "#"
+    SHIFT = ">"
