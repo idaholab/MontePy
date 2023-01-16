@@ -128,9 +128,7 @@ class ValueNode(SemanticNodeBase):
         else:
             self._value = token
         self._padding = padding
-        self._nodes = [token]
-        if self._padding is not None:
-            self._nodes += padding.nodes
+        self._nodes = [self]
 
     @property
     def padding(self):
