@@ -66,7 +66,7 @@ class TestCellClass(TestCase):
         card = Input([in_str], BlockType.CELL)
         cell = Cell(card)
         self.assertIn(2, cell.old_complement_numbers)
-        self.assertEqual(cell.parameters["U"].strip(), "5")
+        self.assertEqual(cell.parameters.get_value("u"), "5.0")
 
     def test_geometry_logic_string_setter(self):
         in_str = "1 0 2"
