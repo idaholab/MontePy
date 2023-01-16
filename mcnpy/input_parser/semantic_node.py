@@ -217,7 +217,7 @@ class ClassifierNode(SemanticNodeBase):
 
     @particles.setter
     def particles(self, part):
-        self.append(number)
+        self.append(part)
         self._particles = part
 
     @property
@@ -226,6 +226,7 @@ class ClassifierNode(SemanticNodeBase):
 
     @modifier.setter
     def modifier(self, mod):
+        self.append(mod)
         self._modifier = mod
 
 

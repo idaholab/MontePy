@@ -20,12 +20,21 @@ class DataParser(MCNP_Parser, metaclass=MetaBuilder):
             ret.nodes["data"] = p[1]
         return p
 
-    @_("TEXT", "TEXT NUMBER", "classifier PARTICLE_DESIGNATOR", "classifier padding")
+    @_(
+        "modifier TEXT",
+        "TEXT",
+        "classifier NUMBER",
+        "classifier PARTICLE_DESIGNATOR",
+        "classifier padding",
+    )
     def classifier(self, p):
         if "classifier" in p:
             classifier = p.classifier
         else:
             classifier = semantic_node.ClassifierNode()
+
+        if "modifier" in p:
+            classifier.modifier = semantic_node.ValueNode(p.modifier, str)
         if "TEXT" in p:
             classifier.prefix = semantic_node.ValueNode(p.TEXT, str)
         if "NUMBER" in p:
@@ -38,6 +47,10 @@ class DataParser(MCNP_Parser, metaclass=MetaBuilder):
             classifier.append(p.padding)
 
         return classifier
+
+    @_('"*"')
+    def modifier(self, p):
+        return p[0]
 
     @_("zaid_phrase number_phrase")
     def isotope_fraction(self, p):
