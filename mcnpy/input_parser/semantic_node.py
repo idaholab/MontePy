@@ -120,6 +120,10 @@ class PaddingNode(SemanticNodeBase):
     def __repr__(self):
         return str(self)
 
+    @property
+    def value(self):
+        return "".join(self.nodes)
+
 
 class ValueNode(SemanticNodeBase):
     def __init__(self, token, token_type, padding=None):
@@ -161,7 +165,13 @@ class ListNode(SemanticNodeBase):
 
     @property
     def value(self):
-        return " ".join([str(node.value) for node in self.nodes])
+        strings = []
+        for node in self.nodes:
+            if isinstance(node, SemanticNodeBase):
+                strings.append(str(node.value))
+            else:
+                strings.append(node)
+        return " ".join(strings)
 
 
 class ParametersNode(SemanticNodeBase):
