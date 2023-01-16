@@ -158,6 +158,14 @@ class ValueNode(SemanticNodeBase):
         return self._value
 
 
+class ParticleNode(SemanticNodeBase):
+    def __init__(self, name, token):
+        super().__init__(name)
+        self._nodes = [self]
+        self._token = token
+        # TODO parse particles
+
+
 class ListNode(SemanticNodeBase):
     def __init__(self, name):
         super().__init__(name)
@@ -174,6 +182,51 @@ class ListNode(SemanticNodeBase):
             else:
                 strings.append(node)
         return " ".join(strings)
+
+
+class ClassifierNode(SemanticNodeBase):
+    def __init__(self):
+        super().__init__("classifier")
+        self._prefix = None
+        self._number = None
+        self._particles = None
+        self._modifier = None
+        self._nodes = []
+
+    @property
+    def prefix(self):
+        return self._prefix
+
+    @prefix.setter
+    def prefix(self, pref):
+        self.append(pref)
+        self._prefix = pref
+
+    @property
+    def number(self):
+        return self._number
+
+    @number.setter
+    def number(self, number):
+        self.append(number)
+        self._number = number
+
+    @property
+    def particles(self):
+        return self._particles
+
+    @particles.setter
+    def particles(self, part):
+        self.append(number)
+        self._particles = part
+
+    @property
+    def modifier(self):
+        return self._modifier
+
+    @modifier.setter
+    def modifier(self, mod):
+        self._modifier = mod
 
 
 class ParametersNode(SemanticNodeBase):

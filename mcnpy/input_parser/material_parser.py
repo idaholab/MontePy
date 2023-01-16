@@ -2,7 +2,7 @@ from mcnpy.input_parser.data_parser import DataParser
 
 
 class MaterialParser(DataParser):
-    @_("identifier isotope_fractions", "identifier isotope_fractions parameters")
+    @_("classifier isotope_fractions", "classifier isotope_fractions parameters")
     def material(self, p):
         return p
 
