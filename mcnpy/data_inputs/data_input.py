@@ -158,10 +158,11 @@ class DataInputAbstract(MCNP_Input):
 
         """
         self._classifier = self._tree["classifier"]
-        self.__enforce_name(match_dict)
+        self.__enforce_name()
         self._input_number = self._classifier.number
         self._prefix = self._classifier._prefix.value
-        self._classifiers = self._classifier.particles.particles
+        if self._classifier.particles:
+            self._classifiers = self._classifier.particles.particles
         self._modifier = self._classifier.modifier
 
     def __enforce_name(self):
