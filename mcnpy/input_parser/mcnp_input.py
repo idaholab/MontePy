@@ -113,7 +113,7 @@ class Input(SyntaxNode):
         return f"INPUT: {self._block_type}"
 
     def __repr__(self):
-        return f"INPUT: {self._block_type}: {self._words}"
+        return f"INPUT: {self._block_type}: {self.input_lines}"
 
     @property
     def block_type(self):
