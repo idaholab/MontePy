@@ -76,7 +76,7 @@ class Cell(MCNP_Input):
             if self._old_mat_number != 0:
                 self._density = abs(mat_tree.get_value("density"))
                 self._is_atom_dens = mat_tree.get_value("density") >= 0
-            self._parse_geometry
+            self._parse_geometry()
 
     def _parse_geometry(self):
         """

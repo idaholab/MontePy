@@ -111,7 +111,7 @@ class CellParser(MCNP_Parser):
     )
     def number_sequence(self, p):
         sequence = p[0]
-        for node in p[1:]:
+        for node in list(p)[1:]:
             sequence.append(node)
         return sequence
 
