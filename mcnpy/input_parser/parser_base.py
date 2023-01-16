@@ -21,15 +21,28 @@ class MetaBuilder(sly.yacc.ParserMeta):
 
     def __new__(meta, classname, bases, attributes):
         if classname != "MCNP_Parser":
-            for attr_name in dir(MCNP_Parser):
-                if (
-                    not attr_name.startswith("_")
-                    and attr_name not in MetaBuilder.protected_names
-                ):
-                    func = getattr(MCNP_Parser, attr_name)
-                    attributes[attr_name] = func
+            for basis in bases:
+                MetaBuilder._flatten_rules(classname, basis, attributes)
+                print("returned")
+                print(classname, attributes.keys())
         cls = super().__new__(meta, classname, bases, attributes)
+        print(cls)
         return cls
+
+    @staticmethod
+    def _flatten_rules(classname, basis, attributes):
+        for attr_name in dir(basis):
+            if (
+                not attr_name.startswith("_")
+                and attr_name not in MetaBuilder.protected_names
+            ):
+                func = getattr(basis, attr_name)
+                attributes[attr_name] = func
+        parent = basis.__bases__
+        for par_basis in parent:
+            if par_basis != Parser:
+                return
+                MetaBuilder._flatten_rules(classname, par_basis, attributes)
 
 
 class MCNP_Parser(Parser, metaclass=MetaBuilder):
