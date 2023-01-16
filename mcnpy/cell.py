@@ -52,7 +52,6 @@ class Cell(MCNP_Input):
         :param comment: the Comment block that preceded this blog if any.
         :type comment: Comment
         """
-        super().__init__(input, self._parser, comment)
         self._material = None
         self._old_number = None
         self._load_blank_modifiers()
@@ -63,6 +62,7 @@ class Cell(MCNP_Input):
         self._complements = Cells()
         self._old_complement_numbers = set()
         self._number = -1
+        super().__init__(input, self._parser, comment)
         if input:
             self._old_number = int(self._tree.get_value("cell_num"))
             self._number = self._old_number
