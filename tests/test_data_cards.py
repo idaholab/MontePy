@@ -150,7 +150,7 @@ class testDataInputClass(TestCase):
 
     def test_volumes_for_only_some_cells(self):
         cells = [
-            mcnpy.Cell(Input([f"{i + 1} 0 u=3"], BlockType.CELL)) for i in range(10)
+            mcnpy.Cell(Input([f"{i + 1} 0 -1 u=3"], BlockType.CELL)) for i in range(10)
         ]
         prob = MCNP_Problem(None)
         prob.cells = cells
