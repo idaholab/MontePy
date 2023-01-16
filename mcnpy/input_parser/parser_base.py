@@ -72,9 +72,9 @@ class MCNP_Parser(Parser, metaclass=MetaBuilder):
         p[0].append(p[1])
         return p[0]
 
-    @_('"="', "SPACE")
+    @_('"="', "padding", '"=" padding')
     def param_seperator(self, p):
-        return p
+        return self._flush_phrase(p, str)
 
     @_(
         "KEYWORD param_seperator number_sequence",
