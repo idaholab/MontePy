@@ -132,6 +132,8 @@ class ValueNode(SemanticNodeBase):
         self._type = token_type
         if token_type == float:
             self._value = fortran_float(token)
+        elif token_type == int:
+            self._value = int(token)
         else:
             self._value = token
         self._padding = padding
