@@ -132,7 +132,7 @@ class TestCellClass(TestCase):
                 in_str = f"1 0 -1 FILL={in_fill} {ending}"
                 card = Input([in_str], BlockType.CELL)
                 cell = Cell(card)
-                self.assertEqual(cell.parameters["FILL"].strip(), in_fill.strip())
+                self.assertIn("6600.0", cell.parameters.get_value("fill"))
                 cell.number = 2
                 output = cell.format_for_mcnp_input((6, 2, 0))
                 self.assertIn(in_fill, output[2])
