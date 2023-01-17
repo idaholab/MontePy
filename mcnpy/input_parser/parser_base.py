@@ -23,10 +23,7 @@ class MetaBuilder(sly.yacc.ParserMeta):
         if classname != "MCNP_Parser":
             for basis in bases:
                 MetaBuilder._flatten_rules(classname, basis, attributes)
-                print("returned")
-                print(classname, attributes.keys())
         cls = super().__new__(meta, classname, bases, attributes)
-        print(cls)
         return cls
 
     @staticmethod
@@ -48,6 +45,7 @@ class MetaBuilder(sly.yacc.ParserMeta):
 class MCNP_Parser(Parser, metaclass=MetaBuilder):
     tokens = MCNP_Lexer.tokens
 
+    # TODO make an identifier prhase
     @_("NUMBER", "NUMBER padding")
     def number_phrase(self, p):
         return self._flush_phrase(p, float)

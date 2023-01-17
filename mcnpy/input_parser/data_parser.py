@@ -3,7 +3,7 @@ from mcnpy.input_parser.parser_base import MCNP_Parser, MetaBuilder
 from mcnpy.input_parser import semantic_node
 
 
-class DataParser(MCNP_Parser, metaclass=MetaBuilder):
+class DataParser(MCNP_Parser):
     @_(
         "classifier number_sequence",
         "classifier isotope_fractions",
