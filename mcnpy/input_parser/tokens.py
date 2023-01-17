@@ -184,45 +184,15 @@ class MCNP_Lexer(Lexer):
         self.lineno += t.value.count("\n")
         return t
 
-    @_(r"\d*R\s")
-    def REPEAT(self, t):
-        try:
-            t.repeat_num = int(t.value.lower().replace("r", ""))
-        except ValueError:
-            t.repeat_num = 1
-        return t
+    REPEAT = r"\d*R\s"
 
-    @_(r"\d*M\s")
-    def MULTIPLY(self, t):
-        try:
-            t.multiply_num = int(t.value.lower().replace("m", ""))
-        except ValueError:
-            t.multiply_num = 1
-        return t
+    MULTIPLY = r"M\s"
 
-    @_(r"\d*I\s")
-    def INTERPOLATE(self, t):
-        try:
-            t.interp_num = int(t.value.lower().replace("i", ""))
-        except ValueError:
-            t.interp_num = 1
-        return t
+    INTERPOLATE = r"\d*I\s"
 
-    @_(r"\d*J\s")
-    def JUMP(self, t):
-        try:
-            t.jump_num = int(t.value.lower().replace("i", ""))
-        except ValueError:
-            t.jump_num = 1
-        return t
+    JUMP = r"\d*J\s"
 
-    @_(r"\d*I?LOG\s")
-    def LOG_INTERPOLATE(self, t):
-        try:
-            t.jump_num = int(t.value.lower().replace("i", ""))
-        except ValueError:
-            t.jump_num = 1
-        return t
+    LOG_INTERPOLATE = r"\d*I?LOG\s"
 
     @_(r"[a-z/\.]+")
     def TEXT(self, t):

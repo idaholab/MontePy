@@ -65,6 +65,10 @@ class MCNP_Parser(Parser, metaclass=MetaBuilder):
             sequence.append(p[1])
         return sequence
 
+    @_("number_sequence REPEAT", "number_sequence NUMBER MULTIPLY")
+    def number_sequence(self, p):
+        return semantic_node.ShortcutNode(p)
+
     @_("NULL", "NULL padding")
     def null_phrase(self, p):
         return self._flush_phrase(p, float)

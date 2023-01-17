@@ -1,4 +1,5 @@
 from abc import ABC, abstractmethod
+from mcnpy.input_parser.shortcuts import Shortcuts
 from mcnpy.geometry_operators import Operator
 from mcnpy.utilities import fortran_float
 
@@ -182,6 +183,44 @@ class ListNode(SemanticNodeBase):
             else:
                 strings.append(node)
         return " ".join(strings)
+
+
+class ShortcutNode(ListNode):
+    _shortcut_names = {
+        "REPEAT": Shortcuts.REPEAT,
+        "JUMP": Shortcuts.JUMP,
+        "INTERPOLATE": Shortcuts.INTERPOLATE,
+        "LOG_INTERPOLATE": Shortcuts.LOG_INTERPOLATE,
+        "MULTIPLY": Shortcuts.MULTIPLY,
+    }
+
+    def __init__(self, p):
+        for search_str, shortcut in self._shortcut_names.items():
+            self._type = None
+            if hasattr(p, search_str):
+                super().__init__(search_str.lower())
+                self._type = shortcut
+            if self._type is None:
+                raise ValueError("must use a valid shortcut")
+        self._original = list(p)
+        if self._type == Shortcuts.REPEAT:
+            self._expand_repeat(p)
+        if self._type == Shortcuts.MULTIPLY:
+            self._expand_multiply(p)
+
+    def _expand_repeat(self, p):
+        self._nodes = [p[0].nodes.pop()]
+        repeat = p[1]
+        try:
+            repeat_num = int(repeat.lower().replace("r", ""))
+        except ValueError:
+            repeat_num = 1
+        self._nodes += self.nodes[0] * repeat_num
+
+    def _expand_multiply(self, p):
+        self._nodes = [p[0].nodes.pop()]
+        mult_val = fortran_float(p[1])
+        self._nodes.append(self.nodes[-1] * mult_val)
 
 
 class ClassifierNode(SemanticNodeBase):

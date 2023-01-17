@@ -8,5 +8,6 @@ from . import material_parser
 from . import mcnp_input
 from . import parser_base
 from . import read_parser
+from . import shortcuts
 from . import surface_parser
 from . import tokens
