@@ -72,6 +72,8 @@ class MCNP_Lexer(Lexer):
         "refi",
         "refc",
         "refs",
+        # volume
+        "no",
     }
 
     _SURFACE_TYPES = {
