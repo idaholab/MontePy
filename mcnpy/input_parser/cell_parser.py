@@ -5,12 +5,12 @@ from mcnpy.input_parser import semantic_node
 
 class CellParser(MCNP_Parser):
     @_(
-        "number_phrase material geometry_expr parameters",
-        "number_phrase material geometry_expr",
+        "identifier_phrase material geometry_expr parameters",
+        "identifier_phrase material geometry_expr",
     )
     def cell(self, p):
         dict_tree = {
-            "cell_num": p.number_phrase,
+            "cell_num": p.identifier_phrase,
             "material": p.material,
             "geometry": p.geometry_expr,
         }
@@ -23,7 +23,7 @@ class CellParser(MCNP_Parser):
         if p.KEYWORD.lower() == "like":
             raise UnsupportedFeature("The like but feature is not supported")
 
-    @_("null_phrase", "number_phrase number_phrase")
+    @_("null_phrase", "identifier_phrase number_phrase")
     def material(self, p):
         if len(p) == 1:
             ret_dict = {"mat_number": p.null_phrase}

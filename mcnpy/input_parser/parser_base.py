@@ -45,10 +45,13 @@ class MetaBuilder(sly.yacc.ParserMeta):
 class MCNP_Parser(Parser, metaclass=MetaBuilder):
     tokens = MCNP_Lexer.tokens
 
-    # TODO make an identifier prhase
     @_("NUMBER", "NUMBER padding")
     def number_phrase(self, p):
         return self._flush_phrase(p, float)
+
+    @_("NUMBER", "NUMBER padding")
+    def identifier_phrase(self, p):
+        return self._flush_phrase(p, int)
 
     @_(
         "number_phrase",
@@ -65,13 +68,13 @@ class MCNP_Parser(Parser, metaclass=MetaBuilder):
             sequence.append(p[1])
         return sequence
 
-    @_("number_sequence REPEAT", "number_sequence NUMBER MULTIPLY")
+    @_("number_phrase REPEAT", "number_phrase NUMBER MULTIPLY")
     def number_sequence(self, p):
         return semantic_node.ShortcutNode(p)
 
     @_("NULL", "NULL padding")
     def null_phrase(self, p):
-        return self._flush_phrase(p, float)
+        return self._flush_phrase(p, int)
 
     @_("TEXT", "TEXT padding")
     def text_phrase(self, p):
