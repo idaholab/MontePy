@@ -258,7 +258,7 @@ class Cell(MCNP_Input):
         """
         pass
 
-    @property
+    @make_prop_pointer("_material", (Material, type(None)), deletable = True)
     def material(self):
         """
         The Material object for the cell.
@@ -267,15 +267,8 @@ class Cell(MCNP_Input):
 
         :rtype: Material
         """
-        return self._material
+        pass
 
-    @material.setter
-    def material(self, mat=None):
-        if mat:
-            if not isinstance(mat, Material):
-                raise TypeError("material must be a Material instance")
-        self._mutated = True
-        self._material = mat
 
     @property
     def atom_density(self) -> float:
@@ -328,14 +321,14 @@ class Cell(MCNP_Input):
         """
         return self._is_atom_dens
 
-    @property
+    @make_prop_value_node("_old_mat_number")
     def old_mat_number(self):
         """
         The material number provided in the original input file
         """
-        return self._old_mat_number
+        pass
 
-    @property
+    @make_prop_pointer("_surfaces", (Surfaces, list), base_type = Surfaces)
     def surfaces(self):
         """
         List of the Surface objects associated with this cell.
@@ -343,19 +336,8 @@ class Cell(MCNP_Input):
         This list does not convey any of the CGS Boolean logic
         :rtype: Surfaces
         """
-        return self._surfaces
+        pass
 
-    @surfaces.setter
-    def surfaces(self, surfs):
-        if type(surfs) not in [Surfaces, list]:
-            raise TypeError("surfaces must be an instance of list or Surfaces")
-        if isinstance(surfs, list):
-            for surf in surfs:
-                if not isinstance(surf, Surface):
-                    raise TypeError(f"the surfaces element {surf} is not a Surface")
-            surfs = Surfaces(surfs)
-        self._mutated = True
-        self._surfaces = surfs
 
     @property
     def old_surface_numbers(self):
