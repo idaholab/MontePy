@@ -1,3 +1,4 @@
+import functools
 import itertools
 from mcnpy.cells import Cells
 from mcnpy.data_inputs import importance, volume
@@ -11,6 +12,51 @@ from mcnpy.surface_collection import Surfaces
 from mcnpy.utilities import *
 import re
 import numbers
+
+
+def make_prop_val_node(
+    hidden_param, types=None, base_type=None, validator=None, deletable=False
+):
+    def decorator(func):
+        @property
+        @functools.wraps(func)
+        def getter(self):
+            result = func(self)
+            if result:
+                return result
+            else:
+                return getattr(self, hidden_param).value
+
+        if types is not None:
+
+            def setter(self, value):
+                if not isinstance(value, types):
+                    raise TypeError(f"{func.__name__} must be of type: {types}")
+                if base_type is not None and not isinstance(value, base_type):
+                    value = base_type(value)
+                if validator:
+                    validator(self, value)
+                node = getattr(self, hidden_param)
+                node.value = value
+
+            getter = getter.setter(setter)
+        
+        if deletable:
+            def deleter(self):
+                setattr(self, hidden_param, None)
+
+            getter = getter.deleter(deleter)
+        return getter
+
+    return decorator
+
+
+
+def _number_validator(self, number):
+    if number <= 0:
+        raise ValueError("number must be > 0")
+    if self._problem:
+        self._problem.cells.check_number(number)
 
 
 class Cell(MCNP_Input):
@@ -64,7 +110,7 @@ class Cell(MCNP_Input):
         self._number = -1
         super().__init__(input, self._parser, comment)
         if input:
-            self._old_number = int(self._tree.get_value("cell_num"))
+            self._old_number = self._tree["cell_num"]
             self._number = self._old_number
             mat_tree = self._tree["material"]
             self._old_mat_number = int(mat_tree.get_value("mat_number"))
@@ -166,34 +212,23 @@ class Cell(MCNP_Input):
         """
         return self._volume.set
 
-    @property
+    @make_prop_val_node("_old_number")
     def old_number(self):
         """
         The original cell number provided in the input file
 
         :rtype: int
         """
-        return self._old_number
+        pass
 
-    @property
+    @make_prop_val_node("_number", int, validator=_number_validator)
     def number(self):
         """
         The current cell number that will be written out to a new input.
 
         :rtype: int
         """
-        return self._number
-
-    @number.setter
-    def number(self, number):
-        if not isinstance(number, int):
-            raise TypeError("number must be an int")
-        if number <= 0:
-            raise ValueError("number must be > 0")
-        if self._problem:
-            self._problem.cells.check_number(number)
-        self._mutated = True
-        self._number = number
+        pass
 
     @property
     def material(self):
