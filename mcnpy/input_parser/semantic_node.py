@@ -158,6 +158,10 @@ class ValueNode(SemanticNodeBase):
     def value(self):
         return self._value
 
+    @value.setter
+    def value(self, value):
+        self._value = value
+
 
 class ParticleNode(SemanticNodeBase):
     def __init__(self, name, token):
