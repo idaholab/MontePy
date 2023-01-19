@@ -66,11 +66,7 @@ class MCNP_Parser(Parser, metaclass=MetaBuilder):
             sequence.append(p[0])
         else:
             sequence = p[0]
-            if hasattr(p, "number_phrase"):
-                sequence.append(p[1])
-            else:
-                for number in p[1].nodes:
-                    sequence.append(number)
+            sequence.append(p[1])
         return sequence
 
     @_(
