@@ -322,7 +322,7 @@ class Cell(MCNP_Input):
         """
         return self._is_atom_dens
 
-    @make_prop_value_node("_old_mat_number")
+    @make_prop_val_node("_old_mat_number")
     def old_mat_number(self):
         """
         The material number provided in the original input file
