@@ -220,7 +220,7 @@ class Transform(data_card.DataCardAbstract, Numbered_MCNP_Card):
         :param first_line: If true this is the first line of input
         :type first_line: bool
         :param is_pass_through: If True the transform number will be supressed
-        :type is_pass_trhough: bool
+        :type is_pass_through: bool
         :returns: a tuple of (bool: true if this needs an *, list of str of the input)
         :rtype: tuple
         """
