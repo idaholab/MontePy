@@ -56,6 +56,7 @@ class MCNP_Parser(Parser, metaclass=MetaBuilder):
     @_(
         "number_phrase",
         "null_phrase",
+        "shortcut_sequence",
         "number_sequence number_phrase",
         "number_sequence number_sequence",
         "number_sequence null_phrase",
@@ -76,7 +77,7 @@ class MCNP_Parser(Parser, metaclass=MetaBuilder):
         "number_phrase LOG_INTERPOLATE number_phrase",
         "JUMP",
     )
-    def number_sequence(self, p):
+    def shortcut_sequence(self, p):
         return semantic_node.ShortcutNode(p)
 
     @_("NULL", "NULL padding")
@@ -108,7 +109,6 @@ class MCNP_Parser(Parser, metaclass=MetaBuilder):
         return self._flush_phrase(p, str)
 
     @_(
-        "KEYWORD param_seperator number_phrase",
         "KEYWORD param_seperator number_sequence",
         "KEYWORD param_seperator text_phrase",
     )
