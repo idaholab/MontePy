@@ -512,7 +512,7 @@ class Cell(MCNP_Input):
         return f"CELL: {self.number}, mat: {mat_num}, {dens_str}"
 
     def __repr__(self):
-        ret = f"CELL: {self._number} \n"
+        ret = f"CELL: {self.number} \n"
         if self.material:
             ret += str(self.material) + "\n"
         else:
