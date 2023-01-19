@@ -130,7 +130,7 @@ class Cell(MCNP_Input):
         self._old_number = None
         self._load_blank_modifiers()
         self._old_mat_number = None
-        self._density = None
+        self._density_node = None
         self._surfaces = Surfaces()
         self._old_surface_numbers = set()
         self._complements = Cells()
@@ -143,9 +143,9 @@ class Cell(MCNP_Input):
             mat_tree = self._tree["material"]
             self._old_mat_number = mat_tree["mat_number"]
             if self.old_mat_number != 0:
-                self._density = mat_tree.["density"]
-                self._density.value = abs(self._density.value)
+                self._density_node = mat_tree["density"]
                 self._is_atom_dens = mat_tree.get_value("density") >= 0
+                self._density_node.value = abs(self._density)
             self._parse_geometry()
 
     def _parse_geometry(self):
@@ -268,6 +268,10 @@ class Cell(MCNP_Input):
 
         :rtype: Material
         """
+        pass
+
+    @make_prop_val_node("_density_node", (float, int), base_type=float, deletable=True)
+    def _density(self):
         pass
 
 
