@@ -57,6 +57,7 @@ class MCNP_Parser(Parser, metaclass=MetaBuilder):
         "number_phrase",
         "null_phrase",
         "number_sequence number_phrase",
+        "number_sequence number_sequence",
         "number_sequence null_phrase",
     )
     def number_sequence(self, p):
@@ -65,7 +66,11 @@ class MCNP_Parser(Parser, metaclass=MetaBuilder):
             sequence.append(p[0])
         else:
             sequence = p[0]
-            sequence.append(p[1])
+            if hasattr(p, "number_phrase"):
+                sequence.append(p[1])
+            else:
+                for number in p[1].nodes:
+                    sequence.append(number)
         return sequence
 
     @_("number_phrase REPEAT", "number_phrase NUMBER MULTIPLY")
