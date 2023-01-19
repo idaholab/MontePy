@@ -73,7 +73,13 @@ class MCNP_Parser(Parser, metaclass=MetaBuilder):
                     sequence.append(number)
         return sequence
 
-    @_("number_phrase REPEAT", "number_phrase NUMBER MULTIPLY")
+    @_(
+        "number_phrase REPEAT",
+        "number_phrase NUMBER MULTIPLY",
+        "number_phrase INTERPOLATE number_phrase",
+        "number_phrase LOG_INTERPOLATE number_phrase",
+        "JUMP",
+    )
     def number_sequence(self, p):
         return semantic_node.ShortcutNode(p)
 

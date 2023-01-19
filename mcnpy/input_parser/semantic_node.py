@@ -1,4 +1,5 @@
 from abc import ABC, abstractmethod
+from mcnpy import input_parser
 from mcnpy.input_parser.shortcuts import Shortcuts
 from mcnpy.geometry_operators import Operator
 from mcnpy.utilities import fortran_float
@@ -197,6 +198,7 @@ class ShortcutNode(ListNode):
         "LOG_INTERPOLATE": Shortcuts.LOG_INTERPOLATE,
         "MULTIPLY": Shortcuts.MULTIPLY,
     }
+    _num_finder = re.compile("\d+")
 
     def __init__(self, p):
         for search_str, shortcut in self._shortcut_names.items():
@@ -209,11 +211,15 @@ class ShortcutNode(ListNode):
         self._original = list(p)
         if self._type == Shortcuts.REPEAT:
             self._expand_repeat(p)
-        if self._type == Shortcuts.MULTIPLY:
+        elif self._type == Shortcuts.MULTIPLY:
             self._expand_multiply(p)
+        elif self._type == Shortcuts.JUMP:
+            self._expand_jump(p)
+        elif self._type in {Shortcuts.INTERPOLATE, Shortcuts.LOG_INTERPOLATE}:
+            self._expand_interpolate(p)
 
     def _expand_repeat(self, p):
-        self._nodes = [p[0].nodes.pop()]
+        self._nodes = [p[0]]
         repeat = p[1]
         try:
             repeat_num = int(repeat.lower().replace("r", ""))
@@ -222,9 +228,41 @@ class ShortcutNode(ListNode):
         self._nodes += self.nodes[0] * repeat_num
 
     def _expand_multiply(self, p):
-        self._nodes = [p[0].nodes.pop()]
+        self._nodes = [p[0]]
         mult_val = fortran_float(p[1])
         self._nodes.append(self.nodes[-1] * mult_val)
+
+    def _expand_jump(self, p):
+        try:
+            jump_num = int(p[0].lower().replace("j", ""))
+        except ValueError:
+            jump_num = 1
+        self._nodes = [input_parser.mcnp_input.Jump()] * jump_num
+
+    def _expand_interpolate(self, p):
+        if hasattr(p, "LOG_INTERPOLATE"):
+            is_log = True
+        else:
+            is_log = False
+        begin = p[0].value
+        self._nodes = [p[0]]
+        end = p[2].value
+        match = self._num_finder.search(p[1])
+        if match:
+            number = match.group(0)
+        else:
+            number = 1
+        if is_log:
+            begin = math.log(begin, 10)
+            end = math.log(end, 10)
+        spacing = (end - begin) / (number + 1)
+        for i in range(number):
+            if is_log:
+                new_val = 10 ** (begin + spacing * (i + 1))
+            else:
+                new_val = begin + spacing * (i + 1)
+            self.append(new_val)
+        self.append(p[2])
 
 
 class ClassifierNode(SemanticNodeBase):
