@@ -101,6 +101,7 @@ class MCNP_Parser(Parser, metaclass=MetaBuilder):
         return self._flush_phrase(p, str)
 
     @_(
+        "KEYWORD param_seperator number_phrase",
         "KEYWORD param_seperator number_sequence",
         "KEYWORD param_seperator text_phrase",
     )

@@ -110,6 +110,7 @@ class CellParser(MCNP_Parser):
     # support for fill card wierdness
     @_(
         'number_sequence "(" number_sequence ")"',
+        'number_sequence "(" number_phrase ")"',
         'number_sequence "(" number_sequence ")" padding',
     )
     def number_sequence(self, p):
