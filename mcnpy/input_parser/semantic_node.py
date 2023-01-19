@@ -3,6 +3,7 @@ from mcnpy import input_parser
 from mcnpy.input_parser.shortcuts import Shortcuts
 from mcnpy.geometry_operators import Operator
 from mcnpy.utilities import fortran_float
+import re
 
 
 class SemanticNodeBase(ABC):
@@ -198,7 +199,7 @@ class ShortcutNode(ListNode):
         "LOG_INTERPOLATE": Shortcuts.LOG_INTERPOLATE,
         "MULTIPLY": Shortcuts.MULTIPLY,
     }
-    _num_finder = re.compile("\d+")
+    _num_finder = re.compile(r"\d+")
 
     def __init__(self, p):
         for search_str, shortcut in self._shortcut_names.items():
