@@ -68,3 +68,9 @@ class DataParser(MCNP_Parser):
     @_("ZAID padding")
     def zaid_phrase(self, p):
         return p
+
+
+class ClassifierParser(DataParser):
+    @_("classifier")
+    def classifier(self, p):
+        return p
