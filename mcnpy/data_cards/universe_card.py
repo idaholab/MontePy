@@ -50,8 +50,7 @@ class UniverseCard(CellModifierCard):
                     if value < 0:
                         self._not_truncated = True
                     value = abs(value)
-                    assert value >= 0
-                except (ValueError) as e:
+                except ValueError:
                     raise ValueError(
                         f"Cell universe must be an integer {value} was given"
                     )
