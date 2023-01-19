@@ -64,7 +64,7 @@ class UniverseCard(CellModifierCard):
                     try:
                         value = int(word)
                         self._universe.append(value)
-                    except (ValueError) as e:
+                    except ValueError:
                         raise MalformedInputError(
                             input_card,
                             f"Cell universes must be an integer ≥ 0. {word} was given",
