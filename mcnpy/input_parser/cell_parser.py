@@ -23,10 +23,10 @@ class CellParser(MCNP_Parser):
         if p.KEYWORD.lower() == "like":
             raise UnsupportedFeature("The like but feature is not supported")
 
-    @_("null_phrase", "identifier_phrase number_phrase")
+    @_("null_ident_phrase", "identifier_phrase number_phrase")
     def material(self, p):
         if len(p) == 1:
-            ret_dict = {"mat_number": p.null_phrase}
+            ret_dict = {"mat_number": p.null_ident_phrase}
         else:
             ret_dict = {"mat_number": p[0], "density": p[1]}
         return semantic_node.SemanticNode("material", ret_dict)

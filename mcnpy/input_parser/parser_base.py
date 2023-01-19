@@ -82,6 +82,10 @@ class MCNP_Parser(Parser, metaclass=MetaBuilder):
 
     @_("NULL", "NULL padding")
     def null_phrase(self, p):
+        return self._flush_phrase(p, float)
+
+    @_("NULL", "NULL padding")
+    def null_ident_phrase(self, p):
         return self._flush_phrase(p, int)
 
     @_("TEXT", "TEXT padding")
