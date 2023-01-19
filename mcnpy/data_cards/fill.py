@@ -430,7 +430,6 @@ class Fill(CellModifierCard):
         ret = []
         if self.in_cell_block:
             key = "FILL"
-            value = ""
             in_deg = False
             transform_lines = [""]
             if self.universe is not None:
