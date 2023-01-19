@@ -773,7 +773,14 @@ class Cell(Numbered_MCNP_Card):
             dens_str = f"DENS: {self._density} {units}"
         else:
             dens_str = "DENS: None"
-        return f"CELL: {self.number}, mat: {mat_num}, {dens_str}"
+        universe_num = self.universe.number
+        ret = f"CELL: {self.number}, mat: {mat_num}, {dens_str}"
+        if universe_num != 0:
+            ret += f", universe: {universe_num}"
+        if self.fill.universe:
+            ret += f", filled by: {self.fill.universe}"
+
+        return ret
 
     def __repr__(self):
         ret = f"CELL: {self._cell_number} \n"
