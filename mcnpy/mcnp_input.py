@@ -136,14 +136,6 @@ class MCNP_Input(ABC):
         return self._input_lines
 
     @property
-    def mutated(self):
-        """True if the user has changed a property of this input
-
-        :rtype: bool
-        """
-        return self._mutated
-
-    @property
     @abstractmethod
     def allowed_keywords(self):
         """
