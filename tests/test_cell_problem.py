@@ -68,6 +68,15 @@ class TestCellClass(TestCase):
         self.assertIn(2, cell.old_complement_numbers)
         self.assertEqual(cell.parameters["U"].strip(), "5")
 
+    def test_cell_validator(self):
+        cell = Cell()
+        with self.assertRaises(mcnpy.errors.IllegalState):
+            cell.validate()
+        cell.mass_density = 5.0
+        with self.assertRaises(mcnpy.errors.IllegalState):
+            cell.validate()
+        del cell.mass_density
+
     def test_geometry_logic_string_setter(self):
         in_str = "1 0 2"
         card = Card([in_str], BlockType.CELL)
