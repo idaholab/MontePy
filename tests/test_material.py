@@ -135,14 +135,45 @@ class TestIsotope(TestCase):
         self.assertEqual(isotope.A, 1)
         self.assertEqual(isotope.element.Z, 1)
         self.assertEqual(isotope.library, "80c")
-
         with self.assertRaises(ValueError):
             Isotope("1001.80c.5")
         with self.assertRaises(ValueError):
             Isotope("hi.80c")
-
         with self.assertRaises(MalformedInputError):
             Isotope("1001")
+
+    def test_isotope_metastable_init(self):
+        isotope = Isotope("13426.02c")
+        self.assertEqual(isotope.ZAID, "13426")
+        self.assertEqual(isotope.Z, 13)
+        self.assertEqual(isotope.A, 26)
+        self.assertTrue(isotope.is_metastable)
+        self.assertEqual(isotope.meta_state, 1)
+        isotope = Isotope("92635.02c")
+        self.assertEqual(isotope.A, 235)
+        self.assertEqual(isotope.meta_state, 1)
+        isotope = Isotope("92935.02c")
+        self.assertEqual(isotope.A, 235)
+        self.assertEqual(isotope.meta_state, 4)
+        self.assertEqual(isotope.mcnp_str(), "92935.02c")
+        edge_cases = [
+            ("4412", 4, 12, 1),
+            ("4413", 4, 13, 1),
+            ("4414", 4, 14, 1),
+            ("36569", 36, 69, 2),
+            ("77764", 77, 164, 3),
+        ]
+        for ZA, Z_ans, A_ans, isomer_ans in edge_cases:
+            isotope = Isotope(ZA + ".80c")
+            self.assertEqual(isotope.Z, Z_ans)
+            self.assertEqual(isotope.A, A_ans)
+            self.assertEqual(isotope.meta_state, isomer_ans)
+        with self.assertRaises(ValueError):
+            isotope = Isotope("13826.02c")
+
+    def test_isotope_get_base_zaid(self):
+        isotope = Isotope("92635.02c")
+        self.assertEqual(isotope.get_base_zaid(), 92235)
 
     def test_isotope_library_setter(self):
         isotope = Isotope("1001.80c")
