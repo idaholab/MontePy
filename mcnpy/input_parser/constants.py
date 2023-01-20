@@ -4,20 +4,20 @@ from mcnpy.errors import UnsupportedFeature
 Constants related to how MCNP inputs are formatted.
 """
 
+BLANK_SPACE_CONTINUE = 5
 """
 Number of spaces in a new line before it's considered a continuation.
 """
-BLANK_SPACE_CONTINUE = 5
 
+LINE_LENGTH = {(5, 1, 60): 80, (6, 1, 0): 80, (6, 2, 0): 128}
 """
 The number of characters allowed in a line for each MCNP version.
 """
-LINE_LENGTH = {(5, 1, 60): 80, (6, 1, 0): 80, (6, 2, 0): 128}
 
+DEFAULT_VERSION = (6, 2, 0)
 """
 The default version of MCNP to use.
 """
-DEFAULT_VERSION = (6, 2, 0)
 
 
 def get_max_line_length(mcnp_version=DEFAULT_VERSION):

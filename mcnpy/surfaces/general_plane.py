@@ -5,6 +5,11 @@ from mcnpy.surfaces.surface import Surface
 class GeneralPlane(Surface):
     """
     Represents P
+
+    :param input_card: The Card object representing the input
+    :type input_card: Card
+    :param comments: The Comments that proceeded this card or were inside of this if any
+    :type Comments: list
     """
 
     def __init__(self, input_card, comment=None):

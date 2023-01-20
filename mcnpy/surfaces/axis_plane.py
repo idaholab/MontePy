@@ -5,18 +5,16 @@ from .surface import Surface
 class AxisPlane(Surface):
     """
     Represents PX, PY, PZ
+
+    :param input_card: The Card object representing the input
+    :type input_card: Card
+    :param comments: The Comments that proceeded this card or were inside of this if any
+    :type Comments: list
     """
 
     COORDINATE = {SurfaceType.PX: "x", SurfaceType.PY: "y", SurfaceType.PZ: "z"}
 
     def __init__(self, input_card, comment=None):
-        """
-        :param input_card: The Card object representing the input
-        :type input_card: Card
-        :param comment: the Comment object representing the
-                        preceding comment block.
-        :type comment: Comment
-        """
         super().__init__(input_card, comment)
         ST = SurfaceType
         if self.surface_type not in [ST.PX, ST.PY, ST.PZ]:

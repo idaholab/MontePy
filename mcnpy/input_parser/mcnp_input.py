@@ -94,11 +94,11 @@ class Card(MCNP_Input):
     :type block_type: BlockType
     """
 
+    SPECIAL_COMMENT_PREFIXES = ["fc", "sc"]
     """Prefixes for special comments like tally comments.
     
     :rtype: list
     """
-    SPECIAL_COMMENT_PREFIXES = ["fc", "sc"]
 
     def __init__(self, input_lines, block_type):
         super().__init__(input_lines)

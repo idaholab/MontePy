@@ -5,6 +5,11 @@ from .surface import Surface
 class CylinderParAxis(Surface):
     """
     Represents surfaces: C/X, C/Y, C/Z
+
+    :param input_card: The Card object representing the input
+    :type input_card: Card
+    :param comments: The Comments that proceeded this card or were inside of this if any
+    :type Comments: list
     """
 
     COORDINATE_PAIRS = {
@@ -12,15 +17,10 @@ class CylinderParAxis(Surface):
         SurfaceType.C_Y: {0: "x", 1: "z"},
         SurfaceType.C_Z: {0: "x", 1: "y"},
     }
+    """Which coordinate is what value for each cylinder type.
+    """
 
     def __init__(self, input_card, comment=None):
-        """
-        :param input_card: The Card object representing the input
-        :type input_card: Card
-        :param comment: the Comment object representing the
-                        preceding comment block.
-        :type comment: Comment
-        """
         super().__init__(input_card, comment)
         ST = SurfaceType
         if self.surface_type not in [ST.C_X, ST.C_Y, ST.C_Z]:
@@ -43,9 +43,6 @@ class CylinderParAxis(Surface):
 
     @coordinates.setter
     def coordinates(self, coordinates):
-        """
-        :param coordinates: the coordinates, must be 2 long.
-        """
         if not isinstance(coordinates, list):
             raise TypeError("coordinates must be a list")
         if len(coordinates) != 2:
