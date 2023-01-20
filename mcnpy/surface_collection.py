@@ -30,9 +30,13 @@ class Surfaces(NumberedObjectCollection):
 
     This example will shift all PZ surfaces up by 10 cm.
 
-    >>> for surface in problem.surfaces.pz:
-    >>>    surface.location += 10
+    .. code-block:: python
 
+        for surface in problem.surfaces.pz:
+            surface.location += 10
+
+    :param surfaces: the list of surfaces to start with if needed
+    :type surfaces: list
     """
 
     def __init__(self, surfaces=None):
