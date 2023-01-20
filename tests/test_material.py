@@ -55,6 +55,11 @@ class testMaterialClass(TestCase):
 
         self.assertEqual(material.parameter_string, "Gas=1")
 
+    def test_material_validator(self):
+        material = Material()
+        with self.assertRaises(mcnpy.errors.IllegalState):
+            material.validate()
+
     def test_material_setter(self):
         in_str = "M20 1001.80c 0.5 8016.80c 0.5"
         input_card = Card([in_str], BlockType.DATA)
@@ -182,6 +187,11 @@ class TestThermalScattering(TestCase):
         comment = Comment(["c foo"], ["foo"])
         card = ThermalScatteringLaw(comment=comment, material=material)
         self.assertEqual(card.parent_material, material)
+
+    def test_thermal_scatter_validate(self):
+        thermal = ThermalScatteringLaw()
+        with self.assertRaises(mcnpy.errors.IllegalState):
+            thermal.validate()
 
     def test_thermal_scattering_add(self):
         in_str = "Mt20 grph.20t"
