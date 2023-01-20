@@ -158,18 +158,18 @@ class UniverseCard(CellModifierCard):
                     cell._universe._old_number = abs(uni_number)
                     if uni_number < 0:
                         cell._universe._not_truncated = True
-        universes = self._problem.universes
-        for cell in cells:
-            uni_num = cell.old_universe_number
-            if uni_num is None:
-                uni_num = 0
-            if uni_num not in universes.numbers:
-                universe = Universe(uni_num)
-                universe.link_to_problem(self._problem)
-                universes.append(universe)
-            else:
-                universe = universes[uni_num]
-            cell._universe._universe = universe
+            universes = self._problem.universes
+            for cell in cells:
+                uni_num = cell.old_universe_number
+                if uni_num is None:
+                    uni_num = 0
+                if uni_num not in universes.numbers:
+                    universe = Universe(uni_num)
+                    universe.link_to_problem(self._problem)
+                    universes.append(universe)
+                else:
+                    universe = universes[uni_num]
+                cell._universe._universe = universe
 
     def _clear_data(self):
         del self._universe
