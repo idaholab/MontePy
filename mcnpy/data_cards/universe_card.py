@@ -39,9 +39,9 @@ class UniverseCard(CellModifierCard):
         :param value: the value from the key-value pair in a cell
         :type value: str
         """
-        super().__init__(input_card, comments, in_cell_block, key, value)
         self._universe = None
         self._not_truncated = False
+        super().__init__(input_card, comments, in_cell_block, key, value)
         if self.in_cell_block:
             self._old_number = None
             if key:

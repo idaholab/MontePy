@@ -45,13 +45,13 @@ class Fill(CellModifierCard):
         :type value: str
         """
 
-        super().__init__(input_card, comments, in_cell_block, key, value)
         self._old_number = None
         self._universe = None
         self._transform = None
         self._hidden_transform = None
         self._old_transform_number = None
         self._multi_universe = False
+        super().__init__(input_card, comments, in_cell_block, key, value)
         if self.in_cell_block:
             if key:
                 self._parse_cell_input(key, value)
