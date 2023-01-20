@@ -8,7 +8,7 @@ class CylinderOnAxis(Surface):
     Represents surfaces: CX, CY, CZ
     """
 
-    def __init__(self, input_card, comment=None):
+    def __init__(self, input_card=None, comment=None):
         """
         :param input_card: The Card object representing the input
         :type input_card: Card
@@ -16,13 +16,17 @@ class CylinderOnAxis(Surface):
                         preceding comment block.
         :type comment: Comment
         """
+        self._radius = None
         super().__init__(input_card, comment)
         ST = SurfaceType
-        if self.surface_type not in [ST.CX, ST.CY, ST.CZ]:
-            raise ValueError("CylinderOnAxis must be of surface_type: CX, CY, CZ")
-        if len(self.surface_constants) != 1:
-            raise ValueError("CylinderOnAxis only accepts one surface_constant")
-        self._radius = self.surface_constants[0]
+        if input_card:
+            if self.surface_type not in [ST.CX, ST.CY, ST.CZ]:
+                raise ValueError("CylinderOnAxis must be of surface_type: CX, CY, CZ")
+            if len(self.surface_constants) != 1:
+                raise ValueError("CylinderOnAxis only accepts one surface_constant")
+            self._radius = self.surface_constants[0]
+        else:
+            self._surface_constants = [None]
 
     @property
     def radius(self):

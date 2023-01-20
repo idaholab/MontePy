@@ -25,6 +25,7 @@ class Surface(MCNP_Card):
         self._old_transform_number = None
         self._surface_type = None
         self._surface_number = -1
+        self._surface_constants = []
         i = 0
         super().__init__(input_card, comment)
         # surface number
