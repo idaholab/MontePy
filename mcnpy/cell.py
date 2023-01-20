@@ -286,6 +286,11 @@ class Cell(MCNP_Card):
         self._is_atom_dens = True
         self._density = float(density)
 
+    @atom_density.deleter
+    def atom_density(self):
+        self._mutated = True
+        self._density = None
+
     @property
     def mass_density(self) -> float:
         """
@@ -306,6 +311,11 @@ class Cell(MCNP_Card):
         self._mutated = True
         self._is_atom_dens = False
         self._density = float(density)
+
+    @mass_density.deleter
+    def mass_density(self):
+        self._mutated = True
+        self._density = None
 
     @property
     def is_atom_dens(self):
