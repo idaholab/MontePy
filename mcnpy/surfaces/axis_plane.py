@@ -10,7 +10,7 @@ class AxisPlane(Surface):
 
     COORDINATE = {SurfaceType.PX: "x", SurfaceType.PY: "y", SurfaceType.PZ: "z"}
 
-    def __init__(self, input_card, comment=None):
+    def __init__(self, input_card=None, comment=None):
         """
         :param input_card: The Card object representing the input
         :type input_card: Card
@@ -18,13 +18,17 @@ class AxisPlane(Surface):
                         preceding comment block.
         :type comment: Comment
         """
+        self._location = None
         super().__init__(input_card, comment)
         ST = SurfaceType
-        if self.surface_type not in [ST.PX, ST.PY, ST.PZ]:
-            raise ValueError("AxisPlane must be a surface of type: PX, PY, or PZ")
-        if len(self.surface_constants) != 1:
-            raise ValueError("AxisPlane must have exactly 1 surface constant")
-        self._location = self.surface_constants[0]
+        if input_card:
+            if self.surface_type not in [ST.PX, ST.PY, ST.PZ]:
+                raise ValueError("AxisPlane must be a surface of type: PX, PY, or PZ")
+            if len(self.surface_constants) != 1:
+                raise ValueError("AxisPlane must have exactly 1 surface constant")
+            self._location = self.surface_constants[0]
+        else:
+            self._surface_constants = [None]
 
     @property
     def location(self):
@@ -44,6 +48,7 @@ class AxisPlane(Surface):
         self._surface_constants[0] = location
 
     def validate(self):
+        super().validate()
         if not self.location:
             raise IllegalState(f"Surface: {self.number} does not have a location set.")
 

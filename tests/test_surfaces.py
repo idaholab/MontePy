@@ -83,12 +83,14 @@ class testSurfaces(TestCase):
         surf = Surface()
         with self.assertRaises(mcnpy.errors.IllegalState):
             surf.validate()
+        # cylinder on axis
         surf = CylinderOnAxis()
         with self.assertRaises(mcnpy.errors.IllegalState):
             surf.validate()
         surf._surface_type = SurfaceType.CX
         with self.assertRaises(mcnpy.errors.IllegalState):
             surf.validate()
+        # cylinder par axis
         surf = CylinderParAxis()
         with self.assertRaises(mcnpy.errors.IllegalState):
             surf.validate()
@@ -96,6 +98,14 @@ class testSurfaces(TestCase):
         with self.assertRaises(mcnpy.errors.IllegalState):
             surf.validate()
         surf.radius = 5.0
+        with self.assertRaises(mcnpy.errors.IllegalState):
+            surf.validate()
+        # axis plane
+        surf = AxisPlane()
+        with self.assertRaises(mcnpy.errors.IllegalState):
+            surf.validate()
+        surf._surface_type = SurfaceType.PX
+        print(surf.location)
         with self.assertRaises(mcnpy.errors.IllegalState):
             surf.validate()
 
