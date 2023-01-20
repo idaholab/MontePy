@@ -192,6 +192,12 @@ class TestThermalScattering(TestCase):
         thermal = ThermalScatteringLaw()
         with self.assertRaises(mcnpy.errors.IllegalState):
             thermal.validate()
+        material = Material()
+        material.number = 1
+        thermal._old_material_number = 1
+        thermal.update_pointers([material])
+        with self.assertRaises(mcnpy.errors.IllegalState):
+            thermal.validate()
 
     def test_thermal_scattering_add(self):
         in_str = "Mt20 grph.20t"
