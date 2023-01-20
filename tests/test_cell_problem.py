@@ -72,6 +72,8 @@ class TestCellClass(TestCase):
         cell = Cell()
         with self.assertRaises(mcnpy.errors.IllegalState):
             cell.validate()
+        with self.assertRaises(mcnpy.errors.IllegalState):
+            cell.format_for_mcnp_input((6, 2, 0))
         cell.mass_density = 5.0
         with self.assertRaises(mcnpy.errors.IllegalState):
             cell.validate()
@@ -126,10 +128,10 @@ class TestCellClass(TestCase):
         in_str = "1 1 0.5 2"
         card = Card([in_str], BlockType.CELL)
         cell = Cell(card)
-        del cell.mass_density 
+        del cell.mass_density
         self.assertIsNone(cell.mass_density)
         cell.atom_density = 1.0
-        del cell.atom_density 
+        del cell.atom_density
         self.assertIsNone(cell.atom_density)
 
     def test_cell_sorting(self):

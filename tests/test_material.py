@@ -59,6 +59,8 @@ class testMaterialClass(TestCase):
         material = Material()
         with self.assertRaises(mcnpy.errors.IllegalState):
             material.validate()
+        with self.assertRaises(mcnpy.errors.IllegalState):
+            material.format_for_mcnp_input((6, 2, 0))
 
     def test_material_setter(self):
         in_str = "M20 1001.80c 0.5 8016.80c 0.5"
@@ -223,6 +225,8 @@ class TestThermalScattering(TestCase):
         thermal = ThermalScatteringLaw()
         with self.assertRaises(mcnpy.errors.IllegalState):
             thermal.validate()
+        with self.assertRaises(mcnpy.errors.IllegalState):
+            thermal.format_for_mcnp_input((6, 2, 0))
         material = Material()
         material.number = 1
         thermal._old_material_number = 1

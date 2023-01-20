@@ -83,10 +83,14 @@ class testSurfaces(TestCase):
         surf = Surface()
         with self.assertRaises(mcnpy.errors.IllegalState):
             surf.validate()
+        with self.assertRaises(mcnpy.errors.IllegalState):
+            surf.format_for_mcnp_input((6, 2, 0))
         # cylinder on axis
         surf = CylinderOnAxis()
         with self.assertRaises(mcnpy.errors.IllegalState):
             surf.validate()
+        with self.assertRaises(mcnpy.errors.IllegalState):
+            surf.format_for_mcnp_input((6, 2, 0))
         surf._surface_type = SurfaceType.CX
         with self.assertRaises(mcnpy.errors.IllegalState):
             surf.validate()
@@ -94,6 +98,8 @@ class testSurfaces(TestCase):
         surf = CylinderParAxis()
         with self.assertRaises(mcnpy.errors.IllegalState):
             surf.validate()
+        with self.assertRaises(mcnpy.errors.IllegalState):
+            surf.format_for_mcnp_input((6, 2, 0))
         surf._surface_type = SurfaceType.C_X
         with self.assertRaises(mcnpy.errors.IllegalState):
             surf.validate()
@@ -104,6 +110,8 @@ class testSurfaces(TestCase):
         surf = AxisPlane()
         with self.assertRaises(mcnpy.errors.IllegalState):
             surf.validate()
+        with self.assertRaises(mcnpy.errors.IllegalState):
+            surf.format_for_mcnp_input((6, 2, 0))
         surf._surface_type = SurfaceType.PX
         with self.assertRaises(mcnpy.errors.IllegalState):
             surf.validate()
@@ -111,6 +119,8 @@ class testSurfaces(TestCase):
         surf = GeneralPlane()
         with self.assertRaises(mcnpy.errors.IllegalState):
             surf.validate()
+        with self.assertRaises(mcnpy.errors.IllegalState):
+            surf.format_for_mcnp_input((6, 2, 0))
         surf._surface_type = SurfaceType.P
         with self.assertRaises(mcnpy.errors.IllegalState):
             surf.validate()
