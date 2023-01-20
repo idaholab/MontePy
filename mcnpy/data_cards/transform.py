@@ -9,6 +9,11 @@ import re
 class Transform(data_card.DataCardAbstract):
     """
     Card to represent a transform card (TR)
+
+    :param input_card: The Card syntax object this will wrap and parse.
+    :type input_card: Card
+    :param comments: The Comments that proceeded this card or were inside of this if any
+    :type Comments: list
     """
 
     def __init__(self, input_card=None, comment=None):
@@ -137,6 +142,8 @@ class Transform(data_card.DataCardAbstract):
     def old_number(self):
         """
         The transform number used in the original file
+
+        :rtype: int
         """
         return self._old_transform_number
 

@@ -5,6 +5,9 @@ from mcnpy.errors import *
 class Isotope:
     """
     A class to represent an MCNP isotope
+
+    :param ZAID: the MCNP isotope identifier
+    :type ZAID: str
     """
 
     #                   Cl-52      Br-101     Xe-150      Os-203    Cm-251     Og-296
@@ -14,10 +17,6 @@ class Isotope:
     """
 
     def __init__(self, ZAID):
-        """
-        :param ZAID: the MCNP isotope identifier
-        :type ZAID: str
-        """
         if "." in ZAID:
             parts = ZAID.split(".")
             try:
@@ -85,7 +84,7 @@ class Isotope:
         """
         The ZZZAAA identifier following MCNP convention
 
-        :rtype: str
+        :rtype: int
         """
         # if this is made mutable this cannot be user provided, but must be calculated.
         return self._ZAID

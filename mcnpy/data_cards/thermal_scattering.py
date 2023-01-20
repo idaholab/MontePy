@@ -7,21 +7,20 @@ import mcnpy
 class ThermalScatteringLaw(DataCardAbstract):
     """
     Class to hold MT cards
+
+    This is designed to be called two ways.
+    The first is with a read input file using input_card, comment
+    The second is after a read with a material and a comment (using named inputs)
+
+    :param input_card: the Card object representing this data card
+    :type input_card: Card
+    :param comment: The Comment that may proceed this
+    :type comment: Comment
+    :param material: the parent Material object that owns this
+    :type material: Material
     """
 
     def __init__(self, input_card="", comment=None, material=None):
-        """
-        This is designed to be called two ways.
-
-        The first is with a read input file using input_card, comment
-        The second is after a read with a material and a comment (using named inputs)
-        :param input_card: the Card object representing this data card
-        :type input_card: Card
-        :param comment: The Comment that may proceed this
-        :type comment: Comment
-        :param material: the parent Material object that owns this
-        :type material: Material
-        """
         self._old_material_number = None
         self._parent_material = None
         self._scattering_laws = []
@@ -52,6 +51,8 @@ class ThermalScatteringLaw(DataCardAbstract):
     def old_number(self):
         """
         The material number from the file
+
+        :rtype: int
         """
         return self._old_material_number
 
@@ -67,7 +68,7 @@ class ThermalScatteringLaw(DataCardAbstract):
     @property
     def thermal_scattering_laws(self):
         """
-        The thermal scattering laws to use for this material
+        The thermal scattering laws to use for this material as strings.
 
         :rtype: list
         """
@@ -88,6 +89,9 @@ class ThermalScatteringLaw(DataCardAbstract):
     def add_scattering_law(self, law):
         """
         Adds the requested scattering law to this material
+
+        :param law: the thermal scattering law to add.
+        :type law: str
         """
         self._scattering_laws.append(law)
 

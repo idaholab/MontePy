@@ -8,6 +8,17 @@ from mcnpy.mcnp_card import MCNP_Card
 class Volume(CellModifierCard):
     """
     Class for the data input that modifies cell volumes; ``VOL``.
+
+    :param input_card: the Card object representing this data card
+    :type input_card: Card
+    :param comments: The list of Comments that may proceed this or be entwined with it.
+    :type comments: list
+    :param in_cell_block: if this card came from the cell block of an input file.
+    :type in_cell_block: bool
+    :param key: the key from the key-value pair in a cell
+    :type key: str
+    :param value: the value from the key-value pair in a cell
+    :type value: str
     """
 
     def __init__(
