@@ -10,7 +10,7 @@ import textwrap
 class MCNP_Card(ABC):
     """
     Abstract class for semantic representations of MCNP input cards.
-    
+
     :param input_card: The Card syntax object this will wrap and parse.
     :type input_card: Card
     :param comments: The Comments that proceeded this card or were inside of this if any
@@ -83,7 +83,7 @@ class MCNP_Card(ABC):
 
         e.g.: ``1 0 -1 u=1 imp:n=0.5`` has the parameters
         ``{"U": "1", "IMP:N": "0.5"}``
-        
+
         :returns: a dictionary of the key-value pairs of the parameters.
         :rytpe: dict
         """
@@ -292,7 +292,7 @@ class MCNP_Card(ABC):
         Takes a list of strings and jump values and combines repeated jump values.
 
         e.g., 1 1 J J 3 J becomes 11 2J 3 J
-        
+
         :param values: a list of string and Jump values to try to compress
         :type values: list
         :returns: a list of MCNP word strings that have jump compression
