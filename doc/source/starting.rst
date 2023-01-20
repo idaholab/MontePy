@@ -122,8 +122,6 @@ These cells are the "vacuum boundary" cells.
 Their importances will all be set to 0.
 
 
-Working with Universes
-----------------------
 
 Setting How Cell Data Gets displayed in the Input file
 ------------------------------------------------------
@@ -381,3 +379,9 @@ None
 True
 >>> cell.mass_density
 None
+
+
+Working with Universes
+----------------------
+
+TODO

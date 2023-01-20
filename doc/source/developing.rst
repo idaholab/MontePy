@@ -12,8 +12,8 @@ Top Level
 ^^^^^^^^^
 The top level of the package is reserved for only a select few objects.
 All children of :class:`mcnpy.numbered_object_collection.NumberedObjectCollection` can live here.
-The other allowed classes are: ``Exceptions``, :class:`mcnpy.mcnp_card.MCNP_Card`, :class:`mcnpy.mcnp_problem.MCNP_Problem`,
-and :class:`mcnpy.cell.Cell`.
+The other allowed classes are: ``Exceptions``, :class:`mcnpy.mcnp_card.MCNP_Card`, :class:`mcnpy.mcnp_problem.MCNP_Problem`, :class:`mcnpy.cell.Cell`,
+:class:`mcnpy.particle.Particle`, and :class:`mcnpy.universe.Universe`.
 Utility functions are allowed at this level as well.
 
 
@@ -57,6 +57,11 @@ Style Guide
 #. Use ``black`` to autoformat all code.
 #. Spaces for indentation, tabs for alignment. Use spaces to build python syntax (4 spaces per level), and tabs for aligning text inside of docstrings.
 
+.. warning::
+   In version 0.1.5 much of the developer infrastructure will significantly change.
+   This is to convert to using true parsers, and to build syntax trees for all inputs.
+   It is suggested you work with Micah if you are adding new features prior to this release.
+
 Inheritance
 -----------
 
@@ -71,11 +76,39 @@ For example: some children are: :class:`mcnpy.cell.Cell`, :class:`mcnpy.surfaces
 How to __init__
 """""""""""""""
 Your init function signature should be: ``def __init__(self, input_card=None, comment=None)``.
-You should the immediately call ``super().__init__(input_card, comment)``.
+You should then immediately populate default values, and then
+call ``super().__init__(input_card, comment)``.
+This way if ``super().__init__`` fails, 
+there will be enough information for the error reporting to not fail,
+when trying to convert the objects to strings.
 This will then populate the parameters: ``input_card``, ``words``, and ``comment``.
 Now you should (inside an in if block checking ``input_card``) parse 
 self.words.
 New classes need to support "from scratch" creation e.g., ``cell = Cell()``.
+
+.. note::
+   This system will be changed drastically with 0.1.5.
+
+How to __str__ vs __repr___
+""""""""""""""""""""""""""""
+All objects must implement ``__str__`` (called by ``str()``), 
+and ``__repr__`` (called by ``repr()``).
+See `this issue <https://hpcgitlab.hpc.inl.gov/experiment_analysis/mcnpy/-/issues/41>`_ for a more detailed discussion.
+In general ``__str__`` should return a one line string with enough information to uniquely identify the object.
+For numbered objects this should include their number, and a few high level details.
+For ``__repr__`` this should include debugging information.
+This should include most if not all internal state information.
+
+See this example for :class:`mcnpy.cell.Cell`
+
+>>> str(cell)
+CELL: 2, mat: 2, DENS: 8.0 g/cm3
+>>> repr(cell)
+CELL: 2
+MATERIAL: 2, ['iron']
+density: 8.0 atom/b-cm
+SURFACE: 1005, RCC
+
 
 Mutation
 """"""""
@@ -84,6 +117,8 @@ which is inconvenient.
 This is handled by ``self._mutated``. 
 Whenever an object parameter is set the setter must set ``self._mutated=True``. 
 
+.. note::
+   This system will be removed in 0.1.5
 
 Format for MCNP Input
 """""""""""""""""""""
@@ -132,7 +167,7 @@ Example taken from :class:`mcnpy.data_cards.mode.Mode`
 Collection: :class:`mcnpy.numbered_object_collection.NumberedObjectCollection`
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 This should be subclassed for any collection of objects that will are numbered.
-For example: cells, surfaces, materials, tallies, etc.
+For example: cells, surfaces, materials, universes, tallies, etc.
 By default you need to do almost nothing.
 The class that will be added to this collection must have the property ``obj.number``.
 
@@ -141,10 +176,36 @@ How to __init__
 Your init signature should be ``def __init__(self, objects=None)``
 All you need to then do is call super, 
 with the class this will wrap.
-For example the init function for ``Cells`` ::
+For example the init function for ``Cells`` 
+
+.. code-block:: python
 
         def __init__(self, cells=None):
             super().__init__(mcnpy.Cell, cells)
+
+Numbered Object :class:`mcnpy.numbered_mcnp_card.Numbered_MCNP_Card`
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+MCNP allows many types of number objects like cells, surfaces, and tallies. 
+The only thing special about this is that it requires there be the properties:
+``number`` and ``old_number``.
+The ``old_number`` is what was read from the input file, and should not mutate.
+The ``number`` is the object's current number and should mutate.
+The parent class provides a system to link to a problem via ``self._problem``.
+Note this field can be ``None``. 
+When setting a number you must check for numbering collisions with the method:
+:func:`mcnpy.numbered_object_collection.NumberedObjectCollection.check_number`.
+This function returns nothing, but will raise an error when a number collision occurs.
+For example the ``Surface`` number setter looks like::
+        
+    @number.setter
+    def number(self, number):
+        assert isinstance(number, int)
+        assert number > 0
+        if self._problem:
+            self._problem.surfaces.check_number(number)
+        self._mutated = True
+        self._surface_number = number
+
 
 Surface: :class:`mcnpy.surfaces.surface.Surface`
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -208,8 +269,8 @@ Cards this would be appropriate for would be things like ``mode`` and ``kcode``.
 To do this it uses the dictionary ``cards_to_property`` in the ``__load_data_cards_to_object`` method.
 To add a problem level data Object you need to 
 
-1. Add it ``cards_to_property``. The key will be the object class, and the value will be a string for the attribute it should be loaded to.
-1. Add a property that exposes this attribute in a desirable way.
+#. Add it ``cards_to_property``. The key will be the object class, and the value will be a string for the attribute it should be loaded to.
+#. Add a property that exposes this attribute in a desirable way.
 
 Data Cards that Modify Cells :class:`mcnpy.data_cards.cell_modifier.CellModifierCard`
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -235,9 +296,9 @@ These will all be automatically called from ``Cell`` as discussed below.
 Most of the boiler plate will be handled by super. 
 The goals for init function should be: 
 
-1. initialize default values needed for when this is initialized from a blank call.
-1. Parse the data provided in the ``input_card``, when ``in_cell_block`` is False.
-1. Parse the data given in ``key`` and ``value when ``in_cell_block`` is True.
+#. initialize default values needed for when this is initialized from a blank call.
+#. Parse the data provided in the ``input_card``, when ``in_cell_block`` is False.
+#. Parse the data given in ``key`` and ``value`` when ``in_cell_block`` is True.
 
 
 On data Ownership
@@ -271,8 +332,8 @@ If this boolean is false repeats of this object are allowed and they will be mer
 If True only one instance of the object is allowed.
 (e.g., ``VOL=5 VOL=10`` makes no sense).
 For finding which class to use the :func:`mcnpy.data_cards.data_parser.PREFIX_MATCHES` dict is used. See above.
-The key,value pairs in ``Cell.parameters`` is iterated over. 
-If any of the keys is a partial mathc to the ``PREFIX_MATCHES`` dict then that class is used,
+The key, value pairs in ``Cell.parameters`` is iterated over. 
+If any of the keys is a partial match to the ``PREFIX_MATCHES`` dict then that class is used,
 and constructed. 
 The new object is then loaded into the ``Cell`` object at the given attribute using ``setattr``.
 If your class is properly specified in both dictionaries you should be good to go on the ``Cell`` 
@@ -306,7 +367,11 @@ This means that this will *not* be the first line in this case. ::
          IMP:E=0
 
 For the data_block case the output should be a complete MCNP input that stands on its own.
-For this though you need to remember that this object being called will have no data.
+You should check ``self.has_changed_print_style`` to help determine if the output has mutated.
+Next you also need to check the modifier object owned by every cell for if any of them have mutated.
+See the :class:`mcnpy.data_cards.universe_card.UniverseCard` implementation for an example.
+
+For printing in the data block though you need to remember that this object being called will have no data.
 You will need to iterate over: ``self._problem.cells`` and retrieve the data from there.
 You may find the new function: :func:`mcnpy.mcnp_card.MCNP_Card.compress_repeat_values` helpful.
 
@@ -326,7 +391,7 @@ There should be a ``self.in_cell_block`` guard.
 
 You need to check that there was no double specifying of data in both the cell and data block.
 This should raise :class:`mcnpy.errors.MalformedInputError`.
-This is checking and error handling is handled by the method ``self._check_redundant_definitions()``.
+This checking and error handling is handled by the method ``self._check_redundant_definitions()``.
 
 ``_clear_data``
 """"""""""""""""
@@ -359,26 +424,6 @@ How to __init__
 """""""""""""""
 You need to call ``super().__init__(input_lines)``,
 and this will provide by ``self.input_lines``.
-
-Making a numbered Object
-------------------------
-MCNP allows many types of number objects like cells, surfaces, and tallies. 
-First you need to provide the property ``number``. 
-The parent class provides a system to link to a problem via ``self._problem``.
-Note this field can be ``None``. 
-When setting a number you must check for numbering collisions with the method:
-:func:`mcnpy.numbered_object_collection.NumberedObjectCollection.check_number`.
-This function returns nothing, but will raise an error when a number collision occurs.
-For example the ``Surface`` number setter looks like::
-        
-    @number.setter
-    def number(self, number):
-        assert isinstance(number, int)
-        assert number > 0
-        if self._problem:
-            self._problem.surfaces.check_number(number)
-        self._mutated = True
-        self._surface_number = number
 
 On the use of Pointers and Generator
 ------------------------------------
