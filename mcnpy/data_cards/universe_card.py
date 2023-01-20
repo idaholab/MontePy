@@ -144,30 +144,32 @@ class UniverseCard(CellModifierCard):
         )
 
     def push_to_cells(self):
-        if self._problem:
-            if not self.in_cell_block:
-                cells = self._problem.cells
-                if self._universe:
-                    self._check_redundant_definitions()
-                    for cell, uni_number in itertools.zip_longest(
-                        cells, self._universe, fillvalue=None
-                    ):
-                        if not isinstance(uni_number, (Jump, type(None))):
-                            cell._universe._old_number = abs(uni_number)
-                            if uni_number < 0:
-                                cell._universe._not_truncated = True
-            universes = self._problem.universes
-            for cell in cells:
-                uni_num = cell.old_universe_number
-                if uni_num is None:
-                    uni_num = 0
-                if uni_num not in universes.numbers:
-                    universe = Universe(uni_num)
-                    universe.link_to_problem(self._problem)
-                    universes.append(universe)
-                else:
-                    universe = universes[uni_num]
-                cell._universe._universe = universe
+        if not self._problem:
+            return
+        if not self.in_cell_block:
+            cells = self._problem.cells
+            if self._universe:
+                self._check_redundant_definitions()
+                for cell, uni_number in itertools.zip_longest(
+                    cells, self._universe, fillvalue=None
+                ):
+                    if isinstance(uni_number, (Jump, type(None))):
+                        continue
+                    cell._universe._old_number = abs(uni_number)
+                    if uni_number < 0:
+                        cell._universe._not_truncated = True
+        universes = self._problem.universes
+        for cell in cells:
+            uni_num = cell.old_universe_number
+            if uni_num is None:
+                uni_num = 0
+            if uni_num not in universes.numbers:
+                universe = Universe(uni_num)
+                universe.link_to_problem(self._problem)
+                universes.append(universe)
+            else:
+                universe = universes[uni_num]
+            cell._universe._universe = universe
 
     def _clear_data(self):
         del self._universe
