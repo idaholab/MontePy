@@ -93,8 +93,8 @@ class ThermalScatteringLaw(DataCardAbstract):
 
     def validate(self):
         if len(self._scattering_laws) == 0:
-            if hasattr(self, "_number"):
-                message = f"No thermal scattering laws given for MT{self.number}."
+            if self.parent_material:
+                message = f"No thermal scattering laws given for MT{self.parent_material.number}."
             else:
                 message = f"No thermal scattering laws given for thermal scattering {hex(id(self))}"
             raise IllegalState(message)

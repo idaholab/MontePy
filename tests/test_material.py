@@ -195,7 +195,7 @@ class TestThermalScattering(TestCase):
         material = Material()
         material.number = 1
         thermal._old_material_number = 1
-        thermal.update_pointers([material])
+        material.update_pointers([thermal])
         with self.assertRaises(mcnpy.errors.IllegalState):
             thermal.validate()
 
