@@ -93,7 +93,11 @@ class ThermalScatteringLaw(DataCardAbstract):
 
     def validate(self):
         if len(self._scattering_laws) == 0:
-            raise IllegalState(f"No thermal scattering laws given for MT{self.number}.")
+            if hasattr(self, "_number"):
+                message = f"No thermal scattering laws given for MT{self.number}."
+            else:
+                message = f"No thermal scattering laws given for thermal scattering {hex(id(self))}"
+            raise IllegalState(message)
 
     def format_for_mcnp_input(self, mcnp_version):
         self.validate()
