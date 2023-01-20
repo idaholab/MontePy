@@ -7,12 +7,17 @@ The library provides a semantic interface for working with input files, or our p
 It understands that the second entry on a cell card is the material number,
 and will link the cell with its material object.
 
-Note: Due to a conservative approach to export control restrictions MCNPy only supports MCNP 6.2 currently.
+.. warning::
+    MCNPy is built primarily to support MCNP 6.2. Some success maybe achieved with MCNP 6.1, and 5.1.60, 
+    but there may be issues due new features in MCNP 6.2, not being backwards compatible.
+    Use earlier versions of MCNP with MCNPy at your own risk.
+
+    Due to the manuals for these earlier versions of MCNP, these versions will likely never be fully supported.
 
 Reading a File
 --------------
 
-MCNPy offers the :func:`mcnpy.read_input` function for getting started.
+MCNPy offers the :func:`mcnpy.read_input` (actually :func:`mcnpy.input_parser.input_reader.read_input`) function for getting started.
 It will read the specified MCNP input file, and return an MCNPy :class:`mcnpy.mcnp_problem.MCNP_Problem` object.
 
 >>> import mcnpy
@@ -24,13 +29,22 @@ Writing a File
 --------------
 
 The :class:`mcnpy.mcnp_problem.MCNP_Problem` object has the method :func:`mcnpy.mcnp_problem.MCNP_Problem.write_to_file`, which writes the problem's current 
-state to a valid MCNP input file.
+state as a valid MCNP input file.
 
 >>> problem.write_to_file("bar.imcnp")
 
+.. warning::
+   Be careful with overwriting the original file when writing a modified file out.
+   This will wipe out the original version, and if you have no version control,
+   may lead to losing information.
+
 If no changes are made to the problem in MCNPy the entire file will be just parroted out as it was in the original file.
-However any objects (e.g., two cells) that were changed (mutated) will have their original formatting discarded,
+However any objects (e.g., two cells) that were changed (i.e., mutated) will have their original formatting discarded,
 and MCNPy will decide how to format that object in the input file.
+
+.. note::
+    This behavior will change with version 0.1.5.
+    The main scope of this release will be fundamental design change that will preserve all user formatting.
 
 For example say we have this simple MCNP input file (saved as foo.imcnp) ::
   
@@ -86,7 +100,7 @@ This is generally accessed through ``cell.importance``.
 You can access the importance for a specific particle type by its name.
 For example: ``cell.importance.neutron`` or ``cell.importance.photon``.
 
-You can also quickly get the information by :class:`mcnpy.particle.Particle`.
+You can also quickly get the information by passing an instance of:class:`mcnpy.particle.Particle` as a key to importance.
 For example: ::
     
     for particle in problem.mode:
@@ -102,14 +116,21 @@ For example: ::
 This will set the importances for the neutron and photon. 
 
 There is also the method: :func:`mcnpy.cells.Cells.set_equal_importance`.
-This method sets all of the cells for all particles in the problem to the same importance,
-except for the vacuum boundary cells.
+This method sets all of the cells for all particles in the problem to the same importance.
+You can optionally pass a list of cells to this function.
+These cells are the "vacuum boundary" cells.
+Their importances will all be set to 0.
+
+
+Working with Universes
+----------------------
 
 Setting How Cell Data Gets displayed in the Input file
 ------------------------------------------------------
 
 Much of the cell data can show up in the cell block or the data block, like the importance card.
-You can change how this happens with :func:`mcnpy.mcnp_problem.MCNP_Problem.print_in_data_block`.
+These are referred to MCNPy as "cell modifiers".
+You can change how these cell modifiers are printed with :func:`mcnpy.mcnp_problem.MCNP_Problem.print_in_data_block`.
 This acts like a dictionary where the key is the MCNP card name.
 So to make cell importance data show up in the cell block just run:
 ``problem.print_in_data_block["imp"] = False``.
@@ -120,6 +141,9 @@ What Information is Kept
 So what does MCNPy keep, and what does it forget? 
 In general the philosophy of MCNPy is: meaning first; formatting second. 
 Its first priority is to preserve the semantic meaning and discard complex formatting for now.
+
+.. note::
+   This paradigm will change dramatically with release 0.1.5.
 
 Information Kept
 ^^^^^^^^^^^^^^^^
@@ -137,7 +161,10 @@ Information Lost
    So If you were to write out a problem that used the read card in the surface block the surface
    cards in that file from the read card will appear at the end of the new surface block in the newly written file.
 #. MCNP shortcuts for numbers. The shortcuts like: ``1 9r`` will be expanded to its meaning, and will not be
-   recompressed. The jump (e.g, ``2j``) shortcut isn't currently expanded.
+   recompressed, easily. Jumps will be subsituted with the valued :class:`mcnpy.input_parser.mcnp_input.Jump`.
+   When writing cell modifiers (e.g., ``imp``, ``vol``, etc.) recompression will be attempted,
+   as there can be a lot of information here.
+   The only shortcuts currently recompressed are repeats and jumps though.
 
 What a Problem Looks Like
 -------------------------
@@ -163,14 +190,13 @@ looks like a ``dict``, walks like a ``dict``, and quacks like ``dict``.
 This mainly means you can quickly get an object (e.g., :class:`mcnpy.cell.Cell`, :class:`mcnpy.surfaces.surface.Surface`, :class:`mcnpy.data_cards.material.Material`) 
 by its number.
 
-So say you want to access cell 6005 from a problem it is accessible quickly by:
+So say you want to access cell 2 from a problem it is accessible quickly by:
 
->>> prob.cells[6005]
+>>> prob.cells[2]
 CELL: 2
-None
-SURFACE: 4, CZ
-SURFACE: 5, PZ
-SURFACE: 6, PZ
+MATERIAL: 2, ['iron']
+density: 8.0 atom/b-cm
+SURFACE: 1005, RCC
 
 
 Collections are Iterable
@@ -223,14 +249,14 @@ There are a number of tools to avoid this though:
 #. :func:`mcnpy.numbered_object_collection.NumberedObjectCollection.next_number` will find the next 
    number available by taking the highest number used and increasing it.
 
-The collections also have a property called ``numbers``, which lists all numbers that are in use.
+The collections also have a property called :func:`mcnpy.numbered_object_collection.NumberedObjectCollection.numbers`, which lists all numbers that are in use.
 Note that using this property has some perils that will be covered in the next section.
 
 
 Beware the Generators!
 ^^^^^^^^^^^^^^^^^^^^^^
 
-The Collections ( ``cells``, ``surfaces``, ``materials``, etc.) offer many generators. 
+The Collections ( ``cells``, ``surfaces``, ``materials``, ``universes``, etc.) offer many generators. 
 First, what is a generator? 
 Basically they are iterators that are dynamically created.
 They don't hold any information until you ask for it.
@@ -333,50 +359,25 @@ Density
 ^^^^^^^
 This gets a bit more complicated.
 MCNP supports both atom density, and mass density. 
-So when you access ``cell.density`` on its own,
-the result is ambiguous, 
-because it could be in g/cm3 or atom/b-cm.
-No; MCNPy does not support negative density; it doesn't exist!
+So MCNPy doesn't have a ``cel.density``.
+Rather it has ``cell.mass_density`` and ``cell.atom_density``.
+At any given time only one of these will provide a number,
+the other one will return ``None``.
 
-To remove this ambiguity you need to check ``cell.is_atom_dens``.
+You can check which one will give a value by checking ``cell.is_atom_dens``.
 As the name suggests it will return ``True`` if the density is an atom density,
 and ``False`` if it is a mass density.
 
-To avoid this ambiguity when setting ``cell.density`` you cannot set it to just a number.
-Instead you must set it using a tuple. 
-This tuple must contain a ``float``, and ``bool``.
-The number is the density,
-and the boolean indicates whether or not the density 
-is in atom density.
-``True`` means it is an atom density,
-and ``False`` means it is a mass density.
+To convert a cell from mass density to atom density you just need to set the relevant density field.
 
-Trying to set the density as a float will fail:
-
->>> cell.density = 5.0
----------------------------------------------------------------------------
-TypeError                                 Traceback (most recent call last)
-<ipython-input-3-8bc0463ae415> in <module>
-----> 1 prob.cells[1].density = 5
-~/dev/mcnpy/doc/mcnpy/cell.py in density(self, density_tuple)
-    199             :type is_atom_dens: bool
-    200         """
---> 201         density, is_atom_dens = density_tuple
-    202         assert isinstance(density, float)
-    203         assert isinstance(is_atom_dens, bool)
-TypeError: cannot unpack non-iterable int object
-
-Instead you must specify what density type you are providing:
-
->>> cell.density = (5.0, False)
->>> cell.density
-5.0
 >>> cell.is_atom_dens
 False
->>> cell.density = (0.01, True)
->>> cell.density
-0.01
+>>> cell.mass_density
+5.5
+>>> cell.atom_density
+None
+>>> cell.atom_density = 0.05
 >>> cell.is_atom_dens
 True
-
-Remember: make objects, not regexs!
+>>> cell.mass_density
+None
