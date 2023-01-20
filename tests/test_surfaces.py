@@ -79,6 +79,11 @@ class testSurfaces(TestCase):
         with self.assertRaises(MalformedInputError):
             Surface(card)
 
+    def test_validator(self):
+        surf = Surface()
+        with self.assertRaises(mcnpy.errors.IllegalState):
+            surf.validate()
+
     def test_surface_is_reflecting_setter(self):
         in_str = "1 PZ 0.0"
         card = Card([in_str], BlockType.SURFACE)
