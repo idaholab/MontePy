@@ -773,10 +773,9 @@ class Cell(Numbered_MCNP_Card):
             dens_str = f"DENS: {self._density} {units}"
         else:
             dens_str = "DENS: None"
-        universe_num = self.universe.number
         ret = f"CELL: {self.number}, mat: {mat_num}, {dens_str}"
-        if universe_num != 0:
-            ret += f", universe: {universe_num}"
+        if self.universe and self.universe.number != 0:
+            ret += f", universe: {self.universe.number}"
         if self.fill.universe:
             ret += f", filled by: {self.fill.universe}"
 
