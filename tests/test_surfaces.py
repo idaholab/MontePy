@@ -83,6 +83,21 @@ class testSurfaces(TestCase):
         surf = Surface()
         with self.assertRaises(mcnpy.errors.IllegalState):
             surf.validate()
+        surf = CylinderOnAxis()
+        with self.assertRaises(mcnpy.errors.IllegalState):
+            surf.validate()
+        surf._surface_type = SurfaceType.CX
+        with self.assertRaises(mcnpy.errors.IllegalState):
+            surf.validate()
+        surf = CylinderParAxis()
+        with self.assertRaises(mcnpy.errors.IllegalState):
+            surf.validate()
+        surf._surface_type = SurfaceType.C_X
+        with self.assertRaises(mcnpy.errors.IllegalState):
+            surf.validate()
+        surf.radius = 5.0
+        with self.assertRaises(mcnpy.errors.IllegalState):
+            surf.validate()
 
     def test_surface_is_reflecting_setter(self):
         in_str = "1 PZ 0.0"
