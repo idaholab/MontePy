@@ -122,6 +122,16 @@ class TestCellClass(TestCase):
         with self.assertRaises(ValueError):
             cell.mass_density = -5
 
+    def test_cell_density_deleter(self):
+        in_str = "1 1 0.5 2"
+        card = Card([in_str], BlockType.CELL)
+        cell = Cell(card)
+        del cell.mass_density 
+        self.assertIsNone(cell.mass_density)
+        cell.atom_density = 1.0
+        del cell.atom_density 
+        self.assertIsNone(cell.atom_density)
+
     def test_cell_sorting(self):
         in_str = "1 1 0.5 2"
         card = Card([in_str], BlockType.CELL)
