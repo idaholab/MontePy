@@ -3,7 +3,7 @@ from unittest import TestCase
 
 import mcnpy
 from mcnpy.input_parser import input_syntax_reader
-from mcnpy.input_parser.mcnp_input import Card, Jump, Message, Title
+from mcnpy.input_parser.mcnp_input import Card, Jump, Message, ReadCard, Title
 from mcnpy.input_parser.block_type import BlockType
 from mcnpy.particle import Particle
 
@@ -43,6 +43,13 @@ test title
                 self.assertIsInstance(card, mcnpy.input_parser.mcnp_input.Message)
                 self.assertEqual(card.lines[0], validator)
                 self.assertEqual(len(card.lines), 1)
+
+    def testReadCardStr(self):
+        card = ReadCard(["Read file=hi.imcnp"], BlockType.CELL)
+        self.assertEqual(str(card), "READ CARD: Block_Type: BlockType.CELL")
+        self.assertEqual(
+            repr(card), "READ CARD: BlockType.CELL: ['Read', 'file=hi.imcnp']"
+        )
 
     def testTitleFinder(self):
         test_title = "Richard Stallman writes GNU"
@@ -120,7 +127,8 @@ c bop
 foo
 bar
 """
-        self.assertEqual(str(card), str_answer)
+        self.assertEqual(repr(card), str_answer)
+        self.assertEqual("COMMENT: 2 lines", str(card))
         self.assertEqual(len(answer), len(output))
         for i, line in enumerate(output):
             self.assertEqual(answer[i], line)
@@ -132,7 +140,8 @@ bar
 foo
 bar
 """
-        self.assertEqual(str_answer, str(card))
+        self.assertEqual(str_answer, repr(card))
+        self.assertEqual("MESSAGE: 2 lines", str(card))
         output = card.format_for_mcnp_input((6, 2, 0))
         self.assertEqual(len(answer), len(output))
         for i, line in enumerate(output):
@@ -184,7 +193,8 @@ bar
         card = mcnpy.input_parser.mcnp_input.Card(
             [in_str], mcnpy.input_parser.block_type.BlockType.CELL
         )
-        self.assertEqual(str(card), "CARD: BlockType.CELL: ['1', '0', '-1']")
+        self.assertEqual(str(card), "CARD: BlockType.CELL")
+        self.assertEqual(repr(card), "CARD: BlockType.CELL: ['1', '0', '-1']")
 
     def testShortcutExpansion(self):
         tests = {
@@ -208,7 +218,12 @@ bar
                 "8",
                 "10",
             ],
-            ("M", "1", "2j", "4",): ["M", "1", mcnpy.Jump(), mcnpy.Jump(), "4"],
+            (
+                "M",
+                "1",
+                "2j",
+                "4",
+            ): ["M", "1", mcnpy.Jump(), mcnpy.Jump(), "4"],
         }
         invalid = [
             ("M", "3J", "4R"),
@@ -217,7 +232,10 @@ bar
             ("M", "1", "2Ilog", "J"),
             ("M", "3J", "2M"),
             ("M", "10", "M"),
-            ("M5", "2R",),
+            (
+                "M5",
+                "2R",
+            ),
         ]
 
         parser = mcnpy.input_parser.mcnp_input.parse_card_shortcuts

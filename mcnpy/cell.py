@@ -522,7 +522,7 @@ class Cell(MCNP_Card):
                     new_num = next(temp_numbers)
                     temp_cells[complement] = new_num
                 pad_string = re.sub(
-                    fr"#{old_num}(\D)",
+                    rf"#{old_num}(\D)",
                     r"#{new_num}\g<1>".format(new_num=new_num),
                     pad_string,
                 )
@@ -535,7 +535,7 @@ class Cell(MCNP_Card):
                     new_num = next(temp_numbers)
                     temp_surfaces[surface] = new_num
                 pad_string = re.sub(
-                    fr"([^#\d]){old_num}(\D)",
+                    rf"([^#\d]){old_num}(\D)",
                     r"\g<1>{new_num}\g<2>".format(new_num=new_num),
                     pad_string,
                 )
@@ -656,14 +656,32 @@ class Cell(MCNP_Card):
                 card.link_to_problem(problem)
 
     def __str__(self):
+        if self.material:
+            mat_num = self.material.number
+        else:
+            mat_num = 0
+        if self._density:
+            if self.is_atom_dens:
+                units = "g/cm3"
+            else:
+                units = "atom/b-cm"
+            dens_str = f"DENS: {self._density} {units}"
+        else:
+            dens_str = "DENS: None"
+        return f"CELL: {self.number}, mat: {mat_num}, {dens_str}"
+
+    def __repr__(self):
         ret = f"CELL: {self._cell_number} \n"
-        ret += str(self._material) + "\n"
+        if self.material:
+            ret += str(self.material) + "\n"
+        else:
+            ret += "Void material \n"
         if self._density:
             ret += f"density: {self._density} "
             if self._is_atom_dens:
-                ret += "atom/b-cm"
+                ret += "atom/b-cm\n"
             else:
-                ret += "g/cc"
+                ret += "g/cc\n"
         for surface in self._surfaces:
             ret += str(surface) + "\n"
         ret += "\n"
@@ -671,6 +689,3 @@ class Cell(MCNP_Card):
 
     def __lt__(self, other):
         return self.number < other.number
-
-    def __repr__(self):
-        return self.__str__()

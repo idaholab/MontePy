@@ -254,3 +254,14 @@ class TestNumberedObjectCollection(unittest.TestCase):
         surfaces.append_renumber(new_surf)
         self.assertEqual(len(surfaces), size + 1)
         self.assertEqual(new_surf.number, 6)
+
+    def test_str(self):
+        cells = self.simple_problem.cells
+        self.assertEqual(str(cells), "Cells: [1, 2, 3, 99, 5]")
+        key_phrases = [
+            "Numbered_object_collection: obj_class: <class 'mcnpy.cell.Cell'>",
+            "Objects: [CELL: 1",
+            "Number cache: {1: CELL: 1",
+        ]
+        for phrase in key_phrases:
+            self.assertIn(phrase, repr(cells))

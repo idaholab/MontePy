@@ -149,7 +149,8 @@ DISPLACE: [0. 0. 0.]
 ROTATE: [0. 0. 0. 0. 0. 0. 0. 0. 0.]
 MAIN_TO_AUX: False
 """
-        self.assertEqual(answer, str(transform))
+        self.assertEqual(answer, repr(transform))
+        self.assertEqual("TRANSFORM: 5", str(transform))
 
     def test_transform_print_mcnp(self):
         in_str = "tr5 " + "0.0 " * 3 + "0.0 " * 9 + " -1"
