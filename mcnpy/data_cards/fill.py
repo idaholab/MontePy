@@ -2,7 +2,6 @@ from mcnpy.data_cards.cell_modifier import CellModifierCard
 from mcnpy.data_cards.transform import Transform
 from mcnpy.errors import *
 from mcnpy.input_parser.block_type import BlockType
-from mcnpy.input_parser.constants import DEFAULT_VERSION
 from mcnpy.input_parser.mcnp_input import Card, Jump
 from mcnpy.mcnp_card import MCNP_Card
 from mcnpy.universe import Universe
