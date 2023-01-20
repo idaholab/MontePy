@@ -2,6 +2,9 @@ import mcnpy
 
 
 class CellDataPrintController:
+    """
+    Class for controlling if cell modifier data is printed in cell or data blocks.
+    """
     def __init__(self):
         self._print_data = {}
 

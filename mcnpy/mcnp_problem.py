@@ -1,5 +1,5 @@
 import itertools
-from mcnpy.cell_data_control import CellDataPrintController
+from mcnpy._cell_data_control import CellDataPrintController
 from mcnpy.data_cards import mode
 from mcnpy.cell import Cell
 from mcnpy.cells import Cells
