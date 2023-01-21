@@ -141,6 +141,24 @@ class ValueNode(SemanticNodeBase):
             self._value = token
         self._padding = padding
         self._nodes = [self]
+        self._zero_padding = None
+        self._precision = None
+        self._is_scientific = False
+        self._is_engineering = False
+        self._value_length
+
+    def reverse_engineer_formatting(self):
+        self._value_length = len(self._token)
+        if self.padding:
+            # TODO detect space
+            if self.padding.nodes[0]:
+                self._value_length += len(self.padding.nodes[0])
+
+        if self._type == float or self._type == int:
+            no_zero_pad = self._token.lstrip("0")
+            delta = len(self._token) - len(no_zero_pad)
+            if delta > 0:
+                self._zero_padding = delta
 
     @property
     def padding(self):
