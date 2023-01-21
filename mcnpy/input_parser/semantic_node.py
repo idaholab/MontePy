@@ -127,12 +127,39 @@ class PaddingNode(SemanticNodeBase):
     def value(self):
         return "".join(self.nodes)
 
+    def is_space(self, i):
+        return len(self.nodes[i].strip()) == 0
+
 
 class ValueNode(SemanticNodeBase):
+
+    _FORMATTERS = {
+        float: {
+            "value_length": 0,
+            "precision": 16,
+            "zero_padding": 0,
+            "sign": " ",
+            "divider": "e",
+        },
+        int: {},
+        str: {},
+    }
+
+    _SCIENTIFIC_FINDER = re.compile(
+        r"""
+                                    (?P<sign>[+\-]?)        # leading sign if any
+                                    (?P<significand>\d+\.*\d*)  # the actual number
+                                    (?P<e>[eE]?)                # optional e
+                                    [+\-]\d+                    #exponent
+                                    """,
+        re.VERBOSE,
+    )
+
     def __init__(self, token, token_type, padding=None):
         super().__init__("")
         self._token = token
         self._type = token_type
+        self._formatter = self._FORMATTERS[token_type]
         if token_type == float:
             self._value = fortran_float(token)
         elif token_type == int:
@@ -141,24 +168,53 @@ class ValueNode(SemanticNodeBase):
             self._value = token
         self._padding = padding
         self._nodes = [self]
-        self._zero_padding = None
-        self._precision = None
         self._is_scientific = False
-        self._is_engineering = False
-        self._value_length
 
-    def reverse_engineer_formatting(self):
-        self._value_length = len(self._token)
+    def _reverse_engineer_formatting(self):
+        self._formatter["value_length"] = len(self._token)
         if self.padding:
             # TODO detect space
-            if self.padding.nodes[0]:
-                self._value_length += len(self.padding.nodes[0])
+            if self.padding.is_space(0):
+                self._formatter["value_length"] += len(self.padding.nodes[0])
 
         if self._type == float or self._type == int:
-            no_zero_pad = self._token.lstrip("0")
+            no_zero_pad = self._token.lstrip("0+-")
             delta = len(self._token) - len(no_zero_pad)
-            if delta > 0:
-                self._zero_padding = delta
+            if delta > 0 and self.value != 0:
+                self._formatter["zero_padding"] = delta
+            if self._type == float:
+                self._reverse_engineer_float()
+
+    def _reverse_engineer_float(self):
+        if match := self._SCIENTIFIC_FINDER.match(self._token):
+            groups = match.groupdict(default="")
+            self._is_scientific = True
+            significand = groups["significand"]
+            self._formatter["divider"] = groups["e"]
+            if groups["sign"] == "+":
+                self._formatter["sign"] = "+"
+            # extra space for the "e" in scientific and... stuff
+            self._formatter["zero_padding"] += 4
+        else:
+            significand = self._token
+            if significand.startswith("+"):
+                self._formatter["sign"] = "+"
+        precision = len(significand.split(".")[1])
+        self._formatter["precision"] = precision
+        self._formatter["zero_padding"] += precision + 2
+
+    def format(self):
+        if self._type == float:
+            if self._is_scientific:
+                temp = "{value:0={sign}{zero_padding}.{precision}e}".format(
+                    value=self.value, **self._formatter
+                )
+                temp = temp.replace("e", self._formatter["divider"])
+            else:
+                temp = "{value:0={sign}{zero_padding}.{precision}f}".format(
+                    value=self.value, **self._formatter
+                )
+            return "{temp:<{value_length}}".format(temp=temp, **self._formatter)
 
     @property
     def padding(self):
