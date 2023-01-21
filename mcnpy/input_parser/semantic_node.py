@@ -141,13 +141,13 @@ class ValueNode(SemanticNodeBase):
             "sign": " ",
             "divider": "e",
         },
-        int: {},
-        str: {},
+        int: {"value_length": 0, "zero_padding": 0, "sign": "-"},
+        str: {"value_length": 0},
     }
 
     _SCIENTIFIC_FINDER = re.compile(
         r"""
-                                    (?P<sign>[+\-]?)        # leading sign if any
+                                    [+\-]?                      # leading sign if any
                                     (?P<significand>\d+\.*\d*)  # the actual number
                                     (?P<e>[eE]?)                # optional e
                                     [+\-]\d+                    #exponent
@@ -159,7 +159,7 @@ class ValueNode(SemanticNodeBase):
         super().__init__("")
         self._token = token
         self._type = token_type
-        self._formatter = self._FORMATTERS[token_type]
+        self._formatter = self._FORMATTERS[token_type].copy()
         if token_type == float:
             self._value = fortran_float(token)
         elif token_type == int:
@@ -173,15 +173,16 @@ class ValueNode(SemanticNodeBase):
     def _reverse_engineer_formatting(self):
         self._formatter["value_length"] = len(self._token)
         if self.padding:
-            # TODO detect space
             if self.padding.is_space(0):
                 self._formatter["value_length"] += len(self.padding.nodes[0])
 
         if self._type == float or self._type == int:
             no_zero_pad = self._token.lstrip("0+-")
             delta = len(self._token) - len(no_zero_pad)
-            if delta > 0 and self.value != 0:
+            if delta > 0:
                 self._formatter["zero_padding"] = delta
+            if self._token.startswith("+"):
+                self._formatter["sign"] = "+"
             if self._type == float:
                 self._reverse_engineer_float()
 
@@ -191,19 +192,16 @@ class ValueNode(SemanticNodeBase):
             self._is_scientific = True
             significand = groups["significand"]
             self._formatter["divider"] = groups["e"]
-            if groups["sign"] == "+":
-                self._formatter["sign"] = "+"
             # extra space for the "e" in scientific and... stuff
             self._formatter["zero_padding"] += 4
         else:
             significand = self._token
-            if significand.startswith("+"):
-                self._formatter["sign"] = "+"
         precision = len(significand.split(".")[1])
         self._formatter["precision"] = precision
         self._formatter["zero_padding"] += precision + 2
 
     def format(self):
+        self._reverse_engineer_formatting()
         if self._type == float:
             if self._is_scientific:
                 temp = "{value:0={sign}{zero_padding}.{precision}e}".format(
@@ -214,7 +212,13 @@ class ValueNode(SemanticNodeBase):
                 temp = "{value:0={sign}{zero_padding}.{precision}f}".format(
                     value=self.value, **self._formatter
                 )
-            return "{temp:<{value_length}}".format(temp=temp, **self._formatter)
+        elif self._type == int:
+            temp = "{value:0={sign}{zero_padding}g}".format(
+                value=self.value, **self._formatter
+            )
+        else:
+            temp = self.value
+        return "{temp:<{value_length}}".format(temp=temp, **self._formatter)
 
     @property
     def padding(self):
