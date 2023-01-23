@@ -1,4 +1,4 @@
-from mcnpy import mcnp_input
+from mcnpy import mcnp_object
 from mcnpy.data_inputs import data_input
 from mcnpy.errors import *
 from mcnpy.utilities import *
@@ -202,7 +202,7 @@ class Transform(data_input.DataInputAbstract):
         return ret
 
     def format_for_mcnp_input(self, mcnp_version):
-        ret = mcnp_input.MCNP_Input.format_for_mcnp_input(self, mcnp_version)
+        ret = mcnp_object.MCNP_Object.format_for_mcnp_input(self, mcnp_version)
         if self.mutated:
             buff_list = []
             if self.is_in_degrees:

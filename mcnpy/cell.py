@@ -4,7 +4,7 @@ from mcnpy.data_inputs import importance, volume
 from mcnpy.data_inputs.data_parser import PREFIX_MATCHES
 from mcnpy.input_parser.cell_parser import CellParser
 from mcnpy.errors import *
-from mcnpy.mcnp_input import MCNP_Input
+from mcnpy.mcnp_object import MCNP_Object
 from mcnpy.data_inputs.material import Material
 from mcnpy.surfaces.surface import Surface
 from mcnpy.surface_collection import Surfaces
@@ -20,7 +20,7 @@ def _number_validator(self, number):
         self._problem.cells.check_number(number)
 
 
-class Cell(MCNP_Input):
+class Cell(MCNP_Object):
     """
     Object to represent a single MCNP cell defined in CGS.
 

@@ -21,7 +21,7 @@ __version__ = "0.2.0.dev1"
 __maintainer__ = "Micah Gale"
 __email__ = "micah.gale@inl.gov"
 __status__ = "Development"
-__all__ = ["cell", "surfaces", "mcnp_input.py", "input_parser"]
+__all__ = ["cell", "surfaces", "mcnp_object.py", "input_parser"]
 
 from . import input_parser
 from .input_parser.input_reader import read_input

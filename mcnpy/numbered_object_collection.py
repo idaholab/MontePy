@@ -1,6 +1,6 @@
 from abc import ABC, abstractmethod
 import typing
-from mcnpy.mcnp_input import MCNP_Input
+from mcnpy.mcnp_object import MCNP_Object
 from mcnpy.errors import *
 
 
@@ -138,7 +138,7 @@ class NumberedObjectCollection(ABC):
         """Appends the given object to the end of this collection.
 
         :param obj: the object to add.
-        :type obj: MCNP_Input
+        :type obj: MCNP_Object
         :raises: NumberConflictError: if this object has a number that is already in use.
         """
         if not isinstance(obj, self._obj_class):
@@ -162,7 +162,7 @@ class NumberedObjectCollection(ABC):
         until an available number is found.
 
         :param obj: The MCNP object being added to the collection.
-        :type obj: MCNP_Input
+        :type obj: MCNP_Object
         :param step: the incrementing step to use to find a new number.
         :type step: int
         :return: the number for the object.
@@ -306,7 +306,7 @@ class NumberedObjectCollection(ABC):
     def __contains__(self, other):
         return other in self._objects
 
-    def get(self, i: int, default=None) -> (MCNP_Input, None):
+    def get(self, i: int, default=None) -> (MCNP_Object, None):
         """
         Get ``i`` if possible, or else return ``default``.
 
@@ -315,7 +315,7 @@ class NumberedObjectCollection(ABC):
         :param default: value to return if not found
         :type default: object
 
-        :rtype: MCNP_Input
+        :rtype: MCNP_Object
         """
         try:
             ret = self.__num_cache[i]
@@ -338,20 +338,20 @@ class NumberedObjectCollection(ABC):
         for o in self._objects:
             yield o.number
 
-    def values(self) -> typing.Generator[MCNP_Input, None, None]:
+    def values(self) -> typing.Generator[MCNP_Object, None, None]:
         """
         Get iterator of the collection's objects.
 
-        :rtype: MCNP_Input
+        :rtype: MCNP_Object
         """
         for o in self._objects:
             yield o
 
-    def items(self) -> typing.Generator[typing.Tuple[int, MCNP_Input], None, None]:
+    def items(self) -> typing.Generator[typing.Tuple[int, MCNP_Object], None, None]:
         """
         Get iterator of the collections (number, object) pairs.
 
-        :rtype: tuple(int, MCNP_Input)
+        :rtype: tuple(int, MCNP_Object)
         """
         for o in self._objects:
             yield o.number, o

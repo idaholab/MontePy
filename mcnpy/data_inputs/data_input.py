@@ -2,11 +2,11 @@ from abc import abstractmethod
 from mcnpy.errors import *
 from mcnpy.input_parser.data_parser import DataParser
 from mcnpy.particle import Particle
-from mcnpy.mcnp_input import MCNP_Input
+from mcnpy.mcnp_object import MCNP_Object
 import re
 
 
-class DataInputAbstract(MCNP_Input):
+class DataInputAbstract(MCNP_Object):
     """
     Parent class to describe all MCNP data inputs.
     """

@@ -27,7 +27,7 @@ def read_input_syntax(input_file, mcnp_version=DEFAULT_VERSION):
     :type input_file: str
     :param mcnp_version: The version of MCNP that the input is intended for.
     :type mcnp_version: tuple
-    :returns: a generator of MCNP_Input objects
+    :returns: a generator of MCNP_Object objects
     :rtype: generator
     """
     global reading_queue
@@ -41,7 +41,7 @@ def read_front_matters(fh, mcnp_version):
     """
     Reads the beginning of an MCNP file for all of the unusual data there.
 
-    This is a generator function that will yield multiple MCNP_Input instances.
+    This is a generator function that will yield multiple MCNP_Object instances.
 
     Warning: this function will move the file handle forward in state.
     Warning: this function will not close the file handle
@@ -51,7 +51,7 @@ def read_front_matters(fh, mcnp_version):
     :param mcnp_version: The version of MCNP that the input is intended for.
     :type mcnp_version: tuple
     :return: an instance of the Title class, and possible an instance of a Message class
-    :rtype: MCNP_Input
+    :rtype: MCNP_Object
     """
     is_in_message_block = False
     found_title = False
@@ -80,7 +80,7 @@ def read_data(fh, mcnp_version, block_type=None, recursion=False):
     """
     Reads the bulk of an MCNP file for all of the MCNP data.
 
-    This is a generator function that will yield multiple MCNP_Input instances.
+    This is a generator function that will yield multiple MCNP_Object instances.
 
     Warning: this function will move the file handle forward in state.
     Warning: this function will not close the file handle

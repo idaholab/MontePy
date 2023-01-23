@@ -1,5 +1,5 @@
 from mcnpy.data_inputs.data_input import DataInputAbstract
-from mcnpy import mcnp_input
+from mcnpy import mcnp_object
 from mcnpy.errors import *
 import mcnpy
 
@@ -92,7 +92,7 @@ class ThermalScatteringLaw(DataInputAbstract):
         self._scattering_laws.append(law)
 
     def format_for_mcnp_input(self, mcnp_version):
-        ret = mcnp_input.MCNP_Input.format_for_mcnp_input(self, mcnp_version)
+        ret = mcnp_object.MCNP_Object.format_for_mcnp_input(self, mcnp_version)
         mutated = self.mutated
         if not self.parent_material:
             raise MalformedInputError(

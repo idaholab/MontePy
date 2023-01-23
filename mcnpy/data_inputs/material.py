@@ -1,7 +1,7 @@
 from mcnpy.data_inputs import data_input, thermal_scattering
 from mcnpy.data_inputs.isotope import Isotope
 from mcnpy.data_inputs.material_component import MaterialComponent
-from mcnpy import mcnp_input
+from mcnpy import mcnp_object
 from mcnpy.errors import *
 from mcnpy.utilities import *
 import itertools
@@ -236,7 +236,7 @@ class Material(data_input.DataInputAbstract):
         return elements
 
     def format_for_mcnp_input(self, mcnp_version):
-        ret = mcnp_input.MCNP_Input.format_for_mcnp_input(self, mcnp_version)
+        ret = mcnp_object.MCNP_Object.format_for_mcnp_input(self, mcnp_version)
         if self.mutated:
             sorted_isotopes = sorted(list(self.material_components.keys()))
             first_component = self.material_components[sorted_isotopes[0]]

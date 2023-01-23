@@ -7,7 +7,7 @@ import numpy as np
 import textwrap
 
 
-class MCNP_Input(ABC):
+class MCNP_Object(ABC):
     """
     Abstract class for semantic representations of MCNP inputs.
     """
@@ -62,7 +62,7 @@ class MCNP_Input(ABC):
     @abstractmethod
     def format_for_mcnp_input(self, mcnp_version):
         """
-        Creates a string representation of this MCNP_Input that can be
+        Creates a string representation of this MCNP_Object that can be
         written to file.
 
         :param mcnp_version: The tuple for the MCNP version that must be exported to.
@@ -139,7 +139,7 @@ class MCNP_Input(ABC):
     @abstractmethod
     def allowed_keywords(self):
         """
-        The allowed keywords for this class of MCNP_Input.
+        The allowed keywords for this class of MCNP_Object.
 
         The allowed keywords need to be in upper case.
 
@@ -168,7 +168,7 @@ class MCNP_Input(ABC):
         :rtype: list
         """
         string = " ".join(words)
-        return MCNP_Input.wrap_string_for_mcnp(string, mcnp_version, is_first_line)
+        return MCNP_Object.wrap_string_for_mcnp(string, mcnp_version, is_first_line)
 
     @staticmethod
     def wrap_string_for_mcnp(string, mcnp_version, is_first_line):

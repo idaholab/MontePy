@@ -1,7 +1,7 @@
 from mcnpy.data_inputs.cell_modifier import CellModifierInput
 from mcnpy.errors import *
 from mcnpy.input_parser.constants import DEFAULT_VERSION
-from mcnpy.mcnp_input import MCNP_Input
+from mcnpy.mcnp_object import MCNP_Object
 from mcnpy.particle import Particle
 import numbers
 
@@ -203,7 +203,7 @@ class Importance(CellModifierInput):
                         mutated = True
                         break
             if mutated and self._problem.print_in_data_block["IMP"]:
-                ret = MCNP_Input.format_for_mcnp_input(self, mcnp_version)
+                ret = MCNP_Object.format_for_mcnp_input(self, mcnp_version)
                 part_value = {}
                 for particle in sorted(self._problem.mode):
                     value = tuple(self._format_data_input_particle(particle))

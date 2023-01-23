@@ -42,7 +42,7 @@ class MCNP_Problem:
         This should not be mutated, and should be used a reference to maintain
         the structure
 
-        :return: A list of the MCNP_Input objects representing the file as it was read
+        :return: A list of the MCNP_Object objects representing the file as it was read
         :rtype: list
         """
         return self._original_inputs
