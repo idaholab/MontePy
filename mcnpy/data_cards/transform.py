@@ -228,17 +228,6 @@ class Transform(data_card.DataCardAbstract, Numbered_MCNP_Card):
         in_degs = False
         buff_list = []
         if not is_pass_through:
-    def validate(self):
-        if self.displacement_vector is None or len(self.displacement_vector) != 3:
-            raise IllegalState(
-                f"Transform: {self.number} does not have a valid displacement Vector"
-            )
-
-    def format_for_mcnp_input(self, mcnp_version):
-        self.validate()
-        ret = mcnp_card.MCNP_Card.format_for_mcnp_input(self, mcnp_version)
-        if self.mutated:
-            buff_list = []
             if self.is_in_degrees:
                 buff_list.append(f"*TR{self.number}")
             else:
@@ -260,7 +249,14 @@ class Transform(data_card.DataCardAbstract, Numbered_MCNP_Card):
             ret += Transform.wrap_string_for_mcnp("-1", mcnp_version, False)
         return (in_degs, ret)
 
+    def validate(self):
+        if self.displacement_vector is None or len(self.displacement_vector) != 3:
+            raise IllegalState(
+                f"Transform: {self.number} does not have a valid displacement Vector"
+            )
+
     def format_for_mcnp_input(self, mcnp_version):
+        self.validate()
         ret = mcnp_card.MCNP_Card.format_for_mcnp_input(self, mcnp_version)
         if self.mutated:
             _, lines = self._generate_inputs(mcnp_version, True, False)
