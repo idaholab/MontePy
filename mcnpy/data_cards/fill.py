@@ -422,7 +422,7 @@ class Fill(CellModifierCard):
             f"old_number: {self.old_universe_number}, old_transform: {self._old_transform_number}"
             f"Universe: {self.universe}, transform: {self.transform}"
             f"Multi_universe: {self._multi_universe} hidden_transform: {self.hidden_transform}"
-            f"Min/Max: {str(self.min_index) + ' ' +str(self.max_index) if self.multi_universe == True  else 'None'}"
+            f"Min/Max: {str(self.min_index) + ' ' +str(self.max_index) if self._multi_universe == True  else 'None'}"
         )
 
     def format_for_mcnp_input(self, mcnp_version):
