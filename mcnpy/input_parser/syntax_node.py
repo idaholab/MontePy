@@ -6,7 +6,7 @@ from mcnpy.utilities import fortran_float
 import re
 
 
-class SemanticNodeBase(ABC):
+class SyntaxNodeBase(ABC):
     def __init__(self, name):
         self._name = name
         self._nodes = []
@@ -23,7 +23,7 @@ class SemanticNodeBase(ABC):
         if any([isinstance(x, ValueNode) for x in self.nodes]):
             return True
         for node in self.nodes:
-            if isinstance(node, SemanticNodeBase):
+            if isinstance(node, SyntaxNodeBase):
                 if node.has_leaves:
                     return True
         return False
@@ -55,7 +55,7 @@ class SemanticNodeBase(ABC):
         self._name = name
 
 
-class SemanticNode(SemanticNodeBase):
+class SyntaxNode(SyntaxNodeBase):
     def __init__(self, name, parse_dict):
         super().__init__(name)
         self._name = name
@@ -81,7 +81,7 @@ class SemanticNode(SemanticNodeBase):
         return str(self)
 
 
-class GeometryTree(SemanticNodeBase):
+class GeometryTree(SyntaxNodeBase):
     def __init__(self, name, tokens, op, left, right=None):
         super().__init__(name)
         self._nodes = tokens
@@ -112,7 +112,7 @@ class GeometryTree(SemanticNodeBase):
         return (surfaces, cells)
 
 
-class PaddingNode(SemanticNodeBase):
+class PaddingNode(SyntaxNodeBase):
     def __init__(self, token):
         super().__init__("padding")
         self._nodes = [token]
@@ -131,7 +131,7 @@ class PaddingNode(SemanticNodeBase):
         return len(self.nodes[i].strip()) == 0
 
 
-class ValueNode(SemanticNodeBase):
+class ValueNode(SyntaxNodeBase):
 
     _FORMATTERS = {
         float: {
@@ -243,7 +243,7 @@ class ValueNode(SemanticNodeBase):
         self._value = value
 
 
-class ParticleNode(SemanticNodeBase):
+class ParticleNode(SyntaxNodeBase):
     def __init__(self, name, token):
         super().__init__(name)
         self._nodes = [self]
@@ -251,7 +251,7 @@ class ParticleNode(SemanticNodeBase):
         # TODO parse particles
 
 
-class ListNode(SemanticNodeBase):
+class ListNode(SyntaxNodeBase):
     def __init__(self, name):
         super().__init__(name)
 
@@ -262,7 +262,7 @@ class ListNode(SemanticNodeBase):
     def value(self):
         strings = []
         for node in self.nodes:
-            if isinstance(node, SemanticNodeBase):
+            if isinstance(node, SyntaxNodeBase):
                 strings.append(str(node.value))
             else:
                 strings.append(node)
@@ -344,7 +344,7 @@ class ShortcutNode(ListNode):
         self.append(p[2])
 
 
-class ClassifierNode(SemanticNodeBase):
+class ClassifierNode(SyntaxNodeBase):
     def __init__(self):
         super().__init__("classifier")
         self._prefix = None
@@ -390,7 +390,7 @@ class ClassifierNode(SemanticNodeBase):
         self._modifier = mod
 
 
-class ParametersNode(SemanticNodeBase):
+class ParametersNode(SyntaxNodeBase):
     def __init__(self):
         super().__init__("parameters")
         self._nodes = {}

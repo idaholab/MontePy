@@ -1,5 +1,5 @@
 from mcnpy.input_parser.tokens import MCNP_Lexer
-from mcnpy.input_parser import semantic_node
+from mcnpy.input_parser import syntax_node
 from sly import Parser
 import sly
 
@@ -63,7 +63,7 @@ class MCNP_Parser(Parser, metaclass=MetaBuilder):
     )
     def number_sequence(self, p):
         if len(p) == 1:
-            sequence = semantic_node.ListNode("number sequence")
+            sequence = syntax_node.ListNode("number sequence")
             sequence.append(p[0])
         else:
             sequence = p[0]
@@ -78,7 +78,7 @@ class MCNP_Parser(Parser, metaclass=MetaBuilder):
         "JUMP",
     )
     def shortcut_sequence(self, p):
-        return semantic_node.ShortcutNode(p)
+        return syntax_node.ShortcutNode(p)
 
     @_("NULL", "NULL padding")
     def null_phrase(self, p):
@@ -97,11 +97,11 @@ class MCNP_Parser(Parser, metaclass=MetaBuilder):
             padding = p[1]
         else:
             padding = None
-        return semantic_node.ValueNode(p[0], token_type, padding)
+        return syntax_node.ValueNode(p[0], token_type, padding)
 
     @_("SPACE")
     def padding(self, p):
-        return semantic_node.PaddingNode(p.SPACE)
+        return syntax_node.PaddingNode(p.SPACE)
 
     @_("padding SPACE", "padding DOLLAR_COMMENT", "padding COMMENT", 'padding "&"')
     def padding(self, p):
@@ -122,7 +122,7 @@ class MCNP_Parser(Parser, metaclass=MetaBuilder):
     @_("parameter", "parameters parameter")
     def parameters(self, p):
         if len(p) == 1:
-            params = semantic_node.ParametersNode()
+            params = syntax_node.ParametersNode()
             param = p[0]
         else:
             params = p[0]

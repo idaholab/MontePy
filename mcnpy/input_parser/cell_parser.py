@@ -1,6 +1,6 @@
 from mcnpy.errors import *
 from mcnpy.input_parser.parser_base import MCNP_Parser
-from mcnpy.input_parser import semantic_node
+from mcnpy.input_parser import syntax_node
 
 
 class CellParser(MCNP_Parser):
@@ -16,7 +16,7 @@ class CellParser(MCNP_Parser):
         }
         if len(p) == 4:
             dict_tree["parameters"] = p.parameters
-        return semantic_node.SemanticNode("cell", dict_tree)
+        return syntax_node.SyntaxNode("cell", dict_tree)
 
     @_("number_phrase KEYWORD")
     def cell(self, p):
@@ -29,11 +29,11 @@ class CellParser(MCNP_Parser):
             ret_dict = {"mat_number": p.null_ident_phrase}
         else:
             ret_dict = {"mat_number": p[0], "density": p[1]}
-        return semantic_node.SemanticNode("material", ret_dict)
+        return syntax_node.SyntaxNode("material", ret_dict)
 
     @_('":"')
     def union(self, p):
-        return semantic_node.PaddingNode(p[0])
+        return syntax_node.PaddingNode(p[0])
 
     @_("union padding")
     def union(self, p):
@@ -46,7 +46,7 @@ class CellParser(MCNP_Parser):
     def geometry_expr(self, p):
         left = p.geometry_expr
         right = p.geometry_term
-        return semantic_node.GeometryTree(
+        return syntax_node.GeometryTree(
             "union", left.nodes + [p.union] + right.nodes, ":", left, right
         )
 
@@ -59,15 +59,15 @@ class CellParser(MCNP_Parser):
     @_("geometry_term")
     def geometry_expr(self, p):
         term = p.geometry_term
-        if isinstance(term, semantic_node.ValueNode):
-            term = semantic_node.GeometryTree("shift", term.nodes, ">", term)
+        if isinstance(term, syntax_node.ValueNode):
+            term = syntax_node.GeometryTree("shift", term.nodes, ">", term)
         return term
 
     @_("geometry_term padding geometry_factor")
     def geometry_term(self, p):
         left = p.geometry_term
         right = p.geometry_factor
-        return semantic_node.GeometryTree(
+        return syntax_node.GeometryTree(
             "intersection", left.nodes + [p.padding] + right.nodes, "*", left, right
         )
 
@@ -87,7 +87,7 @@ class CellParser(MCNP_Parser):
 
     @_("COMPLEMENT geometry_factory")
     def geometry_factor(self, p):
-        return semantic_node.GeometryTree(
+        return syntax_node.GeometryTree(
             "complement",
             [p.COMPLEMENT] + p.geometry_factory.nodes,
             "#",
@@ -96,11 +96,11 @@ class CellParser(MCNP_Parser):
 
     @_("NUMBER")
     def geometry_factory(self, p):
-        return semantic_node.ValueNode(p.NUMBER, float)
+        return syntax_node.ValueNode(p.NUMBER, float)
 
     @_('"(" geometry_expr ")"')
     def geometry_factory(self, p):
-        ret = semantic_node.ListNode("geom parens")
+        ret = syntax_node.ListNode("geom parens")
         ret.append(p[0])
         for node in p.geometry_expr.nodes:
             ret.append(node)
