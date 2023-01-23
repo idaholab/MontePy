@@ -464,6 +464,8 @@ class Cell(Numbered_MCNP_Card):
             surfs = Surfaces(surfs)
         self._mutated = True
         self._surfaces = surfs
+        if self._problem:
+            self._surfaces.link_to_problem(self._problem)
 
     @property
     def old_surface_numbers(self):
@@ -536,6 +538,8 @@ class Cell(Numbered_MCNP_Card):
             complements = Cells(complements)
         self._mutated = True
         self._complements = complements
+        if self._problem:
+            self._complements.link_to_problem(self._problem)
 
     @property
     def cells_complementing_this(self):
@@ -770,6 +774,8 @@ class Cell(Numbered_MCNP_Card):
 
     def link_to_problem(self, problem):
         super().link_to_problem(problem)
+        self.complements.link_to_problem(problem)
+        self.surfaces.link_to_problem(problem)
         for attr, _ in Cell._CARDS_TO_PROPERTY.values():
             card = getattr(self, attr, None)
             if card:

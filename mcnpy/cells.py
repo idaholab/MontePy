@@ -6,12 +6,14 @@ from mcnpy.errors import MalformedInputError
 class Cells(NumberedObjectCollection):
     """A collections of multiple :class:`mcnpy.cell.Cell` objects."""
 
-    def __init__(self, cells=None):
+    def __init__(self, cells=None, problem=None):
         """
         :param cells: the list of cells to start with if needed
         :type cells: list
+        :param problem: the problem to link this collection to.
+        :type problem: MCNP_Problem
         """
-        super().__init__(mcnpy.Cell, cells)
+        super().__init__(mcnpy.Cell, cells, problem)
 
     def set_equal_importance(self, importance, vacuum_cells=tuple()):
         """

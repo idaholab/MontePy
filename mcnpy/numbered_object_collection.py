@@ -1,5 +1,6 @@
 from abc import ABC, abstractmethod
 import typing
+import mcnpy
 from mcnpy.mcnp_card import MCNP_Card
 from mcnpy.numbered_mcnp_card import Numbered_MCNP_Card
 from mcnpy.errors import *
@@ -11,17 +12,20 @@ class NumberedObjectCollection(ABC):
     It quacks like a dict, it acts like a dict, but is a list.
     """
 
-    def __init__(self, obj_class, objects=None):
+    def __init__(self, obj_class, objects=None, problem=None):
         """
         :param obj_class: the class of numbered objects being collected
         :type obj_class: type
         :param objects: the list of cells to start with if needed
         :type objects: list
+        :param problem: the problem to link this collection to.
+        :type problem: MCNP_Problem
         """
         self.__num_cache = {}
         assert issubclass(obj_class, Numbered_MCNP_Card)
         self._obj_class = obj_class
         self._objects = []
+        self._problem = problem
         if objects:
             if not isinstance(objects, list):
                 raise TypeError("NumberedObjectCollection must be built from a list")
@@ -39,6 +43,18 @@ class NumberedObjectCollection(ABC):
                     )
                 self.__num_cache[obj.number] = obj
             self._objects = objects
+
+    def link_to_problem(self, problem):
+        """Links the card to the parent problem for this card.
+
+        This is done so that cards can find links to other objects.
+
+        :param problem: The problem to link this card to.
+        :type problem: MCNP_Problem
+        """
+        if not isinstance(problem, mcnpy.mcnp_problem.MCNP_Problem):
+            raise TypeError("problem must be an MCNP_Problem")
+        self._problem = problem
 
     @property
     def numbers(self):
@@ -115,6 +131,9 @@ class NumberedObjectCollection(ABC):
             else:
                 self.__num_cache.pop(obj.number, None)
         self._objects.extend(other_list)
+        if self._problem:
+            for obj in other_list:
+                obj.link_to_problem(self._problem)
 
     def remove(self, delete):
         self.__num_cache.pop(delete.number, None)
@@ -131,7 +150,7 @@ class NumberedObjectCollection(ABC):
 
     def __repr__(self):
         return (
-            f"Numbered_object_collection: obj_class: {self._obj_class}\n"
+            f"Numbered_object_collection: obj_class: {self._obj_class}, problem: {self._problem}\n"
             f"Objects: {self._objects}\n"
             f"Number cache: {self.__num_cache}"
         )
@@ -155,6 +174,8 @@ class NumberedObjectCollection(ABC):
         else:
             self.__num_cache[obj.number] = obj
         self._objects.append(obj)
+        if self._problem:
+            obj.link_to_problem(self._problem)
 
     def append_renumber(self, obj, step=1):
         """Appends the object, but will renumber the object if collision occurs.
@@ -182,6 +203,8 @@ class NumberedObjectCollection(ABC):
             obj.number = number
             self.append(obj)
 
+        if self._problem:
+            obj.link_to_problem(self._problem)
         return number
 
     def request_number(self, start_num=1, step=1):
@@ -303,6 +326,9 @@ class NumberedObjectCollection(ABC):
             else:
                 self.__num_cache[obj.number] = obj
         self._objects += other_list
+        if self._problem:
+            for obj in other_list:
+                obj.link_to_problem(self._problem)
         return self
 
     def __contains__(self, other):

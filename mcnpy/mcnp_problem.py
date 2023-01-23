@@ -29,12 +29,12 @@ class MCNP_Problem:
         self._message = None
         self._print_in_data_block = CellDataPrintController()
         self._original_inputs = []
-        self._cells = Cells()
-        self._surfaces = Surfaces()
-        self._universes = Universes()
-        self._transforms = Transforms()
+        self._cells = Cells(problem=self)
+        self._surfaces = Surfaces(problem=self)
+        self._universes = Universes(problem=self)
+        self._transforms = Transforms(problem=self)
         self._data_cards = []
-        self._materials = Materials()
+        self._materials = Materials(problem=self)
         self._mcnp_version = DEFAULT_VERSION
         self._mode = mode.Mode()
 

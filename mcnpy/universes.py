@@ -7,5 +7,5 @@ class Universes(NumberedObjectCollection):
     A container of multiple :class:`mcnpy.universe.Universe` instances.
     """
 
-    def __init__(self, objects=None):
-        super().__init__(Universe, objects)
+    def __init__(self, objects=None, problem=None):
+        super().__init__(Universe, objects, problem)
