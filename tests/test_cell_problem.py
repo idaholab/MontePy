@@ -68,6 +68,17 @@ class TestCellClass(TestCase):
         self.assertIn(2, cell.old_complement_numbers)
         self.assertEqual(cell.parameters["U"].strip(), "5")
 
+    def test_cell_validator(self):
+        cell = Cell()
+        with self.assertRaises(mcnpy.errors.IllegalState):
+            cell.validate()
+        with self.assertRaises(mcnpy.errors.IllegalState):
+            cell.format_for_mcnp_input((6, 2, 0))
+        cell.mass_density = 5.0
+        with self.assertRaises(mcnpy.errors.IllegalState):
+            cell.validate()
+        del cell.mass_density
+
     def test_geometry_logic_string_setter(self):
         in_str = "1 0 2"
         card = Card([in_str], BlockType.CELL)
@@ -113,6 +124,16 @@ class TestCellClass(TestCase):
         with self.assertRaises(ValueError):
             cell.mass_density = -5
 
+    def test_cell_density_deleter(self):
+        in_str = "1 1 0.5 2"
+        card = Card([in_str], BlockType.CELL)
+        cell = Cell(card)
+        del cell.mass_density
+        self.assertIsNone(cell.mass_density)
+        cell.atom_density = 1.0
+        del cell.atom_density
+        self.assertIsNone(cell.atom_density)
+
     def test_cell_sorting(self):
         in_str = "1 1 0.5 2"
         card = Card([in_str], BlockType.CELL)
@@ -132,6 +153,14 @@ class TestCellClass(TestCase):
                 in_str = f"1 0 -1 FILL={in_fill} {ending}"
                 card = Card([in_str], BlockType.CELL)
                 cell = Cell(card)
+                cell.surfaces.append(
+                    mcnpy.surfaces.surface.Surface(
+                        mcnpy.input_parser.mcnp_input.Card(
+                            ["6600 PZ 1.0"],
+                            mcnpy.input_parser.block_type.BlockType.SURFACE,
+                        )
+                    )
+                )
                 self.assertEqual(cell.parameters["FILL"].strip(), in_fill.strip())
                 cell.number = 2
                 output = cell.format_for_mcnp_input((6, 2, 0))
