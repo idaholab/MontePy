@@ -38,7 +38,7 @@ class Jump:
         return type(self) == type(other)
 
 
-class SyntaxNode(ABC):
+class ParsingNode(ABC):
     """
     Object to represent a single coherent MCNP input, such as an input.
     """
@@ -90,7 +90,7 @@ class SyntaxNode(ABC):
         pass
 
 
-class Input(SyntaxNode):
+class Input(ParsingNode):
     """
     Represents a single MCNP "Input" e.g. a single cell definition.
     """
@@ -260,7 +260,7 @@ class ReadInput(Input):
         return f"READ INPUT: {self._block_type}: {self._tree.nodes}"
 
 
-class Comment(SyntaxNode):
+class Comment(ParsingNode):
     """
     Object to represent a full line comment in an MCNP problem.
     """
@@ -335,7 +335,7 @@ class Comment(SyntaxNode):
         self._cutting = True
 
 
-class Message(SyntaxNode):
+class Message(ParsingNode):
     """
     Object to represent an MCNP message.
 
@@ -391,7 +391,7 @@ class Message(SyntaxNode):
         return ret
 
 
-class Title(SyntaxNode):
+class Title(ParsingNode):
     """
     Object to represent the title for an MCNP problem
     """
