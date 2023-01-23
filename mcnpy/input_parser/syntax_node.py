@@ -198,6 +198,8 @@ class ValueNode(SyntaxNodeBase):
         if self._type == float or self._type == int:
             no_zero_pad = self._token.lstrip("0+-")
             delta = len(self._token) - len(no_zero_pad)
+            if self._token.startswith("+") or self._token.startswith("-"):
+                delta -= 1
             if delta > 0:
                 self._formatter["zero_padding"] = delta
             if self._token.startswith("+"):

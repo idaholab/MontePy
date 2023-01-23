@@ -128,7 +128,7 @@ class TestCellClass(TestCase):
                 self.assertIn("6600.0", cell.parameters.get_value("fill"))
                 cell.number = 2
                 output = cell.format_for_mcnp_input((6, 2, 0))
-                self.assertIn(in_fill, output[2])
+                self.assertIn(in_fill, output)
                 parts = output[2].split("=")
                 # ensure that fill is final entry
                 self.assertIn("FILL", parts[-2])
