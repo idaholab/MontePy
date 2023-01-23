@@ -209,7 +209,7 @@ class TestFill(TestCase):
         self.assertEqual(fill.min_index[0], 0)
         self.assertEqual(fill.max_index[2], 1)
         answer = np.array([[[1, 2], [3, 4]], [[5, 6], [7, 8]]])
-        self.assertTrue((fill.old_universe_number == answer).all())
+        self.assertTrue((fill.old_universe_numbers == answer).all())
         # test string universe
         with self.assertRaises(ValueError):
             fill = Fill(in_cell_block=True, key="fill", value="0:1 0:1 0:1 hi")

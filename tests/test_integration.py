@@ -750,8 +750,8 @@ class testFullFileIntegration(TestCase):
                 self.assertTrue(
                     (cell.fill.max_index == np.array([1.0, 1.0, 0.0])).all()
                 )
-                self.assertEqual(cell.fill.universe[0][0][0].number, answer[0][0][0])
-                self.assertEqual(cell.fill.universe[1][1][0].number, answer[1][1][0])
+                self.assertEqual(cell.fill.universes[0][0][0].number, answer[0][0][0])
+                self.assertEqual(cell.fill.universes[1][1][0].number, answer[1][1][0])
                 self.assertEqual(cell.fill.transform, problem.transforms[5])
             else:
                 self.assertEqual(cell.fill.universe.number, answer)

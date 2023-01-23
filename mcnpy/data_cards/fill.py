@@ -46,7 +46,9 @@ class Fill(CellModifierCard):
         """
 
         self._old_number = None
+        self._old_numbers = None
         self._universe = None
+        self._universes = None
         self._transform = None
         self._hidden_transform = None
         self._old_transform_number = None
@@ -158,7 +160,7 @@ class Fill(CellModifierCard):
                     "The minimum value must be smaller than the max value."
                     f"Min: {min_val}, Max: {max_val}, Input: {value}"
                 )
-        self._old_number = np.zeros(self._sizes, dtype=np.dtype(int))
+        self._old_numbers = np.zeros(self._sizes, dtype=np.dtype(int))
         for i in self._axis_range(0):
             for j in self._axis_range(1):
                 for k in self._axis_range(2):
@@ -166,7 +168,7 @@ class Fill(CellModifierCard):
                     try:
                         val = int(val)
                         assert val >= 0
-                        self._old_number[i][j][k] = val
+                        self._old_numbers[i][j][k] = val
                     except (ValueError, AssertionError) as e:
                         raise ValueError(
                             "Values provided must be valid universes. {val} given."
@@ -189,15 +191,22 @@ class Fill(CellModifierCard):
         """
         The universe that this cell will be filled with.
 
-        :returns: the universe that the cell will be filled with.
+        Only returns a value when :func:`multiple_universes` is False, otherwise none.
+
+        :returns: the universe that the cell will be filled with, or None
         :rtype: Universe
         """
-        return self._universe
+        if not self.multiple_universes:
+            return self._universe
 
     @universe.setter
     def universe(self, value):
         if not isinstance(value, (Universe, type(None))):
             raise TypeError("Universe must be set to a Universe. {value} given.")
+        if self.multiple_universes:
+            raise ValueError(
+                "A single universe can only be set when multiple_universes is False."
+            )
         self._mutated = True
         self._universe = value
 
@@ -205,6 +214,35 @@ class Fill(CellModifierCard):
     def universe(self):
         self._mutated = True
         self._universe = None
+
+    @property
+    def universes(self):
+        """
+        The universes that this cell will be filled with in a lattice.
+
+        Only returns a value when :func:`multiple_universes` is true, otherwise none.
+
+        :returns: the universes that the cell will be filled with as a 3-D array.
+        :rtype: np.ndarray
+        """
+        if self.multiple_universes:
+            return self._universes
+
+    @universes.setter
+    def universes(self, value):
+        if not isinstance(value, (np.ndarray, type(None))):
+            raise TypeError("Universes must be set to an array. {value} given.")
+        if not self.multiple_universes:
+            raise ValueError(
+                "Multiple universes can only be set when multiple_universes is True."
+            )
+        self._mutated = True
+        self._universes = value
+
+    @universes.deleter
+    def universes(self):
+        self._mutated = True
+        self._universes = None
 
     @property
     def min_index(self):
@@ -243,12 +281,22 @@ class Fill(CellModifierCard):
     @property
     def old_universe_number(self):
         """
-        The number(s) of the universe(s) that this is filled by taken from the input.
+        The number of the universe that this is filled by taken from the input.
 
         :returns: the old universe number
-        :type: int or :class:`numpy.ndarray`
+        :type: int
         """
         return self._old_number
+
+    @property
+    def old_universe_numbers(self):
+        """
+        The numbers of the universes that this is filled by taken from the input.
+
+        :returns: the old universe numbers
+        :type: :class:`numpy.ndarray`
+        """
+        return self._old_numbers
 
     @property
     def hidden_transform(self):
@@ -316,14 +364,19 @@ class Fill(CellModifierCard):
         if self.in_cell_block:
             if self.old_transform_number:
                 self._transform = self._problem.transforms[self.old_transform_number]
-            if self.old_universe_number is not None:
-                if isinstance(self.old_universe_number, np.ndarray):
-                    self._universe = np.empty_like(self.old_universe_number, dtype="O")
+            if (
+                self.old_universe_number is not None
+                or self.old_universe_numbers is not None
+            ):
+                if isinstance(self.old_universe_numbers, np.ndarray):
+                    self._universes = np.empty_like(
+                        self.old_universe_numbers, dtype="O"
+                    )
                     for i in self._axis_range(0):
                         for j in self._axis_range(1):
                             for k in self._axis_range(2):
-                                self._universe[i][j][k] = get_universe(
-                                    self.old_universe_number[i][j][k].item()
+                                self._universes[i][j][k] = get_universe(
+                                    self.old_universe_numbers[i][j][k].item()
                                 )
                 else:
                     self._universe = get_universe(self.old_universe_number)
@@ -377,7 +430,7 @@ class Fill(CellModifierCard):
         for i in self._axis_range(0):
             for j in self._axis_range(1):
                 for k in self._axis_range(2):
-                    buff_str += f" {self.universe[i][j][k].number}"
+                    buff_str += f" {self.universes[i][j][k].number}"
                 ret.extend(self.wrap_string_for_mcnp(buff_str, mcnp_version, False))
                 buff_str = ""
         return ret
@@ -431,7 +484,7 @@ class Fill(CellModifierCard):
             key = "FILL"
             in_deg = False
             transform_lines = [""]
-            if self.universe is not None:
+            if self.universe is not None or self.universes is not None:
                 if self.transform:
                     in_deg, transform_lines = self._prepare_transform_string(
                         mcnp_version
@@ -439,7 +492,7 @@ class Fill(CellModifierCard):
                 if in_deg:
                     key = "*" + key
                 lines_iter = iter(transform_lines)
-                if isinstance(self.universe, Universe):
+                if not self.multiple_universes:
                     value = f"{self.universe.number} {next(lines_iter)}"
                 else:
                     complex_lines = self._generate_complex_fill_string(mcnp_version)
@@ -448,7 +501,7 @@ class Fill(CellModifierCard):
                 ret.extend(
                     self.wrap_string_for_mcnp(f"{key}={value}", mcnp_version, False)
                 )
-                if isinstance(self.universe, np.ndarray):
+                if self.multiple_universes:
                     for line in complex_lines[1:]:
                         ret.extend(self.wrap_string_for_mcnp(line, mcnp_version, False))
                 for line in lines_iter:
