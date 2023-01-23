@@ -423,71 +423,19 @@ class Cell(MCNP_Object):
                     return True
         return False
 
-    def format_for_mcnp_input(self, mcnp_version):
-        mutated = self.mutated
-        if not mutated:
-            if self.material:
-                mutated = self.material.mutated
-            for surf in self.surfaces:
-                if surf.mutated:
-                    mutated = True
-                    break
-        if not mutated:
-            mutated = self.modifier_block_print_changed
-
-        if mutated:
-            ret = super().format_for_mcnp_input(mcnp_version)
-            self.update_geometry_logic_string()
-            buffList = [str(self.number)]
-            if self.material:
-                buffList.append(str(self.material.number))
-                if self.is_atom_dens:
-                    dens = self.atom_density
-                else:
-                    dens = -self.mass_density
-                buffList.append(f"{dens:.4g}")
-            else:
-                buffList.append("0")
-            ret += Cell.wrap_words_for_mcnp(buffList, mcnp_version, True)
-            ret += Cell.wrap_string_for_mcnp(
-                self.geometry_logic_string, mcnp_version, False
-            )
-            if self.parameters:
-                strings = []
-                keys = list(self.parameters.keys())
-                """
-                Yes this is hacky voodoo.
-                We don't know if it's necessary, but are too scared to remove it.
-                The goal is to make sure that the FILL parameter is always the last 
-                one on a cell input.
-
-                This is based on a superstition that MCNP is less likely to crash when 
-                data is given this way; but we just don't know.
-                You've used MCNP are you that surprised we had to do this?
-
-                MCNP giveth, and MCNP taketh. 
-                """
-                if "FILL" in keys:
-                    keys.remove("FILL")
-                    keys.append("FILL")
-                for key in keys:
-                    value = self.parameters[key]
-                    if isinstance(value, list):
-                        value = " ".join(value)
-                    strings.append(f"{key}={value}")
-                ret += Cell.wrap_words_for_mcnp(strings, mcnp_version, False)
-            for attr, _ in Cell._INPUTS_TO_PROPERTY.values():
-                if hasattr(self, attr):
-                    if (
-                        self._problem
-                        and not self._problem.print_in_data_block[
-                            getattr(self, attr)._class_prefix
-                        ]
-                    ):
-                        ret += getattr(self, attr).format_for_mcnp_input(mcnp_version)
+    def _update_values(self):
+        if self.material:
+            mat_num = self.material.number
         else:
-            ret = self._format_for_mcnp_unmutated(mcnp_version)
-        return ret
+            mat_num = 0
+        self._tree["material"]["mat_number"].value = mat_num
+
+    def format_for_mcnp_input(self, mcnp_version):
+        self._update_values()
+        print(type(self._tree))
+        print(self._tree)
+        print(self._tree.format())
+        return self._tree.format()
 
     def link_to_problem(self, problem):
         super().link_to_problem(problem)
