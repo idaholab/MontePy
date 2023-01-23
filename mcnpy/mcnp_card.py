@@ -312,6 +312,14 @@ class MCNP_Card(ABC):
         flush_jumps()
         return ret
 
+    def validate(self):
+        """
+        Validates that the object is in a usable state.
+
+        :raises: IllegalState if any condition exists that make the object incomplete.
+        """
+        pass
+
     @property
     def words(self):
         """

@@ -91,7 +91,16 @@ class ThermalScatteringLaw(DataCardAbstract):
         """
         self._scattering_laws.append(law)
 
+    def validate(self):
+        if len(self._scattering_laws) == 0:
+            if self.parent_material:
+                message = f"No thermal scattering laws given for MT{self.parent_material.number}."
+            else:
+                message = f"No thermal scattering laws given for thermal scattering {hex(id(self))}"
+            raise IllegalState(message)
+
     def format_for_mcnp_input(self, mcnp_version):
+        self.validate()
         ret = mcnp_card.MCNP_Card.format_for_mcnp_input(self, mcnp_version)
         mutated = self.mutated
         if not self.parent_material:

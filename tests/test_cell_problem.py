@@ -69,6 +69,17 @@ class TestCellClass(TestCase):
         self.assertAlmostEqual(cell.volume, 20)
         self.assertEqual(cell.parameters["TRCL"].strip(), "5")
 
+    def test_cell_validator(self):
+        cell = Cell()
+        with self.assertRaises(mcnpy.errors.IllegalState):
+            cell.validate()
+        with self.assertRaises(mcnpy.errors.IllegalState):
+            cell.format_for_mcnp_input((6, 2, 0))
+        cell.mass_density = 5.0
+        with self.assertRaises(mcnpy.errors.IllegalState):
+            cell.validate()
+        del cell.mass_density
+
     def test_geometry_logic_string_setter(self):
         in_str = "1 0 2"
         card = Card([in_str], BlockType.CELL)
@@ -114,6 +125,16 @@ class TestCellClass(TestCase):
         with self.assertRaises(ValueError):
             cell.mass_density = -5
 
+    def test_cell_density_deleter(self):
+        in_str = "1 1 0.5 2"
+        card = Card([in_str], BlockType.CELL)
+        cell = Cell(card)
+        del cell.mass_density
+        self.assertIsNone(cell.mass_density)
+        cell.atom_density = 1.0
+        del cell.atom_density
+        self.assertIsNone(cell.atom_density)
+
     def test_cell_sorting(self):
         in_str = "1 1 0.5 2"
         card = Card([in_str], BlockType.CELL)
@@ -125,6 +146,29 @@ class TestCellClass(TestCase):
         answer = [cell1, cell2]
         for i, cell in enumerate(test_sort):
             self.assertEqual(cell, answer[i])
+
+    def test_cell_fill_parsing(self):
+        test_fill_strs = ["6600 (610)", "6600 (0.0 0.0 10.0)"]
+        for ending in ["IMP:N=1", ""]:
+            for in_fill in test_fill_strs:
+                in_str = f"1 0 -1 FILL={in_fill} {ending}"
+                card = Card([in_str], BlockType.CELL)
+                cell = Cell(card)
+                cell.surfaces.append(
+                    mcnpy.surfaces.surface.Surface(
+                        mcnpy.input_parser.mcnp_input.Card(
+                            ["6600 PZ 1.0"],
+                            mcnpy.input_parser.block_type.BlockType.SURFACE,
+                        )
+                    )
+                )
+                self.assertEqual(cell.parameters["FILL"].strip(), in_fill.strip())
+                cell.number = 2
+                output = cell.format_for_mcnp_input((6, 2, 0))
+                self.assertIn(in_fill, output[2])
+                parts = output[2].split("=")
+                # ensure that fill is final entry
+                self.assertIn("FILL", parts[-2])
 
     def test_cell_parameters_setting(self):
         in_str = "1 1 0.5 2"

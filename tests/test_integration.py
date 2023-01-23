@@ -841,3 +841,14 @@ class testFullFileIntegration(TestCase):
             str(self.simple_problem.print_in_data_block),
             "Print data in data block: {'imp': False, 'u': False, 'fill': False, 'vol': True}",
         )
+
+    def test_cell_validator(self):
+        problem = copy.deepcopy(self.simple_problem)
+        cell = problem.cells[1]
+        del cell.mass_density
+        with self.assertRaises(mcnpy.errors.IllegalState):
+            cell.validate()
+        cell.mass_density = 1.0
+        cell.geometry_logic_string = ""
+        with self.assertRaises(mcnpy.errors.IllegalState):
+            cell.validate()

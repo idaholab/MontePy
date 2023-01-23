@@ -242,7 +242,14 @@ class Material(data_card.DataCardAbstract, Numbered_MCNP_Card):
                 elements.append(isotope.element.name)
         return elements
 
+    def validate(self):
+        if len(self.material_components) == 0:
+            raise IllegalState(
+                f"Material: {self.number} does not have any components defined."
+            )
+
     def format_for_mcnp_input(self, mcnp_version):
+        self.validate()
         ret = mcnp_card.MCNP_Card.format_for_mcnp_input(self, mcnp_version)
         if self.mutated:
             sorted_isotopes = sorted(list(self.material_components.keys()))

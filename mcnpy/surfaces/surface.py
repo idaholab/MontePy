@@ -11,7 +11,7 @@ class Surface(Numbered_MCNP_Card):
     Object to hold a single MCNP surface
     """
 
-    def __init__(self, input_card, comment=None):
+    def __init__(self, input_card=None, comment=None):
         """
         :param input_card: The Card object representing the input
         :type input_card: Card
@@ -19,70 +19,73 @@ class Surface(Numbered_MCNP_Card):
                         preceding comment block.
         :type comment: Comment
         """
-        super().__init__(input_card, comment)
-        words = input_card.words
         self._periodic_surface = None
         self._old_periodic_surface = None
         self._transform = None
         self._old_transform_number = None
+        self._surface_type = None
         self._surface_number = -1
-        i = 0
-        # surface number
-        surface_num = words[i]
-        if "*" in surface_num:
-            self._is_reflecting = True
-            surface_num = surface_num.strip("*")
-        else:
-            self._is_reflecting = False
-        if "+" in surface_num:
-            self._is_white_boundary = True
-            surface_num = surface_num.strip("+")
-        else:
-            self._is_white_boundary = False
-
-        try:
-            surface_num = int(surface_num)
-            assert surface_num > 0
-            self._surface_number = surface_num
-            self._old_surface_number = surface_num
-        except (AssertionError, ValueError):
-            raise MalformedInputError(
-                input_card, f"{words[i]} could not be parsed as a surface number."
-            )
-        i += 1
-        num_finder = re.compile(r"\d+")
-        # handle N if specified
-        if num_finder.search(words[i]):
-            try:
-                num = int(words[i])
-                if num > 0:
-                    self._old_transform_number = abs(num)
-                elif num < 0:
-                    self._old_periodic_surface = abs(num)
-                i += 1
-            except ValueError:
-                raise MalformedInputError(
-                    input_card,
-                    f"{words[i]} could not be parsed as a periodic surface or a transform.",
-                )
-        # parse surface mnemonic
-        try:
-            self._surface_type = SurfaceType(words[i].upper())
-        except ValueError:
-            raise MalformedInputError(
-                input_card,
-                f"{words[i]} could not be parsed as a surface type mnemonic.",
-            )
-        # parse the parameters
         self._surface_constants = []
-        for entry in words[i + 1 :]:
+        i = 0
+        super().__init__(input_card, comment)
+        # surface number
+        if input_card:
+            words = input_card.words
+            surface_num = words[i]
+            if "*" in surface_num:
+                self._is_reflecting = True
+                surface_num = surface_num.strip("*")
+            else:
+                self._is_reflecting = False
+            if "+" in surface_num:
+                self._is_white_boundary = True
+                surface_num = surface_num.strip("+")
+            else:
+                self._is_white_boundary = False
+
             try:
-                self._surface_constants.append(fortran_float(entry))
+                surface_num = int(surface_num)
+                assert surface_num > 0
+                self._surface_number = surface_num
+                self._old_surface_number = surface_num
+            except (AssertionError, ValueError):
+                raise MalformedInputError(
+                    input_card, f"{words[i]} could not be parsed as a surface number."
+                )
+            i += 1
+            num_finder = re.compile(r"\d+")
+            # handle N if specified
+            if num_finder.search(words[i]):
+                try:
+                    num = int(words[i])
+                    if num > 0:
+                        self._old_transform_number = abs(num)
+                    elif num < 0:
+                        self._old_periodic_surface = abs(num)
+                    i += 1
+                except ValueError:
+                    raise MalformedInputError(
+                        input_card,
+                        f"{words[i]} could not be parsed as a periodic surface or a transform.",
+                    )
+            # parse surface mnemonic
+            try:
+                self._surface_type = SurfaceType(words[i].upper())
             except ValueError:
                 raise MalformedInputError(
                     input_card,
-                    f"{entry} could not be parsed as a surface constant.",
+                    f"{words[i]} could not be parsed as a surface type mnemonic.",
                 )
+            # parse the parameters
+            self._surface_constants = []
+            for entry in words[i + 1 :]:
+                try:
+                    self._surface_constants.append(fortran_float(entry))
+                except ValueError:
+                    raise MalformedInputError(
+                        input_card,
+                        f"{entry} could not be parsed as a surface constant.",
+                    )
 
     @property
     def allowed_keywords(self):
@@ -288,8 +291,15 @@ class Surface(Numbered_MCNP_Card):
                     self.old_transform_number,
                 )
 
+    def validate(self):
+        if not self.surface_type:
+            raise IllegalState(
+                f"Surface: {self.number} does not have a surface type set."
+            )
+
     def format_for_mcnp_input(self, mcnp_version):
         mutated = self.mutated
+        self.validate()
         if not mutated:
             for obj in [self.periodic_surface, self.transform]:
                 if obj and obj.mutated:
