@@ -1,5 +1,6 @@
 from .surface_type import SurfaceType
 from .surface import Surface
+from mcnpy.errors import *
 
 
 class AxisPlane(Surface):
@@ -18,12 +19,16 @@ class AxisPlane(Surface):
         :type comment: Comment
         """
         super().__init__(input, comment)
+        self._location = None
         ST = SurfaceType
-        if self.surface_type not in [ST.PX, ST.PY, ST.PZ]:
-            raise ValueError("AxisPlane must be a surface of type: PX, PY, or PZ")
-        if len(self.surface_constants) != 1:
-            raise ValueError("AxisPlane must have exactly 1 surface constant")
-        self._location = self.surface_constants[0]
+        if input_card:
+            if self.surface_type not in [ST.PX, ST.PY, ST.PZ]:
+                raise ValueError("AxisPlane must be a surface of type: PX, PY, or PZ")
+            if len(self.surface_constants) != 1:
+                raise ValueError("AxisPlane must have exactly 1 surface constant")
+            self._location = self.surface_constants[0]
+        else:
+            self._surface_constants = [None]
 
     @property
     def location(self):
@@ -41,6 +46,11 @@ class AxisPlane(Surface):
         self._mutated = True
         self._location = location
         self._surface_constants[0] = location
+
+    def validate(self):
+        super().validate()
+        if not self.location:
+            raise IllegalState(f"Surface: {self.number} does not have a location set.")
 
     def find_duplicate_surfaces(self, surfaces, tolerance):
         ret = []

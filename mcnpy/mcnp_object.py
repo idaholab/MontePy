@@ -273,6 +273,14 @@ class MCNP_Object(ABC):
         flush_jumps()
         return ret
 
+    def validate(self):
+        """
+        Validates that the object is in a usable state.
+
+        :raises: IllegalState if any condition exists that make the object incomplete.
+        """
+        pass
+
     def link_to_problem(self, problem):
         """Links the input to the parent problem for this input.
 

@@ -83,6 +83,13 @@ class testTransformClass(TestCase):
         self.assertTrue(not transform.is_in_degrees)
         self.assertTrue(transform.is_main_to_aux)
 
+    def test_validate(self):
+        transform = Transform()
+        with self.assertRaises(mcnpy.errors.IllegalState):
+            transform.validate()
+        with self.assertRaises(mcnpy.errors.IllegalState):
+            transform.format_for_mcnp_input((6, 2, 0))
+
     def test_transform_degrees_setter(self):
         in_str = "*tr5 " + "1.0 " * 3 + "0.0 " * 9 + " -1"
         card = Input([in_str], BlockType.DATA)

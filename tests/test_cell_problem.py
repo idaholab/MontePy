@@ -69,6 +69,25 @@ class TestCellClass(TestCase):
         self.assertEqual(cell.parameters.get_value("u"), '5.0')
 
     # TODO test updating cell geometry once done
+    def test_cell_validator(self):
+        cell = Cell()
+        with self.assertRaises(mcnpy.errors.IllegalState):
+            cell.validate()
+        with self.assertRaises(mcnpy.errors.IllegalState):
+            cell.format_for_mcnp_input((6, 2, 0))
+        cell.mass_density = 5.0
+        with self.assertRaises(mcnpy.errors.IllegalState):
+            cell.validate()
+        del cell.mass_density
+
+    def test_geometry_logic_string_setter(self):
+        in_str = "1 0 2"
+        card = Card([in_str], BlockType.CELL)
+        cell = Cell(card)
+        cell.geometry_logic_string = "1 2"
+        self.assertEqual(cell.geometry_logic_string, "1 2")
+        with self.assertRaises(TypeError):
+            cell.geometry_logic_string = 1
 
     def test_number_setter(self):
         in_str = "1 0 2"
@@ -105,6 +124,16 @@ class TestCellClass(TestCase):
             cell.atom_density = -1.5
         with self.assertRaises(ValueError):
             cell.mass_density = -5
+
+    def test_cell_density_deleter(self):
+        in_str = "1 1 0.5 2"
+        card = Card([in_str], BlockType.CELL)
+        cell = Cell(card)
+        del cell.mass_density
+        self.assertIsNone(cell.mass_density)
+        cell.atom_density = 1.0
+        del cell.atom_density
+        self.assertIsNone(cell.atom_density)
 
     def test_cell_sorting(self):
         in_str = "1 1 0.5 2"

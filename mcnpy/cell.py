@@ -228,6 +228,11 @@ class Cell(MCNP_Object):
         self._is_atom_dens = True
         self._density = float(density)
 
+    @atom_density.deleter
+    def atom_density(self):
+        self._mutated = True
+        self._density = None
+
     @property
     def mass_density(self) -> float:
         """
@@ -248,6 +253,11 @@ class Cell(MCNP_Object):
         self._mutated = True
         self._is_atom_dens = False
         self._density = float(density)
+
+    @mass_density.deleter
+    def mass_density(self):
+        self._mutated = True
+        self._density = None
 
     @property
     def is_atom_dens(self):
@@ -429,12 +439,28 @@ class Cell(MCNP_Object):
         else:
             mat_num = 0
         self._tree["material"]["mat_number"].value = mat_num
+    def validate(self):
+        """
+        Validates that the cell is in a usable state.
+
+        :raises: IllegalState if any condition exists that make the object incomplete.
+        """
+        if self._density and self.material is None:
+            raise IllegalState(f"Cell {self.number} has a density set but no material")
+        if self.material is not None and not self._density:
+            raise IllegalState(
+                f"Cell {self.number} has a non-void material but no density"
+            )
+        if len(self.surfaces) == 0 and len(self.complements) == 0:
+            raise IllegalState(
+                f"Cell {self.number} has no surfaces nor complemented cells attached to it"
+            )
+        if len(self.geometry_logic_string) == 0:
+            raise IllegalState(f"Cell {self.number} has no geometry defined")
 
     def format_for_mcnp_input(self, mcnp_version):
+        self.validate()
         self._update_values()
-        print(type(self._tree))
-        print(self._tree)
-        print(self._tree.format())
         return self._tree.format()
 
     def link_to_problem(self, problem):
