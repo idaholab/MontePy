@@ -54,6 +54,10 @@ class SyntaxNodeBase(ABC):
             raise TypeError("Name must be a string")
         self._name = name
 
+    @abstractmethod
+    def format(self):
+        pass
+
 
 class SyntaxNode(SyntaxNodeBase):
     def __init__(self, name, parse_dict):
@@ -79,6 +83,12 @@ class SyntaxNode(SyntaxNodeBase):
 
     def __repr__(self):
         return str(self)
+
+    def format(self):
+        ret = ""
+        for node in self.nodes.values():
+            ret += node.format()
+        return ret
 
 
 class GeometryTree(SyntaxNodeBase):
@@ -111,6 +121,12 @@ class GeometryTree(SyntaxNodeBase):
                     surfaces.append(identifier)
         return (surfaces, cells)
 
+    def format(self):
+        ret = ""
+        for node in self.nodes:
+            ret += node.format()
+        return ret
+
 
 class PaddingNode(SyntaxNodeBase):
     def __init__(self, token):
@@ -129,6 +145,9 @@ class PaddingNode(SyntaxNodeBase):
 
     def is_space(self, i):
         return len(self.nodes[i].strip()) == 0
+
+    def format(self):
+        return "".join(self.nodes)
 
 
 class ValueNode(SyntaxNodeBase):
@@ -196,7 +215,11 @@ class ValueNode(SyntaxNodeBase):
             self._formatter["zero_padding"] += 4
         else:
             significand = self._token
-        precision = len(significand.split(".")[1])
+        parts = significand.split(".")
+        if len(parts) == 2:
+            precision = len(parts[1])
+        else:
+            precision = 0
         self._formatter["precision"] = precision
         self._formatter["zero_padding"] += precision + 2
 
@@ -218,7 +241,12 @@ class ValueNode(SyntaxNodeBase):
             )
         else:
             temp = self.value
-        return "{temp:<{value_length}}".format(temp=temp, **self._formatter)
+        if self.padding:
+            return "{temp:<{value_length}}{padding}".format(
+                temp=temp, padding="".join(self.padding.nodes), **self._formatter
+            )
+        else:
+            return "{temp:<{value_length}}".format(temp=temp, **self._formatter)
 
     @property
     def padding(self):
@@ -267,6 +295,12 @@ class ListNode(SyntaxNodeBase):
             else:
                 strings.append(node)
         return " ".join(strings)
+
+    def format(self):
+        ret = ""
+        for node in self.nodes:
+            ret += node.format()
+        return ret
 
 
 class ShortcutNode(ListNode):
@@ -389,6 +423,18 @@ class ClassifierNode(SyntaxNodeBase):
         self.append(mod)
         self._modifier = mod
 
+    def format(self):
+        if self.modifier:
+            ret = self.modifier
+        else:
+            ret = ""
+        ret += self.prefix
+        if self.number:
+            ret += self.number
+        if self.particles:
+            ret += self.particles
+        return ret
+
 
 class ParametersNode(SyntaxNodeBase):
     def __init__(self):
@@ -422,3 +468,9 @@ class ParametersNode(SyntaxNodeBase):
 
     def __contains__(self, key):
         return key.lower() in self.nodes
+
+    def format(self):
+        ret = ""
+        for node in self.nodes.values():
+            ret += "".join(node[1:-1]) + node[-1].format() + node[0].format()
+        return ret
