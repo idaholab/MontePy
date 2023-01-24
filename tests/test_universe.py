@@ -182,6 +182,7 @@ class TestFill(TestCase):
     def test_complex_transform_fill_init(self):
         fill = Fill(in_cell_block=True, key="*fill", value="1 (1.5 0.0 0.0)")
         self.assertTrue(fill.hidden_transform)
+        self.assertIsNone(fill.universes)
         self.assertEqual(fill.old_universe_number, 1)
         self.assertEqual(len(fill.transform.displacement_vector), 3)
         self.assertTrue(fill.transform.is_in_degrees)
@@ -206,6 +207,7 @@ class TestFill(TestCase):
 
     def test_complicated_lattice_fill_init(self):
         fill = Fill(in_cell_block=True, key="fill", value="0:1 0:1 0:1 1 2 3 4 5 6 7 8")
+        self.assertIsNone(fill.universe)
         self.assertEqual(fill.min_index[0], 0)
         self.assertEqual(fill.max_index[2], 1)
         answer = np.array([[[1, 2], [3, 4]], [[5, 6], [7, 8]]])
@@ -250,6 +252,7 @@ class TestFill(TestCase):
         fill.universe = uni
         self.assertEqual(fill.universe.number, uni.number)
         self.assertTrue(fill.mutated)
+        self.assertIsNone(fill.universes)
         fill.universe = None
         self.assertIsNone(fill.universe)
         fill.universe = uni
@@ -257,6 +260,18 @@ class TestFill(TestCase):
         self.assertIsNone(fill.universe)
         with self.assertRaises(TypeError):
             fill.universe = "hi"
+
+    def test_fill_universes_setter(self):
+        fill = Fill(in_cell_block=True, key="fill", value="0:1 0:1 0:1 1 2 3 4 5 6 7 8")
+        uni = mcnpy.Universe(10)
+        fill_array = np.array([[[uni, uni], [uni, uni]], [[uni, uni], [uni, uni]]])
+        fill.universes = fill_array
+        self.assertTrue((fill.universes == fill_array).all())
+        self.assertTrue(fill.mutated)
+        del fill.universes
+        self.assertIsNone(fill.universes)
+        with self.assertRaises(TypeError):
+            fill.universes = "hi"
 
     def test_fill_merge(self):
         card = Card(["FiLl 1 2 3 4"], BlockType.DATA)
