@@ -134,7 +134,7 @@ class MCNP_Card(ABC):
     @property
     def comments(self):
         """
-        The preceding comment block to this card if any.
+        The preceding comments block to this card if any.
 
         :rtype: Comment
         """

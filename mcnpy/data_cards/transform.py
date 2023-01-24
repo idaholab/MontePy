@@ -12,8 +12,8 @@ class Transform(data_card.DataCardAbstract, Numbered_MCNP_Card):
     Card to represent a transform card (TR)
     """
 
-    def __init__(self, input_card=None, comment=None, pass_through=False):
-        super().__init__(input_card, comment)
+    def __init__(self, input_card=None, comments=None, pass_through=False):
+        super().__init__(input_card, comments)
         self._pass_through = pass_through
         if input_card is None:
             self._transform_number = -1

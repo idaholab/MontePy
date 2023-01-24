@@ -14,17 +14,17 @@ class CylinderParAxis(Surface):
         SurfaceType.C_Z: {0: "x", 1: "y"},
     }
 
-    def __init__(self, input_card=None, comment=None):
+    def __init__(self, input_card=None, comments=None):
         """
         :param input_card: The Card object representing the input
         :type input_card: Card
-        :param comment: the Comment object representing the
-                        preceding comment block.
-        :type comment: Comment
+        :param comments: the Comment object representing the
+                        preceding comments block.
+        :type comments: Comment
         """
         self._coordinates = None
         self._radius = None
-        super().__init__(input_card, comment)
+        super().__init__(input_card, comments)
         ST = SurfaceType
         if input_card:
             if self.surface_type not in [ST.C_X, ST.C_Y, ST.C_Z]:

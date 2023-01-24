@@ -11,13 +11,13 @@ class Surface(Numbered_MCNP_Card):
     Object to hold a single MCNP surface
     """
 
-    def __init__(self, input_card=None, comment=None):
+    def __init__(self, input_card=None, comments=None):
         """
         :param input_card: The Card object representing the input
         :type input_card: Card
-        :param comment: the Comment object representing the
-                        preceding comment block.
-        :type comment: Comment
+        :param comments: the Comment object representing the
+                        preceding comments block.
+        :type comments: Comment
         """
         self._periodic_surface = None
         self._old_periodic_surface = None
@@ -27,7 +27,7 @@ class Surface(Numbered_MCNP_Card):
         self._surface_number = -1
         self._surface_constants = []
         i = 0
-        super().__init__(input_card, comment)
+        super().__init__(input_card, comments)
         # surface number
         if input_card:
             words = input_card.words

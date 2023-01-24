@@ -20,7 +20,7 @@ class Cell(Numbered_MCNP_Card):
     :param input_card: the Card input for the cell definition
     :type input_card: Card
     :param comments: the Comments block that preceded and are in the cell block if any.
-    :type comment: list
+    :type comments: list
     """
 
     _ALLOWED_KEYWORDS = {
@@ -51,14 +51,14 @@ class Cell(Numbered_MCNP_Card):
         fill.Fill: ("_fill", True),
     }
 
-    def __init__(self, input_card=None, comment=None):
+    def __init__(self, input_card=None, comments=None):
         """
         :param input_card: the Card input for the cell definition
         :type input_card: Card
         :param comments: the Comments block that preceded and are in the cell block if any.
-        :type comment: list
+        :type comments: list
         """
-        super().__init__(input_card, comment)
+        super().__init__(input_card, comments)
         self._material = None
         self._old_cell_number = None
         self._load_blank_modifiers()
