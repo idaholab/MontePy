@@ -478,12 +478,12 @@ class Fill(CellModifierCard):
 
     def __repr__(self):
         return (
-            f"Fill: set_in_cell: {self.set_in_cell_block}, in_cell: {self.in_cell_block}"
-            f"old_number: {self.old_universe_number}, old_transform: {self._old_transform_number}",
-            f"old_numbers: {self.old_universe_numbers}"
-            f"Universe: {self.universe}, universes: {self.universes}, transform: {self.transform}"
-            f"Multi_universe: {self._multi_universe} hidden_transform: {self.hidden_transform}"
-            f"Min/Max: {str(self.min_index) + ' ' +str(self.max_index) if self._multi_universe == True  else 'None'}",
+            f"Fill: set_in_cell: {self.set_in_cell_block}, in_cell: {self.in_cell_block} "
+            f"old_number: {self.old_universe_number}, old_transform: {self._old_transform_number} "
+            f"old_numbers: {self.old_universe_numbers} "
+            f"Universe: {self.universe}, universes: {self.universes}, transform: {self.transform} "
+            f"Multi_universe: {self._multi_universe} hidden_transform: {self.hidden_transform} "
+            f"Min/Max: {str(self.min_index) + ' ' +str(self.max_index) if self._multi_universe == True  else 'None'}"
         )
 
     def format_for_mcnp_input(self, mcnp_version):
