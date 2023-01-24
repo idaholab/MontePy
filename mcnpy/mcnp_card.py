@@ -134,7 +134,7 @@ class MCNP_Card(ABC):
     @property
     def comments(self):
         """
-        The preceding comment block to this card if any.
+        The preceding comments block to this card if any.
 
         :rtype: Comment
         """
@@ -253,6 +253,7 @@ class MCNP_Card(ABC):
         ret = []
         last_value = None
         float_formatter = "{:n}"
+        repeat_counter = 0
 
         def flush_repeats():
             nonlocal repeat_counter, ret
@@ -263,7 +264,10 @@ class MCNP_Card(ABC):
             repeat_counter = 0
 
         for value in values:
-            if last_value:
+            if isinstance(value, mcnpy.input_parser.mcnp_input.Jump):
+                ret.append(value)
+                last_value = None
+            elif last_value:
                 if np.isclose(value, last_value, atol=threshold):
                     repeat_counter += 1
                 else:

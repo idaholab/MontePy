@@ -2,6 +2,7 @@ from mcnpy.data_cards import data_card, thermal_scattering
 from mcnpy.data_cards.isotope import Isotope
 from mcnpy.data_cards.material_component import MaterialComponent
 from mcnpy import mcnp_card
+from mcnpy.numbered_mcnp_card import Numbered_MCNP_Card
 from mcnpy.errors import *
 from mcnpy.utilities import *
 import itertools
@@ -14,19 +15,19 @@ TODO
 """
 
 
-class Material(data_card.DataCardAbstract):
+class Material(data_card.DataCardAbstract, Numbered_MCNP_Card):
     """
     A class to represent an MCNP material.
     """
 
-    def __init__(self, input_card=None, comment=None):
+    def __init__(self, input_card=None, comments=None):
         """
         :param input_card: the input card that contains the data
         :type input_card: Card
-        :param comment: The comment card that preceded this card if any.
-        :type comment: Comment
+        :param comments: The comments card that preceded this card if any.
+        :type comments: Comment
         """
-        super().__init__(input_card, comment)
+        super().__init__(input_card, comments)
         self._material_components = {}
         self._thermal_scattering = None
         self._material_number = -1

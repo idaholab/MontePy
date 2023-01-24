@@ -6,28 +6,28 @@ from mcnpy.surfaces.cylinder_par_axis import CylinderParAxis
 from mcnpy.surfaces.general_plane import GeneralPlane
 
 
-def surface_builder(input_card, comment=None):
+def surface_builder(input_card, comments=None):
     """
     Builds a Surface object for the type of Surface
 
     :param input_card: The Card object representing the input
     :type input_card: Card
-    :param comment: the Comment object representing the
-                    preceding comment block.
-    :type comment: Comment
+    :param comments: the Comment object representing the
+                    preceding comments block.
+    :type comments: Comment
     :returns: A Surface object properly parsed. If supported a sub-class of Surface will be given.
     :rtype: Surface
     """
     ST = SurfaceType
-    buffer_surface = Surface(input_card, comment)
+    buffer_surface = Surface(input_card, comments)
     type_of_surface = buffer_surface.surface_type
     if type_of_surface in [ST.C_X, ST.C_Y, ST.C_Z]:
-        return CylinderParAxis(input_card, comment)
+        return CylinderParAxis(input_card, comments)
     elif type_of_surface in [ST.CX, ST.CY, ST.CZ]:
-        return CylinderOnAxis(input_card, comment)
+        return CylinderOnAxis(input_card, comments)
     elif type_of_surface in [ST.PX, ST.PY, ST.PZ]:
-        return AxisPlane(input_card, comment)
+        return AxisPlane(input_card, comments)
     elif type_of_surface == ST.P:
-        return GeneralPlane(input_card, comment)
+        return GeneralPlane(input_card, comments)
     else:
         return buffer_surface

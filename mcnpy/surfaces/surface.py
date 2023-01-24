@@ -1,23 +1,23 @@
 from mcnpy.errors import *
 from mcnpy.data_cards import transform
-from mcnpy.mcnp_card import MCNP_Card
+from mcnpy.numbered_mcnp_card import Numbered_MCNP_Card
 from mcnpy.surfaces.surface_type import SurfaceType
 from mcnpy.utilities import *
 import re
 
 
-class Surface(MCNP_Card):
+class Surface(Numbered_MCNP_Card):
     """
     Object to hold a single MCNP surface
     """
 
-    def __init__(self, input_card=None, comment=None):
+    def __init__(self, input_card=None, comments=None):
         """
         :param input_card: The Card object representing the input
         :type input_card: Card
-        :param comment: the Comment object representing the
-                        preceding comment block.
-        :type comment: Comment
+        :param comments: the Comment object representing the
+                        preceding comments block.
+        :type comments: Comment
         """
         self._periodic_surface = None
         self._old_periodic_surface = None
@@ -27,7 +27,7 @@ class Surface(MCNP_Card):
         self._surface_number = -1
         self._surface_constants = []
         i = 0
-        super().__init__(input_card, comment)
+        super().__init__(input_card, comments)
         # surface number
         if input_card:
             words = input_card.words
@@ -261,16 +261,21 @@ class Surface(MCNP_Card):
             f"constants: {self.surface_constants}"
         )
 
-    def update_pointers(self, surface_dict, data_cards):
+    def update_pointers(self, surfaces, data_cards):
         """
         Updates the internal pointers to the appropriate objects.
 
         Right now only periodic surface links will be made.
         Eventually transform pointers should be made.
+
+        :param surfaces: A Surfaces collection of the surfaces in the problem.
+        :type surfaces: Surfaces
+        :param data_cards: the data_cards in the problem.
+        :type data_cards: list
         """
         if self.old_periodic_surface:
             try:
-                self._periodic_surface = surface_dict[self.old_periodic_surface]
+                self._periodic_surface = surfaces[self.old_periodic_surface]
             except KeyError:
                 raise BrokenObjectLinkError(
                     "Surface",

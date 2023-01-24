@@ -1,18 +1,20 @@
 from mcnpy import mcnp_card
 from mcnpy.data_cards import data_card
 from mcnpy.errors import *
+from mcnpy.numbered_mcnp_card import Numbered_MCNP_Card
 from mcnpy.utilities import *
 import numpy as np
 import re
 
 
-class Transform(data_card.DataCardAbstract):
+class Transform(data_card.DataCardAbstract, Numbered_MCNP_Card):
     """
     Card to represent a transform card (TR)
     """
 
-    def __init__(self, input_card=None, comment=None):
-        super().__init__(input_card, comment)
+    def __init__(self, input_card=None, comments=None, pass_through=False):
+        super().__init__(input_card, comments)
+        self._pass_through = pass_through
         if input_card is None:
             self._transform_number = -1
             self._old_transform_number = -1
@@ -95,6 +97,11 @@ class Transform(data_card.DataCardAbstract):
         return 0
 
     @property
+    def hidden_transform(self):
+        """ """
+        return self._pass_through
+
+    @property
     def is_in_degrees(self):
         """
         The rotation matrix is in degrees and not in cosines
@@ -119,6 +126,7 @@ class Transform(data_card.DataCardAbstract):
         The transform number for this transform
 
         :rtype: int
+
         """
         return self._transform_number
 
@@ -203,6 +211,44 @@ class Transform(data_card.DataCardAbstract):
         ret += f"MAIN_TO_AUX: {self.is_main_to_aux}\n"
         return ret
 
+    def _generate_inputs(self, mcnp_version, first_line=True, is_pass_through=False):
+        """
+        Generates appropriately formatted input for this transform.
+
+        :param mcnp_version: see format_for_mcnp_input
+        :type mcnp_version: tuple
+        :param first_line: If true this is the first line of input
+        :type first_line: bool
+        :param is_pass_through: If True the transform number will be supressed
+        :type is_pass_through: bool
+        :returns: a tuple of (bool: true if this needs an *, list of str of the input)
+        :rtype: tuple
+        """
+        ret = []
+        in_degs = False
+        buff_list = []
+        if not is_pass_through:
+            if self.is_in_degrees:
+                buff_list.append(f"*TR{self.number}")
+            else:
+                buff_list.append(f"TR{self.number}")
+        else:
+            in_degs = self.is_in_degrees
+        for value in self.displacement_vector:
+            buff_list.append(f"{value}")
+
+        ret += Transform.wrap_words_for_mcnp(buff_list, mcnp_version, first_line)
+        buff_list = []
+        i = 0
+        for i, value in enumerate(self.rotation_matrix):
+            buff_list.append(f"{value}")
+            if (i + 1) % 3 == 0:
+                ret += Transform.wrap_words_for_mcnp(buff_list, mcnp_version, False)
+                buff_list = []
+        if i == 8 and not self.is_main_to_aux:
+            ret += Transform.wrap_string_for_mcnp("-1", mcnp_version, False)
+        return (in_degs, ret)
+
     def validate(self):
         if self.displacement_vector is None or len(self.displacement_vector) != 3:
             raise IllegalState(
@@ -213,24 +259,8 @@ class Transform(data_card.DataCardAbstract):
         self.validate()
         ret = mcnp_card.MCNP_Card.format_for_mcnp_input(self, mcnp_version)
         if self.mutated:
-            buff_list = []
-            if self.is_in_degrees:
-                buff_list.append(f"*TR{self.number}")
-            else:
-                buff_list.append(f"TR{self.number}")
-            for value in self.displacement_vector:
-                buff_list.append(f"{value}")
-
-            ret += Transform.wrap_words_for_mcnp(buff_list, mcnp_version, True)
-            buff_list = []
-            i = 0
-            for i, value in enumerate(self.rotation_matrix):
-                buff_list.append(f"{value}")
-                if (i + 1) % 3 == 0:
-                    ret += Transform.wrap_words_for_mcnp(buff_list, mcnp_version, False)
-                    buff_list = []
-            if i == 8 and not self.is_main_to_aux:
-                ret += Transform.wrap_string_for_mcnp("-1", mcnp_version, False)
+            _, lines = self._generate_inputs(mcnp_version, True, False)
+            ret.extend(lines)
         else:
             ret = self._format_for_mcnp_unmutated(mcnp_version)
         return ret

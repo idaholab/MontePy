@@ -44,8 +44,14 @@ unit_test:
 doc_test:
    stage: test
    script:
-    - echo "Executing Sphinx build to detect syntax errors"
-    - sphinx-build doc/source/ doc/build/ -W --keep-going -E
+      - echo "Executing Sphinx build to detect syntax errors"
+      - sphinx-build doc/source/ doc/build/ -W --keep-going -E
+      - sphinx-build -b singlehtml -D html_theme=basic doc/source/ doc/build/singlehtml/
+   artifacts:
+     expose_as: 'Updated Documentation'
+     paths: 
+       - doc/build/singlehtml/index.html
+     expire_in: 1 day
 
 format_test:
   stage: test

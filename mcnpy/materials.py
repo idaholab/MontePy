@@ -9,5 +9,5 @@ class Materials(NumberedObjectCollection):
     A container of multiple :class:`mcnpy.data_cards.material.Material` instances.
     """
 
-    def __init__(self, objects=None):
-        super().__init__(Material, objects)
+    def __init__(self, objects=None, problem=None):
+        super().__init__(Material, objects, problem)

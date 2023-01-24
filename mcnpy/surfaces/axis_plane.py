@@ -10,16 +10,16 @@ class AxisPlane(Surface):
 
     COORDINATE = {SurfaceType.PX: "x", SurfaceType.PY: "y", SurfaceType.PZ: "z"}
 
-    def __init__(self, input_card=None, comment=None):
+    def __init__(self, input_card=None, comments=None):
         """
         :param input_card: The Card object representing the input
         :type input_card: Card
-        :param comment: the Comment object representing the
-                        preceding comment block.
-        :type comment: Comment
+        :param comments: the Comment object representing the
+                        preceding comments block.
+        :type comments: Comment
         """
         self._location = None
-        super().__init__(input_card, comment)
+        super().__init__(input_card, comments)
         ST = SurfaceType
         if input_card:
             if self.surface_type not in [ST.PX, ST.PY, ST.PZ]:
