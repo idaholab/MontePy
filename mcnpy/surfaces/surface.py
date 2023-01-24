@@ -261,16 +261,21 @@ class Surface(Numbered_MCNP_Card):
             f"constants: {self.surface_constants}"
         )
 
-    def update_pointers(self, surface_dict, data_cards):
+    def update_pointers(self, surfaces, data_cards):
         """
         Updates the internal pointers to the appropriate objects.
 
         Right now only periodic surface links will be made.
         Eventually transform pointers should be made.
+
+        :param surfaces: A Surfaces collection of the surfaces in the problem.
+        :type surfaces: Surfaces
+        :param data_cards: the data_cards in the problem.
+        :type data_cards: list
         """
         if self.old_periodic_surface:
             try:
-                self._periodic_surface = surface_dict[self.old_periodic_surface]
+                self._periodic_surface = surfaces[self.old_periodic_surface]
             except KeyError:
                 raise BrokenObjectLinkError(
                     "Surface",

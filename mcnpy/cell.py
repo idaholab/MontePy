@@ -553,21 +553,23 @@ class Cell(Numbered_MCNP_Card):
                     if self in cell.complements:
                         yield cell
 
-    def update_pointers(self, cell_dict, material_dict, surface_dict):
+    def update_pointers(self, cells, materials, surfaces):
         """
         Attaches this object to the appropriate objects for surfaces and materials.
 
-        :param material_dict: a dictionary mapping the material number to the Material object.
-        :type material_dict: dict
-        :param surface_dict: a dictionary mapping the surface number to the Surface object.
-        :type surface_dict: dict
+        :param cells: a Cells collection of the cells in the problem.
+        :type cells: Cells
+        :param materials: a materials collection of the materials in the problem
+        :type materials: Materials
+        :param surfaces: a surfaces collection of the surfaces in the problem
+        :type surfaces: Surfaces
         """
         self._surfaces = Surfaces()
         self._complements = Cells()
         if self._old_mat_number is not None:
             if self._old_mat_number > 0:
                 try:
-                    self._material = material_dict[self._old_mat_number]
+                    self._material = materials[self._old_mat_number]
                 except KeyError:
                     raise BrokenObjectLinkError(
                         "Cell", self.number, "Material", self.old_mat_number
@@ -578,7 +580,7 @@ class Cell(Numbered_MCNP_Card):
         if self._old_surface_numbers:
             for surface_number in self._old_surface_numbers:
                 try:
-                    self._surfaces.append(surface_dict[surface_number])
+                    self._surfaces.append(surfaces[surface_number])
                 except KeyError:
                     raise BrokenObjectLinkError(
                         "Cell", self.number, "Surface", surface_number
@@ -587,7 +589,7 @@ class Cell(Numbered_MCNP_Card):
         if self._old_complement_numbers:
             for complement_number in self._old_complement_numbers:
                 try:
-                    self._complements.append(cell_dict[complement_number])
+                    self._complements.append(cells[complement_number])
                 except KeyError:
                     raise BrokenObjectLinkError(
                         "Cell", self.number, "Complement Cell", complement_number
