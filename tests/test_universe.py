@@ -260,6 +260,11 @@ class TestFill(TestCase):
         self.assertIsNone(fill.universe)
         with self.assertRaises(TypeError):
             fill.universe = "hi"
+        with self.assertRaises(TypeError):
+            fill.multiple_universes = "hi"
+        fill.multiple_universes = True
+        with self.assertRaises(ValueError):
+            fill.universe = uni
 
     def test_fill_universes_setter(self):
         fill = Fill(in_cell_block=True, key="fill", value="0:1 0:1 0:1 1 2 3 4 5 6 7 8")
@@ -272,6 +277,9 @@ class TestFill(TestCase):
         self.assertIsNone(fill.universes)
         with self.assertRaises(TypeError):
             fill.universes = "hi"
+        fill.multiple_universes = False
+        with self.assertRaises(ValueError):
+            fill.universes = fill_array
 
     def test_fill_merge(self):
         card = Card(["FiLl 1 2 3 4"], BlockType.DATA)
