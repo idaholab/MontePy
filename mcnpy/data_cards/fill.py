@@ -171,7 +171,7 @@ class Fill(CellModifierCard):
                         self._old_numbers[i][j][k] = val
                     except (ValueError, AssertionError) as e:
                         raise ValueError(
-                            "Values provided must be valid universes. {val} given."
+                            f"Values provided must be valid universes. {val} given."
                         )
 
     @property
@@ -202,7 +202,7 @@ class Fill(CellModifierCard):
     @universe.setter
     def universe(self, value):
         if not isinstance(value, (Universe, type(None))):
-            raise TypeError("Universe must be set to a Universe. {value} given.")
+            raise TypeError(f"Universe must be set to a Universe. {value} given.")
         if self.multiple_universes:
             raise ValueError(
                 "A single universe can only be set when multiple_universes is False."
@@ -231,7 +231,7 @@ class Fill(CellModifierCard):
     @universes.setter
     def universes(self, value):
         if not isinstance(value, (np.ndarray, type(None))):
-            raise TypeError("Universes must be set to an array. {value} given.")
+            raise TypeError(f"Universes must be set to an array. {value} given.")
         if not self.multiple_universes:
             raise ValueError(
                 "Multiple universes can only be set when multiple_universes is True."
@@ -472,10 +472,11 @@ class Fill(CellModifierCard):
     def __repr__(self):
         return (
             f"Fill: set_in_cell: {self.set_in_cell_block}, in_cell: {self.in_cell_block}"
-            f"old_number: {self.old_universe_number}, old_transform: {self._old_transform_number}"
-            f"Universe: {self.universe}, transform: {self.transform}"
+            f"old_number: {self.old_universe_number}, old_transform: {self._old_transform_number}",
+            f"old_numbers: {self.old_universe_numbers}"
+            f"Universe: {self.universe}, universes: {self.universes}, transform: {self.transform}"
             f"Multi_universe: {self._multi_universe} hidden_transform: {self.hidden_transform}"
-            f"Min/Max: {str(self.min_index) + ' ' +str(self.max_index) if self._multi_universe == True  else 'None'}"
+            f"Min/Max: {str(self.min_index) + ' ' +str(self.max_index) if self._multi_universe == True  else 'None'}",
         )
 
     def format_for_mcnp_input(self, mcnp_version):
