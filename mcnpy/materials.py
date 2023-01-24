@@ -12,5 +12,5 @@ class Materials(NumberedObjectCollection):
     :type objects: list
     """
 
-    def __init__(self, objects=None):
-        super().__init__(Material, objects)
+    def __init__(self, objects=None, problem=None):
+        super().__init__(Material, objects, problem)

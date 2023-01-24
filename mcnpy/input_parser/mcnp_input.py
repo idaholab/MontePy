@@ -148,6 +148,19 @@ class Card(MCNP_Input):
 
 
 def parse_card_shortcuts(words, card=None):
+    """
+    Parses MCNP input shortcuts.
+
+    E.g., ``2R``, ``1 10I 100``, ``2J``
+
+    Returns a list of strings with all shortcuts decompressed or changed out.
+    Jumps will be changed to :class:`mcnpy.input_parser.mcnp_input.Jump`.
+
+    :param words: the list of strings or "words".
+    :type words: list
+    :returns: modified version of words with all compressions expanded.
+    :rtype: list
+    """
     number_parser = re.compile(r"(\d+\.*\d*[e\+\-]*\d*)")
     ret = []
     for i, word in enumerate(words):
@@ -248,6 +261,11 @@ def parse_card_shortcuts(words, card=None):
 class ReadCard(Card):
     """
     A card for the read card that reads another input file
+
+    :param input_lines: the lines read straight from the input file.
+    :type input_lines: list
+    :param block_type: An enum showing which of three MCNP blocks this was inside of.
+    :type block_type: BlockType
     """
 
     def __init__(self, input_lines, block_type):
@@ -278,7 +296,7 @@ class Comment(MCNP_Input):
     """
     Object to represent a full line comment in an MCNP problem.
 
-    A full line comment begins with ``C``.
+    This represents only ``C `` style comments and not ``$`` style comments.
 
     :param input_lines: the lines read straight from the input file.
     :type input_lines: list
@@ -414,6 +432,11 @@ class Message(MCNP_Input):
 class Title(MCNP_Input):
     """
     Object to represent the title for an MCNP problem
+
+    :param input_lines: the lines read straight from the input file.
+    :type input_lines: list
+    :param title: The string for the title of the problem.
+    :type title: str
     """
 
     def __init__(self, input_lines, title):

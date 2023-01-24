@@ -1,26 +1,26 @@
-MESSAGE: this is a message
-it should show up at the beginning
-foo
-
 MCNP Test Model for MOAA
 C cells
 c
 1 1 20
          -1000  $ dollar comment
-     imp:n,p=1 U=350 trcl=5
+     imp:n,p=1 trcl=5
+     u=1
 2 2 8
       -1005
      imp:n=1
      imp:p=0.5
+     lat 1 
+     fill= 0:1 0:1 0:0 1 0 0 1 (5)
 3 3 -1
       1000 1005 -1010
      imp:n,p=1
 99 0
       1010
      imp:n,p=0
+     fill=1
 5 0 
       #99
-      imp:n,p=3 fill=350 (1 0 0 )
+      imp:n,p=3 fill=1 (1 0.0 0.0)
 c foo end comment
 
 C surfaces
@@ -42,6 +42,7 @@ C water
 m3        1001.80c           2
            8016.80c           1
 MT3 lwtr.23t
+TR5 0.0 0.0 1.0
 C execution
 ksrc 0 0 0
 kcode 100000 1.000 50 1050

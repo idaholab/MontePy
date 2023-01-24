@@ -1,25 +1,26 @@
 import itertools
 from mcnpy.cells import Cells
-from mcnpy.data_cards import importance, volume
+from mcnpy.data_cards import fill, importance, lattice_card, universe_card, volume
 from mcnpy.data_cards.data_parser import PREFIX_MATCHES
 from mcnpy.errors import *
-from mcnpy.mcnp_card import MCNP_Card
+from mcnpy.numbered_mcnp_card import Numbered_MCNP_Card
 from mcnpy.data_cards.material import Material
 from mcnpy.surfaces.surface import Surface
 from mcnpy.surface_collection import Surfaces
+from mcnpy.universe import Universe
 from mcnpy.utilities import *
 import re
 import numbers
 
 
-class Cell(MCNP_Card):
+class Cell(Numbered_MCNP_Card):
     """
     Object to represent a single MCNP cell defined in CGS.
 
-    :param input_card: The Card syntax object this will wrap and parse.
+    :param input_card: the Card input for the cell definition
     :type input_card: Card
-    :param comments: The Comments that proceeded this card or were inside of this if any
-    :type Comments: list
+    :param comments: the Comments block that preceded and are in the cell block if any.
+    :type comments: list
     """
 
     _ALLOWED_KEYWORDS = {
@@ -45,6 +46,9 @@ class Cell(MCNP_Card):
     _CARDS_TO_PROPERTY = {
         importance.Importance: ("_importance", False),
         volume.Volume: ("_volume", True),
+        universe_card.UniverseCard: ("_universe", True),
+        lattice_card.LatticeCard: ("_lattice", True),
+        fill.Fill: ("_fill", True),
     }
 
     def __init__(self, input_card=None, comment=None):
@@ -171,9 +175,106 @@ class Cell(MCNP_Card):
         """
         The importances for this cell for various particle types.
 
+        Each particle's importance is a property of Importance.
+        e.g., ``cell.importance.photon = 1.0``.
+
+        :returns: the importance for the Cell.
         :rtype: Importance
         """
         return self._importance
+
+    @property
+    def universe(self):
+        """
+        The Universe that this cell is in.
+
+        :returns: the Universe the cell is in.
+        :rtype: Universe
+        """
+        return self._universe.universe
+
+    @property
+    def fill(self):
+        """
+        the Fill object representing how this cell is filled.
+
+        This not only describes the universe that is filling this,
+        but more complex things like transformations, and matrix fills.
+
+        :returns: The Fill object of how this cell is to be filled.
+        :rtype: Fill
+        """
+        return self._fill
+
+    @universe.setter
+    def universe(self, value):
+        if not isinstance(value, Universe):
+            raise TypeError("universe must be set to a Universe")
+        self._mutated = True
+        self._universe.universe = value
+
+    @property
+    def not_truncated(self):
+        """
+        Indicates if this cell has been marked as not being truncated for optimization.
+
+        See Note 1 from section 3.3.1.5.1 of the user manual (LA-UR-17-29981).
+
+        Note this can be set to True iff that this cell is not in Universe 0.
+
+            Note 1. A problem will run faster by preceding the U card entry with a minus sign for any
+            cell that is not truncated by the boundary of any higher-level cell. (The minus sign indicates
+            that calculating distances to boundary in higher-level cells can be omitted.) Use this
+            capability with EXTREME CAUTION; MCNP6 cannot detect errors in this feature because
+            the logic that enables detection is omitted by the presence of the negative universe. Extremely
+            wrong answers can be quietly calculated. Plot several views of the geometry or run with the
+            VOID card to check for errors.
+
+            -- LA-UR-17-29981.
+
+        :rtype: bool
+        :returns: True if this cell has been marked as not being truncated by the parent filled cell.
+        """
+        if self.universe.number == 0:
+            return False
+        return self._universe.not_truncated
+
+    @not_truncated.setter
+    def not_truncated(self, value):
+        if not isinstance(value, bool):
+            raise TypeError("not_truncated_by_parent must be a bool")
+        if self.universe.number == 0 and value:
+            raise ValueError("can't specify if cell is truncated for universe 0")
+        self._mutated = True
+        self._universe._not_truncated = value
+
+    @property
+    def old_universe_number(self):
+        """
+        The original universe number read in from the input file.
+
+        :returns: the number of the Universe for the cell in the input file.
+        :rtype: int
+        """
+        return self._universe.old_number
+
+    @property
+    def lattice(self):
+        """
+        The type of lattice being used by the cell.
+
+        :returns: the type of lattice being used
+        :rtype: Lattice
+        """
+        return self._lattice.lattice
+
+    @lattice.setter
+    def lattice(self, value):
+        self._lattice.lattice = value
+
+    @lattice.deleter
+    def lattice(self):
+        self._lattice.lattice = None
 
     @property
     def volume(self):
@@ -290,6 +391,11 @@ class Cell(MCNP_Card):
         self._is_atom_dens = True
         self._density = float(density)
 
+    @atom_density.deleter
+    def atom_density(self):
+        self._mutated = True
+        self._density = None
+
     @property
     def mass_density(self) -> float:
         """
@@ -311,6 +417,11 @@ class Cell(MCNP_Card):
         self._mutated = True
         self._is_atom_dens = False
         self._density = float(density)
+
+    @mass_density.deleter
+    def mass_density(self):
+        self._mutated = True
+        self._density = None
 
     @property
     def is_atom_dens(self):
@@ -354,6 +465,8 @@ class Cell(MCNP_Card):
             surfs = Surfaces(surfs)
         self._mutated = True
         self._surfaces = surfs
+        if self._problem:
+            self._surfaces.link_to_problem(self._problem)
 
     @property
     def old_surface_numbers(self):
@@ -381,6 +494,7 @@ class Cell(MCNP_Card):
         .. warning::
             This will be deprecated and completely removed in version 0.1.5.
 
+        :returns: the geometry logic string for this cell.
         :rtype: str
         """
         return self._geometry_logic_string
@@ -432,6 +546,8 @@ class Cell(MCNP_Card):
             complements = Cells(complements)
         self._mutated = True
         self._complements = complements
+        if self._problem:
+            self._complements.link_to_problem(self._problem)
 
     @property
     def cells_complementing_this(self):
@@ -447,21 +563,23 @@ class Cell(MCNP_Card):
                     if self in cell.complements:
                         yield cell
 
-    def update_pointers(self, cell_dict, material_dict, surface_dict):
+    def update_pointers(self, cells, materials, surfaces):
         """
         Attaches this object to the appropriate objects for surfaces and materials.
 
-        :param material_dict: a dictionary mapping the material number to the Material object.
-        :type material_dict: dict
-        :param surface_dict: a dictionary mapping the surface number to the Surface object.
-        :type surface_dict: dict
+        :param cells: a Cells collection of the cells in the problem.
+        :type cells: Cells
+        :param materials: a materials collection of the materials in the problem
+        :type materials: Materials
+        :param surfaces: a surfaces collection of the surfaces in the problem
+        :type surfaces: Surfaces
         """
         self._surfaces = Surfaces()
         self._complements = Cells()
         if self._old_mat_number is not None:
             if self._old_mat_number > 0:
                 try:
-                    self._material = material_dict[self._old_mat_number]
+                    self._material = materials[self._old_mat_number]
                 except KeyError:
                     raise BrokenObjectLinkError(
                         "Cell", self.number, "Material", self.old_mat_number
@@ -472,7 +590,7 @@ class Cell(MCNP_Card):
         if self._old_surface_numbers:
             for surface_number in self._old_surface_numbers:
                 try:
-                    self._surfaces.append(surface_dict[surface_number])
+                    self._surfaces.append(surfaces[surface_number])
                 except KeyError:
                     raise BrokenObjectLinkError(
                         "Cell", self.number, "Surface", surface_number
@@ -481,7 +599,7 @@ class Cell(MCNP_Card):
         if self._old_complement_numbers:
             for complement_number in self._old_complement_numbers:
                 try:
-                    self._complements.append(cell_dict[complement_number])
+                    self._complements.append(cells[complement_number])
                 except KeyError:
                     raise BrokenObjectLinkError(
                         "Cell", self.number, "Complement Cell", complement_number
@@ -610,8 +728,28 @@ class Cell(MCNP_Card):
                     return True
         return False
 
+    def validate(self):
+        """
+        Validates that the cell is in a usable state.
+
+        :raises: IllegalState if any condition exists that make the object incomplete.
+        """
+        if self._density and self.material is None:
+            raise IllegalState(f"Cell {self.number} has a density set but no material")
+        if self.material is not None and not self._density:
+            raise IllegalState(
+                f"Cell {self.number} has a non-void material but no density"
+            )
+        if len(self.surfaces) == 0 and len(self.complements) == 0:
+            raise IllegalState(
+                f"Cell {self.number} has no surfaces nor complemented cells attached to it"
+            )
+        if len(self.geometry_logic_string) == 0:
+            raise IllegalState(f"Cell {self.number} has no geometry defined")
+
     def format_for_mcnp_input(self, mcnp_version):
         mutated = self.mutated
+        self.validate()
         if not mutated:
             if self.material:
                 mutated = self.material.mutated
@@ -642,21 +780,6 @@ class Cell(MCNP_Card):
             if self.parameters:
                 strings = []
                 keys = list(self.parameters.keys())
-                """
-                Yes this is hacky voodoo.
-                We don't know if it's necessary, but are too scared to remove it.
-                The goal is to make sure that the FILL parameter is always the last 
-                one on a cell card.
-
-                This is based on a superstition that MCNP is less likely to crash when 
-                data is given this way; but we just don't know.
-                You've used MCNP are you that surprised we had to do this?
-
-                MCNP giveth, and MCNP taketh. 
-                """
-                if "FILL" in keys:
-                    keys.remove("FILL")
-                    keys.append("FILL")
                 for key in keys:
                     value = self.parameters[key]
                     if isinstance(value, list):
@@ -678,6 +801,8 @@ class Cell(MCNP_Card):
 
     def link_to_problem(self, problem):
         super().link_to_problem(problem)
+        self.complements.link_to_problem(problem)
+        self.surfaces.link_to_problem(problem)
         for attr, _ in Cell._CARDS_TO_PROPERTY.values():
             card = getattr(self, attr, None)
             if card:
@@ -696,7 +821,13 @@ class Cell(MCNP_Card):
             dens_str = f"DENS: {self._density} {units}"
         else:
             dens_str = "DENS: None"
-        return f"CELL: {self.number}, mat: {mat_num}, {dens_str}"
+        ret = f"CELL: {self.number}, mat: {mat_num}, {dens_str}"
+        if self.universe and self.universe.number != 0:
+            ret += f", universe: {self.universe.number}"
+        if self.fill.universe:
+            ret += f", filled by: {self.fill.universe}"
+
+        return ret
 
     def __repr__(self):
         ret = f"CELL: {self._cell_number} \n"

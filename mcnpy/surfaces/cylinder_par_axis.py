@@ -1,5 +1,6 @@
 from .surface_type import SurfaceType
 from .surface import Surface
+from mcnpy.errors import *
 
 
 class CylinderParAxis(Surface):
@@ -20,17 +21,24 @@ class CylinderParAxis(Surface):
     """Which coordinate is what value for each cylinder type.
     """
 
-    def __init__(self, input_card, comment=None):
-        super().__init__(input_card, comment)
+    def __init__(self, input_card=None, comments=None):
+        self._coordinates = None
+        self._radius = None
+        super().__init__(input_card, comments)
         ST = SurfaceType
-        if self.surface_type not in [ST.C_X, ST.C_Y, ST.C_Z]:
-            raise ValueError(
-                "CylinderParAxis must be a surface of types: C/X, C/Y, C/Z"
-            )
-        if len(self.surface_constants) != 3:
-            raise ValueError("CylinderParAxis must have exactly 3 surface_constants")
-        self._coordinates = self.surface_constants[0:2]
-        self._radius = self.surface_constants[2]
+        if input_card:
+            if self.surface_type not in [ST.C_X, ST.C_Y, ST.C_Z]:
+                raise ValueError(
+                    "CylinderParAxis must be a surface of types: C/X, C/Y, C/Z"
+                )
+            if len(self.surface_constants) != 3:
+                raise ValueError(
+                    "CylinderParAxis must have exactly 3 surface_constants"
+                )
+            self._coordinates = self.surface_constants[0:2]
+            self._radius = self.surface_constants[2]
+        else:
+            self._surface_constants = [None] * 3
 
     @property
     def coordinates(self):
@@ -69,6 +77,13 @@ class CylinderParAxis(Surface):
         self._mutated = True
         self._radius = radius
         self._surface_constants[2] = radius
+
+    def validate(self):
+        super().validate()
+        if not self.radius:
+            raise IllegalState(f"Surface: {self.number} does not have a radius set.")
+        if not self.coordinates:
+            raise IllegalState(f"Surface: {self.number} does not have coordinates set.")
 
     def find_duplicate_surfaces(self, surfaces, tolerance):
         ret = []

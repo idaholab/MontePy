@@ -39,8 +39,8 @@ class Surfaces(NumberedObjectCollection):
     :type surfaces: list
     """
 
-    def __init__(self, surfaces=None):
-        super().__init__(Surface, surfaces)
+    def __init__(self, surfaces=None, problem=None):
+        super().__init__(Surface, surfaces, problem)
 
 
 def __setup_surfaces_generators():

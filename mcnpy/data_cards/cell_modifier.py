@@ -70,27 +70,32 @@ class CellModifierCard(DataCardAbstract):
         :rtype: bool
         """
         if self._problem:
-            if not self.in_cell_block:
-                for cell in self._problem.cells:
-                    attr = mcnpy.Cell._CARDS_TO_PROPERTY[type(self)][0]
-                    set_in_cell_block = getattr(cell, attr).set_in_cell_block
-                    break
-            else:
-                set_in_cell_block = self.set_in_cell_block
             print_in_cell_block = not self._problem.print_in_data_block[
                 self.class_prefix
             ]
+            set_in_cell_block = print_in_cell_block
+            if not self.in_cell_block:
+                for cell in self._problem.cells:
+                    attr = mcnpy.Cell._CARDS_TO_PROPERTY[type(self)][0]
+                    modifier = getattr(cell, attr)
+                    if modifier.has_information:
+                        set_in_cell_block = modifier.set_in_cell_block
+                    break
+            else:
+                if self.has_information:
+                    set_in_cell_block = self.set_in_cell_block
             return print_in_cell_block ^ set_in_cell_block
         else:
             return False
 
     @abstractmethod
-    def merge(self, card):
+    def merge(self, other):
         """
         Merges the data from another card of same type into this one.
 
-        :param card: The other card to merge into this one.
-        :type card: CellModifierCard
+        :param other: The other object to merge into this object.
+        :type other: CellModifierCard
+        :raises MalformedInputError: if two objects cannot be merged.
         """
         pass
 
@@ -109,6 +114,19 @@ class CellModifierCard(DataCardAbstract):
         Use ``self._check_redundant_definitions`` to do this.
 
         :raises MalformedInputError: When data are given in the cell block and the data block.
+        """
+        pass
+
+    @property
+    @abstractmethod
+    def has_information(self):
+        """
+        For a cell instance of :class:`mcnpy.data_cards.cell_modifier.CellModifierCard` returns True iff there is information here worth printing out.
+
+        e.g., a manually set volume for a cell
+
+        :returns: True if this instance has information worth printing.
+        :rtype: bool
         """
         pass
 

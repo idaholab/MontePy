@@ -3,6 +3,7 @@ from mcnpy.errors import *
 from mcnpy.input_parser.constants import DEFAULT_VERSION
 from mcnpy.input_parser.mcnp_input import Jump
 from mcnpy.mcnp_card import MCNP_Card
+from mcnpy.utilities import *
 
 
 class Volume(CellModifierCard):
@@ -24,13 +25,13 @@ class Volume(CellModifierCard):
     def __init__(
         self, input_card=None, comments=None, in_cell_block=False, key=None, value=None
     ):
-        super().__init__(input_card, comments, in_cell_block, key, value)
         self._volume = None
         self._calc_by_mcnp = True
+        super().__init__(input_card, comments, in_cell_block, key, value)
         if self.in_cell_block:
             if key:
                 try:
-                    value = float(value)
+                    value = fortran_float(value)
                     assert value >= 0.0
                 except (ValueError, AssertionError) as e:
                     raise ValueError(
@@ -47,7 +48,7 @@ class Volume(CellModifierCard):
             for word in words:
                 if isinstance(word, str):
                     try:
-                        value = float(word)
+                        value = fortran_float(word)
                         assert value >= 0
                         self._volume.append(value)
                     except (ValueError, AssertionError) as e:
@@ -124,6 +125,11 @@ class Volume(CellModifierCard):
         if not self.in_cell_block:
             self._calc_by_mcnp = value
             self._mutated = True
+
+    @property
+    def has_information(self):
+        if self.in_cell_block:
+            return self.set
 
     @property
     def set(self) -> bool:

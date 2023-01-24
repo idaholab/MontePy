@@ -2,24 +2,25 @@ from mcnpy.data_cards import data_card, thermal_scattering
 from mcnpy.data_cards.isotope import Isotope
 from mcnpy.data_cards.material_component import MaterialComponent
 from mcnpy import mcnp_card
+from mcnpy.numbered_mcnp_card import Numbered_MCNP_Card
 from mcnpy.errors import *
 from mcnpy.utilities import *
 import itertools
 import re
 
 
-class Material(data_card.DataCardAbstract):
+class Material(data_card.DataCardAbstract, Numbered_MCNP_Card):
     """
     A class to represent an MCNP material.
 
     :param input_card: the input card that contains the data
     :type input_card: Card
-    :param comment: The comments that preceded this card and are in this card if any.
-    :type comment: list
+    :param comments: The comments card that preceded this card if any.
+    :type comments: list
     """
 
-    def __init__(self, input_card=None, comment=None):
-        super().__init__(input_card, comment)
+    def __init__(self, input_card=None, comments=None):
+        super().__init__(input_card, comments)
         self._material_components = {}
         self._thermal_scattering = None
         self._material_number = -1
@@ -242,7 +243,14 @@ class Material(data_card.DataCardAbstract):
                 elements.append(isotope.element.name)
         return elements
 
+    def validate(self):
+        if len(self.material_components) == 0:
+            raise IllegalState(
+                f"Material: {self.number} does not have any components defined."
+            )
+
     def format_for_mcnp_input(self, mcnp_version):
+        self.validate()
         ret = mcnp_card.MCNP_Card.format_for_mcnp_input(self, mcnp_version)
         if self.mutated:
             sorted_isotopes = sorted(list(self.material_components.keys()))

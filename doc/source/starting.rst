@@ -352,36 +352,50 @@ This previous code is much simpler now::
 
 Cells 
 -----
-
 Density
 ^^^^^^^
 This gets a bit more complicated.
 MCNP supports both atom density, and mass density. 
-So MCNPy doesn't have a ``cel.density``.
-Rather it has ``cell.mass_density`` and ``cell.atom_density``.
-At any given time only one of these will provide a number,
-the other one will return ``None``.
+So when you access ``cell.density`` on its own,
+the result is ambiguous, 
+because it could be in g/cm3 or atom/b-cm.
+No; MCNPy does not support negative density; it doesn't exist!
+For this reason ``cell.density`` is deprecated.
+Instead there is now ``cell.atom_density`` and ``cell.mass_density``. 
 
-You can check which one will give a value by checking ``cell.is_atom_dens``.
-As the name suggests it will return ``True`` if the density is an atom density,
-and ``False`` if it is a mass density.
+``cell.atom_density`` is in units of atomcs/b-cm,
+and ``cell.mass_density`` is in units of g/cm3.
+Both will never return a valid number simultaneously.
+If the cell density is set to a mass density ``cell.atom_density`` will return ``None``.
+Setting the value for one of these densities will change the density mode.
+MCNPy does not convert mass density to atom density and vice versa.
 
-To convert a cell from mass density to atom density you just need to set the relevant density field.
-
->>> cell.is_atom_dens
-False
 >>> cell.mass_density
-5.5
->>> cell.atom_density
+9.8
+>>> cell.atom_density 
 None
->>> cell.atom_density = 0.05
->>> cell.is_atom_dens
-True
+>>> cell.atom_density = 0.5
 >>> cell.mass_density
 None
 
 
 Working with Universes
 ----------------------
+MCNPy supports MCNP universes as well.
+``problem.universes`` will contain all universes in a problem.
+If a cell is not assigned to any universe it will be assigned to Universe 0, while reading in the input file.
+To change what cells are in a universe you must set this at the cell level.
+This is done to prevent a cell from being assigned to multiple universes::
 
-TODO
+    universe = problem.universes[350]
+    for cell_num in {1,2,3,4,5}:
+        cell = problem.cells[cell_num]
+        cell.universe = universe
+    
+We can confirm this worked with the generator ``universe.cells``:
+
+>>> list(universe.cells.numbers)
+[1, 2, 3, 4, 5]
+
+Remember: make objects, not regexs!
+===================================

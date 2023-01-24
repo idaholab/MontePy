@@ -14,24 +14,24 @@ class ThermalScatteringLaw(DataCardAbstract):
 
     :param input_card: the Card object representing this data card
     :type input_card: Card
-    :param comment: The Comment that may proceed this
-    :type comment: Comment
+    :param comments: The Comments that may proceed this
+    :type comments: list
     :param material: the parent Material object that owns this
     :type material: Material
     """
 
-    def __init__(self, input_card="", comment=None, material=None):
+    def __init__(self, input_card="", comments=None, material=None):
         self._old_material_number = None
         self._parent_material = None
         self._scattering_laws = []
         if input_card:
-            super().__init__(input_card, comment)
+            super().__init__(input_card, comments)
             words = self.words
             self._old_material_number = self._input_number
             self._scattering_laws = self.words[1:]
         else:
-            if comment:
-                self._comment = comment
+            if comments:
+                self._comment = comments
             if material:
                 self._parent_material = material
 
@@ -95,7 +95,16 @@ class ThermalScatteringLaw(DataCardAbstract):
         """
         self._scattering_laws.append(law)
 
+    def validate(self):
+        if len(self._scattering_laws) == 0:
+            if self.parent_material:
+                message = f"No thermal scattering laws given for MT{self.parent_material.number}."
+            else:
+                message = f"No thermal scattering laws given for thermal scattering {hex(id(self))}"
+            raise IllegalState(message)
+
     def format_for_mcnp_input(self, mcnp_version):
+        self.validate()
         ret = mcnp_card.MCNP_Card.format_for_mcnp_input(self, mcnp_version)
         mutated = self.mutated
         if not self.parent_material:
