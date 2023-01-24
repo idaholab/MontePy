@@ -278,6 +278,13 @@ class Fill(CellModifierCard):
         """
         return self._multi_universe
 
+    @multiple_universes.setter
+    def multiple_universes(self, value):
+        if not isinstance(value, bool):
+            raise TypeError("Multiple_univeses must be set to a bool")
+        self._multi_universe = value
+        self._mutated = True
+
     @property
     def old_universe_number(self):
         """
