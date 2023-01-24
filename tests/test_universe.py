@@ -281,6 +281,13 @@ class TestFill(TestCase):
         with self.assertRaises(ValueError):
             fill.universes = fill_array
 
+    def test_fill_str(self):
+        fill = Fill(in_cell_block=True, key="fill", value="0:1 0:1 0:1 1 2 3 4 5 6 7 8")
+        output = str(fill)
+        self.assertIn("Fill", output)
+        output = repr(fill)
+        self.assertIn("Fill", output)
+
     def test_fill_merge(self):
         card = Card(["FiLl 1 2 3 4"], BlockType.DATA)
         fill1 = Fill(card)
