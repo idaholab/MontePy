@@ -379,23 +379,105 @@ None
 None
 
 
-Working with Universes
-----------------------
+Universes
+---------
+
 MCNPy supports MCNP universes as well.
 ``problem.universes`` will contain all universes in a problem.
-If a cell is not assigned to any universe it will be assigned to Universe 0, while reading in the input file.
-To change what cells are in a universe you must set this at the cell level.
-This is done to prevent a cell from being assigned to multiple universes::
+These are stored in :class:`mcnpy.universes.Universes` as :class:`mcnpy.universe.Universe` instances. 
+If a cell is not assigned to any universe it will be assigned to Universe 0, *not None*, while reading in the input file.
+To change what cells are in a universe you can set this at the cell level.
+This is done to prevent a cell from being assigned to multiple universes
 
+.. code-block:: python
+    
     universe = problem.universes[350]
-    for cell_num in {1,2,3,4,5}:
-        cell = problem.cells[cell_num]
+    for cell in problem.cells[1:5]:
         cell.universe = universe
     
 We can confirm this worked with the generator ``universe.cells``:
 
->>> list(universe.cells.numbers)
+>>> [cell.number for cell in universe.cells]
 [1, 2, 3, 4, 5]
+
+Claiming Cells
+^^^^^^^^^^^^^^
+
+The ``Universe`` class also has the method: :func:`mcnpy.universe.Universe.claim`.
+This is a shortcut to do the above code.
+For all cells passed (either as a single ``Cell``, a ``list`` of cells, or a ``Cells`` instance)
+will be removed from their current universe, and moved to this universe.
+This simplifies the above code to just being:
+
+.. code-block:: python
+
+   universe = problem.universes[350]
+   universe.claim(problem.cells[1:5])
+
+Creating a new Universe
+^^^^^^^^^^^^^^^^^^^^^^^
+
+Creating a new universe is very straight forward.
+You just need to initialize it with a new number,
+and then add it to the problem:
+
+.. code-block:: python
+   
+   universe = mcnpy.Universe(333)
+   problem.universes.append(universe)
+
+Now you can add cells to this universe as you normally would.
+
+.. note::
+   A universe with no cells assigned will not be written out to the MCNP input file, and will "dissapear".
+
+.. note::
+   Universe number collisions are not checked for when a universe is created,
+   but only when it is added to the problem.
+   Make sure to plan accordingly, and consider using :func:`mcnpy.numbered_object_collection.NumberedObjectCollection.request_number`.
+
+
+
+Filling Cells
+^^^^^^^^^^^^^
+
+What's the point of creating a universe if you can't fill a cell with it, and therefore use it?
+Filling is handled by the :class:`mcnpy.data_cards.fill.Fill` object in ``cell.fill``.
+
+To fill a cell with a specific universe you can just run:
+
+.. code-block:: python
+
+        cell.fill.universe = universe
+
+This will then fill the cell with a single universe with no transform.
+You can also easy apply a transform to the filling universe with:
+
+.. code-block:: python
+
+        cell.fill.tranform = transform
+
+.. note::
+
+   MCNP supports some rather complicated cell filling systems.
+   Mainly the ability to fill a cell with different universes for every lattice site,
+   and to create an "anonymous transform" in the fill card.
+
+   MCNPy can understand and manipulate fills with these features in the input.
+   However, generating these from scratch may be cumbersome.
+   If you use this feature, and have input on how to make it more user friendly,
+   please reach out to the developers.
+
+
+
+References
+^^^^^^^^^^
+
+See the following cell properties for more details:
+
+* :func:`mcnpy.cell.Cell.universe`
+* :func:`mcnpy.cell.Cell.lattice`
+* :func:`mcnpy.cell.Cell.fill`
 
 Remember: make objects, not regexs!
 ===================================
