@@ -18,6 +18,16 @@ class NumberedObjectCollection(ABC):
 
     You can also add delete items like you would in a dictionary normally.
 
+    Unlike dictionaries this collection also supports slices e.g., ``[1:3]``.
+    This will return a new :class:`NumberedObjectCollection` with objects
+    that have cell numbers that fit that slice. If a number is in a slice that 
+    is not an actual object it will just be skipped.
+
+    Because MCNP numbered objects start at 1, so do the indices.
+    The slices are effectively 1-based and endpoint-inclusive.
+    This means rather than the normal behavior of [0:5] excluding the index
+    5, 5 would be included.
+
     :param obj_class: the class of numbered objects being collected
     :type obj_class: type
     :param objects: the list of cells to start with if needed
@@ -273,6 +283,8 @@ class NumberedObjectCollection(ABC):
         The indices are the object numbers.
         Because MCNP numbered objects start at 1, so do the indices.
         They are effectively 1-based and endpoint-inclusive.
+
+        :rtype: NumberedObjectCollection
         """
         rstep = i.step if i.step is not None else 1
         rstart = i.start
