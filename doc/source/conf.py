@@ -20,7 +20,7 @@ import mcnpy
 # -- Project information -----------------------------------------------------
 
 project = "OpenMCNPy"
-copyright = "2022, Battelle Energy Alliance LLC."
+copyright = "2021 – 2023, Battelle Energy Alliance LLC."
 author = "Micah D. Gale (@galemica), Travis J. Labossiere-Hickman (@tjlaboss)"
 
 
