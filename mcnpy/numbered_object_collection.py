@@ -20,7 +20,7 @@ class NumberedObjectCollection(ABC):
 
     Unlike dictionaries this collection also supports slices e.g., ``[1:3]``.
     This will return a new :class:`NumberedObjectCollection` with objects
-    that have cell numbers that fit that slice. If a number is in a slice that 
+    that have cell numbers that fit that slice. If a number is in a slice that
     is not an actual object it will just be skipped.
 
     Because MCNP numbered objects start at 1, so do the indices.
