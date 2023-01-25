@@ -296,7 +296,7 @@ class Comment(MCNP_Input):
     """
     Object to represent a full line comment in an MCNP problem.
 
-    This represents only ``C `` style comments and not ``$`` style comments.
+    This represents only ``C`` style comments and not ``$`` style comments.
 
     :param input_lines: the lines read straight from the input file.
     :type input_lines: list
