@@ -90,5 +90,6 @@ pages:
       - public
   only:
     - master
+    - main
     - doc
-    - blackTesting
+    - deploy_fix
