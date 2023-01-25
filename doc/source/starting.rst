@@ -9,10 +9,10 @@ and will link the cell with its material object.
 
 .. warning::
     MCNPy is built primarily to support MCNP 6.2. Some success maybe achieved with MCNP 6.1, and 5.1.60, 
-    but there may be issues due new features in MCNP 6.2, not being backwards compatible.
+    but there may be issues due to new features in MCNP 6.2, not being backwards compatible.
     Use earlier versions of MCNP with MCNPy at your own risk.
 
-    Due to the manuals for these earlier versions of MCNP, these versions will likely never be fully supported.
+    Due to the manuals for these earlier versions of MCNP being export controlled, these versions will likely never be fully supported.
 
 Reading a File
 --------------
