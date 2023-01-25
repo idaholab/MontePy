@@ -26,7 +26,6 @@ class Importance(CellModifierCard):
     def __init__(
         self, input_card=None, comments=None, in_cell_block=False, key=None, value=None
     ):
-        """ """
         super().__init__(input_card, comments, in_cell_block, key, value)
         self._particle_importances = {}
         if self.in_cell_block:
