@@ -49,7 +49,7 @@ unit_test:
 doc_test:
    stage: test
    script:
-      - rm -r doc/source/api
+      - if [[ -d doc/source/api ]]; then rm -r doc/source/api; 
       - echo "Executing Sphinx build to detect syntax errors"
       - sphinx-build doc/source/ doc/build/ -W --keep-going -E
       - sphinx-build -b html doc/source/ doc/build/html
@@ -79,7 +79,7 @@ pages:
   script:
     - echo "Building documentation with Sphinx."
     - cd doc/
-    - rm -r source/api
+    - if [[ -d doc/source/api ]]; then rm -r doc/source/api; 
     - make html
     - cd ..
     - mv doc/build/html public
