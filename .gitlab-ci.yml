@@ -44,6 +44,7 @@ unit_test:
 doc_test:
    stage: test
    script:
+      - rm -r doc/source/api
       - echo "Executing Sphinx build to detect syntax errors"
       - sphinx-build doc/source/ doc/build/ -W --keep-going -E
       - sphinx-build -b singlehtml -D html_theme=basic doc/source/ doc/build/singlehtml/
@@ -72,6 +73,7 @@ pages:
   script:
     - echo "Building documentation with Sphinx."
     - cd doc/
+    - rm -r source/api
     - make html
     - cd ..
     - mv doc/build/html public
