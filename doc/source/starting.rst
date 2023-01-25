@@ -17,8 +17,8 @@ and will link the cell with its material object.
 Reading a File
 --------------
 
-MCNPy offers the :func:`mcnpy.read_input` (actually :func:`mcnpy.input_parser.input_reader.read_input`) function for getting started.
-It will read the specified MCNP input file, and return an MCNPy :class:`mcnpy.mcnp_problem.MCNP_Problem` object.
+MCNPy offers the :func:`mcnpy.read_input` (actually :func:`~mcnpy.input_parser.input_reader.read_input`) function for getting started.
+It will read the specified MCNP input file, and return an MCNPy :class:`~mcnpy.mcnp_problem.MCNP_Problem` object.
 
 >>> import mcnpy
 >>> problem = mcnpy.read_input("foo.imcnp")
@@ -28,7 +28,7 @@ It will read the specified MCNP input file, and return an MCNPy :class:`mcnpy.mc
 Writing a File
 --------------
 
-The :class:`mcnpy.mcnp_problem.MCNP_Problem` object has the method :func:`mcnpy.mcnp_problem.MCNP_Problem.write_to_file`, which writes the problem's current 
+The :class:`~mcnpy.mcnp_problem.MCNP_Problem` object has the method :func:`~mcnpy.mcnp_problem.MCNP_Problem.write_to_file`, which writes the problem's current 
 state as a valid MCNP input file.
 
 >>> problem.write_to_file("bar.imcnp")
@@ -100,7 +100,7 @@ This is generally accessed through ``cell.importance``.
 You can access the importance for a specific particle type by its name.
 For example: ``cell.importance.neutron`` or ``cell.importance.photon``.
 
-You can also quickly get the information by passing an instance of:class:`mcnpy.particle.Particle` as a key to importance.
+You can also quickly get the information by passing an instance of:class:`~mcnpy.particle.Particle` as a key to importance.
 For example: ::
     
     for particle in problem.mode:
@@ -115,7 +115,7 @@ For example: ::
 
 This will set the importances for the neutron and photon. 
 
-There is also the method: :func:`mcnpy.cells.Cells.set_equal_importance`.
+There is also the method: :func:`~mcnpy.cells.Cells.set_equal_importance`.
 This method sets all of the cells for all particles in the problem to the same importance.
 You can optionally pass a list of cells to this function.
 These cells are the "vacuum boundary" cells.
@@ -128,7 +128,7 @@ Setting How Cell Data Gets displayed in the Input file
 
 Much of the cell data can show up in the cell block or the data block, like the importance card.
 These are referred to MCNPy as "cell modifiers".
-You can change how these cell modifiers are printed with :func:`mcnpy.mcnp_problem.MCNP_Problem.print_in_data_block`.
+You can change how these cell modifiers are printed with :func:`~mcnpy.mcnp_problem.MCNP_Problem.print_in_data_block`.
 This acts like a dictionary where the key is the MCNP card name.
 So to make cell importance data show up in the cell block just run:
 ``problem.print_in_data_block["imp"] = False``.
@@ -159,7 +159,7 @@ Information Lost
    So If you were to write out a problem that used the read card in the surface block the surface
    cards in that file from the read card will appear at the end of the new surface block in the newly written file.
 #. MCNP shortcuts for numbers. The shortcuts like: ``1 9r`` will be expanded to its meaning, and will not be
-   recompressed, easily. Jumps will be subsituted with the valued :class:`mcnpy.input_parser.mcnp_input.Jump`.
+   recompressed, easily. Jumps will be subsituted with the valued :class:`~mcnpy.input_parser.mcnp_input.Jump`.
    When writing cell modifiers (e.g., ``imp``, ``vol``, etc.) recompression will be attempted,
    as there can be a lot of information here.
    The only shortcuts currently recompressed are repeats and jumps though.
@@ -167,25 +167,25 @@ Information Lost
 What a Problem Looks Like
 -------------------------
 
-The :class:`mcnpy.mcnp_problem.MCNP_Problem` is the object that represents an MCNP input file/problem.
+The :class:`~mcnpy.mcnp_problem.MCNP_Problem` is the object that represents an MCNP input file/problem.
 The meat of the Problem is its collections, such as ``cells``, ``surfaces``, and ``materials``. 
-Technically these are :class:`mcnpy.numbered_object_collection.NumberedObjectCollection`, 
+Technically these are :class:`~mcnpy.numbered_object_collection.NumberedObjectCollection`, 
 but it looks like a ``dict``, walks like a ``dict``, and quacks like ``dict``, so most users can just treat it like that.
 
 .. note::
    Though these collections are based on a dict, they don't behave exactly like a dict.
    For a dict the iteration (e.g., ``for key in dict:``) iterates over the keys.
    Also when you check if an item is in a dict (e.g., ``if key in dict:``) it checks if the item is a key.
-   For :class:`mcnpy.numbered_object_collection.NumberedObjectCollection` this is reversed.
+   For :class:`~mcnpy.numbered_object_collection.NumberedObjectCollection` this is reversed.
    When iterating it is done over the items of the collection (e.g., ``for cell in cells:``).
    Similar checking will be done for the object being in the collection (e.g., ``if cell in cells:``).
 
 Collections are Accessible by Number
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-As mentioned before :class:`mcnpy.numbered_object_collection.NumberedObjectCollection` 
+As mentioned before :class:`~mcnpy.numbered_object_collection.NumberedObjectCollection` 
 looks like a ``dict``, walks like a ``dict``, and quacks like ``dict``.
-This mainly means you can quickly get an object (e.g., :class:`mcnpy.cell.Cell`, :class:`mcnpy.surfaces.surface.Surface`, :class:`mcnpy.data_cards.material.Material`) 
+This mainly means you can quickly get an object (e.g., :class:`~mcnpy.cell.Cell`, :class:`~mcnpy.surfaces.surface.Surface`, :class:`~mcnpy.data_cards.material.Material`) 
 by its number.
 
 So say you want to access cell 2 from a problem it is accessible quickly by:
@@ -238,16 +238,16 @@ SURFACE: 6, PZ
 
 There are a number of tools to avoid this though:
 
-#. :func:`mcnpy.numbered_object_collection.NumberedObjectCollection.append_renumber` politely 
+#. :func:`~mcnpy.numbered_object_collection.NumberedObjectCollection.append_renumber` politely 
    renumbers the added object if there is a number conflict.
-#. :func:`mcnpy.numbered_object_collection.NumberedObjectCollection.request_number` will give you the
+#. :func:`~mcnpy.numbered_object_collection.NumberedObjectCollection.request_number` will give you the
    number you requested. If that's not possible it will find a nearby number that works.
    Note you should immediately use this number, and append the object to the Collection, 
    because this number could become stale.
-#. :func:`mcnpy.numbered_object_collection.NumberedObjectCollection.next_number` will find the next 
+#. :func:`~mcnpy.numbered_object_collection.NumberedObjectCollection.next_number` will find the next 
    number available by taking the highest number used and increasing it.
 
-The collections also have a property called :func:`mcnpy.numbered_object_collection.NumberedObjectCollection.numbers`, which lists all numbers that are in use.
+The collections also have a property called :func:`~mcnpy.numbered_object_collection.NumberedObjectCollection.numbers`, which lists all numbers that are in use.
 Note that using this property has some perils that will be covered in the next section.
 
 
@@ -307,8 +307,8 @@ Surfaces
 The most important unsung heroes of an MCNP problem are the surfaces.
 They may be tedious to work with but you can't get anything done without them.
 MCNP supports *alot* of types of surfaces, and all of them are special in their own way.
-You can see all the surface types here: :class:`mcnpy.surfaces.surface_type.SurfaceType`.
-By default all surfaces are an instance of :class:`mcnpy.surfaces.surface.Surface`.
+You can see all the surface types here: :class:`~mcnpy.surfaces.surface_type.SurfaceType`.
+By default all surfaces are an instance of :class:`~mcnpy.surfaces.surface.Surface`.
 They will always have the properties: ``surface_type``, and ``surface_constants``.
 If you need to modify the surface you can do so through the ``surface_constants`` list.
 But for some of our favorite surfaces 
@@ -317,9 +317,9 @@ these will be a special subclass of ``Surface``,
 that will truly understand surface constants for what the mean.
 See :mod:`mcnpy.surfaces` for specific classes, and their documentation.
 
-Two useful examples are the :class:`mcnpy.surfaces.cylinder_on_axis.CylinderOnAxis`, 
+Two useful examples are the :class:`~mcnpy.surfaces.cylinder_on_axis.CylinderOnAxis`, 
 which covers ``CX``, ``CY``, and ``CZ``,
-and the :class:`mcnpy.surfaces.axis_plane.AxisPlane`,
+and the :class:`~mcnpy.surfaces.axis_plane.AxisPlane`,
 which covers ``PX``, ``PY``, ``PZ``.
 The first contains the parameter: ``radius``, 
 and the second one contains the parameters: ``location``. 
@@ -342,7 +342,7 @@ Wow that's rather verbose.
 This was the only way to do this with the API for awhile.
 But MCNPy 0.0.5 fixed this with: you guessed it: generators.
 
-The :class:`mcnpy.surface_collection.Surfaces` collection has a generator for every type of surface in MCNP.
+The :class:`~mcnpy.surface_collection.Surfaces` collection has a generator for every type of surface in MCNP.
 These are very easy to find: they are just the lower case version of the 
 MCNP surface mnemonic. 
 This previous code is much simpler now::
@@ -384,7 +384,7 @@ Universes
 
 MCNPy supports MCNP universes as well.
 ``problem.universes`` will contain all universes in a problem.
-These are stored in :class:`mcnpy.universes.Universes` as :class:`mcnpy.universe.Universe` instances. 
+These are stored in :class:`~mcnpy.universes.Universes` as :class:`~mcnpy.universe.Universe` instances. 
 If a cell is not assigned to any universe it will be assigned to Universe 0, *not None*, while reading in the input file.
 To change what cells are in a universe you can set this at the cell level.
 This is done to prevent a cell from being assigned to multiple universes
@@ -403,7 +403,7 @@ We can confirm this worked with the generator ``universe.cells``:
 Claiming Cells
 ^^^^^^^^^^^^^^
 
-The ``Universe`` class also has the method: :func:`mcnpy.universe.Universe.claim`.
+The ``Universe`` class also has the method: :func:`~mcnpy.universe.Universe.claim`.
 This is a shortcut to do the above code.
 For all cells passed (either as a single ``Cell``, a ``list`` of cells, or a ``Cells`` instance)
 will be removed from their current universe, and moved to this universe.
@@ -434,7 +434,7 @@ Now you can add cells to this universe as you normally would.
 .. note::
    Universe number collisions are not checked for when a universe is created,
    but only when it is added to the problem.
-   Make sure to plan accordingly, and consider using :func:`mcnpy.numbered_object_collection.NumberedObjectCollection.request_number`.
+   Make sure to plan accordingly, and consider using :func:`~mcnpy.numbered_object_collection.NumberedObjectCollection.request_number`.
 
 
 
@@ -442,7 +442,7 @@ Filling Cells
 ^^^^^^^^^^^^^
 
 What's the point of creating a universe if you can't fill a cell with it, and therefore use it?
-Filling is handled by the :class:`mcnpy.data_cards.fill.Fill` object in ``cell.fill``.
+Filling is handled by the :class:`~mcnpy.data_cards.fill.Fill` object in ``cell.fill``.
 
 To fill a cell with a specific universe you can just run:
 
@@ -475,9 +475,9 @@ References
 
 See the following cell properties for more details:
 
-* :func:`mcnpy.cell.Cell.universe`
-* :func:`mcnpy.cell.Cell.lattice`
-* :func:`mcnpy.cell.Cell.fill`
+* :func:`~mcnpy.cell.Cell.universe`
+* :func:`~mcnpy.cell.Cell.lattice`
+* :func:`~mcnpy.cell.Cell.fill`
 
 Remember: make objects, not regexes!
 ====================================
