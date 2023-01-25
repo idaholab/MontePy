@@ -90,5 +90,5 @@ pages:
       - public
   only:
     - master
+    - main
     - doc
-    - blackTesting
