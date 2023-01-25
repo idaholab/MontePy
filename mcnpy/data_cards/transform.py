@@ -103,7 +103,13 @@ class Transform(data_card.DataCardAbstract, Numbered_MCNP_Card):
 
     @property
     def hidden_transform(self):
-        """ """
+        """
+        Whether or not this transform is "hidden" i.e., has no number.
+
+        If True this transform was created from a fill card, and has no number.
+
+        :rtype: bool
+        """
         return self._pass_through
 
     @property
