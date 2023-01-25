@@ -26,7 +26,6 @@ class CellModifierCard(DataCardAbstract):
     def __init__(
         self, input_card=None, comments=None, in_cell_block=False, key=None, value=None
     ):
-        """ """
         if key and value:
             input_card = Card([f"{key} {value}"], BlockType.DATA)
         super().__init__(input_card, comments)
