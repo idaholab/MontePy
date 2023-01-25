@@ -5,6 +5,9 @@ before_script:
   - export PATH="~/.local/bin/:/data/gitlab-runner/.conda/envs/experiment_analysis_mcnpy/bin:$PATH"
   - conda activate experiment_analysis_mcnpy
 
+after_script:
+  - export PATH=$(echo "$PATH" | sed -e 's/:\/data\/gitlab-runner\/.conda\/envs\/experiment_analysis_mcnpy\/$//')
+  - conda deactivate
 
 install:
   stage: build
