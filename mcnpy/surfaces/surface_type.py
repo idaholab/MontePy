@@ -1,53 +1,71 @@
 from enum import unique, Enum
 
 
-@unique
+# @unique
 class SurfaceType(str, Enum):
+    """
+    An enumeration of the surface types allowed.
+
+    :param value: The shorthand used by MCNP
+    :type value: str
+    :param description: The human readable description of the surface.
+    :type description: str
+    """
+
+    def __new__(cls, value, description):
+        obj = str.__new__(cls, value)
+        obj._value_ = value
+        obj.description = description
+        return obj
+
     # planes
-    P = "P"
-    PX = "PX"
-    PY = "PY"
-    PZ = "PZ"
+    P = ("P", "general plane")
+    PX = ("PX", "plane normal to x-axis")
+    PY = ("PY", "plane normal to y-axis")
+    PZ = ("PZ", "plane normal to z-axis")
     # spheres
-    SO = "SO"
-    S = "S"
-    SX = "SX"
-    SY = "SY"
-    SZ = "SZ"
+    SO = ("SO", "sphere centered at origin")
+    S = ("S", "general sphere")
+    SX = ("SX", "sphere centered on x-axis")
+    SY = ("SY", "sphere centered on y-axis")
+    SZ = ("SZ", "sphere centered on z-axis")
     # cylinder
-    C_X = "C/X"
-    C_Y = "C/Y"
-    C_Z = "C/Z"
-    CX = "CX"
-    CY = "CY"
-    CZ = "CZ"
+    C_X = ("C/X", "cylinder parallel to x-axis")
+    C_Y = ("C/Y", "cylinder parallel to y-axis")
+    C_Z = ("C/Z", "cylinder parallel to z-axis")
+    CX = ("CX", "cylinder on x-axis")
+    CY = ("CY", "cylinder on y-axis")
+    CZ = ("CZ", "cylinder on z-axis")
     # cone
-    K_X = "K/X"
-    K_Y = "K/Y"
-    K_Z = "K/Z"
-    KX = "KX"
-    KY = "KY"
-    KZ = "KZ"
+    K_X = ("K/X", "cone parallel to x-axis")
+    K_Y = ("K/Y", "cone parallel to y-axis")
+    K_Z = ("K/Z", "cone parallel to z-axis")
+    KX = ("KX", "cone on x-axis")
+    KY = ("KY", "cone on y-axis")
+    KZ = ("KZ", "cone on z-axis")
     # generalized 3D conics
-    SQ = "SQ"
-    GQ = "GQ"
+    SQ = ("SQ", "ellipsoid, hyperboloid, or paraboloid parallel to an axis")
+    GQ = (
+        "GQ",
+        "cylinder, cone, ellipsoid hyperboloid, or parabaloid not parallel to an axis",
+    )
     # Torus
-    TX = "TX"
-    TY = "TY"
-    TZ = "TZ"
+    TX = ("TX", "elliptical torus parallel to x-axis")
+    TY = ("TY", "elliptical torus parallel to y-axis")
+    TZ = ("TZ", "elliptical torus parallel to z-axis")
     # by points
-    X = "X"
-    Y = "Y"
-    Z = "Z"
+    X = ("X", "axisymmetric surface defined by points")
+    Y = ("Y", "axisymmetric surface defined by points")
+    Z = ("Z", "axisymmetric surface defined by points")
     # macrobodies
-    BOX = "BOX"
-    RPP = "RPP"
-    SPH = "SPH"
-    RCC = "RCC"
-    RHP = "RHP"
-    HEX = "HEX"
-    REC = "REC"
-    TRC = "TRC"
-    ELL = "ELL"
-    WED = "WED"
-    ARB = "ARB"
+    BOX = ("BOX", "orthogonal box")
+    RPP = ("RPP", "rectangular parallelepiped")
+    SPH = ("SPH", "sphere")
+    RCC = ("RCC", "right circular cylinder")
+    RHP = ("RHP", "right hexagonal prism")
+    HEX = ("HEX", "right hexagonal prism")
+    REC = ("REC", "right elliptical cylinder")
+    TRC = ("TRC", "truncated right-angle cone")
+    ELL = ("ELL", "ellipsoid")
+    WED = ("WED", "wedge")
+    ARB = ("ARB", "arbitrary polyhedron")

@@ -1,10 +1,16 @@
 from .surface_type import SurfaceType
 from .surface import Surface
+from mcnpy.errors import *
 
 
 class CylinderParAxis(Surface):
     """
     Represents surfaces: C/X, C/Y, C/Z
+
+    :param input_card: The Card object representing the input
+    :type input_card: Card
+    :param comments: The Comments that proceeded this card or were inside of this if any
+    :type Comments: list
     """
 
     COORDINATE_PAIRS = {
@@ -12,21 +18,27 @@ class CylinderParAxis(Surface):
         SurfaceType.C_Y: {0: "x", 1: "z"},
         SurfaceType.C_Z: {0: "x", 1: "y"},
     }
+    """Which coordinate is what value for each cylinder type.
+    """
 
-    def __init__(self, input_card, comment=None):
-        """
-        :param input_card: The Card object representing the input
-        :type input_card: Card
-        :param comment: the Comment object representing the
-                        preceding comment block.
-        :type comment: Comment
-        """
-        super().__init__(input_card, comment)
+    def __init__(self, input_card=None, comments=None):
+        self._coordinates = None
+        self._radius = None
+        super().__init__(input_card, comments)
         ST = SurfaceType
-        assert self.surface_type in [ST.C_X, ST.C_Y, ST.C_Z]
-        assert len(self.surface_constants) == 3
-        self._coordinates = self.surface_constants[0:2]
-        self._radius = self.surface_constants[2]
+        if input_card:
+            if self.surface_type not in [ST.C_X, ST.C_Y, ST.C_Z]:
+                raise ValueError(
+                    "CylinderParAxis must be a surface of types: C/X, C/Y, C/Z"
+                )
+            if len(self.surface_constants) != 3:
+                raise ValueError(
+                    "CylinderParAxis must have exactly 3 surface_constants"
+                )
+            self._coordinates = self.surface_constants[0:2]
+            self._radius = self.surface_constants[2]
+        else:
+            self._surface_constants = [None] * 3
 
     @property
     def coordinates(self):
@@ -39,11 +51,10 @@ class CylinderParAxis(Surface):
 
     @coordinates.setter
     def coordinates(self, coordinates):
-        """
-        :param coordinates: the coordinates, must be 2 long.
-        """
-        assert isinstance(coordinates, list)
-        assert len(coordinates) == 2
+        if not isinstance(coordinates, list):
+            raise TypeError("coordinates must be a list")
+        if len(coordinates) != 2:
+            raise ValueError("coordinates must have exactly two elements")
         self._mutated = True
         self._coordinates = coordinates
         self._surface_constants[0:2] = coordinates
@@ -59,11 +70,20 @@ class CylinderParAxis(Surface):
 
     @radius.setter
     def radius(self, radius):
-        assert isinstance(radius, float)
-        assert radius > 0
+        if not isinstance(radius, float):
+            raise TypeError("radius must be a float")
+        if radius <= 0.0:
+            raise ValueError("radius must be greater than 0")
         self._mutated = True
         self._radius = radius
         self._surface_constants[2] = radius
+
+    def validate(self):
+        super().validate()
+        if not self.radius:
+            raise IllegalState(f"Surface: {self.number} does not have a radius set.")
+        if not self.coordinates:
+            raise IllegalState(f"Surface: {self.number} does not have coordinates set.")
 
     def find_duplicate_surfaces(self, surfaces, tolerance):
         ret = []

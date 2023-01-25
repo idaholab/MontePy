@@ -1,4 +1,13 @@
-class MalformedInputError(Exception):
+class LineOverRunWarning(UserWarning):
+    """
+    Raised when non-comment inputs exceed the allowed line length in an input.
+    """
+
+    def __init__(self, message):
+        self.message = message
+
+
+class MalformedInputError(ValueError):
     """
     Raised when there is an error parsing the MCNP input
     """
@@ -37,9 +46,39 @@ class BrokenObjectLinkError(MalformedInputError):
         )
 
 
+class ParticleTypeNotInProblem(ValueError):
+    """
+    Raised when data are set for a particle type not in
+    the problem's mode.
+    """
+
+    def __init__(self, message):
+        super().__init__(message)
+
+
 class UnsupportedFeature(NotImplementedError):
     """
     Raised when MCNP syntax that is not supported is found
+    """
+
+    def __init__(self, message):
+        self.message = message
+        super().__init__(self.message)
+
+
+class UnknownElement(ValueError):
+    """
+    Raised when an undefined element is used.
+    """
+
+    def __init__(self, missing_val):
+        self.message = f"An element identified by: {missing_val} is unknown to MCNPy."
+        super().__init__(self.message)
+
+
+class IllegalState(ValueError):
+    """
+    Raised when an object can't be printed out due to an illegal state.
     """
 
     def __init__(self, message):

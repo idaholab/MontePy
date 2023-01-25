@@ -3,21 +3,22 @@ from mcnpy.surfaces.surface_type import SurfaceType
 from mcnpy.numbered_object_collection import NumberedObjectCollection
 
 
-class SurfacesGenerator:
-    """A class for a Descriptor for the Surfaces collection.
+def __create_surface_generator(surf_type):
+    """A function for a Descriptor for the Surfaces collection.
 
     This is meant to make it possible to get a generator at
     surfaces.pz
+
+    This works by creating a closure that is a generator.
+    This closure is then passed to ``property()`` to create a property
     """
 
-    def __set_name__(self, owner, name):
-        self._surfs = owner
-        self.surf_type = name
-
-    def __get__(self, obj, objtype=None):
+    def closure(obj):
         for surf in obj.objects:
-            if surf.surface_type.name.lower() == self.surf_type:
+            if surf.surface_type == surf_type:
                 yield surf
+
+    return closure
 
 
 class Surfaces(NumberedObjectCollection):
@@ -29,17 +30,24 @@ class Surfaces(NumberedObjectCollection):
 
     This example will shift all PZ surfaces up by 10 cm.
 
-    >>> for surface in problem.surfaces.pz:
-    >>>    surface.location += 10
+    .. code-block:: python
 
+        for surface in problem.surfaces.pz:
+            surface.location += 10
+
+    :param surfaces: the list of surfaces to start with if needed
+    :type surfaces: list
     """
-    pz = SurfacesGenerator()
 
-    def __init__(self, surfaces=None):
-        super().__init__(Surface, surfaces)
+    def __init__(self, surfaces=None, problem=None):
+        super().__init__(Surface, surfaces, problem)
 
 
-for surf_type in SurfaceType:
-    generator = SurfacesGenerator()
-    generator.__set_name__(Surfaces, surf_type.name.lower())
-    setattr(Surfaces, surf_type.name.lower(), generator)
+def __setup_surfaces_generators():
+    for surf_type in SurfaceType:
+        doc = f"Generator for getting all surfaces of type *{surf_type.description}* or ``{surf_type.value}``"
+        getter = property(__create_surface_generator(surf_type), doc=doc)
+        setattr(Surfaces, surf_type.name.lower(), getter)
+
+
+__setup_surfaces_generators()

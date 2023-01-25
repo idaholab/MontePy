@@ -3,18 +3,19 @@ class MaterialComponent:
     A class to represent a single component in a material.
 
     For example: this may be H-1 in water: like 1001.80c -0.6667
+
+    :param isotope: the Isotope object representing this isotope
+    :type isotope: Isotope
+    :param fraction: the fraction of this component in the material
+    :type fraction: float
     """
 
     def __init__(self, isotope, fraction):
-        """
-        :param isotope: the Isotope object representing this isotope
-        :type isotope: Isotope
-        :param fraction: the fraction of this component in the material
-        :type fraction: float
-        """
         self._isotope = isotope
-        assert isinstance(fraction, float)
-        assert fraction > 0
+        if not isinstance(fraction, float):
+            raise TypeError("fraction must be a float")
+        if fraction <= 0:
+            raise ValueError("fraction must be > 0.0")
         self._fraction = fraction
 
     @property

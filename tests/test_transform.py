@@ -11,16 +11,24 @@ from mcnpy.input_parser.mcnp_input import Card
 class testTransformClass(TestCase):
     def test_transform_init(self):
         # test wrong ID finder
-        with self.assertRaises(AssertionError):
+        with self.assertRaises(MalformedInputError):
             card = Card(["M20"], BlockType.DATA)
             Transform(card)
         # test that the minimum word requirement is set
-        with self.assertRaises(AssertionError):
+        with self.assertRaises(MalformedInputError):
             card = Card(["TR5"], BlockType.DATA)
             Transform(card)
         # test that the transform is a valid number
         with self.assertRaises(MalformedInputError):
             card = Card(["TR1foo 0.0 0.0 0.0"], BlockType.DATA)
+            Transform(card)
+        # test that the transform has a number
+        with self.assertRaises(MalformedInputError):
+            card = Card(["*TR 0.0 0.0 0.0"], BlockType.DATA)
+            Transform(card)
+        # test that the transform doesn't have a particle
+        with self.assertRaises(MalformedInputError):
+            card = Card(["TR5:n,p 0.0 0.0 0.0"], BlockType.DATA)
             Transform(card)
 
         # test vanilla case
@@ -67,13 +75,28 @@ class testTransformClass(TestCase):
         with self.assertRaises(MalformedInputError):
             Transform(card)
 
+        # test blank init
+        transform = Transform()
+        self.assertEqual(transform.number, -1)
+        self.assertEqual(len(transform.displacement_vector), 0)
+        self.assertEqual(len(transform.rotation_matrix), 0)
+        self.assertTrue(not transform.is_in_degrees)
+        self.assertTrue(transform.is_main_to_aux)
+
+    def test_validate(self):
+        transform = Transform()
+        with self.assertRaises(mcnpy.errors.IllegalState):
+            transform.validate()
+        with self.assertRaises(mcnpy.errors.IllegalState):
+            transform.format_for_mcnp_input((6, 2, 0))
+
     def test_transform_degrees_setter(self):
         in_str = "*tr5 " + "1.0 " * 3 + "0.0 " * 9 + " -1"
         card = Card([in_str], BlockType.DATA)
         transform = Transform(card)
         transform.is_in_degrees = False
         self.assertFalse(transform.is_in_degrees)
-        with self.assertRaises(AssertionError):
+        with self.assertRaises(TypeError):
             transform.is_in_degrees = 1
 
     def test_transform_number_setter(self):
@@ -82,8 +105,10 @@ class testTransformClass(TestCase):
         transform = Transform(card)
         transform.number = 20
         self.assertEqual(transform.number, 20)
-        with self.assertRaises(AssertionError):
+        with self.assertRaises(TypeError):
             transform.number = "hi"
+        with self.assertRaises(ValueError):
+            transform.number = -5
 
     def test_transform_displace_setter(self):
         in_str = "*tr5 " + "1.0 " * 3 + "0.0 " * 9 + " -1"
@@ -92,10 +117,12 @@ class testTransformClass(TestCase):
         transform.displacement_vector = np.array([1.0, 1.0, 1.0])
         for component in transform.displacement_vector:
             self.assertEqual(component, 1.0)
-        with self.assertRaises(AssertionError):
+        with self.assertRaises(TypeError):
             transform.displacement_vector = [1, 2]
-        with self.assertRaises(AssertionError):
+        with self.assertRaises(ValueError):
             transform.displacement_vector = np.array([1.0])
+        with self.assertRaises(ValueError):
+            transform.displacement_vector = np.array([1.0] * 10)
 
     def test_tranform_rotation_setter(self):
         in_str = "*tr5 " + "1.0 " * 3 + "0.0 " * 9 + " -1"
@@ -104,10 +131,12 @@ class testTransformClass(TestCase):
         transform.rotation_matrix = np.array([1.0] * 5)
         for component in transform.rotation_matrix:
             self.assertEqual(component, 1.0)
-        with self.assertRaises(AssertionError):
+        with self.assertRaises(TypeError):
             transform.rotation_matrix = [1, 2]
-        with self.assertRaises(AssertionError):
+        with self.assertRaises(ValueError):
             transform.rotation_matrix = np.array([1.0])
+        with self.assertRaises(ValueError):
+            transform.displacement_vector = np.array([1.0] * 10)
 
     def test_is_main_aux_setter(self):
         in_str = "*tr5 " + "1.0 " * 3 + "0.0 " * 9
@@ -115,7 +144,7 @@ class testTransformClass(TestCase):
         transform = Transform(card)
         transform.is_main_to_aux = False
         self.assertFalse(transform.is_main_to_aux)
-        with self.assertRaises(AssertionError):
+        with self.assertRaises(TypeError):
             transform.is_main_to_aux = "hi"
 
     def test_transform_str(self):
@@ -127,7 +156,8 @@ DISPLACE: [0. 0. 0.]
 ROTATE: [0. 0. 0. 0. 0. 0. 0. 0. 0.]
 MAIN_TO_AUX: False
 """
-        self.assertEqual(answer, str(transform))
+        self.assertEqual(answer, repr(transform))
+        self.assertEqual("TRANSFORM: 5", str(transform))
 
     def test_transform_print_mcnp(self):
         in_str = "tr5 " + "0.0 " * 3 + "0.0 " * 9 + " -1"

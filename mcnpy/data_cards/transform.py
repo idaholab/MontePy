@@ -1,18 +1,25 @@
 from mcnpy import mcnp_card
 from mcnpy.data_cards import data_card
 from mcnpy.errors import *
+from mcnpy.numbered_mcnp_card import Numbered_MCNP_Card
 from mcnpy.utilities import *
 import numpy as np
 import re
 
 
-class Transform(data_card.DataCard):
+class Transform(data_card.DataCardAbstract, Numbered_MCNP_Card):
     """
     Card to represent a transform card (TR)
+
+    :param input_card: The Card syntax object this will wrap and parse.
+    :type input_card: Card
+    :param comments: The Comments that proceeded this card or were inside of this if any
+    :type Comments: list
     """
 
-    def __init__(self, input_card=None, comment=None):
-        super().__init__(input_card, comment)
+    def __init__(self, input_card=None, comments=None, pass_through=False):
+        super().__init__(input_card, comments)
+        self._pass_through = pass_through
         if input_card is None:
             self._transform_number = -1
             self._old_transform_number = -1
@@ -23,22 +30,18 @@ class Transform(data_card.DataCard):
         else:
             words = self.words
             i = 0
-            assert re.match("\*?tr\d+", words[i].lower())
-            assert len(words) >= 3
-            try:
-                if "*" in words[i]:
-                    self._is_in_degrees = True
-                else:
-                    self._is_in_degrees = False
-                num = words[i].lower().strip("*tr")
-                self._transform_number = int(num)
-                self._old_transform_number = self._transform_number
-                i += 1
-
-            except ValueError:
+            if len(words) < 3:
                 raise MalformedInputError(
-                    input_card, f"{words[0]} can't be parsed as transform number"
+                    input_card, f"Not enough entries were provided"
                 )
+            if self.prefix_modifier and "*" in self.prefix_modifier:
+                self._is_in_degrees = True
+            else:
+                self._is_in_degrees = False
+            self._transform_number = self._input_number
+            self._old_transform_number = self._transform_number
+            i += 1
+
             # parse displacement
             try:
                 values = []
@@ -87,6 +90,29 @@ class Transform(data_card.DataCard):
                     pass
 
     @property
+    def class_prefix(self):
+        return "tr"
+
+    @property
+    def has_number(self):
+        return True
+
+    @property
+    def has_classifier(self):
+        return 0
+
+    @property
+    def hidden_transform(self):
+        """
+        Whether or not this transform is "hidden" i.e., has no number.
+
+        If True this transform was created from a fill card, and has no number.
+
+        :rtype: bool
+        """
+        return self._pass_through
+
+    @property
     def is_in_degrees(self):
         """
         The rotation matrix is in degrees and not in cosines
@@ -100,7 +126,8 @@ class Transform(data_card.DataCard):
         """
         Does not currently correct the rotation matrix for you
         """
-        assert isinstance(in_deg, bool)
+        if not isinstance(in_deg, bool):
+            raise TypeError("in_deg must be a bool")
         self._mutated = True
         self._is_in_degrees = in_deg
 
@@ -110,12 +137,16 @@ class Transform(data_card.DataCard):
         The transform number for this transform
 
         :rtype: int
+
         """
         return self._transform_number
 
     @number.setter
     def number(self, num):
-        assert isinstance(num, int)
+        if not isinstance(num, int):
+            raise TypeError("number must be an int")
+        if num <= 0:
+            raise ValueError("number must be > 0")
         self._mutated = True
         self._transform_number = num
         self._words = [f"TR{num}"]
@@ -125,6 +156,8 @@ class Transform(data_card.DataCard):
     def old_number(self):
         """
         The transform number used in the original file
+
+        :rtype: int
         """
         return self._old_transform_number
 
@@ -139,8 +172,10 @@ class Transform(data_card.DataCard):
 
     @displacement_vector.setter
     def displacement_vector(self, vector):
-        assert isinstance(vector, np.ndarray)
-        assert len(vector) == 3
+        if not isinstance(vector, np.ndarray):
+            raise TypeError("displacement_vector must be a numpy array")
+        if len(vector) != 3:
+            raise ValueError("displacement_vector must have three components")
         self._mutated = True
         self._displacement_vector = vector
 
@@ -155,8 +190,10 @@ class Transform(data_card.DataCard):
 
     @rotation_matrix.setter
     def rotation_matrix(self, matrix):
-        assert isinstance(matrix, np.ndarray)
-        assert len(matrix) >= 5
+        if not isinstance(matrix, np.ndarray):
+            raise TypeError("rotation_matrix must be a numpy array")
+        if len(matrix) < 5 or len(matrix) > 9:
+            raise ValueError("rotation_matrix must have between 5 and 9 components.")
         self._mutated = True
         self._rotation_matrix = matrix
 
@@ -172,38 +209,71 @@ class Transform(data_card.DataCard):
 
     @is_main_to_aux.setter
     def is_main_to_aux(self, flag):
-        assert isinstance(flag, bool)
+        if not isinstance(flag, bool):
+            raise TypeError("is_main_to_aux must be a bool")
         self._mutated = True
         self._is_main_to_aux = flag
 
     def __str__(self):
+        return f"TRANSFORM: {self.number}"
+
+    def __repr__(self):
         ret = f"TRANSFORM: {self.number}\n"
         ret += f"DISPLACE: {self.displacement_vector}\n"
         ret += f"ROTATE: {self.rotation_matrix}\n"
         ret += f"MAIN_TO_AUX: {self.is_main_to_aux}\n"
         return ret
 
-    def format_for_mcnp_input(self, mcnp_version):
-        ret = mcnp_card.MCNP_Card.format_for_mcnp_input(self, mcnp_version)
-        if self.mutated:
-            buff_list = []
+    def _generate_inputs(self, mcnp_version, first_line=True, is_pass_through=False):
+        """
+        Generates appropriately formatted input for this transform.
+
+        :param mcnp_version: see format_for_mcnp_input
+        :type mcnp_version: tuple
+        :param first_line: If true this is the first line of input
+        :type first_line: bool
+        :param is_pass_through: If True the transform number will be supressed
+        :type is_pass_through: bool
+        :returns: a tuple of (bool: true if this needs an *, list of str of the input)
+        :rtype: tuple
+        """
+        ret = []
+        in_degs = False
+        buff_list = []
+        if not is_pass_through:
             if self.is_in_degrees:
                 buff_list.append(f"*TR{self.number}")
             else:
                 buff_list.append(f"TR{self.number}")
-            for value in self.displacement_vector:
-                buff_list.append(f"{value}")
+        else:
+            in_degs = self.is_in_degrees
+        for value in self.displacement_vector:
+            buff_list.append(f"{value}")
 
-            ret += Transform.wrap_words_for_mcnp(buff_list, mcnp_version, True)
-            buff_list = []
-            i = 0
-            for i, value in enumerate(self.rotation_matrix):
-                buff_list.append(f"{value}")
-                if (i + 1) % 3 == 0:
-                    ret += Transform.wrap_words_for_mcnp(buff_list, mcnp_version, False)
-                    buff_list = []
-            if i == 8 and not self.is_main_to_aux:
-                ret += Transform.wrap_string_for_mcnp("-1", mcnp_version, False)
+        ret += Transform.wrap_words_for_mcnp(buff_list, mcnp_version, first_line)
+        buff_list = []
+        i = 0
+        for i, value in enumerate(self.rotation_matrix):
+            buff_list.append(f"{value}")
+            if (i + 1) % 3 == 0:
+                ret += Transform.wrap_words_for_mcnp(buff_list, mcnp_version, False)
+                buff_list = []
+        if i == 8 and not self.is_main_to_aux:
+            ret += Transform.wrap_string_for_mcnp("-1", mcnp_version, False)
+        return (in_degs, ret)
+
+    def validate(self):
+        if self.displacement_vector is None or len(self.displacement_vector) != 3:
+            raise IllegalState(
+                f"Transform: {self.number} does not have a valid displacement Vector"
+            )
+
+    def format_for_mcnp_input(self, mcnp_version):
+        self.validate()
+        ret = mcnp_card.MCNP_Card.format_for_mcnp_input(self, mcnp_version)
+        if self.mutated:
+            _, lines = self._generate_inputs(mcnp_version, True, False)
+            ret.extend(lines)
         else:
             ret = self._format_for_mcnp_unmutated(mcnp_version)
         return ret

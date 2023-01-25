@@ -79,13 +79,59 @@ class testSurfaces(TestCase):
         with self.assertRaises(MalformedInputError):
             Surface(card)
 
+    def test_validator(self):
+        surf = Surface()
+        with self.assertRaises(mcnpy.errors.IllegalState):
+            surf.validate()
+        with self.assertRaises(mcnpy.errors.IllegalState):
+            surf.format_for_mcnp_input((6, 2, 0))
+        # cylinder on axis
+        surf = CylinderOnAxis()
+        with self.assertRaises(mcnpy.errors.IllegalState):
+            surf.validate()
+        with self.assertRaises(mcnpy.errors.IllegalState):
+            surf.format_for_mcnp_input((6, 2, 0))
+        surf._surface_type = SurfaceType.CX
+        with self.assertRaises(mcnpy.errors.IllegalState):
+            surf.validate()
+        # cylinder par axis
+        surf = CylinderParAxis()
+        with self.assertRaises(mcnpy.errors.IllegalState):
+            surf.validate()
+        with self.assertRaises(mcnpy.errors.IllegalState):
+            surf.format_for_mcnp_input((6, 2, 0))
+        surf._surface_type = SurfaceType.C_X
+        with self.assertRaises(mcnpy.errors.IllegalState):
+            surf.validate()
+        surf.radius = 5.0
+        with self.assertRaises(mcnpy.errors.IllegalState):
+            surf.validate()
+        # axis plane
+        surf = AxisPlane()
+        with self.assertRaises(mcnpy.errors.IllegalState):
+            surf.validate()
+        with self.assertRaises(mcnpy.errors.IllegalState):
+            surf.format_for_mcnp_input((6, 2, 0))
+        surf._surface_type = SurfaceType.PX
+        with self.assertRaises(mcnpy.errors.IllegalState):
+            surf.validate()
+        # general plane
+        surf = GeneralPlane()
+        with self.assertRaises(mcnpy.errors.IllegalState):
+            surf.validate()
+        with self.assertRaises(mcnpy.errors.IllegalState):
+            surf.format_for_mcnp_input((6, 2, 0))
+        surf._surface_type = SurfaceType.P
+        with self.assertRaises(mcnpy.errors.IllegalState):
+            surf.validate()
+
     def test_surface_is_reflecting_setter(self):
         in_str = "1 PZ 0.0"
         card = Card([in_str], BlockType.SURFACE)
         surf = Surface(card)
         surf.is_reflecting = True
         self.assertTrue(surf.is_reflecting)
-        with self.assertRaises(AssertionError):
+        with self.assertRaises(TypeError):
             surf.is_reflecting = 1
 
     def test_surface_is_white_bound_setter(self):
@@ -94,7 +140,7 @@ class testSurfaces(TestCase):
         surf = Surface(card)
         surf.is_white_boundary = True
         self.assertTrue(surf.is_white_boundary)
-        with self.assertRaises(AssertionError):
+        with self.assertRaises(TypeError):
             surf.is_white_boundary = 1
 
     def test_surface_constants_setter(self):
@@ -103,8 +149,10 @@ class testSurfaces(TestCase):
         surf = Surface(card)
         surf.surface_constants = [10.0]
         self.assertEqual(surf.surface_constants[0], 10.0)
-        with self.assertRaises(AssertionError):
+        with self.assertRaises(TypeError):
             surf.surface_constants = "foo"
+        with self.assertRaises(TypeError):
+            surf.surface_constants = [1, "foo"]
 
     def test_surface_number_setter(self):
         in_str = "1 PZ 0.0"
@@ -112,9 +160,9 @@ class testSurfaces(TestCase):
         surf = Surface(card)
         surf.number = 20
         self.assertEqual(surf.number, 20)
-        with self.assertRaises(AssertionError):
+        with self.assertRaises(TypeError):
             surf.number = "foo"
-        with self.assertRaises(AssertionError):
+        with self.assertRaises(ValueError):
             surf.number = -5
 
     def test_surface_ordering(self):
@@ -153,6 +201,10 @@ class testSurfaces(TestCase):
         card = Card([in_str], BlockType.SURFACE)
         surf = Surface(card)
         self.assertEqual(str(surf), "SURFACE: 1, PZ")
+        self.assertEqual(
+            repr(surf),
+            "SURFACE: 1, PZ, periodic surface: None, transform: None, constants: [0.0]",
+        )
 
     def test_surface_builder(self):
         testers = [
@@ -172,13 +224,45 @@ class testSurfaces(TestCase):
             card = Card([in_str], BlockType.SURFACE)
             self.assertIsInstance(surface_builder(card), surf_plane)
 
+    def test_axis_plane_init(self):
+        bad_inputs = ["1 P 0.0", "1 PZ 0.0 10.0"]
+        for bad_input in bad_inputs:
+            with self.assertRaises(ValueError):
+                surf = mcnpy.surfaces.axis_plane.AxisPlane(
+                    Card([bad_input], BlockType.SURFACE)
+                )
+
+    def test_cylinder_on_axis_init(self):
+        bad_inputs = ["1 P 0.0", "1 CZ 0.0 10.0"]
+        for bad_input in bad_inputs:
+            with self.assertRaises(ValueError):
+                surf = mcnpy.surfaces.cylinder_on_axis.CylinderOnAxis(
+                    Card([bad_input], BlockType.SURFACE)
+                )
+
+    def test_cylinder_par_axis_init(self):
+        bad_inputs = ["1 P 0.0", "1 C/Z 0.0"]
+        for bad_input in bad_inputs:
+            with self.assertRaises(ValueError):
+                surf = mcnpy.surfaces.cylinder_par_axis.CylinderParAxis(
+                    Card([bad_input], BlockType.SURFACE)
+                )
+
+    def test_gen_plane_init(self):
+        bad_inputs = ["1 PZ 0.0", "1 P 0.0"]
+        for bad_input in bad_inputs:
+            with self.assertRaises(ValueError):
+                surf = mcnpy.surfaces.general_plane.GeneralPlane(
+                    Card([bad_input], BlockType.SURFACE)
+                )
+
     def test_axis_plane_location_setter(self):
         in_str = "1 PZ 0.0"
         surf = surface_builder(Card([in_str], BlockType.SURFACE))
         self.assertEqual(surf.location, 0.0)
         surf.location = 10.0
         self.assertEqual(surf.location, 10.0)
-        with self.assertRaises(AssertionError):
+        with self.assertRaises(TypeError):
             surf.location = "hi"
 
     def test_cylinder_axis_radius_setter(self):
@@ -187,8 +271,10 @@ class testSurfaces(TestCase):
         self.assertEqual(surf.radius, 5.0)
         surf.radius = 3.0
         self.assertEqual(surf.radius, 3.0)
-        with self.assertRaises(AssertionError):
+        with self.assertRaises(TypeError):
             surf.radius = "foo"
+        with self.assertRaises(ValueError):
+            surf.radius = -5.0
 
     def test_cylinder_radius_setter(self):
         in_str = "1 c/Z 3.0 4.0 5"
@@ -196,8 +282,10 @@ class testSurfaces(TestCase):
         self.assertEqual(surf.radius, 5.0)
         surf.radius = 3.0
         self.assertEqual(surf.radius, 3.0)
-        with self.assertRaises(AssertionError):
+        with self.assertRaises(TypeError):
             surf.radius = "foo"
+        with self.assertRaises(ValueError):
+            surf.radius = -5.0
 
     def test_cylinder_location_setter(self):
         in_str = "1 c/Z 3.0 4.0 5"
@@ -206,8 +294,8 @@ class testSurfaces(TestCase):
         surf.coordinates = [1, 2]
         self.assertEqual(surf.coordinates, [1, 2])
         # test wrong type
-        with self.assertRaises(AssertionError):
+        with self.assertRaises(TypeError):
             surf.coordinates = "fo"
         # test length issues
-        with self.assertRaises(AssertionError):
+        with self.assertRaises(ValueError):
             surf.coordinates = [3, 4, 5]

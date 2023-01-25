@@ -10,7 +10,8 @@ c
      imp:n,p=1 U=350 trcl=5
 2 2 8
       -1005
-     imp:n,p=1
+     imp:n=1
+     imp:p=0.5
 3 3 -1
       1000 1005 -1010
      imp:n,p=1
@@ -19,7 +20,7 @@ c
      imp:n,p=0
 5 0 
       #99
-      imp:n,p=3 fill=5 1 0 0 
+      imp:n,p=3 fill=350 (1 0 0 )
 c foo end comment
 
 C surfaces
@@ -46,5 +47,6 @@ ksrc 0 0 0
 kcode 100000 1.000 50 1050
 phys:p j 1 2j 1
 mode n p
+vol NO 2J 1 1.5 J
 
 

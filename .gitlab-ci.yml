@@ -2,19 +2,31 @@ image: python:latest
 
 before_script:
   - python --version
-  - export PATH="~/.local/bin:$PATH"
+  - export PATH="~/.local/bin/:/data/gitlab-runner/.conda/envs/experiment_analysis_mcnpy/bin:$PATH"
+  - echo $PATH
+  - conda activate experiment_analysis_mcnpy
 
+after_script:
+  - export PATH=$(echo "$PATH" | sed -e 's/:\/data\/gitlab-runner\/.conda\/envs\/experiment_analysis_mcnpy\/$//')
+  - echo $PATH
+  - conda deactivate
 
 install:
   stage: build
   script:
+    - echo "setting up conda"
+    - conda create -n experiment_analysis_mcnpy python
     - echo "Installing dependencies"
+    - which python
+    - which pip
     - pip install -r requirements/dev.txt
     - python setup.py sdist bdist_wheel
-    - pip install dist/*.whl --force-reinstall
+    - pip install --user dist/*.whl --force-reinstall
       # test the extras installation
     - python setup.py install easy_install --user mcnpy[test]
     - python setup.py install easy_install --user mcnpy[doc]
+    - pip freeze
+
 
 
 unit_test:
@@ -22,6 +34,8 @@ unit_test:
   coverage: '/TOTAL.+ ([0-9\.]{1,5}%)/'
   script:
     - echo "Executing unit tests"
+    - which python
+    - pip freeze
     - coverage run --source mcnpy -m pytest --junitxml=test_report.xml
     - coverage report -m --precision=2
     - coverage xml
@@ -31,6 +45,27 @@ unit_test:
       coverage_report:
          coverage_format: cobertura
          path: coverage.xml
+
+doc_test:
+   stage: test
+   script:
+      - if [[ -d doc/source/api ]]; then rm -r doc/source/api ; fi; 
+      - echo "Executing Sphinx build to detect syntax errors"
+      - sphinx-build doc/source/ doc/build/ -W --keep-going -E
+      - sphinx-build -b html doc/source/ doc/build/html
+      - mv doc/build/html html
+   artifacts:
+     expose_as: 'Updated Documentation'
+     paths: 
+       - html
+     expire_in: 1 day
+
+format_test:
+  stage: test
+  script: 
+    - echo "Testing if anything is unformatted"
+    - echo "If error occurs changes were not formatted using black"
+    - black --check mcnpy/ tests/
 
 
 deploy1:
@@ -44,6 +79,7 @@ pages:
   script:
     - echo "Building documentation with Sphinx."
     - cd doc/
+    - if [[ -d doc/source/api ]]; then rm -r doc/source/api ; fi; 
     - make html
     - cd ..
     - mv doc/build/html public
@@ -54,5 +90,5 @@ pages:
       - public
   only:
     - master
-    - develop
     - doc
+    - blackTesting

@@ -1,6 +1,28 @@
-from mcnpy.data_cards import data_card, material, thermal_scattering
+from mcnpy.data_cards import (
+    data_card,
+    fill,
+    importance,
+    lattice_card,
+    material,
+    mode,
+    thermal_scattering,
+    universe_card,
+    volume,
+)
 from mcnpy.data_cards import transform
 import re
+
+PREFIX_MATCHES = {
+    "fill": fill.Fill,
+    "imp": importance.Importance,
+    "lat": lattice_card.LatticeCard,
+    "m": material.Material,
+    "mode": mode.Mode,
+    "mt": thermal_scattering.ThermalScatteringLaw,
+    "tr": transform.Transform,
+    "vol": volume.Volume,
+    "u": universe_card.UniverseCard,
+}
 
 
 def parse_data(input_card, comment=None):
@@ -14,16 +36,11 @@ def parse_data(input_card, comment=None):
     :return: the parsed DataCard object
     :rtype: DataCard
     """
-    identifier = input_card.words[0].lower()
 
-    # material finder
-    if re.match("m\d+", identifier):
-        return material.Material(input_card, comment)
-    if re.match("mt\d+", identifier):
-        return thermal_scattering.ThermalScatteringLaw(
-            input_card=input_card, comment=comment
-        )
-    if re.match("\*?tr\d+", identifier):
-        return transform.Transform(input_card, comment)
-    else:
-        return data_card.DataCard(input_card, comment)
+    base_card = data_card.DataCard(input_card, comment)
+    prefix = base_card.prefix
+
+    for match, data_class in PREFIX_MATCHES.items():
+        if prefix == match:
+            return data_class(input_card, comment)
+    return base_card
