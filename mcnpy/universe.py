@@ -37,7 +37,7 @@ class Universe(Numbered_MCNP_Card):
 
     def claim(self, cells):
         """
-        Take the given cells and move them into this universe, and out of their original univere.
+        Take the given cells and move them into this universe, and out of their original universe.
 
         Can be given a single Cell, a list of cells, or a Cells object.
 
