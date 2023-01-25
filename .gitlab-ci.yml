@@ -53,7 +53,7 @@ doc_test:
       - echo "Executing Sphinx build to detect syntax errors"
       - sphinx-build doc/source/ doc/build/ -W --keep-going -E
       - sphinx-build -b html doc/source/ doc/build/html
-      - cd doc/build
+      - mv doc/build/html html
    artifacts:
      expose_as: 'Updated Documentation'
      paths: 
