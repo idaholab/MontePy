@@ -7,7 +7,7 @@ You will receive an MCNP_Problem object that you will interact with.
 """
 
 __author__ = "Micah Gale, Travis Labossiere-Hickman"
-__copyright__ = "Copyright 2021 – 2022, Battelle Energy Alliance, LLC."
+__copyright__ = "Copyright 2021 – 2023, Battelle Energy Alliance, LLC."
 __credits__ = [
     "Micah Gale",
     "Travis Labossiere-Hickman",
@@ -17,7 +17,7 @@ __credits__ = [
 ]
 
 name = "mcnpy"
-__version__ = "0.1.0.dev8"
+__version__ = "0.1.0.dev9"
 __maintainer__ = "Micah Gale"
 __email__ = "micah.gale@inl.gov"
 __status__ = "Development"

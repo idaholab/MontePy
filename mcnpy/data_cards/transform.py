@@ -10,6 +10,11 @@ import re
 class Transform(data_card.DataCardAbstract, Numbered_MCNP_Card):
     """
     Card to represent a transform card (TR)
+
+    :param input_card: The Card syntax object this will wrap and parse.
+    :type input_card: Card
+    :param comments: The Comments that proceeded this card or were inside of this if any
+    :type Comments: list
     """
 
     def __init__(self, input_card=None, comments=None, pass_through=False):
@@ -98,7 +103,13 @@ class Transform(data_card.DataCardAbstract, Numbered_MCNP_Card):
 
     @property
     def hidden_transform(self):
-        """ """
+        """
+        Whether or not this transform is "hidden" i.e., has no number.
+
+        If True this transform was created from a fill card, and has no number.
+
+        :rtype: bool
+        """
         return self._pass_through
 
     @property
@@ -145,6 +156,8 @@ class Transform(data_card.DataCardAbstract, Numbered_MCNP_Card):
     def old_number(self):
         """
         The transform number used in the original file
+
+        :rtype: int
         """
         return self._old_transform_number
 

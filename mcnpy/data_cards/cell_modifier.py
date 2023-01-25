@@ -7,26 +7,25 @@ from mcnpy.input_parser.mcnp_input import Card
 
 class CellModifierCard(DataCardAbstract):
     """
-    Abstract Parent class for Data Cards that modify cells/ geometry.
+    Abstract Parent class for Data Cards that modify cells / geometry.
 
     Examples: IMP, VOL, etc.
+
+    :param input_card: the Card object representing this data card
+    :type input_card: Card
+    :param comments: The list of Comments that may proceed this or be entwined with it.
+    :type comments: list
+    :param in_cell_block: if this card came from the cell block of an input file.
+    :type in_cell_block: bool
+    :param key: the key from the key-value pair in a cell
+    :type key: str
+    :param value: the value from the key-value pair in a cell
+    :type value: str
     """
 
     def __init__(
         self, input_card=None, comments=None, in_cell_block=False, key=None, value=None
     ):
-        """
-        :param input_card: the Card object representing this data card
-        :type input_card: Card
-        :param comments: The list of Comments that may proceed this or be entwined with it.
-        :type comments: list
-        :param in_cell_block: if this card came from the cell block of an input file.
-        :type in_cell_block: bool
-        :param key: the key from the key-value pair in a cell
-        :type key: str
-        :param key: the value from the key-value pair in a cell
-        :type key: str
-        """
         if key and value:
             input_card = Card([f"{key} {value}"], BlockType.DATA)
         super().__init__(input_card, comments)
@@ -94,7 +93,7 @@ class CellModifierCard(DataCardAbstract):
         Merges the data from another card of same type into this one.
 
         :param other: The other object to merge into this object.
-        :type other: self
+        :type other: CellModifierCard
         :raises MalformedInputError: if two objects cannot be merged.
         """
         pass
@@ -111,6 +110,7 @@ class CellModifierCard(DataCardAbstract):
 
         This needs to also check that none of the cells had data provided in the cell block
         (check that ``set_in_cell_block`` isn't set).
+        Use ``self._check_redundant_definitions`` to do this.
 
         :raises MalformedInputError: When data are given in the cell block and the data block.
         """

@@ -6,18 +6,16 @@ from mcnpy.errors import *
 class AxisPlane(Surface):
     """
     Represents PX, PY, PZ
+
+    :param input_card: The Card object representing the input
+    :type input_card: Card
+    :param comments: The Comments that proceeded this card or were inside of this if any
+    :type Comments: list
     """
 
     COORDINATE = {SurfaceType.PX: "x", SurfaceType.PY: "y", SurfaceType.PZ: "z"}
 
     def __init__(self, input_card=None, comments=None):
-        """
-        :param input_card: The Card object representing the input
-        :type input_card: Card
-        :param comments: the Comment object representing the
-                        preceding comments block.
-        :type comments: Comment
-        """
         self._location = None
         super().__init__(input_card, comments)
         ST = SurfaceType

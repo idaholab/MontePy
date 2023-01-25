@@ -1,5 +1,5 @@
 import itertools
-from mcnpy.cell_data_control import CellDataPrintController
+from mcnpy._cell_data_control import CellDataPrintController
 from mcnpy.data_cards import mode, transform
 from mcnpy.cell import Cell
 from mcnpy.cells import Cells
@@ -17,13 +17,12 @@ from mcnpy.transforms import Transforms
 class MCNP_Problem:
     """
     A class to represent an entire MCNP problem in a semantic way.
+
+    :param file_name: the path to the file that will be read.
+    :type file_name: str
     """
 
     def __init__(self, file_name):
-        """
-        :param file_name: the path to the file that will be read.
-        :type file_name: str
-        """
         self._input_file = file_name
         self._title = None
         self._message = None
@@ -54,9 +53,9 @@ class MCNP_Problem:
     @property
     def cells(self):
         """
-        A list of the Cell objects in this problem.
+        A collection of the Cell objects in this problem.
 
-        :return: a list of the Cell objects, ordered by the order they were in the input file.
+        :return: a collection of the Cell objects, ordered by the order they were in the input file.
         :rtype: Cells
         """
         return self._cells
@@ -73,11 +72,20 @@ class MCNP_Problem:
     def mode(self):
         """
         The mode of particles being used for the problem.
+
+        :rtype: Mode
         """
         return self._mode
 
     def set_mode(self, particles):
-        """"""
+        """Sets the mode of problem to the given particles.
+
+        For details see: :func:`mcnpy.data_cards.mode.Mode.set`.
+
+        :param particles: the particles that the mode will be switched to.
+        :type particles: list, str
+        :raises ValueError: if string is not a valid particle shorthand.
+        """
         self._mode.set(particles)
 
     @property
@@ -85,9 +93,11 @@ class MCNP_Problem:
         """
         The version of MCNP that this is intended for.
 
-        MCNP versions prior to 6.2 aren't officially supported to avoid
-        Export Control Restrictions. Documentation for MCNP 6.2 is public in report:
-        LA-UR-17-29981
+        .. note::
+            MCNP versions prior to 6.2 aren't fully supported to avoid
+            Export Control Restrictions. Documentation for MCNP 6.2 is public in report:
+            LA-UR-17-29981.
+            All features are based on MCNP 6.2, and may cause other versions of MCNP to break.
 
         The version is a tuple of major, minor, revision.
         6.2.0 would be represented as (6, 2, 0)
@@ -109,9 +119,9 @@ class MCNP_Problem:
     @property
     def surfaces(self):
         """
-        A list of the Surface objects in this problem.
+        A collection of the Surface objects in this problem.
 
-        :return: a list of the Surface objects, ordered by the order they were in the input file.
+        :return: a collection of the Surface objects, ordered by the order they were in the input file.
         :rtype: Surfaces
         """
         return self._surfaces
@@ -119,9 +129,9 @@ class MCNP_Problem:
     @property
     def materials(self):
         """
-        A list of the Material objects in this problem.
+        A collection of the Material objects in this problem.
 
-        :return: a list of the Material objects, ordered by the order they were in the input file.
+        :return: a colection of the Material objects, ordered by the order they were in the input file.
         :rtype: Materials
         """
         return self._materials
@@ -138,6 +148,13 @@ class MCNP_Problem:
     def print_in_data_block(self):
         """
         Controls whether or not the specific card gets printed in the cell block or the data block.
+
+        This acts like a dictionary. The key is the case insensitive name of the card.
+        For example to enable printing importance data in the data block run:
+
+        ``problem.print_in_data_block["Imp"] = True``
+
+        :rtype: bool
         """
         return self._print_in_data_block
 
@@ -146,7 +163,7 @@ class MCNP_Problem:
         """
         A list of the DataCard objects in this problem.
 
-        :return: a list of the DataCard objects, ordered by the order they were in the input file.
+        :return: a list of the :class:`mcnpy.data_cards.data_card.DataCardAbstract` objects, ordered by the order they were in the input file.
         :rtype: list
         """
         return self._data_cards
@@ -276,10 +293,11 @@ class MCNP_Problem:
 
     def add_cell_children_to_problem(self):
         """
-        Adds the surfaces and materials added to this problem to the
+        Adds the surfaces and materials of all cells in this problem to this problem to the
         internal lists to allow them to be written to file.
 
-        WARNING: this does not move transforms and complement cells, and probably others.
+        .. warning::
+            this does not move transforms and complement cells, and probably others.
         """
         surfaces = set(self.surfaces)
         materials = set(self.materials)
@@ -299,6 +317,7 @@ class MCNP_Problem:
 
         :param new_problem: the file name to write this problem to
         :type new_problem: str
+        :raises IllegalState: if an object in the problem has not been fully initialized.
         """
         with open(new_problem, "w") as fh:
             if self.message:

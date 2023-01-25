@@ -9,16 +9,14 @@ import re
 class Surface(Numbered_MCNP_Card):
     """
     Object to hold a single MCNP surface
+
+    :param input_card: The Card object representing the input
+    :type input_card: Card
+    :param comments: The Comments that proceeded this card or were inside of this if any
+    :type Comments: list
     """
 
     def __init__(self, input_card=None, comments=None):
-        """
-        :param input_card: The Card object representing the input
-        :type input_card: Card
-        :param comments: the Comment object representing the
-                        preceding comments block.
-        :type comments: Comment
-        """
         self._periodic_surface = None
         self._old_periodic_surface = None
         self._transform = None
@@ -160,8 +158,6 @@ class Surface(Numbered_MCNP_Card):
         """
         The transformation number for this surface in the original file.
 
-        TODO connect and allow updates
-
         :rtype: int
         """
         return self._old_transform_number
@@ -170,6 +166,8 @@ class Surface(Numbered_MCNP_Card):
     def old_periodic_surface(self):
         """
         The surface number this is periodic with reference to in the original file.
+
+        :rtype: int
         """
         return self._old_periodic_surface
 
@@ -177,6 +175,8 @@ class Surface(Numbered_MCNP_Card):
     def periodic_surface(self):
         """
         The surface that this surface is periodic with respect to
+
+        :rtype: Surface
         """
         return self._periodic_surface
 
@@ -245,6 +245,11 @@ class Surface(Numbered_MCNP_Card):
 
     @property
     def cells(self):
+        """
+        A generator of Cells that use this surface.
+
+        :rtype: generator
+        """
         if self._problem:
             for cell in self._problem.cells:
                 if self in cell.surfaces:

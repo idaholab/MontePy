@@ -8,25 +8,18 @@ from mcnpy.utilities import *
 import itertools
 import re
 
-"""
-TODO
--only consume cards that are consumed
--How to handle cells
-"""
-
 
 class Material(data_card.DataCardAbstract, Numbered_MCNP_Card):
     """
     A class to represent an MCNP material.
+
+    :param input_card: the input card that contains the data
+    :type input_card: Card
+    :param comments: The comments card that preceded this card if any.
+    :type comments: list
     """
 
     def __init__(self, input_card=None, comments=None):
-        """
-        :param input_card: the input card that contains the data
-        :type input_card: Card
-        :param comments: The comments card that preceded this card if any.
-        :type comments: Comment
-        """
         super().__init__(input_card, comments)
         self._material_components = {}
         self._thermal_scattering = None
@@ -128,6 +121,8 @@ class Material(data_card.DataCardAbstract, Numbered_MCNP_Card):
     def is_atom_fraction(self):
         """
         If true this constituent is in atom fraction, not weight fraction.
+
+        :rtype: bool
         """
         return self._is_atom_fraction
 
@@ -154,12 +149,18 @@ class Material(data_card.DataCardAbstract, Numbered_MCNP_Card):
     def thermal_scattering(self):
         """
         The thermal scattering law for this material
+
+        :rtype: ThermalScatteringLaw
         """
         return self._thermal_scattering
 
     @property
     def cells(self):
-        """"""
+        """A generator of the cells that use this material.
+
+        :returns: an iterator of the Cell objects which use this.
+        :rtype: generator
+        """
         if self._problem:
             for cell in self._problem.cells:
                 if cell.material == self:

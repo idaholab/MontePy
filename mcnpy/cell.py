@@ -51,14 +51,8 @@ class Cell(Numbered_MCNP_Card):
         fill.Fill: ("_fill", True),
     }
 
-    def __init__(self, input_card=None, comments=None):
-        """
-        :param input_card: the Card input for the cell definition
-        :type input_card: Card
-        :param comments: the Comments block that preceded and are in the cell block if any.
-        :type comments: list
-        """
-        super().__init__(input_card, comments)
+    def __init__(self, input_card=None, comment=None):
+        super().__init__(input_card, comment)
         self._material = None
         self._old_cell_number = None
         self._load_blank_modifiers()
@@ -179,7 +173,7 @@ class Cell(Numbered_MCNP_Card):
     @property
     def importance(self):
         """
-        The cell importance.
+        The importances for this cell for various particle types.
 
         Each particle's importance is a property of Importance.
         e.g., ``cell.importance.photon = 1.0``.
@@ -290,7 +284,7 @@ class Cell(Numbered_MCNP_Card):
         Will only return a number if the volume has been manually set.
 
         :returns: the volume that has been manually set or None.
-        :rtype: float
+        :rtype: float, None
         """
         return self._volume.volume
 
@@ -380,7 +374,8 @@ class Cell(Numbered_MCNP_Card):
         """
         The atom density of the material in the cell, in a/b-cm.
 
-        :rtype: float
+        :returns: the atom density. If no density is set or it is in mass density will return None.
+        :rtype: float, None
         """
         if self._density and not self._is_atom_dens:
             raise AttributeError(f"Cell {self.number} is in mass density.")
@@ -406,7 +401,8 @@ class Cell(Numbered_MCNP_Card):
         """
         The mass density of the material in the cell, in g/cc.
 
-        :rtype: float
+        :returns: the mass density. If no density is set or it is in atom density will return None.
+        :rtype: float, None
         """
         if self._density and self._is_atom_dens:
             raise AttributeError(f"Cell {self.number} is in atom density.")
@@ -432,7 +428,9 @@ class Cell(Numbered_MCNP_Card):
         """
         Whether or not the density is in atom density [a/b-cm].
 
-        True means it is in atom density, false means mass density [g/cc]
+        True means it is in atom density, false means mass density [g/cc].
+
+        :rtype: bool
         """
         return self._is_atom_dens
 
@@ -440,6 +438,8 @@ class Cell(Numbered_MCNP_Card):
     def old_mat_number(self):
         """
         The material number provided in the original input file
+
+        :rtype: int
         """
         return self._old_mat_number
 
@@ -449,6 +449,7 @@ class Cell(Numbered_MCNP_Card):
         List of the Surface objects associated with this cell.
 
         This list does not convey any of the CGS Boolean logic
+
         :rtype: Surfaces
         """
         return self._surfaces
@@ -488,7 +489,10 @@ class Cell(Numbered_MCNP_Card):
     @property
     def geometry_logic_string(self):
         """
-        The original surface input for the cell
+        The original geoemtry input string for the cell.
+
+        .. warning::
+            This will be deprecated and completely removed in version 0.1.5.
 
         :returns: the geometry logic string for this cell.
         :rtype: str
@@ -505,9 +509,13 @@ class Cell(Numbered_MCNP_Card):
     @property
     def parameters(self):
         """
-        A dictionary of the additional parameters for the cell.
+        A dictionary of the additional parameters for the object.
 
-        e.g.: Universes, and imp:n
+        e.g.: ``1 0 -1 u=1 imp:n=0.5`` has the parameters
+        ``{"U": "1", "IMP:N": "0.5"}``
+
+        :returns: a dictionary of the key-value pairs of the parameters.
+        :rytpe: dict
         """
         return self._parameters
 
@@ -523,7 +531,7 @@ class Cell(Numbered_MCNP_Card):
         """
         The Cell objects that this cell is a complement of
 
-        :rytpe: Cells
+        :rytpe: :class:`mcnpy.cells.Cells`
         """
         return self._complements
 
@@ -546,6 +554,8 @@ class Cell(Numbered_MCNP_Card):
         """The cells which are a complement of this cell.
 
         This returns a generator.
+
+        :rtype: generator
         """
         if self._problem:
             for cell in self._problem.cells:
@@ -600,6 +610,10 @@ class Cell(Numbered_MCNP_Card):
         Updates the geometry logic string with new surface numbers.
 
         This is a bit of a hacky temporary solution while true boolean logic is implemented.
+
+        .. warning::
+            This will be deprecated and removed in version 0.1.5
+
         """
         matching_surfaces = {}
         matching_complements = {}
@@ -619,6 +633,9 @@ class Cell(Numbered_MCNP_Card):
         self, mapping_surface_dict, mapping_complement_dict
     ):
         """Updates geometry logic string based on a map.
+
+        .. warning::
+            This will be deprecated and removed in version 0.1.5
 
         :param mapping_surface_dict: A dict mapping the old surface number to the new one. The key is the old one.
         :type mapping_dict: dict
@@ -697,6 +714,14 @@ class Cell(Numbered_MCNP_Card):
 
     @property
     def modifier_block_print_changed(self):
+        """
+        Whether or not the print style of the cell modifiers has changed.
+
+        For instance if the file had importances in the cell block, but the user
+        changed that to print in the data block. This would return True in that situation.
+
+        :rtype: bool
+        """
         for attr, _ in Cell._CARDS_TO_PROPERTY.values():
             if hasattr(self, attr):
                 if getattr(self, attr).has_changed_print_style:

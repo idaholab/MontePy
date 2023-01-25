@@ -4,7 +4,7 @@ from enum import Enum, unique
 @unique
 class BlockType(Enum):
     """
-    Enum for all of the blocks allowed in MCNP.
+    An enumeration for the different blocks in an input file.
     """
 
     CELL = 0

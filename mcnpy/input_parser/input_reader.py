@@ -14,6 +14,11 @@ def read_input(input_file, mcnp_version=DEFAULT_VERSION):
     :type mcnp_version: tuple
     :returns: The MCNP_Problem instance representing this file.
     :rtype: MCNP_Problem
+    :raises UnsupportedFeature: If an input format is used that MCNPy does not support.
+    :raises MalformedInputError: If an input has a broken syntax.
+    :raises NumberConflictError: If two objects use the same number in the input file.
+    :raises BrokenObjectLinkError: If a reference is made to an object that is not in the input file.
+    :raises UnknownElement: If an isotope is specified for an unkown element.
     """
     problem = mcnp_problem.MCNP_Problem(input_file)
     problem.mcnp_version = mcnp_version

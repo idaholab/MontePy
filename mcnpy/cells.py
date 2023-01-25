@@ -4,20 +4,20 @@ from mcnpy.errors import MalformedInputError
 
 
 class Cells(NumberedObjectCollection):
-    """A collections of multiple :class:`mcnpy.cell.Cell` objects."""
+    """A collections of multiple :class:`mcnpy.cell.Cell` objects.
+
+    :param cells: the list of cells to start with if needed
+    :type cells: list
+    :param problem: the problem to link this collection to.
+    :type problem: MCNP_Problem
+    """
 
     def __init__(self, cells=None, problem=None):
-        """
-        :param cells: the list of cells to start with if needed
-        :type cells: list
-        :param problem: the problem to link this collection to.
-        :type problem: MCNP_Problem
-        """
         super().__init__(mcnpy.Cell, cells, problem)
 
     def set_equal_importance(self, importance, vacuum_cells=tuple()):
         """
-        Sets all cells except the vacuum cells to the same importance using importance.all.
+        Sets all cells except the vacuum cells to the same importance using :func:`mcnpy.data_cards.importance.Importance.all`.
 
         The vacuum cells will be set to 0.0. You can specify cell numbers or cell objects.
 
