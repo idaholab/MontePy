@@ -118,7 +118,7 @@ class NumberedObjectCollection(ABC):
         :param pos: The index of the element to pop from the internal list.
         :type pos: int
         :return: the final elements
-        :rtype: NumberedMCNP_Card
+        :rtype: Numbered_MCNP_Card
         """
         if not isinstance(pos, int):
             raise TypeError("The index for popping must be an int")
@@ -161,7 +161,7 @@ class NumberedObjectCollection(ABC):
         Removes the given object from the collection.
 
         :param delete: the object to delete
-        :type delete: NumberedMCNP_Card
+        :type delete: Numbered_MCNP_Card
         """
         self.__num_cache.pop(delete.number, None)
         self._objects.remove(delete)
@@ -186,7 +186,7 @@ class NumberedObjectCollection(ABC):
         """Appends the given object to the end of this collection.
 
         :param obj: the object to add.
-        :type obj: NumberedMCNP_Card
+        :type obj: Numbered_MCNP_Card
         :raises NumberConflictError: if this object has a number that is already in use.
         """
         if not isinstance(obj, self._obj_class):
@@ -212,7 +212,7 @@ class NumberedObjectCollection(ABC):
         until an available number is found.
 
         :param obj: The MCNP object being added to the collection.
-        :type obj: NumberedMCNP_Card
+        :type obj: Numbered_MCNP_Card
         :param step: the incrementing step to use to find a new number.
         :type step: int
         :return: the number for the object.
@@ -375,7 +375,7 @@ class NumberedObjectCollection(ABC):
         :param default: value to return if not found
         :type default: object
 
-        :rtype: NumberedMCNP_Card
+        :rtype: Numbered_MCNP_Card
         """
         try:
             ret = self.__num_cache[i]
@@ -402,7 +402,7 @@ class NumberedObjectCollection(ABC):
         """
         Get iterator of the collection's objects.
 
-        :rtype: NumberedMCNP_Card
+        :rtype: Numbered_MCNP_Card
         """
         for o in self._objects:
             yield o
