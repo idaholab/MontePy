@@ -89,7 +89,7 @@ New classes need to support "from scratch" creation e.g., ``cell = Cell()``.
 .. note::
    This system will be changed drastically with 0.1.5.
 
-How to __str__ vs __repr___
+How to __str__ vs __repr__
 """"""""""""""""""""""""""""
 All objects must implement ``__str__`` (called by ``str()``), 
 and ``__repr__`` (called by ``repr()``).
