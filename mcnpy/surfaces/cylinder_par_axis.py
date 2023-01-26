@@ -6,6 +6,11 @@ from mcnpy.errors import *
 class CylinderParAxis(Surface):
     """
     Represents surfaces: C/X, C/Y, C/Z
+
+    :param input: The Input object representing the input
+    :type input: Input
+    :param comments: The Comments that proceeded this card or were inside of this if any
+    :type Comments: list
     """
 
     COORDINATE_PAIRS = {
@@ -13,20 +18,15 @@ class CylinderParAxis(Surface):
         SurfaceType.C_Y: {0: "x", 1: "z"},
         SurfaceType.C_Z: {0: "x", 1: "y"},
     }
+    """Which coordinate is what value for each cylinder type.
+    """
 
     def __init__(self, input, comment=None):
-        """
-        :param input: The Input object representing the input
-        :type input: Input
-        :param comment: the Comment object representing the
-                        preceding comment block.
-        :type comment: Comment
-        """
         self._coordinates = None
         self._radius = None
         super().__init__(input, comment)
         ST = SurfaceType
-        if input_card:
+        if input:
             if self.surface_type not in [ST.C_X, ST.C_Y, ST.C_Z]:
                 raise ValueError(
                     "CylinderParAxis must be a surface of types: C/X, C/Y, C/Z"
@@ -51,9 +51,6 @@ class CylinderParAxis(Surface):
 
     @coordinates.setter
     def coordinates(self, coordinates):
-        """
-        :param coordinates: the coordinates, must be 2 long.
-        """
         if not isinstance(coordinates, list):
             raise TypeError("coordinates must be a list")
         if len(coordinates) != 2:

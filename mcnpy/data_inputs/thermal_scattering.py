@@ -7,21 +7,20 @@ import mcnpy
 class ThermalScatteringLaw(DataInputAbstract):
     """
     Class to hold MT Inputs
+    
+    This is designed to be called two ways.
+    The first is with a read input file using input_card, comment
+    The second is after a read with a material and a comment (using named inputs)
+
+    :param input: the Input object representing this data input
+    :type input: Input
+    :param comments: The Comments that may proceed this
+    :type comments: list
+    :param material: the parent Material object that owns this
+    :type material: Material
     """
 
     def __init__(self, input="", comment=None, material=None):
-        """
-        This is designed to be called two ways.
-
-        The first is with a read input file using input, comment
-        The second is after a read with a material and a comment (using named inputs)
-        :param input: the Input object representing this data input
-        :type input: Input
-        :param comment: The Comment that may proceed this
-        :type comment: Comment
-        :param material: the parent Material object that owns this
-        :type material: Material
-        """
         self._old_material_number = None
         self._parent_material = None
         self._scattering_laws = []
@@ -31,8 +30,8 @@ class ThermalScatteringLaw(DataInputAbstract):
             self._old_material_number = self._input_number
             self._scattering_laws = self.words[1:]
         else:
-            if comment:
-                self._comment = comment
+            if comments:
+                self._comment = comments
             if material:
                 self._parent_material = material
 
@@ -52,6 +51,8 @@ class ThermalScatteringLaw(DataInputAbstract):
     def old_number(self):
         """
         The material number from the file
+
+        :rtype: int
         """
         return self._old_material_number
 
@@ -67,7 +68,7 @@ class ThermalScatteringLaw(DataInputAbstract):
     @property
     def thermal_scattering_laws(self):
         """
-        The thermal scattering laws to use for this material
+        The thermal scattering laws to use for this material as strings.
 
         :rtype: list
         """
@@ -88,6 +89,9 @@ class ThermalScatteringLaw(DataInputAbstract):
     def add_scattering_law(self, law):
         """
         Adds the requested scattering law to this material
+
+        :param law: the thermal scattering law to add.
+        :type law: str
         """
         self._scattering_laws.append(law)
 

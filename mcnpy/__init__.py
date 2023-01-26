@@ -7,7 +7,7 @@ You will receive an MCNP_Problem object that you will interact with.
 """
 
 __author__ = "Micah Gale, Travis Labossiere-Hickman"
-__copyright__ = "Copyright 2021 – 2022, Battelle Energy Alliance, LLC."
+__copyright__ = "Copyright 2021 – 2023, Battelle Energy Alliance, LLC."
 __credits__ = [
     "Micah Gale",
     "Travis Labossiere-Hickman",
@@ -33,3 +33,4 @@ from mcnpy.input_parser.mcnp_input import Comment
 from mcnpy.input_parser.mcnp_input import Jump
 from mcnpy.particle import Particle
 from mcnpy.surfaces.surface_type import SurfaceType
+from mcnpy.universe import Universe

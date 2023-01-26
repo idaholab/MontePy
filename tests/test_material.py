@@ -218,7 +218,7 @@ class TestThermalScattering(TestCase):
         input_card = Input([in_str], BlockType.DATA)
         material = Material(input_card, None)
         comment = Comment(["c foo"], ["foo"])
-        card = ThermalScatteringLaw(comment=comment, material=material)
+        card = ThermalScatteringLaw(comments=comment, material=material)
         self.assertEqual(card.parent_material, material)
 
     def test_thermal_scatter_validate(self):

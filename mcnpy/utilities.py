@@ -10,6 +10,9 @@ def fortran_float(number_string):
     """
     Attempts to convert a FORTRAN formatted float string to a float.
 
+    FORTRAN allows silly things for scientific notation like ``6.02+23``
+    to represent Avogadro's Number.
+
     :param number_string: the string that will be converted to a float
     :type number_string: str
     :raises ValueError: If the string can not be parsed as a float.

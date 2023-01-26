@@ -5,15 +5,14 @@ from mcnpy.particle import Particle
 class Mode(DataInputAbstract):
     """
     Class for the particle mode for a problem.
+
+    :param input: the Input object representing this data input
+    :type input: Input
+    :param comments: The Comment that may proceed this
+    :type comments: Comment
     """
 
     def __init__(self, input=None, comments=None):
-        """
-        :param input: the Input object representing this data input
-        :type input: Input
-        :param comments: The Comment that may proceed this
-        :type comments: Comment
-        """
         super().__init__(input, comments)
         if input:
             self._particles = set()
@@ -31,6 +30,8 @@ class Mode(DataInputAbstract):
         """
         The type of particles involved in this problem.
 
+        The set will contain instances of :class:`mcnpy.particle.Particle`.
+
         :rtype: set
         """
         return self._particles.copy()
@@ -39,6 +40,12 @@ class Mode(DataInputAbstract):
         """
         Adds the given particle to the problem.
 
+        If specifying particle type by string this must be the MCNP shorthand,
+        such as ``n`` for ``Particle.NEUTRON``.
+
+        :param particle: the particle type to add to the mode.
+        :type particle: Particle, str
+        :raises ValueError: if string is not a valid particle shorthand.
         """
         if not isinstance(particle, (Particle, str)):
             raise TypeError("particle must be a Particle instance")
@@ -52,6 +59,10 @@ class Mode(DataInputAbstract):
     def remove(self, particle):
         """
         Remove the given particle from the problem
+
+        :param particle: the particle type to remove from the mode.
+        :type particle: Particle, str
+        :raises ValueError: if string is not a valid particle shorthand.
         """
         if not isinstance(particle, (Particle, str)):
             raise TypeError("particle must be a Particle instance")
@@ -65,12 +76,13 @@ class Mode(DataInputAbstract):
         Completely override the current mode.
 
         Can specify it as:
-            * "n p"
-            * ["n", "p"]
-            * [Particle.NEUTRON, Particle.PHOTON]
+         * ``"n p"``
+         * ``["n", "p"]``
+         * ``[Particle.NEUTRON, Particle.PHOTON]``
 
         :param particles: the particles that the mode will be switched to.
-        :type particles: list
+        :type particles: list, str
+        :raises ValueError: if string is not a valid particle shorthand.
         """
         if not isinstance(particles, (list, set, str)):
             raise TypeError("particles must be a list, string, or set")

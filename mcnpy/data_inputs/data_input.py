@@ -9,6 +9,11 @@ import re
 class DataInputAbstract(MCNP_Object):
     """
     Parent class to describe all MCNP data inputs.
+
+    :param input: the Input object representing this data input
+    :type input: Input
+    :param comments: The list of Comments that may proceed this or be entwined with it.
+    :type comments: list
     """
 
     _parser = DataParser()
@@ -68,7 +73,7 @@ class DataInputAbstract(MCNP_Object):
     def _has_number(self):
         """Whether or not this class supports numbering.
 
-        For example: ``kcode`` doesn't allow numbers but tallies do allow it e.g.: ``f7``
+        For example: ``kcode`` doesn't allow numbers but tallies do allow it e.g., ``f7``
 
         :returns: True if this class allows numbers
         :rtype: bool
@@ -80,7 +85,7 @@ class DataInputAbstract(MCNP_Object):
     def _has_classifier(self):
         """Whether or not this class supports particle classifiers.
 
-        For example: ``kcode`` doesn't allow numbers but tallies do allow it e.g.: ``f7:n``
+        For example: ``kcode`` doesn't allow particle types but tallies do allow it e.g., ``f7:n``
 
         * 0 : not allowed
         * 1 : is optional
@@ -93,11 +98,14 @@ class DataInputAbstract(MCNP_Object):
 
     @property
     def particle_classifiers(self):
-        """The particle class part of the input identifier as a parsed list
+        """The particle class part of the card identifier as a parsed list.
+
+        This is parsed from the input that was read.
 
         For example: the classifier for ``F7:n`` is ``:n``, and ``imp:n,p`` is ``:n,p``
         This will be parsed as a list: ``[<Particle.NEUTRON: 'N'>, <Particle.PHOTON: 'P'>]``.
 
+        :returns: the particles listed in the input if any. Otherwise None
         :rtype: list
         """
         if self._classifiers:
@@ -106,21 +114,23 @@ class DataInputAbstract(MCNP_Object):
 
     @property
     def prefix(self):
-        """The text part of the input identifier.
+        """The text part of the card identifier parsed from the input.
 
         For example: for a material like: m20 the prefix is 'm'
+        this will always be lower case.
 
-        this will always be lower case
+        :returns: The prefix read from the input
         :rtype: str
         """
         return self._prefix.lower()
 
     @property
     def prefix_modifier(self):
-        """The modifier to a name prefix.
+        """The modifier to a name prefix that was parsed from the input.
 
         For example: for a transform: ``*tr5`` the modifier is ``*``
 
+        :returns: the prefix modifier that was parsed if any. None if otherwise.
         :rtype: str
         """
         return self._modifier
@@ -231,6 +241,15 @@ class DataInputAbstract(MCNP_Object):
 
 
 class DataInput(DataInputAbstract):
+    """
+    Catch-all for all other MCNP data inputs.
+
+    :param input_card: the Card object representing this data card
+    :type input_card: Card
+    :param comments: The list of Comments that may proceed this or be entwined with it.
+    :type comments: list
+    """
+
     @property
     def _class_prefix(self):
         return None

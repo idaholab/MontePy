@@ -7,26 +7,25 @@ from mcnpy.input_parser.mcnp_input import Input
 
 class CellModifierInput(DataInputAbstract):
     """
-    Abstract Parent class for Data Inputs that modify cells/ geometry.
+    Abstract Parent class for Data Cards that modify cells / geometry.
 
     Examples: IMP, VOL, etc.
+
+    :param input_card: the Card object representing this data card
+    :type input_card: Card
+    :param comments: The list of Comments that may proceed this or be entwined with it.
+    :type comments: list
+    :param in_cell_block: if this card came from the cell block of an input file.
+    :type in_cell_block: bool
+    :param key: the key from the key-value pair in a cell
+    :type key: str
+    :param value: the value from the key-value pair in a cell
+    :type value: str
     """
 
     def __init__(
         self, input=None, comments=None, in_cell_block=False, key=None, value=None
     ):
-        """
-        :param input: the Input object representing this data input
-        :type input: Input
-        :param comments: The list of Comments that may proceed this or be entwined with it.
-        :type comments: list
-        :param in_cell_block: if this input came from the cell block of an input file.
-        :type in_cell_block: bool
-        :param key: the key from the key-value pair in a cell
-        :type key: str
-        :param key: the value from the key-value pair in a cell
-        :type key: str
-        """
         if key and value:
             input = Input([f"{key} {value}"], BlockType.DATA)
         super().__init__(input, comments)
@@ -80,14 +79,29 @@ class CellModifierInput(DataInputAbstract):
             print_in_cell_block = not self._problem.print_in_data_block[
                 self._class_prefix
             ]
+            set_in_cell_block = print_in_cell_block
+            if not self.in_cell_block:
+                for cell in self._problem.cells:
+                    attr = mcnpy.Cell._CARDS_TO_PROPERTY[type(self)][0]
+                    modifier = getattr(cell, attr)
+                    if modifier.has_information:
+                        set_in_cell_block = modifier.set_in_cell_block
+                    break
+            else:
+                if self.has_information:
+                    set_in_cell_block = self.set_in_cell_block
             return print_in_cell_block ^ set_in_cell_block
         else:
             return False
 
     @abstractmethod
-    def merge(self, input):
+    def merge(self, other):
         """
-        Merges the data from another input of same type into this one.
+        Merges the data from another card of same type into this one.
+
+        :param other: The other object to merge into this object.
+        :type other: CellModifierInput
+        :raises MalformedInputError: if two objects cannot be merged.
         """
         pass
 
@@ -103,8 +117,22 @@ class CellModifierInput(DataInputAbstract):
 
         This needs to also check that none of the cells had data provided in the cell block
         (check that ``set_in_cell_block`` isn't set).
+        Use ``self._check_redundant_definitions`` to do this.
 
         :raises MalformedInputError: When data are given in the cell block and the data block.
+        """
+        pass
+
+    @property
+    @abstractmethod
+    def has_information(self):
+        """
+        For a cell instance of :class:`mcnpy.data_cards.cell_modifier.CellModifierCard` returns True iff there is information here worth printing out.
+
+        e.g., a manually set volume for a cell
+
+        :returns: True if this instance has information worth printing.
+        :rtype: bool
         """
         pass
 

@@ -1,26 +1,23 @@
 from mcnpy.errors import *
 from mcnpy.data_inputs import transform
-from mcnpy.mcnp_object import MCNP_Object
+from mcnpy.numbered_mcnp_card import Numbered_MCNP_Card
 from mcnpy.surfaces.surface_type import SurfaceType
 from mcnpy.utilities import *
 import re
 
 
-class Surface(MCNP_Object):
+class Surface(Numbered_MCNP_Card):
     """
     Object to hold a single MCNP surface
+
+    :param input: The Input object representing the input
+    :type input: Input
+    :param comments: The Comments that proceeded this card or were inside of this if any
+    :type Comments: list
     """
 
-    def __init__(self, input, comment=None):
-        """
-        :param input: The Input object representing the input
-        :type input: Input
-        :param comment: the Comment object representing the
-                        preceding comment block.
-        :type comment: Comment
-        """
+    def __init__(self, input=None, comments=None):
         super().__init__(input, comment)
-        words = input.words
         self._periodic_surface = None
         self._old_periodic_surface = None
         self._transform = None
@@ -77,10 +74,10 @@ class Surface(MCNP_Object):
         # parse the parameters
         self._surface_constants = []
         i = 0
-        super().__init__(input_card, comment)
+        super().__init__(input, comments)
         # surface number
-        if input_card:
-            words = input_card.words
+        if input:
+            words = input.words
             surface_num = words[i]
             if "*" in surface_num:
                 self._is_reflecting = True
@@ -100,7 +97,7 @@ class Surface(MCNP_Object):
                 self._old_surface_number = surface_num
             except (AssertionError, ValueError):
                 raise MalformedInputError(
-                    input_card, f"{words[i]} could not be parsed as a surface number."
+                    input, f"{words[i]} could not be parsed as a surface number."
                 )
             i += 1
             num_finder = re.compile(r"\d+")
@@ -115,7 +112,7 @@ class Surface(MCNP_Object):
                     i += 1
                 except ValueError:
                     raise MalformedInputError(
-                        input_card,
+                        input,
                         f"{words[i]} could not be parsed as a periodic surface or a transform.",
                     )
             # parse surface mnemonic
@@ -133,7 +130,7 @@ class Surface(MCNP_Object):
                     self._surface_constants.append(fortran_float(entry))
                 except ValueError:
                     raise MalformedInputError(
-                        input_card,
+                        input,
                         f"{entry} could not be parsed as a surface constant.",
                     )
 
@@ -210,8 +207,6 @@ class Surface(MCNP_Object):
         """
         The transformation number for this surface in the original file.
 
-        TODO connect and allow updates
-
         :rtype: int
         """
         return self._old_transform_number
@@ -220,6 +215,8 @@ class Surface(MCNP_Object):
     def old_periodic_surface(self):
         """
         The surface number this is periodic with reference to in the original file.
+
+        :rtype: int
         """
         return self._old_periodic_surface
 
@@ -227,6 +224,8 @@ class Surface(MCNP_Object):
     def periodic_surface(self):
         """
         The surface that this surface is periodic with respect to
+
+        :rtype: Surface
         """
         return self._periodic_surface
 
@@ -295,6 +294,11 @@ class Surface(MCNP_Object):
 
     @property
     def cells(self):
+        """
+        A generator of Cells that use this surface.
+
+        :rtype: generator
+        """
         if self._problem:
             for cell in self._problem.cells:
                 if self in cell.surfaces:
@@ -311,16 +315,25 @@ class Surface(MCNP_Object):
             f"constants: {self.surface_constants}"
         )
 
+<<<<<<< HEAD
     def update_pointers(self, surface_dict, data_inputs):
+=======
+    def update_pointers(self, surfaces, data_cards):
+>>>>>>> develop
         """
         Updates the internal pointers to the appropriate objects.
 
         Right now only periodic surface links will be made.
         Eventually transform pointers should be made.
+
+        :param surfaces: A Surfaces collection of the surfaces in the problem.
+        :type surfaces: Surfaces
+        :param data_cards: the data_cards in the problem.
+        :type data_cards: list
         """
         if self.old_periodic_surface:
             try:
-                self._periodic_surface = surface_dict[self.old_periodic_surface]
+                self._periodic_surface = surfaces[self.old_periodic_surface]
             except KeyError:
                 raise BrokenObjectLinkError(
                     "Surface",

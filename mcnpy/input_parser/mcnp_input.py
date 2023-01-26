@@ -10,19 +10,20 @@ import re
 
 class Jump:
     """
-    Class to represent a default entry represented by a "jump".
+     Class to represent a default entry represented by a "jump".
 
-    I get up and nothing gets me down
-    You got it tough, I've seen the toughest around
-    And I know, baby, just how you feel
-    You gotta roll with the punches to get to what's real
 
-    Oh, can't you see me standing here?
-    I got my back against the record machine
-    I ain't the worst that you've seen
-    Oh, can't you see what I mean?
+    |     I get up and nothing gets me down
+    |     You got it tough, I've seen the toughest around
+    |     And I know, baby, just how you feel
+    |     You gotta roll with the punches to get to what's real
 
-    Ah, might as well ...
+    |     Oh, can't you see me standing here?
+    |     I got my back against the record machine
+    |     I ain't the worst that you've seen
+    |     Oh, can't you see what I mean?
+
+    |    Ah, might as well ...
     """
 
     def __str__(self):
@@ -41,13 +42,12 @@ class Jump:
 class ParsingNode(ABC):
     """
     Object to represent a single coherent MCNP input, such as an input.
+
+    :param input_lines: the lines read straight from the input file.
+    :type input_lines: list
     """
 
     def __init__(self, input_lines):
-        """
-        :param input_lines: the lines read straight from the input file.
-        :type input_lines: list
-        """
         if not isinstance(input_lines, list):
             raise TypeError("input_lines must be a list")
         for line in input_lines:
@@ -93,17 +93,20 @@ class ParsingNode(ABC):
 class Input(ParsingNode):
     """
     Represents a single MCNP "Input" e.g. a single cell definition.
+
+    :param input_lines: the lines read straight from the input file.
+    :type input_lines: list
+    :param block_type: An enum showing which of three MCNP blocks this was inside of.
+    :type block_type: BlockType
     """
 
     SPECIAL_COMMENT_PREFIXES = ["fc", "sc"]
+    """Prefixes for special comments like tally comments.
+    
+    :rtype: list
+    """
 
     def __init__(self, input_lines, block_type):
-        """
-        :param input_lines: the lines read straight from the input file.
-        :type input_lines: list
-        :param block_type: An enum showing which of three MCNP blocks this was inside of.
-        :type block_type: BlockType
-        """
         super().__init__(input_lines)
         if not isinstance(block_type, BlockType):
             raise TypeError("block_type must be BlockType")
@@ -118,7 +121,8 @@ class Input(ParsingNode):
     @property
     def block_type(self):
         """
-        Enum representing which block of the MCNP input this came from
+        Enum representing which block of the MCNP input this came from.
+
         :rtype: BlockType
         """
         return self._block_type
@@ -133,6 +137,19 @@ class Input(ParsingNode):
 
 
 def parse_input_shortcuts(words, input=None):
+    """
+    Parses MCNP input shortcuts.
+
+    E.g., ``2R``, ``1 10I 100``, ``2J``
+
+    Returns a list of strings with all shortcuts decompressed or changed out.
+    Jumps will be changed to :class:`mcnpy.input_parser.mcnp_input.Jump`.
+
+    :param words: the list of strings or "words".
+    :type words: list
+    :returns: modified version of words with all compressions expanded.
+    :rtype: list
+    """
     number_parser = re.compile(r"(\d+\.*\d*[e\+\-]*\d*)")
     ret = []
     for i, word in enumerate(words):
@@ -233,6 +250,11 @@ def parse_input_shortcuts(words, input=None):
 class ReadInput(Input):
     """
     A input for the read input that reads another input file
+
+    :param input_lines: the lines read straight from the input file.
+    :type input_lines: list
+    :param block_type: An enum showing which of three MCNP blocks this was inside of.
+    :type block_type: BlockType
     """
 
     _parser = ReadParser()
@@ -249,6 +271,7 @@ class ReadInput(Input):
     def file_name(self):
         """
         The relative path to the filename specified in this read input.
+        
         :rtype: str
         """
         return self._parameters["file"]
@@ -263,15 +286,16 @@ class ReadInput(Input):
 class Comment(ParsingNode):
     """
     Object to represent a full line comment in an MCNP problem.
+
+    This represents only ``C`` style comments and not ``$`` style comments.
+
+    :param input_lines: the lines read straight from the input file.
+    :type input_lines: list
+    :param input_line_num: The line number in a parent input input where this Comment appeared
+    :type input_line_num: int
     """
 
     def __init__(self, input_lines, input_line_num=0):
-        """
-        :param input_lines: the lines read straight from the input file.
-        :type input_lines: list
-        :param input_line_num: The line number in a parent input input where this Comment appeared
-        :type input_line_num: int
-        """
         super().__init__(input_lines)
         buff = []
         for line in input_lines:
@@ -303,6 +327,7 @@ class Comment(ParsingNode):
 
         Each entry is a string of that line in the message block.
         The comment beginning "C " has been stripped out
+
         :rtype: list
         """
         return self._lines
@@ -318,6 +343,8 @@ class Comment(ParsingNode):
     def is_cutting_comment(self):
         """
         Whether or not this Comment "cuts" an input input.
+
+        :rtype: bool
         """
         return self._cutting
 
@@ -325,12 +352,14 @@ class Comment(ParsingNode):
     def input_line_num(self):
         """
         Which line of the parent input this comment came from.
+
+        :rtype: int
         """
         return self._input_line_num
 
     def snip(self):
         """
-        Set this Comment to be a cutting comment
+        Set this Comment to be a cutting comment.
         """
         self._cutting = True
 
@@ -340,15 +369,14 @@ class Message(ParsingNode):
     Object to represent an MCNP message.
 
     These are blocks at the beginning of an input that are printed in the output.
+
+    :param input_lines: the lines read straight from the input file.
+    :type input_lines: list
+    :param lines: the strings of each line in the message block
+    :type lines: list
     """
 
     def __init__(self, input_lines, lines):
-        """
-        :param input_lines: the lines read straight from the input file.
-        :type input_lines: list
-        :param lines: the strings of each line in the message block
-        :type lines: list
-        """
         super().__init__(input_lines)
         if not isinstance(lines, list):
             raise TypeError("lines must be a list")
@@ -375,6 +403,7 @@ class Message(ParsingNode):
         The lines of input for the message block.
 
         Each entry is a string of that line in the message block
+
         :rtype: list
         """
         return self._lines
@@ -394,6 +423,11 @@ class Message(ParsingNode):
 class Title(ParsingNode):
     """
     Object to represent the title for an MCNP problem
+
+    :param input_lines: the lines read straight from the input file.
+    :type input_lines: list
+    :param title: The string for the title of the problem.
+    :type title: str
     """
 
     def __init__(self, input_lines, title):

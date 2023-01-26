@@ -6,22 +6,20 @@ from mcnpy.errors import *
 class AxisPlane(Surface):
     """
     Represents PX, PY, PZ
+
+    :param input: The Input object representing the input
+    :type input: Input
+    :param comments: The Comments that proceeded this card or were inside of this if any
+    :type Comments: list
     """
 
     COORDINATE = {SurfaceType.PX: "x", SurfaceType.PY: "y", SurfaceType.PZ: "z"}
 
-    def __init__(self, input, comment=None):
-        """
-        :param input: The Input object representing the input
-        :type input: Input
-        :param comment: the Comment object representing the
-                        preceding comment block.
-        :type comment: Comment
-        """
-        super().__init__(input, comment)
+    def __init__(self, input=None, comments=None):
         self._location = None
+        super().__init__(input, comments)
         ST = SurfaceType
-        if input_card:
+        if input:
             if self.surface_type not in [ST.PX, ST.PY, ST.PZ]:
                 raise ValueError("AxisPlane must be a surface of type: PX, PY, or PZ")
             if len(self.surface_constants) != 1:

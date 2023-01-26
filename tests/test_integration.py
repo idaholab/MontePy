@@ -7,6 +7,7 @@ import mcnpy
 from mcnpy.data_inputs import material, thermal_scattering, volume
 from mcnpy.input_parser.mcnp_input import Input, Comment, Message, Title, ReadInput
 from mcnpy.particle import Particle
+import numpy as np
 
 
 class testFullFileIntegration(TestCase):
@@ -15,6 +16,9 @@ class testFullFileIntegration(TestCase):
         self.simple_problem = mcnpy.read_input(file_name)
         self.importance_problem = mcnpy.read_input(
             os.path.join("tests", "inputs", "test_importance.imcnp")
+        )
+        self.universe_problem = mcnpy.read_input(
+            os.path.join("tests", "inputs", "test_universe.imcnp")
         )
 
     def test_original_input(self):
@@ -382,7 +386,7 @@ class testFullFileIntegration(TestCase):
         cell = problem.cells[1]
         cell.number = 8
         output = cell.format_for_mcnp_input((6, 2, 0))
-        self.assertEqual(len(output), 6)
+        self.assertEqual(len(output), 7)
         self.assertEqual("C this is a cutting comment", output[1])
         material = problem.materials[2]
         material.number = 5
@@ -591,8 +595,138 @@ class testFullFileIntegration(TestCase):
                 Input([in_str], mcnpy.input_parser.block_type.BlockType.CELL)
             )
 
-    def test_importance_end_repeat(self):
+    def test_universe_cell_parsing(self):
+        problem = self.simple_problem
+        answers = [350] + [0] * 4
+        for cell, answer in zip(problem.cells, answers):
+            print(cell, answer)
+            self.assertEqual(cell.universe.number, answer)
+
+    def test_universe_fill_data_parsing(self):
+        problem = mcnpy.read_input(
+            os.path.join("tests", "inputs", "test_universe_data.imcnp")
+        )
+        answers = [350, 0, 0, 1]
+        for cell, answer in zip(problem.cells, answers):
+            print(cell, answer)
+            self.assertEqual(cell.universe.number, answer)
+        for cell in problem.cells:
+            print(cell)
+            if cell.number != 99:
+                self.assertTrue(not cell.not_truncated)
+            else:
+                self.assertTrue(cell.not_truncated)
+        self.assertTrue(problem.cells[99].not_truncated)
+        answers = [None, None, 350, None, None]
+        for cell, answer in zip(problem.cells, answers):
+            print(cell.number, cell.fill.universe, answer)
+            if answer is None:
+                self.assertIsNone(cell.fill.universe)
+            else:
+                self.assertTrue(cell.fill.universe, answer)
+
+    def test_universe_cells(self):
+        answers = {350: [1], 0: [2, 3, 5], 1: [99]}
+        problem = mcnpy.read_input(
+            os.path.join("tests", "inputs", "test_universe_data.imcnp")
+        )
+        for uni_number, cell_answers in answers.items():
+            for cell, answer in zip(problem.universes[uni_number].cells, cell_answers):
+                self.assertEqual(cell.number, answer)
+
+    def test_cell_not_truncate_setter(self):
         problem = copy.deepcopy(self.simple_problem)
+        cell = problem.cells[1]
+        cell.not_truncated = True
+        self.assertTrue(cell.not_truncated)
+        with self.assertRaises(ValueError):
+            cell = problem.cells[2]
+            cell.not_truncated = True
+
+    def test_universe_setter(self):
+        problem = copy.deepcopy(self.simple_problem)
+        universe = problem.universes[350]
+        cell = problem.cells[3]
+        cell.universe = universe
+        self.assertEqual(cell.universe, universe)
+        self.assertEqual(cell.universe.number, 350)
+        with self.assertRaises(TypeError):
+            cell.universe = 5
+
+    def test_universe_cell_formatter(self):
+        problem = copy.deepcopy(self.simple_problem)
+        universe = problem.universes[350]
+        cell = problem.cells[3]
+        cell.universe = universe
+        cell.not_truncated = True
+        output = cell.format_for_mcnp_input((6, 2, 0))
+        self.assertIn("U=-350", " ".join(output))
+
+    def test_universe_data_formatter(self):
+        problem = mcnpy.read_input(
+            os.path.join("tests", "inputs", "test_universe_data.imcnp")
+        )
+        universe = problem.universes[350]
+        cell = problem.cells[3]
+        cell.universe = universe
+        cell.not_truncated = True
+        output = problem.cells._universe.format_for_mcnp_input((6, 2, 0))
+        print(output)
+        self.assertIn("U 350 J -350 -1 J", output)
+
+    def test_universe_number_collision(self):
+        problem = mcnpy.read_input(
+            os.path.join("tests", "inputs", "test_universe_data.imcnp")
+        )
+        with self.assertRaises(mcnpy.errors.NumberConflictError):
+            problem.universes[0].number = 350
+
+        with self.assertRaises(ValueError):
+            problem.universes[350].number = 0
+
+    def test_universe_repr(self):
+        uni = self.simple_problem.universes[0]
+        output = repr(uni)
+        self.assertIn("Number: 0", output)
+        self.assertIn("Problem: set", output)
+        self.assertIn("Cells: [2", output)
+
+    def test_lattice_format_data(self):
+        problem = copy.deepcopy(self.simple_problem)
+        cells = problem.cells
+        cells[1].lattice = 1
+        cells[99].lattice = 2
+        answer = "LAT 1 2J 2"
+        output = cells._lattice.format_for_mcnp_input((6, 2, 0))
+        self.assertIn(answer, output[0])
+
+    def test_lattice_push_to_cells(self):
+        problem = copy.deepcopy(self.simple_problem)
+        lattices = [1, 2, Jump(), Jump()]
+        card = Card(
+            ["Lat " + " ".join(list(map(str, lattices)))],
+            mcnpy.input_parser.block_type.BlockType.DATA,
+        )
+        lattice = mcnpy.data_cards.lattice_card.LatticeCard(card)
+        lattice.link_to_problem(problem)
+        lattice.push_to_cells()
+        for cell, answer in zip(problem.cells, lattices):
+            print(cell.number, answer)
+            if isinstance(answer, int):
+                self.assertEqual(cell.lattice.value, answer)
+            else:
+                self.assertIsNone(cell.lattice)
+
+    def test_universe_problem_parsing(self):
+        problem = self.universe_problem
+        for cell in problem.cells:
+            if cell.number == 1:
+                self.assertEqual(cell.universe.number, 1)
+            else:
+                self.assertEqual(cell.universe.number, 0)
+
+    def test_importance_end_repeat(self):
+        problem = self.universe_problem
         for cell in problem.cells:
             if cell.number in {99, 5}:
                 cell.importance.photon = 1.0
@@ -602,10 +736,110 @@ class testFullFileIntegration(TestCase):
         output = problem.cells._importance.format_for_mcnp_input((6, 2, 0))
         self.assertIn("IMP:P 0 0 0 1 1", output)
 
+    def test_fill_parsing(self):
+        problem = self.universe_problem
+        answers = [None, np.array([[[1], [0]], [[0], [1]]]), None, 1, 1]
+        for cell, answer in zip(problem.cells, answers):
+            if answer is None:
+                self.assertIsNone(cell.fill.universe)
+            elif isinstance(answer, np.ndarray):
+                self.assertTrue(cell.fill.multiple_universes)
+                self.assertTrue(
+                    (cell.fill.min_index == np.array([0.0, 0.0, 0.0])).all()
+                )
+                self.assertTrue(
+                    (cell.fill.max_index == np.array([1.0, 1.0, 0.0])).all()
+                )
+                self.assertEqual(cell.fill.universes[0][0][0].number, answer[0][0][0])
+                self.assertEqual(cell.fill.universes[1][1][0].number, answer[1][1][0])
+                self.assertEqual(cell.fill.transform, problem.transforms[5])
+            else:
+                self.assertEqual(cell.fill.universe.number, answer)
+
+    def test_fill_transform_setter(self):
+        problem = copy.deepcopy(self.universe_problem)
+        transform = problem.transforms[5]
+        cell = problem.cells[5]
+        cell.fill.transform = transform
+        self.assertEqual(cell.fill.transform, transform)
+        self.assertTrue(not cell.fill.hidden_transform)
+        cell.fill.transform = None
+        self.assertIsNone(cell.fill.transform)
+        with self.assertRaises(TypeError):
+            cell.fill.transform = "hi"
+        cell.fill.transform = transform
+        del cell.fill.transform
+        self.assertIsNone(cell.fill.transform)
+
+    def test_fill_cell_format(self):
+        problem = copy.deepcopy(self.universe_problem)
+        fill = problem.cells[5].fill
+        output = fill.format_for_mcnp_input((6, 2, 0))
+        answer = "     FILL=1 (1.0 0.0 0.0)"
+        self.assertEqual(output[0], answer)
+        # test *fill
+        fill.transform.is_in_degrees = True
+        output = fill.format_for_mcnp_input((6, 2, 0))
+        answer = "     *FILL=1 (1.0 0.0 0.0)"
+        self.assertEqual(output[0], answer)
+        # test without transform
+        fill.transform = None
+        answer = "     FILL=1"
+        output = fill.format_for_mcnp_input((6, 2, 0))
+        self.assertEqual(output[0], answer)
+        # test with no fill
+        fill.universe = None
+        output = fill.format_for_mcnp_input((6, 2, 0))
+        self.assertEqual(len(output), 0)
+        # test with complex universe lattice fill
+        fill = problem.cells[2].fill
+        output = fill.format_for_mcnp_input((6, 2, 0))
+        answers = [
+            "     FILL= 0:1 0:1 0:0",
+            "           1",
+            "           0",
+            "           0",
+            "           1",
+            "     (5)",
+        ]
+        self.assertEqual(output, answers)
+        problem.print_in_data_block["FILL"] = True
+        # test that complex fill is not printed in data block
+        with self.assertRaises(ValueError):
+            output = problem.cells._fill.format_for_mcnp_input((6, 2, 0))
+        problem = copy.deepcopy(self.simple_problem)
+        problem.cells[5].fill.transform = None
+        problem.print_in_data_block["FILL"] = True
+        output = problem.cells._fill.format_for_mcnp_input((6, 2, 0))
+        self.assertEqual(output, ["     FILL 4J 350"])
+
+    def test_universe_cells_claim(self):
+        problem = copy.deepcopy(self.universe_problem)
+        universe = problem.universes[1]
+        universe.claim(problem.cells[2])
+        self.assertEqual(problem.cells[2].universe, universe)
+        universe = mcnpy.Universe(5)
+        problem.universes.append(universe)
+        universe.claim(problem.cells)
+        for cell in problem.cells:
+            self.assertEqual(cell.universe, universe)
+        with self.assertRaises(TypeError):
+            universe.claim("hi")
+        with self.assertRaises(TypeError):
+            universe.claim(["hi"])
+
+    def test_universe_cells(self):
+        problem = self.universe_problem
+        answers = [1]
+        universe = problem.universes[1]
+        self.assertEqual(len(answers), len(list(universe.cells)))
+        for cell, answer in zip(universe.cells, answers):
+            self.assertEqual(cell.number, answer)
+
     def test_data_print_control_str(self):
         self.assertEqual(
             str(self.simple_problem.print_in_data_block),
-            "Print data in data block: {'imp': False, 'vol': True}",
+            "Print data in data block: {'imp': False, 'u': False, 'fill': False, 'vol': True}",
         )
 
     def test_cell_validator(self):

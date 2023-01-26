@@ -64,9 +64,11 @@ class TestNumberedObjectCollection(unittest.TestCase):
         self.assertEqual(len(surfaces), size + 2)
         # force a num_cache miss
         extender = copy.deepcopy(extender)
+        for surf in extender:
+            surf._problem = None
+        surfaces[1000].number = 1
         extender[0].number = 1000
         extender[1].number = 70
-        surfaces[1000].number = 1
         surfaces.extend(extender)
         self.assertEqual(len(surfaces), size + 4)
         with self.assertRaises(TypeError):
@@ -105,6 +107,7 @@ class TestNumberedObjectCollection(unittest.TestCase):
         with self.assertRaises(TypeError):
             cells.append_renumber(cell, "hi")
         cell = copy.deepcopy(cell)
+        cell._problem = None
         cell.number = 1
         cells.append_renumber(cell)
         self.assertEqual(cell.number, 4)

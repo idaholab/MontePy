@@ -4,18 +4,20 @@ from mcnpy.errors import MalformedInputError
 
 
 class Cells(NumberedObjectCollection):
-    """A collections of multiple :class:`mcnpy.cell.Cell` objects."""
+    """A collections of multiple :class:`mcnpy.cell.Cell` objects.
 
-    def __init__(self, cells=None):
-        """
-        :param cells: the list of cells to start with if needed
-        :type cells: list
-        """
-        super().__init__(mcnpy.Cell, cells)
+    :param cells: the list of cells to start with if needed
+    :type cells: list
+    :param problem: the problem to link this collection to.
+    :type problem: MCNP_Problem
+    """
+
+    def __init__(self, cells=None, problem=None):
+        super().__init__(mcnpy.Cell, cells, problem)
 
     def set_equal_importance(self, importance, vacuum_cells=tuple()):
         """
-        Sets all cells except the vacuum cells to the same importance using importance.all.
+        Sets all cells except the vacuum cells to the same importance using :func:`mcnpy.data_cards.importance.Importance.all`.
 
         The vacuum cells will be set to 0.0. You can specify cell numbers or cell objects.
 
@@ -59,6 +61,7 @@ class Cells(NumberedObjectCollection):
 
     def update_pointers(self, cells, materials, surfaces, data_inputs, problem):
         inputs_to_property = mcnpy.Cell._INPUTS_TO_PROPERTY
+        inputs_to_always_update = {"_universe", "_fill"}
         inputs_loaded = set()
         # make a copy of the list
         for input in list(data_inputs):
@@ -89,8 +92,10 @@ class Cells(NumberedObjectCollection):
         for input_class, (attr, _) in inputs_to_property.items():
             if not hasattr(self, attr):
                 input = input_class()
-                input.link_to_problem(problem)
+                if attr in inputs_to_always_update:
+                    input.push_to_cells()
                 input._mutated = False
+                input.link_to_problem(problem)
                 setattr(self, attr, input)
 
     def _run_children_format_for_mcnp(self, data_inputs, mcnp_version):

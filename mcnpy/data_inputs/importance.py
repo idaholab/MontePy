@@ -3,17 +3,30 @@ from mcnpy.errors import *
 from mcnpy.input_parser.constants import DEFAULT_VERSION
 from mcnpy.mcnp_object import MCNP_Object
 from mcnpy.particle import Particle
+from mcnpy.utilities import *
 import numbers
 
 
 class Importance(CellModifierInput):
     """
     A data input that sets the importance for a cell(s).
+
+    :param input_card: the Card object representing this data card
+    :type input_card: Card
+    :param comments: The list of Comments that may proceed this or be entwined with it.
+    :type comments: list
+    :param in_cell_block: if this card came from the cell block of an input file.
+    :type in_cell_block: bool
+    :param key: the key from the key-value pair in a cell
+    :type key: str
+    :param value: the value from the key-value pair in a cell
+    :type value: str
     """
 
     def __init__(
         self, input=None, comments=None, in_cell_block=False, key=None, value=None
     ):
+<<<<<<< HEAD:mcnpy/data_inputs/importance.py
         """
         :param input: the input object representing this data input
         :type input: Input
@@ -27,11 +40,14 @@ class Importance(CellModifierInput):
         :type key: str
         """
         super().__init__(input, comments, in_cell_block, key, value)
+=======
+        super().__init__(input_card, comments, in_cell_block, key, value)
+>>>>>>> develop:mcnpy/data_cards/importance.py
         self._particle_importances = {}
         if self.in_cell_block:
             if key:
                 try:
-                    value = float(value)
+                    value = fortran_float(value)
                     assert value >= 0
                 except (ValueError, AssertionError) as e:
                     raise ValueError(
@@ -43,7 +59,7 @@ class Importance(CellModifierInput):
             values = []
             for word in self.words[1:]:
                 try:
-                    value = float(word)
+                    value = fortran_float(word)
                     values.append(value)
                     assert value >= 0
                 except (ValueError, AssertionError) as e:
@@ -64,6 +80,11 @@ class Importance(CellModifierInput):
     @property
     def _has_classifier(self):
         return 2
+
+    @property
+    def has_information(self):
+        if self.in_cell_block:
+            return True
 
     def merge(self, other):
         if not isinstance(other, type(self)):
@@ -134,7 +155,12 @@ class Importance(CellModifierInput):
     @property
     def all(self):
         """
-        Setter for setting importance for all particle types in problem at once.
+        Setter for setting importance for all particle types in the problem at once.
+
+        :param importance: the importance to set all particles to.
+        :type importance: float
+        :returns: None
+        :rtype: None
         """
         return None
 
@@ -260,7 +286,16 @@ def __create_importance_deleter(particle_type):
 
 
 def __create_particle_imp_doc(particle_type):
-    return f"Importance for particles of type *{particle_type.name.lower()}*"
+    return f"""Importance for particles of type *{particle_type.name.lower()}*
+
+Can only be set if this particle is used in the problem mode.
+
+:param importance: The importance to set this to.
+:type importnace: float
+:returns: the importance for the particle type. If not set, defaults to 0.
+:rtype: float
+:raises ParticleTypeNotInProblem: raised if this particle is accessed while not in the problem mode.
+"""
 
 
 def __setup_importances():

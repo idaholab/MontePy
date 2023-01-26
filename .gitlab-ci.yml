@@ -3,8 +3,13 @@ image: python:latest
 before_script:
   - python --version
   - export PATH="~/.local/bin/:/data/gitlab-runner/.conda/envs/experiment_analysis_mcnpy/bin:$PATH"
+  - echo $PATH
   - conda activate experiment_analysis_mcnpy
 
+after_script:
+  - export PATH=$(echo "$PATH" | sed -e 's/:\/data\/gitlab-runner\/.conda\/envs\/experiment_analysis_mcnpy\/$//')
+  - echo $PATH
+  - conda deactivate
 
 install:
   stage: build
@@ -44,8 +49,16 @@ unit_test:
 doc_test:
    stage: test
    script:
-    - echo "Executing Sphinx build to detect syntax errors"
-    - sphinx-build doc/source/ doc/build/ -W --keep-going -E
+      - if [[ -d doc/source/api ]]; then rm -r doc/source/api ; fi; 
+      - echo "Executing Sphinx build to detect syntax errors"
+      - sphinx-build doc/source/ doc/build/ -W --keep-going -E
+      - sphinx-build -b html doc/source/ doc/build/html
+      - mv doc/build/html html
+   artifacts:
+     expose_as: 'Updated Documentation'
+     paths: 
+       - html
+     expire_in: 1 day
 
 format_test:
   stage: test
@@ -66,6 +79,7 @@ pages:
   script:
     - echo "Building documentation with Sphinx."
     - cd doc/
+    - if [[ -d doc/source/api ]]; then rm -r doc/source/api ; fi; 
     - make html
     - cd ..
     - mv doc/build/html public
@@ -76,5 +90,5 @@ pages:
       - public
   only:
     - master
+    - main
     - doc
-    - blackTesting

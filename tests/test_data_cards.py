@@ -2,7 +2,7 @@ from unittest import TestCase
 
 import mcnpy
 
-from mcnpy.cell_data_control import CellDataPrintController
+from mcnpy._cell_data_control import CellDataPrintController
 from mcnpy.data_inputs.data_input import DataInput
 from mcnpy.data_inputs import material, thermal_scattering, transform, volume
 from mcnpy.data_inputs.data_parser import parse_data

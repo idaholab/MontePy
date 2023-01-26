@@ -41,10 +41,13 @@ def read_front_matters(fh, mcnp_version):
     """
     Reads the beginning of an MCNP file for all of the unusual data there.
 
-    This is a generator function that will yield multiple MCNP_Object instances.
+    This is a generator function that will yield multiple :class:`MCNP_Input` instances.
 
-    Warning: this function will move the file handle forward in state.
-    Warning: this function will not close the file handle
+    .. warning::
+        This function will move the file handle forward in state.
+
+    .. warning::
+        This function will not close the file handle.
 
     :param fh: The file handle of the input file.
     :type fh: io.TextIoWrapper
@@ -80,10 +83,13 @@ def read_data(fh, mcnp_version, block_type=None, recursion=False):
     """
     Reads the bulk of an MCNP file for all of the MCNP data.
 
-    This is a generator function that will yield multiple MCNP_Object instances.
+    This is a generator function that will yield multiple :class:`MCNP_Input` instances.
 
-    Warning: this function will move the file handle forward in state.
-    Warning: this function will not close the file handle
+    .. warning::
+        This function will move the file handle forward in state.
+
+    .. warning::
+        This function will not close the file handle.
 
     :param fh: The file handle of the input file.
     :type fh: io.TextIoWrapper
@@ -94,8 +100,8 @@ def read_data(fh, mcnp_version, block_type=None, recursion=False):
     :param recursion: Whether or not this is being called recursively. If True this has been called
                          from read_data. This prevents the reading queue causing infinite recursion.
     :type recursion: bool
-    :return: MCNP_input instances, Input or Comment that represent the data in the MCNP input
-    :rtype: MCNP_input
+    :return: MCNP_Input instances: Inputs that represent the data in the MCNP input.
+    :rtype: MCNP_Input
 
     """
     line_length = get_max_line_length(mcnp_version)

@@ -1,25 +1,47 @@
 from abc import ABC, abstractmethod
 import typing
-from mcnpy.mcnp_object import MCNP_Object
+import mcnpy
+from mcnpy.mcnp_card import MCNP_Card
+from mcnpy.numbered_mcnp_card import Numbered_MCNP_Card
 from mcnpy.errors import *
 
 
 class NumberedObjectCollection(ABC):
     """A collections of MCNP objects.
 
-    It quacks like a dict, it acts like a dict, but is a list.
+    It quacks like a dict, it acts like a dict, but it's a list.
+
+    The items in the collection are accessible by their number.
+    For instance to get the Cell with a number of 2 you can just say:
+
+    ``problem.cells[2]``
+
+    You can also add delete items like you would in a dictionary normally.
+
+    Unlike dictionaries this collection also supports slices e.g., ``[1:3]``.
+    This will return a new :class:`NumberedObjectCollection` with objects
+    that have cell numbers that fit that slice. If a number is in a slice that
+    is not an actual object it will just be skipped.
+
+    Because MCNP numbered objects start at 1, so do the indices.
+    The slices are effectively 1-based and endpoint-inclusive.
+    This means rather than the normal behavior of [0:5] excluding the index
+    5, 5 would be included.
+
+    :param obj_class: the class of numbered objects being collected
+    :type obj_class: type
+    :param objects: the list of cells to start with if needed
+    :type objects: list
+    :param problem: the problem to link this collection to.
+    :type problem: MCNP_Problem
     """
 
-    def __init__(self, obj_class, objects=None):
-        """
-        :param obj_class: the class of numbered objects being collected
-        :type obj_class: type
-        :param objects: the list of cells to start with if needed
-        :type objects: list
-        """
+    def __init__(self, obj_class, objects=None, problem=None):
         self.__num_cache = {}
+        assert issubclass(obj_class, Numbered_MCNP_Card)
         self._obj_class = obj_class
         self._objects = []
+        self._problem = problem
         if objects:
             if not isinstance(objects, list):
                 raise TypeError("NumberedObjectCollection must be built from a list")
@@ -38,10 +60,24 @@ class NumberedObjectCollection(ABC):
                 self.__num_cache[obj.number] = obj
             self._objects = objects
 
+    def link_to_problem(self, problem):
+        """Links the card to the parent problem for this card.
+
+        This is done so that cards can find links to other objects.
+
+        :param problem: The problem to link this card to.
+        :type problem: MCNP_Problem
+        """
+        if not isinstance(problem, mcnpy.mcnp_problem.MCNP_Problem):
+            raise TypeError("problem must be an MCNP_Problem")
+        self._problem = problem
+
     @property
     def numbers(self):
         """
         A generator of the numbers being used.
+
+        :rtype: generator
         """
         self.__num_cache
         for obj in self._objects:
@@ -54,7 +90,7 @@ class NumberedObjectCollection(ABC):
 
         :param number: The number to check.
         :type number: int
-        :raises: NumberConflictError : if this number is in use.
+        :raises NumberConflictError: if this number is in use.
         """
         if not isinstance(number, int):
             raise TypeError("The number must be an int")
@@ -70,6 +106,8 @@ class NumberedObjectCollection(ABC):
 
         The list object is a new instance, but the underlying objects
         are the same.
+
+        :rtype: list
         """
         return self._objects[:]
 
@@ -80,6 +118,7 @@ class NumberedObjectCollection(ABC):
         :param pos: The index of the element to pop from the internal list.
         :type pos: int
         :return: the final elements
+        :rtype: Numbered_MCNP_Card
         """
         if not isinstance(pos, int):
             raise TypeError("The index for popping must be an int")
@@ -93,7 +132,7 @@ class NumberedObjectCollection(ABC):
 
         :param other_list: the list of objects to add.
         :type other_list: list
-        :raises: NumberConflictError if these items conflict with existing elements.
+        :raises NumberConflictError: if these items conflict with existing elements.
         """
         if not isinstance(other_list, list):
             raise TypeError("The extending list must be a list")
@@ -113,8 +152,17 @@ class NumberedObjectCollection(ABC):
             else:
                 self.__num_cache.pop(obj.number, None)
         self._objects.extend(other_list)
+        if self._problem:
+            for obj in other_list:
+                obj.link_to_problem(self._problem)
 
     def remove(self, delete):
+        """
+        Removes the given object from the collection.
+
+        :param delete: the object to delete
+        :type delete: Numbered_MCNP_Card
+        """
         self.__num_cache.pop(delete.number, None)
         self._objects.remove(delete)
 
@@ -129,7 +177,7 @@ class NumberedObjectCollection(ABC):
 
     def __repr__(self):
         return (
-            f"Numbered_object_collection: obj_class: {self._obj_class}\n"
+            f"Numbered_object_collection: obj_class: {self._obj_class}, problem: {self._problem}\n"
             f"Objects: {self._objects}\n"
             f"Number cache: {self.__num_cache}"
         )
@@ -138,8 +186,8 @@ class NumberedObjectCollection(ABC):
         """Appends the given object to the end of this collection.
 
         :param obj: the object to add.
-        :type obj: MCNP_Object
-        :raises: NumberConflictError: if this object has a number that is already in use.
+        :type obj: Numbered_MCNP_Card
+        :raises NumberConflictError: if this object has a number that is already in use.
         """
         if not isinstance(obj, self._obj_class):
             raise TypeError(f"object being appended must be of type: {self._obj_class}")
@@ -153,6 +201,8 @@ class NumberedObjectCollection(ABC):
         else:
             self.__num_cache[obj.number] = obj
         self._objects.append(obj)
+        if self._problem:
+            obj.link_to_problem(self._problem)
 
     def append_renumber(self, obj, step=1):
         """Appends the object, but will renumber the object if collision occurs.
@@ -162,7 +212,7 @@ class NumberedObjectCollection(ABC):
         until an available number is found.
 
         :param obj: The MCNP object being added to the collection.
-        :type obj: MCNP_Object
+        :type obj: Numbered_MCNP_Card
         :param step: the incrementing step to use to find a new number.
         :type step: int
         :return: the number for the object.
@@ -180,6 +230,8 @@ class NumberedObjectCollection(ABC):
             obj.number = number
             self.append(obj)
 
+        if self._problem:
+            obj.link_to_problem(self._problem)
         return number
 
     def request_number(self, start_num=1, step=1):
@@ -210,10 +262,13 @@ class NumberedObjectCollection(ABC):
 
         This works by finding the current maximum number, and then adding the
         stepsize to it.
+
+        :param step: how much to increase the last number by
+        :type step: int
         """
         if not isinstance(step, int):
             raise TypeError("step must be an int")
-        if step <= 0:
+        if step <= 0
             raise ValueError("step must be > 0")
         return max(self.numbers) + step
 
@@ -228,6 +283,8 @@ class NumberedObjectCollection(ABC):
         The indices are the object numbers.
         Because MCNP numbered objects start at 1, so do the indices.
         They are effectively 1-based and endpoint-inclusive.
+
+        :rtype: NumberedObjectCollection
         """
         rstep = i.step if i.step is not None else 1
         rstart = i.start
@@ -301,6 +358,9 @@ class NumberedObjectCollection(ABC):
             else:
                 self.__num_cache[obj.number] = obj
         self._objects += other_list
+        if self._problem:
+            for obj in other_list:
+                obj.link_to_problem(self._problem)
         return self
 
     def __contains__(self, other):
@@ -310,12 +370,12 @@ class NumberedObjectCollection(ABC):
         """
         Get ``i`` if possible, or else return ``default``.
 
-        :param i: number of the object to get
+        :param i: number of the object to get, not it's location in the internal list
         :type i: int
         :param default: value to return if not found
         :type default: object
 
-        :rtype: MCNP_Object
+        :rtype: Numbered_MCNP_Card
         """
         try:
             ret = self.__num_cache[i]
@@ -342,7 +402,7 @@ class NumberedObjectCollection(ABC):
         """
         Get iterator of the collection's objects.
 
-        :rtype: MCNP_Object
+        :rtype: Numbered_MCNP_Card
         """
         for o in self._objects:
             yield o

@@ -8,3 +8,4 @@ dist/*
 *.*.sw*
 doc/build/*
 doc/source/api/*
+.coverage
