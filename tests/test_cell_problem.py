@@ -66,7 +66,7 @@ class TestCellClass(TestCase):
         card = Input([in_str], BlockType.CELL)
         cell = Cell(card)
         self.assertIn(2, cell.old_complement_numbers)
-        self.assertEqual(cell.parameters["TRCL"].strip(), "5")
+        self.assertEqual(cell.parameters["TRCL"][0].nodes[0].value, 5.0)
 
     # TODO test updating cell geometry once done
     def test_cell_validator(self):
@@ -163,4 +163,4 @@ class TestCellClass(TestCase):
         in_str = f"1 0 -1 PWT 1.0"
         card = Input([in_str], BlockType.CELL)
         cell = Cell(card)
-        self.assertEqual(cell.parameters["PWT"], "1.0")
+        self.assertEqual(cell.parameters["PWT"][0].nodes[0].value, 1.0)
