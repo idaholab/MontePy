@@ -60,18 +60,19 @@ class Cell(Numbered_MCNP_Object):
 
     def __init__(self, input=None, comments=None):
         self._material = None
-        self._old_number = None
+        self._old_number = self._generate_default_node(int, -1)
         self._load_blank_modifiers()
-        self._old_mat_number = None
-        self._density_node = None
+        self._old_mat_number = self._generate_default_node(int, -1)
+        self._density_node = self._generate_default_node(float, None)
         self._surfaces = Surfaces()
         self._old_surface_numbers = set()
         self._complements = Cells()
         self._old_complement_numbers = set()
-        self._number = -1
+        self._number = self._generate_default_node(int, -1)
         super().__init__(input, self._parser, comments)
         if input:
             self._old_number = self._tree["cell_num"]
+            # TODO break link
             self._number = self._old_number
             mat_tree = self._tree["material"]
             self._old_mat_number = mat_tree["mat_number"]
