@@ -62,16 +62,16 @@ class Volume(CellModifierInput):
                         f"Word: {word} cannot be parsed as a volume as a str, or Jump"
                     )
 
-    @property
-    def _class_prefix(self):
+    @staticmethod
+    def _class_prefix():
         return "vol"
 
-    @property
-    def _has_number(self):
+    @staticmethod
+    def _has_number():
         return False
 
-    @property
-    def _has_classifier(self):
+    @staticmethod
+    def _has_classifier():
         return 0
 
     @property

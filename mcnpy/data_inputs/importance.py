@@ -53,16 +53,16 @@ class Importance(CellModifierInput):
             for particle in self.particle_classifiers:
                 self._particle_importances[particle] = values
 
-    @property
-    def _class_prefix(self):
+    @staticmethod
+    def _class_prefix():
         return "imp"
 
-    @property
-    def _has_number(self):
+    @staticmethod
+    def _has_number():
         return False
 
-    @property
-    def _has_classifier(self):
+    @staticmethod
+    def _has_classifier():
         return 2
 
     @property

@@ -54,9 +54,9 @@ class DataInputAbstract(MCNP_Object):
         self._mutated = True
         self._words = words
 
-    @property
+    @staticmethod
     @abstractmethod
-    def _class_prefix(self):
+    def _class_prefix():
         """The text part of the input identifier.
 
         For example: for a material the prefix is ``m``
@@ -68,9 +68,9 @@ class DataInputAbstract(MCNP_Object):
         """
         pass
 
-    @property
+    @staticmethod
     @abstractmethod
-    def _has_number(self):
+    def _has_number():
         """Whether or not this class supports numbering.
 
         For example: ``kcode`` doesn't allow numbers but tallies do allow it e.g., ``f7``
@@ -80,9 +80,9 @@ class DataInputAbstract(MCNP_Object):
         """
         pass
 
-    @property
+    @staticmethod
     @abstractmethod
-    def _has_classifier(self):
+    def _has_classifier():
         """Whether or not this class supports particle classifiers.
 
         For example: ``kcode`` doesn't allow particle types but tallies do allow it e.g., ``f7:n``

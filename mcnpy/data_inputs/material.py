@@ -199,16 +199,16 @@ class Material(data_input.DataInputAbstract, Numbered_MCNP_Object):
                             self, "Multiple MT inputs were specified for this material."
                         )
 
-    @property
-    def _class_prefix(self):
+    @staticmethod
+    def _class_prefix():
         return "m"
 
-    @property
-    def _has_number(self):
+    @staticmethod
+    def _has_number():
         return True
 
-    @property
-    def _has_classifier(self):
+    @staticmethod
+    def _has_classifier():
         return 0
 
     def __repr__(self):

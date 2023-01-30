@@ -161,16 +161,16 @@ class Fill(CellModifierInput):
                             f"Values provided must be valid universes. {val} given."
                         )
 
-    @property
-    def _class_prefix(self):
+    @staticmethod
+    def _class_prefix():
         return "fill"
 
-    @property
-    def _has_number(self):
+    @staticmethod
+    def _has_number():
         return False
 
-    @property
-    def _has_classifier(self):
+    @staticmethod
+    def _has_classifier():
         return 0
 
     @property

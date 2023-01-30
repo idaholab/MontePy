@@ -87,16 +87,16 @@ class Transform(data_input.DataInputAbstract, Numbered_MCNP_Object):
                 except IndexError:
                     pass
 
-    @property
-    def _class_prefix(self):
+    @staticmethod
+    def _class_prefix():
         return "tr"
 
-    @property
-    def _has_number(self):
+    @staticmethod
+    def _has_number():
         return True
 
-    @property
-    def _has_classifier(self):
+    @staticmethod
+    def _has_classifier():
         return 0
 
     @property
