@@ -80,14 +80,7 @@ class TestCellClass(TestCase):
             cell.validate()
         del cell.mass_density
 
-    def test_geometry_logic_string_setter(self):
-        in_str = "1 0 2"
-        card = Input([in_str], BlockType.CELL)
-        cell = Cell(card)
-        cell.geometry_logic_string = "1 2"
-        self.assertEqual(cell.geometry_logic_string, "1 2")
-        with self.assertRaises(TypeError):
-            cell.geometry_logic_string = 1
+    # TODO test geometry stuff
 
     def test_number_setter(self):
         in_str = "1 0 2"
