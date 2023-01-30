@@ -72,5 +72,7 @@ class DataParser(MCNP_Parser):
 
 class ClassifierParser(DataParser):
     @_("classifier")
-    def classifier(self, p):
-        return p
+    def data_classifier(self, p):
+        return syntax_node.SyntaxNode(
+            "data input classifier", {"classifier": p.classifier}
+        )

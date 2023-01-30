@@ -283,6 +283,10 @@ class ParticleNode(SyntaxNodeBase):
         self._token = token
         # TODO parse particles
 
+    def format(self):
+        # TODO
+        pass
+
 
 class ListNode(SyntaxNodeBase):
     def __init__(self, name):

@@ -1,6 +1,7 @@
 from abc import abstractmethod
 from mcnpy.errors import *
-from mcnpy.input_parser.data_parser import DataParser
+from mcnpy.input_parser.data_parser import ClassifierParser, DataParser
+from mcnpy.input_parser.mcnp_input import Input
 from mcnpy.particle import Particle
 from mcnpy.mcnp_object import MCNP_Object
 import re
@@ -18,18 +19,26 @@ class DataInputAbstract(MCNP_Object):
 
     _parser = DataParser()
 
-    def __init__(self, input=None, comments=None):
+    _classifier_parser = ClassifierParser()
+
+    def __init__(self, input=None, comments=None, fast_parse=False):
         """
         :param input: the Input object representing this data input
         :type input: Input
         :param comments: The list of Comments that may proceed this or be entwined with it.
         :type comments: list
         """
-        super().__init__(input, self._parser, comments)
-        if input:
-            self.__split_name()
+        if not fast_parse:
+            super().__init__(input, self._parser, comments)
+            if input:
+                self.__split_name()
+            else:
+                self._words = []
         else:
-            self._words = []
+            words = input.input_lines[0].split()
+            input = Input([words[0]], input.block_type)
+            super().__init__(input, self._classifier_parser, comments)
+            self.__split_name()
 
     @property
     def allowed_keywords(self):
