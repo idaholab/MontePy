@@ -2,6 +2,7 @@ from abc import ABC, abstractmethod
 from mcnpy.errors import *
 from mcnpy.input_parser.constants import BLANK_SPACE_CONTINUE, get_max_line_length
 from mcnpy.input_parser.mcnp_input import Comment
+from mcnpy.input_parser.syntax_node import PaddingNode, ValueNode
 import mcnpy
 import numpy as np
 import textwrap
@@ -48,6 +49,16 @@ class MCNP_Object(ABC):
             self._comments = comments
         else:
             self._comments = []
+
+    @staticmethod
+    def _generate_default_node(value_type, default, padding=" "):
+        if padding:
+            padding_node = PaddingNode(padding)
+        else:
+            padding_node = None
+        if default is None:
+            return ValueNode(default, value_type, padding_node)
+        return ValueNode(str(default), value_type, padding_node)
 
     @property
     def parameters(self):

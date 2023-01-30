@@ -179,7 +179,10 @@ class ValueNode(SyntaxNodeBase):
         self._token = token
         self._type = token_type
         self._formatter = self._FORMATTERS[token_type].copy()
-        if token_type == float:
+        if token is None:
+            print("is none")
+            self._value = None
+        elif token_type == float:
             self._value = fortran_float(token)
         elif token_type == int:
             self._value = int(token)
