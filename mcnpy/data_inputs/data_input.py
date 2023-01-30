@@ -220,26 +220,6 @@ class DataInputAbstract(MCNP_Object):
                     f"{self.words[0]} cannot have a particle classifier for {type(self)}",
                 )
 
-    @staticmethod
-    def _parse_particle_classifiers(classifier_str):
-        """
-        Parses a particle classifier string.
-
-        Interprets ``:n,p`` (from ``imp:n,p``) as:
-            ``[<Particle.NEUTRON: 'N'>, <Particle.PHOTON: 'P'>]``
-
-        :param classifier_str: the input classifier string from the input name.
-        :type classifier_str: str
-        :returns: a list of the ParticleTypes in the classifier
-        :rtype: list
-        """
-        if classifier_str:
-            classifier_chunks = classifier_str.replace(":", "").split(",")
-            ret = []
-            for chunk in classifier_chunks:
-                ret.append(Particle(chunk.upper()))
-            return ret
-
     def __lt__(self, other):
         type_comp = self.prefix < other.prefix
         if type_comp:

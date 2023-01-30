@@ -2,6 +2,7 @@ from abc import ABC, abstractmethod
 from mcnpy import input_parser
 from mcnpy.input_parser.shortcuts import Shortcuts
 from mcnpy.geometry_operators import Operator
+from mcnpy.particle import Particle
 from mcnpy.utilities import fortran_float
 import re
 
@@ -276,15 +277,39 @@ class ValueNode(SyntaxNodeBase):
 
 
 class ParticleNode(SyntaxNodeBase):
+    _letter_finder = re.compile(r"([a-zA-Z])")
+
     def __init__(self, name, token):
         super().__init__(name)
         self._nodes = [self]
         self._token = token
-        # TODO parse particles
+        classifier_chunks = token.replace(":", "").split(",")
+        self._particles = set()
+        self._formatter = {"upper": False}
+        for chunk in classifier_chunks:
+            ret.add(Particle(chunk.upper()))
+
+    @property
+    def particles(self):
+        return self._particles
 
     def format(self):
-        # TODO
-        pass
+        if self._formatter["upper"]:
+            parts = [str(p).upper() for p in self._particles]
+        else:
+            parts = [str(p).lower() for p in self._particles]
+        return f":{','.join(parts)}"
+
+    def _reverse_engineer_format(self):
+        total_match = 0
+        upper_match = 0
+        for match in _letter_finder.finditer(self._token):
+            if match:
+                if match.isupper():
+                    upper_match += 0
+                total_match += 1
+        if upper_match / total_match >= 0.5:
+            self._formatter["upper"] = True
 
 
 class ListNode(SyntaxNodeBase):
@@ -452,11 +477,11 @@ class ClassifierNode(SyntaxNodeBase):
             ret = self.modifier
         else:
             ret = ""
-        ret += self.prefix
+        ret += self.prefix.format()
         if self.number:
-            ret += self.number
+            ret += self.number.format()
         if self.particles:
-            ret += self.particles
+            ret += self.particles.format()
         return ret
 
 
