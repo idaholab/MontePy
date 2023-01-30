@@ -1,3 +1,7 @@
+from mcnpy.data_inputs.isotope import Isotope
+from mcnpy.input_parser.syntax_node import ValueNode
+
+
 class MaterialComponent:
     """
     A class to represent a single component in a material.
@@ -7,16 +11,20 @@ class MaterialComponent:
     :param isotope: the Isotope object representing this isotope
     :type isotope: Isotope
     :param fraction: the fraction of this component in the material
-    :type fraction: float
+    :type fraction: ValueNode
     """
 
     def __init__(self, isotope, fraction):
+        if not isinstance(isotope, Isotope):
+            raise TypeError(f"Isotope must be an Isotope. {isotope} given")
+        if not isinstance(fraction, ValueNode) or not isinstance(fraction.value, float):
+            raise TypeError(f"fraction must be float ValueNode. {fraction} given.")
         self._isotope = isotope
+        self._tree = fraction
+        fraction = fraction.value
         if not isinstance(fraction, float):
             raise TypeError("fraction must be a float")
-        if fraction <= 0:
-            raise ValueError("fraction must be > 0.0")
-        self._fraction = fraction
+        self._fraction = abs(fraction)
 
     @property
     def isotope(self):

@@ -1,3 +1,4 @@
+import copy
 from mcnpy.data_inputs import data_input, thermal_scattering
 from mcnpy.data_inputs.isotope import Isotope
 from mcnpy.data_inputs.material_component import MaterialComponent
@@ -23,54 +24,40 @@ class Material(data_input.DataInputAbstract, Numbered_MCNP_Object):
     _parser = MaterialParser()
 
     def __init__(self, input=None, comment=None):
-        super().__init__(input, comment)
         self._material_components = {}
         self._thermal_scattering = None
-        self._material_number = -1
+        self._material_number = self._generate_default_node(int, -1)
+        super().__init__(input, comment)
         if input:
-            words = self.words
-            # material numbers
             num = self._input_number
-            self._old_material_number = num
-            self._material_number = num
-            words_iter = iter(words[1:])
+            self._old_number = copy.deepcopy(num)
+            self._number = num
             set_atom_frac = False
-            self._parameter_string = ""
-            for isotope_str in words_iter:
-                try:
-                    isotope = Isotope(isotope_str)
-                    fraction = next(words_iter)
-                    fraction = fortran_float(fraction)
-                except MalformedInputError:
-                    self._parameter_string += " ".join(
-                        itertools.chain([isotope_str], words_iter)
-                    )
-                    break
-                except ValueError:
-                    raise MalformedInputError(
-                        input,
-                        f"{fraction} could not be parsed as a material fraction",
-                    )
+            isotope_fractions = self._tree["isotope_fractions"]
+            for isotope_node, fraction in isotope_fractions.nodes:
+                isotope = Isotope(node=isotope_node)
+                frac = fraction.value
                 if not set_atom_frac:
                     set_atom_frac = True
-                    if fraction > 0:
+                    if frac > 0:
                         self._is_atom_fraction = True
                     else:
                         self._is_atom_fraction = False
                 else:
                     # if switching fraction formatting
-                    if (fraction > 0 and not self._is_atom_fraction) or (
-                        fraction < 0 and self._is_atom_fraction
+                    if (frac > 0 and not self._is_atom_fraction) or (
+                        fract < 0 and self._is_atom_fraction
                     ):
                         raise MalformedInputError(
                             input,
-                            "Material definitons cannot use atom and mass fraction at the same time",
+                            "Material definitions cannot use atom and mass fraction at the same time",
                         )
                 self._material_components[isotope] = MaterialComponent(
-                    isotope, abs(fraction)
+                    isotope, fraction
                 )
 
     @property
+    # TODO can I delete this?
     def allowed_keywords(self):
         return {
             "GAS",
