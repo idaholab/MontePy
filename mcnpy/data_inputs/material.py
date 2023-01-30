@@ -11,6 +11,13 @@ import itertools
 import re
 
 
+def _number_validator(self, number):
+    if number <= 0:
+        raise ValueError("number must be > 0")
+    if self._problem:
+        self._problem.materials.check_number(number)
+
+
 class Material(data_input.DataInputAbstract, Numbered_MCNP_Object):
     """
     A class to represent an MCNP material.
@@ -78,16 +85,16 @@ class Material(data_input.DataInputAbstract, Numbered_MCNP_Object):
             "REFS",
         }
 
-    @property
+    @make_prop_val_node("_old_number")
     def old_number(self):
         """
         The material number that was used in the read file
 
         :rtype: int
         """
-        return self._old_material_number
+        pass
 
-    @property
+    @make_prop_val_node("_number", int, _number_validator)
     def number(self):
         """
         The number to use to identify the material by
@@ -95,17 +102,6 @@ class Material(data_input.DataInputAbstract, Numbered_MCNP_Object):
         :rtype: int
         """
         return self._material_number
-
-    @number.setter
-    def number(self, number):
-        if not isinstance(number, int):
-            raise TypeError("number must be an int")
-        if number <= 0:
-            raise ValueError("number must be > 0")
-        if self._problem:
-            self._problem.materials.check_number(number)
-        self._mutated = True
-        self._material_number = number
 
     @property
     def is_atom_fraction(self):
@@ -126,16 +122,7 @@ class Material(data_input.DataInputAbstract, Numbered_MCNP_Object):
         # TODO allow detecting mutation of components
         return self._material_components
 
-    @property
-    def parameter_string(self):
-        """
-        String containing the key value pairs specified if any
-
-        :rtype: str
-        """
-        return self._parameter_string
-
-    @property
+    @make_prop_pointer("_thermal_scattering", thermal_scattering.ThermalScatteringLaw)
     def thermal_scattering(self):
         """
         The thermal scattering law for this material
