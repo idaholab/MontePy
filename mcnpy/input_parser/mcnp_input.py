@@ -271,7 +271,7 @@ class ReadInput(Input):
     def file_name(self):
         """
         The relative path to the filename specified in this read input.
-        
+
         :rtype: str
         """
         return self._parameters["file"]

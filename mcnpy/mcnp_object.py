@@ -10,7 +10,7 @@ import textwrap
 class MCNP_Object(ABC):
     """
     Abstract class for semantic representations of MCNP inputs.
-        
+
     :param input: The Input syntax object this will wrap and parse.
     :type input: Input
     :param comments: The Comments that proceeded this input or were inside of this if any

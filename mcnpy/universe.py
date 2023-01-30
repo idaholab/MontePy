@@ -2,10 +2,10 @@ import mcnpy
 from mcnpy.cells import Cells
 from mcnpy.input_parser.mcnp_input import Card
 from mcnpy.input_parser.block_type import BlockType
-from mcnpy.numbered_mcnp_card import Numbered_MCNP_Card
+from mcnpy.numbered_mcnp_object import Numbered_MCNP_Object
 
 
-class Universe(Numbered_MCNP_Card):
+class Universe(Numbered_MCNP_Object):
     """
     Class to represent an MCNP universe, but not handle the input
     directly.

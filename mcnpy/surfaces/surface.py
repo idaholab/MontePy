@@ -1,12 +1,12 @@
 from mcnpy.errors import *
 from mcnpy.data_inputs import transform
-from mcnpy.numbered_mcnp_card import Numbered_MCNP_Card
+from mcnpy.numbered_mcnp_object import Numbered_MCNP_Object
 from mcnpy.surfaces.surface_type import SurfaceType
 from mcnpy.utilities import *
 import re
 
 
-class Surface(Numbered_MCNP_Card):
+class Surface(Numbered_MCNP_Object):
     """
     Object to hold a single MCNP surface
 
@@ -315,11 +315,7 @@ class Surface(Numbered_MCNP_Card):
             f"constants: {self.surface_constants}"
         )
 
-<<<<<<< HEAD
-    def update_pointers(self, surface_dict, data_inputs):
-=======
     def update_pointers(self, surfaces, data_cards):
->>>>>>> develop
         """
         Updates the internal pointers to the appropriate objects.
 

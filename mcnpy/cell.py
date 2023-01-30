@@ -583,6 +583,7 @@ class Cell(Numbered_MCNP_Card):
         else:
             mat_num = 0
         self._tree["material"]["mat_number"].value = mat_num
+
     def validate(self):
         """
         Validates that the cell is in a usable state.

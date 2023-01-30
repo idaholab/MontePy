@@ -183,8 +183,8 @@ For example the init function for ``Cells``
         def __init__(self, cells=None):
             super().__init__(mcnpy.Cell, cells)
 
-Numbered Object :class:`~mcnpy.numbered_mcnp_card.Numbered_MCNP_Card`
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Numbered Object :class:`~mcnpy.numbered_mcnp_card.Numbered_MCNP_Object`
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 MCNP allows many types of number objects like cells, surfaces, and tallies. 
 The only thing special about this is that it requires there be the properties:
 ``number`` and ``old_number``.
@@ -272,8 +272,8 @@ To add a problem level data Object you need to
 #. Add it ``cards_to_property``. The key will be the object class, and the value will be a string for the attribute it should be loaded to.
 #. Add a property that exposes this attribute in a desirable way.
 
-Making a numbered Object :class:`~mcnpy.numbered_mcnp_card.Numbered_MCNP_Card`
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Making a numbered Object :class:`~mcnpy.numbered_mcnp_card.Numbered_MCNP_Object`
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 MCNP allows many types of number objects like cells, surfaces, and tallies. 
 First you need to provide the property ``number``, and ``old_number``.
 The parent class provides a system to link to a problem via ``self._problem``.

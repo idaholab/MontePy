@@ -7,7 +7,7 @@ import mcnpy
 class ThermalScatteringLaw(DataInputAbstract):
     """
     Class to hold MT Inputs
-    
+
     This is designed to be called two ways.
     The first is with a read input file using input_card, comment
     The second is after a read with a material and a comment (using named inputs)

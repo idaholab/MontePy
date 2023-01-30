@@ -11,11 +11,11 @@ class Importance(CellModifierInput):
     """
     A data input that sets the importance for a cell(s).
 
-    :param input_card: the Card object representing this data card
-    :type input_card: Card
+    :param input: the input object representing this data input
+    :type input: Input
     :param comments: The list of Comments that may proceed this or be entwined with it.
     :type comments: list
-    :param in_cell_block: if this card came from the cell block of an input file.
+    :param in_cell_block: if this Input came from the cell block of an input file.
     :type in_cell_block: bool
     :param key: the key from the key-value pair in a cell
     :type key: str
@@ -26,23 +26,7 @@ class Importance(CellModifierInput):
     def __init__(
         self, input=None, comments=None, in_cell_block=False, key=None, value=None
     ):
-<<<<<<< HEAD:mcnpy/data_inputs/importance.py
-        """
-        :param input: the input object representing this data input
-        :type input: Input
-        :param comments: The list of Comments that may proceed this or be entwined with it.
-        :type comments: list
-        :param in_cell_block: if this Input came from the cell block of an input file.
-        :type in_cell_block: bool
-        :param key: the key from the key-value pair in a cell
-        :type key: str
-        :param key: the value from the key-value pair in a cell
-        :type key: str
-        """
         super().__init__(input, comments, in_cell_block, key, value)
-=======
-        super().__init__(input_card, comments, in_cell_block, key, value)
->>>>>>> develop:mcnpy/data_cards/importance.py
         self._particle_importances = {}
         if self.in_cell_block:
             if key:

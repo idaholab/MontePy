@@ -2,7 +2,7 @@ from abc import ABC, abstractmethod
 import typing
 import mcnpy
 from mcnpy.mcnp_card import MCNP_Card
-from mcnpy.numbered_mcnp_card import Numbered_MCNP_Card
+from mcnpy.numbered_mcnp_object import Numbered_MCNP_Object
 from mcnpy.errors import *
 
 
@@ -38,7 +38,7 @@ class NumberedObjectCollection(ABC):
 
     def __init__(self, obj_class, objects=None, problem=None):
         self.__num_cache = {}
-        assert issubclass(obj_class, Numbered_MCNP_Card)
+        assert issubclass(obj_class, Numbered_MCNP_Object)
         self._obj_class = obj_class
         self._objects = []
         self._problem = problem
@@ -118,7 +118,7 @@ class NumberedObjectCollection(ABC):
         :param pos: The index of the element to pop from the internal list.
         :type pos: int
         :return: the final elements
-        :rtype: Numbered_MCNP_Card
+        :rtype: Numbered_MCNP_Object
         """
         if not isinstance(pos, int):
             raise TypeError("The index for popping must be an int")
@@ -161,7 +161,7 @@ class NumberedObjectCollection(ABC):
         Removes the given object from the collection.
 
         :param delete: the object to delete
-        :type delete: Numbered_MCNP_Card
+        :type delete: Numbered_MCNP_Object
         """
         self.__num_cache.pop(delete.number, None)
         self._objects.remove(delete)
@@ -186,7 +186,7 @@ class NumberedObjectCollection(ABC):
         """Appends the given object to the end of this collection.
 
         :param obj: the object to add.
-        :type obj: Numbered_MCNP_Card
+        :type obj: Numbered_MCNP_Object
         :raises NumberConflictError: if this object has a number that is already in use.
         """
         if not isinstance(obj, self._obj_class):
@@ -212,7 +212,7 @@ class NumberedObjectCollection(ABC):
         until an available number is found.
 
         :param obj: The MCNP object being added to the collection.
-        :type obj: Numbered_MCNP_Card
+        :type obj: Numbered_MCNP_Object
         :param step: the incrementing step to use to find a new number.
         :type step: int
         :return: the number for the object.
@@ -268,7 +268,7 @@ class NumberedObjectCollection(ABC):
         """
         if not isinstance(step, int):
             raise TypeError("step must be an int")
-        if step <= 0
+        if step <= 0:
             raise ValueError("step must be > 0")
         return max(self.numbers) + step
 
@@ -375,7 +375,7 @@ class NumberedObjectCollection(ABC):
         :param default: value to return if not found
         :type default: object
 
-        :rtype: Numbered_MCNP_Card
+        :rtype: Numbered_MCNP_Object
         """
         try:
             ret = self.__num_cache[i]
@@ -402,7 +402,7 @@ class NumberedObjectCollection(ABC):
         """
         Get iterator of the collection's objects.
 
-        :rtype: Numbered_MCNP_Card
+        :rtype: Numbered_MCNP_Object
         """
         for o in self._objects:
             yield o
