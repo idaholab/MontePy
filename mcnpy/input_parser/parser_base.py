@@ -72,7 +72,7 @@ class MCNP_Parser(Parser, metaclass=MetaBuilder):
 
     @_(
         "number_phrase REPEAT",
-        "number_phrase NUMBER MULTIPLY",
+        "number_phrase MULTIPLY",
         "number_phrase INTERPOLATE number_phrase",
         "number_phrase LOG_INTERPOLATE number_phrase",
         "JUMP",

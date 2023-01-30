@@ -167,6 +167,8 @@ class MCNP_Lexer(Lexer):
     def ZAID(self, t):
         return t
 
+    MULTIPLY = r"[+\-]?[0-9]+\.?[0-9]*E?[+\-]?[0-9]*M\s"
+
     @_(r"[+\-]?[0-9]+\.?[0-9]*E?[+\-]?[0-9]*")
     def NUMBER(self, t):
         if fortran_float(t.value) == 0:
@@ -185,8 +187,6 @@ class MCNP_Lexer(Lexer):
         return t
 
     REPEAT = r"\d*R\s"
-
-    MULTIPLY = r"M\s"
 
     INTERPOLATE = r"\d*I\s"
 
