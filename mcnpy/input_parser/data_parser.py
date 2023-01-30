@@ -63,11 +63,16 @@ class DataParser(MCNP_Parser):
 
     @_("isotope_fraction", "isotope_fractions isotope_fraction")
     def isotope_fractions(self, p):
-        return p
+        if hasattr(p, "isotope_fractions"):
+            fractions = p.isotope_fractions
+        else:
+            fractions = syntax_node.IsotopesNode("isotope list")
+        fractions.append(p.isotope_fraction)
+        return fractions
 
     @_("ZAID padding")
     def zaid_phrase(self, p):
-        return p
+        return self._flush_phrase(p, str)
 
 
 class ClassifierParser(DataParser):

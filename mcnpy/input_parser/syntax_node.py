@@ -180,7 +180,6 @@ class ValueNode(SyntaxNodeBase):
         self._type = token_type
         self._formatter = self._FORMATTERS[token_type].copy()
         if token is None:
-            print("is none")
             self._value = None
         elif token_type == float:
             self._value = fortran_float(token)
@@ -310,6 +309,22 @@ class ListNode(SyntaxNodeBase):
         for node in self.nodes:
             ret += node.format()
         return ret
+
+
+class IsotopesNode(SyntaxNodeBase):
+    def __init__(self, name):
+        super().__init__(name)
+
+    def append(self, isotope_fraction):
+        isotope, concentration = isotope_fraction[1:3]
+        self._nodes.append((isotope, concentration))
+
+    def format(self):
+        # TODO
+        pass
+
+    def __repr__(self):
+        return f"(Isotopes: {self.nodes})"
 
 
 class ShortcutNode(ListNode):
