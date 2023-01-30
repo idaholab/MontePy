@@ -305,7 +305,9 @@ class Cell(Numbered_MCNP_Object):
         """
         pass
 
-    @make_prop_val_node("_density_node", (float, int), base_type=float, deletable=True)
+    @make_prop_val_node(
+        "_density_node", (float, int, type(None)), base_type=float, deletable=True
+    )
     def _density(self):
         pass
 
