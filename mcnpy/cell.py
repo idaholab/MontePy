@@ -23,8 +23,8 @@ class Cell(Numbered_MCNP_Object):
     """
     Object to represent a single MCNP cell defined in CGS.
 
-    :param input_card: the Card input for the cell definition
-    :type input_card: Card
+    :param input: the input for the cell definition
+    :type input: Input
     :param comments: the Comments block that preceded and are in the cell block if any.
     :type comments: list
     """
@@ -58,7 +58,7 @@ class Cell(Numbered_MCNP_Object):
     }
     _parser = CellParser()
 
-    def __init__(self, input_card=None, comments=None):
+    def __init__(self, input=None, comments=None):
         self._material = None
         self._old_number = None
         self._load_blank_modifiers()
