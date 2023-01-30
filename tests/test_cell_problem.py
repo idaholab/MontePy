@@ -82,7 +82,7 @@ class TestCellClass(TestCase):
 
     def test_geometry_logic_string_setter(self):
         in_str = "1 0 2"
-        card = Card([in_str], BlockType.CELL)
+        card = Input([in_str], BlockType.CELL)
         cell = Cell(card)
         cell.geometry_logic_string = "1 2"
         self.assertEqual(cell.geometry_logic_string, "1 2")
@@ -127,7 +127,7 @@ class TestCellClass(TestCase):
 
     def test_cell_density_deleter(self):
         in_str = "1 1 0.5 2"
-        card = Card([in_str], BlockType.CELL)
+        card = Input([in_str], BlockType.CELL)
         cell = Cell(card)
         del cell.mass_density
         self.assertIsNone(cell.mass_density)
@@ -168,6 +168,6 @@ class TestCellClass(TestCase):
 
     def test_cell_paremeters_no_eq(self):
         in_str = f"1 0 -1 PWT 1.0"
-        card = Card([in_str], BlockType.CELL)
+        card = Input([in_str], BlockType.CELL)
         cell = Cell(card)
         self.assertEqual(cell.parameters["PWT"], "1.0")
