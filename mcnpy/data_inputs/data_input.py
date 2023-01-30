@@ -192,11 +192,12 @@ class DataInputAbstract(MCNP_Object):
         """
         classifier = self._classifier
         if self._class_prefix:
-            if classifier.prefix.value.lower() != self._class_prefix:
+            if classifier.prefix.value.lower() != self._class_prefix():
                 raise MalformedInputError(
-                    self.words, f"{self.words[0]} has the wrong prefix for {type(self)}"
+                    self,
+                    f"{self._tree['classifier'].format()} has the wrong prefix for {type(self)}",
                 )
-            if self._has_number:
+            if self._has_number():
                 try:
                     num = classifier.number.value
                     assert num > 0
@@ -204,16 +205,16 @@ class DataInputAbstract(MCNP_Object):
                     raise MalformedInputError(
                         self.words, f"{self.words[0]} does not contain a valid number"
                     )
-            if not self._has_number and classifier.number is not None:
+            if not self._has_number() and classifier.number is not None:
                 raise MalformedInputError(
                     self.words, f"{self.words[0]} cannot have a number for {type(self)}"
                 )
-            if self._has_classifier == 2 and classifier.particles is None:
+            if self._has_classifier() == 2 and classifier.particles is None:
                 raise MalformedInputError(
                     self.words,
                     f"{self.words[0]} doesn't have a particle classifier for {type(self)}",
                 )
-            if self._has_classifier == 0 and classifier.particles is not None:
+            if self._has_classifier() == 0 and classifier.particles is not None:
                 raise MalformedInputError(
                     self.words,
                     f"{self.words[0]} cannot have a particle classifier for {type(self)}",
