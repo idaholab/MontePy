@@ -41,7 +41,10 @@ def make_prop_val_node(
             if result:
                 return result
             else:
-                return getattr(self, hidden_param).value
+                val = getattr(self, hidden_param)
+                if val is None:
+                    return None
+                return val.value
 
         if types is not None:
 
