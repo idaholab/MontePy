@@ -9,7 +9,7 @@ import itertools
 import re
 
 
-class Material(data_card.DataCardAbstract, Numbered_MCNP_Object):
+class Material(data_input.DataInputAbstract, Numbered_MCNP_Object):
     """
     A class to represent an MCNP material.
 

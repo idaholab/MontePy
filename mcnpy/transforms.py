@@ -1,5 +1,5 @@
 from mcnpy.numbered_object_collection import NumberedObjectCollection
-from mcnpy.data_cards.transform import Transform
+from mcnpy.data_inputs.transform import Transform
 
 
 class Transforms(NumberedObjectCollection):

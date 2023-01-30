@@ -1,13 +1,12 @@
 import itertools
-from mcnpy.data_cards.cell_modifier import CellModifierCard
-from mcnpy.data_cards.lattice import Lattice
+from mcnpy.data_inputs.cell_modifier import CellModifierInput
+from mcnpy.data_inputs.lattice import Lattice
 from mcnpy.errors import *
-from mcnpy.input_parser.constants import DEFAULT_VERSION
 from mcnpy.input_parser.mcnp_input import Jump
-from mcnpy.mcnp_card import MCNP_Card
+from mcnpy.mcnp_object import MCNP_Object
 
 
-class LatticeCard(CellModifierCard):
+class LatticeInput(CellModifierInput):
     """
     Object to handle the inputs from ``LAT``.
 
@@ -162,7 +161,7 @@ class LatticeCard(CellModifierCard):
                         mutated = True
                         break
             if mutated and self._problem.print_in_data_block["LAT"]:
-                ret = MCNP_Card.format_for_mcnp_input(self, mcnp_version)
+                ret = MCNP_Object.format_for_mcnp_input(self, mcnp_version)
                 ret_strs = ["LAT"]
                 lattices = []
                 for cell in self._problem.cells:

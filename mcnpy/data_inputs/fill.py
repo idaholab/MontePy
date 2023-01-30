@@ -1,19 +1,19 @@
-from mcnpy.data_cards.cell_modifier import CellModifierCard
-from mcnpy.data_cards.transform import Transform
+from mcnpy.data_inputs.cell_modifier import CellModifierInput
+from mcnpy.data_inputs.transform import Transform
 from mcnpy.errors import *
 from mcnpy.input_parser.block_type import BlockType
-from mcnpy.input_parser.mcnp_input import Card, Jump
-from mcnpy.mcnp_card import MCNP_Card
+from mcnpy.input_parser.mcnp_input import Input, Jump
+from mcnpy.mcnp_object import MCNP_Object
 from mcnpy.universe import Universe
 import numpy as np
 
 
-class Fill(CellModifierCard):
+class Fill(CellModifierInput):
     """
     Object to handle the ``FILL`` card in cell and data blocks.
 
-    :param input_card: the Card object representing this data card
-    :type input_card: Card
+    :param input: the Input object representing this data card
+    :type input: Input
     :param comments: The list of Comments that may proceed this or be entwined with it.
     :type comments: list
     :param in_cell_block: if this card came from the cell block of an input file.
@@ -30,21 +30,8 @@ class Fill(CellModifierCard):
     """
 
     def __init__(
-        self, input_card=None, comments=None, in_cell_block=False, key=None, value=None
+        self, input=None, comments=None, in_cell_block=False, key=None, value=None
     ):
-        """
-        :param input_card: the Card object representing this data card
-        :type input_card: Card
-        :param comments: The list of Comments that may proceed this or be entwined with it.
-        :type comments: list
-        :param in_cell_block: if this card came from the cell block of an input file.
-        :type in_cell_block: bool
-        :param key: the key from the key-value pair in a cell
-        :type key: str
-        :param value: the value from the key-value pair in a cell
-        :type value: str
-        """
-
         self._old_number = None
         self._old_numbers = None
         self._universe = None
@@ -53,7 +40,7 @@ class Fill(CellModifierCard):
         self._hidden_transform = None
         self._old_transform_number = None
         self._multi_universe = False
-        super().__init__(input_card, comments, in_cell_block, key, value)
+        super().__init__(input, comments, in_cell_block, key, value)
         if self.in_cell_block:
             if key:
                 self._parse_cell_input(key, value)
@@ -521,7 +508,7 @@ class Fill(CellModifierCard):
                     mutated = True
                     break
             if mutated and self._problem.print_in_data_block["FILL"]:
-                ret = MCNP_Card.format_for_mcnp_input(self, mcnp_version)
+                ret = MCNP_Object.format_for_mcnp_input(self, mcnp_version)
                 words = ["FILL"]
                 universes = []
                 for cell in self._problem.cells:

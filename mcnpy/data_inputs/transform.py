@@ -7,7 +7,7 @@ import numpy as np
 import re
 
 
-class Transform(data_card.DataCardAbstract, Numbered_MCNP_Object):
+class Transform(data_input.DataInputAbstract, Numbered_MCNP_Object):
     """
     Card to represent a transform card (TR)
 

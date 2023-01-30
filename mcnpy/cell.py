@@ -1,10 +1,10 @@
 import itertools
 from mcnpy.cells import Cells
-from mcnpy.data_inputs import importance, volume
+from mcnpy.data_inputs import importance, fill, lattice_input, universe_input, volume
 from mcnpy.data_inputs.data_parser import PREFIX_MATCHES
 from mcnpy.input_parser.cell_parser import CellParser
 from mcnpy.errors import *
-from mcnpy.mcnp_object import MCNP_Object
+from mcnpy.numbered_mcnp_object import Numbered_MCNP_Object
 from mcnpy.data_inputs.material import Material
 from mcnpy.surfaces.surface import Surface
 from mcnpy.surface_collection import Surfaces
@@ -21,7 +21,7 @@ def _number_validator(self, number):
         self._problem.cells.check_number(number)
 
 
-class Cell(Numbered_MCNP_Card):
+class Cell(Numbered_MCNP_Object):
     """
     Object to represent a single MCNP cell defined in CGS.
 
@@ -54,8 +54,8 @@ class Cell(Numbered_MCNP_Card):
     _INPUTS_TO_PROPERTY = {
         importance.Importance: ("_importance", False),
         volume.Volume: ("_volume", True),
-        universe_card.UniverseCard: ("_universe", True),
-        lattice_card.LatticeCard: ("_lattice", True),
+        universe_input.UniverseInput: ("_universe", True),
+        lattice_input.LatticeInput: ("_lattice", True),
         fill.Fill: ("_fill", True),
     }
     _parser = CellParser()

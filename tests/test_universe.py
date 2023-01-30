@@ -5,56 +5,56 @@ import mcnpy
 from mcnpy.cell import Cell
 from mcnpy.errors import *
 from mcnpy.input_parser.block_type import BlockType
-from mcnpy.input_parser.mcnp_input import Card, Comment, Jump
+from mcnpy.input_parser.mcnp_input import Input, Jump
 from mcnpy.universe import Universe
-from mcnpy.data_cards.fill import Fill
-from mcnpy.data_cards.lattice import Lattice
-from mcnpy.data_cards.lattice_card import LatticeCard
-from mcnpy.data_cards.universe_card import UniverseCard
+from mcnpy.data_inputs.fill import Fill
+from mcnpy.data_inputs.lattice import Lattice
+from mcnpy.data_inputs.lattice_input import LatticeInput
+from mcnpy.data_inputs.universe_input import UniverseInput
 import numpy as np
 
 
-class TestUniverseCard(TestCase):
+class TestUniverseInput(TestCase):
     def test_universe_card_init(self):
-        card = UniverseCard(in_cell_block=True, key="U", value="5")
+        card = UniverseInput(in_cell_block=True, key="U", value="5")
         self.assertEqual(card.old_number, 5)
         self.assertTrue(not card.not_truncated)
         # test bad float
         with self.assertRaises(ValueError):
-            card = UniverseCard(in_cell_block=True, key="U", value="5.5")
+            card = UniverseInput(in_cell_block=True, key="U", value="5.5")
 
         # test string
         with self.assertRaises(ValueError):
-            card = UniverseCard(in_cell_block=True, key="U", value="hi")
+            card = UniverseInput(in_cell_block=True, key="U", value="hi")
 
         # test negative universe
-        card = UniverseCard(in_cell_block=True, key="U", value="-3")
+        card = UniverseInput(in_cell_block=True, key="U", value="-3")
         self.assertEqual(card.old_number, 3)
         self.assertTrue(card.not_truncated)
 
         universes = [1, 2, 3]
         card = Card(["U " + " ".join(list(map(str, universes)))], BlockType.DATA)
-        uni_card = UniverseCard(card)
+        uni_card = UniverseInput(card)
         self.assertEqual(uni_card._universe, universes)
 
         # test jump
         card = Card(["U J"], BlockType.DATA)
-        uni_card = UniverseCard(card)
+        uni_card = UniverseInput(card)
         self.assertEqual(uni_card._universe[0], Jump())
 
         # test bad float
         with self.assertRaises(MalformedInputError):
             card = Card(["U 5.5"], BlockType.DATA)
-            uni_card = UniverseCard(card)
+            uni_card = UniverseInput(card)
 
         # test bad str
         with self.assertRaises(MalformedInputError):
             card = Card(["U hi"], BlockType.DATA)
-            uni_card = UniverseCard(card)
+            uni_card = UniverseInput(card)
 
         # test bad negative
         card = Card(["U -2"], BlockType.DATA)
-        uni_card = UniverseCard(card)
+        uni_card = UniverseInput(card)
 
     def test_universe_init(self):
         uni = Universe(5)
@@ -65,7 +65,7 @@ class TestUniverseCard(TestCase):
             Universe(-1)
 
     def test_str(self):
-        card = UniverseCard(in_cell_block=True, key="U", value="5")
+        card = UniverseInput(in_cell_block=True, key="U", value="5")
         uni = Universe(5)
         card.universe = uni
         output = str(card)
@@ -76,12 +76,12 @@ class TestUniverseCard(TestCase):
         self.assertIn("Universe : Universe(5)", output)
 
     def test_merge(self):
-        card = UniverseCard(in_cell_block=True, key="U", value="5")
+        card = UniverseInput(in_cell_block=True, key="U", value="5")
         with self.assertRaises(MalformedInputError):
             card.merge(card)
 
     def test_universe_setter(self):
-        card = UniverseCard(in_cell_block=True, key="U", value="5")
+        card = UniverseInput(in_cell_block=True, key="U", value="5")
         uni = Universe(5)
         card.universe = uni
         self.assertEqual(card.universe, uni)
@@ -90,7 +90,7 @@ class TestUniverseCard(TestCase):
             card.universe = 5
 
     def test_universe_truncate_setter(self):
-        card = UniverseCard(in_cell_block=True, key="U", value="5")
+        card = UniverseInput(in_cell_block=True, key="U", value="5")
         self.assertTrue(not card.not_truncated)
         card.not_truncated = True
         self.assertTrue(card.not_truncated)
@@ -117,15 +117,15 @@ class TestUniverse(TestCase):
 
 class TestLattice(TestCase):
     def test_lattice_init(self):
-        lattice = LatticeCard(in_cell_block=True, key="lat", value="1")
+        lattice = LatticeInput(in_cell_block=True, key="lat", value="1")
         self.assertEqual(lattice.lattice, Lattice(1))
         with self.assertRaises(ValueError):
-            lattice = LatticeCard(in_cell_block=True, key="lat", value="hi")
+            lattice = LatticeInput(in_cell_block=True, key="lat", value="hi")
         with self.assertRaises(ValueError):
-            lattice = LatticeCard(in_cell_block=True, key="lat", value="5")
+            lattice = LatticeInput(in_cell_block=True, key="lat", value="5")
         lattices = [1, 2, Jump(), Jump()]
         card = Card(["Lat " + " ".join(list(map(str, lattices)))], BlockType.DATA)
-        lattice = LatticeCard(card)
+        lattice = LatticeInput(card)
         for answer, lattice in zip(lattices, lattice._lattice):
             if isinstance(answer, int):
                 self.assertEqual(answer, lattice.value)
@@ -133,13 +133,13 @@ class TestLattice(TestCase):
                 self.assertEqual(answer, lattice)
         with self.assertRaises(MalformedInputError):
             card = Card(["Lat 3"], BlockType.DATA)
-            LatticeCard(card)
+            LatticeInput(card)
         with self.assertRaises(MalformedInputError):
             card = Card(["Lat str"], BlockType.DATA)
-            LatticeCard(card)
+            LatticeInput(card)
 
     def test_lattice_setter(self):
-        lattice = LatticeCard(in_cell_block=True, key="lat", value="1")
+        lattice = LatticeInput(in_cell_block=True, key="lat", value="1")
         lattice.lattice = Lattice(2)
         self.assertEqual(Lattice(2), lattice.lattice)
         lattice.lattice = 1
@@ -153,17 +153,17 @@ class TestLattice(TestCase):
             lattice.lattice = -1
 
     def test_lattice_deleter(self):
-        lattice = LatticeCard(in_cell_block=True, key="lat", value="1")
+        lattice = LatticeInput(in_cell_block=True, key="lat", value="1")
         del lattice.lattice
         self.assertIsNone(lattice.lattice)
 
     def test_lattice_merge(self):
-        lattice = LatticeCard(in_cell_block=True, key="lat", value="1")
+        lattice = LatticeInput(in_cell_block=True, key="lat", value="1")
         with self.assertRaises(MalformedInputError):
             lattice.merge(lattice)
 
     def test_lattice_cell_format(self):
-        lattice = LatticeCard(in_cell_block=True, key="lat", value="1")
+        lattice = LatticeInput(in_cell_block=True, key="lat", value="1")
         output = lattice.format_for_mcnp_input(DEFAULT_VERSION)
         self.assertIn("LAT=1", output[0])
         lattice.lattice = None
@@ -171,7 +171,7 @@ class TestLattice(TestCase):
         self.assertEqual(output, [])
 
     def test_lattice_repr(self):
-        lattice = LatticeCard(in_cell_block=True, key="lat", value="1")
+        lattice = LatticeInput(in_cell_block=True, key="lat", value="1")
         out = repr(lattice)
         self.assertIn("in_cell: True", out)
         self.assertIn("set_in_block: True", out)

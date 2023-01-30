@@ -1,6 +1,6 @@
 import mcnpy
 from mcnpy.cells import Cells
-from mcnpy.input_parser.mcnp_input import Card
+from mcnpy.input_parser.mcnp_input import Input
 from mcnpy.input_parser.block_type import BlockType
 from mcnpy.numbered_mcnp_object import Numbered_MCNP_Object
 
@@ -15,7 +15,7 @@ class Universe(Numbered_MCNP_Object):
     """
 
     def __init__(self, number):
-        super().__init__(Card(["U"], BlockType.DATA))
+        super().__init__(Input(["U"], BlockType.DATA))
         if not isinstance(number, int):
             raise TypeError("number must be int")
         if number < 0:

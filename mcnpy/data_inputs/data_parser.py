@@ -1,12 +1,12 @@
 from mcnpy.data_inputs import (
-    data_card,
+    data_input,
     fill,
     importance,
-    lattice_card,
+    lattice_input,
     material,
     mode,
     thermal_scattering,
-    universe_card,
+    universe_input,
     volume,
 )
 from mcnpy.data_inputs import transform
@@ -15,13 +15,13 @@ import re
 PREFIX_MATCHES = {
     "fill": fill.Fill,
     "imp": importance.Importance,
-    "lat": lattice_card.LatticeCard,
+    "lat": lattice_input.LatticeInput,
     "m": material.Material,
     "mode": mode.Mode,
     "mt": thermal_scattering.ThermalScatteringLaw,
     "tr": transform.Transform,
     "vol": volume.Volume,
-    "u": universe_card.UniverseCard,
+    "u": universe_input.UniverseInput,
 }
 
 
