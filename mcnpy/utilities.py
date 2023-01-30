@@ -27,7 +27,7 @@ def fortran_float(number_string):
         try:
             return float(update_number)
         except ValueError:
-            raise ValueError from e
+            raise ValueError(f"Value Not parsable as float: {number_string}") from e
 
 
 def make_prop_val_node(
