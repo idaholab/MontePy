@@ -1,4 +1,3 @@
-import itertools
 from mcnpy.cells import Cells
 from mcnpy.data_inputs import importance, fill, lattice_input, universe_input, volume
 from mcnpy.data_inputs.data_parser import PREFIX_MATCHES
@@ -10,7 +9,6 @@ from mcnpy.surfaces.surface import Surface
 from mcnpy.surface_collection import Surfaces
 from mcnpy.universe import Universe
 from mcnpy.utilities import *
-import re
 import numbers
 
 
