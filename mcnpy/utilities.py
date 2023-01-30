@@ -47,8 +47,14 @@ def make_prop_val_node(
 
             def setter(self, value):
                 if not isinstance(value, types):
-                    raise TypeError(f"{func.__name__} must be of type: {types}")
-                if base_type is not None and not isinstance(value, base_type):
+                    raise TypeError(
+                        f"{func.__name__} must be of type: {types}. {value} given."
+                    )
+                if (
+                    base_type is not None
+                    and value is not None
+                    and not isinstance(value, base_type)
+                ):
                     value = base_type(value)
                 if validator:
                     validator(self, value)
