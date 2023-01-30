@@ -64,15 +64,15 @@ class UniverseInput(CellModifierInput):
                     )
 
     @property
-    def class_prefix(self):
+    def _class_prefix(self):
         return "u"
 
     @property
-    def has_number(self):
+    def _has_number(self):
         return False
 
     @property
-    def has_classifier(self):
+    def _has_classifier(self):
         return 0
 
     @property
