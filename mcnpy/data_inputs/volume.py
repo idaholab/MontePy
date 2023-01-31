@@ -156,10 +156,7 @@ class Volume(CellModifierInput):
         del self._volume
 
     def __str__(self):
-        mutated = self.mutated
-        self._mutated = True
         ret = "\n".join(self.format_for_mcnp_input(DEFAULT_VERSION))
-        self._mutated = mutated
         return ret
 
     def __repr__(self):
