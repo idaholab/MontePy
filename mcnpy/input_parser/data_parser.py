@@ -6,7 +6,7 @@ from mcnpy.input_parser import syntax_node
 class DataParser(MCNP_Parser):
     @_(
         "classifier number_sequence",
-        "classifier isotope_fractions",
+        "classifier KEYWORD number_sequence",
         "data_input parameters",
     )
     def data_input(self, p):
@@ -17,7 +17,9 @@ class DataParser(MCNP_Parser):
             ret = syntax_node.SyntaxNode("data input", {})
         if hasattr(p, "classifier"):
             ret.nodes["classifier"] = p.classifier
-            ret.nodes["data"] = p[1]
+            if hasattr(p, "KEYWORD"):
+                ret.nodes["keyword"] = p.KEYWORD
+            ret.nodes["data"] = p.number_sequence
         return ret
 
     @_(
