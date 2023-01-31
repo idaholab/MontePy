@@ -41,26 +41,21 @@ class Volume(CellModifierInput):
                 self._calc_by_mcnp = False
         elif input:
             self._volume = []
-            words = self.words[1:]
-            if self.words[1].lower() == "no":
+            tree = self._tree
+            if "keyword" in tree and tree["keyword"].lower() == "no":
                 self._calc_by_mcnp = False
-                words = self.words[2:]
-            for word in words:
-                if isinstance(word, str):
+            for node in tree["data"].nodes:
+                if not isinstance(node, Jump):
                     try:
-                        value = fortran_float(word)
+                        value = node.value
                         assert value >= 0
                         self._volume.append(value)
-                    except (ValueError, AssertionError) as e:
+                    except AssertionError:
                         raise MalformedInputError(
                             input, f"Cell volumes by a number ≥ 0.0: {word} given"
                         )
-                elif isinstance(word, Jump):
-                    self._volume.append(word)
-                else:
-                    raise TypeError(
-                        f"Word: {word} cannot be parsed as a volume as a str, or Jump"
-                    )
+                elif isinstance(node, Jump):
+                    self._volume.append(node)
 
     @staticmethod
     def _class_prefix():
