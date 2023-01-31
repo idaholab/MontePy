@@ -58,7 +58,7 @@ class MCNP_Parser(Parser, metaclass=MetaBuilder):
         "null_phrase",
         "shortcut_sequence",
         "number_sequence number_phrase",
-        "number_sequence number_sequence",
+        "number_sequence shortcut_sequence",
         "number_sequence null_phrase",
     )
     def number_sequence(self, p):
