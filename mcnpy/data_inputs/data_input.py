@@ -162,7 +162,7 @@ class DataInputAbstract(MCNP_Object):
         pass
 
     def __str__(self):
-        return f"DATA INPUT: {self._words}"
+        return f"DATA INPUT: {self._tree['classifier']}"
 
     def __split_name(self):
         """

@@ -512,6 +512,9 @@ class ClassifierNode(SyntaxNodeBase):
             ret += self.particles.format()
         return ret
 
+    def __str__(self):
+        return self.format()
+
     def __repr__(self):
         return (
             f"(Classifier: mod: {self.modifier}, prefix: {self.prefix}, "
