@@ -18,7 +18,9 @@ class DataParser(MCNP_Parser):
         if hasattr(p, "classifier"):
             ret.nodes["classifier"] = p.classifier
             if hasattr(p, "KEYWORD"):
-                ret.nodes["keyword"] = p.KEYWORD
+                ret.nodes["keyword"] = syntax_node.ValueNode(
+                    p.KEYWORD, str, padding=p.padding
+                )
             ret.nodes["data"] = p.number_sequence
         return ret
 
