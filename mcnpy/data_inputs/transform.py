@@ -1,3 +1,4 @@
+import copy
 from mcnpy import mcnp_object
 from mcnpy.data_inputs import data_input
 from mcnpy.errors import *
@@ -18,17 +19,16 @@ class Transform(data_input.DataInputAbstract, Numbered_MCNP_Object):
     """
 
     def __init__(self, input=None, comments=None, pass_through=False):
-        super().__init__(input, comments)
         self._pass_through = pass_through
-        if input is None:
-            self._transform_number = -1
-            self._old_transform_number = -1
-            self._displacement_vector = np.array([])
-            self._rotation_matrix = np.array([])
-            self._is_in_degrees = False
-            self._is_main_to_aux = True
-        else:
-            words = self.words
+        self._transform_number = self._generate_default_node(int, -1)
+        self._old_transform_number = self._generate_default_node(int, -1)
+        self._displacement_vector = np.array([])
+        self._rotation_matrix = np.array([])
+        self._is_in_degrees = False
+        self._is_main_to_aux = True
+        super().__init__(input, comments)
+        if input:
+            words = self._tree["data"]
             i = 0
             if len(words) < 3:
                 raise MalformedInputError(input, f"Not enough entries were provided")
@@ -37,14 +37,13 @@ class Transform(data_input.DataInputAbstract, Numbered_MCNP_Object):
             else:
                 self._is_in_degrees = False
             self._transform_number = self._input_number
-            self._old_transform_number = self._transform_number
-            i += 1
+            self._old_transform_number = copy.deepcopy(self._transform_number)
 
             # parse displacement
             try:
                 values = []
-                for j, word in enumerate(words[i:]):
-                    values.append(fortran_float(word))
+                for j, word in enumerate(words):
+                    values.append(word.value)
                     i += 1
                     if j >= 2:
                         break
@@ -59,8 +58,8 @@ class Transform(data_input.DataInputAbstract, Numbered_MCNP_Object):
             # parse rotation
             try:
                 values = []
-                for j, word in enumerate(words[i:]):
-                    values.append(fortran_float(word))
+                for j, word in enumerate(words.nodes[i:]):
+                    values.append(word.node)
                     i += 1
                     if j >= 8:
                         break
