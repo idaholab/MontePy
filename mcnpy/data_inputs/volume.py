@@ -44,7 +44,7 @@ class Volume(CellModifierInput):
             tree = self._tree
             if "keyword" in tree and tree["keyword"].lower() == "no":
                 self._calc_by_mcnp = False
-            for node in tree["data"].nodes:
+            for node in tree["data"]:
                 if not isinstance(node, Jump):
                     try:
                         value = node.value
