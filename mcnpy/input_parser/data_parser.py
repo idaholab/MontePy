@@ -61,7 +61,7 @@ class DataParser(MCNP_Parser):
     @_("classifier padding")
     def classifier_phrase(self, p):
         classifier = p.classifier
-        classifier.append(p.padding)
+        classifier.padding = p.padding
         return classifier
 
     @_('"*"')

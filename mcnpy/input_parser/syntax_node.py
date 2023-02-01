@@ -463,6 +463,7 @@ class ClassifierNode(SyntaxNodeBase):
         self._number = None
         self._particles = None
         self._modifier = None
+        self._padding = None
         self._nodes = []
 
     @property
@@ -501,6 +502,15 @@ class ClassifierNode(SyntaxNodeBase):
         self.append(mod)
         self._modifier = mod
 
+    @property
+    def padding(self):
+        return self._padding
+
+    @padding.setter
+    def padding(self, val):
+        self.append(val)
+        self._padding = val
+
     def format(self):
         if self.modifier:
             ret = self.modifier
@@ -511,6 +521,8 @@ class ClassifierNode(SyntaxNodeBase):
             ret += self.number.format()
         if self.particles:
             ret += self.particles.format()
+        if self.padding:
+            ret += self.padding.format()
         return ret
 
     def __str__(self):
