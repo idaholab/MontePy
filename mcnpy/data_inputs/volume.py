@@ -42,7 +42,7 @@ class Volume(CellModifierInput):
         elif input:
             self._volume = []
             tree = self._tree
-            if "keyword" in tree and tree["keyword"].lower() == "no":
+            if "keyword" in tree and tree["keyword"].value.lower() == "no":
                 self._calc_by_mcnp = False
             for node in tree["data"]:
                 if not isinstance(node, Jump):
@@ -52,7 +52,7 @@ class Volume(CellModifierInput):
                         self._volume.append(value)
                     except AssertionError:
                         raise MalformedInputError(
-                            input, f"Cell volumes by a number ≥ 0.0: {word} given"
+                            input, f"Cell volumes by a number ≥ 0.0: {node} given"
                         )
                 elif isinstance(node, Jump):
                     self._volume.append(node)
