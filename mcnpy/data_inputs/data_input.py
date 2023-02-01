@@ -144,6 +144,13 @@ class DataInputAbstract(MCNP_Object):
         """
         return self._modifier
 
+    @property
+    def data(self):
+        """
+        TODO
+        """
+        return self._tree["data"]
+
     def format_for_mcnp_input(self, mcnp_version):
         ret = super().format_for_mcnp_input(mcnp_version)
         if self.mutated:
