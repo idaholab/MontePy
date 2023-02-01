@@ -262,7 +262,7 @@ class ValueNode(SyntaxNodeBase):
         self._padding = pad
 
     def __str__(self):
-        return f"(Value, {self._value}, padding: {self._padding}"
+        return f"(Value, {self._value}, padding: {self._padding})"
 
     def __repr__(self):
         return str(self)
@@ -511,6 +511,12 @@ class ClassifierNode(SyntaxNodeBase):
         if self.particles:
             ret += self.particles.format()
         return ret
+
+    def __repr__(self):
+        return (
+            f"(Classifier: mod: {self.modifier}, prefix: {self.prefix}, "
+            f"number: {self.number}, particles: {self.particles})"
+        )
 
 
 class ParametersNode(SyntaxNodeBase):
