@@ -363,13 +363,13 @@ class ShortcutNode(ListNode):
     _num_finder = re.compile(r"\d+")
 
     def __init__(self, p):
+        self._type = None
         for search_str, shortcut in self._shortcut_names.items():
-            self._type = None
             if hasattr(p, search_str):
                 super().__init__(search_str.lower())
                 self._type = shortcut
-            if self._type is None:
-                raise ValueError("must use a valid shortcut")
+        if self._type is None:
+            raise ValueError("must use a valid shortcut")
         self._original = list(p)
         if self._type == Shortcuts.REPEAT:
             self._expand_repeat(p)
@@ -379,6 +379,9 @@ class ShortcutNode(ListNode):
             self._expand_jump(p)
         elif self._type in {Shortcuts.INTERPOLATE, Shortcuts.LOG_INTERPOLATE}:
             self._expand_interpolate(p)
+
+    def __repr__(self):
+        return f"(shortcut:{self._type}: {self.nodes})"
 
     def _expand_repeat(self, p):
         self._nodes = [p[0]]
