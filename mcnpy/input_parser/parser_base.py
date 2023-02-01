@@ -56,9 +56,9 @@ class MCNP_Parser(Parser, metaclass=MetaBuilder):
     @_(
         "number_phrase",
         "null_phrase",
-        "shortcut_sequence",
+        "shortcut_phrase",
         "number_sequence number_phrase",
-        "number_sequence shortcut_sequence",
+        "number_sequence shortcut_phrase",
         "number_sequence null_phrase",
     )
     def number_sequence(self, p):
@@ -79,6 +79,14 @@ class MCNP_Parser(Parser, metaclass=MetaBuilder):
     )
     def shortcut_sequence(self, p):
         return syntax_node.ShortcutNode(p)
+
+    @_("shortcut_sequence")
+    @_("shortcut_sequence padding")
+    def shortcut_phrase(self, p):
+        sequence = p.shortcut_sequence
+        if len(p) == 2:
+            sequence.append(p.padding)
+        return sequence
 
     @_("NULL", "NULL padding")
     def null_phrase(self, p):
