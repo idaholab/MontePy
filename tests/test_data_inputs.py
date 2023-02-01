@@ -31,7 +31,7 @@ class testDataInputClass(TestCase):
         in_str = "vol 1 1 0"
         input_card = Input([in_str], BlockType.DATA)
         data_card = DataInput(input_card)
-        self.assertEqual(str(data_card), "DATA INPUT: vol")
+        self.assertEqual(str(data_card), "DATA INPUT: vol ")
 
     def test_data_card_format_mcnp(self):
         in_str = "m1 1001.80c 1.0"
