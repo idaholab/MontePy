@@ -294,19 +294,20 @@ class ParticleNode(SyntaxNodeBase):
         return self._particles
 
     def format(self):
+        self._reverse_engineer_format()
         if self._formatter["upper"]:
-            parts = [str(p).upper() for p in self._particles]
+            parts = [p.value.upper() for p in self._particles]
         else:
-            parts = [str(p).lower() for p in self._particles]
+            parts = [p.value.lower() for p in self._particles]
         return f":{','.join(parts)}"
 
     def _reverse_engineer_format(self):
         total_match = 0
         upper_match = 0
-        for match in _letter_finder.finditer(self._token):
+        for match in self._letter_finder.finditer(self._token):
             if match:
-                if match.isupper():
-                    upper_match += 0
+                if match.group(0).isupper():
+                    upper_match += 1
                 total_match += 1
         if upper_match / total_match >= 0.5:
             self._formatter["upper"] = True
