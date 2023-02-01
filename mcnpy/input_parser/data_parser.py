@@ -5,8 +5,8 @@ from mcnpy.input_parser import syntax_node
 
 class DataParser(MCNP_Parser):
     @_(
-        "classifier number_sequence",
-        "classifier KEYWORD padding number_sequence",
+        "classifier_phrase number_sequence",
+        "classifier_phrase KEYWORD padding number_sequence",
         "data_input parameters",
     )
     def data_input(self, p):
@@ -15,8 +15,8 @@ class DataParser(MCNP_Parser):
             ret.nodes["parameters"] = p.parameters
         else:
             ret = syntax_node.SyntaxNode("data input", {})
-        if hasattr(p, "classifier"):
-            ret.nodes["classifier"] = p.classifier
+        if hasattr(p, "classifier_phrase"):
+            ret.nodes["classifier"] = p.classifier_phrase
             if hasattr(p, "KEYWORD"):
                 ret.nodes["keyword"] = syntax_node.ValueNode(
                     p.KEYWORD, str, padding=p.padding
@@ -30,7 +30,6 @@ class DataParser(MCNP_Parser):
         "KEYWORD",
         "classifier NUMBER",
         "classifier PARTICLE_DESIGNATOR",
-        "classifier padding",
     )
     def classifier(self, p):
         if hasattr(p, "classifier"):
@@ -52,9 +51,13 @@ class DataParser(MCNP_Parser):
             classifier.particles = syntax_node.ParticleNode(
                 "data particles", p.PARTICLE_DESIGNATOR
             )
-        if "padding" in p:
-            classifier.append(p.padding)
 
+        return classifier
+
+    @_("classifier padding")
+    def classifier_phrase(self, p):
+        classifier = p.classifier
+        classifier.append(p.padding)
         return classifier
 
     @_('"*"')

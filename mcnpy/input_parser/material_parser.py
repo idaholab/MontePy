@@ -3,9 +3,12 @@ from mcnpy.input_parser import syntax_node
 
 
 class MaterialParser(DataParser):
-    @_("classifier isotope_fractions", "classifier isotope_fractions parameters")
+    @_("classifier_phrase isotope_fractions", "classifier isotope_fractions parameters")
     def material(self, p):
-        ret = {"classifier": p.classifier, "isotope_fractions": p.isotope_fractions}
+        ret = {
+            "classifier": p.classifier_phrase,
+            "isotope_fractions": p.isotope_fractions,
+        }
         if hasattr(p, "parameters"):
             ret["parameters"] = p.parameters
         return syntax_node.SyntaxNode("material", ret)

@@ -24,6 +24,7 @@ class MCNP_Lexer(Lexer):
         SURFACE_TYPE,
         TALLY_COMMENT,
         TEXT,
+        THERMAL_LAW,
         ZAID,
     }
 
@@ -194,7 +195,9 @@ class MCNP_Lexer(Lexer):
         self.lineno += t.value.count("\n")
         return t
 
-    @_(r"[a-z/\.]+")
+    THERMAL_LAW = r"[a-z/]+\.\d+[a-z]"
+
+    @_(r"[a-z\.]+")
     def TEXT(self, t):
         if t.value.lower() in self._KEYWORDS:
             t.type = "KEYWORD"
