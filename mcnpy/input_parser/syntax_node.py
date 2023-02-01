@@ -158,7 +158,7 @@ class ValueNode(SyntaxNodeBase):
             "value_length": 0,
             "precision": 16,
             "zero_padding": 0,
-            "sign": " ",
+            "sign": "-",
             "divider": "e",
         },
         int: {"value_length": 0, "zero_padding": 0, "sign": "-"},
@@ -167,11 +167,11 @@ class ValueNode(SyntaxNodeBase):
 
     _SCIENTIFIC_FINDER = re.compile(
         r"""
-                                    [+\-]?                      # leading sign if any
-                                    (?P<significand>\d+\.*\d*)  # the actual number
-                                    (?P<e>[eE]?)                # optional e
-                                    [+\-]\d+                    #exponent
-                                    """,
+            [+\-]?                      # leading sign if any
+            (?P<significand>\d+\.*\d*)  # the actual number
+            (?P<e>[eE]?)                # optional e
+            [+\-]\d+                    #exponent
+        """,
         re.VERBOSE,
     )
 
@@ -191,24 +191,27 @@ class ValueNode(SyntaxNodeBase):
         self._padding = padding
         self._nodes = [self]
         self._is_scientific = False
+        self._is_reversed = False
 
     def _reverse_engineer_formatting(self):
-        self._formatter["value_length"] = len(self._token)
-        if self.padding:
-            if self.padding.is_space(0):
-                self._formatter["value_length"] += len(self.padding.nodes[0])
+        if not self._is_reversed:
+            self._is_reversed = True
+            self._formatter["value_length"] = len(self._token)
+            if self.padding:
+                if self.padding.is_space(0):
+                    self._formatter["value_length"] += len(self.padding.nodes[0])
 
-        if self._type == float or self._type == int:
-            no_zero_pad = self._token.lstrip("0+-")
-            delta = len(self._token) - len(no_zero_pad)
-            if self._token.startswith("+") or self._token.startswith("-"):
-                delta -= 1
-            if delta > 0:
-                self._formatter["zero_padding"] = delta
-            if self._token.startswith("+"):
-                self._formatter["sign"] = "+"
-            if self._type == float:
-                self._reverse_engineer_float()
+            if self._type == float or self._type == int:
+                no_zero_pad = self._token.lstrip("0+-")
+                delta = len(self._token) - len(no_zero_pad)
+                if self._token.startswith("+") or self._token.startswith("-"):
+                    delta -= 1
+                if delta > 0:
+                    self._formatter["zero_padding"] = delta
+                if self._token.startswith("+"):
+                    self._formatter["sign"] = "+"
+                if self._type == float:
+                    self._reverse_engineer_float()
 
     def _reverse_engineer_float(self):
         if match := self._SCIENTIFIC_FINDER.match(self._token):
@@ -226,7 +229,7 @@ class ValueNode(SyntaxNodeBase):
         else:
             precision = 0
         self._formatter["precision"] = precision
-        self._formatter["zero_padding"] += precision + 2
+        self._formatter["zero_padding"] += precision
 
     def format(self):
         self._reverse_engineer_formatting()
@@ -237,7 +240,7 @@ class ValueNode(SyntaxNodeBase):
                 )
                 temp = temp.replace("e", self._formatter["divider"])
             else:
-                temp = "{value:0={sign}{zero_padding}.{precision}f}".format(
+                temp = "{value:0={sign}0{zero_padding}.{precision}f}".format(
                     value=self.value, **self._formatter
                 )
         elif self._type == int:
@@ -247,11 +250,15 @@ class ValueNode(SyntaxNodeBase):
         else:
             temp = self.value
         if self.padding:
-            return "{temp:<{value_length}}{padding}".format(
-                temp=temp, padding="".join(self.padding.nodes), **self._formatter
-            )
+            if self.padding.nodes[0].isspace():
+                pad_str = "".join(self.padding.nodes[1:])
+            else:
+                pad_str = "".join(self.padding.nodes)
         else:
-            return "{temp:<{value_length}}".format(temp=temp, **self._formatter)
+            pad_str = ""
+        return "{temp:<{value_length}}{padding}".format(
+            temp=temp, padding=pad_str, **self._formatter
+        )
 
     @property
     def padding(self):
