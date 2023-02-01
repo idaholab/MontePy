@@ -28,8 +28,6 @@ class Material(data_input.DataInputAbstract, Numbered_MCNP_Object):
     :type comments: list
     """
 
-    _parser = MaterialParser()
-
     def __init__(self, input=None, comment=None):
         self._material_components = {}
         self._thermal_scattering = None
@@ -40,7 +38,7 @@ class Material(data_input.DataInputAbstract, Numbered_MCNP_Object):
             self._old_number = copy.deepcopy(num)
             self._number = num
             set_atom_frac = False
-            isotope_fractions = self._tree["isotope_fractions"]
+            isotope_fractions = self._tree["data"]
             for isotope_node, fraction in isotope_fractions.nodes:
                 isotope = Isotope(node=isotope_node)
                 frac = fraction.value

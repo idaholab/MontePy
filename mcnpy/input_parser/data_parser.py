@@ -7,6 +7,7 @@ class DataParser(MCNP_Parser):
     @_(
         "classifier_phrase number_sequence",
         "classifier_phrase KEYWORD padding number_sequence",
+        "classifier_phrase isotope_fractions",
         "data_input parameters",
     )
     def data_input(self, p):
@@ -21,7 +22,10 @@ class DataParser(MCNP_Parser):
                 ret.nodes["keyword"] = syntax_node.ValueNode(
                     p.KEYWORD, str, padding=p.padding
                 )
-            ret.nodes["data"] = p.number_sequence
+            if hasattr(p, "number_sequence"):
+                ret.nodes["data"] = p.number_sequence
+            else:
+                ret.nodes["data"] = p.isotope_fractions
         return ret
 
     @_(
@@ -80,6 +84,10 @@ class DataParser(MCNP_Parser):
     @_("ZAID padding")
     def zaid_phrase(self, p):
         return self._flush_phrase(p, str)
+
+    @_("KEYWORD param_seperator NUMBER text_phrase")
+    def parameter(self, p):
+        return p
 
 
 class ClassifierParser(DataParser):
