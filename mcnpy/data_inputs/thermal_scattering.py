@@ -1,4 +1,5 @@
 from mcnpy.data_inputs.data_input import DataInputAbstract
+from mcnpy.input_parser.thermal_parser import ThermalParser
 from mcnpy import mcnp_object
 from mcnpy.errors import *
 import mcnpy
@@ -20,18 +21,17 @@ class ThermalScatteringLaw(DataInputAbstract):
     :type material: Material
     """
 
-    def __init__(self, input="", comment=None, material=None):
-        self._old_material_number = None
+    _parser = ThermalParser()
+
+    def __init__(self, input="", comments=None, material=None):
+        self._old_material_number = self._generate_default_node(int, -1)
         self._parent_material = None
         self._scattering_laws = []
+        super().__init__(input, comments)
         if input:
-            super().__init__(input, comment)
-            words = self.words
             self._old_material_number = self._input_number
-            self._scattering_laws = self.words[1:]
+            self._scattering_laws = self._tree["data"].nodes
         else:
-            if comments:
-                self._comment = comments
             if material:
                 self._parent_material = material
 
@@ -72,7 +72,10 @@ class ThermalScatteringLaw(DataInputAbstract):
 
         :rtype: list
         """
-        return self._scattering_laws
+        ret = []
+        for law in self._scattering_laws:
+            ret.append(law.value)
+        return ret
 
     @thermal_scattering_laws.setter
     def thermal_scattering_laws(self, laws):
@@ -83,8 +86,9 @@ class ThermalScatteringLaw(DataInputAbstract):
                 raise TypeError(
                     f"element {law} in thermal_scattering_laws must be a string"
                 )
-        self._mutated = True
-        self._scattering_laws = laws
+        self._scattering_laws.clear()
+        for law in laws:
+            self._scattering_laws.append(self._generate_default_node(str, law))
 
     def add_scattering_law(self, law):
         """
@@ -93,7 +97,7 @@ class ThermalScatteringLaw(DataInputAbstract):
         :param law: the thermal scattering law to add.
         :type law: str
         """
-        self._scattering_laws.append(law)
+        self._scattering_laws.append(self._generate_default_node(str, law))
 
     def validate(self):
         if len(self._scattering_laws) == 0:
