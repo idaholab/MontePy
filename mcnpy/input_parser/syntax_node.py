@@ -325,6 +325,9 @@ class ListNode(SyntaxNodeBase):
         for node in self.nodes:
             if isinstance(node, SyntaxNodeBase):
                 strings.append(str(node.value))
+            elif isinstance(node, input_parser.mcnp_input.Jump):
+                strings.append(str(node))
+
             else:
                 strings.append(node)
         return " ".join(strings)
@@ -334,6 +337,28 @@ class ListNode(SyntaxNodeBase):
         for node in self.nodes:
             ret += node.format()
         return ret
+
+    def __iter__(self):
+        self._index = 0
+        self._nest_index = 0
+        return self
+
+    def __next__(self):
+        try:
+            val = self.nodes[self._index]
+            if isinstance(val, ShortcutNode):
+                try:
+                    nested_val = val.nodes[self._nest_index]
+                    self._nest_index += 1
+                    return nested_val
+                except IndexError:
+                    self._nest_index = 0
+                    self._index += 1
+                    val = self.nodes[self._index]
+            self._index += 1
+            return val
+        except IndexError:
+            raise StopIteration
 
 
 class IsotopesNode(SyntaxNodeBase):
