@@ -84,39 +84,7 @@ class MCNP_Object(ABC):
         :return: a list of strings for the lines that this input will occupy.
         :rtype: list
         """
-        ret = []
-        if self.comments:
-            if not self.mutated:
-                ret += self.comments[0].format_for_mcnp_input(mcnp_version)
-            else:
-                for comment in self.comments:
-                    ret += comment.format_for_mcnp_input(mcnp_version)
-        return ret
-
-    def _format_for_mcnp_unmutated(self, mcnp_version):
-        """
-        Creates a string representation of this input that can be
-        written to file when the input did not mutate.
-
-        TODO add to developer's guide.
-
-        :param mcnp_version: The tuple for the MCNP version that must be exported to.
-        :type mcnp_version: tuple
-        :return: a list of strings for the lines that this input will occupy.
-        :rtype: list
-        """
-        ret = []
-        comments_dict = {}
-        if self.comments:
-            for comment in self.comments:
-                if comment.is_cutting_comment:
-                    comments_dict[comment.input_line_num] = comment
-            ret += self.comments[0].format_for_mcnp_input(mcnp_version)
-        for i, line in enumerate(self.input_lines):
-            if i in comments_dict:
-                ret += comments_dict[i].format_for_mcnp_input(mcnp_version)
-            ret.append(line)
-        return ret
+        pass
 
     @property
     def comments(self):
@@ -198,7 +166,8 @@ class MCNP_Object(ABC):
         multi-line inputs will be handled by using the indentation format,
         and not the "&" method.
 
-        :param string: A long string that needs to be chunked appropriately for MCNP inputs
+        :param string: A long string with new lines in it,
+                    that needs to be chunked appropriately for MCNP inputs
         :type string: str
         :param mcnp_version: the tuple for the MCNP that must be formatted for.
         :type mcnp_version: tuple
@@ -210,6 +179,7 @@ class MCNP_Object(ABC):
         """
         line_length = get_max_line_length(mcnp_version)
         indent_length = BLANK_SPACE_CONTINUE
+        strings = string.splitlines()
         if is_first_line:
             initial_indent = 0
         else:
@@ -219,7 +189,10 @@ class MCNP_Object(ABC):
             initial_indent=" " * initial_indent,
             subsequent_indent=" " * indent_length,
         )
-        return wrapper.wrap(string)
+        ret = []
+        for line in strings:
+            ret += wrapper.wrap(line)
+        return ret
 
     @staticmethod
     def compress_repeat_values(values, threshold=1e-6):
