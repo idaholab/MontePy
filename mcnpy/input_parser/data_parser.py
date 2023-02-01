@@ -6,7 +6,7 @@ from mcnpy.input_parser import syntax_node
 class DataParser(MCNP_Parser):
     @_(
         "classifier number_sequence",
-        "classifier KEYWORD number_sequence",
+        "classifier KEYWORD padding number_sequence",
         "data_input parameters",
     )
     def data_input(self, p):
