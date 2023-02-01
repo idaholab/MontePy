@@ -17,7 +17,8 @@ setup(
     ],
     # needs f string formatting
     # needs insertion ordered dicts
-    python_requires=">=3.7",
+    # needs :=
+    python_requires=">=3.8",
     extras_require={
         "doc": ["sphinx", "sphinxcontrib-apidoc", "sphinx_rtd_theme"],
         "test": ["coverage"],
