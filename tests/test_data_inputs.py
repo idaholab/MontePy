@@ -14,13 +14,13 @@ from mcnpy.mcnp_problem import MCNP_Problem
 
 class testDataInputClass(TestCase):
     def test_data_card_init(self):
-        in_str = "m1 1001.80c 1.0"
+        in_str = "imp:n 1 1 1 0"
         input_card = Input([in_str], BlockType.DATA)
         comment = Comment(["C foo", "c bar"], ["foo", "bar"])
         data_card = DataInput(input_card, comment)
-        words = in_str.split()
-        for i, word in enumerate(data_card.words):
-            self.assertEqual(word, words[i])
+        words = in_str.split()[1:]
+        for i, word in enumerate(data_card.data):
+            self.assertEqual(word.value, float(words[i]))
         self.assertEqual(comment, data_card.comments[0])
 
     def test_data_card_empty_constructor(self):
