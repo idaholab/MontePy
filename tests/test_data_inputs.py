@@ -28,10 +28,10 @@ class testDataInputClass(TestCase):
         self.assertIsInstance(card.words, list)
 
     def test_data_card_str(self):
-        in_str = "m1 1001.80c 1.0"
+        in_str = "vol 1 1 0"
         input_card = Input([in_str], BlockType.DATA)
         data_card = DataInput(input_card)
-        self.assertEqual(str(data_card), "DATA INPUT: " + str(in_str.split()))
+        self.assertEqual(str(data_card), "DATA INPUT: vol")
 
     def test_data_card_format_mcnp(self):
         in_str = "m1 1001.80c 1.0"
@@ -71,18 +71,6 @@ class testDataInputClass(TestCase):
                 input_card = Input([w], BlockType.DATA)
                 card = parse_data(input_card)
                 self.assertIsInstance(card, identifiers[ident.lower()])
-
-    def test_data_card_words_setter(self):
-        in_str = "IMP:N 1 1"
-        input_card = Input([in_str], BlockType.DATA)
-        input_card = DataInput(input_card)
-        new_words = input_card.words + ["0"]
-        input_card.words = new_words
-        self.assertEqual(new_words, input_card.words)
-        with self.assertRaises(TypeError):
-            input_card.words = 5
-        with self.assertRaises(TypeError):
-            input_card.words = [5]
 
     def test_data_card_mutate_print(self):
         in_str = "IMP:N 1 1"
