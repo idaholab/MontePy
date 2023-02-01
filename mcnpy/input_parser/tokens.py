@@ -167,7 +167,15 @@ class MCNP_Lexer(Lexer):
     def ZAID(self, t):
         return t
 
+    INTERPOLATE = r"\d*I\s"
+
+    JUMP = r"\d*J\s"
+
+    LOG_INTERPOLATE = r"\d*I?LOG\s"
+
     MULTIPLY = r"[+\-]?[0-9]+\.?[0-9]*E?[+\-]?[0-9]*M\s"
+
+    REPEAT = r"\d*R\s"
 
     @_(r"[+\-]?[0-9]+\.?[0-9]*E?[+\-]?[0-9]*")
     def NUMBER(self, t):
@@ -185,14 +193,6 @@ class MCNP_Lexer(Lexer):
     def MESSAGE(self, t):
         self.lineno += t.value.count("\n")
         return t
-
-    REPEAT = r"\d*R\s"
-
-    INTERPOLATE = r"\d*I\s"
-
-    JUMP = r"\d*J\s"
-
-    LOG_INTERPOLATE = r"\d*I?LOG\s"
 
     @_(r"[a-z/\.]+")
     def TEXT(self, t):
