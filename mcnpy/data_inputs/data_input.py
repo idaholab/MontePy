@@ -151,13 +151,16 @@ class DataInputAbstract(MCNP_Object):
         """
         return self._tree["data"]
 
+    def validate(self):
+        pass
+
+    def _update_values(self):
+        pass
+
     def format_for_mcnp_input(self, mcnp_version):
-        ret = super().format_for_mcnp_input(mcnp_version)
-        if self.mutated:
-            ret += DataInput.wrap_words_for_mcnp(self.words, mcnp_version, True)
-        else:
-            ret = self._format_for_mcnp_unmutated(mcnp_version)
-        return ret
+        self.validate()
+        self._update_values()
+        return self.wrap_string_for_mcnp(self._tree.format(), mcnp_version, True)
 
     def update_pointers(self, data_inputs):
         """
