@@ -287,7 +287,7 @@ class ParticleNode(SyntaxNodeBase):
         self._particles = set()
         self._formatter = {"upper": False}
         for chunk in classifier_chunks:
-            ret.add(Particle(chunk.upper()))
+            self._particles.add(Particle(chunk.upper()))
 
     @property
     def particles(self):
