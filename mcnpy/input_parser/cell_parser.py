@@ -7,14 +7,18 @@ class CellParser(MCNP_Parser):
     @_(
         "identifier_phrase material geometry_expr parameters",
         "identifier_phrase material geometry_expr",
+        "padding identifier_phrase material geometry_expr parameters",
+        "padding identifier_phrase material geometry_expr",
     )
     def cell(self, p):
-        dict_tree = {
-            "cell_num": p.identifier_phrase,
-            "material": p.material,
-            "geometry": p.geometry_expr,
-        }
-        if len(p) == 4:
+        dict_tree = {}
+        if isinstance(p[0], syntax_node.PaddingNode):
+            dict_tree["start_pad"] = p[0]
+
+        dict_tree["cell_num"] = p.identifier_phrase
+        dict_tree["material"] = p.material
+        dict_tree["geometry"] = p.geometry_expr
+        if hasattr(p, "parameters"):
             dict_tree["parameters"] = p.parameters
         return syntax_node.SyntaxNode("cell", dict_tree)
 

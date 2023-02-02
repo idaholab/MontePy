@@ -5,28 +5,36 @@ from mcnpy.input_parser import syntax_node
 
 class DataParser(MCNP_Parser):
     @_(
-        "classifier_phrase number_sequence",
-        "classifier_phrase KEYWORD padding number_sequence",
-        "classifier_phrase isotope_fractions",
-        "data_input parameters",
+        "introduction data",
+        "introduction data parameters",
     )
     def data_input(self, p):
-        if "data_input" in p:
-            ret = p.data_input
-            ret.nodes["parameters"] = p.parameters
-        else:
-            ret = syntax_node.SyntaxNode("data input", {})
-        if hasattr(p, "classifier_phrase"):
-            ret.nodes["classifier"] = p.classifier_phrase
-            if hasattr(p, "KEYWORD"):
-                ret.nodes["keyword"] = syntax_node.ValueNode(
-                    p.KEYWORD, str, padding=p.padding
-                )
-            if hasattr(p, "number_sequence"):
-                ret.nodes["data"] = p.number_sequence
-            else:
-                ret.nodes["data"] = p.isotope_fractions
-        return ret
+        ret = {}
+        for key, node in p.introduction.nodes.items():
+            ret[key] = node
+        ret["data"] = p.data
+        if hasattr(p, "parameters"):
+            ret["parameters"] = p.parameters
+        return syntax_node.SyntaxNode("data", ret)
+
+    @_(
+        "classifier_phrase",
+        "classifier_phrase KEYWORD padding",
+        "padding classifier_phrase",
+        "padding classifier_phrase KEYWORD padding",
+    )
+    def introduction(self, p):
+        ret = {}
+        if isinstance(p[0], syntax_node.PaddingNode):
+            ret["start_pad"] = p[0]
+        ret["classifier"] = p.classifier_phrase
+        if hasattr(p, "KEYWORD"):
+            ret["keyword"] = syntax_node.ValueNode(p.KEYWORD, str, padding=p[-1])
+        return syntax_node.SyntaxNode("data intro", ret)
+
+    @_("number_sequence", "isotope_fractions")
+    def data(self, p):
+        return p[0]
 
     @_(
         "modifier classifier",

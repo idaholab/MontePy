@@ -155,6 +155,7 @@ class DataInputAbstract(MCNP_Object):
         pass
 
     def _update_values(self):
+        # TODO implement
         pass
 
     def format_for_mcnp_input(self, mcnp_version):
