@@ -107,9 +107,9 @@ class MCNP_Parser(Parser, metaclass=MetaBuilder):
             padding = None
         return syntax_node.ValueNode(p[0], token_type, padding)
 
-    @_("SPACE")
+    @_("SPACE", "DOLLAR_COMMENT", "COMMENT")
     def padding(self, p):
-        return syntax_node.PaddingNode(p.SPACE)
+        return syntax_node.PaddingNode(p[0])
 
     @_("padding SPACE", "padding DOLLAR_COMMENT", "padding COMMENT", 'padding "&"')
     def padding(self, p):
