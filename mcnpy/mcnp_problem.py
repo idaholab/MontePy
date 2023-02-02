@@ -237,7 +237,7 @@ class MCNP_Problem:
                 comment_queue.append(input)
 
             elif isinstance(input, mcnp_input.Input):
-                if len(input.words) > 0:
+                if len(input.input_lines) > 0:
                     if input.block_type == block_type.BlockType.CELL:
                         cell = Cell(input, comment_queue)
                         cell.link_to_problem(self)
