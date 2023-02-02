@@ -81,6 +81,7 @@ class Cell(Numbered_MCNP_Object):
                 self._is_atom_dens = mat_tree.get_value("density") >= 0
                 self._density_node.value = abs(self._density)
             self._parse_geometry()
+            self._parse_keyword_modifiers()
 
     def _parse_geometry(self):
         """
@@ -98,14 +99,13 @@ class Cell(Numbered_MCNP_Object):
         """
         Parses the parameters to make the object and load as an attribute
         """
-        for key, value in dict(self._parameters).items():
-            for prefix, input_class in PREFIX_MATCHES.items():
-                if (
-                    input_class in Cell._INPUTS_TO_PROPERTY
-                    and prefix.upper() in key.upper()
-                ):
+        for key, value in self.parameters.nodes.items():
+            for input_class in PREFIX_MATCHES:
+                prefix = input_class._class_prefix()
+                if input_class in Cell._INPUTS_TO_PROPERTY and prefix in key.lower():
                     attr, ban_repeat = Cell._INPUTS_TO_PROPERTY[input_class]
-                    del self._parameters[key]
+                    # TODO how to do this without messing up tree
+                    # del self._parameters[key]
                     input = input_class(in_cell_block=True, key=key, value=value)
                     if not getattr(self, attr).set_in_cell_block:
                         setattr(self, attr, input)
