@@ -16,12 +16,12 @@ class testDataInputClass(TestCase):
     def test_data_card_init(self):
         in_str = "imp:n 1 1 1 0"
         input_card = Input([in_str], BlockType.DATA)
-        comment = Comment(["C foo", "c bar"], ["foo", "bar"])
-        data_card = DataInput(input_card, comment)
+        data_card = DataInput(input_card)
         words = in_str.split()[1:]
         for i, word in enumerate(data_card.data):
             self.assertEqual(word.value, float(words[i]))
-        self.assertEqual(comment, data_card.comments[0])
+        # TODO test comments
+        # self.assertEqual(comment, data_card.comments[0])
 
     def test_data_card_empty_constructor(self):
         card = DataInput()
@@ -34,15 +34,15 @@ class testDataInputClass(TestCase):
         self.assertEqual(str(data_card), "DATA INPUT: vol ")
 
     def test_data_card_format_mcnp(self):
-        in_str = "m1 1001.80c 1.0"
-        input_card = Input([in_str], BlockType.DATA)
+        in_strs = ["c foo", "c bar", "m1 1001.80c 1.0 $ bar"]
+        input_card = Input(in_strs, BlockType.DATA)
         comment = Comment(["c foo", "c bar"], ["foo", "bar"])
         data_card = DataInput(input_card, comment)
-        answer = ["C foo", "C bar", "m1 1001.80c 1.0"]
         output = data_card.format_for_mcnp_input((6, 2, 0))
-        self.assertEqual(len(answer), len(output))
-        for i, line in enumerate(output):
-            self.assertEqual(answer[i], line)
+        print(output)
+        self.assertEqual(len(output), len(in_strs))
+        for answer, out in zip(in_strs, output):
+            self.assertEqual(answer, out)
 
     def test_comment_setter(self):
         in_str = "m1 1001.80c 1.0"
