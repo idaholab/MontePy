@@ -41,14 +41,14 @@ class Importance(CellModifierInput):
                     self._particle_importances[particle] = value
         elif input:
             values = []
-            for word in self.words[1:]:
+            for node in self._tree["data"]:
                 try:
-                    value = fortran_float(word)
-                    values.append(value)
+                    value = node.value
                     assert value >= 0
-                except (ValueError, AssertionError) as e:
+                    values.append(value)
+                except (AttributeError, AssertionError) as e:
                     raise MalformedInputError(
-                        input, f"Importances must be ≥ 0 value: {word} given"
+                        input, f"Importances must be ≥ 0 value: {node} given"
                     )
             for particle in self.particle_classifiers:
                 self._particle_importances[particle] = values
