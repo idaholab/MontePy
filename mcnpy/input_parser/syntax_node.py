@@ -378,8 +378,10 @@ class IsotopesNode(SyntaxNodeBase):
         self._nodes.append((isotope, concentration))
 
     def format(self):
-        # TODO
-        pass
+        ret = ""
+        for isotope, concentration in self.nodes:
+            ret += isotope.format() + concentration.format()
+        return ret
 
     def __repr__(self):
         return f"(Isotopes: {self.nodes})"
