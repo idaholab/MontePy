@@ -86,7 +86,7 @@ class CellModifierInput(DataInputAbstract):
             else:
                 set_in_cell_block = self.set_in_cell_block
             print_in_cell_block = not self._problem.print_in_data_block[
-                self._class_prefix
+                self._class_prefix()
             ]
             set_in_cell_block = print_in_cell_block
             if not self.in_cell_block:
@@ -117,7 +117,7 @@ class CellModifierInput(DataInputAbstract):
     def link_to_problem(self, problem):
         super().link_to_problem(problem)
         if self.set_in_cell_block:
-            self._problem.print_in_data_block[self._class_prefix] = False
+            self._problem.print_in_data_block[self._class_prefix()] = False
 
     @abstractmethod
     def push_to_cells(self):
