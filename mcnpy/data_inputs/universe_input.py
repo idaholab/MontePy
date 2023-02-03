@@ -31,37 +31,26 @@ class UniverseInput(CellModifierInput):
         self._not_truncated = False
         super().__init__(input, comments, in_cell_block, key, value)
         if self.in_cell_block:
-            self._old_number = None
+            self._old_number = self._generate_default_node(int, -1)
             if key:
-                try:
-                    value = int(value)
-                    if value < 0:
-                        self._not_truncated = True
-                    value = abs(value)
-                except ValueError:
-                    raise ValueError(
-                        f"Cell universe must be an integer {value} was given"
-                    )
-                self._old_number = value
+                val = value["data"][0]
+                val.is_negatable_identifier = True
+                self._not_truncated = val.is_negative
+                self._old_number = val
         elif input_card:
             self._universe = []
-            words = self.words[1:]
-            for word in words:
-                if isinstance(word, str):
+            for node in self.data:
+                if not isinstance(node, Jump):
                     try:
-                        value = int(word)
-                        self._universe.append(value)
+                        node.is_negatable_identifier = True
+                        self._universe.append(node)
                     except ValueError:
                         raise MalformedInputError(
                             input_card,
                             f"Cell universes must be an integer ≥ 0. {word} was given",
                         )
-                elif isinstance(word, Jump):
-                    self._universe.append(word)
-                else:
-                    raise TypeError(
-                        f"Word: {word} cannot be parsed as an universe as a str, or Jump"
-                    )
+                elif isinstance(node, Jump):
+                    self._universe.append(node)
 
     @staticmethod
     def _class_prefix():
