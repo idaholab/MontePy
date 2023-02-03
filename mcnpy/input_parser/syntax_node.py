@@ -549,18 +549,9 @@ class ParametersNode(SyntaxNodeBase):
         super().__init__("parameters")
         self._nodes = {}
 
-    def append(self, *argv):
-        if len(argv) == 3:
-            key, seperator, value = argv
-            self._nodes[key.lower()] = (value, key, seperator)
-        elif len(argv) == 4:
-            key, particle, seperator, value = argv
-            self._nodes[key.lower() + particle.lower()] = (
-                value,
-                key,
-                particle,
-                seperator,
-            )
+    def append(self, val):
+        key = str(val["classifier"])
+        self._nodes[key] = val
 
     def get_value(self, key):
         return self.nodes[key.lower()][0].value

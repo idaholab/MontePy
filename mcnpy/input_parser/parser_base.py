@@ -116,17 +116,6 @@ class MCNP_Parser(Parser, metaclass=MetaBuilder):
         p[0].append(p[1])
         return p[0]
 
-    @_('"="', "padding", '"=" padding')
-    def param_seperator(self, p):
-        return self._flush_phrase(p, str)
-
-    @_(
-        "KEYWORD param_seperator number_sequence",
-        "KEYWORD param_seperator text_phrase",
-    )
-    def parameter(self, p):
-        return p
-
     @_("parameter", "parameters parameter")
     def parameters(self, p):
         if len(p) == 1:
@@ -135,5 +124,59 @@ class MCNP_Parser(Parser, metaclass=MetaBuilder):
         else:
             params = p[0]
             param = p[1]
-        params.append(*param[1:])
+        params.append(param)
         return params
+
+    @_(
+        "classifier param_seperator number_sequence",
+        "classifier param_seperator text_phrase",
+    )
+    def parameter(self, p):
+        return syntax_node.SyntaxNode(
+            p.classifier.prefix,
+            {"classifier": p.classifier, "seperator": p.param_seperator, "data": p[2]},
+        )
+
+    @_('"="', "padding", '"=" padding')
+    def param_seperator(self, p):
+        return self._flush_phrase(p, str)
+
+    @_(
+        "modifier classifier",
+        "TEXT",
+        "KEYWORD",
+        "classifier NUMBER",
+        "classifier PARTICLE_DESIGNATOR",
+    )
+    def classifier(self, p):
+        if hasattr(p, "classifier"):
+            classifier = p.classifier
+        else:
+            classifier = syntax_node.ClassifierNode()
+
+        if hasattr(p, "modifier"):
+            classifier.modifier = syntax_node.ValueNode(p.modifier, str)
+        if hasattr(p, "TEXT") or hasattr(p, "KEYWORD"):
+            if hasattr(p, "TEXT"):
+                text = p.TEXT
+            else:
+                text = p.KEYWORD
+            classifier.prefix = syntax_node.ValueNode(text, str)
+        if hasattr(p, "NUMBER"):
+            classifier.number = syntax_node.ValueNode(p.NUMBER, int)
+        if hasattr(p, "PARTICLE_DESIGNATOR"):
+            classifier.particles = syntax_node.ParticleNode(
+                "data particles", p.PARTICLE_DESIGNATOR
+            )
+
+        return classifier
+
+    @_("classifier padding")
+    def classifier_phrase(self, p):
+        classifier = p.classifier
+        classifier.padding = p.padding
+        return classifier
+
+    @_('"*"')
+    def modifier(self, p):
+        return p[0]

@@ -36,46 +36,6 @@ class DataParser(MCNP_Parser):
     def data(self, p):
         return p[0]
 
-    @_(
-        "modifier classifier",
-        "TEXT",
-        "KEYWORD",
-        "classifier NUMBER",
-        "classifier PARTICLE_DESIGNATOR",
-    )
-    def classifier(self, p):
-        if hasattr(p, "classifier"):
-            classifier = p.classifier
-        else:
-            classifier = syntax_node.ClassifierNode()
-
-        if hasattr(p, "modifier"):
-            classifier.modifier = syntax_node.ValueNode(p.modifier, str)
-        if hasattr(p, "TEXT") or hasattr(p, "KEYWORD"):
-            if hasattr(p, "TEXT"):
-                text = p.TEXT
-            else:
-                text = p.KEYWORD
-            classifier.prefix = syntax_node.ValueNode(text, str)
-        if hasattr(p, "NUMBER"):
-            classifier.number = syntax_node.ValueNode(p.NUMBER, int)
-        if hasattr(p, "PARTICLE_DESIGNATOR"):
-            classifier.particles = syntax_node.ParticleNode(
-                "data particles", p.PARTICLE_DESIGNATOR
-            )
-
-        return classifier
-
-    @_("classifier padding")
-    def classifier_phrase(self, p):
-        classifier = p.classifier
-        classifier.padding = p.padding
-        return classifier
-
-    @_('"*"')
-    def modifier(self, p):
-        return p[0]
-
     @_("zaid_phrase number_phrase")
     def isotope_fraction(self, p):
         return p

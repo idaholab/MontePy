@@ -121,7 +121,3 @@ class CellParser(MCNP_Parser):
         for node in list(p)[1:]:
             sequence.append(node)
         return sequence
-
-    @_("KEYWORD PARTICLE_DESIGNATOR param_seperator number_phrase")
-    def parameter(self, p):
-        return p
