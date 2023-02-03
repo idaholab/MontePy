@@ -36,16 +36,12 @@ class CellModifierInput(DataInputAbstract):
             raise TypeError("in_cell_block must be a bool")
         if key and not isinstance(key, str):
             raise TypeError("key must be a str")
-        if (
-            value
-            and not isinstance(value, tuple)
-            and not isinstance(value[0], syntax_node.SyntaxNodeBase)
-        ):
-            raise TypeError("value must be from a ParametersNode")
+        if value and not isinstance(value, syntax_node.SyntaxNode):
+            raise TypeError("value must be from a SyntaxNode")
         if key and in_cell_block:
             self._set_in_cell_block = True
             self._tree = value
-            self._data = value[0]
+            self._data = value["data"]
         else:
             self._set_in_cell_block = False
         self._in_cell_block = in_cell_block
