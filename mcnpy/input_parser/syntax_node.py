@@ -378,26 +378,17 @@ class ListNode(SyntaxNodeBase):
         return ret
 
     def __iter__(self):
-        self._index = 0
-        self._nest_index = 0
-        return self
+        for node in self.nodes:
+            if isinstance(node, ShortcutNode):
+                yield from node.nodes
+            else:
+                yield node
 
-    def __next__(self):
-        try:
-            val = self.nodes[self._index]
-            if isinstance(val, ShortcutNode):
-                try:
-                    nested_val = val.nodes[self._nest_index]
-                    self._nest_index += 1
-                    return nested_val
-                except IndexError:
-                    self._nest_index = 0
-                    self._index += 1
-                    val = self.nodes[self._index]
-            self._index += 1
-            return val
-        except IndexError:
-            raise StopIteration
+    def __getitem__(self, indx):
+        for i, item in enumerate(self):
+            if i == indx:
+                return item
+        raise IndexError(f"{indx} not in ListNode")
 
 
 class IsotopesNode(SyntaxNodeBase):
