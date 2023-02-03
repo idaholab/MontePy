@@ -2,7 +2,7 @@ from abc import ABC, abstractmethod
 from mcnpy.errors import *
 from mcnpy.input_parser.constants import BLANK_SPACE_CONTINUE, get_max_line_length
 from mcnpy.input_parser.mcnp_input import Comment
-from mcnpy.input_parser.syntax_node import PaddingNode, ValueNode
+from mcnpy.input_parser.syntax_node import PaddingNode, ParametersNode, ValueNode
 import mcnpy
 import numpy as np
 import textwrap
@@ -20,7 +20,7 @@ class MCNP_Object(ABC):
 
     def __init__(self, input, parser, comments=None):
         self._problem = None
-        self._parameters = {}
+        self._parameters = ParametersNode()
         if input:
             if not isinstance(input, mcnpy.input_parser.mcnp_input.Input):
                 raise TypeError("input must be an Input")
