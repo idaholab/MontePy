@@ -1,6 +1,7 @@
 from abc import abstractmethod
 import mcnpy
 from mcnpy.data_inputs.data_input import DataInputAbstract
+from mcnpy.input_parser import syntax_node
 from mcnpy.input_parser.block_type import BlockType
 from mcnpy.input_parser.mcnp_input import Input
 
@@ -26,17 +27,25 @@ class CellModifierInput(DataInputAbstract):
     def __init__(
         self, input=None, comments=None, in_cell_block=False, key=None, value=None
     ):
+        fast_parse = False
         if key and value:
-            input = Input([f"{key} {value}"], BlockType.DATA)
-        super().__init__(input, comments)
+            input = Input([key], BlockType.DATA)
+            fast_parse = True
+        super().__init__(input, comments, fast_parse)
         if not isinstance(in_cell_block, bool):
             raise TypeError("in_cell_block must be a bool")
         if key and not isinstance(key, str):
             raise TypeError("key must be a str")
-        if value and not isinstance(value, str):
-            raise TypeError("value must be a str")
+        if (
+            value
+            and not isinstance(value, tuple)
+            and not isinstance(value[0], syntax_node.SyntaxNodeBase)
+        ):
+            raise TypeError("value must be from a ParametersNode")
         if key and in_cell_block:
             self._set_in_cell_block = True
+            self._tree = value
+            self._data = value[0]
         else:
             self._set_in_cell_block = False
         self._in_cell_block = in_cell_block
