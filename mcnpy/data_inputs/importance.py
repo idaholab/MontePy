@@ -30,10 +30,8 @@ class Importance(CellModifierInput):
         self._particle_importances = {}
         if self.in_cell_block:
             if key:
-                try:
-                    value = fortran_float(value)
-                    assert value >= 0
-                except (ValueError, AssertionError) as e:
+                val = value[0].value
+                if val < 0:
                     raise ValueError(
                         f"Cell importance must be a number ≥ 0. {value} was given"
                     )
