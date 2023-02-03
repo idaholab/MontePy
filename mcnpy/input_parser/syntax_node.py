@@ -180,6 +180,7 @@ class ValueNode(SyntaxNodeBase):
         self._token = token
         self._type = token_type
         self._formatter = self._FORMATTERS[token_type].copy()
+        self._is_neg_id = False
         if token is None:
             self._value = None
         elif token_type == float:
@@ -192,6 +193,34 @@ class ValueNode(SyntaxNodeBase):
         self._nodes = [self]
         self._is_scientific = False
         self._is_reversed = False
+
+    def _convert_to_int(self):
+        self._type = int
+        self._value = int(self._value)
+        self._formatter = self._FORMATTERS[int].copy()
+
+    @property
+    def is_negatable_identifier(self):
+        return self._is_neg_id
+
+    @is_negatable_identifier.setter
+    def is_negatable_identifier(self, val):
+        if val == True:
+            self._convert_to_int()
+            self._is_neg = self.value < 0
+            self._value = abs(self._value)
+
+    @property
+    def is_negative(self):
+        if self.is_negetable_identifier:
+            return self._is_neg
+        if self._type in {int, float}:
+            return self.value < 0
+
+    @is_negative.setter
+    def is_negative(self, val):
+        if self._is_negetable_identifier:
+            self._is_neg = val
 
     def _reverse_engineer_formatting(self):
         if not self._is_reversed:
@@ -321,6 +350,8 @@ class ParticleNode(SyntaxNodeBase):
 
 
 class ListNode(SyntaxNodeBase):
+    # TODO make indexible
+    # need to build lookup table to jump in and out of shortcuts
     def __init__(self, name):
         super().__init__(name)
 
