@@ -6,6 +6,11 @@ from mcnpy.mcnp_object import MCNP_Object
 from mcnpy.utilities import *
 
 
+def _ensure_positive(value):
+    if value < 0:
+        raise ValueError(f"Volume must be positive. {value} given.")
+
+
 class Volume(CellModifierInput):
     """
     Class for the data input that modifies cell volumes; ``VOL``.
@@ -30,10 +35,8 @@ class Volume(CellModifierInput):
         super().__init__(input, comments, in_cell_block, key, value)
         if self.in_cell_block:
             if key:
-                try:
-                    value = fortran_float(value)
-                    assert value >= 0.0
-                except (ValueError, AssertionError) as e:
+                value = self._tree["data"][0]
+                if value.value < 0:
                     raise ValueError(
                         f"Cell volume must be a number ≥ 0.0. {value} was given"
                     )
@@ -69,7 +72,13 @@ class Volume(CellModifierInput):
     def _has_classifier():
         return 0
 
-    @property
+    @make_prop_val_node(
+        "_volume",
+        (float, int, type(None)),
+        float,
+        validator=_ensure_positive,
+        deletable=True,
+    )
     def volume(self):
         """
         The actual cell volume.
@@ -81,20 +90,7 @@ class Volume(CellModifierInput):
         """
         if self.in_cell_block:
             return self._volume
-
-    @volume.setter
-    def volume(self, value):
-        if not isinstance(value, float):
-            raise TypeError("Volume must be set to a float")
-        if value < 0.0:
-            raise ValueError("Volume must be set to a number ≥ 0")
-        self._volume = value
-        self._mutated = True
-
-    @volume.deleter
-    def volume(self):
-        self._volume = None
-        self._mutated = True
+        return False
 
     @property
     def is_mcnp_calculated(self):
