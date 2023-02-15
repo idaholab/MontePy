@@ -261,6 +261,7 @@ class ValueNode(SyntaxNodeBase):
         self._formatter["zero_padding"] += precision
 
     def format(self):
+        # TODO throw warning when things expand
         self._reverse_engineer_formatting()
         if self._type == float:
             if self._is_scientific:
