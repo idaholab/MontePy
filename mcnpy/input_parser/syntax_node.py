@@ -573,7 +573,7 @@ class ParametersNode(SyntaxNodeBase):
         self._nodes = {}
 
     def append(self, val):
-        key = str(val["classifier"])
+        key = str(val["classifier"]).lower()
         self._nodes[key] = val
 
     def get_value(self, key):

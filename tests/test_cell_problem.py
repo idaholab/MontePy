@@ -163,4 +163,4 @@ class TestCellClass(TestCase):
         in_str = f"1 0 -1 PWT 1.0"
         card = Input([in_str], BlockType.CELL)
         cell = Cell(card)
-        self.assertEqual(cell.parameters["PWT"][0].nodes[0].value, 1.0)
+        self.assertEqual(cell.parameters["PWT"]["data"][0].value, 1.0)
