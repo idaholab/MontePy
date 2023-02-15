@@ -212,7 +212,7 @@ class ValueNode(SyntaxNodeBase):
 
     @property
     def is_negative(self):
-        if self.is_negetable_identifier:
+        if self.is_negatable_identifier:
             return self._is_neg
         if self._type in {int, float}:
             return self.value < 0
