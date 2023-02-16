@@ -88,9 +88,7 @@ class Volume(CellModifierInput):
         :returns: the cell volume iff this is for a single cell
         :rtype: float
         """
-        if self.in_cell_block:
-            return self._volume
-        return False
+        pass
 
     @property
     def is_mcnp_calculated(self):
@@ -130,7 +128,7 @@ class Volume(CellModifierInput):
         :returns: true if the volume is manually set.
         :rtype: bool
         """
-        return self._volume is not None
+        return self.volume is not None
 
     def merge(self, other):
         raise MalformedInputError(
