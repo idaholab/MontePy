@@ -298,6 +298,10 @@ class ValueNode(SyntaxNodeBase):
     def padding(self, pad):
         self._padding = pad
 
+    @property
+    def type(self):
+        return self._type
+
     def __str__(self):
         return f"(Value, {self._value}, padding: {self._padding})"
 
