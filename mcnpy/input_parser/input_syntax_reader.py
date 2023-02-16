@@ -134,6 +134,14 @@ def read_data(fh, mcnp_version, block_type=None, recursion=False):
         continue_input = False
         input_raw_lines = []
 
+    def is_comment(line):
+        upper_start = line[0 : BLANK_SPACE_CONTINUE + 1].upper()
+        non_blank_comment = upper_start and line.lstrip().upper().startswith("C ")
+        if non_blank_comment:
+            return True
+        blank_comment = "C\n" == upper_start.lstrip() or "C\r\n" == upper_start.lstrip()
+        return blank_comment or non_blank_comment
+
     for line in fh:
         # transition to next block with blank line
         if not line.strip():
@@ -143,6 +151,7 @@ def read_data(fh, mcnp_version, block_type=None, recursion=False):
         if (
             line[0:BLANK_SPACE_CONTINUE].strip()
             and not continue_input
+            and not is_comment(line)
             and input_raw_lines
         ):
             yield from flush_input()
