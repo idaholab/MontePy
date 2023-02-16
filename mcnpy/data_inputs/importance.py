@@ -30,7 +30,7 @@ class Importance(CellModifierInput):
         self._particle_importances = {}
         if self.in_cell_block:
             if key:
-                val = value[0].value
+                val = value["data"][0].value
                 if val < 0:
                     raise ValueError(
                         f"Cell importance must be a number ≥ 0. {value} was given"
