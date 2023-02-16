@@ -6,7 +6,7 @@ from mcnpy.mcnp_object import MCNP_Object
 from mcnpy.utilities import *
 
 
-def _ensure_positive(value):
+def _ensure_positive(self, value):
     if value < 0:
         raise ValueError(f"Volume must be positive. {value} given.")
 
@@ -30,7 +30,7 @@ class Volume(CellModifierInput):
     def __init__(
         self, input=None, comments=None, in_cell_block=False, key=None, value=None
     ):
-        self._volume = None
+        self._volume = self._generate_default_node(float, None)
         self._calc_by_mcnp = True
         super().__init__(input, comments, in_cell_block, key, value)
         if self.in_cell_block:
