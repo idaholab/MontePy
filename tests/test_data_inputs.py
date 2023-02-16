@@ -130,7 +130,17 @@ class testDataInputClass(TestCase):
             )
             card = volume.Volume(key="VoL", value=node, in_cell_block=True)
         with self.assertRaises(ValueError):
-            card = volume.Volume(key="VoL", value="-1", in_cell_block=True)
+            list_node = syntax_node.ListNode("data")
+            list_node.append(syntax_node.ValueNode("-1", float))
+            node = syntax_node.SyntaxNode(
+                "volume",
+                {
+                    "classifier": syntax_node.ValueNode("VoL", str),
+                    "seperator": syntax_node.ValueNode("=", str),
+                    "data": list_node,
+                },
+            )
+            card = volume.Volume(key="VoL", value=node, in_cell_block=True)
 
     def test_volume_init_data(self):
         in_str = "VOL 1 1 2J 0"
