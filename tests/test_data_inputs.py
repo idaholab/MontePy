@@ -8,6 +8,7 @@ from mcnpy.data_inputs import material, thermal_scattering, transform, volume
 from mcnpy.data_inputs.data_parser import parse_data
 from mcnpy.errors import *
 from mcnpy.input_parser.mcnp_input import Input, Comment, Jump
+from mcnpy.input_parser import syntax_node
 from mcnpy.input_parser.block_type import BlockType
 from mcnpy.mcnp_problem import MCNP_Problem
 
@@ -98,7 +99,17 @@ class testDataInputClass(TestCase):
 
     def test_volume_init_cell(self):
         vol = 1.0
-        card = volume.Volume(key="VoL", value=str(vol), in_cell_block=True)
+        list_node = syntax_node.ListNode("data")
+        list_node.append(syntax_node.ValueNode(str(vol), float))
+        node = syntax_node.SyntaxNode(
+            "volume",
+            {
+                "classifier": syntax_node.ValueNode("VoL", str),
+                "seperator": syntax_node.ValueNode("=", str),
+                "data": list_node,
+            },
+        )
+        card = volume.Volume(key="VoL", value=node, in_cell_block=True)
         self.assertEqual(card.volume, vol)
         self.assertTrue(card.in_cell_block)
         self.assertTrue(card.set_in_cell_block)
@@ -107,7 +118,17 @@ class testDataInputClass(TestCase):
         card = volume.Volume(in_cell_block=True)
         self.assertTrue(card.is_mcnp_calculated)
         with self.assertRaises(ValueError):
-            card = volume.Volume(key="VoL", value="s", in_cell_block=True)
+            list_node = syntax_node.ListNode("data")
+            list_node.append(syntax_node.ValueNode("s", str))
+            node = syntax_node.SyntaxNode(
+                "volume",
+                {
+                    "classifier": syntax_node.ValueNode("VoL", str),
+                    "seperator": syntax_node.ValueNode("=", str),
+                    "data": list_node,
+                },
+            )
+            card = volume.Volume(key="VoL", value=node, in_cell_block=True)
         with self.assertRaises(ValueError):
             card = volume.Volume(key="VoL", value="-1", in_cell_block=True)
 
@@ -152,7 +173,17 @@ class testDataInputClass(TestCase):
 
     def test_volume_setter(self):
         vol = 1.0
-        card = volume.Volume(key="VoL", value=str(vol), in_cell_block=True)
+        list_node = syntax_node.ListNode("data")
+        list_node.append(syntax_node.ValueNode(str(vol), float))
+        node = syntax_node.SyntaxNode(
+            "volume",
+            {
+                "classifier": syntax_node.ValueNode("VoL", str),
+                "seperator": syntax_node.ValueNode("=", str),
+                "data": list_node,
+            },
+        )
+        card = volume.Volume(key="VoL", value=node, in_cell_block=True)
         card.volume = 5.0
         self.assertEqual(card.volume, 5.0)
         with self.assertRaises(TypeError):
@@ -162,18 +193,48 @@ class testDataInputClass(TestCase):
 
     def test_volume_deleter(self):
         vol = 1.0
-        card = volume.Volume(key="VoL", value=str(vol), in_cell_block=True)
+        list_node = syntax_node.ListNode("data")
+        list_node.append(syntax_node.ValueNode(str(vol), float))
+        node = syntax_node.SyntaxNode(
+            "volume",
+            {
+                "classifier": syntax_node.ValueNode("VoL", str),
+                "seperator": syntax_node.ValueNode("=", str),
+                "data": list_node,
+            },
+        )
+        card = volume.Volume(key="VoL", value=node, in_cell_block=True)
         del card.volume
         self.assertIsNone(card.volume)
 
     def test_volume_merge(self):
         vol = 1.0
-        card = volume.Volume(key="VoL", value=str(vol), in_cell_block=True)
-        card2 = volume.Volume(key="VoL", value=str(vol), in_cell_block=True)
+        list_node = syntax_node.ListNode("data")
+        list_node.append(syntax_node.ValueNode(str(vol), float))
+        node = syntax_node.SyntaxNode(
+            "volume",
+            {
+                "classifier": syntax_node.ValueNode("VoL", str),
+                "seperator": syntax_node.ValueNode("=", str),
+                "data": list_node,
+            },
+        )
+        card = volume.Volume(key="VoL", value=node, in_cell_block=True)
+        card2 = volume.Volume(key="VoL", value=node, in_cell_block=True)
         with self.assertRaises(MalformedInputError):
             card.merge(card2)
 
     def test_volume_repr(self):
         vol = 1.0
-        card = volume.Volume(key="VoL", value=str(vol), in_cell_block=True)
+        list_node = syntax_node.ListNode("data")
+        list_node.append(syntax_node.ValueNode(str(vol), float))
+        node = syntax_node.SyntaxNode(
+            "volume",
+            {
+                "classifier": syntax_node.ValueNode("VoL", str),
+                "seperator": syntax_node.ValueNode("=", str),
+                "data": list_node,
+            },
+        )
+        card = volume.Volume(key="VoL", value=node, in_cell_block=True)
         self.assertIn("VOLUME", repr(card))

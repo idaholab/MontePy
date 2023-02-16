@@ -20,6 +20,7 @@ class CellModifierInput(DataInputAbstract):
     :type in_cell_block: bool
     :param key: the key from the key-value pair in a cell
     :type key: str
+    TODO: update types
     :param value: the value from the key-value pair in a cell
     :type value: str
     """
