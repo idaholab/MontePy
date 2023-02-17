@@ -25,7 +25,8 @@ class MetaBuilder(sly.yacc.ParserMeta):
                 MetaBuilder._flatten_rules(classname, basis, attributes)
         cls = super().__new__(meta, classname, bases, attributes)
         return cls
-
+    
+    # TODO use special dict allowing overloading
     @staticmethod
     def _flatten_rules(classname, basis, attributes):
         for attr_name in dir(basis):
