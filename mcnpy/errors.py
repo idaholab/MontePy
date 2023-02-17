@@ -13,7 +13,7 @@ class MalformedInputError(ValueError):
     """
 
     def __init__(self, input, message):
-        self.message = message + "\n the full input: \n " + str(input)
+        self.message = message + "\n the full input: \n " + repr(input)
         super().__init__(self.message)
 
 
