@@ -500,8 +500,8 @@ class Cell(Numbered_MCNP_Object):
         """
         self._surfaces = Surfaces()
         self._complements = Cells()
-        if self._old_mat_number is not None:
-            if self._old_mat_number > 0:
+        if self.old_mat_number is not None:
+            if self.old_mat_number > 0:
                 try:
                     self._material = materials[self._old_mat_number]
                 except KeyError:

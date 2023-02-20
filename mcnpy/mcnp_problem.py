@@ -32,7 +32,7 @@ class MCNP_Problem:
         self._surfaces = Surfaces(problem=self)
         self._universes = Universes(problem=self)
         self._transforms = Transforms(problem=self)
-        self._data_cards = []
+        self._data_inputs = []
         self._materials = Materials(problem=self)
         self._mcnp_version = DEFAULT_VERSION
         self._mode = mode.Mode()
