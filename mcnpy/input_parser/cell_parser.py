@@ -75,6 +75,28 @@ class CellParser(MCNP_Parser):
             "intersection", left.nodes + [p.padding] + right.nodes, "*", left, right
         )
 
+    @_("geometry_term shortcut_sequence")
+    def geometry_term(self, p):
+        left = p.geometry_term
+        for node in p.shortcut_sequence.nodes:
+            new_tree = syntax_node.GeometryTree(
+                "intersection", left.nodes + node.nodes, "*", left, node
+            )
+            left = new_tree
+        return new_tree
+
+    @_("shortcut_sequence")
+    def geometry_term(self, p):
+        node_iter = iter(p.shortcut_sequence.nodes)
+        left = next(node_iter)
+        for node in node_iter:
+            new_tree = syntax_node.GeometryTree(
+                "intersection", left.nodes + node.nodes, "*", left, node
+            )
+            left = new_tree
+        print(new_tree)
+        return new_tree
+
     @_("geometry_term padding")
     def geometry_term(self, p):
         ret = p.geometry_term
