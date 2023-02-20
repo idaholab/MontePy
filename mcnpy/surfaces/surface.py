@@ -17,7 +17,7 @@ class Surface(Numbered_MCNP_Object):
     """
 
     def __init__(self, input=None, comments=None):
-        super().__init__(input, comment)
+        super().__init__(input, comments)
         self._periodic_surface = None
         self._old_periodic_surface = None
         self._transform = None
