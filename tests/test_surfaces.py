@@ -115,6 +115,8 @@ class testSurfaces(TestCase):
         surf._surface_type = SurfaceType.PX
         with self.assertRaises(mcnpy.errors.IllegalState):
             surf.validate()
+        surf.location = 0.0
+        surf.validate()
         # general plane
         surf = GeneralPlane()
         with self.assertRaises(mcnpy.errors.IllegalState):

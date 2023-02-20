@@ -47,7 +47,7 @@ class AxisPlane(Surface):
 
     def validate(self):
         super().validate()
-        if not self.location:
+        if self.location is None:
             raise IllegalState(f"Surface: {self.number} does not have a location set.")
 
     def find_duplicate_surfaces(self, surfaces, tolerance):
