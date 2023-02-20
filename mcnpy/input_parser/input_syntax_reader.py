@@ -110,6 +110,7 @@ def read_data(fh, mcnp_version, block_type=None, recursion=False):
         block_type = BlockType.CELL
     is_in_comment = False
     continue_input = False
+    has_non_comments = False
     input_raw_lines = []
 
     def flush_block():
@@ -143,6 +144,7 @@ def read_data(fh, mcnp_version, block_type=None, recursion=False):
         return blank_comment or non_blank_comment
 
     for line in fh:
+        line_is_comment = is_comment(line)
         # transition to next block with blank line
         if not line.strip():
             yield from flush_block()
@@ -151,7 +153,8 @@ def read_data(fh, mcnp_version, block_type=None, recursion=False):
         if (
             line[0:BLANK_SPACE_CONTINUE].strip()
             and not continue_input
-            and not is_comment(line)
+            and not line_is_comment
+            and has_non_comments
             and input_raw_lines
         ):
             yield from flush_input()
@@ -170,6 +173,7 @@ def read_data(fh, mcnp_version, block_type=None, recursion=False):
             continue_input = True
         else:
             continue_input = False
+        has_non_comments = has_non_comments or not line_is_comment
         input_raw_lines.append(line.rstrip())
     yield from flush_block()
 
