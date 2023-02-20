@@ -25,7 +25,7 @@ class MetaBuilder(sly.yacc.ParserMeta):
                 MetaBuilder._flatten_rules(classname, basis, attributes)
         cls = super().__new__(meta, classname, bases, attributes)
         return cls
-    
+
     # TODO use special dict allowing overloading
     @staticmethod
     def _flatten_rules(classname, basis, attributes):
@@ -74,8 +74,8 @@ class MCNP_Parser(Parser, metaclass=MetaBuilder):
     @_(
         "number_phrase REPEAT",
         "number_phrase MULTIPLY",
-        "number_phrase INTERPOLATE number_phrase",
-        "number_phrase LOG_INTERPOLATE number_phrase",
+        "number_phrase INTERPOLATE padding number_phrase",
+        "number_phrase LOG_INTERPOLATE padding number_phrase",
         "JUMP",
     )
     def shortcut_sequence(self, p):

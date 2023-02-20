@@ -471,12 +471,12 @@ class ShortcutNode(ListNode):
             is_log = True
         else:
             is_log = False
-        begin = p[0].value
+        begin = p.number_phrase0.value
         self._nodes = [p[0]]
-        end = p[2].value
+        end = p.number_phrase1.value
         match = self._num_finder.search(p[1])
         if match:
-            number = match.group(0)
+            number = int(match.group(0))
         else:
             number = 1
         if is_log:
@@ -488,8 +488,8 @@ class ShortcutNode(ListNode):
                 new_val = 10 ** (begin + spacing * (i + 1))
             else:
                 new_val = begin + spacing * (i + 1)
-            self.append(new_val)
-        self.append(p[2])
+            self.append(ValueNode(str(new_val), float))
+        self.append(p.number_phrase1)
 
 
 class ClassifierNode(SyntaxNodeBase):
