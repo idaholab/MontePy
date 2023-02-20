@@ -126,12 +126,9 @@ class CellParser(MCNP_Parser):
 
     @_('"(" geometry_expr ")"')
     def geometry_factory(self, p):
-        ret = syntax_node.ListNode("geom parens")
-        ret.append(p[0])
-        for node in p.geometry_expr.nodes:
-            ret.append(node)
-        ret.append(p[2])
-        return ret
+        return syntax_node.GeometryTree(
+            "geom parens", [p[0]] + p.geometry_expr.nodes + [p[1]], ">", p.geometry_expr
+        )
 
     # support for fill card wierdness
     @_(
