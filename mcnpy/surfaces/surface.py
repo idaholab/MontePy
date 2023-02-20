@@ -1,5 +1,6 @@
 from mcnpy.errors import *
 from mcnpy.data_inputs import transform
+from mcnpy.input_parser.surface_parser import SurfaceParser
 from mcnpy.numbered_mcnp_object import Numbered_MCNP_Object
 from mcnpy.surfaces.surface_type import SurfaceType
 from mcnpy.utilities import *
@@ -16,123 +17,56 @@ class Surface(Numbered_MCNP_Object):
     :type Comments: list
     """
 
+    _parser = SurfaceParser()
+
     def __init__(self, input=None, comments=None):
-        super().__init__(input, comments)
+        print(input, self._parser, comments)
+        super().__init__(input, self._parser, comments)
         self._periodic_surface = None
         self._old_periodic_surface = None
         self._transform = None
         self._old_transform_number = None
-        self._surface_type = None
-        self._surface_number = -1
-        i = 0
+        self._is_reflecting = False
+        self._is_white_boundary = False
+        self._surface_type = self._generate_default_node(str, None)
+        self._surface_number = self._generate_default_node(int, -1)
+        self._modifier = self._generate_default_node(str, None)
         # surface number
-        surface_num = words[i]
-        if "*" in surface_num:
-            self._is_reflecting = True
-            surface_num = surface_num.strip("*")
-        else:
-            self._is_reflecting = False
-        if "+" in surface_num:
-            self._is_white_boundary = True
-            surface_num = surface_num.strip("+")
-        else:
-            self._is_white_boundary = False
-
-        try:
-            surface_num = int(surface_num)
-            assert surface_num > 0
-            self._surface_number = surface_num
-            self._old_surface_number = surface_num
-        except (AssertionError, ValueError):
-            raise MalformedInputError(
-                input, f"{words[i]} could not be parsed as a surface number."
-            )
-        i += 1
-        num_finder = re.compile(r"\d+")
-        # handle N if specified
-        if num_finder.search(words[i]):
+        if input:
+            self._surface_number = self._tree["surface_num"]["number"]
+            if "modifier" in self._tree["surface_num"]:
+                self._modifier = self._tree["surface_num"]["modifier"]
+                if self._modifier.value == "*":
+                    self._is_reflecting = True
+                elif self._modifier.value == "+":
+                    self._is_white_boundary = True
             try:
-                num = int(words[i])
-                if num > 0:
-                    self._old_transform_number = abs(num)
-                elif num < 0:
-                    self._old_periodic_surface = abs(num)
-                i += 1
-            except ValueError:
+                assert self._surface_number.value > 0
+            except AssertionError:
                 raise MalformedInputError(
-                    input,
-                    f"{words[i]} could not be parsed as a periodic surface or a transform.",
+                    input, f"{words[i]} could not be parsed as a valid surface number."
                 )
+            if "pointer" in self._tree:
+                val = self._tree["pointer"]
+                val.is_negatable_identifier = True
+                if val.is_negative:
+                    self._old_periodic_surface = val
+                else:
+                    self._old_transform_number = val
+            self._surface_type = self._tree["surface_type"]
         # parse surface mnemonic
         try:
-            self._surface_type = SurfaceType(words[i].upper())
+            # enforce enums
+            SurfaceType(self._surface_type.value)
         except ValueError:
             raise MalformedInputError(
                 input,
                 f"{words[i]} could not be parsed as a surface type mnemonic.",
             )
-        # parse the parameters
-        self._surface_constants = []
-        i = 0
-        super().__init__(input, comments)
-        # surface number
-        if input:
-            words = input.words
-            surface_num = words[i]
-            if "*" in surface_num:
-                self._is_reflecting = True
-                surface_num = surface_num.strip("*")
-            else:
-                self._is_reflecting = False
-            if "+" in surface_num:
-                self._is_white_boundary = True
-                surface_num = surface_num.strip("+")
-            else:
-                self._is_white_boundary = False
-
-            try:
-                surface_num = int(surface_num)
-                assert surface_num > 0
-                self._surface_number = surface_num
-                self._old_surface_number = surface_num
-            except (AssertionError, ValueError):
-                raise MalformedInputError(
-                    input, f"{words[i]} could not be parsed as a surface number."
-                )
-            i += 1
-            num_finder = re.compile(r"\d+")
-            # handle N if specified
-            if num_finder.search(words[i]):
-                try:
-                    num = int(words[i])
-                    if num > 0:
-                        self._old_transform_number = abs(num)
-                    elif num < 0:
-                        self._old_periodic_surface = abs(num)
-                    i += 1
-                except ValueError:
-                    raise MalformedInputError(
-                        input,
-                        f"{words[i]} could not be parsed as a periodic surface or a transform.",
-                    )
-            # parse surface mnemonic
-            try:
-                self._surface_type = SurfaceType(words[i].upper())
-            except ValueError:
-                raise MalformedInputError(
-                    input,
-                    f"{entry} could not be parsed as a surface constant.",
-                )
             # parse the parameters
             self._surface_constants = []
-            for entry in words[i + 1 :]:
-                try:
-                    self._surface_constants.append(fortran_float(entry))
-                except ValueError:
-                    raise MalformedInputError(
-                        input,
-                        f"{entry} could not be parsed as a surface constant.",
-                    )
+            for entry in self._tree["data"]:
+                self._surface_constants.append(entry.value)
 
     @property
     def allowed_keywords(self):
