@@ -57,7 +57,8 @@ class Surface(Numbered_MCNP_Object):
                 assert self._number.value > 0
             except AssertionError:
                 raise MalformedInputError(
-                    input, f"{words[i]} could not be parsed as a valid surface number."
+                    input,
+                    f"{self._number.value} could not be parsed as a valid surface number.",
                 )
             if self._tree["pointer"].value is not None:
                 val = self._tree["pointer"]
