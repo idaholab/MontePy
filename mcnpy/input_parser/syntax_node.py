@@ -302,6 +302,10 @@ class ValueNode(SyntaxNodeBase):
     def type(self):
         return self._type
 
+    @property
+    def token(self):
+        return self._token
+
     def __str__(self):
         return f"(Value, {self._value}, padding: {self._padding})"
 
