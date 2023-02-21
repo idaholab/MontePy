@@ -223,7 +223,7 @@ class ValueNode(SyntaxNodeBase):
             self._is_neg = val
 
     def _reverse_engineer_formatting(self):
-        if not self._is_reversed:
+        if not self._is_reversed and self._token is not None:
             self._is_reversed = True
             self._formatter["value_length"] = len(self._token)
             if self.padding:
