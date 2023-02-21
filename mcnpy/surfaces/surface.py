@@ -143,7 +143,7 @@ class Surface(Numbered_MCNP_Object):
         self._mutated = True
         self._surface_constants = constants
 
-    @make_prop_val_node("_old_transform_surface")
+    @make_prop_val_node("_old_transform_number")
     def old_transform_number(self):
         """
         The transformation number for this surface in the original file.
