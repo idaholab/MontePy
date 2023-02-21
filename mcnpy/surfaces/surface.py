@@ -256,43 +256,26 @@ class Surface(Numbered_MCNP_Object):
                 )
 
     def validate(self):
-        if not self.surface_type:
+        if self.surface_type is None:
             raise IllegalState(
                 f"Surface: {self.number} does not have a surface type set."
             )
 
+    def _update_values(self):
+        modifier = self._tree["surface_num"]["modifier"]
+        if self.is_reflecting:
+            modifier.value = "*"
+        elif self.is_white_boundary:
+            modifier.value = "+"
+        if self.transform is not None:
+            self._old_transform_number.value = self.transform.number
+        elif self.periodic_surface is not None:
+            self._old_periodic_surface.value = self.periodic_surface.number
+
     def format_for_mcnp_input(self, mcnp_version):
-        mutated = self.mutated
         self.validate()
-        if not mutated:
-            for obj in [self.periodic_surface, self.transform]:
-                if obj and obj.mutated:
-                    mutated = True
-                    break
-        if mutated:
-            ret = super().format_for_mcnp_input(mcnp_version)
-            buffList = []
-            # surface number
-            if self.is_reflecting:
-                buffList.append(f"*{self.number}")
-            elif self.is_white_boundary:
-                buffList.append(f"+{self.number}")
-            else:
-                buffList.append(str(self.number))
-
-            if self.periodic_surface:
-                buffList.append(str(-self.periodic_surface.number))
-            elif self.transform:
-                buffList.append(str(self.transform.number))
-
-            buffList.append(self.surface_type.value)
-
-            for constant in self.surface_constants:
-                buffList.append(f"{constant:.6g}")
-            ret += Surface.wrap_words_for_mcnp(buffList, mcnp_version, True)
-        else:
-            ret = self._format_for_mcnp_unmutated(mcnp_version)
-        return ret
+        self._update_values()
+        return self.wrap_string_for_mcnp(self._tree.format(), mcnp_version, True)
 
     def __lt__(self, other):
         return self.number < other.number
