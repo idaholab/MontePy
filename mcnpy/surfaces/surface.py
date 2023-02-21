@@ -9,8 +9,8 @@ import re
 
 
 def _enforce_numbers(self, value):
-    if number <= 0:
-        raise ValueError("The number be greater than 0")
+    if value <= 0:
+        raise ValueError(f"The number be greater than 0; {value} given.")
 
 
 class Surface(Numbered_MCNP_Object):
