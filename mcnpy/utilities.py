@@ -49,6 +49,7 @@ def make_prop_val_node(
         if types is not None:
 
             def setter(self, value):
+                nonlocal types
                 if isinstance(types, tuple) and len(types) == 0:
                     types = type(self)
                 if not isinstance(value, types):
