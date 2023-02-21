@@ -61,15 +61,15 @@ class Surface(Numbered_MCNP_Object):
                 else:
                     self._old_transform_number = val
             self._surface_type = self._tree["surface_type"]
-        # parse surface mnemonic
-        try:
-            # enforce enums
-            SurfaceType(self._surface_type.value)
-        except ValueError:
-            raise MalformedInputError(
-                input,
-                f"{words[i]} could not be parsed as a surface type mnemonic.",
-            )
+            # parse surface mnemonic
+            try:
+                # enforce enums
+                self._surface_type.value = SurfaceType(self._surface_type.value)
+            except ValueError:
+                raise MalformedInputError(
+                    input,
+                    f"{self._surface_type.value} could not be parsed as a surface type mnemonic.",
+                )
             # parse the parameters
             self._surface_constants = []
             for entry in self._tree["data"]:
@@ -79,7 +79,7 @@ class Surface(Numbered_MCNP_Object):
     def allowed_keywords(self):
         return set()
 
-    @property
+    @make_prop_val_node("_surface_type", (SurfaceType, str), SurfaceType)
     def surface_type(self):
         """
         The mnemonic for the type of surface.
@@ -88,7 +88,7 @@ class Surface(Numbered_MCNP_Object):
 
         :rtype: SurfaceType
         """
-        return self._surface_type
+        pass
 
     @property
     def is_reflecting(self):
