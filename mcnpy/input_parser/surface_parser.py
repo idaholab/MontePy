@@ -12,6 +12,8 @@ class SurfaceParser(MCNP_Parser):
         ret["surface_num"] = p.surface_id
         if hasattr(p, "number_phrase"):
             ret["pointer"] = p.number_phrase
+        else:
+            ret["pointer"] = syntax_node.ValueNode(None, int)
         ret["surface_type"] = syntax_node.ValueNode(p.SURFACE_TYPE, str, p.padding)
         ret["data"] = p.number_sequence
         return syntax_node.SyntaxNode("surface", ret)
@@ -20,6 +22,9 @@ class SurfaceParser(MCNP_Parser):
     def surface_id(self, p):
         ret = {}
         if p[0] in {"*", "+"}:
-            ret["modifier"] = p[0]
+            ret["modifier"] = syntax_node.ValueNode(p[0], str)
+        else:
+            ret["modifier"] = syntax_node.ValueNode(None, str)
+
         ret["number"] = p.number_phrase
         return syntax_node.SyntaxNode("surface_number", ret)
