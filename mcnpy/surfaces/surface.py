@@ -1,6 +1,7 @@
 import copy
 from mcnpy.errors import *
 from mcnpy.data_inputs import transform
+from mcnpy.input_parser import syntax_node
 from mcnpy.input_parser.surface_parser import SurfaceParser
 from mcnpy.numbered_mcnp_object import Numbered_MCNP_Object
 from mcnpy.surfaces.surface_type import SurfaceType
@@ -34,12 +35,14 @@ class Surface(Numbered_MCNP_Object):
         self._old_transform_number = None
         self._is_reflecting = False
         self._is_white_boundary = False
+        self._surface_constants = []
         self._surface_type = self._generate_default_node(str, None)
         self._number = self._generate_default_node(int, -1)
         self._modifier = self._generate_default_node(str, None)
         # surface number
         if input:
             self._number = self._tree["surface_num"]["number"]
+            self._number._convert_to_int()
             self._old_number = copy.deepcopy(self._number)
             if "modifier" in self._tree["surface_num"]:
                 self._modifier = self._tree["surface_num"]["modifier"]
@@ -53,7 +56,7 @@ class Surface(Numbered_MCNP_Object):
                 raise MalformedInputError(
                     input, f"{words[i]} could not be parsed as a valid surface number."
                 )
-            if "pointer" in self._tree:
+            if self._tree["pointer"].value is not None:
                 val = self._tree["pointer"]
                 val.is_negatable_identifier = True
                 if val.is_negative:
@@ -71,7 +74,6 @@ class Surface(Numbered_MCNP_Object):
                     f"{self._surface_type.value} could not be parsed as a surface type mnemonic.",
                 )
             # parse the parameters
-            self._surface_constants = []
             for entry in self._tree["data"]:
                 self._surface_constants.append(entry.value)
 
