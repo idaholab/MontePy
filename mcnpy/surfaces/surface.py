@@ -1,3 +1,4 @@
+import copy
 from mcnpy.errors import *
 from mcnpy.data_inputs import transform
 from mcnpy.input_parser.surface_parser import SurfaceParser
@@ -5,6 +6,11 @@ from mcnpy.numbered_mcnp_object import Numbered_MCNP_Object
 from mcnpy.surfaces.surface_type import SurfaceType
 from mcnpy.utilities import *
 import re
+
+
+def _enforce_numbers(self, value):
+    if number <= 0:
+        raise ValueError("The number be greater than 0")
 
 
 class Surface(Numbered_MCNP_Object):
@@ -29,11 +35,12 @@ class Surface(Numbered_MCNP_Object):
         self._is_reflecting = False
         self._is_white_boundary = False
         self._surface_type = self._generate_default_node(str, None)
-        self._surface_number = self._generate_default_node(int, -1)
+        self._number = self._generate_default_node(int, -1)
         self._modifier = self._generate_default_node(str, None)
         # surface number
         if input:
-            self._surface_number = self._tree["surface_num"]["number"]
+            self._number = self._tree["surface_num"]["number"]
+            self._old_number = copy.deepcopy(self._number)
             if "modifier" in self._tree["surface_num"]:
                 self._modifier = self._tree["surface_num"]["modifier"]
                 if self._modifier.value == "*":
@@ -41,7 +48,7 @@ class Surface(Numbered_MCNP_Object):
                 elif self._modifier.value == "+":
                     self._is_white_boundary = True
             try:
-                assert self._surface_number.value > 0
+                assert self._number.value > 0
             except AssertionError:
                 raise MalformedInputError(
                     input, f"{words[i]} could not be parsed as a valid surface number."
@@ -96,7 +103,6 @@ class Surface(Numbered_MCNP_Object):
     def is_reflecting(self, reflect):
         if not isinstance(reflect, bool):
             raise TypeError("is_reflecting must be set to a bool")
-        self._mutated = True
         self._is_reflecting = reflect
 
     @property
@@ -112,7 +118,6 @@ class Surface(Numbered_MCNP_Object):
     def is_white_boundary(self, white):
         if not isinstance(white, bool):
             raise TypeError("is_white_boundary must be set to a bool")
-        self._mutated = True
         self._is_white_boundary = white
 
     @property
@@ -136,95 +141,59 @@ class Surface(Numbered_MCNP_Object):
         self._mutated = True
         self._surface_constants = constants
 
-    @property
+    @make_prop_val_node("_old_transform_surface")
     def old_transform_number(self):
         """
         The transformation number for this surface in the original file.
 
         :rtype: int
         """
-        return self._old_transform_number
+        pass
 
-    @property
+    @make_prop_val_node("_old_periodic_surface")
     def old_periodic_surface(self):
         """
         The surface number this is periodic with reference to in the original file.
 
         :rtype: int
         """
-        return self._old_periodic_surface
+        pass
 
-    @property
+    @make_prop_pointer("_periodic_surface", types=(), deletable=False)
     def periodic_surface(self):
         """
         The surface that this surface is periodic with respect to
 
         :rtype: Surface
         """
-        return self._periodic_surface
+        pass
 
-    @periodic_surface.setter
-    def periodic_surface(self, periodic):
-        if not isinstance(periodic, Surface):
-            raise TypeError("The periodic_surface must be a surface")
-        self._mutated = True
-        self._periodic_surface = periodic
-
-    @periodic_surface.deleter
-    def periodic_surface(self):
-        self._mutated = True
-        self._periodic_surface = None
-
-    @property
+    @make_prop_pointer("_transform", transform.Transform, deletable=True)
     def transform(self):
         """
         The Transform object that translates this surface
 
         :rtype: Transform
         """
-        return self._transform
+        pass
 
-    @transform.setter
-    def transform(self, tr):
-        if not isinstance(tr, transform.Transform):
-            raise TypeError("The transform for this surface must be a Transform")
-        self._mutated = True
-        self._transform = tr
-
-    @transform.deleter
-    def transform(self):
-        self._mutated = True
-        self._transform = None
-        self._old_transform_number = None
-
-    @property
+    @make_prop_val_node("_old_number")
     def old_number(self):
         """
         The surface number that was used in the read file
 
         :rtype: int
         """
-        return self._old_surface_number
+        pass
 
-    @property
+    @make_prop_val_node("_number", int, validator=_enforce_numbers)
     def number(self):
         """
         The surface number to use.
 
         :rtype: int
         """
-        return self._surface_number
-
-    @number.setter
-    def number(self, number):
-        if not isinstance(number, int):
-            raise TypeError("The number must be an int")
-        if number <= 0:
-            raise ValueError("The number be greater than 0")
-        if self._problem:
-            self._problem.surfaces.check_number(number)
-        self._mutated = True
-        self._surface_number = number
+        pass
 
     @property
     def cells(self):
