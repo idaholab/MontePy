@@ -13,7 +13,7 @@ class GeneralPlane(Surface):
     :type Comments: list
     """
 
-    def __init__(self, input, comment=None):
+    def __init__(self, input=None, comment=None):
         super().__init__(input, comment)
         if input:
             if self.surface_type != SurfaceType.P:

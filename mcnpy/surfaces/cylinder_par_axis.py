@@ -21,7 +21,7 @@ class CylinderParAxis(Surface):
     """Which coordinate is what value for each cylinder type.
     """
 
-    def __init__(self, input, comment=None):
+    def __init__(self, input=None, comment=None):
         self._coordinates = None
         self._radius = None
         super().__init__(input, comment)
