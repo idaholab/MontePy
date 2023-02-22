@@ -264,12 +264,12 @@ class ValueNode(SyntaxNodeBase):
         parts = significand.split(".")
         if len(parts) == 2:
             precision = len(parts[1])
+            self._formatter["zero_padding"] += precision
         else:
-            precision = 0
+            precision = self._FORMATTERS[float]["precision"]
             self._formatter["as_int"] = True
 
         self._formatter["precision"] = precision
-        self._formatter["zero_padding"] += precision
 
     def _can_float_to_int_happen(self):
         if self._type != float or not self._formatter["as_int"]:
