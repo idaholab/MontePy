@@ -27,7 +27,6 @@ class Surface(Numbered_MCNP_Object):
     _parser = SurfaceParser()
 
     def __init__(self, input=None, comments=None):
-        print(input, self._parser, comments)
         super().__init__(input, self._parser, comments)
         self._periodic_surface = None
         self._old_periodic_surface = None

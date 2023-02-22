@@ -209,6 +209,7 @@ class ValueNode(SyntaxNodeBase):
             self._convert_to_int()
             self._is_neg = self.value < 0
             self._value = abs(self._value)
+        self._is_neg_id = val
 
     @property
     def is_negative(self):
