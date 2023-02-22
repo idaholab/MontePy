@@ -183,15 +183,16 @@ class testSurfaces(TestCase):
         card = Input([in_str], BlockType.SURFACE)
         surf = Surface(card)
         surf.number = 2
-        answer = "+2 PZ 0"
+        answer = "+2 PZ 0.0"
         self.assertEqual(surf.format_for_mcnp_input((6, 2, 0))[0], answer)
         in_str = "*1 PZ 0.0"
         card = Input([in_str], BlockType.SURFACE)
         surf = Surface(card)
         surf.number = 2
-        answer = "*2 PZ 0"
+        answer = "*2 PZ 0.0"
         self.assertEqual(surf.format_for_mcnp_input((6, 2, 0))[0], answer)
-        in_str = "1 PZ 0.0"
+        # test input mimicry
+        in_str = "1 PZ 0"
         card = Input([in_str], BlockType.SURFACE)
         surf = Surface(card)
         surf.number = 2
