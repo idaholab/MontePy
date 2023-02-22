@@ -175,8 +175,10 @@ class ValueNode(SyntaxNodeBase):
         r"""
             [+\-]?                      # leading sign if any
             (?P<significand>\d+\.*\d*)  # the actual number
-            (?P<e>[eE]?)                # optional e
-            [+\-]?\d+                    #exponent
+            ((?P<e>[eE])                 # non-optional e with +/-
+            [+\-]?|
+            [+\-])                  #non-optional +/- if fortran float is used
+            \d+                    #exponent
         """,
         re.VERBOSE,
     )
