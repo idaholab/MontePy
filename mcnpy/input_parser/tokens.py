@@ -197,7 +197,7 @@ class MCNP_Lexer(Lexer):
 
     THERMAL_LAW = r"[a-z/]+\.\d+[a-z]"
 
-    @_(r"[a-z\.]+")
+    @_(r"[a-z\./]+")
     def TEXT(self, t):
         if t.value.lower() in self._KEYWORDS:
             t.type = "KEYWORD"
