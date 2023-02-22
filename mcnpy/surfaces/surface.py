@@ -70,7 +70,7 @@ class Surface(Numbered_MCNP_Object):
             # parse surface mnemonic
             try:
                 # enforce enums
-                self._surface_type.value = SurfaceType(self._surface_type.value)
+                self._surface_type.value = SurfaceType(self._surface_type.value.upper())
             except ValueError:
                 raise MalformedInputError(
                     input,
