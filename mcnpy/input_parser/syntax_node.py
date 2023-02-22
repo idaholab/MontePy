@@ -164,6 +164,8 @@ class ValueNode(SyntaxNodeBase):
             "zero_padding": 0,
             "sign": "-",
             "divider": "e",
+            "as_int": False,
+            "int_tolerance": 1e-6,
         },
         int: {"value_length": 0, "zero_padding": 0, "sign": "-"},
         str: {"value_length": 0},
@@ -262,13 +264,28 @@ class ValueNode(SyntaxNodeBase):
             precision = len(parts[1])
         else:
             precision = 0
+            self._formatter["as_int"] = True
+
         self._formatter["precision"] = precision
         self._formatter["zero_padding"] += precision
+
+    def _can_float_to_int_happen(self):
+        if self._type != float or not self._formatter["as_int"]:
+            return False
+        nearest_int = round(self.value)
+        if abs(nearest_int - self.value) > self._formatter["int_tolerance"]:
+            return False
+        return True
 
     def format(self):
         # TODO throw warning when things expand
         self._reverse_engineer_formatting()
-        if self._type == float:
+        if self._type == int or self._can_float_to_int_happen():
+            temp = "{value:0={sign}{zero_padding}g}".format(
+                value=self.value, **self._formatter
+            )
+        elif self._type == float:
+            print(self._formatter)
             if self._is_scientific:
                 temp = "{value:0={sign}{zero_padding}.{precision}e}".format(
                     value=self.value, **self._formatter
@@ -278,10 +295,6 @@ class ValueNode(SyntaxNodeBase):
                 temp = "{value:0={sign}0{zero_padding}.{precision}f}".format(
                     value=self.value, **self._formatter
                 )
-        elif self._type == int:
-            temp = "{value:0={sign}{zero_padding}g}".format(
-                value=self.value, **self._formatter
-            )
         else:
             temp = self.value
         if self.padding:
