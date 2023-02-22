@@ -178,7 +178,7 @@ class MCNP_Lexer(Lexer):
 
     REPEAT = r"\d*R\s"
 
-    @_(r"[+\-]?[0-9]+\.?[0-9]*E?[+\-]?[0-9]*")
+    @_(r"[+\-]?[0-9]+\.?[0-9]*E?[+\-]?[0-9]*", r"[+\-]?[0-9]*\.?[0-9]+E?[+\-]?[0-9]*")
     def NUMBER(self, t):
         if fortran_float(t.value) == 0:
             t.type = "NULL"
