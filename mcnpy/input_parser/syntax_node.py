@@ -176,7 +176,7 @@ class ValueNode(SyntaxNodeBase):
             [+\-]?                      # leading sign if any
             (?P<significand>\d+\.*\d*)  # the actual number
             (?P<e>[eE]?)                # optional e
-            [+\-]\d+                    #exponent
+            [+\-]?\d+                    #exponent
         """,
         re.VERBOSE,
     )
