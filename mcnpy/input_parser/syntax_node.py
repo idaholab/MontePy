@@ -88,7 +88,11 @@ class SyntaxNode(SyntaxNodeBase):
     def format(self):
         ret = ""
         for node in self.nodes.values():
-            ret += node.format()
+            if isinstance(node, ValueNode):
+                if node.value is not None:
+                    ret += node.format()
+            else:
+                ret += node.format()
         return ret
 
 
