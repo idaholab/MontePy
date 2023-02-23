@@ -40,17 +40,17 @@ class Material(data_input.DataInputAbstract, Numbered_MCNP_Object):
             isotope_fractions = self._tree["data"]
             for isotope_node, fraction in isotope_fractions.nodes:
                 isotope = Isotope(node=isotope_node)
-                frac = fraction.value
+                fraction.is_negetable_float = True
                 if not set_atom_frac:
                     set_atom_frac = True
-                    if frac > 0:
+                    if not fraction.is_negative:
                         self._is_atom_fraction = True
                     else:
                         self._is_atom_fraction = False
                 else:
                     # if switching fraction formatting
-                    if (frac > 0 and not self._is_atom_fraction) or (
-                        fract < 0 and self._is_atom_fraction
+                    if (not fraction.is_negative and not self._is_atom_fraction) or (
+                        fraction.is_negative and self._is_atom_fraction
                     ):
                         raise MalformedInputError(
                             input,
