@@ -10,6 +10,7 @@ from mcnpy.data_inputs.thermal_scattering import ThermalScatteringLaw
 from mcnpy.errors import MalformedInputError, UnknownElement
 from mcnpy.input_parser.block_type import BlockType
 from mcnpy.input_parser.mcnp_input import Input, Comment
+from mcnpy.input_parser.syntax_node import ValueNode
 
 
 class testMaterialClass(TestCase):
@@ -114,7 +115,7 @@ Pu-239 (80c) 0.1
     def test_material_comp_init(self):
         # test fraction test
         with self.assertRaises(ValueError):
-            MaterialComponent(Isotope("1001.80c"), -0.1)
+            MaterialComponent(Isotope("1001.80c"), ValueNode("-0.1",float))
 
         # test bad fraction
         with self.assertRaises(TypeError):
