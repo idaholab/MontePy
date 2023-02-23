@@ -1,5 +1,5 @@
 from mcnpy.data_inputs.isotope import Isotope
-from mcnpy.input_parser.syntax_node import ValueNode
+from mcnpy.input_parser.syntax_node import PaddingNode, ValueNode
 
 
 class MaterialComponent:
@@ -17,14 +17,17 @@ class MaterialComponent:
     def __init__(self, isotope, fraction):
         if not isinstance(isotope, Isotope):
             raise TypeError(f"Isotope must be an Isotope. {isotope} given")
-        if not isinstance(fraction, ValueNode) or not isinstance(fraction.value, float):
+        if isinstance(fraction, (float, int)):
+            fraction = ValueNode(str(fraction), float, padding=PaddingNode(" "))
+        elif not isinstance(fraction, ValueNode) or not isinstance(
+            fraction.value, float
+        ):
             raise TypeError(f"fraction must be float ValueNode. {fraction} given.")
         self._isotope = isotope
         self._tree = fraction
-        fraction = fraction.value
-        if not isinstance(fraction, float):
-            raise TypeError("fraction must be a float")
-        self._fraction = abs(fraction)
+        if fraction.value < 0:
+            raise ValueError(f"Fraction must be > 0. {fraction.value} given.")
+        self._fraction = fraction
 
     @property
     def isotope(self):
