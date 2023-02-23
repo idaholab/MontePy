@@ -124,13 +124,15 @@ class CellParser(MCNP_Parser):
     def geometry_factory(self, p):
         return syntax_node.ValueNode(p.NUMBER, float)
 
-    @_('"(" geometry_expr ")"')
+    @_('"(" geometry_expr ")"', '"(" padding geometry_expr ")"')
     def geometry_factory(self, p):
-        return syntax_node.GeometryTree(
-            "geom parens", [p[0]] + p.geometry_expr.nodes + [p[1]], ">", p.geometry_expr
-        )
+        nodes = [p[0]]
+        if hasattr(p, "padding"):
+            nodes += p.padding.nodes
+        nodes += p.geometry_expr.nodes + [p[-1]]
+        return syntax_node.GeometryTree("geom parens", nodes, ">", p.geometry_expr)
 
-    # support for fill card wierdness
+    # support for fill card weirdness
     @_(
         'number_sequence "(" number_sequence ")"',
         'number_sequence "(" number_sequence ")" padding',
