@@ -189,6 +189,7 @@ class ValueNode(SyntaxNodeBase):
         self._type = token_type
         self._formatter = self._FORMATTERS[token_type].copy()
         self._is_neg_id = False
+        self._is_neg_val = False
         if token is None:
             self._value = None
         elif token_type == float:
@@ -218,6 +219,17 @@ class ValueNode(SyntaxNodeBase):
             self._is_neg = self.value < 0
             self._value = abs(self._value)
         self._is_neg_id = val
+
+    @property
+    def is_negetable_float(self):
+        return self._is_neg_val
+
+    @is_negetable_float.setter
+    def is_negetable_float(self, val):
+        if val == True:
+            self._is_neg = self.value < 0
+            self._value = abs(self._value)
+        self._is_neg_val = val
 
     @property
     def is_negative(self):
