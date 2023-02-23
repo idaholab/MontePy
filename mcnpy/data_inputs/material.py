@@ -91,14 +91,14 @@ class Material(data_input.DataInputAbstract, Numbered_MCNP_Object):
         """
         pass
 
-    @make_prop_val_node("_number", int, _number_validator)
+    @make_prop_val_node("_number", int, validator=_number_validator)
     def number(self):
         """
         The number to use to identify the material by
 
         :rtype: int
         """
-        return self._material_number
+        pass
 
     @property
     def is_atom_fraction(self):
@@ -225,24 +225,8 @@ class Material(data_input.DataInputAbstract, Numbered_MCNP_Object):
 
     def format_for_mcnp_input(self, mcnp_version):
         self.validate()
-        ret = mcnp_object.MCNP_Object.format_for_mcnp_input(self, mcnp_version)
-        if self.mutated:
-            sorted_isotopes = sorted(list(self.material_components.keys()))
-            first_component = self.material_components[sorted_isotopes[0]]
-
-            ret.append(
-                f"m{self.number:<8} {first_component.isotope.mcnp_str():>8} {first_component.fraction:>11.4g}"
-            )
-            for isotope in sorted_isotopes[1:]:  # skips the first
-                component = self.material_components[isotope]
-                ret.append(
-                    f"{component.isotope.mcnp_str():>18} {component.fraction:>11.4g}"
-                )
-        else:
-            ret = self._format_for_mcnp_unmutated(mcnp_version)
-        if self.thermal_scattering:
-            ret += self.thermal_scattering.format_for_mcnp_input(mcnp_version)
-        return ret
+        self._update_values()
+        return self.wrap_string_for_mcnp(self._tree.format(), mcnp_version, True)
 
     def __hash__(self):
         """WARNING: this is a temporary solution to make sets remove duplicate materials.
