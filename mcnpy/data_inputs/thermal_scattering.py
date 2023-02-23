@@ -110,23 +110,8 @@ class ThermalScatteringLaw(DataInputAbstract):
 
     def format_for_mcnp_input(self, mcnp_version):
         self.validate()
-        ret = mcnp_object.MCNP_Object.format_for_mcnp_input(self, mcnp_version)
-        mutated = self.mutated
-        if not self.parent_material:
-            raise MalformedInputError(
-                self, "MT input is detached from a parent material"
-            )
-        if not mutated:
-            mutated = self.parent_material.mutated
-        if mutated:
-            buff_list = [f"MT{self.parent_material.number}"]
-            buff_list += self._scattering_laws
-            ret += ThermalScatteringLaw.wrap_words_for_mcnp(
-                buff_list, mcnp_version, True
-            )
-        else:
-            ret = self._format_for_mcnp_unmutated(mcnp_version)
-        return ret
+        self._update_values()
+        return self.wrap_string_for_mcnp(self._tree.format(), mcnp_version, True)
 
     def update_pointers(self, data_inputs):
         """
