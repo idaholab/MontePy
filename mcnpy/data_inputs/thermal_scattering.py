@@ -2,6 +2,7 @@ from mcnpy.data_inputs.data_input import DataInputAbstract
 from mcnpy.input_parser.thermal_parser import ThermalParser
 from mcnpy import mcnp_object
 from mcnpy.errors import *
+from mcnpy.utilities import *
 import mcnpy
 
 
@@ -24,12 +25,12 @@ class ThermalScatteringLaw(DataInputAbstract):
     _parser = ThermalParser()
 
     def __init__(self, input="", comments=None, material=None):
-        self._old_material_number = self._generate_default_node(int, -1)
+        self._old_number = self._generate_default_node(int, -1)
         self._parent_material = None
         self._scattering_laws = []
         super().__init__(input, comments)
         if input:
-            self._old_material_number = self._input_number
+            self._old_number = self._input_number
             self._scattering_laws = self._tree["data"].nodes
         else:
             if material:
@@ -47,14 +48,14 @@ class ThermalScatteringLaw(DataInputAbstract):
     def _has_classifier():
         return 0
 
-    @property
+    @make_prop_val_node("_old_number")
     def old_number(self):
         """
         The material number from the file
 
         :rtype: int
         """
-        return self._old_material_number
+        pass
 
     @property
     def parent_material(self):
