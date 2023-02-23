@@ -30,7 +30,7 @@ class Material(data_input.DataInputAbstract, Numbered_MCNP_Object):
     def __init__(self, input=None, comment=None):
         self._material_components = {}
         self._thermal_scattering = None
-        self._material_number = self._generate_default_node(int, -1)
+        self._number = self._generate_default_node(int, -1)
         super().__init__(input, comment)
         if input:
             num = self._input_number
