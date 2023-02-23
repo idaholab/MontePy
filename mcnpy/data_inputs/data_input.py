@@ -238,7 +238,7 @@ class DataInputAbstract(MCNP_Object):
         elif self.prefix > other.prefix:
             return type_comp
         else:  # otherwise first part is equal
-            return self._input_number < other._input_number
+            return self._input_number.value < other._input_number.value
 
 
 class DataInput(DataInputAbstract):
