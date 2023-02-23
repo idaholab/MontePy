@@ -287,7 +287,6 @@ class ValueNode(SyntaxNodeBase):
                 value=self.value, **self._formatter
             )
         elif self._type == float:
-            print(self._formatter)
             if self._is_scientific:
                 temp = "{value:0={sign}{zero_padding}.{precision}e}".format(
                     value=self.value, **self._formatter
