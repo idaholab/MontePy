@@ -277,7 +277,7 @@ class TestThermalScattering(TestCase):
         material = Material(input_card, None)
         material.update_pointers([card])
         material.thermal_scattering.thermal_scattering_laws = ["grph.20t"]
-        self.assertEqual(card.format_for_mcnp_input((6, 2, 0)), ["MT20 grph.20t"])
+        self.assertEqual(card.format_for_mcnp_input((6, 2, 0)), ["Mt20 grph.20t"])
 
     def test_thermal_str(self):
         in_str = "Mt20 grph.20t"
