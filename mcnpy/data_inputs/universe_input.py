@@ -28,6 +28,7 @@ class UniverseInput(CellModifierInput):
         self, input=None, comments=None, in_cell_block=False, key=None, value=None
     ):
         self._universe = None
+        self._universes = None
         self._not_truncated = False
         super().__init__(input, comments, in_cell_block, key, value)
         if self.in_cell_block:
@@ -38,19 +39,19 @@ class UniverseInput(CellModifierInput):
                 self._not_truncated = val.is_negative
                 self._old_number = val
         elif input:
-            self._universe = []
+            self._universes = []
             for node in self.data:
                 if not isinstance(node, Jump):
                     try:
                         node.is_negatable_identifier = True
-                        self._universe.append(node)
+                        self._universes.append(node)
                     except ValueError:
                         raise MalformedInputError(
                             input_card,
                             f"Cell universes must be an integer ≥ 0. {word} was given",
                         )
                 elif isinstance(node, Jump):
-                    self._universe.append(node)
+                    self._universes.append(node)
 
     @staticmethod
     def _class_prefix():
@@ -125,10 +126,10 @@ class UniverseInput(CellModifierInput):
             return
         if not self.in_cell_block:
             cells = self._problem.cells
-            if self._universe:
+            if self._universes:
                 self._check_redundant_definitions()
                 for cell, uni_number in itertools.zip_longest(
-                    cells, self._universe, fillvalue=None
+                    cells, self._universes, fillvalue=None
                 ):
                     if isinstance(uni_number, (Jump, type(None))):
                         continue
@@ -149,7 +150,7 @@ class UniverseInput(CellModifierInput):
                 cell._universe._universe = universe
 
     def _clear_data(self):
-        del self._universe
+        del self._universes
 
     def __str__(self):
         mutated = self.mutated
@@ -162,7 +163,8 @@ class UniverseInput(CellModifierInput):
         ret = (
             f"UNIVERSE: in_cell: {self._in_cell_block}"
             f" set_in_block: {self.set_in_cell_block}, "
-            f"Universe : {self._universe}"
+            f"Universe : {self._universe}, "
+            f"Universes: {self._universes}"
         )
         return ret
 
