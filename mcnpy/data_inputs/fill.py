@@ -44,7 +44,7 @@ class Fill(CellModifierInput):
         if self.in_cell_block:
             if key:
                 self._parse_cell_input(key, value)
-        elif input_card:
+        elif input:
             self._old_number = []
             words = self.words[1:]
             for word in words:

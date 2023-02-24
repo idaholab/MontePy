@@ -23,11 +23,11 @@ class LatticeInput(CellModifierInput):
     """
 
     def __init__(
-        self, input_card=None, comments=None, in_cell_block=False, key=None, value=None
+        self, input=None, comments=None, in_cell_block=False, key=None, value=None
     ):
         """
-        :param input_card: the Card object representing this data card
-        :type input_card: Card
+        :param input: the Input object representing this data card
+        :type input: Input
         :param comments: The list of Comments that may proceed this or be entwined with it.
         :type comments: list
         :param in_cell_block: if this card came from the cell block of an input file.
@@ -37,7 +37,7 @@ class LatticeInput(CellModifierInput):
         :param value: the value from the key-value pair in a cell
         :type value: str
         """
-        super().__init__(input_card, comments, in_cell_block, key, value)
+        super().__init__(input, comments, in_cell_block, key, value)
         self._lattice = None
         if self.in_cell_block:
             if key:
@@ -47,7 +47,7 @@ class LatticeInput(CellModifierInput):
                 except (ValueError) as e:
                     raise ValueError("Cell Lattice must be 1 or 2")
                 self._lattice = value
-        elif input_card:
+        elif input:
             self._lattice = []
             words = self.words[1:]
             for word in words:

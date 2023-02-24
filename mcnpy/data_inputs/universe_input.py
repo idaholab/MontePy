@@ -37,7 +37,7 @@ class UniverseInput(CellModifierInput):
                 val.is_negatable_identifier = True
                 self._not_truncated = val.is_negative
                 self._old_number = val
-        elif input_card:
+        elif input:
             self._universe = []
             for node in self.data:
                 if not isinstance(node, Jump):
