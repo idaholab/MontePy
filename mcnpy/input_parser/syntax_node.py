@@ -136,7 +136,7 @@ class GeometryTree(SyntaxNodeBase):
 class PaddingNode(SyntaxNodeBase):
     def __init__(self, token):
         super().__init__("padding")
-        self._nodes = [token]
+        self.append(token)
 
     def __str__(self):
         return f"(Padding, {self._nodes})"
@@ -149,7 +149,17 @@ class PaddingNode(SyntaxNodeBase):
         return "".join(self.nodes)
 
     def is_space(self, i):
-        return len(self.nodes[i].strip()) == 0
+        val = self.nodes[i]
+        return len(val.strip()) == 0 and val != "\n"
+
+    def append(self, val):
+        parts = val.split("\n")
+        if len(parts) > 1:
+            for part in parts[:-1]:
+                self._nodes += [part, "\n"]
+            self._nodes.append(parts[-1])
+        else:
+            self._nodes.append(val)
 
     def format(self):
         return "".join(self.nodes)
