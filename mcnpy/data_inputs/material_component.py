@@ -1,5 +1,11 @@
 from mcnpy.data_inputs.isotope import Isotope
 from mcnpy.input_parser.syntax_node import PaddingNode, ValueNode
+from mcnpy.utilities import make_prop_val_node
+
+
+def _enforce_positive(self, val):
+    if val <= 0:
+        raise ValueError(f"material component fraction must be > 0. {val} given.")
 
 
 class MaterialComponent:
@@ -38,14 +44,14 @@ class MaterialComponent:
         """
         return self._isotope
 
-    @property
+    @make_prop_val_node("_fraction", (float, int), float, _enforce_positive)
     def fraction(self):
         """
         The fraction of the isotope for this component
 
         :rtype: float
         """
-        return self._fraction
+        pass
 
     def __str__(self):
         return f"{self.isotope} {self.fraction}"
