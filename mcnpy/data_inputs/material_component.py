@@ -55,3 +55,6 @@ class MaterialComponent:
 
     def __str__(self):
         return f"{self.isotope} {self.fraction}"
+
+    def __repr__(self):
+        return f"{self.isotope} {self._fraction}"

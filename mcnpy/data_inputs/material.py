@@ -193,7 +193,7 @@ class Material(data_input.DataInputAbstract, Numbered_MCNP_Object):
             ret += "mass\n"
 
         for component in self.material_components:
-            ret += str(self.material_components[component]) + "\n"
+            ret += repr(self.material_components[component]) + "\n"
         if self.thermal_scattering:
             ret += f"Thermal Scattering: {self.thermal_scattering}"
 
