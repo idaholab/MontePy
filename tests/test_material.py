@@ -101,11 +101,11 @@ Pu-239 (80c) (Value, 0.1, padding: None)
             self.assertEqual(mat, answers[i])
 
     def test_material_format_mcnp(self):
-        in_str = "M20 1001.80c 0.5 8016.80c 0.5"
-        input_card = Input([in_str], BlockType.DATA)
+        in_strs = ["M20 1001.80c 0.5", "     8016.80c         0.5"]
+        input_card = Input(in_strs, BlockType.DATA)
         material = Material(input_card, None)
         material.number = 25
-        answers = ["m25       1001.80c         0.5", "          8016.80c         0.5"]
+        answers = ["M25 1001.80c 0.5", "     8016.80c         0.5"]
         output = material.format_for_mcnp_input((6, 2, 0))
         self.assertEqual(len(answers), len(output))
         for i, line in enumerate(output):
