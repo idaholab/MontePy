@@ -448,6 +448,9 @@ class IsotopesNode(SyntaxNodeBase):
     def __repr__(self):
         return f"(Isotopes: {self.nodes})"
 
+    def __iter__(self):
+        return iter(self.nodes)
+
 
 class ShortcutNode(ListNode):
     _shortcut_names = {

@@ -38,7 +38,7 @@ class Material(data_input.DataInputAbstract, Numbered_MCNP_Object):
             self._number = num
             set_atom_frac = False
             isotope_fractions = self._tree["data"]
-            for isotope_node, fraction in isotope_fractions.nodes:
+            for isotope_node, fraction in isotope_fractions:
                 isotope = Isotope(node=isotope_node)
                 fraction.is_negetable_float = True
                 if not set_atom_frac:
