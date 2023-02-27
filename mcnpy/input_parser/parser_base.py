@@ -45,6 +45,7 @@ class MetaBuilder(sly.yacc.ParserMeta):
 
 class MCNP_Parser(Parser, metaclass=MetaBuilder):
     tokens = MCNP_Lexer.tokens
+    debugfile = None
 
     @_("NUMBER", "NUMBER padding")
     def number_phrase(self, p):

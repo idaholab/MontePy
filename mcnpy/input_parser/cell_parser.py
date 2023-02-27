@@ -4,6 +4,8 @@ from mcnpy.input_parser import syntax_node
 
 
 class CellParser(MCNP_Parser):
+    debugfile = None
+
     @_(
         "identifier_phrase material geometry_expr parameters",
         "identifier_phrase material geometry_expr",

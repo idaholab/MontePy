@@ -3,6 +3,8 @@ from mcnpy.input_parser import syntax_node
 
 
 class ReadParser(MCNP_Parser):
+    debugfile = None
+
     @_("KEYWORD padding parameters")
     def read_input(self, p):
         if p.KEYWORD.lower() == "read":

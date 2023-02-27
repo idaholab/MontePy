@@ -3,6 +3,8 @@ from mcnpy.input_parser import syntax_node
 
 
 class ThermalParser(DataParser):
+    debugfile = None
+
     @_("classifier_phrase thermal_law_sequence")
     def thermal_mat(self, p):
         return syntax_node.SyntaxNode(

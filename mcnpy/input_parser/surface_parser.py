@@ -3,6 +3,8 @@ from mcnpy.input_parser import syntax_node
 
 
 class SurfaceParser(MCNP_Parser):
+    debugfile = None
+
     @_(
         "surface_id SURFACE_TYPE padding number_sequence",
         "surface_id number_phrase SURFACE_TYPE padding number_sequence",

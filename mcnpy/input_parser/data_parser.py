@@ -4,6 +4,8 @@ from mcnpy.input_parser import syntax_node
 
 
 class DataParser(MCNP_Parser):
+    debugfile = None
+
     @_(
         "introduction data",
         "introduction data parameters",
@@ -59,6 +61,8 @@ class DataParser(MCNP_Parser):
 
 
 class ClassifierParser(DataParser):
+    debugfile = None
+
     @_("classifier")
     def data_classifier(self, p):
         return syntax_node.SyntaxNode(
