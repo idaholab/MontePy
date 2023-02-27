@@ -51,7 +51,7 @@ class DataParser(MCNP_Parser):
         fractions.append(p.isotope_fraction)
         return fractions
 
-    @_("ZAID padding")
+    @_("ZAID", "ZAID padding")
     def zaid_phrase(self, p):
         return self._flush_phrase(p, str)
 
