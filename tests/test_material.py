@@ -52,8 +52,7 @@ class testMaterialClass(TestCase):
         in_str = "M20 1001.80c 0.5 8016.80c 0.5 Gas=1"
         input_card = Input([in_str], BlockType.DATA)
         material = Material(input_card, None)
-
-        self.assertEqual(material.parameter_string, "Gas=1")
+        self.assertEqual(material.parameters["gas"]["data"][0].value, 1.0)
 
     def test_material_validator(self):
         material = Material()
