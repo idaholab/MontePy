@@ -92,10 +92,10 @@ class Cells(NumberedObjectCollection):
         for input_class, (attr, _) in inputs_to_property.items():
             if not hasattr(self, attr):
                 input = input_class()
+                input.link_to_problem(problem)
                 if attr in inputs_to_always_update:
                     input.push_to_cells()
                 input._mutated = False
-                input.link_to_problem(problem)
                 setattr(self, attr, input)
 
     def _run_children_format_for_mcnp(self, data_inputs, mcnp_version):
