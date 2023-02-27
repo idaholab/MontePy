@@ -55,9 +55,18 @@ class DataParser(MCNP_Parser):
     def zaid_phrase(self, p):
         return self._flush_phrase(p, str)
 
-    @_("KEYWORD param_seperator NUMBER text_phrase")
+    # TODO test this style of parameter
+    # for material libraries
+    @_("classifier param_seperator NUMBER text_phrase")
     def parameter(self, p):
-        return p
+        return syntax_node.SyntaxNode(
+            p.classifier.prefix.value,
+            {
+                "classifier": p.classifier,
+                "seperator": p.param_seperator,
+                "data": syntax_node.ValueNode(p.NUMBER + p.text_phrase, str),
+            },
+        )
 
 
 class ClassifierParser(DataParser):
