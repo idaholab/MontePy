@@ -82,8 +82,7 @@ class MCNP_Parser(Parser, metaclass=MetaBuilder):
     def shortcut_sequence(self, p):
         return syntax_node.ShortcutNode(p)
 
-    @_("shortcut_sequence")
-    @_("shortcut_sequence padding")
+    @_("shortcut_sequence", "shortcut_sequence padding")
     def shortcut_phrase(self, p):
         sequence = p.shortcut_sequence
         if len(p) == 2:
