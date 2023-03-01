@@ -1,6 +1,7 @@
 from mcnpy.data_inputs.cell_modifier import CellModifierInput
 from mcnpy.errors import *
 from mcnpy.input_parser.constants import DEFAULT_VERSION
+from mcnpy.input_parser.syntax_node import ListNode, ValueNode
 from mcnpy.mcnp_object import MCNP_Object
 from mcnpy.particle import Particle
 from mcnpy.utilities import *
@@ -30,13 +31,15 @@ class Importance(CellModifierInput):
         self._particle_importances = {}
         if self.in_cell_block:
             if key:
-                val = value["data"][0].value
-                if val < 0:
+                val = value["data"]
+                if isinstance(val, ListNode):
+                    val = value["data"][0]
+                if val.type != float or val.value < 0:
                     raise ValueError(
-                        f"Cell importance must be a number ≥ 0. {value} was given"
+                        f"Cell importance must be a number ≥ 0. {val.value} was given"
                     )
                 for particle in self.particle_classifiers:
-                    self._particle_importances[particle] = value
+                    self._particle_importances[particle] = val
         elif input:
             values = []
             for node in self._tree["data"]:
