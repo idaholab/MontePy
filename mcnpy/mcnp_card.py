@@ -66,7 +66,7 @@ class MCNP_Card(ABC):
             for i, fragment in enumerate(fragments):
                 keyword = fragment.split(":")[0].upper()
                 if keyword in self.allowed_keywords:
-                    if i != 0:
+                    if i != 0 and key and value:
                         flush_pair(key, value)
                         value = []
                     key = fragment
