@@ -50,7 +50,8 @@ class MCNP_Card(ABC):
             for i, word in enumerate(self.words):
                 if (
                     any([char.isalpha() for char in word])
-                    and word.split(":")[0].upper() in self.allowed_keywords
+                    and word.split("=")[0].split(":")[0].upper()
+                    in self.allowed_keywords
                 ):
                     break
             fragments = []
