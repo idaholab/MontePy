@@ -98,7 +98,10 @@ class Importance(CellModifierInput):
         if not isinstance(particle, Particle):
             raise TypeError("Key must be a particle")
         self._check_particle_in_problem(particle)
-        return self._particle_importances[particle]
+        val = self._particle_importances[particle]
+        if isinstance(val, ValueNode):
+            return val.value
+        return val
 
     def __setitem__(self, particle, value):
         if not isinstance(particle, Particle):
@@ -109,7 +112,7 @@ class Importance(CellModifierInput):
         if value < 0:
             raise ValueError("importance must be ≥ 0")
         self._mutated = True
-        self._particle_importances[particle] = value
+        self._particle_importances[particle].value = value
 
     def __delitem__(self, particle):
         if not isinstance(particle, Particle):
@@ -159,7 +162,7 @@ class Importance(CellModifierInput):
         if self._problem:
             self._mutated = True
             for particle in self._problem.mode:
-                self._particle_importances[particle] = value
+                self._particle_importances[particle].value = value
 
     def _clear_data(self):
         if not self.in_cell_block:
@@ -241,7 +244,10 @@ def __create_importance_getter(particle_type):
     def closure(obj):
         obj._check_particle_in_problem(particle_type)
         try:
-            return obj._particle_importances[particle_type]
+            val = obj._particle_importances[particle_type]
+            if isinstance(val, ValueNode):
+                return val.value
+            return val
         except KeyError:
             return 0.0
 
@@ -257,7 +263,7 @@ def __create_importance_setter(particle_type):
         if value < 0:
             raise ValueError("importance must be ≥ 0")
         obj._mutated = True
-        obj._particle_importances[particle_type] = value
+        obj._particle_importances[particle_type].value = value
 
     return closure
 
