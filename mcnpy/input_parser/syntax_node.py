@@ -330,8 +330,6 @@ class ValueNode(SyntaxNodeBase):
         temp = "{temp:<{value_length}}{padding}".format(
             temp=temp, padding=pad_str, **self._formatter
         )
-        if self.padding and len(self.padding) > 1:
-            return temp + "".join(self.padding.nodes[1:])
         return temp
 
     @property
