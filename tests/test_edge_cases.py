@@ -63,3 +63,18 @@ class EdgeCaseTests(TestCase):
             comment = problem.cells[1].comments[0]
             self.assertTrue(len(comment.lines[0]) <= 80)
             self.assertEqual(len(problem.surfaces), 3)
+
+    def test_confused_key_word(self):
+        # this came from Andrew Bascom's Issue #99
+        in_strs = [
+            "29502 30002 2.53E-02 ( 500020 -500023  -500060 ):  $ Outer Capsule Lower Endcap",
+            "          ( 500023 -500024 500062 -500060 ):  $ Outer Capsule Lower Endcap",
+            "          ( 500024 -500025 500062 -500061 )  $ Outer Capsule Lower Endcap",
+            "                u= 106 $ Outer Capsule Lower Endcap",
+        ]
+        input = mcnpy.input_parser.mcnp_input.Card(
+            in_strs, mcnpy.input_parser.block_type.BlockType.CELL
+        )
+        cell = mcnpy.Cell(input)
+        self.assertNotIn("", cell.parameters)
+        self.assertEqual(len(cell.parameters), 0)

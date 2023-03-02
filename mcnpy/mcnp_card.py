@@ -48,7 +48,11 @@ class MCNP_Card(ABC):
     def _parse_key_value_pairs(self):
         if self.allowed_keywords:
             for i, word in enumerate(self.words):
-                if any([char.isalpha() for char in word]):
+                if (
+                    any([char.isalpha() for char in word])
+                    and word.split("=")[0].split(":")[0].upper()
+                    in self.allowed_keywords
+                ):
                     break
             fragments = []
             for word in self.words[i:]:
@@ -66,7 +70,7 @@ class MCNP_Card(ABC):
             for i, fragment in enumerate(fragments):
                 keyword = fragment.split(":")[0].upper()
                 if keyword in self.allowed_keywords:
-                    if i != 0:
+                    if i != 0 and key and value:
                         flush_pair(key, value)
                         value = []
                     key = fragment
