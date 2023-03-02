@@ -852,3 +852,29 @@ class testFullFileIntegration(TestCase):
         cell.geometry_logic_string = ""
         with self.assertRaises(mcnpy.errors.IllegalState):
             cell.validate()
+
+    def test_importance_rewrite(self):
+        out_file = "test_import_data"
+        problem = copy.deepcopy(self.simple_problem)
+        problem.print_in_data_block["imp"] = True
+        try:
+            problem.write_to_file(out_file)
+            problem = mcnpy.read_input(out_file)
+            problem.print_in_data_block["imp"] = False
+            problem.write_to_file(out_file)
+            found_n = False
+            found_p = False
+            with open(out_file, "r") as fh:
+                for line in fh:
+                    print(line.rstrip())
+                    if "IMP:N 1 2R" in line:
+                        found_n = True
+                    if "IMP:P 1 0.5" in line:
+                        found_p = True
+            self.assertTrue(not found_n)
+            self.assertTrue(not found_p)
+        finally:
+            try:
+                os.remove(out_file)
+            except FileNotFoundError:
+                pass
