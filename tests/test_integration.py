@@ -850,7 +850,7 @@ class testFullFileIntegration(TestCase):
         problem.cells[5].fill.transform = None
         problem.print_in_data_block["FILL"] = True
         output = problem.cells._fill.format_for_mcnp_input((6, 2, 0))
-        self.assertEqual(output, ["     FILL 4J 350"])
+        self.assertEqual(output, ["FILL 4J 350"])
 
     def test_universe_cells_claim(self):
         problem = copy.deepcopy(self.universe_problem)
