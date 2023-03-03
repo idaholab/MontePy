@@ -521,27 +521,33 @@ class Fill(CellModifierCard):
                     mutated = True
                     break
             if mutated and self._problem.print_in_data_block["FILL"]:
-                ret = MCNP_Card.format_for_mcnp_input(self, mcnp_version)
-                words = ["FILL"]
-                universes = []
+                has_info = False
                 for cell in self._problem.cells:
-                    fill = cell.fill
-                    if fill.transform or fill.multiple_universes:
-                        raise ValueError(
-                            f"Fill can not be in the data block if"
-                            " fill transforms and other complex inputs are used."
-                            f" Cell {cell.number} used these"
+                    if cell._fill.has_information:
+                        has_info = True
+                        break
+                if has_info:
+                    ret = MCNP_Card.format_for_mcnp_input(self, mcnp_version)
+                    words = ["FILL"]
+                    universes = []
+                    for cell in self._problem.cells:
+                        fill = cell.fill
+                        if fill.transform or fill.multiple_universes:
+                            raise ValueError(
+                                f"Fill can not be in the data block if"
+                                " fill transforms and other complex inputs are used."
+                                f" Cell {cell.number} used these"
+                            )
+                        if fill.universe:
+                            universes.append(fill.universe.number)
+                        else:
+                            universes.append(Jump())
+                    words.extend(
+                        self.compress_jump_values(
+                            self.compress_repeat_values(universes, 1e-1)
                         )
-                    if fill.universe:
-                        universes.append(fill.universe.number)
-                    else:
-                        universes.append(Jump())
-                words.extend(
-                    self.compress_jump_values(
-                        self.compress_repeat_values(universes, 1e-1)
                     )
-                )
-                ret += self.wrap_words_for_mcnp(words, mcnp_version, True)
+                    ret += self.wrap_words_for_mcnp(words, mcnp_version, True)
             # if not mutated
             elif self._problem.print_in_data_block["FILL"]:
                 ret = self._format_for_mcnp_unmutated(mcnp_version)

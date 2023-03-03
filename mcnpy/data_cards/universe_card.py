@@ -229,19 +229,27 @@ class UniverseCard(CellModifierCard):
                         mutated = True
                         break
             if mutated and self._problem.print_in_data_block["U"]:
-                ret = MCNP_Card.format_for_mcnp_input(self, mcnp_version)
-                ret_strs = ["U"]
-                unis = []
+                has_info = False
                 for cell in self._problem.cells:
-                    unis.append(
-                        UniverseCard._get_print_number(
-                            cell.universe.number, cell.not_truncated
+                    if cell._volume.has_information:
+                        has_info = True
+                        break
+                if has_info:
+                    ret = MCNP_Card.format_for_mcnp_input(self, mcnp_version)
+                    ret_strs = ["U"]
+                    unis = []
+                    for cell in self._problem.cells:
+                        unis.append(
+                            UniverseCard._get_print_number(
+                                cell.universe.number, cell.not_truncated
+                            )
+                        )
+                    ret_strs.extend(
+                        self.compress_jump_values(
+                            self.compress_repeat_values(unis, 1e-1)
                         )
                     )
-                ret_strs.extend(
-                    self.compress_jump_values(self.compress_repeat_values(unis, 1e-1))
-                )
-                ret.extend(self.wrap_words_for_mcnp(ret_strs, mcnp_version, True))
+                    ret.extend(self.wrap_words_for_mcnp(ret_strs, mcnp_version, True))
             elif self._problem.print_in_data_block["U"]:
                 ret = self._format_for_mcnp_unmutated(mcnp_version)
         return ret

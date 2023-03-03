@@ -191,18 +191,24 @@ class Volume(CellModifierCard):
                         mutated = True
                         break
             if mutated and self._problem.print_in_data_block["VOL"]:
-                ret = MCNP_Card.format_for_mcnp_input(self, mcnp_version)
-                ret_strs = ["VOL"]
-                if not self.is_mcnp_calculated:
-                    ret_strs.append("NO")
-                volumes = []
+                has_info = False
                 for cell in self._problem.cells:
-                    if cell.volume:
-                        volumes.append(f"{cell.volume}")
-                    else:
-                        volumes.append(Jump())
-                ret_strs.extend(self.compress_jump_values(volumes))
-                ret.extend(self.wrap_words_for_mcnp(ret_strs, mcnp_version, True))
+                    if cell._volume.has_information:
+                        has_info = True
+                        break
+                if has_info:
+                    ret = MCNP_Card.format_for_mcnp_input(self, mcnp_version)
+                    ret_strs = ["VOL"]
+                    if not self.is_mcnp_calculated:
+                        ret_strs.append("NO")
+                    volumes = []
+                    for cell in self._problem.cells:
+                        if cell.volume:
+                            volumes.append(f"{cell.volume}")
+                        else:
+                            volumes.append(Jump())
+                    ret_strs.extend(self.compress_jump_values(volumes))
+                    ret.extend(self.wrap_words_for_mcnp(ret_strs, mcnp_version, True))
 
             elif self._problem.print_in_data_block["VOL"]:
                 ret = self._format_for_mcnp_unmutated(mcnp_version)
