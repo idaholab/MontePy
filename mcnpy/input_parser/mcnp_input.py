@@ -44,6 +44,14 @@ class Jump:
         """
         return "j"
 
+    def title(self):
+        """
+        Skip.
+
+        :rtype: str
+        """
+        return "Jump"
+
     def upper(self):
         """
         Jump.

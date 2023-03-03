@@ -337,6 +337,8 @@ bar
         jump = Jump()
         # first you need to hop
         self.assertEqual("j", jump.lower())
+        # then you need to skip
+        self.assertEqual("Jump", jump.title())
         # before you can jump
         self.assertEqual("J", jump.upper())
 
