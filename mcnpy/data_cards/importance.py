@@ -230,7 +230,7 @@ class Importance(CellModifierCard):
                         )
                     )
             # if not mutated
-            else:
+            elif self._problem.print_in_data_block["IMP"]:
                 ret = self._format_for_mcnp_unmutated(mcnp_version)
         return ret
 
