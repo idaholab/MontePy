@@ -560,7 +560,7 @@ class testFullFileIntegration(TestCase):
                         found_vol = True
             self.assertTrue(not found_universe)
             self.assertTrue(not found_lattice)
-            self.assertTrue(not fond_vol)
+            self.assertTrue(not found_vol)
             self.assertTrue(not found_fill)
         finally:
             try:
