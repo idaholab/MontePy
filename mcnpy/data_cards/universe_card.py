@@ -242,6 +242,6 @@ class UniverseCard(CellModifierCard):
                     self.compress_jump_values(self.compress_repeat_values(unis, 1e-1))
                 )
                 ret.extend(self.wrap_words_for_mcnp(ret_strs, mcnp_version, True))
-            else:
+            elif self._problem.print_in_data_block["U"]:
                 ret = self._format_for_mcnp_unmutated(mcnp_version)
         return ret

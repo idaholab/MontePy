@@ -204,6 +204,6 @@ class Volume(CellModifierCard):
                 ret_strs.extend(self.compress_jump_values(volumes))
                 ret.extend(self.wrap_words_for_mcnp(ret_strs, mcnp_version, True))
 
-            else:
+            elif self._problem.print_in_data_block["VOL"]:
                 ret = self._format_for_mcnp_unmutated(mcnp_version)
         return ret

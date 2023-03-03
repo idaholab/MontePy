@@ -542,4 +542,7 @@ class Fill(CellModifierCard):
                     )
                 )
                 ret += self.wrap_words_for_mcnp(words, mcnp_version, False)
+            # if not mutated
+            elif self._problem.print_in_data_block["FILL"]:
+                ret = self._format_for_mcnp_unmutated(mcnp_version)
         return ret

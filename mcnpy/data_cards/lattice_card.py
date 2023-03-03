@@ -176,6 +176,6 @@ class LatticeCard(CellModifierCard):
                     )
                 )
                 ret.extend(self.wrap_words_for_mcnp(ret_strs, mcnp_version, True))
-            else:
+            elif self._problem.print_in_data_block["LAT"]:
                 ret = self._format_for_mcnp_unmutated(mcnp_version)
         return ret
