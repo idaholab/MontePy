@@ -114,6 +114,13 @@ class testFullFileIntegration(TestCase):
             for i, cell in enumerate(self.simple_problem.cells):
                 num = cell.number
                 self.assertEqual(num, test_problem.cells[num].number)
+                for attr in {"universe", "volume"}:
+                    print(f"testing the attribute: {attr}")
+                    gold = getattr(self.simple_problem.cells[num], attr)
+                    test = getattr(test_problem.cells[num], attr)
+                    if attr in {"universe"} and gold is not None:
+                        gold, test = (gold.number, test.number)
+                    self.assertEqual(gold, test)
             for i, surf in enumerate(self.simple_problem.surfaces):
                 num = surf.number
                 self.assertEqual(surf.number, test_problem.surfaces[num].number)
