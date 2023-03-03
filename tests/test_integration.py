@@ -529,6 +529,45 @@ class testFullFileIntegration(TestCase):
             except FileNotFoundError:
                 pass
 
+    def test_avoid_blank_cell_modifier_write(self):
+        out_file = "test_modifier_data"
+        problem = copy.deepcopy(self.simple_problem)
+        problem.print_in_data_block["U"] = True
+        problem.print_in_data_block["FILL"] = True
+        problem.print_in_data_block["LAT"] = True
+        problem.cells[5].fill.transform = None
+        problem.cells[5].fill.universe = None
+        problem.cells[1].universe = problem.universes[0]
+        for cell in problem.cells:
+            del cell.volume
+        problem.cells.allow_mcnp_volume_calc = True
+        try:
+            problem.write_to_file(out_file)
+            found_universe = False
+            found_lattice = False
+            found_vol = False
+            found_fill = False
+            with open(out_file, "r") as fh:
+                for line in fh:
+                    print(line.rstrip())
+                    if "U " in line:
+                        found_universe = True
+                    if "LAT " in line:
+                        found_lat = True
+                    if "FILL " in line:
+                        found_fill = True
+                    if "VOL " in line:
+                        found_vol = True
+            self.assertTrue(not found_universe)
+            self.assertTrue(not found_lattice)
+            self.assertTrue(not fond_vol)
+            self.assertTrue(not found_fill)
+        finally:
+            try:
+                os.remove(out_file)
+            except FileNotFoundError:
+                pass
+
     def test_set_mode(self):
         problem = copy.deepcopy(self.importance_problem)
         problem.set_mode("e p")
