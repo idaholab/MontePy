@@ -333,6 +333,13 @@ bar
         with self.assertRaises(TypeError):
             bool(jump)
 
+    def test_jump_and_a_hop(self):
+        jump = Jump()
+        # first you need to hop
+        self.assertEqual("j", jump.lower())
+        # before you can jump
+        self.assertEqual("J", jump.upper())
+
 
 class DataCardTestFixture(mcnpy.data_cards.data_card.DataCardAbstract):
     def __init__(self, input_card=None, comment=None):
