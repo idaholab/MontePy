@@ -1,5 +1,6 @@
 from mcnpy.data_inputs.data_input import DataInputAbstract
 from mcnpy.input_parser.mode_parser import ModeParser
+from mcnpy.input_parser import syntax_node
 from mcnpy.particle import Particle
 
 
@@ -19,13 +20,25 @@ class Mode(DataInputAbstract):
         super().__init__(input, comments)
         if input:
             self._particles = set()
-            self._parse_and_override_particle_modes(self.words[1:])
+            self._parse_and_override_particle_modes(
+                [p.value for p in self._tree["data"]]
+            )
         else:
             self._particles = {Particle.NEUTRON}
+            # TODO
+            classifier = syntax_node.ClassifierNode()
+            classifier.prefix = self._generate_default_node(str, "mode")
+            self._tree = syntax_node.SyntaxNode(
+                "mode",
+                {
+                    "classifier": classifier,
+                    "data": syntax_node.ListNode("particles"),
+                },
+            )
 
-    def _parse_and_override_particle_modes(self, part_names):
+    def _parse_and_override_particle_modes(self, particles):
         self._particles = set()
-        for particle in part_names:
+        for particle in particles:
             self._particles.add(Particle(particle.upper()))
 
     @property
@@ -50,13 +63,14 @@ class Mode(DataInputAbstract):
         :type particle: Particle, str
         :raises ValueError: if string is not a valid particle shorthand.
         """
-        if not isinstance(particle, (Particle, str)):
+        if not isinstance(particle, (Particle, str, syntax_node.ValueNode)):
             raise TypeError("particle must be a Particle instance")
-        if isinstance(particle, str):
+        if isinstance(particle, (str, syntax_node.ValueNode)):
             # error catching not needed
             # enum will raise ValueError "foo is not a valid Particle"
+            if isinstance(particle, syntax_node.ValueNode):
+                particle = particle.value
             particle = Particle(particle.upper())
-        self._mutated = True
         self._particles.add(particle)
 
     def remove(self, particle):
@@ -71,7 +85,6 @@ class Mode(DataInputAbstract):
             raise TypeError("particle must be a Particle instance")
         if isinstance(particle, str):
             particle = Particle(particle.upper())
-        self._mutated = True
         self._particles.remove(particle)
 
     def set(self, particles):
@@ -131,14 +144,11 @@ class Mode(DataInputAbstract):
     def _has_classifier():
         return 0
 
-    def format_for_mcnp_input(self, mcnp_version):
-        if self.mutated:
-            words = ["MODE"]
-            for particle in self.particles:
-                words.append(particle.value)
-            self.words = words
-            ret = super().format_for_mcnp_input(mcnp_version)
-        else:
-            ret = self._format_for_mcnp_unmutated(mcnp_version)
+    def _update_values(self):
+        # TODO
+        pass
 
-        return ret
+    def format_for_mcnp_input(self, mcnp_version):
+        self.validate()
+        self._update_values()
+        return self.wrap_string_for_mcnp(self._tree.format(), mcnp_version, True)
