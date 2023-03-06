@@ -1,4 +1,5 @@
 from mcnpy.data_inputs.data_input import DataInputAbstract
+from mcnpy.input_parser.mode_parser import ModeParser
 from mcnpy.particle import Particle
 
 
@@ -11,6 +12,8 @@ class Mode(DataInputAbstract):
     :param comments: The Comment that may proceed this
     :type comments: Comment
     """
+
+    _parser = ModeParser()
 
     def __init__(self, input=None, comments=None):
         super().__init__(input, comments)
