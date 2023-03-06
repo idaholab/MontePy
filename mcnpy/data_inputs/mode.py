@@ -145,8 +145,18 @@ class Mode(DataInputAbstract):
         return 0
 
     def _update_values(self):
-        # TODO
-        pass
+        old_particles = {}
+        for particle in self._tree["data"]:
+            part = Particle(particle.value.upper())
+            old_particles[part] = particle
+        old_parts = set(old_particles.keys())
+        to_remove = old_parts - self.particles
+        to_add = self.particles - old_parts
+        for removal in to_remove:
+            node = old_particles[removal]
+            self._tree["data"].remove(node)
+        for addition in to_add:
+            self._tree["data"].append(self._generate_default_node(str, addition.value))
 
     def format_for_mcnp_input(self, mcnp_version):
         self.validate()
