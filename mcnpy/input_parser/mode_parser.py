@@ -24,7 +24,7 @@ class ModeParser(DataParser):
 
     @_("PARTICLE", "SURFACE_TYPE", "PARTICLE_SPECIAL")
     def particle_text(self, p):
-        return p
+        return p[0]
 
     @_("particle_text padding", "particle_text")
     def particle_phrase(self, p):
