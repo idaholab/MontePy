@@ -25,9 +25,9 @@ class Mode(DataInputAbstract):
             )
         else:
             self._particles = {Particle.NEUTRON}
-            # TODO
             classifier = syntax_node.ClassifierNode()
-            classifier.prefix = self._generate_default_node(str, "mode")
+            classifier.prefix = self._generate_default_node(str, "MODE")
+            classifier.padding = syntax_node.PaddingNode(" ")
             self._tree = syntax_node.SyntaxNode(
                 "mode",
                 {
