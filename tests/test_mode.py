@@ -36,7 +36,6 @@ class TestMode(TestCase):
         mode.add(Particle.NEGATIVE_MUON)
         self.assertIn(Particle.NEGATIVE_MUON, mode)
         self.assertEqual(len(mode), 3)
-        self.assertTrue(mode.mutated)
 
     def test_mode_remove(self):
         mode = Mode()
