@@ -401,8 +401,6 @@ class ParticleNode(SyntaxNodeBase):
 
 
 class ListNode(SyntaxNodeBase):
-    # TODO make indexible
-    # need to build lookup table to jump in and out of shortcuts
     def __init__(self, name):
         super().__init__(name)
 
@@ -440,6 +438,9 @@ class ListNode(SyntaxNodeBase):
             if i == indx:
                 return item
         raise IndexError(f"{indx} not in ListNode")
+
+    def remove(self, obj):
+        self.nodes.remove(obj)
 
 
 class IsotopesNode(SyntaxNodeBase):
