@@ -17,6 +17,8 @@ class MCNP_Lexer(Lexer):
         MULTIPLY,
         NUMBER,
         NULL,
+        PARTICLE,
+        PARTICLE_SPECIAL,
         PARTICLE_DESIGNATOR,
         REPEAT,
         SOURCE_COMMENT,
@@ -120,6 +122,46 @@ class MCNP_Lexer(Lexer):
         "arb",
     }
 
+    _PARTICLES = {
+        "n",
+        "p",
+        "e",
+        "|",
+        "q",
+        "u",
+        "v",
+        "f",
+        "h",
+        "l",
+        "+",
+        "-",
+        "x",
+        "y",
+        "o",
+        "!",
+        "<",
+        ">",
+        "g",
+        "/",
+        "z",
+        "k",
+        "%",
+        "^",
+        "b",
+        "_",
+        "~",
+        "c",
+        "w",
+        "@",
+        "d",
+        "t",
+        "s",
+        "a",
+        "*",
+        "?",
+        "#",
+    }
+
     literals = {"(", ":", ")", "&", "#", "=", "*", "+"}
 
     COMPLEMENT = r"\#"
@@ -186,8 +228,12 @@ class MCNP_Lexer(Lexer):
 
     NULL = r"0+"
 
-    @_(r":[npe|quvfhl+\-xyo!<>g/zk%^b_~cw@dtsa\*\?\#,]+")
+    @_(r":([npe|quvfhl+\-xyo!<>g/zk%^b_~cw@dtsa\*\?,]|\#\d*)+")
     def PARTICLE_DESIGNATOR(self, t):
+        return t
+
+    @_(r"([|+\-!<>/%^_~@\*\?\#,]|\#\d*)+")
+    def PARTICLE_SPECIAL(self, t):
         return t
 
     @_(r"MESSAGE:.*\s")
@@ -203,6 +249,8 @@ class MCNP_Lexer(Lexer):
             t.type = "KEYWORD"
         elif t.value.lower() in self._SURFACE_TYPES:
             t.type = "SURFACE_TYPE"
+        elif t.value.lower() in self._PARTICLES:
+            t.type = "PARTICLE"
         return t
 
     KEYWORD = r"imp"
