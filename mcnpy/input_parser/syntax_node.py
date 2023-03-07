@@ -105,7 +105,7 @@ class GeometryTree(SyntaxNodeBase):
         self._right_side = right
 
     def __str__(self):
-        return f"Geometry: {self._left_side} {self._operator} {self._right_side}"
+        return f"Geometry: ( {self._left_side} {self._operator} {self._right_side} )"
 
     def __repr__(self):
         return str(self)
