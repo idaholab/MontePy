@@ -503,7 +503,7 @@ class Cell(Numbered_MCNP_Object):
         if self.old_mat_number is not None:
             if self.old_mat_number > 0:
                 try:
-                    self._material = materials[self._old_mat_number]
+                    self._material = materials[self.old_mat_number]
                 except KeyError:
                     raise BrokenObjectLinkError(
                         "Cell", self.number, "Material", self.old_mat_number
@@ -512,7 +512,7 @@ class Cell(Numbered_MCNP_Object):
                 self._material = None
 
         if self._old_surface_numbers:
-            for surface_number in self._old_surface_numbers:
+            for surface_number in self.old_surface_numbers:
                 try:
                     self._surfaces.append(surfaces[surface_number])
                 except KeyError:
@@ -521,7 +521,7 @@ class Cell(Numbered_MCNP_Object):
                     )
 
         if self._old_complement_numbers:
-            for complement_number in self._old_complement_numbers:
+            for complement_number in self.old_complement_numbers:
                 try:
                     self._complements.append(cells[complement_number])
                 except KeyError:
