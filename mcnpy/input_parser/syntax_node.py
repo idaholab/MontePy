@@ -113,11 +113,13 @@ class GeometryTree(SyntaxNodeBase):
     def get_geometry_identifiers(self):
         surfaces = []
         cells = []
-        for node in self.nodes:
+        for node in (self._left_side, self._right_side):
+            if node is None:
+                continue
             if isinstance(node, type(self)):
-                child_surf, child_cell = node.get_geometry_identifiers()
-                surfaces += child_surf
-                cells += child_cell
+                child_surfs, child_cells = node.get_geometry_identifiers()
+                surfaces += child_surfs
+                cells += child_cells
             elif isinstance(node, ValueNode):
                 identifier = abs(int(node.value))
                 if self._operator == Operator.COMPLEMENT:
