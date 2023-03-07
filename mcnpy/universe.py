@@ -2,6 +2,7 @@ import mcnpy
 from mcnpy.cells import Cells
 from mcnpy.input_parser.mcnp_input import Input
 from mcnpy.input_parser.block_type import BlockType
+from mcnpy.input_parser import syntax_node
 from mcnpy.numbered_mcnp_object import Numbered_MCNP_Object
 
 
@@ -15,12 +16,17 @@ class Universe(Numbered_MCNP_Object):
     """
 
     def __init__(self, number):
-        super().__init__(Input(["U"], BlockType.DATA))
         if not isinstance(number, int):
             raise TypeError("number must be int")
         if number < 0:
-            raise ValueError("Universe number must be ≥ 0")
+            raise ValueError(f"Universe number must be ≥ 0. {number} given.")
         self._number = number
+
+        class Parser:
+            def parse(self, input):
+                return syntax_node.SyntaxNode("fake universe", {})
+
+        super().__init__(Input(["U"], BlockType.DATA), Parser())
 
     @property
     def cells(self):
