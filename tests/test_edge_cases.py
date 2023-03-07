@@ -72,9 +72,10 @@ class EdgeCaseTests(TestCase):
             "          ( 500024 -500025 500062 -500061 )  $ Outer Capsule Lower Endcap",
             "                u= 106 $ Outer Capsule Lower Endcap",
         ]
-        input = mcnpy.input_parser.mcnp_input.Card(
+        input = mcnpy.input_parser.mcnp_input.Input(
             in_strs, mcnpy.input_parser.block_type.BlockType.CELL
         )
         cell = mcnpy.Cell(input)
         self.assertNotIn("", cell.parameters)
-        self.assertEqual(len(cell.parameters), 0)
+        print(cell.parameters)
+        self.assertEqual(len(cell.parameters), 1)
