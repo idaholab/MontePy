@@ -32,7 +32,7 @@ class UniverseInput(CellModifierInput):
         self._not_truncated = False
         super().__init__(input, comments, in_cell_block, key, value)
         if self.in_cell_block:
-            self._old_number = self._generate_default_node(int, -1)
+            self._old_number = self._generate_default_node(int, 0)
             if key:
                 val = value["data"][0]
                 val.is_negatable_identifier = True
