@@ -514,7 +514,9 @@ class Cell(Numbered_MCNP_Object):
         if self._old_surface_numbers:
             for surface_number in self.old_surface_numbers:
                 try:
-                    self._surfaces.append(surfaces[surface_number])
+                    surf = surfaces[surface_number]
+                    if surf not in self.surfaces:
+                        self._surfaces.append(surf)
                 except KeyError:
                     raise BrokenObjectLinkError(
                         "Cell", self.number, "Surface", surface_number
@@ -523,7 +525,9 @@ class Cell(Numbered_MCNP_Object):
         if self._old_complement_numbers:
             for complement_number in self.old_complement_numbers:
                 try:
-                    self._complements.append(cells[complement_number])
+                    complement = cells[complement_number]
+                    if complement not in self.complements:
+                        self._complements.append(complement)
                 except KeyError:
                     raise BrokenObjectLinkError(
                         "Cell", self.number, "Complement Cell", complement_number
