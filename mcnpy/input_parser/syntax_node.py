@@ -523,9 +523,18 @@ class ShortcutNode(ListNode):
             is_log = True
         else:
             is_log = False
-        begin = p.number_phrase0.value
+        if hasattr(p, "geometry_term"):
+            term = p.geometry_term
+            if isinstance(term, GeometryTree):
+                surfs, _ = term.get_geometry_identifiers()
+                begin = surfs[-1]
+            else:
+                begin = term.value
+            end = p.number_phrase.value
+        else:
+            begin = p.number_phrase0.value
+            end = p.number_phrase1.value
         self._nodes = [p[0]]
-        end = p.number_phrase1.value
         match = self._num_finder.search(p[1])
         if match:
             number = int(match.group(0))
@@ -541,7 +550,12 @@ class ShortcutNode(ListNode):
             else:
                 new_val = begin + spacing * (i + 1)
             self.append(ValueNode(str(new_val), float))
-        self.append(p.number_phrase1)
+        if hasattr(p, "geometry_term"):
+            self.append(p.number_phrase)
+        else:
+            self.append(p.number_phrase1)
+
+    # TODO implement format to recompress
 
 
 class ClassifierNode(SyntaxNodeBase):
