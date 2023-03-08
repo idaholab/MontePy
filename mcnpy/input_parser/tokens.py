@@ -5,6 +5,7 @@ from sly import Lexer
 
 
 class MCNP_Lexer(Lexer):
+    # TODO build context dependent lexer
     tokens = {
         COMMENT,
         COMPLEMENT,
@@ -256,6 +257,28 @@ class MCNP_Lexer(Lexer):
     KEYWORD = r"imp"
 
     SURFACE_TYPE = r"pz"
+
+
+class SurfaceLexer(MCNP_Lexer):
+    tokens = {
+        COMMENT,
+        COMPLEMENT,
+        DOLLAR_COMMENT,
+        INTERPOLATE,
+        JUMP,
+        KEYWORD,
+        LOG_INTERPOLATE,
+        MESSAGE,
+        MULTIPLY,
+        NUMBER,
+        NULL,
+        REPEAT,
+        SPACE,
+        SURFACE_TYPE,
+        TEXT,
+        THERMAL_LAW,
+        ZAID,
+    }
 
 
 def find_column(text, token):
