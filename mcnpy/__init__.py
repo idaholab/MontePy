@@ -14,6 +14,7 @@ __credits__ = [
     "Austin Carter",
     "Andrew Bascom",
     "Roberto Fairhurst Agosta",
+    "Brenna Carbno",
 ]
 
 name = "mcnpy"
