@@ -1,6 +1,7 @@
 from unittest import TestCase
 
 from mcnpy.input_parser.constants import DEFAULT_VERSION
+from mcnpy.input_parser import syntax_node
 import mcnpy
 from mcnpy.cell import Cell
 from mcnpy.errors import *
@@ -16,7 +17,9 @@ import numpy as np
 
 class TestUniverseInput(TestCase):
     def test_universe_card_init(self):
-        card = UniverseInput(in_cell_block=True, key="U", value="5")
+        key = syntax_node.ValueNode("U", str)
+        value = syntax_node.ValueNode("5", float)
+        card = UniverseInput(in_cell_block=True, key=key, value=value)
         self.assertEqual(card.old_number, 5)
         self.assertTrue(not card.not_truncated)
         # test bad float
@@ -247,7 +250,9 @@ class TestFill(TestCase):
             fill = Fill(card)
 
     def test_fill_universe_setter(self):
-        fill = Fill(in_cell_block=True, key="fill", value="5")
+        key = syntax_node.ValueNode("fill", str)
+        value = syntax_node.ValueNode("5", float)
+        fill = Fill(in_cell_block=True, key=key, value=value)
         uni = mcnpy.Universe(6)
         fill.universe = uni
         self.assertEqual(fill.universe.number, uni.number)
@@ -267,7 +272,9 @@ class TestFill(TestCase):
             fill.universe = uni
 
     def test_fill_universes_setter(self):
-        fill = Fill(in_cell_block=True, key="fill", value="0:1 0:1 0:1 1 2 3 4 5 6 7 8")
+        input = Input(["1 0 -1 fill=0:1 0:1 0:1 1 2 3 4 5 6 7 8"], BlockType.CELL)
+        cell = Cell(input)
+        fill = cell.fill
         uni = mcnpy.Universe(10)
         fill_array = np.array([[[uni, uni], [uni, uni]], [[uni, uni], [uni, uni]]])
         fill.universes = fill_array
