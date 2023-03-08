@@ -32,7 +32,7 @@ class Fill(CellModifierInput):
     def __init__(
         self, input=None, comments=None, in_cell_block=False, key=None, value=None
     ):
-        self._old_number = None
+        self._old_number = self._generate_default_node(int, -1)
         self._old_numbers = None
         self._universe = None
         self._universes = None
@@ -45,14 +45,14 @@ class Fill(CellModifierInput):
             if key:
                 self._parse_cell_input(key, value)
         elif input:
-            self._old_number = []
-            words = self.words[1:]
-            for word in words:
+            self._old_numbers = []
+            values = self._tree["data"]
+            for value in values:
                 if isinstance(word, str):
                     try:
                         value = int(word)
                         assert value >= 0
-                        self._old_number.append(value)
+                        self._old_numbers.append(value)
                     except (ValueError, AssertionError) as e:
                         raise MalformedInputError(
                             input_card,
