@@ -4,7 +4,7 @@ from mcnpy.errors import *
 from mcnpy.input_parser.block_type import BlockType
 from mcnpy.input_parser.constants import BLANK_SPACE_CONTINUE, get_max_line_length
 from mcnpy.input_parser.read_parser import ReadParser
-from mcnpy.input_parser.tokens import MCNP_Lexer
+from mcnpy.input_parser.tokens import CellLexer, SurfaceLexer, DataLexer
 import re
 
 
@@ -131,7 +131,12 @@ class Input(ParsingNode):
         pass
 
     def tokenize(self):
-        lexer = MCNP_Lexer()
+        if self.block_type == BlockType.CELL:
+            lexer = CellLexer()
+        elif self.block_type == BlockType.SURFACE:
+            lexer = SurfaceLexer()
+        else:
+            lexer = DataLexer()
         for token in lexer.tokenize(self.input_text):
             yield token
 

@@ -5,7 +5,7 @@ from sly import Lexer
 
 
 class MCNP_Lexer(Lexer):
-    # TODO build context dependent lexer
+
     tokens = {
         COMMENT,
         COMPLEMENT,
@@ -80,89 +80,6 @@ class MCNP_Lexer(Lexer):
         "no",
     }
 
-    _SURFACE_TYPES = {
-        "p",
-        "px",
-        "py",
-        "pz",
-        "so",
-        "s",
-        "sx",
-        "sy",
-        "sz",
-        "c/x",
-        "c/y",
-        "c/z",
-        "cx",
-        "cy",
-        "cz",
-        "k/x",
-        "k/y",
-        "k/z",
-        "kx",
-        "ky",
-        "kz",
-        "sq",
-        "gq",
-        "tx",
-        "ty",
-        "tz",
-        "x",
-        "y",
-        "z",
-        "box",
-        "rpp",
-        "sph",
-        "rcc",
-        "rhp",
-        "hex",
-        "rec",
-        "trc",
-        "ell",
-        "wed",
-        "arb",
-    }
-
-    _PARTICLES = {
-        "n",
-        "p",
-        "e",
-        "|",
-        "q",
-        "u",
-        "v",
-        "f",
-        "h",
-        "l",
-        "+",
-        "-",
-        "x",
-        "y",
-        "o",
-        "!",
-        "<",
-        ">",
-        "g",
-        "/",
-        "z",
-        "k",
-        "%",
-        "^",
-        "b",
-        "_",
-        "~",
-        "c",
-        "w",
-        "@",
-        "d",
-        "t",
-        "s",
-        "a",
-        "*",
-        "?",
-        "#",
-    }
-
     literals = {"(", ":", ")", "&", "#", "=", "*", "+"}
 
     COMPLEMENT = r"\#"
@@ -229,14 +146,6 @@ class MCNP_Lexer(Lexer):
 
     NULL = r"0+"
 
-    @_(r":([npe|quvfhl+\-xyo!<>g/zk%^b_~cw@dtsa\*\?,]|\#\d*)+")
-    def PARTICLE_DESIGNATOR(self, t):
-        return t
-
-    @_(r"([|+\-!<>/%^_~@\*\?\#,]|\#\d*)+")
-    def PARTICLE_SPECIAL(self, t):
-        return t
-
     @_(r"MESSAGE:.*\s")
     def MESSAGE(self, t):
         self.lineno += t.value.count("\n")
@@ -248,15 +157,137 @@ class MCNP_Lexer(Lexer):
     def TEXT(self, t):
         if t.value.lower() in self._KEYWORDS:
             t.type = "KEYWORD"
-        elif t.value.lower() in self._SURFACE_TYPES:
-            t.type = "SURFACE_TYPE"
+        return t
+
+
+class ParticleLexer(MCNP_Lexer):
+
+    tokens = {
+        COMMENT,
+        COMPLEMENT,
+        DOLLAR_COMMENT,
+        INTERPOLATE,
+        JUMP,
+        KEYWORD,
+        LOG_INTERPOLATE,
+        MESSAGE,
+        MULTIPLY,
+        NUMBER,
+        NULL,
+        PARTICLE,
+        PARTICLE_DESIGNATOR,
+        REPEAT,
+        SOURCE_COMMENT,
+        SPACE,
+        TALLY_COMMENT,
+        TEXT,
+        THERMAL_LAW,
+        ZAID,
+    }
+
+    _PARTICLES = {
+        "n",
+        "p",
+        "e",
+        "|",
+        "q",
+        "u",
+        "v",
+        "f",
+        "h",
+        "l",
+        "+",
+        "-",
+        "x",
+        "y",
+        "o",
+        "!",
+        "<",
+        ">",
+        "g",
+        "/",
+        "z",
+        "k",
+        "%",
+        "^",
+        "b",
+        "_",
+        "~",
+        "c",
+        "w",
+        "@",
+        "d",
+        "t",
+        "s",
+        "a",
+        "*",
+        "?",
+        "#",
+    }
+
+    @_(r":([npe|quvfhl+\-xyo!<>g/zk%^b_~cw@dtsa\*\?,]|\#\d*)+")
+    def PARTICLE_DESIGNATOR(self, t):
+        return t
+
+    @_(r"[a-z\./]+")
+    def TEXT(self, t):
+        if t.value.lower() in self._KEYWORDS:
+            t.type = "KEYWORD"
         elif t.value.lower() in self._PARTICLES:
             t.type = "PARTICLE"
         return t
 
-    KEYWORD = r"imp"
 
-    SURFACE_TYPE = r"pz"
+class CellLexer(ParticleLexer):
+    tokens = {
+        COMMENT,
+        COMPLEMENT,
+        DOLLAR_COMMENT,
+        INTERPOLATE,
+        JUMP,
+        KEYWORD,
+        LOG_INTERPOLATE,
+        MESSAGE,
+        MULTIPLY,
+        NUMBER,
+        NULL,
+        PARTICLE,
+        PARTICLE_DESIGNATOR,
+        REPEAT,
+        SPACE,
+        TEXT,
+        THERMAL_LAW,
+        ZAID,
+    }
+
+
+class DataLexer(ParticleLexer):
+    tokens = {
+        COMMENT,
+        COMPLEMENT,
+        DOLLAR_COMMENT,
+        INTERPOLATE,
+        JUMP,
+        KEYWORD,
+        LOG_INTERPOLATE,
+        MESSAGE,
+        MULTIPLY,
+        NUMBER,
+        NULL,
+        PARTICLE,
+        PARTICLE_DESIGNATOR,
+        REPEAT,
+        SOURCE_COMMENT,
+        SPACE,
+        TALLY_COMMENT,
+        TEXT,
+        THERMAL_LAW,
+        ZAID,
+    }
+
+    @_(r"([|+\-!<>/%^_~@\*\?\#,]|\#\d*)+")
+    def PARTICLE_SPECIAL(self, t):
+        return t
 
 
 class SurfaceLexer(MCNP_Lexer):
@@ -279,6 +310,55 @@ class SurfaceLexer(MCNP_Lexer):
         THERMAL_LAW,
         ZAID,
     }
+
+    _SURFACE_TYPES = {
+        "p",
+        "px",
+        "py",
+        "pz",
+        "so",
+        "s",
+        "sx",
+        "sy",
+        "sz",
+        "c/x",
+        "c/y",
+        "c/z",
+        "cx",
+        "cy",
+        "cz",
+        "k/x",
+        "k/y",
+        "k/z",
+        "kx",
+        "ky",
+        "kz",
+        "sq",
+        "gq",
+        "tx",
+        "ty",
+        "tz",
+        "x",
+        "y",
+        "z",
+        "box",
+        "rpp",
+        "sph",
+        "rcc",
+        "rhp",
+        "hex",
+        "rec",
+        "trc",
+        "ell",
+        "wed",
+        "arb",
+    }
+
+    @_(r"[a-z\./]+")
+    def TEXT(self, t):
+        if t.value.lower() in self._SURFACE_TYPES:
+            t.type = "SURFACE_TYPE"
+        return t
 
 
 def find_column(text, token):

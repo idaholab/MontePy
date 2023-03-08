@@ -5,7 +5,6 @@ from mcnpy.input_parser import syntax_node
 
 class SurfaceParser(MCNP_Parser):
     debugfile = None
-    tokens = SurfaceLexer.tokens
 
     @_(
         "surface_id SURFACE_TYPE padding number_sequence",
