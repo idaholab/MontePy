@@ -207,6 +207,7 @@ class testFullFileIntegration(TestCase):
         cell.material = mat
         cell.surfaces = [surf]
         cell.mass_density = 1.0
+        cell.geometry_logic_string = "-5"
         cell.number = cell_num
         cell.universe = problem.universes[350]
         problem.cells.append(cell)
