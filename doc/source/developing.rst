@@ -58,7 +58,7 @@ Style Guide
 #. Spaces for indentation, tabs for alignment. Use spaces to build python syntax (4 spaces per level), and tabs for aligning text inside of docstrings.
 
 .. warning::
-   In version 0.1.5 much of the developer infrastructure will significantly change.
+   In version 0.2.0 much of the developer infrastructure will significantly change.
    This is to convert to using true parsers, and to build syntax trees for all inputs.
    It is suggested you work with Micah if you are adding new features prior to this release.
 
@@ -87,7 +87,7 @@ self.words.
 New classes need to support "from scratch" creation e.g., ``cell = Cell()``.
 
 .. note::
-   This system will be changed drastically with 0.1.5.
+   This system will be changed drastically with 0.2.0.
 
 How to __str__ vs __repr__
 """"""""""""""""""""""""""""
@@ -118,7 +118,7 @@ This is handled by ``self._mutated``.
 Whenever an object parameter is set the setter must set ``self._mutated=True``. 
 
 .. note::
-   This system will be removed in 0.1.5
+   This system will be removed in 0.2.0
 
 Format for MCNP Input
 """""""""""""""""""""
