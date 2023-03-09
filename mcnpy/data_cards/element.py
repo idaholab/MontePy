@@ -304,6 +304,7 @@ class Element:
         "Rn": "radon",
         "Fr": "francium",
         "Ra": "radium",
+        "Ac": "actinium",
         "Th": "thorium",
         "Pa": "protactinium",
         "U": "uranium",

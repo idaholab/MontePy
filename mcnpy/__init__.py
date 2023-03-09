@@ -6,17 +6,18 @@ start by running mcnpy.read_input().
 You will receive an MCNP_Problem object that you will interact with.
 """
 
-__author__ = "Micah Gale, Travis Labossiere-Hickman"
+__author__ = "Micah Gale, Travis Labossiere-Hickman, Brenna Carbno"
 __credits__ = [
     "Micah Gale",
     "Travis Labossiere-Hickman",
     "Austin Carter",
     "Andrew Bascom",
     "Roberto Fairhurst Agosta",
+    "Brenna Carbno",
 ]
 
 name = "mcnpy"
-__version__ = "0.1.5dev2"
+__version__ = "0.1.5dev4"
 __maintainer__ = "Micah Gale"
 __email__ = "micah.gale@inl.gov"
 __status__ = "Development"
