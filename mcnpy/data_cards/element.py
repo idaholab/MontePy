@@ -7,7 +7,7 @@ class Element:
 
     :param Z: the Z number of the element
     :type Z: int
-    :raises: UnknownElement if there is no element with that Z number.
+    :raises UnknownElement: if there is no element with that Z number.
     """
 
     def __init__(self, Z):
@@ -66,7 +66,7 @@ class Element:
 
         :returns: the element with this symbol
         :rtype: Element
-        :raises: UnknownElement if there is no element with that symbol.
+        :raises UnknownElement: if there is no element with that symbol.
         """
         try:
             Z = cls.__SYMBOL_TO_Z[symbol]
@@ -83,7 +83,7 @@ class Element:
 
         :returns: the element with this name
         :rtype: Element
-        :raises: UnknownElement if there is no element with that name.
+        :raises UnknownElement: if there is no element with that name.
         """
         try:
             symbol = cls.__NAMES_TO_SYMBOLS[name]
@@ -304,6 +304,7 @@ class Element:
         "Rn": "radon",
         "Fr": "francium",
         "Ra": "radium",
+        "Ac": "actinium",
         "Th": "thorium",
         "Pa": "protactinium",
         "U": "uranium",

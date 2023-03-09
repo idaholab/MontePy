@@ -85,3 +85,13 @@ class UnknownElement(ValueError):
     def __init__(self, missing_val):
         self.message = f"An element identified by: {missing_val} is unknown to MCNPy."
         super().__init__(self.message)
+
+
+class IllegalState(ValueError):
+    """
+    Raised when an object can't be printed out due to an illegal state.
+    """
+
+    def __init__(self, message):
+        self.message = message
+        super().__init__(self.message)

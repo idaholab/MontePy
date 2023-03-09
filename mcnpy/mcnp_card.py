@@ -10,15 +10,14 @@ import textwrap
 class MCNP_Card(ABC):
     """
     Abstract class for semantic representations of MCNP input cards.
+
+    :param input_card: The Card syntax object this will wrap and parse.
+    :type input_card: Card
+    :param comments: The Comments that proceeded this card or were inside of this if any
+    :type Comments: list
     """
 
     def __init__(self, input_card, comments=None):
-        """
-        :param input_card: The Card syntax object this will wrap and parse.
-        :type input_card: Card
-        :param comments: The Comments that proceeded this card or were inside of this if any
-        :type Comments: list
-        """
         self._problem = None
         self._parameters = {}
         if input_card:
@@ -49,7 +48,11 @@ class MCNP_Card(ABC):
     def _parse_key_value_pairs(self):
         if self.allowed_keywords:
             for i, word in enumerate(self.words):
-                if any([char.isalpha() for char in word]):
+                if (
+                    any([char.isalpha() for char in word])
+                    and word.split("=")[0].split(":")[0].upper()
+                    in self.allowed_keywords
+                ):
                     break
             fragments = []
             for word in self.words[i:]:
@@ -67,7 +70,7 @@ class MCNP_Card(ABC):
             for i, fragment in enumerate(fragments):
                 keyword = fragment.split(":")[0].upper()
                 if keyword in self.allowed_keywords:
-                    if i != 0:
+                    if i != 0 and key and value:
                         flush_pair(key, value)
                         value = []
                     key = fragment
@@ -80,9 +83,13 @@ class MCNP_Card(ABC):
     @property
     def parameters(self):
         """
-        A dictionary of the additional parameters for the cell.
+        A dictionary of the additional parameters for the object.
 
-        e.g.: Universes, and imp:n
+        e.g.: ``1 0 -1 u=1 imp:n=0.5`` has the parameters
+        ``{"U": "1", "IMP:N": "0.5"}``
+
+        :returns: a dictionary of the key-value pairs of the parameters.
+        :rytpe: dict
         """
         return self._parameters
 
@@ -134,9 +141,13 @@ class MCNP_Card(ABC):
     @property
     def comments(self):
         """
-        The preceding comment block to this card if any.
+        The comments associated with this card if any.
 
-        :rtype: Comment
+        This includes all ``C`` comments before this card that aren't part of another card,
+        and any comments that are inside this card.
+
+        :returns: a list of the comments associated with this comment.
+        :rtype: list
         """
         return self._comments
 
@@ -176,6 +187,8 @@ class MCNP_Card(ABC):
         """
         The allowed keywords for this class of MCNP_Card.
 
+        The allowed keywords that would appear in the parameters block.
+        For instance for cells the keywords ``IMP`` and ``VOL`` are allowed.
         The allowed keywords need to be in upper case.
 
         :returns: A set of the allowed keywords. If there are none this should return the empty set.
@@ -253,6 +266,7 @@ class MCNP_Card(ABC):
         ret = []
         last_value = None
         float_formatter = "{:n}"
+        repeat_counter = 0
 
         def flush_repeats():
             nonlocal repeat_counter, ret
@@ -263,7 +277,10 @@ class MCNP_Card(ABC):
             repeat_counter = 0
 
         for value in values:
-            if last_value:
+            if isinstance(value, mcnpy.input_parser.mcnp_input.Jump):
+                ret.append(value)
+                last_value = None
+            elif last_value:
                 if np.isclose(value, last_value, atol=threshold):
                     repeat_counter += 1
                 else:
@@ -283,9 +300,10 @@ class MCNP_Card(ABC):
         Takes a list of strings and jump values and combines repeated jump values.
 
         e.g., 1 1 J J 3 J becomes 11 2J 3 J
+
         :param values: a list of string and Jump values to try to compress
         :type values: list
-        :returns: a list of MCNP word strings that have repeat compression
+        :returns: a list of MCNP word strings that have jump compression
         :rtype: list
         """
         ret = []
@@ -308,11 +326,20 @@ class MCNP_Card(ABC):
         flush_jumps()
         return ret
 
+    def validate(self):
+        """
+        Validates that the object is in a usable state.
+
+        :raises: IllegalState if any condition exists that make the object incomplete.
+        """
+        pass
+
     @property
     def words(self):
         """
         The words from the input file for this card.
 
+        :rtype: list
         """
         return self._words
 

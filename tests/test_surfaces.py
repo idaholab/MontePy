@@ -90,6 +90,54 @@ class testSurfaces(TestCase):
         with self.assertRaises(MalformedInputError):
             Surface(card)
 
+    def test_validator(self):
+        surf = Surface()
+        with self.assertRaises(mcnpy.errors.IllegalState):
+            surf.validate()
+        with self.assertRaises(mcnpy.errors.IllegalState):
+            surf.format_for_mcnp_input((6, 2, 0))
+        # cylinder on axis
+        surf = CylinderOnAxis()
+        with self.assertRaises(mcnpy.errors.IllegalState):
+            surf.validate()
+        with self.assertRaises(mcnpy.errors.IllegalState):
+            surf.format_for_mcnp_input((6, 2, 0))
+        surf._surface_type = SurfaceType.CX
+        with self.assertRaises(mcnpy.errors.IllegalState):
+            surf.validate()
+        # cylinder par axis
+        surf = CylinderParAxis()
+        with self.assertRaises(mcnpy.errors.IllegalState):
+            surf.validate()
+        with self.assertRaises(mcnpy.errors.IllegalState):
+            surf.format_for_mcnp_input((6, 2, 0))
+        surf._surface_type = SurfaceType.C_X
+        with self.assertRaises(mcnpy.errors.IllegalState):
+            surf.validate()
+        surf.radius = 5.0
+        with self.assertRaises(mcnpy.errors.IllegalState):
+            surf.validate()
+        # axis plane
+        surf = AxisPlane()
+        with self.assertRaises(mcnpy.errors.IllegalState):
+            surf.validate()
+        with self.assertRaises(mcnpy.errors.IllegalState):
+            surf.format_for_mcnp_input((6, 2, 0))
+        surf._surface_type = SurfaceType.PX
+        with self.assertRaises(mcnpy.errors.IllegalState):
+            surf.validate()
+        surf.location = 0.0
+        surf.validate()
+        # general plane
+        surf = GeneralPlane()
+        with self.assertRaises(mcnpy.errors.IllegalState):
+            surf.validate()
+        with self.assertRaises(mcnpy.errors.IllegalState):
+            surf.format_for_mcnp_input((6, 2, 0))
+        surf._surface_type = SurfaceType.P
+        with self.assertRaises(mcnpy.errors.IllegalState):
+            surf.validate()
+
     def test_surface_is_reflecting_setter(self):
         in_str = "1 PZ 0.0"
         card = Card([in_str], BlockType.SURFACE)

@@ -7,32 +7,31 @@ import mcnpy
 class ThermalScatteringLaw(DataCardAbstract):
     """
     Class to hold MT cards
+
+    This is designed to be called two ways.
+    The first is with a read input file using input_card, comment
+    The second is after a read with a material and a comment (using named inputs)
+
+    :param input_card: the Card object representing this data card
+    :type input_card: Card
+    :param comments: The Comments that may proceed this
+    :type comments: list
+    :param material: the parent Material object that owns this
+    :type material: Material
     """
 
-    def __init__(self, input_card="", comment=None, material=None):
-        """
-        This is designed to be called two ways.
-
-        The first is with a read input file using input_card, comment
-        The second is after a read with a material and a comment (using named inputs)
-        :param input_card: the Card object representing this data card
-        :type input_card: Card
-        :param comment: The Comment that may proceed this
-        :type comment: Comment
-        :param material: the parent Material object that owns this
-        :type material: Material
-        """
+    def __init__(self, input_card="", comments=None, material=None):
         self._old_material_number = None
         self._parent_material = None
         self._scattering_laws = []
         if input_card:
-            super().__init__(input_card, comment)
+            super().__init__(input_card, comments)
             words = self.words
             self._old_material_number = self._input_number
             self._scattering_laws = self.words[1:]
         else:
-            if comment:
-                self._comment = comment
+            if comments:
+                self._comment = comments
             if material:
                 self._parent_material = material
 
@@ -52,6 +51,8 @@ class ThermalScatteringLaw(DataCardAbstract):
     def old_number(self):
         """
         The material number from the file
+
+        :rtype: int
         """
         return self._old_material_number
 
@@ -67,7 +68,7 @@ class ThermalScatteringLaw(DataCardAbstract):
     @property
     def thermal_scattering_laws(self):
         """
-        The thermal scattering laws to use for this material
+        The thermal scattering laws to use for this material as strings.
 
         :rtype: list
         """
@@ -88,10 +89,22 @@ class ThermalScatteringLaw(DataCardAbstract):
     def add_scattering_law(self, law):
         """
         Adds the requested scattering law to this material
+
+        :param law: the thermal scattering law to add.
+        :type law: str
         """
         self._scattering_laws.append(law)
 
+    def validate(self):
+        if len(self._scattering_laws) == 0:
+            if self.parent_material:
+                message = f"No thermal scattering laws given for MT{self.parent_material.number}."
+            else:
+                message = f"No thermal scattering laws given for thermal scattering {hex(id(self))}"
+            raise IllegalState(message)
+
     def format_for_mcnp_input(self, mcnp_version):
+        self.validate()
         ret = mcnp_card.MCNP_Card.format_for_mcnp_input(self, mcnp_version)
         mutated = self.mutated
         if not self.parent_material:

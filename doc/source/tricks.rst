@@ -14,7 +14,7 @@ get the "extreme" surfaces, using the max and min function.
 
 By default though these functions will sort the surfaces by surface number.
 Rather you need to use the key argument to change how the surfaces are sorted.
-These examples use [python lambda expressions](https://docs.python.org/3/tutorial/controlflow.html#lambda-expressions),
+These examples use `python lambda expressions <https://docs.python.org/3/tutorial/controlflow.html#lambda-expressions>`_,
 which are very short anonymous functions.
 
 Here are some examples:

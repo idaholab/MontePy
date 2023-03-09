@@ -1,29 +1,32 @@
 from .surface_type import SurfaceType
 from .surface import Surface
+from mcnpy.errors import *
 
 
 class AxisPlane(Surface):
     """
     Represents PX, PY, PZ
+
+    :param input_card: The Card object representing the input
+    :type input_card: Card
+    :param comments: The Comments that proceeded this card or were inside of this if any
+    :type Comments: list
     """
 
     COORDINATE = {SurfaceType.PX: "x", SurfaceType.PY: "y", SurfaceType.PZ: "z"}
 
-    def __init__(self, input_card, comment=None):
-        """
-        :param input_card: The Card object representing the input
-        :type input_card: Card
-        :param comment: the Comment object representing the
-                        preceding comment block.
-        :type comment: Comment
-        """
-        super().__init__(input_card, comment)
+    def __init__(self, input_card=None, comments=None):
+        self._location = None
+        super().__init__(input_card, comments)
         ST = SurfaceType
-        if self.surface_type not in [ST.PX, ST.PY, ST.PZ]:
-            raise ValueError("AxisPlane must be a surface of type: PX, PY, or PZ")
-        if len(self.surface_constants) != 1:
-            raise ValueError("AxisPlane must have exactly 1 surface constant")
-        self._location = self.surface_constants[0]
+        if input_card:
+            if self.surface_type not in [ST.PX, ST.PY, ST.PZ]:
+                raise ValueError("AxisPlane must be a surface of type: PX, PY, or PZ")
+            if len(self.surface_constants) != 1:
+                raise ValueError("AxisPlane must have exactly 1 surface constant")
+            self._location = self.surface_constants[0]
+        else:
+            self._surface_constants = [None]
 
     @property
     def location(self):
@@ -41,6 +44,11 @@ class AxisPlane(Surface):
         self._mutated = True
         self._location = location
         self._surface_constants[0] = location
+
+    def validate(self):
+        super().validate()
+        if self.location is None:
+            raise IllegalState(f"Surface: {self.number} does not have a location set.")
 
     def find_duplicate_surfaces(self, surfaces, tolerance):
         ret = []
