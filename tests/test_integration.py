@@ -712,7 +712,12 @@ class testFullFileIntegration(TestCase):
         problem = mcnpy.read_input(
             os.path.join("tests", "inputs", "test_universe_data.imcnp")
         )
+        output = problem.cells._universe.format_for_mcnp_input((6, 2, 0))
+        print(output)
+        self.assertIn("U 350 2J -1", output)
         universe = problem.universes[350]
+        # test unmutated
+        # test mutated
         cell = problem.cells[3]
         cell.universe = universe
         cell.not_truncated = True
