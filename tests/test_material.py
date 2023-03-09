@@ -294,6 +294,9 @@ class TestElement(TestCase):
         for Z in range(1, 119):
             element = Element(Z)
             self.assertEqual(element.Z, Z)
+            # Test to ensure there are no missing elements
+            name = element.name
+            symbol = element.symbol
 
         with self.assertRaises(UnknownElement):
             Element(119)

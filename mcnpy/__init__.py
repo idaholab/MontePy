@@ -6,14 +6,14 @@ start by running mcnpy.read_input().
 You will receive an MCNP_Problem object that you will interact with.
 """
 
-__author__ = "Micah Gale, Travis Labossiere-Hickman"
-__copyright__ = "Copyright 2021 – 2023, Battelle Energy Alliance, LLC."
+__author__ = "Micah Gale, Travis Labossiere-Hickman, Brenna Carbno"
 __credits__ = [
     "Micah Gale",
     "Travis Labossiere-Hickman",
     "Austin Carter",
     "Andrew Bascom",
     "Roberto Fairhurst Agosta",
+    "Brenna Carbno",
 ]
 
 name = "mcnpy"
