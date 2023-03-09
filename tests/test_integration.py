@@ -506,6 +506,7 @@ class testFullFileIntegration(TestCase):
             problem.write_to_file(out_file)
             found_np = False
             found_e = False
+            found_data_np = False
             with open(out_file, "r") as fh:
                 for line in fh:
                     print(line.rstrip())
@@ -513,8 +514,11 @@ class testFullFileIntegration(TestCase):
                         found_np = True
                     elif "IMP:E=1" in line:
                         found_e = True
+                    elif "imp:e 1" in line.lower():
+                        found_data_np = True
             self.assertTrue(found_np)
             self.assertTrue(found_e)
+            self.assertTrue(not found_data_np)
         finally:
             try:
                 os.remove(out_file)
