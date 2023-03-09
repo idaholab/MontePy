@@ -32,7 +32,7 @@ Setting up and Typical Development Workflow
    The easiest way to make this branch is to "create merge request" from gitlab.
    This will create a new branch (though with an unwieldy name) that you can checkout and work on.
 
-#. Run the test cases. MCNPy relies heavily on it's over 200 tests for the development process.
+#. Run the test cases. MCNPy relies heavily on its over 200 tests for the development process.
    These are configured so if you run: ``python -m pytest`` from the root of the git repository 
    all tests will be found and ran.
 
