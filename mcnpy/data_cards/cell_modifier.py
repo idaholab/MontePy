@@ -39,6 +39,7 @@ class CellModifierCard(DataCardAbstract):
             self._set_in_cell_block = True
         else:
             self._set_in_cell_block = False
+            self._mutated = False
         self._in_cell_block = in_cell_block
         self._in_key = key
         self._in_value = value
