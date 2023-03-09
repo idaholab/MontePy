@@ -39,15 +39,15 @@ Setting up and Typical Development Workflow
 #. Develop test cases. This is especially important if you are working on a bug fix.
    A merge request will not be accepted until it can be shown that a test case can replicate the 
    bug and does in deed fail without the bug fix in place.
-   To achieve it is recommended that you commit the test first, and push it to gitlab.
+   To achieve this, it is recommended that you commit the test first, and push it to gitlab.
    This way there will be a record of the CI pipeline failing that can be quickly reviewed as part of the merge request.
 
    Though MCNPy uses ``pytest`` for running the tests,
    it actually uses `unittest <https://docs.python.org/3/library/unittest.html>`_ for setting up all test fixtures. 
    Generally unit tests of new features go in the test file with the closest class name. 
    Integration tests have all been dumped in ``tests/test_integration.py``. 
-   For integration tests you can likely use the ``tests/inputs/test.imcnp``.
-   This is pre-loaded as ``self.simple_problem``.
+   For integration tests you can likely use the ``tests/inputs/test.imcnp`` input file.
+   This is pre-loaded as an :class:`~mcnpy.mcnp_problem.MCNP_Problem` stored as: ``self.simple_problem``.
    If you need to mutate it at all you must first make a ``copy.deepcopy`` of it.
 
 #. Write the code.
