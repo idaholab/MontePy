@@ -741,6 +741,7 @@ class testFullFileIntegration(TestCase):
         new_cell = copy.deepcopy(cell)
         new_cell.number = 1000
         new_cell.universe = universe
+        new_cell.not_truncated = False
         problem.cells.append(new_cell)
         output = problem.cells._universe.format_for_mcnp_input((6, 2, 0))
         print(output)
