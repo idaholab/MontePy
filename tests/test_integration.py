@@ -744,7 +744,7 @@ class testFullFileIntegration(TestCase):
         output = problem.cells._universe.format_for_mcnp_input((6, 2, 0))
         print(output)
         self.assertIn("U 350 J -350 -1 J", output)
-        # test appending a new cell
+        # test appending a new mutated cell
         new_cell = copy.deepcopy(cell)
         new_cell.number = 1000
         new_cell.universe = universe
@@ -753,6 +753,22 @@ class testFullFileIntegration(TestCase):
         output = problem.cells._universe.format_for_mcnp_input((6, 2, 0))
         print(output)
         self.assertIn("U 350 J -350 -1 J 350", output)
+        # test appending a new UNmutated cell
+        problem = mcnpy.read_input(
+            os.path.join("tests", "inputs", "test_universe_data.imcnp")
+        )
+        cell = problem.cells[3]
+        new_cell = copy.deepcopy(cell)
+        new_cell.number = 1000
+        new_cell.universe = universe
+        new_cell.not_truncated = False
+        # lazily implement pulling cell in from other model
+        new_cell._mutated = False
+        new_cell._universe._mutated = False
+        problem.cells.append(new_cell)
+        output = problem.cells._universe.format_for_mcnp_input((6, 2, 0))
+        print(output)
+        self.assertIn("U 350 2J -1 J 350", output)
 
     def test_universe_number_collision(self):
         problem = mcnpy.read_input(
