@@ -436,10 +436,37 @@ class ListNode(SyntaxNodeBase):
                 yield node
 
     def __getitem__(self, indx):
+        if isinstance(indx, slice):
+            return self.__get_slice(indx)
         for i, item in enumerate(self):
             if i == indx:
                 return item
         raise IndexError(f"{indx} not in ListNode")
+
+    def __get_slice(self, i: slice):
+        rstep = i.step if i.step is not None else 1
+        rstart = i.start
+        rstop = i.stop
+        if rstep < 0:  # Backwards
+            if rstart is None:
+                rstart = len(self.nodes) - 1
+            if rstop is None:
+                rstop = 0
+            rstop -= 1
+        else:  # Forwards
+            if rstart is None:
+                rstart = 0
+            if rstop is None:
+                rstop = len(self.nodes) - 1
+            rstop += 1
+        ret = []
+        allowed_indices = range(rstart, rstop, rstep)
+        for i, item in enumerate(self):
+            if i in allowed_indices:
+                ret.append(item)
+        if rstep > 0:
+            return ret
+        return ret.reverse()
 
     def remove(self, obj):
         self.nodes.remove(obj)
