@@ -83,8 +83,8 @@ class Fill(CellModifierInput):
                 data = value["data"]
                 try:
                     val = data[0]
-                    val.is_negetable_identifier = True
-                    assert val.is_negative is not False
+                    val._convert_to_int()
+                    assert val.value >= 0
                     self._old_number = val
                 except (AssertionError) as e:
                     raise ValueError(
@@ -103,8 +103,8 @@ class Fill(CellModifierInput):
             if len(trans_data) == 1:
                 try:
                     transform = trans_data[0]
-                    transform.is_negatable_identifier
-                    assert transform.is_negative is not False
+                    transform._convert_to_int()
+                    assert transform.value > 0
                     self._hidden_transform = False
                     self._old_transform_number = transform
                 except (AssertionError) as e:
@@ -158,19 +158,19 @@ class Fill(CellModifierInput):
                     "The minimum value must be smaller than the max value."
                     f"Min: {min_val.value}, Max: {max_val.value}, Input: {value.format()}"
                 )
-        self._old_numbers = np.zeros(self._sizes, dtype=np.dtype(int))
+        self._old_numbers = np.zeros(self._sizes, dtype=np.dtype(object))
         words = iter(words[8:])
         for i in self._axis_range(0):
             for j in self._axis_range(1):
                 for k in self._axis_range(2):
                     val = next(words)
                     try:
-                        val.is_negetable_identifier = True
-                        assert val.is_negative is not False
+                        val._convert_to_int()
+                        assert val.value > 0
                         self._old_numbers[i][j][k] = val
                     except (ValueError, AssertionError) as e:
                         raise ValueError(
-                            f"Values provided must be valid universes. {val} given."
+                            f"Values provided must be valid universes. {val.value} given."
                         )
 
     @staticmethod
