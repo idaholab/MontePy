@@ -114,7 +114,7 @@ class LatticeCard(CellModifierCard):
 
     def push_to_cells(self):
         if self._problem and not self.in_cell_block:
-            self._old_num_cells = len(self._problem.cells)
+            self._starting_num_cells = len(self._problem.cells)
             cells = self._problem.cells
             if self._lattice:
                 self._check_redundant_definitions()
