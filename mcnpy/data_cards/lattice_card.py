@@ -114,6 +114,7 @@ class LatticeCard(CellModifierCard):
 
     def push_to_cells(self):
         if self._problem and not self.in_cell_block:
+            self._old_num_cells = len(self._problem.cells)
             cells = self._problem.cells
             if self._lattice:
                 self._check_redundant_definitions()
@@ -157,6 +158,8 @@ class LatticeCard(CellModifierCard):
             mutated = self.mutated
             if not mutated:
                 mutated = self.has_changed_print_style
+                if self._starting_num_cells != len(self._problem.cells):
+                    mutated = True
                 for cell in self._problem.cells:
                     if cell._lattice.mutated:
                         mutated = True

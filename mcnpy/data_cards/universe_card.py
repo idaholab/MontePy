@@ -148,6 +148,7 @@ class UniverseCard(CellModifierCard):
             return
         if not self.in_cell_block:
             cells = self._problem.cells
+            self._starting_num_cells = len(cells)
             if self._universe:
                 self._check_redundant_definitions()
                 for cell, uni_number in itertools.zip_longest(
@@ -224,6 +225,8 @@ class UniverseCard(CellModifierCard):
             mutated = self.mutated
             if not mutated:
                 mutated = self.has_changed_print_style
+                if self._starting_num_cells != len(self._problem.cells):
+                    mutated = True
                 for cell in self._problem.cells:
                     if cell._universe.mutated:
                         mutated = True

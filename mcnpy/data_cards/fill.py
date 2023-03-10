@@ -389,6 +389,7 @@ class Fill(CellModifierCard):
                     self._universe = get_universe(self.old_universe_number)
         else:
             if not self.set_in_cell_block and self.old_universe_number:
+                self._starting_num_cells = len(self._problem.cells)
                 for cell, old_number in zip(
                     self._problem.cells, self.old_universe_number
                 ):
@@ -516,6 +517,8 @@ class Fill(CellModifierCard):
                     ret.extend(self.wrap_string_for_mcnp(line, mcnp_version, False))
         else:
             mutated = self.has_changed_print_style
+            if self._starting_num_cells != len(self._problem.cells):
+                mutated = True
             for cell in self._problem.cells:
                 if cell.fill.mutated:
                     mutated = True
