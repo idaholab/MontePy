@@ -1,3 +1,4 @@
+import itertools as it
 from mcnpy.data_inputs.cell_modifier import CellModifierInput
 from mcnpy.data_inputs.transform import Transform
 from mcnpy.errors import *
@@ -46,7 +47,7 @@ class Fill(CellModifierInput):
                 self._parse_cell_input(key, value)
         elif input:
             self._old_numbers = []
-            values = self._tree["data"]
+            values = self.data
             for value in values:
                 if isinstance(word, str):
                     try:
@@ -76,44 +77,46 @@ class Fill(CellModifierInput):
         """
 
         def get_universe(value):
-            if ":" in value:
+            if ":" in value["data"].nodes:
                 self._parse_matrix(value)
             else:
-                words = value.split()
+                data = value["data"]
                 try:
-                    val = int(words[0])
-                    assert val > 0
+                    val = data[0]
+                    val.is_negetable_identifier = True
+                    assert val.is_negative is not False
                     self._old_number = val
-                except (ValueError, AssertionError) as e:
+                except (AssertionError) as e:
                     raise ValueError(
-                        f"The fill universe must be a valid integer, {words[0]} was given"
+                        f"The fill universe must be a valid integer ≥ 0, {val.value} was given"
                     )
                 # ensure only one universe is given
-                if len(words) >= 2 and "(" not in words[1]:
+                if len(data) >= 2 and "(" not in data[1]:
                     raise ValueError(
-                        f"Fill cannot have two universes in this format. {value} given"
+                        f"Fill cannot have two universes in this format. {data.format()} given"
                     )
 
-        if "(" in value:
+        data = value["data"]
+        if "(" in data.nodes:
             get_universe(value)
-            parens_contents = value[value.index("(") + 1 : value.rindex(")")]
-            words = parens_contents.split()
-            if len(words) == 1:
+            trans_data = value[value.index("(") + 1 : value.rindex(")")]
+            if len(trans_data) == 1:
                 try:
-                    transform = int(words[0])
-                    assert transform > 0
+                    transform = trans_data[0]
+                    transform.is_negatable_identifier
+                    assert transform.is_negative is not False
                     self._hidden_transform = False
                     self._old_transform_number = transform
-                except (ValueError, AssertionError) as e:
+                except (AssertionError) as e:
                     raise ValueError(
                         "Transform number must be a positive integer. {words[0]} was given."
                     )
             elif len(words) > 1:
-                if "*" in key:
+                if "*" in value["classifier"].mod:
                     in_key = "*TR1"
                 else:
                     in_key = "TR1"
-                input_card = Card([in_key + " " + parens_contents], BlockType.DATA)
+                input_card = Input([in_key + " " + parens_contents], BlockType.DATA)
                 self._transform = Transform(input_card, pass_through=True)
                 self._hidden_transform = True
 
@@ -128,33 +131,42 @@ class Fill(CellModifierInput):
         :type value: str
         """
         self._multi_universe = True
-        words = iter(value.split())
-        self._min_index = np.zeros((3,), dtype=np.dtype(int))
-        self._max_index = np.zeros((3,), dtype=np.dtype(int))
-        for axis, limits in zip(Fill.DIMENSIONS.values(), words):
-            values = limits.split(":")
-            for val, limit_holder in zip(values, (self._min_index, self._max_index)):
+        words = value["data"]
+        self._min_index = np.zeros((3,), dtype=np.dtype(object))
+        self._max_index = np.zeros((3,), dtype=np.dtype(object))
+        limits_iter = (
+            it.islice(words, 0, None, 3),
+            it.islice(words, 1, None, 3),
+            it.islice(words, 2, None, 3),
+        )
+        for axis, min_val, seperator, max_val in zip(
+            Fill.DIMENSIONS.values(), *limits_iter
+        ):
+            for val, limit_holder in zip(
+                (min_val, max_val), (self._min_index, self._max_index)
+            ):
                 try:
-                    val = int(val)
+                    val._convert_to_int()
                     limit_holder[axis] = val
                 except (ValueError) as e:
                     raise ValueError(
-                        f"The lattice limits must be an integer. {val} was given"
+                        f"The lattice limits must be an integer. {val.value} was given"
                     )
         for min_val, max_val in zip(self.min_index, self.max_index):
-            if min_val > max_val:
+            if min_val.value > max_val.value:
                 raise ValueError(
                     "The minimum value must be smaller than the max value."
-                    f"Min: {min_val}, Max: {max_val}, Input: {value}"
+                    f"Min: {min_val.value}, Max: {max_val.value}, Input: {value.format()}"
                 )
         self._old_numbers = np.zeros(self._sizes, dtype=np.dtype(int))
+        words = iter(words[8:])
         for i in self._axis_range(0):
             for j in self._axis_range(1):
                 for k in self._axis_range(2):
                     val = next(words)
                     try:
-                        val = int(val)
-                        assert val >= 0
+                        val.is_negetable_identifier = True
+                        assert val.is_negative is not False
                         self._old_numbers[i][j][k] = val
                     except (ValueError, AssertionError) as e:
                         raise ValueError(
@@ -448,7 +460,7 @@ class Fill(CellModifierInput):
         :returns: the length of the given axis of the universe matrix.
         :rtype: int
         """
-        return int(self.max_index[axis] - self.min_index[axis]) + 1
+        return int(self.max_index[axis].value - self.min_index[axis].value) + 1
 
     @property
     def _sizes(self):
