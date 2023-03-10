@@ -129,7 +129,7 @@ class Importance(CellModifierCard):
     def push_to_cells(self):
         if self._problem and not self.in_cell_block:
             self._check_redundant_definitions()
-            self._old_num_cells = len(self._problem.cells)
+            self._starting_num_cells = len(self._problem.cells)
             for particle in self._particle_importances:
                 for i, cell in enumerate(self._problem.cells):
                     value = self._particle_importances[particle][i]
