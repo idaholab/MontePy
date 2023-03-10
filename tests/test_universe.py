@@ -249,9 +249,17 @@ class TestFill(TestCase):
             fill = Fill(card)
 
     def test_fill_universe_setter(self):
-        key = syntax_node.ValueNode("fill", str)
-        value = syntax_node.ValueNode("5", float)
-        fill = Fill(in_cell_block=True, key=key, value=value)
+        list_node = syntax_node.ListNode("num")
+        list_node.append(syntax_node.ValueNode("5", float))
+        value = syntax_node.SyntaxNode(
+            "fill",
+            {
+                "classifier": "",
+                "seperator": syntax_node.ValueNode("=", str),
+                "data": list_node,
+            },
+        )
+        fill = Fill(in_cell_block=True, key="fill", value=value)
         uni = mcnpy.Universe(6)
         fill.universe = uni
         self.assertEqual(fill.universe.number, uni.number)
