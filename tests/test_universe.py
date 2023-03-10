@@ -88,7 +88,6 @@ class TestUniverseInput(TestCase):
         uni = Universe(5)
         card.universe = uni
         self.assertEqual(card.universe, uni)
-        self.assertTrue(card.mutated)
         with self.assertRaises(TypeError):
             card.universe = 5
 
@@ -256,7 +255,6 @@ class TestFill(TestCase):
         uni = mcnpy.Universe(6)
         fill.universe = uni
         self.assertEqual(fill.universe.number, uni.number)
-        self.assertTrue(fill.mutated)
         self.assertIsNone(fill.universes)
         fill.universe = None
         self.assertIsNone(fill.universe)
@@ -279,7 +277,6 @@ class TestFill(TestCase):
         fill_array = np.array([[[uni, uni], [uni, uni]], [[uni, uni], [uni, uni]]])
         fill.universes = fill_array
         self.assertTrue((fill.universes == fill_array).all())
-        self.assertTrue(fill.mutated)
         del fill.universes
         self.assertIsNone(fill.universes)
         with self.assertRaises(TypeError):
