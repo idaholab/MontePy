@@ -500,31 +500,38 @@ class testFullFileIntegration(TestCase):
                 pass
 
     def test_importance_write_cell(self):
-        out_file = "test_import_cell"
-        problem = copy.deepcopy(self.importance_problem)
-        problem.print_in_data_block["imp"] = False
-        try:
-            problem.write_to_file(out_file)
-            found_np = False
-            found_e = False
-            found_data_np = False
-            with open(out_file, "r") as fh:
-                for line in fh:
-                    print(line.rstrip())
-                    if "IMP:N,P=1" in line:
-                        found_np = True
-                    elif "IMP:E=1" in line:
-                        found_e = True
-                    elif "imp:e 1" in line.lower():
-                        found_data_np = True
-            self.assertTrue(found_np)
-            self.assertTrue(found_e)
-            self.assertTrue(not found_data_np)
-        finally:
+        for state in ["no change", "new unmutated cell", "new mutated cell"]:
+            out_file = "test_import_cell"
+            problem = copy.deepcopy(self.importance_problem)
+            if "new" in state:
+                cell = copy.deepcopy(problem.cells[5])
+                cell.number = 999
+                problem.cells.append(cell)
+            if "new unmutated cell" == state:
+                cell._mutateddd = False
+            problem.print_in_data_block["imp"] = False
             try:
-                os.remove(out_file)
-            except FileNotFoundError:
-                pass
+                problem.write_to_file(out_file)
+                found_np = False
+                found_e = False
+                found_data_np = False
+                with open(out_file, "r") as fh:
+                    for line in fh:
+                        print(line.rstrip())
+                        if "IMP:N,P=1" in line:
+                            found_np = True
+                        elif "IMP:E=1" in line:
+                            found_e = True
+                        elif "imp:e 1" in line.lower():
+                            found_data_np = True
+                self.assertTrue(found_np)
+                self.assertTrue(found_e)
+                self.assertTrue(not found_data_np)
+            finally:
+                try:
+                    os.remove(out_file)
+                except FileNotFoundError:
+                    pass
 
     def test_importance_write_data(self):
         out_file = "test_import_data"
