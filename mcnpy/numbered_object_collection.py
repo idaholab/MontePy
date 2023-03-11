@@ -126,6 +126,13 @@ class NumberedObjectCollection(ABC):
         self.__num_cache.pop(obj.number, None)
         return obj
 
+    def clear(self):
+        """
+        Removes all objects from this collection.
+        """
+        self._objects.clear()
+        self.__num_cache.clear()
+
     def extend(self, other_list):
         """
         Extends this collection with another list.
