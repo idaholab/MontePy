@@ -195,6 +195,10 @@ class testFullFileIntegration(TestCase):
         in_str = "M5 6000.70c 1.0"
         card = mcnpy.input_parser.mcnp_input.Card([in_str], BT.SURFACE)
         mat = mcnpy.data_cards.material.Material(card, None)
+        in_str = "TR1 0 0 1"
+        input = mcnpy.input_parser.mcnp_input.Card([in_str], BT.DATA)
+        transform = mcnpy.data_cards.transform.Transform(input)
+        surf.transform = transform
         cell = mcnpy.Cell()
         cell.material = mat
         cell.surfaces = [surf]
@@ -204,6 +208,8 @@ class testFullFileIntegration(TestCase):
         self.assertIn(surf, problem.surfaces)
         self.assertIn(mat, problem.materials)
         self.assertIn(mat, problem.data_cards)
+        self.assertIn(transform, problem.transforms)
+        self.assertIn(transform, problem.data_cards)
 
     def test_problem_mcnp_version_setter(self):
         problem = copy.copy(self.simple_problem)
