@@ -214,30 +214,46 @@ class TestFill(TestCase):
         self.simple_fill = Fill(in_cell_block=True, key="fill", value=tree)
 
     def test_complex_transform_fill_init(self):
-        fill = Fill(in_cell_block=True, key="*fill", value="1 (1.5 0.0 0.0)")
+        input = Input(["1 0 -1 *fill=1 (1.5 0.0 0.0)"], BlockType.CELL)
+        cell = Cell(input)
+        fill = cell.fill
         self.assertTrue(fill.hidden_transform)
         self.assertIsNone(fill.universes)
         self.assertEqual(fill.old_universe_number, 1)
         self.assertEqual(len(fill.transform.displacement_vector), 3)
         self.assertTrue(fill.transform.is_in_degrees)
-        fill = Fill(in_cell_block=True, key="fill", value="1 (1.5 0.0 0.0)")
+        input = Input(["1 0 -1 fill=1 (1.5 0.0 0.0)"], BlockType.CELL)
+        cell = Cell(input)
+        fill = cell.fill
         self.assertTrue(not fill.transform.is_in_degrees)
-        fill = Fill(in_cell_block=True, key="fill", value="5 (3)")
+        input = Input(["1 0 -1 fill=1 (3)"], BlockType.CELL)
+        cell = Cell(input)
+        fill = cell.fill
         self.assertTrue(not fill.hidden_transform)
         self.assertEqual(fill.old_universe_number, 5)
         self.assertEqual(fill.old_transform_number, 3)
         # test bad string
         with self.assertRaises(ValueError):
-            fill = Fill(in_cell_block=True, key="fill", value="hi")
+            input = Input(["1 0 -1 fill=hi"], BlockType.CELL)
+            cell = Cell(input)
+            fill = cell.fill
         with self.assertRaises(ValueError):
-            fill = Fill(in_cell_block=True, key="fill", value="1 (hi)")
+            input = Input(["1 0 -1 fill=1 (hi)"], BlockType.CELL)
+            cell = Cell(input)
+            fill = cell.fill
         # test negative universe
         with self.assertRaises(ValueError):
-            fill = Fill(in_cell_block=True, key="fill", value="-5")
+            input = Input(["1 0 -1 fill=-5"], BlockType.CELL)
+            cell = Cell(input)
+            fill = cell.fill
         with self.assertRaises(ValueError):
-            fill = Fill(in_cell_block=True, key="fill", value="5 (-5)")
+            input = Input(["1 0 -1 fill=5 (-5)"], BlockType.CELL)
+            cell = Cell(input)
+            fill = cell.fill
         with self.assertRaises(ValueError):
-            fill = Fill(in_cell_block=True, key="fill", value="5 1 0 0")
+            input = Input(["1 0 -1 fill=5 1 0 0"], BlockType.CELL)
+            cell = Cell(input)
+            fill = cell.fill
 
     def test_complicated_lattice_fill_init(self):
         input = Input(["1 0 -1 fill=0:1 0:1 0:1 1 2 3 4 5 6 7 8"], BlockType.CELL)
