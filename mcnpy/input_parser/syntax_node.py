@@ -642,7 +642,7 @@ class ClassifierNode(SyntaxNodeBase):
 
     def format(self):
         if self.modifier:
-            ret = self.modifier
+            ret = self.modifier.format()
         else:
             ret = ""
         ret += self.prefix.format()
