@@ -4,6 +4,7 @@ from mcnpy.data_inputs.transform import Transform
 from mcnpy.errors import *
 from mcnpy.input_parser.block_type import BlockType
 from mcnpy.input_parser.mcnp_input import Input, Jump
+from mcnpy.input_parser.syntax_node import ValueNode
 from mcnpy.mcnp_object import MCNP_Object
 from mcnpy.universe import Universe
 import numpy as np
@@ -49,10 +50,10 @@ class Fill(CellModifierInput):
             self._old_numbers = []
             values = self.data
             for value in values:
-                if isinstance(word, str):
+                if isinstance(value, ValueNode):
                     try:
-                        value = int(word)
-                        assert value >= 0
+                        value._convert_to_int()
+                        assert value.value >= 0
                         self._old_numbers.append(value)
                     except (ValueError, AssertionError) as e:
                         raise MalformedInputError(
@@ -302,6 +303,8 @@ class Fill(CellModifierInput):
         :returns: the old universe numbers
         :type: :class:`numpy.ndarray`
         """
+        if isinstance(self._old_numbers, list):
+            return [num.value for num in self._old_numbers]
         return self._old_numbers
 
     @property

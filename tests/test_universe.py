@@ -271,9 +271,9 @@ class TestFill(TestCase):
 
     def test_data_fill_init(self):
         card = Input(["FiLl 1 2 3 4"], BlockType.DATA)
-        fill = Fill(input)
+        fill = Fill(card)
         answer = [1, 2, 3, 4]
-        self.assertEqual(fill.old_universe_number, answer)
+        self.assertEqual(fill.old_universe_numbers, answer)
         # jump
         card = Input(["FiLl 1 2J 4"], BlockType.DATA)
         fill = Fill(card)
