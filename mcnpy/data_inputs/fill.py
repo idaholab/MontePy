@@ -133,8 +133,8 @@ class Fill(CellModifierInput):
         """
         self._multi_universe = True
         words = value["data"]
-        self._min_index = np.zeros((3,), dtype=np.dtype(object))
-        self._max_index = np.zeros((3,), dtype=np.dtype(object))
+        self._min_index = np.zeros((3,), dtype=np.dtype(int))
+        self._max_index = np.zeros((3,), dtype=np.dtype(int))
         limits_iter = (
             it.islice(words, 0, None, 3),
             it.islice(words, 1, None, 3),
@@ -148,19 +148,19 @@ class Fill(CellModifierInput):
             ):
                 try:
                     val._convert_to_int()
-                    limit_holder[axis] = val
+                    limit_holder[axis] = val.value
                 except (ValueError) as e:
                     raise ValueError(
                         f"The lattice limits must be an integer. {val.value} was given"
                     )
         for min_val, max_val in zip(self.min_index, self.max_index):
-            if min_val.value > max_val.value:
+            if min_val > max_val:
                 raise ValueError(
                     "The minimum value must be smaller than the max value."
                     f"Min: {min_val.value}, Max: {max_val.value}, Input: {value.format()}"
                 )
-        self._old_numbers = np.zeros(self._sizes, dtype=np.dtype(object))
-        words = iter(words[8:])
+        self._old_numbers = np.zeros(self._sizes, dtype=np.dtype(int))
+        words = iter(words[9:])
         for i in self._axis_range(0):
             for j in self._axis_range(1):
                 for k in self._axis_range(2):
@@ -168,7 +168,7 @@ class Fill(CellModifierInput):
                     try:
                         val._convert_to_int()
                         assert val.value > 0
-                        self._old_numbers[i][j][k] = val
+                        self._old_numbers[i][j][k] = val.value
                     except (ValueError, AssertionError) as e:
                         raise ValueError(
                             f"Values provided must be valid universes. {val.value} given."
@@ -466,7 +466,7 @@ class Fill(CellModifierInput):
         :returns: the length of the given axis of the universe matrix.
         :rtype: int
         """
-        return int(self.max_index[axis].value - self.min_index[axis].value) + 1
+        return int(self.max_index[axis] - self.min_index[axis]) + 1
 
     @property
     def _sizes(self):

@@ -247,6 +247,7 @@ class TestFill(TestCase):
         self.assertEqual(fill.min_index[0], 0)
         self.assertEqual(fill.max_index[2], 1)
         answer = np.array([[[1, 2], [3, 4]], [[5, 6], [7, 8]]])
+        print(fill.old_universe_numbers)
         self.assertTrue((fill.old_universe_numbers == answer).all())
         # test string universe
         with self.assertRaises(ValueError):
@@ -278,7 +279,7 @@ class TestFill(TestCase):
         card = Input(["FiLl 1 2J 4"], BlockType.DATA)
         fill = Fill(card)
         answer = [1, Jump(), Jump(), 4]
-        self.assertEqual(fill.old_universe_number, answer)
+        self.assertEqual(fill.old_universe_numbers, answer)
         # test negative universe
         with self.assertRaises(MalformedInputError):
             card = Input(["FiLl 1 -2 3 4"], BlockType.DATA)
