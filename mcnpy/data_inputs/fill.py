@@ -57,14 +57,14 @@ class Fill(CellModifierInput):
                         self._old_numbers.append(value)
                     except (ValueError, AssertionError) as e:
                         raise MalformedInputError(
-                            input_card,
-                            f"Cell fill must be set to a valid universe, {word} was given",
+                            input,
+                            f"Cell fill must be set to a valid universe, {value} was given",
                         )
-                elif isinstance(word, Jump):
-                    self._old_number.append(word)
+                elif isinstance(value, Jump):
+                    self._old_numbers.append(value)
                 else:
                     raise TypeError(
-                        f"Word: {word} cannot be parsed as a lattice as a str, or Jump"
+                        f"Value: {value} cannot be parsed as a lattice as a str, or Jump"
                     )
 
     def _parse_cell_input(self, key, value):
@@ -304,7 +304,10 @@ class Fill(CellModifierInput):
         :type: :class:`numpy.ndarray`
         """
         if isinstance(self._old_numbers, list):
-            return [num.value for num in self._old_numbers]
+            return [
+                num.value if isinstance(num, ValueNode) else num
+                for num in self._old_numbers
+            ]
         return self._old_numbers
 
     @property
