@@ -145,7 +145,7 @@ class CellParser(MCNP_Parser):
     @_(
         'number_sequence "(" number_sequence ")"',
         'number_sequence "(" number_sequence ")" padding',
-        'number_sequence ":" number_phrase',
+        'number_sequence ":" numerical_phrase',
     )
     def number_sequence(self, p):
         sequence = p[0]
