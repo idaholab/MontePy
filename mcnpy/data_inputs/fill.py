@@ -157,7 +157,7 @@ class Fill(CellModifierInput):
             if min_val > max_val:
                 raise ValueError(
                     "The minimum value must be smaller than the max value."
-                    f"Min: {min_val.value}, Max: {max_val.value}, Input: {value.format()}"
+                    f"Min: {min_val}, Max: {max_val}, Input: {value.format()}"
                 )
         self._old_numbers = np.zeros(self._sizes, dtype=np.dtype(int))
         words = iter(words[9:])
