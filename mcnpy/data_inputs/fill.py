@@ -100,7 +100,9 @@ class Fill(CellModifierInput):
         data = value["data"]
         if "(" in data.nodes:
             get_universe(value)
-            trans_data = value[value.index("(") + 1 : value.rindex(")")]
+            trans_data = value["data"][
+                list(value["data"]).index("(") + 1 : list(value["data"]).index(")")
+            ]
             if len(trans_data) == 1:
                 try:
                     transform = trans_data[0]
@@ -112,12 +114,14 @@ class Fill(CellModifierInput):
                     raise ValueError(
                         "Transform number must be a positive integer. {words[0]} was given."
                     )
-            elif len(words) > 1:
-                if "*" in value["classifier"].mod:
+            elif len(trans_data) > 1:
+                if "*" == value["classifier"].modifier:
                     in_key = "*TR1"
                 else:
                     in_key = "TR1"
-                input_card = Input([in_key + " " + parens_contents], BlockType.DATA)
+                input_card = Input(
+                    [in_key + " " + " ".join(trans_data)], BlockType.DATA
+                )
                 self._transform = Transform(input_card, pass_through=True)
                 self._hidden_transform = True
 
