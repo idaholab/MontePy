@@ -141,7 +141,7 @@ class NumberedObjectCollection(ABC):
         :type other_list: list
         :raises NumberConflictError: if these items conflict with existing elements.
         """
-        if not isinstance(other_list, list):
+        if not isinstance(other_list, (list, type(self))):
             raise TypeError("The extending list must be a list")
         for obj in other_list:
             if not isinstance(obj, self._obj_class):
@@ -158,6 +158,8 @@ class NumberedObjectCollection(ABC):
             # if this number is a ghost; remove it.
             else:
                 self.__num_cache.pop(obj.number, None)
+        if isinstance(other_list, type(self)):
+            other_list = other_list.objects
         self._objects.extend(other_list)
         if self._problem:
             for obj in other_list:
