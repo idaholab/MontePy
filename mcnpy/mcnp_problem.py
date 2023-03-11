@@ -301,15 +301,21 @@ class MCNP_Problem:
         """
         surfaces = set(self.surfaces)
         materials = set(self.materials)
+        transforms = set(self.transforms)
         for cell in self.cells:
             surfaces.update(set(cell.surfaces))
+            for surf in cell.surfaces:
+                if surf.transform:
+                    transforms.add(surf.transform)
             if cell.material:
                 materials.add(cell.material)
         surfaces = sorted(list(surfaces))
         materials = sorted(list(materials))
+        transforms = sorted(list(transforms))
         self._surfaces = Surfaces(surfaces)
         self._materials = Materials(materials)
-        self._data_cards = sorted(list(set(self._data_cards + materials)))
+        self._transforms = Transforms(transforms)
+        self._data_cards = sorted(list(set(self._data_cards + materials + transforms)))
 
     def write_to_file(self, new_problem):
         """
