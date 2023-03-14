@@ -150,5 +150,9 @@ class CellParser(MCNP_Parser):
     def number_sequence(self, p):
         sequence = p[0]
         for node in list(p)[1:]:
-            sequence.append(node)
+            if isinstance(node, syntax_node.ListNode):
+                for val in node.nodes:
+                    sequence.append(val)
+            else:
+                sequence.append(node)
         return sequence
