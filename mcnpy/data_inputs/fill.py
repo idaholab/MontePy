@@ -119,9 +119,7 @@ class Fill(CellModifierInput):
                     in_key = "*TR1"
                 else:
                     in_key = "TR1"
-                input_card = Input(
-                    [in_key + " " + " ".join(trans_data)], BlockType.DATA
-                )
+                input_card = Input([in_key + " " + trans_data.format()], BlockType.DATA)
                 self._transform = Transform(input_card, pass_through=True)
                 self._hidden_transform = True
 
