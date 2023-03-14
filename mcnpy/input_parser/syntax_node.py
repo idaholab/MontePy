@@ -459,14 +459,17 @@ class ListNode(SyntaxNodeBase):
             if rstop is None:
                 rstop = len(self.nodes) - 1
             rstop += 1
-        ret = []
+        buffer = []
         allowed_indices = range(rstart, rstop, rstep)
         for i, item in enumerate(self):
             if i in allowed_indices:
-                ret.append(item)
-        if rstep > 0:
-            return ret
-        return ret.reverse()
+                buffer.append(item)
+        ret = ListNode(f"{self.name}_slice")
+        if rstep < 0:
+            buffer = buffer.reverse
+        for val in buffer:
+            ret.append(val)
+        return ret
 
     def remove(self, obj):
         self.nodes.remove(obj)
