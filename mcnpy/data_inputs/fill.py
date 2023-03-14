@@ -101,7 +101,7 @@ class Fill(CellModifierInput):
         if "(" in data.nodes:
             get_universe(value)
             trans_data = value["data"][
-                list(value["data"]).index("(") + 1 : list(value["data"]).index(")")
+                list(value["data"]).index("(") + 1 : list(value["data"]).index(")") - 1
             ]
             if len(trans_data) == 1:
                 try:
