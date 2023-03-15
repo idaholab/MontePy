@@ -128,15 +128,15 @@ class MCNP_Lexer(Lexer):
     def ZAID(self, t):
         return t
 
-    INTERPOLATE = r"\d*I\s"
+    INTERPOLATE = r"\d*I"
 
-    JUMP = r"\d*J\s"
+    JUMP = r"\d*J"
 
-    LOG_INTERPOLATE = r"\d*I?LOG\s"
+    LOG_INTERPOLATE = r"\d*I?LOG"
 
-    MULTIPLY = r"[+\-]?[0-9]+\.?[0-9]*E?[+\-]?[0-9]*M\s"
+    MULTIPLY = r"[+\-]?[0-9]+\.?[0-9]*E?[+\-]?[0-9]*M"
 
-    REPEAT = r"\d*R\s"
+    REPEAT = r"\d*R"
 
     @_(r"[+\-]?[0-9]+\.?[0-9]*E?[+\-]?[0-9]*", r"[+\-]?[0-9]*\.?[0-9]+E?[+\-]?[0-9]*")
     def NUMBER(self, t):
