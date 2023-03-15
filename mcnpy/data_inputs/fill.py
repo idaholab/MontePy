@@ -88,12 +88,16 @@ class Fill(CellModifierInput):
                     val._convert_to_int()
                     assert val.value >= 0
                     self._old_number = val
-                except (AssertionError) as e:
+                except (TypeError, AssertionError) as e:
                     raise ValueError(
-                        f"The fill universe must be a valid integer ≥ 0, {val.value} was given"
+                        f"The fill universe must be a valid integer ≥ 0, {data} was given"
                     )
                 # ensure only one universe is given
-                if len(data) >= 2 and "(" not in data[1]:
+                if (
+                    len(data) >= 2
+                    and isinstance(data[1], ValueNode)
+                    and "(" != data[1].value
+                ):
                     raise ValueError(
                         f"Fill cannot have two universes in this format. {data.format()} given"
                     )
