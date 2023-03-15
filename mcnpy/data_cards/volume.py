@@ -150,6 +150,7 @@ class Volume(CellModifierCard):
         if not self.in_cell_block and self._problem and self._volume:
             self._check_redundant_definitions()
             cells = self._problem.cells
+            self._starting_num_cells = len(cells)
             for i, cell in enumerate(cells):
                 if i >= len(self._volume):
                     return
@@ -186,6 +187,8 @@ class Volume(CellModifierCard):
             mutated = self.mutated
             if not mutated:
                 mutated = self.has_changed_print_style
+                if self._starting_num_cells != len(self._problem.cells):
+                    mutated = True
                 for cell in self._problem.cells:
                     if cell._volume.mutated:
                         mutated = True
