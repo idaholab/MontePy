@@ -156,7 +156,7 @@ class Volume(CellModifierCard):
                     return
                 vol = self._volume[i]
                 if not isinstance(vol, Jump):
-                    cell.volume = vol
+                    cell._volume._volume = vol
 
     def _clear_data(self):
         del self._volume
