@@ -310,13 +310,13 @@ class MCNP_Problem:
                     transforms.add(surf.transform)
             if cell.material:
                 materials.add(cell.material)
-        surfaces = sorted(list(surfaces))
-        materials = sorted(list(materials))
-        transforms = sorted(list(transforms))
+        surfaces = sorted(surfaces)
+        materials = sorted(materials)
+        transforms = sorted(transforms)
         self._surfaces = Surfaces(surfaces)
         self._materials = Materials(materials)
         self._transforms = Transforms(transforms)
-        self._data_cards = sorted(list(set(self._data_cards + materials + transforms)))
+        self._data_cards = sorted(set(self._data_cards + materials + transforms))
 
     def write_to_file(self, new_problem):
         """
