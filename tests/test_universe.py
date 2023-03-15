@@ -82,7 +82,7 @@ class TestUniverseInput(TestCase):
         uni_card = UniverseInput(card)
 
     def test_str(self):
-        card = UniverseInput(in_cell_block=True, key="U", value="5")
+        card = copy.deepcopy(self.universe)
         uni = Universe(5)
         card.universe = uni
         output = str(card)
@@ -93,12 +93,12 @@ class TestUniverseInput(TestCase):
         self.assertIn("Universe : Universe(5)", output)
 
     def test_merge(self):
-        card = UniverseInput(in_cell_block=True, key="U", value="5")
+        card = copy.deepcopy(self.universe)
         with self.assertRaises(MalformedInputError):
             card.merge(card)
 
     def test_universe_setter(self):
-        card = UniverseInput(in_cell_block=True, key="U", value="5")
+        card = copy.deepcopy(self.universe)
         uni = Universe(5)
         card.universe = uni
         self.assertEqual(card.universe, uni)
@@ -106,7 +106,7 @@ class TestUniverseInput(TestCase):
             card.universe = 5
 
     def test_universe_truncate_setter(self):
-        card = UniverseInput(in_cell_block=True, key="U", value="5")
+        card = copy.deepcopy(self.universe)
         self.assertTrue(not card.not_truncated)
         card.not_truncated = True
         self.assertTrue(card.not_truncated)
