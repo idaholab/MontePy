@@ -90,7 +90,7 @@ class MCNP_Parser(Parser, metaclass=MetaBuilder):
     def shortcut_phrase(self, p):
         sequence = p.shortcut_sequence
         if len(p) == 2:
-            sequence.append(p.padding)
+            sequence.nodes[-1].padding = p.padding
         return sequence
 
     @_("NULL", "NULL padding")
