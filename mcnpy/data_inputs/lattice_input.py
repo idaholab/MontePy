@@ -3,6 +3,7 @@ from mcnpy.data_inputs.cell_modifier import CellModifierInput
 from mcnpy.data_inputs.lattice import Lattice
 from mcnpy.errors import *
 from mcnpy.input_parser.mcnp_input import Jump
+from mcnpy.input_parser.syntax_node import ValueNode
 from mcnpy.mcnp_object import MCNP_Object
 
 
@@ -50,15 +51,16 @@ class LatticeInput(CellModifierInput):
                 self._lattice = val
         elif input:
             self._lattice = []
-            words = self.words[1:]
+            words = self.data
             for word in words:
-                if isinstance(word, str):
+                if isinstance(word, ValueNode):
                     try:
-                        value = int(word)
-                        self._lattice.append(Lattice(value))
+                        value = word
+                        value._convert_to_int()
+                        self._lattice.append(Lattice(value.value))
                     except ValueError:
                         raise MalformedInputError(
-                            input_card, f"Cell lattice must be 1 or 2"
+                            input, f"Cell lattice must be 1 or 2. {word} given."
                         )
                 elif isinstance(word, Jump):
                     self._lattice.append(word)
