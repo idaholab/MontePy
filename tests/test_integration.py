@@ -181,9 +181,11 @@ class testFullFileIntegration(TestCase):
         with self.assertRaises(TypeError):
             problem.cells.append(5)
         problem.cells = cells
-        self.assertEqual(problem.cells, cells)
+        self.assertEqual(problem.cells.objects, cells.objects)
         problem.cells = list(cells)
         self.assertEqual(problem.cells[2], cells[2])
+        # test that cell modifiers are still there
+        output = problem.cells._importance.format_for_mcnp_input((6, 2, 0))
 
     def test_problem_test_setter(self):
         problem = copy.copy(self.simple_problem)
