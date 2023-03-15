@@ -298,7 +298,7 @@ class MCNP_Problem:
         internal lists to allow them to be written to file.
 
         .. warning::
-            this does not move transforms and complement cells, and probably others.
+            this does not move complement cells, and probably others.
         """
         surfaces = set(self.surfaces)
         materials = set(self.materials)
