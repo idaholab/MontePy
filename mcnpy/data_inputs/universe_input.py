@@ -167,10 +167,7 @@ class UniverseInput(CellModifierInput):
         del self._universes
 
     def __str__(self):
-        mutated = self.mutated
-        self._mutated = True
         ret = "\n".join(self.format_for_mcnp_input(DEFAULT_VERSION))
-        self._mutated = mutated
         return ret
 
     def __repr__(self):
@@ -202,39 +199,11 @@ class UniverseInput(CellModifierInput):
             number = -number
         return number
 
+    def _update_values(self):
+        pass
+        # TODO
+
     def format_for_mcnp_input(self, mcnp_version):
-        ret = []
-        if self.in_cell_block:
-            if self.universe and self.universe.number != 0:
-                ret.extend(
-                    self.wrap_string_for_mcnp(
-                        f"U={UniverseCard._get_print_number(self.universe.number, self.not_truncated)}",
-                        mcnp_version,
-                        False,
-                    )
-                )
-        else:
-            mutated = self.mutated
-            if not mutated:
-                mutated = self.has_changed_print_style
-                for cell in self._problem.cells:
-                    if cell._universe.mutated:
-                        mutated = True
-                        break
-            if mutated and self._problem.print_in_data_block["U"]:
-                ret = MCNP_Card.format_for_mcnp_input(self, mcnp_version)
-                ret_strs = ["U"]
-                unis = []
-                for cell in self._problem.cells:
-                    unis.append(
-                        UniverseCard._get_print_number(
-                            cell.universe.number, cell.not_truncated
-                        )
-                    )
-                ret_strs.extend(
-                    self.compress_jump_values(self.compress_repeat_values(unis, 1e-1))
-                )
-                ret.extend(self.wrap_words_for_mcnp(ret_strs, mcnp_version, True))
-            else:
-                ret = self._format_for_mcnp_unmutated(mcnp_version)
-        return ret
+        self.validate()
+        self._update_values()
+        return self.wrap_string_for_mcnp(self._tree.format(), mcnp_version, True)
