@@ -44,25 +44,6 @@ class DataInputAbstract(MCNP_Object):
     def allowed_keywords(self):
         return set()
 
-    @property
-    def words(self):
-        """
-        The words of the data input, not parsed.
-
-        :rtype: list
-        """
-        return self._words
-
-    @words.setter
-    def words(self, words):
-        if not isinstance(words, list):
-            raise TypeError("words must be a list")
-        for word in words:
-            if not isinstance(word, str):
-                raise TypeError(f"element in words: {word} is not a string")
-        self._mutated = True
-        self._words = words
-
     @staticmethod
     @abstractmethod
     def _class_prefix():
