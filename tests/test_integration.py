@@ -735,7 +735,7 @@ class testFullFileIntegration(TestCase):
         # test unmutated
         output = problem.cells._universe.format_for_mcnp_input((6, 2, 0))
         print(output)
-        self.assertIn("U 350 2J -1", output)
+        self.assertIn("u 350 2J -1", output)
         universe = problem.universes[350]
         # test mutated
         cell = problem.cells[3]
@@ -960,6 +960,7 @@ class testFullFileIntegration(TestCase):
             problem.write_to_file(out_file)
             found_n = False
             found_p = False
+            found_vol = False
             with open(out_file, "r") as fh:
                 for line in fh:
                     print(line.rstrip())
@@ -967,8 +968,11 @@ class testFullFileIntegration(TestCase):
                         found_n = True
                     if "IMP:P 1 0.5" in line:
                         found_p = True
+                    if "vol NO 2J 1 1.5 J" in line:
+                        found_vol = True
             self.assertTrue(not found_n)
             self.assertTrue(not found_p)
+            self.assertTrue(found_vol)
         finally:
             try:
                 os.remove(out_file)
