@@ -3,8 +3,10 @@ from mcnpy.data_inputs.cell_modifier import CellModifierInput
 from mcnpy.errors import *
 from mcnpy.input_parser.constants import DEFAULT_VERSION
 from mcnpy.input_parser.mcnp_input import Jump
+from mcnpy.input_parser.syntax_node import ValueNode
 from mcnpy.mcnp_object import MCNP_Object
 from mcnpy.universe import Universe
+from mcnpy.utilities import *
 
 
 class UniverseInput(CellModifierInput):
@@ -29,6 +31,8 @@ class UniverseInput(CellModifierInput):
     ):
         self._universe = None
         self._universes = None
+        self._old_numbers = []
+        self._old_number = self._generate_default_node(int, None)
         self._not_truncated = False
         super().__init__(input, comments, in_cell_block, key, value)
         if self.in_cell_block:
@@ -44,14 +48,14 @@ class UniverseInput(CellModifierInput):
                 if not isinstance(node, Jump):
                     try:
                         node.is_negatable_identifier = True
-                        self._universes.append(node)
+                        self._old_numbers.append(node)
                     except ValueError:
                         raise MalformedInputError(
-                            input_card,
-                            f"Cell universes must be an integer ≥ 0. {word} was given",
+                            input,
+                            f"Cell universes must be an integer ≥ 0. {node} was given",
                         )
                 elif isinstance(node, Jump):
-                    self._universes.append(node)
+                    self._old_numbers.append(node)
 
     @staticmethod
     def _class_prefix():
@@ -65,10 +69,20 @@ class UniverseInput(CellModifierInput):
     def _has_classifier():
         return 0
 
-    @property
+    @make_prop_val_node("_old_number")
     def old_number(self):
-        if self.in_cell_block:
-            return self._old_number
+        pass
+
+    @property
+    def old_numbers(self):
+        ret = []
+        for value in self._old_numbers:
+            print("hi", value)
+            if isinstance(value, ValueNode):
+                ret.append(value.value)
+            else:
+                ret.append(value)
+        return ret
 
     @property
     def has_information(self):
