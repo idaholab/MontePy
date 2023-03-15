@@ -86,7 +86,7 @@ class TestUniverseInput(TestCase):
         uni = Universe(5)
         card.universe = uni
         output = str(card)
-        self.assertIn("U=5", output)
+        self.assertIn("u=5", output)
         output = repr(card)
         self.assertIn("UNIVERSE", output)
         self.assertIn("set_in_block: True", output)
