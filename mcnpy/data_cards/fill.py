@@ -526,7 +526,7 @@ class Fill(CellModifierCard):
             if mutated and self._problem.print_in_data_block["FILL"]:
                 has_info = False
                 for cell in self._problem.cells:
-                    if cell._fill.has_information:
+                    if cell.fill.has_information:
                         has_info = True
                         break
                 if has_info:
