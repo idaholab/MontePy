@@ -226,7 +226,7 @@ class TestFill(TestCase):
         cell = Cell(input)
         fill = cell.fill
         self.assertTrue(not fill.transform.is_in_degrees)
-        input = Input(["1 0 -1 fill=1 (3)"], BlockType.CELL)
+        input = Input(["1 0 -1 fill=5 (3)"], BlockType.CELL)
         cell = Cell(input)
         fill = cell.fill
         self.assertTrue(not fill.hidden_transform)
