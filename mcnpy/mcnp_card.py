@@ -299,7 +299,7 @@ class MCNP_Card(ABC):
         """
         Takes a list of strings and jump values and combines repeated jump values.
 
-        e.g., 1 1 J J 3 J becomes 11 2J 3 J
+        e.g., 1 1 J J 3 J becomes 1 1 2J 3 J
 
         :param values: a list of string and Jump values to try to compress
         :type values: list

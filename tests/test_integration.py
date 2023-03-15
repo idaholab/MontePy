@@ -114,6 +114,13 @@ class testFullFileIntegration(TestCase):
             for i, cell in enumerate(self.simple_problem.cells):
                 num = cell.number
                 self.assertEqual(num, test_problem.cells[num].number)
+                for attr in {"universe", "volume"}:
+                    print(f"testing the attribute: {attr}")
+                    gold = getattr(self.simple_problem.cells[num], attr)
+                    test = getattr(test_problem.cells[num], attr)
+                    if attr in {"universe"} and gold is not None:
+                        gold, test = (gold.number, test.number)
+                    self.assertEqual(gold, test)
             for i, surf in enumerate(self.simple_problem.surfaces):
                 num = surf.number
                 self.assertEqual(surf.number, test_problem.surfaces[num].number)
@@ -195,15 +202,24 @@ class testFullFileIntegration(TestCase):
         in_str = "M5 6000.70c 1.0"
         card = mcnpy.input_parser.mcnp_input.Card([in_str], BT.SURFACE)
         mat = mcnpy.data_cards.material.Material(card, None)
+        cell_num = 1000
         cell = mcnpy.Cell()
         cell.material = mat
         cell.surfaces = [surf]
         cell.mass_density = 1.0
+        cell.geometry_logic_string = "-5"
+        cell.number = cell_num
+        cell.universe = problem.universes[350]
         problem.cells.append(cell)
         problem.add_cell_children_to_problem()
         self.assertIn(surf, problem.surfaces)
         self.assertIn(mat, problem.materials)
         self.assertIn(mat, problem.data_cards)
+        for cell_num in [1, cell_num]:
+            print(cell_num)
+            output = problem.cells[cell_num].format_for_mcnp_input((6, 2, 0))
+            print(output)
+            self.assertIn("U=350", "\n".join(output))
 
     def test_problem_mcnp_version_setter(self):
         problem = copy.copy(self.simple_problem)
@@ -484,27 +500,38 @@ class testFullFileIntegration(TestCase):
                 pass
 
     def test_importance_write_cell(self):
-        out_file = "test_import_cell"
-        problem = copy.deepcopy(self.importance_problem)
-        problem.print_in_data_block["imp"] = False
-        try:
-            problem.write_to_file(out_file)
-            found_np = False
-            found_e = False
-            with open(out_file, "r") as fh:
-                for line in fh:
-                    print(line.rstrip())
-                    if "IMP:N,P=1" in line:
-                        found_np = True
-                    elif "IMP:E=1" in line:
-                        found_e = True
-            self.assertTrue(found_np)
-            self.assertTrue(found_e)
-        finally:
+        for state in ["no change", "new unmutated cell", "new mutated cell"]:
+            out_file = "test_import_cell"
+            problem = copy.deepcopy(self.importance_problem)
+            if "new" in state:
+                cell = copy.deepcopy(problem.cells[5])
+                cell.number = 999
+                problem.cells.append(cell)
+            if "new unmutated cell" == state:
+                cell._mutateddd = False
+            problem.print_in_data_block["imp"] = False
             try:
-                os.remove(out_file)
-            except FileNotFoundError:
-                pass
+                problem.write_to_file(out_file)
+                found_np = False
+                found_e = False
+                found_data_np = False
+                with open(out_file, "r") as fh:
+                    for line in fh:
+                        print(line.rstrip())
+                        if "IMP:N,P=1" in line:
+                            found_np = True
+                        elif "IMP:E=1" in line:
+                            found_e = True
+                        elif "imp:e 1" in line.lower():
+                            found_data_np = True
+                self.assertTrue(found_np)
+                self.assertTrue(found_e)
+                self.assertTrue(not found_data_np)
+            finally:
+                try:
+                    os.remove(out_file)
+                except FileNotFoundError:
+                    pass
 
     def test_importance_write_data(self):
         out_file = "test_import_data"
@@ -523,6 +550,45 @@ class testFullFileIntegration(TestCase):
                         found_p = True
             self.assertTrue(found_n)
             self.assertTrue(found_p)
+        finally:
+            try:
+                os.remove(out_file)
+            except FileNotFoundError:
+                pass
+
+    def test_avoid_blank_cell_modifier_write(self):
+        out_file = "test_modifier_data"
+        problem = copy.deepcopy(self.simple_problem)
+        problem.print_in_data_block["U"] = True
+        problem.print_in_data_block["FILL"] = True
+        problem.print_in_data_block["LAT"] = True
+        problem.cells[5].fill.transform = None
+        problem.cells[5].fill.universe = None
+        problem.cells[1].universe = problem.universes[0]
+        for cell in problem.cells:
+            del cell.volume
+        problem.cells.allow_mcnp_volume_calc = True
+        try:
+            problem.write_to_file(out_file)
+            found_universe = False
+            found_lattice = False
+            found_vol = False
+            found_fill = False
+            with open(out_file, "r") as fh:
+                for line in fh:
+                    print(line.rstrip())
+                    if "U " in line:
+                        found_universe = True
+                    if "LAT " in line:
+                        found_lat = True
+                    if "FILL " in line:
+                        found_fill = True
+                    if "VOL " in line:
+                        found_vol = True
+            self.assertTrue(not found_universe)
+            self.assertTrue(not found_lattice)
+            self.assertTrue(not found_vol)
+            self.assertTrue(not found_fill)
         finally:
             try:
                 os.remove(out_file)
@@ -666,13 +732,43 @@ class testFullFileIntegration(TestCase):
         problem = mcnpy.read_input(
             os.path.join("tests", "inputs", "test_universe_data.imcnp")
         )
+        # test unmutated
+        output = problem.cells._universe.format_for_mcnp_input((6, 2, 0))
+        print(output)
+        self.assertIn("u 350 2J -1", output)
         universe = problem.universes[350]
+        # test mutated
         cell = problem.cells[3]
         cell.universe = universe
         cell.not_truncated = True
         output = problem.cells._universe.format_for_mcnp_input((6, 2, 0))
         print(output)
         self.assertIn("U 350 J -350 -1 J", output)
+        # test appending a new mutated cell
+        new_cell = copy.deepcopy(cell)
+        new_cell.number = 1000
+        new_cell.universe = universe
+        new_cell.not_truncated = False
+        problem.cells.append(new_cell)
+        output = problem.cells._universe.format_for_mcnp_input((6, 2, 0))
+        print(output)
+        self.assertIn("U 350 J -350 -1 J 350", output)
+        # test appending a new UNmutated cell
+        problem = mcnpy.read_input(
+            os.path.join("tests", "inputs", "test_universe_data.imcnp")
+        )
+        cell = problem.cells[3]
+        new_cell = copy.deepcopy(cell)
+        new_cell.number = 1000
+        new_cell.universe = universe
+        new_cell.not_truncated = False
+        # lazily implement pulling cell in from other model
+        new_cell._mutated = False
+        new_cell._universe._mutated = False
+        problem.cells.append(new_cell)
+        output = problem.cells._universe.format_for_mcnp_input((6, 2, 0))
+        print(output)
+        self.assertIn("U 350 2J -1 J 350", output)
 
     def test_universe_number_collision(self):
         problem = mcnpy.read_input(
@@ -811,7 +907,7 @@ class testFullFileIntegration(TestCase):
         problem.cells[5].fill.transform = None
         problem.print_in_data_block["FILL"] = True
         output = problem.cells._fill.format_for_mcnp_input((6, 2, 0))
-        self.assertEqual(output, ["     FILL 4J 350"])
+        self.assertEqual(output, ["FILL 4J 350"])
 
     def test_universe_cells_claim(self):
         problem = copy.deepcopy(self.universe_problem)
@@ -852,3 +948,33 @@ class testFullFileIntegration(TestCase):
         cell.geometry_logic_string = ""
         with self.assertRaises(mcnpy.errors.IllegalState):
             cell.validate()
+
+    def test_importance_rewrite(self):
+        out_file = "test_import_data"
+        problem = copy.deepcopy(self.simple_problem)
+        problem.print_in_data_block["imp"] = True
+        try:
+            problem.write_to_file(out_file)
+            problem = mcnpy.read_input(out_file)
+            problem.print_in_data_block["imp"] = False
+            problem.write_to_file(out_file)
+            found_n = False
+            found_p = False
+            found_vol = False
+            with open(out_file, "r") as fh:
+                for line in fh:
+                    print(line.rstrip())
+                    if "IMP:N 1 2R" in line:
+                        found_n = True
+                    if "IMP:P 1 0.5" in line:
+                        found_p = True
+                    if "vol NO 2J 1 1.5 J" in line:
+                        found_vol = True
+            self.assertTrue(not found_n)
+            self.assertTrue(not found_p)
+            self.assertTrue(found_vol)
+        finally:
+            try:
+                os.remove(out_file)
+            except FileNotFoundError:
+                pass
