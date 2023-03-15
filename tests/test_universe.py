@@ -134,15 +134,15 @@ class TestLattice(TestCase):
     def test_lattice_init(self):
         lattice = self.lattice
         self.assertEqual(lattice.lattice, Lattice(1))
-        tree = copy.deepcopy(tree)
+        tree = copy.deepcopy(self.tree)
         with self.assertRaises(ValueError):
             tree["data"].nodes.pop()
             tree["data"].append(syntax_node.ValueNode("hi", str))
             lattice = LatticeInput(in_cell_block=True, key="lat", value=tree)
         with self.assertRaises(ValueError):
             tree["data"].nodes.pop()
-            tree["data"].append(syntax_node.ValueNode("hi", str))
-            lattice = LatticeInput(in_cell_block=True, key="lat", value="5")
+            tree["data"].append(syntax_node.ValueNode("5", float))
+            lattice = LatticeInput(in_cell_block=True, key="lat", value=tree)
         lattices = [1, 2, Jump(), Jump()]
         card = Input(["Lat " + " ".join(list(map(str, lattices)))], BlockType.DATA)
         lattice = LatticeInput(Input)
