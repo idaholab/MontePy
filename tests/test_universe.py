@@ -17,34 +17,55 @@ import numpy as np
 
 
 class TestUniverseInput(TestCase):
+    def setUp(self):
+        list_node = syntax_node.ListNode("numbers")
+        list_node.append(syntax_node.ValueNode("5", float))
+        classifier = syntax_node.ClassifierNode()
+        classifier.prefix = "u"
+        tree = syntax_node.SyntaxNode(
+            "lattice",
+            {
+                "classifier": classifier,
+                "seperator": syntax_node.ValueNode("=", str),
+                "data": list_node,
+            },
+        )
+        self.tree = tree
+        self.universe = UniverseInput(in_cell_block=True, key="u", value=tree)
+
     def test_universe_card_init(self):
-        key = syntax_node.ValueNode("U", str)
-        value = syntax_node.ValueNode("5", float)
-        card = UniverseInput(in_cell_block=True, key=key, value=value)
+        card = self.universe
         self.assertEqual(card.old_number, 5)
         self.assertTrue(not card.not_truncated)
         # test bad float
         with self.assertRaises(ValueError):
-            card = UniverseInput(in_cell_block=True, key="U", value="5.5")
+            tree = copy.deepcopy(self.tree)
+            tree["data"].nodes.pop()
+            tree["data"].append(syntax_node.ValueNode("5.5", float))
+            card = UniverseInput(in_cell_block=True, key="U", value=tree)
 
         # test string
         with self.assertRaises(ValueError):
-            card = UniverseInput(in_cell_block=True, key="U", value="hi")
+            tree["data"].nodes.pop()
+            tree["data"].append(syntax_node.ValueNode("hi", str))
+            card = UniverseInput(in_cell_block=True, key="U", value=tree)
 
         # test negative universe
-        card = UniverseInput(in_cell_block=True, key="U", value="-3")
+        tree["data"].nodes.pop()
+        tree["data"].append(syntax_node.ValueNode("-3", float))
+        card = UniverseInput(in_cell_block=True, key="U", value=tree)
         self.assertEqual(card.old_number, 3)
         self.assertTrue(card.not_truncated)
 
         universes = [1, 2, 3]
         card = Input(["U " + " ".join(list(map(str, universes)))], BlockType.DATA)
         uni_card = UniverseInput(card)
-        self.assertEqual(uni_card._universe, universes)
+        self.assertEqual(uni_card.old_numbers, universes)
 
         # test jump
         card = Input(["U J"], BlockType.DATA)
         uni_card = UniverseInput(card)
-        self.assertEqual(uni_card._universe[0], Jump())
+        self.assertEqual(uni_card.old_numbers[0], Jump())
 
         # test bad float
         with self.assertRaises(MalformedInputError):
