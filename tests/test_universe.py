@@ -144,8 +144,8 @@ class TestLattice(TestCase):
             tree["data"].append(syntax_node.ValueNode("5", float))
             lattice = LatticeInput(in_cell_block=True, key="lat", value=tree)
         lattices = [1, 2, Jump(), Jump()]
-        card = Input(["Lat " + " ".join(list(map(str, lattices)))], BlockType.DATA)
-        lattice = LatticeInput(Input)
+        input = Input(["Lat " + " ".join(list(map(str, lattices)))], BlockType.DATA)
+        lattice = LatticeInput(input)
         for answer, lattice in zip(lattices, lattice._lattice):
             if isinstance(answer, int):
                 self.assertEqual(answer, lattice.value)
