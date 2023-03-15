@@ -298,19 +298,25 @@ class MCNP_Problem:
         internal lists to allow them to be written to file.
 
         .. warning::
-            this does not move transforms and complement cells, and probably others.
+            this does not move complement cells, and probably others.
         """
         surfaces = set(self.surfaces)
         materials = set(self.materials)
+        transforms = set(self.transforms)
         for cell in self.cells:
             surfaces.update(set(cell.surfaces))
+            for surf in cell.surfaces:
+                if surf.transform:
+                    transforms.add(surf.transform)
             if cell.material:
                 materials.add(cell.material)
-        surfaces = sorted(list(surfaces))
-        materials = sorted(list(materials))
+        surfaces = sorted(surfaces)
+        materials = sorted(materials)
+        transforms = sorted(transforms)
         self._surfaces = Surfaces(surfaces)
         self._materials = Materials(materials)
-        self._data_cards = sorted(list(set(self._data_cards + materials)))
+        self._transforms = Transforms(transforms)
+        self._data_cards = sorted(set(self._data_cards + materials + transforms))
 
     def write_to_file(self, new_problem):
         """
