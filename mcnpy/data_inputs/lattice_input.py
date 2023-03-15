@@ -42,11 +42,12 @@ class LatticeInput(CellModifierInput):
         if self.in_cell_block:
             if key:
                 try:
-                    value = int(value)
-                    value = Lattice(value)
+                    val = value["data"][0]
+                    val._convert_to_int()
+                    val = Lattice(val.value)
                 except (ValueError) as e:
                     raise ValueError("Cell Lattice must be 1 or 2")
-                self._lattice = value
+                self._lattice = val
         elif input:
             self._lattice = []
             words = self.words[1:]
