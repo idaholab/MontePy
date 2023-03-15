@@ -182,6 +182,9 @@ class MCNP_Parser(Parser, metaclass=MetaBuilder):
         classifier.padding = p.padding
         return classifier
 
-    @_('"*"')
+    @_('"*"', "PARTICLE_SPECIAL")
     def modifier(self, p):
+        if hasattr(p, "PARTICLE_SPECIAL"):
+            if p.PARTICLE_SPECIAL == "*":
+                return "*"
         return p[0]
