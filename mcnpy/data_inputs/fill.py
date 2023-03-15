@@ -116,7 +116,8 @@ class Fill(CellModifierInput):
                         "Transform number must be a positive integer. {words[0]} was given."
                     )
             elif len(trans_data) > 1:
-                if "*" == value["classifier"].modifier:
+                modifier = value["classifier"].modifier
+                if modifier and "*" in modifier.value:
                     in_key = "*TR1"
                 else:
                     in_key = "TR1"

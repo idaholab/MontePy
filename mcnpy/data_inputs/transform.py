@@ -32,7 +32,8 @@ class Transform(data_input.DataInputAbstract, Numbered_MCNP_Object):
             i = 0
             if len(words) < 3:
                 raise MalformedInputError(input, f"Not enough entries were provided")
-            if self.prefix_modifier and "*" in self.prefix_modifier:
+            modifier = self._classifier.modifier
+            if modifier and "*" in modifier.value:
                 self._is_in_degrees = True
             else:
                 self._is_in_degrees = False
