@@ -7,6 +7,7 @@ from mcnpy.input_parser.mcnp_input import Input, Jump
 from mcnpy.input_parser.syntax_node import ValueNode
 from mcnpy.mcnp_object import MCNP_Object
 from mcnpy.universe import Universe
+from mcnpy.utilities import *
 import numpy as np
 
 
@@ -287,7 +288,7 @@ class Fill(CellModifierInput):
         self._multi_universe = value
         self._mutated = True
 
-    @property
+    @make_prop_val_node("_old_number")
     def old_universe_number(self):
         """
         The number of the universe that this is filled by taken from the input.
@@ -295,7 +296,7 @@ class Fill(CellModifierInput):
         :returns: the old universe number
         :type: int
         """
-        return self._old_number
+        pass
 
     @property
     def old_universe_numbers(self):
