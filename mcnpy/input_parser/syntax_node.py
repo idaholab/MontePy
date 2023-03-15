@@ -217,7 +217,7 @@ class ValueNode(SyntaxNodeBase):
 
     def _convert_to_int(self):
         self._type = int
-        self._value = int(self._value)
+        self._value = int(self._token)
         self._formatter = self._FORMATTERS[int].copy()
 
     @property
