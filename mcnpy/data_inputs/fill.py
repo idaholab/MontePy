@@ -358,7 +358,7 @@ class Fill(CellModifierInput):
         self._mutated = True
         self._transform = None
 
-    @property
+    @make_prop_val_node("_old_transform_number")
     def old_transform_number(self):
         """
         The number of the transform specified in the input.
@@ -366,7 +366,7 @@ class Fill(CellModifierInput):
         :returns: the original number for the transform from the input.
         :rtype: int
         """
-        return self._old_transform_number
+        pass
 
     def merge(self, other):
         raise MalformedInputError(
