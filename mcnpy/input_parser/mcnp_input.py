@@ -303,7 +303,7 @@ class ReadInput(Input):
 
         :rtype: str
         """
-        return self._parameters["file"]
+        return self._parameters["file"]["data"].value
 
     def __str__(self):
         return f"READ INPUT: Block_Type: {self.block_type}"
