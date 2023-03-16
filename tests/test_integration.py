@@ -351,7 +351,7 @@ class testFullFileIntegration(TestCase):
             "C ",
             "1 1 20",
             "         -1000",
-            "     imp:n,p=1 U=350 trcl=5",
+            "        imp:n,p=1 U=350 trcl=5",
         ]
         self.assertEqual(cell.format_for_mcnp_input((6, 2, 0)), answer)
         # test surface change

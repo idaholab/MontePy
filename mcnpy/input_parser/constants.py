@@ -19,6 +19,11 @@ DEFAULT_VERSION = (6, 2, 0)
 The default version of MCNP to use.
 """
 
+TABSIZE = 8
+"""
+How many spaces a tab is expand to.
+"""
+
 
 def get_max_line_length(mcnp_version=DEFAULT_VERSION):
     """
