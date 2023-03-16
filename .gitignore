@@ -9,3 +9,5 @@ dist/*
 doc/build/*
 doc/source/api/*
 .coverage
+.idea/
+.ipynb_checkpoints/

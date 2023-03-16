@@ -402,6 +402,7 @@ class Fill(CellModifierInput):
                     self._universe = get_universe(self.old_universe_number)
         else:
             if not self.set_in_cell_block and self.old_universe_number:
+                self._starting_num_cells = len(self._problem.cells)
                 for cell, old_number in zip(
                     self._problem.cells, self.old_universe_number
                 ):
@@ -529,30 +530,41 @@ class Fill(CellModifierInput):
                     ret.extend(self.wrap_string_for_mcnp(line, mcnp_version, False))
         else:
             mutated = self.has_changed_print_style
+            if self._starting_num_cells != len(self._problem.cells):
+                mutated = True
             for cell in self._problem.cells:
                 if cell.fill.mutated:
                     mutated = True
                     break
             if mutated and self._problem.print_in_data_block["FILL"]:
-                ret = MCNP_Object.format_for_mcnp_input(self, mcnp_version)
-                words = ["FILL"]
-                universes = []
+                has_info = False
                 for cell in self._problem.cells:
-                    fill = cell.fill
-                    if fill.transform or fill.multiple_universes:
-                        raise ValueError(
-                            f"Fill can not be in the data block if"
-                            " fill transforms and other complex inputs are used."
-                            f" Cell {cell.number} used these"
+                    if cell.fill.has_information:
+                        has_info = True
+                        break
+                if has_info:
+                    ret = MCNP_Card.format_for_mcnp_input(self, mcnp_version)
+                    words = ["FILL"]
+                    universes = []
+                    for cell in self._problem.cells:
+                        fill = cell.fill
+                        if fill.transform or fill.multiple_universes:
+                            raise ValueError(
+                                f"Fill can not be in the data block if"
+                                " fill transforms and other complex inputs are used."
+                                f" Cell {cell.number} used these"
+                            )
+                        if fill.universe:
+                            universes.append(fill.universe.number)
+                        else:
+                            universes.append(Jump())
+                    words.extend(
+                        self.compress_jump_values(
+                            self.compress_repeat_values(universes, 1e-1)
                         )
-                    if fill.universe:
-                        universes.append(fill.universe.number)
-                    else:
-                        universes.append(Jump())
-                words.extend(
-                    self.compress_jump_values(
-                        self.compress_repeat_values(universes, 1e-1)
                     )
-                )
-                ret += self.wrap_words_for_mcnp(words, mcnp_version, False)
+                    ret += self.wrap_words_for_mcnp(words, mcnp_version, True)
+            # if not mutated
+            elif self._problem.print_in_data_block["FILL"]:
+                ret = self._format_for_mcnp_unmutated(mcnp_version)
         return ret

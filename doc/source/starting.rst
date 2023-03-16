@@ -43,7 +43,7 @@ However any objects (e.g., two cells) that were changed (i.e., mutated) will hav
 and MCNPy will decide how to format that object in the input file.
 
 .. note::
-    This behavior will change with version 0.1.5.
+    This behavior will change with version 0.2.0.
     The main scope of this release will be fundamental design change that will preserve all user formatting.
 
 For example say we have this simple MCNP input file (saved as foo.imcnp) ::
@@ -141,7 +141,7 @@ In general the philosophy of MCNPy is: meaning first; formatting second.
 Its first priority is to preserve the semantic meaning and discard complex formatting for now.
 
 .. note::
-   This paradigm will change dramatically with release 0.1.5.
+   This paradigm will change dramatically with release 0.2.0.
 
 Information Kept
 ^^^^^^^^^^^^^^^^

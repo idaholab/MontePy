@@ -141,6 +141,44 @@ class testDataInputClass(TestCase):
                 },
             )
             card = volume.Volume(key="VoL", value=node, in_cell_block=True)
+    # TODO merge manually
+    """
+    def test_volume_init_data(self):
+        in_str = "VOL 1 1 2J 0"
+        input_card = Card([in_str], BlockType.DATA)
+        vol_card = parse_data(input_card)
+        answers = [1.0, 1.0, Jump, Jump, 0.0]
+        for i, vol in enumerate(vol_card._volume):
+            if isinstance(answers[i], float):
+                self.assertAlmostEqual(vol, answers[i])
+            else:
+                self.assertIsInstance(vol, Jump)
+        # test starting jump
+        in_str = "VOL 2J 1 0"
+        input_card = Card([in_str], BlockType.DATA)
+        vol_card = parse_data(input_card)
+        answers = [Jump, Jump, 1.0, 0.0]
+        for i, vol in enumerate(vol_card._volume):
+            if isinstance(answers[i], float):
+                self.assertAlmostEqual(vol, answers[i])
+            else:
+                self.assertIsInstance(vol, Jump)
+        # tests starting no
+        in_str = "VOL NO 1 1 2J 0"
+        input_card = Card([in_str], BlockType.DATA)
+        vol_card = parse_data(input_card)
+        self.assertTrue(not vol_card.is_mcnp_calculated)
+        # invalid number
+        in_str = "VOL NO s 1 2J 0"
+        input_card = Card([in_str], BlockType.DATA)
+        with self.assertRaises(MalformedInputError):
+            vol_card = parse_data(input_card)
+        # negative volume
+        in_str = "VOL NO -1 1 2J 0"
+        input_card = Card([in_str], BlockType.DATA)
+        with self.assertRaises(MalformedInputError):
+            vol_card = parse_data(input_card)
+    """
 
     def test_volume_init_data(self):
         in_str = "VOL 1 1 2J 0"

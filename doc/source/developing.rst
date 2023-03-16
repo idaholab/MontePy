@@ -5,6 +5,97 @@ MCNPy can be thought of as having two layers: the syntax, and the semantic layer
 The syntax layers handle the boring syntax things: like multi-line cards, and comments, etc.
 The semantic layer takes this information and makes sense of it, like what the material number in a cell card is.
 
+Contributing
+------------
+
+Here is a getting started guide to contributing. 
+If you have any questions Micah and Travis are available to give input and answer your questions.
+
+Setting up and Typical Development Workflow
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+#. Clone the repository.
+
+#. Install the required packages. 
+   MCNPy comes with two requirements files. 
+   One (``requirements/common.txt``) is for packages MCNPy depends on.
+   The other (``requirements/dev.txt``) is for packages that are generally necessary for developing.
+   To install these simply run: 
+   
+   ``pip install -r requirements/dev.txt``
+
+#. Tie your work to an issue. All work on MCNPy is tracked through issues. 
+   If you are working on a new feature or bug that is not covered by an issue, please file an issue first.
+
+#. Work on a new branch. The branches: ``develop`` and ``main`` are protected. 
+   All new code must be accepted through a merge request. 
+   The easiest way to make this branch is to "create merge request" from gitlab.
+   This will create a new branch (though with an unwieldy name) that you can checkout and work on.
+
+#. Run the test cases. MCNPy relies heavily on its over 200 tests for the development process.
+   These are configured so if you run: ``python -m pytest`` from the root of the git repository 
+   all tests will be found and ran.
+
+#. Develop test cases. This is especially important if you are working on a bug fix.
+   A merge request will not be accepted until it can be shown that a test case can replicate the 
+   bug and does in deed fail without the bug fix in place.
+   To achieve this, it is recommended that you commit the test first, and push it to gitlab.
+   This way there will be a record of the CI pipeline failing that can be quickly reviewed as part of the merge request.
+
+   Though MCNPy uses ``pytest`` for running the tests,
+   it actually uses `unittest <https://docs.python.org/3/library/unittest.html>`_ for setting up all test fixtures. 
+   Generally unit tests of new features go in the test file with the closest class name. 
+   Integration tests have all been dumped in ``tests/test_integration.py``. 
+   For integration tests you can likely use the ``tests/inputs/test.imcnp`` input file.
+   This is pre-loaded as an :class:`~mcnpy.mcnp_problem.MCNP_Problem` stored as: ``self.simple_problem``.
+   If you need to mutate it at all you must first make a ``copy.deepcopy`` of it.
+
+#. Write the code.
+
+#. Document all new classes and functions. MCNPy uses `Sphinx docstrings <https://sphinx-rtd-tutorial.readthedocs.io/en/latest/docstrings.html>`_.
+
+#. Format the code with ``black``. You can simply run ``black mcnpy tests``
+
+#. Add more test cases as necessary. The merge request should show you the code coverage.
+   The general goal is near 100\% coverage.
+
+#. Update the documentation. Read the "Getting Started" guide and the "Developer's Guide", and see if any information there should be updated.
+   If you expect the feature to be commonly used it should be mentioned in the getting started guide.
+   Otherwise just the docstrings may suffice.
+   Another option is to write an example in the "Tips and Tricks" guide.
+
+#. Update the version, and authors as necessary. The version is stored in ``mcnpy/__init__.py``. See the version numbering system described in ``README.md``.
+   The authors information is in ``AUTHORS`` and ``mcnpy/__init__.py``. 
+
+#. Start a merge request review. Generally Micah or Travis are good reviewers.
+
+
+Deploy Process
+^^^^^^^^^^^^^^
+MCNPy currently does not use a continuous deploy process.
+Rather changes are staged on the ``develop`` branch prior to a release.
+Both ``develop`` and ``main`` are protected branches.
+``main`` should only be used for releases.
+If someone clones ``main`` they will get the most recent official release.
+Only a select few core-developers are allowed to approve a merge to ``main`` and therefore a new release.
+``develop`` should be production quality code that has been approved for release,
+but is waiting on the next release.
+So all new features and bug fixes must first be merged onto ``develop``. 
+
+The expectation is that features once merged onto ``develop`` are stable,
+well tested, well documented, and well-formatted.
+
+Merge Checklist
+^^^^^^^^^^^^^^^
+
+Here are some common issues to check before approving a merge request.
+
+#. If this is a bug fix did the new testing fail without the fix?
+#. Was the version number incremented?
+#. Were the authors and credits properly updated?
+#. Check also the authors in ``mcnpy/__init__.py``
+#. Is this merge request tied to an issue?
+
 Package Structure
 -----------------
 
@@ -58,7 +149,7 @@ Style Guide
 #. Spaces for indentation, tabs for alignment. Use spaces to build python syntax (4 spaces per level), and tabs for aligning text inside of docstrings.
 
 .. warning::
-   In version 0.1.5 much of the developer infrastructure will significantly change.
+   In version 0.2.0 much of the developer infrastructure will significantly change.
    This is to convert to using true parsers, and to build syntax trees for all inputs.
    It is suggested you work with Micah if you are adding new features prior to this release.
 
@@ -87,7 +178,7 @@ self.words.
 New classes need to support "from scratch" creation e.g., ``cell = Cell()``.
 
 .. note::
-   This system will be changed drastically with 0.1.5.
+   This system will be changed drastically with 0.2.0.
 
 How to __str__ vs __repr__
 """"""""""""""""""""""""""""
@@ -118,7 +209,7 @@ This is handled by ``self._mutated``.
 Whenever an object parameter is set the setter must set ``self._mutated=True``. 
 
 .. note::
-   This system will be removed in 0.1.5
+   This system will be removed in 0.2.0
 
 Format for MCNP Input
 """""""""""""""""""""

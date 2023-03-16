@@ -134,6 +134,7 @@ class Importance(CellModifierInput):
     def push_to_cells(self):
         if self._problem and not self.in_cell_block:
             self._check_redundant_definitions()
+            self._starting_num_cells = len(self._problem.cells)
             for particle in self._particle_importances:
                 for i, cell in enumerate(self._problem.cells):
                     value = self._particle_importances[particle][i]
@@ -212,30 +213,40 @@ class Importance(CellModifierInput):
             mutated = self.mutated
             if not mutated:
                 mutated = self.has_changed_print_style
+                if self._starting_num_cells != len(self._problem.cells):
+                    mutated = True
                 for cell in self._problem.cells:
                     if cell.importance.mutated:
                         mutated = True
                         break
             if mutated and self._problem.print_in_data_block["IMP"]:
-                ret = MCNP_Object.format_for_mcnp_input(self, mcnp_version)
-                part_value = {}
-                for particle in sorted(self._problem.mode):
-                    value = tuple(self._format_data_input_particle(particle))
-                    if value in part_value:
-                        part_value[value].append(particle)
-                    else:
-                        part_value[value] = [particle]
-                for value, particles in part_value.items():
-                    particles_short = ",".join(
-                        [part.value for part in sorted(particles)]
-                    )
-                    ret.extend(
-                        self.wrap_words_for_mcnp(
-                            [f"IMP:{particles_short}"] + list(value), mcnp_version, True
+                has_info = False
+                for cell in self._problem.cells:
+                    if cell._importance.has_information:
+                        has_info = True
+                        break
+                if has_info:
+                    ret = MCNP_Card.format_for_mcnp_input(self, mcnp_version)
+                    part_value = {}
+                    for particle in sorted(self._problem.mode):
+                        value = tuple(self._format_data_input_particle(particle))
+                        if value in part_value:
+                            part_value[value].append(particle)
+                        else:
+                            part_value[value] = [particle]
+                    for value, particles in part_value.items():
+                        particles_short = ",".join(
+                            [part.value for part in sorted(particles)]
                         )
-                    )
+                        ret.extend(
+                            self.wrap_words_for_mcnp(
+                                [f"IMP:{particles_short}"] + list(value),
+                                mcnp_version,
+                                True,
+                            )
+                        )
             # if not mutated
-            else:
+            elif self._problem.print_in_data_block["IMP"]:
                 ret = self._format_for_mcnp_unmutated(mcnp_version)
         return ret
 

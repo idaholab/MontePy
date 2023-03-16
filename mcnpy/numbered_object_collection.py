@@ -125,6 +125,13 @@ class NumberedObjectCollection(ABC):
         self.__num_cache.pop(obj.number, None)
         return obj
 
+    def clear(self):
+        """
+        Removes all objects from this collection.
+        """
+        self._objects.clear()
+        self.__num_cache.clear()
+
     def extend(self, other_list):
         """
         Extends this collection with another list.
@@ -133,7 +140,7 @@ class NumberedObjectCollection(ABC):
         :type other_list: list
         :raises NumberConflictError: if these items conflict with existing elements.
         """
-        if not isinstance(other_list, list):
+        if not isinstance(other_list, (list, type(self))):
             raise TypeError("The extending list must be a list")
         for obj in other_list:
             if not isinstance(obj, self._obj_class):

@@ -333,6 +333,15 @@ bar
         with self.assertRaises(TypeError):
             bool(jump)
 
+    def test_jump_and_a_hop(self):
+        jump = Jump()
+        # first you need to hop
+        self.assertEqual("j", jump.lower())
+        # then you need to skip
+        self.assertEqual("Jump", jump.title())
+        # before you can jump
+        self.assertEqual("J", jump.upper())
+
 
 class DataInputTestFixture(mcnpy.data_inputs.data_input.DataInputAbstract):
     def __init__(self, input_card=None, comment=None):

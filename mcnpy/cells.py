@@ -13,7 +13,26 @@ class Cells(NumberedObjectCollection):
     """
 
     def __init__(self, cells=None, problem=None):
+        self.__blank_modifiers = set()
         super().__init__(mcnpy.Cell, cells, problem)
+        self.__setup_blank_cell_modifiers()
+
+    def __setup_blank_cell_modifiers(self, problem=None):
+        cards_to_always_update = {"_universe", "_fill"}
+        cards_to_property = mcnpy.Cell._CARDS_TO_PROPERTY
+        for card_class, (attr, _) in cards_to_property.items():
+            if not hasattr(self, attr):
+                card = card_class()
+                self.__blank_modifiers.add(attr)
+                setattr(self, attr, card)
+            else:
+                card = getattr(self, attr)
+            if problem is not None:
+                card.link_to_problem(problem)
+                if attr not in self.__blank_modifiers or attr in cards_to_always_update:
+                    card.push_to_cells()
+                    card._clear_data()
+            card._mutated = False
 
     def set_equal_importance(self, importance, vacuum_cells=tuple()):
         """
@@ -59,10 +78,14 @@ class Cells(NumberedObjectCollection):
             raise TypeError("allow_mcnp_volume_calc must be set to a bool")
         self._volume.is_mcnp_calculated = value
 
-    def update_pointers(self, cells, materials, surfaces, data_inputs, problem):
-        inputs_to_property = mcnpy.Cell._INPUTS_TO_PROPERTY
-        inputs_to_always_update = {"_universe", "_fill"}
-        inputs_loaded = set()
+    def update_pointers(self, cells, materials, surfaces, data_cards, problem):
+        cards_to_property = mcnpy.Cell._CARDS_TO_PROPERTY
+        cards_to_always_update = {"_universe", "_fill"}
+        cards_loaded = set()
+        # start fresh for loading cell modifiers
+        for attr in self.__blank_modifiers:
+            delattr(self, attr)
+        self.__blank_modifiers = set()
         # make a copy of the list
         for input in list(data_inputs):
             if type(input) in inputs_to_property:
@@ -83,20 +106,7 @@ class Cells(NumberedObjectCollection):
                     inputs_loaded.add(type(input))
         for cell in self:
             cell.update_pointers(cells, materials, surfaces)
-        for attr, _ in inputs_to_property.values():
-            prop = getattr(self, attr, None)
-            if prop is None:
-                continue
-            prop.push_to_cells()
-            prop._clear_data()
-        for input_class, (attr, _) in inputs_to_property.items():
-            if not hasattr(self, attr):
-                input = input_class()
-                input.link_to_problem(problem)
-                if attr in inputs_to_always_update:
-                    input.push_to_cells()
-                input._mutated = False
-                setattr(self, attr, input)
+        self.__setup_blank_cell_modifiers(problem)
 
     def _run_children_format_for_mcnp(self, data_inputs, mcnp_version):
         ret = []
