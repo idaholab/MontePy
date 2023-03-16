@@ -108,7 +108,6 @@ def read_data(fh, mcnp_version, block_type=None, recursion=False):
     block_counter = 0
     if block_type is None:
         block_type = BlockType.CELL
-    is_in_comment = False
     continue_input = False
     has_non_comments = False
     input_raw_lines = []
@@ -117,8 +116,6 @@ def read_data(fh, mcnp_version, block_type=None, recursion=False):
         nonlocal block_counter, block_type
         if len(input_raw_lines) > 0:
             yield from flush_input()
-        if is_in_comment and comment_raw_lines:
-            yield from flush_comment()
         block_counter += 1
         if block_counter < 3:
             block_type = BlockType(block_counter)
@@ -144,10 +141,12 @@ def read_data(fh, mcnp_version, block_type=None, recursion=False):
         return blank_comment or non_blank_comment
 
     for line in fh:
+        line = line.expandtabs(TABSIZE)
         line_is_comment = is_comment(line)
         # transition to next block with blank line
         if not line.strip():
             yield from flush_block()
+            has_non_comments = False
             continue
         # if a new input
         if (

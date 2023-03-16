@@ -164,6 +164,8 @@ bar
         input_order = [mcnp_in.Message, mcnp_in.Title]
         input_order += [mcnp_in.Input] * 17
         for i, input in enumerate(generator):
+            print(input.input_lines)
+            print(input_order[i])
             self.assertIsInstance(input, input_order[i])
 
     def testReadInputWithRead(self):
