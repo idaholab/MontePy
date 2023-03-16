@@ -158,15 +158,11 @@ bar
             self.assertEqual(answer[i], line)
 
     def testReadInput(self):
+        # TODO ensure comments are properly glued to right input
         generator = input_syntax_reader.read_input_syntax("tests/inputs/test.imcnp")
         mcnp_in = mcnpy.input_parser.mcnp_input
-        input_order = [mcnp_in.Message, mcnp_in.Title, mcnp_in.Comment]
-        input_order += [mcnp_in.Input] * 5 + [mcnp_in.Comment] * 2
-        input_order += [mcnp_in.Input] * 3 + [mcnp_in.Comment]
-        for i in range(2):
-            input_order += [mcnp_in.Input, mcnp_in.Comment]
-        input_order += [mcnp_in.Input, mcnp_in.Input, mcnp_in.Comment]
-        input_order += [mcnp_in.Input] * 5
+        input_order = [mcnp_in.Message, mcnp_in.Title]
+        input_order += [mcnp_in.Input] * 17
         for i, input in enumerate(generator):
             self.assertIsInstance(input, input_order[i])
 

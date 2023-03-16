@@ -77,7 +77,6 @@ class UniverseInput(CellModifierInput):
     def old_numbers(self):
         ret = []
         for value in self._old_numbers:
-            print("hi", value)
             if isinstance(value, ValueNode):
                 ret.append(value.value)
             else:
