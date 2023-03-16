@@ -19,7 +19,7 @@ class Cells(NumberedObjectCollection):
 
     def __setup_blank_cell_modifiers(self, problem=None):
         cards_to_always_update = {"_universe", "_fill"}
-        cards_to_property = mcnpy.Cell._CARDS_TO_PROPERTY
+        cards_to_property = mcnpy.Cell._INPUTS_TO_PROPERTY
         for card_class, (attr, _) in cards_to_property.items():
             if not hasattr(self, attr):
                 card = card_class()
@@ -79,7 +79,7 @@ class Cells(NumberedObjectCollection):
         self._volume.is_mcnp_calculated = value
 
     def update_pointers(self, cells, materials, surfaces, data_cards, problem):
-        cards_to_property = mcnpy.Cell._CARDS_TO_PROPERTY
+        cards_to_property = mcnpy.Cell._INPUTS_TO_PROPERTY
         cards_to_always_update = {"_universe", "_fill"}
         cards_loaded = set()
         # start fresh for loading cell modifiers
