@@ -175,9 +175,8 @@ bar
         next(generator)  # skip title
         next(generator)  # skip read none
         card = next(generator)
-        answer = ["1", "0", "-1"]
-        for i, word in enumerate(card.words):
-            self.assertEqual(answer[i], word)
+        answer = ["1 0 -1"]
+        self.assertEqual(answer, card.input_lines)
 
     def testReadInputWithVertMode(self):
         generator = input_syntax_reader.read_input_syntax(
