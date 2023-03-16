@@ -114,6 +114,7 @@ class LatticeCard(CellModifierCard):
 
     def push_to_cells(self):
         if self._problem and not self.in_cell_block:
+            self._starting_num_cells = len(self._problem.cells)
             cells = self._problem.cells
             if self._lattice:
                 self._check_redundant_definitions()
@@ -157,25 +158,33 @@ class LatticeCard(CellModifierCard):
             mutated = self.mutated
             if not mutated:
                 mutated = self.has_changed_print_style
+                if self._starting_num_cells != len(self._problem.cells):
+                    mutated = True
                 for cell in self._problem.cells:
                     if cell._lattice.mutated:
                         mutated = True
                         break
             if mutated and self._problem.print_in_data_block["LAT"]:
-                ret = MCNP_Card.format_for_mcnp_input(self, mcnp_version)
-                ret_strs = ["LAT"]
-                lattices = []
+                has_info = False
                 for cell in self._problem.cells:
-                    if cell.lattice:
-                        lattices.append(cell.lattice.value)
-                    else:
-                        lattices.append(Jump())
-                ret_strs.extend(
-                    self.compress_jump_values(
-                        self.compress_repeat_values(lattices, 1e-1)
+                    if cell._lattice.has_information:
+                        has_info = True
+                        break
+                if has_info:
+                    ret = MCNP_Card.format_for_mcnp_input(self, mcnp_version)
+                    ret_strs = ["LAT"]
+                    lattices = []
+                    for cell in self._problem.cells:
+                        if cell.lattice:
+                            lattices.append(cell.lattice.value)
+                        else:
+                            lattices.append(Jump())
+                    ret_strs.extend(
+                        self.compress_jump_values(
+                            self.compress_repeat_values(lattices, 1e-1)
+                        )
                     )
-                )
-                ret.extend(self.wrap_words_for_mcnp(ret_strs, mcnp_version, True))
-            else:
+                    ret.extend(self.wrap_words_for_mcnp(ret_strs, mcnp_version, True))
+            elif self._problem.print_in_data_block["LAT"]:
                 ret = self._format_for_mcnp_unmutated(mcnp_version)
         return ret

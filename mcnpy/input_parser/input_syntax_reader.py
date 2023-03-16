@@ -160,6 +160,7 @@ def read_data(fh, mcnp_version, block_type=None, recursion=False):
             is_in_comment = True
         # if it's part of a card
         else:
+            line = line.expandtabs(TABSIZE)
             # if a new card
             if (
                 line[0:BLANK_SPACE_CONTINUE].strip()

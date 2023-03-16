@@ -133,6 +133,17 @@ class testDataCardClass(TestCase):
                 self.assertAlmostEqual(vol, answers[i])
             else:
                 self.assertIsInstance(vol, Jump)
+        # test starting jump
+        in_str = "VOL 2J 1 0"
+        input_card = Card([in_str], BlockType.DATA)
+        vol_card = parse_data(input_card)
+        answers = [Jump, Jump, 1.0, 0.0]
+        for i, vol in enumerate(vol_card._volume):
+            if isinstance(answers[i], float):
+                self.assertAlmostEqual(vol, answers[i])
+            else:
+                self.assertIsInstance(vol, Jump)
+        # tests starting no
         in_str = "VOL NO 1 1 2J 0"
         input_card = Card([in_str], BlockType.DATA)
         vol_card = parse_data(input_card)

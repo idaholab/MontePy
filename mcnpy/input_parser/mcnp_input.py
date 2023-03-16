@@ -36,6 +36,30 @@ class Jump:
     def __eq__(self, other):
         return type(self) == type(other)
 
+    def lower(self):
+        """
+        Hop.
+
+        :rtype: str
+        """
+        return "j"
+
+    def title(self):
+        """
+        Skip.
+
+        :rtype: str
+        """
+        return "Jump"
+
+    def upper(self):
+        """
+        Jump.
+
+        :rtype: str
+        """
+        return "J"
+
 
 class MCNP_Input(ABC):
     """
