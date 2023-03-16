@@ -48,7 +48,8 @@ test title
         card = ReadInput(["Read file=hi.imcnp"], BlockType.CELL)
         self.assertEqual(str(card), "READ INPUT: Block_Type: BlockType.CELL")
         self.assertEqual(
-            repr(card), "READ INPUT: BlockType.CELL: ['Read', 'file=hi.imcnp']"
+            repr(card),
+            "READ INPUT: BlockType.CELL: ['Read file=hi.imcnp'] File: hi.imcnp",
         )
 
     def testTitleFinder(self):

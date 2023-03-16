@@ -309,7 +309,9 @@ class ReadInput(Input):
         return f"READ INPUT: Block_Type: {self.block_type}"
 
     def __repr__(self):
-        return f"READ INPUT: {self._block_type}: {self._tree.nodes}"
+        return (
+            f"READ INPUT: {self._block_type}: {self.input_lines} File: {self.file_name}"
+        )
 
 
 class Comment(ParsingNode):
