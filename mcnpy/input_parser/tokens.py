@@ -128,15 +128,13 @@ class MCNP_Lexer(Lexer):
     def ZAID(self, t):
         return t
 
-    INTERPOLATE = r"\d*I"
-
-    JUMP = r"\d*J"
-
-    LOG_INTERPOLATE = r"\d*I?LOG"
-
-    MULTIPLY = r"[+\-]?[0-9]+\.?[0-9]*E?[+\-]?[0-9]*M"
-
-    REPEAT = r"\d*R"
+    @_(r"^[+\-]?[0-9]+\.?[0-9]*E?[+\-]?[0-9]*[a-z\./]+")
+    def TEXT(self, t):
+        if update := self._parse_shortcut(t):
+            return t
+        if t.value.lower() in self._KEYWORDS:
+            t.type = "KEYWORD"
+        return t
 
     @_(r"[+\-]?[0-9]+\.?[0-9]*E?[+\-]?[0-9]*", r"[+\-]?[0-9]*\.?[0-9]+E?[+\-]?[0-9]*")
     def NUMBER(self, t):
@@ -153,11 +151,29 @@ class MCNP_Lexer(Lexer):
 
     THERMAL_LAW = r"[a-z/]+\.\d+[a-z]"
 
-    @_(r"[a-z\./]+")
-    def TEXT(self, t):
-        if t.value.lower() in self._KEYWORDS:
-            t.type = "KEYWORD"
-        return t
+    _EXPRESSIONS = {
+        "INTERPOLATE": re.compile(r"^\d*I$", re.I),
+        "JUMP": re.compile(r"^\d*J$", re.I),
+        "LOG_INTERPOLATE": re.compile(r"^\d*I?LOG$", re.I),
+        "MULTIPLY": re.compile(r"^[+\-]?[0-9]+\.?[0-9]*E?[+\-]?[0-9]*M$", re.I),
+        "REPEAT": re.compile(r"^\d*R$", re.I),
+    }
+
+    def _parse_shortcut(self, t):
+        for token_type, expression in self._EXPRESSIONS.items():
+            if expression.match(t.value):
+                t.type = token_type
+                return t
+
+    INTERPOLATE = r"\d*I"
+
+    JUMP = r"\d*J"
+
+    LOG_INTERPOLATE = r"\d*I?LOG"
+
+    MULTIPLY = r"[+\-]?[0-9]+\.?[0-9]*E?[+\-]?[0-9]*M"
+
+    REPEAT = r"\d*R"
 
 
 class ParticleLexer(MCNP_Lexer):
