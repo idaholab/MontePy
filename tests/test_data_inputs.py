@@ -141,6 +141,7 @@ class testDataInputClass(TestCase):
                 },
             )
             card = volume.Volume(key="VoL", value=node, in_cell_block=True)
+
     # TODO merge manually
     """
     def test_volume_init_data(self):

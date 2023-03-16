@@ -140,12 +140,7 @@ class UniverseInput(CellModifierInput):
             return
         if not self.in_cell_block:
             cells = self._problem.cells
-<<<<<<< HEAD:mcnpy/data_inputs/universe_input.py
             if self._universes:
-=======
-            self._starting_num_cells = len(cells)
-            if self._universe:
->>>>>>> develop:mcnpy/data_cards/universe_card.py
                 self._check_redundant_definitions()
                 for cell, uni_number in itertools.zip_longest(
                     cells, self._universes, fillvalue=None
