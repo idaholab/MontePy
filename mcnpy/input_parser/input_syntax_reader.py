@@ -128,7 +128,7 @@ def read_data(fh, mcnp_version, block_type=None, recursion=False):
         input = Input(input_raw_lines, block_type)
         try:
             read_input = ReadInput(input_raw_lines, block_type)
-            reading_queue.append((block_type, input.file_name))
+            reading_queue.append((block_type, read_input.file_name))
             yield None
         except ValueError:
             yield input
