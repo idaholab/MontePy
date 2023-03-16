@@ -31,8 +31,8 @@ install:
 website_test:
   stage: test
   script:
-    - wget 'https://experiment_analysis_all.pages.hpc.inl.gov/software/mcnpy/'
-    - wget 'https://mcnp.lanl.gov/'
+    - wget --no-check-certificate 'https://experiment_analysis_all.pages.hpc.inl.gov/software/mcnpy/'
+    - wget --no-check-certificate 'https://mcnp.lanl.gov/'
 
 
 unit_test:
