@@ -28,6 +28,7 @@ class DataInputAbstract(MCNP_Object):
         :param comments: The list of Comments that may proceed this or be entwined with it.
         :type comments: list
         """
+        self._particles = None
         if not fast_parse:
             super().__init__(input, self._parser, comments)
             if input:
@@ -98,8 +99,8 @@ class DataInputAbstract(MCNP_Object):
         :returns: the particles listed in the input if any. Otherwise None
         :rtype: list
         """
-        if self._classifiers:
-            return self._classifiers
+        if self._particles:
+            return self._particles
         return None
 
     @property
@@ -173,7 +174,7 @@ class DataInputAbstract(MCNP_Object):
         self._input_number = self._classifier.number
         self._prefix = self._classifier._prefix.value
         if self._classifier.particles:
-            self._classifiers = self._classifier.particles.particles
+            self._particles = self._classifier.particles.particles
         self._modifier = self._classifier.modifier
 
     def __enforce_name(self):
