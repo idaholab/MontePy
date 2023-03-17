@@ -266,10 +266,15 @@ bar
             card = mcnpy.input_parser.mcnp_input.Input(
                 [in_str], mcnpy.input_parser.block_type.BlockType.DATA
             )
-            data_input = mcnpy.data_inputs.data_input.DataInput(card)
+            data_input = mcnpy.data_inputs.data_input.DataInput(card, fast_parse=True)
             self.assertEqual(data_input.prefix, answer["prefix"])
-            self.assertEqual(data_input._input_number, answer["number"])
-            self.assertEqual(data_input.particle_classifiers, answer["classifier"])
+            if answer["number"]:
+                self.assertEqual(data_input._input_number.value, answer["number"])
+            if answer["classifier"]:
+                self.assertEqual(
+                    sorted(data_input.particle_classifiers),
+                    sorted(answer["classifier"]),
+                )
 
     def testDataInputNameEnforcement(self):
         tests = {
@@ -352,7 +357,7 @@ class DataInputTestFixture(mcnpy.data_inputs.data_input.DataInputAbstract):
         self._class_prefix = None
         self._has_number = None
         self._has_classifier = None
-        super().__init__(input_card, comment)
+        super().__init__(input_card, comment, fast_parse=True)
 
     @property
     def class_prefix(self):
