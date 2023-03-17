@@ -128,6 +128,8 @@ class MCNP_Lexer(Lexer):
     def ZAID(self, t):
         return t
 
+    THERMAL_LAW = r"[a-z/]+\.\d+[a-z]"
+
     @_(r"^[+\-]?[0-9]*\.?[0-9]*E?[+\-]?[0-9]*[a-z\./]+")
     def TEXT(self, t):
         if update := self._parse_shortcut(t):
@@ -148,8 +150,6 @@ class MCNP_Lexer(Lexer):
     def MESSAGE(self, t):
         self.lineno += t.value.count("\n")
         return t
-
-    THERMAL_LAW = r"[a-z/]+\.\d+[a-z]"
 
     _EXPRESSIONS = {
         "INTERPOLATE": re.compile(r"^\d*I$", re.I),
