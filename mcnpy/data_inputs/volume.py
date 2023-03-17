@@ -51,9 +51,8 @@ class Volume(CellModifierInput):
             for node in tree["data"]:
                 if not isinstance(node, Jump):
                     try:
-                        value = node.value
-                        assert value >= 0
-                        self._volume.append(value)
+                        assert node.value >= 0
+                        self._volume.append(node)
                     except AssertionError:
                         raise MalformedInputError(
                             input, f"Cell volumes by a number ≥ 0.0: {node} given"
