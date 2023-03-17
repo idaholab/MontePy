@@ -150,6 +150,7 @@ class MCNP_Parser(Parser, metaclass=MetaBuilder):
         "modifier classifier",
         "TEXT",
         "KEYWORD",
+        "PARTICLE",
         "classifier NUMBER",
         "classifier PARTICLE_DESIGNATOR",
     )
@@ -161,11 +162,13 @@ class MCNP_Parser(Parser, metaclass=MetaBuilder):
 
         if hasattr(p, "modifier"):
             classifier.modifier = syntax_node.ValueNode(p.modifier, str)
-        if hasattr(p, "TEXT") or hasattr(p, "KEYWORD"):
+        if hasattr(p, "TEXT") or hasattr(p, "KEYWORD") or hasattr(p, "PARTICLE"):
             if hasattr(p, "TEXT"):
                 text = p.TEXT
-            else:
+            elif hasattr(p, "KEYWORD"):
                 text = p.KEYWORD
+            else:
+                text = p.PARTICLE
             classifier.prefix = syntax_node.ValueNode(text, str)
         if hasattr(p, "NUMBER"):
             classifier.number = syntax_node.ValueNode(p.NUMBER, int)
