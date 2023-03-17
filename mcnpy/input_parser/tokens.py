@@ -91,7 +91,7 @@ class MCNP_Lexer(Lexer):
         self.lineno += t.value.count("\n")
         return t
 
-    @_(r"C\s.*")
+    @_(r"(C\n)|(C\s.*)")
     def COMMENT(self, t):
         self.lineno += t.value.count("\n")
         start = find_column(self.text, t)
