@@ -128,7 +128,7 @@ class MCNP_Lexer(Lexer):
     def ZAID(self, t):
         return t
 
-    @_(r"^[+\-]?[0-9]+\.?[0-9]*E?[+\-]?[0-9]*[a-z\./]+")
+    @_(r"^[+\-]?[0-9]*\.?[0-9]*E?[+\-]?[0-9]*[a-z\./]+")
     def TEXT(self, t):
         if update := self._parse_shortcut(t):
             return t
