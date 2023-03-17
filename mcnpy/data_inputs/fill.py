@@ -35,7 +35,7 @@ class Fill(CellModifierInput):
     def __init__(
         self, input=None, comments=None, in_cell_block=False, key=None, value=None
     ):
-        self._old_number = self._generate_default_node(int, -1)
+        self._old_number = self._generate_default_node(int, None)
         self._old_numbers = None
         self._universe = None
         self._universes = None
@@ -401,10 +401,10 @@ class Fill(CellModifierInput):
                 else:
                     self._universe = get_universe(self.old_universe_number)
         else:
-            if not self.set_in_cell_block and self.old_universe_number:
+            if not self.set_in_cell_block and self.old_universe_numbers:
                 self._starting_num_cells = len(self._problem.cells)
                 for cell, old_number in zip(
-                    self._problem.cells, self.old_universe_number
+                    self._problem.cells, self.old_universe_numbers
                 ):
                     if not isinstance(old_number, Jump):
                         cell._fill._old_number = old_number

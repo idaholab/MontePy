@@ -146,12 +146,12 @@ class UniverseInput(CellModifierInput):
                 ):
                     if isinstance(uni_number, (Jump, type(None))):
                         continue
-                    cell._universe.old_number = abs(uni_number.value)
+                    cell._universe.old_number = uni_number
                     if uni_number < 0:
                         cell._universe._not_truncated = True
             universes = self._problem.universes
             for cell in cells:
-                uni_num = cell.old_universe_number.value
+                uni_num = cell.old_universe_number
                 if uni_num is None:
                     uni_num = 0
                 if uni_num not in universes.numbers:
