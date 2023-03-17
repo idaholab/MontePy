@@ -186,8 +186,8 @@ class testDataInputClass(TestCase):
         vol_card = parse_data(input_card)
         answers = [1.0, 1.0, Jump, Jump, 0.0]
         for i, vol in enumerate(vol_card._volume):
-            if isinstance(answers[i], float):
-                self.assertAlmostEqual(vol, answers[i])
+            if isinstance(vol, syntax_node.ValueNode):
+                self.assertAlmostEqual(vol.value, answers[i])
             else:
                 self.assertIsInstance(vol, Jump)
         in_str = "VOL NO 1 1 2J 0"
