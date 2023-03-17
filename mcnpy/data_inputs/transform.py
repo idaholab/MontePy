@@ -8,6 +8,11 @@ import numpy as np
 import re
 
 
+def _enforce_number(self, val):
+    if val <= 0:
+        raise ValueError(f"Transform number must be > 0. {val} given.")
+
+
 class Transform(data_input.DataInputAbstract, Numbered_MCNP_Object):
     """
     Card to represent a transform card (TR)
@@ -20,8 +25,8 @@ class Transform(data_input.DataInputAbstract, Numbered_MCNP_Object):
 
     def __init__(self, input=None, comments=None, pass_through=False):
         self._pass_through = pass_through
-        self._transform_number = self._generate_default_node(int, -1)
-        self._old_transform_number = self._generate_default_node(int, -1)
+        self._number = self._generate_default_node(int, -1)
+        self._old_number = self._generate_default_node(int, -1)
         self._displacement_vector = np.array([])
         self._rotation_matrix = np.array([])
         self._is_in_degrees = False
@@ -37,8 +42,8 @@ class Transform(data_input.DataInputAbstract, Numbered_MCNP_Object):
                 self._is_in_degrees = True
             else:
                 self._is_in_degrees = False
-            self._transform_number = self._input_number
-            self._old_transform_number = copy.deepcopy(self._transform_number)
+            self._number = self._input_number
+            self._old_number = copy.deepcopy(self._number)
 
             # parse displacement
             try:
@@ -129,7 +134,7 @@ class Transform(data_input.DataInputAbstract, Numbered_MCNP_Object):
         self._mutated = True
         self._is_in_degrees = in_deg
 
-    @property
+    @make_prop_val_node("_number", (int, float), int, _enforce_number)
     def number(self):
         """
         The transform number for this transform
@@ -137,27 +142,16 @@ class Transform(data_input.DataInputAbstract, Numbered_MCNP_Object):
         :rtype: int
 
         """
-        return self._transform_number
+        pass
 
-    @number.setter
-    def number(self, num):
-        if not isinstance(num, int):
-            raise TypeError("number must be an int")
-        if num <= 0:
-            raise ValueError("number must be > 0")
-        self._mutated = True
-        self._transform_number = num
-        self._words = [f"TR{num}"]
-        self._mutated = True
-
-    @property
+    @make_prop_val_node("_old_number")
     def old_number(self):
         """
         The transform number used in the original file
 
         :rtype: int
         """
-        return self._old_transform_number
+        pass
 
     @property
     def displacement_vector(self):
