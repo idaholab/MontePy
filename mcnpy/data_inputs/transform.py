@@ -60,7 +60,7 @@ class Transform(data_input.DataInputAbstract, Numbered_MCNP_Object):
             try:
                 values = []
                 for j, word in enumerate(words.nodes[i:]):
-                    values.append(word.node)
+                    values.append(word.value)
                     i += 1
                     if j >= 8:
                         break
@@ -75,9 +75,9 @@ class Transform(data_input.DataInputAbstract, Numbered_MCNP_Object):
                 try:
                     word = words[i]
                     # if 1 it's the default value
-                    if word == "1":
+                    if int(word.value) == 1:
                         pass
-                    elif word == "-1":
+                    elif int(word.value) == -1:
                         self._is_main_to_aux = False
                     else:
                         raise MalformedInputError(
