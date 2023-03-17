@@ -295,22 +295,31 @@ bar
                 card = mcnpy.input_parser.mcnp_input.Input(
                     [in_str], mcnpy.input_parser.block_type.BlockType.DATA
                 )
-                card = DataInputTestFixture(card)
-                card._class_prefix = answer["prefix"]
-                card._has_number = answer["number"]
-                card._has_classifier = answer["classifier"]
-                card._DataInputAbstract__split_name()
+                Fixture = DataInputTestFixture
+                Fixture._class_prefix1 = answer["prefix"]
+                Fixture._has_number1 = answer["number"]
+                Fixture._has_classifier1 = answer["classifier"]
+                card = Fixture(card)
 
         # tests valid names
         for in_str, answer in valid.items():
             card = mcnpy.input_parser.mcnp_input.Input(
                 [in_str], mcnpy.input_parser.block_type.BlockType.DATA
             )
-            card = DataInputTestFixture(card)
-            card._class_prefix = answer["prefix"]
-            card._has_number = answer["number"]
-            card._has_classifier = answer["classifier"]
-            card._DataInputAbstract__split_name()
+            print(card.input_lines)
+            print(
+                "Prefix",
+                answer["prefix"],
+                "number",
+                answer["number"],
+                "classifier",
+                answer["classifier"],
+            )
+            Fixture = DataInputTestFixture
+            Fixture._class_prefix1 = answer["prefix"]
+            Fixture._has_number1 = answer["number"]
+            Fixture._has_classifier1 = answer["classifier"]
+            card = Fixture(card)
 
     def test_get_line_numbers(self):
         answers = {
@@ -347,6 +356,10 @@ bar
 
 
 class DataInputTestFixture(mcnpy.data_inputs.data_input.DataInputAbstract):
+    _class_prefix1 = None
+    _has_number1 = None
+    _has_classifier1 = None
+
     def __init__(self, input_card=None, comment=None):
         """
         :param input_card: the Card object representing this data input
@@ -354,19 +367,13 @@ class DataInputTestFixture(mcnpy.data_inputs.data_input.DataInputAbstract):
         :param comment: The Comment that may proceed this
         :type comment: Comment
         """
-        self._class_prefix = None
-        self._has_number = None
-        self._has_classifier = None
         super().__init__(input_card, comment, fast_parse=True)
 
-    @property
-    def class_prefix(self):
-        return self._class_prefix
+    def _class_prefix(self):
+        return self._class_prefix1
 
-    @property
-    def has_number(self):
-        return self._has_number
+    def _has_number(self):
+        return self._has_number1
 
-    @property
-    def has_classifier(self):
-        return self._has_classifier
+    def _has_classifier(self):
+        return self._has_classifier1
