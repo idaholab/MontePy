@@ -76,13 +76,13 @@ test title
                 generator = input_syntax_reader.read_data(fh, (6, 2, 0))
                 card = next(generator)
                 self.assertIsInstance(card, mcnpy.input_parser.mcnp_input.Input)
-                answer = ["1", "0", "-1", "5"]
-                self.assertEqual(len(answer), len(card.words))
-                for j, word in enumerate(card.words):
-                    self.assertEqual(word, answer[j])
-                    self.assertEqual(
-                        card.block_type, mcnpy.input_parser.block_type.BlockType.CELL
-                    )
+                answer = [" " * i + "1 0 -1", "     5"]
+                self.assertEqual(len(answer), len(card.input_lines))
+                for j, line in enumerate(card.input_lines):
+                    self.assertEqual(line, answer[j])
+                self.assertEqual(
+                    card.block_type, mcnpy.input_parser.block_type.BlockType.CELL
+                )
 
     def testCommentFinder(self):
         test_string = """c foo
@@ -192,7 +192,7 @@ bar
             [in_str], mcnpy.input_parser.block_type.BlockType.CELL
         )
         self.assertEqual(str(card), "INPUT: BlockType.CELL")
-        self.assertEqual(repr(card), "INPUT: BlockType.CELL: ['1', '0', '-1']")
+        self.assertEqual(repr(card), "INPUT: BlockType.CELL: ['1 0 -1']")
 
     def testShortcutExpansion(self):
         tests = {
