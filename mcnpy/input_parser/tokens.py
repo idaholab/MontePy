@@ -130,7 +130,7 @@ class MCNP_Lexer(Lexer):
 
     THERMAL_LAW = r"[a-z/]+\.\d+[a-z]"
 
-    @_(r"[+\-]?[0-9]*\.?[0-9]*E?[+\-]?[0-9]*[a-df-z]+[a-z\./]*")
+    @_(r"([+\-]?[0-9]*\.?[0-9]*E?[+\-]?[0-9]*[ijrml]+[a-z\./]*)|([a-z\./]+)")
     def TEXT(self, t):
         if update := self._parse_shortcut(t):
             return update
