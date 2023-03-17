@@ -164,13 +164,7 @@ MAIN_TO_AUX: False
         card = Input([in_str], BlockType.DATA)
         transform = Transform(card)
         output = transform.format_for_mcnp_input((6, 2, 0))
-        answers = [
-            "TR2 0.0 0.0 0.0",
-            "     0.0 0.0 0.0",
-            "     0.0 0.0 0.0",
-            "     0.0 0.0 0.0",
-            "     -1",
-        ]
+        answers = [in_str.replace("5", "2")]
         self.assertEqual(output[0], in_str)
         transform.number = 2
         output = transform.format_for_mcnp_input((6, 2, 0))
@@ -178,11 +172,12 @@ MAIN_TO_AUX: False
         for i, line in enumerate(output):
             self.assertEqual(line, answers[i])
         in_str = "*tr5 " + "0.0 " * 3 + "0.0 " * 9 + " -1"
+        answers = [in_str.replace("5", "2")]
         card = Input([in_str], BlockType.DATA)
         transform = Transform(card)
         transform.number = 2
         output = transform.format_for_mcnp_input((6, 2, 0))
-        self.assertEqual(output[0], "*TR2 0.0 0.0 0.0")
+        self.assertEqual(output, answers)
 
     def test_transform_equivalent(self):
         in_str = "tr5 " + "0.0 " * 3 + "0.0 " * 9 + " -1"
