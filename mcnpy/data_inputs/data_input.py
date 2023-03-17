@@ -194,23 +194,25 @@ class DataInputAbstract(MCNP_Object):
                 try:
                     num = classifier.number.value
                     assert num > 0
-                except (AssertionError) as e:
+                except (AttributeError, AssertionError) as e:
                     raise MalformedInputError(
-                        self.words, f"{self.words[0]} does not contain a valid number"
+                        self._input_lines,
+                        f"{classifier} does not contain a valid number",
                     )
             if not self._has_number() and classifier.number is not None:
                 raise MalformedInputError(
-                    self.words, f"{self.words[0]} cannot have a number for {type(self)}"
+                    self._input_lines,
+                    f"{classifier} cannot have a number for {type(self)}",
                 )
             if self._has_classifier() == 2 and classifier.particles is None:
                 raise MalformedInputError(
-                    self.words,
-                    f"{self.words[0]} doesn't have a particle classifier for {type(self)}",
+                    self._input_lines,
+                    f"{classifier} doesn't have a particle classifier for {type(self)}",
                 )
             if self._has_classifier() == 0 and classifier.particles is not None:
                 raise MalformedInputError(
-                    self.words,
-                    f"{self.words[0]} cannot have a particle classifier for {type(self)}",
+                    self._input_lines,
+                    f"{classifier} cannot have a particle classifier for {type(self)}",
                 )
 
     def __lt__(self, other):
