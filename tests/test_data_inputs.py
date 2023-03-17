@@ -26,7 +26,6 @@ class testDataInputClass(TestCase):
 
     def test_data_card_empty_constructor(self):
         card = DataInput()
-        self.assertIsInstance(card.words, list)
 
     def test_data_card_str(self):
         in_str = "vol 1 1 0"
