@@ -229,6 +229,7 @@ class Transform(data_input.DataInputAbstract, Numbered_MCNP_Object):
         :returns: a tuple of (bool: true if this needs an *, list of str of the input)
         :rtype: tuple
         """
+        # TODO
         ret = []
         in_degs = False
         buff_list = []
@@ -260,15 +261,14 @@ class Transform(data_input.DataInputAbstract, Numbered_MCNP_Object):
                 f"Transform: {self.number} does not have a valid displacement Vector"
             )
 
+    def _update_values(self):
+        # TODO
+        pass
+
     def format_for_mcnp_input(self, mcnp_version):
         self.validate()
-        ret = mcnp_object.MCNP_Object.format_for_mcnp_input(self, mcnp_version)
-        if self.mutated:
-            _, lines = self._generate_inputs(mcnp_version, True, False)
-            ret.extend(lines)
-        else:
-            ret = self._format_for_mcnp_unmutated(mcnp_version)
-        return ret
+        self._update_values()
+        return self.wrap_string_for_mcnp(self._tree.format(), mcnp_version, True)
 
     def equivalent(self, other, tolerance):
         """Determines if this is effectively equivalent to another transformation
