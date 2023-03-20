@@ -245,7 +245,7 @@ class ParticleLexer(MCNP_Lexer):
     def PARTICLE_DESIGNATOR(self, t):
         return t
 
-    @_(r"[+\-]?[0-9]*\.?[0-9]*E?[+\-]?[0-9]*[a-df-z]+[a-z\./]*")
+    @_(r"([+\-]?[0-9]*\.?[0-9]*E?[+\-]?[0-9]*[ijrml]+[a-z\./]*)|([a-z\./]+)")
     def TEXT(self, t):
         t = super().TEXT(t)
         if t.value.lower() in self._KEYWORDS:
@@ -371,7 +371,7 @@ class SurfaceLexer(MCNP_Lexer):
         "arb",
     }
 
-    @_(r"[+\-]?[0-9]*\.?[0-9]*E?[+\-]?[0-9]*[a-df-z]+[a-z\./]*")
+    @_(r"([+\-]?[0-9]*\.?[0-9]*E?[+\-]?[0-9]*[ijrml]+[a-z\./]*)|([a-z\./]+)")
     def TEXT(self, t):
         t = super().TEXT(t)
         if t.value.lower() in self._SURFACE_TYPES:
