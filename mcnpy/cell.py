@@ -605,8 +605,6 @@ class Cell(Numbered_MCNP_Object):
             raise IllegalState(
                 f"Cell {self.number} has no surfaces nor complemented cells attached to it"
             )
-        if len(self.geometry_logic_string) == 0:
-            raise IllegalState(f"Cell {self.number} has no geometry defined")
 
     def format_for_mcnp_input(self, mcnp_version):
         self.validate()
