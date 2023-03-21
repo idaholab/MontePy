@@ -694,5 +694,5 @@ class ParametersNode(SyntaxNodeBase):
     def format(self):
         ret = ""
         for node in self.nodes.values():
-            ret += "".join(node[1:-1]) + node[-1].format() + node[0].format()
+            ret += node.format()
         return ret
