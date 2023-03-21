@@ -162,43 +162,11 @@ class Volume(CellModifierInput):
         )
         return ret
 
-    def format_for_mcnp_input(self, mcnp_version):
-        ret = []
-        if self.in_cell_block:
-            if self._volume:
-                ret.extend(
-                    self.wrap_string_for_mcnp(f"VOL={self.volume}", mcnp_version, False)
-                )
-        else:
-            mutated = self.mutated
-            if not mutated:
-                mutated = self.has_changed_print_style
-                if self._starting_num_cells != len(self._problem.cells):
-                    mutated = True
-                for cell in self._problem.cells:
-                    if cell._volume.mutated:
-                        mutated = True
-                        break
-            if mutated and self._problem.print_in_data_block["VOL"]:
-                has_info = False
-                for cell in self._problem.cells:
-                    if cell._volume.has_information:
-                        has_info = True
-                        break
-                if has_info:
-                    ret = MCNP_Card.format_for_mcnp_input(self, mcnp_version)
-                    ret_strs = ["VOL"]
-                    if not self.is_mcnp_calculated:
-                        ret_strs.append("NO")
-                    volumes = []
-                    for cell in self._problem.cells:
-                        if cell.volume:
-                            volumes.append(f"{cell.volume}")
-                        else:
-                            volumes.append(Jump())
-                    ret_strs.extend(self.compress_jump_values(volumes))
-                    ret.extend(self.wrap_words_for_mcnp(ret_strs, mcnp_version, True))
+    def _update_values(self):
+        # TODO
+        pass
 
-            elif self._problem.print_in_data_block["VOL"]:
-                ret = self._format_for_mcnp_unmutated(mcnp_version)
-        return ret
+    def format_for_mcnp_input(self, mcnp_version):
+        self.validate()
+        self._update_values()
+        return self.wrap_string_for_mcnp(self._tree.format(), mcnp_version, True)
