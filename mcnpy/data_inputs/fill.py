@@ -175,7 +175,7 @@ class Fill(CellModifierInput):
                     val = next(words)
                     try:
                         val._convert_to_int()
-                        assert val.value > 0
+                        assert val.value >= 0
                         self._old_numbers[i][j][k] = val.value
                     except (ValueError, AssertionError) as e:
                         raise ValueError(
