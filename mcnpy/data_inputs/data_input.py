@@ -1,4 +1,5 @@
 from abc import abstractmethod
+import mcnpy
 from mcnpy.errors import *
 from mcnpy.input_parser.data_parser import ClassifierParser, DataParser
 from mcnpy.input_parser.mcnp_input import Input
@@ -36,7 +37,9 @@ class DataInputAbstract(MCNP_Object):
             else:
                 self._words = []
         else:
-            words = input.input_lines[0].split()
+            is_comment = mcnpy.input_parser.input_syntax_reader.is_comment
+            data_lines = [line for line in input.input_lines if not is_comment(line)]
+            words = data_lines[0].split()
             input = Input([words[0]], input.block_type)
             super().__init__(input, self._classifier_parser, comments)
             self.__split_name()
