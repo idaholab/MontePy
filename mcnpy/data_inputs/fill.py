@@ -403,9 +403,7 @@ class Fill(CellModifierInput):
         else:
             if not self.set_in_cell_block and self.old_universe_numbers:
                 self._starting_num_cells = len(self._problem.cells)
-                for cell, old_number in zip(
-                    self._problem.cells, self.old_universe_numbers
-                ):
+                for cell, old_number in zip(self._problem.cells, self._old_numbers):
                     if not isinstance(old_number, Jump):
                         cell._fill._old_number = old_number
             for cell in self._problem.cells:
