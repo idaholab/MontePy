@@ -89,7 +89,7 @@ class CellModifierInput(DataInputAbstract):
             set_in_cell_block = print_in_cell_block
             if not self.in_cell_block:
                 for cell in self._problem.cells:
-                    attr = mcnpy.Cell._CARDS_TO_PROPERTY[type(self)][0]
+                    attr = mcnpy.Cell._INPUTS_TO_PROPERTY[type(self)][0]
                     modifier = getattr(cell, attr)
                     if modifier.has_information:
                         set_in_cell_block = modifier.set_in_cell_block
