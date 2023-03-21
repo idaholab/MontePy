@@ -154,7 +154,7 @@ class CellModifierInput(DataInputAbstract):
                 if getattr(cell, attr).set_in_cell_block:
                     raise mcnpy.errors.MalformedInputError(
                         cell,
-                        f"Cell: {cell.number} provided {self._class_prefix.upper()}"
+                        f"Cell: {cell.number} provided {self._class_prefix().upper()}"
                         "data when those data were in the data block",
                     )
 
