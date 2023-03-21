@@ -112,7 +112,7 @@ class Importance(CellModifierInput):
         if value < 0:
             raise ValueError("importance must be ≥ 0")
         self._mutated = True
-        self._particle_importances[particle].value = value
+        self._particle_importances[particle.value] = value
 
     def __delitem__(self, particle):
         if not isinstance(particle, Particle):
