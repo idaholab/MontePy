@@ -115,5 +115,6 @@ class Cells(NumberedObjectCollection):
         ret = []
         for attr, _ in mcnpy.Cell._INPUTS_TO_PROPERTY.values():
             if getattr(self, attr) not in data_inputs:
-                ret += getattr(self, attr).format_for_mcnp_input(mcnp_version)
+                if buf := getattr(self, attr).format_for_mcnp_input(mcnp_version):
+                    ret += buf
         return ret

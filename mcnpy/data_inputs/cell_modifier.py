@@ -182,3 +182,28 @@ class CellModifierInput(DataInputAbstract):
         After data being pushed to cells delete internal data to avoid inadvertent editing.
         """
         pass
+
+    @property
+    def _is_worth_printing(self):
+        if self.in_cell_block:
+            return self.has_information
+        attr, _ = mcnpy.Cell._INPUTS_TO_PROPERTY[type(self)]
+        for cell in self._problem.cells:
+            if getattr(cell, attr).has_information:
+                return True
+        return False
+
+    def format_for_mcnp_input(self, mcnp_version):
+        """
+        Creates a string representation of this MCNP_Object that can be
+        written to file.
+
+        :param mcnp_version: The tuple for the MCNP version that must be exported to.
+        :type mcnp_version: tuple
+        :return: a list of strings for the lines that this input will occupy.
+        :rtype: list
+        """
+        self.validate()
+        self._update_values()
+        if self._is_worth_printing:
+            return self.wrap_string_for_mcnp(self._tree.format(), mcnp_version, True)
