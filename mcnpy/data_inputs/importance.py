@@ -61,8 +61,18 @@ class Importance(CellModifierInput):
         particles.particles = self._problem.mode.particles
         classifier.particles = particles
         list_node = syntax_node.ListNode("imp data")
-        ret = {"classifier": classifier, "data": list_node}
-        self._tree = syntax_node.SyntaxNode("Importance", ret)
+        if not self.in_cell_block:
+            ret = {"classifier": classifier, "data": list_node}
+            self._tree = syntax_node.SyntaxNode("Importance", ret)
+        else:
+            self._tree = syntax_node.SyntaxNode(
+                "Importance",
+                {
+                    "classifier": classifier,
+                    "seperator": self._generate_default_node(str, "=", padding=None),
+                    "data": list_node,
+                },
+            )
 
     @staticmethod
     def _class_prefix():
