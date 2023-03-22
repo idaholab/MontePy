@@ -169,7 +169,7 @@ class TestLattice(TestCase):
         lattice = LatticeInput(input)
         for answer, lattice in zip(lattices, lattice._lattice):
             if isinstance(answer, int):
-                self.assertEqual(answer, lattice.value)
+                self.assertEqual(Lattice(answer), lattice.value)
             else:
                 self.assertEqual(answer, lattice)
         with self.assertRaises(MalformedInputError):
