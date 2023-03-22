@@ -382,6 +382,15 @@ class ParticleNode(SyntaxNodeBase):
     def particles(self):
         return self._particles
 
+    @particles.setter
+    def particles(self, values):
+        if not isinstance(values, set):
+            raise ValueError(f"Particles must be a set. {values} given.")
+        for value in values:
+            if not isinstance(value, Particle):
+                raise ValueError(f"All particles must be a Particle. {value} given")
+        self._particles = values
+
     def format(self):
         self._reverse_engineer_format()
         if self._formatter["upper"]:
