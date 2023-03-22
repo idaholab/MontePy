@@ -200,7 +200,7 @@ class CellModifierInput(DataInputAbstract):
 
     def _collect_new_values(self):
         ret = []
-        attr = mcnpy.Cell._INPUT_TO_PROPERTY[type(self)]
+        attr, _ = mcnpy.Cell._INPUTS_TO_PROPERTY[type(self)]
         for cell in self._problem.cells:
             input = getattr(cell, attr)
             ret.append(input._tree_value)
@@ -228,7 +228,7 @@ class CellModifierInput(DataInputAbstract):
             in_data_block = not self.in_cell_block
         else:
             in_data_block = self._problem.print_in_data_block[
-                self._class_prefix().upper
+                self._class_prefix().upper()
             ]
         if self.in_cell_block and not in_data_block and self.has_information:
             return self.wrap_string_for_mcnp(self._tree.format(), mcnp_version, True)
