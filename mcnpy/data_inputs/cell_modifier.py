@@ -235,3 +235,4 @@ class CellModifierInput(DataInputAbstract):
 
         if not self.in_cell_block and in_data_block and self._is_worth_printing:
             return self.wrap_string_for_mcnp(self._tree.format(), mcnp_version, True)
+        return []
