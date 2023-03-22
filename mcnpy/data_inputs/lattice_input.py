@@ -5,6 +5,7 @@ from mcnpy.errors import *
 from mcnpy.input_parser.mcnp_input import Jump
 from mcnpy.input_parser.syntax_node import ValueNode
 from mcnpy.mcnp_object import MCNP_Object
+from mcnpy.utilities import *
 
 
 class LatticeInput(CellModifierInput):
@@ -45,7 +46,7 @@ class LatticeInput(CellModifierInput):
                 try:
                     val = value["data"][0]
                     val._convert_to_int()
-                    val = Lattice(val.value)
+                    val._convert_to_enum(Lattice)
                 except (ValueError) as e:
                     raise ValueError("Cell Lattice must be 1 or 2")
                 self._lattice = val
@@ -57,7 +58,8 @@ class LatticeInput(CellModifierInput):
                     try:
                         value = word
                         value._convert_to_int()
-                        self._lattice.append(Lattice(value.value))
+                        value._convert_to_enum(Lattice)
+                        self._lattice.append(value)
                     except ValueError:
                         raise MalformedInputError(
                             input, f"Cell lattice must be 1 or 2. {word} given."
@@ -86,33 +88,18 @@ class LatticeInput(CellModifierInput):
         if self.in_cell_block:
             return self.lattice is not None
 
-    @property
+    @make_prop_val_node("_lattice", (Lattice, int, type(None)), Lattice, deletable=True)
     def lattice(self):
         """
         The type of lattice being used.
 
         :rtype: Lattice
         """
+        pass
+
+    @property
+    def _tree_value(self):
         return self._lattice
-
-    @lattice.setter
-    def lattice(self, value):
-        if not isinstance(value, (Lattice, int, type(None))):
-            raise TypeError(
-                "lattice must be set to a Lattice, or an integer, {value} given"
-            )
-        if isinstance(value, int):
-            try:
-                value = Lattice(value)
-            except ValueError:
-                raise ValueError("Value: {value} is not a valid Lattice number")
-        self._mutated = True
-        self._lattice = value
-
-    @lattice.deleter
-    def lattice(self):
-        self._mutated = True
-        self._lattice = None
 
     def push_to_cells(self):
         if self._problem and not self.in_cell_block:
