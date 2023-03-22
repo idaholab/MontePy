@@ -178,7 +178,7 @@ class UniverseInput(CellModifierInput):
             f"UNIVERSE: in_cell: {self._in_cell_block}"
             f" set_in_block: {self.set_in_cell_block}, "
             f"Universe : {self._universe}, "
-            f"Universes: {self._universes}"
+            f"Old Numbers: {self._old_numbers}"
         )
         return ret
 
