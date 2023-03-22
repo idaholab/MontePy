@@ -30,7 +30,6 @@ class UniverseInput(CellModifierInput):
         self, input=None, comments=None, in_cell_block=False, key=None, value=None
     ):
         self._universe = None
-        self._universes = None
         self._old_numbers = []
         self._old_number = self._generate_default_node(int, None)
         self._not_truncated = False
@@ -139,15 +138,15 @@ class UniverseInput(CellModifierInput):
             return
         if not self.in_cell_block:
             cells = self._problem.cells
-            if self._universes:
+            if self._old_numbers:
                 self._check_redundant_definitions()
                 for cell, uni_number in itertools.zip_longest(
-                    cells, self._universes, fillvalue=None
+                    cells, self._old_numbers, fillvalue=None
                 ):
                     if isinstance(uni_number, (Jump, type(None))):
                         continue
-                    cell._universe.old_number = uni_number
-                    if uni_number < 0:
+                    cell._universe._old_number = uni_number
+                    if uni_number.is_negative:
                         cell._universe._not_truncated = True
             universes = self._problem.universes
             for cell in cells:
@@ -163,7 +162,7 @@ class UniverseInput(CellModifierInput):
                 cell._universe._universe = universe
 
     def _clear_data(self):
-        del self._universes
+        del self._old_numbers
 
     def __str__(self):
         ret = "\n".join(self.format_for_mcnp_input(DEFAULT_VERSION))
