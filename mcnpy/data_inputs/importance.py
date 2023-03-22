@@ -74,6 +74,14 @@ class Importance(CellModifierInput):
                 },
             )
 
+    @property
+    def _tree_value(self, particle):
+        pass
+
+    def _collect_new_values(self):
+        pass
+        # TODO
+
     @staticmethod
     def _class_prefix():
         return "imp"

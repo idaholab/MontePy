@@ -193,6 +193,25 @@ class CellModifierInput(DataInputAbstract):
                 return True
         return False
 
+    @property
+    @abstractmethod
+    def _tree_value(self):
+        pass
+
+    def _collect_new_values(self):
+        ret = []
+        attr = mcnpy.Cell._INPUT_TO_PROPERTY[type(self)]
+        for cell in self._problem.cells:
+            input = getattr(cell, attr)
+            ret.append(input._tree_value)
+        return ret
+
+    def _update_values(self):
+        if not hasattr(self, "_tree"):
+            self._create_default_tree()
+        if not self.in_cell_block:
+            new_vals = self._collect_new_values()
+
     def format_for_mcnp_input(self, mcnp_version):
         """
         Creates a string representation of this MCNP_Object that can be
@@ -205,5 +224,16 @@ class CellModifierInput(DataInputAbstract):
         """
         self.validate()
         self._update_values()
-        if self._is_worth_printing:
+        if (
+            self.in_cell_block
+            and not self._problem.print_in_data_block[self._class_prefix().upper]
+            and self.has_information
+        ):
+            return self.wrap_string_for_mcnp(self._tree.format(), mcnp_version, True)
+
+        if (
+            not self.in_cell_block
+            and self._problem.print_in_data_block[self._class_prefix().upper]
+            and self._is_worth_printing
+        ):
             return self.wrap_string_for_mcnp(self._tree.format(), mcnp_version, True)

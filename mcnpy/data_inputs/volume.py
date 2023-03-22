@@ -91,6 +91,11 @@ class Volume(CellModifierInput):
         pass
 
     @property
+    def _tree_value(self):
+        if self.in_cell_block:
+            return self._volume
+
+    @property
     def is_mcnp_calculated(self):
         """
         Indicates whether or not the cell volume will attempt to be calculated by MCNP.

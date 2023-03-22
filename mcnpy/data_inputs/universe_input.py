@@ -128,6 +128,11 @@ class UniverseInput(CellModifierInput):
         self._mutated = True
         self._universe = value
 
+    def _tree_value(self):
+        val = self._old_number
+        val.value = self.universe.number
+        return val
+
     def merge(self, other):
         raise MalformedInputError(
             other, "Cannot have two universe inputs for the problem"
