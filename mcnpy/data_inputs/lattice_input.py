@@ -128,6 +128,6 @@ class LatticeInput(CellModifierInput):
         ret = (
             f"Lattice: in_cell: {self._in_cell_block}"
             f" set_in_block: {self.set_in_cell_block}, "
-            f"Lattice_values : {self._lattice}"
+            f"Lattice_values : {self.lattice}"
         )
         return ret
