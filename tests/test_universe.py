@@ -206,7 +206,7 @@ class TestLattice(TestCase):
     def test_lattice_cell_format(self):
         lattice = self.lattice
         output = lattice.format_for_mcnp_input(DEFAULT_VERSION)
-        self.assertIn("LAT=1", output[0])
+        self.assertIn("lat=1", output[0])
         lattice.lattice = None
         output = lattice.format_for_mcnp_input(DEFAULT_VERSION)
         self.assertEqual(output, [])
