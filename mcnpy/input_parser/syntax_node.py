@@ -1,4 +1,5 @@
 from abc import ABC, abstractmethod
+import enum
 from mcnpy import input_parser
 from mcnpy.input_parser.shortcuts import Shortcuts
 from mcnpy.geometry_operators import Operator
@@ -220,6 +221,11 @@ class ValueNode(SyntaxNodeBase):
         self._value = int(self._token)
         self._formatter = self._FORMATTERS[int].copy()
 
+    def _convert_to_enum(self, enum_class, format_type=str):
+        self._type = enum_class
+        self._value = enum_class(self._value)
+        self._formatter = self._FORMATTERS[format_type].copy()
+
     @property
     def is_negatable_identifier(self):
         return self._is_neg_id
@@ -306,19 +312,23 @@ class ValueNode(SyntaxNodeBase):
     def format(self):
         # TODO throw warning when things expand
         self._reverse_engineer_formatting()
+        if issubclass(self.type, enum.Enum):
+            value = self.value.value
+        else:
+            value = self.value
         if self._type == int or self._can_float_to_int_happen():
             temp = "{value:0={sign}{zero_padding}g}".format(
-                value=self.value, **self._formatter
+                value=value, **self._formatter
             )
         elif self._type == float:
             if self._is_scientific:
                 temp = "{value:0={sign}{zero_padding}.{precision}e}".format(
-                    value=self.value, **self._formatter
+                    value=value, **self._formatter
                 )
                 temp = temp.replace("e", self._formatter["divider"])
             else:
                 temp = "{value:0={sign}0{zero_padding}.{precision}f}".format(
-                    value=self.value, **self._formatter
+                    value=value, **self._formatter
                 )
         else:
             temp = self.value
