@@ -331,7 +331,7 @@ class ValueNode(SyntaxNodeBase):
                     value=value, **self._formatter
                 )
         else:
-            temp = self.value
+            temp = value
         if self.padding:
             if self.padding.nodes[0].isspace():
                 pad_str = "".join(self.padding.nodes[1:])
