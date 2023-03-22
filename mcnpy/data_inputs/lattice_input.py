@@ -46,7 +46,7 @@ class LatticeInput(CellModifierInput):
                 try:
                     val = value["data"][0]
                     val._convert_to_int()
-                    val._convert_to_enum(Lattice)
+                    val._convert_to_enum(Lattice, int)
                 except (ValueError) as e:
                     raise ValueError("Cell Lattice must be 1 or 2")
                 self._lattice = val
@@ -58,7 +58,7 @@ class LatticeInput(CellModifierInput):
                     try:
                         value = word
                         value._convert_to_int()
-                        value._convert_to_enum(Lattice)
+                        value._convert_to_enum(Lattice, int)
                         self._lattice.append(value)
                     except ValueError:
                         raise MalformedInputError(
