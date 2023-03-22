@@ -131,6 +131,10 @@ class LatticeInput(CellModifierInput):
             other, "Cannot have two lattice inputs for the problem"
         )
 
+    def _update_values(self):
+        if not hasattr(self, "_tree"):
+            self._create_default_tree()
+
     def _clear_data(self):
         del self._lattice
 
