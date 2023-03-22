@@ -1,7 +1,7 @@
 from mcnpy.data_inputs.cell_modifier import CellModifierInput
 from mcnpy.errors import *
 from mcnpy.input_parser.constants import DEFAULT_VERSION
-from mcnpy.input_parser.syntax_node import ListNode, ValueNode
+from mcnpy.input_parser import syntax_node
 from mcnpy.mcnp_object import MCNP_Object
 from mcnpy.particle import Particle
 from mcnpy.utilities import *
@@ -32,7 +32,7 @@ class Importance(CellModifierInput):
         if self.in_cell_block:
             if key:
                 val = value["data"]
-                if isinstance(val, ListNode):
+                if isinstance(val, syntax_node.ListNode):
                     val = value["data"][0]
                 if val.type != float or val.value < 0:
                     raise ValueError(
@@ -53,6 +53,16 @@ class Importance(CellModifierInput):
                     )
             for particle in self.particle_classifiers:
                 self._particle_importances[particle] = values
+
+    def _create_default_tree(self):
+        classifier = syntax_node.ClassifierNode()
+        classifier.prefix = "imp"
+        particles = syntax_node.ParticleNode("imp particle", "n")
+        particles.particles = self._problem.mode.particles
+        classifier.particles = particles
+        list_node = syntax_node.ListNode("imp data")
+        ret = {"classifier": classifier, "data": list_node}
+        self._tree = syntax_node.SyntaxNode("Importance", ret)
 
     @staticmethod
     def _class_prefix():
@@ -99,7 +109,7 @@ class Importance(CellModifierInput):
             raise TypeError("Key must be a particle")
         self._check_particle_in_problem(particle)
         val = self._particle_importances[particle]
-        if isinstance(val, ValueNode):
+        if isinstance(val, syntax_node.ValueNode):
             return val.value
         return val
 
@@ -198,8 +208,8 @@ class Importance(CellModifierInput):
         return self.compress_repeat_values(values)
 
     def _update_values(self):
-        # TODO
-        pass
+        if not hasattr(self, "_tree"):
+            self._create_default_tree()
 
 
 def __create_importance_getter(particle_type):
@@ -207,7 +217,7 @@ def __create_importance_getter(particle_type):
         obj._check_particle_in_problem(particle_type)
         try:
             val = obj._particle_importances[particle_type]
-            if isinstance(val, ValueNode):
+            if isinstance(val, syntax_node.ValueNode):
                 return val.value
             return val
         except KeyError:
