@@ -224,16 +224,14 @@ class CellModifierInput(DataInputAbstract):
         """
         self.validate()
         self._update_values()
-        if (
-            self.in_cell_block
-            and not self._problem.print_in_data_block[self._class_prefix().upper]
-            and self.has_information
-        ):
+        if not self._problem:
+            in_data_block = not self.in_cell_block
+        else:
+            in_data_block = self._problem.print_in_data_block[
+                self._class_prefix().upper
+            ]
+        if self.in_cell_block and not in_data_block and self.has_information:
             return self.wrap_string_for_mcnp(self._tree.format(), mcnp_version, True)
 
-        if (
-            not self.in_cell_block
-            and self._problem.print_in_data_block[self._class_prefix().upper]
-            and self._is_worth_printing
-        ):
+        if not self.in_cell_block and in_data_block and self._is_worth_printing:
             return self.wrap_string_for_mcnp(self._tree.format(), mcnp_version, True)
