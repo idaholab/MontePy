@@ -66,7 +66,7 @@ class Jump:
         """"""
         # TODO remove this
         # TODO complete shortcut recompression
-        return "J"
+        return "J "
 
 
 class ParsingNode(ABC):
