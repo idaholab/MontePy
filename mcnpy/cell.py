@@ -606,11 +606,6 @@ class Cell(Numbered_MCNP_Object):
                 f"Cell {self.number} has no surfaces nor complemented cells attached to it"
             )
 
-    def format_for_mcnp_input(self, mcnp_version):
-        self.validate()
-        self._update_values()
-        return self.wrap_string_for_mcnp(self._tree.format(), mcnp_version, True)
-
     def link_to_problem(self, problem):
         super().link_to_problem(problem)
         self.complements.link_to_problem(problem)

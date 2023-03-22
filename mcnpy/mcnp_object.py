@@ -74,6 +74,9 @@ class MCNP_Object(ABC):
         return self._parameters
 
     @abstractmethod
+    def _update_values(self):
+        pass
+
     def format_for_mcnp_input(self, mcnp_version):
         """
         Creates a string representation of this MCNP_Object that can be
@@ -84,7 +87,9 @@ class MCNP_Object(ABC):
         :return: a list of strings for the lines that this input will occupy.
         :rtype: list
         """
-        pass
+        self.validate()
+        self._update_values()
+        return self.wrap_string_for_mcnp(self._tree.format(), mcnp_version, True)
 
     @property
     def comments(self):

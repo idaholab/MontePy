@@ -62,6 +62,12 @@ class Jump:
         """
         return "J"
 
+    def format(self):
+        """"""
+        # TODO remove this
+        # TODO complete shortcut recompression
+        return "J"
+
 
 class ParsingNode(ABC):
     """

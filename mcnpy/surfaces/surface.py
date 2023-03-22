@@ -275,11 +275,6 @@ class Surface(Numbered_MCNP_Object):
         elif self.periodic_surface is not None:
             self._old_periodic_surface.value = self.periodic_surface.number
 
-    def format_for_mcnp_input(self, mcnp_version):
-        self.validate()
-        self._update_values()
-        return self.wrap_string_for_mcnp(self._tree.format(), mcnp_version, True)
-
     def __lt__(self, other):
         return self.number < other.number
 

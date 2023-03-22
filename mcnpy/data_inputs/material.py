@@ -223,11 +223,6 @@ class Material(data_input.DataInputAbstract, Numbered_MCNP_Object):
                 f"Material: {self.number} does not have any components defined."
             )
 
-    def format_for_mcnp_input(self, mcnp_version):
-        self.validate()
-        self._update_values()
-        return self.wrap_string_for_mcnp(self._tree.format(), mcnp_version, True)
-
     def __hash__(self):
         """WARNING: this is a temporary solution to make sets remove duplicate materials.
 

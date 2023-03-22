@@ -157,8 +157,3 @@ class Mode(DataInputAbstract):
             self._tree["data"].remove(node)
         for addition in to_add:
             self._tree["data"].append(self._generate_default_node(str, addition.value))
-
-    def format_for_mcnp_input(self, mcnp_version):
-        self.validate()
-        self._update_values()
-        return self.wrap_string_for_mcnp(self._tree.format(), mcnp_version, True)

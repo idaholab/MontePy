@@ -165,8 +165,3 @@ class Volume(CellModifierInput):
     def _update_values(self):
         # TODO
         pass
-
-    def format_for_mcnp_input(self, mcnp_version):
-        self.validate()
-        self._update_values()
-        return self.wrap_string_for_mcnp(self._tree.format(), mcnp_version, True)

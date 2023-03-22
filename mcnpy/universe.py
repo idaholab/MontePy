@@ -89,7 +89,7 @@ class Universe(Numbered_MCNP_Object):
         """
         return self._number
 
-    def format_for_mcnp_input(self, mcnp_version):
+    def _update_values(self):
         pass
 
     @property

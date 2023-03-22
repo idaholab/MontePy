@@ -265,11 +265,6 @@ class Transform(data_input.DataInputAbstract, Numbered_MCNP_Object):
         # TODO
         pass
 
-    def format_for_mcnp_input(self, mcnp_version):
-        self.validate()
-        self._update_values()
-        return self.wrap_string_for_mcnp(self._tree.format(), mcnp_version, True)
-
     def equivalent(self, other, tolerance):
         """Determines if this is effectively equivalent to another transformation
 
