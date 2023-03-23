@@ -43,4 +43,4 @@ def parse_data(input, comments=None):
     for data_class in PREFIX_MATCHES:
         if prefix == data_class._class_prefix():
             return data_class(input, comments)
-    return base_input
+    return data_input.DataInput(input, comments)
