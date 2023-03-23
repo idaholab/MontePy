@@ -153,6 +153,8 @@ class CellParser(MCNP_Parser):
             if isinstance(node, syntax_node.ListNode):
                 for val in node.nodes:
                     sequence.append(val)
+            elif isinstance(node, str):
+                sequence.append(syntax_node.ValueNode(node, str))
             else:
                 sequence.append(node)
         return sequence
