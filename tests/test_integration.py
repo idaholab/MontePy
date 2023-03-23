@@ -130,7 +130,9 @@ class testFullFileIntegration(TestCase):
                 elif isinstance(data, volume.Volume):
                     self.assertEqual(str(data), str(test_problem.data_inputs[i]))
                 else:
-                    self.assertEqual(data.words, test_problem.data_inputs[i].words)
+                    print("Rewritten data", data.data)
+                    print("Original input data", test_problem.data_inputs[i].data)
+                    self.assertEqual(data.data, test_problem.data_inputs[i].data)
         finally:
             if os.path.exists(out):
                 os.remove(out)
