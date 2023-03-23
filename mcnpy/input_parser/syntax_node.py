@@ -178,6 +178,8 @@ class ValueNode(SyntaxNodeBase):
             "zero_padding": 0,
             "sign": "-",
             "divider": "e",
+            "exponent_length": 0,
+            "exponent_zero_pad": 0,
             "as_int": False,
             "int_tolerance": 1e-6,
         },
@@ -192,7 +194,7 @@ class ValueNode(SyntaxNodeBase):
             ((?P<e>[eE])                 # non-optional e with +/-
             [+\-]?|
             [+\-])                  #non-optional +/- if fortran float is used
-            \d+                    #exponent
+            (?P<exponent>\d+)                    #exponent
         """,
         re.VERBOSE,
     )
@@ -290,6 +292,11 @@ class ValueNode(SyntaxNodeBase):
             self._formatter["divider"] = groups["e"]
             # extra space for the "e" in scientific and... stuff
             self._formatter["zero_padding"] += 4
+            exponent = groups["exponent"]
+            temp_exp = exponent = lstrip("0")
+            if exponent != temp_exp:
+                self._formatter["exponent_length"] = len(exponent)
+                self._formatter["exponent_zero_pad"] = len(exponent) - len(temp_exp)
         else:
             significand = self._token
         parts = significand.split(".")
@@ -327,6 +334,17 @@ class ValueNode(SyntaxNodeBase):
                     value=value, **self._formatter
                 )
                 temp = temp.replace("e", self._formatter["divider"])
+                temp_match = self._SCIENTIFIC_FINDER.match(temp)
+                exponent = temp_match.group("exponent")
+                start, end = temp_math.span("exponent")
+                new_exp_temp = "{value:0<{zero_padding}}.d".format(
+                    value=int(exponent),
+                    zero_padding=self._formatter["exponent_zero_pad"],
+                )
+                new_exp = "{temp:<{value_length}}".format(
+                    temp=new_exp_temp, value_length=self._FORMATTER["exponent_length"]
+                )
+                temp = temp[0:start] + new_exp + temp[end:]
             else:
                 temp = "{value:0={sign}0{zero_padding}.{precision}f}".format(
                     value=value, **self._formatter
