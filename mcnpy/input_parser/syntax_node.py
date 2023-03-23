@@ -1,5 +1,6 @@
 from abc import ABC, abstractmethod
 import enum
+import math
 from mcnpy import input_parser
 from mcnpy.input_parser.shortcuts import Shortcuts
 from mcnpy.geometry_operators import Operator
@@ -374,6 +375,23 @@ class ValueNode(SyntaxNodeBase):
     def value(self, value):
         self._value = value
 
+    def __eq__(self, other):
+        if not isinstance(other, (type(self), str, int, float)):
+            raise TypeError(
+                f"ValueNode can't be equal to {type(other)} type. {other} given."
+            )
+        if isinstance(other, ValueNode):
+            other_val = other.value
+            if self.type != other.type:
+                return False
+        else:
+            other_val = other
+            if self.type != type(other):
+                return False
+        if self.type == float:
+            return math.isclose(self.value, other_val)
+        return self.value == other_val
+
 
 class ParticleNode(SyntaxNodeBase):
     _letter_finder = re.compile(r"([a-zA-Z])")
@@ -492,6 +510,18 @@ class ListNode(SyntaxNodeBase):
 
     def remove(self, obj):
         self.nodes.remove(obj)
+
+    def __eq__(self, other):
+        if not isinstance(other, (type(self), list)):
+            raise TypeError(
+                f"ListNode can only be compared to a ListNode or List. {other} given."
+            )
+        if len(self) != len(other):
+            return False
+        for lhs, rhs in zip(self, other):
+            if lhs != rhs:
+                return False
+        return True
 
 
 class IsotopesNode(SyntaxNodeBase):
