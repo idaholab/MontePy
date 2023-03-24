@@ -211,6 +211,7 @@ class CellModifierInput(DataInputAbstract):
             self._create_default_tree()
         if not self.in_cell_block:
             new_vals = self._collect_new_values()
+            self.data.update_with_new_values(new_vals)
 
     def format_for_mcnp_input(self, mcnp_version):
         """

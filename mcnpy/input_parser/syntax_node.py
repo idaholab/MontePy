@@ -460,9 +460,46 @@ class ParticleNode(SyntaxNodeBase):
 class ListNode(SyntaxNodeBase):
     def __init__(self, name):
         super().__init__(name)
+        self._shortcuts = []
 
     def __repr__(self):
         return f"(list: {self.name}, {self.nodes})"
+
+    def update_with_new_values(self, new_vals):
+        new_val_idx = {}
+        # build map of object to index in new vals
+        for i, val in enumerate(new_vals):
+            new_val_idx[id(val)] = i
+        # create "pointer" list from old objects to new values
+        old_val_idx = []
+        to_remove = set()
+        for val in self:
+            if id(val) in new_val_idx:
+                old_val_idx.append(new_val_idx[id(val)])
+            else:
+                to_remove.add(val)
+        # Delete orphaned objects
+        for obj in to_remove:
+            try:
+                self._nodes.remove(obj)
+            # otherwise it is in the shortcuts
+            except ValueError:
+                # TODO this is almost n*m time. Does this matter?
+                for shortcut in self._shortcuts:
+                    try:
+                        shortcut._nodes.remove(obj)
+                        break
+                    except ValueError:
+                        continue
+        self._expand_shortcuts(new_vals, old_val_idx)
+
+    def _expand_shortcuts(self, new_vals, old_val_idx):
+        pass
+
+    def append(self, val):
+        if isinstance(val, ShortcutNode):
+            self._shortcuts.append(val)
+        super().append(val)
 
     @property
     def value(self):
