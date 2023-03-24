@@ -494,7 +494,32 @@ class ListNode(SyntaxNodeBase):
         self._expand_shortcuts(new_vals, old_val_idx)
 
     def _expand_shortcuts(self, new_vals, old_val_idx):
-        pass
+        starts = []
+        ends = []
+        # build index maps of boundaries
+        for shortcut in self._shortcuts:
+            first = shortcut.nodes[0]
+            last = shortcut.nodes[-1]
+            starts.append(old_val_idx[id(first)])
+            ends.append(old_val_idx[id(last)])
+        # try to consume nearby nodes
+        # TODO these iterations are probably inefficient
+        to_delete = set()
+        for i, shortcut in enumerate(self._shortcuts):
+            for direction, edge in ((-1, 1), (starts, ends)):
+                try:
+                    next_edge = edge[i + direction]
+                except IndexError:
+                    next_edge = None
+                idx = edge[i]
+                for node in self[idx:next_edge:direction]:
+                    if shortcut.consume_edge_node(node, direction):
+                        to_delete.add(node)
+                    else:
+                        break
+        # delete items consumed by shortcuts
+        for obj in to_delete:
+            self._nodes.remove(obj)
 
     def append(self, val):
         if isinstance(val, ShortcutNode):
@@ -688,6 +713,31 @@ class ShortcutNode(ListNode):
             self.append(p.number_phrase)
         else:
             self.append(p.number_phrase1)
+
+    def _can_consume_node(self, node, direction):
+        if self._type == Shortcuts.JUMP:
+            if isinstance(node, Jump):
+                return True
+
+        return False
+
+    # TODO create method for shortcuts to reject children
+    def consume_edge_node(self, node, direction):
+        if self._can_consume_node(node, direction):
+            if direction == 1:
+                self._nodes.append(node)
+            else:
+                # TODO should we do deque here?
+                self._nodes.insert(0, node)
+            return True
+        return False
+
+    def _can_recompress(self):
+        if self._type == Shortcuts.JUMP:
+            for node in self.nodes:
+                if not isinstance(node, Jump):
+                    return False
+            return True
 
     # TODO implement format to recompress
     def format(self):
