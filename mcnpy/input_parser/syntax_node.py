@@ -809,27 +809,39 @@ class ShortcutNode(ListNode):
 
     # TODO implement format to recompress
     def format(self):
-        if self._can_recompress:
-            if self._type == Shortcuts.JUMP:
-                num_jumps = len(self.nodes)
-                if "j" in self._original[0]:
-                    j = "j"
-                else:
-                    j = "J"
-                if num_jumps == 1 and "1" not in self._original[0]:
-                    num_jumps = ""
-
-                temp = f"{num_jumps}{j}"
-            if self.end_padding:
-                pad_str = self.end_padding.format()
-            else:
-                pad_str = ""
-            return f"{temp}{pad_str}"
-        else:
+        if not self._can_recompress:
             ret = ""
             for node in self.nodes:
                 ret += node.format()
             return ret
+
+        if self._type == Shortcuts.JUMP:
+            num_jumps = len(self.nodes)
+            if "j" in self._original[0]:
+                j = "j"
+            else:
+                j = "J"
+            if num_jumps == 1 and "1" not in self._original[0]:
+                num_jumps = ""
+
+            temp = f"{num_jumps}{j}"
+
+        # repeat
+        if self._type == Shortcuts.REPEAT:
+            first_val = self.nodes[0].format()
+            num_repeats = len(self.nodes) - 1
+            if "r" in self.original[1]:
+                r = "r"
+            else:
+                r = "R"
+            if num_repeats == 1 and "1" not in self._original[1]:
+                num_repeats = ""
+            temp = f"{first_val}{num_repeats}{r}"
+        if self.end_padding:
+            pad_str = self.end_padding.format()
+        else:
+            pad_str = ""
+        return f"{temp}{pad_str}"
 
 
 class ClassifierNode(SyntaxNodeBase):
