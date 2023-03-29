@@ -728,6 +728,9 @@ class ShortcutNode(ListNode):
             else:
                 new_val = begin + spacing * (i + 1)
             self.append(ValueNode(str(new_val), float))
+        self._begin = begin
+        self._end = end
+        self._spacing = spacing
         if hasattr(p, "geometry_term"):
             self.append(p.number_phrase)
         else:
@@ -738,7 +741,29 @@ class ShortcutNode(ListNode):
             if isinstance(node, Jump):
                 return True
 
+        # REPEAT
+        elif self._type == Shortcuts.REPEAT:
+            if self.nodes[-1].type != node.type:
+                return False
+            if self.nodes[-1].type in {int, float} and math.isclose(
+                self.nodes[-1].value, node.value
+            ):
+                return True
+            elif self.nodes[-1].value == node.value:
+                return True
+        elif self._type in {Shortcuts.INTERPOLATE, Shortcuts.LOG_INTERPOLATE}:
+            return self._is_valid_interpolate_edge()
+        # Multiply can only ever have 1 value
+        elif self._type == Shortcuts.MULTIPLY:
+            return False
         return False
+
+    def _is_valid_interpolate_edge(self, node):
+        if self._type == Shortcuts.LOG_INTERPOLATE:
+            new_val = 10 ** (self._end + self._spacing)
+        else:
+            new_val = self._end + self._spacing
+        return math.isclose(new_val, node.value)
 
     # TODO create method for shortcuts to reject children
     def consume_edge_node(self, node, direction):
@@ -776,6 +801,11 @@ class ShortcutNode(ListNode):
             else:
                 pad_str = ""
             return f"{temp}{pad_str}"
+        else:
+            ret = ""
+            for node in self.nodes:
+                ret += node.format()
+            return ret
 
 
 class ClassifierNode(SyntaxNodeBase):
