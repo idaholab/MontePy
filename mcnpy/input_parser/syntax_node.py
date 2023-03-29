@@ -816,32 +816,45 @@ class ShortcutNode(ListNode):
             return ret
 
         if self._type == Shortcuts.JUMP:
-            num_jumps = len(self.nodes)
-            if "j" in self._original[0]:
-                j = "j"
-            else:
-                j = "J"
-            if num_jumps == 1 and "1" not in self._original[0]:
-                num_jumps = ""
-
-            temp = f"{num_jumps}{j}"
-
+            temp = self._format_jump()
         # repeat
-        if self._type == Shortcuts.REPEAT:
-            first_val = self.nodes[0].format()
-            num_repeats = len(self.nodes) - 1
-            if "r" in self.original[1]:
-                r = "r"
-            else:
-                r = "R"
-            if num_repeats == 1 and "1" not in self._original[1]:
-                num_repeats = ""
-            temp = f"{first_val}{num_repeats}{r}"
+        elif self._type == Shortcuts.REPEAT:
+            temp = self._format_repeat()
+        elif self._type == Shortcuts.MULTIPY:
+            temp = self._format_multiply()
         if self.end_padding:
             pad_str = self.end_padding.format()
         else:
             pad_str = ""
         return f"{temp}{pad_str}"
+
+    def _format_jump(self):
+        num_jumps = len(self.nodes)
+        if "j" in self._original[0]:
+            j = "j"
+        else:
+            j = "J"
+        if num_jumps == 1 and "1" not in self._original[0]:
+            num_jumps = ""
+
+        return f"{num_jumps}{j}"
+
+    def _format_repeat(self):
+        first_val = self.nodes[0].format()
+        num_repeats = len(self.nodes) - 1
+        if "r" in self.original[1]:
+            r = "r"
+        else:
+            r = "R"
+        if num_repeats == 1 and "1" not in self._original[1]:
+            num_repeats = ""
+        return f"{first_val}{num_repeats}{r}"
+
+    def _format_multiply(self):
+        first_val = self.nodes[0].format()
+        multiplier = self.nodes[1].value / self.nodes[0].value
+        # TODO create phony ValueNode to format multiplier
+        return ""
 
 
 class ClassifierNode(SyntaxNodeBase):
