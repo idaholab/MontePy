@@ -637,6 +637,7 @@ class ShortcutNode(ListNode):
 
     def __init__(self, p):
         self._type = None
+        self._end_pad = None
         for search_str, shortcut in self._shortcut_names.items():
             if hasattr(p, search_str):
                 super().__init__(search_str.lower())
@@ -652,6 +653,18 @@ class ShortcutNode(ListNode):
             self._expand_jump(p)
         elif self._type in {Shortcuts.INTERPOLATE, Shortcuts.LOG_INTERPOLATE}:
             self._expand_interpolate(p)
+
+    @property
+    def end_padding(self):
+        return self._end_pad
+
+    @end_padding.setter
+    def end_padding(self, padding):
+        if not isinstance(padding, PaddingNode):
+            raise TypeError(
+                f"End padding must be of type PaddingNode. {padding} given."
+            )
+        self._end_pad = padding
 
     def __repr__(self):
         return f"(shortcut:{self._type}: {self.nodes})"
@@ -752,8 +765,8 @@ class ShortcutNode(ListNode):
                     num_jumps = ""
 
                 temp = f"{num_jumps}{j}"
-            if self.nodes[-1].padding:
-                pad_str = self.nodes[-1].padding.format()
+            if self.end_padding:
+                pad_str = self.end_padding.format()
             else:
                 pad_str = ""
             return f"{temp}{pad_str}"
