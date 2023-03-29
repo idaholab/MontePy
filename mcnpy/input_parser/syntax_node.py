@@ -786,6 +786,26 @@ class ShortcutNode(ListNode):
                 if not isinstance(node, Jump):
                     return False
             return True
+        elif self._type == Shortcuts.REPEAT:
+            start_val = self.nodes[0].value
+            for node in self.nodes:
+                if not math.isclose(start_val, node.value):
+                    return False
+            return True
+        elif self._type == Shortcuts.MULTIPLY:
+            return self.nodes[0].type == self.nodes[-1].type
+        else:
+            if self._type == Shortcuts.LOG_INTERPOLATE:
+                is_log = True
+            else:
+                is_log = False
+            for i, node in enumerate(self.nodes):
+                new_val = self._begin + self._spacing * (i + 1)
+                if is_log:
+                    new_val = 10**new_val
+                if not math.isclose(new_val, node.value):
+                    return False
+            return True
 
     # TODO implement format to recompress
     def format(self):
