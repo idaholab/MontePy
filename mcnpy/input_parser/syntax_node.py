@@ -317,13 +317,19 @@ class ValueNode(SyntaxNodeBase):
             return False
         return True
 
+    @property
+    def _print_value(self):
+        if self._type == int and self.is_negative:
+            return -self.value
+        return self.value
+
     def format(self):
         # TODO throw warning when things expand
         self._reverse_engineer_formatting()
         if issubclass(self.type, enum.Enum):
             value = self.value.value
         else:
-            value = self.value
+            value = self._print_value
         if self._type == int or self._can_float_to_int_happen():
             temp = "{value:0={sign}{zero_padding}g}".format(
                 value=value, **self._formatter
