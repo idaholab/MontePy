@@ -752,17 +752,21 @@ class ShortcutNode(ListNode):
             elif self.nodes[-1].value == node.value:
                 return True
         elif self._type in {Shortcuts.INTERPOLATE, Shortcuts.LOG_INTERPOLATE}:
-            return self._is_valid_interpolate_edge()
+            return self._is_valid_interpolate_edge(node, direction)
         # Multiply can only ever have 1 value
         elif self._type == Shortcuts.MULTIPLY:
             return False
         return False
 
-    def _is_valid_interpolate_edge(self, node):
-        if self._type == Shortcuts.LOG_INTERPOLATE:
-            new_val = 10 ** (self._end + self._spacing)
+    def _is_valid_interpolate_edge(self, node, direction):
+        if direction == 1:
+            edge = self._end
         else:
-            new_val = self._end + self._spacing
+            edge = self._begin
+        if self._type == Shortcuts.LOG_INTERPOLATE:
+            new_val = 10 ** (edge + direction * self._spacing)
+        else:
+            new_val = edge + direction * self._spacing
         return math.isclose(new_val, node.value)
 
     # TODO create method for shortcuts to reject children
