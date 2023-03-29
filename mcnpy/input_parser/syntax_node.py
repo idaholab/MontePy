@@ -750,7 +750,13 @@ class ShortcutNode(ListNode):
                     j = "J"
                 if num_jumps == 1 and "1" not in self._original[0]:
                     num_jumps = ""
-                return f"{num_jumps}{j}"
+
+                temp = f"{num_jumps}{j}"
+            if self.nodes[-1].padding:
+                pad_str = self.nodes[-1].padding.format()
+            else:
+                pad_str = ""
+            return f"{temp}{pad_str}"
 
 
 class ClassifierNode(SyntaxNodeBase):
