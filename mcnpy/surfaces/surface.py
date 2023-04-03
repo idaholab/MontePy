@@ -164,7 +164,7 @@ class Surface(Numbered_MCNP_Object):
         """
         pass
 
-    @make_prop_pointer("_periodic_surface", types=(), deletable=False)
+    @make_prop_pointer("_periodic_surface", types=(), deletable=True)
     def periodic_surface(self):
         """
         The surface that this surface is periodic with respect to
