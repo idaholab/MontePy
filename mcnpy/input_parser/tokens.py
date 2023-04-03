@@ -10,6 +10,7 @@ class MCNP_Lexer(Lexer):
         COMMENT,
         COMPLEMENT,
         DOLLAR_COMMENT,
+        FILE_PATH,
         INTERPOLATE,
         JUMP,
         KEYWORD,
@@ -174,6 +175,8 @@ class MCNP_Lexer(Lexer):
     MULTIPLY = r"[+\-]?[0-9]+\.?[0-9]*E?[+\-]?[0-9]*M"
 
     REPEAT = r"\d*R"
+
+    FILE_PATH = r'[^><:"|?*]+'
 
 
 class ParticleLexer(MCNP_Lexer):
