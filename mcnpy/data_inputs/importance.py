@@ -46,7 +46,7 @@ class Importance(CellModifierInput):
                 try:
                     value = node.value
                     assert value >= 0
-                    values.append(value)
+                    values.append(node)
                 except (AttributeError, AssertionError) as e:
                     raise MalformedInputError(
                         input, f"Importances must be ≥ 0 value: {node} given"
@@ -166,7 +166,7 @@ class Importance(CellModifierInput):
             for particle in self._particle_importances:
                 for i, cell in enumerate(self._problem.cells):
                     value = self._particle_importances[particle][i]
-                    cell.importance[particle] = value
+                    cell.importance._particle_importances[particle] = value
                     cell.importance._mutated = False
 
     @property
