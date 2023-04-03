@@ -95,6 +95,9 @@ def make_prop_pointer(
         if types is not None:
 
             def setter(self, value):
+                nonlocal types
+                if isinstance(types, tuple) and len(types) == 0:
+                    types = type(self)
                 if not isinstance(value, types):
                     raise TypeError(f"{func.__name__} must be of type: {types}")
                 if base_type is not None and not isinstance(value, base_type):
