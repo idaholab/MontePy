@@ -5,7 +5,7 @@ import os
 
 import mcnpy
 from mcnpy.data_inputs import material, thermal_scattering, volume
-from mcnpy.input_parser.mcnp_input import Input, Comment, Message, Title, ReadInput
+from mcnpy.input_parser.mcnp_input import Input, Comment, Jump, Message, Title, ReadInput
 from mcnpy.particle import Particle
 import numpy as np
 
@@ -809,11 +809,11 @@ class testFullFileIntegration(TestCase):
     def test_lattice_push_to_cells(self):
         problem = copy.deepcopy(self.simple_problem)
         lattices = [1, 2, Jump(), Jump()]
-        card = Card(
+        card = Input(
             ["Lat " + " ".join(list(map(str, lattices)))],
             mcnpy.input_parser.block_type.BlockType.DATA,
         )
-        lattice = mcnpy.data_cards.lattice_card.LatticeCard(card)
+        lattice = mcnpy.data_inputs.lattice_input.LatticeInput(card)
         lattice.link_to_problem(problem)
         lattice.push_to_cells()
         for cell, answer in zip(problem.cells, lattices):
