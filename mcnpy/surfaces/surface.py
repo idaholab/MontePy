@@ -29,9 +29,9 @@ class Surface(Numbered_MCNP_Object):
     def __init__(self, input=None, comments=None):
         super().__init__(input, self._parser, comments)
         self._periodic_surface = None
-        self._old_periodic_surface = None
+        self._old_periodic_surface = self._generate_default_node(int, None)
         self._transform = None
-        self._old_transform_number = None
+        self._old_transform_number = self._generate_default_node(int, None)
         self._is_reflecting = False
         self._is_white_boundary = False
         self._surface_constants = []
