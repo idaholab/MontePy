@@ -223,7 +223,7 @@ class Surface(Numbered_MCNP_Object):
             f"constants: {self.surface_constants}"
         )
 
-    def update_pointers(self, surfaces, data_cards):
+    def update_pointers(self, surfaces, data_inputs):
         """
         Updates the internal pointers to the appropriate objects.
 
