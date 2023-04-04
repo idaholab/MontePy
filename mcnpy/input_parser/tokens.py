@@ -176,7 +176,7 @@ class MCNP_Lexer(Lexer):
 
     REPEAT = r"\d*R"
 
-    FILE_PATH = r'[^><:"|?*]+'
+    FILE_PATH = r'[^><:"%,;=&\(\)|?*\s]+'
 
 
 class ParticleLexer(MCNP_Lexer):
