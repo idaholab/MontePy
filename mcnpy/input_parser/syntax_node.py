@@ -477,6 +477,7 @@ class ListNode(SyntaxNodeBase):
         for i, val in enumerate(new_vals):
             new_val_idx[id(val)] = i
         # create "pointer" list from old objects to new values
+        # TODO any value of pointers?
         old_val_idx = []
         to_remove = set()
         for val in self:
@@ -497,17 +498,18 @@ class ListNode(SyntaxNodeBase):
                         break
                     except ValueError:
                         continue
-        self._expand_shortcuts(new_vals, old_val_idx)
+        # TODO insert new values in
+        self._expand_shortcuts(new_vals, new_val_idx)
 
-    def _expand_shortcuts(self, new_vals, old_val_idx):
+    def _expand_shortcuts(self, new_vals, new_val_idx):
         starts = []
         ends = []
         # build index maps of boundaries
         for shortcut in self._shortcuts:
             first = shortcut.nodes[0]
             last = shortcut.nodes[-1]
-            starts.append(old_val_idx[id(first)])
-            ends.append(old_val_idx[id(last)])
+            starts.append(new_val_idx[id(first)])
+            ends.append(new_val_idx[id(last)])
         # try to consume nearby nodes
         # TODO these iterations are probably inefficient
         to_delete = set()
@@ -518,7 +520,7 @@ class ListNode(SyntaxNodeBase):
                 except IndexError:
                     next_edge = None
                 idx = edge[i]
-                for node in self[idx:next_edge:direction]:
+                for node in new_vals[idx:next_edge:direction]:
                     if shortcut.consume_edge_node(node, direction):
                         to_delete.add(node)
                     else:
@@ -526,6 +528,10 @@ class ListNode(SyntaxNodeBase):
         # delete items consumed by shortcuts
         for obj in to_delete:
             self._nodes.remove(obj)
+
+    # TODO
+    def _find_hanging_jumps(self, new_vals, old_val_idx):
+        pass
 
     def append(self, val):
         if isinstance(val, ShortcutNode):
