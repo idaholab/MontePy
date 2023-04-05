@@ -4,7 +4,7 @@ from mcnpy.data_inputs.transform import Transform
 from mcnpy.errors import *
 from mcnpy.input_parser.block_type import BlockType
 from mcnpy.input_parser.mcnp_input import Input, Jump
-from mcnpy.input_parser.syntax_node import ValueNode
+from mcnpy.input_parser import syntax_node
 from mcnpy.mcnp_object import MCNP_Object
 from mcnpy.universe import Universe
 from mcnpy.utilities import *
@@ -51,7 +51,7 @@ class Fill(CellModifierInput):
             self._old_numbers = []
             values = self.data
             for value in values:
-                if isinstance(value, ValueNode):
+                if isinstance(value, syntax_node.ValueNode):
                     try:
                         value._convert_to_int()
                         assert value.value >= 0
@@ -67,6 +67,20 @@ class Fill(CellModifierInput):
                     raise TypeError(
                         f"Value: {value} cannot be parsed as a lattice as a str, or Jump"
                     )
+
+    def _generate_default_tree(self):
+        list_node = syntax_node.ListNode("number sequence")
+        list_node.append(self._generate_default_node(float, None))
+        classifier = syntax_node.ClassifierNode()
+        classifier.prefix = "fill"
+        self._tree = syntax_node.SyntaxNode(
+            "fill",
+            {
+                "classifier": classifier,
+                "param_seperator": self._generate_default_node(str, "=", None),
+                "data": list_node,
+            },
+        )
 
     def _parse_cell_input(self, key, value):
         """
@@ -95,7 +109,7 @@ class Fill(CellModifierInput):
                 # ensure only one universe is given
                 if (
                     len(data) >= 2
-                    and isinstance(data[1], ValueNode)
+                    and isinstance(data[1], syntax_node.ValueNode)
                     and "(" != data[1].value
                 ):
                     raise ValueError(
@@ -313,7 +327,7 @@ class Fill(CellModifierInput):
         """
         if isinstance(self._old_numbers, list):
             return [
-                num.value if isinstance(num, ValueNode) else num
+                num.value if isinstance(num, syntax_node.ValueNode) else num
                 for num in self._old_numbers
             ]
         return self._old_numbers

@@ -39,16 +39,20 @@ class CellModifierInput(DataInputAbstract):
             raise TypeError("key must be a str")
         if value and not isinstance(value, syntax_node.SyntaxNode):
             raise TypeError("value must be from a SyntaxNode")
+        self._in_cell_block = in_cell_block
+        self._in_key = key
+        self._in_value = value
         if key and in_cell_block:
             self._set_in_cell_block = True
             self._tree = value
             self._data = value["data"]
         else:
             self._set_in_cell_block = False
-            self._mutated = False
-        self._in_cell_block = in_cell_block
-        self._in_key = key
-        self._in_value = value
+            self._generate_default_tree()
+
+    @abstractmethod
+    def _generate_default_tree(self):
+        pass
 
     @property
     def in_cell_block(self):

@@ -54,11 +54,12 @@ class Importance(CellModifierInput):
             for particle in self.particle_classifiers:
                 self._particle_importances[particle] = values
 
-    def _create_default_tree(self):
+    def _generate_default_tree(self):
         classifier = syntax_node.ClassifierNode()
         classifier.prefix = "imp"
         particles = syntax_node.ParticleNode("imp particle", "n")
-        particles.particles = self._problem.mode.particles
+        if self._problem:
+            particles.particles = self._problem.mode.particles
         classifier.particles = particles
         list_node = syntax_node.ListNode("imp data")
         if not self.in_cell_block:
@@ -227,7 +228,7 @@ class Importance(CellModifierInput):
 
     def _update_values(self):
         if not hasattr(self, "_tree"):
-            self._create_default_tree()
+            self._generate_default_tree()
 
 
 def __create_importance_getter(particle_type):

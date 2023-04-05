@@ -3,7 +3,7 @@ from mcnpy.data_inputs.cell_modifier import CellModifierInput
 from mcnpy.errors import *
 from mcnpy.input_parser.constants import DEFAULT_VERSION
 from mcnpy.input_parser.mcnp_input import Jump
-from mcnpy.input_parser.syntax_node import ValueNode
+from mcnpy.input_parser import syntax_node
 from mcnpy.mcnp_object import MCNP_Object
 from mcnpy.universe import Universe
 from mcnpy.utilities import *
@@ -56,6 +56,20 @@ class UniverseInput(CellModifierInput):
                 elif isinstance(node, Jump):
                     self._old_numbers.append(node)
 
+    def _generate_default_tree(self):
+        list_node = syntax_node.ListNode("number sequence")
+        list_node.append(self._generate_default_node(int, None))
+        classifier = syntax_node.ClassifierNode()
+        classifier.prefix = "u"
+        self._tree = syntax_node.SyntaxNode(
+            "universe",
+            {
+                "classifier": classifier,
+                "param_seperator": self._generate_default_node(str, "=", None),
+                "data": list_node,
+            },
+        )
+
     @staticmethod
     def _class_prefix():
         return "u"
@@ -76,7 +90,7 @@ class UniverseInput(CellModifierInput):
     def old_numbers(self):
         ret = []
         for value in self._old_numbers:
-            if isinstance(value, ValueNode):
+            if isinstance(value, syntax_node.ValueNode):
                 ret.append(value.value)
             else:
                 ret.append(value)

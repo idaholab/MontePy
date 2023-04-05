@@ -2,6 +2,7 @@ from mcnpy.data_inputs.cell_modifier import CellModifierInput
 from mcnpy.errors import *
 from mcnpy.input_parser.constants import DEFAULT_VERSION
 from mcnpy.input_parser.mcnp_input import Jump
+from mcnpy.input_parser import syntax_node
 from mcnpy.mcnp_object import MCNP_Object
 from mcnpy.utilities import *
 
@@ -49,7 +50,7 @@ class Volume(CellModifierInput):
             if "keyword" in tree and tree["keyword"].value.lower() == "no":
                 self._calc_by_mcnp = False
             for node in tree["data"]:
-                if not isinstance(node, Jump):
+                if not isinstance(node, Jump) and node.value is not None:
                     try:
                         assert node.value >= 0
                         self._volume.append(node)
@@ -59,6 +60,20 @@ class Volume(CellModifierInput):
                         )
                 elif isinstance(node, Jump):
                     self._volume.append(node)
+
+    def _generate_default_tree(self):
+        list_node = syntax_node.ListNode("number sequence")
+        list_node.append(self._generate_default_node(float, None))
+        classifier = syntax_node.ClassifierNode()
+        classifier.prefix = "vol"
+        self._tree = syntax_node.SyntaxNode(
+            "volume",
+            {
+                "classifier": classifier,
+                "param_seperator": self._generate_default_node(str, "=", None),
+                "data": list_node,
+            },
+        )
 
     @staticmethod
     def _class_prefix():

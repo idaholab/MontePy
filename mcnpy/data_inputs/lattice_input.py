@@ -3,7 +3,7 @@ from mcnpy.data_inputs.cell_modifier import CellModifierInput
 from mcnpy.data_inputs.lattice import Lattice
 from mcnpy.errors import *
 from mcnpy.input_parser.mcnp_input import Jump
-from mcnpy.input_parser.syntax_node import ValueNode
+from mcnpy.input_parser import syntax_node
 from mcnpy.mcnp_object import MCNP_Object
 from mcnpy.utilities import *
 
@@ -54,7 +54,7 @@ class LatticeInput(CellModifierInput):
             self._lattice = []
             words = self.data
             for word in words:
-                if isinstance(word, ValueNode):
+                if isinstance(word, syntax_node.ValueNode):
                     try:
                         value = word
                         value._convert_to_int()
@@ -70,6 +70,22 @@ class LatticeInput(CellModifierInput):
                     raise TypeError(
                         f"Word: {word} cannot be parsed as a lattice as a str, or Jump"
                     )
+
+    def _generate_default_tree(self):
+        list_node = syntax_node.ListNode("number sequence")
+        data = self._generate_default_node(int, None)
+        data._convert_to_enum(Lattice, True, int)
+        list_node.append(data)
+        classifier = syntax_node.ClassifierNode()
+        classifier.prefix = "lat"
+        self._tree = syntax_node.SyntaxNode(
+            "lattice",
+            {
+                "classifier": classifier,
+                "param_seperator": self._generate_default_node(str, "=", None),
+                "data": list_node,
+            },
+        )
 
     @staticmethod
     def _class_prefix():
