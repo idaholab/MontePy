@@ -327,6 +327,8 @@ class ValueNode(SyntaxNodeBase):
     def format(self):
         # TODO throw warning when things expand
         self._reverse_engineer_formatting()
+        if self.value is None:
+            return ""
         if issubclass(self.type, enum.Enum):
             value = self.value.value
         else:
