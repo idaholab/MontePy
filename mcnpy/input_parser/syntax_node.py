@@ -486,12 +486,12 @@ class ListNode(SyntaxNodeBase):
         # create "pointer" list from old objects to new values
         # TODO any value of pointers?
         old_val_idx = []
-        to_remove = set()
+        to_remove = []
         for val in self:
             if id(val) in new_val_idx:
                 old_val_idx.append(new_val_idx[id(val)])
             else:
-                to_remove.add(val)
+                to_remove.append(val)
         # Delete orphaned objects
         for obj in to_remove:
             try:
