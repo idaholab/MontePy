@@ -70,7 +70,7 @@ class Surface(Numbered_MCNP_Object):
             # parse surface mnemonic
             try:
                 # enforce enums
-                self._surface_type.value = SurfaceType(self._surface_type.value.upper())
+                self._surface_type._convert_to_enum(SurfaceType)
             except ValueError:
                 raise MalformedInputError(
                     input,
@@ -78,7 +78,7 @@ class Surface(Numbered_MCNP_Object):
                 )
             # parse the parameters
             for entry in self._tree["data"]:
-                self._surface_constants.append(entry.value)
+                self._surface_constants.append(entry)
 
     @property
     def allowed_keywords(self):
@@ -132,19 +132,24 @@ class Surface(Numbered_MCNP_Object):
 
         :rtype: list
         """
-        return self._surface_constants
+        ret = []
+        for val in self._surface_constants:
+            ret.append(val.value)
+        return ret
 
     @surface_constants.setter
     def surface_constants(self, constants):
         if not isinstance(constants, list):
             raise TypeError("surface_constants must be a list")
+        if len(constants) != len(self._surface_constants):
+            raise ValueError(f"Cannot change the length of the surface constants.")
         for constant in constants:
             if not isinstance(constant, float):
                 raise TypeError(
                     f"The surface constant provided: {constant} must be a float"
                 )
-        self._mutated = True
-        self._surface_constants = constants
+        for i, value in enumerate(constants):
+            self._surface_constants[i].value = value
 
     @make_prop_val_node("_old_transform_number")
     def old_transform_number(self):

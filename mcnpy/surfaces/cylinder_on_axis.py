@@ -1,6 +1,7 @@
 from .surface_type import SurfaceType
 from .surface import Surface
 from mcnpy.errors import *
+from mcnpy.utilities import *
 
 
 class CylinderOnAxis(Surface):
@@ -26,23 +27,14 @@ class CylinderOnAxis(Surface):
         else:
             self._surface_constants = [None]
 
-    @property
+    @make_prop_val_node("_radius", (float, int), float)
     def radius(self):
         """
         The radius of the cylinder
 
         :rtype: float
         """
-        return self._radius
-
-    @radius.setter
-    def radius(self, radius):
-        if not isinstance(radius, float):
-            raise TypeError("radius must be a float")
-        if radius <= 0.0:
-            raise ValueError("radius must be larger than 0")
-        self._mutated = True
-        self._radius = radius
+        pass
 
     def validate(self):
         super().validate()

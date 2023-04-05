@@ -1,6 +1,7 @@
 from .surface_type import SurfaceType
 from .surface import Surface
 from mcnpy.errors import *
+from mcnpy.utilities import *
 
 
 class AxisPlane(Surface):
@@ -28,22 +29,14 @@ class AxisPlane(Surface):
         else:
             self._surface_constants = [None]
 
-    @property
+    @make_prop_val_node("_location", (float, int), float)
     def location(self):
         """
         The location of the plane in space.
 
         :rtype: float
         """
-        return self._location
-
-    @location.setter
-    def location(self, location):
-        if not isinstance(location, float):
-            raise TypeError("location must be a float")
-        self._mutated = True
-        self._location = location
-        self._surface_constants[0] = location
+        pass
 
     def validate(self):
         super().validate()
