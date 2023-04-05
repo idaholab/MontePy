@@ -519,7 +519,7 @@ class ListNode(SyntaxNodeBase):
             ends.append(new_val_idx[id(last)])
         # try to consume nearby nodes
         # TODO these iterations are probably inefficient
-        to_delete = set()
+        to_delete = []
         for i, shortcut in enumerate(self._shortcuts):
             for direction, edge in ((-1, 1), (starts, ends)):
                 try:
@@ -529,7 +529,7 @@ class ListNode(SyntaxNodeBase):
                 idx = edge[i]
                 for node in new_vals[idx:next_edge:direction]:
                     if shortcut.consume_edge_node(node, direction):
-                        to_delete.add(node)
+                        to_delete.append(node)
                     else:
                         break
         # delete items consumed by shortcuts
