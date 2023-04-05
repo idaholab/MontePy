@@ -17,7 +17,7 @@ class AxisPlane(Surface):
     COORDINATE = {SurfaceType.PX: "x", SurfaceType.PY: "y", SurfaceType.PZ: "z"}
 
     def __init__(self, input=None, comments=None):
-        self._location = None
+        self._location = self._generate_default_node(float, None)
         super().__init__(input, comments)
         ST = SurfaceType
         if input:
@@ -25,9 +25,9 @@ class AxisPlane(Surface):
                 raise ValueError("AxisPlane must be a surface of type: PX, PY, or PZ")
             if len(self.surface_constants) != 1:
                 raise ValueError("AxisPlane must have exactly 1 surface constant")
-            self._location = self.surface_constants[0]
+            self._location = self._surface_constants[0]
         else:
-            self._surface_constants = [None]
+            self._surface_constants = [self._location]
 
     @make_prop_val_node("_location", (float, int), float)
     def location(self):

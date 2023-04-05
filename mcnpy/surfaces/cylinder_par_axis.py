@@ -23,8 +23,11 @@ class CylinderParAxis(Surface):
     """
 
     def __init__(self, input=None, comment=None):
-        self._coordinates = None
-        self._radius = None
+        self._coordinates = [
+            self._generate_default_node(float, None),
+            self._generate_default_node(float, None),
+        ]
+        self._radius = self._generate_default_node(float, None)
         super().__init__(input, comment)
         ST = SurfaceType
         if input:
@@ -36,10 +39,10 @@ class CylinderParAxis(Surface):
                 raise ValueError(
                     "CylinderParAxis must have exactly 3 surface_constants"
                 )
-            self._coordinates = self.surface_constants[0:2]
-            self._radius = self.surface_constants[2]
+            self._coordinates = self._surface_constants[0:2]
+            self._radius = self._surface_constants[2]
         else:
-            self._surface_constants = [None] * 3
+            self._surface_constants = [*self._coordinates, self._radius]
 
     @property
     def coordinates(self):

@@ -15,7 +15,7 @@ class CylinderOnAxis(Surface):
     """
 
     def __init__(self, input=None, comments=None):
-        self._radius = None
+        self._radius = self._generate_default_node(float, None)
         super().__init__(input, comments)
         ST = SurfaceType
         if input:
@@ -23,9 +23,9 @@ class CylinderOnAxis(Surface):
                 raise ValueError("CylinderOnAxis must be of surface_type: CX, CY, CZ")
             if len(self.surface_constants) != 1:
                 raise ValueError("CylinderOnAxis only accepts one surface_constant")
-            self._radius = self.surface_constants[0]
+            self._radius = self._surface_constants[0]
         else:
-            self._surface_constants = [None]
+            self._surface_constants = [self._radius]
 
     @make_prop_val_node("_radius", (float, int), float)
     def radius(self):
