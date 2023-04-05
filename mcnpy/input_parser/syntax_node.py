@@ -359,7 +359,11 @@ class ValueNode(SyntaxNodeBase):
             temp = value
         if self.padding:
             if self.padding.nodes[0].isspace():
-                pad_str = "".join(self.padding.nodes[1:])
+                if len(temp) >= self._formatter["value_length"]:
+                    pad_str = " "
+                else:
+                    pad_str = ""
+                pad_str += "".join(self.padding.nodes[1:])
             else:
                 pad_str = "".join(self.padding.nodes)
         else:
