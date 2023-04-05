@@ -24,6 +24,8 @@ class CellParser(MCNP_Parser):
         dict_tree["geometry"] = p.geometry_expr
         if hasattr(p, "parameters"):
             dict_tree["parameters"] = p.parameters
+        else:
+            dict_tree["parameters"] = syntax_node.ParametersNode()
         return syntax_node.SyntaxNode("cell", dict_tree)
 
     @_("number_phrase KEYWORD")
