@@ -163,8 +163,11 @@ class Importance(CellModifierInput):
     def push_to_cells(self):
         if self._problem and not self.in_cell_block:
             self._check_redundant_definitions()
+            # TODO delete
             self._starting_num_cells = len(self._problem.cells)
             for particle in self._particle_importances:
+                if not self._particle_importances[particle]:
+                    continue
                 for i, cell in enumerate(self._problem.cells):
                     value = self._particle_importances[particle][i]
                     cell.importance._particle_importances[particle] = value
