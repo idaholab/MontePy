@@ -221,7 +221,8 @@ class ValueNode(SyntaxNodeBase):
 
     def _convert_to_int(self):
         self._type = int
-        self._value = int(self._token)
+        if self._token is not None:
+            self._value = int(self._token)
         self._formatter = self._FORMATTERS[int].copy()
 
     def _convert_to_enum(self, enum_class, allow_none=False, format_type=str):
@@ -238,8 +239,9 @@ class ValueNode(SyntaxNodeBase):
     def is_negatable_identifier(self, val):
         if val == True:
             self._convert_to_int()
-            self._is_neg = self.value < 0
-            self._value = abs(self._value)
+            if self.value is not None:
+                self._is_neg = self.value < 0
+                self._value = abs(self._value)
         self._is_neg_id = val
 
     @property
