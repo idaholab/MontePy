@@ -5,7 +5,14 @@ import os
 
 import mcnpy
 from mcnpy.data_inputs import material, thermal_scattering, volume
-from mcnpy.input_parser.mcnp_input import Input, Comment, Jump, Message, Title, ReadInput
+from mcnpy.input_parser.mcnp_input import (
+    Input,
+    Comment,
+    Jump,
+    Message,
+    Title,
+    ReadInput,
+)
 from mcnpy.particle import Particle
 import numpy as np
 
@@ -229,7 +236,7 @@ class testFullFileIntegration(TestCase):
             print(cell_num)
             output = problem.cells[cell_num].format_for_mcnp_input((6, 2, 0))
             print(output)
-            self.assertIn("U=350", "\n".join(output))
+            self.assertIn("U=350", "\n".join(output).upper())
 
     def test_problem_mcnp_version_setter(self):
         problem = copy.copy(self.simple_problem)
