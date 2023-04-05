@@ -2,6 +2,7 @@ from mcnpy.cells import Cells
 from mcnpy.data_inputs import importance, fill, lattice_input, universe_input, volume
 from mcnpy.data_inputs.data_parser import PREFIX_MATCHES
 from mcnpy.input_parser.cell_parser import CellParser
+from mcnpy.input_parser import syntax_node
 from mcnpy.errors import *
 from mcnpy.numbered_mcnp_object import Numbered_MCNP_Object
 from mcnpy.data_inputs.material import Material
@@ -583,11 +584,33 @@ class Cell(Numbered_MCNP_Object):
         return False
 
     def _update_values(self):
+        if not hasattr(self, "_tree"):
+            self._generate_default_tree()
         if self.material:
             mat_num = self.material.number
         else:
             mat_num = 0
         self._tree["material"]["mat_number"].value = mat_num
+
+    def _generate_default_tree(self):
+        material = syntax_node.SyntaxNode(
+            "material",
+            {
+                "mat_number": self._generate_default_node(int, None),
+            },
+        )
+        geom_node = self._generate_default_node(int, -1)
+        self._tree = syntax_node.SyntaxNode(
+            "cell",
+            {
+                "cell_num": self._generate_default_node(int, None),
+                "material": material,
+                "geometry": syntax_node.GeometryTree(
+                    "Geometry", [geom_node], ">", geom_node
+                ),
+                "parameters": syntax_node.ParametersNode(),
+            },
+        )
 
     def validate(self):
         """
