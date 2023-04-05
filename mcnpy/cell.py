@@ -106,8 +106,6 @@ class Cell(Numbered_MCNP_Object):
                 prefix = input_class._class_prefix()
                 if input_class in Cell._INPUTS_TO_PROPERTY and prefix in key.lower():
                     attr, ban_repeat = Cell._INPUTS_TO_PROPERTY[input_class]
-                    # TODO how to do this without messing up tree
-                    # del self._parameters[key]
                     input = input_class(in_cell_block=True, key=key, value=value)
                     if not getattr(self, attr).set_in_cell_block:
                         setattr(self, attr, input)
@@ -116,12 +114,27 @@ class Cell(Numbered_MCNP_Object):
                             getattr(self, attr).merge(
                                 input_class(in_cell_block=True, key=key, value=value)
                             )
+        # Add defaults to tree
+        for input_class, (attr, _) in self._INPUTS_TO_PROPERTY.items():
+            has_imp = False
+            if (
+                class_pref := input_class._class_prefix()
+                not in self._tree["parameters"]
+            ):
+                if class_pref == "imp":
+                    for key in self._tree["parameters"].nodes.keys():
+                        if class_pref in key:
+                            has_imp = True
+                            break
+                if not has_imp:
+                    tree = getattr(self, attr)._tree
+                    self._tree["parameters"].append(tree)
 
     def _load_blank_modifiers(self):
         """
         Goes through and populates all the modifier attributes
         """
-        for input_class, (attr, foo) in self._INPUTS_TO_PROPERTY.items():
+        for input_class, (attr, _) in self._INPUTS_TO_PROPERTY.items():
             setattr(self, attr, input_class(in_cell_block=True))
 
     @property
