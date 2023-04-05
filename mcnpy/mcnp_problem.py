@@ -314,7 +314,7 @@ class MCNP_Problem:
         self._surfaces = Surfaces(surfaces)
         self._materials = Materials(materials)
         self._transforms = Transforms(transforms)
-        self._data_cards = sorted(set(self._data_cards + materials + transforms))
+        self._data_inputs = sorted(set(self._data_inputs + materials + transforms))
 
     def write_to_file(self, new_problem):
         """

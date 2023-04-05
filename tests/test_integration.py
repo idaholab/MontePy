@@ -208,7 +208,7 @@ class testFullFileIntegration(TestCase):
         mat = mcnpy.data_inputs.material.Material(card, None)
         in_str = "TR1 0 0 1"
         input = mcnpy.input_parser.mcnp_input.Input([in_str], BT.DATA)
-        transform = mcnpy.data_cards.transform.Transform(input)
+        transform = mcnpy.data_inputs.transform.Transform(input)
         surf.transform = transform
         cell_num = 1000
         cell = mcnpy.Cell()
