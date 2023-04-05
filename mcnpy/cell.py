@@ -1,3 +1,4 @@
+import copy
 from mcnpy.cells import Cells
 from mcnpy.data_inputs import importance, fill, lattice_input, universe_input, volume
 from mcnpy.data_inputs.data_parser import PREFIX_MATCHES
@@ -71,18 +72,18 @@ class Cell(Numbered_MCNP_Object):
         self._old_complement_numbers = set()
         self._number = self._generate_default_node(int, -1)
         super().__init__(input, self._parser, comments)
-        if input:
-            self._old_number = self._tree["cell_num"]
-            # TODO break link
-            self._number = self._old_number
-            mat_tree = self._tree["material"]
-            self._old_mat_number = mat_tree["mat_number"]
-            if self.old_mat_number != 0:
-                self._density_node = mat_tree["density"]
-                self._is_atom_dens = mat_tree.get_value("density") >= 0
-                self._density_node.value = abs(self._density)
-            self._parse_geometry()
-            self._parse_keyword_modifiers()
+        if not input:
+            self._generate_default_tree()
+        self._old_number = copy.deepcopy(self._tree["cell_num"])
+        self._number = self._tree["cell_num"]
+        mat_tree = self._tree["material"]
+        self._old_mat_number = mat_tree["mat_number"]
+        if self.old_mat_number != 0:
+            self._density_node = mat_tree["density"]
+            self._is_atom_dens = mat_tree.get_value("density") >= 0
+            self._density_node.value = abs(self._density)
+        self._parse_geometry()
+        self._parse_keyword_modifiers()
 
     def _parse_geometry(self):
         """
@@ -584,8 +585,6 @@ class Cell(Numbered_MCNP_Object):
         return False
 
     def _update_values(self):
-        if not hasattr(self, "_tree"):
-            self._generate_default_tree()
         if self.material:
             mat_num = self.material.number
         else:
@@ -596,7 +595,8 @@ class Cell(Numbered_MCNP_Object):
         material = syntax_node.SyntaxNode(
             "material",
             {
-                "mat_number": self._generate_default_node(int, None),
+                "mat_number": self._generate_default_node(int, 0),
+                "density": self._generate_default_node(float, None),
             },
         )
         geom_node = self._generate_default_node(int, -1)
