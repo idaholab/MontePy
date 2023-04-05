@@ -219,4 +219,4 @@ class UniverseInput(CellModifierInput):
     def _update_values(self):
         if not hasattr(self, "_tree"):
             self._create_default_tree()
-        # TODO
+        self._tree["data"][0].value = self.universe.number

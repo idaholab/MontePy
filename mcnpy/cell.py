@@ -603,6 +603,8 @@ class Cell(Numbered_MCNP_Object):
         else:
             mat_num = 0
         self._tree["material"]["mat_number"].value = mat_num
+        for input_class, (attr, _) in self._INPUTS_TO_PROPERTY.items():
+            getattr(self, attr)._update_values()
 
     def _generate_default_tree(self):
         material = syntax_node.SyntaxNode(
