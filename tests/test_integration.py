@@ -282,6 +282,7 @@ class testFullFileIntegration(TestCase):
         self.assertIn("1 1 SO", surf.format_for_mcnp_input((6, 2, 0))[0])
         del surf.transform
         self.assertIsNone(surf.transform)
+        self.assertIn("1 SO", surf.format_for_mcnp_input((6, 2, 0))[0])
         with self.assertRaises(TypeError):
             surf.transform = 5
 
