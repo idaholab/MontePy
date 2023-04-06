@@ -40,7 +40,8 @@ class LatticeInput(CellModifierInput):
         :type value: str
         """
         super().__init__(input, comments, in_cell_block, key, value)
-        self._lattice = None
+        self._lattice = self._generate_default_node(int, None)
+        self._lattice._convert_to_enum(Lattice, True, int)
         if self.in_cell_block:
             if key:
                 try:
