@@ -264,7 +264,7 @@ class ValueNode(SyntaxNodeBase):
 
     @is_negative.setter
     def is_negative(self, val):
-        if self._is_negetable_identifier:
+        if self.is_negatable_identifier:
             self._is_neg = val
 
     def _reverse_engineer_formatting(self):
