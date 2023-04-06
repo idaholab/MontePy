@@ -48,7 +48,8 @@ class CellModifierInput(DataInputAbstract):
             self._data = value["data"]
         else:
             self._set_in_cell_block = False
-            self._generate_default_tree()
+            if in_cell_block and key is None and value is None:
+                self._generate_default_tree()
 
     @abstractmethod
     def _generate_default_tree(self):
