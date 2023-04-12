@@ -109,7 +109,7 @@ class SyntaxNode(SyntaxNodeBase):
 
     @property
     def comments(self):
-        for node in self.nodes:
+        for node in self.nodes.values():
             yield from node.comments
 
     def get_trailing_comment(self):
