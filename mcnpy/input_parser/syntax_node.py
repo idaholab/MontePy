@@ -68,7 +68,8 @@ class SyntaxNodeBase(ABC):
 
     def get_trailing_comment(self):
         tail = self.nodes[-1]
-        return tail.get_trailing_comment()
+        if isinstance(tail, type(self)):
+            return tail.get_trailing_comment()
 
 
 class SyntaxNode(SyntaxNodeBase):
@@ -801,7 +802,14 @@ class IsotopesNode(SyntaxNodeBase):
 
     @property
     def comments(self):
-        yield from []
+        for node in self.nodes:
+            for value in node:
+                yield from value.comments
+
+    def get_trailing_comment(self):
+        tail = self.nodes[-1]
+        tail = tail[1]
+        return tail.get_trailing_comment()
 
 
 class ShortcutNode(ListNode):
@@ -1145,6 +1153,10 @@ class ParametersNode(SyntaxNodeBase):
         for node in self.nodes.values():
             ret += node.format()
         return ret
+
+    def get_trailing_comment(self):
+        tail = next(reversed(self.nodes.items()))
+        return tail[1].get_trailing_comment()
 
     @property
     def comments(self):
