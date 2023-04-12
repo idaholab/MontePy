@@ -61,6 +61,11 @@ class SyntaxNodeBase(ABC):
     def format(self):
         pass
 
+    @property
+    @abstractmethod
+    def comments(self):
+        pass
+
 
 class SyntaxNode(SyntaxNodeBase):
     def __init__(self, name, parse_dict):
@@ -96,6 +101,11 @@ class SyntaxNode(SyntaxNodeBase):
             else:
                 ret += node.format()
         return ret
+
+    @property
+    def comments(self):
+        for node in self.nodes:
+            yield from node.comments
 
 
 class GeometryTree(SyntaxNodeBase):
@@ -135,6 +145,11 @@ class GeometryTree(SyntaxNodeBase):
         for node in self.nodes:
             ret += node.format()
         return ret
+
+    @property
+    def comments(self):
+        for node in self.nodes:
+            yield from node.comments
 
 
 class PaddingNode(SyntaxNodeBase):
@@ -483,6 +498,13 @@ class ValueNode(SyntaxNodeBase):
         return temp
 
     @property
+    def comments(self):
+        if self.padding is not None:
+            yield from self.padding.comments
+        else:
+            yield from []
+
+    @property
     def padding(self):
         return self._padding
 
@@ -575,6 +597,10 @@ class ParticleNode(SyntaxNodeBase):
         if upper_match / total_match >= 0.5:
             self._formatter["upper"] = True
 
+    @property
+    def comments(self):
+        yield from []
+
 
 class ListNode(SyntaxNodeBase):
     def __init__(self, name):
@@ -664,6 +690,11 @@ class ListNode(SyntaxNodeBase):
                 strings.append(node)
         return " ".join(strings)
 
+    @property
+    def comments(self):
+        for node in self.nodes:
+            yield from node.comments
+
     def format(self):
         ret = ""
         for node in self.nodes:
@@ -748,6 +779,10 @@ class IsotopesNode(SyntaxNodeBase):
 
     def __iter__(self):
         return iter(self.nodes)
+
+    @property
+    def comments(self):
+        yield from []
 
 
 class ShortcutNode(ListNode):
@@ -1054,6 +1089,13 @@ class ClassifierNode(SyntaxNodeBase):
             f"number: {self.number}, particles: {self.particles})"
         )
 
+    @property
+    def comments(self):
+        if self.padding is not None:
+            yield from self.padding.comments
+        else:
+            yield from []
+
 
 class ParametersNode(SyntaxNodeBase):
     def __init__(self):
@@ -1084,3 +1126,8 @@ class ParametersNode(SyntaxNodeBase):
         for node in self.nodes.values():
             ret += node.format()
         return ret
+
+    @property
+    def comments(self):
+        for node in self.nodes:
+            yield from node.comments
