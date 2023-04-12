@@ -28,21 +28,13 @@ class testFullFileIntegration(TestCase):
         )
 
     def test_original_input(self):
-        cell_order = [Message, Title, Comment]
-        cell_order += [Input] * 5 + [Comment]
-        cell_order += [Comment] + [Input] * 3
-        cell_order += [Comment, Input] * 3
-        cell_order += [Input, Comment] + [Input] * 5
+        cell_order = [Message, Title] + [Input] * 17
         for i, input_ob in enumerate(self.simple_problem.original_inputs):
             self.assertIsInstance(input_ob, cell_order[i])
 
     def test_original_input_dos(self):
         problem = mcnpy.read_input(os.path.join("tests", "inputs", "test_dos.imcnp"))
-        cell_order = [Message, Title, Comment]
-        cell_order += [Input] * 5 + [Comment]
-        cell_order += [Comment] + [Input] * 3
-        cell_order += [Comment, Input] * 3
-        cell_order += [Input, Comment] + [Input] * 5
+        cell_order = [Message, Title] + [Input] * 16
         for i, input_ob in enumerate(problem.original_inputs):
             self.assertIsInstance(input_ob, cell_order[i])
 
