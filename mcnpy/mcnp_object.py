@@ -284,3 +284,7 @@ class MCNP_Object(ABC):
         if not isinstance(problem, mcnpy.mcnp_problem.MCNP_Problem):
             raise TypeError("problem must be an MCNP_Problem")
         self._problem = problem
+
+    @property
+    def trailing_comment(self):
+        return self._tree.get_trailing_comment()
