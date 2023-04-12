@@ -65,7 +65,7 @@ class Volume(CellModifierInput):
         list_node = syntax_node.ListNode("number sequence")
         list_node.append(self._generate_default_node(float, None))
         classifier = syntax_node.ClassifierNode()
-        classifier.prefix = "vol"
+        classifier.prefix = "VOL"
         self._tree = syntax_node.SyntaxNode(
             "volume",
             {

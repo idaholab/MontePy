@@ -60,7 +60,7 @@ class UniverseInput(CellModifierInput):
         list_node = syntax_node.ListNode("number sequence")
         list_node.append(self._generate_default_node(int, None))
         classifier = syntax_node.ClassifierNode()
-        classifier.prefix = "u"
+        classifier.prefix = "U"
         self._tree = syntax_node.SyntaxNode(
             "universe",
             {

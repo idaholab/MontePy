@@ -56,7 +56,7 @@ class Importance(CellModifierInput):
 
     def _generate_default_tree(self):
         classifier = syntax_node.ClassifierNode()
-        classifier.prefix = "imp"
+        classifier.prefix = "IMP"
         particles = syntax_node.ParticleNode("imp particle", "n")
         if self._problem:
             particles.particles = self._problem.mode.particles
