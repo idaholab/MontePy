@@ -221,7 +221,7 @@ class MCNP_Problem:
         """
         Semantically parses the MCNP file provided to the constructor.
         """
-        comment_queue = []
+        trailing_comment = None
         for i, input in enumerate(
             input_syntax_reader.read_input_syntax(self._input_file, self.mcnp_version)
         ):
@@ -235,22 +235,23 @@ class MCNP_Problem:
             elif isinstance(input, mcnp_input.Input):
                 if len(input.input_lines) > 0:
                     if input.block_type == block_type.BlockType.CELL:
-                        cell = Cell(input, comment_queue)
-                        cell.link_to_problem(self)
-                        self._cells.append(cell)
+                        obj = Cell(input)
+                        obj.link_to_problem(self)
+                        self._cells.append(obj)
                     if input.block_type == block_type.BlockType.SURFACE:
-                        surface = surface_builder.surface_builder(input, comment_queue)
-                        surface.link_to_problem(self)
-                        self._surfaces.append(surface)
+                        obj = surface_builder.surface_builder(input)
+                        obj.link_to_problem(self)
+                        self._surfaces.append(obj)
                     if input.block_type == block_type.BlockType.DATA:
-                        data = parse_data(input, comment_queue)
-                        data.link_to_problem(self)
-                        if isinstance(data, Material):
-                            self._materials.append(data)
-                        if isinstance(data, transform.Transform):
-                            self._transforms.append(data)
-                        self._data_inputs.append(data)
-                    comment_queue = []
+                        obj = parse_data(input)
+                        obj.link_to_problem(self)
+                        if isinstance(obj, Material):
+                            self._materials.append(obj)
+                        if isinstance(obj, transform.Transform):
+                            self._transforms.append(obj)
+                        self._data_inputs.append(obj)
+                print(trailing_comment)
+                trailing_comment = obj.trailing_comment
         self.__update_internal_pointers()
 
     def __update_internal_pointers(self):
