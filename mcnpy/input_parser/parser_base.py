@@ -114,11 +114,19 @@ class MCNP_Parser(Parser, metaclass=MetaBuilder):
 
     @_("SPACE", "DOLLAR_COMMENT", "COMMENT")
     def padding(self, p):
-        return syntax_node.PaddingNode(p[0])
+        if hasattr(p, "DOLLAR_COMMENT") or hasattr(p, "COMMENT"):
+            is_comment = True
+        else:
+            is_comment = False
+        return syntax_node.PaddingNode(p[0], is_comment)
 
     @_("padding SPACE", "padding DOLLAR_COMMENT", "padding COMMENT", 'padding "&"')
     def padding(self, p):
-        p[0].append(p[1])
+        if hasattr(p, "DOLLAR_COMMENT") or hasattr(p, "COMMENT"):
+            is_comment = True
+        else:
+            is_comment = False
+        p[0].append(p[1], is_comment)
         return p[0]
 
     @_("parameter", "parameters parameter")

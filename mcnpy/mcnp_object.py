@@ -1,7 +1,6 @@
 from abc import ABC, abstractmethod
 from mcnpy.errors import *
 from mcnpy.input_parser.constants import BLANK_SPACE_CONTINUE, get_max_line_length
-from mcnpy.input_parser.mcnp_input import Comment
 from mcnpy.input_parser.syntax_node import PaddingNode, ParametersNode, ValueNode
 import mcnpy
 import numpy as np
@@ -24,16 +23,6 @@ class MCNP_Object(ABC):
         if input:
             if not isinstance(input, mcnpy.input_parser.mcnp_input.Input):
                 raise TypeError("input must be an Input")
-            if not isinstance(comments, (list, Comment, type(None))):
-                raise TypeError("comments must be either a Comment, a list, or None")
-            if isinstance(comments, list):
-                for comment in comments:
-                    if not isinstance(comment, Comment):
-                        raise TypeError(
-                            f"object {comment} in comments is not a Comment"
-                        )
-            elif isinstance(comments, Comment):
-                comments = [comments]
             self._input_lines = input.input_lines
             self._tree = parser.parse(input.tokenize())
             if self._tree is None:

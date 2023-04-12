@@ -29,7 +29,6 @@ from mcnpy.cell import Cell
 from mcnpy.data_inputs.material import Material
 from mcnpy.data_inputs.transform import Transform
 from mcnpy import geometry_operators
-from mcnpy.input_parser.mcnp_input import Comment
 from mcnpy.input_parser.mcnp_input import Jump
 from mcnpy.particle import Particle
 from mcnpy.surfaces.surface_type import SurfaceType

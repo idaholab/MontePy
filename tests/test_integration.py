@@ -7,7 +7,6 @@ import mcnpy
 from mcnpy.data_inputs import material, thermal_scattering, volume
 from mcnpy.input_parser.mcnp_input import (
     Input,
-    Comment,
     Jump,
     Message,
     Title,

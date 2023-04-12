@@ -319,44 +319,6 @@ class ReadInput(Input):
             f"READ INPUT: {self._block_type}: {self.input_lines} File: {self.file_name}"
         )
 
-
-class Comment(ParsingNode):
-    """
-    Object to represent a full line comment in an MCNP problem.
-
-    This represents only ``C`` style comments and not ``$`` style comments.
-
-    :param input_lines: the lines read straight from the input file.
-    :type input_lines: list
-    :param input_line_num: The line number in a parent input input where this Comment appeared
-    :type input_line_num: int
-    """
-
-    def __init__(self, input_lines, input_line_num=0):
-        super().__init__(input_lines)
-        buff = []
-        for line in input_lines:
-            fragments = re.split(
-                rf"^\s{{0,{BLANK_SPACE_CONTINUE-1}}}C\s", line, flags=re.I
-            )
-            if len(fragments) > 1:
-                comment_line = fragments[1].rstrip()
-            else:
-                comment_line = ""
-            buff.append(comment_line)
-        self._lines = buff
-        self._cutting = False
-        self._input_line_num = input_line_num
-
-    def __str__(self):
-        return f"COMMENT: {len(self._lines)} lines"
-
-    def __repr__(self):
-        ret = "COMMENT:\n"
-        for line in self._lines:
-            ret += line + "\n"
-        return ret
-
     @property
     def lines(self):
         """

@@ -138,9 +138,9 @@ class GeometryTree(SyntaxNodeBase):
 
 
 class PaddingNode(SyntaxNodeBase):
-    def __init__(self, token):
+    def __init__(self, token, is_comment=False):
         super().__init__("padding")
-        self.append(token)
+        self.append(token, is_comment)
 
     def __str__(self):
         return f"(Padding, {self._nodes})"
@@ -156,7 +156,18 @@ class PaddingNode(SyntaxNodeBase):
         val = self.nodes[i]
         return len(val.strip()) == 0 and val != "\n"
 
-    def append(self, val):
+    def append(self, val, is_comment=False):
+        if is_comment:
+            if (
+                len(self.nodes) > 0
+                and isinstance(self.nodes[-1], CommentNode)
+                and not self.nodes[-1].is_dollar
+                and not val.startswith("$")
+            ):
+                self.nodes[-1].append(val)
+            else:
+                self.nodes.append(val)
+            return
         parts = val.split("\n")
         if len(parts) > 1:
             for part in parts[:-1]:
@@ -167,6 +178,99 @@ class PaddingNode(SyntaxNodeBase):
 
     def format(self):
         return "".join(self.nodes)
+
+    @property
+    def comments(self):
+        for node in self.nodes:
+            if isinstance(node, CommentNode):
+                yield node
+
+
+class CommentNode(SyntaxNodeBase):
+    """
+    Object to represent a comment in an MCNP problem.
+
+    :param input: the token from the lexer
+    :type input: Token
+    """
+
+    _SPLITTER = re.compile(
+        rf"(\s{{0,{input_parser.constants.BLANK_SPACE_CONTINUE-1}}}C\s?)|($\s)", re.I
+    )
+
+    def __init__(self, input):
+        super().__init__("comment")
+        is_dollar, node = self._convert_to_node(input)
+        self._is_dollar = is_dollar
+        self._nodes = [node]
+
+    def _convert_to_node(self, token):
+        fragments = self._SPLITTER.split(token)
+        start = fragments[0]
+        if "$" in start:
+            is_dollar = True
+        else:
+            is_dollar = True
+        if len(fragments) > 1:
+            comment_line = fragments[1].rstrip()
+        else:
+            comment_line = ""
+        return (
+            is_dollar,
+            SyntaxNode(
+                "comment",
+                {
+                    "delimiter": ValueNode(start, str),
+                    "data": ValueNode(comment_line, str),
+                },
+            ),
+        )
+
+    def append(self, token):
+        is_dollar, node = self._convert_to_node(token)
+        if is_dollar or self._is_dollar:
+            raise TypeError(
+                f"Cannot append multiple comments to a dollar comment. {token} given."
+            )
+        self._nodes.append(node)
+
+    @property
+    def is_dollar(self):
+        """
+        Whether or not this CommentNode is a dollar sign ($) comment.
+
+        :returns: True iff this is a dollar sign comment.
+        :rtype: bool
+        """
+        return self._is_dollar
+
+    @property
+    def contents(self):
+        """
+        The contents of the comments without delimiters (i.e., $/C).
+
+        :returns: String of the contents
+        :rtype: str
+        """
+        return "\n".join([node["data"].value for node in self.nodes])
+
+    def format(self):
+        ret = ""
+        for node in self.nodes:
+            ret += node.format()
+        return ret
+
+    def comments(self):
+        yield from [self]
+
+    def __str__(self):
+        return f"COMMENT: {len(self)} lines"
+
+    def __repr__(self):
+        ret = "COMMENT:\n"
+        for line in self._lines:
+            ret += line + "\n"
+        return ret
 
 
 class ValueNode(SyntaxNodeBase):

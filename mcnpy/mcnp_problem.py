@@ -232,11 +232,6 @@ class MCNP_Problem:
             elif isinstance(input, mcnp_input.Title) and self._title is None:
                 self._title = input
 
-            elif isinstance(input, mcnp_input.Comment):
-                if len(comment_queue) > 0:
-                    input.snip()
-                comment_queue.append(input)
-
             elif isinstance(input, mcnp_input.Input):
                 if len(input.input_lines) > 0:
                     if input.block_type == block_type.BlockType.CELL:
