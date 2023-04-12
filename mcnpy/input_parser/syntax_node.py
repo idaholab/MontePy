@@ -66,6 +66,10 @@ class SyntaxNodeBase(ABC):
     def comments(self):
         pass
 
+    def get_trailing_comment(self):
+        tail = self.nodes[-1]
+        return tail.get_trailing_comment()
+
 
 class SyntaxNode(SyntaxNodeBase):
     def __init__(self, name, parse_dict):
@@ -106,6 +110,10 @@ class SyntaxNode(SyntaxNodeBase):
     def comments(self):
         for node in self.nodes:
             yield from node.comments
+
+    def get_trailing_comment(self):
+        tail = next(reversed(self.nodes.items()))
+        return tail[1].get_trailing_comment()
 
 
 class GeometryTree(SyntaxNodeBase):
@@ -199,6 +207,11 @@ class PaddingNode(SyntaxNodeBase):
         for node in self.nodes:
             if isinstance(node, CommentNode):
                 yield node
+
+    def get_trailing_comment(self):
+        tail = self.nodes[-1]
+        if isinstance(tail, CommentNode) and not tail.is_dollar:
+            return tail
 
 
 class CommentNode(SyntaxNodeBase):
@@ -503,6 +516,12 @@ class ValueNode(SyntaxNodeBase):
             yield from self.padding.comments
         else:
             yield from []
+
+    def get_trailing_comment(self):
+        if self.padding is None:
+            return
+        return self.padding.get_trailing_comment()
+        tail = self.nodes[-1]
 
     @property
     def padding(self):
