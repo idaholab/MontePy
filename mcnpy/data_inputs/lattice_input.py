@@ -128,7 +128,7 @@ class LatticeInput(CellModifierInput):
                     cells, self._lattice, fillvalue=None
                 ):
                     if not isinstance(lattice, (Jump, type(None))):
-                        cell.lattice = lattice
+                        cell._lattice._lattice = lattice
 
     def merge(self, other):
         raise MalformedInputError(
