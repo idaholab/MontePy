@@ -38,6 +38,14 @@ class testFullFileIntegration(TestCase):
         for i, input_ob in enumerate(problem.original_inputs):
             self.assertIsInstance(input_ob, cell_order[i])
 
+    # TODO formalize this or see if this is covered by other tests.
+    def test_lazy_comments_check(self):
+        problem = self.simple_problem
+        material = problem.materials[1]
+        for comment in material._tree.comments:
+            print(comment)
+        assert False
+
     def test_material_parsing(self):
         mat_numbers = [1, 2, 3]
         for i, mat in enumerate(self.simple_problem.materials):
