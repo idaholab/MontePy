@@ -101,7 +101,7 @@ class UniverseInput(CellModifierInput):
         if self.in_cell_block:
             return self.universe.number != 0
 
-    @property
+    @make_prop_pointer("_universe", Universe)
     def universe(self):
         if self.in_cell_block:
             return self._universe
@@ -132,15 +132,7 @@ class UniverseInput(CellModifierInput):
     def not_truncated(self, value):
         if not isinstance(value, bool):
             raise TypeError("truncated_by_parent must be a bool")
-        self._mutated = True
         self._not_truncated = value
-
-    @universe.setter
-    def universe(self, value):
-        if not isinstance(value, Universe):
-            raise TypeError("universe must be set to a Universe")
-        self._mutated = True
-        self._universe = value
 
     def _tree_value(self):
         val = self._old_number
