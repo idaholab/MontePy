@@ -37,7 +37,7 @@ class UniverseInput(CellModifierInput):
         if self.in_cell_block:
             self._old_number = self._generate_default_node(int, 0)
             if key:
-                val = value["data"][0]
+                val = self._tree["data"][0]
                 val.is_negatable_identifier = True
                 self._not_truncated = val.is_negative
                 self._old_number = val
@@ -209,7 +209,7 @@ class UniverseInput(CellModifierInput):
         return number
 
     def _update_values(self):
-        if not hasattr(self, "_tree"):
-            self._create_default_tree()
         if self.universe is not None:
+            self._tree["data"][0].is_negatable_identifier = True
             self._tree["data"][0].value = self.universe.number
+            self._tree["data"][0].is_negative = self.not_truncated
