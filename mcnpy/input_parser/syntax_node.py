@@ -223,8 +223,13 @@ class CommentNode(SyntaxNodeBase):
     :type input: Token
     """
 
-    _SPLITTER = re.compile(
-        rf"(\s{{0,{input_parser.constants.BLANK_SPACE_CONTINUE-1}}}C\s?)|($\s)", re.I
+    _MATCHER = re.compile(
+        rf"""(?P<delim>
+                (\s{{0,{input_parser.constants.BLANK_SPACE_CONTINUE-1}}}C\s?)
+                |(\$\s)
+             )
+            (?P<contents>.*)""",
+        re.I | re.VERBOSE,
     )
 
     def __init__(self, input):
@@ -234,16 +239,13 @@ class CommentNode(SyntaxNodeBase):
         self._nodes = [node]
 
     def _convert_to_node(self, token):
-        fragments = self._SPLITTER.split(token)
-        start = fragments[0]
+        match = self._MATCHER.match(token)
+        start = match["delim"]
+        comment_line = match["contents"]
         if "$" in start:
             is_dollar = True
         else:
             is_dollar = True
-        if len(fragments) > 1:
-            comment_line = fragments[1].rstrip()
-        else:
-            comment_line = ""
         return (
             is_dollar,
             SyntaxNode(
@@ -296,9 +298,9 @@ class CommentNode(SyntaxNodeBase):
         return f"COMMENT: {len(self)} lines"
 
     def __repr__(self):
-        ret = "COMMENT:\n"
-        for line in self._lines:
-            ret += line + "\n"
+        ret = f"COMMENT:\n"
+        for node in self.nodes:
+            ret += node.format()
         return ret
 
 
