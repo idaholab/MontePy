@@ -41,7 +41,7 @@ class testFullFileIntegration(TestCase):
     # TODO formalize this or see if this is covered by other tests.
     def test_lazy_comments_check(self):
         problem = self.simple_problem
-        material = problem.materials[1]
+        material = problem.materials[2]
         for comment in material._tree.comments:
             print(repr(comment))
         assert False
