@@ -71,6 +71,11 @@ class SyntaxNodeBase(ABC):
         if isinstance(tail, type(self)):
             return tail.get_trailing_comment()
 
+    def _delete_trailing_comment(self):
+        tail = self.nodes[-1]
+        if isinstance(tail, type(self)):
+            tail._delete_trailing_comment()
+
 
 class SyntaxNode(SyntaxNodeBase):
     def __init__(self, name, parse_dict):
@@ -115,6 +120,10 @@ class SyntaxNode(SyntaxNodeBase):
     def get_trailing_comment(self):
         tail = next(reversed(self.nodes.items()))
         return tail[1].get_trailing_comment()
+
+    def _delete_trailing_comment(self):
+        tail = next(reversed(self.nodes.items()))
+        tail[1]._delete_trailing_comment()
 
 
 class GeometryTree(SyntaxNodeBase):
@@ -211,8 +220,25 @@ class PaddingNode(SyntaxNodeBase):
             if isinstance(node, CommentNode):
                 yield node
 
+    def _get_first_comment(self):
+        for i, item in enumerate(self.nodes):
+            if isinstance(item, CommentNode):
+                return i
+        return None
+
     def get_trailing_comment(self):
-        return [c for c in self.comments if not c.is_dollar]
+        i = self._get_first_comment()
+        if i is not None:
+            return self.nodes[i:]
+        return None
+
+    def _delete_trailing_comment(self):
+        i = self._get_first_comment()
+        if i is not None:
+            del self._nodes[i:]
+
+    def _grab_beggining_comment(self, extra_padding):
+        self._nodes = extra_padding + self.nodes
 
 
 class CommentNode(SyntaxNodeBase):
@@ -522,6 +548,11 @@ class ValueNode(SyntaxNodeBase):
             return
         return self.padding.get_trailing_comment()
 
+    def _delete_trailing_comment(self):
+        if self.padding is None:
+            return
+        self.padding._delete_trailing_comment()
+
     @property
     def padding(self):
         return self._padding
@@ -808,6 +839,11 @@ class IsotopesNode(SyntaxNodeBase):
         tail = self.nodes[-1]
         tail = tail[1]
         return tail.get_trailing_comment()
+
+    def _delete_trailing_comment(self):
+        tail = self.nodes[-1]
+        tail = tail[1]
+        tail._delete_trailing_comment()
 
 
 class ShortcutNode(ListNode):
@@ -1155,6 +1191,10 @@ class ParametersNode(SyntaxNodeBase):
     def get_trailing_comment(self):
         tail = next(reversed(self.nodes.items()))
         return tail[1].get_trailing_comment()
+
+    def _delete_trailing_comment(self):
+        tail = next(reversed(self.nodes.items()))
+        tail[1]._delete_trailing_comment()
 
     @property
     def comments(self):

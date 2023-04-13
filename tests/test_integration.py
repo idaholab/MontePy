@@ -44,6 +44,7 @@ class testFullFileIntegration(TestCase):
         material = problem.materials[2]
         for comment in material._tree.comments:
             print(repr(comment))
+        print(material._tree.get_trailing_comment()) 
         assert False
 
     def test_material_parsing(self):

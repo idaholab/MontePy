@@ -288,3 +288,10 @@ class MCNP_Object(ABC):
     @property
     def trailing_comment(self):
         return self._tree.get_trailing_comment()
+
+    def _delete_trailing_comment(self):
+        self._tree._delete_trailing_comment()
+
+    def _grab_beginning_comment(self, padding):
+        if padding:
+            self._tree["start_pad"].grab_beginning_comment(padding)

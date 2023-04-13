@@ -222,6 +222,7 @@ class MCNP_Problem:
         Semantically parses the MCNP file provided to the constructor.
         """
         trailing_comment = None
+        last_obj = None
         for i, input in enumerate(
             input_syntax_reader.read_input_syntax(self._input_file, self.mcnp_version)
         ):
@@ -250,7 +251,11 @@ class MCNP_Problem:
                         if isinstance(obj, transform.Transform):
                             self._transforms.append(obj)
                         self._data_inputs.append(obj)
+                if trailing_comment is not None and last_obj is not None:
+                    obj._grab_beginning_comment(trailing_comment)
+                    last_obj._delete_trailing_comment()
                 trailing_comment = obj.trailing_comment
+                last_obj = obj
         self.__update_internal_pointers()
 
     def __update_internal_pointers(self):
