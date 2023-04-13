@@ -242,10 +242,7 @@ class CommentNode(SyntaxNodeBase):
         match = self._MATCHER.match(token)
         start = match["delim"]
         comment_line = match["contents"]
-        if "$" in start:
-            is_dollar = True
-        else:
-            is_dollar = False
+        is_dollar = "$" in start
         return (
             is_dollar,
             SyntaxNode(
