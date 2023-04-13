@@ -294,4 +294,4 @@ class MCNP_Object(ABC):
 
     def _grab_beginning_comment(self, padding):
         if padding:
-            self._tree["start_pad"].grab_beginning_comment(padding)
+            self._tree["start_pad"]._grab_beginning_comment(padding)

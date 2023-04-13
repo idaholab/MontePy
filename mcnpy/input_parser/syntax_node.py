@@ -237,7 +237,7 @@ class PaddingNode(SyntaxNodeBase):
         if i is not None:
             del self._nodes[i:]
 
-    def _grab_beggining_comment(self, extra_padding):
+    def _grab_beginning_comment(self, extra_padding):
         self._nodes = extra_padding + self.nodes
 
 
