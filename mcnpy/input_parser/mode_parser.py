@@ -6,10 +6,22 @@ from mcnpy.input_parser import syntax_node
 class ModeParser(DataParser):
     debugfile = None
 
-    @_("classifier_phrase particle_sequence")
+    @_(
+        "classifier_phrase particle_sequence",
+        "padding classifier_phrase particle_sequence",
+    )
     def mode(self, p):
+        if isinstance(p[0], syntax_node.PaddingNode):
+            start_pad = p[0]
+        else:
+            start_pad = syntax_node.PaddingNode()
         return syntax_node.SyntaxNode(
-            "mode", {"classifier": p.classifier_phrase, "data": p.particle_sequence}
+            "mode",
+            {
+                "start_pad": start_pad,
+                "classifier": p.classifier_phrase,
+                "data": p.particle_sequence,
+            },
         )
 
     @_("particle_phrase", "particle_sequence particle_phrase")

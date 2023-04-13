@@ -29,6 +29,8 @@ class DataParser(MCNP_Parser):
         ret = {}
         if isinstance(p[0], syntax_node.PaddingNode):
             ret["start_pad"] = p[0]
+        else:
+            ret["start_pad"] = syntax_node.PaddingNode()
         ret["classifier"] = p.classifier_phrase
         if hasattr(p, "KEYWORD"):
             ret["keyword"] = syntax_node.ValueNode(p.KEYWORD, str, padding=p[-1])

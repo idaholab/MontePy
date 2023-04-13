@@ -18,6 +18,8 @@ class CellParser(MCNP_Parser):
         dict_tree = {}
         if isinstance(p[0], syntax_node.PaddingNode):
             dict_tree["start_pad"] = p[0]
+        else:
+            dict_tree["start_pad"] = syntax_node.PaddingNode()
 
         dict_tree["cell_num"] = p.identifier_phrase
         dict_tree["material"] = p.material
