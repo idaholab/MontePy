@@ -171,9 +171,10 @@ class GeometryTree(SyntaxNodeBase):
 
 
 class PaddingNode(SyntaxNodeBase):
-    def __init__(self, token, is_comment=False):
+    def __init__(self, token=None, is_comment=False):
         super().__init__("padding")
-        self.append(token, is_comment)
+        if token is not None:
+            self.append(token, is_comment)
 
     def __str__(self):
         return f"(Padding, {self._nodes})"
