@@ -197,7 +197,13 @@ class PaddingNode(SyntaxNodeBase):
             self._nodes.append(val)
 
     def format(self):
-        return "".join(self.nodes)
+        ret = ""
+        for node in self.nodes:
+            if isinstance(node, str):
+                ret += node
+            else:
+                ret += node.format()
+        return ret
 
     @property
     def comments(self):
