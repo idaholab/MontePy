@@ -245,7 +245,7 @@ class CommentNode(SyntaxNodeBase):
         if "$" in start:
             is_dollar = True
         else:
-            is_dollar = True
+            is_dollar = False
         return (
             is_dollar,
             SyntaxNode(
