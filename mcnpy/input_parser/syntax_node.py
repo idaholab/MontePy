@@ -195,8 +195,12 @@ class PaddingNode(SyntaxNodeBase):
         parts = val.split("\n")
         if len(parts) > 1:
             for part in parts[:-1]:
-                self._nodes += [part, "\n"]
-            self._nodes.append(parts[-1])
+                if part:
+                    self._nodes += [part, "\n"]
+                else:
+                    self._nodes.append("\n")
+            if part:
+                self._nodes.append(parts[-1])
         else:
             self._nodes.append(val)
 
