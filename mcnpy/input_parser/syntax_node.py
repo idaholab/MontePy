@@ -212,7 +212,7 @@ class PaddingNode(SyntaxNodeBase):
                 yield node
 
     def get_trailing_comment(self):
-        return self.comments
+        return [c if not c.is_dollar for c in self.comments]
 
 
 class CommentNode(SyntaxNodeBase):
