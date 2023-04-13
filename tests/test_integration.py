@@ -43,7 +43,7 @@ class testFullFileIntegration(TestCase):
         problem = self.simple_problem
         material = problem.materials[1]
         for comment in material._tree.comments:
-            print(comment)
+            print(repr(comment))
         assert False
 
     def test_material_parsing(self):

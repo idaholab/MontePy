@@ -250,7 +250,6 @@ class MCNP_Problem:
                         if isinstance(obj, transform.Transform):
                             self._transforms.append(obj)
                         self._data_inputs.append(obj)
-                print(trailing_comment)
                 trailing_comment = obj.trailing_comment
         self.__update_internal_pointers()
 

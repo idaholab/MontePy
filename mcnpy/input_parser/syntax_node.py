@@ -190,7 +190,7 @@ class PaddingNode(SyntaxNodeBase):
             ):
                 self.nodes[-1].append(val)
             else:
-                self.nodes.append(val)
+                self.nodes.append(CommentNode(val))
             return
         parts = val.split("\n")
         if len(parts) > 1:
