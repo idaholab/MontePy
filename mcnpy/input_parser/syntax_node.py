@@ -182,15 +182,7 @@ class PaddingNode(SyntaxNodeBase):
 
     def append(self, val, is_comment=False):
         if is_comment:
-            if (
-                len(self.nodes) > 0
-                and isinstance(self.nodes[-1], CommentNode)
-                and not self.nodes[-1].is_dollar
-                and not val.startswith("$")
-            ):
-                self.nodes[-1].append(val)
-            else:
-                self.nodes.append(CommentNode(val))
+            self.nodes.append(CommentNode(val))
             return
         parts = val.split("\n")
         if len(parts) > 1:
