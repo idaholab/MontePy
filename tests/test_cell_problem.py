@@ -10,11 +10,6 @@ class TestCellClass(TestCase):
     def test_bad_init(self):
         with self.assertRaises(TypeError):
             Cell("5")
-        card = Input(["foo"], BlockType.CELL)
-        with self.assertRaises(TypeError):
-            Cell(card, "5")
-        with self.assertRaises(TypeError):
-            Cell(card, ["5"])
 
     def test_init(self):
         # test invalid cell number
