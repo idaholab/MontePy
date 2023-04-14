@@ -3,7 +3,7 @@ from unittest import TestCase
 import mcnpy
 from mcnpy.cell import Cell
 from mcnpy.input_parser.block_type import BlockType
-from mcnpy.input_parser.mcnp_input import Input, Comment
+from mcnpy.input_parser.mcnp_input import Input
 
 
 class TestCellClass(TestCase):

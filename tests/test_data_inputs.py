@@ -7,7 +7,7 @@ from mcnpy.data_inputs.data_input import DataInput
 from mcnpy.data_inputs import material, thermal_scattering, transform, volume
 from mcnpy.data_inputs.data_parser import parse_data
 from mcnpy.errors import *
-from mcnpy.input_parser.mcnp_input import Input, Comment, Jump
+from mcnpy.input_parser.mcnp_input import Input, Jump
 from mcnpy.input_parser import syntax_node
 from mcnpy.input_parser.block_type import BlockType
 from mcnpy.mcnp_problem import MCNP_Problem

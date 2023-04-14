@@ -9,7 +9,7 @@ from mcnpy.data_inputs.material_component import MaterialComponent
 from mcnpy.data_inputs.thermal_scattering import ThermalScatteringLaw
 from mcnpy.errors import MalformedInputError, UnknownElement
 from mcnpy.input_parser.block_type import BlockType
-from mcnpy.input_parser.mcnp_input import Input, Comment
+from mcnpy.input_parser.mcnp_input import Input
 
 
 class testMaterialClass(TestCase):
