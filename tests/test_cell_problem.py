@@ -19,16 +19,16 @@ class TestCellClass(TestCase):
     def test_init(self):
         # test invalid cell number
         in_str = "foo"
-        card = Input([in_str], BlockType.CELL)
+        card = Input([in_str, f"c {in_str}"], BlockType.CELL)
         with self.assertRaises(mcnpy.errors.MalformedInputError):
             in_str = "foo bar"
-            cell = Cell(card, Comment(["c " + in_str]))
+            cell = Cell(card)
         # test like feature unsupported
         in_str = "1 like 2"
-        card = Input([in_str], BlockType.CELL)
+        card = Input([in_str, f"c {in_str}"], BlockType.CELL)
         with self.assertRaises(mcnpy.errors.UnsupportedFeature):
             in_str = "foo bar"
-            cell = Cell(card, Comment(["c " + in_str]))
+            cell = Cell(card)
         # test invalid material number
         in_str = "1 foo"
         card = Input([in_str], BlockType.CELL)
