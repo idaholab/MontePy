@@ -133,10 +133,8 @@ class Importance(CellModifierInput):
         if not isinstance(particle, Particle):
             raise TypeError("Key must be a particle")
         self._check_particle_in_problem(particle)
-        val = self._particle_importances[particle]
-        if isinstance(val, syntax_node.ValueNode):
-            return val.value
-        return val
+        val = self._particle_importances[particle]["data"][0]
+        return val.value
 
     def __setitem__(self, particle, value):
         if not isinstance(particle, Particle):
@@ -146,8 +144,7 @@ class Importance(CellModifierInput):
             raise TypeError("importance must be a number")
         if value < 0:
             raise ValueError("importance must be ≥ 0")
-        self._mutated = True
-        self._particle_importances[particle.value] = value
+        self._particle_importances[particle]["data"][0].value = value
 
     def __delitem__(self, particle):
         if not isinstance(particle, Particle):
@@ -177,7 +174,6 @@ class Importance(CellModifierInput):
                 for i, cell in enumerate(self._problem.cells):
                     value = self._particle_importances[particle]["data"][i]
                     cell.importance._particle_importances[particle] = value
-                    cell.importance._mutated = False
 
     @property
     def all(self):
@@ -199,7 +195,6 @@ class Importance(CellModifierInput):
         if value < 0.0:
             raise ValueError("Importance must be ≥ 0.0")
         if self._problem:
-            self._mutated = True
             for particle in self._problem.mode:
                 self._particle_importances[particle].value = value
 
