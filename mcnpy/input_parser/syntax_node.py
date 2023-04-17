@@ -184,7 +184,7 @@ class PaddingNode(SyntaxNodeBase):
 
     @property
     def value(self):
-        return "".join(self.nodes)
+        return "".join([val.format() for val in self.nodes])
 
     def is_space(self, i):
         val = self.nodes[i]
