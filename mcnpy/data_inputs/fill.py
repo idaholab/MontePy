@@ -525,5 +525,15 @@ class Fill(CellModifierInput):
         )
 
     def _update_values(self):
-        if not hasattr(self, "_tree"):
-            self._create_default_tree()
+        if self.transform and self.transform.is_in_degrees:
+            self._tree["classifier"].modifier = "*"
+        else:
+            self._tree["classifier"].modifier = None
+        if self.transform is None:
+            try:
+                values = [val.value for val in self._tree["data"]]
+                start = values.index("(")
+                end = values.index(")")
+                del self._tree["data"].nodes[start : end + 1]
+            except ValueError:
+                pass
