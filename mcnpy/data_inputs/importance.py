@@ -39,7 +39,7 @@ class Importance(CellModifierInput):
                         f"Cell importance must be a number ≥ 0. {val.value} was given"
                     )
                 for particle in self.particle_classifiers:
-                    self._particle_importances[particle] = val
+                    self._particle_importances[particle] = value
         elif input:
             values = []
             for node in self._tree["data"]:
@@ -52,12 +52,15 @@ class Importance(CellModifierInput):
                         input, f"Importances must be ≥ 0 value: {node} given"
                     )
             for particle in self.particle_classifiers:
-                self._particle_importances[particle] = values
+                self._particle_importances[particle] = self._tree
 
-    def _generate_default_tree(self):
+    def _generate_default_tree(self, particle=None):
         classifier = syntax_node.ClassifierNode()
         classifier.prefix = "IMP"
-        particles = syntax_node.ParticleNode("imp particle", "n")
+        if particle is None:
+            particles = syntax_node.ParticleNode("imp particle", "n")
+        else:
+            particles = syntax_node.ParticleNode("imp particle", particle.value.lower())
         if self._problem:
             particles.particles = self._problem.mode.particles
         classifier.particles = particles
@@ -105,12 +108,15 @@ class Importance(CellModifierInput):
             raise TypeError("Can only be merged with other Importance object")
         if self.in_cell_block != other.in_cell_block:
             raise ValueError("Can not mix cell-level and data-level Importance objects")
+        print(self._tree)
         self._input_lines.extend(other._input_lines)
         if other.set_in_cell_block:
             self._set_in_cell_block = True
         for particle in other:
             if particle not in self:
-                self._particle_importances[particle] = other[particle]
+                self._particle_importances[particle] = other._particle_importances[
+                    particle
+                ]
             else:
                 raise MalformedInputError(
                     other,
@@ -169,7 +175,7 @@ class Importance(CellModifierInput):
                 if not self._particle_importances[particle]:
                     continue
                 for i, cell in enumerate(self._problem.cells):
-                    value = self._particle_importances[particle][i]
+                    value = self._particle_importances[particle]["data"][i]
                     cell.importance._particle_importances[particle] = value
                     cell.importance._mutated = False
 
@@ -238,10 +244,8 @@ def __create_importance_getter(particle_type):
     def closure(obj):
         obj._check_particle_in_problem(particle_type)
         try:
-            val = obj._particle_importances[particle_type]
-            if isinstance(val, syntax_node.ValueNode):
-                return val.value
-            return val
+            val = obj._particle_importances[particle_type]["data"][0]
+            return val.value
         except KeyError:
             return 0.0
 
@@ -256,15 +260,15 @@ def __create_importance_setter(particle_type):
         value = float(value)
         if value < 0:
             raise ValueError("importance must be ≥ 0")
-        obj._mutated = True
-        obj._particle_importances[particle_type].value = value
+        if particle_type not in obj._particle_importances:
+            pass
+        obj._particle_importances[particle_type]["data"][0].value = value
 
     return closure
 
 
 def __create_importance_deleter(particle_type):
     def closure(obj):
-        obj._mutated = True
         del obj._particle_importances[particle_type]
 
     return closure
