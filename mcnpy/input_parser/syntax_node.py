@@ -651,6 +651,9 @@ class ParticleNode(SyntaxNodeBase):
     def comments(self):
         yield from []
 
+    def __repr__(self):
+        return self.format()
+
 
 class ListNode(SyntaxNodeBase):
     def __init__(self, name):
