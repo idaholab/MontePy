@@ -1,3 +1,4 @@
+import copy
 from mcnpy.data_inputs.cell_modifier import CellModifierInput
 from mcnpy.errors import *
 from mcnpy.input_parser.constants import DEFAULT_VERSION
@@ -52,7 +53,7 @@ class Importance(CellModifierInput):
                         input, f"Importances must be ≥ 0 value: {node} given"
                     )
             for particle in self.particle_classifiers:
-                self._particle_importances[particle] = self._tree
+                self._particle_importances[particle] = copy.deepcopy(self._tree)
 
     def _generate_default_tree(self, particle=None):
         classifier = syntax_node.ClassifierNode()
@@ -108,7 +109,6 @@ class Importance(CellModifierInput):
             raise TypeError("Can only be merged with other Importance object")
         if self.in_cell_block != other.in_cell_block:
             raise ValueError("Can not mix cell-level and data-level Importance objects")
-        print(self._tree)
         self._input_lines.extend(other._input_lines)
         if other.set_in_cell_block:
             self._set_in_cell_block = True
