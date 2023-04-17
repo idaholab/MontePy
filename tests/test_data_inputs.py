@@ -36,8 +36,7 @@ class testDataInputClass(TestCase):
     def test_data_card_format_mcnp(self):
         in_strs = ["c foo", "c bar", "m1 1001.80c 1.0 $ bar"]
         input_card = Input(in_strs, BlockType.DATA)
-        comment = Comment(["c foo", "c bar"], ["foo", "bar"])
-        data_card = DataInput(input_card, comment)
+        data_card = DataInput(input_card)
         output = data_card.format_for_mcnp_input((6, 2, 0))
         print(output)
         self.assertEqual(len(output), len(in_strs))
