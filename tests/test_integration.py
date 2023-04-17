@@ -882,16 +882,16 @@ class testFullFileIntegration(TestCase):
         problem = copy.deepcopy(self.universe_problem)
         fill = problem.cells[5].fill
         output = fill.format_for_mcnp_input((6, 2, 0))
-        answer = "     FILL=1 (1.0 0.0 0.0)"
+        answer = "fill=1 (1 0.0 0.0)"
         self.assertEqual(output[0], answer)
         # test *fill
         fill.transform.is_in_degrees = True
         output = fill.format_for_mcnp_input((6, 2, 0))
-        answer = "     *FILL=1 (1.0 0.0 0.0)"
+        answer = "*fill=1 (1 0.0 0.0)"
         self.assertEqual(output[0], answer)
         # test without transform
         fill.transform = None
-        answer = "     FILL=1"
+        answer = "fill=1"
         output = fill.format_for_mcnp_input((6, 2, 0))
         self.assertEqual(output[0], answer)
         # test with no fill
