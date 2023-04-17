@@ -196,7 +196,7 @@ class Importance(CellModifierInput):
             raise ValueError("Importance must be ≥ 0.0")
         if self._problem:
             for particle in self._problem.mode:
-                self._particle_importances[particle].value = value
+                self._particle_importances[particle]["data"][0].value = value
 
     def _clear_data(self):
         if not self.in_cell_block:
