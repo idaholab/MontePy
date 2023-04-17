@@ -34,8 +34,14 @@ class TestImportance(TestCase):
         in_str = "IMP:N,P 1 0"
         card = mcnp_input.Input([in_str], block_type.BlockType.CELL)
         imp = Importance(card)
-        self.assertEqual(imp.neutron, [1.0, 0.0])
-        self.assertEqual(imp.photon, [1.0, 0.0])
+        self.assertEqual(
+            [val.value for val in imp._particle_importances[Particle.NEUTRON]["data"]],
+            [1.0, 0.0],
+        )
+        self.assertEqual(
+            [val.value for val in imp._particle_importances[Particle.PHOTON]["data"]],
+            [1.0, 0.0],
+        )
         # test non-number imp
         in_str = "IMP:N,P 1 h"
         card = mcnp_input.Input([in_str], block_type.BlockType.CELL)
@@ -135,14 +141,23 @@ class TestImportance(TestCase):
 
     def test_importance_merge(self):
         in_str = "IMP:N,P 1 0"
-        card = mcnp_input.Input([in_str], block_type.BlockType.CELL)
+        card = mcnp_input.Input([in_str], block_type.BlockType.DATA)
         imp1 = Importance(card)
         in_str = "IMP:E 0 0"
-        card = mcnp_input.Input([in_str], block_type.BlockType.CELL)
+        card = mcnp_input.Input([in_str], block_type.BlockType.DATA)
         imp2 = Importance(card)
         imp1.merge(imp2)
-        self.assertEqual(imp1.neutron, [1.0, 0.0])
-        self.assertEqual(imp1.electron, [0.0, 0.0])
+        self.assertEqual(
+            [val.value for val in imp1._particle_importances[Particle.NEUTRON]["data"]],
+            [1.0, 0.0],
+        )
+        self.assertEqual(
+            [
+                val.value
+                for val in imp1._particle_importances[Particle.ELECTRON]["data"]
+            ],
+            [0.0, 0.0],
+        )
         # test bad type
         with self.assertRaises(TypeError):
             imp1.merge("hi")
