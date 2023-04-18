@@ -4,6 +4,11 @@ from mcnpy.errors import *
 from mcnpy.utilities import *
 
 
+def _enforce_positive_radius(self, value):
+    if value < 0.0:
+        raise ValueError(f"Radius must be positive. {value} given")
+
+
 class CylinderParAxis(Surface):
     """
     Represents surfaces: C/X, C/Y, C/Z
@@ -65,7 +70,9 @@ class CylinderParAxis(Surface):
         for i, val in enumerate(coordinates):
             self._coordinates[i].value = val
 
-    @make_prop_val_node("_radius", (float, int), float)
+    @make_prop_val_node(
+        "_radius", (float, int), float, validator=_enforce_positive_radius
+    )
     def radius(self):
         """
         The radius of the cylinder.
