@@ -294,9 +294,9 @@ class testSurfaces(TestCase):
     def test_cylinder_location_setter(self):
         in_str = "1 c/Z 3.0 4.0 5"
         surf = surface_builder(Input([in_str], BlockType.SURFACE))
-        self.assertEqual(surf.coordinates, [3.0, 4.0])
+        self.assertEqual(surf.coordinates, (3.0, 4.0))
         surf.coordinates = [1, 2]
-        self.assertEqual(surf.coordinates, [1, 2])
+        self.assertEqual(surf.coordinates, (1, 2))
         # test wrong type
         with self.assertRaises(TypeError):
             surf.coordinates = "fo"
