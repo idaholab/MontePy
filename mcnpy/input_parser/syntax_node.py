@@ -528,7 +528,7 @@ class ValueNode(SyntaxNodeBase):
         else:
             temp = value
         if self.padding:
-            if self.padding.nodes[0].isspace():
+            if self.padding.is_space(0):
                 if len(temp) >= self._formatter["value_length"]:
                     pad_str = " "
                 else:
