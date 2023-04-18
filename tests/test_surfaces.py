@@ -154,7 +154,7 @@ class testSurfaces(TestCase):
         self.assertEqual(surf.surface_constants[0], 10.0)
         with self.assertRaises(TypeError):
             surf.surface_constants = "foo"
-        with self.assertRaises(TypeError):
+        with self.assertRaises(ValueError):
             surf.surface_constants = [1, "foo"]
 
     def test_surface_number_setter(self):
