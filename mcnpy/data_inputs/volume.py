@@ -61,7 +61,7 @@ class Volume(CellModifierInput):
                 elif isinstance(node, Jump):
                     self._volume.append(node)
 
-    def _generate_default_tree(self):
+    def _generate_default_cell_tree(self):
         list_node = syntax_node.ListNode("number sequence")
         list_node.append(self._generate_default_node(float, None))
         classifier = syntax_node.ClassifierNode()

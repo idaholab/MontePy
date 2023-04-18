@@ -39,6 +39,8 @@ class CellModifierInput(DataInputAbstract):
             raise TypeError("key must be a str")
         if value and not isinstance(value, syntax_node.SyntaxNode):
             raise TypeError("value must be from a SyntaxNode")
+        if not in_cell_block and not input:
+            self._generate_default_data_tree()
         self._in_cell_block = in_cell_block
         self._in_key = key
         self._in_value = value
@@ -49,11 +51,25 @@ class CellModifierInput(DataInputAbstract):
         else:
             self._set_in_cell_block = False
             if in_cell_block and key is None and value is None:
-                self._generate_default_tree()
+                self._generate_default_cell_tree()
 
     @abstractmethod
-    def _generate_default_tree(self):
+    def _generate_default_cell_tree(self):
         pass
+
+    def _generate_default_data_tree(self):
+        list_node = syntax_node.ListNode("number sequence")
+        list_node.append(self._generate_default_node(float, None))
+        classifier = syntax_node.ClassifierNode()
+        classifier.prefix = self._class_prefix().upper()
+        self._tree = syntax_node.SyntaxNode(
+            self._class_prefix(),
+            {
+                "start_pad": syntax_node.PaddingNode(),
+                "classifier": classifier,
+                "data": list_node,
+            },
+        )
 
     @property
     def in_cell_block(self):

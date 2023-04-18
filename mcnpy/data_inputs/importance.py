@@ -55,7 +55,7 @@ class Importance(CellModifierInput):
             for particle in self.particle_classifiers:
                 self._particle_importances[particle] = copy.deepcopy(self._tree)
 
-    def _generate_default_tree(self, particle=None):
+    def _generate_default_cell_tree(self, particle=None):
         classifier = syntax_node.ClassifierNode()
         classifier.prefix = "IMP"
         if particle is None:

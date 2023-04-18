@@ -72,7 +72,7 @@ class LatticeInput(CellModifierInput):
                         f"Word: {word} cannot be parsed as a lattice as a str, or Jump"
                     )
 
-    def _generate_default_tree(self):
+    def _generate_default_cell_tree(self):
         list_node = syntax_node.ListNode("number sequence")
         data = self._generate_default_node(int, None)
         data._convert_to_enum(Lattice, True, int)
