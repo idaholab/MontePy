@@ -116,8 +116,8 @@ class testSurfaces(TestCase):
         with self.assertRaises(mcnpy.errors.IllegalState):
             surf.validate()
         surf.location = 0.0
-        with self.assertRaises(mcnpy.errors.IllegalState):
-            surf.validate()
+        # ensure that this doesn't raise an error
+        surf.validate()
         # general plane
         surf = GeneralPlane()
         with self.assertRaises(mcnpy.errors.IllegalState):
