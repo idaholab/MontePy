@@ -384,10 +384,16 @@ class ValueNode(SyntaxNodeBase):
             self._value = int(self._token)
         self._formatter = self._FORMATTERS[int].copy()
 
-    def _convert_to_enum(self, enum_class, allow_none=False, format_type=str):
+    def _convert_to_enum(
+        self, enum_class, allow_none=False, format_type=str, switch_to_upper=False
+    ):
         self._type = enum_class
+        if switch_to_upper:
+            value = self._value.upper()
+        else:
+            value = self._value
         if not (allow_none and self._value is None):
-            self._value = enum_class(self._value)
+            self._value = enum_class(value)
         self._formatter = self._FORMATTERS[format_type].copy()
 
     @property
