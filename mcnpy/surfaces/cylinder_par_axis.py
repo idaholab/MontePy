@@ -76,9 +76,9 @@ class CylinderParAxis(Surface):
 
     def validate(self):
         super().validate()
-        if not self.radius:
+        if self.radius is None:
             raise IllegalState(f"Surface: {self.number} does not have a radius set.")
-        if not self.coordinates:
+        if self.coordinates[0] is None or self.coordinates[1] is None:
             raise IllegalState(f"Surface: {self.number} does not have coordinates set.")
 
     def find_duplicate_surfaces(self, surfaces, tolerance):
