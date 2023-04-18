@@ -15,7 +15,7 @@ install:
   stage: build
   script:
     - echo "setting up conda"
-    - conda create -y -n experiment_analysis_mcnpy python==3.7.0
+    - conda create -y -n experiment_analysis_mcnpy python==3.8.0
     - echo "Installing dependencies"
     - which python
     - which pip
