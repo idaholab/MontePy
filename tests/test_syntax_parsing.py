@@ -120,16 +120,13 @@ c bop
 
     def testCommentFormatInput(self):
         in_strs = ["c foo", "c bar"]
-        card = mcnpy.input_parser.mcnp_input.Comment(in_strs, ["foo", "bar"])
-        output = card.format_for_mcnp_input((6.2, 0))
-        output = card.format_for_mcnp_input((6, 2, 0))
-        answer = ["C foo", "C bar"]
+        card = mcnpy.input_parser.syntax_node.CommentNode(in_strs[0])
+        output = card.format()
+        answer = "c foo"
         str_answer = """COMMENT:
-foo
-bar
-"""
+c foo"""
         self.assertEqual(repr(card), str_answer)
-        self.assertEqual("COMMENT: 2 lines", str(card))
+        self.assertEqual("COMMENT: 1 lines", str(card))
         self.assertEqual(len(answer), len(output))
         for i, line in enumerate(output):
             self.assertEqual(answer[i], line)
