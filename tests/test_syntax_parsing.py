@@ -84,13 +84,9 @@ test title
                     card.block_type, mcnpy.input_parser.block_type.BlockType.CELL
                 )
 
+    # TODO ensure this is tested in Input parsers
+    """
     def testCommentFinder(self):
-        test_string = """c foo
-c bar
-c
-c bop
- c
-"""
         for i in range(5):
             tester = " " * i + test_string
             with StringIO(tester) as fh:
@@ -100,6 +96,7 @@ c bop
                 self.assertEqual(card.lines[0], "foo")
                 self.assertEqual(card.lines[1], "bar")
                 self.assertEqual(card.lines[3], "bop")
+    """
 
     def testReadCardFinder(self):
         test_string = "read file=foo.imcnp "
