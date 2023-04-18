@@ -201,7 +201,7 @@ class PaddingNode(SyntaxNodeBase):
                     self._nodes += [part, "\n"]
                 else:
                     self._nodes.append("\n")
-            if part:
+            if parts[-1]:
                 self._nodes.append(parts[-1])
         else:
             self._nodes.append(val)
