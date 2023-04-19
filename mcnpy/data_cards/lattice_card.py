@@ -45,7 +45,7 @@ class LatticeCard(CellModifierCard):
                 try:
                     value = int(value)
                     value = Lattice(value)
-                except (ValueError) as e:
+                except ValueError as e:
                     raise ValueError("Cell Lattice must be 1 or 2")
                 self._lattice = value
         elif input_card:
