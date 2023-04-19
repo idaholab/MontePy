@@ -1,7 +1,8 @@
 import copy
+import math
 from mcnpy.data_inputs.cell_modifier import CellModifierInput
 from mcnpy.errors import *
-from mcnpy.constants import DEFAULT_VERSION
+from mcnpy.constants import DEFAULT_VERSION, rel_tol, abs_tol
 from mcnpy.input_parser import syntax_node
 from mcnpy.mcnp_object import MCNP_Object
 from mcnpy.particle import Particle
@@ -176,6 +177,33 @@ class Importance(CellModifierInput):
                 for i, cell in enumerate(self._problem.cells):
                     value = self._particle_importances[particle]["data"][i]
                     cell.importance._particle_importances[particle] = value
+
+    def _format_tree(self):
+        particles_printed = set()
+        ret = ""
+        for particle in self:
+            if particle in particles_printed:
+                continue
+            other_particles = self._particle_importances[particle][
+                "classifier"
+            ].particles
+            to_remove = set()
+            for other_part in other_particles:
+                if other_part != particle:
+                    if math.isclose(
+                        self[particle],
+                        self[other_part],
+                        rel_tol=rel_tol,
+                        abs_tol=abs_tol,
+                    ):
+                        particles_printed.add(other_part)
+                    else:
+                        to_remove.add(other_part)
+            for removee in to_remove:
+                other_particles.remove(removee)
+            ret += self._particle_importances[particle].format()
+            particles_printed.add(particle)
+        return ret
 
     @property
     def all(self):
