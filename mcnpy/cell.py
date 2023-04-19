@@ -714,12 +714,17 @@ class Cell(Numbered_MCNP_Object):
             if key != "parameters":
                 ret += node.format()
             else:
+                printed_importance = False
                 for param in node.nodes.values():
                     if param["classifier"].prefix.value.lower() in modifier_keywords:
                         cls = modifier_keywords[
                             param["classifier"].prefix.value.lower()
                         ]
                         attr, _ = self._INPUTS_TO_PROPERTY[cls]
+                        if attr == "_importance":
+                            if printed_importance:
+                                continue
+                            printed_importance = True
                         ret += "\n".join(
                             getattr(self, attr).format_for_mcnp_input(mcnp_version)
                         )
