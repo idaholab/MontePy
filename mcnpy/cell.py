@@ -693,3 +693,36 @@ class Cell(Numbered_MCNP_Object):
 
     def __lt__(self, other):
         return self.number < other.number
+
+    def format_for_mcnp_input(self, mcnp_version):
+        """
+        Creates a string representation of this MCNP_Object that can be
+        written to file.
+
+        :param mcnp_version: The tuple for the MCNP version that must be exported to.
+        :type mcnp_version: tuple
+        :return: a list of strings for the lines that this input will occupy.
+        :rtype: list
+        """
+        self.validate()
+        self._update_values()
+        modifier_keywords = {
+            cls._class_prefix(): cls for cls in self._INPUTS_TO_PROPERTY.keys()
+        }
+        ret = ""
+        for key, node in self._tree.nodes.items():
+            if key != "parameters":
+                ret += node.format()
+            else:
+                for param in node.nodes.values():
+                    if param["classifier"].prefix.value.lower() in modifier_keywords:
+                        cls = modifier_keywords[
+                            param["classifier"].prefix.value.lower()
+                        ]
+                        attr, _ = self._INPUTS_TO_PROPERTY[cls]
+                        ret += "\n".join(
+                            getattr(self, attr).format_for_mcnp_input(mcnp_version)
+                        )
+                    else:
+                        ret += param.format()
+        return self.wrap_string_for_mcnp(ret, mcnp_version, True)
