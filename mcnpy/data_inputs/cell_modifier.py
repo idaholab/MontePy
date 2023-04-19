@@ -238,6 +238,9 @@ class CellModifierInput(DataInputAbstract):
             new_vals = self._collect_new_values()
             self.data.update_with_new_values(new_vals)
 
+    def _format_tree(self):
+        return self._tree.format()
+
     def format_for_mcnp_input(self, mcnp_version):
         """
         Creates a string representation of this MCNP_Object that can be
@@ -257,7 +260,7 @@ class CellModifierInput(DataInputAbstract):
                 self._class_prefix().upper()
             ]
         if self.in_cell_block and not in_data_block and self.has_information:
-            return self.wrap_string_for_mcnp(self._tree.format(), mcnp_version, True)
+            return self.wrap_string_for_mcnp(self._format_tree(), mcnp_version, True)
 
         if not self.in_cell_block and in_data_block and self._is_worth_printing:
             return self.wrap_string_for_mcnp(self._tree.format(), mcnp_version, True)
