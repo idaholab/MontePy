@@ -1246,4 +1246,5 @@ class ParametersNode(SyntaxNodeBase):
     @property
     def comments(self):
         for node in self.nodes:
-            yield from node.comments
+            if isinstance(node, SyntaxNodeBase):
+                yield from node.comments
