@@ -239,6 +239,8 @@ class PaddingNode(SyntaxNodeBase):
             del self._nodes[i:]
 
     def _grab_beginning_comment(self, extra_padding):
+        if extra_padding[-1] != "\n":
+            extra_padding.append("\n")
         self._nodes = extra_padding + self.nodes
 
 
