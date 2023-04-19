@@ -8,7 +8,7 @@ Go to the packages page and download a wheel or a tar ball. Run `pip install --u
 
 ## User Documentation
 
-MCNPy has a [sphinx website](https://experiment_analysis.pages.hpc.inl.gov/mcnpy). 
+MCNPy has a [sphinx website](https://experiment_analysis_all.pages.hpc.inl.gov/software/mcnpy/). 
 This has a getting started guide for users,
 as well as API documentation. 
 There is also a developer's guide covering the design and approach of MCNPy, and how to contribute.
@@ -54,7 +54,7 @@ So MCNPy doesn't do what you want? Right now development is done with a  Just-In
 If there's a feature you want add an issue here with the feature request tag. 
 If you want to add a feature on your own talk to Micah Gale (but still add the issue). 
 The system is very modular and you should be able to develop it pretty quickly.
-Also read the [developer's guide](https://experiment_analysis.pages.hpc.inl.gov/mcnpy/developing.html).
+Also read the [developer's guide](https://experiment_analysis_all.pages.hpc.inl.gov/software/mcnpy/developing.html).
 
 # Version Numbering Scheme
 
