@@ -48,7 +48,7 @@ class LatticeInput(CellModifierInput):
                     val = value["data"][0]
                     val._convert_to_int()
                     val._convert_to_enum(Lattice, int)
-                except (ValueError) as e:
+                except ValueError as e:
                     raise ValueError("Cell Lattice must be 1 or 2")
                 self._lattice = val
         elif input:

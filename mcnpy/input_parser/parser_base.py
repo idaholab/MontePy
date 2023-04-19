@@ -18,6 +18,7 @@ class MetaBuilder(sly.yacc.ParserMeta):
         "restart",
         "tokens",
     }
+
     # TODO support function overloading
     def __new__(meta, classname, bases, attributes):
         if classname != "MCNP_Parser":

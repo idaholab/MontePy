@@ -213,7 +213,6 @@ def parse_input_shortcuts(words, input=None):
                     )
             elif letters == "i":
                 try:
-
                     begin = float(number_parser.search(ret[-1]).group(1))
                     for char in ["i", "m", "r", "i", "log"]:
                         if char in words[i + 1].lower():

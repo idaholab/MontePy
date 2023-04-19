@@ -5,7 +5,6 @@ from sly import Lexer
 
 
 class MCNP_Lexer(Lexer):
-
     tokens = {
         COMMENT,
         COMPLEMENT,
@@ -180,7 +179,6 @@ class MCNP_Lexer(Lexer):
 
 
 class ParticleLexer(MCNP_Lexer):
-
     tokens = {
         COMMENT,
         COMPLEMENT,

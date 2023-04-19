@@ -333,7 +333,6 @@ class CommentNode(SyntaxNodeBase):
 
 
 class ValueNode(SyntaxNodeBase):
-
     _FORMATTERS = {
         float: {
             "value_length": 0,

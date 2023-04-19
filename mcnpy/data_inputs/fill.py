@@ -131,7 +131,7 @@ class Fill(CellModifierInput):
                     assert transform.value > 0
                     self._hidden_transform = False
                     self._old_transform_number = transform
-                except (AssertionError) as e:
+                except AssertionError as e:
                     raise ValueError(
                         "Transform number must be a positive integer. {words[0]} was given."
                     )
@@ -173,7 +173,7 @@ class Fill(CellModifierInput):
                 try:
                     val._convert_to_int()
                     limit_holder[axis] = val.value
-                except (ValueError) as e:
+                except ValueError as e:
                     raise ValueError(
                         f"The lattice limits must be an integer. {val.value} was given"
                     )
