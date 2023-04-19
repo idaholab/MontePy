@@ -323,7 +323,7 @@ class CommentNode(SyntaxNodeBase):
         yield from [self]
 
     def __str__(self):
-        return f"COMMENT: {len(self)} lines"
+        return self.format()
 
     def __repr__(self):
         ret = f"COMMENT:\n"
