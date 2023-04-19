@@ -619,11 +619,14 @@ class ParticleNode(SyntaxNodeBase):
         super().__init__(name)
         self._nodes = [self]
         self._token = token
+        self._order = []
         classifier_chunks = token.replace(":", "").split(",")
         self._particles = set()
         self._formatter = {"upper": False}
         for chunk in classifier_chunks:
-            self._particles.add(Particle(chunk.upper()))
+            part = Particle(chunk.upper())
+            self._particles.add(part)
+            self._order.append(part)
 
     @property
     def particles(self):
@@ -631,19 +634,42 @@ class ParticleNode(SyntaxNodeBase):
 
     @particles.setter
     def particles(self, values):
-        if not isinstance(values, set):
+        if not isinstance(values, (list, set)):
             raise ValueError(f"Particles must be a set. {values} given.")
         for value in values:
             if not isinstance(value, Particle):
                 raise ValueError(f"All particles must be a Particle. {value} given")
+        if isinstance(values, list):
+            self._order = values
+            values = set(values)
         self._particles = values
+
+    def add(self, value):
+        if not isinstance(value, Particle):
+            raise ValueError(f"All particles must be a Particle. {value} given")
+        self._order.append(value)
+        self._particles.add(value)
+
+    def remove(self, value):
+        if not isinstance(value, Particle):
+            raise ValueError(f"All particles must be a Particle. {value} given")
+        self._particles.remove(value)
+        self._order.remove(value)
+
+    @property
+    def _particles_sorted(self):
+        ret = self._order
+        remainder = self.particles - set(ret)
+        for straggler in sorted(remainder):
+            ret.append(straggler)
+        return ret
 
     def format(self):
         self._reverse_engineer_format()
         if self._formatter["upper"]:
-            parts = [p.value.upper() for p in self._particles]
+            parts = [p.value.upper() for p in self._particles_sorted]
         else:
-            parts = [p.value.lower() for p in self._particles]
+            parts = [p.value.lower() for p in self._particles_sorted]
         return f":{','.join(parts)}"
 
     def _reverse_engineer_format(self):
