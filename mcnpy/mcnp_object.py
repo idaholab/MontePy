@@ -182,6 +182,7 @@ class MCNP_Object(ABC):
             width=line_length,
             initial_indent=" " * initial_indent,
             subsequent_indent=" " * indent_length,
+            drop_whitespace=False,
         )
         ret = []
         for line in strings:
