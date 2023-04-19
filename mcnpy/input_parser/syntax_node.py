@@ -2,6 +2,7 @@ from abc import ABC, abstractmethod
 import enum
 import math
 from mcnpy import input_parser
+from mcnpy import constants
 from mcnpy.input_parser.shortcuts import Shortcuts
 from mcnpy.geometry_operators import Operator
 from mcnpy.particle import Particle
@@ -254,7 +255,7 @@ class CommentNode(SyntaxNodeBase):
 
     _MATCHER = re.compile(
         rf"""(?P<delim>
-                (\s{{0,{input_parser.constants.BLANK_SPACE_CONTINUE-1}}}C\s?)
+                (\s{{0,{constants.BLANK_SPACE_CONTINUE-1}}}C\s?)
                 |(\$\s)
              )
             (?P<contents>.*)""",

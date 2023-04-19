@@ -1,4 +1,4 @@
-from mcnpy.input_parser import constants
+from mcnpy import constants
 from mcnpy.utilities import fortran_float
 import re
 from sly import Lexer

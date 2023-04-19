@@ -4,7 +4,7 @@ from mcnpy._cell_data_control import CellDataPrintController
 from mcnpy.cell import Cell
 from mcnpy.cells import Cells
 from mcnpy.errors import *
-from mcnpy.input_parser.constants import DEFAULT_VERSION
+from mcnpy.constants import DEFAULT_VERSION
 from mcnpy.materials import Materials
 from mcnpy.surfaces import surface_builder
 from mcnpy.surface_collection import Surfaces

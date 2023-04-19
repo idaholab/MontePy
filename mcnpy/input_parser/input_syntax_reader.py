@@ -3,7 +3,7 @@ from collections import deque
 from .. import errors
 import itertools
 import io
-from mcnpy.input_parser.constants import *
+from mcnpy.constants import *
 from mcnpy.input_parser.mcnp_input import Input, Message, ReadInput, Title
 from mcnpy.input_parser.read_parser import ReadParser
 import os

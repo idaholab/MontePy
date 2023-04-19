@@ -1,7 +1,7 @@
 from unittest import TestCase
 
 import copy
-from mcnpy.input_parser.constants import DEFAULT_VERSION
+from mcnpy.constants import DEFAULT_VERSION
 from mcnpy.input_parser import syntax_node
 import mcnpy
 from mcnpy.cell import Cell

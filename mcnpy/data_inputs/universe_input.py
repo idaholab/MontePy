@@ -1,7 +1,7 @@
 import itertools
 from mcnpy.data_inputs.cell_modifier import CellModifierInput
 from mcnpy.errors import *
-from mcnpy.input_parser.constants import DEFAULT_VERSION
+from mcnpy.constants import DEFAULT_VERSION
 from mcnpy.input_parser.mcnp_input import Jump
 from mcnpy.input_parser import syntax_node
 from mcnpy.mcnp_object import MCNP_Object

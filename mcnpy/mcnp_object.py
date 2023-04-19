@@ -1,6 +1,6 @@
 from abc import ABC, abstractmethod
 from mcnpy.errors import *
-from mcnpy.input_parser.constants import BLANK_SPACE_CONTINUE, get_max_line_length
+from mcnpy.constants import BLANK_SPACE_CONTINUE, get_max_line_length
 from mcnpy.input_parser.syntax_node import PaddingNode, ParametersNode, ValueNode
 import mcnpy
 import numpy as np

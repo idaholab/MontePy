@@ -1,5 +1,5 @@
 from mcnpy import mcnp_problem
-from mcnpy.input_parser.constants import DEFAULT_VERSION
+from mcnpy.constants import DEFAULT_VERSION
 
 
 def read_input(input_file, mcnp_version=DEFAULT_VERSION):

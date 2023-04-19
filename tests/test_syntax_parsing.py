@@ -325,11 +325,9 @@ bar
             (7, 4, 0): 128,
         }
         for version, answer in answers.items():
-            self.assertEqual(
-                answer, mcnpy.input_parser.constants.get_max_line_length(version)
-            )
+            self.assertEqual(answer, mcnpy.constants.get_max_line_length(version))
         with self.assertRaises(mcnpy.errors.UnsupportedFeature):
-            mcnpy.input_parser.constants.get_max_line_length((5, 1, 38))
+            mcnpy.constants.get_max_line_length((5, 1, 38))
 
     def test_jump(self):
         jump = Jump()
