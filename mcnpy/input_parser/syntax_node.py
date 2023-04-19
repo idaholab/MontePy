@@ -662,6 +662,9 @@ class ParticleNode(SyntaxNodeBase):
     def __repr__(self):
         return self.format()
 
+    def __iter__(self):
+        return iter(self.particles)
+
 
 class ListNode(SyntaxNodeBase):
     def __init__(self, name):
