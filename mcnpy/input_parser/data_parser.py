@@ -34,6 +34,8 @@ class DataParser(MCNP_Parser):
         ret["classifier"] = p.classifier_phrase
         if hasattr(p, "KEYWORD"):
             ret["keyword"] = syntax_node.ValueNode(p.KEYWORD, str, padding=p[-1])
+        else:
+            ret["keyword"] = syntax_node.ValueNode(None, str, padding=None)
         return syntax_node.SyntaxNode("data intro", ret)
 
     @_("number_sequence", "isotope_fractions")

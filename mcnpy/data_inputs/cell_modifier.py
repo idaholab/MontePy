@@ -67,6 +67,7 @@ class CellModifierInput(DataInputAbstract):
             {
                 "start_pad": syntax_node.PaddingNode(),
                 "classifier": classifier,
+                "keyword": syntax_node.ValueNode(None, str, None),
                 "data": list_node,
             },
         )
