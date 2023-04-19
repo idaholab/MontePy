@@ -1,6 +1,6 @@
 from abc import ABC, abstractmethod
 from mcnpy.errors import *
-from mcnpy.constants import BLANK_SPACE_CONTINUE, get_max_line_length
+from mcnpy.constants import BLANK_SPACE_CONTINUE, get_max_line_length, rel_tol, abs_tol
 from mcnpy.input_parser.syntax_node import PaddingNode, ParametersNode, ValueNode
 import mcnpy
 import numpy as np
@@ -190,7 +190,7 @@ class MCNP_Object(ABC):
         return ret
 
     @staticmethod
-    def compress_repeat_values(values, threshold=1e-6):
+    def compress_repeat_values(values, threshold=rel_tol):
         """
         Takes a list of floats, and tries to compress it using repeats.
 
@@ -221,7 +221,7 @@ class MCNP_Object(ABC):
                 ret.append(value)
                 last_value = None
             elif last_value:
-                if np.isclose(value, last_value, atol=threshold):
+                if np.isclose(value, last_value, rtol=threshold, atol=abs_tol):
                     repeat_counter += 1
                 else:
                     flush_repeats()

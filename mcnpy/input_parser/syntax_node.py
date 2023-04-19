@@ -3,6 +3,7 @@ import enum
 import math
 from mcnpy import input_parser
 from mcnpy import constants
+from mcnpy.constants import rel_tol, abs_tol
 from mcnpy.input_parser.shortcuts import Shortcuts
 from mcnpy.geometry_operators import Operator
 from mcnpy.particle import Particle
@@ -607,7 +608,7 @@ class ValueNode(SyntaxNodeBase):
             if self.type != type(other):
                 return False
         if self.type == float:
-            return math.isclose(self.value, other_val)
+            return math.isclose(self.value, other_val, rel_tol=rel_tol, abs_tol=abs_tol)
         return self.value == other_val
 
 
@@ -977,7 +978,7 @@ class ShortcutNode(ListNode):
             if self.nodes[-1].type != node.type:
                 return False
             if self.nodes[-1].type in {int, float} and math.isclose(
-                self.nodes[-1].value, node.value
+                self.nodes[-1].value, node.value, rel_tol=rel_tol, abs_tol=abs_tol
             ):
                 return True
             elif self.nodes[-1].value == node.value:
@@ -998,7 +999,7 @@ class ShortcutNode(ListNode):
             new_val = 10 ** (edge + direction * self._spacing)
         else:
             new_val = edge + direction * self._spacing
-        return math.isclose(new_val, node.value)
+        return math.isclose(new_val, node.value, rel_tol=rel_tol, abs_tol=abs_tol)
 
     # TODO create method for shortcuts to reject children
     def consume_edge_node(self, node, direction):
@@ -1020,7 +1021,9 @@ class ShortcutNode(ListNode):
         elif self._type == Shortcuts.REPEAT:
             start_val = self.nodes[0].value
             for node in self.nodes:
-                if not math.isclose(start_val, node.value):
+                if not math.isclose(
+                    start_val, node.value, rel_tol=rel_tol, abs_tol=abs_tol
+                ):
                     return False
             return True
         elif self._type == Shortcuts.MULTIPLY:
@@ -1034,7 +1037,9 @@ class ShortcutNode(ListNode):
                 new_val = self._begin + self._spacing * (i + 1)
                 if is_log:
                     new_val = 10**new_val
-                if not math.isclose(new_val, node.value):
+                if not math.isclose(
+                    new_val, node.value, rel_tol=rel_tol, abs_tol=abs_tol
+                ):
                     return False
             return True
 

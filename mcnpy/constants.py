@@ -1,8 +1,23 @@
 from mcnpy.errors import UnsupportedFeature
 
 """
-Constants related to how MCNP inputs are formatted.
+Constants related to how MCNP inputs are formatted, and MCNPy behavior.
 """
+
+rel_tol = 1e-9
+"""
+Relative tolerance passed to math.isclose.
+
+:rtype: float
+"""
+
+abs_tol = 0.0
+"""
+Absolute tolerance passed to math.isclose.
+
+:rtype: float
+"""
+
 
 BLANK_SPACE_CONTINUE = 5
 """
