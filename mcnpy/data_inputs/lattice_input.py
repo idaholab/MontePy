@@ -78,7 +78,9 @@ class LatticeInput(CellModifierInput):
         data._convert_to_enum(Lattice, True, int)
         list_node.append(data)
         classifier = syntax_node.ClassifierNode()
-        classifier.prefix = "LAT"
+        classifier.prefix = self._generate_default_node(
+            str, self._class_prefix().upper(), None
+        )
         self._tree = syntax_node.SyntaxNode(
             "lattice",
             {
