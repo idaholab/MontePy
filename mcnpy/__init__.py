@@ -24,6 +24,7 @@ __status__ = "Development"
 __all__ = ["cell", "surfaces", "mcnp_object.py", "input_parser"]
 
 from . import input_parser
+from . import constants
 from .input_parser.input_reader import read_input
 from mcnpy.cell import Cell
 from mcnpy.data_inputs.material import Material
