@@ -70,12 +70,12 @@ class SyntaxNodeBase(ABC):
 
     def get_trailing_comment(self):
         tail = self.nodes[-1]
-        if isinstance(tail, type(self)):
+        if isinstance(tail, SyntaxNodeBase):
             return tail.get_trailing_comment()
 
     def _delete_trailing_comment(self):
         tail = self.nodes[-1]
-        if isinstance(tail, type(self)):
+        if isinstance(tail, SyntaxNodeBase):
             tail._delete_trailing_comment()
 
 
