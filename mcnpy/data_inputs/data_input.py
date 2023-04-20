@@ -141,11 +141,6 @@ class DataInputAbstract(MCNP_Object):
         # TODO implement
         pass
 
-    def format_for_mcnp_input(self, mcnp_version):
-        self.validate()
-        self._update_values()
-        return self.wrap_string_for_mcnp(self._tree.format(), mcnp_version, True)
-
     def update_pointers(self, data_inputs):
         """
         Connects data inputs to each other

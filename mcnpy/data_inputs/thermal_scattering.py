@@ -108,10 +108,6 @@ class ThermalScatteringLaw(DataInputAbstract):
                 message = f"No thermal scattering laws given for thermal scattering {hex(id(self))}"
             raise IllegalState(message)
 
-    def format_for_mcnp_input(self, mcnp_version):
-        self.validate()
-        self._update_values()
-        return self.wrap_string_for_mcnp(self._tree.format(), mcnp_version, True)
 
     def update_pointers(self, data_inputs):
         """
