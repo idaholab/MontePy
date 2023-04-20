@@ -66,6 +66,8 @@ class MCNP_Problem:
             raise TypeError("cells must be an instance of list or Cells")
         if isinstance(cells, list):
             cells = Cells(cells)
+        if cells is self.cells:
+            return
         self.cells.clear()
         self.cells.extend(cells)
 

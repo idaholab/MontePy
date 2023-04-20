@@ -1,5 +1,6 @@
 import copy
 import mcnpy
+import mcnpy.cells
 from mcnpy.errors import NumberConflictError
 import unittest
 
@@ -186,6 +187,12 @@ class TestNumberedObjectCollection(unittest.TestCase):
         list_cells[0].number = 20
         cells += list_cells
         self.assertEqual(len(cells), size + 1)
+
+        this_problem = copy.deepcopy(self.simple_problem)
+        for cell in this_problem.cells:
+            cell.number += 1000
+        this_problem.cells += self.simple_problem.cells
+        self.assertEqual(len(this_problem.cells), size * 2)
 
     def test_slice(self):
         test_numbers = [c.number for c in self.simple_problem.cells[1:5]]
