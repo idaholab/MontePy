@@ -538,7 +538,7 @@ class ValueNode(SyntaxNodeBase):
                     pad_str = ""
                 pad_str += "".join([x.format() for x in self.padding.nodes[1:]])
             else:
-                pad_str = "".join(self.padding.nodes)
+                pad_str = "".join([x.format() for x in self.padding.nodes])
         else:
             pad_str = ""
         temp = "{temp:<{value_length}}{padding}".format(
