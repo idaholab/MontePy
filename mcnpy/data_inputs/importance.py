@@ -181,7 +181,12 @@ class Importance(CellModifierInput):
                     continue
                 for i, cell in enumerate(self._problem.cells):
                     value = self._particle_importances[particle]["data"][i]
-                    cell.importance._particle_importances[particle] = value
+                    # force generating the default tree
+                    cell.importance[particle] = value.value
+                    # replace default ValueNode with actual valueNode
+                    data = cell.importance._particle_importances[particle]["data"]
+                    data.nodes.pop()
+                    data.nodes.append(value)
 
     def _format_tree(self):
         particles_printed = set()
