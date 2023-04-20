@@ -150,7 +150,7 @@ class Fill(CellModifierCard):
                 try:
                     val = int(val)
                     limit_holder[axis] = val
-                except (ValueError) as e:
+                except ValueError as e:
                     raise ValueError(
                         f"The lattice limits must be an integer. {val} was given"
                     )

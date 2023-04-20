@@ -14,7 +14,6 @@ class GeneralPlane(Surface):
     """
 
     def __init__(self, input_card=None, comments=None):
-
         super().__init__(input_card, comments)
         if input_card:
             if self.surface_type != SurfaceType.P:
