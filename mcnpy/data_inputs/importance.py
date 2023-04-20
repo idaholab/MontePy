@@ -29,8 +29,8 @@ class Importance(CellModifierInput):
     def __init__(
         self, input=None, comments=None, in_cell_block=False, key=None, value=None
     ):
-        super().__init__(input, comments, in_cell_block, key, value)
         self._particle_importances = {}
+        super().__init__(input, comments, in_cell_block, key, value)
         if self.in_cell_block:
             if key:
                 val = value["data"]
@@ -63,24 +63,24 @@ class Importance(CellModifierInput):
         )
         if particle is None:
             particles = syntax_node.ParticleNode("imp particle", "n")
+            particle = Particle.NEUTRON
         else:
             particles = syntax_node.ParticleNode("imp particle", particle.value.lower())
         if self._problem:
             particles.particles = self._problem.mode.particles
         classifier.particles = particles
         list_node = syntax_node.ListNode("imp data")
-        if not self.in_cell_block:
-            ret = {"classifier": classifier, "data": list_node}
-            self._tree = syntax_node.SyntaxNode("Importance", ret)
-        else:
-            self._tree = syntax_node.SyntaxNode(
-                "Importance",
-                {
-                    "classifier": classifier,
-                    "seperator": self._generate_default_node(str, "=", padding=None),
-                    "data": list_node,
-                },
-            )
+        list_node.append(self._generate_default_node(float, 0.0))
+        tree = syntax_node.SyntaxNode(
+            "Importance",
+            {
+                "classifier": classifier,
+                "seperator": self._generate_default_node(str, "=", padding=None),
+                "data": list_node,
+            },
+        )
+        self._tree = tree
+        self._particle_importances[particle] = tree
 
     @property
     def _tree_value(self, particle):
@@ -150,6 +150,8 @@ class Importance(CellModifierInput):
             raise TypeError("importance must be a number")
         if value < 0:
             raise ValueError("importance must be ≥ 0")
+        if particle not in self._particle_importances:
+            self._generate_default_cell_tree(particle)
         self._particle_importances[particle]["data"][0].value = value
 
     def __delitem__(self, particle):
