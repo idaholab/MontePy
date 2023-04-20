@@ -123,7 +123,7 @@ test title
         str_answer = """COMMENT:
 c foo"""
         self.assertEqual(repr(card), str_answer)
-        self.assertEqual("COMMENT: 1 lines", str(card))
+        self.assertEqual("c foo", str(card))
         self.assertEqual(len(answer), len(output))
         for i, line in enumerate(output):
             self.assertEqual(answer[i], line)
