@@ -86,7 +86,7 @@ class MCNP_Lexer(Lexer):
 
     reflags = re.IGNORECASE | re.VERBOSE
 
-    @_(r"\$.*\s?")
+    @_(r"\$.*")
     def DOLLAR_COMMENT(self, t):
         self.lineno += t.value.count("\n")
         return t

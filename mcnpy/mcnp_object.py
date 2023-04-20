@@ -23,6 +23,7 @@ class MCNP_Object(ABC):
         if input:
             if not isinstance(input, mcnpy.input_parser.mcnp_input.Input):
                 raise TypeError("input must be an Input")
+            # TODO delete
             self._input_lines = input.input_lines
             self._tree = parser.parse(input.tokenize())
             if self._tree is None:
