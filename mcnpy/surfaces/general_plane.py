@@ -14,7 +14,7 @@ class GeneralPlane(Surface):
     """
 
     def __init__(self, input=None, comments=None):
-        super().__init__(input, comment)
+        super().__init__(input, comments)
         if input:
             if self.surface_type != SurfaceType.P:
                 raise ValueError("A GeneralPlane must be a surface of type P")
