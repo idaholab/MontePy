@@ -108,6 +108,9 @@ class ThermalScatteringLaw(DataInputAbstract):
                 message = f"No thermal scattering laws given for thermal scattering {hex(id(self))}"
             raise IllegalState(message)
 
+    def _update_values(self):
+        if self.parent_material:
+            self._tree["classifier"].number.value = self.parent_material.number
 
     def update_pointers(self, data_inputs):
         """
