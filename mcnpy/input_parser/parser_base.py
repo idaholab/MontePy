@@ -50,6 +50,8 @@ class MCNP_Parser(Parser, metaclass=MetaBuilder):
     tokens = MCNP_Lexer.tokens
     debugfile = None
 
+    precedence = (("left", SPACE), ("left", TEXT))
+
     @_("NUMBER", "NUMBER padding")
     def number_phrase(self, p):
         return self._flush_phrase(p, float)
@@ -170,9 +172,7 @@ class MCNP_Parser(Parser, metaclass=MetaBuilder):
 
     @_(
         "modifier classifier",
-        "TEXT",
         "KEYWORD",
-        "PARTICLE",
         "classifier NUMBER",
         "classifier PARTICLE_DESIGNATOR",
     )
@@ -184,10 +184,8 @@ class MCNP_Parser(Parser, metaclass=MetaBuilder):
 
         if hasattr(p, "modifier"):
             classifier.modifier = syntax_node.ValueNode(p.modifier, str)
-        if hasattr(p, "TEXT") or hasattr(p, "KEYWORD") or hasattr(p, "PARTICLE"):
-            if hasattr(p, "TEXT"):
-                text = p.TEXT
-            elif hasattr(p, "KEYWORD"):
+        if hasattr(p, "KEYWORD") or hasattr(p, "PARTICLE"):
+            if hasattr(p, "KEYWORD"):
                 text = p.KEYWORD
             else:
                 text = p.PARTICLE

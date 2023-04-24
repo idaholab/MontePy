@@ -19,6 +19,13 @@ class DataParser(MCNP_Parser):
             ret["parameters"] = p.parameters
         return syntax_node.SyntaxNode("data", ret)
 
+    @_("TEXT")
+    def classifier(self, p):
+        classifier = syntax_node.ClassifierNode()
+        text = p.TEXT
+        classifier.prefix = syntax_node.ValueNode(text, str)
+        return classifier
+
     @_(
         "classifier_phrase",
         "classifier_phrase KEYWORD padding",
