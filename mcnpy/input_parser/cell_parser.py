@@ -51,7 +51,8 @@ class CellParser(MCNP_Parser):
     def union(self, p):
         ret = p.union
         for node in p.padding.nodes:
-            ret.append(node)
+            is_comment = isinstance(node, syntax_node.CommentNode)
+            ret.append(node, is_comment)
         return ret
 
     @_("geometry_expr union geometry_term")

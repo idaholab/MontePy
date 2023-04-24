@@ -194,7 +194,9 @@ class PaddingNode(SyntaxNodeBase):
 
     def append(self, val, is_comment=False):
         if is_comment:
-            self.nodes.append(CommentNode(val))
+            if not isinstance(val, CommentNode):
+                val = CommentNode(val)
+            self.nodes.append(val)
             return
         parts = val.split("\n")
         if len(parts) > 1:
