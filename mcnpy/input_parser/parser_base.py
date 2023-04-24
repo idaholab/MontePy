@@ -156,17 +156,14 @@ class MCNP_Parser(Parser, metaclass=MetaBuilder):
 
     @_("TEXT", "FILE_PATH", "file_name TEXT", "file_name FILE_PATH")
     def file_name(self, p):
-        if not hasattr(p, "file_name"):
-            sequence = syntax_node.ListNode("file sequence")
-            sequence.append(p[0])
-        else:
-            sequence = p.file_name
-            sequence.append(p[1])
-        return sequence
+        ret = p[0]
+        if len(p) > 1:
+            ret += p[1]
+        return ret
 
     @_("file_name", "file_name padding")
     def file_phrase(self, p):
-        self._flush_phrase(p, str)
+        return self._flush_phrase(p, str)
 
     @_('"="', "padding", '"=" padding')
     def param_seperator(self, p):
