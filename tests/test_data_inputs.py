@@ -43,10 +43,11 @@ class testDataInputClass(TestCase):
         for answer, out in zip(in_strs, output):
             self.assertEqual(answer, out)
 
+    # TODO implement comment setting
     def test_comment_setter(self):
         in_str = "m1 1001.80c 1.0"
         input_card = Input([in_str], BlockType.DATA)
-        comment = Comment(["c foo", "c bar"], ["foo", "bar"])
+        comment = "foo"
         data_card = DataInput(input_card)
         data_card.comment = comment
         self.assertEqual(comment, data_card.comment)

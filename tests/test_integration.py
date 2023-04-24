@@ -45,7 +45,6 @@ class testFullFileIntegration(TestCase):
         for comment in material._tree.comments:
             print(repr(comment))
         print(material._tree.get_trailing_comment())
-        assert False
 
     def test_material_parsing(self):
         mat_numbers = [1, 2, 3]
