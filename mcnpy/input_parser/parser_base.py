@@ -184,11 +184,8 @@ class MCNP_Parser(Parser, metaclass=MetaBuilder):
 
         if hasattr(p, "modifier"):
             classifier.modifier = syntax_node.ValueNode(p.modifier, str)
-        if hasattr(p, "KEYWORD") or hasattr(p, "PARTICLE"):
-            if hasattr(p, "KEYWORD"):
-                text = p.KEYWORD
-            else:
-                text = p.PARTICLE
+        if hasattr(p, "KEYWORD"):
+            text = p.KEYWORD
             classifier.prefix = syntax_node.ValueNode(text, str)
         if hasattr(p, "NUMBER"):
             classifier.number = syntax_node.ValueNode(p.NUMBER, int)

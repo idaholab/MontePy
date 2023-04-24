@@ -19,10 +19,13 @@ class DataParser(MCNP_Parser):
             ret["parameters"] = p.parameters
         return syntax_node.SyntaxNode("data", ret)
 
-    @_("TEXT")
+    @_("TEXT", "PARTICLE")
     def classifier(self, p):
         classifier = syntax_node.ClassifierNode()
-        text = p.TEXT
+        if hasattr(p, "TEXT"):
+            text = p.TEXT
+        else:
+            text = p.PARTICLE
         classifier.prefix = syntax_node.ValueNode(text, str)
         return classifier
 
