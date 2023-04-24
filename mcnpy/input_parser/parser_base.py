@@ -17,6 +17,7 @@ class MetaBuilder(sly.yacc.ParserMeta):
         "parse",
         "restart",
         "tokens",
+        "dont_copy",
     }
 
     # TODO support function overloading
@@ -34,6 +35,7 @@ class MetaBuilder(sly.yacc.ParserMeta):
             if (
                 not attr_name.startswith("_")
                 and attr_name not in MetaBuilder.protected_names
+                and attr_name not in attributes.get("dont_copy", set())
             ):
                 func = getattr(basis, attr_name)
                 attributes[attr_name] = func
