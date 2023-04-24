@@ -4,6 +4,7 @@ from mcnpy.input_parser import syntax_node
 
 class ReadParser(MCNP_Parser):
     debugfile = None
+    dont_copy = {"parameter"}
 
     @_("KEYWORD padding parameters", "padding KEYWORD padding parameters")
     def read_input(self, p):
@@ -23,3 +24,12 @@ class ReadParser(MCNP_Parser):
             )
         else:
             return False
+
+    @_(
+        "classifier param_seperator file_phrase",
+    )
+    def parameter(self, p):
+        return syntax_node.SyntaxNode(
+            p.classifier.prefix.value,
+            {"classifier": p.classifier, "seperator": p.param_seperator, "data": p[2]},
+        )

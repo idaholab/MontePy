@@ -146,7 +146,6 @@ class MCNP_Parser(Parser, metaclass=MetaBuilder):
     @_(
         "classifier param_seperator number_sequence",
         "classifier param_seperator text_phrase",
-        "classifier param_seperator file_phrase",
     )
     def parameter(self, p):
         return syntax_node.SyntaxNode(
