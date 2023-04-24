@@ -78,4 +78,6 @@ class EdgeCaseTests(TestCase):
         cell = mcnpy.Cell(input)
         self.assertNotIn("", cell.parameters)
         print(cell.parameters)
-        self.assertEqual(len(cell.parameters), 1)
+        allowed_keys = {"u", "imp:n", "fill", "lat", "vol"}
+        self.assertEqual(len(cell.parameters), 5)
+        self.assertEqual(cell.parameters.nodes.keys(), allowed_keys)
