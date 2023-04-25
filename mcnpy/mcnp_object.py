@@ -92,7 +92,7 @@ class MCNP_Object(ABC):
         :returns: a list of the comments associated with this comment.
         :rtype: list
         """
-        return self._comments
+        return self._tree.comments
 
     @comments.setter
     def comments(self, comments):
