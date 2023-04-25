@@ -184,7 +184,7 @@ class Volume(CellModifierInput):
         )
         return ret
 
-    def _update_values(self):
+    def _update_cell_values(self):
         if self.in_cell_block:
             if self._tree["data"][0] is not self._volume:
                 self._tree["data"].nodes.pop()

@@ -231,10 +231,14 @@ class CellModifierInput(DataInputAbstract):
             ret.append(input._tree_value)
         return ret
 
+    @abstractmethod
+    def _update_cell_values(self):
+        pass
+
     def _update_values(self):
-        if not hasattr(self, "_tree"):
-            self._create_default_tree()
-        if not self.in_cell_block:
+        if self.in_cell_block:
+            self._update_cell_values()
+        else:
             new_vals = self._collect_new_values()
             self.data.update_with_new_values(new_vals)
 

@@ -270,7 +270,7 @@ class Importance(CellModifierInput):
             values.append(cell.importance[particle])
         return self.compress_repeat_values(values)
 
-    def _update_values(self):
+    def _update_cell_values(self):
         if not hasattr(self, "_tree"):
             self._generate_default_tree()
 

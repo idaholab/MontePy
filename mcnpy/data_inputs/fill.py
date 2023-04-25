@@ -526,7 +526,7 @@ class Fill(CellModifierInput):
             f"Min/Max: {str(self.min_index) + ' ' +str(self.max_index) if self._multi_universe == True  else 'None'}"
         )
 
-    def _update_values(self):
+    def _update_cell_values(self):
         if self.transform and self.transform.is_in_degrees:
             self._tree["classifier"].modifier = "*"
         else:

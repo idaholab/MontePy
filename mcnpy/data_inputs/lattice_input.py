@@ -150,3 +150,6 @@ class LatticeInput(CellModifierInput):
             f"Lattice_values : {self.lattice}"
         )
         return ret
+
+    def _update_cell_values(self):
+        pass

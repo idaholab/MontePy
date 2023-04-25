@@ -210,7 +210,7 @@ class UniverseInput(CellModifierInput):
             number = -number
         return number
 
-    def _update_values(self):
+    def _update_cell_values(self):
         if self.universe is not None:
             self._tree["data"][0].is_negatable_identifier = True
             self._tree["data"][0].value = self.universe.number
