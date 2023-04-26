@@ -717,26 +717,45 @@ class ListNode(SyntaxNodeBase):
 
     def _expand_shortcuts(self, new_vals, new_vals_cache):
         def try_expansion(shortcut, value):
-            pass
+            status = shortcut.consume_edge_node(value, 1)
+            if status:
+                new_vals_cache[id(value)] = shortcut
+            return status
 
         def try_reverse_expansion(shortcut, i, last_end):
-            pass
+            if i > 1:
+                for value in new_vals[i - 1 : last_end : -1]:
+                    if shortcut.consume_edge_node(value, -1):
+                        new_vals_cache[id(value)] = shortcut
+                    else:
+                        return
 
-        in_shortcut = False
+        def check_for_orphan_jump(value):
+            if isinstance(value, input_parser.mcnp_input.Jump) and shortcut is None:
+                shortcut = ShortcutNode(p=None, short_type=Shortcuts.JUMP)
+                if shortcut.consume_edge_node(value, 1):
+                    new_vals_cache[id(value)] = shortcut
+
         shortcut = None
         last_end = 0
         for i, value in enumerate(new_vals_cache.values()):
             # found a new shortcut
-            if isinstace(value, ShortcutNode):
+            if isinstance(value, ShortcutNode):
                 # shortcuts bumped up against each other
-                if in_shortcut:
+                if shortcut is not None:
                     last_end = i - 1
-                shortcut = value
                 if try_expansion(shortcut, new_vals[i]):
+                    shortcut = value
                     try_reverse_expansion(shortcut, i, last_end)
             # otherwise it is actually a value to expand as well
             else:
-                pass
+                if shortcut is not None:
+                    if not try_expansion(shorcut, new_vals[i]):
+                        last_end = i - 1
+                        shortcut = None
+                        check_for_orphan_jump(new_vals[i])
+                else:
+                    check_for_orphan_jump(new_vals[i])
 
     # TODO
     def _find_hanging_jumps(self, new_vals, old_val_idx):
@@ -980,24 +999,35 @@ class ShortcutNode(ListNode):
 
     def _can_consume_node(self, node, direction):
         if self._type == Shortcuts.JUMP:
-            if isinstance(node, Jump):
+            if isinstance(node, input_parser.mcnp_input.Jump):
                 return True
 
         # REPEAT
         elif self._type == Shortcuts.REPEAT:
-            if self.nodes[-1].type != node.type:
-                return False
-            if self.nodes[-1].type in {int, float} and math.isclose(
-                self.nodes[-1].value, node.value, rel_tol=rel_tol, abs_tol=abs_tol
+            if len(self.nodes) == 0 and not isinstance(
+                node, input_parser.mcnp_input.Jump
             ):
                 return True
-            elif self.nodes[-1].value == node.value:
+            if direction == 1:
+                edge = self.nodes[-1]
+            else:
+                edge = self.nodes[0]
+            if edge.type != node.type:
+                return False
+            if edge.type in {int, float} and math.isclose(
+                edge.value, node.value, rel_tol=rel_tol, abs_tol=abs_tol
+            ):
                 return True
+            elif edge.value == node.value:
+                return True
+
+        # INTERPOLATE
         elif self._type in {Shortcuts.INTERPOLATE, Shortcuts.LOG_INTERPOLATE}:
             return self._is_valid_interpolate_edge(node, direction)
         # Multiply can only ever have 1 value
         elif self._type == Shortcuts.MULTIPLY:
-            return False
+            if len(self.nodes) == 0:
+                return True
         return False
 
     def _is_valid_interpolate_edge(self, node, direction):
@@ -1011,21 +1041,19 @@ class ShortcutNode(ListNode):
             new_val = edge + direction * self._spacing
         return math.isclose(new_val, node.value, rel_tol=rel_tol, abs_tol=abs_tol)
 
-    # TODO create method for shortcuts to reject children
     def consume_edge_node(self, node, direction):
         if self._can_consume_node(node, direction):
             if direction == 1:
                 self._nodes.append(node)
             else:
-                # TODO should we do deque here?
-                self._nodes.insert(0, node)
+                self._nodes.appendleft(node)
             return True
         return False
 
     def _can_recompress(self):
         if self._type == Shortcuts.JUMP:
             for node in self.nodes:
-                if not isinstance(node, Jump):
+                if not isinstance(node, input_parser.mcnp_input.Jump):
                     return False
             return True
         elif self._type == Shortcuts.REPEAT:
