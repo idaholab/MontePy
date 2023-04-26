@@ -1,4 +1,5 @@
 from abc import ABC, abstractmethod
+import collections
 import enum
 import math
 from mcnpy import input_parser
@@ -876,24 +877,30 @@ class ShortcutNode(ListNode):
     }
     _num_finder = re.compile(r"\d+")
 
-    def __init__(self, p):
+    def __init__(self, p=None, short_type=None):
         self._type = None
         self._end_pad = None
-        for search_str, shortcut in self._shortcut_names.items():
-            if hasattr(p, search_str):
-                super().__init__(search_str.lower())
-                self._type = shortcut
-        if self._type is None:
-            raise ValueError("must use a valid shortcut")
-        self._original = list(p)
-        if self._type == Shortcuts.REPEAT:
-            self._expand_repeat(p)
-        elif self._type == Shortcuts.MULTIPLY:
-            self._expand_multiply(p)
-        elif self._type == Shortcuts.JUMP:
-            self._expand_jump(p)
-        elif self._type in {Shortcuts.INTERPOLATE, Shortcuts.LOG_INTERPOLATE}:
-            self._expand_interpolate(p)
+        self._nodes = collections.deque()
+        if p is not None:
+            for search_str, shortcut in self._shortcut_names.items():
+                if hasattr(p, search_str):
+                    super().__init__(search_str.lower())
+                    self._type = shortcut
+            if self._type is None:
+                raise ValueError("must use a valid shortcut")
+            self._original = list(p)
+            if self._type == Shortcuts.REPEAT:
+                self._expand_repeat(p)
+            elif self._type == Shortcuts.MULTIPLY:
+                self._expand_multiply(p)
+            elif self._type == Shortcuts.JUMP:
+                self._expand_jump(p)
+            elif self._type in {Shortcuts.INTERPOLATE, Shortcuts.LOG_INTERPOLATE}:
+                self._expand_interpolate(p)
+        elif short_type is not None:
+            if not isinstance(short_type, Shortcuts):
+                raise TypeError(f"Shortcut type must be Shortcuts. {short_type} given.")
+            self._type = short_type
 
     @property
     def end_padding(self):
