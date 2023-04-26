@@ -61,7 +61,7 @@ class EdgeCaseTests(TestCase):
         with self.assertWarns(mcnpy.errors.LineOverRunWarning):
             problem = mcnpy.read_input("tests/inputs/test_long_lines.imcnp", (5, 1, 60))
             comment = next(problem.cells[1].comments)
-            self.assertTrue(len(comment.lines[0]) <= 80)
+            self.assertTrue(len(comment.contents[0]) <= 80)
             self.assertEqual(len(problem.surfaces), 3)
 
     def test_confused_key_word(self):
