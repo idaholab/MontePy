@@ -256,16 +256,19 @@ class CellModifierInput(DataInputAbstract):
         :rtype: list
         """
         self.validate()
-        self._update_values()
         if not self._problem:
-            in_data_block = not self.in_cell_block
+            print_in_data_block = not self.in_cell_block
         else:
-            in_data_block = self._problem.print_in_data_block[
+            print_in_data_block = self._problem.print_in_data_block[
                 self._class_prefix().upper()
             ]
-        if self.in_cell_block and not in_data_block and self.has_information:
+        # print in cell block
+        if self.in_cell_block and not print_in_data_block and self.has_information:
+            self._update_values()
             return self.wrap_string_for_mcnp(self._format_tree(), mcnp_version, True)
 
-        if not self.in_cell_block and in_data_block and self._is_worth_printing:
+        # print in data block
+        if not self.in_cell_block and print_in_data_block and self._is_worth_printing:
+            self._update_values()
             return self.wrap_string_for_mcnp(self._tree.format(), mcnp_version, True)
         return []
