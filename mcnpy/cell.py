@@ -117,10 +117,8 @@ class Cell(Numbered_MCNP_Object):
         # Add defaults to tree
         for input_class, (attr, _) in self._INPUTS_TO_PROPERTY.items():
             has_imp = False
-            if (
-                class_pref := input_class._class_prefix()
-                not in self._tree["parameters"]
-            ):
+            class_pref = input_class._class_prefix()
+            if class_pref not in self._tree["parameters"]:
                 if class_pref == "imp":
                     for key in self._tree["parameters"].nodes.keys():
                         if class_pref in key:
