@@ -704,62 +704,38 @@ class ListNode(SyntaxNodeBase):
         return f"(list: {self.name}, {self.nodes})"
 
     def update_with_new_values(self, new_vals):
-        new_val_idx = {}
-        # build map of object to index in new vals
-        for i, val in enumerate(new_vals):
-            new_val_idx[id(val)] = i
-        # create "pointer" list from old objects to new values
-        # TODO any value of pointers?
-        old_val_idx = []
-        to_remove = []
-        for val in self:
-            if id(val) in new_val_idx:
-                old_val_idx.append(new_val_idx[id(val)])
-            else:
-                to_remove.append(val)
-        # Delete orphaned objects
-        for obj in to_remove:
-            try:
-                self._nodes.remove(obj)
-            # otherwise it is in the shortcuts
-            except ValueError:
-                # TODO this is almost n*m time. Does this matter?
-                for shortcut in self._shortcuts:
-                    try:
-                        shortcut._nodes.remove(obj)
-                        break
-                    except ValueError:
-                        continue
-        # TODO insert new values in
-        self._expand_shortcuts(new_vals, new_val_idx)
-
-    def _expand_shortcuts(self, new_vals, new_val_idx):
-        starts = []
-        ends = []
-        # build index maps of boundaries
+        new_vals_cache = {id(v): v for v in new_vals}
+        # bind shortcuts to single site in new values
         for shortcut in self._shortcuts:
-            first = shortcut.nodes[0]
-            last = shortcut.nodes[-1]
-            starts.append(new_val_idx[id(first)])
-            ends.append(new_val_idx[id(last)])
-        # try to consume nearby nodes
-        # TODO these iterations are probably inefficient
-        to_delete = []
-        for i, shortcut in enumerate(self._shortcuts):
-            for direction, edge in ((-1, 1), (starts, ends)):
-                try:
-                    next_edge = edge[i + direction]
-                except IndexError:
-                    next_edge = None
-                idx = edge[i]
-                for node in new_vals[idx:next_edge:direction]:
-                    if shortcut.consume_edge_node(node, direction):
-                        to_delete.append(node)
-                    else:
-                        break
-        # delete items consumed by shortcuts
-        for obj in to_delete:
-            self._nodes.remove(obj)
+            for node in shortcut.nodes:
+                if id(node) in new_vals_cache:
+                    new_vals_cache[id(node)] = shortcut
+                    shortcut.nodes.clear()
+                    break
+        self._expand_shortcuts(new_vals, new_vals_cache)
+
+    def _expand_shortcuts(self, new_vals, new_vals_cache):
+        def try_expansion(shortcut, value):
+            pass
+
+        def try_reverse_expansion(shortcut, i, last_end):
+            pass
+
+        in_shortcut = False
+        shortcut = None
+        last_end = 0
+        for i, value in enumerate(new_vals_cache.values()):
+            # found a new shortcut
+            if isinstace(value, ShortcutNode):
+                # shortcuts bumped up against each other
+                if in_shortcut:
+                    last_end = i - 1
+                shortcut = value
+                if try_expansion(shortcut, new_vals[i]):
+                    try_reverse_expansion(shortcut, i, last_end)
+            # otherwise it is actually a value to expand as well
+            else:
+                pass
 
     # TODO
     def _find_hanging_jumps(self, new_vals, old_val_idx):
