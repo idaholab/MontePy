@@ -25,7 +25,12 @@ class MCNP_Object(ABC):
                 raise TypeError("input must be an Input")
             # TODO delete
             self._input_lines = input.input_lines
-            self._tree = parser.parse(input.tokenize())
+            try:
+                self._tree = parser.parse(input.tokenize())
+            except ValueError as e:
+                raise ValueError(
+                    f"Error parsing object of type: {type(self)}: {e.args[0]}"
+                )
             if self._tree is None:
                 raise MalformedInputError(
                     input, "There is a syntax error with the input."

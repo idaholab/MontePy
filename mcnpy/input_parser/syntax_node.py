@@ -1213,6 +1213,8 @@ class ParametersNode(SyntaxNodeBase):
 
     def append(self, val):
         key = str(val["classifier"]).lower()
+        if key in self._nodes:
+            raise ValueError(f"Second parameter given for {key}.")
         self._nodes[key] = val
 
     def get_value(self, key):
