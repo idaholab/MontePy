@@ -740,6 +740,7 @@ class ListNode(SyntaxNodeBase):
                         return
 
         def check_for_orphan_jump(value):
+            nonlocal shortcut
             if isinstance(value, input_parser.mcnp_input.Jump) and shortcut is None:
                 shortcut = ShortcutNode(p=None, short_type=Shortcuts.JUMP)
                 if shortcut.consume_edge_node(value, 1):
@@ -759,7 +760,7 @@ class ListNode(SyntaxNodeBase):
             # otherwise it is actually a value to expand as well
             else:
                 if shortcut is not None:
-                    if not try_expansion(shorcut, new_vals[i]):
+                    if not try_expansion(shortcut, new_vals[i]):
                         last_end = i - 1
                         shortcut = None
                         check_for_orphan_jump(new_vals[i])
