@@ -1232,7 +1232,11 @@ class ParametersNode(SyntaxNodeBase):
         self._nodes = {}
 
     def append(self, val):
-        key = str(val["classifier"]).lower()
+        classifier = val["classifier"]
+        key = (
+            classifier.prefix.value
+            + (str(classifier.particles) if classifier.particles else "")
+        ).lower()
         if key in self._nodes:
             raise ValueError(f"Second parameter given for {key}.")
         self._nodes[key] = val
