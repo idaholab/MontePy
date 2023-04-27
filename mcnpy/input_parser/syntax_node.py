@@ -757,7 +757,10 @@ class ListNode(SyntaxNodeBase):
 
         def check_for_orphan_jump(value):
             nonlocal shortcut
-            if isinstance(value, input_parser.mcnp_input.Jump) and shortcut is None:
+            if (
+                isinstance(value._token, input_parser.mcnp_input.Jump)
+                and shortcut is None
+            ):
                 shortcut = ShortcutNode(p=None, short_type=Shortcuts.JUMP)
                 if shortcut.consume_edge_node(value, 1):
                     new_vals_cache[id(value)] = shortcut
@@ -1029,7 +1032,7 @@ class ShortcutNode(ListNode):
 
     def _can_consume_node(self, node, direction):
         if self._type == Shortcuts.JUMP:
-            if isinstance(node, input_parser.mcnp_input.Jump):
+            if isinstance(node._token, input_parser.mcnp_input.Jump):
                 return True
 
         # REPEAT
