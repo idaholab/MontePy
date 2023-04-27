@@ -721,11 +721,13 @@ class ListNode(SyntaxNodeBase):
                     shortcut.nodes.clear()
                     break
         self._expand_shortcuts(new_vals, new_vals_cache)
-        self._shorcuts = []
+        self._shortcuts = []
         self._nodes = []
         for key, node in new_vals_cache.items():
             if isinstance(node, ShortcutNode):
-                if len(self._shortcuts) > 0 and node is not self._shortcuts[-1]:
+                if (
+                    len(self._shortcuts) > 0 and node is not self._shortcuts[-1]
+                ) or len(self._shortcuts) == 0:
                     self._shortcuts.append(node)
                     self._nodes.append(node)
             else:
