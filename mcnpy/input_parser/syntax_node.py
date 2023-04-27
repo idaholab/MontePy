@@ -379,7 +379,10 @@ class ValueNode(SyntaxNodeBase):
             else:
                 self._value = fortran_float(token)
         elif token_type == int:
-            self._value = int(token)
+            if isinstance(token, input_parser.mcnp_input.Jump):
+                self._value = None
+            else:
+                self._value = int(token)
         else:
             self._value = token
         self._padding = padding

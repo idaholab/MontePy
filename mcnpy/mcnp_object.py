@@ -51,7 +51,7 @@ class MCNP_Object(ABC):
             padding_node = PaddingNode(padding)
         else:
             padding_node = None
-        if default is None:
+        if default is None or isinstance(default, mcnpy.input_parser.mcnp_input.Jump):
             return ValueNode(default, value_type, padding_node)
         return ValueNode(str(default), value_type, padding_node)
 
