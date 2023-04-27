@@ -770,9 +770,11 @@ class ListNode(SyntaxNodeBase):
                 # shortcuts bumped up against each other
                 if shortcut is not None:
                     last_end = i - 1
+                shortcut = value
                 if try_expansion(shortcut, new_vals[i]):
-                    shortcut = value
                     try_reverse_expansion(shortcut, i, last_end)
+                else:
+                    shortcut = None
             # otherwise it is actually a value to expand as well
             else:
                 if shortcut is not None:
@@ -782,10 +784,6 @@ class ListNode(SyntaxNodeBase):
                         check_for_orphan_jump(new_vals[i])
                 else:
                     check_for_orphan_jump(new_vals[i])
-
-    # TODO
-    def _find_hanging_jumps(self, new_vals, old_val_idx):
-        pass
 
     def append(self, val):
         if isinstance(val, ShortcutNode):
