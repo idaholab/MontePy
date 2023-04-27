@@ -910,6 +910,7 @@ class ShortcutNode(ListNode):
         self._type = None
         self._end_pad = None
         self._nodes = collections.deque()
+        self._original = []
         if p is not None:
             for search_str, shortcut in self._shortcut_names.items():
                 if hasattr(p, search_str):
@@ -1114,11 +1115,11 @@ class ShortcutNode(ListNode):
 
     def _format_jump(self):
         num_jumps = len(self.nodes)
-        if "j" in self._original[0]:
+        if len(self._original) > 0 and "j" in self._original[0]:
             j = "j"
         else:
             j = "J"
-        if num_jumps == 1 and "1" not in self._original[0]:
+        if num_jumps == 1 and len(self._original) > 0 and "1" not in self._original[0]:
             num_jumps = ""
 
         return f"{num_jumps}{j}"
