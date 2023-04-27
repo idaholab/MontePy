@@ -3,7 +3,7 @@ import mcnpy
 from mcnpy.data_inputs.data_input import DataInputAbstract
 from mcnpy.input_parser import syntax_node
 from mcnpy.input_parser.block_type import BlockType
-from mcnpy.input_parser.mcnp_input import Input
+from mcnpy.input_parser.mcnp_input import Input, Jump
 
 
 class CellModifierInput(DataInputAbstract):
@@ -228,7 +228,10 @@ class CellModifierInput(DataInputAbstract):
         attr, _ = mcnpy.Cell._INPUTS_TO_PROPERTY[type(self)]
         for cell in self._problem.cells:
             input = getattr(cell, attr)
-            ret.append(input._tree_value)
+            if input._tree_value.value is None:
+                ret.append(Jump())
+            else:
+                ret.append(input._tree_value)
         return ret
 
     @abstractmethod
