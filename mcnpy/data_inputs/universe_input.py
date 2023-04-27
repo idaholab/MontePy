@@ -35,7 +35,6 @@ class UniverseInput(CellModifierInput):
         self._not_truncated = False
         super().__init__(input, comments, in_cell_block, key, value)
         if self.in_cell_block:
-            self._old_number = self._generate_default_node(int, 0)
             if key:
                 val = self._tree["data"][0]
                 val.is_negatable_identifier = True
@@ -58,7 +57,7 @@ class UniverseInput(CellModifierInput):
 
     def _generate_default_cell_tree(self):
         list_node = syntax_node.ListNode("number sequence")
-        list_node.append(self._generate_default_node(int, None))
+        list_node.append(self._generate_default_node(int, Jump()))
         classifier = syntax_node.ClassifierNode()
         classifier.prefix = self._generate_default_node(
             str, self._class_prefix().upper(), None
