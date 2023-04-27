@@ -101,11 +101,14 @@ class Cell(Numbered_MCNP_Object):
         """
         Parses the parameters to make the object and load as an attribute
         """
+        found_class_prefixes = set()
         for key, value in self.parameters.nodes.items():
             for input_class in PREFIX_MATCHES:
                 prefix = input_class._class_prefix()
                 if input_class in Cell._INPUTS_TO_PROPERTY and prefix in key.lower():
                     attr, ban_repeat = Cell._INPUTS_TO_PROPERTY[input_class]
+                    key = str(value["classifier"]).lower()
+                    found_class_prefixes.add(value["classifier"].prefix.value.lower())
                     input = input_class(in_cell_block=True, key=key, value=value)
                     if not getattr(self, attr).set_in_cell_block:
                         setattr(self, attr, input)
@@ -118,15 +121,16 @@ class Cell(Numbered_MCNP_Object):
         for input_class, (attr, _) in self._INPUTS_TO_PROPERTY.items():
             has_imp = False
             class_pref = input_class._class_prefix()
-            if class_pref not in self._tree["parameters"]:
-                if class_pref == "imp":
-                    for key in self._tree["parameters"].nodes.keys():
-                        if class_pref in key:
-                            has_imp = True
-                            break
-                if not has_imp:
-                    tree = getattr(self, attr)._tree
-                    self._tree["parameters"].append(tree)
+            if class_pref in found_class_prefixes:
+                continue
+            if class_pref == "imp":
+                for key in self._tree["parameters"].nodes.keys():
+                    if class_pref in key:
+                        has_imp = True
+                        break
+            if (class_pref == "imp" and not has_imp) or class_pref != "imp":
+                tree = getattr(self, attr)._tree
+                self._tree["parameters"].append(tree)
 
     def _load_blank_modifiers(self):
         """
