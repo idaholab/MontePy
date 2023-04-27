@@ -136,10 +136,20 @@ class UniverseInput(CellModifierInput):
             raise TypeError("truncated_by_parent must be a bool")
         self._not_truncated = value
 
+    @property
     def _tree_value(self):
         val = self._old_number
         val.value = self.universe.number
         return val
+
+    def _collect_new_values(self):
+        ret = []
+        for cell in self._problem.cells:
+            if cell._universe._tree_value.value == 0:
+                ret.append(Jump())
+            else:
+                ret.append(cell._universe._tree_value)
+        return ret
 
     def merge(self, other):
         raise MalformedInputError(
