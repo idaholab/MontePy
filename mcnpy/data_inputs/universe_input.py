@@ -146,9 +146,8 @@ class UniverseInput(CellModifierInput):
         ret = []
         for cell in self._problem.cells:
             if cell._universe._tree_value.value == 0:
-                ret.append(Jump())
-            else:
-                ret.append(cell._universe._tree_value)
+                cell._universe._tree_value.value = None
+            ret.append(cell._universe._tree_value)
         return ret
 
     def merge(self, other):
