@@ -228,10 +228,7 @@ class CellModifierInput(DataInputAbstract):
         attr, _ = mcnpy.Cell._INPUTS_TO_PROPERTY[type(self)]
         for cell in self._problem.cells:
             input = getattr(cell, attr)
-            if input._tree_value.value is None:
-                ret.append(Jump())
-            else:
-                ret.append(input._tree_value)
+            ret.append(input._tree_value)
         return ret
 
     @abstractmethod

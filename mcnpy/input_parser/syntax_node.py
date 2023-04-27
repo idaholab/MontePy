@@ -374,7 +374,10 @@ class ValueNode(SyntaxNodeBase):
         if token is None:
             self._value = None
         elif token_type == float:
-            self._value = fortran_float(token)
+            if isinstance(token, input_parser.mcnp_input.Jump):
+                self._value = None
+            else:
+                self._value = fortran_float(token)
         elif token_type == int:
             self._value = int(token)
         else:
@@ -386,7 +389,9 @@ class ValueNode(SyntaxNodeBase):
 
     def _convert_to_int(self):
         self._type = int
-        if self._token is not None:
+        if self._token is not None and not isinstance(
+            self._token, input_parser.mcnp_input.Jump
+        ):
             self._value = int(self._token)
         self._formatter = self._FORMATTERS[int].copy()
 
@@ -413,6 +418,8 @@ class ValueNode(SyntaxNodeBase):
             if self.value is not None:
                 self._is_neg = self.value < 0
                 self._value = abs(self._value)
+            else:
+                self._is_neg = False
         self._is_neg_id = val
 
     @property
@@ -979,7 +986,8 @@ class ShortcutNode(ListNode):
             jump_num = int(p[0].lower().replace("j", ""))
         except ValueError:
             jump_num = 1
-        self._nodes = [input_parser.mcnp_input.Jump()] * jump_num
+        for i in range(jump_num):
+            self._nodes.append(ValueNode(input_parser.mcnp_input.Jump(), float))
 
     def _expand_interpolate(self, p):
         if hasattr(p, "LOG_INTERPOLATE"):

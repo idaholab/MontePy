@@ -51,7 +51,7 @@ class Fill(CellModifierInput):
             self._old_numbers = []
             values = self.data
             for value in values:
-                if isinstance(value, syntax_node.ValueNode):
+                if value.value is not None:
                     try:
                         value._convert_to_int()
                         assert value.value >= 0
@@ -61,12 +61,8 @@ class Fill(CellModifierInput):
                             input,
                             f"Cell fill must be set to a valid universe, {value} was given",
                         )
-                elif isinstance(value, Jump):
-                    self._old_numbers.append(value)
                 else:
-                    raise TypeError(
-                        f"Value: {value} cannot be parsed as a lattice as a str, or Jump"
-                    )
+                    self._old_numbers.append(value)
 
     def _generate_default_cell_tree(self):
         list_node = syntax_node.ListNode("number sequence")

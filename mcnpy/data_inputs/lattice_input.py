@@ -55,7 +55,7 @@ class LatticeInput(CellModifierInput):
             self._lattice = []
             words = self.data
             for word in words:
-                if isinstance(word, syntax_node.ValueNode):
+                if word.value is not None:
                     try:
                         value = word
                         value._convert_to_int()
@@ -65,12 +65,8 @@ class LatticeInput(CellModifierInput):
                         raise MalformedInputError(
                             input, f"Cell lattice must be 1 or 2. {word} given."
                         )
-                elif isinstance(word, Jump):
-                    self._lattice.append(word)
                 else:
-                    raise TypeError(
-                        f"Word: {word} cannot be parsed as a lattice as a str, or Jump"
-                    )
+                    self._lattice.append(word)
 
     def _generate_default_cell_tree(self):
         list_node = syntax_node.ListNode("number sequence")
