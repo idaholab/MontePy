@@ -31,7 +31,7 @@ class UniverseInput(CellModifierInput):
     ):
         self._universe = None
         self._old_numbers = []
-        self._old_number = self._generate_default_node(int, None)
+        self._old_number = self._generate_default_node(int, Jump())
         self._not_truncated = False
         super().__init__(input, comments, in_cell_block, key, value)
         if self.in_cell_block:
