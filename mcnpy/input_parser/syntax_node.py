@@ -723,6 +723,15 @@ class ListNode(SyntaxNodeBase):
                     self._nodes.append(node)
             else:
                 self._nodes.append(node)
+        end = self._nodes[-1]
+        # pop off final shortcut if it's a jump the user left off
+        if (
+            isinstance(end, ShortcutNode)
+            and end._type == Shortcuts.JUMP
+            and len(end._original) == 0
+        ):
+            self._nodes.pop()
+            self._shortcuts.pop()
 
     def _expand_shortcuts(self, new_vals, new_vals_cache):
         def try_expansion(shortcut, value):
@@ -796,7 +805,10 @@ class ListNode(SyntaxNodeBase):
 
     def format(self):
         ret = ""
-        for node in self.nodes:
+        length = len(self.nodes)
+        for i, node in enumerate(self.nodes):
+            if isinstance(node, ValueNode) and node.padding is None and i < length - 1:
+                node.padding = PaddingNode(" ")
             ret += node.format()
         return ret
 
@@ -931,6 +943,7 @@ class ShortcutNode(ListNode):
             if not isinstance(short_type, Shortcuts):
                 raise TypeError(f"Shortcut type must be Shortcuts. {short_type} given.")
             self._type = short_type
+            self._end_pad = PaddingNode(" ")
 
     @property
     def end_padding(self):
