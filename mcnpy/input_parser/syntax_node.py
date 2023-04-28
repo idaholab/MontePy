@@ -756,6 +756,8 @@ class ListNode(SyntaxNodeBase):
             status = shortcut.consume_edge_node(value, 1)
             if status:
                 new_vals_cache[id(value)] = shortcut
+            else:
+                new_vals_cache[id(value)] = value
             return status
 
         def try_reverse_expansion(shortcut, i, last_end):
@@ -764,14 +766,12 @@ class ListNode(SyntaxNodeBase):
                     if shortcut.consume_edge_node(value, -1):
                         new_vals_cache[id(value)] = shortcut
                     else:
+                        new_vals_cache[id(value)] = value
                         return
 
         def check_for_orphan_jump(value):
             nonlocal shortcut
-            if (
-                isinstance(value._token, input_parser.mcnp_input.Jump)
-                and shortcut is None
-            ):
+            if value.value is None and shortcut is None:
                 shortcut = ShortcutNode(p=None, short_type=Shortcuts.JUMP)
                 if shortcut.consume_edge_node(value, 1):
                     new_vals_cache[id(value)] = shortcut
@@ -1043,7 +1043,7 @@ class ShortcutNode(ListNode):
 
     def _can_consume_node(self, node, direction):
         if self._type == Shortcuts.JUMP:
-            if isinstance(node._token, input_parser.mcnp_input.Jump):
+            if node.value is None:
                 return True
 
         # REPEAT
