@@ -270,5 +270,5 @@ class CellModifierInput(DataInputAbstract):
         # print in data block
         if not self.in_cell_block and print_in_data_block and self._is_worth_printing:
             self._update_values()
-            return self.wrap_string_for_mcnp(self._tree.format(), mcnp_version, True)
+            return self.wrap_string_for_mcnp(self._format_tree(), mcnp_version, True)
         return []

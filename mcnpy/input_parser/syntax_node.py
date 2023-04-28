@@ -451,25 +451,31 @@ class ValueNode(SyntaxNodeBase):
     def _reverse_engineer_formatting(self):
         if not self._is_reversed and self._token is not None:
             self._is_reversed = True
-            self._formatter["value_length"] = len(self._token)
+            token = self._token
+            if isinstance(token, input_parser.mcnp_input.Jump):
+                token = "J"
+            self._formatter["value_length"] = len(token)
             if self.padding:
                 if self.padding.is_space(0):
                     self._formatter["value_length"] += len(self.padding.nodes[0])
 
             if self._type == float or self._type == int:
-                no_zero_pad = self._token.lstrip("0+-")
-                delta = len(self._token) - len(no_zero_pad)
-                if self._token.startswith("+") or self._token.startswith("-"):
+                no_zero_pad = token.lstrip("0+-")
+                delta = len(token) - len(no_zero_pad)
+                if token.startswith("+") or token.startswith("-"):
                     delta -= 1
                 if delta > 0:
                     self._formatter["zero_padding"] = delta
-                if self._token.startswith("+"):
+                if token.startswith("+"):
                     self._formatter["sign"] = "+"
                 if self._type == float:
                     self._reverse_engineer_float()
 
     def _reverse_engineer_float(self):
-        if match := self._SCIENTIFIC_FINDER.match(self._token):
+        token = self._token
+        if isinstance(token, input_parser.mcnp_input.Jump):
+            token = "J"
+        if match := self._SCIENTIFIC_FINDER.match(token):
             groups = match.groupdict(default="")
             self._is_scientific = True
             significand = groups["significand"]
