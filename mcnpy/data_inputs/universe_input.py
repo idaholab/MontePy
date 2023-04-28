@@ -139,14 +139,17 @@ class UniverseInput(CellModifierInput):
     def _tree_value(self):
         val = self._old_number
         val.value = self.universe.number
+        val.is_negative = self.not_truncated
         return val
 
     def _collect_new_values(self):
         ret = []
         for cell in self._problem.cells:
+            # force value update here with _tree_value
             if cell._universe._tree_value.value == 0:
-                cell._universe._tree_value.value = None
-            ret.append(cell._universe._tree_value)
+                # access ValueNode directly to avoid override with _tree_value
+                cell._universe._old_number._value = None
+            ret.append(cell._universe._old_number)
         return ret
 
     def merge(self, other):
@@ -197,26 +200,6 @@ class UniverseInput(CellModifierInput):
             f"Old Numbers: {self._old_numbers}"
         )
         return ret
-
-    @staticmethod
-    def _get_print_number(number, not_truncating):
-        """
-        Prepares the universe number for printing.
-
-        This handles the whole negative sign for not being truncated by the parent.
-
-        :param number: the universe number.
-        :type number: int
-        :param not_truncating: True if this cell isn't truncated by the parent cell
-        :type not_truncating: bool
-        :returns: the number properly formatted or a Jump if the number is 0.
-        :rtype: int or Jump
-        """
-        if number == 0:
-            return Jump()
-        if not_truncating:
-            number = -number
-        return number
 
     def _update_cell_values(self):
         if self.universe is not None:
