@@ -59,30 +59,28 @@ class CellParser(MCNP_Parser):
     def geometry_expr(self, p):
         left = p.geometry_expr
         right = p.geometry_term
-        return syntax_node.GeometryTree(
-            "union", left.nodes + [p.union] + right.nodes, ":", left, right
-        )
+        nodes = {"left": left.nodes, "operator": p.union, "right": right.nodes}
+        return syntax_node.GeometryTree("union", nodes, ":", left, right)
 
     @_("geometry_expr padding")
     def geometry_expr(self, p):
         ret = p.geometry_expr
-        ret.append(p.padding)
+        ret.nodes["end_pad"] = p.padding
         return ret
 
     @_("geometry_term")
     def geometry_expr(self, p):
         term = p.geometry_term
         if isinstance(term, syntax_node.ValueNode):
-            term = syntax_node.GeometryTree("shift", term.nodes, ">", term)
+            term = syntax_node.GeometryTree("shift", {"left": term.nodes}, ">", term)
         return term
 
     @_("geometry_term padding geometry_factor")
     def geometry_term(self, p):
         left = p.geometry_term
         right = p.geometry_factor
-        return syntax_node.GeometryTree(
-            "intersection", left.nodes + [p.padding] + right.nodes, "*", left, right
-        )
+        nodes = {"left": left.nodes, "operator": p.padding, "right": right.nodes}
+        return syntax_node.GeometryTree("intersection", nodes, "*", left, right)
 
     @_("geometry_term shortcut_sequence")
     def geometry_term(self, p):
@@ -114,7 +112,7 @@ class CellParser(MCNP_Parser):
     @_("geometry_term padding")
     def geometry_term(self, p):
         ret = p.geometry_term
-        ret.append(p.padding)
+        ret.nodes["end_pad"] = p.padding
         return ret
 
     @_("geometry_factor")
@@ -127,9 +125,10 @@ class CellParser(MCNP_Parser):
 
     @_("COMPLEMENT geometry_factory")
     def geometry_factor(self, p):
+        nodes = {"operator": p.COMPLEMENT, "left": p.geometry_factory}
         return syntax_node.GeometryTree(
             "complement",
-            [p.COMPLEMENT] + p.geometry_factory.nodes,
+            nodes,
             "#",
             p.geometry_factory,
         )
@@ -140,10 +139,14 @@ class CellParser(MCNP_Parser):
 
     @_('"(" geometry_expr ")"', '"(" padding geometry_expr ")"')
     def geometry_factory(self, p):
-        nodes = [p[0]]
+        nodes = {
+            "start_pad": syntax_node.PaddingNode(p[0]),
+            "left": p.geometry_expr,
+            "end_pad": syntax_node.PaddingNode(p[-1]),
+        }
         if hasattr(p, "padding"):
-            nodes += p.padding.nodes
-        nodes += p.geometry_expr.nodes + [p[-1]]
+            for node in p.padding.nodes:
+                nodes["start_pad"].append(node)
         return syntax_node.GeometryTree("geom parens", nodes, ">", p.geometry_expr)
 
     # support for fill card weirdness

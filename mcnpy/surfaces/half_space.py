@@ -26,6 +26,10 @@ class HalfSpace:
     def operator(self):
         pass
 
+    @make_prop_pointer("_node")
+    def node(self):
+        pass
+
     @staticmethod
     def parse_input_node(node):
         sides = []
@@ -36,7 +40,6 @@ class HalfSpace:
                 is_cell = node.operator == Operator.COMPLEMENT
                 sides.append(UnitHalfSpace.parse_input_node(side, is_cell))
             else:
-                # TODO give arguments
                 sides.append(HalfSpace.parse_input_node(side))
         # ignore shifts, and simplify the tree
         if node.operator == Operator.SHIFT:
@@ -73,6 +76,12 @@ class HalfSpace:
         self.left._update_values()
         if self.right:
             self.right._update_values()
+
+    def _update_operator(self):
+        if self.node is None:
+            self._generate_default_tree()
+        if self.operator == Operator.INTERSECTION:
+            print(self.node.nodes["operator"])
 
     def __iand__(self, other):
         if not isinstance(other, HalfSpace):
@@ -122,6 +131,9 @@ class HalfSpace:
         if not isinstance(other, HalfSpace):
             raise TypeError(f"Right hand side must be HalfSpace. {other} given.")
         return HalfSpace(self, Operator.COMPLEMENT)
+
+    def _generate_default_tree(self):
+        pass
 
 
 class UnitHalfSpace:
