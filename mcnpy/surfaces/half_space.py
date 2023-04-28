@@ -14,17 +14,17 @@ class HalfSpace:
         self._node = node
         self._cell = None
 
-    @property
+    @make_prop_pointer("_left", ())
     def left(self):
-        return self._left
+        pass
 
-    @property
+    @make_prop_pointer("_right", (), deletable=True)
     def right(self):
-        return self._right
+        pass
 
-    @property
+    @make_prop_pointer("_operator", Operator)
     def operator(self):
-        return self._operator
+        pass
 
     @staticmethod
     def parse_input_node(node):
@@ -132,6 +132,30 @@ class UnitHalfSpace:
         self._is_cell = is_cell
         self._node = node
         self._cell = None
+
+    @property
+    def divider(self):
+        """"""
+        return self._divider
+
+    # done manually to avoid circular imports
+    @divider.setter
+    def divider(self, div):
+        if not isinstance(div, (mcnpy.Cell, Surface)):
+            raise TypeError("Divider must be a Cell or Surface")
+        self._divider = div
+
+    @property
+    def is_cell(self):
+        return self._is_cell
+
+    @property
+    def node(self):
+        return self._node
+
+    @make_prop_pointer("_side", bool)
+    def side(self):
+        return self._side
 
     @staticmethod
     def parse_input_node(node, is_cell=False):

@@ -325,6 +325,10 @@ class Cell(Numbered_MCNP_Object):
         """
         pass
 
+    @make_prop_pointer("_geometry", HalfSpace)
+    def geometry(self):
+        pass
+
     @make_prop_val_node(
         "_density_node", (float, int, type(None)), base_type=float, deletable=True
     )
