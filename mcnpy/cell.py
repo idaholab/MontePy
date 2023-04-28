@@ -7,6 +7,7 @@ from mcnpy.input_parser import syntax_node
 from mcnpy.errors import *
 from mcnpy.numbered_mcnp_object import Numbered_MCNP_Object
 from mcnpy.data_inputs.material import Material
+from mcnpy.surfaces.half_space import HalfSpace, UnitHalfSpace
 from mcnpy.surfaces.surface import Surface
 from mcnpy.surface_collection import Surfaces
 from mcnpy.universe import Universe
@@ -695,6 +696,9 @@ class Cell(Numbered_MCNP_Object):
 
     def __lt__(self, other):
         return self.number < other.number
+
+    def __invert__(self):
+        return UnitHalfSpace(self, True, True)
 
     def format_for_mcnp_input(self, mcnp_version):
         """
