@@ -65,7 +65,7 @@ class TestUniverseInput(TestCase):
         # test jump
         card = Input(["U J"], BlockType.DATA)
         uni_card = UniverseInput(card)
-        self.assertEqual(uni_card.old_numbers[0], Jump())
+        self.assertEqual(uni_card.old_numbers[0], None)
 
         # test bad float
         with self.assertRaises(MalformedInputError):
@@ -164,14 +164,11 @@ class TestLattice(TestCase):
             tree["data"].nodes.pop()
             tree["data"].append(syntax_node.ValueNode("5", float))
             lattice = LatticeInput(in_cell_block=True, key="lat", value=tree)
-        lattices = [1, 2, Jump(), Jump()]
+        lattices = [1, 2, None, None]
         input = Input(["Lat " + " ".join(list(map(str, lattices)))], BlockType.DATA)
         lattice = LatticeInput(input)
         for answer, lattice in zip(lattices, lattice._lattice):
-            if isinstance(answer, int):
-                self.assertEqual(Lattice(answer), lattice.value)
-            else:
-                self.assertEqual(answer, lattice)
+            self.assertEqual(Lattice(answer), lattice.value)
         with self.assertRaises(MalformedInputError):
             card = Input(["Lat 3"], BlockType.DATA)
             LatticeInput(card)
@@ -314,7 +311,7 @@ class TestFill(TestCase):
         # jump
         card = Input(["FiLl 1 2J 4"], BlockType.DATA)
         fill = Fill(card)
-        answer = [1, Jump(), Jump(), 4]
+        answer = [1, None, None, 4]
         self.assertEqual(fill.old_universe_numbers, answer)
         # test negative universe
         with self.assertRaises(MalformedInputError):
