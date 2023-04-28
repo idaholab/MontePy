@@ -172,6 +172,18 @@ class GeometryTree(SyntaxNodeBase):
         for node in self.nodes:
             yield from node.comments
 
+    @property
+    def left(self):
+        return self._left_side
+
+    @property
+    def right(self):
+        return self._right_side
+
+    @property
+    def operator(self):
+        return self._operator
+
 
 class PaddingNode(SyntaxNodeBase):
     def __init__(self, token=None, is_comment=False):
