@@ -4,6 +4,7 @@ from mcnpy.data_inputs import transform
 from mcnpy.input_parser import syntax_node
 from mcnpy.input_parser.surface_parser import SurfaceParser
 from mcnpy.numbered_mcnp_object import Numbered_MCNP_Object
+from mcnpy.surfaces import half_space
 from mcnpy.surfaces.surface_type import SurfaceType
 from mcnpy.utilities import *
 import re
@@ -329,3 +330,9 @@ class Surface(Numbered_MCNP_Object):
         :rtype: list
         """
         return []
+
+    def __neg__(self):
+        return half_space.UnitHalfSpace(self, -1)
+
+    def __pos__(self):
+        return half_space.UnitHalfSpace(self, +1)
