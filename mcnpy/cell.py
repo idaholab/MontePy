@@ -97,6 +97,7 @@ class Cell(Numbered_MCNP_Object):
         surfs, cells = geometry.get_geometry_identifiers()
         self._old_surface_numbers = surfs
         self._old_complement_numbers = cells
+        self._geometry = HalfSpace.parse_input_node(geometry)
 
     def _parse_keyword_modifiers(self):
         """
@@ -550,6 +551,7 @@ class Cell(Numbered_MCNP_Object):
                     raise BrokenObjectLinkError(
                         "Cell", self.number, "Complement Cell", complement_number
                     )
+        self._geometry.update_pointers(self.complements, self.surfaces, self)
 
     def remove_duplicate_surfaces(self, deleting_dict):
         """Updates old surface numbers to prepare for deleting surfaces.
