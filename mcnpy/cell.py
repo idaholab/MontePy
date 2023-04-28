@@ -608,6 +608,9 @@ class Cell(Numbered_MCNP_Object):
         else:
             mat_num = 0
         self._tree["material"]["mat_number"].value = mat_num
+        self._geometry._update_values()
+        # TODO generate default nodes if needed
+        self._tree.nodes["geometry"] = self.geometry.node
         for input_class, (attr, _) in self._INPUTS_TO_PROPERTY.items():
             getattr(self, attr)._update_values()
 

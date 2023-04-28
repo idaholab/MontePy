@@ -1,5 +1,8 @@
+import mcnpy
+from mcnpy.errors import *
 from mcnpy.geometry_operators import Operator
 from mcnpy.input_parser.syntax_node import GeometryTree, ValueNode
+from mcnpy.utilities import *
 
 
 class HalfSpace:
@@ -64,6 +67,12 @@ class HalfSpace:
             cells |= new_cells
             surfaces |= new_surfaces
         return cells, surfaces
+
+    def _update_values(self):
+        # TODO update with operators
+        self.left._update_values()
+        if self.right:
+            self.right._update_values()
 
     def __iand__(self, other):
         if not isinstance(other, HalfSpace):
@@ -151,6 +160,10 @@ class UnitHalfSpace:
             raise BrokenObjectLinkError(
                 "Cell", self._cell.number, "Surface", self._divider
             )
+
+    def _update_values(self):
+        self._node.value = self.divider.number
+        self._node.is_negative = self.side
 
     def _get_leaf_objects(self):
         if self._is_cell:
