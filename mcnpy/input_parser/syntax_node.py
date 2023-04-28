@@ -1154,7 +1154,10 @@ class ShortcutNode(ListNode):
             j = "j"
         else:
             j = "J"
-        if num_jumps == 1 and len(self._original) > 0 and "1" not in self._original[0]:
+        length = len(self._original)
+        if num_jumps == 1 and (
+            length == 0 or (length > 0 and "1" not in self._original[0])
+        ):
             num_jumps = ""
 
         return f"{num_jumps}{j}"
