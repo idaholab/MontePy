@@ -1148,6 +1148,8 @@ class ShortcutNode(ListNode):
 
     def _format_jump(self):
         num_jumps = len(self.nodes)
+        if num_jumps == 0:
+            return ""
         if len(self._original) > 0 and "j" in self._original[0]:
             j = "j"
         else:
