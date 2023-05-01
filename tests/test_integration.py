@@ -497,9 +497,9 @@ class testFullFileIntegration(TestCase):
             with open(out_file, "r") as fh:
                 for line in fh:
                     print(line.rstrip())
-                    if "IMP:N 0.5" in line:
+                    if "imp:n 0.5" in line:
                         found_n = True
-                    elif "IMP:E" in line:
+                    elif "imp:e" in line:
                         found_e = True
             self.assertTrue(found_n)
             self.assertTrue(found_e)
@@ -528,9 +528,9 @@ class testFullFileIntegration(TestCase):
                 with open(out_file, "r") as fh:
                     for line in fh:
                         print(line.rstrip())
-                        if "IMP:N,P=1" in line:
+                        if "imp:n,p=1" in line:
                             found_np = True
-                        elif "IMP:E=1" in line:
+                        elif "imp:e=1" in line:
                             found_e = True
                         elif "imp:e 1" in line.lower():
                             found_data_np = True
