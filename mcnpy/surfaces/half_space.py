@@ -70,6 +70,22 @@ class HalfSpace:
                 if item not in parent:
                     parent.append(item)
 
+    def remove_duplicate_surfaces(self, deleting_dict):
+        """Updates old surface numbers to prepare for deleting surfaces.
+
+        :param deleting_dict: a dict of the surfaces to delete.
+        :type deleting_dict: dict
+        """
+        _, surfaces = self._get_leaf_objects()
+        new_deleting_dict = {}
+        for dead_surface, new_surface in deleting_dict.items():
+            if dead_surface in surfaces:
+                new_deleting_dict[dead_surface] = new_surface
+        if len(new_deleting_dict) > 0:
+            self.left.remove_duplicate_surfaces(new_deleting_dict)
+            if self.right is not None:
+                self.right.remove_duplicate_surfaces(new_deleting_dict)
+
     def _get_leaf_objects(self):
         cells, surfaces = self.left._get_leaf_objects()
         if self.right:
@@ -292,3 +308,14 @@ class UnitHalfSpace(HalfSpace):
         if self._is_cell:
             return ({self._divider}, set())
         return (set(), {self._divider})
+
+    def remove_duplicate_surfaces(self, deleting_dict):
+        """Updates old surface numbers to prepare for deleting surfaces.
+
+        :param deleting_dict: a dict of the surfaces to delete.
+        :type deleting_dict: dict
+        """
+        if not self.is_cell:
+            if self.divider in deleting_dict:
+                new_surface = deleting_dict[self.divider]
+                self.divider = new_surface

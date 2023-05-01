@@ -560,35 +560,17 @@ class Cell(Numbered_MCNP_Object):
     def remove_duplicate_surfaces(self, deleting_dict):
         """Updates old surface numbers to prepare for deleting surfaces.
 
-        Note: update_pointers must be ran again.
-        For the deleting_dict the key is the old surface,
-        and the value is the new one.
-
         :param deleting_dict: a dict of the surfaces to delete.
         :type deleting_dict: dict
         """
-        will_update = False
-        for dead_surface in deleting_dict:
+        new_deleting_dict = {}
+        for dead_surface, new_surface in deleting_dict.items():
             if dead_surface in self.surfaces:
-                will_update = True
-                break
-        if will_update:
-            self._mutated = True
-            # force logic string to known state
-            self.update_geometry_logic_string()
-            matching_surfaces = {}
-            for dead_surface in deleting_dict:
-                if dead_surface in self.surfaces:
-                    matching_surfaces[dead_surface.number] = deleting_dict[
-                        dead_surface
-                    ].number
-                    old_old = dead_surface.old_number
-                    new_old = deleting_dict[dead_surface].old_number
-                    self._old_surface_numbers = [
-                        new_old if item == old_old else item
-                        for item in self._old_surface_numbers
-                    ]
-            self._update_geometry_logic_by_map(matching_surfaces, {})
+                new_deleting_dict[dead_surface] = new_surface
+        if len(new_deleting_dict) > 0:
+            self.geometry.remove_duplicate_surfaces(new_deleting_dict)
+            for dead_surface in new_deleting_dict:
+                self.surfaces.remove(dead_surface)
 
     @property
     def modifier_block_print_changed(self):
