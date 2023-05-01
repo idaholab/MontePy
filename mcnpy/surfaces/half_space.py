@@ -120,9 +120,9 @@ class HalfSpace:
             self._node = syntax_node.GeometryTree(
                 "default geometry", ret, self.operator.value, self.left, self.right
             )
-        self.node.nodes["left"] = self.left
+        self.node.nodes["left"] = self.left.node
         if self.right is not None:
-            self.node.nodes["right"] = self.right
+            self.node.nodes["right"] = self.right.node
 
     def _update_operator(self):
         if self.node is None:
