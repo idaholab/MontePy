@@ -1,3 +1,4 @@
+import collections
 import copy
 import math
 from mcnpy.data_inputs.cell_modifier import CellModifierInput
@@ -30,6 +31,7 @@ class Importance(CellModifierInput):
         self, input=None, comments=None, in_cell_block=False, key=None, value=None
     ):
         self._particle_importances = {}
+        self._real_tree = {}
         super().__init__(input, comments, in_cell_block, key, value)
         if self.in_cell_block:
             if key:
@@ -55,6 +57,7 @@ class Importance(CellModifierInput):
                     )
             for particle in self.particle_classifiers:
                 self._particle_importances[particle] = copy.deepcopy(self._tree)
+                self._real_tree[particle] = copy.deepcopy(self._tree)
 
     def _generate_default_cell_tree(self, particle=None):
         classifier = syntax_node.ClassifierNode()
@@ -112,7 +115,6 @@ class Importance(CellModifierInput):
             raise TypeError("Can only be merged with other Importance object")
         if self.in_cell_block != other.in_cell_block:
             raise ValueError("Can not mix cell-level and data-level Importance objects")
-        self._input_lines.extend(other._input_lines)
         if other.set_in_cell_block:
             self._set_in_cell_block = True
         for particle in other:
@@ -120,6 +122,9 @@ class Importance(CellModifierInput):
                 self._particle_importances[particle] = other._particle_importances[
                     particle
                 ]
+                # keep original formatting external to data cleared out
+                if not self.in_cell_block:
+                    self._real_tree[particle] = self._particle_importances[particle]
             else:
                 raise MalformedInputError(
                     other,
