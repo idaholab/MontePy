@@ -286,16 +286,17 @@ class UnitHalfSpace(HalfSpace):
         container = surfaces
         if self._is_cell:
             container = cells
-        try:
-            self._divider = container[self._divider]
-        except KeyError:
-            if self._is_cell:
+        if isinstance(self.divider, int):
+            try:
+                self._divider = container[self._divider]
+            except KeyError:
+                if self._is_cell:
+                    raise BrokenObjectLinkError(
+                        "Cell", self._cell.number, "Complement", self._divider
+                    )
                 raise BrokenObjectLinkError(
-                    "Cell", self._cell.number, "Complement", self._divider
+                    "Cell", self._cell.number, "Surface", self._divider
                 )
-            raise BrokenObjectLinkError(
-                "Cell", self._cell.number, "Surface", self._divider
-            )
 
     def _ensure_has_nodes(self):
         if self.node is None:
