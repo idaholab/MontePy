@@ -35,7 +35,11 @@ class CellParser(MCNP_Parser):
         if p.KEYWORD.lower() == "like":
             raise UnsupportedFeature("The like but feature is not supported")
 
-    @_("null_ident_phrase", "identifier_phrase number_phrase")
+    @_(
+        "null_ident_phrase",
+        "identifier_phrase number_phrase",
+        "identifier_phrase null_phrase",
+    )
     def material(self, p):
         if len(p) == 1:
             ret_dict = {"mat_number": p.null_ident_phrase}
