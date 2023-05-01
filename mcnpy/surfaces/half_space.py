@@ -72,7 +72,7 @@ class HalfSpace:
         return cells, surfaces
 
     def _update_values(self):
-        # TODO update with operators
+        self._update_operator()
         self.left._update_values()
         if self.right:
             self.right._update_values()
@@ -80,8 +80,35 @@ class HalfSpace:
     def _update_operator(self):
         if self.node is None:
             self._generate_default_tree()
+        operator_node = self.node.nodes["operator"]
+        output = operator_node.format()
         if self.operator == Operator.INTERSECTION:
-            print(self.node.nodes["operator"])
+            if not output.isspace():
+                self.__switch_operator(" ")
+        elif self.operator == Operator.UNION:
+            if ":" not in output:
+                self.__switch_operator(":")
+        elif self.operator == Operator.COMPLEMENT:
+            if "#" not in output:
+                self.__switch_operator("#")
+
+    def __switch_operator(self, new_symbol):
+        operator_node = self.node.nodes["operator"]
+        operator_node._nodes = [
+            n.replace("#", " ").replace(":", " ") for n in operator_node.nodes
+        ]
+        if new_symbol == "#":
+            operator_node._nodes[-1] = operator_node.nodes[-1][:-1] + "#"
+        elif new_symbol == ":":
+            output = operator_node.format()
+            midpoint = len(output) // 2
+        total_len = 0
+        for i, node in enumerate(operator_node.nodes):
+            if total_len + len(node) >= midpoint:
+                break
+            total_len += len(node)
+        index = midpoint - total_len
+        operator_node._nodes[i] = node[:index] + ":" + node[index + 1 :]
 
     def __iand__(self, other):
         if not isinstance(other, HalfSpace):
@@ -174,7 +201,6 @@ class UnitHalfSpace:
         if not isinstance(node, ValueNode):
             raise TypeError(f"Must be called on a ValueNode. {node} given.")
         node.is_negatable_identifier = True
-        print(node)
         if is_cell:
             side = True
         else:
