@@ -98,6 +98,17 @@ class HalfSpace:
         elif self.operator == Operator.COMPLEMENT:
             if "#" not in output:
                 self.__switch_operator("#")
+                # change tree order
+                self._node = syntax_node.GeometryTree(
+                    "default geometry",
+                    {
+                        "operator": self.node.nodes["operator"],
+                        "left": self.node.nodes["left"],
+                    },
+                    self.operator.value,
+                    self.left,
+                    self.right,
+                )
 
     def __switch_operator(self, new_symbol):
         operator_node = self.node.nodes["operator"]
