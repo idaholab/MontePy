@@ -56,6 +56,16 @@ class ParticleTypeNotInProblem(ValueError):
         super().__init__(message)
 
 
+class ParticleTypeNotInCell(ValueError):
+    """
+    Raised when data for importance data for a particle in
+    the problem is not provided for a cell.
+    """
+
+    def __init__(self, message):
+        super().__init__(message)
+
+
 class UnsupportedFeature(NotImplementedError):
     """
     Raised when MCNP syntax that is not supported is found
