@@ -527,6 +527,7 @@ class ValueNode(SyntaxNodeBase):
 
     def format(self):
         # TODO throw warning when things expand
+        # TODO when 1 -> 0.5 don't do: 0.5000000000
         self._reverse_engineer_formatting()
         if self.value is None:
             return ""
@@ -689,9 +690,13 @@ class ParticleNode(SyntaxNodeBase):
     @property
     def _particles_sorted(self):
         ret = self._order
-        remainder = self.particles - set(ret)
+        ret_set = set(ret)
+        remainder = self.particles - ret_set
+        extras = ret_set - self.particles
         for straggler in sorted(remainder):
             ret.append(straggler)
+        for useless in extras:
+            ret.remove(useless)
         return ret
 
     def format(self):
