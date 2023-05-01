@@ -205,9 +205,9 @@ class HalfSpace:
         pass
 
 
-class UnitHalfSpace:
+class UnitHalfSpace(HalfSpace):
     def __init__(self, divider, side, is_cell, node=None):
-        if not isinstance(divider, (int, mcnpy.Cell, Surface)):
+        if not isinstance(divider, (int, mcnpy.Cell, mcnpy.surfaces.surface.Surface)):
             raise TypeError(
                 f"divider must be an int, Cell, or Surface. {divider} given"
             )
@@ -215,8 +215,8 @@ class UnitHalfSpace:
             raise TypeError(f"side must be bool. {side} given.")
         if not isinstance(is_cell, bool):
             raise TypeError(f"is_cell must be bool. {is_cell} given.")
-        if not isinstance(node, (GeometryTree, type(None))):
-            raise TypeError(f"node must be a GeometryTree or None. {node} given.")
+        if not isinstance(node, (ValueNode, type(None))):
+            raise TypeError(f"node must be a ValueNode or None. {node} given.")
         self._divider = divider
         self._side = side
         self._is_cell = is_cell
@@ -231,7 +231,7 @@ class UnitHalfSpace:
     # done manually to avoid circular imports
     @divider.setter
     def divider(self, div):
-        if not isinstance(div, (mcnpy.Cell, Surface)):
+        if not isinstance(div, (mcnpy.Cell, mcnpy.surfaces.surface.Surface)):
             raise TypeError("Divider must be a Cell or Surface")
         self._divider = div
 
