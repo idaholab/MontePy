@@ -194,31 +194,41 @@ class Importance(CellModifierInput):
                     data.nodes.append(value)
 
     def _format_tree(self):
-        particles_printed = set()
-        ret = ""
-        for particle in self:
-            if particle in particles_printed:
-                continue
-            other_particles = self._particle_importances[particle][
-                "classifier"
-            ].particles
-            to_remove = set()
-            for other_part in other_particles:
-                if other_part != particle:
-                    if math.isclose(
-                        self[particle],
-                        self[other_part],
-                        rel_tol=rel_tol,
-                        abs_tol=abs_tol,
-                    ):
-                        particles_printed.add(other_part)
-                    else:
-                        to_remove.add(other_part)
-            for removee in to_remove:
-                other_particles.remove(removee)
-            ret += self._particle_importances[particle].format()
-            particles_printed.add(particle)
-        return ret
+        if self.in_cell_block:
+            particles_printed = set()
+            ret = ""
+            for particle in self:
+                if particle in particles_printed:
+                    continue
+                other_particles = self._particle_importances[particle][
+                    "classifier"
+                ].particles
+                to_remove = set()
+                for other_part in other_particles:
+                    if other_part != particle:
+                        if math.isclose(
+                            self[particle],
+                            self[other_part],
+                            rel_tol=rel_tol,
+                            abs_tol=abs_tol,
+                        ):
+                            particles_printed.add(other_part)
+                        else:
+                            to_remove.add(other_part)
+                for removee in to_remove:
+                    other_particles.remove(removee)
+                ret += self._particle_importances[particle].format()
+                particles_printed.add(particle)
+            return ret
+        else:
+            printed_parts = set()
+            ret = []
+            for particle, tree in self._real_tree.items():
+                if particle in printed_parts:
+                    continue
+                printed_parts |= tree["classifier"].particles.particles
+                ret.append(tree.format())
+            return "\n".join(ret)
 
     @property
     def all(self):
