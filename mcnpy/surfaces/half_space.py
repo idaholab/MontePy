@@ -268,7 +268,7 @@ class UnitHalfSpace(HalfSpace):
 
     @make_prop_pointer("_side", bool)
     def side(self):
-        return self._side
+        pass
 
     @staticmethod
     def parse_input_node(node, is_cell=False):
@@ -278,7 +278,7 @@ class UnitHalfSpace(HalfSpace):
         if is_cell:
             side = True
         else:
-            side = not node.is_negative
+            side = node.is_negative
         return UnitHalfSpace(node.value, side, is_cell, node)
 
     def update_pointers(self, cells, surfaces, cell):
