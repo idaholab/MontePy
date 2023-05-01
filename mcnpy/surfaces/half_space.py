@@ -250,6 +250,13 @@ class UnitHalfSpace(HalfSpace):
         if not isinstance(div, (mcnpy.Cell, mcnpy.surfaces.surface.Surface)):
             raise TypeError("Divider must be a Cell or Surface")
         self._divider = div
+        if self._cell is not None:
+            if self.is_cell:
+                container = self._cell.complements
+            else:
+                container = self._cell.surfaces
+            if div not in container:
+                container.append(div)
 
     @property
     def is_cell(self):
