@@ -163,7 +163,7 @@ class GeometryTree(SyntaxNodeBase):
 
     def format(self):
         ret = ""
-        for node in self.nodes:
+        for node in self.nodes.values():
             ret += node.format()
         return ret
 
