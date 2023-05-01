@@ -264,30 +264,70 @@ class Importance(CellModifierInput):
                     f"Particle type: {particle_type} not included in problem mode."
                 )
 
-    def _combine_importances(self):
+    def _collect_new_values(self):
+        new_vals = collections.defaultdict(list)
+        particle_pairings = collections.defaultdict(set)
+        for particle in self._problem.mode.particles:
+            for cell in self._problem.cells:
+                try:
+                    tree = cell.importance._particle_importances[particle]
+                except KeyError:
+                    raise ParticleTypeNotInCell(
+                        f"Importance data not available for cell {cell.number} for particle: "
+                        f"{particle}, though it is in the problem"
+                    )
+                # TODO fix that data -> cell doesn't preserve recombine
+                new_vals[particle].append(tree["data"][0])
+                if len(particle_pairings[particle]) == 0:
+                    particle_pairings[particle] = tree["classifier"].particles.particles
+                else:
+                    particle_pairings[particle] &= tree[
+                        "classifier"
+                    ].particles.particles
+        return self._try_combine_values(new_vals, particle_pairings)
+
+    def _update_values(self):
+        if self.in_cell_block:
+            self._update_cell_values()
+        else:
+            new_vals = self._collect_new_values()
+            for part_set, data in new_vals.items():
+                for particle in part_set:
+                    tree = self._real_tree[particle]
+                    tree["classifier"].particles.particles = set(part_set)
+                    tree["data"].update_with_new_values(data)
+
+    def _try_combine_values(self, new_vals, particle_pairings):
+        covered_parts = set()
         ret = {}
-        inverse = {}
-        mod_threshold = 1e6
-        for particle, value in self._particle_importances.items():
-            round_val = int(value * mod_threshold)
-            if round_val in inverse:
-                inverse[round_val].append(particle)
-            else:
-                inverse[round_val] = [particle]
-        for value, particles in inverse.items():
-            part_tuple = tuple(sorted(particles))
-            ret[part_tuple] = value / mod_threshold
+        for particle, pairings in particle_pairings.items():
+            if particle in covered_parts:
+                continue
+            gold = new_vals[particle]
+            matching_parts = {particle}
+            covered_parts.add(particle)
+            for test_part in pairings:
+                if test_part == particle or test_part in covered_parts:
+                    continue
+                test_vals = new_vals[test_part]
+                matches = True
+                for gold_val, test_val in zip(gold, test_vals):
+                    if not math.isclose(
+                        gold_val.value,
+                        test_val.value,
+                        rel_tol=rel_tol,
+                        abs_tol=abs_tol,
+                    ):
+                        matches = False
+                        break
+                if matches:
+                    matching_parts.add(test_part)
+                    covered_parts.add(test_part)
+            ret[frozenset(matching_parts)] = gold
         return ret
 
-    def _format_data_input_particle(self, particle):
-        values = []
-        for cell in self._problem.cells:
-            values.append(cell.importance[particle])
-        return self.compress_repeat_values(values)
-
     def _update_cell_values(self):
-        if not hasattr(self, "_tree"):
-            self._generate_default_tree()
+        pass
 
 
 def __create_importance_getter(particle_type):
