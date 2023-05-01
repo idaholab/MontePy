@@ -7,7 +7,14 @@ from mcnpy.utilities import *
 
 class HalfSpace:
     def __init__(self, left, operator, right=None, node=None):
-        # TODO type enforcement
+        if not isinstance(left, HalfSpace):
+            raise TypeError(f"left must be a HalfSpace. {left} given.")
+        if not isinstance(right, (HalfSpace, type(None))):
+            raise TypeError(f"right must be a HalfSpace, or None. {right} given.")
+        if not isinstance(operator, Operator):
+            raise TypeError(f"operator must be of type Operator. {operator} given.")
+        if not isinstance(node, (GeometryTree, type(None))):
+            raise TypeError(f"node must be a GeometryTree or None. {node} given.")
         self._left = left
         self._operator = operator
         self._right = right
@@ -165,7 +172,16 @@ class HalfSpace:
 
 class UnitHalfSpace:
     def __init__(self, divider, side, is_cell, node=None):
-        # TODO type enforcement
+        if not isinstance(divider, (int, mcnpy.Cell, Surface)):
+            raise TypeError(
+                f"divider must be an int, Cell, or Surface. {divider} given"
+            )
+        if not isinstance(side, bool):
+            raise TypeError(f"side must be bool. {side} given.")
+        if not isinstance(is_cell, bool):
+            raise TypeError(f"is_cell must be bool. {is_cell} given.")
+        if not isinstance(node, (GeometryTree, type(None))):
+            raise TypeError(f"node must be a GeometryTree or None. {node} given.")
         self._divider = divider
         self._side = side
         self._is_cell = is_cell
