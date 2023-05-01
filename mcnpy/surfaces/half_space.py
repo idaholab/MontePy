@@ -79,10 +79,34 @@ class HalfSpace:
         return cells, surfaces
 
     def _update_values(self):
+        self._ensure_has_nodes()
         self._update_operator()
         self.left._update_values()
         if self.right:
             self.right._update_values()
+
+    def _ensure_has_nodes(self):
+        self.left._ensure_has_nodes()
+        if self.right is not None:
+            self.right._ensure_has_nodes()
+        if self.node is None:
+            if self.operator == Operator.INTERSECTION:
+                operator = " "
+            elif self.operator == Operator.UNION:
+                operator = " : "
+            elif self.operator == Operator.COMPLEMENT:
+                operator = " #"
+                ret = {"operator": operator, "left": self.left.node}
+            if self.operator in {Operator.INTERSECTION, Operator.UNION}:
+                ret = {"left": self.left.node, "operator": operator}
+            if self.right is not None:
+                ret["right"] = self.right.node
+            self._node = syntax_node.GeometryTree(
+                "default geometry", ret, self.operator.value, self.left, self.right
+            )
+        self.node.nodes["left"] = self.left
+        if self.right is not None:
+            self.node.nodes["right"] = self.right
 
     def _update_operator(self):
         if self.node is None:
@@ -249,6 +273,16 @@ class UnitHalfSpace:
             raise BrokenObjectLinkError(
                 "Cell", self._cell.number, "Surface", self._divider
             )
+
+    def _ensure_has_nodes(self):
+        if self.node is None:
+            if isinstance(self.divider, int):
+                num = self.divider
+            else:
+                num = self.divider.number
+            node = syntax_node.ValueNode(str(number), int)
+            node.is_negatable_identifier = True
+            self._node = node
 
     def _update_values(self):
         self._node.value = self.divider.number
