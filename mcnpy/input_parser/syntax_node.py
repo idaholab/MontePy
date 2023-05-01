@@ -560,7 +560,7 @@ class ValueNode(SyntaxNodeBase):
                     value=value, **self._formatter
                 )
         else:
-            temp = value
+            temp = str(value)
         if self.padding:
             if self.padding.is_space(0):
                 if len(temp) >= self._formatter["value_length"]:
