@@ -309,7 +309,10 @@ class UnitHalfSpace(HalfSpace):
             self._node = node
 
     def _update_values(self):
-        self._node.value = self.divider.number
+        if isinstance(self.divider, int):
+            self._node.value = self.divider
+        else:
+            self._node.value = self.divider.number
         self._node.is_negative = self.side
 
     def _get_leaf_objects(self):
