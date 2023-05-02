@@ -268,7 +268,8 @@ class UnitHalfSpace(HalfSpace):
 
     @make_prop_pointer("_side", bool)
     def side(self):
-        pass
+        # make cells always "+"
+        return self.is_cell or self._side
 
     @staticmethod
     def parse_input_node(node, is_cell=False):
