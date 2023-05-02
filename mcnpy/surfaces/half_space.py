@@ -278,7 +278,7 @@ class UnitHalfSpace(HalfSpace):
         if is_cell:
             side = True
         else:
-            side = node.is_negative
+            side = not node.is_negative
         return UnitHalfSpace(node.value, side, is_cell, node)
 
     def update_pointers(self, cells, surfaces, cell):
@@ -313,7 +313,7 @@ class UnitHalfSpace(HalfSpace):
             self._node.value = self.divider
         else:
             self._node.value = self.divider.number
-        self._node.is_negative = self.side
+        self._node.is_negative = not self.side
 
     def _get_leaf_objects(self):
         if self._is_cell:
