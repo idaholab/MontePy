@@ -548,15 +548,16 @@ class testFullFileIntegration(TestCase):
         problem = copy.deepcopy(self.simple_problem)
         problem.print_in_data_block["imp"] = True
         try:
+            # TODO test extra spaces
             problem.write_to_file(out_file)
             found_n = False
             found_p = False
             with open(out_file, "r") as fh:
                 for line in fh:
                     print(line.rstrip())
-                    if "IMP:N 1 2R" in line:
+                    if "imp:n 1" in line:
                         found_n = True
-                    if "IMP:P 1 0.5" in line:
+                    if "imp:p 1 0.5" in line:
                         found_p = True
             self.assertTrue(found_n)
             self.assertTrue(found_p)
