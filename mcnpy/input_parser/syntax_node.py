@@ -858,9 +858,13 @@ class ListNode(SyntaxNodeBase):
     def __getitem__(self, indx):
         if isinstance(indx, slice):
             return self.__get_slice(indx)
-        for i, item in enumerate(self):
-            if i == indx:
-                return item
+        if indx >= 0:
+            for i, item in enumerate(self):
+                if i == indx:
+                    return item
+        else:
+            items = list(self)
+            return items[indx]
         raise IndexError(f"{indx} not in ListNode")
 
     def __get_slice(self, i: slice):
