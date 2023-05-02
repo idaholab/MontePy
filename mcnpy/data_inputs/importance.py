@@ -186,9 +186,10 @@ class Importance(CellModifierInput):
                     cell.importance[particle] = value.value
                     # replace default ValueNode with actual valueNode
                     tree = cell.importance._particle_importances[particle]
-                    tree.nodes["classifier"] = self._particle_importances[particle][
-                        "classifier"
-                    ]
+                    tree.nodes["classifier"] = copy.deepcopy(
+                        self._particle_importances[particle]["classifier"]
+                    )
+                    tree["classifier"].padding = None
                     data = tree["data"]
                     data.nodes.pop()
                     data.nodes.append(value)
