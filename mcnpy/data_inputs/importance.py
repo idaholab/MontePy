@@ -89,10 +89,6 @@ class Importance(CellModifierInput):
     def _tree_value(self, particle):
         pass
 
-    def _collect_new_values(self):
-        pass
-        # TODO
-
     @staticmethod
     def _class_prefix():
         return "imp"
@@ -179,7 +175,7 @@ class Importance(CellModifierInput):
     def push_to_cells(self):
         if self._problem and not self.in_cell_block:
             self._check_redundant_definitions()
-            # TODO delete
+            # TODO delete all
             self._starting_num_cells = len(self._problem.cells)
             for particle in self._particle_importances:
                 if not self._particle_importances[particle]:
@@ -189,7 +185,11 @@ class Importance(CellModifierInput):
                     # force generating the default tree
                     cell.importance[particle] = value.value
                     # replace default ValueNode with actual valueNode
-                    data = cell.importance._particle_importances[particle]["data"]
+                    tree = cell.importance._particle_importances[particle]
+                    tree.nodes["classifier"] = self._particle_importances[particle][
+                        "classifier"
+                    ]
+                    data = tree["data"]
                     data.nodes.pop()
                     data.nodes.append(value)
 
@@ -276,7 +276,6 @@ class Importance(CellModifierInput):
                         f"Importance data not available for cell {cell.number} for particle: "
                         f"{particle}, though it is in the problem"
                     )
-                # TODO fix that data -> cell doesn't preserve recombine
                 new_vals[particle].append(tree["data"][0])
                 if len(particle_pairings[particle]) == 0:
                     particle_pairings[particle] = tree["classifier"].particles.particles
