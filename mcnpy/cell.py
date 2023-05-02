@@ -1,5 +1,6 @@
 import copy
 from mcnpy.cells import Cells
+from mcnpy.constants import BLANK_SPACE_CONTINUE
 from mcnpy.data_inputs import importance, fill, lattice_input, universe_input, volume
 from mcnpy.data_inputs.data_parser import PREFIX_MATCHES
 from mcnpy.input_parser.cell_parser import CellParser
@@ -706,6 +707,16 @@ class Cell(Numbered_MCNP_Object):
         modifier_keywords = {
             cls._class_prefix(): cls for cls in self._INPUTS_TO_PROPERTY.keys()
         }
+
+        def cleanup_last_line(ret):
+            last_line = ret.splitlines()[-1]
+            # check if adding to end of comment
+            if last_line.lower().startswith("c ") and last_line[-1] != "\n":
+                return ret + "\n" + " " * BLANK_SPACE_CONTINUE
+            if not last_line[-1].isspace():
+                return ret + " "
+            return ret
+
         ret = ""
         for key, node in self._tree.nodes.items():
             if key != "parameters":
@@ -722,9 +733,13 @@ class Cell(Numbered_MCNP_Object):
                             if printed_importance:
                                 continue
                             printed_importance = True
+                        # add trailing space to comment if necessary
+                        ret = cleanup_last_line(ret)
                         ret += "\n".join(
                             getattr(self, attr).format_for_mcnp_input(mcnp_version)
                         )
                     else:
+                        # add trailing space to comment if necessary
+                        ret = cleanup_last_line(ret)
                         ret += param.format()
         return self.wrap_string_for_mcnp(ret, mcnp_version, True)

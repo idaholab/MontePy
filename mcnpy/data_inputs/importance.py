@@ -286,9 +286,15 @@ class Importance(CellModifierInput):
                     ].particles.particles
         return self._try_combine_values(new_vals, particle_pairings)
 
-    def _update_values(self):
+    def _update_values(self, in_middle=False):
         if self.in_cell_block:
             self._update_cell_values()
+            length = len(self._particle_importances)
+            for i, tree in enumerate(self._particle_importances.values()):
+                if i < length - 1:
+                    edge = tree["data"][-1]
+                    if isinstance(edge, syntax_node.ValueNode) and edge.padding is None:
+                        edge.padding = syntax_node.PaddingNode(" ")
         else:
             new_vals = self._collect_new_values()
             for part_set, data in new_vals.items():
