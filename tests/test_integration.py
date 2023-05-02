@@ -548,7 +548,6 @@ class testFullFileIntegration(TestCase):
         problem = copy.deepcopy(self.simple_problem)
         problem.print_in_data_block["imp"] = True
         try:
-            # TODO test extra spaces
             problem.write_to_file(out_file)
             found_n = False
             found_p = False

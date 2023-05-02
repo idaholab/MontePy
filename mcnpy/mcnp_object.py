@@ -192,7 +192,8 @@ class MCNP_Object(ABC):
         )
         ret = []
         for line in strings:
-            ret += wrapper.wrap(line)
+            if line.strip():
+                ret += wrapper.wrap(line)
         return ret
 
     @staticmethod
