@@ -292,6 +292,16 @@ class Importance(CellModifierInput):
             new_vals = self._collect_new_values()
             for part_set, data in new_vals.items():
                 for particle in part_set:
+                    if particle not in self._real_tree:
+                        tree = _generate_default_data_tree(particle)
+                        self._real_tree[particle] = tree
+                        padding = tree["classifier"].padding
+                        tree.nodes["classifier"] = copy.deepcopy(
+                            next(
+                                iter(self._problem.cells)
+                            ).importance._particle_importances[particle]["classifier"]
+                        )
+                        tree["classifier"].padding = padding
                     tree = self._real_tree[particle]
                     tree["classifier"].particles.particles = set(part_set)
                     tree["data"].update_with_new_values(data)
@@ -327,6 +337,27 @@ class Importance(CellModifierInput):
 
     def _update_cell_values(self):
         pass
+
+
+def _generate_default_data_tree(particle):
+    list_node = syntax_node.ListNode("number sequence")
+    list_node.append(syntax_node.ValueNode(None, float))
+    classifier = syntax_node.ClassifierNode()
+    classifier.prefix = syntax_node.ValueNode("IMP", str)
+    classifier.padding = syntax_node.PaddingNode(" ")
+    classifier.particles = syntax_node.ParticleNode(
+        "IMP_particles", f":{particle.value}"
+    )
+    classifier.particles.particles = {particle}
+    return syntax_node.SyntaxNode(
+        "IMP",
+        {
+            "start_pad": syntax_node.PaddingNode(),
+            "classifier": classifier,
+            "keyword": syntax_node.ValueNode(None, str, None),
+            "data": list_node,
+        },
+    )
 
 
 def __create_importance_getter(particle_type):
