@@ -891,7 +891,7 @@ class testFullFileIntegration(TestCase):
         self.assertEqual(output[0], answer)
         # test without transform
         fill.transform = None
-        answer = "fill=1"
+        answer = "fill=1 "
         output = fill.format_for_mcnp_input((6, 2, 0))
         self.assertEqual(output[0], answer)
         # test with no fill
