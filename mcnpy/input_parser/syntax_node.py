@@ -454,7 +454,7 @@ class ValueNode(SyntaxNodeBase):
     def is_negative(self):
         if self.is_negatable_identifier or self.is_negetable_float:
             return self._is_neg
-        if self._type in {int, float}:
+        if self._type in {int, float} and self.value is not None:
             return self.value < 0
 
     @is_negative.setter
