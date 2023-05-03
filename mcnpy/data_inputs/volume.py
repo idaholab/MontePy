@@ -54,7 +54,7 @@ class Volume(CellModifierInput):
             ):
                 self._calc_by_mcnp = False
             for node in tree["data"]:
-                if not isinstance(node, Jump) and node.value is not None:
+                if node.value is not None:
                     try:
                         assert node.value >= 0
                         self._volume.append(node)
@@ -62,7 +62,7 @@ class Volume(CellModifierInput):
                         raise MalformedInputError(
                             input, f"Cell volumes by a number ≥ 0.0: {node} given"
                         )
-                elif isinstance(node, Jump):
+                else:
                     self._volume.append(node)
 
     def _generate_default_cell_tree(self):

@@ -43,7 +43,7 @@ class UniverseInput(CellModifierInput):
         elif input:
             self._universes = []
             for node in self.data:
-                if not isinstance(node, Jump):
+                if node.value is not None:
                     try:
                         node.is_negatable_identifier = True
                         self._old_numbers.append(node)
@@ -52,7 +52,7 @@ class UniverseInput(CellModifierInput):
                             input,
                             f"Cell universes must be an integer ≥ 0. {node} was given",
                         )
-                elif isinstance(node, Jump):
+                else:
                     self._old_numbers.append(node)
 
     def _generate_default_cell_tree(self):
