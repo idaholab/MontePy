@@ -383,6 +383,7 @@ class ValueNode(SyntaxNodeBase):
         self._formatter = self._FORMATTERS[token_type].copy()
         self._is_neg_id = False
         self._is_neg_val = False
+        self._og_value = None
         if token is None:
             self._value = None
         elif token_type == float:
@@ -397,6 +398,7 @@ class ValueNode(SyntaxNodeBase):
                 self._value = int(token)
         else:
             self._value = token
+        self._og_value = self.value
         self._padding = padding
         self._nodes = [self]
         self._is_scientific = False
@@ -525,9 +527,23 @@ class ValueNode(SyntaxNodeBase):
             return -self.value
         return self.value
 
+    @property
+    def _value_changed(self):
+        if self.value is None and self._og_value is None:
+            return False
+        if self.value is None or self._og_value is None:
+            return True
+        if self._type in {float, int}:
+            return not math.isclose(
+                self.value, self._og_value, rel_tol=rel_tol, abs_tol=abs_tol
+            )
+        return self.value != self._og_value
+
     def format(self):
         # TODO throw warning when things expand
         # TODO when 1 -> 0.5 don't do: 0.5000000000
+        if not self._value_changed:
+            return f"{self._token}{self.padding.format() if self.padding else ''}"
         self._reverse_engineer_formatting()
         if self.value is None:
             return ""
