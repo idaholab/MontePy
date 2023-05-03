@@ -840,7 +840,8 @@ class testFullFileIntegration(TestCase):
                 cell.importance.photon = 0.0
         problem.print_in_data_block["IMP"] = True
         output = problem.cells._importance.format_for_mcnp_input((6, 2, 0))
-        self.assertIn("imp:p 0 0", output)
+        # OG value was 0.5 so 0.0 is correct.
+        self.assertIn("imp:p 0 0.0", output)
 
     def test_fill_parsing(self):
         problem = self.universe_problem
