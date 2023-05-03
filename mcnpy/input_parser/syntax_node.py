@@ -535,7 +535,7 @@ class ValueNode(SyntaxNodeBase):
             return True
         if self._type in {float, int}:
             return not math.isclose(
-                self.value, self._og_value, rel_tol=rel_tol, abs_tol=abs_tol
+                self._print_value, self._og_value, rel_tol=rel_tol, abs_tol=abs_tol
             )
         return self.value != self._og_value
 
