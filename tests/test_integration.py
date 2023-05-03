@@ -391,8 +391,8 @@ class testFullFileIntegration(TestCase):
     def test_cutting_comments_parse(self):
         problem = mcnpy.read_input("tests/inputs/breaking_comments.imcnp")
         comments = problem.cells[1].comments
-        self.assertEqual(len(comments), 2)
-        self.assertIn("this is a cutting comment", comments[1].lines[0])
+        self.assertEqual(len(comments), 3)
+        self.assertIn("this is a cutting comment", list(comments)[2].contents)
         comments = problem.materials[2].comments
         self.assertEqual(len(comments), 2)
 
