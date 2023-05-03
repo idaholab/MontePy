@@ -502,7 +502,7 @@ class ValueNode(SyntaxNodeBase):
                 self._formatter["exponent_length"] = len(exponent)
                 self._formatter["exponent_zero_pad"] = len(exponent) - len(temp_exp)
         else:
-            significand = self._token
+            significand = token
         parts = significand.split(".")
         if len(parts) == 2:
             precision = len(parts[1])
