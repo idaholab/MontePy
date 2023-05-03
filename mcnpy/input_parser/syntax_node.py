@@ -541,7 +541,6 @@ class ValueNode(SyntaxNodeBase):
 
     def format(self):
         # TODO throw warning when things expand
-        # TODO when 1 -> 0.5 don't do: 0.5000000000
         if not self._value_changed:
             return f"{self._token}{self.padding.format() if self.padding else ''}"
         self._reverse_engineer_formatting()
@@ -572,6 +571,8 @@ class ValueNode(SyntaxNodeBase):
                     temp=new_exp_temp, value_length=self._FORMATTER["exponent_length"]
                 )
                 temp = temp[0:start] + new_exp + temp[end:]
+            elif self._formatter["as_int"]:
+                temp = "{value:g}".format(value=value)
             else:
                 temp = "{value:0={sign}0{zero_padding}.{precision}f}".format(
                     value=value, **self._formatter
@@ -1162,7 +1163,6 @@ class ShortcutNode(ListNode):
                     return False
             return True
 
-    # TODO implement format to recompress
     def format(self):
         if not self._can_recompress:
             ret = ""
