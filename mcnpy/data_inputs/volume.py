@@ -188,16 +188,23 @@ class Volume(CellModifierInput):
         )
         return ret
 
-    def _update_cell_values(self):
+    def _update_values(self):
         if self.in_cell_block:
-            if self._tree["data"][0] is not self._volume:
-                self._tree["data"].nodes.pop()
-                self._tree["data"].append(self._volume)
+            self._update_cell_values()
         else:
             keyword = self._tree["keyword"]
-            if not self.is_mcnp_calculated and keyword.value.lower() != "no":
+            if not self.is_mcnp_calculated and (
+                keyword.value is None or keyword.value.lower() != "no"
+            ):
                 keyword.value = "NO"
-                if len(keyword.padding) == 0:
-                    keyword.padding.append(" ")
+                if keyword.padding is None or len(keyword.padding) == 0:
+                    keyword.padding = syntax_node.PaddingNode(" ")
             elif self.is_mcnp_calculated:
                 keyword.value = None
+            new_vals = self._collect_new_values()
+            self.data.update_with_new_values(new_vals)
+
+    def _update_cell_values(self):
+        if self._tree["data"][0] is not self._volume:
+            self._tree["data"].nodes.pop()
+            self._tree["data"].append(self._volume)
