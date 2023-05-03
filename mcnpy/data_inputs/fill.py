@@ -346,18 +346,17 @@ class Fill(CellModifierInput):
     @property
     def has_information(self):
         if self.in_cell_block:
-            return self.universe is not None
+            return self.universe is not None or self.universes is not None
 
     @property
     def _tree_value(self):
-        if fill.transform or fill.multiple_universes:
+        if self.transform or self.multiple_universes:
             raise ValueError(
                 f"Fill can not be in the data block if"
                 " fill transforms and other complex inputs are used."
-                f" Cell {cell.number} used these"
             )
         val = self._old_number
-        val.value = self.universe.number
+        val.value = self.universe.number if self.universe else None
         return val
 
     @property
