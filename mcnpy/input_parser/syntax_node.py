@@ -657,7 +657,8 @@ class ValueNode(SyntaxNodeBase):
             other_val = other
             if self.type != type(other):
                 return False
-        if self.type == float:
+
+        if self.type == float and self.value is not None and other_val is not None:
             return math.isclose(self.value, other_val, rel_tol=rel_tol, abs_tol=abs_tol)
         return self.value == other_val
 
