@@ -184,7 +184,7 @@ class testDataInputClass(TestCase):
         in_str = "VOL 1 1 2J 0"
         input_card = Input([in_str], BlockType.DATA)
         vol_card = parse_data(input_card)
-        answers = [1.0, 1.0, Jump, Jump, 0.0]
+        answers = [1.0, 1.0, None, None, 0.0]
         for i, vol in enumerate(vol_card._volume):
             if isinstance(vol, syntax_node.ValueNode):
                 self.assertAlmostEqual(vol.value, answers[i])
