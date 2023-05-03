@@ -42,7 +42,10 @@ class CellParser(MCNP_Parser):
     )
     def material(self, p):
         if len(p) == 1:
-            ret_dict = {"mat_number": p.null_ident_phrase}
+            ret_dict = {
+                "mat_number": p.null_ident_phrase,
+                "density": syntax_node.ValueNode(None, float),
+            }
         else:
             ret_dict = {"mat_number": p[0], "density": p[1]}
         return syntax_node.SyntaxNode("material", ret_dict)

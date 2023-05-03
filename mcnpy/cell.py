@@ -80,10 +80,10 @@ class Cell(Numbered_MCNP_Object):
         self._number = self._tree["cell_num"]
         mat_tree = self._tree["material"]
         self._old_mat_number = mat_tree["mat_number"]
+        self._density_node = mat_tree["density"]
+        self._density_node.is_negatable_float = True
         if self.old_mat_number != 0:
-            self._density_node = mat_tree["density"]
-            self._is_atom_dens = mat_tree.get_value("density") >= 0
-            self._density_node.value = abs(self._density)
+            self._is_atom_dens = not self._density_node.is_negative
         self._parse_geometry()
         self._parse_keyword_modifiers()
 
@@ -592,6 +592,7 @@ class Cell(Numbered_MCNP_Object):
     def _update_values(self):
         if self.material:
             mat_num = self.material.number
+            self._tree["material"]["density"].is_negative = not self.is_atom_dens
         else:
             mat_num = 0
         self._tree["material"]["mat_number"].value = mat_num
