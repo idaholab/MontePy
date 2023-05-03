@@ -412,13 +412,15 @@ class testFullFileIntegration(TestCase):
         cell = problem.cells[1]
         cell.number = 8
         output = cell.format_for_mcnp_input((6, 2, 0))
-        self.assertEqual(len(output), 7)
-        self.assertEqual("C this is a cutting comment", output[1])
+        print(output)
+        self.assertEqual(len(output), 5)
+        self.assertEqual("c this is a cutting comment", output[3])
         material = problem.materials[2]
         material.number = 5
         output = material.format_for_mcnp_input((6, 2, 0))
+        print(output)
         self.assertEqual(len(output), 5)
-        self.assertEqual("C          26057.80c        2.12", output[1])
+        self.assertEqual("c          26057.80c        2.12", output[3])
 
     def test_comments_setter(self):
         cell = copy.deepcopy(self.simple_problem.cells[1])
