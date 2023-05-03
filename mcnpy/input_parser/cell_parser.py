@@ -76,14 +76,14 @@ class CellParser(MCNP_Parser):
     def geometry_expr(self, p):
         term = p.geometry_term
         if isinstance(term, syntax_node.ValueNode):
-            term = syntax_node.GeometryTree("shift", {"left": term.nodes}, ">", term)
+            term = syntax_node.GeometryTree("shift", {"left": term}, ">", term)
         return term
 
     @_("geometry_term padding geometry_factor")
     def geometry_term(self, p):
         left = p.geometry_term
         right = p.geometry_factor
-        nodes = {"left": left.nodes, "operator": p.padding, "right": right.nodes}
+        nodes = {"left": left, "operator": p.padding, "right": right}
         return syntax_node.GeometryTree("intersection", nodes, "*", left, right)
 
     @_("geometry_term shortcut_sequence")
