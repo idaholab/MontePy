@@ -62,7 +62,7 @@ class testFullFileIntegration(TestCase):
         cards = [M, M, M, "KSRC", "KCODE", "PHYS:P", "MODE", V]
         for i, card in enumerate(self.simple_problem.data_inputs):
             if isinstance(cards[i], str):
-                self.assertEqual(card.words[0].upper(), cards[i])
+                self.assertEqual(card.classifier.format().upper().rstrip(), cards[i])
             else:
                 self.assertIsInstance(card, cards[i])
             if i == 2:
