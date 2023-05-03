@@ -134,6 +134,11 @@ class DataInputAbstract(MCNP_Object):
         """
         return self._tree["data"]
 
+    @property
+    def classifier(self):
+        """ " """
+        return self._tree["classifier"]
+
     def validate(self):
         pass
 
