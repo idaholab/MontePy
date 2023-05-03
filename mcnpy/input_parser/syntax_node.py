@@ -260,6 +260,13 @@ class PaddingNode(SyntaxNodeBase):
             extra_padding.append("\n")
         self._nodes = extra_padding + self.nodes
 
+    def __eq__(self, other):
+        if not isinstance(other, (type(self), str)):
+            raise "PaddingNode can only be compared to PaddingNode or str"
+        if isinstance(other, type(self)):
+            other = other.format()
+        return self.format() == other
+
 
 class CommentNode(SyntaxNodeBase):
     """
