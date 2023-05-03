@@ -51,18 +51,18 @@ class Fill(CellModifierInput):
             self._old_numbers = []
             values = self.data
             for value in values:
-                if value.value is not None:
-                    try:
-                        value._convert_to_int()
+                try:
+                    value._convert_to_int()
+                    if value.value is not None:
                         assert value.value >= 0
                         self._old_numbers.append(value)
-                    except (ValueError, AssertionError) as e:
-                        raise MalformedInputError(
-                            input,
-                            f"Cell fill must be set to a valid universe, {value} was given",
-                        )
-                else:
-                    self._old_numbers.append(value)
+                    else:
+                        self._old_numbers.append(value)
+                except (ValueError, AssertionError) as e:
+                    raise MalformedInputError(
+                        input,
+                        f"Cell fill must be set to a valid universe, {value} was given",
+                    )
 
     def _generate_default_cell_tree(self):
         list_node = syntax_node.ListNode("number sequence")

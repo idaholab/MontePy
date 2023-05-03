@@ -43,17 +43,17 @@ class UniverseInput(CellModifierInput):
         elif input:
             self._universes = []
             for node in self.data:
-                if node.value is not None:
-                    try:
-                        node.is_negatable_identifier = True
+                try:
+                    node.is_negatable_identifier = True
+                    if node.value is not None:
                         self._old_numbers.append(node)
-                    except ValueError:
-                        raise MalformedInputError(
-                            input,
-                            f"Cell universes must be an integer ≥ 0. {node} was given",
-                        )
-                else:
-                    self._old_numbers.append(node)
+                    else:
+                        self._old_numbers.append(node)
+                except ValueError:
+                    raise MalformedInputError(
+                        input,
+                        f"Cell universes must be an integer ≥ 0. {node} was given",
+                    )
 
     def _generate_default_cell_tree(self):
         list_node = syntax_node.ListNode("number sequence")
