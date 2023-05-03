@@ -901,14 +901,7 @@ class testFullFileIntegration(TestCase):
         # test with complex universe lattice fill
         fill = problem.cells[2].fill
         output = fill.format_for_mcnp_input((6, 2, 0))
-        answers = [
-            "     FILL= 0:1 0:1 0:0",
-            "           1",
-            "           0",
-            "           0",
-            "           1",
-            "     (5)",
-        ]
+        answers = ["fill= 0:1 0:1 0:0 1 0 0 1 (5)"]
         self.assertEqual(output, answers)
         problem.print_in_data_block["FILL"] = True
         # test that complex fill is not printed in data block
@@ -918,7 +911,7 @@ class testFullFileIntegration(TestCase):
         problem.cells[5].fill.transform = None
         problem.print_in_data_block["FILL"] = True
         output = problem.cells._fill.format_for_mcnp_input((6, 2, 0))
-        self.assertEqual(output, ["FILL 4J 350"])
+        self.assertEqual(output, ["FILL 4J 350 "])
 
     def test_universe_cells_claim(self):
         problem = copy.deepcopy(self.universe_problem)
