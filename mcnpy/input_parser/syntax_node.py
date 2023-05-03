@@ -517,7 +517,7 @@ class ValueNode(SyntaxNodeBase):
         if self._type != float or not self._formatter["as_int"]:
             return False
         nearest_int = round(self.value)
-        if abs(nearest_int - self.value) > self._formatter["int_tolerance"]:
+        if not math.isclose(nearest_int, self.value, rel_tol=rel_tol, abs_tol=abs_tol):
             return False
         return True
 
@@ -543,16 +543,16 @@ class ValueNode(SyntaxNodeBase):
         # TODO throw warning when things expand
         if not self._value_changed:
             return f"{self._token}{self.padding.format() if self.padding else ''}"
-        self._reverse_engineer_formatting()
         if self.value is None:
             return ""
+        self._reverse_engineer_formatting()
         if issubclass(self.type, enum.Enum):
             value = self.value.value
         else:
             value = self._print_value
         if self._type == int or self._can_float_to_int_happen():
-            temp = "{value:0={sign}{zero_padding}g}".format(
-                value=value, **self._formatter
+            temp = "{value:0={sign}{zero_padding}d}".format(
+                value=int(value), **self._formatter
             )
         elif self._type == float:
             if self._is_scientific:
@@ -572,7 +572,9 @@ class ValueNode(SyntaxNodeBase):
                 )
                 temp = temp[0:start] + new_exp + temp[end:]
             elif self._formatter["as_int"]:
-                temp = "{value:g}".format(value=value)
+                temp = "{value:0={sign}0{zero_padding}g}".format(
+                    value=value, **self._formatter
+                )
             else:
                 temp = "{value:0={sign}0{zero_padding}.{precision}f}".format(
                     value=value, **self._formatter
