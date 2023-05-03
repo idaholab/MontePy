@@ -870,7 +870,12 @@ class ListNode(SyntaxNodeBase):
         ret = ""
         length = len(self.nodes)
         for i, node in enumerate(self.nodes):
-            if isinstance(node, ValueNode) and node.padding is None and i < length - 1:
+            if (
+                isinstance(node, ValueNode)
+                and node.padding is None
+                and i < length - 1
+                and not isinstance(self.nodes[i + 1], PaddingNode)
+            ):
                 node.padding = PaddingNode(" ")
             ret += node.format()
         return ret
