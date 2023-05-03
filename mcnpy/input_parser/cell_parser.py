@@ -180,7 +180,7 @@ class CellParser(MCNP_Parser):
                 for val in node.nodes:
                     sequence.append(val)
             elif isinstance(node, str):
-                sequence.append(syntax_node.ValueNode(node, str))
+                sequence.append(syntax_node.PaddingNode(node))
             else:
                 sequence.append(node)
         return sequence
