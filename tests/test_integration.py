@@ -357,10 +357,10 @@ class testFullFileIntegration(TestCase):
         # test input pass-through
         answer = [
             "C cells",
-            "C ",
+            "c",
             "1 1 20",
-            "         -1000",
-            "        imp:n,p=1 U=350 trcl=5",
+            "         -1000  $ dollar comment",
+            "        imp:n,p=1 U=350 trcl=5 ",
         ]
         self.assertEqual(cell.format_for_mcnp_input((6, 2, 0)), answer)
         # test surface change
@@ -368,10 +368,12 @@ class testFullFileIntegration(TestCase):
         new_prob.surfaces[1000].number = 5
         cell = new_prob.cells[1]
         output = cell.format_for_mcnp_input((6, 2, 0))
-        self.assertEqual(int(output[3]), -5)
+        print(output)
+        self.assertEqual(int(output[3].split("$")[0]), -5)
         # test mass density printer
         cell.mass_density = 10.0
         output = cell.format_for_mcnp_input((6, 2, 0))
+        print(output)
         self.assertAlmostEqual(float(output[2].split()[2]), -10)
         # ensure that surface number updated
         # Test material number change
