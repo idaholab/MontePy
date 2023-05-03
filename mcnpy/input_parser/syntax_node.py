@@ -447,11 +447,11 @@ class ValueNode(SyntaxNodeBase):
         self._is_neg_id = val
 
     @property
-    def is_negetable_float(self):
+    def is_negatable_float(self):
         return self._is_neg_val
 
-    @is_negetable_float.setter
-    def is_negetable_float(self, val):
+    @is_negatable_float.setter
+    def is_negatable_float(self, val):
         if val == True:
             self._is_neg = self.value < 0
             self._value = abs(self._value)
@@ -459,14 +459,14 @@ class ValueNode(SyntaxNodeBase):
 
     @property
     def is_negative(self):
-        if self.is_negatable_identifier or self.is_negetable_float:
+        if self.is_negatable_identifier or self.is_negatable_float:
             return self._is_neg
         if self._type in {int, float} and self.value is not None:
             return self.value < 0
 
     @is_negative.setter
     def is_negative(self, val):
-        if self.is_negatable_identifier:
+        if self.is_negatable_identifier or self.is_negatable_float:
             self._is_neg = val
 
     def _reverse_engineer_formatting(self):
