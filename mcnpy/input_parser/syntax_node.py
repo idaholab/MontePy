@@ -443,7 +443,7 @@ class ValueNode(SyntaxNodeBase):
                 self._is_neg = self.value < 0
                 self._value = abs(self._value)
             else:
-                self._is_neg = False
+                self._is_neg = None
         self._is_neg_id = val
 
     @property
@@ -453,8 +453,11 @@ class ValueNode(SyntaxNodeBase):
     @is_negatable_float.setter
     def is_negatable_float(self, val):
         if val == True:
-            self._is_neg = self.value < 0
-            self._value = abs(self._value)
+            if self.value is not None:
+                self._is_neg = self.value < 0
+                self._value = abs(self._value)
+            else:
+                self._is_neg = None
         self._is_neg_val = val
 
     @property
@@ -530,7 +533,7 @@ class ValueNode(SyntaxNodeBase):
 
     @property
     def _print_value(self):
-        if self._type == int and self.is_negative:
+        if self._type in {int, float} and self.is_negative:
             return -self.value
         return self.value
 
