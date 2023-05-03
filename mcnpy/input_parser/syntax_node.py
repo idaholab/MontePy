@@ -169,7 +169,7 @@ class GeometryTree(SyntaxNodeBase):
 
     @property
     def comments(self):
-        for node in self.nodes:
+        for node in self.nodes.values():
             yield from node.comments
 
     @property
