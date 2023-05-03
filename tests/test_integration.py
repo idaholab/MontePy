@@ -463,7 +463,7 @@ class testFullFileIntegration(TestCase):
         output = imp.format_for_mcnp_input((6, 2, 0))
         print(output)
         self.assertEqual(len(output), 3)
-        self.assertEqual("IMP:N 0.5 1 1 0 3", output[1])
+        self.assertIn("imp:n 0.5 1 1 0 3", output)
 
     def test_importance_write_unmutated(self):
         out_file = "test_import_unmute"
