@@ -97,17 +97,7 @@ class MCNP_Object(ABC):
         :returns: a list of the comments associated with this comment.
         :rtype: list
         """
-        return self._tree.comments
-
-    @comments.setter
-    def comments(self, comments):
-        if not isinstance(comments, list):
-            raise TypeError("comments must be a list")
-        for comment in comments:
-            if not isinstance(comment, Comment):
-                raise TypeError(f"Element {comment} in comments is not a Comment")
-        self._mutated = True
-        self._comments = comments
+        return list(self._tree.comments)
 
     @comments.deleter
     def comments(self):
