@@ -60,7 +60,7 @@ class EdgeCaseTests(TestCase):
     def test_long_lines(self):
         with self.assertWarns(mcnpy.errors.LineOverRunWarning):
             problem = mcnpy.read_input("tests/inputs/test_long_lines.imcnp", (5, 1, 60))
-            comment = next(problem.cells[1].comments)
+            comment = problem.cells[1].comments[0]
             self.assertTrue(len(comment.contents[0]) <= 80)
             self.assertEqual(len(problem.surfaces), 3)
 
