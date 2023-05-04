@@ -1,7 +1,13 @@
 from abc import ABC, abstractmethod
+import itertools as it
 from mcnpy.errors import *
 from mcnpy.constants import BLANK_SPACE_CONTINUE, get_max_line_length, rel_tol, abs_tol
-from mcnpy.input_parser.syntax_node import PaddingNode, ParametersNode, ValueNode
+from mcnpy.input_parser.syntax_node import (
+    CommentNode,
+    PaddingNode,
+    ParametersNode,
+    ValueNode,
+)
 import mcnpy
 import numpy as np
 import textwrap
@@ -99,9 +105,32 @@ class MCNP_Object(ABC):
         """
         return list(self._tree.comments)
 
-    @comments.deleter
-    def comments(self):
-        self._comment = []
+    @property
+    def leading_comments(self):
+        """ """
+        return list(self._tree["start_pad"].comments)
+
+    @leading_comments.setter
+    def leading_comments(self, comments):
+        if not isinstance(comments, (list, tuple, CommentNode)):
+            raise TypeError(
+                f"Comments must be a CommentNode, or a list of Comments. {comments} given."
+            )
+        if isinstance(comments, CommentNode):
+            comments = [comments]
+        for i, comment in enumerate(comments):
+            if not isinstance(comment, CommentNode):
+                raise TypeError(
+                    f"Comment must be a CommentNode. {comment} given at index {i}."
+                )
+        new_nodes = list(*zip(comments, it.cycle(["\n"])))
+        if self._tree["start_pad"] is None:
+            self._tree["start_pad"] = syntax_node.PaddingNode(" ")
+        self._tree["start_pad"]._nodes = new_nodes
+
+    @leading_comments.deleter
+    def leading_comments(self, comments):
+        self._tree["start_pad"] = None
 
     @property
     def input_lines(self):
