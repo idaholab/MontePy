@@ -217,6 +217,13 @@ class HalfSpace:
             raise TypeError(f"Right hand side must be HalfSpace. {other} given.")
         return HalfSpace(self, Operator.COMPLEMENT)
 
+    def __len__(self):
+        length = 0
+        length += len(self.left)
+        if self.right is not None:
+            length += len(self.right)
+        return length
+
     def _generate_default_tree(self):
         pass
 
@@ -331,3 +338,6 @@ class UnitHalfSpace(HalfSpace):
             if self.divider in deleting_dict:
                 new_surface = deleting_dict[self.divider]
                 self.divider = new_surface
+
+    def __len__(self):
+        return 1
