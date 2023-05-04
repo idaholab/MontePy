@@ -313,7 +313,7 @@ class testFullFileIntegration(TestCase):
         problem = mcnpy.read_input("tests/inputs/test_surfaces.imcnp")
         surf = problem.surfaces[1]
         # Test input pass through
-        answer = ["1 -2 SO -5"]
+        answer = ["1 -2 SO -5 "]
         self.assertEqual(surf.format_for_mcnp_input((6, 2, 0)), answer)
         # Test changing periodic surface
         new_prob = copy.deepcopy(problem)
