@@ -195,44 +195,49 @@ class Transform(data_input.DataInputAbstract, Numbered_MCNP_Object):
         ret += f"MAIN_TO_AUX: {self.is_main_to_aux}\n"
         return ret
 
-    def _generate_inputs(self, mcnp_version, first_line=True, is_pass_through=False):
-        """
-        Generates appropriately formatted input for this transform.
-
-        :param mcnp_version: see format_for_mcnp_input
-        :type mcnp_version: tuple
-        :param first_line: If true this is the first line of input
-        :type first_line: bool
-        :param is_pass_through: If True the transform number will be supressed
-        :type is_pass_through: bool
-        :returns: a tuple of (bool: true if this needs an *, list of str of the input)
-        :rtype: tuple
-        """
-        # TODO
-        ret = []
-        in_degs = False
-        buff_list = []
-        if not is_pass_through:
-            if self.is_in_degrees:
-                buff_list.append(f"*TR{self.number}")
-            else:
-                buff_list.append(f"TR{self.number}")
+    def _update_values(self):
+        # update in degrees
+        if self.is_in_degrees:
+            self._classifier.modifier.value = "*"
         else:
-            in_degs = self.is_in_degrees
-        for value in self.displacement_vector:
-            buff_list.append(f"{value}")
-
-        ret += Transform.wrap_words_for_mcnp(buff_list, mcnp_version, first_line)
-        buff_list = []
-        i = 0
-        for i, value in enumerate(self.rotation_matrix):
-            buff_list.append(f"{value}")
-            if (i + 1) % 3 == 0:
-                ret += Transform.wrap_words_for_mcnp(buff_list, mcnp_version, False)
-                buff_list = []
-        if i == 8 and not self.is_main_to_aux:
-            ret += Transform.wrap_string_for_mcnp("-1", mcnp_version, False)
-        return (in_degs, ret)
+            self._classifier.modifier.value = None
+        # update displacement vector
+        new_values = []
+        list_iter = iter(self.data)
+        length = len(self.data)
+        for value, node in zip(self.displacement_vector, list_iter):
+            node.value = value
+            new_values.append(node)
+        # update the rotation matrix
+        # test if the rotation matrix has info, or was specified or main_to_aux is needed
+        needs_rotation = (
+            np.any(self.rotation_matrix)
+            or len(self.data) >= 8
+            or not self.is_main_to_aux
+        )
+        if needs_rotation:
+            a = self.rotation_matrix
+            flat_pack = [a[iy, ix] for iy, ix in np.ndindex(a.shape)]
+            for i, (value, node) in zip(flat_pack, list_iter):
+                node.value = value
+                new_values.append(node)
+            if i < len(flat_pack) - 1:
+                for value in flat_pack[i:]:
+                    node = self._generate_default_node(float, value)
+                    self.data.append(node)
+                    new_values.append(node)
+            # if main to aux specified or is needed
+            if len(self.data) == 13 or not self.is_main_to_aux:
+                if len(self.data) == 13:
+                    node = self.data[-1]
+                else:
+                    node = self._generate_default_node(int, 1)
+                    node.is_negatable_identifier = True
+                    self.data.append(node)
+                node.is_negative = not self.is_main_to_aux
+                new_values.append(node)
+        # Trigger shortcut recompression
+        self.data.update_with_new_values(new_values)
 
     def validate(self):
         if self.displacement_vector is None or len(self.displacement_vector) != 3:
