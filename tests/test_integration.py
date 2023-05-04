@@ -426,14 +426,14 @@ class testFullFileIntegration(TestCase):
     def test_comments_setter(self):
         cell = copy.deepcopy(self.simple_problem.cells[1])
         comment = self.simple_problem.surfaces[1000].comments[0]
-        cell.comments = [comment]
+        cell.leading_comments = [comment]
+        self.assertEqual(cell.comments[0], comment)
+        cell.leading_comments = comment
         self.assertEqual(cell.comments[0], comment)
         with self.assertRaises(TypeError):
-            cell.comments = comment
+            cell.leading_comments = [5]
         with self.assertRaises(TypeError):
-            cell.comments = [5]
-        with self.assertRaises(TypeError):
-            cell.comments = 5
+            cell.leading_comments = 5
 
     def test_problem_linker(self):
         cell = mcnpy.Cell()
