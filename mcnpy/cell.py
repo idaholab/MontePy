@@ -700,7 +700,9 @@ class Cell(Numbered_MCNP_Object):
         return self.number < other.number
 
     def __invert__(self):
-        return UnitHalfSpace(self, True, True)
+        return UnitHalfSpace(
+            self, True, True, self._generate_default_node(int, self.number, None)
+        )
 
     def format_for_mcnp_input(self, mcnp_version):
         """
