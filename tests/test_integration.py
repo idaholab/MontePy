@@ -952,10 +952,16 @@ class testFullFileIntegration(TestCase):
         del cell.mass_density
         with self.assertRaises(mcnpy.errors.IllegalState):
             cell.validate()
-        cell.mass_density = 1.0
-        cell.geometry_logic_string = ""
+        cell = mcnpy.Cell()
+        # test no geometry at all
         with self.assertRaises(mcnpy.errors.IllegalState):
             cell.validate()
+        surf = problem.surfaces[1000]
+        cell.surfaces.append(surf)
+        # test surface added but geomtry not defined
+        with self.assertRaises(mcnpy.errors.IllegalState):
+            cell.validate()
+        
 
     def test_importance_rewrite(self):
         out_file = "test_import_data"
