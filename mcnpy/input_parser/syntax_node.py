@@ -420,7 +420,7 @@ class ValueNode(SyntaxNodeBase):
                 self._value = int(self._token)
             except ValueError as e:
                 parts = self._token.split(".")
-                if int(parts[1]) == 0:
+                if len(parts) > 1 and int(parts[1]) == 0:
                     self._value = int(parts[0])
                 else:
                     raise e
