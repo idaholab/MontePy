@@ -219,9 +219,8 @@ class testFullFileIntegration(TestCase):
         cell_num = 1000
         cell = mcnpy.Cell()
         cell.material = mat
-        cell.surfaces = [surf]
+        cell.geometry = -surf
         cell.mass_density = 1.0
-        cell.geometry_logic_string = "-5"
         cell.number = cell_num
         cell.universe = problem.universes[350]
         problem.cells.append(cell)
@@ -961,7 +960,6 @@ class testFullFileIntegration(TestCase):
         # test surface added but geomtry not defined
         with self.assertRaises(mcnpy.errors.IllegalState):
             cell.validate()
-        
 
     def test_importance_rewrite(self):
         out_file = "test_import_data"
