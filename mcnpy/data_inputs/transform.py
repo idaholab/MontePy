@@ -79,15 +79,13 @@ class Transform(data_input.DataInputAbstract, Numbered_MCNP_Object):
             if len(values) == 9:
                 try:
                     word = words[i]
-                    # if 1 it's the default value
-                    if int(word.value) == 1:
-                        pass
-                    elif int(word.value) == -1:
-                        self._is_main_to_aux = False
-                    else:
+                    word.is_negatable_identifier = True
+                    if word.value != 1:
                         raise MalformedInputError(
                             input, f"{word} can't be parsed as 1 or -1"
                         )
+                    # negative means not main_to_aux
+                    self._is_main_to_aux = not word.is_negative
                 # if no more words remain don't worry
                 except IndexError:
                     pass
