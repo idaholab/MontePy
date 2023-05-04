@@ -95,10 +95,14 @@ class Cell(Numbered_MCNP_Object):
                 and param_found is True is cell parameter inputs are found
         """
         geometry = self._tree["geometry"]
-        surfs, cells = geometry.get_geometry_identifiers()
+        surfs = cells = []
+        if geometry is not None:
+            surfs, cells = geometry.get_geometry_identifiers()
+            self._geometry = HalfSpace.parse_input_node(geometry)
+        else:
+            self._geometry = None
         self._old_surface_numbers = surfs
         self._old_complement_numbers = cells
-        self._geometry = HalfSpace.parse_input_node(geometry)
 
     def _parse_keyword_modifiers(self):
         """
@@ -616,9 +620,7 @@ class Cell(Numbered_MCNP_Object):
             {
                 "cell_num": self._generate_default_node(int, None),
                 "material": material,
-                "geometry": syntax_node.GeometryTree(
-                    "Geometry", [geom_node], ">", geom_node
-                ),
+                "geometry": None,
                 "parameters": syntax_node.ParametersNode(),
             },
         )
