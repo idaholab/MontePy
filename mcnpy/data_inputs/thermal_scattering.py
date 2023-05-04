@@ -111,6 +111,10 @@ class ThermalScatteringLaw(DataInputAbstract):
     def _update_values(self):
         if self.parent_material:
             self._tree["classifier"].number.value = self.parent_material.number
+        else:
+            raise MalformedInputError(
+                self, f"MT{self.old_number} input is detached from a parent material"
+            )
 
     def update_pointers(self, data_inputs):
         """
