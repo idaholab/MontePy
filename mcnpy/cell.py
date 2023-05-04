@@ -639,6 +639,8 @@ class Cell(Numbered_MCNP_Object):
             raise IllegalState(
                 f"Cell {self.number} has no surfaces nor complemented cells attached to it"
             )
+        if self.geometry is None or len(self.geometry) == 0:
+            raise IllegalState(f"Cell {self.number} has no geometry defined.")
 
     def link_to_problem(self, problem):
         super().link_to_problem(problem)
