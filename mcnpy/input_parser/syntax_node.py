@@ -416,7 +416,14 @@ class ValueNode(SyntaxNodeBase):
         if self._token is not None and not isinstance(
             self._token, input_parser.mcnp_input.Jump
         ):
-            self._value = int(self._token)
+            try:
+                self._value = int(self._token)
+            except ValueError as e:
+                parts = self._token.split(".")
+                if int(parts[1]) == 0:
+                    self._value = int(parts[0])
+                else:
+                    raise e
         self._formatter = self._FORMATTERS[int].copy()
 
     def _convert_to_enum(
