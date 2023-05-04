@@ -23,6 +23,11 @@ def _number_validator(self, number):
         self._problem.cells.check_number(number)
 
 
+def _link_geometry_to_cell(self, geom):
+    geom._cell = self
+    geom._add_new_children_to_cell(geom)
+
+
 class Cell(Numbered_MCNP_Object):
     """
     Object to represent a single MCNP cell defined in CGS.
@@ -330,7 +335,7 @@ class Cell(Numbered_MCNP_Object):
         """
         pass
 
-    @make_prop_pointer("_geometry", HalfSpace)
+    @make_prop_pointer("_geometry", HalfSpace, validator=_link_geometry_to_cell)
     def geometry(self):
         pass
 
