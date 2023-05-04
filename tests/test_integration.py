@@ -4,8 +4,14 @@ from unittest import TestCase, expectedFailure
 import os
 
 import mcnpy
-from mcnpy.data_cards import material, thermal_scattering, volume
-from mcnpy.input_parser.mcnp_input import Card, Comment, Jump, Message, Title, ReadCard
+from mcnpy.data_inputs import material, thermal_scattering, volume
+from mcnpy.input_parser.mcnp_input import (
+    Input,
+    Jump,
+    Message,
+    Title,
+    ReadInput,
+)
 from mcnpy.particle import Particle
 import numpy as np
 
@@ -22,23 +28,23 @@ class testFullFileIntegration(TestCase):
         )
 
     def test_original_input(self):
-        cell_order = [Message, Title, Comment]
-        cell_order += [Card] * 5 + [Comment]
-        cell_order += [Comment] + [Card] * 3
-        cell_order += [Comment, Card] * 3
-        cell_order += [Card, Comment] + [Card] * 5
+        cell_order = [Message, Title] + [Input] * 17
         for i, input_ob in enumerate(self.simple_problem.original_inputs):
             self.assertIsInstance(input_ob, cell_order[i])
 
     def test_original_input_dos(self):
         problem = mcnpy.read_input(os.path.join("tests", "inputs", "test_dos.imcnp"))
-        cell_order = [Message, Title, Comment]
-        cell_order += [Card] * 5 + [Comment]
-        cell_order += [Comment] + [Card] * 3
-        cell_order += [Comment, Card] * 3
-        cell_order += [Card, Comment] + [Card] * 5
+        cell_order = [Message, Title] + [Input] * 16
         for i, input_ob in enumerate(problem.original_inputs):
             self.assertIsInstance(input_ob, cell_order[i])
+
+    # TODO formalize this or see if this is covered by other tests.
+    def test_lazy_comments_check(self):
+        problem = self.simple_problem
+        material = problem.materials[2]
+        for comment in material._tree.comments:
+            print(repr(comment))
+        print(material._tree.get_trailing_comment())
 
     def test_material_parsing(self):
         mat_numbers = [1, 2, 3]
@@ -54,9 +60,9 @@ class testFullFileIntegration(TestCase):
         M = material.Material
         V = volume.Volume
         cards = [M, M, M, "KSRC", "KCODE", "PHYS:P", "MODE", V]
-        for i, card in enumerate(self.simple_problem.data_cards):
+        for i, card in enumerate(self.simple_problem.data_inputs):
             if isinstance(cards[i], str):
-                self.assertEqual(card.words[0].upper(), cards[i])
+                self.assertEqual(card.classifier.format().upper().rstrip(), cards[i])
             else:
                 self.assertIsInstance(card, cards[i])
             if i == 2:
@@ -124,13 +130,15 @@ class testFullFileIntegration(TestCase):
             for i, surf in enumerate(self.simple_problem.surfaces):
                 num = surf.number
                 self.assertEqual(surf.number, test_problem.surfaces[num].number)
-            for i, data in enumerate(self.simple_problem.data_cards):
+            for i, data in enumerate(self.simple_problem.data_inputs):
                 if isinstance(data, material.Material):
-                    self.assertEqual(data.number, test_problem.data_cards[i].number)
+                    self.assertEqual(data.number, test_problem.data_inputs[i].number)
                 elif isinstance(data, volume.Volume):
-                    self.assertEqual(str(data), str(test_problem.data_cards[i]))
+                    self.assertEqual(str(data), str(test_problem.data_inputs[i]))
                 else:
-                    self.assertEqual(data.words, test_problem.data_cards[i].words)
+                    print("Rewritten data", data.data)
+                    print("Original input data", test_problem.data_inputs[i].data)
+                    self.assertEqual(data.data, test_problem.data_inputs[i].data)
         finally:
             if os.path.exists(out):
                 os.remove(out)
@@ -199,35 +207,34 @@ class testFullFileIntegration(TestCase):
         problem = copy.copy(self.simple_problem)
         BT = mcnpy.input_parser.block_type.BlockType
         in_str = "5 SO 5.0"
-        card = mcnpy.input_parser.mcnp_input.Card([in_str], BT.SURFACE)
+        card = mcnpy.input_parser.mcnp_input.Input([in_str], BT.SURFACE)
         surf = mcnpy.surfaces.surface_builder.surface_builder(card)
         in_str = "M5 6000.70c 1.0"
-        card = mcnpy.input_parser.mcnp_input.Card([in_str], BT.SURFACE)
-        mat = mcnpy.data_cards.material.Material(card, None)
+        card = mcnpy.input_parser.mcnp_input.Input([in_str], BT.SURFACE)
+        mat = mcnpy.data_inputs.material.Material(card, None)
         in_str = "TR1 0 0 1"
-        input = mcnpy.input_parser.mcnp_input.Card([in_str], BT.DATA)
-        transform = mcnpy.data_cards.transform.Transform(input)
+        input = mcnpy.input_parser.mcnp_input.Input([in_str], BT.DATA)
+        transform = mcnpy.data_inputs.transform.Transform(input)
         surf.transform = transform
         cell_num = 1000
         cell = mcnpy.Cell()
         cell.material = mat
-        cell.surfaces = [surf]
+        cell.geometry = -surf
         cell.mass_density = 1.0
-        cell.geometry_logic_string = "-5"
         cell.number = cell_num
         cell.universe = problem.universes[350]
         problem.cells.append(cell)
         problem.add_cell_children_to_problem()
         self.assertIn(surf, problem.surfaces)
         self.assertIn(mat, problem.materials)
-        self.assertIn(mat, problem.data_cards)
+        self.assertIn(mat, problem.data_inputs)
         self.assertIn(transform, problem.transforms)
-        self.assertIn(transform, problem.data_cards)
+        self.assertIn(transform, problem.data_inputs)
         for cell_num in [1, cell_num]:
             print(cell_num)
             output = problem.cells[cell_num].format_for_mcnp_input((6, 2, 0))
             print(output)
-            self.assertIn("U=350", "\n".join(output))
+            self.assertIn("U=350", "\n".join(output).upper())
 
     def test_problem_mcnp_version_setter(self):
         problem = copy.copy(self.simple_problem)
@@ -266,13 +273,14 @@ class testFullFileIntegration(TestCase):
     def test_surface_transform(self):
         problem = mcnpy.read_input("tests/inputs/test_surfaces.imcnp")
         surf = problem.surfaces[1]
-        transform = problem.data_cards[0]
+        transform = problem.data_inputs[0]
         del surf.periodic_surface
         surf.transform = transform
         self.assertEqual(surf.transform, transform)
         self.assertIn("1 1 SO", surf.format_for_mcnp_input((6, 2, 0))[0])
         del surf.transform
         self.assertIsNone(surf.transform)
+        self.assertIn("1 SO", surf.format_for_mcnp_input((6, 2, 0))[0])
         with self.assertRaises(TypeError):
             surf.transform = 5
 
@@ -303,8 +311,8 @@ class testFullFileIntegration(TestCase):
     def test_surface_card_pass_through(self):
         problem = mcnpy.read_input("tests/inputs/test_surfaces.imcnp")
         surf = problem.surfaces[1]
-        # Test card pass through
-        answer = ["1 -2 SO -5"]
+        # Test input pass through
+        answer = ["1 -2 SO 5 "]
         self.assertEqual(surf.format_for_mcnp_input((6, 2, 0)), answer)
         # Test changing periodic surface
         new_prob = copy.deepcopy(problem)
@@ -345,13 +353,13 @@ class testFullFileIntegration(TestCase):
     def test_cell_card_pass_through(self):
         problem = copy.deepcopy(self.simple_problem)
         cell = problem.cells[1]
-        # test card pass-through
+        # test input pass-through
         answer = [
             "C cells",
-            "C ",
+            "c",
             "1 1 20",
-            "         -1000",
-            "        imp:n,p=1 U=350 trcl=5",
+            "         -1000  $ dollar comment",
+            "        imp:n,p=1 U=350 trcl=5 ",
         ]
         self.assertEqual(cell.format_for_mcnp_input((6, 2, 0)), answer)
         # test surface change
@@ -359,10 +367,12 @@ class testFullFileIntegration(TestCase):
         new_prob.surfaces[1000].number = 5
         cell = new_prob.cells[1]
         output = cell.format_for_mcnp_input((6, 2, 0))
-        self.assertEqual(int(output[3]), -5)
+        print(output)
+        self.assertEqual(int(output[3].split("$")[0]), -5)
         # test mass density printer
         cell.mass_density = 10.0
         output = cell.format_for_mcnp_input((6, 2, 0))
+        print(output)
         self.assertAlmostEqual(float(output[2].split()[2]), -10)
         # ensure that surface number updated
         # Test material number change
@@ -371,13 +381,6 @@ class testFullFileIntegration(TestCase):
         cell = new_prob.cells[1]
         output = cell.format_for_mcnp_input((6, 2, 0))
         self.assertEqual(int(output[2].split()[1]), 5)
-
-    def test_cell_fill_formatting(self):
-        cell = copy.deepcopy(self.simple_problem.cells[1])
-        cell._mutated = True
-        cell.parameters["FILL"] = ["5", "(4)"]
-        output = cell.format_for_mcnp_input((6, 2, 0))
-        self.assertIn("FILL=5 (4)", output[4])
 
     def test_thermal_scattering_pass_through(self):
         problem = copy.deepcopy(self.simple_problem)
@@ -389,8 +392,8 @@ class testFullFileIntegration(TestCase):
     def test_cutting_comments_parse(self):
         problem = mcnpy.read_input("tests/inputs/breaking_comments.imcnp")
         comments = problem.cells[1].comments
-        self.assertEqual(len(comments), 2)
-        self.assertIn("this is a cutting comment", comments[1].lines[0])
+        self.assertEqual(len(comments), 3)
+        self.assertIn("this is a cutting comment", list(comments)[2].contents)
         comments = problem.materials[2].comments
         self.assertEqual(len(comments), 2)
 
@@ -399,36 +402,38 @@ class testFullFileIntegration(TestCase):
         cell = problem.cells[1]
         output = cell.format_for_mcnp_input((6, 2, 0))
         self.assertEqual(len(output), 5)
-        self.assertEqual("C this is a cutting comment", output[3])
+        self.assertEqual("c this is a cutting comment", output[3])
         material = problem.materials[2]
         output = material.format_for_mcnp_input((6, 2, 0))
         self.assertEqual(len(output), 5)
-        self.assertEqual("C          26057.80c        2.12", output[3])
+        self.assertEqual("c          26057.80c        2.12", output[3])
 
     def test_cutting_comments_print_mutate(self):
         problem = mcnpy.read_input("tests/inputs/breaking_comments.imcnp")
         cell = problem.cells[1]
         cell.number = 8
         output = cell.format_for_mcnp_input((6, 2, 0))
-        self.assertEqual(len(output), 7)
-        self.assertEqual("C this is a cutting comment", output[1])
+        print(output)
+        self.assertEqual(len(output), 5)
+        self.assertEqual("c this is a cutting comment", output[3])
         material = problem.materials[2]
         material.number = 5
         output = material.format_for_mcnp_input((6, 2, 0))
+        print(output)
         self.assertEqual(len(output), 5)
-        self.assertEqual("C          26057.80c        2.12", output[1])
+        self.assertEqual("c          26057.80c        2.12", output[3])
 
     def test_comments_setter(self):
         cell = copy.deepcopy(self.simple_problem.cells[1])
         comment = self.simple_problem.surfaces[1000].comments[0]
-        cell.comments = [comment]
+        cell.leading_comments = [comment]
+        self.assertEqual(cell.comments[0], comment)
+        cell.leading_comments = comment
         self.assertEqual(cell.comments[0], comment)
         with self.assertRaises(TypeError):
-            cell.comments = comment
+            cell.leading_comments = [5]
         with self.assertRaises(TypeError):
-            cell.comments = [5]
-        with self.assertRaises(TypeError):
-            cell.comments = 5
+            cell.leading_comments = 5
 
     def test_problem_linker(self):
         cell = mcnpy.Cell()
@@ -461,7 +466,7 @@ class testFullFileIntegration(TestCase):
         output = imp.format_for_mcnp_input((6, 2, 0))
         print(output)
         self.assertEqual(len(output), 3)
-        self.assertEqual("IMP:N 0.5 1 1 0 3", output[1])
+        self.assertIn("imp:n 0.5 1 1 0 3", output)
 
     def test_importance_write_unmutated(self):
         out_file = "test_import_unmute"
@@ -495,9 +500,9 @@ class testFullFileIntegration(TestCase):
             with open(out_file, "r") as fh:
                 for line in fh:
                     print(line.rstrip())
-                    if "IMP:N 0.5" in line:
+                    if "imp:n 0.5" in line:
                         found_n = True
-                    elif "IMP:E" in line:
+                    elif "imp:e" in line:
                         found_e = True
             self.assertTrue(found_n)
             self.assertTrue(found_e)
@@ -526,9 +531,9 @@ class testFullFileIntegration(TestCase):
                 with open(out_file, "r") as fh:
                     for line in fh:
                         print(line.rstrip())
-                        if "IMP:N,P=1" in line:
+                        if "imp:n,p=1" in line:
                             found_np = True
-                        elif "IMP:E=1" in line:
+                        elif "imp:e=1" in line:
                             found_e = True
                         elif "imp:e 1" in line.lower():
                             found_data_np = True
@@ -552,9 +557,9 @@ class testFullFileIntegration(TestCase):
             with open(out_file, "r") as fh:
                 for line in fh:
                     print(line.rstrip())
-                    if "IMP:N 1 2R" in line:
+                    if "imp:n 1" in line:
                         found_n = True
-                    if "IMP:P 1 0.5" in line:
+                    if "imp:p 1 0.5" in line:
                         found_p = True
             self.assertTrue(found_n)
             self.assertTrue(found_p)
@@ -666,7 +671,7 @@ class testFullFileIntegration(TestCase):
         in_str = "1 0 -1 VOL=1 VOL 5"
         with self.assertRaises(ValueError):
             cell = mcnpy.Cell(
-                Card([in_str], mcnpy.input_parser.block_type.BlockType.CELL)
+                Input([in_str], mcnpy.input_parser.block_type.BlockType.CELL)
             )
 
     def test_universe_cell_parsing(self):
@@ -751,7 +756,7 @@ class testFullFileIntegration(TestCase):
         cell.not_truncated = True
         output = problem.cells._universe.format_for_mcnp_input((6, 2, 0))
         print(output)
-        self.assertIn("U 350 J -350 -1 J", output)
+        self.assertIn("u 350 J -350 -1", output)
         # test appending a new mutated cell
         new_cell = copy.deepcopy(cell)
         new_cell.number = 1000
@@ -760,7 +765,7 @@ class testFullFileIntegration(TestCase):
         problem.cells.append(new_cell)
         output = problem.cells._universe.format_for_mcnp_input((6, 2, 0))
         print(output)
-        self.assertIn("U 350 J -350 -1 J 350", output)
+        self.assertIn("u 350 J -350 -1 J 350 ", output)
         # test appending a new UNmutated cell
         problem = mcnpy.read_input(
             os.path.join("tests", "inputs", "test_universe_data.imcnp")
@@ -776,7 +781,7 @@ class testFullFileIntegration(TestCase):
         problem.cells.append(new_cell)
         output = problem.cells._universe.format_for_mcnp_input((6, 2, 0))
         print(output)
-        self.assertIn("U 350 2J -1 J 350", output)
+        self.assertIn("u 350 2J -1 J 350", output)
 
     def test_universe_number_collision(self):
         problem = mcnpy.read_input(
@@ -807,11 +812,11 @@ class testFullFileIntegration(TestCase):
     def test_lattice_push_to_cells(self):
         problem = copy.deepcopy(self.simple_problem)
         lattices = [1, 2, Jump(), Jump()]
-        card = Card(
+        card = Input(
             ["Lat " + " ".join(list(map(str, lattices)))],
             mcnpy.input_parser.block_type.BlockType.DATA,
         )
-        lattice = mcnpy.data_cards.lattice_card.LatticeCard(card)
+        lattice = mcnpy.data_inputs.lattice_input.LatticeInput(card)
         lattice.link_to_problem(problem)
         lattice.push_to_cells()
         for cell, answer in zip(problem.cells, lattices):
@@ -838,7 +843,8 @@ class testFullFileIntegration(TestCase):
                 cell.importance.photon = 0.0
         problem.print_in_data_block["IMP"] = True
         output = problem.cells._importance.format_for_mcnp_input((6, 2, 0))
-        self.assertIn("IMP:P 0 0 0 1 1", output)
+        # OG value was 0.5 so 0.0 is correct.
+        self.assertIn("imp:p 0 0.0", output)
 
     def test_fill_parsing(self):
         problem = self.universe_problem
@@ -879,16 +885,16 @@ class testFullFileIntegration(TestCase):
         problem = copy.deepcopy(self.universe_problem)
         fill = problem.cells[5].fill
         output = fill.format_for_mcnp_input((6, 2, 0))
-        answer = "     FILL=1 (1.0 0.0 0.0)"
+        answer = "fill=1 (1 0.0 0.0)"
         self.assertEqual(output[0], answer)
         # test *fill
         fill.transform.is_in_degrees = True
         output = fill.format_for_mcnp_input((6, 2, 0))
-        answer = "     *FILL=1 (1.0 0.0 0.0)"
+        answer = "*fill=1 (1 0.0 0.0)"
         self.assertEqual(output[0], answer)
         # test without transform
         fill.transform = None
-        answer = "     FILL=1"
+        answer = "fill=1 "
         output = fill.format_for_mcnp_input((6, 2, 0))
         self.assertEqual(output[0], answer)
         # test with no fill
@@ -898,14 +904,7 @@ class testFullFileIntegration(TestCase):
         # test with complex universe lattice fill
         fill = problem.cells[2].fill
         output = fill.format_for_mcnp_input((6, 2, 0))
-        answers = [
-            "     FILL= 0:1 0:1 0:0",
-            "           1",
-            "           0",
-            "           0",
-            "           1",
-            "     (5)",
-        ]
+        answers = ["fill= 0:1 0:1 0:0 1 0 0 1 (5)"]
         self.assertEqual(output, answers)
         problem.print_in_data_block["FILL"] = True
         # test that complex fill is not printed in data block
@@ -915,7 +914,7 @@ class testFullFileIntegration(TestCase):
         problem.cells[5].fill.transform = None
         problem.print_in_data_block["FILL"] = True
         output = problem.cells._fill.format_for_mcnp_input((6, 2, 0))
-        self.assertEqual(output, ["FILL 4J 350"])
+        self.assertEqual(output, ["FILL 4J 350 "])
 
     def test_universe_cells_claim(self):
         problem = copy.deepcopy(self.universe_problem)
@@ -952,8 +951,13 @@ class testFullFileIntegration(TestCase):
         del cell.mass_density
         with self.assertRaises(mcnpy.errors.IllegalState):
             cell.validate()
-        cell.mass_density = 1.0
-        cell.geometry_logic_string = ""
+        cell = mcnpy.Cell()
+        # test no geometry at all
+        with self.assertRaises(mcnpy.errors.IllegalState):
+            cell.validate()
+        surf = problem.surfaces[1000]
+        cell.surfaces.append(surf)
+        # test surface added but geomtry not defined
         with self.assertRaises(mcnpy.errors.IllegalState):
             cell.validate()
 

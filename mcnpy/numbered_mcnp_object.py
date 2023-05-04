@@ -1,8 +1,8 @@
 from abc import abstractmethod
-from mcnpy.mcnp_card import MCNP_Card
+from mcnpy.mcnp_object import MCNP_Object
 
 
-class Numbered_MCNP_Card(MCNP_Card):
+class Numbered_MCNP_Object(MCNP_Object):
     @property
     @abstractmethod
     def number(self):

@@ -12,8 +12,8 @@ class MalformedInputError(ValueError):
     Raised when there is an error parsing the MCNP input
     """
 
-    def __init__(self, card, message):
-        self.message = message + "\n the full input: \n " + str(card)
+    def __init__(self, input, message):
+        self.message = message + "\n the full input: \n " + repr(input)
         super().__init__(self.message)
 
 
@@ -50,6 +50,16 @@ class ParticleTypeNotInProblem(ValueError):
     """
     Raised when data are set for a particle type not in
     the problem's mode.
+    """
+
+    def __init__(self, message):
+        super().__init__(message)
+
+
+class ParticleTypeNotInCell(ValueError):
+    """
+    Raised when data for importance data for a particle in
+    the problem is not provided for a cell.
     """
 
     def __init__(self, message):

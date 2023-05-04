@@ -1,48 +1,47 @@
 from .surface_type import SurfaceType
 from .surface import Surface
 from mcnpy.errors import *
+from mcnpy.utilities import *
+
+
+def _enforce_positive_radius(self, value):
+    if value < 0.0:
+        raise ValueError(f"Radius must be positive. {value} given")
 
 
 class CylinderOnAxis(Surface):
     """
     Represents surfaces: CX, CY, CZ
 
-    :param input_card: The Card object representing the input
-    :type input_card: Card
+    :param input: The Input object representing the input
+    :type input: Input
     :param comments: The Comments that proceeded this card or were inside of this if any
     :type Comments: list
     """
 
-    def __init__(self, input_card=None, comments=None):
-        self._radius = None
-        super().__init__(input_card, comments)
+    def __init__(self, input=None, comments=None):
+        self._radius = self._generate_default_node(float, None)
+        super().__init__(input, comments)
         ST = SurfaceType
-        if input_card:
+        if input:
             if self.surface_type not in [ST.CX, ST.CY, ST.CZ]:
                 raise ValueError("CylinderOnAxis must be of surface_type: CX, CY, CZ")
             if len(self.surface_constants) != 1:
                 raise ValueError("CylinderOnAxis only accepts one surface_constant")
-            self._radius = self.surface_constants[0]
+            self._radius = self._surface_constants[0]
         else:
-            self._surface_constants = [None]
+            self._surface_constants = [self._radius]
 
-    @property
+    @make_prop_val_node(
+        "_radius", (float, int), float, validator=_enforce_positive_radius
+    )
     def radius(self):
         """
         The radius of the cylinder
 
         :rtype: float
         """
-        return self._radius
-
-    @radius.setter
-    def radius(self, radius):
-        if not isinstance(radius, float):
-            raise TypeError("radius must be a float")
-        if radius <= 0.0:
-            raise ValueError("radius must be larger than 0")
-        self._mutated = True
-        self._radius = radius
+        pass
 
     def validate(self):
         super().validate()

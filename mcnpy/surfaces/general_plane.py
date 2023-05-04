@@ -7,16 +7,15 @@ class GeneralPlane(Surface):
     """
     Represents P
 
-    :param input_card: The Card object representing the input
-    :type input_card: Card
+    :param input: The Input object representing the input
+    :type input: Input
     :param comments: The Comments that proceeded this card or were inside of this if any
     :type Comments: list
     """
 
-    def __init__(self, input_card=None, comments=None):
-
-        super().__init__(input_card, comments)
-        if input_card:
+    def __init__(self, input=None, comments=None):
+        super().__init__(input, comments)
+        if input:
             if self.surface_type != SurfaceType.P:
                 raise ValueError("A GeneralPlane must be a surface of type P")
             if len(self.surface_constants) not in {4, 9}:

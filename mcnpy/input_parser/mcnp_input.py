@@ -2,7 +2,9 @@ from abc import ABC, abstractmethod
 import math
 from mcnpy.errors import *
 from mcnpy.input_parser.block_type import BlockType
-from mcnpy.input_parser.constants import BLANK_SPACE_CONTINUE, get_max_line_length
+from mcnpy.constants import BLANK_SPACE_CONTINUE, get_max_line_length
+from mcnpy.input_parser.read_parser import ReadParser
+from mcnpy.input_parser.tokens import CellLexer, SurfaceLexer, DataLexer
 import re
 
 
@@ -61,9 +63,9 @@ class Jump:
         return "J"
 
 
-class MCNP_Input(ABC):
+class ParsingNode(ABC):
     """
-    Object to represent a single coherent MCNP input, such as a card.
+    Object to represent a single coherent MCNP input, such as an input.
 
     :param input_lines: the lines read straight from the input file.
     :type input_lines: list
@@ -87,6 +89,10 @@ class MCNP_Input(ABC):
         return self._input_lines
 
     @property
+    def input_text(self):
+        return "\n".join(self.input_lines)
+
+    @property
     def mutated(self):
         """If true this input has been mutated by the user, and needs to be formatted
 
@@ -97,20 +103,20 @@ class MCNP_Input(ABC):
     @abstractmethod
     def format_for_mcnp_input(self, mcnp_version):
         """
-        Creates a string representation of this card that can be
+        Creates a string representation of this input that can be
         written to file.
 
         :param mcnp_version: The tuple for the MCNP version that must be exported to.
         :type mcnp_version: tuple
-        :return: a list of strings for the lines that this card will occupy.
+        :return: a list of strings for the lines that this input will occupy.
         :rtype: list
         """
         pass
 
 
-class Card(MCNP_Input):
+class Input(ParsingNode):
     """
-    Represents a single MCNP "card" e.g. a single cell definition.
+    Represents a single MCNP "Input" e.g. a single cell definition.
 
     :param input_lines: the lines read straight from the input file.
     :type input_lines: list
@@ -128,35 +134,13 @@ class Card(MCNP_Input):
         super().__init__(input_lines)
         if not isinstance(block_type, BlockType):
             raise TypeError("block_type must be BlockType")
-        words = []
-        for line in input_lines:
-            line = line.split("$")[0]
-            words += line.replace(" &", "").split()
-        self._words = words
         self._block_type = block_type
-        found = False
-        for prefix in self.SPECIAL_COMMENT_PREFIXES:
-            if prefix in words[0].lower():
-                found = True
-        if not found:
-            self._words = parse_card_shortcuts(words, self)
 
     def __str__(self):
-        return f"CARD: {self._block_type}"
+        return f"INPUT: {self._block_type}"
 
     def __repr__(self):
-        return f"CARD: {self._block_type}: {self._words}"
-
-    @property
-    def words(self):
-        """
-        A list of the string representation of the words for the card definition.
-
-        For example a material definition may contain: 'M10', '10001.70c', '0.1'
-
-        :rtype: list
-        """
-        return self._words
+        return f"INPUT: {self._block_type}: {self.input_lines}"
 
     @property
     def block_type(self):
@@ -170,8 +154,18 @@ class Card(MCNP_Input):
     def format_for_mcnp_input(self, mcnp_version):
         pass
 
+    def tokenize(self):
+        if self.block_type == BlockType.CELL:
+            lexer = CellLexer()
+        elif self.block_type == BlockType.SURFACE:
+            lexer = SurfaceLexer()
+        else:
+            lexer = DataLexer()
+        for token in lexer.tokenize(self.input_text):
+            yield token
 
-def parse_card_shortcuts(words, card=None):
+
+def parse_input_shortcuts(words, input=None):
     """
     Parses MCNP input shortcuts.
 
@@ -209,11 +203,10 @@ def parse_card_shortcuts(words, card=None):
                     ret += [last_val] * number
                 except (IndexError, AssertionError) as e:
                     raise MalformedInputError(
-                        card, "The repeat shortcut must come after a value"
+                        input, "The repeat shortcut must come after a value"
                     )
             elif letters == "i":
                 try:
-
                     begin = float(number_parser.search(ret[-1]).group(1))
                     for char in ["i", "m", "r", "i", "log"]:
                         if char in words[i + 1].lower():
@@ -230,7 +223,7 @@ def parse_card_shortcuts(words, card=None):
                         ret.append(f"{new_val:g}")
                 except (IndexError, TypeError, ValueError, AttributeError) as e:
                     raise MalformedInputError(
-                        card,
+                        input,
                         "The interpolate shortcut must come between two values",
                     )
             elif letters == "m":
@@ -238,7 +231,7 @@ def parse_card_shortcuts(words, card=None):
                     last_val = float(number_parser.search(ret[-1]).group(1))
                     if number is None:
                         raise MalformedInputError(
-                            card,
+                            input,
                             "The multiply shortcut must have a multiplying value",
                         )
                     new_val = number * last_val
@@ -246,7 +239,7 @@ def parse_card_shortcuts(words, card=None):
 
                 except (IndexError, TypeError, ValueError, AttributeError) as e:
                     raise MalformedInputError(
-                        card, "The multiply shortcut must come after a value"
+                        input, "The multiply shortcut must come after a value"
                     )
 
             elif letters == "j":
@@ -272,7 +265,7 @@ def parse_card_shortcuts(words, card=None):
 
                 except (IndexError, TypeError, ValueError, AttributeError) as e:
                     raise MalformedInputError(
-                        card,
+                        input,
                         "The log interpolation shortcut must come between two values",
                     )
             else:
@@ -282,9 +275,9 @@ def parse_card_shortcuts(words, card=None):
     return ret
 
 
-class ReadCard(Card):
+class ReadInput(Input):
     """
-    A card for the read card that reads another input file
+    A input for the read input that reads another input file
 
     :param input_lines: the lines read straight from the input file.
     :type input_lines: list
@@ -292,66 +285,32 @@ class ReadCard(Card):
     :type block_type: BlockType
     """
 
+    _parser = ReadParser()
+
     def __init__(self, input_lines, block_type):
         super().__init__(input_lines, block_type)
-        file_finder = re.compile(r"file=(?P<file>[\S]+)", re.I)
-        for word in self.words[1:]:
-            match = file_finder.match(word)
-            if match:
-                self._file_name = match.group("file")
+        parse_result = self._parser.parse(self.tokenize())
+        if not parse_result:
+            raise ValueError("Not a valid Read Input")
+        self._tree = parse_result
+        self._parameters = self._tree["parameters"]
 
     @property
     def file_name(self):
         """
-        The relative path to the filename specified in this read card.
+        The relative path to the filename specified in this read input.
 
         :rtype: str
         """
-        return self._file_name
+        return self._parameters["file"]["data"].value
 
     def __str__(self):
-        return f"READ CARD: Block_Type: {self.block_type}"
+        return f"READ INPUT: Block_Type: {self.block_type}"
 
     def __repr__(self):
-        return f"READ CARD: {self._block_type}: {self._words}"
-
-
-class Comment(MCNP_Input):
-    """
-    Object to represent a full line comment in an MCNP problem.
-
-    This represents only ``C`` style comments and not ``$`` style comments.
-
-    :param input_lines: the lines read straight from the input file.
-    :type input_lines: list
-    :param card_line: The line number in a parent input card where this Comment appeared
-    :type card_line: int
-    """
-
-    def __init__(self, input_lines, card_line=0):
-        super().__init__(input_lines)
-        buff = []
-        for line in input_lines:
-            fragments = re.split(
-                rf"^\s{{0,{BLANK_SPACE_CONTINUE-1}}}C\s", line, flags=re.I
-            )
-            if len(fragments) > 1:
-                comment_line = fragments[1].rstrip()
-            else:
-                comment_line = ""
-            buff.append(comment_line)
-        self._lines = buff
-        self._cutting = False
-        self._card_line = card_line
-
-    def __str__(self):
-        return f"COMMENT: {len(self._lines)} lines"
-
-    def __repr__(self):
-        ret = "COMMENT:\n"
-        for line in self._lines:
-            ret += line + "\n"
-        return ret
+        return (
+            f"READ INPUT: {self._block_type}: {self.input_lines} File: {self.file_name}"
+        )
 
     @property
     def lines(self):
@@ -375,20 +334,20 @@ class Comment(MCNP_Input):
     @property
     def is_cutting_comment(self):
         """
-        Whether or not this Comment "cuts" an input card.
+        Whether or not this Comment "cuts" an input input.
 
         :rtype: bool
         """
         return self._cutting
 
     @property
-    def card_line(self):
+    def input_line_num(self):
         """
-        Which line of the parent card this comment came from.
+        Which line of the parent input this comment came from.
 
         :rtype: int
         """
-        return self._card_line
+        return self._input_line_num
 
     def snip(self):
         """
@@ -397,7 +356,7 @@ class Comment(MCNP_Input):
         self._cutting = True
 
 
-class Message(MCNP_Input):
+class Message(ParsingNode):
     """
     Object to represent an MCNP message.
 
@@ -453,7 +412,7 @@ class Message(MCNP_Input):
         return ret
 
 
-class Title(MCNP_Input):
+class Title(ParsingNode):
     """
     Object to represent the title for an MCNP problem
 

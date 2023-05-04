@@ -1,19 +1,22 @@
-from mcnpy.data_cards.cell_modifier import CellModifierCard
-from mcnpy.data_cards.transform import Transform
+import itertools as it
+from mcnpy.data_inputs.cell_modifier import CellModifierInput
+from mcnpy.data_inputs.transform import Transform
 from mcnpy.errors import *
 from mcnpy.input_parser.block_type import BlockType
-from mcnpy.input_parser.mcnp_input import Card, Jump
-from mcnpy.mcnp_card import MCNP_Card
+from mcnpy.input_parser.mcnp_input import Input, Jump
+from mcnpy.input_parser import syntax_node
+from mcnpy.mcnp_object import MCNP_Object
 from mcnpy.universe import Universe
+from mcnpy.utilities import *
 import numpy as np
 
 
-class Fill(CellModifierCard):
+class Fill(CellModifierInput):
     """
     Object to handle the ``FILL`` card in cell and data blocks.
 
-    :param input_card: the Card object representing this data card
-    :type input_card: Card
+    :param input: the Input object representing this data card
+    :type input: Input
     :param comments: The list of Comments that may proceed this or be entwined with it.
     :type comments: list
     :param in_cell_block: if this card came from the cell block of an input file.
@@ -30,22 +33,9 @@ class Fill(CellModifierCard):
     """
 
     def __init__(
-        self, input_card=None, comments=None, in_cell_block=False, key=None, value=None
+        self, input=None, comments=None, in_cell_block=False, key=None, value=None
     ):
-        """
-        :param input_card: the Card object representing this data card
-        :type input_card: Card
-        :param comments: The list of Comments that may proceed this or be entwined with it.
-        :type comments: list
-        :param in_cell_block: if this card came from the cell block of an input file.
-        :type in_cell_block: bool
-        :param key: the key from the key-value pair in a cell
-        :type key: str
-        :param value: the value from the key-value pair in a cell
-        :type value: str
-        """
-
-        self._old_number = None
+        self._old_number = self._generate_default_node(int, None)
         self._old_numbers = None
         self._universe = None
         self._universes = None
@@ -53,30 +43,42 @@ class Fill(CellModifierCard):
         self._hidden_transform = None
         self._old_transform_number = None
         self._multi_universe = False
-        super().__init__(input_card, comments, in_cell_block, key, value)
+        super().__init__(input, comments, in_cell_block, key, value)
         if self.in_cell_block:
             if key:
                 self._parse_cell_input(key, value)
-        elif input_card:
-            self._old_number = []
-            words = self.words[1:]
-            for word in words:
-                if isinstance(word, str):
-                    try:
-                        value = int(word)
-                        assert value >= 0
-                        self._old_number.append(value)
-                    except (ValueError, AssertionError) as e:
-                        raise MalformedInputError(
-                            input_card,
-                            f"Cell fill must be set to a valid universe, {word} was given",
-                        )
-                elif isinstance(word, Jump):
-                    self._old_number.append(word)
-                else:
-                    raise TypeError(
-                        f"Word: {word} cannot be parsed as a lattice as a str, or Jump"
+        elif input:
+            self._old_numbers = []
+            values = self.data
+            for value in values:
+                try:
+                    value._convert_to_int()
+                    if value.value is not None:
+                        assert value.value >= 0
+                        self._old_numbers.append(value)
+                    else:
+                        self._old_numbers.append(value)
+                except (ValueError, AssertionError) as e:
+                    raise MalformedInputError(
+                        input,
+                        f"Cell fill must be set to a valid universe, {value} was given",
                     )
+
+    def _generate_default_cell_tree(self):
+        list_node = syntax_node.ListNode("number sequence")
+        list_node.append(self._generate_default_node(float, None))
+        classifier = syntax_node.ClassifierNode()
+        classifier.prefix = self._generate_default_node(
+            str, self._class_prefix().upper(), None
+        )
+        self._tree = syntax_node.SyntaxNode(
+            "fill",
+            {
+                "classifier": classifier,
+                "param_seperator": self._generate_default_node(str, "=", None),
+                "data": list_node,
+            },
+        )
 
     def _parse_cell_input(self, key, value):
         """
@@ -89,44 +91,53 @@ class Fill(CellModifierCard):
         """
 
         def get_universe(value):
-            if ":" in value:
+            if ":" in value["data"].nodes:
                 self._parse_matrix(value)
             else:
-                words = value.split()
+                data = value["data"]
                 try:
-                    val = int(words[0])
-                    assert val > 0
+                    val = data[0]
+                    val._convert_to_int()
+                    assert val.value >= 0
                     self._old_number = val
-                except (ValueError, AssertionError) as e:
+                except (TypeError, AssertionError) as e:
                     raise ValueError(
-                        f"The fill universe must be a valid integer, {words[0]} was given"
+                        f"The fill universe must be a valid integer ≥ 0, {data} was given"
                     )
                 # ensure only one universe is given
-                if len(words) >= 2 and "(" not in words[1]:
+                if (
+                    len(data) >= 2
+                    and isinstance(data[1], syntax_node.ValueNode)
+                    and "(" != data[1].value
+                ):
                     raise ValueError(
-                        f"Fill cannot have two universes in this format. {value} given"
+                        f"Fill cannot have two universes in this format. {data.format()} given"
                     )
 
-        if "(" in value:
+        data = value["data"]
+        if "(" in data.nodes:
             get_universe(value)
-            parens_contents = value[value.index("(") + 1 : value.rindex(")")]
-            words = parens_contents.split()
-            if len(words) == 1:
+            trans_data = value["data"][
+                list(value["data"]).index("(") + 1 : list(value["data"]).index(")") - 1
+            ]
+            if len(trans_data) == 1:
                 try:
-                    transform = int(words[0])
-                    assert transform > 0
+                    transform = trans_data[0]
+                    transform._convert_to_int()
+                    assert transform.value > 0
                     self._hidden_transform = False
                     self._old_transform_number = transform
-                except (ValueError, AssertionError) as e:
+                except AssertionError as e:
                     raise ValueError(
                         "Transform number must be a positive integer. {words[0]} was given."
                     )
-            elif len(words) > 1:
-                if "*" in key:
+            elif len(trans_data) > 1:
+                modifier = value["classifier"].modifier
+                if modifier and "*" in modifier.value:
                     in_key = "*TR1"
                 else:
                     in_key = "TR1"
-                input_card = Card([in_key + " " + parens_contents], BlockType.DATA)
+                input_card = Input([in_key + " " + trans_data.format()], BlockType.DATA)
                 self._transform = Transform(input_card, pass_through=True)
                 self._hidden_transform = True
 
@@ -141,49 +152,58 @@ class Fill(CellModifierCard):
         :type value: str
         """
         self._multi_universe = True
-        words = iter(value.split())
+        words = value["data"]
         self._min_index = np.zeros((3,), dtype=np.dtype(int))
         self._max_index = np.zeros((3,), dtype=np.dtype(int))
-        for axis, limits in zip(Fill.DIMENSIONS.values(), words):
-            values = limits.split(":")
-            for val, limit_holder in zip(values, (self._min_index, self._max_index)):
+        limits_iter = (
+            it.islice(words, 0, None, 3),
+            it.islice(words, 1, None, 3),
+            it.islice(words, 2, None, 3),
+        )
+        for axis, min_val, seperator, max_val in zip(
+            Fill.DIMENSIONS.values(), *limits_iter
+        ):
+            for val, limit_holder in zip(
+                (min_val, max_val), (self._min_index, self._max_index)
+            ):
                 try:
-                    val = int(val)
-                    limit_holder[axis] = val
-                except (ValueError) as e:
+                    val._convert_to_int()
+                    limit_holder[axis] = val.value
+                except ValueError as e:
                     raise ValueError(
-                        f"The lattice limits must be an integer. {val} was given"
+                        f"The lattice limits must be an integer. {val.value} was given"
                     )
         for min_val, max_val in zip(self.min_index, self.max_index):
             if min_val > max_val:
                 raise ValueError(
                     "The minimum value must be smaller than the max value."
-                    f"Min: {min_val}, Max: {max_val}, Input: {value}"
+                    f"Min: {min_val}, Max: {max_val}, Input: {value.format()}"
                 )
         self._old_numbers = np.zeros(self._sizes, dtype=np.dtype(int))
+        words = iter(words[9:])
         for i in self._axis_range(0):
             for j in self._axis_range(1):
                 for k in self._axis_range(2):
                     val = next(words)
                     try:
-                        val = int(val)
-                        assert val >= 0
-                        self._old_numbers[i][j][k] = val
+                        val._convert_to_int()
+                        assert val.value >= 0
+                        self._old_numbers[i][j][k] = val.value
                     except (ValueError, AssertionError) as e:
                         raise ValueError(
-                            f"Values provided must be valid universes. {val} given."
+                            f"Values provided must be valid universes. {val.value} given."
                         )
 
-    @property
-    def class_prefix(self):
+    @staticmethod
+    def _class_prefix():
         return "fill"
 
-    @property
-    def has_number(self):
+    @staticmethod
+    def _has_number():
         return False
 
-    @property
-    def has_classifier(self):
+    @staticmethod
+    def _has_classifier():
         return 0
 
     @property
@@ -285,7 +305,7 @@ class Fill(CellModifierCard):
         self._multi_universe = value
         self._mutated = True
 
-    @property
+    @make_prop_val_node("_old_number")
     def old_universe_number(self):
         """
         The number of the universe that this is filled by taken from the input.
@@ -293,7 +313,7 @@ class Fill(CellModifierCard):
         :returns: the old universe number
         :type: int
         """
-        return self._old_number
+        pass
 
     @property
     def old_universe_numbers(self):
@@ -303,6 +323,11 @@ class Fill(CellModifierCard):
         :returns: the old universe numbers
         :type: :class:`numpy.ndarray`
         """
+        if isinstance(self._old_numbers, list):
+            return [
+                num.value if isinstance(num, syntax_node.ValueNode) else num
+                for num in self._old_numbers
+            ]
         return self._old_numbers
 
     @property
@@ -321,7 +346,18 @@ class Fill(CellModifierCard):
     @property
     def has_information(self):
         if self.in_cell_block:
-            return self.universe is not None
+            return self.universe is not None or self.universes is not None
+
+    @property
+    def _tree_value(self):
+        if self.transform or self.multiple_universes:
+            raise ValueError(
+                f"Fill can not be in the data block if"
+                " fill transforms and other complex inputs are used."
+            )
+        val = self._old_number
+        val.value = self.universe.number if self.universe else None
+        return val
 
     @property
     def transform(self):
@@ -349,7 +385,7 @@ class Fill(CellModifierCard):
         self._mutated = True
         self._transform = None
 
-    @property
+    @make_prop_val_node("_old_transform_number")
     def old_transform_number(self):
         """
         The number of the transform specified in the input.
@@ -357,7 +393,7 @@ class Fill(CellModifierCard):
         :returns: the original number for the transform from the input.
         :rtype: int
         """
-        return self._old_transform_number
+        pass
 
     def merge(self, other):
         raise MalformedInputError(
@@ -388,11 +424,9 @@ class Fill(CellModifierCard):
                 else:
                     self._universe = get_universe(self.old_universe_number)
         else:
-            if not self.set_in_cell_block and self.old_universe_number:
+            if not self.set_in_cell_block and self.old_universe_numbers:
                 self._starting_num_cells = len(self._problem.cells)
-                for cell, old_number in zip(
-                    self._problem.cells, self.old_universe_number
-                ):
+                for cell, old_number in zip(self._problem.cells, self._old_numbers):
                     if not isinstance(old_number, Jump):
                         cell._fill._old_number = old_number
             for cell in self._problem.cells:
@@ -487,71 +521,16 @@ class Fill(CellModifierCard):
             f"Min/Max: {str(self.min_index) + ' ' +str(self.max_index) if self._multi_universe == True  else 'None'}"
         )
 
-    def format_for_mcnp_input(self, mcnp_version):
-        ret = []
-        if self.in_cell_block:
-            key = "FILL"
-            in_deg = False
-            transform_lines = [""]
-            if self.universe is not None or self.universes is not None:
-                if self.transform:
-                    in_deg, transform_lines = self._prepare_transform_string(
-                        mcnp_version
-                    )
-                if in_deg:
-                    key = "*" + key
-                lines_iter = iter(transform_lines)
-                if not self.multiple_universes:
-                    value = f"{self.universe.number} {next(lines_iter)}"
-                else:
-                    complex_lines = self._generate_complex_fill_string(mcnp_version)
-                    value = complex_lines[0]
-
-                ret.extend(
-                    self.wrap_string_for_mcnp(f"{key}={value}", mcnp_version, False)
-                )
-                if self.multiple_universes:
-                    for line in complex_lines[1:]:
-                        ret.extend(self.wrap_string_for_mcnp(line, mcnp_version, False))
-                for line in lines_iter:
-                    ret.extend(self.wrap_string_for_mcnp(line, mcnp_version, False))
+    def _update_cell_values(self):
+        if self.transform and self.transform.is_in_degrees:
+            self._tree["classifier"].modifier = "*"
         else:
-            mutated = self.has_changed_print_style
-            if self._starting_num_cells != len(self._problem.cells):
-                mutated = True
-            for cell in self._problem.cells:
-                if cell.fill.mutated:
-                    mutated = True
-                    break
-            if mutated and self._problem.print_in_data_block["FILL"]:
-                has_info = False
-                for cell in self._problem.cells:
-                    if cell.fill.has_information:
-                        has_info = True
-                        break
-                if has_info:
-                    ret = MCNP_Card.format_for_mcnp_input(self, mcnp_version)
-                    words = ["FILL"]
-                    universes = []
-                    for cell in self._problem.cells:
-                        fill = cell.fill
-                        if fill.transform or fill.multiple_universes:
-                            raise ValueError(
-                                f"Fill can not be in the data block if"
-                                " fill transforms and other complex inputs are used."
-                                f" Cell {cell.number} used these"
-                            )
-                        if fill.universe:
-                            universes.append(fill.universe.number)
-                        else:
-                            universes.append(Jump())
-                    words.extend(
-                        self.compress_jump_values(
-                            self.compress_repeat_values(universes, 1e-1)
-                        )
-                    )
-                    ret += self.wrap_words_for_mcnp(words, mcnp_version, True)
-            # if not mutated
-            elif self._problem.print_in_data_block["FILL"]:
-                ret = self._format_for_mcnp_unmutated(mcnp_version)
-        return ret
+            self._tree["classifier"].modifier = None
+        if self.transform is None:
+            try:
+                values = [val.value for val in self._tree["data"]]
+                start = values.index("(")
+                end = values.index(")")
+                del self._tree["data"].nodes[start : end + 1]
+            except ValueError:
+                pass

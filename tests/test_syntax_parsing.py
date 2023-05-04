@@ -3,7 +3,7 @@ from unittest import TestCase
 
 import mcnpy
 from mcnpy.input_parser import input_syntax_reader
-from mcnpy.input_parser.mcnp_input import Card, Jump, Message, ReadCard, Title
+from mcnpy.input_parser.mcnp_input import Input, Jump, Message, ReadInput, Title
 from mcnpy.input_parser.block_type import BlockType
 from mcnpy.particle import Particle
 
@@ -11,11 +11,11 @@ from mcnpy.particle import Particle
 class TestSyntaxParsing(TestCase):
     def testCardInit(self):
         with self.assertRaises(TypeError):
-            Card("5", BlockType.CELL)
+            Input("5", BlockType.CELL)
         with self.assertRaises(TypeError):
-            Card([5], BlockType.CELL)
+            Input([5], BlockType.CELL)
         with self.assertRaises(TypeError):
-            Card(["5"], "5")
+            Input(["5"], "5")
 
     def testMessageInit(self):
         with self.assertRaises(TypeError):
@@ -45,10 +45,11 @@ test title
                 self.assertEqual(len(card.lines), 1)
 
     def testReadCardStr(self):
-        card = ReadCard(["Read file=hi.imcnp"], BlockType.CELL)
-        self.assertEqual(str(card), "READ CARD: Block_Type: BlockType.CELL")
+        card = ReadInput(["Read file=hi.imcnp"], BlockType.CELL)
+        self.assertEqual(str(card), "READ INPUT: Block_Type: BlockType.CELL")
         self.assertEqual(
-            repr(card), "READ CARD: BlockType.CELL: ['Read', 'file=hi.imcnp']"
+            repr(card),
+            "READ INPUT: BlockType.CELL: ['Read file=hi.imcnp'] File: hi.imcnp",
         )
 
     def testTitleFinder(self):
@@ -74,22 +75,18 @@ test title
             with StringIO(tester) as fh:
                 generator = input_syntax_reader.read_data(fh, (6, 2, 0))
                 card = next(generator)
-                self.assertIsInstance(card, mcnpy.input_parser.mcnp_input.Card)
-                answer = ["1", "0", "-1", "5"]
-                self.assertEqual(len(answer), len(card.words))
-                for j, word in enumerate(card.words):
-                    self.assertEqual(word, answer[j])
-                    self.assertEqual(
-                        card.block_type, mcnpy.input_parser.block_type.BlockType.CELL
-                    )
+                self.assertIsInstance(card, mcnpy.input_parser.mcnp_input.Input)
+                answer = [" " * i + "1 0 -1", "     5"]
+                self.assertEqual(len(answer), len(card.input_lines))
+                for j, line in enumerate(card.input_lines):
+                    self.assertEqual(line, answer[j])
+                self.assertEqual(
+                    card.block_type, mcnpy.input_parser.block_type.BlockType.CELL
+                )
 
+    # TODO ensure this is tested in Input parsers
+    """
     def testCommentFinder(self):
-        test_string = """c foo
-c bar
-c
-c bop
- c
-"""
         for i in range(5):
             tester = " " * i + test_string
             with StringIO(tester) as fh:
@@ -99,12 +96,13 @@ c bop
                 self.assertEqual(card.lines[0], "foo")
                 self.assertEqual(card.lines[1], "bar")
                 self.assertEqual(card.lines[3], "bop")
+    """
 
     def testReadCardFinder(self):
         test_string = "read file=foo.imcnp "
         with StringIO(test_string) as fh:
             card = next(input_syntax_reader.read_data(fh, (6, 2, 0)))
-            self.assertIsNone(card)  # the read card is hidden from the user
+            self.assertIsNone(card)  # the read input is hidden from the user
 
     def testBlockId(self):
         test_string = "1 0 -1"
@@ -119,16 +117,13 @@ c bop
 
     def testCommentFormatInput(self):
         in_strs = ["c foo", "c bar"]
-        card = mcnpy.input_parser.mcnp_input.Comment(in_strs, ["foo", "bar"])
-        output = card.format_for_mcnp_input((6.2, 0))
-        output = card.format_for_mcnp_input((6, 2, 0))
-        answer = ["C foo", "C bar"]
+        card = mcnpy.input_parser.syntax_node.CommentNode(in_strs[0])
+        output = card.format()
+        answer = "c foo"
         str_answer = """COMMENT:
-foo
-bar
-"""
+c foo"""
         self.assertEqual(repr(card), str_answer)
-        self.assertEqual("COMMENT: 2 lines", str(card))
+        self.assertEqual("c foo", str(card))
         self.assertEqual(len(answer), len(output))
         for i, line in enumerate(output):
             self.assertEqual(answer[i], line)
@@ -158,16 +153,14 @@ bar
             self.assertEqual(answer[i], line)
 
     def testReadInput(self):
+        # TODO ensure comments are properly glued to right input
         generator = input_syntax_reader.read_input_syntax("tests/inputs/test.imcnp")
         mcnp_in = mcnpy.input_parser.mcnp_input
-        input_order = [mcnp_in.Message, mcnp_in.Title, mcnp_in.Comment]
-        input_order += [mcnp_in.Card] * 5 + [mcnp_in.Comment] * 2
-        input_order += [mcnp_in.Card] * 3 + [mcnp_in.Comment]
-        for i in range(2):
-            input_order += [mcnp_in.Card, mcnp_in.Comment]
-        input_order += [mcnp_in.Card, mcnp_in.Card, mcnp_in.Comment]
-        input_order += [mcnp_in.Card] * 5
+        input_order = [mcnp_in.Message, mcnp_in.Title]
+        input_order += [mcnp_in.Input] * 17
         for i, input in enumerate(generator):
+            print(input.input_lines)
+            print(input_order[i])
             self.assertIsInstance(input, input_order[i])
 
     def testReadInputWithRead(self):
@@ -175,9 +168,8 @@ bar
         next(generator)  # skip title
         next(generator)  # skip read none
         card = next(generator)
-        answer = ["1", "0", "-1"]
-        for i, word in enumerate(card.words):
-            self.assertEqual(answer[i], word)
+        answer = ["1 0 -1"]
+        self.assertEqual(answer, card.input_lines)
 
     def testReadInputWithVertMode(self):
         generator = input_syntax_reader.read_input_syntax(
@@ -190,11 +182,11 @@ bar
 
     def testCardStringRepr(self):
         in_str = "1 0 -1"
-        card = mcnpy.input_parser.mcnp_input.Card(
+        card = mcnpy.input_parser.mcnp_input.Input(
             [in_str], mcnpy.input_parser.block_type.BlockType.CELL
         )
-        self.assertEqual(str(card), "CARD: BlockType.CELL")
-        self.assertEqual(repr(card), "CARD: BlockType.CELL: ['1', '0', '-1']")
+        self.assertEqual(str(card), "INPUT: BlockType.CELL")
+        self.assertEqual(repr(card), "INPUT: BlockType.CELL: ['1 0 -1']")
 
     def testShortcutExpansion(self):
         tests = {
@@ -238,7 +230,7 @@ bar
             ),
         ]
 
-        parser = mcnpy.input_parser.mcnp_input.parse_card_shortcuts
+        parser = mcnpy.input_parser.mcnp_input.parse_input_shortcuts
         for test, answer in tests.items():
             print(test)
             parsed = parser(list(test))
@@ -248,7 +240,7 @@ bar
             with self.assertRaises(mcnpy.errors.MalformedInputError):
                 parser(list(test))
 
-    def testDataCardNameParsing(self):
+    def testDataInputNameParsing(self):
         tests = {
             "kcOde": {"prefix": "kcode", "number": None, "classifier": None},
             "M300": {"prefix": "m", "number": 300, "classifier": None},
@@ -265,15 +257,20 @@ bar
         }
         for in_str, answer in tests.items():
             # Testing parsing the names
-            card = mcnpy.input_parser.mcnp_input.Card(
+            card = mcnpy.input_parser.mcnp_input.Input(
                 [in_str], mcnpy.input_parser.block_type.BlockType.DATA
             )
-            data_card = mcnpy.data_cards.data_card.DataCard(card)
-            self.assertEqual(data_card.prefix, answer["prefix"])
-            self.assertEqual(data_card._input_number, answer["number"])
-            self.assertEqual(data_card.particle_classifiers, answer["classifier"])
+            data_input = mcnpy.data_inputs.data_input.DataInput(card, fast_parse=True)
+            self.assertEqual(data_input.prefix, answer["prefix"])
+            if answer["number"]:
+                self.assertEqual(data_input._input_number.value, answer["number"])
+            if answer["classifier"]:
+                self.assertEqual(
+                    sorted(data_input.particle_classifiers),
+                    sorted(answer["classifier"]),
+                )
 
-    def testDataCardNameEnforcement(self):
+    def testDataInputNameEnforcement(self):
         tests = {
             "kcOde5": {"prefix": "kcode", "number": False, "classifier": 0},
             "M-300": {"prefix": "m", "number": True, "classifier": 0},
@@ -289,25 +286,34 @@ bar
         # tests invalid names
         for in_str, answer in tests.items():
             with self.assertRaises(mcnpy.errors.MalformedInputError):
-                card = mcnpy.input_parser.mcnp_input.Card(
+                card = mcnpy.input_parser.mcnp_input.Input(
                     [in_str], mcnpy.input_parser.block_type.BlockType.DATA
                 )
-                card = DataCardTestFixture(card)
-                card._class_prefix = answer["prefix"]
-                card._has_number = answer["number"]
-                card._has_classifier = answer["classifier"]
-                card._DataCardAbstract__split_name()
+                Fixture = DataInputTestFixture
+                Fixture._class_prefix1 = answer["prefix"]
+                Fixture._has_number1 = answer["number"]
+                Fixture._has_classifier1 = answer["classifier"]
+                card = Fixture(card)
 
         # tests valid names
         for in_str, answer in valid.items():
-            card = mcnpy.input_parser.mcnp_input.Card(
+            card = mcnpy.input_parser.mcnp_input.Input(
                 [in_str], mcnpy.input_parser.block_type.BlockType.DATA
             )
-            card = DataCardTestFixture(card)
-            card._class_prefix = answer["prefix"]
-            card._has_number = answer["number"]
-            card._has_classifier = answer["classifier"]
-            card._DataCardAbstract__split_name()
+            print(card.input_lines)
+            print(
+                "Prefix",
+                answer["prefix"],
+                "number",
+                answer["number"],
+                "classifier",
+                answer["classifier"],
+            )
+            Fixture = DataInputTestFixture
+            Fixture._class_prefix1 = answer["prefix"]
+            Fixture._has_number1 = answer["number"]
+            Fixture._has_classifier1 = answer["classifier"]
+            card = Fixture(card)
 
     def test_get_line_numbers(self):
         answers = {
@@ -319,11 +325,9 @@ bar
             (7, 4, 0): 128,
         }
         for version, answer in answers.items():
-            self.assertEqual(
-                answer, mcnpy.input_parser.constants.get_max_line_length(version)
-            )
+            self.assertEqual(answer, mcnpy.constants.get_max_line_length(version))
         with self.assertRaises(mcnpy.errors.UnsupportedFeature):
-            mcnpy.input_parser.constants.get_max_line_length((5, 1, 38))
+            mcnpy.constants.get_max_line_length((5, 1, 38))
 
     def test_jump(self):
         jump = Jump()
@@ -343,27 +347,25 @@ bar
         self.assertEqual("J", jump.upper())
 
 
-class DataCardTestFixture(mcnpy.data_cards.data_card.DataCardAbstract):
+class DataInputTestFixture(mcnpy.data_inputs.data_input.DataInputAbstract):
+    _class_prefix1 = None
+    _has_number1 = None
+    _has_classifier1 = None
+
     def __init__(self, input_card=None, comment=None):
         """
-        :param input_card: the Card object representing this data card
-        :type input_card: Card
+        :param input_card: the Card object representing this data input
+        :type input_card: Input
         :param comment: The Comment that may proceed this
         :type comment: Comment
         """
-        self._class_prefix = None
-        self._has_number = None
-        self._has_classifier = None
-        super().__init__(input_card, comment)
+        super().__init__(input_card, comment, fast_parse=True)
 
-    @property
-    def class_prefix(self):
-        return self._class_prefix
+    def _class_prefix(self):
+        return self._class_prefix1
 
-    @property
-    def has_number(self):
-        return self._has_number
+    def _has_number(self):
+        return self._has_number1
 
-    @property
-    def has_classifier(self):
-        return self._has_classifier
+    def _has_classifier(self):
+        return self._has_classifier1

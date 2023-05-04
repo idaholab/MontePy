@@ -1,5 +1,6 @@
-from mcnpy.data_cards.element import Element
+from mcnpy.data_inputs.element import Element
 from mcnpy.errors import *
+from mcnpy.input_parser.syntax_node import ValueNode
 
 
 class Isotope:
@@ -16,7 +17,10 @@ class Isotope:
     Points on bounding curve for determining if "valid" isotope
     """
 
-    def __init__(self, ZAID):
+    def __init__(self, ZAID="", node=None):
+        if node is not None and isinstance(node, ValueNode):
+            self._tree = node
+            ZAID = node.value
         if "." in ZAID:
             parts = ZAID.split(".")
             try:

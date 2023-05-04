@@ -1,95 +1,91 @@
+import copy
 from mcnpy.errors import *
-from mcnpy.data_cards import transform
-from mcnpy.numbered_mcnp_card import Numbered_MCNP_Card
+from mcnpy.data_inputs import transform
+from mcnpy.input_parser import syntax_node
+from mcnpy.input_parser.surface_parser import SurfaceParser
+from mcnpy.numbered_mcnp_object import Numbered_MCNP_Object
+from mcnpy.surfaces import half_space
 from mcnpy.surfaces.surface_type import SurfaceType
 from mcnpy.utilities import *
 import re
 
 
-class Surface(Numbered_MCNP_Card):
+def _enforce_numbers(self, value):
+    if value <= 0:
+        raise ValueError(f"The number be greater than 0; {value} given.")
+
+
+class Surface(Numbered_MCNP_Object):
     """
     Object to hold a single MCNP surface
 
-    :param input_card: The Card object representing the input
-    :type input_card: Card
+    :param input: The Input object representing the input
+    :type input: Input
     :param comments: The Comments that proceeded this card or were inside of this if any
     :type Comments: list
     """
 
-    def __init__(self, input_card=None, comments=None):
-        self._periodic_surface = None
-        self._old_periodic_surface = None
-        self._transform = None
-        self._old_transform_number = None
-        self._surface_type = None
-        self._surface_number = -1
-        self._surface_constants = []
-        i = 0
-        super().__init__(input_card, comments)
-        # surface number
-        if input_card:
-            words = input_card.words
-            surface_num = words[i]
-            if "*" in surface_num:
-                self._is_reflecting = True
-                surface_num = surface_num.strip("*")
-            else:
-                self._is_reflecting = False
-            if "+" in surface_num:
-                self._is_white_boundary = True
-                surface_num = surface_num.strip("+")
-            else:
-                self._is_white_boundary = False
+    _parser = SurfaceParser()
 
+    def __init__(self, input=None, comments=None):
+        super().__init__(input, self._parser, comments)
+        self._periodic_surface = None
+        self._old_periodic_surface = self._generate_default_node(int, None)
+        self._transform = None
+        self._old_transform_number = self._generate_default_node(int, None)
+        self._is_reflecting = False
+        self._is_white_boundary = False
+        self._surface_constants = []
+        self._surface_type = self._generate_default_node(str, None)
+        self._number = self._generate_default_node(int, -1)
+        self._modifier = self._generate_default_node(str, None)
+        # surface number
+        if input:
+            self._number = self._tree["surface_num"]["number"]
+            self._number._convert_to_int()
+            self._old_number = copy.deepcopy(self._number)
+            if "modifier" in self._tree["surface_num"]:
+                self._modifier = self._tree["surface_num"]["modifier"]
+                if self._modifier.value == "*":
+                    self._is_reflecting = True
+                elif self._modifier.value == "+":
+                    self._is_white_boundary = True
+                elif "+" in self._number.token:
+                    self._is_white_boundary = True
+                    self._number._token = self._number.token.replace("+", "")
             try:
-                surface_num = int(surface_num)
-                assert surface_num > 0
-                self._surface_number = surface_num
-                self._old_surface_number = surface_num
-            except (AssertionError, ValueError):
+                assert self._number.value > 0
+            except AssertionError:
                 raise MalformedInputError(
-                    input_card, f"{words[i]} could not be parsed as a surface number."
+                    input,
+                    f"{self._number.value} could not be parsed as a valid surface number.",
                 )
-            i += 1
-            num_finder = re.compile(r"\d+")
-            # handle N if specified
-            if num_finder.search(words[i]):
-                try:
-                    num = int(words[i])
-                    if num > 0:
-                        self._old_transform_number = abs(num)
-                    elif num < 0:
-                        self._old_periodic_surface = abs(num)
-                    i += 1
-                except ValueError:
-                    raise MalformedInputError(
-                        input_card,
-                        f"{words[i]} could not be parsed as a periodic surface or a transform.",
-                    )
+            if self._tree["pointer"].value is not None:
+                val = self._tree["pointer"]
+                val.is_negatable_identifier = True
+                if val.is_negative:
+                    self._old_periodic_surface = val
+                else:
+                    self._old_transform_number = val
+            self._surface_type = self._tree["surface_type"]
             # parse surface mnemonic
             try:
-                self._surface_type = SurfaceType(words[i].upper())
+                # enforce enums
+                self._surface_type._convert_to_enum(SurfaceType, switch_to_upper=True)
             except ValueError:
                 raise MalformedInputError(
-                    input_card,
-                    f"{words[i]} could not be parsed as a surface type mnemonic.",
+                    input,
+                    f"{self._surface_type.value} could not be parsed as a surface type mnemonic.",
                 )
             # parse the parameters
-            self._surface_constants = []
-            for entry in words[i + 1 :]:
-                try:
-                    self._surface_constants.append(fortran_float(entry))
-                except ValueError:
-                    raise MalformedInputError(
-                        input_card,
-                        f"{entry} could not be parsed as a surface constant.",
-                    )
+            for entry in self._tree["data"]:
+                self._surface_constants.append(entry)
 
     @property
     def allowed_keywords(self):
         return set()
 
-    @property
+    @make_prop_val_node("_surface_type", (SurfaceType, str), SurfaceType)
     def surface_type(self):
         """
         The mnemonic for the type of surface.
@@ -98,7 +94,7 @@ class Surface(Numbered_MCNP_Card):
 
         :rtype: SurfaceType
         """
-        return self._surface_type
+        pass
 
     @property
     def is_reflecting(self):
@@ -113,7 +109,6 @@ class Surface(Numbered_MCNP_Card):
     def is_reflecting(self, reflect):
         if not isinstance(reflect, bool):
             raise TypeError("is_reflecting must be set to a bool")
-        self._mutated = True
         self._is_reflecting = reflect
 
     @property
@@ -129,7 +124,6 @@ class Surface(Numbered_MCNP_Card):
     def is_white_boundary(self, white):
         if not isinstance(white, bool):
             raise TypeError("is_white_boundary must be set to a bool")
-        self._mutated = True
         self._is_white_boundary = white
 
     @property
@@ -139,109 +133,78 @@ class Surface(Numbered_MCNP_Card):
 
         :rtype: list
         """
-        return self._surface_constants
+        ret = []
+        for val in self._surface_constants:
+            ret.append(val.value)
+        return ret
 
     @surface_constants.setter
     def surface_constants(self, constants):
         if not isinstance(constants, list):
             raise TypeError("surface_constants must be a list")
+        if len(constants) != len(self._surface_constants):
+            raise ValueError(f"Cannot change the length of the surface constants.")
         for constant in constants:
             if not isinstance(constant, float):
                 raise TypeError(
                     f"The surface constant provided: {constant} must be a float"
                 )
-        self._mutated = True
-        self._surface_constants = constants
+        for i, value in enumerate(constants):
+            self._surface_constants[i].value = value
 
-    @property
+    @make_prop_val_node("_old_transform_number")
     def old_transform_number(self):
         """
         The transformation number for this surface in the original file.
 
         :rtype: int
         """
-        return self._old_transform_number
+        pass
 
-    @property
+    @make_prop_val_node("_old_periodic_surface")
     def old_periodic_surface(self):
         """
         The surface number this is periodic with reference to in the original file.
 
         :rtype: int
         """
-        return self._old_periodic_surface
+        pass
 
-    @property
+    @make_prop_pointer("_periodic_surface", types=(), deletable=True)
     def periodic_surface(self):
         """
         The surface that this surface is periodic with respect to
 
         :rtype: Surface
         """
-        return self._periodic_surface
+        pass
 
-    @periodic_surface.setter
-    def periodic_surface(self, periodic):
-        if not isinstance(periodic, Surface):
-            raise TypeError("The periodic_surface must be a surface")
-        self._mutated = True
-        self._periodic_surface = periodic
-
-    @periodic_surface.deleter
-    def periodic_surface(self):
-        self._mutated = True
-        self._periodic_surface = None
-
-    @property
+    @make_prop_pointer("_transform", transform.Transform, deletable=True)
     def transform(self):
         """
         The Transform object that translates this surface
 
         :rtype: Transform
         """
-        return self._transform
+        pass
 
-    @transform.setter
-    def transform(self, tr):
-        if not isinstance(tr, transform.Transform):
-            raise TypeError("The transform for this surface must be a Transform")
-        self._mutated = True
-        self._transform = tr
-
-    @transform.deleter
-    def transform(self):
-        self._mutated = True
-        self._transform = None
-        self._old_transform_number = None
-
-    @property
+    @make_prop_val_node("_old_number")
     def old_number(self):
         """
         The surface number that was used in the read file
 
         :rtype: int
         """
-        return self._old_surface_number
+        pass
 
-    @property
+    @make_prop_val_node("_number", int, validator=_enforce_numbers)
     def number(self):
         """
         The surface number to use.
 
         :rtype: int
         """
-        return self._surface_number
-
-    @number.setter
-    def number(self, number):
-        if not isinstance(number, int):
-            raise TypeError("The number must be an int")
-        if number <= 0:
-            raise ValueError("The number be greater than 0")
-        if self._problem:
-            self._problem.surfaces.check_number(number)
-        self._mutated = True
-        self._surface_number = number
+        pass
 
     @property
     def cells(self):
@@ -266,7 +229,7 @@ class Surface(Numbered_MCNP_Card):
             f"constants: {self.surface_constants}"
         )
 
-    def update_pointers(self, surfaces, data_cards):
+    def update_pointers(self, surfaces, data_inputs):
         """
         Updates the internal pointers to the appropriate objects.
 
@@ -289,10 +252,10 @@ class Surface(Numbered_MCNP_Card):
                     self.old_periodic_surface,
                 )
         if self.old_transform_number:
-            for card in data_cards:
-                if isinstance(card, transform.Transform):
-                    if card.number == self.old_transform_number:
-                        self._transform = card
+            for input in data_inputs:
+                if isinstance(input, transform.Transform):
+                    if input.number == self.old_transform_number:
+                        self._transform = input
             if not self.transform:
                 raise BrokenObjectLinkError(
                     "Surface",
@@ -302,43 +265,25 @@ class Surface(Numbered_MCNP_Card):
                 )
 
     def validate(self):
-        if not self.surface_type:
+        if self.surface_type is None:
             raise IllegalState(
                 f"Surface: {self.number} does not have a surface type set."
             )
 
-    def format_for_mcnp_input(self, mcnp_version):
-        mutated = self.mutated
-        self.validate()
-        if not mutated:
-            for obj in [self.periodic_surface, self.transform]:
-                if obj and obj.mutated:
-                    mutated = True
-                    break
-        if mutated:
-            ret = super().format_for_mcnp_input(mcnp_version)
-            buffList = []
-            # surface number
-            if self.is_reflecting:
-                buffList.append(f"*{self.number}")
-            elif self.is_white_boundary:
-                buffList.append(f"+{self.number}")
-            else:
-                buffList.append(str(self.number))
-
-            if self.periodic_surface:
-                buffList.append(str(-self.periodic_surface.number))
-            elif self.transform:
-                buffList.append(str(self.transform.number))
-
-            buffList.append(self.surface_type.value)
-
-            for constant in self.surface_constants:
-                buffList.append(f"{constant:.6g}")
-            ret += Surface.wrap_words_for_mcnp(buffList, mcnp_version, True)
-        else:
-            ret = self._format_for_mcnp_unmutated(mcnp_version)
-        return ret
+    def _update_values(self):
+        modifier = self._tree["surface_num"]["modifier"]
+        if self.is_reflecting:
+            modifier.value = "*"
+        elif self.is_white_boundary:
+            modifier.value = "+"
+        if self.transform is not None:
+            self._old_transform_number.value = self.transform.number
+            self._old_transform_number.is_negative = False
+            self._tree.nodes["pointer"] = self._old_transform_number
+        elif self.periodic_surface is not None:
+            self._old_periodic_surface.value = self.periodic_surface.number
+            self._old_periodic_surface.is_negative = True
+            self._tree.nodes["pointer"] = self._old_periodic_surface
 
     def __lt__(self, other):
         return self.number < other.number
@@ -385,3 +330,13 @@ class Surface(Numbered_MCNP_Card):
         :rtype: list
         """
         return []
+
+    def __neg__(self):
+        return half_space.UnitHalfSpace(
+            self, False, False, self._generate_default_node(int, self.number, None)
+        )
+
+    def __pos__(self):
+        return half_space.UnitHalfSpace(
+            self, True, False, self._generate_default_node(int, self.number, None)
+        )

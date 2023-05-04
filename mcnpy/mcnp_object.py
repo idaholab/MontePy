@@ -1,42 +1,48 @@
 from abc import ABC, abstractmethod
+import itertools as it
 from mcnpy.errors import *
-from mcnpy.input_parser.constants import BLANK_SPACE_CONTINUE, get_max_line_length
-from mcnpy.input_parser.mcnp_input import Comment
+from mcnpy.constants import BLANK_SPACE_CONTINUE, get_max_line_length, rel_tol, abs_tol
+from mcnpy.input_parser.syntax_node import (
+    CommentNode,
+    PaddingNode,
+    ParametersNode,
+    ValueNode,
+)
 import mcnpy
 import numpy as np
 import textwrap
 
 
-class MCNP_Card(ABC):
+class MCNP_Object(ABC):
     """
-    Abstract class for semantic representations of MCNP input cards.
+    Abstract class for semantic representations of MCNP inputs.
 
-    :param input_card: The Card syntax object this will wrap and parse.
-    :type input_card: Card
-    :param comments: The Comments that proceeded this card or were inside of this if any
+    :param input: The Input syntax object this will wrap and parse.
+    :type input: Input
+    :param comments: The Comments that proceeded this input or were inside of this if any
     :type Comments: list
     """
 
-    def __init__(self, input_card, comments=None):
+    def __init__(self, input, parser, comments=None):
         self._problem = None
-        self._parameters = {}
-        if input_card:
-            if not isinstance(input_card, mcnpy.input_parser.mcnp_input.Card):
-                raise TypeError("input_card must be a Card")
-            if not isinstance(comments, (list, Comment, type(None))):
-                raise TypeError("comments must be either a Comment, a list, or None")
-            self._words = input_card.words
-            self._parse_key_value_pairs()
-            if isinstance(comments, list):
-                for comment in comments:
-                    if not isinstance(comment, Comment):
-                        raise TypeError(
-                            f"object {comment} in comments is not a Comment"
-                        )
-            elif isinstance(comments, Comment):
-                comments = [comments]
-            self._input_lines = input_card.input_lines
-            self._mutated = False
+        self._parameters = ParametersNode()
+        if input:
+            if not isinstance(input, mcnpy.input_parser.mcnp_input.Input):
+                raise TypeError("input must be an Input")
+            # TODO delete
+            self._input_lines = input.input_lines
+            try:
+                self._tree = parser.parse(input.tokenize())
+            except ValueError as e:
+                raise ValueError(
+                    f"Error parsing object of type: {type(self)}: {e.args[0]}"
+                )
+            if self._tree is None:
+                raise MalformedInputError(
+                    input, "There is a syntax error with the input."
+                )
+            if "parameters" in self._tree:
+                self._parameters = self._tree["parameters"]
         else:
             self._input_lines = []
             self._mutated = True
@@ -45,40 +51,15 @@ class MCNP_Card(ABC):
         else:
             self._comments = []
 
-    def _parse_key_value_pairs(self):
-        if self.allowed_keywords:
-            for i, word in enumerate(self.words):
-                if (
-                    any([char.isalpha() for char in word])
-                    and word.split("=")[0].split(":")[0].upper()
-                    in self.allowed_keywords
-                ):
-                    break
-            fragments = []
-            for word in self.words[i:]:
-                fragments.extend(word.split("="))
-            # cut out these words from further parsing
-            self._words = self.words[:i]
-            key = ""
-            value = []
-
-            def flush_pair(key, value):
-                if key.upper() in self._parameters:
-                    raise ValueError(f"Multiple values given for parameter {key}")
-                self._parameters[key.upper()] = " ".join(value)
-
-            for i, fragment in enumerate(fragments):
-                keyword = fragment.split(":")[0].upper()
-                if keyword in self.allowed_keywords:
-                    if i != 0 and key and value:
-                        flush_pair(key, value)
-                        value = []
-                    key = fragment
-                else:
-                    value.append(fragment)
-                if i == len(fragments) - 1:
-                    if key and value:
-                        flush_pair(key, value)
+    @staticmethod
+    def _generate_default_node(value_type, default, padding=" "):
+        if padding:
+            padding_node = PaddingNode(padding)
+        else:
+            padding_node = None
+        if default is None or isinstance(default, mcnpy.input_parser.mcnp_input.Jump):
+            return ValueNode(default, value_type, padding_node)
+        return ValueNode(str(default), value_type, padding_node)
 
     @property
     def parameters(self):
@@ -94,54 +75,27 @@ class MCNP_Card(ABC):
         return self._parameters
 
     @abstractmethod
+    def _update_values(self):
+        pass
+
     def format_for_mcnp_input(self, mcnp_version):
         """
-        Creates a string representation of this card that can be
+        Creates a string representation of this MCNP_Object that can be
         written to file.
 
         :param mcnp_version: The tuple for the MCNP version that must be exported to.
         :type mcnp_version: tuple
-        :return: a list of strings for the lines that this card will occupy.
+        :return: a list of strings for the lines that this input will occupy.
         :rtype: list
         """
-        ret = []
-        if self.comments:
-            if not self.mutated:
-                ret += self.comments[0].format_for_mcnp_input(mcnp_version)
-            else:
-                for comment in self.comments:
-                    ret += comment.format_for_mcnp_input(mcnp_version)
-        return ret
-
-    def _format_for_mcnp_unmutated(self, mcnp_version):
-        """
-        Creates a string representation of this card that can be
-        written to file when the card did not mutate.
-
-        TODO add to developer's guide.
-
-        :param mcnp_version: The tuple for the MCNP version that must be exported to.
-        :type mcnp_version: tuple
-        :return: a list of strings for the lines that this card will occupy.
-        :rtype: list
-        """
-        ret = []
-        comments_dict = {}
-        if self.comments:
-            for comment in self.comments:
-                if comment.is_cutting_comment:
-                    comments_dict[comment.card_line] = comment
-            ret += self.comments[0].format_for_mcnp_input(mcnp_version)
-        for i, line in enumerate(self.input_lines):
-            if i in comments_dict:
-                ret += comments_dict[i].format_for_mcnp_input(mcnp_version)
-            ret.append(line)
-        return ret
+        self.validate()
+        self._update_values()
+        return self.wrap_string_for_mcnp(self._tree.format(), mcnp_version, True)
 
     @property
     def comments(self):
         """
-        The comments associated with this card if any.
+        The comments associated with this input if any.
 
         This includes all ``C`` comments before this card that aren't part of another card,
         and any comments that are inside this card.
@@ -149,21 +103,34 @@ class MCNP_Card(ABC):
         :returns: a list of the comments associated with this comment.
         :rtype: list
         """
-        return self._comments
+        return list(self._tree.comments)
 
-    @comments.setter
-    def comments(self, comments):
-        if not isinstance(comments, list):
-            raise TypeError("comments must be a list")
-        for comment in comments:
-            if not isinstance(comment, Comment):
-                raise TypeError(f"Element {comment} in comments is not a Comment")
-        self._mutated = True
-        self._comments = comments
+    @property
+    def leading_comments(self):
+        """ """
+        return list(self._tree["start_pad"].comments)
 
-    @comments.deleter
-    def comments(self):
-        self._comment = []
+    @leading_comments.setter
+    def leading_comments(self, comments):
+        if not isinstance(comments, (list, tuple, CommentNode)):
+            raise TypeError(
+                f"Comments must be a CommentNode, or a list of Comments. {comments} given."
+            )
+        if isinstance(comments, CommentNode):
+            comments = [comments]
+        for i, comment in enumerate(comments):
+            if not isinstance(comment, CommentNode):
+                raise TypeError(
+                    f"Comment must be a CommentNode. {comment} given at index {i}."
+                )
+        new_nodes = list(*zip(comments, it.cycle(["\n"])))
+        if self._tree["start_pad"] is None:
+            self._tree["start_pad"] = syntax_node.PaddingNode(" ")
+        self._tree["start_pad"]._nodes = new_nodes
+
+    @leading_comments.deleter
+    def leading_comments(self, comments):
+        self._tree["start_pad"] = None
 
     @property
     def input_lines(self):
@@ -174,18 +141,10 @@ class MCNP_Card(ABC):
         return self._input_lines
 
     @property
-    def mutated(self):
-        """True if the user has changed a property of this card
-
-        :rtype: bool
-        """
-        return self._mutated
-
-    @property
     @abstractmethod
     def allowed_keywords(self):
         """
-        The allowed keywords for this class of MCNP_Card.
+        The allowed keywords for this class of MCNP_Object.
 
         The allowed keywords that would appear in the parameters block.
         For instance for cells the keywords ``IMP`` and ``VOL`` are allowed.
@@ -201,36 +160,37 @@ class MCNP_Card(ABC):
         """
         Wraps the list of the words to be a well formed MCNP input.
 
-        multi-line cards will be handled by using the indentation format,
+        multi-line inputs will be handled by using the indentation format,
         and not the "&" method.
 
-        :param words: A list of the "words" or data-grams that needed to added to this card.
+        :param words: A list of the "words" or data-grams that needed to added to this input.
                       Each word will be separated by at least one space.
         :type words: list
         :param mcnp_version: the tuple for the MCNP that must be formatted for.
         :type mcnp_version: tuple
-        :param is_first_line: If true this will be the beginning of an MCNP card.
+        :param is_first_line: If true this will be the beginning of an MCNP Input.
                              The first line will not be indented.
         :type is_first_line: bool
         :returns: A list of strings that can be written to an input file, one item to a line.
         :rtype: list
         """
         string = " ".join(words)
-        return MCNP_Card.wrap_string_for_mcnp(string, mcnp_version, is_first_line)
+        return MCNP_Object.wrap_string_for_mcnp(string, mcnp_version, is_first_line)
 
     @staticmethod
     def wrap_string_for_mcnp(string, mcnp_version, is_first_line):
         """
         Wraps the list of the words to be a well formed MCNP input.
 
-        multi-line cards will be handled by using the indentation format,
+        multi-line inputs will be handled by using the indentation format,
         and not the "&" method.
 
-        :param string: A long string that needs to be chunked appropriately for MCNP inputs
+        :param string: A long string with new lines in it,
+                    that needs to be chunked appropriately for MCNP inputs
         :type string: str
         :param mcnp_version: the tuple for the MCNP that must be formatted for.
         :type mcnp_version: tuple
-        :param is_first_line: If true this will be the beginning of an MCNP card.
+        :param is_first_line: If true this will be the beginning of an MCNP input.
                              The first line will not be indented.
         :type is_first_line: bool
         :returns: A list of strings that can be written to an input file, one item to a line.
@@ -238,6 +198,7 @@ class MCNP_Card(ABC):
         """
         line_length = get_max_line_length(mcnp_version)
         indent_length = BLANK_SPACE_CONTINUE
+        strings = string.splitlines()
         if is_first_line:
             initial_indent = 0
         else:
@@ -246,11 +207,16 @@ class MCNP_Card(ABC):
             width=line_length,
             initial_indent=" " * initial_indent,
             subsequent_indent=" " * indent_length,
+            drop_whitespace=False,
         )
-        return wrapper.wrap(string)
+        ret = []
+        for line in strings:
+            if line.strip():
+                ret += wrapper.wrap(line)
+        return ret
 
     @staticmethod
-    def compress_repeat_values(values, threshold=1e-6):
+    def compress_repeat_values(values, threshold=rel_tol):
         """
         Takes a list of floats, and tries to compress it using repeats.
 
@@ -281,7 +247,7 @@ class MCNP_Card(ABC):
                 ret.append(value)
                 last_value = None
             elif last_value:
-                if np.isclose(value, last_value, atol=threshold):
+                if np.isclose(value, last_value, rtol=threshold, atol=abs_tol):
                     repeat_counter += 1
                 else:
                     flush_repeats()
@@ -334,23 +300,25 @@ class MCNP_Card(ABC):
         """
         pass
 
-    @property
-    def words(self):
-        """
-        The words from the input file for this card.
-
-        :rtype: list
-        """
-        return self._words
-
     def link_to_problem(self, problem):
-        """Links the card to the parent problem for this card.
+        """Links the input to the parent problem for this input.
 
-        This is done so that cards can find links to other objects.
+        This is done so that inputs can find links to other objects.
 
-        :param problem: The problem to link this card to.
+        :param problem: The problem to link this input to.
         :type problem: MCNP_Problem
         """
         if not isinstance(problem, mcnpy.mcnp_problem.MCNP_Problem):
             raise TypeError("problem must be an MCNP_Problem")
         self._problem = problem
+
+    @property
+    def trailing_comment(self):
+        return self._tree.get_trailing_comment()
+
+    def _delete_trailing_comment(self):
+        self._tree._delete_trailing_comment()
+
+    def _grab_beginning_comment(self, padding):
+        if padding:
+            self._tree["start_pad"]._grab_beginning_comment(padding)

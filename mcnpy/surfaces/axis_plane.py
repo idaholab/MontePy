@@ -1,49 +1,42 @@
 from .surface_type import SurfaceType
 from .surface import Surface
 from mcnpy.errors import *
+from mcnpy.utilities import *
 
 
 class AxisPlane(Surface):
     """
     Represents PX, PY, PZ
 
-    :param input_card: The Card object representing the input
-    :type input_card: Card
+    :param input: The Input object representing the input
+    :type input: Input
     :param comments: The Comments that proceeded this card or were inside of this if any
     :type Comments: list
     """
 
     COORDINATE = {SurfaceType.PX: "x", SurfaceType.PY: "y", SurfaceType.PZ: "z"}
 
-    def __init__(self, input_card=None, comments=None):
-        self._location = None
-        super().__init__(input_card, comments)
+    def __init__(self, input=None, comments=None):
+        self._location = self._generate_default_node(float, None)
+        super().__init__(input, comments)
         ST = SurfaceType
-        if input_card:
+        if input:
             if self.surface_type not in [ST.PX, ST.PY, ST.PZ]:
                 raise ValueError("AxisPlane must be a surface of type: PX, PY, or PZ")
             if len(self.surface_constants) != 1:
                 raise ValueError("AxisPlane must have exactly 1 surface constant")
-            self._location = self.surface_constants[0]
+            self._location = self._surface_constants[0]
         else:
-            self._surface_constants = [None]
+            self._surface_constants = [self._location]
 
-    @property
+    @make_prop_val_node("_location", (float, int), float)
     def location(self):
         """
         The location of the plane in space.
 
         :rtype: float
         """
-        return self._location
-
-    @location.setter
-    def location(self, location):
-        if not isinstance(location, float):
-            raise TypeError("location must be a float")
-        self._mutated = True
-        self._location = location
-        self._surface_constants[0] = location
+        pass
 
     def validate(self):
         super().validate()

@@ -1,60 +1,61 @@
-from mcnpy.data_cards.data_card import DataCardAbstract
-from mcnpy import mcnp_card
+from mcnpy.data_inputs.data_input import DataInputAbstract
+from mcnpy.input_parser.thermal_parser import ThermalParser
+from mcnpy import mcnp_object
 from mcnpy.errors import *
+from mcnpy.utilities import *
 import mcnpy
 
 
-class ThermalScatteringLaw(DataCardAbstract):
+class ThermalScatteringLaw(DataInputAbstract):
     """
-    Class to hold MT cards
+    Class to hold MT Inputs
 
     This is designed to be called two ways.
     The first is with a read input file using input_card, comment
     The second is after a read with a material and a comment (using named inputs)
 
-    :param input_card: the Card object representing this data card
-    :type input_card: Card
+    :param input: the Input object representing this data input
+    :type input: Input
     :param comments: The Comments that may proceed this
     :type comments: list
     :param material: the parent Material object that owns this
     :type material: Material
     """
 
-    def __init__(self, input_card="", comments=None, material=None):
-        self._old_material_number = None
+    _parser = ThermalParser()
+
+    def __init__(self, input="", comments=None, material=None):
+        self._old_number = self._generate_default_node(int, -1)
         self._parent_material = None
         self._scattering_laws = []
-        if input_card:
-            super().__init__(input_card, comments)
-            words = self.words
-            self._old_material_number = self._input_number
-            self._scattering_laws = self.words[1:]
+        super().__init__(input, comments)
+        if input:
+            self._old_number = self._input_number
+            self._scattering_laws = self._tree["data"].nodes
         else:
-            if comments:
-                self._comment = comments
             if material:
                 self._parent_material = material
 
-    @property
-    def class_prefix(self):
+    @staticmethod
+    def _class_prefix():
         return "mt"
 
-    @property
-    def has_number(self):
+    @staticmethod
+    def _has_number():
         return True
 
-    @property
-    def has_classifier(self):
+    @staticmethod
+    def _has_classifier():
         return 0
 
-    @property
+    @make_prop_val_node("_old_number")
     def old_number(self):
         """
         The material number from the file
 
         :rtype: int
         """
-        return self._old_material_number
+        pass
 
     @property
     def parent_material(self):
@@ -72,7 +73,10 @@ class ThermalScatteringLaw(DataCardAbstract):
 
         :rtype: list
         """
-        return self._scattering_laws
+        ret = []
+        for law in self._scattering_laws:
+            ret.append(law.value)
+        return ret
 
     @thermal_scattering_laws.setter
     def thermal_scattering_laws(self, laws):
@@ -83,8 +87,9 @@ class ThermalScatteringLaw(DataCardAbstract):
                 raise TypeError(
                     f"element {law} in thermal_scattering_laws must be a string"
                 )
-        self._mutated = True
-        self._scattering_laws = laws
+        self._scattering_laws.clear()
+        for law in laws:
+            self._scattering_laws.append(self._generate_default_node(str, law))
 
     def add_scattering_law(self, law):
         """
@@ -93,7 +98,7 @@ class ThermalScatteringLaw(DataCardAbstract):
         :param law: the thermal scattering law to add.
         :type law: str
         """
-        self._scattering_laws.append(law)
+        self._scattering_laws.append(self._generate_default_node(str, law))
 
     def validate(self):
         if len(self._scattering_laws) == 0:
@@ -103,37 +108,25 @@ class ThermalScatteringLaw(DataCardAbstract):
                 message = f"No thermal scattering laws given for thermal scattering {hex(id(self))}"
             raise IllegalState(message)
 
-    def format_for_mcnp_input(self, mcnp_version):
-        self.validate()
-        ret = mcnp_card.MCNP_Card.format_for_mcnp_input(self, mcnp_version)
-        mutated = self.mutated
-        if not self.parent_material:
-            raise MalformedInputError(
-                self, "MT input is detached from a parent material"
-            )
-        if not mutated:
-            mutated = self.parent_material.mutated
-        if mutated:
-            buff_list = [f"MT{self.parent_material.number}"]
-            buff_list += self._scattering_laws
-            ret += ThermalScatteringLaw.wrap_words_for_mcnp(
-                buff_list, mcnp_version, True
-            )
+    def _update_values(self):
+        if self.parent_material:
+            self._tree["classifier"].number.value = self.parent_material.number
         else:
-            ret = self._format_for_mcnp_unmutated(mcnp_version)
-        return ret
+            raise MalformedInputError(
+                self, f"MT{self.old_number} input is detached from a parent material"
+            )
 
-    def update_pointers(self, data_cards):
+    def update_pointers(self, data_inputs):
         """
         Updates pointer to the thermal scattering data
 
-        :param data_cards: a list of the data cards in the problem
-        :type data_cards: list
+        :param data_inputs: a list of the data inputs in the problem
+        :type data_inputs: list
         """
         found = False
-        for card in data_cards:
-            if isinstance(card, mcnpy.data_cards.material.Material):
-                if card.number == self.old_number:
+        for input in data_inputs:
+            if isinstance(input, mcnpy.data_inputs.material.Material):
+                if input.number == self.old_number:
                     found = True
 
         if not found:

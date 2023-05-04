@@ -32,11 +32,11 @@ class EdgeCaseTests(TestCase):
 
     def test_orphaning_mt(self):
         problem = mcnpy.read_input(os.path.join("tests", "inputs", "test.imcnp"))
-        card = mcnpy.input_parser.mcnp_input.Card(
+        card = mcnpy.input_parser.mcnp_input.Input(
             ["MT5 lwtr.01t"],
             mcnpy.input_parser.block_type.BlockType.DATA,
         )
-        problem.data_cards.append(mcnpy.data_cards.data_parser.parse_data(card))
+        problem.data_inputs.append(mcnpy.data_inputs.data_parser.parse_data(card))
         try:
             with self.assertRaises(MalformedInputError):
                 problem.write_to_file("out")
@@ -47,21 +47,21 @@ class EdgeCaseTests(TestCase):
 
     def test_shortcuts_in_special_comment(self):
         in_str = "fc247 experiment in I24 Cell Specific Heating"
-        card = mcnpy.input_parser.mcnp_input.Card(
+        card = mcnpy.input_parser.mcnp_input.Input(
             [in_str], mcnpy.input_parser.block_type.BlockType.DATA
         )
-        self.assertEqual(card.words, in_str.split())
+        self.assertEqual(card.input_lines, [in_str])
         in_str = in_str.replace("fc247", "sc247")
-        card = mcnpy.input_parser.mcnp_input.Card(
+        card = mcnpy.input_parser.mcnp_input.Input(
             [in_str], mcnpy.input_parser.block_type.BlockType.DATA
         )
-        self.assertEqual(card.words, in_str.split())
+        self.assertEqual(card.input_lines, [in_str])
 
     def test_long_lines(self):
         with self.assertWarns(mcnpy.errors.LineOverRunWarning):
             problem = mcnpy.read_input("tests/inputs/test_long_lines.imcnp", (5, 1, 60))
             comment = problem.cells[1].comments[0]
-            self.assertTrue(len(comment.lines[0]) <= 80)
+            self.assertTrue(len(comment.contents[0]) <= 80)
             self.assertEqual(len(problem.surfaces), 3)
 
     def test_confused_key_word(self):
@@ -72,9 +72,12 @@ class EdgeCaseTests(TestCase):
             "          ( 500024 -500025 500062 -500061 )  $ Outer Capsule Lower Endcap",
             "                u= 106 $ Outer Capsule Lower Endcap",
         ]
-        input = mcnpy.input_parser.mcnp_input.Card(
+        input = mcnpy.input_parser.mcnp_input.Input(
             in_strs, mcnpy.input_parser.block_type.BlockType.CELL
         )
         cell = mcnpy.Cell(input)
         self.assertNotIn("", cell.parameters)
-        self.assertEqual(len(cell.parameters), 0)
+        print(cell.parameters)
+        allowed_keys = {"u", "imp:n", "fill", "lat", "vol"}
+        self.assertEqual(len(cell.parameters), 5)
+        self.assertEqual(cell.parameters.nodes.keys(), allowed_keys)

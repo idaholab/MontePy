@@ -18,9 +18,9 @@ class Cells(NumberedObjectCollection):
         self.__setup_blank_cell_modifiers()
 
     def __setup_blank_cell_modifiers(self, problem=None):
-        cards_to_always_update = {"_universe", "_fill"}
-        cards_to_property = mcnpy.Cell._CARDS_TO_PROPERTY
-        for card_class, (attr, _) in cards_to_property.items():
+        inputs_to_always_update = {"_universe", "_fill"}
+        inputs_to_property = mcnpy.Cell._INPUTS_TO_PROPERTY
+        for card_class, (attr, _) in inputs_to_property.items():
             if not hasattr(self, attr):
                 card = card_class()
                 self.__blank_modifiers.add(attr)
@@ -29,7 +29,10 @@ class Cells(NumberedObjectCollection):
                 card = getattr(self, attr)
             if problem is not None:
                 card.link_to_problem(problem)
-                if attr not in self.__blank_modifiers or attr in cards_to_always_update:
+                if (
+                    attr not in self.__blank_modifiers
+                    or attr in inputs_to_always_update
+                ):
                     card.push_to_cells()
                     card._clear_data()
             card._mutated = False
@@ -78,39 +81,40 @@ class Cells(NumberedObjectCollection):
             raise TypeError("allow_mcnp_volume_calc must be set to a bool")
         self._volume.is_mcnp_calculated = value
 
-    def update_pointers(self, cells, materials, surfaces, data_cards, problem):
-        cards_to_property = mcnpy.Cell._CARDS_TO_PROPERTY
-        cards_to_always_update = {"_universe", "_fill"}
-        cards_loaded = set()
+    def update_pointers(self, cells, materials, surfaces, data_inputs, problem):
+        inputs_to_property = mcnpy.Cell._INPUTS_TO_PROPERTY
+        inputs_to_always_update = {"_universe", "_fill"}
+        inputs_loaded = set()
         # start fresh for loading cell modifiers
         for attr in self.__blank_modifiers:
             delattr(self, attr)
         self.__blank_modifiers = set()
         # make a copy of the list
-        for card in list(data_cards):
-            if type(card) in cards_to_property:
-                card_class = type(card)
-                attr, cant_repeat = cards_to_property[card_class]
-                if cant_repeat and card_class in cards_loaded:
+        for input in list(data_inputs):
+            if type(input) in inputs_to_property:
+                input_class = type(input)
+                attr, cant_repeat = inputs_to_property[input_class]
+                if cant_repeat and input_class in inputs_loaded:
                     raise MalformedInputError(
-                        card,
-                        f"The card: {type(card)} is only allowed once in a problem",
+                        input,
+                        f"The input: {type(input)} is only allowed once in a problem",
                     )
                 if not hasattr(self, attr):
-                    setattr(self, attr, card)
-                    problem.print_in_data_block[card.class_prefix] = True
+                    setattr(self, attr, input)
+                    problem.print_in_data_block[input._class_prefix()] = True
                 else:
-                    getattr(self, attr).merge(card)
-                    data_cards.remove(card)
+                    getattr(self, attr).merge(input)
+                    data_inputs.remove(input)
                 if cant_repeat:
-                    cards_loaded.add(type(card))
+                    inputs_loaded.add(type(input))
         for cell in self:
             cell.update_pointers(cells, materials, surfaces)
         self.__setup_blank_cell_modifiers(problem)
 
-    def _run_children_format_for_mcnp(self, data_cards, mcnp_version):
+    def _run_children_format_for_mcnp(self, data_inputs, mcnp_version):
         ret = []
-        for attr, _ in mcnpy.Cell._CARDS_TO_PROPERTY.values():
-            if getattr(self, attr) not in data_cards:
-                ret += getattr(self, attr).format_for_mcnp_input(mcnp_version)
+        for attr, _ in mcnpy.Cell._INPUTS_TO_PROPERTY.values():
+            if getattr(self, attr) not in data_inputs:
+                if buf := getattr(self, attr).format_for_mcnp_input(mcnp_version):
+                    ret += buf
         return ret

@@ -1,15 +1,23 @@
-from mcnpy.data_cards import data_card, thermal_scattering
-from mcnpy.data_cards.isotope import Isotope
-from mcnpy.data_cards.material_component import MaterialComponent
-from mcnpy import mcnp_card
-from mcnpy.numbered_mcnp_card import Numbered_MCNP_Card
+import copy
+from mcnpy.data_inputs import data_input, thermal_scattering
+from mcnpy.data_inputs.isotope import Isotope
+from mcnpy.data_inputs.material_component import MaterialComponent
+from mcnpy import mcnp_object
+from mcnpy.numbered_mcnp_object import Numbered_MCNP_Object
 from mcnpy.errors import *
 from mcnpy.utilities import *
 import itertools
 import re
 
 
-class Material(data_card.DataCardAbstract, Numbered_MCNP_Card):
+def _number_validator(self, number):
+    if number <= 0:
+        raise ValueError("number must be > 0")
+    if self._problem:
+        self._problem.materials.check_number(number)
+
+
+class Material(data_input.DataInputAbstract, Numbered_MCNP_Object):
     """
     A class to represent an MCNP material.
 
@@ -19,55 +27,41 @@ class Material(data_card.DataCardAbstract, Numbered_MCNP_Card):
     :type comments: list
     """
 
-    def __init__(self, input_card=None, comments=None):
-        super().__init__(input_card, comments)
+    def __init__(self, input=None, comment=None):
         self._material_components = {}
         self._thermal_scattering = None
-        self._material_number = -1
-        if input_card:
-            words = self.words
-            # material numbers
+        self._number = self._generate_default_node(int, -1)
+        super().__init__(input, comment)
+        if input:
             num = self._input_number
-            self._old_material_number = num
-            self._material_number = num
-            words_iter = iter(words[1:])
+            self._old_number = copy.deepcopy(num)
+            self._number = num
             set_atom_frac = False
-            self._parameter_string = ""
-            for isotope_str in words_iter:
-                try:
-                    isotope = Isotope(isotope_str)
-                    fraction = next(words_iter)
-                    fraction = fortran_float(fraction)
-                except MalformedInputError:
-                    self._parameter_string += " ".join(
-                        itertools.chain([isotope_str], words_iter)
-                    )
-                    break
-                except ValueError:
-                    raise MalformedInputError(
-                        input_card,
-                        f"{fraction} could not be parsed as a material fraction",
-                    )
+            isotope_fractions = self._tree["data"]
+            for isotope_node, fraction in isotope_fractions:
+                isotope = Isotope(node=isotope_node)
+                fraction.is_negatable_float = True
                 if not set_atom_frac:
                     set_atom_frac = True
-                    if fraction > 0:
+                    if not fraction.is_negative:
                         self._is_atom_fraction = True
                     else:
                         self._is_atom_fraction = False
                 else:
                     # if switching fraction formatting
-                    if (fraction > 0 and not self._is_atom_fraction) or (
-                        fraction < 0 and self._is_atom_fraction
+                    if (not fraction.is_negative and not self._is_atom_fraction) or (
+                        fraction.is_negative and self._is_atom_fraction
                     ):
                         raise MalformedInputError(
-                            input_card,
-                            "Material definitons cannot use atom and mass fraction at the same time",
+                            input,
+                            "Material definitions cannot use atom and mass fraction at the same time",
                         )
                 self._material_components[isotope] = MaterialComponent(
-                    isotope, abs(fraction)
+                    isotope, fraction
                 )
 
     @property
+    # TODO can I delete this?
     def allowed_keywords(self):
         return {
             "GAS",
@@ -88,34 +82,23 @@ class Material(data_card.DataCardAbstract, Numbered_MCNP_Card):
             "REFS",
         }
 
-    @property
+    @make_prop_val_node("_old_number")
     def old_number(self):
         """
         The material number that was used in the read file
 
         :rtype: int
         """
-        return self._old_material_number
+        pass
 
-    @property
+    @make_prop_val_node("_number", int, validator=_number_validator)
     def number(self):
         """
         The number to use to identify the material by
 
         :rtype: int
         """
-        return self._material_number
-
-    @number.setter
-    def number(self, number):
-        if not isinstance(number, int):
-            raise TypeError("number must be an int")
-        if number <= 0:
-            raise ValueError("number must be > 0")
-        if self._problem:
-            self._problem.materials.check_number(number)
-        self._mutated = True
-        self._material_number = number
+        pass
 
     @property
     def is_atom_fraction(self):
@@ -136,16 +119,7 @@ class Material(data_card.DataCardAbstract, Numbered_MCNP_Card):
         # TODO allow detecting mutation of components
         return self._material_components
 
-    @property
-    def parameter_string(self):
-        """
-        String containing the key value pairs specified if any
-
-        :rtype: str
-        """
-        return self._parameter_string
-
-    @property
+    @make_prop_pointer("_thermal_scattering", thermal_scattering.ThermalScatteringLaw)
     def thermal_scattering(self):
         """
         The thermal scattering law for this material
@@ -180,35 +154,35 @@ class Material(data_card.DataCardAbstract, Numbered_MCNP_Card):
         )
         self._thermal_scattering.add_scattering_law(law)
 
-    def update_pointers(self, data_cards):
+    def update_pointers(self, data_inputs):
         """
         Updates pointer to the thermal scattering data
 
-        :param data_cards: a list of the data cards in the problem
-        :type data_cards: list
+        :param data_inputs: a list of the data inputs in the problem
+        :type data_inputs: list
         """
-        for card in list(data_cards):
-            if isinstance(card, thermal_scattering.ThermalScatteringLaw):
-                if card.old_number == self.number:
+        for input in list(data_inputs):
+            if isinstance(input, thermal_scattering.ThermalScatteringLaw):
+                if input.old_number == self.number:
                     if not self._thermal_scattering:
-                        self._thermal_scattering = card
-                        card._parent_material = self
-                        data_cards.remove(card)
+                        self._thermal_scattering = input
+                        input._parent_material = self
+                        data_inputs.remove(input)
                     else:
                         raise MalformedInputError(
                             self, "Multiple MT inputs were specified for this material."
                         )
 
-    @property
-    def class_prefix(self):
+    @staticmethod
+    def _class_prefix():
         return "m"
 
-    @property
-    def has_number(self):
+    @staticmethod
+    def _has_number():
         return True
 
-    @property
-    def has_classifier(self):
+    @staticmethod
+    def _has_classifier():
         return 0
 
     def __repr__(self):
@@ -219,7 +193,7 @@ class Material(data_card.DataCardAbstract, Numbered_MCNP_Card):
             ret += "mass\n"
 
         for component in self.material_components:
-            ret += str(self.material_components[component]) + "\n"
+            ret += repr(self.material_components[component]) + "\n"
         if self.thermal_scattering:
             ret += f"Thermal Scattering: {self.thermal_scattering}"
 
@@ -248,27 +222,6 @@ class Material(data_card.DataCardAbstract, Numbered_MCNP_Card):
             raise IllegalState(
                 f"Material: {self.number} does not have any components defined."
             )
-
-    def format_for_mcnp_input(self, mcnp_version):
-        self.validate()
-        ret = mcnp_card.MCNP_Card.format_for_mcnp_input(self, mcnp_version)
-        if self.mutated:
-            sorted_isotopes = sorted(list(self.material_components.keys()))
-            first_component = self.material_components[sorted_isotopes[0]]
-
-            ret.append(
-                f"m{self.number:<8} {first_component.isotope.mcnp_str():>8} {first_component.fraction:>11.4g}"
-            )
-            for isotope in sorted_isotopes[1:]:  # skips the first
-                component = self.material_components[isotope]
-                ret.append(
-                    f"{component.isotope.mcnp_str():>18} {component.fraction:>11.4g}"
-                )
-        else:
-            ret = self._format_for_mcnp_unmutated(mcnp_version)
-        if self.thermal_scattering:
-            ret += self.thermal_scattering.format_for_mcnp_input(mcnp_version)
-        return ret
 
     def __hash__(self):
         """WARNING: this is a temporary solution to make sets remove duplicate materials.

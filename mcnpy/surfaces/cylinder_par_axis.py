@@ -1,14 +1,20 @@
 from .surface_type import SurfaceType
 from .surface import Surface
 from mcnpy.errors import *
+from mcnpy.utilities import *
+
+
+def _enforce_positive_radius(self, value):
+    if value < 0.0:
+        raise ValueError(f"Radius must be positive. {value} given")
 
 
 class CylinderParAxis(Surface):
     """
     Represents surfaces: C/X, C/Y, C/Z
 
-    :param input_card: The Card object representing the input
-    :type input_card: Card
+    :param input: The Input object representing the input
+    :type input: Input
     :param comments: The Comments that proceeded this card or were inside of this if any
     :type Comments: list
     """
@@ -21,12 +27,15 @@ class CylinderParAxis(Surface):
     """Which coordinate is what value for each cylinder type.
     """
 
-    def __init__(self, input_card=None, comments=None):
-        self._coordinates = None
-        self._radius = None
-        super().__init__(input_card, comments)
+    def __init__(self, input=None, comment=None):
+        self._coordinates = [
+            self._generate_default_node(float, None),
+            self._generate_default_node(float, None),
+        ]
+        self._radius = self._generate_default_node(float, None)
+        super().__init__(input, comment)
         ST = SurfaceType
-        if input_card:
+        if input:
             if self.surface_type not in [ST.C_X, ST.C_Y, ST.C_Z]:
                 raise ValueError(
                     "CylinderParAxis must be a surface of types: C/X, C/Y, C/Z"
@@ -35,54 +44,48 @@ class CylinderParAxis(Surface):
                 raise ValueError(
                     "CylinderParAxis must have exactly 3 surface_constants"
                 )
-            self._coordinates = self.surface_constants[0:2]
-            self._radius = self.surface_constants[2]
+            self._coordinates = self._surface_constants[0:2]
+            self._radius = self._surface_constants[2]
         else:
-            self._surface_constants = [None] * 3
+            self._surface_constants = [*self._coordinates, self._radius]
 
     @property
     def coordinates(self):
         """
         The two coordinates for this cylinder to center on.
 
-        :rytpe: list
+        :rytpe: tuple
         """
-        return self._coordinates
+        return (self._coordinates[0].value, self._coordinates[1].value)
 
     @coordinates.setter
     def coordinates(self, coordinates):
-        if not isinstance(coordinates, list):
+        if not isinstance(coordinates, (list, tuple)):
             raise TypeError("coordinates must be a list")
         if len(coordinates) != 2:
             raise ValueError("coordinates must have exactly two elements")
-        self._mutated = True
-        self._coordinates = coordinates
-        self._surface_constants[0:2] = coordinates
+        for val in coordinates:
+            if not isinstance(val, (float, int)):
+                raise TypeError(f"Coordinate must be a number. {val} given.")
+        for i, val in enumerate(coordinates):
+            self._coordinates[i].value = val
 
-    @property
+    @make_prop_val_node(
+        "_radius", (float, int), float, validator=_enforce_positive_radius
+    )
     def radius(self):
         """
         The radius of the cylinder.
 
         :rtype: float
         """
-        return self._radius
-
-    @radius.setter
-    def radius(self, radius):
-        if not isinstance(radius, float):
-            raise TypeError("radius must be a float")
-        if radius <= 0.0:
-            raise ValueError("radius must be greater than 0")
-        self._mutated = True
-        self._radius = radius
-        self._surface_constants[2] = radius
+        pass
 
     def validate(self):
         super().validate()
-        if not self.radius:
+        if self.radius is None:
             raise IllegalState(f"Surface: {self.number} does not have a radius set.")
-        if not self.coordinates:
+        if any({c is None for c in self.coordinates}):
             raise IllegalState(f"Surface: {self.number} does not have coordinates set.")
 
     def find_duplicate_surfaces(self, surfaces, tolerance):
