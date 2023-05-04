@@ -113,24 +113,14 @@ class Transform(data_input.DataInputAbstract, Numbered_MCNP_Object):
         """
         return self._pass_through
 
-    @property
+    @make_prop_pointer("_is_in_degrees", bool)
     def is_in_degrees(self):
         """
         The rotation matrix is in degrees and not in cosines
 
         :rtype: bool
         """
-        return self._is_in_degrees
-
-    @is_in_degrees.setter
-    def is_in_degrees(self, in_deg):
-        """
-        Does not currently correct the rotation matrix for you
-        """
-        if not isinstance(in_deg, bool):
-            raise TypeError("in_deg must be a bool")
-        self._mutated = True
-        self._is_in_degrees = in_deg
+        pass
 
     @make_prop_val_node("_number", (int, float), int, _enforce_number)
     def number(self):
@@ -166,7 +156,6 @@ class Transform(data_input.DataInputAbstract, Numbered_MCNP_Object):
             raise TypeError("displacement_vector must be a numpy array")
         if len(vector) != 3:
             raise ValueError("displacement_vector must have three components")
-        self._mutated = True
         self._displacement_vector = vector
 
     @property
@@ -184,10 +173,9 @@ class Transform(data_input.DataInputAbstract, Numbered_MCNP_Object):
             raise TypeError("rotation_matrix must be a numpy array")
         if len(matrix) < 5 or len(matrix) > 9:
             raise ValueError("rotation_matrix must have between 5 and 9 components.")
-        self._mutated = True
         self._rotation_matrix = matrix
 
-    @property
+    @make_prop_pointer("_is_main_to_aux", bool)
     def is_main_to_aux(self):
         """
         Whether or not the displacement vector points from the main origin to auxilary
@@ -196,13 +184,6 @@ class Transform(data_input.DataInputAbstract, Numbered_MCNP_Object):
         :rtype: bool
         """
         return self._is_main_to_aux
-
-    @is_main_to_aux.setter
-    def is_main_to_aux(self, flag):
-        if not isinstance(flag, bool):
-            raise TypeError("is_main_to_aux must be a bool")
-        self._mutated = True
-        self._is_main_to_aux = flag
 
     def __str__(self):
         return f"TRANSFORM: {self.number}"
