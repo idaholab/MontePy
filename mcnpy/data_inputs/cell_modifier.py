@@ -12,6 +12,8 @@ class CellModifierInput(DataInputAbstract):
 
     Examples: IMP, VOL, etc.
 
+    TODO: update types for key and value
+
     :param input_card: the Card object representing this data card
     :type input_card: Card
     :param comments: The list of Comments that may proceed this or be entwined with it.
@@ -20,7 +22,6 @@ class CellModifierInput(DataInputAbstract):
     :type in_cell_block: bool
     :param key: the key from the key-value pair in a cell
     :type key: str
-    TODO: update types
     :param value: the value from the key-value pair in a cell
     :type value: str
     """
