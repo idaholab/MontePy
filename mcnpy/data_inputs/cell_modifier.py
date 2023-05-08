@@ -88,41 +88,6 @@ class CellModifierInput(DataInputAbstract):
         """
         return self._set_in_cell_block
 
-    @property
-    def has_changed_print_style(self):
-        """
-        returns true if the printing style for this modifier has changed
-        from cell block to data block, or vice versa.
-
-        :returns: true if the printing style for this modifier has changed
-        :rtype: bool
-        """
-        if self._problem:
-            if not self.in_cell_block:
-                for cell in self._problem.cells:
-                    attr = mcnpy.Cell._INPUTS_TO_PROPERTY[type(self)][0]
-                    set_in_cell_block = getattr(cell, attr).set_in_cell_block
-                    break
-            else:
-                set_in_cell_block = self.set_in_cell_block
-            print_in_cell_block = not self._problem.print_in_data_block[
-                self._class_prefix()
-            ]
-            set_in_cell_block = print_in_cell_block
-            if not self.in_cell_block:
-                for cell in self._problem.cells:
-                    attr = mcnpy.Cell._INPUTS_TO_PROPERTY[type(self)][0]
-                    modifier = getattr(cell, attr)
-                    if modifier.has_information:
-                        set_in_cell_block = modifier.set_in_cell_block
-                    break
-            else:
-                if self.has_information:
-                    set_in_cell_block = self.set_in_cell_block
-            return print_in_cell_block ^ set_in_cell_block
-        else:
-            return False
-
     @abstractmethod
     def merge(self, other):
         """
