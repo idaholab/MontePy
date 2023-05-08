@@ -191,22 +191,22 @@ class DataInputAbstract(MCNP_Object):
                     assert num > 0
                 except (AttributeError, AssertionError) as e:
                     raise MalformedInputError(
-                        self._input_lines,
+                        self,
                         f"{classifier} does not contain a valid number",
                     )
             if not self._has_number() and classifier.number is not None:
                 raise MalformedInputError(
-                    self._input_lines,
+                    self,
                     f"{classifier} cannot have a number for {type(self)}",
                 )
             if self._has_classifier() == 2 and classifier.particles is None:
                 raise MalformedInputError(
-                    self._input_lines,
+                    self,
                     f"{classifier} doesn't have a particle classifier for {type(self)}",
                 )
             if self._has_classifier() == 0 and classifier.particles is not None:
                 raise MalformedInputError(
-                    self._input_lines,
+                    self,
                     f"{classifier} cannot have a particle classifier for {type(self)}",
                 )
 
