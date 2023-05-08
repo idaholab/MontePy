@@ -119,7 +119,6 @@ class TestUniverse(TestCase):
         universe = Universe(5)
         self.assertEqual(universe.number, 5)
         self.assertEqual(universe.old_number, 5)
-        self.assertEqual(universe.allowed_keywords, set())
         with self.assertRaises(TypeError):
             Universe("hi")
         with self.assertRaises(ValueError):

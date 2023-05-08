@@ -36,10 +36,6 @@ class DataInputAbstract(MCNP_Object):
             super().__init__(input, self._classifier_parser)
             self.__split_name()
 
-    @property
-    def allowed_keywords(self):
-        return set()
-
     @staticmethod
     @abstractmethod
     def _class_prefix():

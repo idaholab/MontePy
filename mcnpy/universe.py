@@ -92,10 +92,6 @@ class Universe(Numbered_MCNP_Object):
     def _update_values(self):
         pass
 
-    @property
-    def allowed_keywords(self):
-        return set()
-
     def __str__(self):
         return f"Universe({self.number})"
 

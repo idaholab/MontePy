@@ -126,21 +126,6 @@ class MCNP_Object(ABC):
     def leading_comments(self, comments):
         self._tree["start_pad"] = None
 
-    @property
-    @abstractmethod
-    def allowed_keywords(self):
-        """
-        The allowed keywords for this class of MCNP_Object.
-
-        The allowed keywords that would appear in the parameters block.
-        For instance for cells the keywords ``IMP`` and ``VOL`` are allowed.
-        The allowed keywords need to be in upper case.
-
-        :returns: A set of the allowed keywords. If there are none this should return the empty set.
-        :rtype: set
-        """
-        pass
-
     @staticmethod
     def wrap_string_for_mcnp(string, mcnp_version, is_first_line):
         """

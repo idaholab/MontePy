@@ -60,28 +60,6 @@ class Material(data_input.DataInputAbstract, Numbered_MCNP_Object):
                     isotope, fraction
                 )
 
-    @property
-    # TODO can I delete this?
-    def allowed_keywords(self):
-        return {
-            "GAS",
-            "ESTEP",
-            "HSTEP",
-            "NLIB",
-            "PLIB",
-            "PNLIB",
-            "ELIB",
-            "HLIB",
-            "ALIB",
-            "SLIB",
-            "TLIB",
-            "DLIB",
-            "COND",
-            "REFI",
-            "REFC",
-            "REFS",
-        }
-
     @make_prop_val_node("_old_number")
     def old_number(self):
         """

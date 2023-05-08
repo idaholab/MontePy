@@ -79,10 +79,6 @@ class Surface(Numbered_MCNP_Object):
             for entry in self._tree["data"]:
                 self._surface_constants.append(entry)
 
-    @property
-    def allowed_keywords(self):
-        return set()
-
     @make_prop_val_node("_surface_type", (SurfaceType, str), SurfaceType)
     def surface_type(self):
         """

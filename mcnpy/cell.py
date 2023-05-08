@@ -150,10 +150,6 @@ class Cell(Numbered_MCNP_Object):
             setattr(self, attr, input_class(in_cell_block=True))
 
     @property
-    def allowed_keywords(self):
-        return Cell._ALLOWED_KEYWORDS
-
-    @property
     def importance(self):
         """
         The importances for this cell for various particle types.
