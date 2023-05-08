@@ -124,7 +124,10 @@ class DataInputAbstract(MCNP_Object):
     @property
     def data(self):
         """
-        TODO
+        The syntax tree actually holding the data.
+
+        :returns: The syntax tree with the information.
+        :rtype: ListNode
         """
         return self._tree["data"]
 
@@ -137,7 +140,6 @@ class DataInputAbstract(MCNP_Object):
         pass
 
     def _update_values(self):
-        # TODO implement
         pass
 
     def update_pointers(self, data_inputs):
