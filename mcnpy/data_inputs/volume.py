@@ -161,7 +161,6 @@ class Volume(CellModifierInput):
         if not self.in_cell_block and self._problem and self._volume:
             self._check_redundant_definitions()
             cells = self._problem.cells
-            self._starting_num_cells = len(cells)
             for i, cell in enumerate(cells):
                 if i >= len(self._volume):
                     return
