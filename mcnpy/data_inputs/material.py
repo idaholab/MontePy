@@ -94,7 +94,6 @@ class Material(data_input.DataInputAbstract, Numbered_MCNP_Object):
 
         :rtype: dict
         """
-        # TODO allow detecting mutation of components
         return self._material_components
 
     @make_prop_pointer("_thermal_scattering", thermal_scattering.ThermalScatteringLaw)

@@ -245,10 +245,6 @@ class Transform(data_input.DataInputAbstract, Numbered_MCNP_Object):
                 f"Transform: {self.number} does not have a valid displacement Vector"
             )
 
-    def _update_values(self):
-        # TODO
-        pass
-
     def equivalent(self, other, tolerance):
         """Determines if this is effectively equivalent to another transformation
 
