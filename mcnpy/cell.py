@@ -428,21 +428,6 @@ class Cell(Numbered_MCNP_Object):
         """
         return self._surfaces
 
-    # TODO
-    @surfaces.setter
-    def surfaces(self, surfs):
-        if type(surfs) not in [Surfaces, list]:
-            raise TypeError("surfaces must be an instance of list or Surfaces")
-        if isinstance(surfs, list):
-            for surf in surfs:
-                if not isinstance(surf, Surface):
-                    raise TypeError(f"the surfaces element {surf} is not a Surface")
-            surfs = Surfaces(surfs)
-        self._mutated = True
-        self._surfaces = surfs
-        if self._problem:
-            self._surfaces.link_to_problem(self._problem)
-
     @property
     def old_surface_numbers(self):
         """
@@ -489,20 +474,6 @@ class Cell(Numbered_MCNP_Object):
         :rytpe: :class:`mcnpy.cells.Cells`
         """
         return self._complements
-
-    @complements.setter
-    def complements(self, complements):
-        if type(complements) not in (Cells, list):
-            raise TypeError("complements must be an instance of list or Cells")
-        if isinstance(complements, list):
-            for cell in complements:
-                if not isinstance(cell, Cell):
-                    raise TypeError(f"complements component {cell} is not a Cell")
-            complements = Cells(complements)
-        self._mutated = True
-        self._complements = complements
-        if self._problem:
-            self._complements.link_to_problem(self._problem)
 
     @property
     def cells_complementing_this(self):
@@ -604,7 +575,6 @@ class Cell(Numbered_MCNP_Object):
             mat_num = 0
         self._tree["material"]["mat_number"].value = mat_num
         self._geometry._update_values()
-        # TODO generate default nodes if needed
         self._tree.nodes["geometry"] = self.geometry.node
         for input_class, (attr, _) in self._INPUTS_TO_PROPERTY.items():
             getattr(self, attr)._update_values()
