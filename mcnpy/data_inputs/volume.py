@@ -33,7 +33,6 @@ class Volume(CellModifierInput):
         if self.in_cell_block:
             if key:
                 value = self._tree["data"][0]
-                # TODO all parameters can accept text. Need to verify type for all parameters
                 if value.type != float or value.value < 0:
                     raise ValueError(
                         f"Cell volume must be a number ≥ 0.0. {value} was given"
