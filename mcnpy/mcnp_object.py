@@ -29,8 +29,6 @@ class MCNP_Object(ABC):
         if input:
             if not isinstance(input, mcnpy.input_parser.mcnp_input.Input):
                 raise TypeError("input must be an Input")
-            # TODO delete
-            self._input_lines = input.input_lines
             try:
                 self._tree = parser.parse(input.tokenize())
             except ValueError as e:
@@ -46,10 +44,6 @@ class MCNP_Object(ABC):
         else:
             self._input_lines = []
             self._mutated = True
-        if comments:
-            self._comments = comments
-        else:
-            self._comments = []
 
     @staticmethod
     def _generate_default_node(value_type, default, padding=" "):
@@ -132,13 +126,6 @@ class MCNP_Object(ABC):
     def leading_comments(self, comments):
         self._tree["start_pad"] = None
 
-    @property
-    def input_lines(self):
-        """The raw input lines read from the input file
-
-        :rtype: list
-        """
-        return self._input_lines
 
     @property
     @abstractmethod
@@ -155,27 +142,6 @@ class MCNP_Object(ABC):
         """
         pass
 
-    @staticmethod
-    def wrap_words_for_mcnp(words, mcnp_version, is_first_line):
-        """
-        Wraps the list of the words to be a well formed MCNP input.
-
-        multi-line inputs will be handled by using the indentation format,
-        and not the "&" method.
-
-        :param words: A list of the "words" or data-grams that needed to added to this input.
-                      Each word will be separated by at least one space.
-        :type words: list
-        :param mcnp_version: the tuple for the MCNP that must be formatted for.
-        :type mcnp_version: tuple
-        :param is_first_line: If true this will be the beginning of an MCNP Input.
-                             The first line will not be indented.
-        :type is_first_line: bool
-        :returns: A list of strings that can be written to an input file, one item to a line.
-        :rtype: list
-        """
-        string = " ".join(words)
-        return MCNP_Object.wrap_string_for_mcnp(string, mcnp_version, is_first_line)
 
     @staticmethod
     def wrap_string_for_mcnp(string, mcnp_version, is_first_line):
@@ -215,82 +181,6 @@ class MCNP_Object(ABC):
                 ret += wrapper.wrap(line)
         return ret
 
-    @staticmethod
-    def compress_repeat_values(values, threshold=rel_tol):
-        """
-        Takes a list of floats, and tries to compress it using repeats.
-
-        E.g., 1 1 1 1 would compress to 1 3R
-
-        :param values: a list of float values to try to compress
-        :type values: list
-        :param threshold: the minimum threshold to consider two values different
-        :type threshold: float
-        :returns: a list of MCNP word strings that have repeat compression
-        :rtype: list
-        """
-        ret = []
-        last_value = None
-        float_formatter = "{:n}"
-        repeat_counter = 0
-
-        def flush_repeats():
-            nonlocal repeat_counter, ret
-            if repeat_counter >= 2:
-                ret.append(f"{repeat_counter}R")
-            elif repeat_counter == 1:
-                ret.append(float_formatter.format(last_value))
-            repeat_counter = 0
-
-        for value in values:
-            if isinstance(value, mcnpy.input_parser.mcnp_input.Jump):
-                ret.append(value)
-                last_value = None
-            elif last_value:
-                if np.isclose(value, last_value, rtol=threshold, atol=abs_tol):
-                    repeat_counter += 1
-                else:
-                    flush_repeats()
-                    ret.append(float_formatter.format(value))
-                    last_value = value
-            else:
-                ret.append(float_formatter.format(value))
-                last_value = value
-                repeat_counter = 0
-        flush_repeats()
-        return ret
-
-    @staticmethod
-    def compress_jump_values(values):
-        """
-        Takes a list of strings and jump values and combines repeated jump values.
-
-        e.g., 1 1 J J 3 J becomes 1 1 2J 3 J
-
-        :param values: a list of string and Jump values to try to compress
-        :type values: list
-        :returns: a list of MCNP word strings that have jump compression
-        :rtype: list
-        """
-        ret = []
-        jump_counter = 0
-
-        def flush_jumps():
-            nonlocal jump_counter, ret
-            if jump_counter == 1:
-                ret.append("J")
-            elif jump_counter >= 1:
-                ret.append(f"{jump_counter}J")
-            jump_counter = 0
-
-        for value in values:
-            if isinstance(value, mcnpy.input_parser.mcnp_input.Jump):
-                jump_counter += 1
-            else:
-                flush_jumps()
-                ret.append(value)
-        flush_jumps()
-        return ret
 
     def validate(self):
         """
