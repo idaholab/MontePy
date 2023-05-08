@@ -10,15 +10,13 @@ class AxisPlane(Surface):
 
     :param input: The Input object representing the input
     :type input: Input
-    :param comments: The Comments that proceeded this card or were inside of this if any
-    :type Comments: list
     """
 
     COORDINATE = {SurfaceType.PX: "x", SurfaceType.PY: "y", SurfaceType.PZ: "z"}
 
-    def __init__(self, input=None, comments=None):
+    def __init__(self, input=None):
         self._location = self._generate_default_node(float, None)
-        super().__init__(input, comments)
+        super().__init__(input)
         ST = SurfaceType
         if input:
             if self.surface_type not in [ST.PX, ST.PY, ST.PZ]:

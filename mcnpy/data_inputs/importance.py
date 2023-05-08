@@ -17,8 +17,6 @@ class Importance(CellModifierInput):
 
     :param input: the input object representing this data input
     :type input: Input
-    :param comments: The list of Comments that may proceed this or be entwined with it.
-    :type comments: list
     :param in_cell_block: if this Input came from the cell block of an input file.
     :type in_cell_block: bool
     :param key: the key from the key-value pair in a cell
@@ -27,12 +25,10 @@ class Importance(CellModifierInput):
     :type value: str
     """
 
-    def __init__(
-        self, input=None, comments=None, in_cell_block=False, key=None, value=None
-    ):
+    def __init__(self, input=None, in_cell_block=False, key=None, value=None):
         self._particle_importances = {}
         self._real_tree = {}
-        super().__init__(input, comments, in_cell_block, key, value)
+        super().__init__(input, in_cell_block, key, value)
         if self.in_cell_block:
             if key:
                 val = value["data"]

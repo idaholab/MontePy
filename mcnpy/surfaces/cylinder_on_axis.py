@@ -15,13 +15,11 @@ class CylinderOnAxis(Surface):
 
     :param input: The Input object representing the input
     :type input: Input
-    :param comments: The Comments that proceeded this card or were inside of this if any
-    :type Comments: list
     """
 
-    def __init__(self, input=None, comments=None):
+    def __init__(self, input=None):
         self._radius = self._generate_default_node(float, None)
-        super().__init__(input, comments)
+        super().__init__(input)
         ST = SurfaceType
         if input:
             if self.surface_type not in [ST.CX, ST.CY, ST.CZ]:

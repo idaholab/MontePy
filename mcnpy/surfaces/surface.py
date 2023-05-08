@@ -21,14 +21,12 @@ class Surface(Numbered_MCNP_Object):
 
     :param input: The Input object representing the input
     :type input: Input
-    :param comments: The Comments that proceeded this card or were inside of this if any
-    :type Comments: list
     """
 
     _parser = SurfaceParser()
 
-    def __init__(self, input=None, comments=None):
-        super().__init__(input, self._parser, comments)
+    def __init__(self, input=None):
+        super().__init__(input, self._parser)
         self._periodic_surface = None
         self._old_periodic_surface = self._generate_default_node(int, None)
         self._transform = None

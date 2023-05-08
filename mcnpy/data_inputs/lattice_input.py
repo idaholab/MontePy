@@ -12,10 +12,8 @@ class LatticeInput(CellModifierInput):
     """
     Object to handle the inputs from ``LAT``.
 
-    :param input_card: the Card object representing this data card
-    :type input_card: Card
-    :param comments: The list of Comments that may proceed this or be entwined with it.
-    :type comments: list
+    :param input: the Input object representing this data card
+    :type input: Input
     :param in_cell_block: if this card came from the cell block of an input file.
     :type in_cell_block: bool
     :param key: the key from the key-value pair in a cell
@@ -24,22 +22,8 @@ class LatticeInput(CellModifierInput):
     :type value: str
     """
 
-    def __init__(
-        self, input=None, comments=None, in_cell_block=False, key=None, value=None
-    ):
-        """
-        :param input: the Input object representing this data card
-        :type input: Input
-        :param comments: The list of Comments that may proceed this or be entwined with it.
-        :type comments: list
-        :param in_cell_block: if this card came from the cell block of an input file.
-        :type in_cell_block: bool
-        :param key: the key from the key-value pair in a cell
-        :type key: str
-        :param value: the value from the key-value pair in a cell
-        :type value: str
-        """
-        super().__init__(input, comments, in_cell_block, key, value)
+    def __init__(self, input=None, in_cell_block=False, key=None, value=None):
+        super().__init__(input, in_cell_block, key, value)
         self._lattice = self._generate_default_node(int, None)
         self._lattice._convert_to_enum(Lattice, True, int)
         if self.in_cell_block:

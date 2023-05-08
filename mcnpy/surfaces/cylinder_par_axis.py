@@ -15,8 +15,6 @@ class CylinderParAxis(Surface):
 
     :param input: The Input object representing the input
     :type input: Input
-    :param comments: The Comments that proceeded this card or were inside of this if any
-    :type Comments: list
     """
 
     COORDINATE_PAIRS = {
@@ -27,13 +25,13 @@ class CylinderParAxis(Surface):
     """Which coordinate is what value for each cylinder type.
     """
 
-    def __init__(self, input=None, comment=None):
+    def __init__(self, input=None):
         self._coordinates = [
             self._generate_default_node(float, None),
             self._generate_default_node(float, None),
         ]
         self._radius = self._generate_default_node(float, None)
-        super().__init__(input, comment)
+        super().__init__(input)
         ST = SurfaceType
         if input:
             if self.surface_type not in [ST.C_X, ST.C_Y, ST.C_Z]:

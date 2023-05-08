@@ -352,14 +352,12 @@ class DataInputTestFixture(mcnpy.data_inputs.data_input.DataInputAbstract):
     _has_number1 = None
     _has_classifier1 = None
 
-    def __init__(self, input_card=None, comment=None):
+    def __init__(self, input_card=None):
         """
         :param input_card: the Card object representing this data input
         :type input_card: Input
-        :param comment: The Comment that may proceed this
-        :type comment: Comment
         """
-        super().__init__(input_card, comment, fast_parse=True)
+        super().__init__(input_card, fast_parse=True)
 
     def _class_prefix(self):
         return self._class_prefix1

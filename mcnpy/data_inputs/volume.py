@@ -18,8 +18,6 @@ class Volume(CellModifierInput):
 
     :param input: the Input object representing this data card
     :type input: Input
-    :param comments: The list of Comments that may proceed this or be entwined with it.
-    :type comments: list
     :param in_cell_block: if this card came from the cell block of an input file.
     :type in_cell_block: bool
     :param key: the key from the key-value pair in a cell
@@ -28,12 +26,10 @@ class Volume(CellModifierInput):
     :type value: str
     """
 
-    def __init__(
-        self, input=None, comments=None, in_cell_block=False, key=None, value=None
-    ):
+    def __init__(self, input=None, in_cell_block=False, key=None, value=None):
         self._volume = self._generate_default_node(float, None)
         self._calc_by_mcnp = True
-        super().__init__(input, comments, in_cell_block, key, value)
+        super().__init__(input, in_cell_block, key, value)
         if self.in_cell_block:
             if key:
                 value = self._tree["data"][0]

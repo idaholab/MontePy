@@ -19,11 +19,11 @@ class MCNP_Object(ABC):
 
     :param input: The Input syntax object this will wrap and parse.
     :type input: Input
-    :param comments: The Comments that proceeded this input or were inside of this if any
-    :type Comments: list
+    :param parser: The parser object to parse the input with.
+    :type parser: MCNP_Lexer
     """
 
-    def __init__(self, input, parser, comments=None):
+    def __init__(self, input, parser):
         self._problem = None
         self._parameters = ParametersNode()
         if input:
@@ -126,7 +126,6 @@ class MCNP_Object(ABC):
     def leading_comments(self, comments):
         self._tree["start_pad"] = None
 
-
     @property
     @abstractmethod
     def allowed_keywords(self):
@@ -141,7 +140,6 @@ class MCNP_Object(ABC):
         :rtype: set
         """
         pass
-
 
     @staticmethod
     def wrap_string_for_mcnp(string, mcnp_version, is_first_line):
@@ -180,7 +178,6 @@ class MCNP_Object(ABC):
             if line.strip():
                 ret += wrapper.wrap(line)
         return ret
-
 
     def validate(self):
         """

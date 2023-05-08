@@ -14,24 +14,18 @@ class DataInputAbstract(MCNP_Object):
 
     :param input: the Input object representing this data input
     :type input: Input
-    :param comments: The list of Comments that may proceed this or be entwined with it.
-    :type comments: list
+    :param fast_parse: Whether or not to only parse the first word for the type of data.
+    :type fast_parse: bool
     """
 
     _parser = DataParser()
 
     _classifier_parser = ClassifierParser()
 
-    def __init__(self, input=None, comments=None, fast_parse=False):
-        """
-        :param input: the Input object representing this data input
-        :type input: Input
-        :param comments: The list of Comments that may proceed this or be entwined with it.
-        :type comments: list
-        """
+    def __init__(self, input=None, fast_parse=False):
         self._particles = None
         if not fast_parse:
-            super().__init__(input, self._parser, comments)
+            super().__init__(input, self._parser)
             if input:
                 self.__split_name()
         else:
@@ -39,7 +33,7 @@ class DataInputAbstract(MCNP_Object):
             data_lines = [line for line in input.input_lines if not is_comment(line)]
             words = data_lines[0].split()
             input = Input([words[0]], input.block_type)
-            super().__init__(input, self._classifier_parser, comments)
+            super().__init__(input, self._classifier_parser)
             self.__split_name()
 
     @property
@@ -230,10 +224,8 @@ class DataInput(DataInputAbstract):
     """
     Catch-all for all other MCNP data inputs.
 
-    :param input_card: the Card object representing this data card
-    :type input_card: Card
-    :param comments: The list of Comments that may proceed this or be entwined with it.
-    :type comments: list
+    :param input: the Input object representing this data input
+    :type input: Input
     """
 
     @property

@@ -34,8 +34,6 @@ class Cell(Numbered_MCNP_Object):
 
     :param input: the input for the cell definition
     :type input: Input
-    :param comments: the Comments block that preceded and are in the cell block if any.
-    :type comments: list
     """
 
     _ALLOWED_KEYWORDS = {
@@ -78,7 +76,7 @@ class Cell(Numbered_MCNP_Object):
         self._complements = Cells()
         self._old_complement_numbers = set()
         self._number = self._generate_default_node(int, -1)
-        super().__init__(input, self._parser, comments)
+        super().__init__(input, self._parser)
         if not input:
             self._generate_default_tree()
         self._old_number = copy.deepcopy(self._tree["cell_num"])
