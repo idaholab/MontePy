@@ -197,10 +197,14 @@ class Transform(data_input.DataInputAbstract, Numbered_MCNP_Object):
 
     def _update_values(self):
         # update in degrees
+        if self._classifier.modifier is None:
+            self._classifier.modifier = self._generate_default_node(
+                str, "", padding=None
+            )
         if self.is_in_degrees:
             self._classifier.modifier.value = "*"
         else:
-            self._classifier.modifier.value = None
+            self._classifier.modifier.value = ""
         # update displacement vector
         new_values = []
         list_iter = iter(self.data)
@@ -216,9 +220,8 @@ class Transform(data_input.DataInputAbstract, Numbered_MCNP_Object):
             or not self.is_main_to_aux
         )
         if needs_rotation:
-            a = self.rotation_matrix
-            flat_pack = [a[iy, ix] for iy, ix in np.ndindex(a.shape)]
-            for i, (value, node) in zip(flat_pack, list_iter):
+            flat_pack = self.rotation_matrix
+            for i, (value, node) in enumerate(zip(flat_pack, list_iter)):
                 node.value = value
                 new_values.append(node)
             if i < len(flat_pack) - 1:
