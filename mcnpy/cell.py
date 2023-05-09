@@ -413,7 +413,7 @@ class Cell(Numbered_MCNP_Object):
         """
         pass
 
-    @make_prop_pointer("_surfaces", (Surfaces, list), base_type=Surfaces)
+    @make_prop_pointer("_surfaces")
     def surfaces(self):
         """
         List of the Surface objects associated with this cell.
