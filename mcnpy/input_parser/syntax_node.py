@@ -412,8 +412,8 @@ class ValueNode(SyntaxNodeBase):
         self._is_reversed = False
 
     def _convert_to_int(self):
-        if self._type not in {float}:
-            raise TypeError(f"ValueNode must be a float to convert to int")
+        if self._type not in {float, int}:
+            raise ValueError(f"ValueNode must be a float to convert to int")
         self._type = int
         if self._token is not None and not isinstance(
             self._token, input_parser.mcnp_input.Jump
