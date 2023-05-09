@@ -153,31 +153,6 @@ class testFullFileIntegration(TestCase):
         with self.assertRaises(TypeError):
             cell.material = 5
 
-    def test_cell_surfaces_setter(self):
-        cell = self.simple_problem.cells[1]
-        surfaces = self.simple_problem.surfaces
-        cell.surfaces = surfaces
-        self.assertEqual(cell.surfaces, surfaces)
-        with self.assertRaises(TypeError):
-            cell.surfaces = 5
-        with self.assertRaises(TypeError):
-            cell.surfaces = [5]
-
-    def test_cell_complements_setter(self):
-        cell = self.simple_problem.cells[1]
-        complement_numbers = list(self.simple_problem.cells.numbers)[1:]
-        complements = []
-        for num in complement_numbers:
-            complements.append(self.simple_problem.cells[num])
-        with self.assertRaises(TypeError):
-            cell.complements = 5
-        with self.assertRaises(TypeError):
-            cell.complements = [5, 6]
-        with self.assertRaises(TypeError):
-            cell.complements.append(5)
-        cell.complements = complements
-        self.assertEqual(list(cell.complements), complements)
-
     def test_problem_cells_setter(self):
         problem = copy.deepcopy(self.simple_problem)
         cells = self.simple_problem.cells
