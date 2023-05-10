@@ -137,19 +137,22 @@ class TestGeometryIntegration(TestCase):
         self.assertIsNone(half_space.right)
 
     def test_iand_recursion(self):
-        cell1 = ~mcnpy.Cell()
-        cell2 = ~mcnpy.Cell()
+        cell1 = mcnpy.Cell()
+        cell2 = mcnpy.Cell()
         cell3 = mcnpy.Cell()
-        half_space = cell1 & cell2
+        half_space = ~cell1 & ~cell2
+        cell1.number = 1
+        cell2.number = 2
+        cell3.number = 3
         cell3.geometry = half_space
-        half_space &= cell1
-        self.assertIs(half_space.left, cell1)
+        half_space &= ~cell1
+        self.assertEqual(half_space.left, ~cell1)
         self.assertNotIsInstance(half_space.right, UnitHalfSpace)
-        self.assertIs(half_space.right.left, cell2)
-        self.assertIs(half_space.right.right, cell1)
+        self.assertEqual(half_space.right.left, ~cell2)
+        self.assertEqual(half_space.right.right, ~cell1)
         self.assertEqual(len(half_space), 3)
         for i in range(1, 100):
-            half_space &= cell1
+            half_space &= ~cell1
             self.assertEqual(len(half_space), i + 3)
 
     def test_ior_recursion(self):
