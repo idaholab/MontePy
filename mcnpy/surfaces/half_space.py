@@ -191,11 +191,10 @@ class HalfSpace:
     def __ior__(self, other):
         if not isinstance(other, HalfSpace):
             raise TypeError(f"Right hand side must be HalfSpace. {other} given.")
-        left_leaf = isinstance(self.left, UnitHalfSpace)
         right_leaf = (
             self.right is not None and isinstance(self.right, UnitHalfSpace)
         ) or self.right is None
-        if left_leaf and right_leaf:
+        if right_leaf:
             if self.right is not None:
                 self.right = self.right | other
                 return self
