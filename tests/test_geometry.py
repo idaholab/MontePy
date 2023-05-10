@@ -177,3 +177,10 @@ class TestGeometryIntegration(TestCase):
         for i in range(1, 100):
             half_space |= cell1
             self.assertEqual(len(half_space), i + 3)
+        with self.assertRaises(TypeError):
+            half_space |= "hi"
+        # test with complement
+        half_space1 = ~(~cell1 | ~cell2)
+        half_space1 |= ~cell2
+        self.assertEqual(half_space1.left, ~(~cell1 | ~cell2))
+        self.assertEqual(half_space1.right, ~cell2)
