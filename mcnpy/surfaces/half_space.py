@@ -175,11 +175,10 @@ class HalfSpace:
     def __iand__(self, other):
         if not isinstance(other, HalfSpace):
             raise TypeError(f"Right hand side must be HalfSpace. {other} given.")
-        left_leaf = isinstance(self.left, UnitHalfSpace)
         right_leaf = (
             self.right is not None and isinstance(self.right, UnitHalfSpace)
         ) or self.right is None
-        if left_leaf and right_leaf:
+        if right_leaf:
             if self.right is not None:
                 self.right = self.right & other
                 return self
@@ -227,7 +226,7 @@ class HalfSpace:
         return length
 
     def __eq__(self, other):
-        # bad subclassing types
+        # don't allow subclassing on right side
         if type(self) != type(other):
             raise TypeError(f"HalfSpaces can only be compared to each other")
         if self.operator != other.operator:
@@ -237,7 +236,9 @@ class HalfSpace:
 
         if self.left != other.left:
             return False
-        if self.righ is not None and self.right == other.right:
+        if self.right is not None and self.right == other.right:
+            return True
+        elif self.right is None:
             return True
         return False
 
