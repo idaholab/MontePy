@@ -245,6 +245,11 @@ class HalfSpace:
     def _generate_default_tree(self):
         pass
 
+    def __str__(self):
+        if self.operator == Operator.COMPLEMENT:
+            return f"{self.operator.value}{self.left}"
+        return f"({self.left}{self.operator.value}{self.right})"
+
 
 class UnitHalfSpace(HalfSpace):
     def __init__(self, divider, side, is_cell, node=None):
@@ -286,6 +291,20 @@ class UnitHalfSpace(HalfSpace):
     @property
     def is_cell(self):
         return self._is_cell
+
+    def __str__(self):
+        if self.side:
+            if self.is_cell:
+                side = "#"
+            else:
+                side = "+"
+        else:
+            side = "-"
+        if isinstance(self.divider, int):
+            div = self.divider
+        else:
+            div = self.divider.number
+        return f"{side}{div}"
 
     @property
     def node(self):
