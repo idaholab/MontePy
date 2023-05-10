@@ -64,6 +64,8 @@ class HalfSpace:
             self.right.update_pointers(cells, surfaces, cell)
 
     def _add_new_children_to_cell(self, other):
+        if self._cell is None:
+            return
         cells, surfaces = other._get_leaf_objects()
         for container, parent in zip(
             (cells, surfaces), (self._cell.complements, self._cell.surfaces)
@@ -184,7 +186,7 @@ class HalfSpace:
             else:
                 return (~self.left) & other
         self.right &= other
-        self._add_new_children_to_parent(other)
+        self._add_new_children_to_cell(other)
         return self
 
     def __ior__(self, other):
@@ -201,8 +203,8 @@ class HalfSpace:
             else:
                 return (~self.left) | other
         self.right |= other
-        self._add_new_children_to_parent(other)
-        return sel
+        self._add_new_children_to_cell(other)
+        return self
 
     def __and__(self, other):
         if not isinstance(other, HalfSpace):
@@ -215,8 +217,6 @@ class HalfSpace:
         return HalfSpace(self, Operator.UNION, other)
 
     def __invert__(self):
-        if not isinstance(other, HalfSpace):
-            raise TypeError(f"Right hand side must be HalfSpace. {other} given.")
         return HalfSpace(self, Operator.COMPLEMENT)
 
     def __len__(self):
