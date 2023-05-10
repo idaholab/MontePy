@@ -224,6 +224,21 @@ class HalfSpace:
             length += len(self.right)
         return length
 
+    def __eq__(self, other):
+        # bad subclassing types
+        if type(self) != type(other):
+            raise TypeError(f"HalfSpaces can only be compared to each other")
+        if self.operator != other.operator:
+            return False
+        if (self.right is None) != (other.right is None):
+            return False
+
+        if self.left != other.left:
+            return False
+        if self.righ is not None and self.right == other.right:
+            return True
+        return False
+
     def _generate_default_tree(self):
         pass
 
@@ -341,3 +356,12 @@ class UnitHalfSpace(HalfSpace):
 
     def __len__(self):
         return 1
+
+    def __eq__(self, other):
+        if not isinstance(other, UnitHalfSpace):
+            raise TypeError("UnitHalfSpace can't be equal to other type")
+        return (
+            self.is_cell == other.is_cell
+            and self.divider is other.divider
+            and self.side == other.side
+        )
