@@ -41,6 +41,8 @@ class HalfSpace:
 
     @staticmethod
     def parse_input_node(node):
+        if not isinstance(node, GeometryTree):
+            raise TypeError("Node must be a GeoemtryTree.")
         sides = []
         for side in (node.left, node.right):
             if side is None:
@@ -278,6 +280,8 @@ class UnitHalfSpace(HalfSpace):
     def divider(self, div):
         if not isinstance(div, (mcnpy.Cell, mcnpy.surfaces.surface.Surface)):
             raise TypeError("Divider must be a Cell or Surface")
+        if self.is_cell != isinstance(div, mcnpy.Cell):
+            raise TypeError("Divider type must match with is_cell")
         self._divider = div
         if self._cell is not None:
             if self.is_cell:
@@ -318,6 +322,8 @@ class UnitHalfSpace(HalfSpace):
     def parse_input_node(node, is_cell=False):
         if not isinstance(node, ValueNode):
             raise TypeError(f"Must be called on a ValueNode. {node} given.")
+        if not isinstance(is_cell, bool):
+            raise TypeError("is_cell must be a bool.")
         node.is_negatable_identifier = True
         if is_cell:
             side = True
