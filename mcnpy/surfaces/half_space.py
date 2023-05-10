@@ -15,6 +15,8 @@ class HalfSpace:
             raise TypeError(f"operator must be of type Operator. {operator} given.")
         if not isinstance(node, (GeometryTree, type(None))):
             raise TypeError(f"node must be a GeometryTree or None. {node} given.")
+        if right is None and operator != Operator.COMPLEMENT:
+            raise ValueError(f"Both sides required for: {operator}")
         self._left = left
         self._operator = operator
         self._right = right
