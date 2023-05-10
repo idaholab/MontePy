@@ -237,3 +237,111 @@ class TestGeometryIntegration(TestCase):
         half_space1 |= ~cell2
         self.assertEqual(half_space1.left, ~(~cell1 | ~cell2))
         self.assertEqual(half_space1.right, ~cell2)
+
+    def test_parse_input_tree(self):
+        # simplest intersection
+        input = mcnpy.input_parser.mcnp_input.Input(
+            ["1 0 1 -2"], mcnpy.input_parser.block_type.BlockType.CELL
+        )
+        parser = mcnpy.input_parser.cell_parser.CellParser()
+        tree = parser.parse(input.tokenize())
+        geometry = tree["geometry"]
+        half_space = HalfSpace.parse_input_node(geometry)
+        self.assertEqual(half_space.operator, Operator.INTERSECTION)
+        self.assertEqual(half_space.left.divider, 1)
+        self.assertTrue(half_space.left.side)
+        self.assertTrue(not half_space.left.is_cell)
+        self.assertEqual(half_space.right.divider, 2)
+        self.assertTrue(not half_space.right.side)
+        self.assertTrue(not half_space.right.is_cell)
+        # Test type checking
+        with self.assertRaises(TypeError):
+            HalfSpace.parse_input_node("hi")
+        # test assymetric
+        input = mcnpy.input_parser.mcnp_input.Input(
+            ["1 0 #2"], mcnpy.input_parser.block_type.BlockType.CELL
+        )
+        parser = mcnpy.input_parser.cell_parser.CellParser()
+        tree = parser.parse(input.tokenize())
+        geometry = tree["geometry"]
+        half_space = HalfSpace.parse_input_node(geometry)
+        self.assertEqual(half_space.operator, Operator.COMPLEMENT)
+        self.assertEqual(half_space.left.divider, 2)
+        self.assertTrue(half_space.left.side)
+        self.assertTrue(half_space.left.is_cell)
+        self.assertIsNone(half_space.right)
+        # Test nested trees
+        input = mcnpy.input_parser.mcnp_input.Input(
+            ["1 0 1 -2 : 3"], mcnpy.input_parser.block_type.BlockType.CELL
+        )
+        parser = mcnpy.input_parser.cell_parser.CellParser()
+        tree = parser.parse(input.tokenize())
+        geometry = tree["geometry"]
+        half_space = HalfSpace.parse_input_node(geometry)
+        self.assertEqual(half_space.operator, Operator.UNION)
+        self.assertNotIsInstance(half_space.left, UnitHalfSpace)
+        self.assertIsInstance(half_space.right, UnitHalfSpace)
+        self.assertEqual(half_space.left.operator, Operator.INTERSECTION)
+        self.assertEqual(half_space.right.divider, 3)
+        self.assertEqual(half_space.left.left.divider, 1)
+        self.assertEqual(half_space.left.right.divider, 2)
+        # test shift
+        input = mcnpy.input_parser.mcnp_input.Input(
+            ["1 0 #(1 2 3)"], mcnpy.input_parser.block_type.BlockType.CELL
+        )
+        parser = mcnpy.input_parser.cell_parser.CellParser()
+        tree = parser.parse(input.tokenize())
+        geometry = tree["geometry"]
+        half_space = HalfSpace.parse_input_node(geometry)
+        self.assertEqual(half_space.operator, Operator.COMPLEMENT)
+        self.assertIsNone(half_space.right)
+        self.assertEqual(half_space.left.operator, Operator.INTERSECTION)
+
+    def test_parse_input_value_node(self):
+        node = mcnpy.input_parser.syntax_node.ValueNode("-1", float)
+        half_space = UnitHalfSpace.parse_input_node(node)
+        self.assertTrue(not half_space.is_cell)
+        self.assertTrue(not half_space.side)
+        self.assertEqual(half_space.divider, 1)
+        half_space = UnitHalfSpace.parse_input_node(node, True)
+        self.assertTrue(half_space.is_cell)
+        self.assertTrue(half_space.side)
+        self.assertEqual(half_space.divider, 1)
+        node = mcnpy.input_parser.syntax_node.ValueNode("+1", float)
+        half_space = UnitHalfSpace.parse_input_node(node, False)
+        self.assertTrue(not half_space.is_cell)
+        self.assertTrue(half_space.side)
+        self.assertEqual(half_space.divider, 1)
+        with self.assertRaises(TypeError):
+            UnitHalfSpace.parse_input_node("hi", False)
+        with self.assertRaises(TypeError):
+            UnitHalfSpace.parse_input_node(node, "hi")
+
+    def test_unit_divider_setter(self):
+        cell = mcnpy.Cell()
+        cell.number = 1
+        parent = mcnpy.Cell()
+        parent.number = 2
+        node = mcnpy.input_parser.syntax_node.ValueNode("1", float)
+        half_space = UnitHalfSpace.parse_input_node(node, True)
+        cells = mcnpy.cells.Cells()
+        cells.append(cell)
+        half_space.update_pointers(cells, [], parent)
+        self.assertIs(half_space.divider, cell)
+        cell2 = mcnpy.Cell()
+        # #madLads
+        cell2.number = 4
+        half_space.divider = cell2
+        self.assertIs(half_space.divider, cell2)
+        self.assertIn(cell2, parent.complements)
+        # test with surface
+        surf = mcnpy.surfaces.CylinderParAxis()
+        surf.number = 5
+        with self.assertRaises(TypeError):
+            half_space.divider = surf
+        half_space.is_cell = False
+        half_space.divider = surf
+        self.assertIs(half_space.divider, surf)
+        self.assertIn(surf, parent.surfaces)
+        with self.assertRaises(TypeError):
+            half_space.divider = "hi"
