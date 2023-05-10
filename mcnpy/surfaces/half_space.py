@@ -291,9 +291,9 @@ class UnitHalfSpace(HalfSpace):
             if div not in container:
                 container.append(div)
 
-    @property
+    @make_prop_pointer("_is_cell", bool)
     def is_cell(self):
-        return self._is_cell
+        pass
 
     def __str__(self):
         if self.side:
