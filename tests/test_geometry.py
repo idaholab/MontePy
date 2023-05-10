@@ -150,10 +150,18 @@ class TestGeometryIntegration(TestCase):
         self.assertNotIsInstance(half_space.right, UnitHalfSpace)
         self.assertEqual(half_space.right.left, ~cell2)
         self.assertEqual(half_space.right.right, ~cell1)
+        self.assertEqual(half_space.operator, Operator.INTERSECTION)
         self.assertEqual(len(half_space), 3)
         for i in range(1, 100):
             half_space &= ~cell1
             self.assertEqual(len(half_space), i + 3)
+        with self.assertRaises(TypeError):
+            half_space &= "hi"
+        # test with complement
+        half_space1 = ~(~cell1 & ~cell2)
+        half_space1 &= ~cell2
+        self.assertEqual(half_space1.left, ~(~cell1 & ~cell2))
+        self.assertEqual(half_space1.right, ~cell2)
 
     def test_ior_recursion(self):
         cell1 = ~mcnpy.Cell()
@@ -164,6 +172,7 @@ class TestGeometryIntegration(TestCase):
         self.assertNotIsInstance(half_space.right, UnitHalfSpace)
         self.assertIs(half_space.right.left, cell2)
         self.assertIs(half_space.right.right, cell1)
+        self.assertEqual(half_space.operator, Operator.UNION)
         self.assertEqual(len(half_space), 3)
         for i in range(1, 100):
             half_space |= cell1
