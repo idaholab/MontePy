@@ -41,6 +41,35 @@ class TestHalfSpaceUnit(TestCase):
         half_space = -surface & ~cell
         self.assertEqual(len(half_space), 2)
 
+    def test_eq(self):
+        cell1 = mcnpy.Cell()
+        cell2 = mcnpy.Cell()
+        half1 = ~cell1 & ~cell2
+        self.assertTrue(half1 == half1)
+        half2 = ~cell1 | ~cell2
+        self.assertTrue(half1 != half2)
+        half2 = ~cell1 & ~cell1
+        self.assertTrue(half1 != half2)
+        half2 = ~cell2 & ~cell2
+        self.assertTrue(half1 != half2)
+        half2 = ~half1
+        half2._operator = Operator.INTERSECTION
+        self.assertTrue(half1 != half2)
+        with self.assertRaises(TypeError):
+            half1 == "hi"
+
+    def test_str(self):
+        cell1 = mcnpy.Cell()
+        cell1.number = 1
+        cell2 = mcnpy.Cell()
+        cell2.number = 2
+        half_space = ~cell1 | ~cell2
+        self.assertEqual(str(half_space), "(#1:#2)")
+        half_space = ~cell1 & ~cell2
+        self.assertEqual(str(half_space), "(#1*#2)")
+        half_space = ~(~cell1 & ~cell2)
+        self.assertEqual(str(half_space), "#(#1*#2)")
+
 
 class TestUnitHalfSpaceUnit(TestCase):
     def test_init(self):
@@ -58,6 +87,30 @@ class TestUnitHalfSpaceUnit(TestCase):
             half_space = UnitHalfSpace(123, True, "hi")
         with self.assertRaises(TypeError):
             half_space = UnitHalfSpace(123, True, False, "hi")
+
+    def test_eq(self):
+        half1 = UnitHalfSpace(1, True, False)
+        self.assertTrue(half1 == half1)
+        half2 = UnitHalfSpace(2, True, False)
+        self.assertTrue(half1 != half2)
+        half2 = UnitHalfSpace(1, False, False)
+        self.assertTrue(half1 != half2)
+        half2 = UnitHalfSpace(1, True, True)
+        self.assertTrue(half1 != half2)
+        with self.assertRaises(TypeError):
+            half1 == "hi"
+
+    def test_str(self):
+        half_space = UnitHalfSpace(1, True, False)
+        self.assertEqual(str(half_space), "+1")
+        half_space.side = False
+        self.assertEqual(str(half_space), "-1")
+        half_space.is_cell = True
+        self.assertEqual(str(half_space), "#1")
+        cell = mcnpy.Cell()
+        cell.number = 1
+        half_space.divider = cell
+        self.assertEqual(str(half_space), "#1")
 
 
 class TestGeometryIntegration(TestCase):
