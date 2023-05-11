@@ -561,10 +561,6 @@ class Cell(Numbered_MCNP_Object):
             raise IllegalState(
                 f"Cell {self.number} has a non-void material but no density"
             )
-        if len(self.surfaces) == 0 and len(self.complements) == 0:
-            raise IllegalState(
-                f"Cell {self.number} has no surfaces nor complemented cells attached to it"
-            )
         if self.geometry is None or len(self.geometry) == 0:
             raise IllegalState(f"Cell {self.number} has no geometry defined.")
 
