@@ -53,7 +53,7 @@ class HalfSpace:
             else:
                 sides.append(HalfSpace.parse_input_node(side))
         # ignore shifts, and simplify the tree
-        if node.operator == Operator.SHIFT:
+        if node.operator == Operator._SHIFT:
             return sides[0]
         if len(sides) == 1:
             sides.append(None)
