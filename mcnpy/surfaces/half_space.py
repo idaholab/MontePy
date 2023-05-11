@@ -1,7 +1,7 @@
 import mcnpy
 from mcnpy.errors import *
 from mcnpy.geometry_operators import Operator
-from mcnpy.input_parser.syntax_node import GeometryTree, ValueNode
+from mcnpy.input_parser.syntax_node import GeometryTree, PaddingNode, ValueNode
 from mcnpy.utilities import *
 
 
@@ -118,7 +118,15 @@ class HalfSpace:
                 operator = " : "
             elif self.operator == Operator.COMPLEMENT:
                 operator = " #"
-                ret = {"operator": operator, "left": self.left.node}
+                if isinstance(self.left, UnitHalfSpace):
+                    ret = {"operator": operator, "left": self.left.node}
+                else:
+                    ret = {
+                        "operator": operator,
+                        "start_pad": PaddingNode("("),
+                        "left": self.left.node,
+                        "end_pad": PaddingNode(")"),
+                    }
             if self.operator in {Operator.INTERSECTION, Operator.UNION}:
                 ret = {"left": self.left.node, "operator": operator}
             if self.right is not None:
