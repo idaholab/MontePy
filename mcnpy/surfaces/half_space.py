@@ -118,6 +118,10 @@ class HalfSpace:
                 operator = " : "
             elif self.operator == Operator.COMPLEMENT:
                 operator = " #"
+            operator = PaddingNode(operator)
+            if self.operator in {Operator.INTERSECTION, Operator.UNION}:
+                ret = {"left": self.left.node, "operator": operator}
+            else:
                 if isinstance(self.left, UnitHalfSpace):
                     ret = {"operator": operator, "left": self.left.node}
                 else:
