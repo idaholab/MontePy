@@ -326,11 +326,7 @@ class Surface(Numbered_MCNP_Object):
         return []
 
     def __neg__(self):
-        return half_space.UnitHalfSpace(
-            self, False, False, self._generate_default_node(int, self.number, None)
-        )
+        return half_space.UnitHalfSpace(self, False, False)
 
     def __pos__(self):
-        return half_space.UnitHalfSpace(
-            self, True, False, self._generate_default_node(int, self.number, None)
-        )
+        return half_space.UnitHalfSpace(self, True, False)
