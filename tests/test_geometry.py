@@ -107,11 +107,11 @@ class TestUnitHalfSpaceUnit(TestCase):
         half_space.side = False
         self.assertEqual(str(half_space), "-1")
         half_space.is_cell = True
-        self.assertEqual(str(half_space), "#1")
+        self.assertEqual(str(half_space), "1")
         cell = mcnpy.Cell()
         cell.number = 1
         half_space.divider = cell
-        self.assertEqual(str(half_space), "#1")
+        self.assertEqual(str(half_space), "1")
 
 
 class TestGeometryIntegration(TestCase):
@@ -138,9 +138,8 @@ class TestGeometryIntegration(TestCase):
         cell = mcnpy.Cell()
         half_space = ~cell
         self.assertIsInstance(half_space, HalfSpace)
-        self.assertIsInstance(half_space, UnitHalfSpace)
-        self.assertIs(half_space.divider, cell)
-        self.assertTrue(half_space.side)
+        self.assertIs(half_space.left.divider, cell)
+        self.assertTrue(half_space.left.side)
         with self.assertRaises(TypeError):
             half_space = cell & cell
         with self.assertRaises(TypeError):
@@ -388,3 +387,11 @@ class TestGeometryIntegration(TestCase):
         node = half_space.node
         self.assertEqual(node.operator, Operator.COMPLEMENT)
         self.assertEqual(node.format(), " #(-1 : 1)")
+        # test cell complement
+        cell = mcnpy.Cell()
+        cell.number = 1
+        half_space = ~cell
+        half_space._ensure_has_nodes()
+        node = half_space.node
+        self.assertEqual(node.operator, Operator.COMPLEMENT)
+        self.assertEqual(node.format(), " #1")
