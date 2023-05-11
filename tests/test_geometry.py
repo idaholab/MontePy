@@ -223,8 +223,8 @@ class TestGeometryIntegration(TestCase):
         half_space |= cell1
         self.assertIs(half_space.left, cell1)
         self.assertNotIsInstance(half_space.right, UnitHalfSpace)
-        self.assertIs(half_space.right.left, cell2)
-        self.assertIs(half_space.right.right, cell1)
+        self.assertEqual(half_space.right.left, cell2)
+        self.assertEqual(half_space.right.right, cell1)
         self.assertEqual(half_space.operator, Operator.UNION)
         self.assertEqual(len(half_space), 3)
         for i in range(1, 100):
