@@ -326,12 +326,53 @@ class Cell(Numbered_MCNP_Object):
 
     @make_prop_pointer("_geometry", HalfSpace, validator=_link_geometry_to_cell)
     def geometry(self):
+        """
+        The Geometry for this problem.
+
+        The HalfSpace tree that is able to represent this cell's geometry.
+        MCNPy's geometry is based upon dividers, which includes both Surfaces, and cells.
+        A half-space is created by choosing one side of the divider.
+        A divider will always create two half-spaces; only one of which can be finite.
+
+        For instance a plane creates two infinite half-spaces, one above and one below.
+        A finite cell also creates two half-spaces; inside, and outside.
+
+        These halfspaces can then be combined with set-logic to make a new half-space.
+
+        To generate a halfspace from a surface you must specify the positive or negative side:
+
+        .. code-block:: python
+
+            half_space = +plane
+
+        To complement a cell you must invert it:
+
+        .. code-block:: python
+
+           half_space = ~cell
+
+        To create more complex geometry you can use binary and ``&`` as an intersection, and binary or ``|`` as a
+        union:
+
+        .. code-block:: python
+
+            half_space = -cylinder & + bottom & - top
+
+        For better documentation please refer to `OpenMC
+        <https://docs.openmc.org/en/stable/usersguide/geometry.html>`_.
+
+        :returns: this cell's geometry
+        :rtype: HalfSpace
+        """
         pass
 
     @make_prop_val_node(
         "_density_node", (float, int, type(None)), base_type=float, deletable=True
     )
     def _density(self):
+        """
+        This is a wrapper to allow using the prop_val_node with mass_density and atom_density.
+        """
         pass
 
     @property
@@ -443,6 +484,8 @@ class Cell(Numbered_MCNP_Object):
     def complements(self):
         """
         The Cell objects that this cell is a complement of
+
+        TODO: should this be a generator?
 
         :rytpe: :class:`mcnpy.cells.Cells`
         """
