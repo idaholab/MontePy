@@ -141,8 +141,6 @@ class HalfSpace:
             self.node.nodes["right"] = self.right.node
 
     def _update_operator(self):
-        if self.node is None:
-            self._generate_default_tree()
         operator_node = self.node.nodes["operator"]
         output = operator_node.format()
         if self.operator == Operator.INTERSECTION:
