@@ -123,7 +123,7 @@ class HalfSpace:
                 ret = {"left": self.left.node, "operator": operator}
             if self.right is not None:
                 ret["right"] = self.right.node
-            self._node = syntax_node.GeometryTree(
+            self._node = GeometryTree(
                 "default geometry", ret, self.operator.value, self.left, self.right
             )
         self.node.nodes["left"] = self.left.node
@@ -145,7 +145,7 @@ class HalfSpace:
             if "#" not in output:
                 self.__switch_operator("#")
                 # change tree order
-                self._node = syntax_node.GeometryTree(
+                self._node = GeometryTree(
                     "default geometry",
                     {
                         "operator": self.node.nodes["operator"],
@@ -354,7 +354,7 @@ class UnitHalfSpace(HalfSpace):
                 num = self.divider
             else:
                 num = self.divider.number
-            node = syntax_node.ValueNode(str(number), int)
+            node = ValueNode(str(num), int)
             node.is_negatable_identifier = True
             self._node = node
 
