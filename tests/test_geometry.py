@@ -356,6 +356,11 @@ class TestGeometryIntegration(TestCase):
         self.assertIsInstance(node, syntax_node.ValueNode)
         self.assertEqual(node.value, 1)
         self.assertEqual(node.format(), "1")
+        # test with negative side
+        half_space = UnitHalfSpace(surf, False, False)
+        half_space._ensure_has_nodes()
+        node = half_space.node
+        self.assertEqual(node.format(), "-1")
         # test with int and not an object
         half_space = UnitHalfSpace(1, True, False)
         half_space._ensure_has_nodes()
