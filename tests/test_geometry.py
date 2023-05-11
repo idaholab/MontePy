@@ -374,3 +374,17 @@ class TestGeometryIntegration(TestCase):
         half_space = -surf | +surf
         half_space._ensure_has_nodes()
         node = half_space.node
+        self.assertIsInstance(node, syntax_node.GeometryTree)
+        self.assertEqual(node.operator, Operator.UNION)
+        self.assertEqual(node.format(), "-1 : 1")
+        # Test intersection
+        half_space = -surf & +surf
+        half_space._ensure_has_nodes()
+        node = half_space.node
+        self.assertEqual(node.operator, Operator.INTERSECTION)
+        # Test complement
+        half_space = ~(-surf | +surf)
+        half_space._ensure_has_nodes()
+        node = half_space.node
+        self.assertEqual(node.operator, Operator.COMPLEMENT)
+        self.assertEqual(node.format(), "#(-1 : 1)")
