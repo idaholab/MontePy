@@ -273,12 +273,14 @@ class Cell(Numbered_MCNP_Object):
     @property
     def volume_mcnp_calc(self):
         """
-        Indicates whether or not the cell volume will attempt to be calculated by MCNP.
+        Indicates whether or not MCNP will attempt to calculate the cell volume.
 
         This can be disabled by either manually setting the volume or disabling
         this calculation globally.
-        This does not guarantee that MCNP will able to do so.
+        This does not guarantee that MCNP will able to calculate the volume.
         Complex geometries may make this impossible.
+
+        See :func:`~mcnpy.cells.Cells.allow_mcnp_volume_calc`
 
         :returns: True iff MCNP will try to calculate the volume for this cell.
         :rtype: bool
