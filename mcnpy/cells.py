@@ -82,6 +82,19 @@ class Cells(NumberedObjectCollection):
         self._volume.is_mcnp_calculated = value
 
     def update_pointers(self, cells, materials, surfaces, data_inputs, problem):
+        """
+        Attaches this object to the appropriate objects for surfaces and materials.
+
+        This will also update each cell with data from the data block,
+        for instance with cell volume from the data block.
+
+        :param cells: a Cells collection of the cells in the problem.
+        :type cells: Cells
+        :param materials: a materials collection of the materials in the problem
+        :type materials: Materials
+        :param surfaces: a surfaces collection of the surfaces in the problem
+        :type surfaces: Surfaces
+        """
         inputs_to_property = mcnpy.Cell._INPUTS_TO_PROPERTY
         inputs_to_always_update = {"_universe", "_fill"}
         inputs_loaded = set()
