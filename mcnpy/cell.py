@@ -8,6 +8,7 @@ from mcnpy.input_parser import syntax_node
 from mcnpy.errors import *
 from mcnpy.numbered_mcnp_object import Numbered_MCNP_Object
 from mcnpy.data_inputs.material import Material
+from mcnpy.geometry_operators import Operator
 from mcnpy.surfaces.half_space import HalfSpace, UnitHalfSpace
 from mcnpy.surfaces.surface import Surface
 from mcnpy.surface_collection import Surfaces
@@ -664,7 +665,8 @@ class Cell(Numbered_MCNP_Object):
         return self.number < other.number
 
     def __invert__(self):
-        return UnitHalfSpace(self, True, True)
+        base_node = UnitHalfSpace(self, True, True)
+        return HalfSpace(base_node, Operator.COMPLEMENT)
 
     def format_for_mcnp_input(self, mcnp_version):
         """

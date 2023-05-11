@@ -304,10 +304,9 @@ class UnitHalfSpace(HalfSpace):
         pass
 
     def __str__(self):
+        side = ""
         if self.side:
-            if self.is_cell:
-                side = "#"
-            else:
+            if not self.is_cell:
                 side = "+"
         else:
             side = "-"
