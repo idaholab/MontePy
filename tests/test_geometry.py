@@ -2,6 +2,7 @@ from unittest import TestCase
 
 import mcnpy
 from mcnpy.geometry_operators import Operator
+from mcnpy.input_parser import syntax_node
 from mcnpy.surfaces.half_space import HalfSpace, UnitHalfSpace
 
 
@@ -345,3 +346,26 @@ class TestGeometryIntegration(TestCase):
         self.assertIn(surf, parent.surfaces)
         with self.assertRaises(TypeError):
             half_space.divider = "hi"
+
+    def test_unit_create_default_node(self):
+        surf = mcnpy.surfaces.CylinderParAxis()
+        surf.number = 1
+        half_space = UnitHalfSpace(surf, True, False)
+        half_space._ensure_has_nodes()
+        node = half_space.node
+        self.assertIsInstance(node, syntax_node.ValueNode)
+        self.assertEqual(node.value, 1)
+        self.assertEqual(node.format(), "1")
+        # test with int and not an object
+        half_space = UnitHalfSpace(1, True, False)
+        half_space._ensure_has_nodes()
+        node = half_space.node
+        self.assertIsInstance(node, syntax_node.ValueNode)
+        self.assertEqual(node.value, 1)
+
+    def test_tree_create_default_node(self):
+        surf = mcnpy.surfaces.CylinderParAxis()
+        surf.number = 1
+        half_space = -surf | +surf
+        half_space._ensure_has_nodes()
+        node = half_space.node
