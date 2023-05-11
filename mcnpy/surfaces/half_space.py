@@ -353,11 +353,15 @@ class UnitHalfSpace(HalfSpace):
     def update_pointers(self, cells, surfaces, cell):
         self._cell = cell
         container = surfaces
+        par_container = self._cell.surfaces
         if self._is_cell:
             container = cells
+            par_container = self._cell.complements
         if isinstance(self.divider, int):
             try:
                 self._divider = container[self._divider]
+                if self._divider not in par_container:
+                    par_container.append(self._divider)
             except KeyError:
                 if self._is_cell:
                     raise BrokenObjectLinkError(

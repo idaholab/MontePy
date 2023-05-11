@@ -509,29 +509,7 @@ class Cell(Numbered_MCNP_Object):
                     )
             else:
                 self._material = None
-
-        if self._old_surface_numbers:
-            for surface_number in self.old_surface_numbers:
-                try:
-                    surf = surfaces[surface_number]
-                    if surf not in self.surfaces:
-                        self._surfaces.append(surf)
-                except KeyError:
-                    raise BrokenObjectLinkError(
-                        "Cell", self.number, "Surface", surface_number
-                    )
-
-        if self._old_complement_numbers:
-            for complement_number in self.old_complement_numbers:
-                try:
-                    complement = cells[complement_number]
-                    if complement not in self.complements:
-                        self._complements.append(complement)
-                except KeyError:
-                    raise BrokenObjectLinkError(
-                        "Cell", self.number, "Complement Cell", complement_number
-                    )
-        self._geometry.update_pointers(self.complements, self.surfaces, self)
+        self._geometry.update_pointers(cells, surfaces, self)
 
     def remove_duplicate_surfaces(self, deleting_dict):
         """Updates old surface numbers to prepare for deleting surfaces.
