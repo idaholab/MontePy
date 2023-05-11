@@ -387,4 +387,4 @@ class TestGeometryIntegration(TestCase):
         half_space._ensure_has_nodes()
         node = half_space.node
         self.assertEqual(node.operator, Operator.COMPLEMENT)
-        self.assertEqual(node.format(), "#(-1 : 1)")
+        self.assertEqual(node.format(), " #(-1 : 1)")
