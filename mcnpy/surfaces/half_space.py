@@ -131,8 +131,6 @@ class HalfSpace:
                         "left": self.left.node,
                         "end_pad": PaddingNode(")"),
                     }
-            if self.operator in {Operator.INTERSECTION, Operator.UNION}:
-                ret = {"left": self.left.node, "operator": operator}
             if self.right is not None:
                 ret["right"] = self.right.node
             self._node = GeometryTree(
@@ -178,13 +176,13 @@ class HalfSpace:
         elif new_symbol == ":":
             output = operator_node.format()
             midpoint = len(output) // 2
-        total_len = 0
-        for i, node in enumerate(operator_node.nodes):
-            if total_len + len(node) >= midpoint:
-                break
-            total_len += len(node)
-        index = midpoint - total_len
-        operator_node._nodes[i] = node[:index] + ":" + node[index + 1 :]
+            total_len = 0
+            for i, node in enumerate(operator_node.nodes):
+                if total_len + len(node) - 1 >= midpoint:
+                    break
+                total_len += len(node)
+            index = midpoint - total_len
+            operator_node._nodes[i] = node[:index] + ":" + node[index + 1 :]
 
     def __iand__(self, other):
         if not isinstance(other, HalfSpace):
