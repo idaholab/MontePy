@@ -259,6 +259,9 @@ class HalfSpace:
             return f"{self.operator.value}{self.left}"
         return f"({self.left}{self.operator.value}{self.right})"
 
+    def __repr__(self):
+        return f"(l: {repr(self.left)}| op: {self.operator}| r:{repr(self.right)})"
+
 
 class UnitHalfSpace(HalfSpace):
     def __init__(self, divider, side, is_cell, node=None):
@@ -315,6 +318,9 @@ class UnitHalfSpace(HalfSpace):
         else:
             div = self.divider.number
         return f"{side}{div}"
+
+    def __repr__(self):
+        return f"s: {self.side}, is_c: {self.is_cell}, div: {self.divider}"
 
     @property
     def node(self):
