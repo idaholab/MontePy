@@ -70,6 +70,8 @@ class TestHalfSpaceUnit(TestCase):
         self.assertEqual(str(half_space), "(#1*#2)")
         half_space = ~(~cell1 & ~cell2)
         self.assertEqual(str(half_space), "#(#1*#2)")
+        # test that no errors occur
+        repr(half_space)
 
 
 class TestUnitHalfSpaceUnit(TestCase):
