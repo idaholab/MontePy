@@ -403,3 +403,29 @@ class TestGeometryIntegration(TestCase):
         node = half_space.node
         self.assertEqual(node.operator, Operator.COMPLEMENT)
         self.assertEqual(node.format(), " #1")
+
+    def test_update_operators_in_node(self):
+        surf = mcnpy.surfaces.CylinderParAxis()
+        surf.number = 1
+        half_space = -surf | +surf
+        half_space._ensure_has_nodes()
+        half_space.operator = Operator.INTERSECTION
+        half_space._update_values()
+        self.assertEqual(half_space.node.format(), "-1   1")
+        del half_space.right
+        half_space.operator = Operator.COMPLEMENT
+        cell = mcnpy.Cell()
+        cell.number = 1
+        half_space.left = UnitHalfSpace(cell, True, True)
+        half_space._update_values()
+        self.assertEqual(half_space.node.format(), "  #1")
+        # test with blank tree
+        half_space = -surf & +surf
+        half_space._update_values()
+        self.assertEqual(half_space.node.format(), "-1 1")
+        # test move to union
+        # test centering
+        half_space.node.nodes["operator"].append("  ")
+        half_space.operator = Operator.UNION
+        half_space._update_values()
+        self.assertEqual(half_space.node.format(), "-1 : 1")
