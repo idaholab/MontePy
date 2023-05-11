@@ -547,22 +547,6 @@ class Cell(Numbered_MCNP_Object):
             for dead_surface in new_deleting_dict:
                 self.surfaces.remove(dead_surface)
 
-    @property
-    def modifier_block_print_changed(self):
-        """
-        Whether or not the print style of the cell modifiers has changed.
-
-        For instance if the file had importances in the cell block, but the user
-        changed that to print in the data block. This would return True in that situation.
-
-        :rtype: bool
-        """
-        for attr, _ in Cell._CARDS_TO_PROPERTY.values():
-            if hasattr(self, attr):
-                if getattr(self, attr).has_changed_print_style:
-                    return True
-        return False
-
     def _update_values(self):
         if self.material:
             mat_num = self.material.number
