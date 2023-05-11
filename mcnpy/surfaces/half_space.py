@@ -102,7 +102,9 @@ class HalfSpace:
 
     def _update_values(self):
         self._ensure_has_nodes()
-        self._update_operator()
+        self._update_node()
+        if isinstance(self, UnitHalfSpace):
+            return
         self.left._update_values()
         if self.right:
             self.right._update_values()
@@ -140,7 +142,7 @@ class HalfSpace:
         if self.right is not None:
             self.node.nodes["right"] = self.right.node
 
-    def _update_operator(self):
+    def _update_node(self):
         operator_node = self.node.nodes["operator"]
         output = operator_node.format()
         if self.operator == Operator.INTERSECTION:
@@ -376,7 +378,7 @@ class UnitHalfSpace(HalfSpace):
             node.is_negative = not self.side
             self._node = node
 
-    def _update_values(self):
+    def _update_node(self):
         if isinstance(self.divider, int):
             self._node.value = self.divider
         else:
