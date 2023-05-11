@@ -185,6 +185,8 @@ class HalfSpace:
     def __iand__(self, other):
         if not isinstance(other, HalfSpace):
             raise TypeError(f"Right hand side must be HalfSpace. {other} given.")
+        if isinstance(self, UnitHalfSpace):
+            return self & other
         right_leaf = (
             self.right is not None and isinstance(self.right, UnitHalfSpace)
         ) or self.right is None
@@ -201,6 +203,8 @@ class HalfSpace:
     def __ior__(self, other):
         if not isinstance(other, HalfSpace):
             raise TypeError(f"Right hand side must be HalfSpace. {other} given.")
+        if isinstance(self, UnitHalfSpace):
+            return self | other
         right_leaf = (
             self.right is not None and isinstance(self.right, UnitHalfSpace)
         ) or self.right is None
