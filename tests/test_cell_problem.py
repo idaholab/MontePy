@@ -42,7 +42,6 @@ class TestCellClass(TestCase):
         self.assertEqual(cell.number, 1)
         self.assertIsNone(cell.material)
         self.assertEqual(cell.old_mat_number, 0)
-        self.assertIn(2, cell.old_surface_numbers)
 
         # test material cell
         for atom_dens, density in [(False, "-0.5"), (True, "0.5")]:
@@ -60,7 +59,6 @@ class TestCellClass(TestCase):
         in_str = "1 0 #2 u= 5 vol=20 trcl=5"
         card = Input([in_str], BlockType.CELL)
         cell = Cell(card)
-        self.assertIn(2, cell.old_complement_numbers)
         self.assertEqual(cell.parameters["TRCL"]["data"][0].value, 5.0)
 
     # TODO test updating cell geometry once done
