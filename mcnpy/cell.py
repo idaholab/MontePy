@@ -73,9 +73,7 @@ class Cell(Numbered_MCNP_Object):
         self._old_mat_number = self._generate_default_node(int, -1)
         self._density_node = self._generate_default_node(float, None)
         self._surfaces = Surfaces()
-        self._old_surface_numbers = set()
         self._complements = Cells()
-        self._old_complement_numbers = set()
         self._number = self._generate_default_node(int, -1)
         super().__init__(input, self._parser)
         if not input:
@@ -99,14 +97,10 @@ class Cell(Numbered_MCNP_Object):
                 and param_found is True is cell parameter inputs are found
         """
         geometry = self._tree["geometry"]
-        surfs = cells = []
         if geometry is not None:
-            surfs, cells = geometry.get_geometry_identifiers()
             self._geometry = HalfSpace.parse_input_node(geometry)
         else:
             self._geometry = None
-        self._old_surface_numbers = surfs
-        self._old_complement_numbers = cells
 
     def _parse_keyword_modifiers(self):
         """
@@ -424,24 +418,6 @@ class Cell(Numbered_MCNP_Object):
         :rtype: Surfaces
         """
         return self._surfaces
-
-    @property
-    def old_surface_numbers(self):
-        """
-        List of the surface numbers specified in the original input file.
-
-        :rtype: list
-        """
-        return self._old_surface_numbers
-
-    @property
-    def old_complement_numbers(self):
-        """
-        List of the cell numbers that this is a complement of.
-
-        :rtype: list
-        """
-        return self._old_complement_numbers
 
     @property
     def parameters(self):
