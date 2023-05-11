@@ -210,11 +210,16 @@ class TestGeometryIntegration(TestCase):
             self.assertEqual(len(half_space), i + 3)
         with self.assertRaises(TypeError):
             half_space &= "hi"
-        # test with complement
-        half_space1 = ~(~cell1 & ~cell2)
-        half_space1 &= ~cell2
-        self.assertEqual(half_space1.left, ~(~cell1 & ~cell2))
-        self.assertEqual(half_space1.right, ~cell2)
+        # test with unit halfspaces
+        surf = mcnpy.surfaces.CylinderParAxis()
+        # test going from leaf to tree
+        half_space = -surf
+        half_space &= +surf
+        self.assertEqual(len(half_space), 2)
+        # test with actual tree
+        half_space = -surf | +surf
+        half_space &= +surf
+        self.assertEqual(len(half_space), 3)
 
     def test_ior_recursion(self):
         cell1 = ~mcnpy.Cell()
@@ -232,11 +237,14 @@ class TestGeometryIntegration(TestCase):
             self.assertEqual(len(half_space), i + 3)
         with self.assertRaises(TypeError):
             half_space |= "hi"
-        # test with complement
-        half_space1 = ~(~cell1 | ~cell2)
-        half_space1 |= ~cell2
-        self.assertEqual(half_space1.left, ~(~cell1 | ~cell2))
-        self.assertEqual(half_space1.right, ~cell2)
+        # test with unit halfspaces
+        surf = mcnpy.surfaces.CylinderParAxis()
+        half_space = -surf
+        half_space |= +surf
+        self.assertEqual(len(half_space), 2)
+        half_space = -surf | +surf
+        half_space |= +surf
+        self.assertEqual(len(half_space), 3)
 
     def test_parse_input_tree(self):
         # simplest intersection
