@@ -42,8 +42,11 @@ class MCNP_Problem:
         """
         A list of the MCNP_Inputs read from the original file.
 
-        This should not be mutated, and should be used a reference to maintain
+        This should not be mutated, and should be used as a reference to maintain
         the structure
+
+        .. deprecated:: 0.2.0
+            This will likely be removed soon, and it's functionality will not be necessary to reproduce.
 
         :return: A list of the MCNP_Object objects representing the file as it was read
         :rtype: list
@@ -209,13 +212,19 @@ class MCNP_Problem:
     def universes(self):
         """
         The Universes object holding all problem universes.
+
+        :returns: a collection of universes in the problem.
+        :rtype: Universes
         """
         return self._universes
 
     @property
     def transforms(self):
         """
-        The transform objects in this problem.
+        The collection of transform objects in this problem.
+
+        :returns: a collection of transforms in the problem.
+        :rtype: Transforms
         """
         return self._transforms
 
@@ -294,11 +303,11 @@ class MCNP_Problem:
 
     def add_cell_children_to_problem(self):
         """
-        Adds the surfaces and materials of all cells in this problem to this problem to the
+        Adds the surfaces, materials, and transforms of all cells in this problem to this problem to the
         internal lists to allow them to be written to file.
 
         .. warning::
-            this does not move complement cells, and probably others.
+            this does not move complement cells, and probably other objects.
         """
         surfaces = set(self.surfaces)
         materials = set(self.materials)
