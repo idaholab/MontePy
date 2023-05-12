@@ -21,17 +21,15 @@ class Material(data_input.DataInputAbstract, Numbered_MCNP_Object):
     """
     A class to represent an MCNP material.
 
-    :param input_card: the input card that contains the data
-    :type input_card: Card
-    :param comments: The comments card that preceded this card if any.
-    :type comments: list
+    :param input: the input card that contains the data
+    :type input: Input
     """
 
-    def __init__(self, input=None, comment=None):
+    def __init__(self, input=None):
         self._material_components = {}
         self._thermal_scattering = None
         self._number = self._generate_default_node(int, -1)
-        super().__init__(input, comment)
+        super().__init__(input)
         if input:
             num = self._input_number
             self._old_number = copy.deepcopy(num)

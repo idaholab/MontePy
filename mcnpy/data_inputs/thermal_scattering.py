@@ -16,19 +16,17 @@ class ThermalScatteringLaw(DataInputAbstract):
 
     :param input: the Input object representing this data input
     :type input: Input
-    :param comments: The Comments that may proceed this
-    :type comments: list
     :param material: the parent Material object that owns this
     :type material: Material
     """
 
     _parser = ThermalParser()
 
-    def __init__(self, input="", comments=None, material=None):
+    def __init__(self, input="", material=None):
         self._old_number = self._generate_default_node(int, -1)
         self._parent_material = None
         self._scattering_laws = []
-        super().__init__(input, comments)
+        super().__init__(input)
         if input:
             self._old_number = self._input_number
             self._scattering_laws = self._tree["data"].nodes

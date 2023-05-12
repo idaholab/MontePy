@@ -19,11 +19,9 @@ class Transform(data_input.DataInputAbstract, Numbered_MCNP_Object):
 
     :param input: The Input syntax object this will wrap and parse.
     :type input: Input
-    :param comments: The Comments that proceeded this card or were inside of this if any
-    :type Comments: list
     """
 
-    def __init__(self, input=None, comments=None, pass_through=False):
+    def __init__(self, input=None, pass_through=False):
         self._pass_through = pass_through
         self._number = self._generate_default_node(int, -1)
         self._old_number = self._generate_default_node(int, -1)
@@ -31,7 +29,7 @@ class Transform(data_input.DataInputAbstract, Numbered_MCNP_Object):
         self._rotation_matrix = np.array([])
         self._is_in_degrees = False
         self._is_main_to_aux = True
-        super().__init__(input, comments)
+        super().__init__(input)
         if input:
             words = self._tree["data"]
             i = 0

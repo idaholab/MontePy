@@ -10,14 +10,12 @@ class Mode(DataInputAbstract):
 
     :param input: the Input object representing this data input
     :type input: Input
-    :param comments: The Comment that may proceed this
-    :type comments: Comment
     """
 
     _parser = ModeParser()
 
-    def __init__(self, input=None, comments=None):
-        super().__init__(input, comments)
+    def __init__(self, input=None):
+        super().__init__(input)
         if input:
             self._particles = set()
             self._parse_and_override_particle_modes(
