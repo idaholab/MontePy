@@ -164,6 +164,8 @@ class Input(ParsingNode):
         for token in lexer.tokenize(self.input_text):
             yield token
 
+    # TODO delete
+
 
 def parse_input_shortcuts(words, input=None):
     """

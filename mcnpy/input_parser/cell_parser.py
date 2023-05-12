@@ -4,6 +4,13 @@ from mcnpy.input_parser import syntax_node
 
 
 class CellParser(MCNP_Parser):
+    """
+    The parser for parsing a Cell input.
+
+    :returns: a syntax tree of the cell.
+    :rtype: SyntaxNode
+    """
+
     debugfile = None
 
     # TODO implement doc parser meta class

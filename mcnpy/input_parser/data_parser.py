@@ -4,6 +4,13 @@ from mcnpy.input_parser import syntax_node
 
 
 class DataParser(MCNP_Parser):
+    """
+    A parser for almost all data inputs.
+
+    :returns: a syntax tree for the data input.
+    :rtype: SyntaxNode
+    """
+
     debugfile = None
 
     @_(
@@ -84,6 +91,13 @@ class DataParser(MCNP_Parser):
 
 
 class ClassifierParser(DataParser):
+    """
+    A parser for parsing the first word or classifier of a data input.
+
+    :returns: the classifier of the data input.
+    :rtype: ClassifierNode
+    """
+
     debugfile = None
 
     @_("classifier")
