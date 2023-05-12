@@ -15,14 +15,14 @@ class Fill(CellModifierInput):
     """
     Object to handle the ``FILL`` card in cell and data blocks.
 
-    :param input: the Input object representing this data card
+    :param input: the Input object representing this data input
     :type input: Input
     :param in_cell_block: if this card came from the cell block of an input file.
     :type in_cell_block: bool
     :param key: the key from the key-value pair in a cell
     :type key: str
-    :param value: the value from the key-value pair in a cell
-    :type value: str
+    :param value: the value syntax tree from the key-value pair in a cell
+    :type value: SyntaxNode
     """
 
     DIMENSIONS = {"i": 0, "j": 1, "k": 2}

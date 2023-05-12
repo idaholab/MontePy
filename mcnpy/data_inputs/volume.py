@@ -16,14 +16,14 @@ class Volume(CellModifierInput):
     """
     Class for the data input that modifies cell volumes; ``VOL``.
 
-    :param input: the Input object representing this data card
+    :param input: the Input object representing this data input
     :type input: Input
     :param in_cell_block: if this card came from the cell block of an input file.
     :type in_cell_block: bool
     :param key: the key from the key-value pair in a cell
     :type key: str
-    :param value: the value from the key-value pair in a cell
-    :type value: str
+    :param value: the value syntax tree from the key-value pair in a cell
+    :type value: SyntaxNode
     """
 
     def __init__(self, input=None, in_cell_block=False, key=None, value=None):
