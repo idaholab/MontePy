@@ -129,7 +129,14 @@ class DataInputAbstract(MCNP_Object):
 
     @property
     def classifier(self):
-        """ " """
+        """
+        The syntax tree object holding the data classifier.
+
+        For example this would container information like ``M4``, or ``F104:n``.
+
+        :returns: the classifier for this data_input.
+        :rtype: ClassifierNode
+        """
         return self._tree["classifier"]
 
     def validate(self):
