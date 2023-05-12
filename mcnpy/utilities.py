@@ -33,6 +33,24 @@ def fortran_float(number_string):
 def make_prop_val_node(
     hidden_param, types=None, base_type=None, validator=None, deletable=False
 ):
+    """
+    A decorator function for making a property from a ValueNode.
+
+    This decorator is meant to handle all boiler plate. It will get and
+    set the value property of the underlying ValueNode.
+    By default the property is not settable unless types is set.
+
+    :param hidden_param: The string representing the parameter name of the internally stored ValueNode.
+    :type hidden_param: str
+    :param types: the acceptable types for the settable, which is passed to isinstance. If an empty tuple will be
+                type(self).
+    :type types: Class, tuple
+    :param validator: A validator function to run on values before setting. Must accept func(self, value).
+    :type validator: function
+    :param deletable: If true make this property deletable. When deleted the value will be set to None.
+    :type deletable: bool
+    """
+
     def decorator(func):
         @property
         @functools.wraps(func)
@@ -83,6 +101,21 @@ def make_prop_val_node(
 def make_prop_pointer(
     hidden_param, types=None, base_type=None, validator=None, deletable=False
 ):
+    """
+    A decorator function that makes a property based off of a pointer to another object.
+
+    Note this can also be used for almost any circumstance as everything in python is a pointer.
+
+    :param hidden_param: The string representing the parameter name of the internally stored ValueNode.
+    :type hidden_param: str
+    :param types: the acceptable types for the settable, which is passed to isinstance.
+    :type types: Class, tuple
+    :param validator: A validator function to run on values before setting. Must accept func(self, value).
+    :type validator: function
+    :param deletable: If true make this property deletable. When deleted the value will be set to None.
+    :type deletable: bool
+    """
+
     def decorator(func):
         @property
         @functools.wraps(func)
