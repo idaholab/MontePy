@@ -9,7 +9,8 @@ class ModeParser(DataParser):
 
     :returns: syntax tree for the mode input.
     :rtype: SyntaxNode
-    """ 
+    """
+
     debugfile = None
 
     @_(
