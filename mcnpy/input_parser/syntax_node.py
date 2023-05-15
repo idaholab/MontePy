@@ -23,23 +23,13 @@ class SyntaxNodeBase(ABC):
 
     @property
     def nodes(self):
+        """
+        The children nodes of this node.
+
+        :returns: a list of the nodes.
+        :rtype: list
+        """
         return self._nodes
-
-    def has_leaves(self):
-        if any([isinstance(x, ValueNode) for x in self.nodes]):
-            return True
-        for node in self.nodes:
-            if isinstance(node, SyntaxNodeBase):
-                if node.has_leaves:
-                    return True
-        return False
-
-    def get_last_leaf_parent(self):
-        for node in self.nodes[::-1]:
-            if isinstance(node, Token):
-                return self
-            if node.has_leaves:
-                return node.get_last_leaf_parent()
 
     def __len__(self):
         return len(self.nodes)
