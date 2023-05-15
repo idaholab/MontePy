@@ -955,6 +955,15 @@ class ValueNode(SyntaxNodeBase):
 
 
 class ParticleNode(SyntaxNodeBase):
+    """
+    A node to hold particles information in a :class:`ClassifierNode`.
+
+    :param name: the name for the node.
+    :type name: str
+    :param token: the original token from parsing
+    :type token: str
+    """
+
     _letter_finder = re.compile(r"([a-zA-Z])")
 
     def __init__(self, name, token):
@@ -972,6 +981,12 @@ class ParticleNode(SyntaxNodeBase):
 
     @property
     def particles(self):
+        """
+        The particles included in this node.
+
+        :returns: a set of the particles being used.
+        :rtype: set
+        """
         return self._particles
 
     @particles.setter
@@ -987,12 +1002,24 @@ class ParticleNode(SyntaxNodeBase):
         self._particles = values
 
     def add(self, value):
+        """
+        Add a particle to this node.
+
+        :param value: the particle to add.
+        :type value: Particle
+        """
         if not isinstance(value, Particle):
             raise ValueError(f"All particles must be a Particle. {value} given")
         self._order.append(value)
         self._particles.add(value)
 
     def remove(self, value):
+        """
+        Remove a particle from this node.
+
+        :param value: the particle to remove.
+        :type value: Particle
+        """
         if not isinstance(value, Particle):
             raise ValueError(f"All particles must be a Particle. {value} given")
         self._particles.remove(value)
@@ -1000,6 +1027,16 @@ class ParticleNode(SyntaxNodeBase):
 
     @property
     def _particles_sorted(self):
+        """
+        The particles in this node ordered in a nice-ish way.
+
+        Ordering:
+            1. User input.
+            2. Order of particles appended
+            3. randomly at the end if all else fails.
+
+        :rtype: list
+        """
         ret = self._order
         ret_set = set(ret)
         remainder = self.particles - ret_set
@@ -1041,6 +1078,13 @@ class ParticleNode(SyntaxNodeBase):
 
 
 class ListNode(SyntaxNodeBase):
+    """
+    A node to represent a list of values.
+
+    :param name: the name of this node.
+    :type name: str
+    """
+
     def __init__(self, name):
         super().__init__(name)
         self._shortcuts = []
@@ -1049,6 +1093,17 @@ class ListNode(SyntaxNodeBase):
         return f"(list: {self.name}, {self.nodes})"
 
     def update_with_new_values(self, new_vals):
+        """
+        Update this list node with new values.
+
+        This will first try to find if any shortcuts in the original input match up with
+        the new values. If so it will then "zip" out those shortcuts to consume
+        as many neighbor nodes as possible.
+        Finally, the internal shortcuts, and list will be updated to reflect the new state.
+
+        :param new_vals: the new values (a list of ValueNodes)
+        :type new_vals: list
+        """
         new_vals_cache = {id(v): v for v in new_vals}
         # bind shortcuts to single site in new values
         for shortcut in self._shortcuts:
@@ -1080,6 +1135,16 @@ class ListNode(SyntaxNodeBase):
             self._shortcuts.pop()
 
     def _expand_shortcuts(self, new_vals, new_vals_cache):
+        """
+        Expands the existing shortcuts, and tries to "zip out" and consume their neighbors.
+
+        :param new_vals: the new values.
+        :type new_vals: list
+        :param new_vals_cache: a dictionary mapping the id of the ValueNode to the ValueNode
+            or ShortcutNode. This is ordered the same as ``new_vals``.
+        :type new_vals_cache: dict
+        """
+
         def try_expansion(shortcut, value):
             status = shortcut.consume_edge_node(value, 1)
             if status:
@@ -1098,6 +1163,9 @@ class ListNode(SyntaxNodeBase):
                         return
 
         def check_for_orphan_jump(value):
+            """
+            Checks if the current Jump is not tied to an existing Shortcut
+            """
             nonlocal shortcut
             if value.value is None and shortcut is None:
                 shortcut = ShortcutNode(p=None, short_type=Shortcuts.JUMP)
@@ -1128,6 +1196,12 @@ class ListNode(SyntaxNodeBase):
                     check_for_orphan_jump(new_vals[i])
 
     def append(self, val):
+        """
+        Append the node to this node.
+
+        :param node: node
+        :type node: ValueNode, ShortcutNode
+        """
         if isinstance(val, ShortcutNode):
             self._shortcuts.append(val)
         super().append(val)
@@ -1171,6 +1245,9 @@ class ListNode(SyntaxNodeBase):
         raise IndexError(f"{indx} not in ListNode")
 
     def __get_slice(self, i: slice):
+        """
+        Helper function for __getitem__ with slices.
+        """
         rstep = i.step if i.step is not None else 1
         rstart = i.start
         rstop = i.stop
@@ -1199,6 +1276,14 @@ class ListNode(SyntaxNodeBase):
         return ret
 
     def remove(self, obj):
+        """
+        Removes the given object from this list.
+
+        TODO: handle shortcuts
+
+        :param obj: the object to remove.
+        :type obj: ValueNode
+        """
         self.nodes.remove(obj)
 
     def __eq__(self, other):
@@ -1215,10 +1300,26 @@ class ListNode(SyntaxNodeBase):
 
 
 class IsotopesNode(SyntaxNodeBase):
+    """
+    A node for representing isotopes and their concentration.
+
+    This stores a list of tuples of ZAIDs and concentrations.
+
+    :param name: a name for labeling this node.
+    :type name: str
+    """
+
     def __init__(self, name):
         super().__init__(name)
 
     def append(self, isotope_fraction):
+        """
+        Append the node to this node.
+
+        :param isotope_fraction: the isotope_fraction to add. This must be a list
+            of a ValueNode that is the ZAID, and a ValueNode of the concentration.
+        :type isotope_fraction: list
+        """
         isotope, concentration = isotope_fraction[1:3]
         self._nodes.append((isotope, concentration))
 
@@ -1252,6 +1353,17 @@ class IsotopesNode(SyntaxNodeBase):
 
 
 class ShortcutNode(ListNode):
+    """
+    A node that pretends to be a :class:`ListNode` but is actually representing a shortcut.
+
+    This takes the shortcut tokens, and expands it into their "virtual" values.
+
+    :param p: the parsing object to parse.
+    :type p: ???
+    :param short_type: the type of the shortcut.
+    :type short_type: Shortcuts
+    """
+
     _shortcut_names = {
         "REPEAT": Shortcuts.REPEAT,
         "JUMP": Shortcuts.JUMP,
@@ -1290,6 +1402,11 @@ class ShortcutNode(ListNode):
 
     @property
     def end_padding(self):
+        """
+        The padding at the end of this shortcut.
+
+        :rtype: PaddingNode
+        """
         return self._end_pad
 
     @end_padding.setter
@@ -1366,6 +1483,16 @@ class ShortcutNode(ListNode):
             self.append(p.number_phrase1)
 
     def _can_consume_node(self, node, direction):
+        """
+        If it's possible to consume this node.
+
+        :param node: the node to consume
+        :type node: ValueNode
+        :param direction: the direct to go in. Must be in {-1, 1}
+        :type direction: int
+        :returns: true it can be consumed.
+        :rtype: bool
+        """
         if self._type == Shortcuts.JUMP:
             if node.value is None:
                 return True
@@ -1399,6 +1526,16 @@ class ShortcutNode(ListNode):
         return False
 
     def _is_valid_interpolate_edge(self, node, direction):
+        """
+        Is a valid interpolation edge.
+
+        :param node: the node to consume
+        :type node: ValueNode
+        :param direction: the direct to go in. Must be in {-1, 1}
+        :type direction: int
+        :returns: true it can be consumed.
+        :rtype: bool
+        """
         if direction == 1:
             edge = self._end
         else:
@@ -1410,6 +1547,14 @@ class ShortcutNode(ListNode):
         return math.isclose(new_val, node.value, rel_tol=rel_tol, abs_tol=abs_tol)
 
     def consume_edge_node(self, node, direction):
+        """
+        Tries to consume the given edge.
+
+        If it can be consumed the node is appended to the internal nodes.
+
+        :returns: True if the node was consumed.
+        :rtype: bool
+        """
         if self._can_consume_node(node, direction):
             if direction == 1:
                 self._nodes.append(node)
@@ -1467,6 +1612,12 @@ class ShortcutNode(ListNode):
 
 
 class ClassifierNode(SyntaxNodeBase):
+    """
+    A node to represent the classifier for a :class:`mcnpy.data_input.DataInput`
+
+    e.g., represents ``M4``, ``F104:n,p``, ``IMP:n,e``.
+    """
+
     def __init__(self):
         super().__init__("classifier")
         self._prefix = None
