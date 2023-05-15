@@ -1133,19 +1133,6 @@ class ListNode(SyntaxNodeBase):
         super().append(val)
 
     @property
-    def value(self):
-        strings = []
-        for node in self.nodes:
-            if isinstance(node, SyntaxNodeBase):
-                strings.append(str(node.value))
-            elif isinstance(node, input_parser.mcnp_input.Jump):
-                strings.append(str(node))
-
-            else:
-                strings.append(node)
-        return " ".join(strings)
-
-    @property
     def comments(self):
         for node in self.nodes:
             yield from node.comments
@@ -1431,44 +1418,7 @@ class ShortcutNode(ListNode):
             return True
         return False
 
-    def _can_recompress(self):
-        if self._type == Shortcuts.JUMP:
-            for node in self.nodes:
-                if not isinstance(node, input_parser.mcnp_input.Jump):
-                    return False
-            return True
-        elif self._type == Shortcuts.REPEAT:
-            start_val = self.nodes[0].value
-            for node in self.nodes:
-                if not math.isclose(
-                    start_val, node.value, rel_tol=rel_tol, abs_tol=abs_tol
-                ):
-                    return False
-            return True
-        elif self._type == Shortcuts.MULTIPLY:
-            return self.nodes[0].type == self.nodes[-1].type
-        else:
-            if self._type == Shortcuts.LOG_INTERPOLATE:
-                is_log = True
-            else:
-                is_log = False
-            for i, node in enumerate(self.nodes):
-                new_val = self._begin + self._spacing * (i + 1)
-                if is_log:
-                    new_val = 10**new_val
-                if not math.isclose(
-                    new_val, node.value, rel_tol=rel_tol, abs_tol=abs_tol
-                ):
-                    return False
-            return True
-
     def format(self):
-        if not self._can_recompress:
-            ret = ""
-            for node in self.nodes:
-                ret += node.format()
-            return ret
-
         if self._type == Shortcuts.JUMP:
             temp = self._format_jump()
         # repeat
