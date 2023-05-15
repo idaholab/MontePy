@@ -35,6 +35,9 @@ class SyntaxNodeBase(ABC):
         return len(self.nodes)
 
     def print_nodes(self):
+        """
+        TODO delete?
+        """
         ret = []
         for node in self._nodes:
             ret.append(node.print_nodes())
@@ -132,24 +135,6 @@ class GeometryTree(SyntaxNodeBase):
 
     def __repr__(self):
         return str(self)
-
-    def get_geometry_identifiers(self):
-        surfaces = []
-        cells = []
-        for node in (self._left_side, self._right_side):
-            if node is None:
-                continue
-            if isinstance(node, type(self)):
-                child_surfs, child_cells = node.get_geometry_identifiers()
-                surfaces += child_surfs
-                cells += child_cells
-            elif isinstance(node, ValueNode):
-                identifier = abs(int(node.value))
-                if self._operator == Operator.COMPLEMENT:
-                    cells.append(identifier)
-                else:
-                    surfaces.append(identifier)
-        return (surfaces, cells)
 
     def format(self):
         ret = ""
