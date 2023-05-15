@@ -3,6 +3,12 @@ from mcnpy.input_parser import syntax_node
 
 
 class ThermalParser(DataParser):
+    """
+    A parser for thermal scattering law inputs.
+
+    :rtype: SyntaxNode
+    """
+
     debugfile = None
 
     @_("classifier_phrase thermal_law_sequence")

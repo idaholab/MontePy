@@ -4,6 +4,12 @@ from mcnpy.input_parser import syntax_node
 
 
 class SurfaceParser(MCNP_Parser):
+    """
+    A parser for MCNP surfaces.
+
+    :rtype: SyntaxNode
+    """
+
     debugfile = None
 
     @_(
