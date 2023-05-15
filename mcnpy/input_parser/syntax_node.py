@@ -13,12 +13,27 @@ import re
 
 
 class SyntaxNodeBase(ABC):
+    """
+    A base class for all syntax nodes.
+
+    A syntax node is any component of the syntax tree
+    for a parsed input.
+
+    :param name: a name for labeling this node.
+    :type name: str
+    """
+
     def __init__(self, name):
         self._name = name
         self._nodes = []
 
     def append(self, node):
-        # todo type checking
+        """
+        Append the node to this node.
+
+        :param node: node
+        :type node: SyntaxNodeBase, str, None
+        """
         self._nodes.append(node)
 
     @property
@@ -45,6 +60,12 @@ class SyntaxNodeBase(ABC):
 
     @property
     def name(self):
+        """
+        The name for the node.
+
+        :returns: the node's name.
+        :rtype: str
+        """
         return self._name
 
     @name.setter
@@ -55,25 +76,66 @@ class SyntaxNodeBase(ABC):
 
     @abstractmethod
     def format(self):
+        """
+        Generate a string representing the tree's current state.
+
+        :returns: the MCNP representation of the tree's current state.
+        :rtype: str
+        """
         pass
 
     @property
     @abstractmethod
     def comments(self):
+        """
+        A generator of all comments contained in this tree.
+
+        :returns: the comments in the tree.
+        :rtype: Generator
+        """
         pass
 
     def get_trailing_comment(self):
+        """
+        Get the trailing comments if any.
+
+        :returns: The trailing comments of this tree.
+        :rtype: list
+        """
         tail = self.nodes[-1]
         if isinstance(tail, SyntaxNodeBase):
             return tail.get_trailing_comment()
 
     def _delete_trailing_comment(self):
+        """
+        Deletes the trailing comment if any.
+        """
         tail = self.nodes[-1]
         if isinstance(tail, SyntaxNodeBase):
             tail._delete_trailing_comment()
 
 
 class SyntaxNode(SyntaxNodeBase):
+    """
+    A general syntax node for handling inner tree nodes.
+
+    This is a generalized wrapper for a dictionary.
+    The order of the dictionary is significant.
+
+    This does behave like a dict for collecting items. e.g.,
+
+    .. code-block:: python
+
+        value = syntax_node["start_pad"]
+        if key in syntax_node:
+            pass
+
+    :param name: a name for labeling this node.
+    :type name: str
+    :param parse_dict: the dictionary of the syntax tree nodes.
+    :type parse_dict: dict
+    """
+
     def __init__(self, name, parse_dict):
         super().__init__(name)
         self._name = name
@@ -86,6 +148,15 @@ class SyntaxNode(SyntaxNodeBase):
         return key in self.nodes
 
     def get_value(self, key):
+        """
+        Get a value from the syntax tree.
+
+        :param key: the key for the item to get.
+        :type key: str
+        :returns: the node in the syntax tree.
+        :rtype: SyntaxNodeBase
+        :raises KeyError: if key is not in SyntaxNode
+        """
         temp = self.nodes[key]
         if isinstance(temp, ValueNode):
             return temp.value
@@ -123,6 +194,21 @@ class SyntaxNode(SyntaxNodeBase):
 
 
 class GeometryTree(SyntaxNodeBase):
+    """
+    A syntax tree that is a binary tree for representing CSG geometry logic.
+
+    :param name: a name for labeling this node.
+    :type name: str
+    :param tokens: The nodes that are in the tree.
+    :type tokens: dict
+    :param op: The string representation of the Operator to use.
+    :type op: str
+    :param left: the node of the left side of the binary tree.
+    :type left: GeometryTree, ValueNode
+    :param right: the node of the right side of the binary tree.
+    :type right: GeometryTree, ValueNode
+    """
+
     def __init__(self, name, tokens, op, left, right=None):
         super().__init__(name)
         self._nodes = tokens
@@ -149,18 +235,45 @@ class GeometryTree(SyntaxNodeBase):
 
     @property
     def left(self):
+        """
+        The left side of the binary tree.
+
+        :returns: the left node of the syntax tree.
+        :rtype: GeometryTree, ValueNode
+        """
         return self._left_side
 
     @property
     def right(self):
+        """
+        The right side of the binary tree.
+
+        :returns: the right node of the syntax tree.
+        :rtype: GeometryTree, ValueNode
+        """
         return self._right_side
 
     @property
     def operator(self):
+        """
+        The operator used for the binary tree.
+
+        :returns: the operator used.
+        :rtype: Operator
+        """
         return self._operator
 
 
 class PaddingNode(SyntaxNodeBase):
+    """
+    A syntax tree node to represent a collection of sequential padding elements.
+
+    :param token: The first padding token for this node.
+    :type token: str
+    :param is_comment: If the token provided is a comment.
+    :type is_comment: bool
+    """
+
     def __init__(self, token=None, is_comment=False):
         super().__init__("padding")
         if token is not None:
@@ -174,13 +287,40 @@ class PaddingNode(SyntaxNodeBase):
 
     @property
     def value(self):
+        """
+        A string representation of the contents of this node.
+
+        All of the padding will be combined into a single string.
+
+        :returns: a string sequence of the padding.
+        :rtype: str
+        """
         return "".join([val.format() for val in self.nodes])
 
     def is_space(self, i):
+        """
+        Determine if the value at i is a space or not.
+
+        .. note::
+            the newline, ``\\n``, by itself is not considered a space.
+
+        :param i: the index of the element to check.
+        :type i: int
+        :returns: true iff the padding at that node is only spaces that are not ``\\n``.
+        :raises IndexError: if the index i is not in ``self.nodes``.
+        """
         val = self.nodes[i]
         return len(val.strip()) == 0 and val != "\n"
 
     def append(self, val, is_comment=False):
+        """
+        Append the node to this node.
+
+        :param node: node
+        :type node: str, CommentNode
+        :param is_comment: whether or not the node is a comment.
+        :type is_comment: bool
+        """
         if is_comment:
             if not isinstance(val, CommentNode):
                 val = CommentNode(val)
@@ -214,6 +354,12 @@ class PaddingNode(SyntaxNodeBase):
                 yield node
 
     def _get_first_comment(self):
+        """
+        Get the first index that is a comment.
+
+        :returns: the index of the first comment, if there is no comment then None.
+        :rtype: int, None
+        """
         for i, item in enumerate(self.nodes):
             if isinstance(item, CommentNode):
                 return i
@@ -231,6 +377,12 @@ class PaddingNode(SyntaxNodeBase):
             del self._nodes[i:]
 
     def _grab_beginning_comment(self, extra_padding):
+        """
+        Consumes the provided comment, and moves it to the beginning of this node.
+
+        :param extra_padding: the padding comment to add to the beginning of this padding.
+        :type extra_padding: list
+        """
         if extra_padding[-1] != "\n":
             extra_padding.append("\n")
         self._nodes = extra_padding + self.nodes
@@ -259,6 +411,9 @@ class CommentNode(SyntaxNodeBase):
             (?P<contents>.*)""",
         re.I | re.VERBOSE,
     )
+    """
+    A re matcher to confirm this is a C style comment.
+    """
 
     def __init__(self, input):
         super().__init__("comment")
@@ -267,6 +422,14 @@ class CommentNode(SyntaxNodeBase):
         self._nodes = [node]
 
     def _convert_to_node(self, token):
+        """
+        Converts the token to a Syntax Node to store.
+
+        :param token: the token to convert.
+        :type token: str
+        :returns: the SyntaxNode of the Comment.
+        :rtype: SyntaxNode
+        """
         match = self._MATCHER.match(token)
         start = match["delim"]
         comment_line = match["contents"]
@@ -283,6 +446,12 @@ class CommentNode(SyntaxNodeBase):
         )
 
     def append(self, token):
+        """
+        Append the comment token to this node.
+
+        :param token: the comment token
+        :type token: str
+        """
         is_dollar, node = self._convert_to_node(token)
         if is_dollar or self._is_dollar:
             raise TypeError(
@@ -330,6 +499,20 @@ class CommentNode(SyntaxNodeBase):
 
 
 class ValueNode(SyntaxNodeBase):
+    """
+    A syntax node to represent the leaf node.
+
+    This stores the original input token, the current value,
+    and the possible associated padding.
+
+    :param token: the original token for the ValueNode.
+    :type token: str
+    :param token_type: the type for the ValueNode.
+    :type token_type: class
+    :param padding: the padding for this node.
+    :type padding: PaddingNode
+    """
+
     _FORMATTERS = {
         float: {
             "value_length": 0,
@@ -345,6 +528,9 @@ class ValueNode(SyntaxNodeBase):
         int: {"value_length": 0, "zero_padding": 0, "sign": "-"},
         str: {"value_length": 0},
     }
+    """
+    The default formatters for each type.
+    """
 
     _SCIENTIFIC_FINDER = re.compile(
         r"""
@@ -357,6 +543,9 @@ class ValueNode(SyntaxNodeBase):
         """,
         re.VERBOSE,
     )
+    """
+    A regex for finding scientific notation.
+    """
 
     def __init__(self, token, token_type, padding=None):
         super().__init__("")
@@ -387,6 +576,9 @@ class ValueNode(SyntaxNodeBase):
         self._is_reversed = False
 
     def _convert_to_int(self):
+        """
+        Converts a float ValueNode to an int ValueNode.
+        """
         if self._type not in {float, int}:
             raise ValueError(f"ValueNode must be a float to convert to int")
         self._type = int
@@ -406,6 +598,18 @@ class ValueNode(SyntaxNodeBase):
     def _convert_to_enum(
         self, enum_class, allow_none=False, format_type=str, switch_to_upper=False
     ):
+        """
+        Converts the ValueNode to an Enum for allowed values.
+
+        :param enum_class: the class for the enum to use.
+        :type enum_class: Class
+        :param allow_none: Whether or not to allow None as a value.
+        :type allow_none: bool
+        :param format_type: the base data type to format this ValueNode as.
+        :type format_type: Class
+        :param switch_to_upper: Whether or not to convert a string to upper case before convert to enum.
+        :type switch_to_upper: bool
+        """
         self._type = enum_class
         if switch_to_upper:
             value = self._value.upper()
@@ -417,6 +621,20 @@ class ValueNode(SyntaxNodeBase):
 
     @property
     def is_negatable_identifier(self):
+        """
+        Whether or not this value is a negatable identifier.
+
+        Example use: the surface transform or periodic surface is switched based on positive
+        or negative.
+
+        This means:
+            1. the ValueNode is an int.
+            2. The ``value`` will always be positive.
+            3. The ``is_negative`` property will be available.
+
+        :returns: the state of this marker.
+        :rtype: bool
+        """
         return self._is_neg_id
 
     @is_negatable_identifier.setter
@@ -432,6 +650,19 @@ class ValueNode(SyntaxNodeBase):
 
     @property
     def is_negatable_float(self):
+        """
+        Whether or not this value is a negatable float.
+
+        Example use: cell density.
+
+        This means:
+            1. the ValueNode is an int.
+            2. The ``value`` will always be positive.
+            3. The ``is_negative`` property will be available.
+
+        :returns: the state of this marker.
+        :rtype: bool
+        """
         return self._is_neg_val
 
     @is_negatable_float.setter
@@ -446,6 +677,15 @@ class ValueNode(SyntaxNodeBase):
 
     @property
     def is_negative(self):
+        """
+        Whether or not this value is negative.
+
+        If neither :func:`is_negatable_float` or :func:`is_negatable_identifier` is true
+        then this will return ``None``.
+
+        :returns: true if this value is negative (either in input or through state).
+        :rtype: bool, None
+        """
         if self.is_negatable_identifier or self.is_negatable_float:
             return self._is_neg
         if self._type in {int, float} and self.value is not None:
@@ -457,6 +697,9 @@ class ValueNode(SyntaxNodeBase):
             self._is_neg = val
 
     def _reverse_engineer_formatting(self):
+        """
+        Tries its best to figure out and update the formatter based on the token's format.
+        """
         if not self._is_reversed and self._token is not None:
             self._is_reversed = True
             token = self._token
@@ -508,6 +751,15 @@ class ValueNode(SyntaxNodeBase):
         self._formatter["precision"] = precision
 
     def _can_float_to_int_happen(self):
+        """
+        Checks if you can format a floating point as an int.
+
+        E.g., 1.0 -> 1
+
+        Considers if this was done in the input, and if the value is close to the int value.
+
+        :rtype: bool.
+        """
         if self._type != float or not self._formatter["as_int"]:
             return False
         nearest_int = round(self.value)
@@ -517,12 +769,27 @@ class ValueNode(SyntaxNodeBase):
 
     @property
     def _print_value(self):
+        """
+        The print version of the value.
+
+        This takes a float/int that is negatable, and negates it
+        based on the ``is_negative`` value.
+
+        :rtype: int, float
+        """
         if self._type in {int, float} and self.is_negative:
             return -self.value
         return self.value
 
     @property
     def _value_changed(self):
+        """
+        Checks if the value has changed at all from first parsing.
+
+        Used to shortcut formatting and reverse engineering.
+
+        :rtype: bool
+        """
         if self.value is None and self._og_value is None:
             return False
         if self.value is None or self._og_value is None:
@@ -610,6 +877,12 @@ class ValueNode(SyntaxNodeBase):
 
     @property
     def padding(self):
+        """
+        The padding if any for this ValueNode.
+
+        :returns: the padding if any.
+        :rtype: PaddingNode
+        """
         return self._padding
 
     @padding.setter
@@ -618,10 +891,24 @@ class ValueNode(SyntaxNodeBase):
 
     @property
     def type(self):
+        """
+        The data type for this ValueNode.
+
+        Examples: float, int, str, Lattice
+
+        :returns: the class for the value of this node.
+        :rtype: Class
+        """
         return self._type
 
     @property
     def token(self):
+        """
+        The original text (token) for this ValueNode.
+
+        :returns: the original input.
+        :rtype: str
+        """
         return self._token
 
     def __str__(self):
@@ -632,6 +919,16 @@ class ValueNode(SyntaxNodeBase):
 
     @property
     def value(self):
+        """
+        The current semantic value of this ValueNode.
+
+        This is the parsed meaning in the type of ``self.type``,
+        that can be updated. When this value is updated, next time format()
+        is ran this value will be used.
+
+        :returns: the node's value in type ``type``.
+        :rtype: float, int, str, enum
+        """
         return self._value
 
     @value.setter
