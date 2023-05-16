@@ -5,6 +5,11 @@ from sly import Lexer
 
 
 class MCNP_Lexer(Lexer):
+    """
+    Base lexer for all MCNP lexers.
+
+    Provides ~90% of the tokens definition.
+    """
     tokens = {
         COMMENT,
         COMPLEMENT,
@@ -79,20 +84,32 @@ class MCNP_Lexer(Lexer):
         # volume
         "no",
     }
+    """
+    Defines allowed keywords in MCNP.
+    """
 
     literals = {"(", ":", ")", "&", "#", "=", "*", "+"}
 
     COMPLEMENT = r"\#"
+    """
+    A complement character.
+    """
 
     reflags = re.IGNORECASE | re.VERBOSE
 
     @_(r"\$.*")
     def DOLLAR_COMMENT(self, t):
+        """
+        A comment starting with a dollar sign.
+        """
         self.lineno += t.value.count("\n")
         return t
 
     @_(r"C\n", r"C\s.*")
     def COMMENT(self, t):
+        """
+        A ``c`` style comment.
+        """
         self.lineno += t.value.count("\n")
         start = find_column(self.text, t)
         if start <= 5:
@@ -102,6 +119,9 @@ class MCNP_Lexer(Lexer):
 
     @_(r"SC\d+.*")
     def SOURCE_COMMENT(self, t):
+        """
+        A source comment.
+        """
         self.lineno += t.value.count("\n")
         start = find_column(self.text, t)
         if start <= 5:
@@ -111,6 +131,9 @@ class MCNP_Lexer(Lexer):
 
     @_(r"FC\d+.*")
     def TALLY_COMMENT(self, t):
+        """
+        A tally Comment.
+        """
         self.lineno += t.value.count("\n")
         start = find_column(self.text, t)
         if start <= 5:
@@ -120,18 +143,34 @@ class MCNP_Lexer(Lexer):
 
     @_(r"\s+")
     def SPACE(self, t):
+        """
+        Any white space.
+        """
         t.value = t.value.expandtabs(constants.TABSIZE)
         self.lineno += t.value.count("\n")
         return t
 
     @_(r"\d{4,6}\.\d{2,3}[a-z]")
     def ZAID(self, t):
+        """
+        A ZAID isotope definition in the MCNP format.
+
+        E.g.: ``1001.80c``.
+        """
         return t
 
     THERMAL_LAW = r"[a-z/]+\.\d+[a-z]"
+    """
+    An MCNP formatted thermal scattering law.
+
+    e.g.: ``lwtr.20t``. 
+    """
 
     @_(r"[+\-]?[0-9]*\.?[0-9]*E?[+\-]?[0-9]*[ijrml]+[a-z\./]*", r"[a-z]+[a-z\./]*")
     def TEXT(self, t):
+        """
+        General text that covers shortcuts and Keywords.
+        """
         if update := self._parse_shortcut(t):
             return update
         if t.value.lower() in self._KEYWORDS:
@@ -140,14 +179,23 @@ class MCNP_Lexer(Lexer):
 
     @_(r"[+\-]?[0-9]+\.?[0-9]*E?[+\-]?[0-9]*", r"[+\-]?[0-9]*\.?[0-9]+E?[+\-]?[0-9]*")
     def NUMBER(self, t):
+        """
+        A float, or int number, including "fortran floats".
+        """
         if fortran_float(t.value) == 0:
             t.type = "NULL"
         return t
 
     NULL = r"0+"
+    """
+    Zero number.
+    """
 
     @_(r"MESSAGE:.*\s")
     def MESSAGE(self, t):
+        """ 
+        A message block.
+        """
         self.lineno += t.value.count("\n")
         return t
 
@@ -166,19 +214,40 @@ class MCNP_Lexer(Lexer):
                 return t
 
     INTERPOLATE = r"\d*I"
+    """
+    An interpolate shortcut.
+    """
 
     JUMP = r"\d*J"
+    """
+    A jump shortcut.
+    """
 
     LOG_INTERPOLATE = r"\d*I?LOG"
+    """
+    A logarithmic interpolate shortcut.
+    """
 
     MULTIPLY = r"[+\-]?[0-9]+\.?[0-9]*E?[+\-]?[0-9]*M"
+    """
+    A multiply shortcut.
+    """
 
     REPEAT = r"\d*R"
+    """
+    A repeat shortcut.
+    """
 
     FILE_PATH = r'[^><:"%,;=&\(\)|?*\s]+'
+    """
+    A file path that covers basically anything that windows or linux allows.
+    """
 
 
 class ParticleLexer(MCNP_Lexer):
+    """
+    A lexer for lexing an input that has particles in it.
+    """
     tokens = {
         COMMENT,
         COMPLEMENT,
@@ -244,6 +313,12 @@ class ParticleLexer(MCNP_Lexer):
 
     @_(r":([npe|quvfhl+\-xyo!<>g/zk%^b_~cw@dtsa\*\?,]|\#\d*)+")
     def PARTICLE_DESIGNATOR(self, t):
+        """
+        A list of particles associated with the input.
+
+        The biggest reason for this is so that ``p`` is interpreted 
+        as a photon, and not a plane.
+        """
         return t
 
     @_(r"[+\-]?[0-9]*\.?[0-9]*E?[+\-]?[0-9]*[ijrml]+[a-z\./]*", r"[a-z]+[a-z\./]*")
@@ -257,6 +332,9 @@ class ParticleLexer(MCNP_Lexer):
 
 
 class CellLexer(ParticleLexer):
+    """
+    A lexer for cell inputs that allows particles.
+    """
     tokens = {
         COMMENT,
         COMPLEMENT,
@@ -280,6 +358,9 @@ class CellLexer(ParticleLexer):
 
 
 class DataLexer(ParticleLexer):
+    """
+    A lexer for data inputs.
+    """
     tokens = {
         COMMENT,
         COMPLEMENT,
@@ -305,10 +386,19 @@ class DataLexer(ParticleLexer):
 
     @_(r"([|+\-!<>/%^_~@\*\?\#,]|\#\d*)+")
     def PARTICLE_SPECIAL(self, t):
+        """
+        Particle designators that are special characters.
+        """
         return t
 
 
 class SurfaceLexer(MCNP_Lexer):
+    """
+    A lexer for Surface inputs.
+
+    The main difference is that ``p`` will be interpreted as a plane,
+    and not a photon.
+    """
     tokens = {
         COMMENT,
         COMPLEMENT,
@@ -371,6 +461,9 @@ class SurfaceLexer(MCNP_Lexer):
         "wed",
         "arb",
     }
+    """
+    All allowed surface types.
+    """
 
     @_(r"[+\-]?[0-9]*\.?[0-9]*E?[+\-]?[0-9]*[ijrml]+[a-z\./]*", r"[a-z]+[a-z\./]*")
     def TEXT(self, t):
@@ -381,6 +474,16 @@ class SurfaceLexer(MCNP_Lexer):
 
 
 def find_column(text, token):
+    """
+    Calculates the column number for the start of this token.
+
+    Uses 0-indexing.
+
+    :param text: the text being lexed.
+    :type text: str
+    :param token: the token currently being processed
+    :type token: sly.lex.Token 
+    """
     last_cr = text.rfind("\n", 0, token.index)
     if last_cr < 0:
         last_cr = 0
