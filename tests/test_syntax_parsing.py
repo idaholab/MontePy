@@ -5,7 +5,153 @@ import mcnpy
 from mcnpy.input_parser import input_syntax_reader
 from mcnpy.input_parser.mcnp_input import Input, Jump, Message, ReadInput, Title
 from mcnpy.input_parser.block_type import BlockType
+from mcnpy.input_parser import syntax_node
 from mcnpy.particle import Particle
+
+
+class TestSyntaxNode(TestCase):
+    def test_valuenoode_init(self):
+        for type, token, answer in [
+            (str, "hi", "hi"),
+            (float, "1.2300", 1.23),
+            (int, "1", 1),
+            (float, "1.23e-3", 1.23e-3),
+            (float, "6.02+23", 6.02e23),
+        ]:
+            for padding in [None, syntax_node.PaddingNode(" ")]:
+                node = syntax_node.ValueNode(token, type, padding)
+                self.assertEqual(node.value, answer)
+                self.assertEqual(node.token, token)
+                if padding:
+                    self.assertEqual(node.padding, padding)
+                else:
+                    self.assertIsNone(node.padding)
+        # test with None values
+        for type in {str, float, int}:
+            node = syntax_node.ValueNode(None, type)
+            self.assertIsNone(node.value)
+            node = syntax_node.ValueNode(Jump(), type)
+            self.assertIsNone(node.value)
+
+    def test_valuenode_convert_to_int(self):
+        node = syntax_node.ValueNode("1", float)
+        node._convert_to_int()
+        self.assertEqual(node.type, int)
+        self.assertEqual(node.value, 1)
+        # test 1.0
+        node = syntax_node.ValueNode("1.0", float)
+        node._convert_to_int()
+        self.assertEqual(node.type, int)
+        self.assertEqual(node.value, 1)
+        # test wrong type
+        with self.assertRaises(ValueError):
+            node = syntax_node.ValueNode("hi", str)
+            node._convert_to_int()
+        # test real float
+        with self.assertRaises(ValueError):
+            node = syntax_node.ValueNode("1.23", float)
+            node._convert_to_int()
+
+    def test_valuenode_convert_to_enum(self):
+        node = syntax_node.ValueNode("1", float)
+        lat = mcnpy.data_inputs.lattice.Lattice
+        node._convert_to_enum(lat)
+        self.assertEqual(node.type, lat)
+        self.assertEqual(node.value, lat(1))
+        # test with None
+        with self.assertRaises(ValueError):
+            node = syntax_node.ValueNode(None, float)
+            node._convert_to_enum(lat)
+        node._convert_to_enum(lat, allow_none=True)
+        self.assertIsNone(node.value)
+        st = mcnpy.surfaces.surface_type.SurfaceType
+        node = syntax_node.ValueNode("p", str)
+        node._convert_to_enum(st, switch_to_upper=True)
+        self.assertEqual(node.type, st)
+        self.assertEqual(node.value, st("P"))
+
+    def test_is_negat_identifier(self):
+        node = syntax_node.ValueNode("-1", float)
+        self.assertTrue(not node.is_negatable_identifier)
+        self.assertIsNone(node.is_negative)
+        node.is_negatable_identifier = True
+        self.assertTrue(node.is_negatable_identifier)
+        self.assertEqual(node.type, int)
+        self.assertTrue(node.value > 0)
+        self.assertTrue(node.is_negative)
+        # test with positive number
+        node = syntax_node.ValueNode("1", float)
+        node.is_negatable_identifier = True
+        self.assertEqual(node.type, int)
+        self.assertTrue(node.value > 0)
+        self.assertTrue(not node.is_negative)
+        # test with none
+        node = syntax_node.ValueNode(None, float)
+        node.is_negatable_identifier = True
+        self.assertEqual(node.type, int)
+        self.assertIsNone(node.value)
+        self.assertIsNone(node.is_negative)
+        node.value = 1
+        self.assertEqual(node.value, 1)
+        self.assertTrue(not node.is_negative)
+
+    def test_is_negat_float(self):
+        node = syntax_node.ValueNode("-1.23", float)
+        self.assertTrue(not node.is_negatable_float)
+        self.assertIsNone(node.is_negative)
+        node.is_negatable_float = True
+        self.assertEqual(node.type, float)
+        self.assertTrue(node.value > 0)
+        self.assertTrue(node.is_negative)
+        self.assertTrue(node.is_negatable_float)
+        # test with positive number
+        node = syntax_node.ValueNode("1.23", float)
+        node.is_negatable_float = True
+        self.assertEqual(node.type, float)
+        self.assertTrue(not node.is_negative)
+        # test with None
+        node = syntax_node.ValueNode(None, float)
+        node.is_negatable_float = True
+        self.assertEqual(node.type, float)
+        self.assertIsNone(node.value)
+        self.assertIsNone(node.is_negative)
+        node.value = 1
+        self.assertEqual(node.value, 1)
+        self.assertTrue(not node.is_negative)
+
+    def test_is_negative(self):
+        node = syntax_node.ValueNode("-1.23", float)
+        node.is_negatable_float = True
+        self.assertTrue(node.is_negative)
+        node.is_negative = False
+        self.assertTrue(node.value > 0)
+        self.assertTrue(not node.is_negative)
+        node = syntax_node.ValueNode("hi", str)
+        node.is_negative = True
+        self.assertIsNone(node.is_negative)
+
+    def test_valuenode_int_format(self):
+        node = syntax_node.ValueNode("-1", int)
+        answer = "-1"
+        output = node.format()
+        self.assertEqual(output, answer)
+        for input, val, answer in [
+            ("1", 5, "5"),
+            ("-1", 2, "2"),
+            ("+1", 5, "+5"),
+            ("0001", 5, "0005"),
+        ]:
+            node = syntax_node.ValueNode(input, int)
+            node.value = val
+            self.assertEqual(node.format(), answer)
+        # test messing around with padding
+        for padding, val, answer in [([" "], 10, "10"),]:
+            pad_node = syntax_node.PaddingNode(padding[0])
+            for pad in padding[1:]:
+                pad_node.append(pad)
+            node = syntax_node.ValueNode("1", int, pad_node)
+            node.value = val
+            self.assertEqual(node.format(), answer)
 
 
 class TestSyntaxParsing(TestCase):
