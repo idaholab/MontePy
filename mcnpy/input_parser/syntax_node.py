@@ -1793,9 +1793,6 @@ class ParametersNode(SyntaxNodeBase):
             raise ValueError(f"Second parameter given for {key}.")
         self._nodes[key] = val
 
-    def get_value(self, key):
-        return self.nodes[key.lower()][0].value
-
     def __str__(self):
         return f"(Parameters, {self.nodes})"
 
