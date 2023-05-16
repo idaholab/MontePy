@@ -706,13 +706,16 @@ class ValueNode(SyntaxNodeBase):
 
             if self._type == float or self._type == int:
                 no_zero_pad = token.lstrip("0+-")
-                delta = len(token) - len(no_zero_pad)
+                length = len(token)
+                delta = length - len(no_zero_pad)
                 if token.startswith("+") or token.startswith("-"):
                     delta -= 1
+                    if token.startswith("+"):
+                        self._formatter["sign"] = "+"
+                    if token.startswith("-"):
+                        self._formatter["sign"] = " "
                 if delta > 0:
-                    self._formatter["zero_padding"] = delta
-                if token.startswith("+"):
-                    self._formatter["sign"] = "+"
+                    self._formatter["zero_padding"] = length
                 if self._type == float:
                     self._reverse_engineer_float()
 
