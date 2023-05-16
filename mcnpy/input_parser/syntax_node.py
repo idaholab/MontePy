@@ -841,7 +841,12 @@ class ValueNode(SyntaxNodeBase):
             temp = str(value)
         if self.padding:
             if self.padding.is_space(0):
-                if len(temp) >= self._formatter["value_length"]:
+                # if there was and end space, and we ran out of space, and there isn't
+                # a saving space later on
+                if len(temp) >= self._formatter["value_length"] and not (
+                    len(self.padding) > 1
+                    and (self.padding.is_space(1) or self.padding.nodes[1] == "\n")
+                ):
                     pad_str = " "
                 else:
                     pad_str = ""
