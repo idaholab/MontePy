@@ -930,6 +930,8 @@ class ValueNode(SyntaxNodeBase):
 
     @value.setter
     def value(self, value):
+        if self.is_negative is not None:
+            value = abs(value)
         self._value = value
 
     def __eq__(self, other):
