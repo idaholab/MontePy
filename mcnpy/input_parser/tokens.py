@@ -10,6 +10,7 @@ class MCNP_Lexer(Lexer):
 
     Provides ~90% of the tokens definition.
     """
+
     tokens = {
         COMMENT,
         COMPLEMENT,
@@ -193,7 +194,7 @@ class MCNP_Lexer(Lexer):
 
     @_(r"MESSAGE:.*\s")
     def MESSAGE(self, t):
-        """ 
+        """
         A message block.
         """
         self.lineno += t.value.count("\n")
@@ -248,6 +249,7 @@ class ParticleLexer(MCNP_Lexer):
     """
     A lexer for lexing an input that has particles in it.
     """
+
     tokens = {
         COMMENT,
         COMPLEMENT,
@@ -316,7 +318,7 @@ class ParticleLexer(MCNP_Lexer):
         """
         A list of particles associated with the input.
 
-        The biggest reason for this is so that ``p`` is interpreted 
+        The biggest reason for this is so that ``p`` is interpreted
         as a photon, and not a plane.
         """
         return t
@@ -335,6 +337,7 @@ class CellLexer(ParticleLexer):
     """
     A lexer for cell inputs that allows particles.
     """
+
     tokens = {
         COMMENT,
         COMPLEMENT,
@@ -361,6 +364,7 @@ class DataLexer(ParticleLexer):
     """
     A lexer for data inputs.
     """
+
     tokens = {
         COMMENT,
         COMPLEMENT,
@@ -399,6 +403,7 @@ class SurfaceLexer(MCNP_Lexer):
     The main difference is that ``p`` will be interpreted as a plane,
     and not a photon.
     """
+
     tokens = {
         COMMENT,
         COMPLEMENT,
@@ -482,7 +487,7 @@ def find_column(text, token):
     :param text: the text being lexed.
     :type text: str
     :param token: the token currently being processed
-    :type token: sly.lex.Token 
+    :type token: sly.lex.Token
     """
     last_cr = text.rfind("\n", 0, token.index)
     if last_cr < 0:

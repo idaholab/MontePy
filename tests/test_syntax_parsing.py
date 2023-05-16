@@ -137,21 +137,50 @@ class TestSyntaxNode(TestCase):
         self.assertEqual(output, answer)
         for input, val, answer in [
             ("1", 5, "5"),
-            ("-1", 2, "2"),
+            ("-1", 2, " 2"),
+            ("-1", -2, "-2"),
             ("+1", 5, "+5"),
             ("0001", 5, "0005"),
+            (Jump(), 5, "5"),
         ]:
             node = syntax_node.ValueNode(input, int)
             node.value = val
             self.assertEqual(node.format(), answer)
+            node = syntax_node.ValueNode(input, int)
+            node.is_negatable_identifier = True
+            node.value = val
+            node.is_negative = val < 0
+            self.assertEqual(node.format(), answer)
         # test messing around with padding
-        for padding, val, answer in [([" "], 10, "10"),]:
+        for padding, val, answer in [
+            ([" "], 10, "10 "),
+            (["  "], 10, "10 "),
+            (["\n"], 10, "10\n"),
+            ([" ", "\n", "c hi"], 10, "10\nc hi"),
+            ([" ", " "], 10, "10 "),
+        ]:
             pad_node = syntax_node.PaddingNode(padding[0])
             for pad in padding[1:]:
                 pad_node.append(pad)
             node = syntax_node.ValueNode("1", int, pad_node)
             node.value = val
             self.assertEqual(node.format(), answer)
+
+    def test_value_has_changed(self):
+        # test None no change
+        node = syntax_node.ValueNode(None, int)
+        self.assertTrue(not node._value_changed)
+        # test None changed
+        node.value = 5
+        self.assertTrue(node._value_changed)
+        node = syntax_node.ValueNode("1.23", float)
+        self.assertTrue(not node._value_changed)
+        node.value = 1.25
+        self.assertTrue(node._value_changed)
+        node = syntax_node.ValueNode("hi", str)
+        self.assertTrue(not node._value_changed)
+        node.value = "foo"
+        self.assertTrue(node._value_changed)
 
 
 class TestSyntaxParsing(TestCase):
