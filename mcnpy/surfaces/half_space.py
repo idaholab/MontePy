@@ -6,6 +6,28 @@ from mcnpy.utilities import *
 
 
 class HalfSpace:
+    """
+    Class representing a geometry half_space. 
+
+    Half_spaces in MCNPy are used very loosely, 
+    and is not mathematically rigorous. In MCNPy a divider is a something
+    that splits a space (R^3) into two half-spaces. At the simplest this would 
+    be a surface or other quadratic surface. There will always be two half_spaces,
+    a negative, or inside (False) or positive, outside (True). 
+    This class proper is for binary trees implementing CSG set logic. The same
+    logic with half-spaces still apply as the intersection will always create two
+    half-spaces (though one may be the empty set).
+    In this case thinking of "inside" and "outside" may be more useful.
+
+    :param left: The left side of the binary tree.
+    :type left: HalfSpace
+    :param operator: the operator to apply between the two branches.
+    :type operator: Operator
+    :param right: the right side of the binary tree.
+    :type right: HalfSpace
+    :param node: the node this was parsed from.
+    :type node: GeometryTree
+    """
     def __init__(self, left, operator, right=None, node=None):
         if not isinstance(left, HalfSpace):
             raise TypeError(f"left must be a HalfSpace. {left} given.")
@@ -25,6 +47,12 @@ class HalfSpace:
 
     @make_prop_pointer("_left", ())
     def left(self):
+        """
+        The left side of the binary tree of this half_space.
+
+        :returns: the left side of the tree.
+        :rtype: HalfSpace
+        """
         pass
 
     @make_prop_pointer("_right", (), deletable=True)
