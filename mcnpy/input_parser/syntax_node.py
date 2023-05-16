@@ -1359,7 +1359,7 @@ class ShortcutNode(ListNode):
     This takes the shortcut tokens, and expands it into their "virtual" values.
 
     :param p: the parsing object to parse.
-    :type p: ???
+    :type p: sly.yacc.YaccProduction
     :param short_type: the type of the shortcut.
     :type short_type: Shortcuts
     """
@@ -1629,6 +1629,16 @@ class ClassifierNode(SyntaxNodeBase):
 
     @property
     def prefix(self):
+        """
+        The prefix for the classifier.
+
+        That is the string that tells what type of input this is.
+
+        E.g.: ``M`` in ``M4`` or ``IMP`` in ``IMP:n``.
+
+        :returns: the prefix
+        :rtype: ValueNode
+        """
         return self._prefix
 
     @prefix.setter
@@ -1638,6 +1648,12 @@ class ClassifierNode(SyntaxNodeBase):
 
     @property
     def number(self):
+        """
+        The number if any for the classifier.
+
+        :returns: the number holder for this classifier.
+        :rtype: ValueNode
+        """
         return self._number
 
     @number.setter
@@ -1647,6 +1663,12 @@ class ClassifierNode(SyntaxNodeBase):
 
     @property
     def particles(self):
+        """
+        The particles if any tied to this classifier.
+
+        :returns: the particles used.
+        :rtype: ParticleNode
+        """
         return self._particles
 
     @particles.setter
@@ -1656,6 +1678,15 @@ class ClassifierNode(SyntaxNodeBase):
 
     @property
     def modifier(self):
+        """
+        The modifier for this classifier if any.
+
+        A modifier is a prefix character that changes the inputs behavior,
+        e.g.: ``*`` or ``+``.
+
+        :returns: the modifier
+        :rtype: ValueNode
+        """
         return self._modifier
 
     @modifier.setter
@@ -1665,6 +1696,15 @@ class ClassifierNode(SyntaxNodeBase):
 
     @property
     def padding(self):
+        """
+        The padding for this classifier.
+
+        .. Note::
+            None of the ValueNodes in this object should have padding.
+
+        :returns: the padding after the classifier.
+        :rtype: PaddingNode
+        """
         return self._padding
 
     @padding.setter
@@ -1704,11 +1744,46 @@ class ClassifierNode(SyntaxNodeBase):
 
 
 class ParametersNode(SyntaxNodeBase):
+    """
+    A node to hold the parameters, key-value pairs, for this input.
+
+    This behaves like a dictionary and is accessible by their key*
+
+    .. Note::
+        How to access values.
+
+        The internal dictionary doesn't use the full classifier directly,
+        because some parameters should not be both allowed: e.g., ``fill`` and ``*fill``.
+        The key is a string that is all lower case, and only uses the classifiers prefix,
+        and particles.
+
+        So to access a cell's fill information you would run:
+
+        .. code-block:: python
+
+            parameters["fill"]
+
+        And to access the n,p importance:
+
+        .. code-block:: python
+
+            parameters["imp:n,p"]
+    """
+
     def __init__(self):
         super().__init__("parameters")
         self._nodes = {}
 
     def append(self, val):
+        """
+        Append the node to this node.
+
+        This takes a syntax node, which requires the keys:
+            ``["classifier", "seperator", "data"]``
+
+        :param val: the parameter to append.
+        :type val: SyntaxNode
+        """
         classifier = val["classifier"]
         key = (
             classifier.prefix.value
