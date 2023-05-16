@@ -557,16 +557,12 @@ class ValueNode(SyntaxNodeBase):
         self._og_value = None
         if token is None:
             self._value = None
+        elif isinstance(token, input_parser.mcnp_input.Jump):
+            self._value = None
         elif token_type == float:
-            if isinstance(token, input_parser.mcnp_input.Jump):
-                self._value = None
-            else:
-                self._value = fortran_float(token)
+            self._value = fortran_float(token)
         elif token_type == int:
-            if isinstance(token, input_parser.mcnp_input.Jump):
-                self._value = None
-            else:
-                self._value = int(token)
+            self._value = int(token)
         else:
             self._value = token
         self._og_value = self.value
