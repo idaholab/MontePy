@@ -935,7 +935,7 @@ class ValueNode(SyntaxNodeBase):
 
     @value.setter
     def value(self, value):
-        if self.is_negative is not None:
+        if self.is_negative is not None and value is not None:
             value = abs(value)
         self._value = value
 
