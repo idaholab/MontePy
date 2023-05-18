@@ -820,13 +820,13 @@ class ValueNode(SyntaxNodeBase):
                 temp = temp.replace("e", self._formatter["divider"])
                 temp_match = self._SCIENTIFIC_FINDER.match(temp)
                 exponent = temp_match.group("exponent")
-                start, end = temp_math.span("exponent")
-                new_exp_temp = "{value:0<{zero_padding}}.d".format(
+                start, end = temp_match.span("exponent")
+                new_exp_temp = "{value:0={zero_padding}d}".format(
                     value=int(exponent),
                     zero_padding=self._formatter["exponent_zero_pad"],
                 )
                 new_exp = "{temp:<{value_length}}".format(
-                    temp=new_exp_temp, value_length=self._FORMATTER["exponent_length"]
+                    temp=new_exp_temp, value_length=self._formatter["exponent_length"]
                 )
                 temp = temp[0:start] + new_exp + temp[end:]
             elif self._formatter["as_int"]:
