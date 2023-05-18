@@ -731,10 +731,10 @@ class ValueNode(SyntaxNodeBase):
             # extra space for the "e" in scientific and... stuff
             self._formatter["zero_padding"] += 4
             exponent = groups["exponent"]
-            temp_exp = exponent = lstrip("0")
+            temp_exp = exponent.lstrip("0")
             if exponent != temp_exp:
                 self._formatter["exponent_length"] = len(exponent)
-                self._formatter["exponent_zero_pad"] = len(exponent) - len(temp_exp)
+                self._formatter["exponent_zero_pad"] = len(exponent)
         else:
             significand = token
         parts = significand.split(".")
