@@ -810,7 +810,7 @@ class testFullFileIntegration(TestCase):
                 self.assertEqual(cell.universe.number, 0)
 
     def test_importance_end_repeat(self):
-        problem = self.universe_problem
+        problem = copy.deepcopy(self.universe_problem)
         for cell in problem.cells:
             if cell.number in {99, 5}:
                 cell.importance.photon = 1.0

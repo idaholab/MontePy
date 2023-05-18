@@ -191,6 +191,7 @@ class TestSyntaxNode(TestCase):
             ("1.602-0019", 6.02e23, "6.020+0023"),
             (Jump(), 5.4, "5.4"),
             ("1", 2, "2"),
+            ("0.5", 0, "0.0"),
         ]:
             node = syntax_node.ValueNode(input, float)
             node.value = val
