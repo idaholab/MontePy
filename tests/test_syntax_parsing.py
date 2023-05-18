@@ -186,6 +186,7 @@ class TestSyntaxNode(TestCase):
         for input, val, answer in [
             ("1.23", 1.23, "1.23"),
             ("1.23", 4.56, "4.56"),
+            ("-1.23", 4.56, " 4.56"),
             ("1.0e-2", 2, "2.0e+0"),
             ("1.602-19", 6.02e23, "6.020+23"),
             ("1.602-0019", 6.02e23, "6.020+0023"),
@@ -209,6 +210,18 @@ class TestSyntaxNode(TestCase):
             node = syntax_node.ValueNode("1.0", float, pad_node)
             node.value = val
             self.assertEqual(node.format(), answer)
+
+    def test_value_str_format(self):
+        for input, val, answer in [
+            ("hi", "foo", "foo"),
+            ("hi ", "foo", "foo "),
+        ]:
+            node = syntax_node.ValueNode(input, str)
+            node.value = val
+            self.assertEqual(node.format(), answer)
+
+    def test_value_enum_format(self):
+        pass
 
 
 class TestSyntaxParsing(TestCase):
