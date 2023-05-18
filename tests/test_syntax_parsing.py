@@ -182,6 +182,33 @@ class TestSyntaxNode(TestCase):
         node.value = "foo"
         self.assertTrue(node._value_changed)
 
+    def test_value_float_format(self):
+        for input, val, answer in [
+            ("1.23", 1.23, "1.23"),
+            ("1.23", 4.56, "4.56"),
+            ("1.0e-2", 2, "2.0e+0"),
+            ("1.602-19", 6.02e23, "6.020+23"),
+            ("1.602-0019", 6.02e23, "6.020+0023"),
+            (Jump(), 5.4, "5.4"),
+            ("1", 2, "2"),
+        ]:
+            node = syntax_node.ValueNode(input, float)
+            node.value = val
+            self.assertEqual(node.format(), answer)
+        for padding, val, answer in [
+            ([" "], 10, "10.0 "),
+            (["  "], 10, "10.0 "),
+            (["\n"], 10, "10.0\n"),
+            ([" ", "\n", "c hi"], 10, "10.0\nc hi"),
+            ([" ", " "], 10, "10.0 "),
+        ]:
+            pad_node = syntax_node.PaddingNode(padding[0])
+            for pad in padding[1:]:
+                pad_node.append(pad)
+            node = syntax_node.ValueNode("1.0", float, pad_node)
+            node.value = val
+            self.assertEqual(node.format(), answer)
+
 
 class TestSyntaxParsing(TestCase):
     def testCardInit(self):
