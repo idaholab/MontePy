@@ -740,7 +740,6 @@ class ValueNode(SyntaxNodeBase):
         parts = significand.split(".")
         if len(parts) == 2:
             precision = len(parts[1])
-            self._formatter["zero_padding"] += precision
         else:
             precision = self._FORMATTERS[float]["precision"]
             self._formatter["as_int"] = True
