@@ -185,6 +185,8 @@ class SyntaxNode(SyntaxNodeBase):
             yield from node.comments
 
     def get_trailing_comment(self):
+        if len(self.nodes) == 0:
+            return
         tail = next(reversed(self.nodes.items()))
         return tail[1].get_trailing_comment()
 
