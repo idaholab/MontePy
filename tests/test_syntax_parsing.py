@@ -1,3 +1,4 @@
+import copy
 from io import StringIO
 from unittest import TestCase
 
@@ -9,7 +10,7 @@ from mcnpy.input_parser import syntax_node
 from mcnpy.particle import Particle
 
 
-class TestSyntaxNode(TestCase):
+class TestValueNode(TestCase):
     def test_valuenoode_init(self):
         for type, token, answer in [
             (str, "hi", "hi"),
@@ -214,14 +215,149 @@ class TestSyntaxNode(TestCase):
     def test_value_str_format(self):
         for input, val, answer in [
             ("hi", "foo", "foo"),
-            ("hi ", "foo", "foo "),
+            ("hi", None, ""),
         ]:
             node = syntax_node.ValueNode(input, str)
             node.value = val
             self.assertEqual(node.format(), answer)
+        for padding, val, answer in [
+            ([" "], "foo", "foo "),
+            (["  "], "foo", "foo "),
+            (["\n"], "foo", "foo\n"),
+            ([" ", "\n", "c hi"], "foo", "foo\nc hi"),
+            ([" ", " "], "foo", "foo "),
+        ]:
+            pad_node = syntax_node.PaddingNode(padding[0])
+            for pad in padding[1:]:
+                pad_node.append(pad)
+            node = syntax_node.ValueNode("hi", str, pad_node)
+            node.value = val
+            self.assertEqual(node.format(), answer)
 
     def test_value_enum_format(self):
-        pass
+        lat = mcnpy.data_inputs.lattice.Lattice
+        st = mcnpy.surfaces.surface_type.SurfaceType
+        for input, val, enum_class, args, answer in [
+            (
+                "1",
+                lat.HEXAGONAL,
+                lat,
+                {"format_type": int, "switch_to_upper": False},
+                "2",
+            ),
+            ("p", st.PZ, st, {"format_type": str, "switch_to_upper": True}, "PZ"),
+        ]:
+            node = syntax_node.ValueNode(input, args["format_type"])
+            node._convert_to_enum(enum_class, **args)
+            node.value = val
+            self.assertEqual(node.format(), answer)
+
+    def test_value_comments(self):
+        value_node = syntax_node.ValueNode("1", int)
+        self.assertEqual(len(list(value_node.comments)), 0)
+        padding = syntax_node.PaddingNode("$ hi", True)
+        value_node.padding = padding
+        comments = list(value_node.comments)
+        self.assertEqual(len(comments), 1)
+        self.assertIn("hi", comments[0].contents)
+
+    def test_value_trailing_comments(self):
+        value_node = syntax_node.ValueNode("1", int)
+        self.assertIsNone(value_node.get_trailing_comment())
+        value_node._delete_trailing_comment()
+        self.assertIsNone(value_node.get_trailing_comment())
+        padding = syntax_node.PaddingNode("$ hi", True)
+        value_node.padding = padding
+        comment = value_node.get_trailing_comment()
+        self.assertEqual(len(comment), 1)
+        self.assertEqual(comment[0].contents, "hi")
+        value_node._delete_trailing_comment()
+        self.assertIsNone(value_node.get_trailing_comment())
+
+    def test_value_str(self):
+        value_node = syntax_node.ValueNode("1", int)
+        str(value_node)
+        repr(value_node)
+        padding = syntax_node.PaddingNode("$ hi", True)
+        value_node.padding = padding
+        str(value_node)
+        repr(value_node)
+
+    def test_value_equality(self):
+        value_node1 = syntax_node.ValueNode("1", int)
+        self.assertTrue(value_node1 == value_node1)
+        with self.assertRaises(TypeError):
+            value_node1 == syntax_node.PaddingNode("")
+        value_node2 = syntax_node.ValueNode("2", int)
+        self.assertTrue(value_node1 != value_node2)
+        value_node3 = syntax_node.ValueNode("hi", str)
+        self.assertTrue(value_node1 != value_node3)
+        self.assertTrue(value_node1 == 1)
+        self.assertTrue(value_node1 != 2)
+        self.assertTrue(value_node1 != "hi")
+        value_node4 = syntax_node.ValueNode("1.5", float)
+        value_node5 = syntax_node.ValueNode("1.50000000000001", float)
+        self.assertTrue(value_node4 == value_node5)
+        value_node5.value = 2.0
+        self.assertTrue(value_node4 != value_node5)
+
+
+class TestSyntaxNode(TestCase):
+    def setUp(self):
+        value1 = syntax_node.ValueNode("1.5", float)
+        value2 = syntax_node.ValueNode("1", int)
+        self.test_node = syntax_node.SyntaxNode(
+            "test",
+            {"foo": value1, "bar": value2, "bar2": syntax_node.SyntaxNode("test2", {})},
+        )
+
+    def test_syntax_init(self):
+        test = self.test_node
+        self.assertEqual(test.name, "test")
+        self.assertIn("foo", test.nodes)
+        self.assertIn("bar", test.nodes)
+        self.assertIsInstance(test.nodes["foo"], syntax_node.ValueNode)
+
+    def test_get_value(self):
+        test = self.test_node
+        self.assertEqual(test.get_value("foo"), 1.5)
+        with self.assertRaises(KeyError):
+            test.get_value("foo2")
+        with self.assertRaises(KeyError):
+            test.get_value("bar2")
+
+    def test_syntax_format(self):
+        output = self.test_node.format()
+        self.assertEqual(output, "1.51")
+
+    def test_syntax_dict(self):
+        test = self.test_node
+        self.assertIn("foo", test)
+        self.assertEqual(test["foo"], test.nodes["foo"])
+
+    def test_syntax_comments(self):
+        padding = syntax_node.PaddingNode("$ hi", True)
+        test = copy.deepcopy(self.test_node)
+        test["foo"].padding = padding
+        padding = syntax_node.PaddingNode("$ foo", True)
+        test["bar"].padding = padding
+        comments = list(test.comments)
+        self.assertEqual(len(comments), 2)
+
+    def test_syntax_trailing_comments(self):
+        # test with blank tail
+        self.assertIsNone(self.test_node.get_trailing_comment())
+        test = copy.deepcopy(self.test_node)
+        test["bar2"].nodes["foo"] = syntax_node.ValueNode("1.23", float)
+        self.assertIsNone(test.get_trailing_comment())
+        test["bar2"]["foo"].padding = syntax_node.PaddingNode("$ hi", True)
+        self.assertEqual(len(test.get_trailing_comment()), 1)
+        test._delete_trailing_comment()
+        self.assertIsNone(test.get_trailing_comment())
+
+    def test_syntax_str(self):
+        str(self.test_node)
+        repr(self.test_node)
 
 
 class TestSyntaxParsing(TestCase):
