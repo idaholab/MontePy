@@ -312,6 +312,8 @@ class PaddingNode(SyntaxNodeBase):
         :raises IndexError: if the index i is not in ``self.nodes``.
         """
         val = self.nodes[i]
+        if not isinstance(val, str):
+            return False
         return len(val.strip()) == 0 and val != "\n"
 
     def append(self, val, is_comment=False):
