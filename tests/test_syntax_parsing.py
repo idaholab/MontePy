@@ -404,6 +404,60 @@ class TestGeometryTree(TestCase):
         self.assertEqual(len(comments), 1)
 
 
+class TestPaddingNode(TestCase):
+    def test_padding_init(self):
+        pad = syntax_node.PaddingNode(" ")
+        self.assertEqual(len(pad.nodes), 1)
+        self.assertEqual(pad.value, " ")
+
+    def test_padding_is_space(self):
+        pad = syntax_node.PaddingNode(" ")
+        self.assertTrue(pad.is_space(0))
+        pad.append("\n")
+        self.assertTrue(not pad.is_space(1))
+        pad.append("$ hi", True)
+        self.assertTrue(not pad.is_space(2))
+        with self.assertRaises(IndexError):
+            pad.is_space(5)
+
+    def test_padding_append(self):
+        pad = syntax_node.PaddingNode(" ")
+        pad.append("\n")
+        self.assertEqual(len(pad), 2)
+        pad.append(" ")
+        self.assertEqual(len(pad), 3)
+        pad.append(" \n")
+        self.assertEqual(len(pad), 5)
+        pad.append("$ hi", True)
+        self.assertEqual(len(pad), 6)
+
+    def test_padding_format(self):
+        pad = syntax_node.PaddingNode(" ")
+        self.assertEqual(pad.format(), " ")
+        pad.append("$ hi", True)
+        self.assertEqual(pad.format(), " $ hi")
+
+    def test_padding_grab_beginning_format(self):
+        pad = syntax_node.PaddingNode(" ")
+        new_pad = [
+            syntax_node.CommentNode("c hi"),
+            "\n",
+            syntax_node.CommentNode("c foo"),
+        ]
+        answer = copy.copy(new_pad)
+        pad._grab_beginning_comment(new_pad)
+        self.assertEqual(pad.nodes, answer + ["\n", " "])
+
+    def test_padding_eq(self):
+        pad = syntax_node.PaddingNode(" ")
+        self.assertTrue(pad == " ")
+        self.assertTrue(pad != " hi ")
+        pad1 = syntax_node.PaddingNode(" ")
+        self.assertTrue(pad == pad1)
+        with self.assertRaises(TypeError):
+            pad == 1
+
+
 class TestSyntaxParsing(TestCase):
     def testCardInit(self):
         with self.assertRaises(TypeError):
