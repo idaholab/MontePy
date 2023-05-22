@@ -457,6 +457,11 @@ class TestPaddingNode(TestCase):
         with self.assertRaises(TypeError):
             pad == 1
 
+    def test_comment_init(self):
+        comment = syntax_node.CommentNode("$ hi")
+        self.assertIsInstance(comment.nodes[0], syntax_node.SyntaxNode)
+        self.assertEqual(len(comment.nodes), 1)
+
 
 class TestSyntaxParsing(TestCase):
     def testCardInit(self):
