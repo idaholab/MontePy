@@ -360,6 +360,50 @@ class TestSyntaxNode(TestCase):
         repr(self.test_node)
 
 
+class TestGeometryTree(TestCase):
+    def setUp(self):
+        left = syntax_node.ValueNode("1", int)
+        right = syntax_node.ValueNode("2", int)
+        op = syntax_node.PaddingNode(" ")
+        self.test_tree = syntax_node.GeometryTree(
+            "test",
+            {"left": left, "operator": op, "right": right},
+            mcnpy.Operator.INTERSECTION,
+            left,
+            right,
+        )
+
+    def test_geometry_init(self):
+        left = syntax_node.ValueNode("1", int)
+        right = syntax_node.ValueNode("2", int)
+        op = syntax_node.PaddingNode(" ")
+        tree = syntax_node.GeometryTree(
+            "test",
+            {"left": left, "operator": op, "right": right},
+            mcnpy.Operator.INTERSECTION,
+            left,
+            right,
+        )
+        self.assertIs(tree.left, left)
+        self.assertIs(tree.right, right)
+        self.assertEqual(tree.operator, mcnpy.Operator.INTERSECTION)
+
+    def test_geometry_format(self):
+        test = self.test_tree
+        self.assertEqual(test.format(), "1 2")
+
+    def test_geometry_str(self):
+        test = self.test_tree
+        str(test)
+        repr(test)
+
+    def test_geometry_comments(self):
+        test = copy.deepcopy(self.test_tree)
+        test.left.padding = syntax_node.PaddingNode("$ hi", True)
+        comments = list(test.comments)
+        self.assertEqual(len(comments), 1)
+
+
 class TestSyntaxParsing(TestCase):
     def testCardInit(self):
         with self.assertRaises(TypeError):
