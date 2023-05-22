@@ -29,6 +29,7 @@ from .input_parser.input_reader import read_input
 from mcnpy.cell import Cell
 from mcnpy.data_inputs.material import Material
 from mcnpy.data_inputs.transform import Transform
+from mcnpy.geometry_operators import Operator
 from mcnpy import geometry_operators
 from mcnpy.input_parser.mcnp_input import Jump
 from mcnpy.particle import Particle
