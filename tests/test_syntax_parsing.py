@@ -461,6 +461,120 @@ class TestPaddingNode(TestCase):
         comment = syntax_node.CommentNode("$ hi")
         self.assertIsInstance(comment.nodes[0], syntax_node.SyntaxNode)
         self.assertEqual(len(comment.nodes), 1)
+        self.assertTrue(comment.is_dollar)
+        comment = syntax_node.CommentNode(" c hi")
+        self.assertTrue(not comment.is_dollar)
+        self.assertEqual(len(list(comment.comments)), 1)
+
+    def test_comment_append(self):
+        comment = syntax_node.CommentNode("c foo")
+        comment.append("c bar")
+        self.assertEqual(len(comment.nodes), 2)
+        # test mismatch
+        comment = syntax_node.CommentNode("$ hi")
+        with self.assertRaises(TypeError):
+            comment.append("c hi")
+
+    def test_comment_str(self):
+        comment = syntax_node.CommentNode("$ hi")
+        str(comment)
+        repr(comment)
+
+
+class TestParticlesNode(TestCase):
+    def test_particle_init(self):
+        parts = syntax_node.ParticleNode("test", ":n,p,e")
+        particle = mcnpy.particle.Particle
+        answers = {particle.NEUTRON, particle.PHOTON, particle.ELECTRON}
+        self.assertEqual(parts.particles, answers)
+        self.assertEqual(len(list(parts.comments)), 0)
+        for part in parts:
+            self.assertIn(part, answers)
+        answers = [particle.NEUTRON, particle.PHOTON, particle.ELECTRON]
+        self.assertEqual(parts._particles_sorted, answers)
+
+    def test_particles_setter(self):
+        parts = syntax_node.ParticleNode("test", "n,p,e")
+        particle = mcnpy.particle.Particle
+        parts.particles = {particle.TRITON}
+        self.assertEqual(parts.particles, {particle.TRITON})
+        parts.particles = [particle.TRITON]
+        self.assertEqual(parts.particles, {particle.TRITON})
+        with self.assertRaises(TypeError):
+            parts.particles = "hi"
+        with self.assertRaises(TypeError):
+            parts.particles = {"hi"}
+
+    def test_particles_add_remove(self):
+        parts = syntax_node.ParticleNode("test", "n,p,e")
+        particle = mcnpy.particle.Particle
+        parts.add(particle.TRITON)
+        self.assertIn(particle.TRITON, parts)
+        self.assertEqual(parts._particles_sorted[-1], particle.TRITON)
+        with self.assertRaises(TypeError):
+            parts.add("hi")
+        parts.remove(particle.NEUTRON)
+        self.assertNotIn(particle.NEUTRON, parts)
+        with self.assertRaises(TypeError):
+            parts.remove("hi")
+
+    def test_particles_sorted(self):
+        parts = syntax_node.ParticleNode("test", "n,p,e")
+        particle = mcnpy.particle.Particle
+        # lazily work around internals
+        parts._particles.remove(particle.NEUTRON)
+        self.assertNotIn(particle.NEUTRON, parts._particles_sorted)
+        parts._particles.add(particle.TRITON)
+        self.assertIn(particle.TRITON, parts._particles_sorted)
+
+    def test_particles_format(self):
+        parts = syntax_node.ParticleNode("test", "n,p,e")
+        repr(parts)
+        self.assertEqual(parts.format(), ":n,p,e")
+        parts = syntax_node.ParticleNode("test", "N,P,E")
+        self.assertEqual(parts.format(), ":N,P,E")
+
+
+class TestListNode(TestCase):
+    def test_list_init(self):
+        list_node = syntax_node.ListNode("list")
+        self.assertEqual(list_node.nodes, [])
+
+    def test_list_append(self):
+        list_node = syntax_node.ListNode("list")
+        list_node.append(syntax_node.ValueNode("1.0", float))
+        self.assertEqual(len(list_node), 1)
+
+    def test_list_slicing(self):
+        list_node = syntax_node.ListNode("list")
+        for i in range(20):
+            list_node.append(syntax_node.ValueNode("1.0", float))
+        self.assertEqual(list_node[5], syntax_node.ValueNode("1.0", float))
+        for val in list_node[1:5]:
+            self.assertEqual(val, syntax_node.ValueNode("1.0", float))
+        for val in list_node[1:5:1]:
+            self.assertEqual(val, syntax_node.ValueNode("1.0", float))
+        for val in list_node[::1]:
+            self.assertEqual(val, syntax_node.ValueNode("1.0", float))
+        for val in list_node[5:1:-1]:
+            self.assertEqual(val, syntax_node.ValueNode("1.0", float))
+        for val in list_node[::-1]:
+            self.assertEqual(val, syntax_node.ValueNode("1.0", float))
+
+    def test_list_equality(self):
+        list_node1 = syntax_node.ListNode("list")
+        for i in range(20):
+            list_node1.append(syntax_node.ValueNode("1.0", float))
+        with self.assertRaises(TypeError):
+            list_node1 == "hi"
+        list2 = [syntax_node.ValueNode("1.0", float)] * 19
+        self.assertTrue(not list_node1 == list2)
+        list2 = [syntax_node.ValueNode("1.0", float)] * 20
+        self.assertTrue(list_node1 == list2)
+        list2 = [syntax_node.ValueNode("1.0", float)] * 19 + [
+            syntax_node.ValueNode("1.5", float)
+        ]
+        self.assertTrue(list_node1 != list2)
 
 
 class TestSyntaxParsing(TestCase):
