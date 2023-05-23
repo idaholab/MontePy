@@ -1000,10 +1000,10 @@ class ParticleNode(SyntaxNodeBase):
     @particles.setter
     def particles(self, values):
         if not isinstance(values, (list, set)):
-            raise ValueError(f"Particles must be a set. {values} given.")
+            raise TypeError(f"Particles must be a set. {values} given.")
         for value in values:
             if not isinstance(value, Particle):
-                raise ValueError(f"All particles must be a Particle. {value} given")
+                raise TypeError(f"All particles must be a Particle. {value} given")
         if isinstance(values, list):
             self._order = values
             values = set(values)
@@ -1017,7 +1017,7 @@ class ParticleNode(SyntaxNodeBase):
         :type value: Particle
         """
         if not isinstance(value, Particle):
-            raise ValueError(f"All particles must be a Particle. {value} given")
+            raise TypeError(f"All particles must be a Particle. {value} given")
         self._order.append(value)
         self._particles.add(value)
 
@@ -1029,7 +1029,7 @@ class ParticleNode(SyntaxNodeBase):
         :type value: Particle
         """
         if not isinstance(value, Particle):
-            raise ValueError(f"All particles must be a Particle. {value} given")
+            raise TypeError(f"All particles must be a Particle. {value} given")
         self._particles.remove(value)
         self._order.remove(value)
 
