@@ -489,6 +489,7 @@ class CommentNode(SyntaxNodeBase):
             ret += node.format()
         return ret
 
+    @property
     def comments(self):
         yield from [self]
 
