@@ -70,6 +70,14 @@ class MCNP_Object(ABC):
 
     @abstractmethod
     def _update_values(self):
+        """
+        Method to update values in syntax tree with new values.
+
+        Generally when :func:`~mcnpy.utilities.make_prop_val_node` this is not necessary to do,
+        but when :func:`~mcnpy.utilities.make_prop_pointer` is used it is necessary.
+        The most common need is to update a value based on the number for an object pointed at,
+        e.g., the material number in a cell definition.
+        """
         pass
 
     def format_for_mcnp_input(self, mcnp_version):
@@ -101,7 +109,12 @@ class MCNP_Object(ABC):
 
     @property
     def leading_comments(self):
-        """ """
+        """
+        Any comments that come before the beginning of the input proper.
+
+        :returns: the leading comments.
+        :rtype: list
+        """
         return list(self._tree["start_pad"].comments)
 
     @leading_comments.setter
@@ -186,6 +199,14 @@ class MCNP_Object(ABC):
 
     @property
     def trailing_comment(self):
+        """
+        The trailing comments and padding of an input.
+
+        Generally this will be blank as these will be moved to be a leading comment for the next input.
+
+        :returns: the trailing ``c`` style comments and intermixed padding (e.g., new lines)
+        :rtype: list
+        """
         return self._tree.get_trailing_comment()
 
     def _delete_trailing_comment(self):
