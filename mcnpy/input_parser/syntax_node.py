@@ -1278,7 +1278,7 @@ class ListNode(SyntaxNodeBase):
                 buffer.append(item)
         ret = ListNode(f"{self.name}_slice")
         if rstep < 0:
-            buffer = buffer.reverse
+            buffer.reverse()
         for val in buffer:
             ret.append(val)
         return ret
