@@ -119,6 +119,24 @@ Pu-239 (80c) (Value, 0.1, padding: None)
         with self.assertRaises(TypeError):
             MaterialComponent(Isotope("1001.80c"), "hi")
 
+        # test bad isotope
+        with self.assertRaises(TypeError):
+            MaterialComponent("hi", 1.0)
+
+    def test_material_comp_fraction_setter(self):
+        comp = MaterialComponent(Isotope("1001.80c"), 0.1)
+        comp.fraction = 5.0
+        self.assertEqual(comp.fraction, 5.0)
+        with self.assertRaises(ValueError):
+            comp.fraction = -1.0
+        with self.assertRaises(TypeError):
+            comp.fraction = "hi"
+
+    def test_material_comp_fraction_str(self):
+        comp = MaterialComponent(Isotope("1001.80c"), 0.1)
+        str(comp)
+        repr(comp)
+
     def test_material_card_pass_through(self):
         in_str = "M20 1001.80c 0.5 8016.80c 0.5"
         input_card = Input([in_str], BlockType.DATA)
