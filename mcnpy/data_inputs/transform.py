@@ -44,34 +44,22 @@ class Transform(data_input.DataInputAbstract, Numbered_MCNP_Object):
             self._old_number = copy.deepcopy(self._number)
 
             # parse displacement
-            try:
-                values = []
-                for j, word in enumerate(words):
-                    values.append(word.value)
-                    i += 1
-                    if j >= 2:
-                        break
-                self._displacement_vector = np.array(values)
-
-            except ValueError:
-                raise MalformedInputError(
-                    input,
-                    f"{word} can't be parsed as a displacement vector component",
-                )
+            values = []
+            for j, word in enumerate(words):
+                values.append(word.value)
+                i += 1
+                if j >= 2:
+                    break
+            self._displacement_vector = np.array(values)
 
             # parse rotation
-            try:
-                values = []
-                for j, word in enumerate(words.nodes[i:]):
-                    values.append(word.value)
-                    i += 1
-                    if j >= 8:
-                        break
-                self._rotation_matrix = np.array(values)
-            except ValueError:
-                raise MalformedInputError(
-                    input, f"{word} can't be parsed as a rotation matrix component"
-                )
+            values = []
+            for j, word in enumerate(words.nodes[i:]):
+                values.append(word.value)
+                i += 1
+                if j >= 8:
+                    break
+            self._rotation_matrix = np.array(values)
 
             self._is_main_to_aux = True
             if len(values) == 9:
