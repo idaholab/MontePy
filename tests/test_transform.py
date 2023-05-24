@@ -209,14 +209,15 @@ MAIN_TO_AUX: False
         # test different main_aux
         in_str = "tr5 " + "0.0 " * 3 + "0.0 " * 9
         card = Input([in_str], BlockType.DATA)
+        compare = Transform(card)
         self.assertFalse(base.equivalent(compare, 1e-3))
         # test different displace
-        in_str = "tr5 " + "1.0 " * 3 + "0.0 " * 9
+        in_str = "tr5 " + "1.0 " * 3 + "0.0 " * 9 + "-1"
         card = Input([in_str], BlockType.DATA)
         compare = Transform(card)
         self.assertFalse(base.equivalent(compare, 1e-3))
         # test different rotation
-        in_str = "tr5 " + "0.0 " * 3 + "1.0 " * 9
+        in_str = "tr5 " + "0.0 " * 3 + "1.0 " * 9 + "-1"
         card = Input([in_str], BlockType.DATA)
         compare = Transform(card)
         self.assertFalse(base.equivalent(compare, 1e-3))
