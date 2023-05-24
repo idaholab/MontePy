@@ -27,14 +27,14 @@ class DataInputAbstract(MCNP_Object):
         if not fast_parse:
             super().__init__(input, self._parser)
             if input:
-                self.__split_name()
+                self.__split_name(input)
         else:
             is_comment = mcnpy.input_parser.input_syntax_reader.is_comment
             data_lines = [line for line in input.input_lines if not is_comment(line)]
             words = data_lines[0].split()
             input = Input([words[0]], input.block_type)
             super().__init__(input, self._classifier_parser)
-            self.__split_name()
+            self.__split_name(input)
 
     @staticmethod
     @abstractmethod
@@ -157,7 +157,7 @@ class DataInputAbstract(MCNP_Object):
     def __str__(self):
         return f"DATA INPUT: {self._tree['classifier']}"
 
-    def __split_name(self):
+    def __split_name(self, input):
         """
         Parses the name of the data input as a prefix, number, and a particle classifier.
 
@@ -166,28 +166,31 @@ class DataInputAbstract(MCNP_Object):
             _input_number
             classifier
 
+        :param input: the input object representing this data input
+        :type input: input
         :raises MalformedInputError: if the name is invalid for this DataInput
-
         """
         self._classifier = self._tree["classifier"]
-        self.__enforce_name()
+        self.__enforce_name(input)
         self._input_number = self._classifier.number
         self._prefix = self._classifier._prefix.value
         if self._classifier.particles:
             self._particles = self._classifier.particles.particles
         self._modifier = self._classifier.modifier
 
-    def __enforce_name(self):
+    def __enforce_name(self, input):
         """
         Checks that the name is valid.
 
+        :param input: the input object representing this data input
+        :type input: input
         :raises MalformedInputError: if the name is invalid for this DataInput
         """
         classifier = self._classifier
         if self._class_prefix:
             if classifier.prefix.value.lower() != self._class_prefix():
                 raise MalformedInputError(
-                    self,
+                    input,
                     f"{self._tree['classifier'].format()} has the wrong prefix for {type(self)}",
                 )
             if self._has_number():
@@ -196,22 +199,22 @@ class DataInputAbstract(MCNP_Object):
                     assert num > 0
                 except (AttributeError, AssertionError) as e:
                     raise MalformedInputError(
-                        self,
+                        input,
                         f"{classifier} does not contain a valid number",
                     )
             if not self._has_number() and classifier.number is not None:
                 raise MalformedInputError(
-                    self,
+                    input,
                     f"{classifier} cannot have a number for {type(self)}",
                 )
             if self._has_classifier() == 2 and classifier.particles is None:
                 raise MalformedInputError(
-                    self,
+                    input,
                     f"{classifier} doesn't have a particle classifier for {type(self)}",
                 )
             if self._has_classifier() == 0 and classifier.particles is not None:
                 raise MalformedInputError(
-                    self,
+                    input,
                     f"{classifier} cannot have a particle classifier for {type(self)}",
                 )
 
