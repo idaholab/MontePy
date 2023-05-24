@@ -1,3 +1,4 @@
+import copy
 from unittest import TestCase
 
 import numpy as np
@@ -25,11 +26,18 @@ class testTransformClass(TestCase):
 
         # test invalid displacement vector
         with self.assertRaises(MalformedInputError):
-            card = Input(["TR1foo 0.0 0.0 hi"], BlockType.DATA)
+            card = Input(["TR1 0.0 0.0 hi"], BlockType.DATA)
             Transform(card)
         # test invalid matrix
         with self.assertRaises(MalformedInputError):
-            card = Input(["TR1foo 0.0 0.0 0.0 0.0 0.0 0.0 0.0 hi"], BlockType.DATA)
+            card = Input(["TR1 0.0 0.0 0.0 0.0 0.0 0.0 0.0 hi"], BlockType.DATA)
+            Transform(card)
+        # test invalid main to aux
+        with self.assertRaises(MalformedInputError):
+            card = Input(
+                ["TR1 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 2"],
+                BlockType.DATA,
+            )
             Transform(card)
         # test that the transform has a number
         with self.assertRaises(MalformedInputError):
