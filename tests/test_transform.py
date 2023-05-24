@@ -227,3 +227,32 @@ MAIN_TO_AUX: False
         compare = Transform(card)
         compare.is_main_to_aux = False
         self.assertFalse(base.equivalent(compare, 1e-3))
+
+    def test_transform_update_values(self):
+        in_str = "tr5 " + "0.0 " * 3 + "0.0 " * 9 + " -1"
+        card = Input([in_str], BlockType.DATA)
+        base = Transform(card)
+        base._update_values()
+        self.assertEqual(base._tree["classifier"].modifier.value, "")
+        self.assertEqual(len(base.data), 13)
+        # test with no rotation matrix start
+        in_str = "tr5 " + "0.0 " * 3
+        card = Input([in_str], BlockType.DATA)
+        base = Transform(card)
+        test = copy.deepcopy(base)
+        test.rotation_matrix = np.ones(9)
+        test._update_values()
+        self.assertEqual(len(test.data), 12)
+        self.assertEqual(test.data[-1].value, 1.0)
+        test.is_main_to_aux = False
+        test._update_values()
+        self.assertEqual(len(test.data), 13)
+        self.assertTrue(test.data[-1].is_negative)
+        # test partial rotation matrix start
+        in_str = "tr5 " + "0.0 " * 3 + "0.0 " * 5
+        card = Input([in_str], BlockType.DATA)
+        base = Transform(card)
+        base.rotation_matrix = np.ones(9)
+        base._update_values()
+        self.assertEqual(len(base.data), 12)
+        self.assertEqual(base.data[-1].value, 1.0)
