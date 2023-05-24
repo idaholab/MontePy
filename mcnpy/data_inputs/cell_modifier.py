@@ -102,24 +102,6 @@ class CellModifierInput(DataInputAbstract):
         if self.set_in_cell_block:
             self._problem.print_in_data_block[self._class_prefix()] = False
 
-    def _create_default_tree(self):
-        """"""
-        classifier = syntax_node.ClassifierNode()
-        classifier.prefix = self._class_prefix()
-        list_node = syntax_node.ListNode("imp data")
-        if not self.in_cell_block:
-            ret = {"classifier": classifier, "data": list_node}
-            self._tree = syntax_node.SyntaxNode("Importance", ret)
-        else:
-            self._tree = syntax_node.SyntaxNode(
-                "Importance",
-                {
-                    "classifier": classifier,
-                    "seperator": self._generate_default_node(str, "=", padding=None),
-                    "data": list_node,
-                },
-            )
-
     @abstractmethod
     def push_to_cells(self):
         """
@@ -223,7 +205,7 @@ class CellModifierInput(DataInputAbstract):
                 self._class_prefix().upper()
             ]
         # print in cell block
-        if self.in_cell_block and not print_in_data_block and self.has_information:
+        if self.in_cell_block and not print_in_data_block and self._is_worth_printing:
             self._update_values()
             return self.wrap_string_for_mcnp(self._format_tree(), mcnp_version, True)
 
