@@ -126,6 +126,7 @@ class ThermalScatteringLaw(DataInputAbstract):
             if isinstance(input, mcnpy.data_inputs.material.Material):
                 if input.number == self.old_number:
                     found = True
+                    self._parent_material = input
 
         if not found:
             raise MalformedInputError(
