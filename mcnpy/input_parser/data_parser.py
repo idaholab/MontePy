@@ -16,12 +16,16 @@ class DataParser(MCNP_Parser):
     @_(
         "introduction data",
         "introduction data parameters",
+        "introduction parameters",
     )
     def data_input(self, p):
         ret = {}
         for key, node in p.introduction.nodes.items():
             ret[key] = node
-        ret["data"] = p.data
+        if hasattr(p, "data"):
+            ret["data"] = p.data
+        else:
+            ret["data"] = syntax_node.ListNode("empty data")
         if hasattr(p, "parameters"):
             ret["parameters"] = p.parameters
         return syntax_node.SyntaxNode("data", ret)
