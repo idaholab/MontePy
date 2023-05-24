@@ -160,7 +160,7 @@ class MCNP_Lexer(Lexer):
         """
         return t
 
-    THERMAL_LAW = r"[a-z/]+\.\d+[a-z]"
+    THERMAL_LAW = r"[a-z/-]+\.\d+[a-z]"
     """
     An MCNP formatted thermal scattering law.
 
