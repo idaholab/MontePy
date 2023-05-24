@@ -22,6 +22,15 @@ class testTransformClass(TestCase):
         with self.assertRaises(MalformedInputError):
             card = Input(["TR1foo 0.0 0.0 0.0"], BlockType.DATA)
             Transform(card)
+
+        # test invalid displacement vector
+        with self.assertRaises(MalformedInputError):
+            card = Input(["TR1foo 0.0 0.0 hi"], BlockType.DATA)
+            Transform(card)
+        # test invalid matrix
+        with self.assertRaises(MalformedInputError):
+            card = Input(["TR1foo 0.0 0.0 0.0 0.0 0.0 0.0 0.0 hi"], BlockType.DATA)
+            Transform(card)
         # test that the transform has a number
         with self.assertRaises(MalformedInputError):
             card = Input(["*TR 0.0 0.0 0.0"], BlockType.DATA)
