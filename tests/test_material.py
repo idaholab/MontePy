@@ -245,10 +245,13 @@ class TestThermalScattering(TestCase):
             thermal.format_for_mcnp_input((6, 2, 0))
         material = Material()
         material.number = 1
-        thermal._old_material_number = 1
-        material.update_pointers([thermal])
+        thermal._old_number = mcnpy.input_parser.syntax_node.ValueNode("1", int)
+        thermal.update_pointers([material])
         with self.assertRaises(mcnpy.errors.IllegalState):
             thermal.validate()
+        thermal._old_number = mcnpy.input_parser.syntax_node.ValueNode("2", int)
+        with self.assertRaises(mcnpy.errors.MalformedInputError):
+            thermal.update_pointers([material])
 
     def test_thermal_scattering_add(self):
         in_str = "Mt20 grph.20t"
