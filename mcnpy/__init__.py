@@ -17,7 +17,7 @@ __credits__ = [
 ]
 
 name = "mcnpy"
-__version__ = "0.2.0.alpha2"
+__version__ = "0.2.0.alpha3"
 __maintainer__ = "Micah Gale"
 __email__ = "micah.gale@inl.gov"
 __status__ = "Development"
