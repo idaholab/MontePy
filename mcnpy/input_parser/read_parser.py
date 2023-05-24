@@ -10,15 +10,17 @@ class ReadParser(MCNP_Parser):
     def read_input(self, p):
         if isinstance(p[0], syntax_node.PaddingNode):
             start_pad = p[0]
+            mid_pad = p[2]
         else:
             start_pad = syntax_node.PaddingNode()
+            mid_pad = p[1]
         if p.KEYWORD.lower() == "read":
             return syntax_node.SyntaxNode(
                 "read",
                 {
                     "start_pad": start_pad,
                     "keyword": p.KEYWORD,
-                    "padding": p.padding,
+                    "padding": mid_pad,
                     "parameters": p.parameters,
                 },
             )
