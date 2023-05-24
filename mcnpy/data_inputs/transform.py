@@ -207,11 +207,12 @@ class Transform(data_input.DataInputAbstract, Numbered_MCNP_Object):
         )
         if needs_rotation:
             flat_pack = self.rotation_matrix
+            i = -1
             for i, (value, node) in enumerate(zip(flat_pack, list_iter)):
                 node.value = value
                 new_values.append(node)
             if i < len(flat_pack) - 1:
-                for value in flat_pack[i:]:
+                for value in flat_pack[i + 1 :]:
                     node = self._generate_default_node(float, value)
                     self.data.append(node)
                     new_values.append(node)
