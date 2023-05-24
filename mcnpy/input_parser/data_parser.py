@@ -14,6 +14,7 @@ class DataParser(MCNP_Parser):
     debugfile = None
 
     @_(
+        "introduction",
         "introduction data",
         "introduction data parameters",
         "introduction parameters",

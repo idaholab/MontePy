@@ -278,6 +278,8 @@ class MCNP_Parser(Parser, metaclass=MetaBuilder):
     @_(
         "modifier classifier",
         "KEYWORD",
+        "SOURCE_COMMENT",
+        "TALLY_COMMENT",
         "classifier NUMBER",
         "classifier PARTICLE_DESIGNATOR",
     )
@@ -297,8 +299,12 @@ class MCNP_Parser(Parser, metaclass=MetaBuilder):
 
         if hasattr(p, "modifier"):
             classifier.modifier = syntax_node.ValueNode(p.modifier, str)
-        if hasattr(p, "KEYWORD"):
-            text = p.KEYWORD
+        if (
+            hasattr(p, "KEYWORD")
+            or hasattr(p, "SOURCE_COMMENT")
+            or hasattr(p, "TALLY_COMMENT")
+        ):
+            text = p[0]
             classifier.prefix = syntax_node.ValueNode(text, str)
         if hasattr(p, "NUMBER"):
             classifier.number = syntax_node.ValueNode(p.NUMBER, int)
@@ -309,7 +315,7 @@ class MCNP_Parser(Parser, metaclass=MetaBuilder):
 
         return classifier
 
-    @_("classifier padding")
+    @_("classifier padding", "classifier")
     def classifier_phrase(self, p):
         """
         A classifier with its padding.
@@ -317,7 +323,8 @@ class MCNP_Parser(Parser, metaclass=MetaBuilder):
         :rtype: ClassifierNode
         """
         classifier = p.classifier
-        classifier.padding = p.padding
+        if len(p) > 1:
+            classifier.padding = p.padding
         return classifier
 
     @_('"*"', "PARTICLE_SPECIAL")
