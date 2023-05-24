@@ -102,6 +102,8 @@ class SyntaxNodeBase(ABC):
         :returns: The trailing comments of this tree.
         :rtype: list
         """
+        if len(self.nodes) == 0:
+            return
         tail = self.nodes[-1]
         if isinstance(tail, SyntaxNodeBase):
             return tail.get_trailing_comment()
@@ -110,6 +112,8 @@ class SyntaxNodeBase(ABC):
         """
         Deletes the trailing comment if any.
         """
+        if len(self.nodes) == 0:
+            return
         tail = self.nodes[-1]
         if isinstance(tail, SyntaxNodeBase):
             tail._delete_trailing_comment()
