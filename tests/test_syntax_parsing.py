@@ -996,6 +996,48 @@ bar
         repr(jump)
 
 
+class TestClassifierNode(TestCase):
+    def test_classifier_init(self):
+        classifier = syntax_node.ClassifierNode()
+        self.assertIsNone(classifier.prefix)
+        self.assertIsNone(classifier.number)
+        self.assertIsNone(classifier.particles)
+        self.assertIsNone(classifier.modifier)
+        self.assertIsNone(classifier.padding)
+
+    def test_classifier_setter(self):
+        classifier = syntax_node.ClassifierNode()
+        classifier.prefix = syntax_node.ValueNode("M", str)
+        self.assertEqual(classifier.prefix.value, "M")
+        classifier.number = syntax_node.ValueNode("124", int)
+        self.assertEqual(classifier.number.value, 124)
+        classifier.modifier = syntax_node.ValueNode("*", str)
+        self.assertEqual(classifier.modifier.value, "*")
+        classifier.padding = syntax_node.PaddingNode(" ")
+        self.assertEqual(len(classifier.padding.nodes), 1)
+
+    def test_classifier_format(self):
+        classifier = syntax_node.ClassifierNode()
+        classifier.prefix = syntax_node.ValueNode("M", str)
+        self.assertEqual(classifier.format(), "M")
+        classifier.number = syntax_node.ValueNode("124", int)
+        self.assertEqual(classifier.format(), "M124")
+        classifier.modifier = syntax_node.ValueNode("*", str)
+        self.assertEqual(classifier.format(), "*M124")
+        classifier.padding = syntax_node.PaddingNode(" ")
+        self.assertEqual(classifier.format(), "*M124 ")
+        str(classifier)
+        repr(classifier)
+
+    def test_classifier_comments(self):
+        classifier = syntax_node.ClassifierNode()
+        classifier.prefix = syntax_node.ValueNode("M", str)
+        self.assertEqual(len(list(classifier.comments)), 0)
+        classifier.padding = syntax_node.PaddingNode(" ")
+        classifier.padding.append("$ hi", True)
+        self.assertEqual(len(list(classifier.comments)), 1)
+
+
 class DataInputTestFixture(mcnpy.data_inputs.data_input.DataInputAbstract):
     _class_prefix1 = None
     _has_number1 = None
