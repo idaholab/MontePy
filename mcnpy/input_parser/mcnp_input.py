@@ -194,49 +194,6 @@ class ReadInput(Input):
             f"READ INPUT: {self._block_type}: {self.input_lines} File: {self.file_name}"
         )
 
-    @property
-    def lines(self):
-        """
-        The lines of input in this comment block.
-
-        Each entry is a string of that line in the message block.
-        The comment beginning "C " has been stripped out
-
-        :rtype: list
-        """
-        return self._lines
-
-    def format_for_mcnp_input(self, mcnp_version):
-        line_length = get_max_line_length(mcnp_version)
-        ret = []
-        for line in self.lines:
-            ret.append("C " + line[0 : line_length - 3])
-        return ret
-
-    @property
-    def is_cutting_comment(self):
-        """
-        Whether or not this Comment "cuts" an input input.
-
-        :rtype: bool
-        """
-        return self._cutting
-
-    @property
-    def input_line_num(self):
-        """
-        Which line of the parent input this comment came from.
-
-        :rtype: int
-        """
-        return self._input_line_num
-
-    def snip(self):
-        """
-        Set this Comment to be a cutting comment.
-        """
-        self._cutting = True
-
 
 class Message(ParsingNode):
     """
