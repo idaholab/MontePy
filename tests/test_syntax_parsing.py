@@ -650,6 +650,63 @@ class TestIsotopesNode(TestCase):
         self.assertIsNone(comments)
 
 
+class TestShortcutNode(TestCase):
+
+    """
+    def testShortcutExpansion(self):
+        tests = {
+            ("M", "1", "3M", "2r"): ["M", "1", "3", "3", "3"],
+            ("M", "0.01", "2ILOG", "10"): ["M", "0.01", "0.1", "1", "10"],
+            ("M", "1", "3M", "I", "4"): ["M", "1", "3", "3.5", "4"],
+            ("M", "1", "3M", "3M"): ["M", "1", "3", "9"],
+            ("M", "1", "2R", "2I", "2.5"): ["M", "1", "1", "1", "1.5", "2", "2.5"],
+            ("M", "1", "R", "2m"): ["M", "1", "1", "2"],
+            ("M", "1", "R", "R"): ["M", "1", "1", "1"],
+            ("M", "1", "2i", "4", "3m"): ["M", "1", "2", "3", "4", "12"],
+            ("M", "1", "i", "3"): ["M", "1", "2", "3"],
+            ("M", "1", "ilog", "100"): ["M", "1", "10", "100"],
+            ("M", "1", "2i", "4", "2i", "10"): [
+                "M",
+                "1",
+                "2",
+                "3",
+                "4",
+                "6",
+                "8",
+                "10",
+            ],
+            (
+                "M",
+                "1",
+                "2j",
+                "4",
+            ): ["M", "1", mcnpy.Jump(), mcnpy.Jump(), "4"],
+        }
+        invalid = [
+            ("M", "3J", "4R"),
+            ("M", "1", "4I", "3M"),
+            ("M", "1", "4I", "J"),
+            ("M", "1", "2Ilog", "J"),
+            ("M", "3J", "2M"),
+            ("M", "10", "M"),
+            (
+                "M5",
+                "2R",
+            ),
+        ]
+
+        parser = mcnpy.input_parser.mcnp_input.parse_input_shortcuts
+        for test, answer in tests.items():
+            print(test)
+            parsed = parser(list(test))
+            self.assertEqual(parsed, answer)
+        for test in invalid:
+            print(test)
+            with self.assertRaises(mcnpy.errors.MalformedInputError):
+                parser(list(test))
+    """
+
+
 class TestSyntaxParsing(TestCase):
     def testCardInit(self):
         with self.assertRaises(TypeError):
@@ -829,58 +886,6 @@ bar
         )
         self.assertEqual(str(card), "INPUT: BlockType.CELL")
         self.assertEqual(repr(card), "INPUT: BlockType.CELL: ['1 0 -1']")
-
-    def testShortcutExpansion(self):
-        tests = {
-            ("M", "1", "3M", "2r"): ["M", "1", "3", "3", "3"],
-            ("M", "0.01", "2ILOG", "10"): ["M", "0.01", "0.1", "1", "10"],
-            ("M", "1", "3M", "I", "4"): ["M", "1", "3", "3.5", "4"],
-            ("M", "1", "3M", "3M"): ["M", "1", "3", "9"],
-            ("M", "1", "2R", "2I", "2.5"): ["M", "1", "1", "1", "1.5", "2", "2.5"],
-            ("M", "1", "R", "2m"): ["M", "1", "1", "2"],
-            ("M", "1", "R", "R"): ["M", "1", "1", "1"],
-            ("M", "1", "2i", "4", "3m"): ["M", "1", "2", "3", "4", "12"],
-            ("M", "1", "i", "3"): ["M", "1", "2", "3"],
-            ("M", "1", "ilog", "100"): ["M", "1", "10", "100"],
-            ("M", "1", "2i", "4", "2i", "10"): [
-                "M",
-                "1",
-                "2",
-                "3",
-                "4",
-                "6",
-                "8",
-                "10",
-            ],
-            (
-                "M",
-                "1",
-                "2j",
-                "4",
-            ): ["M", "1", mcnpy.Jump(), mcnpy.Jump(), "4"],
-        }
-        invalid = [
-            ("M", "3J", "4R"),
-            ("M", "1", "4I", "3M"),
-            ("M", "1", "4I", "J"),
-            ("M", "1", "2Ilog", "J"),
-            ("M", "3J", "2M"),
-            ("M", "10", "M"),
-            (
-                "M5",
-                "2R",
-            ),
-        ]
-
-        parser = mcnpy.input_parser.mcnp_input.parse_input_shortcuts
-        for test, answer in tests.items():
-            print(test)
-            parsed = parser(list(test))
-            self.assertEqual(parsed, answer)
-        for test in invalid:
-            print(test)
-            with self.assertRaises(mcnpy.errors.MalformedInputError):
-                parser(list(test))
 
     def testDataInputNameParsing(self):
         tests = {

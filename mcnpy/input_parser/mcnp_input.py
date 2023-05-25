@@ -92,14 +92,6 @@ class ParsingNode(ABC):
     def input_text(self):
         return "\n".join(self.input_lines)
 
-    @property
-    def mutated(self):
-        """If true this input has been mutated by the user, and needs to be formatted
-
-        :rtype: bool
-        """
-        return self._mutated
-
     @abstractmethod
     def format_for_mcnp_input(self, mcnp_version):
         """
@@ -163,118 +155,6 @@ class Input(ParsingNode):
             lexer = DataLexer()
         for token in lexer.tokenize(self.input_text):
             yield token
-
-    # TODO delete
-
-
-def parse_input_shortcuts(words, input=None):
-    """
-    Parses MCNP input shortcuts.
-
-    E.g., ``2R``, ``1 10I 100``, ``2J``
-
-    Returns a list of strings with all shortcuts decompressed or changed out.
-    Jumps will be changed to :class:`mcnpy.input_parser.mcnp_input.Jump`.
-
-    :param words: the list of strings or "words".
-    :type words: list
-    :returns: modified version of words with all compressions expanded.
-    :rtype: list
-    """
-    number_parser = re.compile(r"(\d+\.*\d*[e\+\-]*\d*)")
-    ret = []
-    for i, word in enumerate(words):
-        if i == 0:
-            ret.append(word)
-            continue
-        letters = "".join(c for c in word if c.isalpha()).lower()
-        if len(letters) >= 1:
-            number = number_parser.search(word)
-            if number:
-                number = float(number.group(1))
-            if letters == "r":
-                try:
-                    last_val = ret[-1]
-                    assert (
-                        not isinstance(last_val, Jump) and last_val and len(ret) > 1
-                    )  # force last_val to be truthy
-                    if number:
-                        number = int(number)
-                    else:
-                        number = 1
-                    ret += [last_val] * number
-                except (IndexError, AssertionError) as e:
-                    raise MalformedInputError(
-                        input, "The repeat shortcut must come after a value"
-                    )
-            elif letters == "i":
-                try:
-                    begin = float(number_parser.search(ret[-1]).group(1))
-                    for char in ["i", "m", "r", "i", "log"]:
-                        if char in words[i + 1].lower():
-                            raise IndexError
-
-                    end = float(number_parser.search(words[i + 1]).group(1))
-                    if number:
-                        number = int(number)
-                    else:
-                        number = 1
-                    spacing = (end - begin) / (number + 1)
-                    for i in range(number):
-                        new_val = begin + spacing * (i + 1)
-                        ret.append(f"{new_val:g}")
-                except (IndexError, TypeError, ValueError, AttributeError) as e:
-                    raise MalformedInputError(
-                        input,
-                        "The interpolate shortcut must come between two values",
-                    )
-            elif letters == "m":
-                try:
-                    last_val = float(number_parser.search(ret[-1]).group(1))
-                    if number is None:
-                        raise MalformedInputError(
-                            input,
-                            "The multiply shortcut must have a multiplying value",
-                        )
-                    new_val = number * last_val
-                    ret.append(f"{new_val:g}")
-
-                except (IndexError, TypeError, ValueError, AttributeError) as e:
-                    raise MalformedInputError(
-                        input, "The multiply shortcut must come after a value"
-                    )
-
-            elif letters == "j":
-                if number:
-                    number = int(number)
-                else:
-                    number = 1
-                ret += [Jump()] * number
-            elif letters in {"ilog", "log"}:
-                try:
-                    begin = math.log(float(number_parser.search(ret[-1]).group(1)), 10)
-                    end = math.log(
-                        float(number_parser.search(words[i + 1]).group(1)), 10
-                    )
-                    if number:
-                        number = int(number)
-                    else:
-                        number = 1
-                    spacing = (end - begin) / (number + 1)
-                    for i in range(number):
-                        new_val = 10 ** (begin + spacing * (i + 1))
-                        ret.append(f"{new_val:g}")
-
-                except (IndexError, TypeError, ValueError, AttributeError) as e:
-                    raise MalformedInputError(
-                        input,
-                        "The log interpolation shortcut must come between two values",
-                    )
-            else:
-                ret.append(word)
-        else:
-            ret.append(word)
-    return ret
 
 
 class ReadInput(Input):
