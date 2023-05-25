@@ -301,6 +301,11 @@ class TestFill(TestCase):
             input = Input(["1 0 -1 fill=0:1 1:0 0:1 1 2 3 4 5 6 7 8"], BlockType.CELL)
             cell = Cell(input)
             fill = cell.fill
+        # test float bounds
+        with self.assertRaises(ValueError):
+            input = Input(["1 0 -1 fill=0:1 0:1.5 0:1 1 2 3 4 5 6 7 8"], BlockType.CELL)
+            cell = Cell(input)
+            fill = cell.fill
 
     def test_data_fill_init(self):
         card = Input(["FiLl 1 2 3 4"], BlockType.DATA)

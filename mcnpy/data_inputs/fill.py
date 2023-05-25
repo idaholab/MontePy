@@ -441,6 +441,8 @@ class Fill(CellModifierInput):
                 the strings are already properly formatted for MCNP
         :rtype: tuple
         """
+
+        # TODO fix MCNP_format_string
         if self.hidden_transform:
             in_deg, lines = self.transform._generate_inputs(mcnp_version, True, True)
             lines[0] = "(" + lines[0]
