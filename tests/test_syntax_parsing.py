@@ -992,6 +992,8 @@ bar
         self.assertEqual("Jump", jump.title())
         # before you can jump
         self.assertEqual("J", jump.upper())
+        str(jump)
+        repr(jump)
 
 
 class DataInputTestFixture(mcnpy.data_inputs.data_input.DataInputAbstract):
