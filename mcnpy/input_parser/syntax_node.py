@@ -1328,9 +1328,10 @@ class IsotopesNode(SyntaxNodeBase):
         """
         Append the node to this node.
 
-        :param isotope_fraction: the isotope_fraction to add. This must be a list
-            of a ValueNode that is the ZAID, and a ValueNode of the concentration.
-        :type isotope_fraction: list
+        :param isotope_fraction: the isotope_fraction to add. This must be a tuple from
+            A Yacc production. This will consist of: the string identifying the Yacc production,
+            a ValueNode that is the ZAID, and a ValueNode of the concentration.
+        :type isotope_fraction: tuple
         """
         isotope, concentration = isotope_fraction[1:3]
         self._nodes.append((isotope, concentration))
