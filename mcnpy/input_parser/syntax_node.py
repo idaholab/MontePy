@@ -49,15 +49,6 @@ class SyntaxNodeBase(ABC):
     def __len__(self):
         return len(self.nodes)
 
-    def print_nodes(self):
-        """
-        TODO delete?
-        """
-        ret = []
-        for node in self._nodes:
-            ret.append(node.print_nodes())
-        return f"N: {self._name} {{{', '.join(ret)}}}"
-
     @property
     def name(self):
         """
