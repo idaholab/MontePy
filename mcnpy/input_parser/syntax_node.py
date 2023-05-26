@@ -61,7 +61,7 @@ class SyntaxNodeBase(ABC):
 
     @name.setter
     def name(self, name):
-        if isinstance(name, str):
+        if not isinstance(name, str):
             raise TypeError("Name must be a string")
         self._name = name
 
