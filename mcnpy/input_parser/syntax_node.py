@@ -1,10 +1,13 @@
 from abc import ABC, abstractmethod
 import collections
+import copy
 import enum
 import math
+
 from mcnpy import input_parser
 from mcnpy import constants
 from mcnpy.constants import rel_tol, abs_tol
+from mcnpy.errors import *
 from mcnpy.input_parser.shortcuts import Shortcuts
 from mcnpy.geometry_operators import Operator
 from mcnpy.particle import Particle
@@ -1424,19 +1427,39 @@ class ShortcutNode(ListNode):
     def __repr__(self):
         return f"(shortcut:{self._type}: {self.nodes})"
 
+    def _get_last_node(self, p):
+        last = p[0]
+        if isinstance(last, ValueNode):
+            return [last]
+        return []
+
     def _expand_repeat(self, p):
-        self._nodes = [p[0]]
+        self._nodes = self._get_last_node(p)
         repeat = p[1]
         try:
             repeat_num = int(repeat.lower().replace("r", ""))
         except ValueError:
             repeat_num = 1
-        self._nodes += self.nodes[0] * repeat_num
+        if isinstance(p[0], ValueNode):
+            last_val = p[0]
+        else:
+            last_val = p[0].nodes[-1]
+        if last_val.value is None:
+            raise MalformedInputError(list(p), "Repeat cannot follow a jump.")
+        self._nodes += [last_val] * repeat_num
 
     def _expand_multiply(self, p):
-        self._nodes = [p[0]]
-        mult_val = fortran_float(p[1])
-        self._nodes.append(self.nodes[-1] * mult_val)
+        self._nodes = self._get_last_node(p)
+        mult_val = fortran_float(p[1].lower().replace("m", ""))
+        if isinstance(p[0], ValueNode):
+            last_val = self.nodes[-1]
+        else:
+            # TODO check if having single element in node breaks update and format
+            last_val = p[0].nodes[-1]
+        if last_val.value is None:
+            raise MalformedInputError(list(p), "Multiply cannot follow a jump.")
+        self._nodes.append(copy.deepcopy(last_val))
+        self.nodes[-1].value *= mult_val
 
     def _expand_jump(self, p):
         try:
@@ -1460,9 +1483,14 @@ class ShortcutNode(ListNode):
                 begin = term.value
             end = p.number_phrase.value
         else:
-            begin = p.number_phrase0.value
-            end = p.number_phrase1.value
-        self._nodes = [p[0]]
+            if isinstance(p[0], ListNode):
+                begin = p[0].nodes[-1].value
+            else:
+                begin = p[0].value
+            end = p.number_phrase.value
+        self._nodes = self._get_last_node(p)
+        if begin is None:
+            raise MalformedInputError(list(p), "Interpolates cannot follow a jump.")
         match = self._num_finder.search(p[1])
         if match:
             number = int(match.group(0))
@@ -1481,10 +1509,7 @@ class ShortcutNode(ListNode):
         self._begin = begin
         self._end = end
         self._spacing = spacing
-        if hasattr(p, "geometry_term"):
-            self.append(p.number_phrase)
-        else:
-            self.append(p.number_phrase1)
+        self.append(p.number_phrase)
 
     def _can_consume_node(self, node, direction):
         """

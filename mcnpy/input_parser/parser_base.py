@@ -96,10 +96,16 @@ class MCNP_Parser(Parser, metaclass=MetaBuilder):
         """
         if len(p) == 1:
             sequence = syntax_node.ListNode("number sequence")
+            if isinstance(p[0], syntax_node.ListNode):
+                return p[0]
             sequence.append(p[0])
         else:
             sequence = p[0]
-            sequence.append(p[1])
+            if isinstance(p[1], syntax_node.ListNode):
+                for node in p[1].nodes:
+                    sequence.append(node)
+            else:
+                sequence.append(p[1])
         return sequence
 
     @_("number_phrase", "null_phrase")
@@ -112,11 +118,15 @@ class MCNP_Parser(Parser, metaclass=MetaBuilder):
         """
         return p[0]
 
+    @_("numerical_phrase", "shortcut_phrase")
+    def shortcut_start(self, p):
+        return p[0]
+
     @_(
-        "numerical_phrase REPEAT",
-        "numerical_phrase MULTIPLY",
-        "numerical_phrase INTERPOLATE padding number_phrase",
-        "numerical_phrase LOG_INTERPOLATE padding number_phrase",
+        "shortcut_start REPEAT",
+        "shortcut_start MULTIPLY",
+        "shortcut_start INTERPOLATE padding number_phrase",
+        "shortcut_start LOG_INTERPOLATE padding number_phrase",
         "JUMP",
     )
     def shortcut_sequence(self, p):
@@ -126,7 +136,13 @@ class MCNP_Parser(Parser, metaclass=MetaBuilder):
         :returns: the parsed shortcut.
         :rtype: ShortcutNode
         """
-        return syntax_node.ShortcutNode(p)
+        short_cut = syntax_node.ShortcutNode(p)
+        if isinstance(p[0], syntax_node.ShortcutNode):
+            list_node = syntax_node.ListNode("next_shortcuts")
+            list_node.append(p[0])
+            list_node.append(short_cut)
+            return list_node
+        return short_cut
 
     @_("shortcut_sequence", "shortcut_sequence padding")
     def shortcut_phrase(self, p):
