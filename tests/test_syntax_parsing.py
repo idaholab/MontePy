@@ -708,24 +708,29 @@ class TestShortcutNode(TestCase):
             "2R",
         ]
 
+        parser = ShortcutTestFixture()
         for test, answer in tests.items():
             print(test)
             input = Input([test], BlockType.DATA)
-            for token in input.tokenize():
-                print(token)
-            parser = ShortcutTestFixture()
             parsed = parser.parse(input.tokenize())
-            self.assertEqual([v.value for v in parsed], answer)
+            for val, gold in zip(parsed, answer):
+                if val.value is None:
+                    self.assertEqual(gold, mcnpy.Jump())
+                else:
+                    self.assertAlmostEqual(val.value, gold)
         for test in invalid:
             print(test)
             with self.assertRaises(mcnpy.errors.MalformedInputError):
-                parser(list(test))
+                input = Input([test], BlockType.DATA)
+                parsed = parser.parse(input.tokenize())
+                if parsed is None:
+                    raise mcnpy.errors.MalformedInputError("", "")
 
 
 class ShortcutTestFixture(MCNP_Parser):
-    @_("number_sequence")
+    @_("number_sequence", "shortcut_sequence")
     def shortcut_magic(self, p):
-        return p.number_sequence
+        return p[0]
 
 
 class TestSyntaxParsing(TestCase):
