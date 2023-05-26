@@ -6,6 +6,7 @@ import mcnpy
 from mcnpy.input_parser import input_syntax_reader
 from mcnpy.input_parser.mcnp_input import Input, Jump, Message, ReadInput, Title
 from mcnpy.input_parser.block_type import BlockType
+from mcnpy.input_parser.parser_base import MCNP_Parser
 from mcnpy.input_parser import syntax_node
 from mcnpy.particle import Particle
 
@@ -674,60 +675,57 @@ class TestIsotopesNode(TestCase):
 
 
 class TestShortcutNode(TestCase):
-
-    """
     def testShortcutExpansion(self):
         tests = {
-            ("M", "1", "3M", "2r"): ["M", "1", "3", "3", "3"],
-            ("M", "0.01", "2ILOG", "10"): ["M", "0.01", "0.1", "1", "10"],
-            ("M", "1", "3M", "I", "4"): ["M", "1", "3", "3.5", "4"],
-            ("M", "1", "3M", "3M"): ["M", "1", "3", "9"],
-            ("M", "1", "2R", "2I", "2.5"): ["M", "1", "1", "1", "1.5", "2", "2.5"],
-            ("M", "1", "R", "2m"): ["M", "1", "1", "2"],
-            ("M", "1", "R", "R"): ["M", "1", "1", "1"],
-            ("M", "1", "2i", "4", "3m"): ["M", "1", "2", "3", "4", "12"],
-            ("M", "1", "i", "3"): ["M", "1", "2", "3"],
-            ("M", "1", "ilog", "100"): ["M", "1", "10", "100"],
-            ("M", "1", "2i", "4", "2i", "10"): [
-                "M",
-                "1",
-                "2",
-                "3",
-                "4",
-                "6",
-                "8",
-                "10",
+            "1 3M 2r": [1, 3, 3, 3],
+            "0.01 2ILOG 10": [0.01, 0.1, 1, 10],
+            "1 3M I 4": [1, 3, 3.5, 4],
+            "1 3M 3M": [1, 3, 9],
+            "1 2R 2I 2.5": [1, 1, 1, 1.5, 2, 2.5],
+            "1 R 2m": [1, 1, 2],
+            "1 R R": [1, 1, 1],
+            "1 2i 4 3m": [1, 2, 3, 4, 12],
+            "1 i 3": [1, 2, 3],
+            "1 ilog 100": [1, 10, 100],
+            "1 2i 4 2i 10": [
+                1,
+                2,
+                3,
+                4,
+                6,
+                8,
+                10,
             ],
-            (
-                "M",
-                "1",
-                "2j",
-                "4",
-            ): ["M", "1", mcnpy.Jump(), mcnpy.Jump(), "4"],
+            ("1 2j 4",): [1, mcnpy.Jump(), mcnpy.Jump(), 4],
         }
         invalid = [
-            ("M", "3J", "4R"),
-            ("M", "1", "4I", "3M"),
-            ("M", "1", "4I", "J"),
-            ("M", "1", "2Ilog", "J"),
-            ("M", "3J", "2M"),
-            ("M", "10", "M"),
-            (
-                "M5",
-                "2R",
-            ),
+            "3J 4R",
+            "1 4I 3M",
+            "1 4I J",
+            "1 2Ilog J",
+            "3J 2M",
+            "10 M",
+            "2R",
         ]
 
-        parser = mcnpy.input_parser.mcnp_input.parse_input_shortcuts
         for test, answer in tests.items():
             print(test)
-            parsed = parser(list(test))
-            self.assertEqual(parsed, answer)
+            input = Input([test], BlockType.DATA)
+            for token in input.tokenize():
+                print(token)
+            parser = ShortcutTestFixture()
+            parsed = parser.parse(input.tokenize())
+            self.assertEqual([v.value for v in parsed], answer)
         for test in invalid:
             print(test)
             with self.assertRaises(mcnpy.errors.MalformedInputError):
                 parser(list(test))
-    """
+
+
+class ShortcutTestFixture(MCNP_Parser):
+    @_("number_sequence")
+    def shortcut_magic(self, p):
+        return p.number_sequence
 
 
 class TestSyntaxParsing(TestCase):
