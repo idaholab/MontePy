@@ -318,6 +318,13 @@ class TestSyntaxNode(TestCase):
         self.assertIn("bar", test.nodes)
         self.assertIsInstance(test.nodes["foo"], syntax_node.ValueNode)
 
+    def test_syntax_name(self):
+        test = self.test_node
+        test.name = "hi"
+        self.assertEqual(test.name, "hi")
+        with self.assertRaises(TypeError):
+            test.name = 1.0
+
     def test_get_value(self):
         test = self.test_node
         self.assertEqual(test.get_value("foo"), 1.5)
@@ -575,6 +582,22 @@ class TestListNode(TestCase):
             syntax_node.ValueNode("1.5", float)
         ]
         self.assertTrue(list_node1 != list2)
+
+    def test_list_trailing_comment(self):
+        list_node1 = syntax_node.ListNode("list")
+        for i in range(20):
+            list_node1.append(syntax_node.ValueNode("1.0", float))
+        padding = syntax_node.PaddingNode("$ hi", True)
+        list_node1[-1].padding = padding
+        comments = list(list_node1.get_trailing_comment())
+        self.assertEqual(len(comments), 1)
+        list_node1._delete_trailing_comment()
+        self.assertIsNone(list_node1.get_trailing_comment())
+        # test an empty list
+        list_node1 = syntax_node.ListNode("list")
+        self.assertIsNone(list_node1.get_trailing_comment())
+        list_node1._delete_trailing_comment()
+        self.assertIsNone(list_node1.get_trailing_comment())
 
 
 class TestIsotopesNode(TestCase):
