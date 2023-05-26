@@ -705,6 +705,7 @@ class TestShortcutNode(TestCase):
                 10,
             ],
             "1 2j 4": [1, mcnpy.Jump(), mcnpy.Jump(), 4],
+            "1 j": [1, mcnpy.Jump()],
         }
         invalid = [
             "3J 4R",
