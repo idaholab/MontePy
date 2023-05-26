@@ -676,8 +676,13 @@ class TestIsotopesNode(TestCase):
 
 class TestShortcutNode(TestCase):
     def testShortcutExpansion(self):
+        """
+        Most examples, unless otherwise noted are taken from Section 2.8.1
+        of LA-UR-17-29981.
+        """
         tests = {
             "1 3M 2r": [1, 3, 3, 3],
+            # unofficial
             "0.01 2ILOG 10": [0.01, 0.1, 1, 10],
             "1 3M I 4": [1, 3, 3.5, 4],
             "1 3M 3M": [1, 3, 9],
@@ -685,8 +690,11 @@ class TestShortcutNode(TestCase):
             "1 R 2m": [1, 1, 2],
             "1 R R": [1, 1, 1],
             "1 2i 4 3m": [1, 2, 3, 4, 12],
+            # unofficial
             "1 i 3": [1, 2, 3],
+            # unofficial
             "1 ilog 100": [1, 10, 100],
+            # last official one
             "1 2i 4 2i 10": [
                 1,
                 2,
@@ -696,11 +704,12 @@ class TestShortcutNode(TestCase):
                 8,
                 10,
             ],
-            ("1 2j 4",): [1, mcnpy.Jump(), mcnpy.Jump(), 4],
+            "1 2j 4": [1, mcnpy.Jump(), mcnpy.Jump(), 4],
         }
         invalid = [
             "3J 4R",
             "1 4I 3M",
+            # last official test
             "1 4I J",
             "1 2Ilog J",
             "3J 2M",
