@@ -675,7 +675,27 @@ class TestIsotopesNode(TestCase):
 
 
 class TestShortcutNode(TestCase):
-    def testShortcutExpansion(self):
+    def test_basic_shortcut_init(self):
+        with self.assertRaises(ValueError):
+            syntax_node.ShortcutNode("")
+        # test a blank init
+        shortcut = syntax_node.ShortcutNode(
+            short_type=syntax_node.Shortcuts.LOG_INTERPOLATE
+        )
+        self.assertEqual(shortcut._type, syntax_node.Shortcuts.LOG_INTERPOLATE)
+        self.assertEqual(shortcut.end_padding.nodes, [" "])
+        with self.assertRaises(TypeError):
+            syntax_node.ShortcutNode(short_type="")
+
+    def test_shortcut_end_padding_setter(self):
+        short = syntax_node.ShortcutNode()
+        pad = syntax_node.PaddingNode(" ")
+        short.end_padding = pad
+        self.assertEqual(short.end_padding, pad)
+        with self.assertRaises(TypeError):
+            short.end_padding = " "
+
+    def test_shortcut_expansion(self):
         """
         Most examples, unless otherwise noted are taken from Section 2.8.1
         of LA-UR-17-29981.
