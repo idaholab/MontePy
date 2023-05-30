@@ -263,6 +263,46 @@ class GeometryTree(SyntaxNodeBase):
         """
         return self._operator
 
+    def __iter__(self):
+        """
+        Iterates over the leafs
+        """
+        self._iter_l_r = False
+        self._iter_complete = False
+        self._sub_iter = None
+        return self
+
+    def __next__(self):
+        if self._iter_complete:
+            raise StopIteration
+        if not self._iter_l_r:
+            node = self.left
+        if self._iter_l_r and self.right is not None:
+            node = self.right
+        if isinstance(node, ValueNode):
+            if not self._iter_l_r:
+                if self.right is not None:
+                    self._iter_l_r = True
+                else:
+                    self._iter_complete = True
+            else:
+                self._iter_complete = True
+            return node
+        if self._sub_iter is None:
+            self._sub_iter = iter(node)
+        try:
+            return next(self._sub_iter)
+        except StopIteration:
+            self._sub_iter = None
+            if not self._iter_l_r:
+                if self.right is not None:
+                    self._iter_l_r = True
+                else:
+                    self._iter_complete = True
+            else:
+                raise StopIteration
+            return next(self)
+
 
 class PaddingNode(SyntaxNodeBase):
     """
