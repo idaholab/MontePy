@@ -733,6 +733,7 @@ class TestShortcutNode(TestCase):
             # last official test
             "1 4I J",
             "1 2Ilog J",
+            "J 2Ilog 5",
             "3J 2M",
             "10 M",
             "2R",
