@@ -118,7 +118,10 @@ class CellParser(MCNP_Parser):
     def geometry_term(self, p):
         shortcut = syntax_node.ShortcutNode(p)
         node_iter = iter(shortcut.nodes)
-        left = next(node_iter)
+        if isinstance(p.geometry_term, syntax_node.GeometryTree):
+            left = p.geometry_term
+        else:
+            left = next(node_iter)
         for node in node_iter:
             new_tree = syntax_node.GeometryTree(
                 "intersection",
