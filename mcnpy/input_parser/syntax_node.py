@@ -1483,7 +1483,10 @@ class ShortcutNode(ListNode):
         if isinstance(p[0], ValueNode):
             last_val = p[0]
         else:
-            last_val = p[0].nodes[-1]
+            if isinstance(p[0], GeometryTree):
+                last_val = list(p[0])[-1]
+            else:
+                last_val = p[0].nodes[-1]
         if last_val.value is None:
             raise MalformedInputError(list(p), "Repeat cannot follow a jump.")
         self._nodes += [last_val] * repeat_num
@@ -1517,8 +1520,7 @@ class ShortcutNode(ListNode):
         if hasattr(p, "geometry_term"):
             term = p.geometry_term
             if isinstance(term, GeometryTree):
-                surfs, _ = term.get_geometry_identifiers()
-                begin = surfs[-1]
+                begin = list(term)[-1].value
             else:
                 begin = term.value
             end = p.number_phrase.value
