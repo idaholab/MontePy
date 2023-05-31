@@ -568,6 +568,8 @@ class TestListNode(TestCase):
             self.assertEqual(val, syntax_node.ValueNode("1.0", float))
         for val in list_node[::-1]:
             self.assertEqual(val, syntax_node.ValueNode("1.0", float))
+        with self.assertRaises(IndexError):
+            list_node[50]
 
     def test_list_equality(self):
         list_node1 = syntax_node.ListNode("list")
@@ -599,6 +601,21 @@ class TestListNode(TestCase):
         self.assertIsNone(list_node1.get_trailing_comment())
         list_node1._delete_trailing_comment()
         self.assertIsNone(list_node1.get_trailing_comment())
+
+    def test_list_format(self):
+        list_node = syntax_node.ListNode("list")
+        for i in range(20):
+            list_node.append(syntax_node.ValueNode("1.0", float))
+        self.assertEqual(list_node.format(), "1.0 " * 19 + "1.0")
+
+    def test_list_comments(self):
+        list_node = syntax_node.ListNode("list")
+        for i in range(20):
+            list_node.append(syntax_node.ValueNode("1.0", float))
+        padding = syntax_node.PaddingNode("$ hi", True)
+        list_node[-1].padding = padding
+        comments = list(list_node.comments)
+        self.assertEqual(len(comments), 1)
 
 
 class TestIsotopesNode(TestCase):
@@ -790,6 +807,23 @@ class ShortcutGeometryTestFixture(mcnpy.input_parser.cell_parser.CellParser):
     @_("geometry_expr")
     def geometry(self, p):
         return p[0]
+
+
+class TestShortcutListIntegration(TestCase):
+    def setUp(self):
+        parser = ShortcutTestFixture()
+        input = Input(["1 1 2i 4"], BlockType.DATA)
+        self.list_node = parser.parse(input.tokenize())
+
+    def test_shortcut_list_node_init(self):
+        answers = [1, 1, 2, 3, 4]
+        for val, gold in zip(self.list_node, answers):
+            self.assertAlmostEqual(val.value, gold)
+
+    def test_shortcut_list_update_vals(self):
+        list_node = copy.deepcopy(self.list_node)
+        values = list(list_node)
+        list_node.update_with_new_values(values)
 
 
 class TestSyntaxParsing(TestCase):
