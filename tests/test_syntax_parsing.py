@@ -763,6 +763,10 @@ class TestShortcutNode(TestCase):
             "1 -2M ": [1, -2],
             "1 2i 4 ": [1, 2, 3, 4],
             "1 ilog 100 ": [1, 10, 100],
+            # secretly test iterator
+            "#1": [1],
+            "#(1 2 3)": [1, 2, 3],
+            "1 2:( 3 4 5)": [1, 2, 3, 4, 5],
         }
 
         parser = ShortcutGeometryTestFixture()
