@@ -760,8 +760,10 @@ class TestShortcutNode(TestCase):
     def test_shortcut_geometry_expansion(self):
         tests = {
             "1 3r ": [1, 1, 1, 1],
+            "1 1 3r ": [1, 1, 1, 1, 1],
             "1 -2M ": [1, -2],
             "1 2i 4 ": [1, 2, 3, 4],
+            "1 1 2i 4 ": [1, 1, 2, 3, 4],
             "1 ilog 100 ": [1, 10, 100],
             # secretly test iterator
             "#1": [1],
@@ -773,11 +775,7 @@ class TestShortcutNode(TestCase):
         for test, answer in tests.items():
             print(test)
             input = Input([test], BlockType.CELL)
-            for token in input.tokenize():
-                print(token)
             parsed = parser.parse(input.tokenize())
-            for val in parsed:
-                print(val)
             for val, gold in zip(parsed, answer):
                 self.assertAlmostEqual(val.value, gold)
 
@@ -789,8 +787,6 @@ class ShortcutTestFixture(MCNP_Parser):
 
 
 class ShortcutGeometryTestFixture(mcnpy.input_parser.cell_parser.CellParser):
-    debugfile = "parser.out"
-
     @_("geometry_expr")
     def geometry(self, p):
         return p[0]
