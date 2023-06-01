@@ -832,7 +832,6 @@ class TestShortcutListIntegration(TestCase):
         values = list(list_node)
         values.insert(2, syntax_node.ValueNode(3.0, float))
         list_node.update_with_new_values(values)
-        print(list_node.nodes)
         self.assertEqual(list(list_node), values)
 
 

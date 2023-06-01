@@ -1470,8 +1470,8 @@ class ShortcutNode(ListNode):
     def _get_last_node(self, p):
         last = p[0]
         if isinstance(last, ValueNode):
-            return [last]
-        return []
+            return collections.deque([last])
+        return collections.deque()
 
     def _expand_repeat(self, p):
         self._nodes = self._get_last_node(p)
