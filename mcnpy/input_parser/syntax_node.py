@@ -1489,7 +1489,7 @@ class ShortcutNode(ListNode):
                 last_val = p[0].nodes[-1]
         if last_val.value is None:
             raise MalformedInputError(list(p), "Repeat cannot follow a jump.")
-        self._nodes += [last_val] * repeat_num
+        self._nodes += [copy.deepcopy(last_val) for i in range(repeat_num)]
 
     def _expand_multiply(self, p):
         self._nodes = self._get_last_node(p)
