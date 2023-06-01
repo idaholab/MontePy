@@ -811,9 +811,9 @@ class ShortcutGeometryTestFixture(mcnpy.input_parser.cell_parser.CellParser):
 
 class TestShortcutListIntegration(TestCase):
     def setUp(self):
-        parser = ShortcutTestFixture()
+        self.parser = ShortcutTestFixture()
         input = Input(["1 1 2i 4"], BlockType.DATA)
-        self.list_node = parser.parse(input.tokenize())
+        self.list_node = self.parser.parse(input.tokenize())
 
     def test_shortcut_list_node_init(self):
         answers = [1, 1, 2, 3, 4]
@@ -824,6 +824,16 @@ class TestShortcutListIntegration(TestCase):
         list_node = copy.deepcopy(self.list_node)
         values = list(list_node)
         list_node.update_with_new_values(values)
+        self.assertEqual(list(list_node), values)
+
+    def test_shortcut_list_update_vals_repeat(self):
+        input = Input(["1 2 3 5R 0 0"], BlockType.DATA)
+        list_node = self.parser.parse(input.tokenize())
+        values = list(list_node)
+        values.insert(2, syntax_node.ValueNode(3.0, float))
+        list_node.update_with_new_values(values)
+        print(list_node.nodes)
+        self.assertEqual(list(list_node), values)
 
 
 class TestSyntaxParsing(TestCase):
