@@ -1663,8 +1663,10 @@ class ShortcutNode(ListNode):
         # repeat
         elif self._type == Shortcuts.REPEAT:
             temp = self._format_repeat()
-        elif self._type == Shortcuts.MULTIPY:
+        elif self._type == Shortcuts.MULTIPLY:
             temp = self._format_multiply()
+        elif self._type in {Shortcuts.INTERPOLATE, Shortcuts.LOG_INTERPOLATE}:
+            temp = self._format_interpolate()
         if self.end_padding:
             pad_str = self.end_padding.format()
         else:
@@ -1690,7 +1692,7 @@ class ShortcutNode(ListNode):
     def _format_repeat(self):
         first_val = self.nodes[0].format()
         num_repeats = len(self.nodes) - 1
-        if "r" in self.original[1]:
+        if "r" in self._original[1]:
             r = "r"
         else:
             r = "R"
