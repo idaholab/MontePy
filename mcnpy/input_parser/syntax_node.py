@@ -1607,14 +1607,18 @@ class ShortcutNode(ListNode):
         :returns: true it can be consumed.
         :rtype: bool
         """
-        if direction == 1:
-            edge = self._end
+        if len(self.nodes) == 0:
+            new_val = self._begin if direction == 1 else self._end
+            if self._type == Shortcuts.LOG_INTERPOLATE:
+                new_val = 10**new_val
         else:
-            edge = self._begin
-        if self._type == Shortcuts.LOG_INTERPOLATE:
-            new_val = 10 ** (edge + direction * self._spacing)
-        else:
-            new_val = edge + direction * self._spacing
+            edge = self.nodes[-1] if direction == 1 else self.nodes[0]
+            edge = edge.value
+            if self._type == Shortcuts.LOG_INTERPOLATE:
+                edge = math.log(edge, 10)
+                new_val = 10 ** (edge + direction * self._spacing)
+            else:
+                new_val = edge + direction * self._spacing
         return math.isclose(new_val, node.value, rel_tol=rel_tol, abs_tol=abs_tol)
 
     def consume_edge_node(self, node, direction):
