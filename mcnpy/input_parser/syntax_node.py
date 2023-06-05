@@ -1732,17 +1732,31 @@ class ShortcutNode(ListNode):
             num_repeats = self._num_node
         return f"{first_val}{num_repeats.format()}{r}"
 
-    def _format_multiply(self):
-        first_val = self.nodes[0].format()
-        multiplier = self.nodes[1].value / self.nodes[0].value
-        # TODO create phony ValueNode to format multiplier
-        return ""
+    def _format_multiply(self, leading_node=None):
+        if leading_node is not None:
+            first_val = leading_node.nodes[-1]
+            first_val_str = ""
+        else:
+            first_val = self.nodes[0]
+            first_val_str = first_val
+        if "M" in self._original[-1]:
+            m = "M"
+        else:
+            m = "m"
+        # TODO use formatting infrastructure for this formatting
+        self._num_node.value = self.nodes[-1].value / first_val.value
+        return f"{first_val_str.format()}{self._num_node.format()}{m}"
 
-    def _format_interpolate(self):
-        start = self.nodes[0]
+    def _format_interpolate(self, leading_node=None):
+        if leading_node is not None:
+            start = ""
+            num_extra_nodes = 1
+        else:
+            start = self.nodes[0]
+            num_extra_nodes = 2
         end = self.nodes[-1]
-        num_interp = len(self.nodes) - 2
-        print(num_interp)
+        num_interp = len(self.nodes) - num_extra_nodes
+        self._num_node.value = num_interp
         interp = "I"
         can_match = False
         if len(self._original) > 0:
