@@ -553,6 +553,12 @@ class TestListNode(TestCase):
         list_node.append(syntax_node.ValueNode("1.0", float))
         self.assertEqual(len(list_node), 1)
 
+    def test_list_str(self):
+        list_node = syntax_node.ListNode("list")
+        list_node.append(syntax_node.ValueNode("1.0", float))
+        str(list_node)
+        repr(list_node)
+
     def test_list_slicing(self):
         list_node = syntax_node.ListNode("list")
         for i in range(20):
@@ -832,7 +838,81 @@ class TestShortcutListIntegration(TestCase):
         values = list(list_node)
         values.insert(2, syntax_node.ValueNode(3.0, float))
         list_node.update_with_new_values(values)
+        self.assertEqual(len(list_node._shortcuts[0].nodes), 7)
         self.assertEqual(list(list_node), values)
+
+    def test_shortcut_list_trailing_jump(self):
+        input = Input(["1 2 3 5R 0 0"], BlockType.DATA)
+        list_node = self.parser.parse(input.tokenize())
+        values = list(list_node)
+        values.append(syntax_node.ValueNode(Jump(), float))
+        list_node.update_with_new_values(values)
+        self.assertEqual(list(list_node), values[:-1])
+        # test with User specified end jump
+        input = Input(["1 2 3 5R 0 0 j"], BlockType.DATA)
+        list_node = self.parser.parse(input.tokenize())
+        values = list(list_node)
+        values.append(syntax_node.ValueNode(Jump(), float))
+        list_node.update_with_new_values(values)
+        self.assertEqual(list(list_node), values)
+
+    def test_shortcut_list_touching_shortcuts(self):
+        input = Input(["1 2 3 5R 3 3 4R 0 0"], BlockType.DATA)
+        list_node = self.parser.parse(input.tokenize())
+        values = list(list_node)
+        list_node.update_with_new_values(values)
+        self.assertEqual(list(list_node), values)
+
+    def test_shortcut_list_shortcut_cant_consume(self):
+        # try with wrong type
+        input = Input(["1 2 3 5R 3 3 4R "], BlockType.DATA)
+        list_node = self.parser.parse(input.tokenize())
+        values = list(list_node)
+        values.append(syntax_node.ValueNode("hi", str))
+        list_node.update_with_new_values(values)
+        self.assertEqual(list(list_node), values)
+        self.assertEqual(len(list_node._shortcuts[1].nodes), 5)
+        # try with wrong value
+        input = Input(["1 2 3 5R 3 3 4R "], BlockType.DATA)
+        list_node = self.parser.parse(input.tokenize())
+        values = list(list_node)
+        values.append(syntax_node.ValueNode("5.0", float))
+        list_node.update_with_new_values(values)
+        self.assertEqual(list(list_node), values)
+        self.assertEqual(len(list_node._shortcuts[1].nodes), 5)
+        # try with right value
+        values[-1].value = 3.0
+        list_node.update_with_new_values(values)
+        self.assertEqual(list(list_node), values)
+        self.assertEqual(len(list_node._shortcuts[1].nodes), 6)
+
+    def test_shortcut_list_multiply(self):
+        # try with wrong type
+        input = Input(["1 2 5M "], BlockType.DATA)
+        list_node = self.parser.parse(input.tokenize())
+        values = list(list_node)
+        values.append(syntax_node.ValueNode("5.0", float))
+        list_node.update_with_new_values(values)
+        self.assertEqual(list(list_node), values)
+        self.assertEqual(len(list_node._shortcuts[0].nodes), 2)
+
+    def test_shortcut_list_interpolate(self):
+        # try with log interpolate
+        input = Input(["1.0 0.01 2ILOG 10"], BlockType.DATA)
+        list_node = self.parser.parse(input.tokenize())
+        values = list(list_node)
+        values.append(syntax_node.ValueNode("100", float))
+        list_node.update_with_new_values(values)
+        self.assertEqual(list(list_node), values)
+        self.assertEqual(len(list_node._shortcuts[0].nodes), 5)
+        # try with linear interpolate
+        input = Input(["1 1 2I 2.5"], BlockType.DATA)
+        list_node = self.parser.parse(input.tokenize())
+        values = list(list_node)
+        values.append(syntax_node.ValueNode("3", float))
+        list_node.update_with_new_values(values)
+        self.assertEqual(list(list_node), values)
+        self.assertEqual(len(list_node._shortcuts[0].nodes), 5)
 
 
 class TestSyntaxParsing(TestCase):
