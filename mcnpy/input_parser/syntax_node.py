@@ -1434,6 +1434,7 @@ class ShortcutNode(ListNode):
         self._nodes = collections.deque()
         self._original = []
         self._full = False
+        self._num_node = ValueNode(None, float)
         if p is not None:
             for search_str, shortcut in self._shortcut_names.items():
                 if hasattr(p, search_str):
@@ -1486,9 +1487,12 @@ class ShortcutNode(ListNode):
         self._nodes = self._get_last_node(p)
         repeat = p[1]
         try:
-            repeat_num = int(repeat.lower().replace("r", ""))
+            repeat_num_str = repeat.lower().replace("r", "")
+            repeat_num = int(repeat_num_str)
+            self._num_node = ValueNode(repeat_num, int)
         except ValueError:
             repeat_num = 1
+            self._num_node = ValueNode(None, int)
         if isinstance(p[0], ValueNode):
             last_val = p[0]
         else:
@@ -1502,7 +1506,9 @@ class ShortcutNode(ListNode):
 
     def _expand_multiply(self, p):
         self._nodes = self._get_last_node(p)
-        mult_val = fortran_float(p[1].lower().replace("m", ""))
+        mult_str = p[1].lower().replace("m", "")
+        mult_val = fortran_float(mult_str)
+        self._num_node = ValueNode(mult_str, float)
         if isinstance(p[0], ValueNode):
             last_val = self.nodes[-1]
         else:
@@ -1515,9 +1521,12 @@ class ShortcutNode(ListNode):
 
     def _expand_jump(self, p):
         try:
-            jump_num = int(p[0].lower().replace("j", ""))
+            jump_str = p[0].lower().replace("j", "")
+            jump_num = int(jump_str)
+            self._num_node = ValueNode(jump_str, int)
         except ValueError:
             jump_num = 1
+            self._num_node = ValueNode(None, int)
         for i in range(jump_num):
             self._nodes.append(ValueNode(input_parser.mcnp_input.Jump(), float))
 
@@ -1545,8 +1554,10 @@ class ShortcutNode(ListNode):
         match = self._num_finder.search(p[1])
         if match:
             number = int(match.group(0))
+            self._num_node = ValueNode(match.group(0), int)
         else:
             number = 1
+            self._num_node = ValueNode(None, int)
         if is_log:
             begin = math.log(begin, 10)
             end = math.log(end, 10)
@@ -1688,23 +1699,38 @@ class ShortcutNode(ListNode):
         else:
             j = "J"
         length = len(self._original)
+        self._num_node.value = num_jumps
         if num_jumps == 1 and (
             length == 0 or (length > 0 and "1" not in self._original[0])
         ):
             num_jumps = ""
+        else:
+            num_jumps = self._num_node
 
-        return f"{num_jumps}{j}"
+        return f"{num_jumps.format()}{j}"
 
-    def _format_repeat(self):
-        first_val = self.nodes[0].format()
-        num_repeats = len(self.nodes) - 1
-        if "r" in self._original[1]:
+    def _format_repeat(self, leading_node=None):
+        if leading_node is not None:
+            first_val = ""
+            num_extra = 0
+        else:
+            first_val = self.nodes[0].format()
+            num_extra = 1
+        num_repeats = len(self.nodes) - num_extra
+        self._num_node.value = num_repeats
+        if len(self._original) >= 2 and "r" in self._original[1]:
             r = "r"
         else:
             r = "R"
-        if num_repeats == 1 and "1" not in self._original[1]:
+        if (
+            num_repeats == 1
+            and len(self._original) >= 2
+            and "1" not in self._original[1]
+        ):
             num_repeats = ""
-        return f"{first_val}{num_repeats}{r}"
+        else:
+            num_repeats = self._num_node
+        return f"{first_val}{num_repeats.format()}{r}"
 
     def _format_multiply(self):
         first_val = self.nodes[0].format()
@@ -1726,17 +1752,19 @@ class ShortcutNode(ListNode):
         if not can_match:
             if self._type == Shortcuts.LOG_INTERPOLATE:
                 interp = "ILOG"
-        if self._type == Shortcuts.INTERPOLATE:
-            if "I" not in self._original[1]:
-                interp = "i"
+        if (
+            num_interp == 1
+            and len(self._original) >= 2
+            and "1" not in self._original[1]
+        ):
+            num_interp = ""
         else:
-            pass
+            num_interp = self._num_node
         if len(self._original) >= 3:
             padding = self._original[2]
         else:
             padding = PaddingNode(" ")
-        print(interp)
-        return f"{start.format()}{num_interp:d}{interp}{padding.format()}{end.format()}"
+        return f"{start.format()}{num_interp.format()}{interp}{padding.format()}{end.format()}"
 
 
 class ClassifierNode(SyntaxNodeBase):
