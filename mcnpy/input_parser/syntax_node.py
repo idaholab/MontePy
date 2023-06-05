@@ -1192,7 +1192,9 @@ class ListNode(SyntaxNodeBase):
         """
 
         def try_expansion(shortcut, value):
-            status = shortcut.consume_edge_node(value, 1)
+            status = shortcut.consume_edge_node(
+                value, 1, i == last_end + 1 and last_end != 0
+            )
             if status:
                 new_vals_cache[id(value)] = shortcut
             else:
@@ -1425,6 +1427,7 @@ class ShortcutNode(ListNode):
         self._end_pad = None
         self._nodes = collections.deque()
         self._original = []
+        self._full = False
         if p is not None:
             for search_str, shortcut in self._shortcut_names.items():
                 if hasattr(p, search_str):
@@ -1553,7 +1556,7 @@ class ShortcutNode(ListNode):
         self._spacing = spacing
         self.append(p.number_phrase)
 
-    def _can_consume_node(self, node, direction):
+    def _can_consume_node(self, node, direction, last_edge_shortcut=False):
         """
         If it's possible to consume this node.
 
@@ -1561,6 +1564,9 @@ class ShortcutNode(ListNode):
         :type node: ValueNode
         :param direction: the direct to go in. Must be in {-1, 1}
         :type direction: int
+        :param last_edge_shortcut: Whether or the previous node in the list was
+            part of a different shortcut
+        :type last_edge_shortcut: bool
         :returns: true it can be consumed.
         :rtype: bool
         """
@@ -1592,7 +1598,13 @@ class ShortcutNode(ListNode):
             return self._is_valid_interpolate_edge(node, direction)
         # Multiply can only ever have 1 value
         elif self._type == Shortcuts.MULTIPLY:
-            if len(self.nodes) <= 1:
+            if len(self.nodes) == 0:
+                # clear out old state if needed
+                self._full = False
+                if last_edge_shortcut:
+                    self._full = True
+                return True
+            if len(self.nodes) == 1 and not self._full:
                 return True
         return False
 
@@ -1621,16 +1633,23 @@ class ShortcutNode(ListNode):
                 new_val = edge + direction * self._spacing
         return math.isclose(new_val, node.value, rel_tol=rel_tol, abs_tol=abs_tol)
 
-    def consume_edge_node(self, node, direction):
+    def consume_edge_node(self, node, direction, last_edge_shortcut=False):
         """
         Tries to consume the given edge.
 
         If it can be consumed the node is appended to the internal nodes.
 
+        :param node: the node to consume
+        :type node: ValueNode
+        :param direction: the direct to go in. Must be in {-1, 1}
+        :type direction: int
+        :param last_edge_shortcut: Whether or the previous node in the list was
+            part of a different shortcut
+        :type last_edge_shortcut: bool
         :returns: True if the node was consumed.
         :rtype: bool
         """
-        if self._can_consume_node(node, direction):
+        if self._can_consume_node(node, direction, last_edge_shortcut):
             if direction == 1:
                 self._nodes.append(node)
             else:
