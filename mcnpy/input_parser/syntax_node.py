@@ -1592,7 +1592,7 @@ class ShortcutNode(ListNode):
             return self._is_valid_interpolate_edge(node, direction)
         # Multiply can only ever have 1 value
         elif self._type == Shortcuts.MULTIPLY:
-            if len(self.nodes) == 0:
+            if len(self.nodes) <= 1:
                 return True
         return False
 
