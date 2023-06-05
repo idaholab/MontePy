@@ -887,7 +887,6 @@ class TestShortcutListIntegration(TestCase):
         self.assertEqual(len(list_node._shortcuts[1].nodes), 6)
 
     def test_shortcut_list_multiply(self):
-        # try with wrong type
         input = Input(["1 2 5M "], BlockType.DATA)
         list_node = self.parser.parse(input.tokenize())
         values = list(list_node)
@@ -895,6 +894,14 @@ class TestShortcutListIntegration(TestCase):
         list_node.update_with_new_values(values)
         self.assertEqual(list(list_node), values)
         self.assertEqual(len(list_node._shortcuts[0].nodes), 2)
+        input = Input(["0.5 2R 5M "], BlockType.DATA)
+        list_node = self.parser.parse(input.tokenize())
+        values = list(list_node)
+        values.append(syntax_node.ValueNode("5.0", float))
+        list_node.update_with_new_values(values)
+        self.assertEqual(list(list_node), values)
+        print(list_node._shortcuts[1].nodes)
+        self.assertEqual(len(list_node._shortcuts[1].nodes), 1)
 
     def test_shortcut_list_interpolate(self):
         # try with log interpolate
