@@ -718,38 +718,39 @@ class TestShortcutNode(TestCase):
         with self.assertRaises(TypeError):
             short.end_padding = " "
 
+    """
+    Most examples, unless otherwise noted are taken from Section 2.8.1
+    of LA-UR-17-29981.
+    """
+    tests = {
+        "1 3M 2r": [1, 3, 3, 3],
+        # unofficial
+        "0.01 2ILOG 10": [0.01, 0.1, 1, 10],
+        "1 3M I 4": [1, 3, 3.5, 4],
+        "1 3M 3M": [1, 3, 9],
+        "1 2R 2I 2.5": [1, 1, 1, 1.5, 2, 2.5],
+        "1 R 2m": [1, 1, 2],
+        "1 R R": [1, 1, 1],
+        "1 2i 4 3m": [1, 2, 3, 4, 12],
+        # unofficial
+        "1 i 3": [1, 2, 3],
+        # unofficial
+        "1 ilog 100": [1, 10, 100],
+        # last official one
+        "1 2i 4 2i 10": [
+            1,
+            2,
+            3,
+            4,
+            6,
+            8,
+            10,
+        ],
+        "1 2j 4": [1, mcnpy.Jump(), mcnpy.Jump(), 4],
+        "1 j": [1, mcnpy.Jump()],
+    }
+
     def test_shortcut_expansion(self):
-        """
-        Most examples, unless otherwise noted are taken from Section 2.8.1
-        of LA-UR-17-29981.
-        """
-        tests = {
-            "1 3M 2r": [1, 3, 3, 3],
-            # unofficial
-            "0.01 2ILOG 10": [0.01, 0.1, 1, 10],
-            "1 3M I 4": [1, 3, 3.5, 4],
-            "1 3M 3M": [1, 3, 9],
-            "1 2R 2I 2.5": [1, 1, 1, 1.5, 2, 2.5],
-            "1 R 2m": [1, 1, 2],
-            "1 R R": [1, 1, 1],
-            "1 2i 4 3m": [1, 2, 3, 4, 12],
-            # unofficial
-            "1 i 3": [1, 2, 3],
-            # unofficial
-            "1 ilog 100": [1, 10, 100],
-            # last official one
-            "1 2i 4 2i 10": [
-                1,
-                2,
-                3,
-                4,
-                6,
-                8,
-                10,
-            ],
-            "1 2j 4": [1, mcnpy.Jump(), mcnpy.Jump(), 4],
-            "1 j": [1, mcnpy.Jump()],
-        }
         invalid = [
             "3J 4R",
             "1 4I 3M",
@@ -763,7 +764,7 @@ class TestShortcutNode(TestCase):
         ]
 
         parser = ShortcutTestFixture()
-        for test, answer in tests.items():
+        for test, answer in self.tests.items():
             print(test)
             input = Input([test], BlockType.DATA)
             parsed = parser.parse(input.tokenize())
@@ -803,6 +804,7 @@ class TestShortcutNode(TestCase):
                 self.assertAlmostEqual(val.value, gold)
 
     def test_shortcut_format(self):
+        parser = ShortcutTestFixture()
         for in_str, answer in [
             ("1 5R", "1 5R"),
             ("1 5r", "1 5r"),
@@ -818,13 +820,18 @@ class TestShortcutNode(TestCase):
             ("2J ", "2J "),
             ("J", "J"),
         ]:
+            print(in_str, answer)
             input = Input([in_str], BlockType.CELL)
-            parser = ShortcutTestFixture()
             shortcut = parser.parse(input.tokenize())
             self.assertEqual(shortcut.format(), answer)
-        # try jump with empty shortcut
+        # try jump with empty jump shortcut
         shortcut.nodes.clear()
         self.assertEqual(shortcut.format(), "")
+        for in_str in self.tests.keys():
+            print(in_str)
+            input = Input([in_str], BlockType.CELL)
+            shortcut = parser.parse(input.tokenize())
+            self.assertEqual(shortcut.format(), in_str)
 
 
 class ShortcutTestFixture(MCNP_Parser):
