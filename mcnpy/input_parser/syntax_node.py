@@ -1706,6 +1706,32 @@ class ShortcutNode(ListNode):
         # TODO create phony ValueNode to format multiplier
         return ""
 
+    def _format_interpolate(self):
+        start = self.nodes[0]
+        end = self.nodes[-1]
+        num_interp = len(self.nodes) - 2
+        print(num_interp)
+        interp = "I"
+        can_match = False
+        if len(self._original) > 0:
+            if match := re.match(r"\d*(\w+)", self._original[1]):
+                can_match = True
+                interp = match.group(1)
+        if not can_match:
+            if self._type == Shortcuts.LOG_INTERPOLATE:
+                interp = "ILOG"
+        if self._type == Shortcuts.INTERPOLATE:
+            if "I" not in self._original[1]:
+                interp = "i"
+        else:
+            pass
+        if len(self._original) >= 3:
+            padding = self._original[2]
+        else:
+            padding = PaddingNode(" ")
+        print(interp)
+        return f"{start.format()}{num_interp:d}{interp}{padding.format()}{end.format()}"
+
 
 class ClassifierNode(SyntaxNodeBase):
     """
