@@ -1284,6 +1284,70 @@ class TestClassifierNode(TestCase):
         self.assertEqual(len(list(classifier.comments)), 1)
 
 
+class TestParametersNode(TestCase):
+    def setUp(self):
+        self.param = syntax_node.ParametersNode()
+        classifier = syntax_node.ClassifierNode()
+        classifier.prefix = syntax_node.ValueNode("vol", str)
+        list_node = syntax_node.ListNode("data")
+        list_node.append(syntax_node.ValueNode("1.0", float))
+        self.param.append(
+            syntax_node.SyntaxNode(
+                "hi",
+                {
+                    "classifier": classifier,
+                    "seperator": syntax_node.ValueNode("=", str),
+                    "data": list_node,
+                },
+            )
+        )
+
+    def test_parameter_init(self):
+        param = syntax_node.ParametersNode()
+        self.assertIsInstance(param.nodes, dict)
+
+    def test_parameter_append(self):
+        self.assertEqual(len(self.param.nodes), 1)
+        with self.assertRaises(ValueError):
+            classifier = syntax_node.ClassifierNode()
+            classifier.prefix = syntax_node.ValueNode("vol", str)
+            self.param.append(syntax_node.SyntaxNode("foo", {"classifier": classifier}))
+
+    def test_parameter_dict(self):
+        param = self.param
+        self.assertEqual(param["vol"], param.nodes["vol"])
+        with self.assertRaises(KeyError):
+            param["hi"]
+        self.assertIn("vol", param)
+
+    def test_parameter_str(self):
+        str(self.param)
+        repr(self.param)
+
+    def test_parameter_format(self):
+        self.assertEqual(self.param.format(), "vol=1.0")
+
+    def test_parameter_comments(self):
+        param = copy.deepcopy(self.param)
+        self.assertEqual(len(list(param.comments)), 0)
+        param["vol"]["data"][0].padding = syntax_node.PaddingNode(" ")
+        param["vol"]["data"][0].padding.append("$ hi", True)
+        self.assertEqual(len(list(param.comments)), 1)
+
+    def test_parameter_trailing_comments(self):
+        param = copy.deepcopy(self.param)
+        self.assertIsNone(param.get_trailing_comment())
+        param._delete_trailing_comment()
+        self.assertIsNone(param.get_trailing_comment())
+        padding = syntax_node.PaddingNode("$ hi", True)
+        param["vol"]["data"][0].padding = padding
+        comment = param.get_trailing_comment()
+        self.assertEqual(len(comment), 1)
+        self.assertEqual(comment[0].contents, "hi")
+        param._delete_trailing_comment()
+        self.assertIsNone(param.get_trailing_comment())
+
+
 class DataInputTestFixture(mcnpy.data_inputs.data_input.DataInputAbstract):
     _class_prefix1 = None
     _has_number1 = None
