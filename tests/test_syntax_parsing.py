@@ -802,6 +802,30 @@ class TestShortcutNode(TestCase):
             for val, gold in zip(parsed, answer):
                 self.assertAlmostEqual(val.value, gold)
 
+    def test_shortcut_format(self):
+        for in_str, answer in [
+            ("1 5R", "1 5R"),
+            ("1 5r", "1 5r"),
+            ("1 r", "1 r"),
+            ("1 2i 5", "1 2i 5"),
+            ("1 2ilog 5", "1 2ilog 5"),
+            ("1 r 2i 5", "1 r 2i 5"),
+            ("1 r 2ilog 5", "1 r 2ilog 5"),
+            ("1 5M", "1 5M"),
+            ("1 5m", "1 5m"),
+            ("2j ", "2j "),
+            ("2j", "2j"),
+            ("2J ", "2J "),
+            ("J", "J"),
+        ]:
+            input = Input([in_str], BlockType.CELL)
+            parser = ShortcutTestFixture()
+            shortcut = parser.parse(input.tokenize())
+            self.assertEqual(shortcut.format(), answer)
+        # try jump with empty shortcut
+        shortcut.nodes.clear()
+        self.assertEqual(shortcut.format(), "")
+
 
 class ShortcutTestFixture(MCNP_Parser):
     @_("number_sequence", "shortcut_sequence")
