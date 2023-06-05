@@ -1262,7 +1262,9 @@ class ListNode(SyntaxNodeBase):
     def format(self):
         ret = ""
         length = len(self.nodes)
+        last_node = None
         for i, node in enumerate(self.nodes):
+            # adds extra padding
             if (
                 isinstance(node, ValueNode)
                 and node.padding is None
@@ -1270,7 +1272,11 @@ class ListNode(SyntaxNodeBase):
                 and not isinstance(self.nodes[i + 1], PaddingNode)
             ):
                 node.padding = PaddingNode(" ")
-            ret += node.format()
+            if isinstance(last_node, ShortcutNode) and isinstance(node, ShortcutNode):
+                ret += node.format(last_node)
+            else:
+                ret += node.format()
+            last_node = node
         return ret
 
     def __iter__(self):
@@ -1657,16 +1663,16 @@ class ShortcutNode(ListNode):
             return True
         return False
 
-    def format(self):
+    def format(self, leading_node=None):
         if self._type == Shortcuts.JUMP:
             temp = self._format_jump()
         # repeat
         elif self._type == Shortcuts.REPEAT:
-            temp = self._format_repeat()
+            temp = self._format_repeat(leading_node)
         elif self._type == Shortcuts.MULTIPLY:
-            temp = self._format_multiply()
+            temp = self._format_multiply(leading_node)
         elif self._type in {Shortcuts.INTERPOLATE, Shortcuts.LOG_INTERPOLATE}:
-            temp = self._format_interpolate()
+            temp = self._format_interpolate(leading_node)
         if self.end_padding:
             pad_str = self.end_padding.format()
         else:
