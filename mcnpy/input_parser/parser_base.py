@@ -96,7 +96,7 @@ class MCNP_Parser(Parser, metaclass=MetaBuilder):
         """
         if len(p) == 1:
             sequence = syntax_node.ListNode("number sequence")
-            if isinstance(p[0], syntax_node.ListNode):
+            if type(p[0]) == syntax_node.ListNode:
                 return p[0]
             sequence.append(p[0])
         else:
