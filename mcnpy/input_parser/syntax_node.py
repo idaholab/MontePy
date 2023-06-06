@@ -1455,6 +1455,13 @@ class ShortcutNode(ListNode):
             if not isinstance(short_type, Shortcuts):
                 raise TypeError(f"Shortcut type must be Shortcuts. {short_type} given.")
             self._type = short_type
+            if self._type in {
+                Shortcuts.INTERPOLATE,
+                Shortcuts.LOG_INTERPOLATE,
+                Shortcuts.JUMP,
+                Shortcuts.JUMP,
+            }:
+                self._num_node = ValueNode(None, int)
             self._end_pad = PaddingNode(" ")
 
     @property
