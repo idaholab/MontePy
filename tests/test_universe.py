@@ -5,6 +5,7 @@ from mcnpy.constants import DEFAULT_VERSION
 from mcnpy.input_parser import syntax_node
 import mcnpy
 from mcnpy.cell import Cell
+from mcnpy.constants import DEFAULT_VERSION
 from mcnpy.errors import *
 from mcnpy.input_parser.block_type import BlockType
 from mcnpy.input_parser.mcnp_input import Input, Jump
@@ -386,3 +387,11 @@ class TestFill(TestCase):
         fill2 = Fill(card)
         with self.assertRaises(MalformedInputError):
             fill1.merge(fill2)
+
+    def test_complex_transform_fill_format(self):
+        input = Input(["1 0 -1 *fill=1 (1.5 0.0 0.0)"], BlockType.CELL)
+        cell = Cell(input)
+        fill = cell.fill
+        fill.transform.displacement_vector[0] = 2.0
+        output = fill.format_for_mcnp_input(DEFAULT_VERSION)
+        self.assertEqual(output[0], "*fill=1 (2.0 0.0 0.0)")
