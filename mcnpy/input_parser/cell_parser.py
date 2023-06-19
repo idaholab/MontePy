@@ -75,12 +75,6 @@ class CellParser(MCNP_Parser):
         nodes = {"left": left.nodes, "operator": p.union, "right": right.nodes}
         return syntax_node.GeometryTree("union", nodes, ":", left, right)
 
-    @_("geometry_expr padding")
-    def geometry_expr(self, p):
-        ret = p.geometry_expr
-        ret.nodes["end_pad"] = p.padding
-        return ret
-
     @_("geometry_term")
     def geometry_expr(self, p):
         term = p.geometry_term
