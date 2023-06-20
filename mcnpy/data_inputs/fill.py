@@ -342,7 +342,12 @@ class Fill(CellModifierInput):
     @property
     def has_information(self):
         if self.in_cell_block:
-            return self.universe is not None or self.universes is not None
+            return (
+                self.universe is not None
+                or self.old_universe_number is not None
+                or self.universes is not None
+                or self.old_universe_numbers is not None
+            )
 
     @property
     def _tree_value(self):
