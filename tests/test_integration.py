@@ -869,6 +869,10 @@ class testFullFileIntegration(TestCase):
         output = fill.format_for_mcnp_input((6, 2, 0))
         answer = "*fill=1 (1 0.0 0.0)"
         self.assertEqual(output[0], answer)
+        # test changing the transform
+        fill.transform.displacement_vector[0] = 2.0
+        output = fill.format_for_mcnp_input((6, 2, 0))
+        self.assertEqual(output[0], "*fill=1 (2 0.0 0.0)")
         # test without transform
         fill.transform = None
         answer = "fill=1 "

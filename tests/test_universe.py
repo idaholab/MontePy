@@ -387,11 +387,3 @@ class TestFill(TestCase):
         fill2 = Fill(card)
         with self.assertRaises(MalformedInputError):
             fill1.merge(fill2)
-
-    def test_complex_transform_fill_format(self):
-        input = Input(["1 0 -1 *fill=1 (1.5 0.0 0.0)"], BlockType.CELL)
-        cell = Cell(input)
-        fill = cell.fill
-        fill.transform.displacement_vector[0] = 2.0
-        output = fill.format_for_mcnp_input(DEFAULT_VERSION)
-        self.assertEqual(output[0], "*fill=1 (2.0 0.0 0.0)")
