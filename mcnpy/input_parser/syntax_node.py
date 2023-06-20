@@ -1150,6 +1150,9 @@ class ListNode(SyntaxNodeBase):
         :param new_vals: the new values (a list of ValueNodes)
         :type new_vals: list
         """
+        if not new_vals:
+            self._nodes = []
+            return
         new_vals_cache = {id(v): v for v in new_vals}
         # bind shortcuts to single site in new values
         for shortcut in self._shortcuts:
