@@ -492,7 +492,7 @@ class Fill(CellModifierInput):
                 values = [val.value for val in self._tree["data"]]
                 start = values.index("(")
                 end = values.index(")")
-                del self._tree["data"].nodes[start : end + 1]
+                del new_vals[start : end + 1]
             except ValueError:
                 pass
         # Update transforms
