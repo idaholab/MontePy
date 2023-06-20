@@ -481,6 +481,8 @@ class Fill(CellModifierInput):
         )
 
     def _update_cell_values(self):
+        # Todo update matrix fills
+        new_vals = list(self._tree["data"])
         if self.transform and self.transform.is_in_degrees:
             self._tree["classifier"].modifier = "*"
         else:
@@ -493,3 +495,26 @@ class Fill(CellModifierInput):
                 del self._tree["data"].nodes[start : end + 1]
             except ValueError:
                 pass
+        # Update transforms
+        else:
+            start = -1
+            end = -1
+            try:
+                values = [val.value for val in self._tree["data"]]
+                start = values.index("(")
+                end = values.index(")")
+            except ValueError:
+                pass
+            if self.transform.hidden_transform:
+                self.transform._update_values()
+                payload = list(self.transform._tree["data"])
+            else:
+                # if started with named transform
+                if start > 0 and end > 0 and ((end - start) - 1 == 1):
+                    payload = [self._tree["data"][start + 1]]
+                else:
+                    payload = [syntax_node.ValueNode("1", int)]
+                payload[0].value = self.transform.number
+            if start > 0 and end > 0:
+                new_vals = new_vals[: start + 1] + payload + new_vals[end:]
+        self._tree["data"].update_with_new_values(new_vals)
