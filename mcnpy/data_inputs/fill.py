@@ -436,49 +436,6 @@ class Fill(CellModifierInput):
         self._old_number = None
         self._universe = None
 
-    def _prepare_transform_string(self, mcnp_version):
-        """
-        Gets the fill transform string ready.
-
-        E.g., (5) or ( 0 0 10)...
-
-        :returns: a tuple of (bool: if true is in degrees and needs *FILL, list of strings)
-                the strings are already properly formatted for MCNP
-        :rtype: tuple
-        """
-
-        # TODO fix MCNP_format_string
-        if self.hidden_transform:
-            in_deg, lines = self.transform._generate_inputs(mcnp_version, True, True)
-            lines[0] = "(" + lines[0]
-            lines[-1] = lines[-1] + ")"
-            return in_deg, lines
-        else:
-            return (False, [f"({self.transform.number})"])
-
-    def _generate_complex_fill_string(self, mcnp_version):
-        """
-        Generates the matrix fill string.
-
-        handles: the index ranging, the universe lists, and formatting for MCNP.
-
-        :returns: a list of properly formatted strings.
-        :rtype: list
-        """
-        ret = []
-        buff_str = ""
-        for axis in self.DIMENSIONS.values():
-            buff_str += f" {self.min_index[axis]}:{self.max_index[axis]}"
-        ret.extend(self.wrap_string_for_mcnp(buff_str, mcnp_version, True))
-        buff_str = ""
-        for i in self._axis_range(0):
-            for j in self._axis_range(1):
-                for k in self._axis_range(2):
-                    buff_str += f" {self.universes[i][j][k].number}"
-                ret.extend(self.wrap_string_for_mcnp(buff_str, mcnp_version, False))
-                buff_str = ""
-        return ret
-
     def _axis_range(self, axis):
         """
         Returns an iterator for iterating over the given axis.
