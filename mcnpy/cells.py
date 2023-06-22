@@ -35,7 +35,6 @@ class Cells(NumberedObjectCollection):
                 ):
                     card.push_to_cells()
                     card._clear_data()
-            card._mutated = False
 
     def set_equal_importance(self, importance, vacuum_cells=tuple()):
         """

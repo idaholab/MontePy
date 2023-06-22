@@ -223,12 +223,10 @@ class Fill(CellModifierInput):
             raise ValueError(
                 "A single universe can only be set when multiple_universes is False."
             )
-        self._mutated = True
         self._universe = value
 
     @universe.deleter
     def universe(self):
-        self._mutated = True
         self._universe = None
 
     @property
@@ -252,12 +250,10 @@ class Fill(CellModifierInput):
             raise ValueError(
                 "Multiple universes can only be set when multiple_universes is True."
             )
-        self._mutated = True
         self._universes = value
 
     @universes.deleter
     def universes(self):
-        self._mutated = True
         self._universes = None
 
     @property
@@ -299,7 +295,6 @@ class Fill(CellModifierInput):
         if not isinstance(value, bool):
             raise TypeError("Multiple_univeses must be set to a bool")
         self._multi_universe = value
-        self._mutated = True
 
     @make_prop_val_node("_old_number")
     def old_universe_number(self):
@@ -369,7 +364,6 @@ class Fill(CellModifierInput):
     def transform(self, value):
         if not isinstance(value, (Transform, type(None))):
             raise TypeError("Transform must be set to a Transform.")
-        self._mutated = True
         self._transform = value
         if value is not None:
             self._hidden_transform = value.hidden_transform
@@ -378,7 +372,6 @@ class Fill(CellModifierInput):
 
     @transform.deleter
     def transform(self):
-        self._mutated = True
         self._transform = None
 
     @make_prop_val_node("_old_transform_number")

@@ -79,7 +79,6 @@ class Universe(Numbered_MCNP_Object):
             raise ValueError("Universe number must be > 0")
         if self._problem:
             self._problem.universes.check_number(number)
-        self._mutated = True
         self._number = number
 
     @property

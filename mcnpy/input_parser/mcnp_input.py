@@ -78,7 +78,6 @@ class ParsingNode(ABC):
             if not isinstance(line, str):
                 raise TypeError(f"element: {line} in input_lines must be a string")
         self._input_lines = input_lines
-        self._mutated = False
 
     @property
     def input_lines(self):

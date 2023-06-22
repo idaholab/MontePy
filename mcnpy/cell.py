@@ -184,7 +184,6 @@ class Cell(Numbered_MCNP_Object):
     def universe(self, value):
         if not isinstance(value, Universe):
             raise TypeError("universe must be set to a Universe")
-        self._mutated = True
         self._universe.universe = value
 
     @property
@@ -219,7 +218,6 @@ class Cell(Numbered_MCNP_Object):
             raise TypeError("not_truncated_by_parent must be a bool")
         if self.universe.number == 0 and value:
             raise ValueError("can't specify if cell is truncated for universe 0")
-        self._mutated = True
         self._universe._not_truncated = value
 
     @property
@@ -395,13 +393,11 @@ class Cell(Numbered_MCNP_Object):
             raise TypeError("Atom density must be a number.")
         elif density < 0:
             raise ValueError("Atom density must be a positive number.")
-        self._mutated = True
         self._is_atom_dens = True
         self._density = float(density)
 
     @atom_density.deleter
     def atom_density(self):
-        self._mutated = True
         self._density = None
 
     @property
@@ -422,13 +418,11 @@ class Cell(Numbered_MCNP_Object):
             raise TypeError("Mass density must be a number.")
         elif density < 0:
             raise ValueError("Mass density must be a positive number.")
-        self._mutated = True
         self._is_atom_dens = False
         self._density = float(density)
 
     @mass_density.deleter
     def mass_density(self):
-        self._mutated = True
         self._density = None
 
     @property
@@ -480,7 +474,6 @@ class Cell(Numbered_MCNP_Object):
         if not isinstance(params, dict):
             raise TypeError("parameters must be a dict")
         self._parameters = params
-        self._mutated = True
 
     @property
     def complements(self):

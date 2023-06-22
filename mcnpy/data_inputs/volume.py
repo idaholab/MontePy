@@ -138,7 +138,6 @@ class Volume(CellModifierInput):
     def is_mcnp_calculated(self, value):
         if not self.in_cell_block:
             self._calc_by_mcnp = value
-            self._mutated = True
 
     @property
     def has_information(self):
