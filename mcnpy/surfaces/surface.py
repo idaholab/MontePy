@@ -46,8 +46,6 @@ class Surface(Numbered_MCNP_Object):
                 self._modifier = self._tree["surface_num"]["modifier"]
                 if self._modifier.value == "*":
                     self._is_reflecting = True
-                elif self._modifier.value == "+":
-                    self._is_white_boundary = True
                 elif "+" in self._number.token:
                     self._is_white_boundary = True
                     self._number._token = self._number.token.replace("+", "")
