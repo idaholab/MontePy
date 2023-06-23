@@ -475,6 +475,7 @@ class Fill(CellModifierInput):
             self._tree["classifier"].modifier = "*"
         else:
             self._tree["classifier"].modifier = None
+        new_vals = self._update_cell_universes(new_vals)
         if self.transform is None:
             try:
                 values = [val.value for val in self._tree["data"]]
@@ -506,3 +507,46 @@ class Fill(CellModifierInput):
             if start > 0 and end > 0:
                 new_vals = new_vals[: start + 1] + payload + new_vals[end:]
         self._tree["data"].update_with_new_values(new_vals)
+
+    def _update_cell_universes(self, new_vals):
+        def _value_node_generator():
+            while True:
+                value = syntax_node.ValueNode("1", int)
+                padding = syntax_node.PaddingNode(" ")
+                value.padding = padding
+                yield value
+
+        if self.multiple_universes:
+            payload = []
+            for i in self._axis_range(0):
+                for j in self._axis_range(1):
+                    for k in self._axis_range(2):
+                        payload.append(self.universes[i][j][k].number)
+        else:
+            payload = [
+                self.universe.number
+                if self.universe is not None
+                else self.old_universe_number
+            ]
+        try:
+            start_transform = new_vals.index("(")
+        except ValueError:
+            start_transform = None
+
+        reverse_list = new_vals.copy()
+        reverse_list.reverse()
+        try:
+            start_matrix = len(new_vals) - reverse_list.index(":") + 1
+        except ValueError:
+            start_matrix = 0
+        value_nodes = it.chain(
+            new_vals[start_matrix:start_transform], _value_node_generator()
+        )
+        buffer = []
+        for universe, value in zip(payload, value_nodes):
+            value.value = universe
+            buffer.append(value)
+        buffer = new_vals[:start_matrix] + buffer
+        if start_transform:
+            buffer += new_vals[start_transform:]
+        return buffer
