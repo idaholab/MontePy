@@ -378,6 +378,12 @@ None
 >>> cell.mass_density
 None
 
+Geometry
+^^^^^^^^
+
+MCNPy now supports understanding constructive solids geometry (CSG) set logic. 
+This implementation was inspired by `OpenMC <https://docs.openmc.org/en/stable/>`_, and `their documentation <https://docs.openmc.org/en/stable/usersguide/geometry.html>`_ may be helpful.
+
 
 Universes
 ---------
