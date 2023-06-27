@@ -39,12 +39,10 @@ state as a valid MCNP input file.
    may lead to losing information.
 
 If no changes are made to the problem in MCNPy the entire file will be just parroted out as it was in the original file.
-However any objects (e.g., two cells) that were changed (i.e., mutated) will have their original formatting discarded,
-and MCNPy will decide how to format that object in the input file.
-
-.. note::
-    This behavior will change with version 0.2.0.
-    The main scope of this release will be fundamental design change that will preserve all user formatting.
+However any objects (e.g., two cells) that were changed (i.e., mutated) may have their formatting changed slightly.
+MCNPy will do its best to guess the formatting of the original value and to replicate it with the new value. 
+However, this may not always be possible, especially if more digits are needed to keep information (e.g., ``10`` versus ``1000``).
+In this case MCNPy will warn you that value will take up more space which may break your pretty formatting.
 
 For example say we have this simple MCNP input file (saved as foo.imcnp) ::
   
@@ -74,8 +72,7 @@ We can then open this file in MCNPy, and then modify it slightly, and save it ag
 This new file we can see is now reformatted according to MCNPy's preferences for formatting::
 
         Example Problem
-        5 0
-              -1000 2 -3
+        5 0  -1000 2 -3
         2 0  -4 5 -6
 
         1000 CZ 0.5
@@ -89,7 +86,7 @@ This new file we can see is now reformatted according to MCNPy's preferences for
         TR1 0.0 0.0 1.0
         TR2 0.0 0.0 1.00001
 
-In addition to the reformatting of cell 5,
+In addition to the renumbering of cell 5,
 notice that the geometry definition for cell 5 was automatically updated to reference the new surface number.
 MCNPy links objects together and will automatically update "pointers" in the file for you.
 
@@ -137,32 +134,35 @@ What Information is Kept
 ------------------------
 
 So what does MCNPy keep, and what does it forget? 
-In general the philosophy of MCNPy is: meaning first; formatting second. 
-Its first priority is to preserve the semantic meaning and discard complex formatting for now.
-
-.. note::
-   This paradigm will change dramatically with release 0.2.0.
 
 Information Kept
 ^^^^^^^^^^^^^^^^
 #. The optional message block at the beginning of the problem (it's a niche feature checkout section 2.4 of the user manual)
 #. The problem title
 #. ``C`` style comments (e.g., ``C this is a banana``)
-#. (Almost) all MCNP inputs (cards). Only the read card is discarded.
+#. (Almost) all MCNP inputs (cards). Only the read input is discarded.
+#. Dollar sign comments (e.g., ``1 0 $ this is a banana``)
+#. Other user formatting and spaces. If extra spaces between values are given the space will be expanded or shortened to try to keep 
+   the position of the next value in the same spot as the length of the first value changes.
+#. MCNP shortcuts for numbers. All shortcuts will be expanded to their meaning. 
+   Jumps will be subsituted with the value: :class:`~mcnpy.input_parser.mcnp_input.Jump`.
+   On write MCNPy will attempt to recompress all shortcuts. It does this by looking at shortcuts in the original file,
+   and trying to "consume" their nearest neighbors. So for instance if you had ``imp:n 1 10r 0`` and added a new cell with an importance of ``1.0``
+   second to the end MCNPy will print ``imp:n 1 11r 0`` and not ``imp:n 1 10r 1 0``. 
+   MCNPy will not automatically "spot" various sequences that could be shortcuts and will not automatically make shortcuts out of them.
+   The one exception to this rule is for jumps. If a sequence of new Jump values are added they will automatically combined as ``2J`` instead of printing them as ``J J``. 
 
 Information Lost
 ^^^^^^^^^^^^^^^^
-#. Dollar sign comments (e.g., ``1 0 $ this is a banana``)
 #. Read cards. These are handled properly, but when written out these cards themselves will disappear. 
    When MCNPy encounters a read card it notes the file in the card, and then discard the card. 
    It will then read these extra files and append their contents to the appropriate block.
    So If you were to write out a problem that used the read card in the surface block the surface
    cards in that file from the read card will appear at the end of the new surface block in the newly written file.
-#. MCNP shortcuts for numbers. The shortcuts like: ``1 9r`` will be expanded to its meaning, and will not be
-   recompressed, easily. Jumps will be subsituted with the valued :class:`~mcnpy.input_parser.mcnp_input.Jump`.
-   When writing cell modifiers (e.g., ``imp``, ``vol``, etc.) recompression will be attempted,
-   as there can be a lot of information here.
-   The only shortcuts currently recompressed are repeats and jumps though.
+
+.. note::
+
+   This will hopefully change soon and read "subfiles" will be kept, and will automatically be written as their own files.
 
 What a Problem Looks Like
 -------------------------
