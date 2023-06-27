@@ -169,7 +169,7 @@ What a Problem Looks Like
 
 The :class:`~mcnpy.mcnp_problem.MCNP_Problem` is the object that represents an MCNP input file/problem.
 The meat of the Problem is its collections, such as ``cells``, ``surfaces``, and ``materials``. 
-Technically these are :class:`~mcnpy.numbered_object_collection.NumberedObjectCollection`, 
+Technically these are :class:`~mcnpy.numbered_object_collection.NumberedObjectCollection` instances, 
 but it looks like a ``dict``, walks like a ``dict``, and quacks like ``dict``, so most users can just treat it like that.
 
 .. note::
@@ -239,7 +239,7 @@ SURFACE: 6, PZ
 There are a number of tools to avoid this though:
 
 #. :func:`~mcnpy.numbered_object_collection.NumberedObjectCollection.append_renumber` politely 
-   renumbers the added object if there is a number conflict.
+   renumbers the added object if there is a number conflict, without raising any errors or warnings.
 #. :func:`~mcnpy.numbered_object_collection.NumberedObjectCollection.request_number` will give you the
    number you requested. If that's not possible it will find a nearby number that works.
    Note you should immediately use this number, and append the object to the Collection, 
@@ -352,16 +352,16 @@ This previous code is much simpler now::
 
 Cells 
 -----
+
 Density
 ^^^^^^^
 This gets a bit more complicated.
 MCNP supports both atom density, and mass density. 
-So when you access ``cell.density`` on its own,
-the result is ambiguous, 
+So if there were a property ``cell.density`` its result could be ambiguous,
 because it could be in g/cm3 or atom/b-cm.
 No; MCNPy does not support negative density; it doesn't exist!
 For this reason ``cell.density`` is deprecated.
-Instead there is now ``cell.atom_density`` and ``cell.mass_density``. 
+Instead there is ``cell.atom_density`` and ``cell.mass_density``. 
 
 ``cell.atom_density`` is in units of atomcs/b-cm,
 and ``cell.mass_density`` is in units of g/cm3.
