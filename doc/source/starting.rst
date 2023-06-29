@@ -388,6 +388,106 @@ Geometry
 MCNPy now supports understanding constructive solids geometry (CSG) set logic. 
 This implementation was inspired by `OpenMC <https://docs.openmc.org/en/stable/>`_, and `their documentation <https://docs.openmc.org/en/stable/usersguide/geometry.html>`_ may be helpful.
 
+Terminology
+===========
+
+In MCNP the geometry of a cell can by defined by either a surface, or another cell (through complements).
+Therefore, it's not very useful to talk about geometry in terms of "surfaces" because it's not accurate and could lead to confusion.
+MCNPy focuses mostly on the mathematical concept of `half-spaces <https://en.wikipedia.org/wiki/Half-space_(geometry)>`_.
+These are represented as :class:`~mcnpy.surfaces.half_space.HalfSpace` instances.
+The use of this term is a bit loose and is not meant to be mathematical rigorous. 
+The general concept though is that the space (R\ :sup:`3`) can always be split into two regions, or half-spaces.
+For MCNPy this division is done by a divider ( a surface, a cell, or some CSG combination of thoses).
+For planes this can be seen really easily; you have a top, and bottom (or a left and a right, etc.). 
+For cells this could be a bit less intuitive, but it is still a divider.
+The two half-spaces can be viewed as in or out of the cell. 
+
+So how are these half-spaces identified?
+In MCNP this generally done by marking the half-space as the positive or negative one.
+In MCNPy these are changed to boolean values for the :func:`~mcnpy.surfaces.half_space.UnitHalfSpace.side` parameter simplicity with True being the positive side.
+For cell complements the side is implicitly handled by the CSG logic, and can always be thought of as the "outside"
+(though ``side`` will return True).
+
+Creating a Half-Space
+=====================
+
+To make a geometry you can't just start with a divider (e.g., a surface), and just expect the geometry to be unambiguous.
+This is because you need to choose a half-space from the divider.
+This is done very simply and pythonic. 
+For a :class:`~mcnpy.surfaces.surface.Surface` you just need to mark the surface as positive (``+``) or negative (``-``) (using the unary operators).
+This actually creates a new object so don't worry about modifying the surface.
+
+>>> type(+bottom_plane)
+mcnpy.surfaces.half_space.UnitHalfSpace
+>>> type(-bottom_plane)
+mcnpy.surfaces.half_space.UnitHalfSpace
+
+For cells the plus/minus operator doesn't make sense. 
+Instead you use the binary not operator (``~``).
+
+>>> type(~capsule_cell)
+mcnpy.surfaces.half_space.HalfSpace
+
+
+Combining Half-Spaces
+=====================
+
+Ultimately though we need to be able to *combine* these half-spaces to work with CSG.
+As with OpenMC, the set logic operations have been mapped to python's bit logic operators.
+
+* ``&``, the and operator, represents a set intersection.
+* ``|``, the or operator, represents a set union.
+* ``~``, the not operator, represents a set complement.
+
+.. note::
+   When you combine two half-spaces with a logical operator you create a new half-space.
+   In this case the concept of a side becomes much more about "in" and "out".
+
+.. note::
+   Half-spaces need not be contiguous.
+
+Order of precedence and grouping is automatically handled by python so you can easily write complicated geometry in one-line.
+
+.. code-block:: python
+
+   #make weird truncated fuel sample
+   slug_half_space = +bottom_plane & -top_plane & -fuel_cylinder
+   gas_gap = ~slug_half_space & +bottom_plane & -top_plane & -clad_cylinder
+   cladding = ~gas_gap & ~slug_half_space & +bottom_plane & -top_plane & -clad_od
+
+   # make weird multi-part cell
+  slugs = (+bottom_plane & -top_plane & -fuel_cylinder) | (+bottom_plane & -top_plane & -other_fuel)
+
+.. note::
+  MCNPy does not check if the geometry definition is "rational".
+  It doesn't check for being finite, existant (having any volumen at all), or being infinite.
+  Nor does it check for overlapping geometry.
+
+Setting and Modifying Geometry
+==============================
+
+The half-space defining a cell's geometry is stored in ``cell.geometry`` (:func:`~mcnpy.cell.Cell.geometry`).
+This property can be rather simply set.::
+
+    fuel_cell.geometry = +bottom_plane & - top_plane & - fuel_cylinder
+
+This will completely redefine the cell's geometry. You can also modify the geometry with augmented assign operators, ``&=``, and ``|=``.::
+
+        fuel_cell.geometry |= other_fuel_region
+
+.. warning:: 
+   Be careful when using ``&=`` and ``|=`` with complex geometries as the order of operations may not be what you expected.
+   You can check the geometry logic by printing it.
+   MCNPy will show you its internal (`binary tree <https://en.wikipedia.org/wiki/Binary_tree>`_) representation of the logic.
+   It will display the operators in a different style.
+   
+   * ``*`` is the intersection operator
+   * ``:`` is the union operator
+   * ``#`` is the complement operator
+
+   For instance the intersection of three surface-based half-spaces could print as:::
+
+        ((+1000*+1005)*-1010)
 
 Universes
 ---------
