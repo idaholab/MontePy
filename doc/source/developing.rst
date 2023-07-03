@@ -155,13 +155,90 @@ Style Guide
 #. Spaces for indentation, tabs for alignment. Use spaces to build python syntax (4 spaces per level), and tabs for aligning text inside of docstrings.
 
 
+Introduction to SLY and Syntax Trees
+------------------------------------
+
+In MCNPy 0.2.0 the core of MCNPy was radically changed. 
+A *real* syntax parser was actually used that actually does things like work with a Lexer, and an L-R table.
+This parsing engine is `SLY (Sly Lex-Yacc) <https://sly.readthedocs.io/en/latest/>`_.
+The parsers used by MCNPy are designed to return "syntax trees".
+These are based on `Abstract Syntax Tree <https://en.wikipedia.org/wiki/Abstract_syntax_tree>`_, but are not true sytax trees per se.
+These trees are not abstract. The white-space, and comment information is preserved.
+
+Example Syntax Tree
+^^^^^^^^^^^^^^^^^^^
+
+Let's look at a typical cell definition::
+
+        1 10 -5.0 1 -2 -3 IMP:N=1 Vol 5.0
+
+This can be broken into large chunks by their type of information
+        
++-------------+-----------------+----------+---------------------+-------------+-------------+
+|                                  High-level                                                |
++=============+=================+==========+=====================+=============+=============+
+| Cell Number | Material Definition        | Geometry Definition | Parameters                |
++-------------+-----------------+----------+---------------------+-------------+-------------+
+| ``1``       | ``10 -5.0``                | ``1 -2 -3``         | ``IMP:N=1 Vol 5.0``       |
++-------------+-----------------+----------+---------------------+-------------+-------------+
+| Cell Number | Material Number | Density  | Geometry Definition | Importance  |   Volume    |
++-------------+-----------------+----------+---------------------+-------------+-------------+
+| ``1``       | ``10``          | ``-5.0`` | ``1 -2 -3``         | ``IMP:N=1`` | ``Vol 5.0`` |
++-------------+-----------------+----------+---------------------+-------------+-------------+
+
+This example shows the first-and-a-half levels of the syntax tree for a Cell.
+This structure does break down a bit further.
+
+Geometry Example
+""""""""""""""""
+
+For geometry this syntax tree is a binary tree as well and applies the grouping rules properly to build the 
+correct logic into the tree. 
+For instance the previous example's geometry::
+
+        1 -2 -3
+
+Would become::
+   
+         Geometry
+            / \
+           /   \
+          1  & / \
+              / & \ 
+            -2    -3
+
+Introduction To Data Types
+""""""""""""""""""""""""""
+
+A syntax tree consists of a series of instances of various node objects.
+All node classes are sub-classes of the :class:`mcnpy.input_parser.syntax_node.SyntaxNodeBase` class.
+The classes are:
+
+* :class:`~mcnpy.input_parser.syntax_node.SyntaxNode` is one of the most commonly used class, and represents a syntax tree. 
+  This is basically a wrapper for a dict (which will be ordered thanks to python 3.8).
+* :class:`~mcnpy.input_parser.syntax_node.ValueNode`  is the most commonly used classes. It represents the leaves of the syntax tree.
+  It is meant to hold a single value, both its semantic value and its text representation, and its surrounding white-space (and comments), or padding.
+* :class:`~mcnpy.input_parser.syntax_node.PaddingNode` is the companion to the ``ValueNode``. It encapsulates all following padding for a value.
+  Padding is considered to be white-space or a comment (:class:`~mcnpy.input_parser.syntax_node.CommentNode`).
+* :class:`~mcnpy.input_parser.syntax_node.ListNode` is a node meant to contain a list of arbitrary length of values.
+* :class:`~mcnpy.input_parser.syntax_node.ShortcutNode` is a helper to a ``ListNode`` for when MCNP shortcuts (e.g., ``1 10r``) are used.
+  They are nested inside of a ``ListNode`` and should be mostly transparent to the user and developer.
+* :class:`~mcnpy.input_parser.syntax_node.ParametersNode` is a node to hold the parameters for an input. 
+  The parameters are the key-value pairs that can come at the end of most inputs.
+* :class:`~mcnpy.input_parser.syntax_node.GeometryTree` is a node for holding the binary trees for the CSG set logic for a cell's geometry definition.
+  It is the most recursive data structure of any of these nodes. 
+* :class:`~mcnpy.input_parser.syntax_node.ClassifierNode` is a node to represent the data classification "word" that describes what the data are for.
+  For example for a material it would contain ``M34``. For a cell importance it could be ``imp:n``.
+  It can contain: a data keyword, a number, a particle designator (:class:`~mcnpy.input_parser.syntax_node.ParticleNode`), and a modifier character (e.g., ``*`` in ``*TR5``).
+* :class:`~mcnpy.input_parser.syntax_node.IsotopesNode` is a node that represents an MCNP style isotope identifier (e.g., ``1001.80c``).
+
 Inheritance
 -----------
 
 There are many abstract or simply parent classes that are designed to be subclassed extensively.
 
-Card: :class:`~mcnpy.mcnp_object.MCNP_Object`
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Input: :class:`~mcnpy.mcnp_object.MCNP_Object`
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 All classes that represent a single input card *must* subclass this. 
 For example: some children are: :class:`~mcnpy.cell.Cell`, :class:`~mcnpy.surfaces.surface.Surface`.
