@@ -245,7 +245,7 @@ For example: some children are: :class:`~mcnpy.cell.Cell`, :class:`~mcnpy.surfac
 
 How to __init__
 """""""""""""""
-Your init function signature should be: ``def __init__(self, input_card=None, comment=None)``.
+Your init function signature should be: ``def __init__(self, input)``.
 You should then immediately populate default values, and then
 call ``super().__init__(input_card, comment)``.
 This way if ``super().__init__`` fails, 

@@ -25,7 +25,7 @@ PREFIX_MATCHES = {
 }
 
 
-def parse_data(input, comments=None):
+def parse_data(input):
     """
     Parses the data input as the appropriate object if it is supported.
 

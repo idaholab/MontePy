@@ -66,7 +66,7 @@ class Cell(Numbered_MCNP_Object):
     }
     _parser = CellParser()
 
-    def __init__(self, input=None, comments=None):
+    def __init__(self, input=None):
         self._material = None
         self._old_number = self._generate_default_node(int, -1)
         self._load_blank_modifiers()
