@@ -138,7 +138,7 @@ Design Philosophy
 #. **Do Not Repeat Yourself (DRY)**
 #. Use abstraction and inheritance smartly.
 #. Use ``_private`` fields mostly. Use ``__private`` for very private things that should never be touched.
-#. Use ``@property`` getters, and if needed setters. Setters must verify and clean user inputs.
+#. Use ``@property`` getters, and if needed setters. Setters must verify and clean user inputs. For the most part use :func:`~mcnpy.utilities.make_prop_val_node`, and :func:`~mcnpy.utilities.make_prop_pointer`.
 #. Fail early and politely. If there's something that might be bad: the user should get a helpful error as
    soon as the error is apparent. 
 #. Test. test. test. The goal is to achieve 100% test coverage. Unit test first, then do integration testing. A new feature merge request will ideally have around a dozen new test cases.
