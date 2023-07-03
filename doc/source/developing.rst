@@ -146,7 +146,7 @@ Design Philosophy
 #. Document all functions.
 #. Expect everything to mutate at any time.
 #. Avoid relative imports when possible. Use top level ones instead: e.g., ``import mcnpy.cell.Cell``.
-#. Defer to vanilla python, and only use the standard library. Currently the only dependencies are ``numpy`` and ``sly``. 
+#. Defer to vanilla python, and only use the standard library. Currently the only dependencies are `numpy <https://numpy.org/>`_ and `sly <https://github.com/dabeaz/sly>`_. 
    There must be good justification for breaking from this convention and complicating things for the user.
 
 Style Guide
