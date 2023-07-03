@@ -114,11 +114,12 @@ The :mod:`mcnpy.input_parser` contains all functions and classes involved in syn
 Generally this is all invoked through :func:`~mcnpy.input_parser.input_reader.read_input`,
 which returns an :class:`~mcnpy.mcnp_problem.MCNP_Problem` instance.
 
-data_cards
-^^^^^^^^^^
+
+data_inputs
+^^^^^^^^^^^
 This package is for all :class:`~mcnpy.mcnp_card.MCNP_Card` children that should exist
 in the data block in an MCNP input. 
-For example :class:`~mcnpy.data_cards.material.Material` lives here.
+For example :class:`~mcnpy.data_inputs.material.Material` lives here.
 
 surfaces
 ^^^^^^^^
@@ -148,18 +149,14 @@ Style Guide
 #. Use ``black`` to autoformat all code.
 #. Spaces for indentation, tabs for alignment. Use spaces to build python syntax (4 spaces per level), and tabs for aligning text inside of docstrings.
 
-.. warning::
-   In version 0.2.0 much of the developer infrastructure will significantly change.
-   This is to convert to using true parsers, and to build syntax trees for all inputs.
-   It is suggested you work with Micah if you are adding new features prior to this release.
 
 Inheritance
 -----------
 
 There are many abstract or simply parent classes that are designed to be subclassed extensively.
 
-Card: :class:`~mcnpy.mcnp_card.MCNP_Card`
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Card: :class:`~mcnpy.mcnp_object.MCNP_Object`
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 All classes that represent a single input card *must* subclass this. 
 For example: some children are: :class:`~mcnpy.cell.Cell`, :class:`~mcnpy.surfaces.surface.Surface`.
@@ -239,7 +236,7 @@ If you care more about formatting create the string for each line you desire.
 Then pass these strings through ``self.wrap_string_for_mcnp``,
 which will then wrap any long lines to ensure it doesn't break MCNP.
 
-Example taken from :class:`~mcnpy.data_cards.mode.Mode`
+Example taken from :class:`~mcnpy.data_inputs.mode.Mode`
 
 .. code-block:: python
 
@@ -274,8 +271,8 @@ For example the init function for ``Cells``
         def __init__(self, cells=None):
             super().__init__(mcnpy.Cell, cells)
 
-Numbered Object :class:`~mcnpy.numbered_mcnp_card.Numbered_MCNP_Object`
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Numbered Object :class:`~mcnpy.numbered_mcnp_object.Numbered_MCNP_Object`
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 MCNP allows many types of number objects like cells, surfaces, and tallies. 
 The only thing special about this is that it requires there be the properties:
 ``number`` and ``old_number``.
@@ -324,9 +321,9 @@ Things to consider.
    being a white surface. To say that two surfaces are duplicate all of these factors must be considered. 
 
 
-Data Cards: :class:`~mcnpy.data_cards.data_card.DataCardAbstract`
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-This class is the parent for all cards that show up in the data block. 
+Data Inputs: :class:`~mcnpy.data_inputs.data_input.DataInputAbstract`
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+This class is the parent for all inputs that show up in the data block. 
 When adding a child you will also need to update the 
 :func:`~mcnpy.data_cards.data_parser.parse_data` function.
 In general first comply with standards for this class's parent: :class:`~mcnpy.mcnp_card.MCNP_Card`.
@@ -345,26 +342,28 @@ You control the parsing behavior through three parameters: ``class_prefix``, ``h
 See the documentation for how to set these.
 
 
-Using the ``data_parser`` function:
-"""""""""""""""""""""""""""""""""""
-The function :func:`~mcnpy.data_cards.data_parser.parse_data` handles converting a ``data_card`` to the correct class automatically.
+Using the :func:`~mcnpy.data_inputs.data_parser.parse_data` function:
+""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+
+The function :func:`~mcnpy.data_inputs.data_parser.parse_data` handles converting a ``data_card`` to the correct class automatically.
 It uses the dictionary ``PREFIX_MATCH`` to do this. 
 This maps the prefix describes above to a specific class.
 
 
-How to add an object to ``MCNP_Problem``
-""""""""""""""""""""""""""""""""""""""""
-the :class:`~mcnpy.mcnp_problem.MCNP_Problem` automatically consumes problem level data cards,
+How to add an object to :class:`~mcnpy.mcnp_problem.MCNP_Problem`
+"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+
+the :class:`~mcnpy.mcnp_problem.MCNP_Problem` automatically consumes problem level data inputs,
 and adds them to itself.
 Cards this would be appropriate for would be things like ``mode`` and ``kcode``. 
-To do this it uses the dictionary ``cards_to_property`` in the ``__load_data_cards_to_object`` method.
+To do this it uses the dictionary ``inputs_to_property`` in the ``__load_data_inputs_to_object`` method.
 To add a problem level data Object you need to 
 
-#. Add it ``cards_to_property``. The key will be the object class, and the value will be a string for the attribute it should be loaded to.
+#. Add it ``inputs_to_property``. The key will be the object class, and the value will be a string for the attribute it should be loaded to.
 #. Add a property that exposes this attribute in a desirable way.
 
-Making a numbered Object :class:`~mcnpy.numbered_mcnp_card.Numbered_MCNP_Object`
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Making a numbered Object :class:`~mcnpy.numbered_mcnp_object.Numbered_MCNP_Object`
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 MCNP allows many types of number objects like cells, surfaces, and tallies. 
 First you need to provide the property ``number``, and ``old_number``.
 The parent class provides a system to link to a problem via ``self._problem``.
@@ -383,9 +382,9 @@ For example the ``Surface`` number setter looks like::
         self._mutated = True
         self._surface_number = number
 
-Data Cards that Modify Cells :class:`~mcnpy.data_cards.cell_modifier.CellModifierCard`
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-This is a subclass of ``DataCardAbstract`` that is meant to handle data cards that specify information about,
+Data Cards that Modify Cells :class:`~mcnpy.data_inputs.cell_modifier.CellModifierInput`
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+This is a subclass of :class:`~mcnpy.data_inputs.data_input.DataInputAbstract` that is meant to handle data inputs that specify information about,
 and modify cells.
 For example ``IMP`` changes the importance of a cell and ``VOL`` specifies its volume.
 Both of these are appropriate uses of this class.
@@ -425,8 +424,8 @@ At the ``Cells`` level the object should be stored in a ``_protected`` attribute
 See more below.
 
 
-How these objects are added to ``Cell`` and ``Cells``
-"""""""""""""""""""""""""""""""""""""""""""""""""""""
+How these objects are added to :class:`~mcnpy.cell.Cell` and :class:`~mcnpy.cells.Cells`
+""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 Due to the number of classes that will ultimately be subclasses of this class,
 some automated hooks have been developed.
 These hooks use a dictionary and the ``setattr`` function to add multiple objects 
@@ -442,7 +441,7 @@ If this boolean is false repeats of this object are allowed and they will be mer
 (e.g., ``IMP:N,P=1 IMP:E=0`` makes sense despite there being two ``IMP`` specified.
 If True only one instance of the object is allowed.
 (e.g., ``VOL=5 VOL=10`` makes no sense).
-For finding which class to use the :func:`~mcnpy.data_cards.data_parser.PREFIX_MATCHES` dict is used. See above.
+For finding which class to use the :func:`~mcnpy.data_inputs.data_parser.PREFIX_MATCHES` dict is used. See above.
 The key, value pairs in ``Cell.parameters`` is iterated over. 
 If any of the keys is a partial match to the ``PREFIX_MATCHES`` dict then that class is used,
 and constructed. 
@@ -451,7 +450,7 @@ If your class is properly specified in both dictionaries you should be good to g
 level.
 
 At the ``Cells`` level the same dictionary (``Cell._CARDS_TO_PROPERTY``) is used as well.
-This time though it is iterating over ``problem.data_cards``.
+This time though it is iterating over ``problem.data_inputs``.
 Thanks to ``data_parser`` these objects are already appropriately typed,
 and the corresponding object just needs to be loaded into an attribute.
 Once again none of these attributes should be exposed through ``@property``.
@@ -480,11 +479,11 @@ This means that this will *not* be the first line in this case. ::
 For the data_block case the output should be a complete MCNP input that stands on its own.
 You should check ``self.has_changed_print_style`` to help determine if the output has mutated.
 Next you also need to check the modifier object owned by every cell for if any of them have mutated.
-See the :class:`~mcnpy.data_cards.universe_card.UniverseCard` implementation for an example.
+See the :class:`~mcnpy.data_inputs.universe_input.UniverseInput` implementation for an example.
 
 For printing in the data block though you need to remember that this object being called will have no data.
 You will need to iterate over: ``self._problem.cells`` and retrieve the data from there.
-You may find the new function: :func:`~mcnpy.mcnp_card.MCNP_Card.compress_repeat_values` helpful.
+You may find the new function: :func:`~mcnpy.mcnp_object.MCNP_Object.compress_repeat_values` helpful.
 
 ``merge``
 """""""""
@@ -526,7 +525,7 @@ Syntax Objects: :class:`~mcnpy.input_parser.mcnp_input.MCNP_Input`
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 This represents all low level components in MCNP syntax, such as:
 Comments, Messages, titles, and Cards. 
-Similar to ``MCNP_Card`` you will need to implement ``format_for_mcnp_input``.
+Similar to ``MCNP_Object`` you will need to implement ``format_for_mcnp_input``.
 In this case though you will not have access the nice helper functions.
 You will be responsible for ensuring that you do not exceed the maximum
 number of column numbers allowed in a line.
@@ -582,9 +581,9 @@ This is an area of new development, and this may change.
 So how do we get a surface to know about the cells it uses? 
 With generators!
 First, one effectively bi-directional pointer is allowed;
-cards are allowed to point to the parent problem.
+inputs are allowed to point to the parent problem.
 This is provided through ``self._problem``, and
-is established by: :func:`~mcnpy.mcnp_card.MCNP_Card.link_to_problem`.
+is established by: :func:`~mcnpy.mcnp_object.MCNP_Object.link_to_problem`.
 With this the surface can find its cells by::
 
     @property
