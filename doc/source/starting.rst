@@ -389,7 +389,7 @@ MCNPy now supports understanding constructive solids geometry (CSG) set logic.
 This implementation was inspired by `OpenMC <https://docs.openmc.org/en/stable/>`_, and `their documentation <https://docs.openmc.org/en/stable/usersguide/geometry.html>`_ may be helpful.
 
 Terminology
-===========
+"""""""""""
 
 In MCNP the geometry of a cell can by defined by either a surface, or another cell (through complements).
 Therefore, it's not very useful to talk about geometry in terms of "surfaces" because it's not accurate and could lead to confusion.
@@ -409,7 +409,7 @@ For cell complements the side is implicitly handled by the CSG logic, and can al
 (though ``side`` will return True).
 
 Creating a Half-Space
-=====================
+"""""""""""""""""""""
 
 To make a geometry you can't just start with a divider (e.g., a surface), and just expect the geometry to be unambiguous.
 This is because you need to choose a half-space from the divider.
@@ -430,7 +430,7 @@ mcnpy.surfaces.half_space.HalfSpace
 
 
 Combining Half-Spaces
-=====================
+"""""""""""""""""""""
 
 Ultimately though we need to be able to *combine* these half-spaces to work with CSG.
 As with OpenMC, the set logic operations have been mapped to python's bit logic operators.
@@ -464,7 +464,7 @@ Order of precedence and grouping is automatically handled by python so you can e
   Nor does it check for overlapping geometry.
 
 Setting and Modifying Geometry
-==============================
+""""""""""""""""""""""""""""""
 
 The half-space defining a cell's geometry is stored in ``cell.geometry`` (:func:`~mcnpy.cell.Cell.geometry`).
 This property can be rather simply set.::
