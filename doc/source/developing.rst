@@ -232,10 +232,15 @@ The classes are:
   It can contain: a data keyword, a number, a particle designator (:class:`~mcnpy.input_parser.syntax_node.ParticleNode`), and a modifier character (e.g., ``*`` in ``*TR5``).
 * :class:`~mcnpy.input_parser.syntax_node.IsotopesNode` is a node that represents an MCNP style isotope identifier (e.g., ``1001.80c``).
 
+Many of these nodes (which aren't leaves) behave like dicts and lists, and can be accessed with indices. 
+For more detail in how to work with them read the next section on MCNP_Objects: :ref:`mcnp-object-docs`.
+
 Inheritance
 -----------
 
 There are many abstract or simply parent classes that are designed to be subclassed extensively.
+
+.. _mcnp-object-docs:
 
 Input: :class:`~mcnpy.mcnp_object.MCNP_Object`
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -247,17 +252,63 @@ How to __init__
 """""""""""""""
 Your init function signature should be: ``def __init__(self, input)``.
 You should then immediately populate default values, and then
-call ``super().__init__(input_card, comment)``.
+call ``super().__init__(input, self._parser)``.
 This way if ``super().__init__`` fails, 
 there will be enough information for the error reporting to not fail,
 when trying to convert the objects to strings.
-This will then populate the parameters: ``input_card``, ``words``, and ``comment``.
+This will then populate the parameters: ``_tree``, and ``comments``.
 Now you should (inside an in if block checking ``input_card``) parse 
-self.words.
-New classes need to support "from scratch" creation e.g., ``cell = Cell()``.
+``self._tree``.
+Classes need to support "from scratch" creation e.g., ``cell = Cell()``.
+
+Working with Parsers, and the Syntax Tree
+"""""""""""""""""""""""""""""""""""""""""
+
+The parent class init function requires an instance of a parser object.
+Note this is an instance, and not the class itself.
+The init function will then run ``parser.parse()``. 
+Most objects in MCNPy will initialize and keep the parser object at the (MCNPy) class level, to reduce overhead.
+
+.. code-block:: python
+
+   class Cell(MCNP_Object):
+       # Snip
+       _parser = CellParser()
+       # snip
+
+TODO: do parsers need to be cleared?
+TODO: document parser base class
+
+If the input was parsed correctly the syntax tree returned will be stored in ``self._tree``.
+If not the errors will be raised automatically.
+The top of the tree will always be an instance of :class:`~mcnpy.input_parser.syntax_node.SyntaxNode`.
+This will behave like a dictionary, and can be acessed by their keys::
+        
+        self._number = self._tree["cell_number"]
+
+Almost all leaves on the trees will be instances of :class:`~mcnpy.input_parser.syntax_node.ValueNode`.
+This has many support functions that you should not try to implement yourself.
+The actual semantic values are stored in ``node.value``, for instance the float value for a float ValueNode.
+This property can be set, and should be.
+
+You should not store the nested value; instead you should store the entire ValueNode in a private attribute,
+and then use :func:`~mcnpy.utilities.make_prop_val_node` to provide the appropriate property.
+
+The parsers can't always know what data type should in a specific position, so largely it treats all numerical values as floats.
+This should be changed during the init so the value_nodes are the correct data type.
+First: if the sign of the value (positive/negative) carries information beyond the value being negative, this should be marked. 
+For instance, on a cell the density can be positive or negative depending on if it's atom or mass density. 
+This doesn't mean the density is negative.
+To mark this set the :func:`~mcnpy.input_parser.syntax_node.ValueNode.is_negatable_float` to ``True`` for floats,
+and :func:`~mcnpy.input_parser.syntax_node.ValueNode.is_negatable_identifier` for integers.
+This will make it so that ``value`` always returns a positive value, and so :func:`~mcnpy.input_parser.syntax_node.ValueNode.is_negative` returns a boolean value.
 
 .. note::
-   This system will be changed drastically with 0.2.0.
+   Setting :func:`~mcnpy.input_parser.syntax_node.ValueNode.is_negatable_identifier` to ``True`` 
+   will convert the ValueNode to an integer ValueNode (via :func:`~mcnpy.input_parser.syntax_node.ValueNode._convert_to_int`).
+
+TODO: Document modifier functions
+
 
 How to __str__ vs __repr__
 """"""""""""""""""""""""""""
