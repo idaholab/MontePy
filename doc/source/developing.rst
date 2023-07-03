@@ -2,8 +2,13 @@ Developer's Guide
 =================
 
 MCNPy can be thought of as having two layers: the syntax, and the semantic layers.
-The syntax layers handle the boring syntax things: like multi-line cards, and comments, etc.
+The syntax layers handle the boring syntax things: like multi-line inputs, and comments, etc.
 The semantic layer takes this information and makes sense of it, like what the material number in a cell card is.
+
+.. note::
+   Punchcards are dead.
+   For this reason MCNPy refrains from using antiquated terminology like "cards" and "decks".
+   Instead MCNPy refers to "inputs", and "files" or "problems". 
 
 Contributing
 ------------
@@ -325,12 +330,12 @@ Data Inputs: :class:`~mcnpy.data_inputs.data_input.DataInputAbstract`
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 This class is the parent for all inputs that show up in the data block. 
 When adding a child you will also need to update the 
-:func:`~mcnpy.data_cards.data_parser.parse_data` function.
+:func:`~mcnpy.data_inputs.data_parser.parse_data` function.
 In general first comply with standards for this class's parent: :class:`~mcnpy.mcnp_card.MCNP_Card`.
-In addition you will need to implement :func:`~mcnpy.data_cards.data_card.DataCard.update_pointers` 
+In addition you will need to implement :func:`~mcnpy.data_inputs.data_input.DataInputAbstract.update_pointers` 
 if you need it.
 
-During init the cards' "name word" (e.g., ``M3``, ``kcode``, ``f7:n``) is validated and parsed.
+During init the inputs' "name word" (e.g., ``M3``, ``kcode``, ``f7:n``) is validated and parsed.
 Conceptually these names can contain up to four sections.
 
 #. A ``prefix_modifier`` this modifies the whole card with a special character such as ``*tr5`` 
@@ -389,12 +394,12 @@ and modify cells.
 For example ``IMP`` changes the importance of a cell and ``VOL`` specifies its volume.
 Both of these are appropriate uses of this class.
 
-This class adds a lot of machinery to handle the complexities of these data cards,
+This class adds a lot of machinery to handle the complexities of these data inputs,
 that is because these data can be specified in the Cell *or* Data block.
 
 How to __init__
 """""""""""""""
-Similar to other cards you need to match the parent signature and run super on it ::
+Similar to other inputs you need to match the parent signature and run super on it ::
 
         def __init__(self, input_card=None, comments=None, in_cell_block=False, key=None, value=None):
              super().__init__(input_card, comments, in_cell_block, key, valuei)  
@@ -573,7 +578,7 @@ In general we should default to MCNP.
 So a cell borrows a surface because a cell card in MCNP 
 references surface numbers, 
 and not vice versa.
-The exception to this is the case of cards that modify another object.
+The exception to this is the case of inputs that modify another object.
 For example the ``MT`` card modifies its parent ``M`` card.
 In general the parent object should own its children modifiers.
 This is an area of new development, and this may change.
