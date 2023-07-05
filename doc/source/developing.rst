@@ -450,29 +450,38 @@ Data Inputs: :class:`~mcnpy.data_inputs.data_input.DataInputAbstract`
 This class is the parent for all inputs that show up in the data block. 
 When adding a child you will also need to update the 
 :func:`~mcnpy.data_inputs.data_parser.parse_data` function.
-In general first comply with standards for this class's parent: :class:`~mcnpy.mcnp_card.MCNP_Card`.
+This can be done by adding the class to ``PREFIX_MATCHES``.
+In general first comply with standards for this class's parent: :class:`~mcnpy.mcnp_object.MCNP_Object`.
 In addition you will need to implement :func:`~mcnpy.data_inputs.data_input.DataInputAbstract.update_pointers` 
 if you need it.
 
 During init the inputs' "name word" (e.g., ``M3``, ``kcode``, ``f7:n``) is validated and parsed.
 Conceptually these names can contain up to four sections.
+This information is stored in an instance of :class:`~mcnpy.input_parser.syntax_node.ClassifierNode`.
 
 #. A ``prefix_modifier`` this modifies the whole card with a special character such as ``*tr5`` 
 #. A ``Prefix``, which is a series of letters that identifies the type such as ``m``
 #. A ``number``, which numbers it. These must be an unsigned integer.
 #. A particle classifier such as ``:n,p``.
 
-You control the parsing behavior through three parameters: ``class_prefix``, ``has_number``, and ``has_classifier``.
+You control the parsing behavior through three methods: :func:`~mcnpy.data_inputs.data_input.DataInputAbstract._class_prefix`, 
+:func:`~mcnpy.data_inputs.data_input.DataInputAbstract._has_number`, 
+and :func:`~mcnpy.data_inputs.data_input.DataInputAbstract._has_classifier`.
 See the documentation for how to set these.
 
 
 Using the :func:`~mcnpy.data_inputs.data_parser.parse_data` function:
 """"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 
-The function :func:`~mcnpy.data_inputs.data_parser.parse_data` handles converting a ``data_card`` to the correct class automatically.
-It uses the dictionary ``PREFIX_MATCH`` to do this. 
-This maps the prefix describes above to a specific class.
+The function :func:`~mcnpy.data_inputs.data_parser.parse_data` handles converting a ``data_input`` to the correct class automatically.
+It uses the set ``PREFIX_MATCH`` to do this. 
+This lists all classes that the function will look into for a matching class prefix.
 
+The ``parse_data`` function will use the ``fast_parse`` option for parsing the data_input.
+This method will only match the first word/classifier using the :class:`~mcnpy.input_parser.data_parser.ClassifierParser`.
+Based upon this the function will decide which class to run for a full parse. 
+By default all subclasses will use the :class:`~mcnpy.input_parser.data_parser.DataParser` class.
+If you need to use a custom parser you do so by setting ``self._parser``.
 
 How to add an object to :class:`~mcnpy.mcnp_problem.MCNP_Problem`
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
@@ -485,6 +494,8 @@ To add a problem level data Object you need to
 
 #. Add it ``inputs_to_property``. The key will be the object class, and the value will be a string for the attribute it should be loaded to.
 #. Add a property that exposes this attribute in a desirable way.
+
+TODO: format for MCNP input for data cards
 
 Making a numbered Object :class:`~mcnpy.numbered_mcnp_object.Numbered_MCNP_Object`
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
