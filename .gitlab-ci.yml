@@ -49,7 +49,6 @@ unit_test:
 doc_test:
    stage: test
    script:
-      - if [[ -d doc/source/api ]]; then rm -r doc/source/api ; fi; 
       - echo "Executing Sphinx build to detect syntax errors"
       - sphinx-build doc/source/ doc/build/ -W --keep-going -E
       - sphinx-build -b html doc/source/ doc/build/html
