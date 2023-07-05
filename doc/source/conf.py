@@ -32,7 +32,6 @@ release = mcnpy.__version__
 # ones.
 extensions = [
     "sphinx.ext.autodoc",
-    "sphinxcontrib.apidoc",
     "sphinx.ext.napoleon",
     "sphinx.ext.intersphinx",
 ]
