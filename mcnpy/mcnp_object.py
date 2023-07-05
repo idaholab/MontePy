@@ -46,6 +46,20 @@ class MCNP_Object(ABC):
 
     @staticmethod
     def _generate_default_node(value_type, default, padding=" "):
+        """
+        Generates a "default" or blank ValueNode.
+
+        None is generally a safe default value to provide.
+
+        :param value_type: the data type for the ValueNode.
+        :type value_type: Class
+        :param default: the default value to provide (type needs to agree with value_type)
+        :type default: value_type
+        :param padding: the string to provide to the PaddingNode. If None no PaddingNode will be added.
+        :type padding: str, None
+        :returns: a new ValueNode with the requested information.
+        :rtype: ValueNode
+        """
         if padding:
             padding_node = PaddingNode(padding)
         else:
