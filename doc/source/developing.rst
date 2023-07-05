@@ -341,63 +341,42 @@ density: 8.0 atom/b-cm
 SURFACE: 1005, RCC
 
 
-Mutation
-""""""""
-MCNPy supports copying the exact input unless an object changes at all,
-which is inconvenient.
-This is handled by ``self._mutated``. 
-Whenever an object parameter is set the setter must set ``self._mutated=True``. 
-
-.. note::
-   This system will be removed in 0.2.0
-
-Format for MCNP Input
-"""""""""""""""""""""
-All children must implement this abstract method.
-This is the method for how :func:`~mcnpy.mcnp_problem.MCNP_Problem.write_to_file` writes
-this class to the file.
-It must return a list of strings that faithfully represent this objects state.
+Writing to File (Format for MCNP Input)
+"""""""""""""""""""""""""""""""""""""""
+MCNPy (via :func:`~mcnpy.mcnp_problem.MCNP_Problem.write_to_file`) writes
+a class to file by calling its :func:`~mcnpy.mcnp_object.MCNP_Object.format_for_mcnp_input` method.
+This must return a list of strings that faithfully represent this objects state, and tries to replicate the user formatting.
 Each string in the list represents one line in the MCNP input file to be written.
 
-First if ``self._mutated = False`` the ``input_lines`` must be parroted out.
-This can be mostly handled by the helper: ``self._format_for_mcnp_unmutated(mcnp_version)``.
-Note you must check if any of the objects that affect this one are mutated as well.
-For example a cell must check if its surfaces has changed, because it's likely that
-the surface's number has changed.
-
-You have three helper functions to achieve this end goal. 
-You should not try to count the number of characters in a line!
-These are :func:`~mcnpy.mcnp_card.MCNP_Card.format_for_mcnp_input`,
-:func:`~mcnpy.mcnp_card.MCNP_Card.wrap_words_for_mcnp`,
-and :func:`~mcnpy.mcnp_card.MCNP_Card.wrap_string_for_mcnp`.
-First you need to store a list from ``super().format_for_mcnp_input``.
-This function will handle adding comments, etc.
-If you don't care about the formatting just create a list of strings,
-representing each word in order that MCNP requires, 
-and pass this to ``self.wrap_words_for_mcnp``.
-If you care more about formatting create the string for each line you desire.
-Then pass these strings through ``self.wrap_string_for_mcnp``,
-which will then wrap any long lines to ensure it doesn't break MCNP.
-
-Example taken from :class:`~mcnpy.data_inputs.mode.Mode`
+For most cases the default implementation should work great.
+This is its implementation:
 
 .. code-block:: python
 
     def format_for_mcnp_input(self, mcnp_version):
-        if self._mutated:
-            ret = super().format_for_mcnp_input(mcnp_version)
-            ret.append("MODE")
-            for particle in self.particles:
-                ret.append(particle.value)
-        else:
-            ret = self._format_for_mcnp_unmutated(mcnp_version)
+        self.validate()
+        self._update_values()
+        return self.wrap_string_for_mcnp(self._tree.format(), mcnp_version, True)
 
-        return ret
+The first call is to :func:`~mcnpy.mcnp_object.MCNP_Object.validate`, which is meant to check for illegal states
+caused by partially created objects the user hasn't completed yet.
+Next the abstract method, :func:`~mcnpy.mcnp_object.MCNP_Object._update_values` is called.
+This function updates the syntax tree with current values.
+Most values should not need to be updated, since their value is linked to a ValueNode, which is pointed to and modified by the object.
+This should only really by used to update information controlled by other objects.
+For instance :class:`~mcnpy.cell.Cell` will update its material number based on ``self.material.number``,
+since the cell object does not control a material's number.
+Finally ``self._tree`` is formatted.
+Remember ``self._tree`` is a syntax tree of type :class:`~mcnpy.input_parser.syntax_node.SyntaxNode`.
+:func:`~mcnpy.input_parser.syntax_node.SyntaxNodeBase.format` will create a string based on the syntax tree,
+which is updated with the new values that have been provided.
+The ValueNode's implementation does most of the heavy lifting here with reverse engineering the user value,
+and then replicating that formatting with the new value.
 
 
 Collection: :class:`~mcnpy.numbered_object_collection.NumberedObjectCollection`
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-This should be subclassed for any collection of objects that will are numbered.
+This should be subclassed for any collection of objects that are numbered.
 For example: cells, surfaces, materials, universes, tallies, etc.
 By default you need to do almost nothing.
 The class that will be added to this collection must have the property ``obj.number``.
