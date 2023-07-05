@@ -293,6 +293,7 @@ This property can be set, and should be.
 
 You should not store the nested value; instead you should store the entire ValueNode in a private attribute,
 and then use :func:`~mcnpy.utilities.make_prop_val_node` to provide the appropriate property.
+Even if an input isn't provided a ValueNode needs to be stored. The utility :func:`~mcnpy.mcnp_object.MCNP_Object._generate_default_node` can help simplify this.
 
 The parsers can't always know what data type should in a specific position, so largely it treats all numerical values as floats.
 This should be changed during the init so the value_nodes are the correct data type.
