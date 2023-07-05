@@ -307,12 +307,17 @@ This will make it so that ``value`` always returns a positive value, and so :fun
    Setting :func:`~mcnpy.input_parser.syntax_node.ValueNode.is_negatable_identifier` to ``True`` 
    will convert the ValueNode to an integer ValueNode (via :func:`~mcnpy.input_parser.syntax_node.ValueNode._convert_to_int`).
 
-Next, if you do not need to change the type for the ValueNode, but do not need to markt the ValueNode as negative;
+Next, if you do not need to change the :func:`~mcnpy.input_parser.syntax_node.ValueNode.type` for the ValueNode, but do not need to markt the ValueNode as negative;
 there are methods to handle this.
 These methods are :func:`~mcnpy.input_parser.syntax_node.ValueNode._convert_to_int`, and
 :func:`~mcnpy.input_parser.syntax_node.ValueNode._convert_to_enum`.
-
-
+``_convert_to_int`` is a rather straight forward function to run, and takes no arguments.
+It should be noted that the value is found by running ``int(self.token)``, that is that the original string value, and not the float value is converted.
+This is in order to avoid allowing ``1.5`` as a valid int, since in this case the floor would be taken.
+``_convert_to_enum`` takes a class instance, which is a subclass of ``Enum``. 
+You can specify a ``format_type``, which specifies what the data should be treated as while formatting it with new data.
+For example :class:`~mcnpy.surfaces.surface_type.SurfaceType` (e.g., ``PZ``) uses ``str`` as its format type,
+whereas :class:`~mcnpy.data_inputs.lattice.Lattice` (e.g., ``1`` or ``2``) uses ``int`` is its format type.
 
 How to __str__ vs __repr__
 """"""""""""""""""""""""""""
