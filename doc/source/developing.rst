@@ -405,8 +405,10 @@ Note this field can be ``None``.
 When setting a number you must check for numbering collisions with the method:
 :func:`~mcnpy.numbered_object_collection.NumberedObjectCollection.check_number`.
 This function returns nothing, but will raise an error when a number collision occurs.
-For example the ``Surface`` number setter looks like::
+For example the ``Surface`` number setter looks like:
         
+.. code-block:: python
+
     @number.setter
     def number(self, number):
         assert isinstance(number, int)
@@ -426,10 +428,10 @@ You should expose clear parameters such as ``radius`` or ``location``.
 
 How to __init__
 """""""""""""""
-This is very similar to how ``MCNP_Card`` works. 
-You need to first run ``super().__init__(input_card, comment)``.
-You will then have access to ``self.surface_type``, and ``self.surface_constants``.
+After running the super init method
+you will then have access to ``self.surface_type``, and ``self.surface_constants``.
 You then need to verify that the surface type is correct, and there are the correct number of surface constants. 
+You will also need to add a branch in the logic for :func:`mcnpy.surfaces.surface_builder.surface_builder`.
 
 :func:`~mcnpy.surfaces.surface.Surface.find_duplicate_surfaces`
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
@@ -438,7 +440,7 @@ such as two ``PZ`` surfaces that are 1 micron apart.
 This should return a list of surfaces that are within the provided tolerance similar to this one.
 Things to consider.
 
-#. The list provided will include ``self``, ``self`` is not considered redundant with regards to ``self``.
+#. The list provided will *not* include ``self``, ``self`` is not considered redundant with regards to ``self``.
 #. Surfaces can be modified in many ways including: being periodic with respect to a surface, being transformed, being a periodic surface, and
    being a white surface. To say that two surfaces are duplicate all of these factors must be considered. 
 
