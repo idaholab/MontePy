@@ -307,7 +307,11 @@ This will make it so that ``value`` always returns a positive value, and so :fun
    Setting :func:`~mcnpy.input_parser.syntax_node.ValueNode.is_negatable_identifier` to ``True`` 
    will convert the ValueNode to an integer ValueNode (via :func:`~mcnpy.input_parser.syntax_node.ValueNode._convert_to_int`).
 
-TODO: Document modifier functions
+Next, if you do not need to change the type for the ValueNode, but do not need to markt the ValueNode as negative;
+there are methods to handle this.
+These methods are :func:`~mcnpy.input_parser.syntax_node.ValueNode._convert_to_int`, and
+:func:`~mcnpy.input_parser.syntax_node.ValueNode._convert_to_enum`.
+
 
 
 How to __str__ vs __repr__
