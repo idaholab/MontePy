@@ -495,7 +495,7 @@ To add a problem level data Object you need to
 #. Add it ``inputs_to_property``. The key will be the object class, and the value will be a string for the attribute it should be loaded to.
 #. Add a property that exposes this attribute in a desirable way.
 
-TODO: format for MCNP input for data cards
+
 
 Making a numbered Object :class:`~mcnpy.numbered_mcnp_object.Numbered_MCNP_Object`
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -529,20 +529,22 @@ that is because these data can be specified in the Cell *or* Data block.
 
 How to __init__
 """""""""""""""
-Similar to other inputs you need to match the parent signature and run super on it ::
+Similar to other inputs you need to match the parent signature and run super on it:
 
-        def __init__(self, input_card=None, comments=None, in_cell_block=False, key=None, value=None):
-             super().__init__(input_card, comments, in_cell_block, key, valuei)  
+.. code-block:: python
+
+    def __init__(self, input=None, in_cell_block=False, key=None, value=None):
+             super().__init__(input, in_cell_block, key, value)  
 
 The added arguments add more information for invoking this from a ``Cell``. 
 When doing so the ``in_cell_block`` will obviously be true,
-and the ``key``, and ``value`` will be taken from the ``parameters`` dict. 
+and the ``key``, and ``value`` will be taken from the ``parameters`` syntax tree. 
 These will all be automatically called from ``Cell`` as discussed below.
 Most of the boiler plate will be handled by super. 
 The goals for init function should be: 
 
 #. initialize default values needed for when this is initialized from a blank call.
-#. Parse the data provided in the ``input_card``, when ``in_cell_block`` is False.
+#. Parse the data provided in the ``input``, when ``in_cell_block`` is False.
 #. Parse the data given in ``key`` and ``value`` when ``in_cell_block`` is True.
 
 
@@ -552,7 +554,7 @@ Objects that subclass this one will only be owned by ``Cell`` and ``Cells`` obje
 They will only be public properties for ``Cell``.
 All "data" must be only in the ``Cell`` level object once the problem has been fully initialized.
 This means that the object owned by ``Cells`` should not know the importance of an individual cell,
-only the object owned by ``Cell`` should be.
+only the object owned by ``Cell`` should know this.
 
 The general rule is that the ``Cell`` level the object (or some part of it) should be available as a public property.
 At the ``Cells`` level the object should be stored in a ``_protected`` attribute.
@@ -566,17 +568,17 @@ some automated hooks have been developed.
 These hooks use a dictionary and the ``setattr`` function to add multiple objects 
 to ``Cell`` or ``Cells`` automatically.
 
-On the Cell level the static dictionary: ``Cell._CARDS_TO_PROPERTY`` maps how data should be
+On the Cell level the static dictionary: ``Cell._INPUTS_TO_PROPERTY`` maps how data should be
 loaded. 
 The key is the class of the object type that should be loaded. 
 The value is then a tuple. 
-First element is the string of the attribute to where the object of this class should be loaded.
-The second element is a boolean.
-If this boolean is false repeats of this object are allowed and they will be merged.
+The first element of the tuple is the string of the attribute to where the object of this class should be loaded.
+The second element of the tuple is a boolean.
+If this boolean is false repeats of this class are allowed and they will be merged.
 (e.g., ``IMP:N,P=1 IMP:E=0`` makes sense despite there being two ``IMP`` specified.
 If True only one instance of the object is allowed.
 (e.g., ``VOL=5 VOL=10`` makes no sense).
-For finding which class to use the :func:`~mcnpy.data_inputs.data_parser.PREFIX_MATCHES` dict is used. See above.
+For finding which class to use the :func:`~mcnpy.data_inputs.data_parser.PREFIX_MATCHES` set is used. See above.
 The key, value pairs in ``Cell.parameters`` is iterated over. 
 If any of the keys is a partial match to the ``PREFIX_MATCHES`` dict then that class is used,
 and constructed. 
