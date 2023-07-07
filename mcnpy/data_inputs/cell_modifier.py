@@ -152,6 +152,14 @@ class CellModifierInput(DataInputAbstract):
 
     @property
     def _is_worth_printing(self):
+        """
+        Determines if this object has information that is worth printing in the input file.
+
+        Uses the :func:`has_information` property for all applicable cell(s)
+
+        :returns: True if this object should be included in the output
+        :rtype: bool
+        """
         if self.in_cell_block:
             return self.has_information
         attr, _ = mcnpy.Cell._INPUTS_TO_PROPERTY[type(self)]
@@ -163,9 +171,23 @@ class CellModifierInput(DataInputAbstract):
     @property
     @abstractmethod
     def _tree_value(self):
+        """
+        The ValueNode that holds the information for this instance, that should be included in the data block.
+
+        :returns: The ValueNode to update the data-block syntax tree with.
+        :rtype: ValueNode
+        """
         pass
 
     def _collect_new_values(self):
+        """
+        Gets a list of the ValueNodes that hold the information for all cells.
+
+        This will be a list in the same order as :func:`mcnpy.mcnp_problem.MCNP_Problem.cells`.
+
+        :returns: a list of the ValueNodes to update the data block syntax tree with
+        :rtype: list
+        """
         ret = []
         attr, _ = mcnpy.Cell._INPUTS_TO_PROPERTY[type(self)]
         for cell in self._problem.cells:
@@ -175,6 +197,9 @@ class CellModifierInput(DataInputAbstract):
 
     @abstractmethod
     def _update_cell_values(self):
+        """
+        Updates values in the syntax tree when in the cell block.
+        """
         pass
 
     def _update_values(self):
@@ -185,6 +210,14 @@ class CellModifierInput(DataInputAbstract):
             self.data.update_with_new_values(new_vals)
 
     def _format_tree(self):
+        """
+        Formats the syntax tree for printing in an input file.
+
+        By default this runs ``self._tree.format()``.
+
+        :returns: a string of the text to write out to the input file (not wrapped yet for MCNP).
+        :rtype: str
+        """
         return self._tree.format()
 
     def format_for_mcnp_input(self, mcnp_version):
