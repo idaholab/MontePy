@@ -589,5 +589,4 @@ See the following cell properties for more details:
 * :func:`~mcnpy.cell.Cell.lattice`
 * :func:`~mcnpy.cell.Cell.fill`
 
-Remember: make objects, not regexes!
-====================================
+**Remember: make objects, not regexes!**
