@@ -596,7 +596,22 @@ Once again none of these attributes should be exposed through ``@property`` at t
 """""""""""""""""""""""""
 
 For the most part the complexity of switching between the cell and data block printing is automatically handled by this parent function.
+In general this looks a lot like the workflow for the base ``format_for_mcnp_input`` implementation.
+However, must internal calls are wrapped in another function, allowing overriding of those wrappers to change behavior for more complex situations.
+In all cases :func:`~mcnpy.data_inputs.cell_modifier.CellModifierInput._is_worth_printing` is checked to see if there is information to be printed.
+The default implementation checks :func:`~mcnpy.data_inputs.cell_modifier.CellModifierInput.has_information` for either the cell or cells.
 
+Next the values need to be updated via :func:`~mcnpy.mcnp_object.MCNP_Object._update_values`.
+For the cell level instance this calls :func:`~mcnpy.data_inputs.cell_modifier.CellModifierInput._update_cell_values`,
+which needs to be implemented.
+For the data-block isntance this is a bit more complicated.
+First all new data for every cell is collected by :func:`~mcnpy.data_inputs.cell_modifier.CellModifierInput._collect_new_values`.
+By default this will get the *ValueNode* that is returned from the abstract method :func:`~mcnpy.data_inputs.cell_modifier.CellModifierInput._tree_value`.
+These values will then be passed to :func:`~mcnpy.input_parser.syntax_node.ListNode.update_with_new_values`.
+
+Finally, the syntax tree is formatted.
+Once again this is wrapped to allow adding more complexity.
+The tree is formatted by :func:`~mcnpy.data_inputs.cell_modifier.CellModifierInput._format_tree`.
 
 ``merge``
 """""""""
@@ -606,6 +621,7 @@ One use case for this is combining the data from: ``IMP:N,P=1 IMP:E=0.5`` into o
 so there's no redundant data.
 This will automatically be called by the loading hooks, and you do not need to worry about
 deleting other.
+
 
 ``push_to_cells``
 """""""""""""""""
