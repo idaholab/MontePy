@@ -204,13 +204,21 @@ class CellModifierInput(DataInputAbstract):
             print_in_data_block = self._problem.print_in_data_block[
                 self._class_prefix().upper()
             ]
-        # print in cell block
-        if self.in_cell_block and not print_in_data_block and self._is_worth_printing:
-            self._update_values()
-            return self.wrap_string_for_mcnp(self._format_tree(), mcnp_version, True)
 
-        # print in data block
-        if not self.in_cell_block and print_in_data_block and self._is_worth_printing:
+        """
+        Boolean logic
+        A= self.in_Cell_block
+        B = print_in_data_block
+        C = is_worth_pring
+
+        Logic:
+            A!BC + !ABC
+            C *(A!B + !AB)
+            C * (A xor B)
+            C * (A != B)
+        """
+        # print in either block
+        if (self.in_cell_block != print_in_data_block) and self._is_worth_printing:
             self._update_values()
             return self.wrap_string_for_mcnp(self._format_tree(), mcnp_version, True)
         return []
