@@ -146,7 +146,9 @@ class CellModifierInput(DataInputAbstract):
     @abstractmethod
     def _clear_data(self):
         """
-        After data being pushed to cells delete internal data to avoid inadvertent editing.
+        After data has been pushed to cells, delete internal data to avoid inadvertent editing.
+
+        This is only called on data-block instances of this object.
         """
         pass
 
