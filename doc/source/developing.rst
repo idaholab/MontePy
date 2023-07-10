@@ -592,8 +592,8 @@ Thanks to ``data_parser`` these objects are already appropriately typed,
 and the corresponding object just needs to be loaded into an attribute.
 Once again none of these attributes should be exposed through ``@property`` at the ``Cells`` level.
 
-``format_for_mcnp_input``
-"""""""""""""""""""""""""
+:func:`~mcnpy.data_inputs.cell_modifier.CellModifierInput.format_for_mcnp_input`
+""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 
 For the most part the complexity of switching between the cell and data block printing is automatically handled by this parent function.
 In general this looks a lot like the workflow for the base ``format_for_mcnp_input`` implementation.
@@ -613,8 +613,9 @@ Finally, the syntax tree is formatted.
 Once again this is wrapped to allow adding more complexity.
 The tree is formatted by :func:`~mcnpy.data_inputs.cell_modifier.CellModifierInput._format_tree`.
 
-``merge``
-"""""""""
+:func:`~mcnpy.data_inputs.cell_modifier.CellModifierInput.merge`
+""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+
 This abstract method allows multiple objects of the same type to be combined, 
 and one will be consumed by the other.
 One use case for this is combining the data from: ``IMP:N,P=1 IMP:E=0.5`` into one object
@@ -623,8 +624,9 @@ This will automatically be called by the loading hooks, and you do not need to w
 deleting other.
 
 
-``push_to_cells``
-"""""""""""""""""
+:func:`~mcnpy.data_inputs.cell_modifier.CellModifierInput.push_to_cells`
+""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+
 This is how data provided in the data block are provided to the ``Cell`` objects.
 There should be a ``self.in_cell_block`` guard.
 
@@ -632,15 +634,17 @@ You need to check that there was no double specifying of data in both the cell a
 This should raise :class:`~mcnpy.errors.MalformedInputError`.
 This checking and error handling is handled by the method ``self._check_redundant_definitions()``.
 
-``_clear_data``
-""""""""""""""""
+:func:`~mcnpy.data_inputs.cell_modifier.CellModifierInput._clear_data`
+""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+
 This method will get called on data block instances.
 The goal is to delete any internal data that has already been pushed to the cells
 so that if a user goes crazy and somehow access this object they cannot modify the data,
 and get into weird end-use behavior.
 
-``problem.print_in_data_block``
-"""""""""""""""""""""""""""""""
+:func:`~mcnpy.mcnp_problem.MCNP_Problem.print_in_data_block`
+""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+
 There is a flag system for controlling if data are output in the cell block or the data block.
 This is controlled by :func:`~mcnpy.mcnp_problem.MCNP_Problem.print_in_data_block`.
 This acts like a dictionary.
@@ -650,8 +654,8 @@ So controlling the printing of ``cell.importance`` data is handled by:
 Most of the work with this property is automated.
 
 
-Syntax Objects: :class:`~mcnpy.input_parser.mcnp_input.MCNP_Input`
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Syntax Objects: :class:`~mcnpy.input_parser.mcnp_input.ParsingNode`
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 This represents all low level components in MCNP syntax, such as:
 Comments, Messages, titles, and Cards. 
 Similar to ``MCNP_Object`` you will need to implement ``format_for_mcnp_input``.
