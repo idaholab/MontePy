@@ -550,6 +550,7 @@ The goals for init function should be:
 
 On data Ownership
 """""""""""""""""
+
 Objects that subclass this one will only be owned by ``Cell`` and ``Cells`` objects.
 They will only be public properties for ``Cell``.
 All "data" must be only in the ``Cell`` level object once the problem has been fully initialized.
@@ -563,6 +564,7 @@ See more below.
 
 How these objects are added to :class:`~mcnpy.cell.Cell` and :class:`~mcnpy.cells.Cells`
 """"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+
 Due to the number of classes that will ultimately be subclasses of this class,
 some automated hooks have been developed.
 These hooks use a dictionary and the ``setattr`` function to add multiple objects 
@@ -585,6 +587,7 @@ and constructed.
 The new object is then loaded into the ``Cell`` object at the given attribute using ``setattr``.
 If your class is properly specified in both dictionaries you should be good to go on the ``Cell`` 
 level.
+Finally, for objects that are default, and contain no information, a default syntax tree is loaded into the parent ``Cell``'s syntax tree.
 
 At the ``Cells`` level the same dictionary (``Cell._INPUTS_TO_PROPERTY``) is used as well.
 This time though it is iterating over ``problem.data_inputs``.
@@ -622,6 +625,7 @@ One use case for this is combining the data from: ``IMP:N,P=1 IMP:E=0.5`` into o
 so there's no redundant data.
 This will automatically be called by the loading hooks, and you do not need to worry about
 deleting other.
+If merging isn't allowed :class:`~mcnpy.errors.MalformedInputError` should be raised.
 
 
 :func:`~mcnpy.data_inputs.cell_modifier.CellModifierInput.push_to_cells`
@@ -632,7 +636,7 @@ There should be a ``self.in_cell_block`` guard.
 
 You need to check that there was no double specifying of data in both the cell and data block.
 This should raise :class:`~mcnpy.errors.MalformedInputError`.
-This checking and error handling is handled by the method ``self._check_redundant_definitions()``.
+This checking and error handling is handled by the method :func:`~mcnpy.data_inputs.cell_modifier.CellModifierInput._check_redundant_definitions`.
 
 :func:`~mcnpy.data_inputs.cell_modifier.CellModifierInput._clear_data`
 """"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
@@ -656,6 +660,7 @@ Most of the work with this property is automated.
 
 Syntax Objects: :class:`~mcnpy.input_parser.mcnp_input.ParsingNode`
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
 This represents all low level components in MCNP syntax, such as:
 Comments, Messages, titles, and Cards. 
 Similar to ``MCNP_Object`` you will need to implement ``format_for_mcnp_input``.
