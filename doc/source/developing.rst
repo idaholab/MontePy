@@ -662,7 +662,7 @@ Syntax Objects: :class:`~mcnpy.input_parser.mcnp_input.ParsingNode`
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 This represents all low level components in MCNP syntax, such as:
-Comments, Messages, titles, and Cards. 
+Messages, titles, and Inputs. 
 Similar to ``MCNP_Object`` you will need to implement ``format_for_mcnp_input``.
 In this case though you will not have access the nice helper functions.
 You will be responsible for ensuring that you do not exceed the maximum
@@ -672,6 +672,34 @@ How to __init__
 """""""""""""""
 You need to call ``super().__init__(input_lines)``,
 and this will provide by ``self.input_lines``.
+
+Parsers: :class:`~mcnpy.input_parser.parser_base.MCNP_Parser` 
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+This is the base class for all parsers in MCNPy.
+It is a wrapper for a :class:`sly.Parser` instance.
+It has had to implement some janky metaclass properties in order to allow subclassing.
+
+.. warning::
+
+        The new subclassing system breaks the SLY magic that allows function overloading (multiple function definitions with the same name),
+        when subclassed.
+        So if you define a new function with the same name as from the parent class it will hide the parent implementation, 
+        and will likely break a lot of things.
+
+First, read the `SLY Documentation <https://sly.readthedocs.io/en/latest/sly.html#writing-a-parser>`_.
+You should also be aware of the tokens that are available.
+See the tokens module: :mod:`mcnpy.input_parser.tokens` for what tokens are available.
+The tokenization process is slightly contextual.
+The context is only changed by the :class:`~mcnpy.input_parser.block_type.BlockType`.
+The lexers used are:
+
+* cell block: :class:`~mcnpy.input_parser.tokens.CellLexer`.
+* surface block: :class:`~mcnpy.input_parser.tokens.SurfaceLexer`.
+* data block: :class:`~mcnpy.input_parser.tokens.DataLexer`.
+
+Most likely you are writing a parser for parsing a complex input in the data block.
+You will then be subclassing :class:`mcnpy.input_parser.data_parser.DataParser`.
 
 On the use of Pointers and Generator
 ------------------------------------
