@@ -30,6 +30,11 @@ class MCNP_Object(ABC):
             if not isinstance(input, mcnpy.input_parser.mcnp_input.Input):
                 raise TypeError("input must be an Input")
             try:
+                try:
+                    parser.restart()
+                # raised if restarted without ever parsing
+                except AttributeError as e:
+                    pass
                 self._tree = parser.parse(input.tokenize())
             except ValueError as e:
                 raise ValueError(

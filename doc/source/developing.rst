@@ -276,8 +276,6 @@ Most objects in MCNPy will initialize and keep the parser object at the (MCNPy) 
        _parser = CellParser()
        # snip
 
-TODO: do parsers need to be cleared?
-TODO: document parser base class
 
 If the input was parsed correctly the syntax tree returned will be stored in ``self._tree``.
 If not the errors will be raised automatically.
