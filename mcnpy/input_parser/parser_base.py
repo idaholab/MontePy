@@ -50,11 +50,37 @@ class MetaBuilder(sly.yacc.ParserMeta):
                 MetaBuilder._flatten_rules(classname, par_basis, attributes)
 
 
+class SLY_Supressor:
+    def __init__(self):
+        self._parse_fail_queue = []
+
+    def debug(self, msg, *args, **kwargs):
+        pass
+
+    info = debug
+
+    warning = debug
+
+    error = debug
+
+    critical = debug
+
+    def parse_error(self, msg, token=None, lineno=0):
+        self._parse_fail_queue.append({"message": msg, "token": token, "line": lineno})
+
+    def clear_queue(self):
+        ret = self._parse_fail_queue
+        self._parse_fail_queue = []
+        return ret
+
+
 class MCNP_Parser(Parser, metaclass=MetaBuilder):
     """
     Base class for all MCNP parsers that provides basics.
     """
 
+    # Remove this if trying to see issues with parser
+    log = SLY_Supressor()
     tokens = MCNP_Lexer.tokens
     debugfile = None
 
@@ -355,3 +381,27 @@ class MCNP_Parser(Parser, metaclass=MetaBuilder):
             if p.PARTICLE_SPECIAL == "*":
                 return "*"
         return p[0]
+
+    def error(self, token):
+        """
+        Default error handling.
+
+        Puts the data into a queue that can be pulled out later for one final clear debug.
+
+        :param token: the token that broke the parsing rules.
+        :type token: Token
+        """
+        if token:
+            lineno = getattr(token, "lineno", 0)
+            if lineno:
+                self.log.parse_error(
+                    f"sly: Syntax error at line {lineno}, token={token.type}\n",
+                    token,
+                    lineno,
+                )
+            else:
+                self.log.parse_error(
+                    f"sly: Syntax error, token={token.type}", token, lineno
+                )
+        else:
+            self.log.parse_error("sly: Parse error in input. EOF\n")

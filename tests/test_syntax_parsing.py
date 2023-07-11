@@ -931,7 +931,6 @@ class TestShortcutListIntegration(TestCase):
         values.append(syntax_node.ValueNode("5.0", float))
         list_node.update_with_new_values(values)
         self.assertEqual(list(list_node), values)
-        print(list_node._shortcuts[1].nodes)
         self.assertEqual(len(list_node._shortcuts[1].nodes), 1)
 
     def test_shortcut_list_interpolate(self):
