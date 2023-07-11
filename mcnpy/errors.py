@@ -56,9 +56,9 @@ class ParsingError(MalformedInputError):
                     self.abs_line = line_no + start_line
                     base_message = f'There was an error parsing "{token.value}".'
                 else:
-                    line_no = None
+                    line_no = 0
                     base_message = f"The input ended prematurely."
-                buffer = [f"    {path}, line {start_line}"]
+                buffer = [f"    {path}, line {start_line + line_no -1}", ""]
                 if input:
                     for i, line in enumerate(input.input_lines):
                         if i == line_no - 1:
