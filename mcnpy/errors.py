@@ -19,10 +19,11 @@ class MalformedInputError(ValueError):
             start_line = input.line_number
             self.path = path
             self.start = start_line
+            lines = "\n".join(input.input_lines)
         else:
             path = ""
             start_line = 0
-        lines = "\n".join(input.input_lines)
+            lines = ""
         self.message = f"""
 : {path}, line {start_line}
 {message}
