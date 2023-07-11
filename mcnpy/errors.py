@@ -54,17 +54,24 @@ class ParsingError(MalformedInputError):
                     line_no = error["line"]
                     self.rel_line = line_no
                     self.abs_line = line_no + start_line
-                    base_message = (
-                        f"There was an error parsing {token.value} ({token.type})."
-                    )
+                    base_message = f'There was an error parsing "{token.value}".'
                 else:
                     line_no = None
                     base_message = f"The input ended prematurely."
                 buffer = [f"    {path}, line {start_line}"]
                 if input:
                     for i, line in enumerate(input.input_lines):
-                        mark = ">" if i == line_no else " "
-                        buffer.append(f"    {mark}{start_line + i:g} {line}")
+                        if i == line_no - 1:
+                            buffer.append(f"    >{start_line + i:5g}| {line}")
+                            if token:
+                                start_pos = line.find(token.value)
+                                length = len(token.value)
+                                marker = "^" * length
+                                buffer.append(
+                                    f"{' '* 10}|{' ' * (start_pos+1)}{marker} not expected here."
+                                )
+                        else:
+                            buffer.append(f"     {start_line + i:5g}| {line}")
                     buffer.append(base_message)
                     buffer.append(error["message"])
                 messages.append("\n".join(buffer))
