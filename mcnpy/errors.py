@@ -13,7 +13,22 @@ class MalformedInputError(ValueError):
     """
 
     def __init__(self, input, message):
-        self.message = message + "\n the full input: \n " + repr(input)
+        if input and input.input_file:
+            self.input = input
+            path = input.input_file.path
+            start_line = input.line_number
+            self.path = path
+            self.start = start_line
+        else:
+            path = ""
+            start_line = 0
+        lines = "\n".join(input.input_lines)
+        self.message = f"""
+: {path}, line {start_line}
+{message}
+
+the full input:
+{lines}"""
         super().__init__(self.message)
 
 
