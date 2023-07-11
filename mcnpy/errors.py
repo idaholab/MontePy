@@ -49,7 +49,6 @@ class ParsingError(MalformedInputError):
             path = ""
             start_line = 0
         if error_queue:
-            messages = []
             for error in error_queue:
                 if token := error["token"]:
                     line_no = error["line"]
@@ -67,6 +66,7 @@ class ParsingError(MalformedInputError):
                         mark = ">" if i == line_no else " "
                         buffer.append(f"    {mark}{start_line + i:g} {line}")
                     buffer.append(base_message)
+                    buffer.append(error["message"])
                 messages.append("\n".join(buffer))
             self.message = "\n".join(messages + [message])
         else:
