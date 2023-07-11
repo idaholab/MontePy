@@ -119,7 +119,7 @@ class Importance(CellModifierInput):
                     self._real_tree[particle] = self._particle_importances[particle]
             else:
                 raise MalformedInputError(
-                    other,
+                    other._input,
                     "Cannot have two importance inputs for the same particle type",
                 )
 

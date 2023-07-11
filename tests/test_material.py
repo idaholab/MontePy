@@ -158,7 +158,7 @@ class TestIsotope(TestCase):
             Isotope("1001.80c.5")
         with self.assertRaises(ValueError):
             Isotope("hi.80c")
-        with self.assertRaises(MalformedInputError):
+        with self.assertRaises(ValueError):
             Isotope("1001")
 
     def test_isotope_metastable_init(self):

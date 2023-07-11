@@ -32,7 +32,7 @@ class Isotope:
             self.__parse_zaid()
             self._library = parts[1]
         else:
-            raise MalformedInputError(ZAID, "Not a valid isotope identifier.")
+            raise ValueError(f"ZAID: {ZAID} could not be parsed as a valid isotope")
 
     def __parse_zaid(self):
         """

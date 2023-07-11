@@ -26,6 +26,7 @@ class MCNP_Object(ABC):
     def __init__(self, input, parser):
         self._problem = None
         self._parameters = ParametersNode()
+        self._input = None
         if input:
             if not isinstance(input, mcnpy.input_parser.mcnp_input.Input):
                 raise TypeError("input must be an Input")
@@ -36,6 +37,7 @@ class MCNP_Object(ABC):
                 except AttributeError as e:
                     pass
                 self._tree = parser.parse(input.tokenize())
+                self._input = input
             except ValueError as e:
                 raise ValueError(
                     f"Error parsing object of type: {type(self)}: {e.args[0]}"

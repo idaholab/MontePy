@@ -156,7 +156,7 @@ class Volume(CellModifierInput):
 
     def merge(self, other):
         raise MalformedInputError(
-            other, "Cannot have two volume inputs for the problem"
+            other._input, "Cannot have two volume inputs for the problem"
         )
 
     def push_to_cells(self):

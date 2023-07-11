@@ -386,7 +386,7 @@ class Fill(CellModifierInput):
 
     def merge(self, other):
         raise MalformedInputError(
-            other, "Cannot have two lattice inputs for the problem"
+            other._input, "Cannot have two lattice inputs for the problem"
         )
 
     def push_to_cells(self):
