@@ -9,12 +9,53 @@ class LineOverRunWarning(UserWarning):
 
 class MalformedInputError(ValueError):
     """
-    Raised when there is an error parsing the MCNP input
+    Raised when there is an error with the MCNP input not related to the parser.
     """
 
     def __init__(self, input, message):
         self.message = message + "\n the full input: \n " + repr(input)
         super().__init__(self.message)
+
+
+class ParsingError(MalformedInputError):
+    """
+    Raised when there is an error parsing the MCNP input at the SLY parsing layer.
+    """
+
+    def __init__(self, input, message, error_queue):
+        messages = []
+        if input and input.input_file:
+            self.input = input
+            path = input.input_file.path
+            start_line = input.line_number
+            self.path = path
+            self.start = start_line
+        else:
+            path = ""
+            start_line = 0
+        if error_queue:
+            messages = []
+            for error in error_queue:
+                if token := error["token"]:
+                    line_no = error["line"]
+                    self.rel_line = line_no
+                    self.abs_line = line_no + start_line
+                    base_message = (
+                        f"There was an error parsing {token.value} ({token.type})."
+                    )
+                else:
+                    line_no = None
+                    base_message = f"The input ended prematurely."
+                buffer = [f"    {path}, line {start_line}"]
+                if input:
+                    for i, line in enumerate(input.input_lines):
+                        mark = ">" if i == line_no else " "
+                        buffer.append(f"    {mark}{start_line + i:g} {line}")
+                    buffer.append(base_message)
+                messages.append("\n".join(buffer))
+            self.message = "\n".join(messages + [message])
+        else:
+            self.message = message
 
 
 class NumberConflictError(Exception):

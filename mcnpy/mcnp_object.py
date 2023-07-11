@@ -41,8 +41,10 @@ class MCNP_Object(ABC):
                     f"Error parsing object of type: {type(self)}: {e.args[0]}"
                 )
             if self._tree is None:
-                raise MalformedInputError(
-                    input, "There is a syntax error with the input."
+                raise ParsingError(
+                    input,
+                    "",
+                    parser.log.clear_queue(),
                 )
             if "parameters" in self._tree:
                 self._parameters = self._tree["parameters"]
