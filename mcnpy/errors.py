@@ -72,6 +72,8 @@ class ParsingError(MalformedInputError):
         else:
             self.message = message
 
+        ValueError.__init__(self, self.message)
+
 
 class NumberConflictError(Exception):
     """
