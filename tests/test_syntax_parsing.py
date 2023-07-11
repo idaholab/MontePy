@@ -776,7 +776,7 @@ class TestShortcutNode(TestCase):
                     self.assertAlmostEqual(val.value, gold)
         for test in invalid:
             print(test)
-            with self.assertRaises(mcnpy.errors.MalformedInputError):
+            with self.assertRaises(ValueError):
                 input = Input([test], BlockType.DATA)
                 parsed = parser.parse(input.tokenize())
                 if parsed is None:

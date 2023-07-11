@@ -1525,7 +1525,7 @@ class ShortcutNode(ListNode):
             # TODO check if having single element in node breaks update and format
             last_val = p[0].nodes[-1]
         if last_val.value is None:
-            raise MalformedInputError(list(p), "Multiply cannot follow a jump.")
+            raise ValueError(f"Multiply cannot follow a jump. Given: {list(p)}")
         self._nodes.append(copy.deepcopy(last_val))
         self.nodes[-1].value *= mult_val
 
@@ -1560,7 +1560,7 @@ class ShortcutNode(ListNode):
             end = p.number_phrase.value
         self._nodes = self._get_last_node(p)
         if begin is None:
-            raise MalformedInputError(list(p), "Interpolates cannot follow a jump.")
+            raise ValueError(f"Interpolates cannot follow a jump. Given: {list(p)}")
         match = self._num_finder.search(p[1])
         if match:
             number = int(match.group(0))
