@@ -4,6 +4,7 @@ from .. import errors
 import itertools
 import io
 from mcnpy.constants import *
+from mcnpy.input_parser.input_file import MCNP_InputFile
 from mcnpy.input_parser.mcnp_input import Input, Message, ReadInput, Title
 from mcnpy.input_parser.read_parser import ReadParser
 import os
@@ -32,12 +33,13 @@ def read_input_syntax(input_file, mcnp_version=DEFAULT_VERSION):
     """
     global reading_queue
     reading_queue = deque()
+    file = MCNP_InputFile(input_file)
     with open(input_file, "r") as fh:
-        yield from read_front_matters(fh, mcnp_version)
-        yield from read_data(fh, mcnp_version)
+        yield from read_front_matters(fh, mcnp_version, file)
+        yield from read_data(fh, mcnp_version, file)
 
 
-def read_front_matters(fh, mcnp_version):
+def read_front_matters(fh, mcnp_version, file_wrapper):
     """
     Reads the beginning of an MCNP file for all of the unusual data there.
 
@@ -53,6 +55,9 @@ def read_front_matters(fh, mcnp_version):
     :type fh: io.TextIoWrapper
     :param mcnp_version: The version of MCNP that the input is intended for.
     :type mcnp_version: tuple
+    :param file_wrapper: a wrapper for the input file being read.
+    :type file_wrapper: MCNP_InputFile
+
     :return: an instance of the Title class, and possible an instance of a Message class
     :rtype: MCNP_Object
     """
@@ -61,6 +66,7 @@ def read_front_matters(fh, mcnp_version):
     lines = []
     raw_lines = []
     for i, line in enumerate(fh):
+        file_wrapper.lineno = i + 1
         if i == 0 and line.upper().startswith("MESSAGE:"):
             is_in_message_block = True
             raw_lines.append(line.rstrip())
@@ -89,7 +95,7 @@ def is_comment(line):
     return blank_comment or non_blank_comment
 
 
-def read_data(fh, mcnp_version, block_type=None, recursion=False):
+def read_data(fh, mcnp_version, file_wrapper, block_type=None, recursion=False):
     """
     Reads the bulk of an MCNP file for all of the MCNP data.
 
@@ -105,15 +111,19 @@ def read_data(fh, mcnp_version, block_type=None, recursion=False):
     :type fh: io.TextIoWrapper
     :param mcnp_version: The version of MCNP that the input is intended for.
     :type mcnp_version: tuple
+    :param file_wrapper: a wrapper for the input file being read.
+    :type file_wrapper: MCNP_InputFile
     :param block_type: The type of block this file is in. This is only used with partial files read using the ReadInput.
     :type block_type: BlockType
     :param recursion: Whether or not this is being called recursively. If True this has been called
                          from read_data. This prevents the reading queue causing infinite recursion.
     :type recursion: bool
+
     :return: MCNP_Input instances: Inputs that represent the data in the MCNP input.
     :rtype: MCNP_Input
 
     """
+    current_file = file_wrapper
     line_length = get_max_line_length(mcnp_version)
     block_counter = 0
     if block_type is None:
@@ -132,10 +142,12 @@ def read_data(fh, mcnp_version, block_type=None, recursion=False):
 
     def flush_input():
         nonlocal input_raw_lines
-        input = Input(input_raw_lines, block_type)
+        input = Input(input_raw_lines, block_type, current_file, current_file.lineno)
         try:
-            read_input = ReadInput(input_raw_lines, block_type)
-            reading_queue.append((block_type, read_input.file_name))
+            read_input = ReadInput(
+                input_raw_lines, block_type, current_file, current_file.lineno
+            )
+            reading_queue.append((block_type, read_input.file_name, current_file.path))
             yield None
         except ValueError:
             yield input
@@ -143,6 +155,7 @@ def read_data(fh, mcnp_version, block_type=None, recursion=False):
         input_raw_lines = []
 
     for line in fh:
+        current_file.lineno += 1
         line = line.expandtabs(TABSIZE)
         line_is_comment = is_comment(line)
         # transition to next block with blank line
@@ -183,7 +196,10 @@ def read_data(fh, mcnp_version, block_type=None, recursion=False):
         if isinstance(fh, io.TextIOWrapper):
             path = os.path.dirname(fh.name)
             while reading_queue:
-                block_type, file_name = reading_queue.popleft()
+                block_type, file_name, parent = reading_queue.popleft()
                 with open(os.path.join(path, file_name), "r") as sub_fh:
-                    for input in read_data(sub_fh, mcnp_version, block_type, True):
+                    new_wrapper = MCNP_InputFile(file_name, parent)
+                    for input in read_data(
+                        sub_fh, mcnp_version, new_wrapper, block_type, True
+                    ):
                         yield input

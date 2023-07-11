@@ -5,6 +5,7 @@ from mcnpy.input_parser.block_type import BlockType
 from mcnpy.constants import BLANK_SPACE_CONTINUE, get_max_line_length
 from mcnpy.input_parser.read_parser import ReadParser
 from mcnpy.input_parser.tokens import CellLexer, SurfaceLexer, DataLexer
+from mcnpy.utilities import *
 import re
 
 
@@ -113,6 +114,10 @@ class Input(ParsingNode):
     :type input_lines: list
     :param block_type: An enum showing which of three MCNP blocks this was inside of.
     :type block_type: BlockType
+    :param input_file: the wrapper for the input file this is read from.
+    :type input_file: MCNP_InputFile
+    :param lineno: the line number this input started at. 1-indexed.
+    :type lineno: int
     """
 
     SPECIAL_COMMENT_PREFIXES = ["fc", "sc"]
@@ -121,11 +126,13 @@ class Input(ParsingNode):
     :rtype: list
     """
 
-    def __init__(self, input_lines, block_type):
+    def __init__(self, input_lines, block_type, input_file=None, lineno=None):
         super().__init__(input_lines)
         if not isinstance(block_type, BlockType):
             raise TypeError("block_type must be BlockType")
         self._block_type = block_type
+        self._input_file = input_file
+        self._lineno = lineno
 
     def __str__(self):
         return f"INPUT: {self._block_type}"
@@ -141,6 +148,26 @@ class Input(ParsingNode):
         :rtype: BlockType
         """
         return self._block_type
+
+    @make_prop_pointer("_input_file")
+    def input_file(self):
+        """
+        The file this input file was read from.
+
+        :rtype: MCNP_InputFile
+        """
+        pass
+
+    @make_prop_pointer("_lineno")
+    def line_number(self):
+        """
+        The line number this input started on.
+
+        This is 1-indexed.
+
+        :rtype: int
+        """
+        pass
 
     def format_for_mcnp_input(self, mcnp_version):
         pass
@@ -164,12 +191,16 @@ class ReadInput(Input):
     :type input_lines: list
     :param block_type: An enum showing which of three MCNP blocks this was inside of.
     :type block_type: BlockType
+    :param input_file: the wrapper for the input file this is read from.
+    :type input_file: MCNP_InputFile
+    :param lineno: the line number this input started at. 1-indexed.
+    :type lineno: int
     """
 
     _parser = ReadParser()
 
-    def __init__(self, input_lines, block_type):
-        super().__init__(input_lines, block_type)
+    def __init__(self, input_lines, block_type, input_file=None, lineno=None):
+        super().__init__(input_lines, block_type, input_file, lineno)
         parse_result = self._parser.parse(self.tokenize())
         if not parse_result:
             raise ValueError("Not a valid Read Input")
