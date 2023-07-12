@@ -142,6 +142,16 @@ class UnsupportedFeature(NotImplementedError):
         super().__init__(self.message)
 
 
+class DeprecationError(NotImplementedError):
+    """
+    Raised when a method, function, or class is deprecated and impossible to do a slow transition.
+    """
+
+    def __init__(self, message):
+        self.message = message
+        super().__init__(self.message)
+
+
 class UnknownElement(ValueError):
     """
     Raised when an undefined element is used.
