@@ -106,6 +106,22 @@ class ParsingNode(ABC):
         pass
 
 
+class Card(ParsingNode):
+    """
+    .. warning::
+
+        .. deprecated:: 0.2.0
+            Punch cards are dead. Use :class:`~mcnpy.input_parser.mcnp_input.Input` instead.
+
+    :raises DeprecatedError: punch cards are dead.
+    """
+
+    def __init__(self, *args, **kwargs):
+        raise DeprecatedError(
+            "This has been deprecated. Use mcnpy.input_parser.mcnp_input.Input instead"
+        )
+
+
 class Input(ParsingNode):
     """
     Represents a single MCNP "Input" e.g. a single cell definition.
@@ -173,6 +189,19 @@ class Input(ParsingNode):
         pass
 
     def tokenize(self):
+        """
+        Tokenizes this input as a stream of Tokens.
+
+        This is a generator of Tokens.
+        This is context dependent based on :func:`block_type`.
+
+        * In a cell block :class:`~mcnpy.input_parser.tokens.CellLexer` is used.
+        * In a surface block :class:`~mcnpy.input_parser.tokens.SurfaceLexer` is used.
+        * In a data block :class:`~mcnpy.input_parser.tokens.DataLexer` is used.
+
+        :returns: a generator of tokens.
+        :rtype: Token
+        """
         if self.block_type == BlockType.CELL:
             lexer = CellLexer()
         elif self.block_type == BlockType.SURFACE:
@@ -181,6 +210,35 @@ class Input(ParsingNode):
             lexer = DataLexer()
         for token in lexer.tokenize(self.input_text):
             yield token
+
+    @property
+    def words(self):
+        """
+        .. warning::
+            .. deprecated:: 0.2.0
+
+            This has been deprecated, and removed.
+
+        :raises DeprecationError: use the parser and tokenize workflow instead.
+        """
+        raise DeprecationError(
+            "This has been deprecated. Use a parser and tokenize instead"
+        )
+
+
+class Comment(ParsingNode):
+    """
+    .. warning::
+        .. deprecated:: 0.2.0
+            This has been replaced by :class:`~mcnpy.input_parser.syntax_node.CommentNode`.
+
+    :raises DeprecationError: Can not be created anymore.
+    """
+
+    def __init__(self, *args, **kwargs):
+        raise DeprecationError(
+            "This has been deprecated and replaced by mcnpy.input_parser.syntax_node.CommentNode."
+        )
 
 
 class ReadInput(Input):
@@ -222,6 +280,22 @@ class ReadInput(Input):
     def __repr__(self):
         return (
             f"READ INPUT: {self._block_type}: {self.input_lines} File: {self.file_name}"
+        )
+
+
+class ReadCard(Card):
+    """
+    .. warning::
+
+        .. deprecated:: 0.2.0
+            Punch cards are dead. Use :class:`~mcnpy.input_parser.mcnp_input.ReadInput` instead.
+
+    :raises DeprecatedError: punch cards are dead.
+    """
+
+    def __init__(self, *args, **kwargs):
+        raise DeprecatedError(
+            "This has been deprecated. Use mcnpy.input_parser.mcnp_input.ReadInput instead"
         )
 
 
@@ -318,3 +392,16 @@ class Title(ParsingNode):
         line_length = 0
         line_length = get_max_line_length(mcnp_version)
         return [self.title[0 : line_length - 1]]
+
+
+def parse_card_shortcuts(*args, **kwargs):
+    """
+    .. warning::
+        .. deprecated:: 0.2.0
+            This is no longer necessary and should not be called.
+
+    :raises DeprecationError: This is not needed anymore.
+    """
+    raise DeprecationError(
+        "This is deprecated and unnecessary. This will be automatically handled by mcnpy.input_parser.parser_base.MCNP_Parser."
+    )
