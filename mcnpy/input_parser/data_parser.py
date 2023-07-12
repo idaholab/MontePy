@@ -7,6 +7,9 @@ class DataParser(MCNP_Parser):
     """
     A parser for almost all data inputs.
 
+    .. versionadded:: 0.2.0
+        This was added with the major parser rework.
+
     :returns: a syntax tree for the data input.
     :rtype: SyntaxNode
     """
@@ -98,6 +101,9 @@ class DataParser(MCNP_Parser):
 class ClassifierParser(DataParser):
     """
     A parser for parsing the first word or classifier of a data input.
+
+    .. versionadded:: 0.2.0
+        This was added with the major parser rework.
 
     :returns: the classifier of the data input.
     :rtype: ClassifierNode

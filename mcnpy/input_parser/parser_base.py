@@ -10,6 +10,10 @@ class MetaBuilder(sly.yacc.ParserMeta):
     """
     Custom MetaClass for allowing subclassing of MCNP_Parser.
 
+
+    .. versionadded:: 0.2.0
+        This was added with the major parser rework.
+
     Note: overloading functions is not allowed.
     """
 
@@ -51,6 +55,13 @@ class MetaBuilder(sly.yacc.ParserMeta):
 
 
 class SLY_Supressor:
+    """
+    This is a fake logger meant to mostly make warnings dissapear.
+
+    .. versionadded:: 0.2.0
+        This was added with the major parser rework.
+    """
+
     def __init__(self):
         self._parse_fail_queue = []
 
@@ -66,9 +77,27 @@ class SLY_Supressor:
     critical = debug
 
     def parse_error(self, msg, token=None, lineno=0):
+        """
+        Adds a SLY parsing error to the error queue for being dumped later.
+
+        :param msg: The message to display.
+        :type msg: str
+        :param token: the token that caused the error if any.
+        :type token: Token
+        :param lineno: the current lineno of the error (from SLY not the file), if any.
+        :type lineno: int
+        """
         self._parse_fail_queue.append({"message": msg, "token": token, "line": lineno})
 
     def clear_queue(self):
+        """
+        Clears the error queue and returns all errors.
+
+        Returns a list of dictionaries. The dictionary has the keys: "message", "token", "line.
+
+        :returns: A list of the errors since the queue was last cleared.
+        :rtype: list
+        """
         ret = self._parse_fail_queue
         self._parse_fail_queue = []
         return ret
@@ -77,6 +106,9 @@ class SLY_Supressor:
 class MCNP_Parser(Parser, metaclass=MetaBuilder):
     """
     Base class for all MCNP parsers that provides basics.
+
+    .. versionadded:: 0.2.0
+        This was added with the major parser rework.
     """
 
     # Remove this if trying to see issues with parser

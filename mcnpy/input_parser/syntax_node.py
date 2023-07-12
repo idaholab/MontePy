@@ -22,6 +22,9 @@ class SyntaxNodeBase(ABC):
     A syntax node is any component of the syntax tree
     for a parsed input.
 
+    .. versionadded:: 0.2.0
+        This was added with the major parser rework.
+
     :param name: a name for labeling this node.
     :type name: str
     """
@@ -128,6 +131,9 @@ class SyntaxNode(SyntaxNodeBase):
         if key in syntax_node:
             pass
 
+    .. versionadded:: 0.2.0
+        This was added with the major parser rework.
+
     :param name: a name for labeling this node.
     :type name: str
     :param parse_dict: the dictionary of the syntax tree nodes.
@@ -196,6 +202,9 @@ class SyntaxNode(SyntaxNodeBase):
 class GeometryTree(SyntaxNodeBase):
     """
     A syntax tree that is a binary tree for representing CSG geometry logic.
+
+    .. versionadded:: 0.2.0
+        This was added with the major parser rework.
 
     :param name: a name for labeling this node.
     :type name: str
@@ -307,6 +316,9 @@ class GeometryTree(SyntaxNodeBase):
 class PaddingNode(SyntaxNodeBase):
     """
     A syntax tree node to represent a collection of sequential padding elements.
+
+    .. versionadded:: 0.2.0
+        This was added with the major parser rework.
 
     :param token: The first padding token for this node.
     :type token: str
@@ -441,6 +453,9 @@ class CommentNode(SyntaxNodeBase):
     """
     Object to represent a comment in an MCNP problem.
 
+    .. versionadded:: 0.2.0
+        This was added with the major parser rework.
+
     :param input: the token from the lexer
     :type input: Token
     """
@@ -547,6 +562,9 @@ class ValueNode(SyntaxNodeBase):
 
     This stores the original input token, the current value,
     and the possible associated padding.
+
+    .. versionadded:: 0.2.0
+        This was added with the major parser rework.
 
     :param token: the original token for the ValueNode.
     :type token: str
@@ -1004,6 +1022,9 @@ class ParticleNode(SyntaxNodeBase):
     """
     A node to hold particles information in a :class:`ClassifierNode`.
 
+    .. versionadded:: 0.2.0
+        This was added with the major parser rework.
+
     :param name: the name for the node.
     :type name: str
     :param token: the original token from parsing
@@ -1126,6 +1147,9 @@ class ParticleNode(SyntaxNodeBase):
 class ListNode(SyntaxNodeBase):
     """
     A node to represent a list of values.
+
+    .. versionadded:: 0.2.0
+        This was added with the major parser rework.
 
     :param name: the name of this node.
     :type name: str
@@ -1362,6 +1386,9 @@ class IsotopesNode(SyntaxNodeBase):
 
     This stores a list of tuples of ZAIDs and concentrations.
 
+    .. versionadded:: 0.2.0
+        This was added with the major parser rework.
+
     :param name: a name for labeling this node.
     :type name: str
     """
@@ -1415,6 +1442,9 @@ class ShortcutNode(ListNode):
     A node that pretends to be a :class:`ListNode` but is actually representing a shortcut.
 
     This takes the shortcut tokens, and expands it into their "virtual" values.
+
+    .. versionadded:: 0.2.0
+        This was added with the major parser rework.
 
     :param p: the parsing object to parse.
     :type p: sly.yacc.YaccProduction
@@ -1795,6 +1825,9 @@ class ClassifierNode(SyntaxNodeBase):
     """
     A node to represent the classifier for a :class:`mcnpy.data_input.DataInput`
 
+    .. versionadded:: 0.2.0
+        This was added with the major parser rework.
+
     e.g., represents ``M4``, ``F104:n,p``, ``IMP:n,e``.
     """
 
@@ -1928,6 +1961,9 @@ class ParametersNode(SyntaxNodeBase):
     A node to hold the parameters, key-value pairs, for this input.
 
     This behaves like a dictionary and is accessible by their key*
+
+    .. versionadded:: 0.2.0
+        This was added with the major parser rework.
 
     .. Note::
         How to access values.

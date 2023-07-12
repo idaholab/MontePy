@@ -7,6 +7,9 @@ class ModeParser(DataParser):
     """
     Parser for parsing the Mode input.
 
+    .. versionadded:: 0.2.0
+        This was added with the major parser rework.
+
     :returns: syntax tree for the mode input.
     :rtype: SyntaxNode
     """

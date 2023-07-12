@@ -6,6 +6,9 @@ class ThermalParser(DataParser):
     """
     A parser for thermal scattering law inputs.
 
+    .. versionadded:: 0.2.0
+        This was added with the major parser rework.
+
     :rtype: SyntaxNode
     """
 

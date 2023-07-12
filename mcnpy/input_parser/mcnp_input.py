@@ -68,6 +68,9 @@ class ParsingNode(ABC):
     """
     Object to represent a single coherent MCNP input, such as an input.
 
+    .. versionadded:: 0.2.0
+        This was added as part of the parser rework.
+
     :param input_lines: the lines read straight from the input file.
     :type input_lines: list
     """
@@ -125,6 +128,10 @@ class Card(ParsingNode):
 class Input(ParsingNode):
     """
     Represents a single MCNP "Input" e.g. a single cell definition.
+
+    .. versionadded:: 0.2.0
+        This was added as part of the parser rework, and rename.
+        This was a replacement for :class:`Card`.
 
     :param input_lines: the lines read straight from the input file.
     :type input_lines: list

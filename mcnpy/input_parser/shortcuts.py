@@ -4,6 +4,9 @@ from enum import Enum
 class Shortcuts(Enum):
     """
     Enumeration of the possible MCNP shortcuts.
+
+    .. versionadded:: 0.2.0
+        This was added with the major parser rework.
     """
 
     REPEAT = "r"

@@ -7,6 +7,9 @@ class SurfaceParser(MCNP_Parser):
     """
     A parser for MCNP surfaces.
 
+    .. versionadded:: 0.2.0
+        This was added with the major parser rework.
+
     :rtype: SyntaxNode
     """
 
