@@ -35,3 +35,11 @@ from mcnpy.input_parser.mcnp_input import Jump
 from mcnpy.particle import Particle
 from mcnpy.surfaces.surface_type import SurfaceType
 from mcnpy.universe import Universe
+import sys
+
+# enable deprecated warnings for users
+if not sys.warnoptions:
+    import os, warnings
+
+    warnings.simplefilter("default")  # Change the filter in this process
+    os.environ["PYTHONWARNINGS"] = "default"  # Also affect subprocesses
