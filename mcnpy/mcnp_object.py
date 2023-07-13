@@ -18,6 +18,10 @@ class MCNP_Object(ABC):
     """
     Abstract class for semantic representations of MCNP inputs.
 
+    .. versionchanged:: 0.2.0
+        Generally significant changes for parser rework.
+        For init removed ``comments``, and added ``parser`` as arguments.
+
     :param input: The Input syntax object this will wrap and parse.
     :type input: Input
     :param parser: The parser object to parse the input with.

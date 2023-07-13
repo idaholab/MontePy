@@ -29,6 +29,9 @@ def parse_data(input):
     """
     Parses the data input as the appropriate object if it is supported.
 
+    .. versionchanged:: 0.2.0
+        Removed the ``comment`` parameter, as it's in the syntax tree directly now.
+
     :param input: the Input object for this Data input
     :type input: Input
     :return: the parsed DataInput object
