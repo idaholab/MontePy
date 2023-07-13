@@ -384,3 +384,26 @@ class MCNP_Object(ABC):
         :raises DeprecatedError: Access the syntax tree instead.
         """
         raise DeprecatedError("This has been removed; instead use the syntax tree")
+
+    @property
+    def allowed_keywords(self):
+        """
+        The allowed keywords for this class of MCNP_Card.
+
+        The allowed keywords that would appear in the parameters block.
+        For instance for cells the keywords ``IMP`` and ``VOL`` are allowed.
+        The allowed keywords need to be in upper case.
+
+        .. deprecated:: 0.2.0
+            This is no longer needed. Instead this is specified in
+            :func:`mcnpy.input_parser.tokens.MCNP_Lexer._KEYWORDS`.
+
+        :returns: A set of the allowed keywords. If there are none this should return the empty set.
+        :rtype: set
+        """
+        warnings.warn(
+            "allowed_keywords are deprecated, and will be removed soon.",
+            DeprecationWarning,
+            stacklevel=2,
+        )
+        return set()
