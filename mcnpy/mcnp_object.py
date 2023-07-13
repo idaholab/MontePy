@@ -11,6 +11,7 @@ from mcnpy.input_parser.syntax_node import (
 import mcnpy
 import numpy as np
 import textwrap
+import warnings
 
 
 class MCNP_Object(ABC):
@@ -60,6 +61,8 @@ class MCNP_Object(ABC):
 
         None is generally a safe default value to provide.
 
+        .. versionadded:: 0.2.0
+
         :param value_type: the data type for the ValueNode.
         :type value_type: Class
         :param default: the default value to provide (type needs to agree with value_type)
@@ -99,6 +102,9 @@ class MCNP_Object(ABC):
         but when :func:`~mcnpy.utilities.make_prop_pointer` is used it is necessary.
         The most common need is to update a value based on the number for an object pointed at,
         e.g., the material number in a cell definition.
+
+        .. versionadded:: 0.2.0
+
         """
         pass
 
@@ -133,6 +139,8 @@ class MCNP_Object(ABC):
     def leading_comments(self):
         """
         Any comments that come before the beginning of the input proper.
+
+        .. versionadded:: 0.2.0
 
         :returns: the leading comments.
         :rtype: list
@@ -237,3 +245,142 @@ class MCNP_Object(ABC):
     def _grab_beginning_comment(self, padding):
         if padding:
             self._tree["start_pad"]._grab_beginning_comment(padding)
+
+    @staticmethod
+    def wrap_words_for_mcnp(words, mcnp_version, is_first_line):
+        """
+        Wraps the list of the words to be a well formed MCNP input.
+
+        multi-line cards will be handled by using the indentation format,
+        and not the "&" method.
+
+        .. deprecated:: 0.2.0
+            The concept of words is deprecated, and should be handled by syntax trees now.
+
+        :param words: A list of the "words" or data-grams that needed to added to this card.
+                      Each word will be separated by at least one space.
+        :type words: list
+        :param mcnp_version: the tuple for the MCNP that must be formatted for.
+        :type mcnp_version: tuple
+        :param is_first_line: If true this will be the beginning of an MCNP card.
+                             The first line will not be indented.
+        :type is_first_line: bool
+        :returns: A list of strings that can be written to an input file, one item to a line.
+        :rtype: list
+        :raises DeprecationWarning: raised always.
+        """
+        warnings.warn(
+            "wrap_words_for_mcnp is deprecated. Use syntax trees instead.",
+            DeprecationWarning,
+            stacklevel=2,
+        )
+        string = " ".join(words)
+        return MCNP_Card.wrap_string_for_mcnp(string, mcnp_version, is_first_line)
+
+    @staticmethod
+    def compress_repeat_values(values, threshold=1e-6):
+        """
+        Takes a list of floats, and tries to compress it using repeats.
+
+        E.g., 1 1 1 1 would compress to 1 3R
+
+        .. deprecated:: 0.2.0
+            This should be automatically handled by the syntax tree instead.
+
+        :param values: a list of float values to try to compress
+        :type values: list
+        :param threshold: the minimum threshold to consider two values different
+        :type threshold: float
+        :returns: a list of MCNP word strings that have repeat compression
+        :rtype: list
+        :raises DeprecationWarning: always raised.
+        """
+        warnings.warn(
+            "compress_repeat_values is deprecated, and shouldn't be necessary anymore",
+            DeprecationWarning,
+            stacklevel=2,
+        )
+        ret = []
+        last_value = None
+        float_formatter = "{:n}"
+        repeat_counter = 0
+
+        def flush_repeats():
+            nonlocal repeat_counter, ret
+            if repeat_counter >= 2:
+                ret.append(f"{repeat_counter}R")
+            elif repeat_counter == 1:
+                ret.append(float_formatter.format(last_value))
+            repeat_counter = 0
+
+        for value in values:
+            if isinstance(value, mcnpy.input_parser.mcnp_input.Jump):
+                ret.append(value)
+                last_value = None
+            elif last_value:
+                if np.isclose(value, last_value, atol=threshold):
+                    repeat_counter += 1
+                else:
+                    flush_repeats()
+                    ret.append(float_formatter.format(value))
+                    last_value = value
+            else:
+                ret.append(float_formatter.format(value))
+                last_value = value
+                repeat_counter = 0
+        flush_repeats()
+        return ret
+
+    @staticmethod
+    def compress_jump_values(values):
+        """
+        Takes a list of strings and jump values and combines repeated jump values.
+
+        e.g., 1 1 J J 3 J becomes 1 1 2J 3 J
+
+        .. deprecated:: 0.2.0
+            This should be automatically handled by the syntax tree instead.
+
+        :param values: a list of string and Jump values to try to compress
+        :type values: list
+        :returns: a list of MCNP word strings that have jump compression
+        :rtype: list
+        :raises DeprecationWarning: raised always.
+        """
+        warnings.warn(
+            "compress_jump_values is deprecated, and will be removed in the future.",
+            DeprecationWarning,
+            stacklevel=2,
+        )
+        ret = []
+        jump_counter = 0
+
+        def flush_jumps():
+            nonlocal jump_counter, ret
+            if jump_counter == 1:
+                ret.append("J")
+            elif jump_counter >= 1:
+                ret.append(f"{jump_counter}J")
+            jump_counter = 0
+
+        for value in values:
+            if isinstance(value, mcnpy.input_parser.mcnp_input.Jump):
+                jump_counter += 1
+            else:
+                flush_jumps()
+                ret.append(value)
+        flush_jumps()
+        return ret
+
+    @property
+    def words(self):
+        """
+        The words from the input file for this card.
+
+        .. warning::
+            .. deprecated:: 0.2.0
+                This has been replaced by the syntax tree data structure.
+
+        :raises DeprecatedError: Access the syntax tree instead.
+        """
+        raise DeprecatedError("This has been removed; instead use the syntax tree")
