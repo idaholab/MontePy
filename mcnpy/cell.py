@@ -31,7 +31,10 @@ def _link_geometry_to_cell(self, geom):
 
 class Cell(Numbered_MCNP_Object):
     """
-    Object to represent a single MCNP cell defined in CGS.
+    Object to represent a single MCNP cell defined in CSG.
+
+    .. versionchanged:: 0.2.0
+        Removed the ``comments`` argument due to overall simplification of init process.
 
     :param input: the input for the cell definition
     :type input: Input
@@ -92,9 +95,6 @@ class Cell(Numbered_MCNP_Object):
     def _parse_geometry(self):
         """
         Parses the cell's geometry definition, and stores it
-
-        :returns: a tuple of j, param_found, j+ i = the index of the first non-geometry word,
-                and param_found is True is cell parameter inputs are found
         """
         geometry = self._tree["geometry"]
         if geometry is not None:
@@ -329,6 +329,9 @@ class Cell(Numbered_MCNP_Object):
         """
         The Geometry for this problem.
 
+        .. versionadded:: 0.2.0
+            Added with the new ability to represent true CSG geometry logic.
+
         The HalfSpace tree that is able to represent this cell's geometry.
         MCNPy's geometry is based upon dividers, which includes both Surfaces, and cells.
         A half-space is created by choosing one side of the divider.
@@ -365,6 +368,22 @@ class Cell(Numbered_MCNP_Object):
         :rtype: HalfSpace
         """
         pass
+
+    @property
+    def geometry_logic_string(self):
+        """
+        The original geoemtry input string for the cell.
+
+        .. warning::
+            .. deprecated:: 0.2.0
+                This was removed to allow for :func:`geometry` to truly implement CSG geometry.
+
+        :raise DeprecationWarning: Will always be raised as an error (which will cause program to halt).
+        """
+        # TODO remove Deprecation Error
+        raise DeprecationWarning(
+            "Geometry_logic_string has been removed from cell. Use Cell.geometry instead."
+        )
 
     @make_prop_val_node(
         "_density_node", (float, int, type(None)), base_type=float, deletable=True
@@ -430,7 +449,7 @@ class Cell(Numbered_MCNP_Object):
         """
         Whether or not the density is in atom density [a/b-cm].
 
-        True means it is in atom density, false means mass density [g/cc].
+        True means it is in atom density, False means mass density [g/cc].
 
         :rtype: bool
         """
@@ -479,8 +498,6 @@ class Cell(Numbered_MCNP_Object):
     def complements(self):
         """
         The Cell objects that this cell is a complement of
-
-        TODO: should this be a generator?
 
         :rytpe: :class:`mcnpy.cells.Cells`
         """
