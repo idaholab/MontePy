@@ -228,7 +228,6 @@ class DataInputAbstract(MCNP_Object):
             return self._input_number.value < other._input_number.value
 
     @property
-    @abstractmethod
     def class_prefix(self):
         """The text part of the card identifier.
 
@@ -250,7 +249,6 @@ class DataInputAbstract(MCNP_Object):
         )
 
     @property
-    @abstractmethod
     def has_number(self):
         """Whether or not this class supports numbering.
 
@@ -270,7 +268,6 @@ class DataInputAbstract(MCNP_Object):
         )
 
     @property
-    @abstractmethod
     def has_classifier(self):
         """Whether or not this class supports particle classifiers.
 
