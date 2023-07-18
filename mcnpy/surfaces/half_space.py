@@ -9,13 +9,17 @@ class HalfSpace:
     """
     Class representing a geometry half_space.
 
-    Half_spaces in MCNPy are used very loosely,
+    .. versionadded:: 0.2.0
+        This was added as the core of the rework to how MCNP geometries are implemented.
+
+    The term `half-spaces <https://en.wikipedia.org/wiki/Half-space_(geometry)>`_ in MCNPy is used very loosely,
     and is not mathematically rigorous. In MCNPy a divider is a something
-    that splits a space (R^3) into two half-spaces. At the simplest this would
-    be a surface or other quadratic surface. There will always be two half_spaces,
+    that splits a space (R\ :sup:`3` ) into two half-spaces. At the simplest this would
+    be a plane or other quadratic surface. There will always be two half-spaces,
     a negative, or inside (False) or positive, outside (True).
-    This class proper is for binary trees implementing CSG set logic. The same
-    logic with half-spaces still apply as the intersection will always create two
+    This class proper is for binary trees implementing
+    `constructive solid geometry (CSG) <https://en.wikipedia.org/wiki/Constructive_solid_geometry>`_ set logic.
+    The same logic with half-spaces still apply as the intersection will always create two
     half-spaces (though one may be the empty set).
     In this case thinking of "inside" and "outside" may be more useful.
 
@@ -396,12 +400,13 @@ class HalfSpace:
 class UnitHalfSpace(HalfSpace):
     """
     The leaf node for the HalfSpace tree.
+    
+    .. versionadded:: 0.2.0
+        This was added as the core of the rework to how MCNP geometries are implemented.
 
     This can only be used as leaves and represents one half_space of a 
     a divider.
-
     The easiest way to generate one is with the divider with unary operators. 
-
     For surfaces you can choose the positive (True) or negative (False) side quickly:
 
     .. code-block:: python
