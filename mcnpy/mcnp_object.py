@@ -208,7 +208,14 @@ class MCNP_Object(ABC):
         ret = []
         for line in strings:
             if line.strip():
-                ret += wrapper.wrap(line)
+                buffer = wrapper.wrap(line)
+                if len(buffer) > 1:
+                    warnings.warn(
+                        f"The line exceeded the maximum length allowed by MCNP, and was split. The line was:\n{line}",
+                        LineExpansionWarning,
+                        stacklevel=2,
+                    )
+                ret += buffer
         return ret
 
     def validate(self):

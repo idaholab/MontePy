@@ -13,6 +13,7 @@ from mcnpy.geometry_operators import Operator
 from mcnpy.particle import Particle
 from mcnpy.utilities import fortran_float
 import re
+import warnings
 
 
 class SyntaxNodeBase(ABC):
@@ -915,10 +916,16 @@ class ValueNode(SyntaxNodeBase):
                 pad_str = "".join([x.format() for x in self.padding.nodes])
         else:
             pad_str = ""
-        temp = "{temp:<{value_length}}{padding}".format(
+        buffer = "{temp:<{value_length}}{padding}".format(
             temp=temp, padding=pad_str, **self._formatter
         )
-        return temp
+        if len(buffer) > self._formatter["value_length"]:
+            warnings.warn(
+                f"The value has expanded, and may change formatting. The original value was {self._token}, new value is {temp}.",
+                LineExpansionWarning,
+                stacklevel=2,
+            )
+        return buffer
 
     @property
     def comments(self):

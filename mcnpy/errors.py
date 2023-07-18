@@ -170,3 +170,13 @@ class IllegalState(ValueError):
     def __init__(self, message):
         self.message = message
         super().__init__(self.message)
+
+
+class LineExpansionWarning(Warning):
+    """
+    Warning for when a field or line expands that may damage user formatting.
+    """
+
+    def __init__(self, message):
+        self.message = message
+        super().__init__(self.message)
