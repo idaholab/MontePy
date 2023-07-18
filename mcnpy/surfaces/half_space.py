@@ -14,7 +14,7 @@ class HalfSpace:
 
     The term `half-spaces <https://en.wikipedia.org/wiki/Half-space_(geometry)>`_ in MCNPy is used very loosely,
     and is not mathematically rigorous. In MCNPy a divider is a something
-    that splits a space (R\ :sup:`3` ) into two half-spaces. At the simplest this would
+    that splits a space (R\\ :sup:`3` ) into two half-spaces. At the simplest this would
     be a plane or other quadratic surface. There will always be two half-spaces,
     a negative, or inside (False) or positive, outside (True).
     This class proper is for binary trees implementing
