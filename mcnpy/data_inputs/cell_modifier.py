@@ -9,7 +9,7 @@ import warnings
 
 class CellModifierInput(DataInputAbstract):
     """
-    Abstract Parent class for Data Cards that modify cells / geometry.
+    Abstract Parent class for Data Inputs that modify cells / geometry.
 
     Examples: IMP, VOL, etc.
 

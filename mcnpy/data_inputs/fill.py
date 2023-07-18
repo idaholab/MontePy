@@ -13,7 +13,7 @@ import numpy as np
 
 class Fill(CellModifierInput):
     """
-    Object to handle the ``FILL`` card in cell and data blocks.
+    Object to handle the ``FILL`` input in cell and data blocks.
 
     :param input: the Input object representing this data input
     :type input: Input

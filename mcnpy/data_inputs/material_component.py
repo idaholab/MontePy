@@ -12,7 +12,7 @@ class MaterialComponent:
     """
     A class to represent a single component in a material.
 
-    For example: this may be H-1 in water: like 1001.80c -0.6667
+    For example: this may be H-1 in water: like 1001.80c — 0.6667
 
     :param isotope: the Isotope object representing this isotope
     :type isotope: Isotope

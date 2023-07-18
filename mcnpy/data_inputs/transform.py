@@ -15,7 +15,7 @@ def _enforce_number(self, val):
 
 class Transform(data_input.DataInputAbstract, Numbered_MCNP_Object):
     """
-    Card to represent a transform card (TR)
+    Input to represent a transform input (TR).
 
     :param input: The Input syntax object this will wrap and parse.
     :type input: Input

@@ -11,7 +11,7 @@ from mcnpy.utilities import *
 
 class UniverseInput(CellModifierInput):
     """
-    Object to actually handle the ``U`` card in cells
+    Object to actually handle the ``U`` input in cells
     and data blocks.
 
     :param input: the Input object representing this data input
