@@ -201,20 +201,28 @@ class TestValueNode(TestCase):
         self.assertTrue(node._value_changed)
 
     def test_value_float_format(self):
-        for input, val, answer in [
-            ("1.23", 1.23, "1.23"),
-            ("1.23", 4.56, "4.56"),
-            ("-1.23", 4.56, " 4.56"),
-            ("1.0e-2", 2, "2.0e+0"),
-            ("1.602-19", 6.02e23, "6.020+23"),
-            ("1.602-0019", 6.02e23, "6.020+0023"),
-            (Jump(), 5.4, "5.4"),
-            ("1", 2, "2"),
-            ("0.5", 0, "0.0"),
+        for input, val, answer, expand in [
+            ("1.23", 1.23, "1.23", False),
+            ("1.23", 4.56, "4.56", False),
+            ("-1.23", 4.56, " 4.56", False),
+            ("1.0e-2", 2, "2.0e+0", False),
+            ("1.602-19", 6.02e23, "6.020+23", False),
+            ("1.602-0019", 6.02e23, "6.020+0023", False),
+            (Jump(), 5.4, "5.4", True),
+            ("1", 2, "2", False),
+            ("0.5", 0, "0.0", False),
         ]:
             node = syntax_node.ValueNode(input, float)
             node.value = val
-            self.assertEqual(node.format(), answer)
+            if expand:
+                warnings.simplefilter("default")
+                with self.assertWarns(LineExpansionWarning):
+                    self.assertEqual(node.format(), answer)
+            else:
+                # change warnings to errors to ensure not raised
+                warnings.resetwarnings()
+                warnings.simplefilter("error")
+                self.assertEqual(node.format(), answer)
         for padding, val, answer, expand in [
             ([" "], 10, "10.0 ", True),
             (["  "], 10, "10.0 ", False),
@@ -245,7 +253,15 @@ class TestValueNode(TestCase):
         ]:
             node = syntax_node.ValueNode(input, str)
             node.value = val
-            self.assertEqual(node.format(), answer)
+            if expand:
+                warnings.simplefilter("default")
+                with self.assertWarns(LineExpansionWarning):
+                    self.assertEqual(node.format(), answer)
+            else:
+                # change warnings to errors to ensure not raised
+                warnings.resetwarnings()
+                warnings.simplefilter("error")
+                self.assertEqual(node.format(), answer)
         for padding, val, answer, expand in [
             ([" "], "foo", "foo ", True),
             (["  "], "foo", "foo ", False),
@@ -272,20 +288,29 @@ class TestValueNode(TestCase):
     def test_value_enum_format(self):
         lat = mcnpy.data_inputs.lattice.Lattice
         st = mcnpy.surfaces.surface_type.SurfaceType
-        for input, val, enum_class, args, answer in [
+        for input, val, enum_class, args, answer, expand in [
             (
                 "1",
                 lat.HEXAGONAL,
                 lat,
                 {"format_type": int, "switch_to_upper": False},
                 "2",
+                False,
             ),
-            ("p", st.PZ, st, {"format_type": str, "switch_to_upper": True}, "PZ"),
+            ("p", st.PZ, st, {"format_type": str, "switch_to_upper": True}, "PZ", True),
         ]:
             node = syntax_node.ValueNode(input, args["format_type"])
             node._convert_to_enum(enum_class, **args)
             node.value = val
-            self.assertEqual(node.format(), answer)
+            if expand:
+                warnings.simplefilter("default")
+                with self.assertWarns(LineExpansionWarning):
+                    self.assertEqual(node.format(), answer)
+            else:
+                # change warnings to errors to ensure not raised
+                warnings.resetwarnings()
+                warnings.simplefilter("error")
+                self.assertEqual(node.format(), answer)
 
     def test_value_comments(self):
         value_node = syntax_node.ValueNode("1", int)
