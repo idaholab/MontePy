@@ -122,9 +122,12 @@ class MCNP_Object(ABC):
         :return: a list of strings for the lines that this input will occupy.
         :rtype: list
         """
-        self.validate()
-        self._update_values()
-        return self.wrap_string_for_mcnp(self._tree.format(), mcnp_version, True)
+        with warnings.catch_warnings(record=True) as warning_group:
+            self.validate()
+            self._update_values()
+            lines = self.wrap_string_for_mcnp(self._tree.format(), mcnp_version, True)
+            print(warning_group)
+            return lines
 
     @property
     def comments(self):
