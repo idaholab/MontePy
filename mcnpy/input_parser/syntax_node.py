@@ -921,7 +921,7 @@ class ValueNode(SyntaxNodeBase):
         buffer = "{temp:<{value_length}}{padding}".format(
             temp=temp, padding=pad_str, **self._formatter
         )
-        if len(buffer) > self._formatter["value_length"]:
+        if len(buffer) > self._formatter["value_length"] and self._token is not None:
             warnings.warn(
                 f"The value has expanded, and may change formatting. The original value was {self._token}, new value is {temp}.",
                 LineExpansionWarning,
