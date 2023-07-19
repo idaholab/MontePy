@@ -12,6 +12,7 @@ from mcnpy.input_parser.mcnp_input import (
     Title,
     ReadInput,
 )
+from mcnpy.errors import *
 from mcnpy.particle import Particle
 import numpy as np
 
@@ -213,7 +214,11 @@ class testFullFileIntegration(TestCase):
         self.assertIn(transform, problem.data_inputs)
         for cell_num in [1, cell_num]:
             print(cell_num)
-            output = problem.cells[cell_num].format_for_mcnp_input((6, 2, 0))
+            if cell_num == 1000:
+                with self.assertWarns(LineExpansionWarning):
+                    output = problem.cells[cell_num].format_for_mcnp_input((6, 2, 0))
+            else:
+                output = problem.cells[cell_num].format_for_mcnp_input((6, 2, 0))
             print(output)
             self.assertIn("U=350", "\n".join(output).upper())
 
@@ -352,7 +357,8 @@ class testFullFileIntegration(TestCase):
         self.assertEqual(int(output[3].split("$")[0]), -5)
         # test mass density printer
         cell.mass_density = 10.0
-        output = cell.format_for_mcnp_input((6, 2, 0))
+        with self.assertWarns(LineExpansionWarning):
+            output = cell.format_for_mcnp_input((6, 2, 0))
         print(output)
         self.assertAlmostEqual(float(output[2].split()[2]), -10)
         # ensure that surface number updated
@@ -446,7 +452,8 @@ class testFullFileIntegration(TestCase):
         problem = copy.deepcopy(self.importance_problem)
         imp = problem.cells._importance
         problem.cells[1].importance.neutron = 0.5
-        output = imp.format_for_mcnp_input((6, 2, 0))
+        with self.assertWarns(LineExpansionWarning):
+            output = imp.format_for_mcnp_input((6, 2, 0))
         print(output)
         self.assertEqual(len(output), 3)
         self.assertIn("imp:n 0.5 1 1 0 3", output)
@@ -477,7 +484,8 @@ class testFullFileIntegration(TestCase):
         problem = copy.deepcopy(self.importance_problem)
         problem.cells[1].importance.neutron = 0.5
         try:
-            problem.write_to_file(out_file)
+            with self.assertWarns(LineExpansionWarning):
+                problem.write_to_file(out_file)
             found_n = False
             found_e = False
             with open(out_file, "r") as fh:
@@ -503,11 +511,13 @@ class testFullFileIntegration(TestCase):
                 cell = copy.deepcopy(problem.cells[5])
                 cell.number = 999
                 problem.cells.append(cell)
-            if "new unmutated cell" == state:
-                cell._mutateddd = False
             problem.print_in_data_block["imp"] = False
             try:
-                problem.write_to_file(out_file)
+                if "new" in state:
+                    with self.assertWarns(LineExpansionWarning):
+                        problem.write_to_file(out_file)
+                else:
+                    problem.write_to_file(out_file)
                 found_np = False
                 found_e = False
                 found_data_np = False
@@ -721,7 +731,8 @@ class testFullFileIntegration(TestCase):
         cell = problem.cells[3]
         cell.universe = universe
         cell.not_truncated = True
-        output = cell.format_for_mcnp_input((6, 2, 0))
+        with self.assertWarns(LineExpansionWarning):
+            output = cell.format_for_mcnp_input((6, 2, 0))
         self.assertIn("U=-350", " ".join(output))
 
     def test_universe_data_formatter(self):
@@ -737,7 +748,8 @@ class testFullFileIntegration(TestCase):
         cell = problem.cells[3]
         cell.universe = universe
         cell.not_truncated = True
-        output = problem.cells._universe.format_for_mcnp_input((6, 2, 0))
+        with self.assertWarns(LineExpansionWarning):
+            output = problem.cells._universe.format_for_mcnp_input((6, 2, 0))
         print(output)
         self.assertIn("u 350 J -350 -1", output)
         # test appending a new mutated cell
@@ -746,7 +758,8 @@ class testFullFileIntegration(TestCase):
         new_cell.universe = universe
         new_cell.not_truncated = False
         problem.cells.append(new_cell)
-        output = problem.cells._universe.format_for_mcnp_input((6, 2, 0))
+        with self.assertWarns(LineExpansionWarning):
+            output = problem.cells._universe.format_for_mcnp_input((6, 2, 0))
         print(output)
         self.assertIn("u 350 J -350 -1 J 350 ", output)
         # test appending a new UNmutated cell
@@ -762,7 +775,8 @@ class testFullFileIntegration(TestCase):
         new_cell._mutated = False
         new_cell._universe._mutated = False
         problem.cells.append(new_cell)
-        output = problem.cells._universe.format_for_mcnp_input((6, 2, 0))
+        with self.assertWarns(LineExpansionWarning):
+            output = problem.cells._universe.format_for_mcnp_input((6, 2, 0))
         print(output)
         self.assertIn("u 350 2J -1 J 350", output)
 
