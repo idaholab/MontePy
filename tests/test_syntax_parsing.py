@@ -165,10 +165,10 @@ class TestValueNode(TestCase):
             ([" "], 10, "10 ", True),
             (["  "], 10, "10 ", False),
             (["\n"], 10, "10\n", True),
-            ([" ", "\n", "c hi"], 10, "10\nc hi", True),
-            (["  ", "\n"], 10, "10 ", False),
+            ([" ", "\n", "c hi"], 10, "10\nc hi", False),
+            (["  ", "\n"], 10, "10 \n", False),
         ]:
-            print("new_val", val, "answer", answer)
+            print("padding", padding, "new_val", val, "answer", repr(answer))
             pad_node = syntax_node.PaddingNode(padding[0])
             for pad in padding[1:]:
                 pad_node.append(pad)
@@ -219,9 +219,10 @@ class TestValueNode(TestCase):
             ([" "], 10, "10.0 ", True),
             (["  "], 10, "10.0 ", False),
             (["\n"], 10, "10.0\n", True),
-            ([" ", "\n", "c hi"], 10, "10.0\nc hi", True),
-            (["  ", "\n"], 10, "10.0 ", False),
+            ([" ", "\n", "c hi"], 10, "10.0\nc hi", False),
+            (["  ", "\n"], 10, "10.0 \n", False),
         ]:
+            print("padding", padding, "new_val", val, "answer", answer)
             pad_node = syntax_node.PaddingNode(padding[0])
             for pad in padding[1:]:
                 pad_node.append(pad)
@@ -249,9 +250,10 @@ class TestValueNode(TestCase):
             ([" "], "foo", "foo ", True),
             (["  "], "foo", "foo ", False),
             (["\n"], "foo", "foo\n", True),
-            ([" ", "\n", "c hi"], "foo", "foo\nc hi", True),
-            (["  ", "\n"], "foo", "foo ", False),
+            ([" ", "\n", "c hi"], "foo", "foo\nc hi", False),
+            (["  ", "\n"], "foo", "foo \n", False),
         ]:
+            print("padding", padding, "new_val", val, "answer", answer)
             pad_node = syntax_node.PaddingNode(padding[0])
             for pad in padding[1:]:
                 pad_node.append(pad)
