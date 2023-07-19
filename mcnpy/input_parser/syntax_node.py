@@ -911,21 +911,24 @@ class ValueNode(SyntaxNodeBase):
                     pad_str = " "
                 else:
                     pad_str = ""
-                pad_str += "".join([x.format() for x in self.padding.nodes[1:]])
+                extra_pad_str = "".join([x.format() for x in self.padding.nodes[1:]])
             else:
-                pad_str = "".join([x.format() for x in self.padding.nodes])
+                pad_str = ""
+                extra_pad_str = "".join([x.format() for x in self.padding.nodes])
         else:
             pad_str = ""
+            extra_pad_str = ""
         buffer = "{temp:<{value_length}}{padding}".format(
             temp=temp, padding=pad_str, **self._formatter
         )
+        print("buffer", repr(buffer), "val", self._formatter["value_length"])
         if len(buffer) > self._formatter["value_length"]:
             warnings.warn(
                 f"The value has expanded, and may change formatting. The original value was {self._token}, new value is {temp}.",
                 LineExpansionWarning,
                 stacklevel=2,
             )
-        return buffer
+        return buffer + extra_pad_str
 
     @property
     def comments(self):
