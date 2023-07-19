@@ -3,6 +3,7 @@ from io import StringIO
 from unittest import TestCase
 
 import mcnpy
+from mcnpy.errors import *
 from mcnpy.input_parser import input_syntax_reader
 from mcnpy.input_parser.mcnp_input import Input, Jump, Message, ReadInput, Title
 from mcnpy.input_parser.block_type import BlockType
@@ -10,6 +11,7 @@ from mcnpy.input_parser.input_file import MCNP_InputFile
 from mcnpy.input_parser.parser_base import MCNP_Parser
 from mcnpy.input_parser import syntax_node
 from mcnpy.particle import Particle
+import warnings
 
 
 class TestValueNode(TestCase):
@@ -138,13 +140,13 @@ class TestValueNode(TestCase):
         answer = "-1"
         output = node.format()
         self.assertEqual(output, answer)
-        for input, val, answer in [
-            ("1", 5, "5"),
-            ("-1", 2, " 2"),
-            ("-1", -2, "-2"),
-            ("+1", 5, "+5"),
-            ("0001", 5, "0005"),
-            (Jump(), 5, "5"),
+        for input, val, answer, expand in [
+            ("1", 5, "5", False),
+            ("-1", 2, " 2", False),
+            ("-1", -2, "-2", False),
+            ("+1", 5, "+5", False),
+            ("0001", 5, "0005", False),
+            (Jump(), 5, "5", False),
         ]:
             node = syntax_node.ValueNode(input, int)
             node.value = val
@@ -153,21 +155,34 @@ class TestValueNode(TestCase):
             node.is_negatable_identifier = True
             node.value = val
             node.is_negative = val < 0
-            self.assertEqual(node.format(), answer)
+            if expand:
+                with self.assertWarns(LineExpansionWarning):
+                    self.assertEqual(node.format(), answer)
+            else:
+                self.assertEqual(node.format(), answer)
         # test messing around with padding
-        for padding, val, answer in [
-            ([" "], 10, "10 "),
-            (["  "], 10, "10 "),
-            (["\n"], 10, "10\n"),
-            ([" ", "\n", "c hi"], 10, "10\nc hi"),
-            ([" ", " "], 10, "10 "),
+        for padding, val, answer, expand in [
+            ([" "], 10, "10 ", True),
+            (["  "], 10, "10 ", False),
+            (["\n"], 10, "10\n", True),
+            ([" ", "\n", "c hi"], 10, "10\nc hi", True),
+            (["  ", "\n"], 10, "10 ", False),
         ]:
+            print("new_val", val, "answer", answer)
             pad_node = syntax_node.PaddingNode(padding[0])
             for pad in padding[1:]:
                 pad_node.append(pad)
             node = syntax_node.ValueNode("1", int, pad_node)
             node.value = val
-            self.assertEqual(node.format(), answer)
+            if expand:
+                warnings.simplefilter("default")
+                with self.assertWarns(LineExpansionWarning):
+                    self.assertEqual(node.format(), answer)
+            else:
+                # change warnings to errors to ensure not raised
+                warnings.resetwarnings()
+                warnings.simplefilter("error")
+                self.assertEqual(node.format(), answer)
 
     def test_value_has_changed(self):
         # test None no change
@@ -200,41 +215,57 @@ class TestValueNode(TestCase):
             node = syntax_node.ValueNode(input, float)
             node.value = val
             self.assertEqual(node.format(), answer)
-        for padding, val, answer in [
-            ([" "], 10, "10.0 "),
-            (["  "], 10, "10.0 "),
-            (["\n"], 10, "10.0\n"),
-            ([" ", "\n", "c hi"], 10, "10.0\nc hi"),
-            ([" ", " "], 10, "10.0 "),
+        for padding, val, answer, expand in [
+            ([" "], 10, "10.0 ", True),
+            (["  "], 10, "10.0 ", False),
+            (["\n"], 10, "10.0\n", True),
+            ([" ", "\n", "c hi"], 10, "10.0\nc hi", True),
+            (["  ", "\n"], 10, "10.0 ", False),
         ]:
             pad_node = syntax_node.PaddingNode(padding[0])
             for pad in padding[1:]:
                 pad_node.append(pad)
             node = syntax_node.ValueNode("1.0", float, pad_node)
             node.value = val
-            self.assertEqual(node.format(), answer)
+            if expand:
+                warnings.simplefilter("default")
+                with self.assertWarns(LineExpansionWarning):
+                    self.assertEqual(node.format(), answer)
+            else:
+                # change warnings to errors to ensure not raised
+                warnings.resetwarnings()
+                warnings.simplefilter("error")
+                self.assertEqual(node.format(), answer)
 
     def test_value_str_format(self):
-        for input, val, answer in [
-            ("hi", "foo", "foo"),
-            ("hi", None, ""),
+        for input, val, answer, expand in [
+            ("hi", "foo", "foo", True),
+            ("hi", None, "", False),
         ]:
             node = syntax_node.ValueNode(input, str)
             node.value = val
             self.assertEqual(node.format(), answer)
-        for padding, val, answer in [
-            ([" "], "foo", "foo "),
-            (["  "], "foo", "foo "),
-            (["\n"], "foo", "foo\n"),
-            ([" ", "\n", "c hi"], "foo", "foo\nc hi"),
-            ([" ", " "], "foo", "foo "),
+        for padding, val, answer, expand in [
+            ([" "], "foo", "foo ", True),
+            (["  "], "foo", "foo ", False),
+            (["\n"], "foo", "foo\n", True),
+            ([" ", "\n", "c hi"], "foo", "foo\nc hi", True),
+            (["  ", "\n"], "foo", "foo ", False),
         ]:
             pad_node = syntax_node.PaddingNode(padding[0])
             for pad in padding[1:]:
                 pad_node.append(pad)
             node = syntax_node.ValueNode("hi", str, pad_node)
             node.value = val
-            self.assertEqual(node.format(), answer)
+            if expand:
+                warnings.simplefilter("default")
+                with self.assertWarns(LineExpansionWarning):
+                    self.assertEqual(node.format(), answer)
+            else:
+                # change warnings to errors to ensure not raised
+                warnings.resetwarnings()
+                warnings.simplefilter("error")
+                self.assertEqual(node.format(), answer)
 
     def test_value_enum_format(self):
         lat = mcnpy.data_inputs.lattice.Lattice
