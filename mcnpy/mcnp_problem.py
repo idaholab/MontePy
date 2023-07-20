@@ -337,24 +337,35 @@ class MCNP_Problem:
         :type new_problem: str
         :raises IllegalState: if an object in the problem has not been fully initialized.
         """
-        with open(new_problem, "w") as fh:
+        new_file = MCNP_InputFile(new_problem)
+        with new_file.open("w") as fh, warnings.catch_warnings(
+            record=True
+        ) as warning_catch:
+            objects_list = []
             if self.message:
-                for line in self.message.format_for_mcnp_input(self.mcnp_version):
-                    fh.write(line + "\n")
-            lines = self.title.format_for_mcnp_input(self.mcnp_version)
-            fh.write(lines[0] + "\n")
-            for cell in self.cells:
-                for line in cell.format_for_mcnp_input(self.mcnp_version):
-                    fh.write(line + "\n")
-            # block terminator
-            fh.write("\n")
-            for surface in self.surfaces:
-                for line in surface.format_for_mcnp_input(self.mcnp_version):
-                    fh.write(line + "\n")
-            fh.write("\n")
-            for input in self.data_inputs:
-                for line in input.format_for_mcnp_input(self.mcnp_version):
-                    fh.write(line + "\n")
+                objects_list.append(([self.message], False))
+            objects_list += [
+                ([self.title], False),
+                (self.cells, True),
+                (self.surfaces, True),
+                (self.data_inputs, True),
+            ]
+            for objects, terminate in objects_list:
+                for obj in objects:
+                    lines = obj.format_for_mcnp_input(self.mcnp_version)
+                    if warning_catch and not getattr(
+                        warning_catch[-1], "handled", None
+                    ):
+                        warning = warning_catch[-1]
+                        warning.lineno = fh.lineno
+                        warning.path = fh.name
+                        warning.obj = obj
+                        warning.lines = lines
+                        warning.handled = True
+                    for line in lines:
+                        fh.write(line + "\n")
+                if terminate:
+                    fh.write("\n")
             for line in self.cells._run_children_format_for_mcnp(
                 self.data_inputs, self.mcnp_version
             ):
