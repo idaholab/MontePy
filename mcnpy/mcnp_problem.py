@@ -10,8 +10,10 @@ from mcnpy.surfaces import surface_builder
 from mcnpy.surface_collection import Surfaces
 from mcnpy.data_inputs import Material, parse_data
 from mcnpy.input_parser import input_syntax_reader, block_type, mcnp_input
+from mcnpy.input_parser.input_file import MCNP_InputFile
 from mcnpy.universes import Universes
 from mcnpy.transforms import Transforms
+import warnings
 
 
 class MCNP_Problem:
@@ -23,7 +25,7 @@ class MCNP_Problem:
     """
 
     def __init__(self, file_name):
-        self._input_file = file_name
+        self._input_file = MCNP_InputFile(file_name)
         self._title = None
         self._message = None
         self._print_in_data_block = CellDataPrintController()
@@ -179,7 +181,7 @@ class MCNP_Problem:
         """
         The file name of the original file name this problem was read from.
 
-        :rtype: str
+        :rtype: MCNP_InputFile
         """
         return self._input_file
 
