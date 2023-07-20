@@ -211,8 +211,14 @@ class MCNP_Object(ABC):
             if line.strip():
                 buffer = wrapper.wrap(line)
                 if len(buffer) > 1:
+                    warning = LineExpansionWarning(
+                        f"The line exceeded the maximum length allowed by MCNP, and was split. The line was:\n{line}"
+                    )
+                    warning.cause = "line"
+                    warning.og_value = line
+                    warning.new_value = buffer
                     warnings.warn(
-                        f"The line exceeded the maximum length allowed by MCNP, and was split. The line was:\n{line}",
+                        warning,
                         LineExpansionWarning,
                         stacklevel=2,
                     )
