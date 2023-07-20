@@ -8,7 +8,11 @@ from mcnpy.mcnp_problem import MCNP_Problem
 class testMCNP_problem(TestCase):
     def test_problem_init(self):
         problem = MCNP_Problem("tests/inputs/test.imcnp")
-        self.assertEqual(problem.input_file, "tests/inputs/test.imcnp")
+        self.assertIsInstance(
+            problem.input_file, mcnpy.input_parser.input_file.MCNP_InputFile
+        )
+        self.assertEqual(problem.input_file.path, "tests/inputs/test.imcnp")
+        self.assertEqual(problem.input_file.name, "tests/inputs/test.imcnp")
         self.assertEqual(problem.mcnp_version, (6, 2, 0))
 
     def test_problem_str(self):

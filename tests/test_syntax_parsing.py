@@ -1041,9 +1041,7 @@ test title
             (test_string.upper(), test_message.upper()),
         ]:
             with StringIO(tester) as fh:
-                generator = input_syntax_reader.read_front_matters(
-                    fh, (6, 2, 0), MCNP_InputFile("foo")
-                )
+                generator = input_syntax_reader.read_front_matters(fh, (6, 2, 0))
                 card = next(generator)
                 self.assertIsInstance(card, mcnpy.input_parser.mcnp_input.Message)
                 self.assertEqual(card.lines[0], validator)
@@ -1067,9 +1065,7 @@ test title
             (test_string.upper(), test_title.upper()),
         ]:
             with StringIO(tester) as fh:
-                generator = input_syntax_reader.read_front_matters(
-                    fh, (6, 2, 0), MCNP_InputFile("foo")
-                )
+                generator = input_syntax_reader.read_front_matters(fh, (6, 2, 0))
                 card = next(generator)
                 self.assertIsInstance(card, mcnpy.input_parser.mcnp_input.Title)
                 self.assertEqual(card.title, validator)
@@ -1080,9 +1076,9 @@ test title
         for i in range(5):
             tester = " " * i + test_string
             with StringIO(tester) as fh:
-                generator = input_syntax_reader.read_data(
-                    fh, (6, 2, 0), MCNP_InputFile("foo")
-                )
+                fh.lineno = 0
+                fh.path = "foo"
+                generator = input_syntax_reader.read_data(fh, (6, 2, 0))
                 card = next(generator)
                 self.assertIsInstance(card, mcnpy.input_parser.mcnp_input.Input)
                 answer = [" " * i + "1 0 -1", "     5"]
@@ -1110,9 +1106,9 @@ test title
     def testReadCardFinder(self):
         test_string = "read file=foo.imcnp "
         with StringIO(test_string) as fh:
-            card = next(
-                input_syntax_reader.read_data(fh, (6, 2, 0), MCNP_InputFile("foo"))
-            )
+            fh.lineno = 0
+            fh.path = "foo"
+            card = next(input_syntax_reader.read_data(fh, (6, 2, 0)))
             self.assertIsNone(card)  # the read input is hidden from the user
 
     def testBlockId(self):
@@ -1120,9 +1116,10 @@ test title
         for i in range(3):
             tester = "\n" * i + test_string
             with StringIO(tester) as fh:
-                for card in input_syntax_reader.read_data(
-                    fh, (6, 2, 0), MCNP_InputFile("foo")
-                ):
+                fh.lineno = 0
+                fh.path = "foo"
+                fh.name = "name"
+                for card in input_syntax_reader.read_data(fh, (6, 2, 0)):
                     pass
                 self.assertEqual(
                     mcnpy.input_parser.block_type.BlockType(i), card.block_type
@@ -1167,7 +1164,9 @@ bar
 
     def testReadInput(self):
         # TODO ensure comments are properly glued to right input
-        generator = input_syntax_reader.read_input_syntax("tests/inputs/test.imcnp")
+        generator = input_syntax_reader.read_input_syntax(
+            MCNP_InputFile("tests/inputs/test.imcnp")
+        )
         mcnp_in = mcnpy.input_parser.mcnp_input
         input_order = [mcnp_in.Message, mcnp_in.Title]
         input_order += [mcnp_in.Input] * 17
@@ -1177,7 +1176,9 @@ bar
             self.assertIsInstance(input, input_order[i])
 
     def testReadInputWithRead(self):
-        generator = input_syntax_reader.read_input_syntax("tests/inputs/testRead.imcnp")
+        generator = input_syntax_reader.read_input_syntax(
+            MCNP_InputFile("tests/inputs/testRead.imcnp")
+        )
         next(generator)  # skip title
         next(generator)  # skip read none
         card = next(generator)
@@ -1186,7 +1187,7 @@ bar
 
     def testReadInputWithVertMode(self):
         generator = input_syntax_reader.read_input_syntax(
-            "tests/inputs/testVerticalMode.imcnp"
+            MCNP_InputFile("tests/inputs/testVerticalMode.imcnp")
         )
         next(generator)
         next(generator)
