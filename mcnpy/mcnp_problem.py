@@ -1,3 +1,4 @@
+from enum import Enum
 import itertools
 from mcnpy.data_inputs import mode, transform
 from mcnpy._cell_data_control import CellDataPrintController
@@ -372,6 +373,33 @@ class MCNP_Problem:
                 fh.write(line + "\n")
 
             fh.write("\n")
+        self._handle_warnings(warning_catch)
+
+    def _handle_warnings(self, warning_queue):
+        class WarningLevels(Enum):
+            SUPRESS = 0
+            MINIMAL = 1
+            MAXIMAL = 5
+
+        warning_level = WarningLevels.MAXIMAL
+
+        for warning_message in warning_queue:
+            warning = warning_message.message
+            message = f"The input starting on Line {warning_message.lineno} of: {warning_message.path} expanded. "
+            if warning_level == WarningLevels.SUPRESS:
+                continue
+            elif warning_level == WarningLevels.MINIMAL:
+                if warning.cause == "value":
+                    message += f"The new value is: {warning.new_value}"
+                else:
+                    message += f"The new lines are: {warning.new_value}"
+            elif warning_level == WarningLevels.MAXIMAL:
+                message += "\nThe new input is:\n"
+                for i, line in enumerate(warning_message.lines):
+                    message += f"     {warning_message.lineno + i:5g}| {line}\n"
+                message += warning.message
+            warning = LineExpansionWarning(message)
+            warnings.warn(warning, stacklevel=3)
 
     def __load_data_inputs_to_object(self, data_inputs):
         """
