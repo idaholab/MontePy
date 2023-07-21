@@ -136,6 +136,7 @@ class Cells(NumberedObjectCollection):
             ) as e:
                 if check_input:
                     warnings.warn(e)
+                    continue
                 else:
                     raise e
         self.__setup_blank_cell_modifiers(problem)

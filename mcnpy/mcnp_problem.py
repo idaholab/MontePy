@@ -274,6 +274,7 @@ class MCNP_Problem:
                     ) as e:
                         if check_input:
                             warnings.warn(e, stacklevel=2)
+                            continue
                         else:
                             raise e
                     if isinstance(obj, Material):
@@ -327,6 +328,7 @@ class MCNP_Problem:
                 ParticleTypeNotInCell,
             ) as e:
                 handle_error(e)
+                continue
 
     def remove_duplicate_surfaces(self, tolerance):
         """Finds duplicate surfaces in the problem, and remove them.
