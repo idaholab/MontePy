@@ -1,6 +1,7 @@
 import mcnpy
 from mcnpy.numbered_object_collection import NumberedObjectCollection
-from mcnpy.errors import MalformedInputError
+from mcnpy.errors import *
+import warnings
 
 
 class Cells(NumberedObjectCollection):
@@ -80,7 +81,9 @@ class Cells(NumberedObjectCollection):
             raise TypeError("allow_mcnp_volume_calc must be set to a bool")
         self._volume.is_mcnp_calculated = value
 
-    def update_pointers(self, cells, materials, surfaces, data_inputs, problem):
+    def update_pointers(
+        self, cells, materials, surfaces, data_inputs, problem, check_input=False
+    ):
         """
         Attaches this object to the appropriate objects for surfaces and materials.
 
@@ -93,6 +96,10 @@ class Cells(NumberedObjectCollection):
         :type materials: Materials
         :param surfaces: a surfaces collection of the surfaces in the problem
         :type surfaces: Surfaces
+        :param problem: The MCNP_Problem these cells are associated with
+        :type problem: MCNP_Problem
+        :param check_input: If true, will try to find all errors with input and collect them as warnings to log.
+        :type check_input: bool
         """
         inputs_to_property = mcnpy.Cell._INPUTS_TO_PROPERTY
         inputs_to_always_update = {"_universe", "_fill"}
@@ -120,7 +127,17 @@ class Cells(NumberedObjectCollection):
                 if cant_repeat:
                     inputs_loaded.add(type(input))
         for cell in self:
-            cell.update_pointers(cells, materials, surfaces)
+            try:
+                cell.update_pointers(cells, materials, surfaces)
+            except (
+                BrokenObjectLinkError,
+                ParticleTypeNotInProblem,
+                ParticleTypeNotInCell,
+            ) as e:
+                if check_input:
+                    warnings.warn(e)
+                else:
+                    raise e
         self.__setup_blank_cell_modifiers(problem)
 
     def _run_children_format_for_mcnp(self, data_inputs, mcnp_version):

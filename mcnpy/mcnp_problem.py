@@ -231,12 +231,23 @@ class MCNP_Problem:
         """
         return self._transforms
 
-    def parse_input(self):
+    def parse_input(self, check_input=False):
         """
         Semantically parses the MCNP file provided to the constructor.
+
+        :param check_input: If true, will try to find all errors with input and collect them as warnings to log.
+        :type check_input: bool
         """
         trailing_comment = None
         last_obj = None
+        OBJ_MATCHER = {
+            block_type.BlockType.CELL: (Cell, self._cells),
+            block_type.BlockType.SURFACE: (
+                surface_builder.surface_builder,
+                self._surfaces,
+            ),
+            block_type.BlockType.DATA: (parse_data, self._data_inputs),
+        }
         for i, input in enumerate(
             input_syntax_reader.read_input_syntax(self._input_file, self.mcnp_version)
         ):
@@ -248,40 +259,74 @@ class MCNP_Problem:
                 self._title = input
 
             elif isinstance(input, mcnp_input.Input):
+                obj_parser, obj_container = OBJ_MATCHER[input.block_type]
                 if len(input.input_lines) > 0:
-                    if input.block_type == block_type.BlockType.CELL:
-                        obj = Cell(input)
+                    try:
+                        obj = obj_parser(input)
                         obj.link_to_problem(self)
-                        self._cells.append(obj)
-                    if input.block_type == block_type.BlockType.SURFACE:
-                        obj = surface_builder.surface_builder(input)
-                        obj.link_to_problem(self)
-                        self._surfaces.append(obj)
-                    if input.block_type == block_type.BlockType.DATA:
-                        obj = parse_data(input)
-                        obj.link_to_problem(self)
-                        if isinstance(obj, Material):
-                            self._materials.append(obj)
-                        if isinstance(obj, transform.Transform):
-                            self._transforms.append(obj)
-                        self._data_inputs.append(obj)
+                        obj_container.append(obj)
+                    except (
+                        MalformedInputError,
+                        ParsingError,
+                        UnsupportedFeature,
+                        UnknownElement,
+                        NumberConflictError,
+                    ) as e:
+                        if check_input:
+                            warnings.warn(e, stacklevel=2)
+                        else:
+                            raise e
+                    if isinstance(obj, Material):
+                        self._materials.append(obj)
+                    if isinstance(obj, transform.Transform):
+                        self._transforms.append(obj)
                 if trailing_comment is not None and last_obj is not None:
                     obj._grab_beginning_comment(trailing_comment)
                     last_obj._delete_trailing_comment()
                 trailing_comment = obj.trailing_comment
                 last_obj = obj
-        self.__update_internal_pointers()
+        self.__update_internal_pointers(check_input)
 
-    def __update_internal_pointers(self):
-        """Updates the internal pointers between objects"""
+    def __update_internal_pointers(self, check_input=False):
+        """Updates the internal pointers between objects
+
+        :param check_input: If true, will try to find all errors with input and collect them as warnings to log.
+        :type check_input: bool
+        """
+
+        def handle_error(e):
+            if check_input:
+                warnings.warn(e)
+            else:
+                raise e
+
         self.__load_data_inputs_to_object(self._data_inputs)
         self._cells.update_pointers(
-            self.cells, self.materials, self.surfaces, self._data_inputs, self
+            self.cells,
+            self.materials,
+            self.surfaces,
+            self._data_inputs,
+            self,
+            check_input,
         )
         for surface in self._surfaces:
-            surface.update_pointers(self.surfaces, self._data_inputs)
+            try:
+                surface.update_pointers(self.surfaces, self._data_inputs)
+            except (
+                BrokenObjectLinkError,
+                ParticleTypeNotInProblem,
+                ParticleTypeNotInCell,
+            ) as e:
+                handle_error(e)
         for input in self._data_inputs:
-            input.update_pointers(self._data_inputs)
+            try:
+                input.update_pointers(self._data_inputs)
+            except (
+                BrokenObjectLinkError,
+                ParticleTypeNotInProblem,
+                ParticleTypeNotInCell,
+            ) as e:
+                handle_error(e)
 
     def remove_duplicate_surfaces(self, tolerance):
         """Finds duplicate surfaces in the problem, and remove them.
