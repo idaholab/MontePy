@@ -15,6 +15,8 @@ class TestMainRunner(TestCase):
 
     def test_check_no_error(self):
         main.check_inputs([os.path.join("tests", "inputs", "test.imcnp")])
+        with self.assertRaises(FileNotFoundError):
+            main.check_inputs(["foo"])
 
     def test_check_warning(self):
         with self.assertWarns(Warning):
