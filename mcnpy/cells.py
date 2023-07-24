@@ -128,10 +128,13 @@ class Cells(NumberedObjectCollection):
                 input_class = type(input)
                 attr, cant_repeat = inputs_to_property[input_class]
                 if cant_repeat and input_class in inputs_loaded:
-                    raise MalformedInputError(
-                        input,
-                        f"The input: {type(input)} is only allowed once in a problem",
-                    )
+                    try:
+                        raise MalformedInputError(
+                            input,
+                            f"The input: {type(input)} is only allowed once in a problem",
+                        )
+                    except MalformedInputError as e:
+                        handle_error(e)
                 if not hasattr(self, attr):
                     setattr(self, attr, input)
                     problem.print_in_data_block[input._class_prefix()] = True

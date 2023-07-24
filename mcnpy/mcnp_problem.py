@@ -248,46 +248,53 @@ class MCNP_Problem:
             ),
             block_type.BlockType.DATA: (parse_data, self._data_inputs),
         }
-        for i, input in enumerate(
-            input_syntax_reader.read_input_syntax(self._input_file, self.mcnp_version)
-        ):
-            self._original_inputs.append(input)
-            if i == 0 and isinstance(input, mcnp_input.Message):
-                self._message = input
+        try:
+            for i, input in enumerate(
+                input_syntax_reader.read_input_syntax(
+                    self._input_file, self.mcnp_version
+                )
+            ):
+                self._original_inputs.append(input)
+                if i == 0 and isinstance(input, mcnp_input.Message):
+                    self._message = input
 
-            elif isinstance(input, mcnp_input.Title) and self._title is None:
-                self._title = input
+                elif isinstance(input, mcnp_input.Title) and self._title is None:
+                    self._title = input
 
-            elif isinstance(input, mcnp_input.Input):
-                obj_parser, obj_container = OBJ_MATCHER[input.block_type]
-                if len(input.input_lines) > 0:
-                    try:
-                        obj = obj_parser(input)
-                        obj.link_to_problem(self)
-                        obj_container.append(obj)
-                    except (
-                        MalformedInputError,
-                        ParsingError,
-                        UnsupportedFeature,
-                        UnknownElement,
-                        NumberConflictError,
-                    ) as e:
-                        if check_input:
-                            warnings.warn(
-                                f"{type(e).__name__}: {e.message}", stacklevel=2
-                            )
-                            continue
-                        else:
-                            raise e
-                    if isinstance(obj, Material):
-                        self._materials.append(obj)
-                    if isinstance(obj, transform.Transform):
-                        self._transforms.append(obj)
-                if trailing_comment is not None and last_obj is not None:
-                    obj._grab_beginning_comment(trailing_comment)
-                    last_obj._delete_trailing_comment()
-                trailing_comment = obj.trailing_comment
-                last_obj = obj
+                elif isinstance(input, mcnp_input.Input):
+                    obj_parser, obj_container = OBJ_MATCHER[input.block_type]
+                    if len(input.input_lines) > 0:
+                        try:
+                            obj = obj_parser(input)
+                            obj.link_to_problem(self)
+                            obj_container.append(obj)
+                        except (
+                            MalformedInputError,
+                            NumberConflictError,
+                            ParsingError,
+                            UnknownElement,
+                        ) as e:
+                            if check_input:
+                                warnings.warn(
+                                    f"{type(e).__name__}: {e.message}", stacklevel=2
+                                )
+                                continue
+                            else:
+                                raise e
+                        if isinstance(obj, Material):
+                            self._materials.append(obj)
+                        if isinstance(obj, transform.Transform):
+                            self._transforms.append(obj)
+                    if trailing_comment is not None and last_obj is not None:
+                        obj._grab_beginning_comment(trailing_comment)
+                        last_obj._delete_trailing_comment()
+                    trailing_comment = obj.trailing_comment
+                    last_obj = obj
+        except UnsupportedFeature as e:
+            if check_input:
+                warnings.warn(f"{type(e).__name__}: {e.message}", stacklevel=2)
+            else:
+                raise e
         self.__update_internal_pointers(check_input)
 
     def __update_internal_pointers(self, check_input=False):
