@@ -1181,6 +1181,8 @@ bar
         )
         next(generator)  # skip title
         next(generator)  # skip read none
+        next(generator)  # skip surfaces input
+        next(generator)  # skip data mode input
         card = next(generator)
         answer = ["1 0 -1"]
         self.assertEqual(answer, card.input_lines)
