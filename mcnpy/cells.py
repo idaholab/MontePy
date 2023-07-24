@@ -18,24 +18,31 @@ class Cells(NumberedObjectCollection):
         super().__init__(mcnpy.Cell, cells, problem)
         self.__setup_blank_cell_modifiers()
 
-    def __setup_blank_cell_modifiers(self, problem=None):
+    def __setup_blank_cell_modifiers(self, problem=None, check_input=False):
         inputs_to_always_update = {"_universe", "_fill"}
         inputs_to_property = mcnpy.Cell._INPUTS_TO_PROPERTY
         for card_class, (attr, _) in inputs_to_property.items():
-            if not hasattr(self, attr):
-                card = card_class()
-                self.__blank_modifiers.add(attr)
-                setattr(self, attr, card)
-            else:
-                card = getattr(self, attr)
-            if problem is not None:
-                card.link_to_problem(problem)
-                if (
-                    attr not in self.__blank_modifiers
-                    or attr in inputs_to_always_update
-                ):
-                    card.push_to_cells()
-                    card._clear_data()
+            try:
+                if not hasattr(self, attr):
+                    card = card_class()
+                    self.__blank_modifiers.add(attr)
+                    setattr(self, attr, card)
+                else:
+                    card = getattr(self, attr)
+                if problem is not None:
+                    card.link_to_problem(problem)
+                    if (
+                        attr not in self.__blank_modifiers
+                        or attr in inputs_to_always_update
+                    ):
+                        card.push_to_cells()
+                        card._clear_data()
+            except MalformedInputError as e:
+                if check_input:
+                    warnings.warn(f"{type(e).__name__}: {e.message}", stacklevel=3)
+                    continue
+                else:
+                    raise e
 
     def set_equal_importance(self, importance, vacuum_cells=tuple()):
         """
