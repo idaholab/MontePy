@@ -326,6 +326,7 @@ class MCNP_Problem:
                 input.update_pointers(self._data_inputs)
             except (
                 BrokenObjectLinkError,
+                MalformedInputError,
                 ParticleTypeNotInProblem,
                 ParticleTypeNotInCell,
             ) as e:
