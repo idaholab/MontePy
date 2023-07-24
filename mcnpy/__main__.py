@@ -2,6 +2,7 @@ import argparse
 import glob
 import mcnpy
 from pathlib import Path
+import sys
 
 """
 Module to make module executable from CLI.
@@ -12,7 +13,7 @@ Module to make module executable from CLI.
 """
 
 
-def define_args():
+def define_args(args):
     """
     Sets and parses the command line arguments.
 
@@ -31,7 +32,7 @@ def define_args():
         help="Check the given input file(s) for errors. Accepts globs, and multiple arguments.",
         metavar="input_file",
     )
-    args = parser.parse_args()
+    args = parser.parse_args(args)
     return args
 
 
@@ -55,9 +56,10 @@ def main():
     """
     The main function
     """
-    args = define_args()
+    args = define_args(sys.argv[1:])
     if "check" in args:
         check_inputs(args.check)
 
 
-main()
+if __name__ == "__main__":
+    main()
