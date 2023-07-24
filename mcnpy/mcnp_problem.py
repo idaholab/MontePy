@@ -299,7 +299,7 @@ class MCNP_Problem:
 
         def handle_error(e):
             if check_input:
-                warnings.warn(e)
+                warnings.warn(f"{type(e).__name__}: {e.message}", stacklevel=3)
             else:
                 raise e
 

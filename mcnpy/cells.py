@@ -108,6 +108,13 @@ class Cells(NumberedObjectCollection):
         :param check_input: If true, will try to find all errors with input and collect them as warnings to log.
         :type check_input: bool
         """
+
+        def handle_error(e):
+            if check_input:
+                warnings.warn(f"{type(e).__name__}: {e.message}", stacklevel=3)
+            else:
+                raise e
+
         inputs_to_property = mcnpy.Cell._INPUTS_TO_PROPERTY
         inputs_to_always_update = {"_universe", "_fill"}
         inputs_loaded = set()
@@ -138,15 +145,13 @@ class Cells(NumberedObjectCollection):
                 cell.update_pointers(cells, materials, surfaces)
             except (
                 BrokenObjectLinkError,
+                MalformedInputError,
                 ParticleTypeNotInProblem,
                 ParticleTypeNotInCell,
             ) as e:
-                if check_input:
-                    warnings.warn(e)
-                    continue
-                else:
-                    raise e
-        self.__setup_blank_cell_modifiers(problem)
+                handle_error(e)
+                continue
+        self.__setup_blank_cell_modifiers(problem, check_input)
 
     def _run_children_format_for_mcnp(self, data_inputs, mcnp_version):
         ret = []
