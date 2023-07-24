@@ -273,7 +273,9 @@ class MCNP_Problem:
                         NumberConflictError,
                     ) as e:
                         if check_input:
-                            warnings.warn(e, stacklevel=2)
+                            warnings.warn(
+                                f"{type(e).__name__}: {e.message}", stacklevel=2
+                            )
                             continue
                         else:
                             raise e
