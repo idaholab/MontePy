@@ -1055,6 +1055,14 @@ test title
             "READ INPUT: BlockType.CELL: ['Read file=hi.imcnp'] File: hi.imcnp",
         )
 
+    def testSingleLineEndComment(self):
+        # tests issues #117
+        input = Input(["c"], BlockType.CELL)
+        generator = input.tokenize()
+        token = next(generator)
+        self.assertEqual(token.type, "COMMENT")
+        self.assertEqual(token.value, "c\n")
+
     def testTitleFinder(self):
         test_title = "Richard Stallman writes GNU"
         test_string = f"""{test_title}
