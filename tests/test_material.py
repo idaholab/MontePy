@@ -237,6 +237,13 @@ class TestThermalScattering(TestCase):
         card = ThermalScatteringLaw(material=material)
         self.assertEqual(card.parent_material, material)
 
+    def test_thermal_scattering_particle_parser(self):
+        # replicate issue #121
+        input_card = Input(["Mt20 h-h2o.40t"], BlockType.DATA)
+        card = ThermalScatteringLaw(input_card)
+        self.assertEqual(card.old_number, 20)
+        self.assertEqual(card.thermal_scattering_laws, ["h-h2o.40t"])
+
     def test_thermal_scatter_validate(self):
         thermal = ThermalScatteringLaw()
         with self.assertRaises(mcnpy.errors.IllegalState):
