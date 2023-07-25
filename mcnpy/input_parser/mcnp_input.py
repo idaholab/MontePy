@@ -93,7 +93,7 @@ class ParsingNode(ABC):
 
     @property
     def input_text(self):
-        return "\n".join(self.input_lines)
+        return "\n".join(self.input_lines) + "\n"
 
     @abstractmethod
     def format_for_mcnp_input(self, mcnp_version):
@@ -215,8 +215,24 @@ class Input(ParsingNode):
             lexer = SurfaceLexer()
         else:
             lexer = DataLexer()
-        for token in lexer.tokenize(self.input_text):
-            yield token
+        # hacky way to capture final new line and remove it after lexing.
+        generator = lexer.tokenize(self.input_text)
+        token = None
+        next_token = None
+        try:
+            token = next(generator)
+            while True:
+                if next_token:
+                    token = next_token
+                next_token = next(generator)
+                yield token
+        except StopIteration:
+            if not token:
+                yield None
+            token.value = token.value.rstrip("\n")
+            if token.value:
+                yield token
+            yield None
 
     @property
     def words(self):
