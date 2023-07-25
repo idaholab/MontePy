@@ -48,7 +48,7 @@ def check_inputs(files):
             raise FileNotFoundError(f"File: {file} not found.")
     for file in files:
         print(f"\n********** Checking: {file} *********\n")
-        problem = mcnpy.mcnp_problem.MCNP_Problem(file)
+        problem = mcnpy.MCNP_Problem(file)
         problem.parse_input(True)
 
 

@@ -27,6 +27,7 @@ from . import input_parser
 from . import constants
 from .input_parser.input_reader import read_input
 from mcnpy.cell import Cell
+from mcnpy.mcnp_problem import MCNP_Problem
 from mcnpy.data_inputs.material import Material
 from mcnpy.data_inputs.transform import Transform
 from mcnpy.geometry_operators import Operator
