@@ -1061,7 +1061,7 @@ test title
         generator = input.tokenize()
         token = next(generator)
         self.assertEqual(token.type, "COMMENT")
-        self.assertEqual(token.value, "c\n")
+        self.assertEqual(token.value, "c")
 
     def testTitleFinder(self):
         test_title = "Richard Stallman writes GNU"
