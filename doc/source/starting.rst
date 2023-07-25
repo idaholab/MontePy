@@ -578,6 +578,15 @@ You can also easy apply a transform to the filling universe with:
    If you use this feature, and have input on how to make it more user friendly,
    please reach out to the developers.
 
+References
+^^^^^^^^^^
+
+See the following cell properties for more details:
+
+* :func:`~mcnpy.cell.Cell.universe`
+* :func:`~mcnpy.cell.Cell.lattice`
+* :func:`~mcnpy.cell.Cell.fill`
+
 Running as an Executable
 ------------------------
 
@@ -614,13 +623,5 @@ If you want to try to troubleshoot errors in python you can do this with the fol
         
         problem.parse_input(True)
 
-References
-^^^^^^^^^^
-
-See the following cell properties for more details:
-
-* :func:`~mcnpy.cell.Cell.universe`
-* :func:`~mcnpy.cell.Cell.lattice`
-* :func:`~mcnpy.cell.Cell.fill`
 
 **Remember: make objects, not regexes!**
