@@ -578,7 +578,41 @@ You can also easy apply a transform to the filling universe with:
    If you use this feature, and have input on how to make it more user friendly,
    please reach out to the developers.
 
+Running as an Executable
+------------------------
 
+MCNPy can be ran as an executable. 
+Currently this only supports checking an MCNP input file for errors.
+
+Checking Input files for Errors
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+MCNPy can be ran to try to open an MCNP input file and to read as much as it can and try to note all errors it finds.
+If there are many errors not all may be found at once due to how errors are handled.
+This is done by executing it with the ``-c`` flag, and specifying a file, or files to check.
+You can also use linux globs::
+
+        python -m mcnpy -c inputs/*.imcnp
+
+MCNPy will then show which file it is reading, and show a warning for every potential error with the input file it has found.
+
+If you want to try to troubleshoot errors in python you can do this with the following steps.
+
+.. warning::
+   This following guide may return an incomplete problem object that may break in very wierd ways.
+   Never use this for actual file editing; only use it for troubleshooting.
+
+1. Setup a new Problem object:
+
+   .. code-block:: python
+        
+       problem = mcnpy.MCNP_Problem("foo.imcnp") 
+
+1. Next load the input file with the ``check_input`` set to ``True``.
+
+   .. code-block:: python
+        
+        problem.parse_input(True)
 
 References
 ^^^^^^^^^^
