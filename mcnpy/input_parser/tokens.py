@@ -92,7 +92,7 @@ class MCNP_Lexer(Lexer):
     Defines allowed keywords in MCNP.
     """
 
-    literals = {"(", ":", ")", "&", "#", "=", "*", "+"}
+    literals = {"(", ":", ")", "&", "#", "=", "*", "+", ","}
 
     COMPLEMENT = r"\#"
     """
@@ -320,16 +320,6 @@ class ParticleLexer(MCNP_Lexer):
         "#",
     }
 
-    @_(r":([npe|quvfhl+\-xyo!<>g/zk%^b_~cw@dtsa\*\?,]|\#\d*)+")
-    def PARTICLE_DESIGNATOR(self, t):
-        """
-        A list of particles associated with the input.
-
-        The biggest reason for this is so that ``p`` is interpreted
-        as a photon, and not a plane.
-        """
-        return t
-
     @_(r"[+\-]?[0-9]*\.?[0-9]*E?[+\-]?[0-9]*[ijrml]+[a-z\./]*", r"[a-z]+[a-z\./]*")
     def TEXT(self, t):
         t = super().TEXT(t)
@@ -403,7 +393,7 @@ class DataLexer(ParticleLexer):
         ZAID,
     }
 
-    @_(r"([|+\-!<>/%^_~@\*\?\#,]|\#\d*)+")
+    @_(r"([|+\-!<>/%^_~@\*\?\#]|\#\d*)+")
     def PARTICLE_SPECIAL(self, t):
         """
         Particle designators that are special characters.
