@@ -1061,6 +1061,16 @@ class ParticleNode(SyntaxNodeBase):
             self._order.append(part)
 
     @property
+    def token(self):
+        """
+        The original text (token) for this ParticleNode.
+
+        :returns: the original input.
+        :rtype: str
+        """
+        return self._token
+
+    @property
     def particles(self):
         """
         The particles included in this node.
