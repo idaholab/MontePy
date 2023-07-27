@@ -464,7 +464,7 @@ class CommentNode(SyntaxNodeBase):
     _MATCHER = re.compile(
         rf"""(?P<delim>
                 (\s{{0,{constants.BLANK_SPACE_CONTINUE-1}}}C\s?)
-                |(\$\s)
+                |(\$\s?)
              )
             (?P<contents>.*)""",
         re.I | re.VERBOSE,
