@@ -317,7 +317,7 @@ class MCNP_Parser(Parser, metaclass=MetaBuilder):
             {"classifier": p.classifier, "seperator": p.param_seperator, "data": p[2]},
         )
 
-    @_("TEXT", "FILE_PATH", "file_name TEXT", "file_name FILE_PATH")
+    @_("file_atom", "file_name file_atom")
     def file_name(self, p):
         """
         A file name.
@@ -328,6 +328,10 @@ class MCNP_Parser(Parser, metaclass=MetaBuilder):
         if len(p) > 1:
             ret += p[1]
         return ret
+
+    @_("TEXT", "FILE_PATH", "NUMBER", "PARTICLE")
+    def file_atom(self, p):
+        return p[0]
 
     @_("file_name", "file_name padding")
     def file_phrase(self, p):
