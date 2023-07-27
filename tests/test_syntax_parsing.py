@@ -1063,6 +1063,10 @@ test title
         self.assertEqual(token.type, "COMMENT")
         self.assertEqual(token.value, "c")
 
+    def testReadCardParticleConfuse(self):
+        input = ReadInput(["Read FILE=A1_cells"], BlockType.CELL)
+        self.assertEqual(input.file_name, "A1_cells")
+
     def testTitleFinder(self):
         test_title = "Richard Stallman writes GNU"
         test_string = f"""{test_title}
