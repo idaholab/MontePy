@@ -488,10 +488,14 @@ class CommentNode(SyntaxNodeBase):
         :returns: the SyntaxNode of the Comment.
         :rtype: SyntaxNode
         """
-        match = self._MATCHER.match(token)
-        start = match["delim"]
-        comment_line = match["contents"]
-        is_dollar = "$" in start
+        if match := self._MATCHER.match(token):
+            start = match["delim"]
+            comment_line = match["contents"]
+            is_dollar = "$" in start
+        else:
+            start = token
+            comment_line = ""
+            is_dollar = "$" in start
         return (
             is_dollar,
             SyntaxNode(
