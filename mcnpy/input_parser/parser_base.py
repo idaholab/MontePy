@@ -372,10 +372,17 @@ class MCNP_Parser(Parser, metaclass=MetaBuilder):
         return p[0]
 
     @_(
-        "modifier classifier",
         "KEYWORD",
+        "PARTICLE",
         "SOURCE_COMMENT",
         "TALLY_COMMENT",
+    )
+    def data_prefix(self, p):
+        return syntax_node.ValueNode(p[0], str)
+
+    @_(
+        "modifier data_prefix",
+        "data_prefix",
         "classifier NUMBER",
         "classifier particle_type",
     )
@@ -395,13 +402,8 @@ class MCNP_Parser(Parser, metaclass=MetaBuilder):
 
         if hasattr(p, "modifier"):
             classifier.modifier = syntax_node.ValueNode(p.modifier, str)
-        if (
-            hasattr(p, "KEYWORD")
-            or hasattr(p, "SOURCE_COMMENT")
-            or hasattr(p, "TALLY_COMMENT")
-        ):
-            text = p[0]
-            classifier.prefix = syntax_node.ValueNode(text, str)
+        if hasattr(p, "data_prefix"):
+            classifier.prefix = p.data_prefix
         if hasattr(p, "NUMBER"):
             classifier.number = syntax_node.ValueNode(p.NUMBER, int)
         if hasattr(p, "particle_type"):
