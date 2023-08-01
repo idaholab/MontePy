@@ -547,6 +547,12 @@ class TestPaddingNode(TestCase):
         str(comment)
         repr(comment)
 
+    def test_blank_dollar_comment(self):
+        comment = syntax_node.CommentNode("$")
+        self.assertTrue(comment.is_dollar)
+        self.assertEqual(len(list(comment.comments)), 1)
+        self.assertEqual(len(comment.contents), 0)
+
 
 class TestParticlesNode(TestCase):
     def test_particle_init(self):
@@ -1193,6 +1199,8 @@ bar
         )
         next(generator)  # skip title
         next(generator)  # skip read none
+        next(generator)  # skip surfaces input
+        next(generator)  # skip data mode input
         card = next(generator)
         answer = ["1 0 -1"]
         self.assertEqual(answer, card.input_lines)

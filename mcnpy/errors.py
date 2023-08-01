@@ -13,7 +13,7 @@ class MalformedInputError(ValueError):
     """
 
     def __init__(self, input, message):
-        if input and input.input_file:
+        if input and getattr(input, "input_file", None) and input.input_file:
             self.input = input
             path = input.input_file.path
             start_line = input.line_number
@@ -40,7 +40,7 @@ class ParsingError(MalformedInputError):
 
     def __init__(self, input, message, error_queue):
         messages = []
-        if input and input.input_file:
+        if input and getattr(input, "input_file", None) and input.input_file:
             self.input = input
             path = input.input_file.path
             start_line = input.line_number

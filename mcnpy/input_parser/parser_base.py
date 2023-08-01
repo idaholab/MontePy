@@ -116,6 +116,10 @@ class MCNP_Parser(Parser, metaclass=MetaBuilder):
     tokens = MCNP_Lexer.tokens
     debugfile = None
 
+    def restart(self):
+        self.log.clear_queue()
+        super().restart()
+
     precedence = (("left", SPACE), ("left", TEXT))
 
     @_("NUMBER", "NUMBER padding")

@@ -1,6 +1,7 @@
 import mcnpy
 from mcnpy.numbered_object_collection import NumberedObjectCollection
-from mcnpy.errors import MalformedInputError
+from mcnpy.errors import *
+import warnings
 
 
 class Cells(NumberedObjectCollection):
@@ -17,24 +18,31 @@ class Cells(NumberedObjectCollection):
         super().__init__(mcnpy.Cell, cells, problem)
         self.__setup_blank_cell_modifiers()
 
-    def __setup_blank_cell_modifiers(self, problem=None):
+    def __setup_blank_cell_modifiers(self, problem=None, check_input=False):
         inputs_to_always_update = {"_universe", "_fill"}
         inputs_to_property = mcnpy.Cell._INPUTS_TO_PROPERTY
         for card_class, (attr, _) in inputs_to_property.items():
-            if not hasattr(self, attr):
-                card = card_class()
-                self.__blank_modifiers.add(attr)
-                setattr(self, attr, card)
-            else:
-                card = getattr(self, attr)
-            if problem is not None:
-                card.link_to_problem(problem)
-                if (
-                    attr not in self.__blank_modifiers
-                    or attr in inputs_to_always_update
-                ):
-                    card.push_to_cells()
-                    card._clear_data()
+            try:
+                if not hasattr(self, attr):
+                    card = card_class()
+                    self.__blank_modifiers.add(attr)
+                    setattr(self, attr, card)
+                else:
+                    card = getattr(self, attr)
+                if problem is not None:
+                    card.link_to_problem(problem)
+                    if (
+                        attr not in self.__blank_modifiers
+                        or attr in inputs_to_always_update
+                    ):
+                        card.push_to_cells()
+                        card._clear_data()
+            except MalformedInputError as e:
+                if check_input:
+                    warnings.warn(f"{type(e).__name__}: {e.message}", stacklevel=3)
+                    continue
+                else:
+                    raise e
 
     def set_equal_importance(self, importance, vacuum_cells=tuple()):
         """
@@ -80,7 +88,9 @@ class Cells(NumberedObjectCollection):
             raise TypeError("allow_mcnp_volume_calc must be set to a bool")
         self._volume.is_mcnp_calculated = value
 
-    def update_pointers(self, cells, materials, surfaces, data_inputs, problem):
+    def update_pointers(
+        self, cells, materials, surfaces, data_inputs, problem, check_input=False
+    ):
         """
         Attaches this object to the appropriate objects for surfaces and materials.
 
@@ -93,7 +103,18 @@ class Cells(NumberedObjectCollection):
         :type materials: Materials
         :param surfaces: a surfaces collection of the surfaces in the problem
         :type surfaces: Surfaces
+        :param problem: The MCNP_Problem these cells are associated with
+        :type problem: MCNP_Problem
+        :param check_input: If true, will try to find all errors with input and collect them as warnings to log.
+        :type check_input: bool
         """
+
+        def handle_error(e):
+            if check_input:
+                warnings.warn(f"{type(e).__name__}: {e.message}", stacklevel=3)
+            else:
+                raise e
+
         inputs_to_property = mcnpy.Cell._INPUTS_TO_PROPERTY
         inputs_to_always_update = {"_universe", "_fill"}
         inputs_loaded = set()
@@ -107,10 +128,13 @@ class Cells(NumberedObjectCollection):
                 input_class = type(input)
                 attr, cant_repeat = inputs_to_property[input_class]
                 if cant_repeat and input_class in inputs_loaded:
-                    raise MalformedInputError(
-                        input,
-                        f"The input: {type(input)} is only allowed once in a problem",
-                    )
+                    try:
+                        raise MalformedInputError(
+                            input,
+                            f"The input: {type(input)} is only allowed once in a problem",
+                        )
+                    except MalformedInputError as e:
+                        handle_error(e)
                 if not hasattr(self, attr):
                     setattr(self, attr, input)
                     problem.print_in_data_block[input._class_prefix()] = True
@@ -120,8 +144,17 @@ class Cells(NumberedObjectCollection):
                 if cant_repeat:
                     inputs_loaded.add(type(input))
         for cell in self:
-            cell.update_pointers(cells, materials, surfaces)
-        self.__setup_blank_cell_modifiers(problem)
+            try:
+                cell.update_pointers(cells, materials, surfaces)
+            except (
+                BrokenObjectLinkError,
+                MalformedInputError,
+                ParticleTypeNotInProblem,
+                ParticleTypeNotInCell,
+            ) as e:
+                handle_error(e)
+                continue
+        self.__setup_blank_cell_modifiers(problem, check_input)
 
     def _run_children_format_for_mcnp(self, data_inputs, mcnp_version):
         ret = []
