@@ -338,6 +338,12 @@ class PaddingNode(SyntaxNodeBase):
     def __repr__(self):
         return str(self)
 
+    def __iadd__(self, other):
+        if not isinstance(other, type(self)):
+            raise TypeError(f"Can only combine with PaddingNodes. {other} given.")
+        self._nodes += other.nodes
+        return self
+
     @property
     def value(self):
         """
