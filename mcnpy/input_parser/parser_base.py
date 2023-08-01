@@ -372,6 +372,7 @@ class MCNP_Parser(Parser, metaclass=MetaBuilder):
         return p[0]
 
     @_(
+        "TEXT",
         "KEYWORD",
         "PARTICLE",
         "SOURCE_COMMENT",
