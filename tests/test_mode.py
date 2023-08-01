@@ -19,7 +19,7 @@ class TestMode(TestCase):
         with self.assertRaises(mcnpy.errors.MalformedInputError):
             mode = Mode(Input([in_str], BlockType.CELL))
         in_str = "mode 1"
-        with self.assertRaises(ValueError):
+        with self.assertRaises(TypeError):
             mode = Mode(Input([in_str], BlockType.CELL))
         mode = Mode()
         self.assertEqual(len(mode), 1)
