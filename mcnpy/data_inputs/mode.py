@@ -1,5 +1,4 @@
 from mcnpy.data_inputs.data_input import DataInputAbstract
-from mcnpy.input_parser.mode_parser import ModeParser
 from mcnpy.input_parser import syntax_node
 from mcnpy.particle import Particle
 
@@ -11,8 +10,6 @@ class Mode(DataInputAbstract):
     :param input: the Input object representing this data input
     :type input: Input
     """
-
-    _parser = ModeParser()
 
     def __init__(self, input=None):
         super().__init__(input)
@@ -37,6 +34,8 @@ class Mode(DataInputAbstract):
     def _parse_and_override_particle_modes(self, particles):
         self._particles = set()
         for particle in particles:
+            if not isinstance(particle, str):
+                raise TypeError(f"Mode particle must be a str. {particle} given.")
             self._particles.add(Particle(particle.upper()))
 
     @property

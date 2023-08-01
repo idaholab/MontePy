@@ -34,16 +34,6 @@ class DataParser(MCNP_Parser):
             ret["parameters"] = p.parameters
         return syntax_node.SyntaxNode("data", ret)
 
-    @_("TEXT", "PARTICLE")
-    def classifier(self, p):
-        classifier = syntax_node.ClassifierNode()
-        if hasattr(p, "TEXT"):
-            text = p.TEXT
-        else:
-            text = p.PARTICLE
-        classifier.prefix = syntax_node.ValueNode(text, str)
-        return classifier
-
     @_(
         "classifier_phrase",
         "classifier_phrase KEYWORD padding",
@@ -63,7 +53,7 @@ class DataParser(MCNP_Parser):
             ret["keyword"] = syntax_node.ValueNode(None, str, padding=None)
         return syntax_node.SyntaxNode("data intro", ret)
 
-    @_("number_sequence", "isotope_fractions")
+    @_("number_sequence", "isotope_fractions", "particle_sequence", "text_sequence")
     def data(self, p):
         return p[0]
 
@@ -83,6 +73,34 @@ class DataParser(MCNP_Parser):
     @_("ZAID", "ZAID padding")
     def zaid_phrase(self, p):
         return self._flush_phrase(p, str)
+
+    @_("particle_phrase", "particle_sequence particle_phrase")
+    def particle_sequence(self, p):
+        if len(p) == 1:
+            sequence = syntax_node.ListNode("particle sequence")
+            sequence.append(p[0])
+        else:
+            sequence = p[0]
+            sequence.append(p[1])
+        return sequence
+
+    @_("PARTICLE", "SURFACE_TYPE", "PARTICLE_SPECIAL")
+    def particle_text(self, p):
+        return p[0]
+
+    @_("particle_text padding", "particle_text")
+    def particle_phrase(self, p):
+        return self._flush_phrase(p, str)
+
+    @_("text_phrase", "text_sequence text_phrase")
+    def text_sequence(self, p):
+        if len(p) == 1:
+            sequence = syntax_node.ListNode("particle sequence")
+            sequence.append(p[0])
+        else:
+            sequence = p[0]
+            sequence.append(p[1])
+        return sequence
 
     # TODO test this style of parameter
     # for material libraries

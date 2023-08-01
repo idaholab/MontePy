@@ -18,7 +18,6 @@ Submodules
    mcnpy.input_parser.input_reader
    mcnpy.input_parser.input_syntax_reader
    mcnpy.input_parser.mcnp_input
-   mcnpy.input_parser.mode_parser
    mcnpy.input_parser.parser_base
    mcnpy.input_parser.read_parser
    mcnpy.input_parser.shortcuts
