@@ -547,6 +547,12 @@ class TestPaddingNode(TestCase):
         str(comment)
         repr(comment)
 
+    def test_blank_dollar_comment(self):
+        comment = syntax_node.CommentNode("$")
+        self.assertTrue(comment.is_dollar)
+        self.assertEqual(len(list(comment.comments)), 1)
+        self.assertEqual(len(comment.contents), 0)
+
 
 class TestParticlesNode(TestCase):
     def test_particle_init(self):
