@@ -34,6 +34,8 @@ class Mode(DataInputAbstract):
     def _parse_and_override_particle_modes(self, particles):
         self._particles = set()
         for particle in particles:
+            if not isinstance(particle, str):
+                raise TypeError(f"Mode particle must be a str. {particle} given.")
             self._particles.add(Particle(particle.upper()))
 
     @property
