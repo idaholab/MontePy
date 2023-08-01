@@ -1239,6 +1239,7 @@ bar
         }
         for in_str, answer in tests.items():
             # Testing parsing the names
+            print("in", in_str, "answer", answer)
             card = mcnpy.input_parser.mcnp_input.Input(
                 [in_str], mcnpy.input_parser.block_type.BlockType.DATA
             )

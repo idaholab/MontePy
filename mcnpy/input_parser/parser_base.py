@@ -357,13 +357,27 @@ class MCNP_Parser(Parser, metaclass=MetaBuilder):
         """
         return self._flush_phrase(p, str)
 
+    @_('":" part', 'particle_type "," part')
+    def particle_type(self, p):
+        if hasattr(p, "particle_type"):
+            token = p.particle_type.token + "".join(list(p)[1:])
+            particle_node = syntax_node.ParticleNode("data particles", token)
+        else:
+            particle_node = syntax_node.ParticleNode("data particles", "".join(list(p)))
+
+        return particle_node
+
+    @_("PARTICLE", "PARTICLE_SPECIAL")
+    def part(self, p):
+        return p[0]
+
     @_(
         "modifier classifier",
         "KEYWORD",
         "SOURCE_COMMENT",
         "TALLY_COMMENT",
         "classifier NUMBER",
-        "classifier PARTICLE_DESIGNATOR",
+        "classifier particle_type",
     )
     def classifier(self, p):
         """
@@ -390,11 +404,8 @@ class MCNP_Parser(Parser, metaclass=MetaBuilder):
             classifier.prefix = syntax_node.ValueNode(text, str)
         if hasattr(p, "NUMBER"):
             classifier.number = syntax_node.ValueNode(p.NUMBER, int)
-        if hasattr(p, "PARTICLE_DESIGNATOR"):
-            classifier.particles = syntax_node.ParticleNode(
-                "data particles", p.PARTICLE_DESIGNATOR
-            )
-
+        if hasattr(p, "particle_type"):
+            classifier.particles = p.particle_type
         return classifier
 
     @_("classifier padding", "classifier")

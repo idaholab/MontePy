@@ -81,3 +81,13 @@ class EdgeCaseTests(TestCase):
         allowed_keys = {"u", "imp:n", "fill", "lat", "vol"}
         self.assertEqual(len(cell.parameters), 5)
         self.assertEqual(cell.parameters.nodes.keys(), allowed_keys)
+
+    def test_confused_union_geometry(self):
+        # based on issue #122
+        in_strs = [
+            "9800     10    -0.123000 +101 -200 -905 +213 (-216:+217)",
+        ]
+        input = mcnpy.input_parser.mcnp_input.Input(
+            in_strs, mcnpy.input_parser.block_type.BlockType.CELL
+        )
+        cell = mcnpy.Cell(input)
