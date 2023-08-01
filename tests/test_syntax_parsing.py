@@ -547,6 +547,12 @@ class TestPaddingNode(TestCase):
         str(comment)
         repr(comment)
 
+    def test_blank_dollar_comment(self):
+        comment = syntax_node.CommentNode("$")
+        self.assertTrue(comment.is_dollar)
+        self.assertEqual(len(list(comment.comments)), 1)
+        self.assertEqual(len(comment.contents), 0)
+
 
 class TestParticlesNode(TestCase):
     def test_particle_init(self):
@@ -1062,6 +1068,10 @@ test title
         token = next(generator)
         self.assertEqual(token.type, "COMMENT")
         self.assertEqual(token.value, "c")
+
+    def testReadCardParticleConfuse(self):
+        input = ReadInput(["Read FILE=A1_cells"], BlockType.CELL)
+        self.assertEqual(input.file_name, "A1_cells")
 
     def testTitleFinder(self):
         test_title = "Richard Stallman writes GNU"
