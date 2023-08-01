@@ -14,12 +14,13 @@ class ThermalParser(DataParser):
 
     debugfile = None
 
-    @_("classifier_phrase thermal_law_sequence")
+    @_("introduction thermal_law_sequence")
     def thermal_mat(self, p):
-        return syntax_node.SyntaxNode(
-            "thermal scattering",
-            {"classifier": p.classifier_phrase, "data": p.thermal_law_sequence},
-        )
+        ret = {}
+        for key, node in p.introduction.nodes.items():
+            ret[key] = node
+        ret["data"] = p.thermal_law_sequence
+        return syntax_node.SyntaxNode("thermal scattering", ret)
 
     @_("thermal_law", "thermal_law_sequence thermal_law")
     def thermal_law_sequence(self, p):

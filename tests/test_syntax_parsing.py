@@ -1061,6 +1061,14 @@ test title
             "READ INPUT: BlockType.CELL: ['Read file=hi.imcnp'] File: hi.imcnp",
         )
 
+    def testSingleLineEndComment(self):
+        # tests issues #117
+        input = Input(["c"], BlockType.CELL)
+        generator = input.tokenize()
+        token = next(generator)
+        self.assertEqual(token.type, "COMMENT")
+        self.assertEqual(token.value, "c")
+
     def testReadCardParticleConfuse(self):
         input = ReadInput(["Read FILE=A1_cells"], BlockType.CELL)
         self.assertEqual(input.file_name, "A1_cells")
@@ -1191,6 +1199,8 @@ bar
         )
         next(generator)  # skip title
         next(generator)  # skip read none
+        next(generator)  # skip surfaces input
+        next(generator)  # skip data mode input
         card = next(generator)
         answer = ["1 0 -1"]
         self.assertEqual(answer, card.input_lines)

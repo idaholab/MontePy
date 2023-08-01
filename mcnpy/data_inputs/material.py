@@ -52,7 +52,7 @@ class Material(data_input.DataInputAbstract, Numbered_MCNP_Object):
                     ):
                         raise MalformedInputError(
                             input,
-                            "Material definitions cannot use atom and mass fraction at the same time",
+                            f"Material definitions for material: {self.number} cannot use atom and mass fraction at the same time",
                         )
                 self._material_components[isotope] = MaterialComponent(
                     isotope, fraction
@@ -123,7 +123,9 @@ class Material(data_input.DataInputAbstract, Numbered_MCNP_Object):
         :type law: str
         """
         if not isinstance(law, str):
-            raise TypeError("Thermal Scattering law must be a string")
+            raise TypeError(
+                f"Thermal Scattering law for material {self.number} must be a string"
+            )
         self._thermal_scattering = thermal_scattering.ThermalScatteringLaw(
             material=self
         )
@@ -145,7 +147,8 @@ class Material(data_input.DataInputAbstract, Numbered_MCNP_Object):
                         data_inputs.remove(input)
                     else:
                         raise MalformedInputError(
-                            self, "Multiple MT inputs were specified for this material."
+                            self,
+                            f"Multiple MT inputs were specified for this material: {self.number}.",
                         )
 
     @staticmethod
