@@ -117,8 +117,30 @@ class MCNP_Parser(Parser, metaclass=MetaBuilder):
     debugfile = None
 
     def restart(self):
+        """
+        Clears internal state information about the current parse.
+
+        Should be ran before a new object is parsed.
+        """
         self.log.clear_queue()
+        self.input = None
         super().restart()
+    
+    def parse(self, token_generator, input=None):
+        """
+        Parses the token stream and returns a syntax tree.
+
+        If the parsing fails None will be returned.
+        The error queue can be retrieved from ``parser.log.clear_queue()``.
+
+        :param token_generator: the token generator from ``lexer.tokenize``.
+        :type token_generator: generator
+        :param input: the input that is being lexed and parsed.
+        :type input: Input
+        :rtype: SyntaxNode
+        """
+        self.input = input
+        return super().parse(token_generator)
 
     precedence = (("left", SPACE), ("left", TEXT))
 

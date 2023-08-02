@@ -41,7 +41,7 @@ class MCNP_Object(ABC):
                 # raised if restarted without ever parsing
                 except AttributeError as e:
                     pass
-                self._tree = parser.parse(input.tokenize())
+                self._tree = parser.parse(input.tokenize(), input)
                 self._input = input
             except ValueError as e:
                 raise ValueError(

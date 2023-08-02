@@ -295,7 +295,7 @@ class ReadInput(Input):
 
     def __init__(self, input_lines, block_type, input_file=None, lineno=None):
         super().__init__(input_lines, block_type, input_file, lineno)
-        parse_result = self._parser.parse(self.tokenize())
+        parse_result = self._parser.parse(self.tokenize(), self)
         if not parse_result:
             raise ValueError("Not a valid Read Input")
         self._tree = parse_result
