@@ -55,8 +55,6 @@ class MCNP_Object(ABC):
                 )
             if "parameters" in self._tree:
                 self._parameters = self._tree["parameters"]
-        else:
-            self._input_lines = []
 
     @staticmethod
     def _generate_default_node(value_type, default, padding=" "):
