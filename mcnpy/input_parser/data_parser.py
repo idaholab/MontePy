@@ -53,7 +53,13 @@ class DataParser(MCNP_Parser):
             ret["keyword"] = syntax_node.ValueNode(None, str, padding=None)
         return syntax_node.SyntaxNode("data intro", ret)
 
-    @_("number_sequence", "isotope_fractions", "particle_sequence", "text_sequence")
+    @_(
+        "number_sequence",
+        "isotope_fractions",
+        "particle_sequence",
+        "text_sequence",
+        "kitchen_sink",
+    )
     def data(self, p):
         return p[0]
 
@@ -95,12 +101,24 @@ class DataParser(MCNP_Parser):
     @_("text_phrase", "text_sequence text_phrase")
     def text_sequence(self, p):
         if len(p) == 1:
-            sequence = syntax_node.ListNode("particle sequence")
+            sequence = syntax_node.ListNode("text sequence")
             sequence.append(p[0])
         else:
             sequence = p[0]
             sequence.append(p[1])
         return sequence
+
+    @_("kitchen_junk", "kitchen_sink kitchen_junk")
+    def kitchen_sink(self, p):
+        sequence = p[0]
+        if len(p) != 1:
+            for node in p[1].nodes:
+                sequence.append(node)
+        return sequence
+
+    @_("number_sequence", "text_sequence", "particle_sequence")
+    def kitchen_junk(self, p):
+        return p[0]
 
     # TODO test this style of parameter
     # for material libraries

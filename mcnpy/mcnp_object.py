@@ -41,7 +41,7 @@ class MCNP_Object(ABC):
                 # raised if restarted without ever parsing
                 except AttributeError as e:
                     pass
-                self._tree = parser.parse(input.tokenize())
+                self._tree = parser.parse(input.tokenize(), input)
                 self._input = input
             except ValueError as e:
                 raise ValueError(
@@ -55,8 +55,6 @@ class MCNP_Object(ABC):
                 )
             if "parameters" in self._tree:
                 self._parameters = self._tree["parameters"]
-        else:
-            self._input_lines = []
 
     @staticmethod
     def _generate_default_node(value_type, default, padding=" "):

@@ -23,7 +23,7 @@ class Universe(Numbered_MCNP_Object):
         self._number = number
 
         class Parser:
-            def parse(self, input):
+            def parse(self, token_gen, input):
                 return syntax_node.SyntaxNode("fake universe", {})
 
         super().__init__(Input(["U"], BlockType.DATA), Parser())

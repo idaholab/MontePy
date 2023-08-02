@@ -156,6 +156,7 @@ class Input(ParsingNode):
         self._block_type = block_type
         self._input_file = input_file
         self._lineno = lineno
+        self._lexer = None
 
     def __str__(self):
         return f"INPUT: {self._block_type}"
@@ -215,6 +216,7 @@ class Input(ParsingNode):
             lexer = SurfaceLexer()
         else:
             lexer = DataLexer()
+        self._lexer = lexer
         # hacky way to capture final new line and remove it after lexing.
         generator = lexer.tokenize(self.input_text)
         token = None
@@ -233,6 +235,17 @@ class Input(ParsingNode):
             if token.value:
                 yield token
             yield None
+        self._lexer = None
+
+    @make_prop_pointer("_lexer")
+    def lexer(self):
+        """
+        The current lexer being used to parse this input.
+
+        If not currently tokenizing this will be None.
+        :rtype:MCNP_Lexer
+        """
+        pass
 
     @property
     def words(self):
@@ -282,7 +295,7 @@ class ReadInput(Input):
 
     def __init__(self, input_lines, block_type, input_file=None, lineno=None):
         super().__init__(input_lines, block_type, input_file, lineno)
-        parse_result = self._parser.parse(self.tokenize())
+        parse_result = self._parser.parse(self.tokenize(), self)
         if not parse_result:
             raise ValueError("Not a valid Read Input")
         self._tree = parse_result
