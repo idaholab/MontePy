@@ -55,6 +55,7 @@ class Volume(CellModifierInput):
             for node in tree["data"]:
                 if node.value is not None:
                     try:
+                        assert node.type == float
                         assert node.value >= 0
                         self._volume.append(node)
                     except AssertionError:
