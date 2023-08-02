@@ -115,7 +115,7 @@ class MCNP_Lexer(Lexer):
         A ``c`` style comment.
         """
         self.lineno += t.value.count("\n")
-        start = find_column(self.text, t)
+        start = self.find_column(self.text, t)
         if start <= 5:
             return t
         else:
@@ -127,7 +127,7 @@ class MCNP_Lexer(Lexer):
         A source comment.
         """
         self.lineno += t.value.count("\n")
-        start = find_column(self.text, t)
+        start = self.find_column(self.text, t)
         if start <= 5:
             return t
         else:
@@ -139,7 +139,7 @@ class MCNP_Lexer(Lexer):
         A tally Comment.
         """
         self.lineno += t.value.count("\n")
-        start = find_column(self.text, t)
+        start = self.find_column(self.text, t)
         if start <= 5:
             return t
         else:
@@ -247,6 +247,28 @@ class MCNP_Lexer(Lexer):
     """
     A file path that covers basically anything that windows or linux allows.
     """
+
+    @staticmethod
+    def find_column(text, token):
+        """
+        Calculates the column number for the start of this token.
+
+        Uses 0-indexing.
+
+        .. versionadded:: 0.2.0
+            This was added with the major parser rework.
+
+
+        :param text: the text being lexed.
+        :type text: str
+        :param token: the token currently being processed
+        :type token: sly.lex.Token
+        """
+        last_cr = text.rfind("\n", 0, token.index)
+        if last_cr < 0:
+            last_cr = 0
+        column = token.index - last_cr
+        return column
 
 
 class ParticleLexer(MCNP_Lexer):
@@ -486,25 +508,3 @@ class SurfaceLexer(MCNP_Lexer):
         if t.value.lower() in self._SURFACE_TYPES:
             t.type = "SURFACE_TYPE"
         return t
-
-
-def find_column(text, token):
-    """
-    Calculates the column number for the start of this token.
-
-    Uses 0-indexing.
-
-    .. versionadded:: 0.2.0
-        This was added with the major parser rework.
-
-
-    :param text: the text being lexed.
-    :type text: str
-    :param token: the token currently being processed
-    :type token: sly.lex.Token
-    """
-    last_cr = text.rfind("\n", 0, token.index)
-    if last_cr < 0:
-        last_cr = 0
-    column = token.index - last_cr
-    return column
