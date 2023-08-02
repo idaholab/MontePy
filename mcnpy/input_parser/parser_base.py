@@ -472,7 +472,7 @@ class MCNP_Parser(Parser, metaclass=MetaBuilder):
             lineno = getattr(token, "lineno", 0)
             if self._input and self._input.lexer:
                 lexer = self._input.lexer
-                index = lexer.find_column(lexer.text, token) - 1
+                index = lexer.find_column(lexer.text, token)
             else:
                 index = 0
             if lineno:
