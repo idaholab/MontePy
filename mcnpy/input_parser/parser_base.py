@@ -125,7 +125,6 @@ class MCNP_Parser(Parser, metaclass=MetaBuilder):
         Should be ran before a new object is parsed.
         """
         self.log.clear_queue()
-        self.input = None
         super().restart()
 
     def parse(self, token_generator, input=None):
@@ -141,7 +140,7 @@ class MCNP_Parser(Parser, metaclass=MetaBuilder):
         :type input: Input
         :rtype: SyntaxNode
         """
-        self.input = input
+        self._input = input
         return super().parse(token_generator)
 
     precedence = (("left", SPACE), ("left", TEXT))
@@ -471,9 +470,9 @@ class MCNP_Parser(Parser, metaclass=MetaBuilder):
         """
         if token:
             lineno = getattr(token, "lineno", 0)
-            if self.input and self.input.lexer:
-                lexer = self.input.lexer
-                index = lexer.get_column(lexer.text, token)
+            if self._input and self._input.lexer:
+                lexer = self._input.lexer
+                index = lexer.find_column(lexer.text, token) - 1
             else:
                 index = 0
             if lineno:
