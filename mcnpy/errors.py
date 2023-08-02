@@ -53,7 +53,7 @@ class ParsingError(MalformedInputError):
             for error in error_queue:
                 if token := error["token"]:
                     line_no = error["line"]
-                    index = token.index
+                    index = error["index"]
                     self.rel_line = line_no
                     self.abs_line = line_no + start_line
                     base_message = f'There was an error parsing "{token.value}".'

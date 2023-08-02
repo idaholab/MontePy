@@ -237,7 +237,7 @@ class Input(ParsingNode):
             yield None
         self._lexer = None
 
-    @make_prop_pointer("_lexer") 
+    @make_prop_pointer("_lexer")
     def lexer(self):
         """
         The current lexer being used to parse this input.
