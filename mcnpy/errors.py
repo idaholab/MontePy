@@ -53,11 +53,13 @@ class ParsingError(MalformedInputError):
             for error in error_queue:
                 if token := error["token"]:
                     line_no = error["line"]
+                    index = token.index
                     self.rel_line = line_no
                     self.abs_line = line_no + start_line
                     base_message = f'There was an error parsing "{token.value}".'
                 else:
                     line_no = 0
+                    index = 0
                     base_message = f"The input ended prematurely."
                 buffer = [f"    {path}, line {start_line + line_no -1}", ""]
                 if input:
@@ -65,11 +67,10 @@ class ParsingError(MalformedInputError):
                         if i == line_no - 1:
                             buffer.append(f"    >{start_line + i:5g}| {line}")
                             if token:
-                                start_pos = line.find(token.value)
                                 length = len(token.value)
                                 marker = "^" * length
                                 buffer.append(
-                                    f"{' '* 10}|{' ' * (start_pos+1)}{marker} not expected here."
+                                    f"{' '* 10}|{' ' * (index+1)}{marker} not expected here."
                                 )
                         else:
                             buffer.append(f"     {start_line + i:5g}| {line}")
