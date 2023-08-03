@@ -29,7 +29,6 @@ class MCNP_Lexer(Lexer):
         NULL,
         PARTICLE,
         PARTICLE_SPECIAL,
-        PARTICLE_DESIGNATOR,
         REPEAT,
         SOURCE_COMMENT,
         SPACE,

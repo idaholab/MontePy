@@ -356,7 +356,21 @@ class MCNP_Parser(Parser, metaclass=MetaBuilder):
             ret += p[1]
         return ret
 
-    @_("TEXT", "FILE_PATH", "NUMBER", "PARTICLE")
+    @_(
+        "TEXT",
+        "FILE_PATH",
+        "NUMBER",
+        "PARTICLE",
+        "INTERPOLATE",
+        "JUMP",
+        "KEYWORD",
+        "LOG_INTERPOLATE",
+        "NULL",
+        "REPEAT",
+        "SURFACE_TYPE",
+        "THERMAL_LAW",
+        "ZAID",
+    )
     def file_atom(self, p):
         return p[0]
 
