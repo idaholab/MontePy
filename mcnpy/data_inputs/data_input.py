@@ -1,10 +1,13 @@
 from abc import abstractmethod
+import copy
+
 import mcnpy
 from mcnpy.errors import *
 from mcnpy.input_parser.data_parser import ClassifierParser, DataParser
 from mcnpy.input_parser.mcnp_input import Input
 from mcnpy.particle import Particle
 from mcnpy.mcnp_object import MCNP_Object
+
 import re
 
 
@@ -23,16 +26,35 @@ class DataInputAbstract(MCNP_Object):
     _classifier_parser = ClassifierParser()
 
     def __init__(self, input=None, fast_parse=False):
+        class ClassifierInput(Input):
+            """
+            A specialized subclass that returns only 1 useful token.
+            """
+
+            def tokenize(self):
+                """
+                Returns one token after all starting comments and spaces.
+                """
+                last_in_comment = True
+                for token in super().tokenize():
+                    if token is None:
+                        break
+                    if last_in_comment:
+                        if token.type not in {"COMMENT", "SPACE"}:
+                            last_in_comment = False
+                    else:
+                        if token.type == "SPACE":
+                            break
+                    yield token
+
         self._particles = None
         if not fast_parse:
             super().__init__(input, self._parser)
             if input:
                 self.__split_name(input)
         else:
-            is_comment = mcnpy.input_parser.input_syntax_reader.is_comment
-            data_lines = [line for line in input.input_lines if not is_comment(line)]
-            words = data_lines[0].split()
-            input = Input([words[0]], input.block_type)
+            input = copy.copy(input)
+            input.__class__ = ClassifierInput
             super().__init__(input, self._classifier_parser)
             self.__split_name(input)
 

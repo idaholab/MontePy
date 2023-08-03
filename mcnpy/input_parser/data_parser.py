@@ -147,8 +147,12 @@ class ClassifierParser(DataParser):
 
     debugfile = None
 
-    @_("classifier")
+    @_("classifier", "padding classifier")
     def data_classifier(self, p):
+        if hasattr(p, "padding"):
+            padding = p.padding
+        else:
+            padding = syntax_node.PaddingNode(None)
         return syntax_node.SyntaxNode(
-            "data input classifier", {"classifier": p.classifier}
+            "data input classifier", {"start_pad": padding, "classifier": p.classifier}
         )

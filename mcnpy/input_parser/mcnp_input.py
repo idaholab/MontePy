@@ -230,11 +230,10 @@ class Input(ParsingNode):
                 yield token
         except StopIteration:
             if not token:
-                yield None
+                return
             token.value = token.value.rstrip("\n")
             if token.value:
                 yield token
-            yield None
         self._lexer = None
 
     @make_prop_pointer("_lexer")
