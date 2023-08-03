@@ -142,15 +142,16 @@ def read_data(fh, mcnp_version, block_type=None, recursion=False):
 
     def flush_input():
         nonlocal input_raw_lines
+        start_line = current_file.lineno + 1 - len(input_raw_lines)
         input = Input(
             input_raw_lines,
             block_type,
             current_file,
-            current_file.lineno + 1 - len(input_raw_lines),
+            start_line,
         )
         try:
             read_input = ReadInput(
-                input_raw_lines, block_type, current_file, current_file.lineno
+                input_raw_lines, block_type, current_file, start_line
             )
             reading_queue.append((block_type, read_input.file_name, current_file.path))
             yield None
