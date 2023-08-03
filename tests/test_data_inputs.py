@@ -286,3 +286,24 @@ class testDataInputClass(TestCase):
         )
         card = volume.Volume(key="VoL", value=node, in_cell_block=True)
         self.assertIn("VOLUME", repr(card))
+
+
+class TestClassifier(TestCase):
+    def test_classifier_start_comment(self):
+        lines = [
+            "c ******************************************************************************",
+            "c *******************************Data Cards*************************************",
+            "c ******************************************************************************",
+            "c",
+            "c",
+            "c data file=fuel",
+            "c ******************** Begin Fuel Data *****************************************",
+            "c",
+            "c",
+            "c fuel",
+            "c     material number 2001 total atom density =  ",
+            "m2001",
+            "      92235.50c     5.0E-01",
+        ]
+        input = Input(lines, BlockType.DATA)
+        data = parse_data(input)
