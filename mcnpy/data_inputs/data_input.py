@@ -1,10 +1,13 @@
 from abc import abstractmethod
+import copy
+
 import mcnpy
 from mcnpy.errors import *
 from mcnpy.input_parser.data_parser import ClassifierParser, DataParser
 from mcnpy.input_parser.mcnp_input import Input
 from mcnpy.particle import Particle
 from mcnpy.mcnp_object import MCNP_Object
+
 import re
 
 
@@ -50,6 +53,7 @@ class DataInputAbstract(MCNP_Object):
             if input:
                 self.__split_name(input)
         else:
+            input = copy.copy(input)
             input.__class__ = ClassifierInput
             super().__init__(input, self._classifier_parser)
             self.__split_name(input)
