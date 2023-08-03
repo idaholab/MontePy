@@ -4,6 +4,7 @@ from .. import errors
 import itertools
 import io
 from mcnpy.constants import *
+from mcnpy.errors import *
 from mcnpy.input_parser.input_file import MCNP_InputFile
 from mcnpy.input_parser.mcnp_input import Input, Message, ReadInput, Title
 from mcnpy.input_parser.read_parser import ReadParser
@@ -142,19 +143,22 @@ def read_data(fh, mcnp_version, block_type=None, recursion=False):
 
     def flush_input():
         nonlocal input_raw_lines
+        start_line = current_file.lineno + 1 - len(input_raw_lines)
         input = Input(
             input_raw_lines,
             block_type,
             current_file,
-            current_file.lineno + 1 - len(input_raw_lines),
+            start_line,
         )
         try:
             read_input = ReadInput(
-                input_raw_lines, block_type, current_file, current_file.lineno
+                input_raw_lines, block_type, current_file, start_line
             )
             reading_queue.append((block_type, read_input.file_name, current_file.path))
             yield None
-        except ValueError:
+        except ValueError as e:
+            if isinstance(e, ParsingError):
+                raise e
             yield input
         continue_input = False
         input_raw_lines = []
