@@ -4,6 +4,7 @@ from .. import errors
 import itertools
 import io
 from mcnpy.constants import *
+from mcnpy.errors import *
 from mcnpy.input_parser.input_file import MCNP_InputFile
 from mcnpy.input_parser.mcnp_input import Input, Message, ReadInput, Title
 from mcnpy.input_parser.read_parser import ReadParser
@@ -155,7 +156,9 @@ def read_data(fh, mcnp_version, block_type=None, recursion=False):
             )
             reading_queue.append((block_type, read_input.file_name, current_file.path))
             yield None
-        except ValueError:
+        except ValueError as e:
+            if isinstance(e, ParsingError):
+                raise e
             yield input
         continue_input = False
         input_raw_lines = []

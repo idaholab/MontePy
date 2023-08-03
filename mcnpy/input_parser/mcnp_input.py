@@ -296,8 +296,12 @@ class ReadInput(Input):
     def __init__(self, input_lines, block_type, input_file=None, lineno=None):
         super().__init__(input_lines, block_type, input_file, lineno)
         parse_result = self._parser.parse(self.tokenize(), self)
+        first_word = input_lines[0].split()[0].lower()
         if not parse_result:
-            raise ValueError("Not a valid Read Input")
+            if first_word != "read":
+                raise ValueError("Not a valid Read Input")
+            else:
+                raise ParsingError(self, "", self._parser.log.clear_queue())
         self._tree = parse_result
         self._parameters = self._tree["parameters"]
 
