@@ -29,3 +29,13 @@ class TestTallyParser(TestCase):
         input = Input(["Fq4 f p e"], BlockType.DATA)
         data = parse_data(input)
         self.assertEqual(data.prefix, "fq")
+
+    def test_parsing_tally_multiplier(self):
+        test_lines = {
+            "fm904   (1.0) (1.0 961 103)",
+            "fm3064 (1.0 361001 444) $ 1.0=mult",
+        }
+        for test in test_lines:
+            print(test)
+            input = Input([test], BlockType.DATA)
+            data = parse_data(input)
