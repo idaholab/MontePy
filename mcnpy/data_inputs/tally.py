@@ -8,10 +8,6 @@ class Tally(DataInputAbstract):
 
     _parser = TallyParser()
 
-    def __init__(self, input):
-        """ """
-        super().__init__(input)
-
     @staticmethod
     def _class_prefix():
         return "f"
