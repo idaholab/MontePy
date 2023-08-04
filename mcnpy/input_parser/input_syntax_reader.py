@@ -91,7 +91,11 @@ def is_comment(line):
     non_blank_comment = upper_start and line.lstrip().upper().startswith("C ")
     if non_blank_comment:
         return True
-    blank_comment = "C\n" == upper_start.lstrip() or "C\r\n" == upper_start.lstrip()
+    blank_comment = (
+        "C\n" == upper_start.lstrip()
+        or "C\r\n" == upper_start.lstrip()
+        or ("C" == upper_start and "\n" not in line)
+    )
     return blank_comment or non_blank_comment
 
 

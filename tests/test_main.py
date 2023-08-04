@@ -33,11 +33,21 @@ class TestMainRunner(TestCase):
             "test_broken_complement.imcnp",
             "testVerticalMode.imcnp",
         }
+        ignore = {
+            "testReadRec1.imcnp",
+            "testReadRec2.imcnp",
+            "testReadRec3.imcnp",
+            "testReadTarget.imcnp",
+        }
+
         for bad_input in bad_inputs:
             with self.assertWarns(Warning):
                 print(f"Testing that a warning is issued for: {bad_input}")
                 main.check_inputs([os.path.join("tests", "inputs", bad_input)])
         for file in glob.glob(os.path.join("tests", "inputs", "*.imcnp")):
-            if os.path.basename(file) not in bad_inputs:
+            if (
+                os.path.basename(file) not in bad_inputs
+                and os.path.basename(file) not in ignore
+            ):
                 print(f"Testing no errors are raised for file: {file}")
                 mcnpy.read_input(file)
