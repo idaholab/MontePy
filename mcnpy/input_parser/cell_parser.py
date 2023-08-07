@@ -167,9 +167,15 @@ class CellParser(MCNP_Parser):
         'number_sequence "(" number_sequence ")"',
         'number_sequence "(" number_sequence ")" padding',
         'number_sequence ":" numerical_phrase',
+        # support for TRCL syntax
+        '"(" number_sequence ")"',
     )
     def number_sequence(self, p):
-        sequence = p[0]
+        if isinstance(p[0], str):
+            sequence = syntax_node.ListNode("parenthetical statement")
+            sequence.append(p[0])
+        else:
+            sequence = p[0]
         for node in list(p)[1:]:
             if isinstance(node, syntax_node.ListNode):
                 for val in node.nodes:
