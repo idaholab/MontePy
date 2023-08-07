@@ -91,3 +91,12 @@ class EdgeCaseTests(TestCase):
             in_strs, mcnpy.input_parser.block_type.BlockType.CELL
         )
         cell = mcnpy.Cell(input)
+
+    def test_confused_trcl(self):
+        input = mcnpy.input_parser.mcnp_input.Input(
+            [
+                "340 0 (94 -209 -340) fill=2 trcl=(0 0 0  0.7071 -0.7071 0  0.7071 0.7071 0  0 0 1)"
+            ],
+            mcnpy.input_parser.block_type.BlockType.CELL,
+        )
+        cell = mcnpy.Cell(input)
