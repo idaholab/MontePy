@@ -384,7 +384,7 @@ class MCNP_Parser(Parser, metaclass=MetaBuilder):
         """
         return self._flush_phrase(p, str)
 
-    @_('"="', "padding", '"=" padding')
+    @_("padding", "padding equals_sign")
     def param_seperator(self, p):
         """
         The seperation between a key and value for a parameter.
@@ -392,7 +392,22 @@ class MCNP_Parser(Parser, metaclass=MetaBuilder):
         :returns: a str ValueNode
         :rtype: ValueNode
         """
-        return self._flush_phrase(p, str)
+        padding = p[0]
+        if len(p) > 1:
+            padding += p[1]
+
+    @_('"="', '"=" padding')
+    def equals_sign(self, p):
+        """
+        The seperation between a key and value for a parameter.
+
+        :returns: a str ValueNode
+        :rtype: ValueNode
+        """
+        padding = syntax_node.PaddingNode("=", p[0])
+        if hasattr(p, "padding"):
+            padding += p.padding
+        return padding
 
     @_('":" part', 'particle_type "," part')
     def particle_type(self, p):
