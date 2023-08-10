@@ -102,3 +102,15 @@ class EdgeCaseTests(TestCase):
                 mcnpy.input_parser.block_type.BlockType.CELL,
             )
             cell = mcnpy.Cell(input)
+
+    def test_space_after_equals(self):
+        lines = [
+            "35000 3690   0.01000    35100   -35105",
+            "                        35110   -35115",
+            "                        35150   -35155   U = 35100",
+        ]
+        input = mcnpy.input_parser.mcnp_input.Input(
+            lines,
+            mcnpy.input_parser.block_type.BlockType.CELL,
+        )
+        cell = mcnpy.Cell(input)
