@@ -405,7 +405,7 @@ class MCNP_Parser(Parser, metaclass=MetaBuilder):
         :returns: a str ValueNode
         :rtype: ValueNode
         """
-        padding = syntax_node.PaddingNode("=", p[0])
+        padding = syntax_node.PaddingNode(p[0])
         if hasattr(p, "padding"):
             padding += p.padding
         return padding
