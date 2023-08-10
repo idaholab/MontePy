@@ -169,6 +169,7 @@ class CellParser(MCNP_Parser):
         'number_sequence ":" numerical_phrase',
         # support for TRCL syntax
         '"(" number_sequence ")"',
+        '"(" number_sequence ")" padding',
     )
     def number_sequence(self, p):
         if isinstance(p[0], str):
