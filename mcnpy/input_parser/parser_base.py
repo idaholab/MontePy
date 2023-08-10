@@ -384,7 +384,7 @@ class MCNP_Parser(Parser, metaclass=MetaBuilder):
         """
         return self._flush_phrase(p, str)
 
-    @_("padding", "padding equals_sign")
+    @_("padding", "equals_sign", "padding equals_sign")
     def param_seperator(self, p):
         """
         The seperation between a key and value for a parameter.
@@ -395,6 +395,7 @@ class MCNP_Parser(Parser, metaclass=MetaBuilder):
         padding = p[0]
         if len(p) > 1:
             padding += p[1]
+        return padding
 
     @_('"="', '"=" padding')
     def equals_sign(self, p):
