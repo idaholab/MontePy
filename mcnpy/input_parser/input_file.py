@@ -64,7 +64,7 @@ class MCNP_InputFile:
         :type mode: str
         :returns: self
         """
-        self._fh = open(self.path, mode)
+        self._fh = open(self.path, mode, encoding="ascii")
         return self
 
     def __enter__(self):
