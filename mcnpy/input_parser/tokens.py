@@ -22,6 +22,7 @@ class MCNP_Lexer(Lexer):
         INTERPOLATE,
         JUMP,
         KEYWORD,
+        LIBRARY_SUFFIX,
         LOG_INTERPOLATE,
         MESSAGE,
         MULTIPLY,
@@ -115,10 +116,9 @@ class MCNP_Lexer(Lexer):
         """
         self.lineno += t.value.count("\n")
         start = self.find_column(self.text, t)
-        if start <= 5:
-            return t
-        else:
-            raise ValueError("Comment not allowed here")
+        if start > 5:
+            t.type = "TEXT"
+        return t
 
     @_(r"SC\d+.*")
     def SOURCE_COMMENT(self, t):
@@ -153,7 +153,7 @@ class MCNP_Lexer(Lexer):
         self.lineno += t.value.count("\n")
         return t
 
-    @_(r"\d{4,6}\.\d{2,3}[a-z]")
+    @_(r"\d{4,6}\.(\d{2}[a-z]|\d{3}[a-z]2)")
     def ZAID(self, t):
         """
         A ZAID isotope definition in the MCNP format.
@@ -161,6 +161,13 @@ class MCNP_Lexer(Lexer):
         E.g.: ``1001.80c``.
         """
         return t
+
+    LIBRARY_SUFFIX = r"(\d{2}[a-z]|\d{3}[a-z]2)"
+    """
+    A material library suffix for an isotope definition in the MCNP format.
+
+    E.g.: ``80c``.
+    """
 
     # note: / is not escaping - since this doesn't not need escape in this position
     THERMAL_LAW = r"[a-z][a-z\d/-]+\.\d+[a-z]"
