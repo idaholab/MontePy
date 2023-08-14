@@ -98,6 +98,10 @@ class DataParser(MCNP_Parser):
     def particle_phrase(self, p):
         return self._flush_phrase(p, str)
 
+    @_("LIBRARY_SUFFIX", "LIBRARY_SUFFIX padding")
+    def text_phrase(self, p):
+        self._flush_phrase(p, str)
+
     @_("text_phrase", "text_sequence text_phrase")
     def text_sequence(self, p):
         if len(p) == 1:
