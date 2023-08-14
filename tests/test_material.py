@@ -54,6 +54,11 @@ class testMaterialClass(TestCase):
         material = Material(input_card)
         self.assertEqual(material.parameters["gas"]["data"][0].value, 1.0)
 
+    def test_material_parameter_parsing(self):
+        for line in ["M20 1001.80c 1.0 gas=0", "M20 1001.80c 1.0 gas = 0 nlib = 00c"]:
+            input = Input([line], BlockType.CELL)
+            material = Material(input)
+
     def test_material_validator(self):
         material = Material()
         with self.assertRaises(mcnpy.errors.IllegalState):

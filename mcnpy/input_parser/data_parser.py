@@ -120,8 +120,6 @@ class DataParser(MCNP_Parser):
     def kitchen_junk(self, p):
         return p[0]
 
-    # TODO test this style of parameter
-    # for material libraries
     @_("classifier param_seperator NUMBER text_phrase")
     def parameter(self, p):
         return syntax_node.SyntaxNode(
