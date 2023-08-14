@@ -869,7 +869,6 @@ class ValueNode(SyntaxNodeBase):
         return self.value != self._og_value
 
     def format(self):
-        # TODO throw warning when things expand
         if not self._value_changed:
             return f"{self._token}{self.padding.format() if self.padding else ''}"
         if self.value is None:
@@ -1394,8 +1393,6 @@ class ListNode(SyntaxNodeBase):
         """
         Removes the given object from this list.
 
-        TODO: handle shortcuts
-
         :param obj: the object to remove.
         :type obj: ValueNode
         """
@@ -1586,7 +1583,6 @@ class ShortcutNode(ListNode):
         if isinstance(p[0], ValueNode):
             last_val = self.nodes[-1]
         else:
-            # TODO check if having single element in node breaks update and format
             last_val = p[0].nodes[-1]
         if last_val.value is None:
             raise ValueError(f"Multiply cannot follow a jump. Given: {list(p)}")
@@ -1817,7 +1813,6 @@ class ShortcutNode(ListNode):
             m = "M"
         else:
             m = "m"
-        # TODO use formatting infrastructure for this formatting
         self._num_node.value = self.nodes[-1].value / first_val.value
         return f"{first_val_str.format()}{self._num_node.format()}{m}"
 
