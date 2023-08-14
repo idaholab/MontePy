@@ -254,9 +254,9 @@ class Input(ParsingNode):
 
             This has been deprecated, and removed.
 
-        :raises DeprecationError: use the parser and tokenize workflow instead.
+        :raises DeprecationWarning: use the parser and tokenize workflow instead.
         """
-        raise DeprecationError(
+        raise DeprecationWarning(
             "This has been deprecated. Use a parser and tokenize instead"
         )
 
@@ -267,11 +267,11 @@ class Comment(ParsingNode):
         .. deprecated:: 0.2.0
             This has been replaced by :class:`~mcnpy.input_parser.syntax_node.CommentNode`.
 
-    :raises DeprecationError: Can not be created anymore.
+    :raises DeprecationWarning: Can not be created anymore.
     """
 
     def __init__(self, *args, **kwargs):
-        raise DeprecationError(
+        raise DeprecationWarning(
             "This has been deprecated and replaced by mcnpy.input_parser.syntax_node.CommentNode."
         )
 
@@ -439,8 +439,8 @@ def parse_card_shortcuts(*args, **kwargs):
         .. deprecated:: 0.2.0
             This is no longer necessary and should not be called.
 
-    :raises DeprecationError: This is not needed anymore.
+    :raises DeprecationWarning: This is not needed anymore.
     """
-    raise DeprecationError(
+    raise DeprecationWarning(
         "This is deprecated and unnecessary. This will be automatically handled by mcnpy.input_parser.parser_base.MCNP_Parser."
     )

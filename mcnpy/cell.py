@@ -380,7 +380,6 @@ class Cell(Numbered_MCNP_Object):
 
         :raise DeprecationWarning: Will always be raised as an error (which will cause program to halt).
         """
-        # TODO remove Deprecation Error
         raise DeprecationWarning(
             "Geometry_logic_string has been removed from cell. Use Cell.geometry instead."
         )
