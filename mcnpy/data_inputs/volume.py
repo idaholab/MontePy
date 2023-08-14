@@ -130,7 +130,6 @@ class Volume(CellModifierInput):
         :rtype: bool
         """
         if self._problem and self.in_cell_block:
-            # TODO need nice way to interact with "NO" as user
             if not self._problem.cells._volume.is_mcnp_calculated:
                 return False
         return self._calc_by_mcnp

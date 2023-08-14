@@ -16,7 +16,6 @@ class CellParser(MCNP_Parser):
 
     debugfile = None
 
-    # TODO implement dictionary overloading
     @_(
         "identifier_phrase material geometry_expr parameters",
         "identifier_phrase material geometry_expr",
