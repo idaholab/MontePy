@@ -4,10 +4,33 @@ A python library to read, edit, and write MCNP input files.
 
 ## Installing
 
-1. [Go to the packages page.](https://hpcgitlab.hpc.inl.gov/experiment_analysis_all/software/mcnpy/-/packages)
-1. Select the release you want to install. The latest version is:![latest release](https://hpcgitlab.hpc.inl.gov/experiment_analysis_all/software/mcnpy/-/badges/release.svg)
+### System Wide (for the current user).
 
-Go to the packages page and download a wheel or a tar ball. Run `pip install --user mcnpy.XXXXXX.tar.gz`
+1. [Go to the packages page.](https://hpcgitlab.hpc.inl.gov/experiment_analysis_all/software/mcnpy/-/packages)
+1. Select the release you want to install. The latest version is: ![latest release](https://hpcgitlab.hpc.inl.gov/experiment_analysis_all/software/mcnpy/-/badges/release.svg)
+1. Scroll down to the bottom of the page, and download the wheel or tar ball file.
+1. Navigate to the location you downloaded the file to.
+1. Install it by running `pip install --user mcnpy.XXXXXX.tar.gz` or `pip install --user mcnpy-0.1.5-py3-none-any.whl`.
+
+### Install specific version for a project
+
+The best way maybe to setup a project-specific conda, momba, a venv environment.
+The steps for installing inside one of those environments are the same as the previous steps.
+
+Another option is to clone the repository and to use symbolic-links. In this scenario we'll assume that your local
+repository is located at `~/dev/mcnpy`, and your project is located at `~/foo/bar`. 
+
+1. Move to the repository parent folder: `cd ~/dev`
+1. Clone this repository: `git clone git@hpcgitlab.hpc.inl.gov:experiment_analysis_all/software/mcnpy.git` 
+1. Enter the repository: `cd mcnpy`
+1. Checkout the specific version you want. These are tagged with git tags
+    1. You can list all tags with `git tag`
+    1. You can then checkout that tag: `git checkout <tag>`
+1. Install the dependent requirements: `pip install -r requirements/common.txt`
+1. Move to your project folder: `cd ~/foo/bar`
+1. Create a symbolic link in the project folder to the repository: `ln -s ~/dev/mcnpy/mcnpy mcnpy`
+
+Now when you run a python script in that folder (*and only in that folder*) `import mcnpy` will use the specific version you want. 
 
 ## User Documentation
 
