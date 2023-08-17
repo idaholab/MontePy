@@ -48,7 +48,8 @@ There is also a developer's guide covering the design and approach of MCNPy, and
 * Can write out full MCNP problem even if it doesn't fully understand a card.	
 * Can write out the MCNP problem verbatim, if it has not been modified at all.
 * Can quickly access cells, surfaces, and materials by their numbers. For example: `cell = problem.cells[105]`.
-* Has 127 test cases right now 
+* Can quickly update cell importances. For example `cell.importance.neutron = 2.0`.
+* Has over 240 test cases right now 
 
  
 Quick example for renumbering all of the cells in a problem:
