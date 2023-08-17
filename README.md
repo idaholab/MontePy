@@ -5,7 +5,7 @@ A python library to read, edit, and write MCNP input files.
 ## Installing
 
 1. [Go to the packages page.](https://hpcgitlab.hpc.inl.gov/experiment_analysis_all/software/mcnpy/-/packages)
-1. Select the release you want to install. The latest version is:[![latest release]](https://hpcgitlab.hpc.inl.gov/experiment_analysis_all/software/mcnpy/-/badges/release.svg)]
+1. Select the release you want to install. The latest version is:![latest release](https://hpcgitlab.hpc.inl.gov/experiment_analysis_all/software/mcnpy/-/badges/release.svg)
 
 Go to the packages page and download a wheel or a tar ball. Run `pip install --user mcnpy.XXXXXX.tar.gz`
 
