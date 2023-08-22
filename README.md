@@ -4,7 +4,40 @@ A python library to read, edit, and write MCNP input files.
 
 ## Installing
 
-Go to the packages page and download a wheel or a tar ball. Run `pip install --user mcnpy.XXXXXX.tar.gz`
+
+### System Wide (for the current user).
+
+>>>
+Note: If you are planning to use this in a jupyter notebook on an HPC, 
+the HPC may use modules for python, which may make it so the installed MCNPy package doesn't show up in the jupyter environment.
+In this case the easiest way to deal with this is to open a teminal inside of `jupyter lab` and to install the package there.
+>>>
+
+1. [Go to the packages page.](https://hpcgitlab.hpc.inl.gov/experiment_analysis_all/software/mcnpy/-/packages)
+1. Select the release you want to install. The latest version is: ![latest release](https://hpcgitlab.hpc.inl.gov/experiment_analysis_all/software/mcnpy/-/badges/release.svg)
+1. Scroll down to the bottom of the page, and download the wheel or tar ball file.
+1. Navigate to the location you downloaded the file to.
+1. Install it by running `pip install --user mcnpy.XXXXXX.tar.gz` or `pip install --user mcnpy-0.1.5-py3-none-any.whl`.
+
+### Install specific version for a project
+
+The best way maybe to setup a project-specific conda, momba, a venv environment.
+The steps for installing inside one of those environments are the same as the previous steps.
+
+Another option is to clone the repository and to use symbolic-links. In this scenario we'll assume that your local
+repository is located at `~/dev/mcnpy`, and your project is located at `~/foo/bar`. 
+
+1. Move to the repository parent folder: `cd ~/dev`
+1. Clone this repository: `git clone git@hpcgitlab.hpc.inl.gov:experiment_analysis_all/software/mcnpy.git` 
+1. Enter the repository: `cd mcnpy`
+1. Checkout the specific version you want. These are tagged with git tags
+    1. You can list all tags with `git tag`
+    1. You can then checkout that tag: `git checkout <tag>`
+1. Install the dependent requirements: `pip install -r requirements/common.txt`
+1. Move to your project folder: `cd ~/foo/bar`
+1. Create a symbolic link in the project folder to the repository: `ln -s ~/dev/mcnpy/mcnpy mcnpy`
+
+Now when you run a python script in that folder (*and only in that folder*) `import mcnpy` will use the specific version you want. 
 
 ## User Documentation
 
@@ -22,7 +55,8 @@ There is also a developer's guide covering the design and approach of MCNPy, and
 * Can write out full MCNP problem even if it doesn't fully understand a card.	
 * Can write out the MCNP problem verbatim, if it has not been modified at all.
 * Can quickly access cells, surfaces, and materials by their numbers. For example: `cell = problem.cells[105]`.
-* Has 127 test cases right now 
+* Can quickly update cell importances. For example `cell.importance.neutron = 2.0`.
+* Has over 240 test cases right now 
 
  
 Quick example for renumbering all of the cells in a problem:
