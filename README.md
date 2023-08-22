@@ -4,13 +4,14 @@ A python library to read, edit, and write MCNP input files.
 
 ## Installing
 
+
+### System Wide (for the current user).
+
 >>>
 Note: If you are planning to use this in a jupyter notebook on an HPC, 
 the HPC may use modules for python, which may make it so the installed MCNPy package doesn't show up in the jupyter environment.
 In this case the easiest way to deal with this is to open a teminal inside of `jupyter lab` and to install the package there.
 >>>
-
-### System Wide (for the current user).
 
 1. [Go to the packages page.](https://hpcgitlab.hpc.inl.gov/experiment_analysis_all/software/mcnpy/-/packages)
 1. Select the release you want to install. The latest version is: ![latest release](https://hpcgitlab.hpc.inl.gov/experiment_analysis_all/software/mcnpy/-/badges/release.svg)
