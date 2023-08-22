@@ -5,9 +5,9 @@ A python library to read, edit, and write MCNP input files.
 ## Installing
 
 >>>
-Note: If you are planning to use this in a python environment (e.g., `jupyter`) on an HPC, modules are likely used,
-and usually python packages installed in one python module are not available in another.
-If need to know what module a `jupyter lab` instance is using you can open the terminal in the lab, and run `module list`.
+Note: If you are planning to use this in a jupyter notebook on an HPC, 
+the HPC may use modules for python, which may make it so the installed MCNPy package doesn't show up in the jupyter environment.
+In this case the easiest way to deal with this is to open a teminal inside of `jupyter lab` and to install the package there.
 >>>
 
 ### System Wide (for the current user).
