@@ -39,3 +39,7 @@ skip_covered = true
 precision = 2
 show_missing = true
 fail_under = 90.0
+
+[tool.pytest.ini_options]
+minversion = "6.0"
+junit_logging = "all"
