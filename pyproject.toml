@@ -17,7 +17,6 @@ dependencies = [
 	"numpy",
 	"sly"
 ]
-Provides-Extra = ["test", "doc"]
 
 [project.optional-dependencies]
 test = ["coverage", "pytest"]
