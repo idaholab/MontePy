@@ -6,18 +6,6 @@ start by running montepy.read_input().
 You will receive an MCNP_Problem object that you will interact with.
 """
 
-__credits__ = [
-    "Micah Gale",
-    "Travis Labossiere-Hickman",
-    "Austin Carter",
-    "Andrew Bascom",
-    "Roberto Fairhurst Agosta",
-    "Brenna Carbno",
-]
-
-__status__ = "Development"
-__all__ = ["cell", "surfaces", "mcnp_object.py", "input_parser"]
-
 from . import input_parser
 from . import constants
 from .input_parser.input_reader import read_input
