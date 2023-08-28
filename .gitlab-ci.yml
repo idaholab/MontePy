@@ -38,8 +38,8 @@ unit_test:
     - echo "Executing unit tests"
     - which python
     - pip freeze
-    - coverage run --source montepy -m pytest --junitxml=test_report.xml
-    - coverage report -m --precision=2
+    - coverage run -m pytest --junitxml=test_report.xml
+    - coverage report 
     - coverage xml
   artifacts:
     reports:
