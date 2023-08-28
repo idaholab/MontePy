@@ -39,7 +39,7 @@ unit_test:
     - which python
     - pip freeze
     - coverage run -m pytest --junitxml=test_report.xml
-    - coverage report -m --precision=2
+    - coverage report 
     - coverage xml
   artifacts:
     reports:
