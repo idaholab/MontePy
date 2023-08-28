@@ -30,3 +30,6 @@ Repository = "https://hpcgitlab.hpc.inl.gov/experiment_analysis_all/software/mcn
 [build-system]
 requires = ["setuptools  >= 40.6.0"]
 build-backend = "setuptools.build_meta"
+
+[tool.coverage.run]
+source = ["mcnpy"]
