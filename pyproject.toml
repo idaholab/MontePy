@@ -1,0 +1,28 @@
+[project]
+name = "mcnpy"
+version = "0.2.0.alpha9"
+description = "A library for reading, editing, and writing MCNP input files"
+readme = "README.md"
+requires-python = ">=3.8"
+maintainers = [
+	{name = "Micah Gale", email = "micah.gale@inl.gov"}
+]
+authors = [
+	{name = "Micah Gale", email = "micah.gale@inl.gov"},
+	{name = "Travis Labossiere-Hickman", email = "Travis.LabossiereHickman@inl.gov"},
+	{name = "Brenna Carbno"}
+]
+keywords = ["MCNP", "neutronics", "imcnp", "input file"]
+dependencies = [
+	"numpy",
+	"sly"
+]
+
+[project.urls]
+Homepage = "https://hpcgitlab.hpc.inl.gov/experiment_analysis_all/software/mcnpy/"
+Documentation = "https://experiment_analysis_all.pages.hpc.inl.gov/software/mcnpy"
+Repository = "https://hpcgitlab.hpc.inl.gov/experiment_analysis_all/software/mcnpy.git"
+
+[build-system]
+requires = ["setuptools  >= 40.6.0"]
+build-backend = "setuptools.build_meta"
