@@ -370,7 +370,7 @@ class Cell(Numbered_MCNP_Object):
         pass
 
     @property
-    def geometry_logic_string(self): # pragma: no cover
+    def geometry_logic_string(self):  # pragma: no cover
         """
         The original geoemtry input string for the cell.
 

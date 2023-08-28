@@ -109,7 +109,7 @@ class ParsingNode(ABC):
         pass
 
 
-class Card(ParsingNode): # pragma: no cover
+class Card(ParsingNode):  # pragma: no cover
     """
     .. warning::
 
@@ -247,7 +247,7 @@ class Input(ParsingNode):
         pass
 
     @property
-    def words(self): #pragma: no cover
+    def words(self):  # pragma: no cover
         """
         .. warning::
             .. deprecated:: 0.2.0
@@ -261,7 +261,7 @@ class Input(ParsingNode):
         )
 
 
-class Comment(ParsingNode): #pragma: no cover
+class Comment(ParsingNode):  # pragma: no cover
     """
     .. warning::
         .. deprecated:: 0.2.0
@@ -322,7 +322,7 @@ class ReadInput(Input):
         )
 
 
-class ReadCard(Card): # pragma: no cover
+class ReadCard(Card):  # pragma: no cover
     """
     .. warning::
 
@@ -433,7 +433,7 @@ class Title(ParsingNode):
         return [self.title[0 : line_length - 1]]
 
 
-def parse_card_shortcuts(*args, **kwargs): #pragma: no cover
+def parse_card_shortcuts(*args, **kwargs):  # pragma: no cover
     """
     .. warning::
         .. deprecated:: 0.2.0
