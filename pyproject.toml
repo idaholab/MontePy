@@ -34,7 +34,6 @@ build-backend = "setuptools.build_meta"
 source = ["montepy"]
 
 [tool.coverage.report]
-skip_covered = true
 precision = 2
 show_missing = true
 fail_under = 90.0
