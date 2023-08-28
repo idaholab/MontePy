@@ -6,7 +6,6 @@ start by running montepy.read_input().
 You will receive an MCNP_Problem object that you will interact with.
 """
 
-__author__ = "Micah Gale, Travis Labossiere-Hickman, Brenna Carbno"
 __credits__ = [
     "Micah Gale",
     "Travis Labossiere-Hickman",
@@ -16,10 +15,6 @@ __credits__ = [
     "Brenna Carbno",
 ]
 
-name = "montepy"
-__version__ = "0.2.0.alpha9"
-__maintainer__ = "Micah Gale"
-__email__ = "micah.gale@inl.gov"
 __status__ = "Development"
 __all__ = ["cell", "surfaces", "mcnp_object.py", "input_parser"]
 
