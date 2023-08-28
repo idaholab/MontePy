@@ -266,7 +266,7 @@ class CellModifierInput(DataInputAbstract):
         return []
 
     @property
-    def has_changed_print_style(self):
+    def has_changed_print_style(self): #pragma: no cover
         """
         returns true if the printing style for this modifier has changed
         from cell block to data block, or vice versa.
