@@ -10,6 +10,7 @@
 # add these directories to sys.path here. If the directory is relative to the
 # documentation root, use os.path.abspath to make it absolute, like shown here.
 #
+import importlib.metadata
 import os
 import sys
 
@@ -24,7 +25,7 @@ copyright = "2021 – 2023, Battelle Energy Alliance LLC."
 author = "Micah D. Gale (@galemica), Travis J. Labossiere-Hickman (@tjlaboss)"
 
 
-release = montepy.__version__
+release = importlib.metadata.version('montepy')
 # -- General configuration ---------------------------------------------------
 
 # Add any Sphinx extension module names here, as strings. They can be
