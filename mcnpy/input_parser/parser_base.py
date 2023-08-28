@@ -166,12 +166,10 @@ class MCNP_Parser(Parser, metaclass=MetaBuilder):
         return self._flush_phrase(p, int)
 
     @_(
-        "number_phrase",
-        "null_phrase",
+        "numerical_phrase",
         "shortcut_phrase",
-        "number_sequence number_phrase",
+        "number_sequence numerical_phrase",
         "number_sequence shortcut_phrase",
-        "number_sequence null_phrase",
     )
     def number_sequence(self, p):
         """
