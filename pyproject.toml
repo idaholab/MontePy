@@ -17,6 +17,11 @@ dependencies = [
 	"numpy",
 	"sly"
 ]
+Provides-Extra = ["test", "doc"]
+
+[project.optional-dependencies]
+test = ["coverage", "pytest"]
+doc = ["sphinx", "sphinxcontrib-apidoc", "sphinx_rtd_theme"]
 
 [project.urls]
 Homepage = "https://hpcgitlab.hpc.inl.gov/experiment_analysis_all/software/mcnpy/"
