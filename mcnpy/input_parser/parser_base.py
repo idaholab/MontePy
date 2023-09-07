@@ -1,9 +1,19 @@
+import copy
 from mcnpy.input_parser.tokens import MCNP_Lexer
 from mcnpy.input_parser import syntax_node
 from sly import Parser
 import sly
 
 _dec = sly.yacc._decorator
+
+class ParserMetaDict(sly.yacc.ParserMetaDict):
+    '''
+    Subclass in order to implement deepcopying
+    '''
+    def __setitem__(self, key, value):
+        if key[:1] != "_":
+            value = copy.deepcopy(value)
+        super().__setitem__(key, value)
 
 
 class MetaBuilder(sly.yacc.ParserMeta):
@@ -30,6 +40,12 @@ class MetaBuilder(sly.yacc.ParserMeta):
         "dont_copy",
     }
 
+    @classmethod
+    def __prepare__(meta, *args, **kwargs):
+        d = ParserMetaDict()
+        d['_'] = _dec
+        return d
+
     def __new__(meta, classname, bases, attributes):
         if classname != "MCNP_Parser":
             for basis in bases:
@@ -46,7 +62,7 @@ class MetaBuilder(sly.yacc.ParserMeta):
                 and attr_name not in attributes.get("dont_copy", set())
             ):
                 func = getattr(basis, attr_name)
-                attributes[attr_name] = func
+                attributes[attr_name] = copy.deepcopy(func)
         parent = basis.__bases__
         for par_basis in parent:
             if par_basis != Parser:
