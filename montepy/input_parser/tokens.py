@@ -153,7 +153,7 @@ class MCNP_Lexer(Lexer):
         self.lineno += t.value.count("\n")
         return t
 
-    @_(r"\d{4,6}\.(\d{2}[a-z]|\d{3}[a-z]2)")
+    @_(r"\d{4,6}\.(\d{2}[a-z]|\d{3}[a-z]{2})")
     def ZAID(self, t):
         """
         A ZAID isotope definition in the MCNP format.
@@ -162,7 +162,7 @@ class MCNP_Lexer(Lexer):
         """
         return t
 
-    LIBRARY_SUFFIX = r"(\d{2}[a-z]|\d{3}[a-z]2)"
+    LIBRARY_SUFFIX = r"(\d{2}[a-z]|\d{3}[a-z]{2})"
     """
     A material library suffix for an isotope definition in the MCNP format.
 
