@@ -174,7 +174,7 @@ class CellParser(MCNP_Parser):
         '"(" number_sequence ")"',
         '"(" number_sequence ")" padding',
     )
-    def fill_numbers(self, p):
+    def number_sequence(self, p):
         if isinstance(p[0], str):
             sequence = syntax_node.ListNode("parenthetical statement")
             sequence.append(p[0])
@@ -189,18 +189,3 @@ class CellParser(MCNP_Parser):
             else:
                 sequence.append(node)
         return sequence
-
-    @_(
-        "classifier param_seperator fill_numbers",
-    )
-    def parameter(self, p):
-        """
-        A singular Key-value pair.
-
-        :returns: the parameter.
-        :rtype: SyntaxNode
-        """
-        return syntax_node.SyntaxNode(
-            p.classifier.prefix.value,
-            {"classifier": p.classifier, "seperator": p.param_seperator, "data": p[2]},
-        )
