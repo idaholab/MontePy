@@ -114,3 +114,15 @@ class EdgeCaseTests(TestCase):
             mcnpy.input_parser.block_type.BlockType.CELL,
         )
         cell = mcnpy.Cell(input)
+
+    def test_interpolate_geometry(self):
+        lines = [
+            "10234   30  1.2456780      -3103  3104 -3133  3136",
+            "                            3201  15i   3217",
+            "                            u=20",
+        ]
+        input = mcnpy.input_parser.mcnp_input.Input(
+            lines,
+            mcnpy.input_parser.block_type.BlockType.CELL,
+        )
+        cell = mcnpy.Cell(input)
