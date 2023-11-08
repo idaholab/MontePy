@@ -116,7 +116,7 @@ class MCNP_Problem:
         :type version: tuple
         """
         if version < (5, 1, 60):
-            raise ValueError(f"The mcnp_version {version} is not supported by MCNPy")
+            raise ValueError(f"The mcnp_version {version} is not supported by MontePy")
         self._mcnp_version = version
 
     @property

@@ -14,17 +14,17 @@ import os
 import sys
 
 sys.path.insert(0, os.path.abspath("../.."))
-import mcnpy
+import montepy
 
 
 # -- Project information -----------------------------------------------------
 
-project = "Montepy"
+project = "MontePy"
 copyright = "2021 – 2023, Battelle Energy Alliance LLC."
 author = "Micah D. Gale (@galemica), Travis J. Labossiere-Hickman (@tjlaboss)"
 
 
-release = mcnpy.__version__
+release = montepy.__version__
 # -- General configuration ---------------------------------------------------
 
 # Add any Sphinx extension module names here, as strings. They can be
