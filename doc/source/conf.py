@@ -14,17 +14,17 @@ import os
 import sys
 
 sys.path.insert(0, os.path.abspath("../.."))
-import mcnpy
+import montepy
 
 
 # -- Project information -----------------------------------------------------
 
-project = "OpenMCNPy"
+project = "MontePy"
 copyright = "2021 – 2023, Battelle Energy Alliance LLC."
 author = "Micah D. Gale (@galemica), Travis J. Labossiere-Hickman (@tjlaboss)"
 
 
-release = mcnpy.__version__
+release = montepy.__version__
 # -- General configuration ---------------------------------------------------
 
 # Add any Sphinx extension module names here, as strings. They can be
@@ -44,7 +44,7 @@ templates_path = ["_templates"]
 # This pattern also affects html_static_path and html_extra_path.
 exclude_patterns = []
 
-wheel = f"mcnpy-{release}-py3-none-any.whl"
+wheel = f"montepy-{release}-py3-none-any.whl"
 
 
 # -- Options for HTML output -------------------------------------------------
@@ -53,7 +53,7 @@ wheel = f"mcnpy-{release}-py3-none-any.whl"
 # a list of builtin themes.
 #
 html_theme = "sphinx_rtd_theme"
-apidoc_module_dir = "../../mcnpy"
+apidoc_module_dir = "../../montepy"
 apidoc_module_first = True
 apidoc_separate_modules = True
 

@@ -82,6 +82,7 @@ class ParsingNode(ABC):
             if not isinstance(line, str):
                 raise TypeError(f"element: {line} in input_lines must be a string")
         self._input_lines = input_lines
+        self._mutated = False
 
     @property
     def input_lines(self):
@@ -92,8 +93,12 @@ class ParsingNode(ABC):
         return self._input_lines
 
     @property
-    def input_text(self):
-        return "\n".join(self.input_lines) + "\n"
+    def mutated(self):
+        """If true this input has been mutated by the user, and needs to be formatted
+
+        :rtype: bool
+        """
+        return self._mutated
 
     @abstractmethod
     def format_for_mcnp_input(self, mcnp_version):

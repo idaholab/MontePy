@@ -18,7 +18,7 @@ def read_input(input_file, mcnp_version=DEFAULT_VERSION):
     :raises MalformedInputError: If an input has a broken syntax.
     :raises NumberConflictError: If two objects use the same number in the input file.
     :raises BrokenObjectLinkError: If a reference is made to an object that is not in the input file.
-    :raises UnknownElement: If an isotope is specified for an unkown element.
+    :raises UnknownElement: If an isotope is specified for an unknown element.
     """
     problem = mcnp_problem.MCNP_Problem(input_file)
     problem.mcnp_version = mcnp_version

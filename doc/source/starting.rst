@@ -1,34 +1,40 @@
-Getting Started with MCNPy
-==========================
+Getting Started with MontePy
+============================
 
-MCNPy is a python API for reading, editing, and writing MCNP input files.
+MontePy is a python API for reading, editing, and writing MCNP input files.
 It does not run MCNP nor does it parse MCNP output files.
 The library provides a semantic interface for working with input files, or our preferred terminology: problems.
 It understands that the second entry on a cell card is the material number,
 and will link the cell with its material object.
 
 .. warning::
-    MCNPy is built primarily to support MCNP 6.2. Some success maybe achieved with MCNP 6.1, and 5.1.60, 
+    MontePy is built primarily to support MCNP 6.2. Some success maybe achieved with MCNP 6.1, and 5.1.60, 
     but there may be issues due to new features in MCNP 6.2, not being backwards compatible.
-    Use earlier versions of MCNP with MCNPy with extra care.
+    Use earlier versions of MCNP with MontePy at your own risk.
+
+    MCNP 6.3 is not fully supported yet either. 
+    An MCNP 6.3 file that is backwards compatible with 6.2 should work fine,
+    but when using the new syntaxes in 6.3,
+    especially for materials,
+    MontePy will likely break.
 
     Due to the manuals for these earlier versions of MCNP being export controlled, these versions will likely never be fully supported.
 
 Reading a File
 --------------
 
-MCNPy offers the :func:`mcnpy.read_input` (actually :func:`~mcnpy.input_parser.input_reader.read_input`) function for getting started.
-It will read the specified MCNP input file, and return an MCNPy :class:`~mcnpy.mcnp_problem.MCNP_Problem` object.
+MontePy offers the :func:`montepy.read_input` (actually :func:`~montepy.input_parser.input_reader.read_input`) function for getting started.
+It will read the specified MCNP input file, and return an MontePy :class:`~montepy.mcnp_problem.MCNP_Problem` object.
 
->>> import mcnpy
->>> problem = mcnpy.read_input("foo.imcnp")
+>>> import montepy
+>>> problem = montepy.read_input("foo.imcnp")
 >>> len(problem.cells)
 4
 
 Writing a File
 --------------
 
-The :class:`~mcnpy.mcnp_problem.MCNP_Problem` object has the method :func:`~mcnpy.mcnp_problem.MCNP_Problem.write_to_file`, which writes the problem's current 
+The :class:`~montepy.mcnp_problem.MCNP_Problem` object has the method :func:`~montepy.mcnp_problem.MCNP_Problem.write_to_file`, which writes the problem's current 
 state as a valid MCNP input file.
 
 >>> problem.write_to_file("bar.imcnp")
@@ -38,11 +44,11 @@ state as a valid MCNP input file.
    This will wipe out the original version, and if you have no version control,
    may lead to losing information.
 
-If no changes are made to the problem in MCNPy the entire file will be just parroted out as it was in the original file.
+If no changes are made to the problem in MontePy the entire file will be just parroted out as it was in the original file.
 However any objects (e.g., two cells) that were changed (i.e., mutated) may have their formatting changed slightly.
-MCNPy will do its best to guess the formatting of the original value and to replicate it with the new value. 
+MontePy will do its best to guess the formatting of the original value and to replicate it with the new value. 
 However, this may not always be possible, especially if more digits are needed to keep information (e.g., ``10`` versus ``1000``).
-In this case MCNPy will warn you that value will take up more space which may break your pretty formatting.
+In this case MontePy will warn you that value will take up more space which may break your pretty formatting.
 
 For example say we have this simple MCNP input file (saved as foo.imcnp) ::
   
@@ -61,15 +67,15 @@ For example say we have this simple MCNP input file (saved as foo.imcnp) ::
         TR1 0 0 1.0
         TR2 0 0 1.00001
 
-We can then open this file in MCNPy, and then modify it slightly, and save it again::
+We can then open this file in MontePy, and then modify it slightly, and save it again::
 
-        import mcnpy
-        problem = mcnpy.read_input("foo.imcnp")
+        import montepy
+        problem = montepy.read_input("foo.imcnp")
         problem.cells[1].number = 5
         problem.surfaces[1].number = 1000
         problem.write_to_file("bar.imcnp")
 
-This new file we can see is now reformatted according to MCNPy's preferences for formatting::
+This new file we can see is now reformatted according to MontePy's preferences for formatting::
 
         Example Problem
         5 0  -1000 2 -3
@@ -88,13 +94,12 @@ This new file we can see is now reformatted according to MCNPy's preferences for
 
 In addition to the renumbering of cell 5,
 notice that the geometry definition for cell 5 was automatically updated to reference the new surface number.
-MCNPy links objects together and will automatically update "pointers" in the file for you.
-
+MontePy links objects together and will automatically update "pointers" in the file for you.
 
 What Information is Kept
 ------------------------
 
-So what does MCNPy keep, and what does it forget? 
+So what does MontePy keep, and what does it forget? 
 
 Information Kept
 ^^^^^^^^^^^^^^^^
@@ -106,17 +111,17 @@ Information Kept
 #. Other user formatting and spaces. If extra spaces between values are given the space will be expanded or shortened to try to keep 
    the position of the next value in the same spot as the length of the first value changes.
 #. MCNP shortcuts for numbers. All shortcuts will be expanded to their meaning. 
-   Jumps will be subsituted with the value: :class:`~mcnpy.input_parser.mcnp_input.Jump`.
-   On write MCNPy will attempt to recompress all shortcuts. It does this by looking at shortcuts in the original file,
+   Jumps will be subsituted with the value: :class:`~montepy.input_parser.mcnp_input.Jump`.
+   On write MontePy will attempt to recompress all shortcuts. It does this by looking at shortcuts in the original file,
    and trying to "consume" their nearest neighbors. So for instance if you had ``imp:n 1 10r 0`` and added a new cell with an importance of ``1.0``
-   second to the end MCNPy will print ``imp:n 1 11r 0`` and not ``imp:n 1 10r 1 0``. 
-   MCNPy will not automatically "spot" various sequences that could be shortcuts and will not automatically make shortcuts out of them.
+   second to the end MontePy will print ``imp:n 1 11r 0`` and not ``imp:n 1 10r 1 0``. 
+   MontePy will not automatically "spot" various sequences that could be shortcuts and will not automatically make shortcuts out of them.
    The one exception to this rule is for jumps. If a sequence of new Jump values are added they will automatically combined as ``2J`` instead of printing them as ``J J``. 
 
 Information Lost
 ^^^^^^^^^^^^^^^^
 #. Read cards. These are handled properly, but when written out these cards themselves will disappear. 
-   When MCNPy encounters a read card it notes the file in the card, and then discard the card. 
+   When MontePy encounters a read card it notes the file in the card, and then discard the card. 
    It will then read these extra files and append their contents to the appropriate block.
    So If you were to write out a problem that used the read card in the surface block the surface
    cards in that file from the read card will appear at the end of the new surface block in the newly written file.
@@ -128,25 +133,25 @@ Information Lost
 What a Problem Looks Like
 -------------------------
 
-The :class:`~mcnpy.mcnp_problem.MCNP_Problem` is the object that represents an MCNP input file/problem.
+The :class:`~montepy.mcnp_problem.MCNP_Problem` is the object that represents an MCNP input file/problem.
 The meat of the Problem is its collections, such as ``cells``, ``surfaces``, and ``materials``. 
-Technically these are :class:`~mcnpy.numbered_object_collection.NumberedObjectCollection` instances, 
+Technically these are :class:`~montepy.numbered_object_collection.NumberedObjectCollection` instances, 
 but it looks like a ``dict``, walks like a ``dict``, and quacks like ``dict``, so most users can just treat it like that.
 
 .. note::
    Though these collections are based on a dict, they don't behave exactly like a dict.
    For a dict the iteration (e.g., ``for key in dict:``) iterates over the keys.
    Also when you check if an item is in a dict (e.g., ``if key in dict:``) it checks if the item is a key.
-   For :class:`~mcnpy.numbered_object_collection.NumberedObjectCollection` this is reversed.
+   For :class:`~montepy.numbered_object_collection.NumberedObjectCollection` this is reversed.
    When iterating it is done over the items of the collection (e.g., ``for cell in cells:``).
    Similar checking will be done for the object being in the collection (e.g., ``if cell in cells:``).
 
 Collections are Accessible by Number
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-As mentioned before :class:`~mcnpy.numbered_object_collection.NumberedObjectCollection` 
+As mentioned before :class:`~montepy.numbered_object_collection.NumberedObjectCollection` 
 looks like a ``dict``, walks like a ``dict``, and quacks like ``dict``.
-This mainly means you can quickly get an object (e.g., :class:`~mcnpy.cell.Cell`, :class:`~mcnpy.surfaces.surface.Surface`, :class:`~mcnpy.data_cards.material.Material`) 
+This mainly means you can quickly get an object (e.g., :class:`~montepy.cell.Cell`, :class:`~montepy.surfaces.surface.Surface`, :class:`~montepy.data_cards.material.Material`) 
 by its number.
 
 So say you want to access cell 2 from a problem it is accessible quickly by:
@@ -174,16 +179,16 @@ Number Collisions (should) be Impossible
 The ``NumberedObjectCollection`` has various mechanisms internally to avoid number collisions 
 (two objects having the same number).
 
->>> import mcnpy
->>> prob = mcnpy.read_input("foo.i")
->>> cell = mcnpy.Cell()
+>>> import montepy
+>>> prob = montepy.read_input("foo.i")
+>>> cell = montepy.Cell()
 >>> cell.number = 2
 prob.cells.append(cell)
 ---------------------------------------------------------------------------
 NumberConflictError                       Traceback (most recent call last)
 <ipython-input-5-52c64b5ddb4b> in <module>
 ----> 1 prob.cells.append(cell)
-~/dev/mcnpy/doc/mcnpy/numbered_object_collection.py in append(self, obj)
+~/dev/montepy/doc/montepy/numbered_object_collection.py in append(self, obj)
     130         assert isinstance(obj, self._obj_class)
     131         if obj.number in self.numbers:
 --> 132             raise NumberConflictError(
@@ -191,7 +196,7 @@ NumberConflictError                       Traceback (most recent call last)
     134                     "There was a numbering conflict when attempting to add "
 NumberConflictError: There was a numbering conflict when attempting to add CELL: 2
 None
- to <class 'mcnpy.cells.Cells'>. Conflict was with CELL: 2
+ to <class 'montepy.cells.Cells'>. Conflict was with CELL: 2
 None
 SURFACE: 4, CZ
 SURFACE: 5, PZ
@@ -199,16 +204,16 @@ SURFACE: 6, PZ
 
 There are a number of tools to avoid this though:
 
-#. :func:`~mcnpy.numbered_object_collection.NumberedObjectCollection.append_renumber` politely 
+#. :func:`~montepy.numbered_object_collection.NumberedObjectCollection.append_renumber` politely 
    renumbers the added object if there is a number conflict, without raising any errors or warnings.
-#. :func:`~mcnpy.numbered_object_collection.NumberedObjectCollection.request_number` will give you the
+#. :func:`~montepy.numbered_object_collection.NumberedObjectCollection.request_number` will give you the
    number you requested. If that's not possible it will find a nearby number that works.
    Note you should immediately use this number, and append the object to the Collection, 
    because this number could become stale.
-#. :func:`~mcnpy.numbered_object_collection.NumberedObjectCollection.next_number` will find the next 
+#. :func:`~montepy.numbered_object_collection.NumberedObjectCollection.next_number` will find the next 
    number available by taking the highest number used and increasing it.
 
-The collections also have a property called :func:`~mcnpy.numbered_object_collection.NumberedObjectCollection.numbers`, which lists all numbers that are in use.
+The collections also have a property called :func:`~montepy.numbered_object_collection.NumberedObjectCollection.numbers`, which lists all numbers that are in use.
 Note that using this property has some perils that will be covered in the next section.
 
 
@@ -268,19 +273,19 @@ Surfaces
 The most important unsung heroes of an MCNP problem are the surfaces.
 They may be tedious to work with but you can't get anything done without them.
 MCNP supports *alot* of types of surfaces, and all of them are special in their own way.
-You can see all the surface types here: :class:`~mcnpy.surfaces.surface_type.SurfaceType`.
-By default all surfaces are an instance of :class:`~mcnpy.surfaces.surface.Surface`.
+You can see all the surface types here: :class:`~montepy.surfaces.surface_type.SurfaceType`.
+By default all surfaces are an instance of :class:`~montepy.surfaces.surface.Surface`.
 They will always have the properties: ``surface_type``, and ``surface_constants``.
 If you need to modify the surface you can do so through the ``surface_constants`` list.
 But for some of our favorite surfaces 
 (``CX``, ``CY``, ``CZ``, ``C\X``, ``C\Y``, ``C\Z``, ``PX``, ``PY``, ``PZ``),
 these will be a special subclass of ``Surface``, 
 that will truly understand surface constants for what the mean.
-See :mod:`mcnpy.surfaces` for specific classes, and their documentation.
+See :mod:`montepy.surfaces` for specific classes, and their documentation.
 
-Two useful examples are the :class:`~mcnpy.surfaces.cylinder_on_axis.CylinderOnAxis`, 
+Two useful examples are the :class:`~montepy.surfaces.cylinder_on_axis.CylinderOnAxis`, 
 which covers ``CX``, ``CY``, and ``CZ``,
-and the :class:`~mcnpy.surfaces.axis_plane.AxisPlane`,
+and the :class:`~montepy.surfaces.axis_plane.AxisPlane`,
 which covers ``PX``, ``PY``, ``PZ``.
 The first contains the parameter: ``radius``, 
 and the second one contains the parameters: ``location``. 
@@ -296,14 +301,14 @@ It would be horrible to have to get each surface by their number, and hoping you
 One way you might think of is: oh let's just filter the surfaces by their type?::
 
   for surface in cell.surfaces:
-    if surface.surface_type == mcnpy.surfaces.surface_type.SurfaceType.PZ:
+    if surface.surface_type == montepy.surfaces.surface_type.SurfaceType.PZ:
       surface.location += 10
 
 Wow that's rather verbose. 
 This was the only way to do this with the API for awhile.
-But MCNPy 0.0.5 fixed this with: you guessed it: generators.
+But MontePy 0.0.5 fixed this with: you guessed it: generators.
 
-The :class:`~mcnpy.surface_collection.Surfaces` collection has a generator for every type of surface in MCNP.
+The :class:`~montepy.surface_collection.Surfaces` collection has a generator for every type of surface in MCNP.
 These are very easy to find: they are just the lower case version of the 
 MCNP surface mnemonic. 
 This previous code is much simpler now::
@@ -318,20 +323,20 @@ Setting Cell Importances
 ^^^^^^^^^^^^^^^^^^^^^^^^
 
 All cells have an importance that can be modified. 
-This is generally accessed through ``cell.importance`` (:func:`~mcnpy.cell.Cell.importance`). 
+This is generally accessed through ``cell.importance`` (:func:`~montepy.cell.Cell.importance`). 
 You can access the importance for a specific particle type by its name in lower case.
 For example: ``cell.importance.neutron`` or ``cell.importance.photon``.
-For a complete list see :class:`~mcnpy.particle.Particle`.
+For a complete list see :class:`~montepy.particle.Particle`.
 
-You can also quickly get the information by passing an instance of :class:`~mcnpy.particle.Particle` as a key to importance.
+You can also quickly get the information by passing an instance of :class:`~montepy.particle.Particle` as a key to importance.
 For example: ::
     
     for particle in problem.mode:
         print(cell.importance[particle])
-    print(cell.importance[mcnpy.Particle.NEUTRON])
+    print(cell.importance[montepy.Particle.NEUTRON])
 
 There's also a lot of convenient ways to do bulk modifications.
-There is the :func:`~mcnpy.data_inputs.importance.Importance.all` property that lets you set the importance for all particles in the problem at once.
+There is the :func:`~montepy.data_inputs.importance.Importance.all` property that lets you set the importance for all particles in the problem at once.
 For example: ::
 
     problem.set_mode("n p")
@@ -339,7 +344,7 @@ For example: ::
 
 This will set the importances for the neutron and photon. 
 
-There is also the method: :func:`~mcnpy.cells.Cells.set_equal_importance`.
+There is also the method: :func:`~montepy.cells.Cells.set_equal_importance`.
 This method sets all of the cells for all particles in the problem to the same importance.
 You can optionally pass a list of cells to this function.
 These cells are the "vacuum boundary" cells.
@@ -351,8 +356,8 @@ Setting How Cell Data Gets displayed in the Input file
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 Much of the cell data can show up in the cell block or the data block, like the importance card.
-These are referred to MCNPy as "cell modifiers".
-You can change how these cell modifiers are printed with :func:`~mcnpy.mcnp_problem.MCNP_Problem.print_in_data_block`.
+These are referred to MontePy as "cell modifiers".
+You can change how these cell modifiers are printed with :func:`~montepy.mcnp_problem.MCNP_Problem.print_in_data_block`.
 This acts like a dictionary where the key is the MCNP card name.
 So to make cell importance data show up in the cell block just run:
 ``problem.print_in_data_block["imp"] = False``.
@@ -363,7 +368,7 @@ This gets a bit more complicated.
 MCNP supports both atom density, and mass density. 
 So if there were a property ``cell.density`` its result could be ambiguous,
 because it could be in g/cm3 or atom/b-cm.
-No; MCNPy does not support negative density; it doesn't exist!
+No; MontePy does not support negative density; it doesn't exist!
 For this reason ``cell.density`` is deprecated.
 Instead there is ``cell.atom_density`` and ``cell.mass_density``. 
 
@@ -372,7 +377,7 @@ and ``cell.mass_density`` is in units of g/cm3.
 Both will never return a valid number simultaneously.
 If the cell density is set to a mass density ``cell.atom_density`` will return ``None``.
 Setting the value for one of these densities will change the density mode.
-MCNPy does not convert mass density to atom density and vice versa.
+MontePy does not convert mass density to atom density and vice versa.
 
 >>> cell.mass_density
 9.8
@@ -385,7 +390,7 @@ None
 Geometry
 ^^^^^^^^
 
-MCNPy now supports understanding constructive solids geometry (CSG) set logic. 
+MontePy now supports understanding constructive solids geometry (CSG) set logic. 
 This implementation was inspired by `OpenMC <https://docs.openmc.org/en/stable/>`_, and `their documentation <https://docs.openmc.org/en/stable/usersguide/geometry.html>`_ may be helpful.
 
 Terminology
@@ -393,18 +398,18 @@ Terminology
 
 In MCNP the geometry of a cell can by defined by either a surface, or another cell (through complements).
 Therefore, it's not very useful to talk about geometry in terms of "surfaces" because it's not accurate and could lead to confusion.
-MCNPy focuses mostly on the mathematical concept of `half-spaces <https://en.wikipedia.org/wiki/Half-space_(geometry)>`_.
-These are represented as :class:`~mcnpy.surfaces.half_space.HalfSpace` instances.
+MontePy focuses mostly on the mathematical concept of `half-spaces <https://en.wikipedia.org/wiki/Half-space_(geometry)>`_.
+These are represented as :class:`~montepy.surfaces.half_space.HalfSpace` instances.
 The use of this term is a bit loose and is not meant to be mathematical rigorous. 
 The general concept though is that the space (R\ :sup:`3`) can always be split into two regions, or half-spaces.
-For MCNPy this division is done by a divider ( a surface, a cell, or some CSG combination of thoses).
+For MontePy this division is done by a divider ( a surface, a cell, or some CSG combination of thoses).
 For planes this can be seen really easily; you have a top, and bottom (or a left and a right, etc.). 
 For cells this could be a bit less intuitive, but it is still a divider.
 The two half-spaces can be viewed as in or out of the cell. 
 
 So how are these half-spaces identified?
 In MCNP this generally done by marking the half-space as the positive or negative one.
-In MCNPy these are changed to boolean values for the :func:`~mcnpy.surfaces.half_space.UnitHalfSpace.side` parameter simplicity with True being the positive side.
+In MontePy these are changed to boolean values for the :func:`~montepy.surfaces.half_space.UnitHalfSpace.side` parameter simplicity with True being the positive side.
 For cell complements the side is implicitly handled by the CSG logic, and can always be thought of as the "outside"
 (though ``side`` will return True).
 
@@ -414,19 +419,19 @@ Creating a Half-Space
 To make a geometry you can't just start with a divider (e.g., a surface), and just expect the geometry to be unambiguous.
 This is because you need to choose a half-space from the divider.
 This is done very simply and pythonic. 
-For a :class:`~mcnpy.surfaces.surface.Surface` you just need to mark the surface as positive (``+``) or negative (``-``) (using the unary operators).
+For a :class:`~montepy.surfaces.surface.Surface` you just need to mark the surface as positive (``+``) or negative (``-``) (using the unary operators).
 This actually creates a new object so don't worry about modifying the surface.
 
 >>> type(+bottom_plane)
-mcnpy.surfaces.half_space.UnitHalfSpace
+montepy.surfaces.half_space.UnitHalfSpace
 >>> type(-bottom_plane)
-mcnpy.surfaces.half_space.UnitHalfSpace
+montepy.surfaces.half_space.UnitHalfSpace
 
 For cells the plus/minus operator doesn't make sense. 
 Instead you use the binary not operator (``~``).
 
 >>> type(~capsule_cell)
-mcnpy.surfaces.half_space.HalfSpace
+montepy.surfaces.half_space.HalfSpace
 
 
 Combining Half-Spaces
@@ -459,14 +464,14 @@ Order of precedence and grouping is automatically handled by python so you can e
   slugs = (+bottom_plane & -top_plane & -fuel_cylinder) | (+bottom_plane & -top_plane & -other_fuel)
 
 .. note::
-  MCNPy does not check if the geometry definition is "rational".
+  MontePy does not check if the geometry definition is "rational".
   It doesn't check for being finite, existant (having any volumen at all), or being infinite.
   Nor does it check for overlapping geometry.
 
 Setting and Modifying Geometry
 """"""""""""""""""""""""""""""
 
-The half-space defining a cell's geometry is stored in ``cell.geometry`` (:func:`~mcnpy.cell.Cell.geometry`).
+The half-space defining a cell's geometry is stored in ``cell.geometry`` (:func:`~montepy.cell.Cell.geometry`).
 This property can be rather simply set.::
 
     fuel_cell.geometry = +bottom_plane & - top_plane & - fuel_cylinder
@@ -478,7 +483,7 @@ This will completely redefine the cell's geometry. You can also modify the geome
 .. warning:: 
    Be careful when using ``&=`` and ``|=`` with complex geometries as the order of operations may not be what you expected.
    You can check the geometry logic by printing it.
-   MCNPy will show you its internal (`binary tree <https://en.wikipedia.org/wiki/Binary_tree>`_) representation of the logic.
+   MontePy will show you its internal (`binary tree <https://en.wikipedia.org/wiki/Binary_tree>`_) representation of the logic.
    It will display the operators in a different style.
    
    * ``*`` is the intersection operator
@@ -492,9 +497,9 @@ This will completely redefine the cell's geometry. You can also modify the geome
 Universes
 ---------
 
-MCNPy supports MCNP universes as well.
+MontePy supports MCNP universes as well.
 ``problem.universes`` will contain all universes in a problem.
-These are stored in :class:`~mcnpy.universes.Universes` as :class:`~mcnpy.universe.Universe` instances. 
+These are stored in :class:`~montepy.universes.Universes` as :class:`~montepy.universe.Universe` instances. 
 If a cell is not assigned to any universe it will be assigned to Universe 0, *not None*, while reading in the input file.
 To change what cells are in a universe you can set this at the cell level.
 This is done to prevent a cell from being assigned to multiple universes
@@ -513,7 +518,7 @@ We can confirm this worked with the generator ``universe.cells``:
 Claiming Cells
 ^^^^^^^^^^^^^^
 
-The ``Universe`` class also has the method: :func:`~mcnpy.universe.Universe.claim`.
+The ``Universe`` class also has the method: :func:`~montepy.universe.Universe.claim`.
 This is a shortcut to do the above code.
 For all cells passed (either as a single ``Cell``, a ``list`` of cells, or a ``Cells`` instance)
 will be removed from their current universe, and moved to this universe.
@@ -533,7 +538,7 @@ and then add it to the problem:
 
 .. code-block:: python
    
-   universe = mcnpy.Universe(333)
+   universe = montepy.Universe(333)
    problem.universes.append(universe)
 
 Now you can add cells to this universe as you normally would.
@@ -544,7 +549,7 @@ Now you can add cells to this universe as you normally would.
 .. note::
    Universe number collisions are not checked for when a universe is created,
    but only when it is added to the problem.
-   Make sure to plan accordingly, and consider using :func:`~mcnpy.numbered_object_collection.NumberedObjectCollection.request_number`.
+   Make sure to plan accordingly, and consider using :func:`~montepy.numbered_object_collection.NumberedObjectCollection.request_number`.
 
 
 
@@ -552,7 +557,7 @@ Filling Cells
 ^^^^^^^^^^^^^
 
 What's the point of creating a universe if you can't fill a cell with it, and therefore use it?
-Filling is handled by the :class:`~mcnpy.data_cards.fill.Fill` object in ``cell.fill``.
+Filling is handled by the :class:`~montepy.data_cards.fill.Fill` object in ``cell.fill``.
 
 To fill a cell with a specific universe you can just run:
 
@@ -573,7 +578,7 @@ You can also easy apply a transform to the filling universe with:
    Mainly the ability to fill a cell with different universes for every lattice site,
    and to create an "anonymous transform" in the fill card.
 
-   MCNPy can understand and manipulate fills with these features in the input.
+   MontePy can understand and manipulate fills with these features in the input.
    However, generating these from scratch may be cumbersome.
    If you use this feature, and have input on how to make it more user friendly,
    please reach out to the developers.
@@ -583,27 +588,27 @@ References
 
 See the following cell properties for more details:
 
-* :func:`~mcnpy.cell.Cell.universe`
-* :func:`~mcnpy.cell.Cell.lattice`
-* :func:`~mcnpy.cell.Cell.fill`
+* :func:`~montepy.cell.Cell.universe`
+* :func:`~montepy.cell.Cell.lattice`
+* :func:`~montepy.cell.Cell.fill`
 
 Running as an Executable
 ------------------------
 
-MCNPy can be ran as an executable. 
+MontePy can be ran as an executable. 
 Currently this only supports checking an MCNP input file for errors.
 
 Checking Input files for Errors
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-MCNPy can be ran to try to open an MCNP input file and to read as much as it can and try to note all errors it finds.
+MontePy can be ran to try to open an MCNP input file and to read as much as it can and try to note all errors it finds.
 If there are many errors not all may be found at once due to how errors are handled.
 This is done by executing it with the ``-c`` flag, and specifying a file, or files to check.
 You can also use linux globs::
 
-        python -m mcnpy -c inputs/*.imcnp
+        python -m montepy -c inputs/*.imcnp
 
-MCNPy will then show which file it is reading, and show a warning for every potential error with the input file it has found.
+MontePy will then show which file it is reading, and show a warning for every potential error with the input file it has found.
 
 If you want to try to troubleshoot errors in python you can do this with the following steps.
 
@@ -615,7 +620,7 @@ If you want to try to troubleshoot errors in python you can do this with the fol
 
    .. code-block:: python
         
-       problem = mcnpy.MCNP_Problem("foo.imcnp") 
+       problem = montepy.MCNP_Problem("foo.imcnp") 
 
 1. Next load the input file with the ``check_input`` set to ``True``.
 
