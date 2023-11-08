@@ -22,6 +22,7 @@ class MCNP_Lexer(Lexer):
         INTERPOLATE,
         JUMP,
         KEYWORD,
+        LIBRARY_SUFFIX,
         LOG_INTERPOLATE,
         MESSAGE,
         MULTIPLY,
@@ -161,6 +162,13 @@ class MCNP_Lexer(Lexer):
         """
         return t
 
+    LIBRARY_SUFFIX = r"(\d{2}[a-z]|\d{3}[a-z]{2})"
+    """
+    A material library suffix for an isotope definition in the MCNP format.
+
+    E.g.: ``80c``.
+    """
+
     # note: / is not escaping - since this doesn't not need escape in this position
     THERMAL_LAW = r"[a-z][a-z\d/-]+\.\d+[a-z]"
     """
@@ -278,7 +286,28 @@ class ParticleLexer(MCNP_Lexer):
 
     """
 
-    tokens = MCNP_Lexer.tokens
+    tokens = {
+        COMMENT,
+        COMPLEMENT,
+        DOLLAR_COMMENT,
+        INTERPOLATE,
+        JUMP,
+        KEYWORD,
+        LOG_INTERPOLATE,
+        MESSAGE,
+        MULTIPLY,
+        NUMBER,
+        NULL,
+        PARTICLE,
+        PARTICLE_DESIGNATOR,
+        REPEAT,
+        SOURCE_COMMENT,
+        SPACE,
+        TALLY_COMMENT,
+        TEXT,
+        THERMAL_LAW,
+        ZAID,
+    }
 
     _PARTICLES = {
         "n",
@@ -339,7 +368,26 @@ class CellLexer(ParticleLexer):
 
     """
 
-    tokens = MCNP_Lexer.tokens
+    tokens = {
+        COMMENT,
+        COMPLEMENT,
+        DOLLAR_COMMENT,
+        INTERPOLATE,
+        JUMP,
+        KEYWORD,
+        LOG_INTERPOLATE,
+        MESSAGE,
+        MULTIPLY,
+        NUMBER,
+        NULL,
+        PARTICLE,
+        PARTICLE_DESIGNATOR,
+        REPEAT,
+        SPACE,
+        TEXT,
+        THERMAL_LAW,
+        ZAID,
+    }
 
 
 class DataLexer(ParticleLexer):
@@ -351,18 +399,28 @@ class DataLexer(ParticleLexer):
 
     """
 
-    tokens = ParticleLexer.tokens.union(
-        {
-            LIBRARY_SUFFIX,
-        }
-    )
-
-    LIBRARY_SUFFIX = r"(\d{2}[a-z]|\d{3}[a-z]{2})"
-    """
-    A material library suffix for an isotope definition in the MCNP format.
-
-    E.g.: ``80c``.
-    """
+    tokens = {
+        COMMENT,
+        COMPLEMENT,
+        DOLLAR_COMMENT,
+        INTERPOLATE,
+        JUMP,
+        KEYWORD,
+        LOG_INTERPOLATE,
+        MESSAGE,
+        MULTIPLY,
+        NUMBER,
+        NULL,
+        PARTICLE,
+        PARTICLE_DESIGNATOR,
+        REPEAT,
+        SOURCE_COMMENT,
+        SPACE,
+        TALLY_COMMENT,
+        TEXT,
+        THERMAL_LAW,
+        ZAID,
+    }
 
     @_(r"([|+\-!<>/%^_~@\*\?\#]|\#\d*)+")
     def PARTICLE_SPECIAL(self, t):

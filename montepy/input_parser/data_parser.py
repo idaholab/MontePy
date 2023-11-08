@@ -15,8 +15,6 @@ class DataParser(MCNP_Parser):
     :rtype: SyntaxNode
     """
 
-    tokens = DataLexer.tokens
-
     debugfile = None
 
     @_(
