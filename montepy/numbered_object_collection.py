@@ -1,9 +1,9 @@
 from abc import ABC, abstractmethod
 import typing
-import mcnpy
-from mcnpy.mcnp_card import MCNP_Card
-from mcnpy.numbered_mcnp_card import Numbered_MCNP_Card
-from mcnpy.errors import *
+import montepy
+from montepy.mcnp_card import MCNP_Card
+from montepy.numbered_mcnp_card import Numbered_MCNP_Card
+from montepy.errors import *
 
 
 class NumberedObjectCollection(ABC):
@@ -68,7 +68,7 @@ class NumberedObjectCollection(ABC):
         :param problem: The problem to link this card to.
         :type problem: MCNP_Problem
         """
-        if not isinstance(problem, mcnpy.mcnp_problem.MCNP_Problem):
+        if not isinstance(problem, montepy.mcnp_problem.MCNP_Problem):
             raise TypeError("problem must be an MCNP_Problem")
         self._problem = problem
 

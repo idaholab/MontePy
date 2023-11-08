@@ -1,4 +1,4 @@
-from mcnpy.data_cards import (
+from montepy.data_cards import (
     data_card,
     fill,
     importance,
@@ -9,7 +9,7 @@ from mcnpy.data_cards import (
     universe_card,
     volume,
 )
-from mcnpy.data_cards import transform
+from montepy.data_cards import transform
 import re
 
 PREFIX_MATCHES = {

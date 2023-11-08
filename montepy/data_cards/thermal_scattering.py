@@ -1,7 +1,7 @@
-from mcnpy.data_cards.data_card import DataCardAbstract
-from mcnpy import mcnp_card
-from mcnpy.errors import *
-import mcnpy
+from montepy.data_cards.data_card import DataCardAbstract
+from montepy import mcnp_card
+from montepy.errors import *
+import montepy
 
 
 class ThermalScatteringLaw(DataCardAbstract):
@@ -132,7 +132,7 @@ class ThermalScatteringLaw(DataCardAbstract):
         """
         found = False
         for card in data_cards:
-            if isinstance(card, mcnpy.data_cards.material.Material):
+            if isinstance(card, montepy.data_cards.material.Material):
                 if card.number == self.old_number:
                     found = True
 

@@ -1,4 +1,4 @@
-import mcnpy
+import montepy
 
 
 class CellDataPrintController:
@@ -12,7 +12,7 @@ class CellDataPrintController:
     def __getitem__(self, key):
         if not isinstance(key, str):
             raise TypeError("Key must be a str")
-        if key.upper() in mcnpy.Cell._ALLOWED_KEYWORDS:
+        if key.upper() in montepy.Cell._ALLOWED_KEYWORDS:
             try:
                 return self._print_data[key.lower()]
             except KeyError:
@@ -25,7 +25,7 @@ class CellDataPrintController:
             raise TypeError("Key must be a str")
         if not isinstance(value, bool):
             raise TypeError("Must be set to a boolean value")
-        if key.upper() in mcnpy.Cell._ALLOWED_KEYWORDS:
+        if key.upper() in montepy.Cell._ALLOWED_KEYWORDS:
             self._print_data[key.lower()] = value
         else:
             raise KeyError(f"{key} is not a supported cell modifier in MCNP")

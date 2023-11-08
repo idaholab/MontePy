@@ -1,5 +1,5 @@
-from mcnpy.data_cards.element import Element
-from mcnpy.errors import *
+from montepy.data_cards.element import Element
+from montepy.errors import *
 
 
 class Isotope:

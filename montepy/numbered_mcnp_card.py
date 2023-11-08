@@ -1,5 +1,5 @@
 from abc import abstractmethod
-from mcnpy.mcnp_card import MCNP_Card
+from montepy.mcnp_card import MCNP_Card
 
 
 class Numbered_MCNP_Card(MCNP_Card):

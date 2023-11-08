@@ -1,8 +1,8 @@
 from abc import abstractmethod
-import mcnpy
-from mcnpy.data_cards.data_card import DataCardAbstract
-from mcnpy.input_parser.block_type import BlockType
-from mcnpy.input_parser.mcnp_input import Card
+import montepy
+from montepy.data_cards.data_card import DataCardAbstract
+from montepy.input_parser.block_type import BlockType
+from montepy.input_parser.mcnp_input import Card
 
 
 class CellModifierCard(DataCardAbstract):
@@ -77,7 +77,7 @@ class CellModifierCard(DataCardAbstract):
             set_in_cell_block = print_in_cell_block
             if not self.in_cell_block:
                 for cell in self._problem.cells:
-                    attr = mcnpy.Cell._CARDS_TO_PROPERTY[type(self)][0]
+                    attr = montepy.Cell._CARDS_TO_PROPERTY[type(self)][0]
                     modifier = getattr(cell, attr)
                     if modifier.has_information:
                         set_in_cell_block = modifier.set_in_cell_block
@@ -122,7 +122,7 @@ class CellModifierCard(DataCardAbstract):
     @abstractmethod
     def has_information(self):
         """
-        For a cell instance of :class:`mcnpy.data_cards.cell_modifier.CellModifierCard` returns True iff there is information here worth printing out.
+        For a cell instance of :class:`montepy.data_cards.cell_modifier.CellModifierCard` returns True iff there is information here worth printing out.
 
         e.g., a manually set volume for a cell
 
@@ -135,12 +135,12 @@ class CellModifierCard(DataCardAbstract):
         """
         Checks that data wasn't given in data block and the cell block.
         """
-        attr, _ = mcnpy.Cell._CARDS_TO_PROPERTY[type(self)]
+        attr, _ = montepy.Cell._CARDS_TO_PROPERTY[type(self)]
         if not self._in_cell_block and self._problem:
             cells = self._problem.cells
             for cell in cells:
                 if getattr(cell, attr).set_in_cell_block:
-                    raise mcnpy.errors.MalformedInputError(
+                    raise montepy.errors.MalformedInputError(
                         cell,
                         f"Cell: {cell.number} provided {self.class_prefix.upper()}"
                         "data when those data were in the data block",

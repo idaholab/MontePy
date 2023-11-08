@@ -1,4 +1,4 @@
-from mcnpy.errors import UnsupportedFeature
+from montepy.errors import UnsupportedFeature
 
 """
 Constants related to how MCNP inputs are formatted.

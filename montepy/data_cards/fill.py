@@ -1,10 +1,10 @@
-from mcnpy.data_cards.cell_modifier import CellModifierCard
-from mcnpy.data_cards.transform import Transform
-from mcnpy.errors import *
-from mcnpy.input_parser.block_type import BlockType
-from mcnpy.input_parser.mcnp_input import Card, Jump
-from mcnpy.mcnp_card import MCNP_Card
-from mcnpy.universe import Universe
+from montepy.data_cards.cell_modifier import CellModifierCard
+from montepy.data_cards.transform import Transform
+from montepy.errors import *
+from montepy.input_parser.block_type import BlockType
+from montepy.input_parser.mcnp_input import Card, Jump
+from montepy.mcnp_card import MCNP_Card
+from montepy.universe import Universe
 import numpy as np
 
 

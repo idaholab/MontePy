@@ -1,8 +1,8 @@
-from mcnpy.errors import *
-from mcnpy.data_cards import transform
-from mcnpy.numbered_mcnp_card import Numbered_MCNP_Card
-from mcnpy.surfaces.surface_type import SurfaceType
-from mcnpy.utilities import *
+from montepy.errors import *
+from montepy.data_cards import transform
+from montepy.numbered_mcnp_card import Numbered_MCNP_Card
+from montepy.surfaces.surface_type import SurfaceType
+from montepy.utilities import *
 import re
 
 

@@ -1,10 +1,10 @@
-import mcnpy
-from mcnpy.numbered_object_collection import NumberedObjectCollection
-from mcnpy.errors import MalformedInputError
+import montepy
+from montepy.numbered_object_collection import NumberedObjectCollection
+from montepy.errors import MalformedInputError
 
 
 class Cells(NumberedObjectCollection):
-    """A collections of multiple :class:`mcnpy.cell.Cell` objects.
+    """A collections of multiple :class:`montepy.cell.Cell` objects.
 
     :param cells: the list of cells to start with if needed
     :type cells: list
@@ -14,12 +14,12 @@ class Cells(NumberedObjectCollection):
 
     def __init__(self, cells=None, problem=None):
         self.__blank_modifiers = set()
-        super().__init__(mcnpy.Cell, cells, problem)
+        super().__init__(montepy.Cell, cells, problem)
         self.__setup_blank_cell_modifiers()
 
     def __setup_blank_cell_modifiers(self, problem=None):
         cards_to_always_update = {"_universe", "_fill"}
-        cards_to_property = mcnpy.Cell._CARDS_TO_PROPERTY
+        cards_to_property = montepy.Cell._CARDS_TO_PROPERTY
         for card_class, (attr, _) in cards_to_property.items():
             if not hasattr(self, attr):
                 card = card_class()
@@ -36,7 +36,7 @@ class Cells(NumberedObjectCollection):
 
     def set_equal_importance(self, importance, vacuum_cells=tuple()):
         """
-        Sets all cells except the vacuum cells to the same importance using :func:`mcnpy.data_cards.importance.Importance.all`.
+        Sets all cells except the vacuum cells to the same importance using :func:`montepy.data_cards.importance.Importance.all`.
 
         The vacuum cells will be set to 0.0. You can specify cell numbers or cell objects.
 
@@ -49,7 +49,7 @@ class Cells(NumberedObjectCollection):
             raise TypeError("vacuum_cells must be a list or set")
         cells_buff = set()
         for cell in vacuum_cells:
-            if not isinstance(cell, (mcnpy.Cell, int)):
+            if not isinstance(cell, (montepy.Cell, int)):
                 raise TypeError("vacuum cell must be a Cell or a cell number")
             if isinstance(cell, int):
                 cells_buff.add(self[cell])
@@ -79,7 +79,7 @@ class Cells(NumberedObjectCollection):
         self._volume.is_mcnp_calculated = value
 
     def update_pointers(self, cells, materials, surfaces, data_cards, problem):
-        cards_to_property = mcnpy.Cell._CARDS_TO_PROPERTY
+        cards_to_property = montepy.Cell._CARDS_TO_PROPERTY
         cards_to_always_update = {"_universe", "_fill"}
         cards_loaded = set()
         # start fresh for loading cell modifiers
@@ -110,7 +110,7 @@ class Cells(NumberedObjectCollection):
 
     def _run_children_format_for_mcnp(self, data_cards, mcnp_version):
         ret = []
-        for attr, _ in mcnpy.Cell._CARDS_TO_PROPERTY.values():
+        for attr, _ in montepy.Cell._CARDS_TO_PROPERTY.values():
             if getattr(self, attr) not in data_cards:
                 ret += getattr(self, attr).format_for_mcnp_input(mcnp_version)
         return ret

@@ -1,4 +1,4 @@
-__name__ = "mcnpy.data_cards"
+__name__ = "montepy.data_cards"
 from .data_card import DataCard
 from .material import Material
 from .thermal_scattering import ThermalScatteringLaw

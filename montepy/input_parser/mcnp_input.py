@@ -1,8 +1,8 @@
 from abc import ABC, abstractmethod
 import math
-from mcnpy.errors import *
-from mcnpy.input_parser.block_type import BlockType
-from mcnpy.input_parser.constants import BLANK_SPACE_CONTINUE, get_max_line_length
+from montepy.errors import *
+from montepy.input_parser.block_type import BlockType
+from montepy.input_parser.constants import BLANK_SPACE_CONTINUE, get_max_line_length
 import re
 
 
@@ -178,7 +178,7 @@ def parse_card_shortcuts(words, card=None):
     E.g., ``2R``, ``1 10I 100``, ``2J``
 
     Returns a list of strings with all shortcuts decompressed or changed out.
-    Jumps will be changed to :class:`mcnpy.input_parser.mcnp_input.Jump`.
+    Jumps will be changed to :class:`montepy.input_parser.mcnp_input.Jump`.
 
     :param words: the list of strings or "words".
     :type words: list

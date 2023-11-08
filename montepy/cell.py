@@ -1,14 +1,14 @@
 import itertools
-from mcnpy.cells import Cells
-from mcnpy.data_cards import fill, importance, lattice_card, universe_card, volume
-from mcnpy.data_cards.data_parser import PREFIX_MATCHES
-from mcnpy.errors import *
-from mcnpy.numbered_mcnp_card import Numbered_MCNP_Card
-from mcnpy.data_cards.material import Material
-from mcnpy.surfaces.surface import Surface
-from mcnpy.surface_collection import Surfaces
-from mcnpy.universe import Universe
-from mcnpy.utilities import *
+from montepy.cells import Cells
+from montepy.data_cards import fill, importance, lattice_card, universe_card, volume
+from montepy.data_cards.data_parser import PREFIX_MATCHES
+from montepy.errors import *
+from montepy.numbered_mcnp_card import Numbered_MCNP_Card
+from montepy.data_cards.material import Material
+from montepy.surfaces.surface import Surface
+from montepy.surface_collection import Surfaces
+from montepy.universe import Universe
+from montepy.utilities import *
 import re
 import numbers
 
@@ -531,7 +531,7 @@ class Cell(Numbered_MCNP_Card):
         """
         The Cell objects that this cell is a complement of
 
-        :rytpe: :class:`mcnpy.cells.Cells`
+        :rytpe: :class:`montepy.cells.Cells`
         """
         return self._complements
 

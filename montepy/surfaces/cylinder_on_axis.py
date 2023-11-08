@@ -1,6 +1,6 @@
 from .surface_type import SurfaceType
 from .surface import Surface
-from mcnpy.errors import *
+from montepy.errors import *
 
 
 class CylinderOnAxis(Surface):

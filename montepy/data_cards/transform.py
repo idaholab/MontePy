@@ -1,8 +1,8 @@
-from mcnpy import mcnp_card
-from mcnpy.data_cards import data_card
-from mcnpy.errors import *
-from mcnpy.numbered_mcnp_card import Numbered_MCNP_Card
-from mcnpy.utilities import *
+from montepy import mcnp_card
+from montepy.data_cards import data_card
+from montepy.errors import *
+from montepy.numbered_mcnp_card import Numbered_MCNP_Card
+from montepy.utilities import *
 import numpy as np
 import re
 

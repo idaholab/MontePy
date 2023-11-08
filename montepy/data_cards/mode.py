@@ -1,5 +1,5 @@
-from mcnpy.data_cards.data_card import DataCardAbstract
-from mcnpy.particle import Particle
+from montepy.data_cards.data_card import DataCardAbstract
+from montepy.particle import Particle
 
 
 class Mode(DataCardAbstract):
@@ -30,7 +30,7 @@ class Mode(DataCardAbstract):
         """
         The type of particles involved in this problem.
 
-        The set will contain instances of :class:`mcnpy.particle.Particle`.
+        The set will contain instances of :class:`montepy.particle.Particle`.
 
         :rtype: set
         """

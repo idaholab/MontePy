@@ -1,10 +1,10 @@
-from mcnpy.data_cards import data_card, thermal_scattering
-from mcnpy.data_cards.isotope import Isotope
-from mcnpy.data_cards.material_component import MaterialComponent
-from mcnpy import mcnp_card
-from mcnpy.numbered_mcnp_card import Numbered_MCNP_Card
-from mcnpy.errors import *
-from mcnpy.utilities import *
+from montepy.data_cards import data_card, thermal_scattering
+from montepy.data_cards.isotope import Isotope
+from montepy.data_cards.material_component import MaterialComponent
+from montepy import mcnp_card
+from montepy.numbered_mcnp_card import Numbered_MCNP_Card
+from montepy.errors import *
+from montepy.utilities import *
 import itertools
 import re
 

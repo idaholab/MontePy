@@ -3,8 +3,8 @@ from collections import deque
 from .. import errors
 import itertools
 import io
-from mcnpy.input_parser.constants import *
-from mcnpy.input_parser.mcnp_input import Card, Comment, Message, ReadCard, Title
+from montepy.input_parser.constants import *
+from montepy.input_parser.mcnp_input import Card, Comment, Message, ReadCard, Title
 import os
 import warnings
 

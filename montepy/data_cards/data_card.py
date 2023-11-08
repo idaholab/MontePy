@@ -1,7 +1,7 @@
 from abc import abstractmethod
-from mcnpy.errors import *
-from mcnpy.particle import Particle
-from mcnpy.mcnp_card import MCNP_Card
+from montepy.errors import *
+from montepy.particle import Particle
+from montepy.mcnp_card import MCNP_Card
 import re
 
 

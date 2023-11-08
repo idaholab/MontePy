@@ -1,8 +1,8 @@
-import mcnpy
-from mcnpy.cells import Cells
-from mcnpy.input_parser.mcnp_input import Card
-from mcnpy.input_parser.block_type import BlockType
-from mcnpy.numbered_mcnp_card import Numbered_MCNP_Card
+import montepy
+from montepy.cells import Cells
+from montepy.input_parser.mcnp_input import Card
+from montepy.input_parser.block_type import BlockType
+from montepy.numbered_mcnp_card import Numbered_MCNP_Card
 
 
 class Universe(Numbered_MCNP_Card):
@@ -45,11 +45,11 @@ class Universe(Numbered_MCNP_Card):
         :type cells: Cell, list, or Cells
         :raises TypeError: if bad parameter is given.
         """
-        if not isinstance(cells, (mcnpy.Cell, list, Cells)):
+        if not isinstance(cells, (montepy.Cell, list, Cells)):
             raise TypeError(f"Cells being claimed must be a Cell, list, or Cells")
         if isinstance(cells, list):
             cells = Cells(cells)
-        if isinstance(cells, mcnpy.Cell):
+        if isinstance(cells, montepy.Cell):
             cells = Cells([cells])
 
         for cell in cells:
