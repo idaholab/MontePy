@@ -1,5 +1,4 @@
 from mcnpy.errors import *
-from mcnpy.input_parser.tokens import DataLexer
 from mcnpy.input_parser.parser_base import MCNP_Parser, MetaBuilder
 from mcnpy.input_parser import syntax_node
 
@@ -14,8 +13,6 @@ class DataParser(MCNP_Parser):
     :returns: a syntax tree for the data input.
     :rtype: SyntaxNode
     """
-
-    tokens = DataLexer.tokens
 
     debugfile = None
 
