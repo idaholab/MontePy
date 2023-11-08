@@ -1,7 +1,7 @@
 Developer's Guide
 =================
 
-Montepy can be thought of as having two layers: the syntax, and the semantic layers.
+MontePy can be thought of as having two layers: the syntax, and the semantic layers.
 The syntax layers handle the boring syntax things: like multi-line cards, and comments, etc.
 The semantic layer takes this information and makes sense of it, like what the material number in a cell card is.
 
@@ -17,14 +17,14 @@ Setting up and Typical Development Workflow
 #. Clone the repository.
 
 #. Install the required packages. 
-   Montepy comes with two requirements files. 
-   One (``requirements/common.txt``) is for packages Montepy depends on.
+   MontePy comes with two requirements files. 
+   One (``requirements/common.txt``) is for packages MontePy depends on.
    The other (``requirements/dev.txt``) is for packages that are generally necessary for developing.
    To install these simply run: 
    
    ``pip install -r requirements/dev.txt``
 
-#. Tie your work to an issue. All work on Montepy is tracked through issues. 
+#. Tie your work to an issue. All work on MontePy is tracked through issues. 
    If you are working on a new feature or bug that is not covered by an issue, please file an issue first.
 
 #. Work on a new branch. The branches: ``develop`` and ``main`` are protected. 
@@ -32,7 +32,7 @@ Setting up and Typical Development Workflow
    The easiest way to make this branch is to "create pull request" from github.
    This will create a new branch (though with an unwieldy name) that you can checkout and work on.
 
-#. Run the test cases. Montepy relies heavily on its over 200 tests for the development process.
+#. Run the test cases. MontePy relies heavily on its over 200 tests for the development process.
    These are configured so if you run: ``python -m pytest`` from the root of the git repository 
    all tests will be found and ran.
 
@@ -42,7 +42,7 @@ Setting up and Typical Development Workflow
    To achieve this, it is recommended that you commit the test first, and push it to gitlab.
    This way there will be a record of the CI pipeline failing that can be quickly reviewed as part of the merge request.
 
-   Though Montepy uses ``pytest`` for running the tests,
+   Though MontePy uses ``pytest`` for running the tests,
    it actually uses `unittest <https://docs.python.org/3/library/unittest.html>`_ for setting up all test fixtures. 
    Generally unit tests of new features go in the test file with the closest class name. 
    Integration tests have all been dumped in ``tests/test_integration.py``. 
@@ -52,7 +52,7 @@ Setting up and Typical Development Workflow
 
 #. Write the code.
 
-#. Document all new classes and functions. Montepy uses `Sphinx docstrings <https://sphinx-rtd-tutorial.readthedocs.io/en/latest/docstrings.html>`_.
+#. Document all new classes and functions. MontePy uses `Sphinx docstrings <https://sphinx-rtd-tutorial.readthedocs.io/en/latest/docstrings.html>`_.
 
 #. Format the code with ``black``. You can simply run ``black montepy tests``
 
@@ -72,7 +72,7 @@ Setting up and Typical Development Workflow
 
 Deploy Process
 ^^^^^^^^^^^^^^
-Montepy currently does not use a continuous deploy process.
+MontePy currently does not use a continuous deploy process.
 Rather changes are staged on the ``develop`` branch prior to a release.
 Both ``develop`` and ``main`` are protected branches.
 ``main`` should only be used for releases.
@@ -203,7 +203,7 @@ SURFACE: 1005, RCC
 
 Mutation
 """"""""
-Montepy supports copying the exact input unless an object changes at all,
+MontePy supports copying the exact input unless an object changes at all,
 which is inconvenient.
 This is handled by ``self._mutated``. 
 Whenever an object parameter is set the setter must set ``self._mutated=True``. 
@@ -544,7 +544,7 @@ First you might be saying there are no pointers in python.
 There are pointers you just don't see them. 
 If these examples aren't clear reach out to one of the core developers.
 
-Montepy abuses pointers a lot. 
+MontePy abuses pointers a lot. 
 This will talk a lot like a Rust reference book about ownership and borrowing.
 There aren't true parallels in python though.
 In this section ownership is considered the first instance of an object, 

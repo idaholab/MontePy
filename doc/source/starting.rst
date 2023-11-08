@@ -1,30 +1,30 @@
-Getting Started with Montepy
+Getting Started with MontePy
 ============================
 
-Montepy is a python API for reading, editing, and writing MCNP input files.
+MontePy is a python API for reading, editing, and writing MCNP input files.
 It does not run MCNP nor does it parse MCNP output files.
 The library provides a semantic interface for working with input files, or our preferred terminology: problems.
 It understands that the second entry on a cell card is the material number,
 and will link the cell with its material object.
 
 .. warning::
-    Montepy is built primarily to support MCNP 6.2. Some success maybe achieved with MCNP 6.1, and 5.1.60, 
+    MontePy is built primarily to support MCNP 6.2. Some success maybe achieved with MCNP 6.1, and 5.1.60, 
     but there may be issues due to new features in MCNP 6.2, not being backwards compatible.
-    Use earlier versions of MCNP with Montepy at your own risk.
+    Use earlier versions of MCNP with MontePy at your own risk.
 
     MCNP 6.3 is not fully supported yet either. 
     An MCNP 6.3 file that is backwards compatible with 6.2 should work fine,
     but when using the new syntaxes in 6.3,
     especially for materials,
-    Montepy will likely break.
+    MontePy will likely break.
 
     Due to the manuals for these earlier versions of MCNP being export controlled, these versions will likely never be fully supported.
 
 Reading a File
 --------------
 
-Montepy offers the :func:`montepy.read_input` (actually :func:`~montepy.input_parser.input_reader.read_input`) function for getting started.
-It will read the specified MCNP input file, and return an Montepy :class:`~montepy.mcnp_problem.MCNP_Problem` object.
+MontePy offers the :func:`montepy.read_input` (actually :func:`~montepy.input_parser.input_reader.read_input`) function for getting started.
+It will read the specified MCNP input file, and return an MontePy :class:`~montepy.mcnp_problem.MCNP_Problem` object.
 
 >>> import montepy
 >>> problem = montepy.read_input("foo.imcnp")
@@ -44,9 +44,9 @@ state as a valid MCNP input file.
    This will wipe out the original version, and if you have no version control,
    may lead to losing information.
 
-If no changes are made to the problem in Montepy the entire file will be just parroted out as it was in the original file.
+If no changes are made to the problem in MontePy the entire file will be just parroted out as it was in the original file.
 However any objects (e.g., two cells) that were changed (i.e., mutated) will have their original formatting discarded,
-and Montepy will decide how to format that object in the input file.
+and MontePy will decide how to format that object in the input file.
 
 .. note::
     This behavior will change with version 0.2.0.
@@ -69,7 +69,7 @@ For example say we have this simple MCNP input file (saved as foo.imcnp) ::
         TR1 0 0 1.0
         TR2 0 0 1.00001
 
-We can then open this file in Montepy, and then modify it slightly, and save it again::
+We can then open this file in MontePy, and then modify it slightly, and save it again::
 
         import montepy
         problem = montepy.read_input("foo.imcnp")
@@ -77,7 +77,7 @@ We can then open this file in Montepy, and then modify it slightly, and save it 
         problem.surfaces[1].number = 1000
         problem.write_to_file("bar.imcnp")
 
-This new file we can see is now reformatted according to Montepy's preferences for formatting::
+This new file we can see is now reformatted according to MontePy's preferences for formatting::
 
         Example Problem
         5 0
@@ -97,7 +97,7 @@ This new file we can see is now reformatted according to Montepy's preferences f
 
 In addition to the reformatting of cell 5,
 notice that the geometry definition for cell 5 was automatically updated to reference the new surface number.
-Montepy links objects together and will automatically update "pointers" in the file for you.
+MontePy links objects together and will automatically update "pointers" in the file for you.
 
 Setting Cell Importances
 ------------------------
@@ -133,7 +133,7 @@ Setting How Cell Data Gets displayed in the Input file
 ------------------------------------------------------
 
 Much of the cell data can show up in the cell block or the data block, like the importance card.
-These are referred to Montepy as "cell modifiers".
+These are referred to MontePy as "cell modifiers".
 You can change how these cell modifiers are printed with :func:`~montepy.mcnp_problem.MCNP_Problem.print_in_data_block`.
 This acts like a dictionary where the key is the MCNP card name.
 So to make cell importance data show up in the cell block just run:
@@ -142,8 +142,8 @@ So to make cell importance data show up in the cell block just run:
 What Information is Kept
 ------------------------
 
-So what does Montepy keep, and what does it forget? 
-In general the philosophy of Montepy is: meaning first; formatting second. 
+So what does MontePy keep, and what does it forget? 
+In general the philosophy of MontePy is: meaning first; formatting second. 
 Its first priority is to preserve the semantic meaning and discard complex formatting for now.
 
 .. note::
@@ -160,7 +160,7 @@ Information Lost
 ^^^^^^^^^^^^^^^^
 #. Dollar sign comments (e.g., ``1 0 $ this is a banana``)
 #. Read cards. These are handled properly, but when written out these cards themselves will disappear. 
-   When Montepy encounters a read card it notes the file in the card, and then discard the card. 
+   When MontePy encounters a read card it notes the file in the card, and then discard the card. 
    It will then read these extra files and append their contents to the appropriate block.
    So If you were to write out a problem that used the read card in the surface block the surface
    cards in that file from the read card will appear at the end of the new surface block in the newly written file.
@@ -346,7 +346,7 @@ One way you might think of is: oh let's just filter the surfaces by their type?:
 
 Wow that's rather verbose. 
 This was the only way to do this with the API for awhile.
-But Montepy 0.0.5 fixed this with: you guessed it: generators.
+But MontePy 0.0.5 fixed this with: you guessed it: generators.
 
 The :class:`~montepy.surface_collection.Surfaces` collection has a generator for every type of surface in MCNP.
 These are very easy to find: they are just the lower case version of the 
@@ -366,7 +366,7 @@ MCNP supports both atom density, and mass density.
 So when you access ``cell.density`` on its own,
 the result is ambiguous, 
 because it could be in g/cm3 or atom/b-cm.
-No; Montepy does not support negative density; it doesn't exist!
+No; MontePy does not support negative density; it doesn't exist!
 For this reason ``cell.density`` is deprecated.
 Instead there is now ``cell.atom_density`` and ``cell.mass_density``. 
 
@@ -375,7 +375,7 @@ and ``cell.mass_density`` is in units of g/cm3.
 Both will never return a valid number simultaneously.
 If the cell density is set to a mass density ``cell.atom_density`` will return ``None``.
 Setting the value for one of these densities will change the density mode.
-Montepy does not convert mass density to atom density and vice versa.
+MontePy does not convert mass density to atom density and vice versa.
 
 >>> cell.mass_density
 9.8
@@ -389,7 +389,7 @@ None
 Universes
 ---------
 
-Montepy supports MCNP universes as well.
+MontePy supports MCNP universes as well.
 ``problem.universes`` will contain all universes in a problem.
 These are stored in :class:`~montepy.universes.Universes` as :class:`~montepy.universe.Universe` instances. 
 If a cell is not assigned to any universe it will be assigned to Universe 0, *not None*, while reading in the input file.
@@ -470,7 +470,7 @@ You can also easy apply a transform to the filling universe with:
    Mainly the ability to fill a cell with different universes for every lattice site,
    and to create an "anonymous transform" in the fill card.
 
-   Montepy can understand and manipulate fills with these features in the input.
+   MontePy can understand and manipulate fills with these features in the input.
    However, generating these from scratch may be cumbersome.
    If you use this feature, and have input on how to make it more user friendly,
    please reach out to the developers.

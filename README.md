@@ -1,4 +1,4 @@
-# Montepy
+# MontePy
 
 A python library to read, edit, and write MCNP input files. 
 
@@ -9,7 +9,7 @@ A python library to read, edit, and write MCNP input files.
 
 >>>
 Note: If you are planning to use this in a jupyter notebook on an HPC, 
-the HPC may use modules for python, which may make it so the installed Montepy package doesn't show up in the jupyter environment.
+the HPC may use modules for python, which may make it so the installed MontePy package doesn't show up in the jupyter environment.
 In this case the easiest way to deal with this is to open a teminal inside of `jupyter lab` and to install the package there.
 >>>
 
@@ -39,10 +39,10 @@ Now when you run a python script in that folder (*and only in that folder*) `imp
 
 ## User Documentation
 
-Montepy has a [sphinx website](https://experiment_analysis_all.pages.hpc.inl.gov/software/montepy/). 
+MontePy has a [sphinx website](https://experiment_analysis_all.pages.hpc.inl.gov/software/montepy/). 
 This has a getting started guide for users,
 as well as API documentation. 
-There is also a developer's guide covering the design and approach of Montepy, and how to contribute.
+There is also a developer's guide covering the design and approach of MontePy, and how to contribute.
 
 ## Features
 	
@@ -82,7 +82,7 @@ Here a few of the known bugs and limitations:
 	
 ## Bugs, Requests and Development
 
-So Montepy doesn't do what you want? Right now development is done with a  Just-In-Time development approach, as in features are added JIT for a developer to use them on my current projects. 
+So MontePy doesn't do what you want? Right now development is done with a  Just-In-Time development approach, as in features are added JIT for a developer to use them on my current projects. 
 If there's a feature you want add an issue here with the feature request tag. 
 If you want to add a feature on your own talk to Micah Gale (but still add the issue). 
 The system is very modular and you should be able to develop it pretty quickly.
