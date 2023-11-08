@@ -159,7 +159,7 @@ Inheritance
 There are many abstract or simply parent classes that are designed to be subclassed extensively.
 
 Card: :class:`~montepy.mcnp_card.MCNP_Card`
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 All classes that represent a single input card *must* subclass this. 
 For example: some children are: :class:`~montepy.cell.Cell`, :class:`~montepy.surfaces.surface.Surface`.
@@ -181,7 +181,7 @@ New classes need to support "from scratch" creation e.g., ``cell = Cell()``.
    This system will be changed drastically with 0.2.0.
 
 How to __str__ vs __repr__
-""""""""""""""""""""""""""""
+""""""""""""""""""""""""""
 All objects must implement ``__str__`` (called by ``str()``), 
 and ``__repr__`` (called by ``repr()``).
 See `this issue <https://hpcgitlab.hpc.inl.gov/experiment_analysis/montepy/-/issues/41>`_ for a more detailed discussion.
@@ -256,7 +256,7 @@ Example taken from :class:`~montepy.data_cards.mode.Mode`
 
 
 Collection: :class:`~montepy.numbered_object_collection.NumberedObjectCollection`
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 This should be subclassed for any collection of objects that will are numbered.
 For example: cells, surfaces, materials, universes, tallies, etc.
 By default you need to do almost nothing.
@@ -275,7 +275,8 @@ For example the init function for ``Cells``
             super().__init__(montepy.Cell, cells)
 
 Numbered Object :class:`~montepy.numbered_mcnp_card.Numbered_MCNP_Card`
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
 MCNP allows many types of number objects like cells, surfaces, and tallies. 
 The only thing special about this is that it requires there be the properties:
 ``number`` and ``old_number``.
@@ -299,7 +300,7 @@ For example the ``Surface`` number setter looks like::
 
 
 Surface: :class:`~montepy.surfaces.surface.Surface`
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 This is the parent class for all Surface classes.
 You will also need to update :func:`~montepy.surfaces.surface_builder.surface_builder`.
 You should expose clear parameters such as ``radius`` or ``location``.
@@ -313,7 +314,7 @@ You will then have access to ``self.surface_type``, and ``self.surface_constants
 You then need to verify that the surface type is correct, and there are the correct number of surface constants. 
 
 :func:`~montepy.surfaces.surface.Surface.find_duplicate_surfaces`
-"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 This function is meant to find very similar surfaces that cause geometry errors,
 such as two ``PZ`` surfaces that are 1 micron apart.
 This should return a list of surfaces that are within the provided tolerance similar to this one.
@@ -325,7 +326,7 @@ Things to consider.
 
 
 Data Cards: :class:`~montepy.data_cards.data_card.DataCardAbstract`
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 This class is the parent for all cards that show up in the data block. 
 When adding a child you will also need to update the 
 :func:`~montepy.data_cards.data_parser.parse_data` function.
@@ -364,7 +365,7 @@ To add a problem level data Object you need to
 #. Add a property that exposes this attribute in a desirable way.
 
 Making a numbered Object :class:`~montepy.numbered_mcnp_card.Numbered_MCNP_Card`
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 MCNP allows many types of number objects like cells, surfaces, and tallies. 
 First you need to provide the property ``number``, and ``old_number``.
 The parent class provides a system to link to a problem via ``self._problem``.
@@ -384,7 +385,7 @@ For example the ``Surface`` number setter looks like::
         self._surface_number = number
 
 Data Cards that Modify Cells :class:`~montepy.data_cards.cell_modifier.CellModifierCard`
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 This is a subclass of ``DataCardAbstract`` that is meant to handle data cards that specify information about,
 and modify cells.
 For example ``IMP`` changes the importance of a cell and ``VOL`` specifies its volume.
@@ -523,7 +524,7 @@ Most of the work with this property is automated.
 
 
 Syntax Objects: :class:`~montepy.input_parser.mcnp_input.MCNP_Input`
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 This represents all low level components in MCNP syntax, such as:
 Comments, Messages, titles, and Cards. 
 Similar to ``MCNP_Card`` you will need to implement ``format_for_mcnp_input``.

@@ -1,5 +1,5 @@
 Getting Started with Montepy
-==========================
+============================
 
 Montepy is a python API for reading, editing, and writing MCNP input files.
 It does not run MCNP nor does it parse MCNP output files.
@@ -352,6 +352,7 @@ This previous code is much simpler now::
 
 Cells 
 -----
+
 Density
 ^^^^^^^
 This gets a bit more complicated.
