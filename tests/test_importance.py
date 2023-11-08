@@ -1,10 +1,10 @@
 from unittest import TestCase
-import mcnpy
-from mcnpy.cell import Cell
-from mcnpy.particle import Particle
-from mcnpy.data_cards.importance import Importance
-from mcnpy.errors import *
-from mcnpy.input_parser import mcnp_input, block_type
+import montepy
+from montepy.cell import Cell
+from montepy.particle import Particle
+from montepy.data_cards.importance import Importance
+from montepy.errors import *
+from montepy.input_parser import mcnp_input, block_type
 import os
 
 
@@ -67,7 +67,10 @@ class TestImportance(TestCase):
         card = mcnp_input.Card([in_str], block_type.BlockType.CELL)
         cell = Cell(card)
         imp = cell.importance
-        particles = [mcnpy.particle.Particle.NEUTRON, mcnpy.particle.Particle.PHOTON]
+        particles = [
+            montepy.particle.Particle.NEUTRON,
+            montepy.particle.Particle.PHOTON,
+        ]
         for particle in imp:
             self.assertIn(particle, particles)
             self.assertAlmostEqual(imp[particle], 1.0)
@@ -80,9 +83,9 @@ class TestImportance(TestCase):
         in_str = "1 0 -1 IMP:N,P=1"
         card = mcnp_input.Card([in_str], block_type.BlockType.CELL)
         cell = Cell(card)
-        problem = mcnpy.mcnp_problem.MCNP_Problem("foo")
-        problem.mode.add(mcnpy.particle.Particle.NEUTRON)
-        problem.mode.add(mcnpy.particle.Particle.PHOTON)
+        problem = montepy.mcnp_problem.MCNP_Problem("foo")
+        problem.mode.add(montepy.particle.Particle.NEUTRON)
+        problem.mode.add(montepy.particle.Particle.PHOTON)
         imp = cell.importance
         cell.link_to_problem(problem)
         imp.all = 2.0
@@ -101,7 +104,7 @@ class TestImportance(TestCase):
         cell = Cell(card)
         cell.importance.neutron = 2.5
         self.assertEqual(cell.importance.neutron, 2.5)
-        problem = mcnpy.mcnp_problem.MCNP_Problem("foo")
+        problem = montepy.mcnp_problem.MCNP_Problem("foo")
         cell.link_to_problem(problem)
         # test problem mode enforcement
         with self.assertRaises(ValueError):
@@ -160,6 +163,6 @@ class TestImportance(TestCase):
 
     def tests_redundant_importance(self):
         with self.assertRaises(MalformedInputError):
-            mcnpy.read_input(
+            montepy.read_input(
                 os.path.join("tests", "inputs", "test_imp_redundant.imcnp")
             )

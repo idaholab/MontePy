@@ -1,11 +1,11 @@
 from io import StringIO
 from unittest import TestCase
 
-import mcnpy
-from mcnpy.input_parser import input_syntax_reader
-from mcnpy.input_parser.mcnp_input import Card, Jump, Message, ReadCard, Title
-from mcnpy.input_parser.block_type import BlockType
-from mcnpy.particle import Particle
+import montepy
+from montepy.input_parser import input_syntax_reader
+from montepy.input_parser.mcnp_input import Card, Jump, Message, ReadCard, Title
+from montepy.input_parser.block_type import BlockType
+from montepy.particle import Particle
 
 
 class TestSyntaxParsing(TestCase):
@@ -40,7 +40,7 @@ test title
             with StringIO(tester) as fh:
                 generator = input_syntax_reader.read_front_matters(fh, (6, 2, 0))
                 card = next(generator)
-                self.assertIsInstance(card, mcnpy.input_parser.mcnp_input.Message)
+                self.assertIsInstance(card, montepy.input_parser.mcnp_input.Message)
                 self.assertEqual(card.lines[0], validator)
                 self.assertEqual(len(card.lines), 1)
 
@@ -63,7 +63,7 @@ test title
             with StringIO(tester) as fh:
                 generator = input_syntax_reader.read_front_matters(fh, (6, 2, 0))
                 card = next(generator)
-                self.assertIsInstance(card, mcnpy.input_parser.mcnp_input.Title)
+                self.assertIsInstance(card, montepy.input_parser.mcnp_input.Title)
                 self.assertEqual(card.title, validator)
 
     def testCardFinder(self):
@@ -74,13 +74,13 @@ test title
             with StringIO(tester) as fh:
                 generator = input_syntax_reader.read_data(fh, (6, 2, 0))
                 card = next(generator)
-                self.assertIsInstance(card, mcnpy.input_parser.mcnp_input.Card)
+                self.assertIsInstance(card, montepy.input_parser.mcnp_input.Card)
                 answer = ["1", "0", "-1", "5"]
                 self.assertEqual(len(answer), len(card.words))
                 for j, word in enumerate(card.words):
                     self.assertEqual(word, answer[j])
                     self.assertEqual(
-                        card.block_type, mcnpy.input_parser.block_type.BlockType.CELL
+                        card.block_type, montepy.input_parser.block_type.BlockType.CELL
                     )
 
     def testCommentFinder(self):
@@ -94,7 +94,7 @@ c bop
             tester = " " * i + test_string
             with StringIO(tester) as fh:
                 card = next(input_syntax_reader.read_data(fh, (6, 2, 0)))
-                self.assertIsInstance(card, mcnpy.input_parser.mcnp_input.Comment)
+                self.assertIsInstance(card, montepy.input_parser.mcnp_input.Comment)
                 self.assertEqual(len(card.lines), 5)
                 self.assertEqual(card.lines[0], "foo")
                 self.assertEqual(card.lines[1], "bar")
@@ -114,12 +114,12 @@ c bop
                 for card in input_syntax_reader.read_data(fh, (6, 2, 0)):
                     pass
                 self.assertEqual(
-                    mcnpy.input_parser.block_type.BlockType(i), card.block_type
+                    montepy.input_parser.block_type.BlockType(i), card.block_type
                 )
 
     def testCommentFormatInput(self):
         in_strs = ["c foo", "c bar"]
-        card = mcnpy.input_parser.mcnp_input.Comment(in_strs, ["foo", "bar"])
+        card = montepy.input_parser.mcnp_input.Comment(in_strs, ["foo", "bar"])
         output = card.format_for_mcnp_input((6.2, 0))
         output = card.format_for_mcnp_input((6, 2, 0))
         answer = ["C foo", "C bar"]
@@ -135,7 +135,7 @@ bar
 
     def testMessageFormatInput(self):
         answer = ["MESSAGE: foo", "bar", ""]
-        card = mcnpy.input_parser.mcnp_input.Message(answer, ["foo", "bar"])
+        card = montepy.input_parser.mcnp_input.Message(answer, ["foo", "bar"])
         str_answer = """MESSAGE:
 foo
 bar
@@ -148,7 +148,7 @@ bar
             self.assertEqual(answer[i], line)
 
     def testTitleFormatInput(self):
-        card = mcnpy.input_parser.mcnp_input.Title(["foo"], "foo")
+        card = montepy.input_parser.mcnp_input.Title(["foo"], "foo")
         answer = ["foo"]
         str_answer = "TITLE: foo"
         self.assertEqual(str(card), str_answer)
@@ -159,7 +159,7 @@ bar
 
     def testReadInput(self):
         generator = input_syntax_reader.read_input_syntax("tests/inputs/test.imcnp")
-        mcnp_in = mcnpy.input_parser.mcnp_input
+        mcnp_in = montepy.input_parser.mcnp_input
         input_order = [mcnp_in.Message, mcnp_in.Title, mcnp_in.Comment]
         input_order += [mcnp_in.Card] * 5 + [mcnp_in.Comment] * 2
         input_order += [mcnp_in.Card] * 3 + [mcnp_in.Comment]
@@ -185,13 +185,13 @@ bar
         )
         next(generator)
         next(generator)
-        with self.assertRaises(mcnpy.errors.UnsupportedFeature):
+        with self.assertRaises(montepy.errors.UnsupportedFeature):
             next(generator)
 
     def testCardStringRepr(self):
         in_str = "1 0 -1"
-        card = mcnpy.input_parser.mcnp_input.Card(
-            [in_str], mcnpy.input_parser.block_type.BlockType.CELL
+        card = montepy.input_parser.mcnp_input.Card(
+            [in_str], montepy.input_parser.block_type.BlockType.CELL
         )
         self.assertEqual(str(card), "CARD: BlockType.CELL")
         self.assertEqual(repr(card), "CARD: BlockType.CELL: ['1', '0', '-1']")
@@ -223,7 +223,7 @@ bar
                 "1",
                 "2j",
                 "4",
-            ): ["M", "1", mcnpy.Jump(), mcnpy.Jump(), "4"],
+            ): ["M", "1", montepy.Jump(), montepy.Jump(), "4"],
         }
         invalid = [
             ("M", "3J", "4R"),
@@ -238,14 +238,14 @@ bar
             ),
         ]
 
-        parser = mcnpy.input_parser.mcnp_input.parse_card_shortcuts
+        parser = montepy.input_parser.mcnp_input.parse_card_shortcuts
         for test, answer in tests.items():
             print(test)
             parsed = parser(list(test))
             self.assertEqual(parsed, answer)
         for test in invalid:
             print(test)
-            with self.assertRaises(mcnpy.errors.MalformedInputError):
+            with self.assertRaises(montepy.errors.MalformedInputError):
                 parser(list(test))
 
     def testDataCardNameParsing(self):
@@ -265,10 +265,10 @@ bar
         }
         for in_str, answer in tests.items():
             # Testing parsing the names
-            card = mcnpy.input_parser.mcnp_input.Card(
-                [in_str], mcnpy.input_parser.block_type.BlockType.DATA
+            card = montepy.input_parser.mcnp_input.Card(
+                [in_str], montepy.input_parser.block_type.BlockType.DATA
             )
-            data_card = mcnpy.data_cards.data_card.DataCard(card)
+            data_card = montepy.data_cards.data_card.DataCard(card)
             self.assertEqual(data_card.prefix, answer["prefix"])
             self.assertEqual(data_card._input_number, answer["number"])
             self.assertEqual(data_card.particle_classifiers, answer["classifier"])
@@ -288,9 +288,9 @@ bar
         }
         # tests invalid names
         for in_str, answer in tests.items():
-            with self.assertRaises(mcnpy.errors.MalformedInputError):
-                card = mcnpy.input_parser.mcnp_input.Card(
-                    [in_str], mcnpy.input_parser.block_type.BlockType.DATA
+            with self.assertRaises(montepy.errors.MalformedInputError):
+                card = montepy.input_parser.mcnp_input.Card(
+                    [in_str], montepy.input_parser.block_type.BlockType.DATA
                 )
                 card = DataCardTestFixture(card)
                 card._class_prefix = answer["prefix"]
@@ -300,8 +300,8 @@ bar
 
         # tests valid names
         for in_str, answer in valid.items():
-            card = mcnpy.input_parser.mcnp_input.Card(
-                [in_str], mcnpy.input_parser.block_type.BlockType.DATA
+            card = montepy.input_parser.mcnp_input.Card(
+                [in_str], montepy.input_parser.block_type.BlockType.DATA
             )
             card = DataCardTestFixture(card)
             card._class_prefix = answer["prefix"]
@@ -320,10 +320,10 @@ bar
         }
         for version, answer in answers.items():
             self.assertEqual(
-                answer, mcnpy.input_parser.constants.get_max_line_length(version)
+                answer, montepy.input_parser.constants.get_max_line_length(version)
             )
-        with self.assertRaises(mcnpy.errors.UnsupportedFeature):
-            mcnpy.input_parser.constants.get_max_line_length((5, 1, 38))
+        with self.assertRaises(montepy.errors.UnsupportedFeature):
+            montepy.input_parser.constants.get_max_line_length((5, 1, 38))
 
     def test_jump(self):
         jump = Jump()
@@ -343,7 +343,7 @@ bar
         self.assertEqual("J", jump.upper())
 
 
-class DataCardTestFixture(mcnpy.data_cards.data_card.DataCardAbstract):
+class DataCardTestFixture(montepy.data_cards.data_card.DataCardAbstract):
     def __init__(self, input_card=None, comment=None):
         """
         :param input_card: the Card object representing this data card
