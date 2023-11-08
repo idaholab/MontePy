@@ -1,5 +1,5 @@
 from abc import abstractmethod
-from mcnpy.mcnp_object import MCNP_Object
+from montepy.mcnp_object import MCNP_Object
 
 
 class Numbered_MCNP_Object(MCNP_Object):

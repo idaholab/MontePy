@@ -1,16 +1,16 @@
 from unittest import TestCase
 
-import mcnpy
+import montepy
 
-from mcnpy._cell_data_control import CellDataPrintController
-from mcnpy.data_inputs.data_input import DataInput
-from mcnpy.data_inputs import material, thermal_scattering, transform, volume
-from mcnpy.data_inputs.data_parser import parse_data
-from mcnpy.errors import *
-from mcnpy.input_parser.mcnp_input import Input, Jump
-from mcnpy.input_parser import syntax_node
-from mcnpy.input_parser.block_type import BlockType
-from mcnpy.mcnp_problem import MCNP_Problem
+from montepy._cell_data_control import CellDataPrintController
+from montepy.data_inputs.data_input import DataInput
+from montepy.data_inputs import material, thermal_scattering, transform, volume
+from montepy.data_inputs.data_parser import parse_data
+from montepy.errors import *
+from montepy.input_parser.mcnp_input import Input, Jump
+from montepy.input_parser import syntax_node
+from montepy.input_parser.block_type import BlockType
+from montepy.mcnp_problem import MCNP_Problem
 
 
 class testDataInputClass(TestCase):
@@ -207,7 +207,8 @@ class testDataInputClass(TestCase):
 
     def test_volumes_for_only_some_cells(self):
         cells = [
-            mcnpy.Cell(Input([f"{i + 1} 0 -1 u=3"], BlockType.CELL)) for i in range(10)
+            montepy.Cell(Input([f"{i + 1} 0 -1 u=3"], BlockType.CELL))
+            for i in range(10)
         ]
         prob = MCNP_Problem(None)
         prob.cells = cells

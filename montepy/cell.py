@@ -1,19 +1,19 @@
 import copy
-from mcnpy.cells import Cells
-from mcnpy.constants import BLANK_SPACE_CONTINUE
-from mcnpy.data_inputs import importance, fill, lattice_input, universe_input, volume
-from mcnpy.data_inputs.data_parser import PREFIX_MATCHES
-from mcnpy.input_parser.cell_parser import CellParser
-from mcnpy.input_parser import syntax_node
-from mcnpy.errors import *
-from mcnpy.numbered_mcnp_object import Numbered_MCNP_Object
-from mcnpy.data_inputs.material import Material
-from mcnpy.geometry_operators import Operator
-from mcnpy.surfaces.half_space import HalfSpace, UnitHalfSpace
-from mcnpy.surfaces.surface import Surface
-from mcnpy.surface_collection import Surfaces
-from mcnpy.universe import Universe
-from mcnpy.utilities import *
+from montepy.cells import Cells
+from montepy.constants import BLANK_SPACE_CONTINUE
+from montepy.data_inputs import importance, fill, lattice_input, universe_input, volume
+from montepy.data_inputs.data_parser import PREFIX_MATCHES
+from montepy.input_parser.cell_parser import CellParser
+from montepy.input_parser import syntax_node
+from montepy.errors import *
+from montepy.numbered_mcnp_object import Numbered_MCNP_Object
+from montepy.data_inputs.material import Material
+from montepy.geometry_operators import Operator
+from montepy.surfaces.half_space import HalfSpace, UnitHalfSpace
+from montepy.surfaces.surface import Surface
+from montepy.surface_collection import Surfaces
+from montepy.universe import Universe
+from montepy.utilities import *
 import numbers
 
 
@@ -278,7 +278,7 @@ class Cell(Numbered_MCNP_Object):
         This does not guarantee that MCNP will able to calculate the volume.
         Complex geometries may make this impossible.
 
-        See :func:`~mcnpy.cells.Cells.allow_mcnp_volume_calc`
+        See :func:`~montepy.cells.Cells.allow_mcnp_volume_calc`
 
         :returns: True iff MCNP will try to calculate the volume for this cell.
         :rtype: bool
@@ -333,7 +333,7 @@ class Cell(Numbered_MCNP_Object):
             Added with the new ability to represent true CSG geometry logic.
 
         The HalfSpace tree that is able to represent this cell's geometry.
-        MCNPy's geometry is based upon dividers, which includes both Surfaces, and cells.
+        MontePy's geometry is based upon dividers, which includes both Surfaces, and cells.
         A half-space is created by choosing one side of the divider.
         A divider will always create two half-spaces; only one of which can be finite.
 
@@ -498,7 +498,7 @@ class Cell(Numbered_MCNP_Object):
         """
         The Cell objects that this cell is a complement of
 
-        :rytpe: :class:`mcnpy.cells.Cells`
+        :rytpe: :class:`montepy.cells.Cells`
         """
         return self._complements
 

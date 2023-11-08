@@ -1,6 +1,6 @@
-from mcnpy.data_inputs.element import Element
-from mcnpy.errors import *
-from mcnpy.input_parser.syntax_node import ValueNode
+from montepy.data_inputs.element import Element
+from montepy.errors import *
+from montepy.input_parser.syntax_node import ValueNode
 
 
 class Isotope:

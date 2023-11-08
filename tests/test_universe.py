@@ -1,19 +1,19 @@
 from unittest import TestCase
 
 import copy
-from mcnpy.constants import DEFAULT_VERSION
-from mcnpy.input_parser import syntax_node
-import mcnpy
-from mcnpy.cell import Cell
-from mcnpy.constants import DEFAULT_VERSION
-from mcnpy.errors import *
-from mcnpy.input_parser.block_type import BlockType
-from mcnpy.input_parser.mcnp_input import Input, Jump
-from mcnpy.universe import Universe
-from mcnpy.data_inputs.fill import Fill
-from mcnpy.data_inputs.lattice import Lattice
-from mcnpy.data_inputs.lattice_input import LatticeInput
-from mcnpy.data_inputs.universe_input import UniverseInput
+from montepy.constants import DEFAULT_VERSION
+from montepy.input_parser import syntax_node
+import montepy
+from montepy.cell import Cell
+from montepy.constants import DEFAULT_VERSION
+from montepy.errors import *
+from montepy.input_parser.block_type import BlockType
+from montepy.input_parser.mcnp_input import Input, Jump
+from montepy.universe import Universe
+from montepy.data_inputs.fill import Fill
+from montepy.data_inputs.lattice import Lattice
+from montepy.data_inputs.lattice_input import LatticeInput
+from montepy.data_inputs.universe_input import UniverseInput
 import numpy as np
 
 
@@ -339,7 +339,7 @@ class TestFill(TestCase):
             },
         )
         fill = copy.deepcopy(self.simple_fill)
-        uni = mcnpy.Universe(6)
+        uni = montepy.Universe(6)
         fill.universe = uni
         self.assertEqual(fill.universe.number, uni.number)
         self.assertIsNone(fill.universes)
@@ -360,7 +360,7 @@ class TestFill(TestCase):
         input = Input(["1 0 -1 fill=0:1 0:1 0:1 1 2 3 4 5 6 7 8"], BlockType.CELL)
         cell = Cell(input)
         fill = cell.fill
-        uni = mcnpy.Universe(10)
+        uni = montepy.Universe(10)
         fill_array = np.array([[[uni, uni], [uni, uni]], [[uni, uni], [uni, uni]]])
         fill.universes = fill_array
         self.assertTrue((fill.universes == fill_array).all())

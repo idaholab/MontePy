@@ -2,15 +2,15 @@ import copy
 from io import StringIO
 from unittest import TestCase
 
-import mcnpy
-from mcnpy.errors import *
-from mcnpy.input_parser import input_syntax_reader
-from mcnpy.input_parser.mcnp_input import Input, Jump, Message, ReadInput, Title
-from mcnpy.input_parser.block_type import BlockType
-from mcnpy.input_parser.input_file import MCNP_InputFile
-from mcnpy.input_parser.parser_base import MCNP_Parser
-from mcnpy.input_parser import syntax_node
-from mcnpy.particle import Particle
+import montepy
+from montepy.errors import *
+from montepy.input_parser import input_syntax_reader
+from montepy.input_parser.mcnp_input import Input, Jump, Message, ReadInput, Title
+from montepy.input_parser.block_type import BlockType
+from montepy.input_parser.input_file import MCNP_InputFile
+from montepy.input_parser.parser_base import MCNP_Parser
+from montepy.input_parser import syntax_node
+from montepy.particle import Particle
 import warnings
 
 
@@ -59,7 +59,7 @@ class TestValueNode(TestCase):
 
     def test_valuenode_convert_to_enum(self):
         node = syntax_node.ValueNode("1", float)
-        lat = mcnpy.data_inputs.lattice.Lattice
+        lat = montepy.data_inputs.lattice.Lattice
         node._convert_to_enum(lat)
         self.assertEqual(node.type, lat)
         self.assertEqual(node.value, lat(1))
@@ -69,7 +69,7 @@ class TestValueNode(TestCase):
             node._convert_to_enum(lat)
         node._convert_to_enum(lat, allow_none=True)
         self.assertIsNone(node.value)
-        st = mcnpy.surfaces.surface_type.SurfaceType
+        st = montepy.surfaces.surface_type.SurfaceType
         node = syntax_node.ValueNode("p", str)
         node._convert_to_enum(st, switch_to_upper=True)
         self.assertEqual(node.type, st)
@@ -286,8 +286,8 @@ class TestValueNode(TestCase):
                 self.assertEqual(node.format(), answer)
 
     def test_value_enum_format(self):
-        lat = mcnpy.data_inputs.lattice.Lattice
-        st = mcnpy.surfaces.surface_type.SurfaceType
+        lat = montepy.data_inputs.lattice.Lattice
+        st = montepy.surfaces.surface_type.SurfaceType
         for input, val, enum_class, args, answer, expand in [
             (
                 "1",
@@ -435,7 +435,7 @@ class TestGeometryTree(TestCase):
         self.test_tree = syntax_node.GeometryTree(
             "test",
             {"left": left, "operator": op, "right": right},
-            mcnpy.Operator.INTERSECTION,
+            montepy.Operator.INTERSECTION,
             left,
             right,
         )
@@ -447,13 +447,13 @@ class TestGeometryTree(TestCase):
         tree = syntax_node.GeometryTree(
             "test",
             {"left": left, "operator": op, "right": right},
-            mcnpy.Operator.INTERSECTION,
+            montepy.Operator.INTERSECTION,
             left,
             right,
         )
         self.assertIs(tree.left, left)
         self.assertIs(tree.right, right)
-        self.assertEqual(tree.operator, mcnpy.Operator.INTERSECTION)
+        self.assertEqual(tree.operator, montepy.Operator.INTERSECTION)
 
     def test_geometry_format(self):
         test = self.test_tree
@@ -557,7 +557,7 @@ class TestPaddingNode(TestCase):
 class TestParticlesNode(TestCase):
     def test_particle_init(self):
         parts = syntax_node.ParticleNode("test", ":n,p,e")
-        particle = mcnpy.particle.Particle
+        particle = montepy.particle.Particle
         answers = {particle.NEUTRON, particle.PHOTON, particle.ELECTRON}
         self.assertEqual(parts.particles, answers)
         self.assertEqual(len(list(parts.comments)), 0)
@@ -568,7 +568,7 @@ class TestParticlesNode(TestCase):
 
     def test_particles_setter(self):
         parts = syntax_node.ParticleNode("test", "n,p,e")
-        particle = mcnpy.particle.Particle
+        particle = montepy.particle.Particle
         parts.particles = {particle.TRITON}
         self.assertEqual(parts.particles, {particle.TRITON})
         parts.particles = [particle.TRITON]
@@ -580,7 +580,7 @@ class TestParticlesNode(TestCase):
 
     def test_particles_add_remove(self):
         parts = syntax_node.ParticleNode("test", "n,p,e")
-        particle = mcnpy.particle.Particle
+        particle = montepy.particle.Particle
         parts.add(particle.TRITON)
         self.assertIn(particle.TRITON, parts)
         self.assertEqual(parts._particles_sorted[-1], particle.TRITON)
@@ -593,7 +593,7 @@ class TestParticlesNode(TestCase):
 
     def test_particles_sorted(self):
         parts = syntax_node.ParticleNode("test", "n,p,e")
-        particle = mcnpy.particle.Particle
+        particle = montepy.particle.Particle
         # lazily work around internals
         parts._particles.remove(particle.NEUTRON)
         self.assertNotIn(particle.NEUTRON, parts._particles_sorted)
@@ -811,8 +811,8 @@ class TestShortcutNode(TestCase):
             8,
             10,
         ],
-        "1 2j 4": [1, mcnpy.Jump(), mcnpy.Jump(), 4],
-        "1 j": [1, mcnpy.Jump()],
+        "1 2j 4": [1, montepy.Jump(), montepy.Jump(), 4],
+        "1 j": [1, montepy.Jump()],
     }
 
     def test_shortcut_expansion(self):
@@ -835,7 +835,7 @@ class TestShortcutNode(TestCase):
             parsed = parser.parse(input.tokenize())
             for val, gold in zip(parsed, answer):
                 if val.value is None:
-                    self.assertEqual(gold, mcnpy.Jump())
+                    self.assertEqual(gold, montepy.Jump())
                 else:
                     self.assertAlmostEqual(val.value, gold)
         for test in invalid:
@@ -844,7 +844,7 @@ class TestShortcutNode(TestCase):
                 input = Input([test], BlockType.DATA)
                 parsed = parser.parse(input.tokenize())
                 if parsed is None:
-                    raise mcnpy.errors.MalformedInputError("", "")
+                    raise montepy.errors.MalformedInputError("", "")
 
     def test_shortcut_geometry_expansion(self):
         tests = {
@@ -905,7 +905,7 @@ class ShortcutTestFixture(MCNP_Parser):
         return p[0]
 
 
-class ShortcutGeometryTestFixture(mcnpy.input_parser.cell_parser.CellParser):
+class ShortcutGeometryTestFixture(montepy.input_parser.cell_parser.CellParser):
     @_("geometry_expr")
     def geometry(self, p):
         return p[0]
@@ -1049,7 +1049,7 @@ test title
             with StringIO(tester) as fh:
                 generator = input_syntax_reader.read_front_matters(fh, (6, 2, 0))
                 card = next(generator)
-                self.assertIsInstance(card, mcnpy.input_parser.mcnp_input.Message)
+                self.assertIsInstance(card, montepy.input_parser.mcnp_input.Message)
                 self.assertEqual(card.lines[0], validator)
                 self.assertEqual(len(card.lines), 1)
 
@@ -1086,7 +1086,7 @@ test title
             with StringIO(tester) as fh:
                 generator = input_syntax_reader.read_front_matters(fh, (6, 2, 0))
                 card = next(generator)
-                self.assertIsInstance(card, mcnpy.input_parser.mcnp_input.Title)
+                self.assertIsInstance(card, montepy.input_parser.mcnp_input.Title)
                 self.assertEqual(card.title, validator)
 
     def testCardFinder(self):
@@ -1099,13 +1099,13 @@ test title
                 fh.path = "foo"
                 generator = input_syntax_reader.read_data(fh, (6, 2, 0))
                 card = next(generator)
-                self.assertIsInstance(card, mcnpy.input_parser.mcnp_input.Input)
+                self.assertIsInstance(card, montepy.input_parser.mcnp_input.Input)
                 answer = [" " * i + "1 0 -1", "     5"]
                 self.assertEqual(len(answer), len(card.input_lines))
                 for j, line in enumerate(card.input_lines):
                     self.assertEqual(line, answer[j])
                 self.assertEqual(
-                    card.block_type, mcnpy.input_parser.block_type.BlockType.CELL
+                    card.block_type, montepy.input_parser.block_type.BlockType.CELL
                 )
 
     # TODO ensure this is tested in Input parsers
@@ -1115,7 +1115,7 @@ test title
             tester = " " * i + test_string
             with StringIO(tester) as fh:
                 card = next(input_syntax_reader.read_data(fh, (6, 2, 0)))
-                self.assertIsInstance(card, mcnpy.input_parser.mcnp_input.Comment)
+                self.assertIsInstance(card, montepy.input_parser.mcnp_input.Comment)
                 self.assertEqual(len(card.lines), 5)
                 self.assertEqual(card.lines[0], "foo")
                 self.assertEqual(card.lines[1], "bar")
@@ -1141,12 +1141,12 @@ test title
                 for card in input_syntax_reader.read_data(fh, (6, 2, 0)):
                     pass
                 self.assertEqual(
-                    mcnpy.input_parser.block_type.BlockType(i), card.block_type
+                    montepy.input_parser.block_type.BlockType(i), card.block_type
                 )
 
     def testCommentFormatInput(self):
         in_strs = ["c foo", "c bar"]
-        card = mcnpy.input_parser.syntax_node.CommentNode(in_strs[0])
+        card = montepy.input_parser.syntax_node.CommentNode(in_strs[0])
         output = card.format()
         answer = "c foo"
         str_answer = """COMMENT:
@@ -1159,7 +1159,7 @@ c foo"""
 
     def testMessageFormatInput(self):
         answer = ["MESSAGE: foo", "bar", ""]
-        card = mcnpy.input_parser.mcnp_input.Message(answer, ["foo", "bar"])
+        card = montepy.input_parser.mcnp_input.Message(answer, ["foo", "bar"])
         str_answer = """MESSAGE:
 foo
 bar
@@ -1172,7 +1172,7 @@ bar
             self.assertEqual(answer[i], line)
 
     def testTitleFormatInput(self):
-        card = mcnpy.input_parser.mcnp_input.Title(["foo"], "foo")
+        card = montepy.input_parser.mcnp_input.Title(["foo"], "foo")
         answer = ["foo"]
         str_answer = "TITLE: foo"
         self.assertEqual(str(card), str_answer)
@@ -1186,7 +1186,7 @@ bar
         generator = input_syntax_reader.read_input_syntax(
             MCNP_InputFile("tests/inputs/test.imcnp")
         )
-        mcnp_in = mcnpy.input_parser.mcnp_input
+        mcnp_in = montepy.input_parser.mcnp_input
         input_order = [mcnp_in.Message, mcnp_in.Title]
         input_order += [mcnp_in.Input] * 17
         for i, input in enumerate(generator):
@@ -1212,13 +1212,13 @@ bar
         )
         next(generator)
         next(generator)
-        with self.assertRaises(mcnpy.errors.UnsupportedFeature):
+        with self.assertRaises(montepy.errors.UnsupportedFeature):
             next(generator)
 
     def testCardStringRepr(self):
         in_str = "1 0 -1"
-        card = mcnpy.input_parser.mcnp_input.Input(
-            [in_str], mcnpy.input_parser.block_type.BlockType.CELL
+        card = montepy.input_parser.mcnp_input.Input(
+            [in_str], montepy.input_parser.block_type.BlockType.CELL
         )
         self.assertEqual(str(card), "INPUT: BlockType.CELL")
         self.assertEqual(repr(card), "INPUT: BlockType.CELL: ['1 0 -1']")
@@ -1241,10 +1241,10 @@ bar
         for in_str, answer in tests.items():
             # Testing parsing the names
             print("in", in_str, "answer", answer)
-            card = mcnpy.input_parser.mcnp_input.Input(
-                [in_str], mcnpy.input_parser.block_type.BlockType.DATA
+            card = montepy.input_parser.mcnp_input.Input(
+                [in_str], montepy.input_parser.block_type.BlockType.DATA
             )
-            data_input = mcnpy.data_inputs.data_input.DataInput(card, fast_parse=True)
+            data_input = montepy.data_inputs.data_input.DataInput(card, fast_parse=True)
             self.assertEqual(data_input.prefix, answer["prefix"])
             if answer["number"]:
                 self.assertEqual(data_input._input_number.value, answer["number"])
@@ -1269,9 +1269,9 @@ bar
         }
         # tests invalid names
         for in_str, answer in tests.items():
-            with self.assertRaises(mcnpy.errors.MalformedInputError):
-                card = mcnpy.input_parser.mcnp_input.Input(
-                    [in_str], mcnpy.input_parser.block_type.BlockType.DATA
+            with self.assertRaises(montepy.errors.MalformedInputError):
+                card = montepy.input_parser.mcnp_input.Input(
+                    [in_str], montepy.input_parser.block_type.BlockType.DATA
                 )
                 Fixture = DataInputTestFixture
                 Fixture._class_prefix1 = answer["prefix"]
@@ -1281,8 +1281,8 @@ bar
 
         # tests valid names
         for in_str, answer in valid.items():
-            card = mcnpy.input_parser.mcnp_input.Input(
-                [in_str], mcnpy.input_parser.block_type.BlockType.DATA
+            card = montepy.input_parser.mcnp_input.Input(
+                [in_str], montepy.input_parser.block_type.BlockType.DATA
             )
             print(card.input_lines)
             print(
@@ -1309,9 +1309,9 @@ bar
             (7, 4, 0): 128,
         }
         for version, answer in answers.items():
-            self.assertEqual(answer, mcnpy.constants.get_max_line_length(version))
-        with self.assertRaises(mcnpy.errors.UnsupportedFeature):
-            mcnpy.constants.get_max_line_length((5, 1, 38))
+            self.assertEqual(answer, montepy.constants.get_max_line_length(version))
+        with self.assertRaises(montepy.errors.UnsupportedFeature):
+            montepy.constants.get_max_line_length((5, 1, 38))
 
     def test_jump(self):
         jump = Jump()
@@ -1439,7 +1439,7 @@ class TestParametersNode(TestCase):
         self.assertIsNone(param.get_trailing_comment())
 
 
-class DataInputTestFixture(mcnpy.data_inputs.data_input.DataInputAbstract):
+class DataInputTestFixture(montepy.data_inputs.data_input.DataInputAbstract):
     _class_prefix1 = None
     _has_number1 = None
     _has_classifier1 = None

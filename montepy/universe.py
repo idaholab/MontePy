@@ -1,9 +1,9 @@
-import mcnpy
-from mcnpy.cells import Cells
-from mcnpy.input_parser.mcnp_input import Input
-from mcnpy.input_parser.block_type import BlockType
-from mcnpy.input_parser import syntax_node
-from mcnpy.numbered_mcnp_object import Numbered_MCNP_Object
+import montepy
+from montepy.cells import Cells
+from montepy.input_parser.mcnp_input import Input
+from montepy.input_parser.block_type import BlockType
+from montepy.input_parser import syntax_node
+from montepy.numbered_mcnp_object import Numbered_MCNP_Object
 
 
 class Universe(Numbered_MCNP_Object):
@@ -51,11 +51,11 @@ class Universe(Numbered_MCNP_Object):
         :type cells: Cell, list, or Cells
         :raises TypeError: if bad parameter is given.
         """
-        if not isinstance(cells, (mcnpy.Cell, list, Cells)):
+        if not isinstance(cells, (montepy.Cell, list, Cells)):
             raise TypeError(f"Cells being claimed must be a Cell, list, or Cells")
         if isinstance(cells, list):
             cells = Cells(cells)
-        if isinstance(cells, mcnpy.Cell):
+        if isinstance(cells, montepy.Cell):
             cells = Cells([cells])
 
         for cell in cells:

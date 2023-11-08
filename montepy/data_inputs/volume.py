@@ -1,10 +1,10 @@
-from mcnpy.data_inputs.cell_modifier import CellModifierInput
-from mcnpy.errors import *
-from mcnpy.constants import DEFAULT_VERSION
-from mcnpy.input_parser.mcnp_input import Jump
-from mcnpy.input_parser import syntax_node
-from mcnpy.mcnp_object import MCNP_Object
-from mcnpy.utilities import *
+from montepy.data_inputs.cell_modifier import CellModifierInput
+from montepy.errors import *
+from montepy.constants import DEFAULT_VERSION
+from montepy.input_parser.mcnp_input import Jump
+from montepy.input_parser import syntax_node
+from montepy.mcnp_object import MCNP_Object
+from montepy.utilities import *
 
 
 def _ensure_positive(self, value):

@@ -1,9 +1,9 @@
 from unittest import TestCase
 
-import mcnpy
-from mcnpy.cell import Cell
-from mcnpy.input_parser.block_type import BlockType
-from mcnpy.input_parser.mcnp_input import Input
+import montepy
+from montepy.cell import Cell
+from montepy.input_parser.block_type import BlockType
+from montepy.input_parser.mcnp_input import Input
 
 
 class TestCellClass(TestCase):
@@ -15,24 +15,24 @@ class TestCellClass(TestCase):
         # test invalid cell number
         in_str = "foo"
         card = Input([in_str, f"c {in_str}"], BlockType.CELL)
-        with self.assertRaises(mcnpy.errors.MalformedInputError):
+        with self.assertRaises(montepy.errors.MalformedInputError):
             in_str = "foo bar"
             cell = Cell(card)
         # test like feature unsupported
         in_str = "1 like 2"
         card = Input([in_str, f"c {in_str}"], BlockType.CELL)
-        with self.assertRaises(mcnpy.errors.UnsupportedFeature):
+        with self.assertRaises(montepy.errors.UnsupportedFeature):
             in_str = "foo bar"
             cell = Cell(card)
         # test invalid material number
         in_str = "1 foo"
         card = Input([in_str], BlockType.CELL)
-        with self.assertRaises(mcnpy.errors.MalformedInputError):
+        with self.assertRaises(montepy.errors.MalformedInputError):
             cell = Cell(card)
         # test invalid material density
         in_str = "1 1 foo"
         card = Input([in_str], BlockType.CELL)
-        with self.assertRaises(mcnpy.errors.MalformedInputError):
+        with self.assertRaises(montepy.errors.MalformedInputError):
             cell = Cell(card)
         # tests void cell
         in_str = "1 0 2"
@@ -64,12 +64,12 @@ class TestCellClass(TestCase):
     # TODO test updating cell geometry once done
     def test_cell_validator(self):
         cell = Cell()
-        with self.assertRaises(mcnpy.errors.IllegalState):
+        with self.assertRaises(montepy.errors.IllegalState):
             cell.validate()
-        with self.assertRaises(mcnpy.errors.IllegalState):
+        with self.assertRaises(montepy.errors.IllegalState):
             cell.format_for_mcnp_input((6, 2, 0))
         cell.mass_density = 5.0
-        with self.assertRaises(mcnpy.errors.IllegalState):
+        with self.assertRaises(montepy.errors.IllegalState):
             cell.validate()
         del cell.mass_density
 

@@ -1,19 +1,19 @@
 from enum import Enum
 import itertools
-from mcnpy.data_inputs import mode, transform
-from mcnpy._cell_data_control import CellDataPrintController
-from mcnpy.cell import Cell
-from mcnpy.cells import Cells
-from mcnpy.errors import *
-from mcnpy.constants import DEFAULT_VERSION
-from mcnpy.materials import Materials
-from mcnpy.surfaces import surface_builder
-from mcnpy.surface_collection import Surfaces
-from mcnpy.data_inputs import Material, parse_data
-from mcnpy.input_parser import input_syntax_reader, block_type, mcnp_input
-from mcnpy.input_parser.input_file import MCNP_InputFile
-from mcnpy.universes import Universes
-from mcnpy.transforms import Transforms
+from montepy.data_inputs import mode, transform
+from montepy._cell_data_control import CellDataPrintController
+from montepy.cell import Cell
+from montepy.cells import Cells
+from montepy.errors import *
+from montepy.constants import DEFAULT_VERSION
+from montepy.materials import Materials
+from montepy.surfaces import surface_builder
+from montepy.surface_collection import Surfaces
+from montepy.data_inputs import Material, parse_data
+from montepy.input_parser import input_syntax_reader, block_type, mcnp_input
+from montepy.input_parser.input_file import MCNP_InputFile
+from montepy.universes import Universes
+from montepy.transforms import Transforms
 import warnings
 
 
@@ -89,7 +89,7 @@ class MCNP_Problem:
     def set_mode(self, particles):
         """Sets the mode of problem to the given particles.
 
-        For details see: :func:`mcnpy.data_cards.mode.Mode.set`.
+        For details see: :func:`montepy.data_cards.mode.Mode.set`.
 
         :param particles: the particles that the mode will be switched to.
         :type particles: list, str
@@ -122,7 +122,7 @@ class MCNP_Problem:
         :type version: tuple
         """
         if version < (5, 1, 60):
-            raise ValueError(f"The mcnp_version {version} is not supported by MCNPy")
+            raise ValueError(f"The mcnp_version {version} is not supported by MontePy")
         self._mcnp_version = version
 
     @property
@@ -172,7 +172,7 @@ class MCNP_Problem:
         """
         A list of the DataInput objects in this problem.
 
-        :return: a list of the :class:`~mcnpy.data_cards.data_card.DataCardAbstract` objects, ordered by the order they were in the input file.
+        :return: a list of the :class:`~montepy.data_cards.data_card.DataCardAbstract` objects, ordered by the order they were in the input file.
         :rtype: list
         """
         return self._data_inputs

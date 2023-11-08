@@ -1,11 +1,11 @@
 from abc import ABC, abstractmethod
 import math
-from mcnpy.errors import *
-from mcnpy.input_parser.block_type import BlockType
-from mcnpy.constants import BLANK_SPACE_CONTINUE, get_max_line_length
-from mcnpy.input_parser.read_parser import ReadParser
-from mcnpy.input_parser.tokens import CellLexer, SurfaceLexer, DataLexer
-from mcnpy.utilities import *
+from montepy.errors import *
+from montepy.input_parser.block_type import BlockType
+from montepy.constants import BLANK_SPACE_CONTINUE, get_max_line_length
+from montepy.input_parser.read_parser import ReadParser
+from montepy.input_parser.tokens import CellLexer, SurfaceLexer, DataLexer
+from montepy.utilities import *
 import re
 
 
@@ -114,14 +114,14 @@ class Card(ParsingNode):
     .. warning::
 
         .. deprecated:: 0.2.0
-            Punch cards are dead. Use :class:`~mcnpy.input_parser.mcnp_input.Input` instead.
+            Punch cards are dead. Use :class:`~montepy.input_parser.mcnp_input.Input` instead.
 
     :raises DeprecatedError: punch cards are dead.
     """
 
     def __init__(self, *args, **kwargs):
         raise DeprecatedError(
-            "This has been deprecated. Use mcnpy.input_parser.mcnp_input.Input instead"
+            "This has been deprecated. Use montepy.input_parser.mcnp_input.Input instead"
         )
 
 
@@ -203,9 +203,9 @@ class Input(ParsingNode):
         This is a generator of Tokens.
         This is context dependent based on :func:`block_type`.
 
-        * In a cell block :class:`~mcnpy.input_parser.tokens.CellLexer` is used.
-        * In a surface block :class:`~mcnpy.input_parser.tokens.SurfaceLexer` is used.
-        * In a data block :class:`~mcnpy.input_parser.tokens.DataLexer` is used.
+        * In a cell block :class:`~montepy.input_parser.tokens.CellLexer` is used.
+        * In a surface block :class:`~montepy.input_parser.tokens.SurfaceLexer` is used.
+        * In a data block :class:`~montepy.input_parser.tokens.DataLexer` is used.
 
         :returns: a generator of tokens.
         :rtype: Token
@@ -265,14 +265,14 @@ class Comment(ParsingNode):
     """
     .. warning::
         .. deprecated:: 0.2.0
-            This has been replaced by :class:`~mcnpy.input_parser.syntax_node.CommentNode`.
+            This has been replaced by :class:`~montepy.input_parser.syntax_node.CommentNode`.
 
     :raises DeprecationWarning: Can not be created anymore.
     """
 
     def __init__(self, *args, **kwargs):
         raise DeprecationWarning(
-            "This has been deprecated and replaced by mcnpy.input_parser.syntax_node.CommentNode."
+            "This has been deprecated and replaced by montepy.input_parser.syntax_node.CommentNode."
         )
 
 
@@ -327,14 +327,14 @@ class ReadCard(Card):
     .. warning::
 
         .. deprecated:: 0.2.0
-            Punch cards are dead. Use :class:`~mcnpy.input_parser.mcnp_input.ReadInput` instead.
+            Punch cards are dead. Use :class:`~montepy.input_parser.mcnp_input.ReadInput` instead.
 
     :raises DeprecatedError: punch cards are dead.
     """
 
     def __init__(self, *args, **kwargs):
         raise DeprecatedError(
-            "This has been deprecated. Use mcnpy.input_parser.mcnp_input.ReadInput instead"
+            "This has been deprecated. Use montepy.input_parser.mcnp_input.ReadInput instead"
         )
 
 
@@ -442,5 +442,5 @@ def parse_card_shortcuts(*args, **kwargs):
     :raises DeprecationWarning: This is not needed anymore.
     """
     raise DeprecationWarning(
-        "This is deprecated and unnecessary. This will be automatically handled by mcnpy.input_parser.parser_base.MCNP_Parser."
+        "This is deprecated and unnecessary. This will be automatically handled by montepy.input_parser.parser_base.MCNP_Parser."
     )

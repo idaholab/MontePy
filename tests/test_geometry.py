@@ -1,15 +1,15 @@
 from unittest import TestCase
 
-import mcnpy
-from mcnpy.geometry_operators import Operator
-from mcnpy.input_parser import syntax_node
-from mcnpy.surfaces.half_space import HalfSpace, UnitHalfSpace
+import montepy
+from montepy.geometry_operators import Operator
+from montepy.input_parser import syntax_node
+from montepy.surfaces.half_space import HalfSpace, UnitHalfSpace
 
 
 class TestHalfSpaceUnit(TestCase):
     def test_init(self):
-        surface = mcnpy.surfaces.CylinderOnAxis()
-        node = mcnpy.input_parser.syntax_node.GeometryTree("hi", [], "*", " ", " ")
+        surface = montepy.surfaces.CylinderOnAxis()
+        node = montepy.input_parser.syntax_node.GeometryTree("hi", [], "*", " ", " ")
         half_space = HalfSpace(+surface, Operator.UNION, -surface, node)
         self.assertIs(half_space.operator, Operator.UNION)
         self.assertEqual(half_space.left, +surface)
@@ -29,22 +29,22 @@ class TestHalfSpaceUnit(TestCase):
             HalfSpace(+surface, Operator.INTERSECTION)
 
     def test_get_leaves(self):
-        surface = mcnpy.surfaces.CylinderOnAxis()
-        cell = mcnpy.Cell()
+        surface = montepy.surfaces.CylinderOnAxis()
+        cell = montepy.Cell()
         half_space = -surface & ~cell
         cells, surfaces = half_space._get_leaf_objects()
         self.assertEqual(cells, {cell})
         self.assertEqual(surfaces, {surface})
 
     def test_len(self):
-        surface = mcnpy.surfaces.CylinderOnAxis()
-        cell = mcnpy.Cell()
+        surface = montepy.surfaces.CylinderOnAxis()
+        cell = montepy.Cell()
         half_space = -surface & ~cell
         self.assertEqual(len(half_space), 2)
 
     def test_eq(self):
-        cell1 = mcnpy.Cell()
-        cell2 = mcnpy.Cell()
+        cell1 = montepy.Cell()
+        cell2 = montepy.Cell()
         half1 = ~cell1 & ~cell2
         self.assertTrue(half1 == half1)
         half2 = ~cell1 | ~cell2
@@ -60,9 +60,9 @@ class TestHalfSpaceUnit(TestCase):
             half1 == "hi"
 
     def test_str(self):
-        cell1 = mcnpy.Cell()
+        cell1 = montepy.Cell()
         cell1.number = 1
-        cell2 = mcnpy.Cell()
+        cell2 = montepy.Cell()
         cell2.number = 2
         half_space = ~cell1 | ~cell2
         self.assertEqual(str(half_space), "(#1:#2)")
@@ -76,7 +76,7 @@ class TestHalfSpaceUnit(TestCase):
 
 class TestUnitHalfSpaceUnit(TestCase):
     def test_init(self):
-        node = mcnpy.input_parser.syntax_node.ValueNode("123", float)
+        node = montepy.input_parser.syntax_node.ValueNode("123", float)
         half_space = UnitHalfSpace(123, True, False, node)
         self.assertEqual(half_space.divider, 123)
         self.assertTrue(half_space.side)
@@ -110,7 +110,7 @@ class TestUnitHalfSpaceUnit(TestCase):
         self.assertEqual(str(half_space), "-1")
         half_space.is_cell = True
         self.assertEqual(str(half_space), "1")
-        cell = mcnpy.Cell()
+        cell = montepy.Cell()
         cell.number = 1
         half_space.divider = cell
         self.assertEqual(str(half_space), "1")
@@ -118,7 +118,7 @@ class TestUnitHalfSpaceUnit(TestCase):
 
 class TestGeometryIntegration(TestCase):
     def test_surface_half_space(self):
-        surface = mcnpy.surfaces.cylinder_on_axis.CylinderOnAxis()
+        surface = montepy.surfaces.cylinder_on_axis.CylinderOnAxis()
         half_space = +surface
         self.assertIsInstance(half_space, HalfSpace)
         self.assertIsInstance(half_space, UnitHalfSpace)
@@ -137,7 +137,7 @@ class TestGeometryIntegration(TestCase):
             half_space = ~surface
 
     def test_cell_half_space(self):
-        cell = mcnpy.Cell()
+        cell = montepy.Cell()
         half_space = ~cell
         self.assertIsInstance(half_space, HalfSpace)
         self.assertIs(half_space.left.divider, cell)
@@ -152,8 +152,8 @@ class TestGeometryIntegration(TestCase):
             half_space = -cell
 
     def test_intersect_half_space(self):
-        cell1 = ~mcnpy.Cell()
-        cell2 = ~mcnpy.Cell()
+        cell1 = ~montepy.Cell()
+        cell2 = ~montepy.Cell()
         half_space = cell1 & cell2
         self.assertIsInstance(half_space, HalfSpace)
         self.assertIs(half_space.operator, Operator.INTERSECTION)
@@ -169,8 +169,8 @@ class TestGeometryIntegration(TestCase):
             cell2 - cell1
 
     def test_union_half_space(self):
-        cell1 = ~mcnpy.Cell()
-        cell2 = ~mcnpy.Cell()
+        cell1 = ~montepy.Cell()
+        cell2 = ~montepy.Cell()
         half_space = cell1 | cell2
         self.assertIsInstance(half_space, HalfSpace)
         self.assertIs(half_space.operator, Operator.UNION)
@@ -182,8 +182,8 @@ class TestGeometryIntegration(TestCase):
             "hi" | cell1
 
     def test_invert_half_space(self):
-        cell1 = ~mcnpy.Cell()
-        cell2 = ~mcnpy.Cell()
+        cell1 = ~montepy.Cell()
+        cell2 = ~montepy.Cell()
         half_space1 = cell1 | cell2
         half_space = ~half_space1
         self.assertIsInstance(half_space, HalfSpace)
@@ -192,9 +192,9 @@ class TestGeometryIntegration(TestCase):
         self.assertIsNone(half_space.right)
 
     def test_iand_recursion(self):
-        cell1 = mcnpy.Cell()
-        cell2 = mcnpy.Cell()
-        cell3 = mcnpy.Cell()
+        cell1 = montepy.Cell()
+        cell2 = montepy.Cell()
+        cell3 = montepy.Cell()
         half_space = ~cell1 & ~cell2
         cell1.number = 1
         cell2.number = 2
@@ -213,7 +213,7 @@ class TestGeometryIntegration(TestCase):
         with self.assertRaises(TypeError):
             half_space &= "hi"
         # test with unit halfspaces
-        surf = mcnpy.surfaces.CylinderParAxis()
+        surf = montepy.surfaces.CylinderParAxis()
         # test going from leaf to tree
         half_space = -surf
         half_space &= +surf
@@ -224,8 +224,8 @@ class TestGeometryIntegration(TestCase):
         self.assertEqual(len(half_space), 3)
 
     def test_ior_recursion(self):
-        cell1 = ~mcnpy.Cell()
-        cell2 = ~mcnpy.Cell()
+        cell1 = ~montepy.Cell()
+        cell2 = ~montepy.Cell()
         half_space = cell1 | cell2
         half_space |= cell1
         self.assertIs(half_space.left, cell1)
@@ -240,7 +240,7 @@ class TestGeometryIntegration(TestCase):
         with self.assertRaises(TypeError):
             half_space |= "hi"
         # test with unit halfspaces
-        surf = mcnpy.surfaces.CylinderParAxis()
+        surf = montepy.surfaces.CylinderParAxis()
         half_space = -surf
         half_space |= +surf
         self.assertEqual(len(half_space), 2)
@@ -250,10 +250,10 @@ class TestGeometryIntegration(TestCase):
 
     def test_parse_input_tree(self):
         # simplest intersection
-        input = mcnpy.input_parser.mcnp_input.Input(
-            ["1 0 1 -2"], mcnpy.input_parser.block_type.BlockType.CELL
+        input = montepy.input_parser.mcnp_input.Input(
+            ["1 0 1 -2"], montepy.input_parser.block_type.BlockType.CELL
         )
-        parser = mcnpy.input_parser.cell_parser.CellParser()
+        parser = montepy.input_parser.cell_parser.CellParser()
         tree = parser.parse(input.tokenize())
         geometry = tree["geometry"]
         half_space = HalfSpace.parse_input_node(geometry)
@@ -268,10 +268,10 @@ class TestGeometryIntegration(TestCase):
         with self.assertRaises(TypeError):
             HalfSpace.parse_input_node("hi")
         # test assymetric
-        input = mcnpy.input_parser.mcnp_input.Input(
-            ["1 0 #2"], mcnpy.input_parser.block_type.BlockType.CELL
+        input = montepy.input_parser.mcnp_input.Input(
+            ["1 0 #2"], montepy.input_parser.block_type.BlockType.CELL
         )
-        parser = mcnpy.input_parser.cell_parser.CellParser()
+        parser = montepy.input_parser.cell_parser.CellParser()
         tree = parser.parse(input.tokenize())
         geometry = tree["geometry"]
         half_space = HalfSpace.parse_input_node(geometry)
@@ -281,10 +281,10 @@ class TestGeometryIntegration(TestCase):
         self.assertTrue(half_space.left.is_cell)
         self.assertIsNone(half_space.right)
         # Test nested trees
-        input = mcnpy.input_parser.mcnp_input.Input(
-            ["1 0 1 -2 : 3"], mcnpy.input_parser.block_type.BlockType.CELL
+        input = montepy.input_parser.mcnp_input.Input(
+            ["1 0 1 -2 : 3"], montepy.input_parser.block_type.BlockType.CELL
         )
-        parser = mcnpy.input_parser.cell_parser.CellParser()
+        parser = montepy.input_parser.cell_parser.CellParser()
         tree = parser.parse(input.tokenize())
         geometry = tree["geometry"]
         half_space = HalfSpace.parse_input_node(geometry)
@@ -296,10 +296,10 @@ class TestGeometryIntegration(TestCase):
         self.assertEqual(half_space.left.left.divider, 1)
         self.assertEqual(half_space.left.right.divider, 2)
         # test shift
-        input = mcnpy.input_parser.mcnp_input.Input(
-            ["1 0 #(1 2 3)"], mcnpy.input_parser.block_type.BlockType.CELL
+        input = montepy.input_parser.mcnp_input.Input(
+            ["1 0 #(1 2 3)"], montepy.input_parser.block_type.BlockType.CELL
         )
-        parser = mcnpy.input_parser.cell_parser.CellParser()
+        parser = montepy.input_parser.cell_parser.CellParser()
         tree = parser.parse(input.tokenize())
         geometry = tree["geometry"]
         half_space = HalfSpace.parse_input_node(geometry)
@@ -308,7 +308,7 @@ class TestGeometryIntegration(TestCase):
         self.assertEqual(half_space.left.operator, Operator.INTERSECTION)
 
     def test_parse_input_value_node(self):
-        node = mcnpy.input_parser.syntax_node.ValueNode("-1", float)
+        node = montepy.input_parser.syntax_node.ValueNode("-1", float)
         half_space = UnitHalfSpace.parse_input_node(node)
         self.assertTrue(not half_space.is_cell)
         self.assertTrue(not half_space.side)
@@ -317,7 +317,7 @@ class TestGeometryIntegration(TestCase):
         self.assertTrue(half_space.is_cell)
         self.assertTrue(half_space.side)
         self.assertEqual(half_space.divider, 1)
-        node = mcnpy.input_parser.syntax_node.ValueNode("+1", float)
+        node = montepy.input_parser.syntax_node.ValueNode("+1", float)
         half_space = UnitHalfSpace.parse_input_node(node, False)
         self.assertTrue(not half_space.is_cell)
         self.assertTrue(half_space.side)
@@ -328,24 +328,24 @@ class TestGeometryIntegration(TestCase):
             UnitHalfSpace.parse_input_node(node, "hi")
 
     def test_unit_divider_setter(self):
-        cell = mcnpy.Cell()
+        cell = montepy.Cell()
         cell.number = 1
-        parent = mcnpy.Cell()
+        parent = montepy.Cell()
         parent.number = 2
-        node = mcnpy.input_parser.syntax_node.ValueNode("1", float)
+        node = montepy.input_parser.syntax_node.ValueNode("1", float)
         half_space = UnitHalfSpace.parse_input_node(node, True)
-        cells = mcnpy.cells.Cells()
+        cells = montepy.cells.Cells()
         cells.append(cell)
         half_space.update_pointers(cells, [], parent)
         self.assertIs(half_space.divider, cell)
-        cell2 = mcnpy.Cell()
+        cell2 = montepy.Cell()
         # #madLads
         cell2.number = 4
         half_space.divider = cell2
         self.assertIs(half_space.divider, cell2)
         self.assertIn(cell2, parent.complements)
         # test with surface
-        surf = mcnpy.surfaces.CylinderParAxis()
+        surf = montepy.surfaces.CylinderParAxis()
         surf.number = 5
         with self.assertRaises(TypeError):
             half_space.divider = surf
@@ -357,7 +357,7 @@ class TestGeometryIntegration(TestCase):
             half_space.divider = "hi"
 
     def test_unit_create_default_node(self):
-        surf = mcnpy.surfaces.CylinderParAxis()
+        surf = montepy.surfaces.CylinderParAxis()
         surf.number = 1
         half_space = UnitHalfSpace(surf, True, False)
         half_space._ensure_has_nodes()
@@ -378,7 +378,7 @@ class TestGeometryIntegration(TestCase):
         self.assertEqual(node.value, 1)
 
     def test_tree_create_default_node(self):
-        surf = mcnpy.surfaces.CylinderParAxis()
+        surf = montepy.surfaces.CylinderParAxis()
         surf.number = 1
         half_space = -surf | +surf
         half_space._ensure_has_nodes()
@@ -398,7 +398,7 @@ class TestGeometryIntegration(TestCase):
         self.assertEqual(node.operator, Operator.COMPLEMENT)
         self.assertEqual(node.format(), " #(-1 : 1)")
         # test cell complement
-        cell = mcnpy.Cell()
+        cell = montepy.Cell()
         cell.number = 1
         half_space = ~cell
         half_space._ensure_has_nodes()
@@ -407,7 +407,7 @@ class TestGeometryIntegration(TestCase):
         self.assertEqual(node.format(), " #1")
 
     def test_update_operators_in_node(self):
-        surf = mcnpy.surfaces.CylinderParAxis()
+        surf = montepy.surfaces.CylinderParAxis()
         surf.number = 1
         half_space = -surf | +surf
         half_space._ensure_has_nodes()
@@ -416,7 +416,7 @@ class TestGeometryIntegration(TestCase):
         self.assertEqual(half_space.node.format(), "-1   1")
         del half_space.right
         half_space.operator = Operator.COMPLEMENT
-        cell = mcnpy.Cell()
+        cell = montepy.Cell()
         cell.number = 1
         half_space.left = UnitHalfSpace(cell, True, True)
         half_space._update_values()

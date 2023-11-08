@@ -1,5 +1,5 @@
-from mcnpy.input_parser.data_parser import DataParser
-from mcnpy.input_parser import syntax_node
+from montepy.input_parser.data_parser import DataParser
+from montepy.input_parser import syntax_node
 
 
 class ThermalParser(DataParser):

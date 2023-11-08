@@ -1,6 +1,6 @@
-from mcnpy.errors import *
-from mcnpy.input_parser.parser_base import MCNP_Parser
-from mcnpy.input_parser import syntax_node
+from montepy.errors import *
+from montepy.input_parser.parser_base import MCNP_Parser
+from montepy.input_parser import syntax_node
 
 
 class CellParser(MCNP_Parser):

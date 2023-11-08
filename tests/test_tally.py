@@ -1,7 +1,7 @@
-import mcnpy
-from mcnpy.data_inputs.data_parser import parse_data
-from mcnpy.input_parser.block_type import BlockType
-from mcnpy.input_parser.mcnp_input import Input
+import montepy
+from montepy.data_inputs.data_parser import parse_data
+from montepy.input_parser.block_type import BlockType
+from montepy.input_parser.mcnp_input import Input
 
 
 from unittest import TestCase

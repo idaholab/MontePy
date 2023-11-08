@@ -1,9 +1,9 @@
-from mcnpy.data_inputs.data_input import DataInputAbstract
-from mcnpy.input_parser.thermal_parser import ThermalParser
-from mcnpy import mcnp_object
-from mcnpy.errors import *
-from mcnpy.utilities import *
-import mcnpy
+from montepy.data_inputs.data_input import DataInputAbstract
+from montepy.input_parser.thermal_parser import ThermalParser
+from montepy import mcnp_object
+from montepy.errors import *
+from montepy.utilities import *
+import montepy
 
 
 class ThermalScatteringLaw(DataInputAbstract):
@@ -124,7 +124,7 @@ class ThermalScatteringLaw(DataInputAbstract):
         """
         found = False
         for input in data_inputs:
-            if isinstance(input, mcnpy.data_inputs.material.Material):
+            if isinstance(input, montepy.data_inputs.material.Material):
                 if input.number == self.old_number:
                     found = True
                     self._parent_material = input

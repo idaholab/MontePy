@@ -1,15 +1,15 @@
 from unittest import TestCase
 
-import mcnpy
+import montepy
 
-from mcnpy.mcnp_problem import MCNP_Problem
+from montepy.mcnp_problem import MCNP_Problem
 
 
 class testMCNP_problem(TestCase):
     def test_problem_init(self):
         problem = MCNP_Problem("tests/inputs/test.imcnp")
         self.assertIsInstance(
-            problem.input_file, mcnpy.input_parser.input_file.MCNP_InputFile
+            problem.input_file, montepy.input_parser.input_file.MCNP_InputFile
         )
         self.assertEqual(problem.input_file.path, "tests/inputs/test.imcnp")
         self.assertEqual(problem.input_file.name, "tests/inputs/test.imcnp")

@@ -1,15 +1,15 @@
 from unittest import TestCase
 
-import mcnpy
+import montepy
 
-from mcnpy.data_inputs.element import Element
-from mcnpy.data_inputs.isotope import Isotope
-from mcnpy.data_inputs.material import Material
-from mcnpy.data_inputs.material_component import MaterialComponent
-from mcnpy.data_inputs.thermal_scattering import ThermalScatteringLaw
-from mcnpy.errors import MalformedInputError, UnknownElement
-from mcnpy.input_parser.block_type import BlockType
-from mcnpy.input_parser.mcnp_input import Input
+from montepy.data_inputs.element import Element
+from montepy.data_inputs.isotope import Isotope
+from montepy.data_inputs.material import Material
+from montepy.data_inputs.material_component import MaterialComponent
+from montepy.data_inputs.thermal_scattering import ThermalScatteringLaw
+from montepy.errors import MalformedInputError, UnknownElement
+from montepy.input_parser.block_type import BlockType
+from montepy.input_parser.mcnp_input import Input
 
 
 class testMaterialClass(TestCase):
@@ -61,9 +61,9 @@ class testMaterialClass(TestCase):
 
     def test_material_validator(self):
         material = Material()
-        with self.assertRaises(mcnpy.errors.IllegalState):
+        with self.assertRaises(montepy.errors.IllegalState):
             material.validate()
-        with self.assertRaises(mcnpy.errors.IllegalState):
+        with self.assertRaises(montepy.errors.IllegalState):
             material.format_for_mcnp_input((6, 2, 0))
 
     def test_material_setter(self):
@@ -251,18 +251,18 @@ class TestThermalScattering(TestCase):
 
     def test_thermal_scatter_validate(self):
         thermal = ThermalScatteringLaw()
-        with self.assertRaises(mcnpy.errors.IllegalState):
+        with self.assertRaises(montepy.errors.IllegalState):
             thermal.validate()
-        with self.assertRaises(mcnpy.errors.IllegalState):
+        with self.assertRaises(montepy.errors.IllegalState):
             thermal.format_for_mcnp_input((6, 2, 0))
         material = Material()
         material.number = 1
-        thermal._old_number = mcnpy.input_parser.syntax_node.ValueNode("1", int)
+        thermal._old_number = montepy.input_parser.syntax_node.ValueNode("1", int)
         thermal.update_pointers([material])
-        with self.assertRaises(mcnpy.errors.IllegalState):
+        with self.assertRaises(montepy.errors.IllegalState):
             thermal.validate()
-        thermal._old_number = mcnpy.input_parser.syntax_node.ValueNode("2", int)
-        with self.assertRaises(mcnpy.errors.MalformedInputError):
+        thermal._old_number = montepy.input_parser.syntax_node.ValueNode("2", int)
+        with self.assertRaises(montepy.errors.MalformedInputError):
             thermal.update_pointers([material])
 
     def test_thermal_scattering_add(self):
@@ -367,5 +367,5 @@ class TestElement(TestCase):
 
 class TestParticle(TestCase):
     def test_particle_str(self):
-        part = mcnpy.Particle("N")
+        part = montepy.Particle("N")
         self.assertEqual(str(part), "neutron")

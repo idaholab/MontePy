@@ -1,8 +1,8 @@
-import mcnpy
-from mcnpy.errors import *
-from mcnpy.geometry_operators import Operator
-from mcnpy.input_parser.syntax_node import GeometryTree, PaddingNode, ValueNode
-from mcnpy.utilities import *
+import montepy
+from montepy.errors import *
+from montepy.geometry_operators import Operator
+from montepy.input_parser.syntax_node import GeometryTree, PaddingNode, ValueNode
+from montepy.utilities import *
 
 
 class HalfSpace:
@@ -12,8 +12,8 @@ class HalfSpace:
     .. versionadded:: 0.2.0
         This was added as the core of the rework to how MCNP geometries are implemented.
 
-    The term `half-spaces <https://en.wikipedia.org/wiki/Half-space_(geometry)>`_ in MCNPy is used very loosely,
-    and is not mathematically rigorous. In MCNPy a divider is a something
+    The term `half-spaces <https://en.wikipedia.org/wiki/Half-space_(geometry)>`_ in MontePy is used very loosely,
+    and is not mathematically rigorous. In MontePy a divider is a something
     that splits a space (R\\ :sup:`3` ) into two half-spaces. At the simplest this would
     be a plane or other quadratic surface. There will always be two half-spaces,
     a negative, or inside (False) or positive, outside (True).
@@ -152,7 +152,7 @@ class HalfSpace:
 
         1. Link this HalfSpace (and its children) to the parent cell.
         2. Update the divider parameter to point to the relevant surface or cell.
-        3. Update the parent's :func:`~mcnpy.cell.Cell.surfaces`, and :func:`~mcnpy.cell.Cell.complements`.
+        3. Update the parent's :func:`~montepy.cell.Cell.surfaces`, and :func:`~montepy.cell.Cell.complements`.
 
         :param cells: the cells in the problem.
         :type cells: Cells
@@ -187,7 +187,7 @@ class HalfSpace:
         """Updates old surface numbers to prepare for deleting surfaces.
 
         This will ensure any new surfaces or complements properly get added to the parent
-        cell's :func:`~mcnpy.cell.Cell.surfaces` and :func:`~mcnpy.cell.Cell.complements`.
+        cell's :func:`~montepy.cell.Cell.surfaces` and :func:`~montepy.cell.Cell.complements`.
 
         :param deleting_dict: a dict of the surfaces to delete.
         :type deleting_dict: dict
@@ -444,7 +444,9 @@ class UnitHalfSpace(HalfSpace):
     """
 
     def __init__(self, divider, side, is_cell, node=None):
-        if not isinstance(divider, (int, mcnpy.Cell, mcnpy.surfaces.surface.Surface)):
+        if not isinstance(
+            divider, (int, montepy.Cell, montepy.surfaces.surface.Surface)
+        ):
             raise TypeError(
                 f"divider must be an int, Cell, or Surface. {divider} given"
             )
@@ -473,9 +475,9 @@ class UnitHalfSpace(HalfSpace):
     # done manually to avoid circular imports
     @divider.setter
     def divider(self, div):
-        if not isinstance(div, (mcnpy.Cell, mcnpy.surfaces.surface.Surface)):
+        if not isinstance(div, (montepy.Cell, montepy.surfaces.surface.Surface)):
             raise TypeError("Divider must be a Cell or Surface")
-        if self.is_cell != isinstance(div, mcnpy.Cell):
+        if self.is_cell != isinstance(div, montepy.Cell):
             raise TypeError("Divider type must match with is_cell")
         self._divider = div
         if self._cell is not None:

@@ -1,6 +1,6 @@
-from mcnpy.surfaces.surface import Surface
-from mcnpy.surfaces.surface_type import SurfaceType
-from mcnpy.numbered_object_collection import NumberedObjectCollection
+from montepy.surfaces.surface import Surface
+from montepy.surfaces.surface_type import SurfaceType
+from montepy.numbered_object_collection import NumberedObjectCollection
 
 
 def __create_surface_generator(surf_type):
@@ -22,7 +22,7 @@ def __create_surface_generator(surf_type):
 
 
 class Surfaces(NumberedObjectCollection):
-    """A collection of multiple :class:`mcnpy.surfaces.surface.Surface` instances.
+    """A collection of multiple :class:`montepy.surfaces.surface.Surface` instances.
 
     This collection has a generator for every supported type of MCNP surface.
     These are accessed by the for lower case version of the MCNP mnemonic.

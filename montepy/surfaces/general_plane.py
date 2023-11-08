@@ -1,6 +1,6 @@
-from mcnpy.errors import *
-from mcnpy.surfaces.surface_type import SurfaceType
-from mcnpy.surfaces.surface import Surface
+from montepy.errors import *
+from montepy.surfaces.surface_type import SurfaceType
+from montepy.surfaces.surface import Surface
 
 
 class GeneralPlane(Surface):

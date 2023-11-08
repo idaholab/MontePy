@@ -1,6 +1,6 @@
 from unittest import TestCase
 
-from mcnpy.utilities import fortran_float
+from montepy.utilities import fortran_float
 
 
 class testFortranFloat(TestCase):

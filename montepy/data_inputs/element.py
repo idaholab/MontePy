@@ -1,4 +1,4 @@
-from mcnpy.errors import *
+from montepy.errors import *
 
 
 class Element:

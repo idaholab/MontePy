@@ -1,8 +1,8 @@
 from unittest import TestCase
 
-import mcnpy
-from mcnpy.data_inputs.data_parser import parse_data
-from mcnpy.input_parser.block_type import BlockType
+import montepy
+from montepy.data_inputs.data_parser import parse_data
+from montepy.input_parser.block_type import BlockType
 
 
 class TestSourceDefinition(TestCase):
@@ -10,5 +10,5 @@ class TestSourceDefinition(TestCase):
         lines = ["si1  l   60001 838i 60840", " sp1  d 0.0100 0.01000 0.0100"]
         for test_line in lines:
             print(test_line)
-            input = mcnpy.input_parser.mcnp_input.Input([test_line], BlockType.DATA)
+            input = montepy.input_parser.mcnp_input.Input([test_line], BlockType.DATA)
             parse_data(input)

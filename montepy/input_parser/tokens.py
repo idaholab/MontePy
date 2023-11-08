@@ -1,5 +1,5 @@
-from mcnpy import constants
-from mcnpy.utilities import fortran_float
+from montepy import constants
+from montepy.utilities import fortran_float
 import re
 from sly import Lexer
 

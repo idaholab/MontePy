@@ -1,10 +1,10 @@
 from unittest import TestCase
 
-import mcnpy
-from mcnpy.data_inputs.mode import Mode
-from mcnpy.input_parser.mcnp_input import Input
-from mcnpy.input_parser.block_type import BlockType
-from mcnpy.particle import Particle
+import montepy
+from montepy.data_inputs.mode import Mode
+from montepy.input_parser.mcnp_input import Input
+from montepy.input_parser.block_type import BlockType
+from montepy.particle import Particle
 
 
 class TestMode(TestCase):
@@ -16,7 +16,7 @@ class TestMode(TestCase):
         self.assertIn(Particle.PHOTON, mode.particles)
         # test bad input
         in_str = "kcode"
-        with self.assertRaises(mcnpy.errors.MalformedInputError):
+        with self.assertRaises(montepy.errors.MalformedInputError):
             mode = Mode(Input([in_str], BlockType.CELL))
         in_str = "mode 1"
         with self.assertRaises(TypeError):

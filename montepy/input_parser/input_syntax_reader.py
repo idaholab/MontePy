@@ -3,11 +3,11 @@ from collections import deque
 from .. import errors
 import itertools
 import io
-from mcnpy.constants import *
-from mcnpy.errors import *
-from mcnpy.input_parser.input_file import MCNP_InputFile
-from mcnpy.input_parser.mcnp_input import Input, Message, ReadInput, Title
-from mcnpy.input_parser.read_parser import ReadParser
+from montepy.constants import *
+from montepy.errors import *
+from montepy.input_parser.input_file import MCNP_InputFile
+from montepy.input_parser.mcnp_input import Input, Message, ReadInput, Title
+from montepy.input_parser.read_parser import ReadParser
 import os
 import warnings
 

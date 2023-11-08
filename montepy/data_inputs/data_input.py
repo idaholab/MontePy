@@ -1,12 +1,12 @@
 from abc import abstractmethod
 import copy
 
-import mcnpy
-from mcnpy.errors import *
-from mcnpy.input_parser.data_parser import ClassifierParser, DataParser
-from mcnpy.input_parser.mcnp_input import Input
-from mcnpy.particle import Particle
-from mcnpy.mcnp_object import MCNP_Object
+import montepy
+from montepy.errors import *
+from montepy.input_parser.data_parser import ClassifierParser, DataParser
+from montepy.input_parser.mcnp_input import Input
+from montepy.particle import Particle
+from montepy.mcnp_object import MCNP_Object
 
 import re
 

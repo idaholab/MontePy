@@ -1,10 +1,10 @@
-from mcnpy.numbered_object_collection import NumberedObjectCollection
-from mcnpy.universe import Universe
+from montepy.numbered_object_collection import NumberedObjectCollection
+from montepy.universe import Universe
 
 
 class Universes(NumberedObjectCollection):
     """
-    A container of multiple :class:`~mcnpy.universe.Universe` instances.
+    A container of multiple :class:`~montepy.universe.Universe` instances.
     """
 
     def __init__(self, objects=None, problem=None):

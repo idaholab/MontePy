@@ -1,11 +1,11 @@
 import itertools
-from mcnpy.data_inputs.cell_modifier import CellModifierInput
-from mcnpy.data_inputs.lattice import Lattice
-from mcnpy.errors import *
-from mcnpy.input_parser.mcnp_input import Jump
-from mcnpy.input_parser import syntax_node
-from mcnpy.mcnp_object import MCNP_Object
-from mcnpy.utilities import *
+from montepy.data_inputs.cell_modifier import CellModifierInput
+from montepy.data_inputs.lattice import Lattice
+from montepy.errors import *
+from montepy.input_parser.mcnp_input import Jump
+from montepy.input_parser import syntax_node
+from montepy.mcnp_object import MCNP_Object
+from montepy.utilities import *
 
 
 class LatticeInput(CellModifierInput):

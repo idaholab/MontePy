@@ -1,5 +1,5 @@
-from mcnpy import mcnp_problem
-from mcnpy.constants import DEFAULT_VERSION
+from montepy import mcnp_problem
+from montepy.constants import DEFAULT_VERSION
 
 
 def read_input(input_file, mcnp_version=DEFAULT_VERSION):
@@ -14,7 +14,7 @@ def read_input(input_file, mcnp_version=DEFAULT_VERSION):
     :type mcnp_version: tuple
     :returns: The MCNP_Problem instance representing this file.
     :rtype: MCNP_Problem
-    :raises UnsupportedFeature: If an input format is used that MCNPy does not support.
+    :raises UnsupportedFeature: If an input format is used that MontePy does not support.
     :raises MalformedInputError: If an input has a broken syntax.
     :raises NumberConflictError: If two objects use the same number in the input file.
     :raises BrokenObjectLinkError: If a reference is made to an object that is not in the input file.

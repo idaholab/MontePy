@@ -1,6 +1,6 @@
-from mcnpy.errors import *
+from montepy.errors import *
 
 raise DeprecationWarning(
-    """mcnpy.data_cards has moved to mcnpy.data_inputs.
+    """montepy.data_cards has moved to montepy.data_inputs.
 Punch cards are dead."""
 )

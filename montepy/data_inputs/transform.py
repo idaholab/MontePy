@@ -1,9 +1,9 @@
 import copy
-from mcnpy import mcnp_object
-from mcnpy.data_inputs import data_input
-from mcnpy.errors import *
-from mcnpy.numbered_mcnp_object import Numbered_MCNP_Object
-from mcnpy.utilities import *
+from montepy import mcnp_object
+from montepy.data_inputs import data_input
+from montepy.errors import *
+from montepy.numbered_mcnp_object import Numbered_MCNP_Object
+from montepy.utilities import *
 import numpy as np
 import re
 

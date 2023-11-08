@@ -1,5 +1,5 @@
-from mcnpy.input_parser.tokens import MCNP_Lexer
-from mcnpy.input_parser import syntax_node
+from montepy.input_parser.tokens import MCNP_Lexer
+from montepy.input_parser import syntax_node
 from sly import Parser
 import sly
 

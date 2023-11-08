@@ -1,4 +1,4 @@
-__name__ = "mcnpy.data_inputs"
+__name__ = "montepy.data_inputs"
 from .data_input import DataInput
 from .material import Material
 from .thermal_scattering import ThermalScatteringLaw

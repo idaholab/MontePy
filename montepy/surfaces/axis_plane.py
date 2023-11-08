@@ -1,7 +1,7 @@
 from .surface_type import SurfaceType
 from .surface import Surface
-from mcnpy.errors import *
-from mcnpy.utilities import *
+from montepy.errors import *
+from montepy.utilities import *
 
 
 class AxisPlane(Surface):

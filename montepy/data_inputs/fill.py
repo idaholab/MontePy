@@ -1,13 +1,13 @@
 import itertools as it
-from mcnpy.data_inputs.cell_modifier import CellModifierInput
-from mcnpy.data_inputs.transform import Transform
-from mcnpy.errors import *
-from mcnpy.input_parser.block_type import BlockType
-from mcnpy.input_parser.mcnp_input import Input, Jump
-from mcnpy.input_parser import syntax_node
-from mcnpy.mcnp_object import MCNP_Object
-from mcnpy.universe import Universe
-from mcnpy.utilities import *
+from montepy.data_inputs.cell_modifier import CellModifierInput
+from montepy.data_inputs.transform import Transform
+from montepy.errors import *
+from montepy.input_parser.block_type import BlockType
+from montepy.input_parser.mcnp_input import Input, Jump
+from montepy.input_parser import syntax_node
+from montepy.mcnp_object import MCNP_Object
+from montepy.universe import Universe
+from montepy.utilities import *
 import numpy as np
 
 

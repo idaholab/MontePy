@@ -4,14 +4,14 @@ import copy
 import enum
 import math
 
-from mcnpy import input_parser
-from mcnpy import constants
-from mcnpy.constants import rel_tol, abs_tol
-from mcnpy.errors import *
-from mcnpy.input_parser.shortcuts import Shortcuts
-from mcnpy.geometry_operators import Operator
-from mcnpy.particle import Particle
-from mcnpy.utilities import fortran_float
+from montepy import input_parser
+from montepy import constants
+from montepy.constants import rel_tol, abs_tol
+from montepy.errors import *
+from montepy.input_parser.shortcuts import Shortcuts
+from montepy.geometry_operators import Operator
+from montepy.particle import Particle
+from montepy.utilities import fortran_float
 import re
 import warnings
 
@@ -1852,7 +1852,7 @@ class ShortcutNode(ListNode):
 
 class ClassifierNode(SyntaxNodeBase):
     """
-    A node to represent the classifier for a :class:`mcnpy.data_input.DataInput`
+    A node to represent the classifier for a :class:`montepy.data_input.DataInput`
 
     .. versionadded:: 0.2.0
         This was added with the major parser rework.

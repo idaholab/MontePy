@@ -1,9 +1,9 @@
 from abc import abstractmethod
-import mcnpy
-from mcnpy.data_inputs.data_input import DataInputAbstract
-from mcnpy.input_parser import syntax_node
-from mcnpy.input_parser.block_type import BlockType
-from mcnpy.input_parser.mcnp_input import Input, Jump
+import montepy
+from montepy.data_inputs.data_input import DataInputAbstract
+from montepy.input_parser import syntax_node
+from montepy.input_parser.block_type import BlockType
+from montepy.input_parser.mcnp_input import Input, Jump
 import warnings
 
 
@@ -120,7 +120,7 @@ class CellModifierInput(DataInputAbstract):
     @abstractmethod
     def has_information(self):
         """
-        For a cell instance of :class:`mcnpy.data_cards.cell_modifier.CellModifierCard` returns True iff there is information here worth printing out.
+        For a cell instance of :class:`montepy.data_cards.cell_modifier.CellModifierCard` returns True iff there is information here worth printing out.
 
         e.g., a manually set volume for a cell
 
@@ -133,12 +133,12 @@ class CellModifierInput(DataInputAbstract):
         """
         Checks that data wasn't given in data block and the cell block.
         """
-        attr, _ = mcnpy.Cell._INPUTS_TO_PROPERTY[type(self)]
+        attr, _ = montepy.Cell._INPUTS_TO_PROPERTY[type(self)]
         if not self._in_cell_block and self._problem:
             cells = self._problem.cells
             for cell in cells:
                 if getattr(cell, attr).set_in_cell_block:
-                    raise mcnpy.errors.MalformedInputError(
+                    raise montepy.errors.MalformedInputError(
                         cell._input,
                         f"Cell: {cell.number} provided {self._class_prefix().upper()}"
                         " data when those data were in the data block",
@@ -165,7 +165,7 @@ class CellModifierInput(DataInputAbstract):
         """
         if self.in_cell_block:
             return self.has_information
-        attr, _ = mcnpy.Cell._INPUTS_TO_PROPERTY[type(self)]
+        attr, _ = montepy.Cell._INPUTS_TO_PROPERTY[type(self)]
         for cell in self._problem.cells:
             if getattr(cell, attr).has_information:
                 return True
@@ -188,7 +188,7 @@ class CellModifierInput(DataInputAbstract):
         """
         Gets a list of the ValueNodes that hold the information for all cells.
 
-        This will be a list in the same order as :func:`mcnpy.mcnp_problem.MCNP_Problem.cells`.
+        This will be a list in the same order as :func:`montepy.mcnp_problem.MCNP_Problem.cells`.
 
         .. versionadded:: 0.2.0
 
@@ -196,7 +196,7 @@ class CellModifierInput(DataInputAbstract):
         :rtype: list
         """
         ret = []
-        attr, _ = mcnpy.Cell._INPUTS_TO_PROPERTY[type(self)]
+        attr, _ = montepy.Cell._INPUTS_TO_PROPERTY[type(self)]
         for cell in self._problem.cells:
             input = getattr(cell, attr)
             ret.append(input._tree_value)
@@ -290,7 +290,7 @@ class CellModifierInput(DataInputAbstract):
             set_in_cell_block = print_in_cell_block
             if not self.in_cell_block:
                 for cell in self._problem.cells:
-                    attr = mcnpy.Cell._CARDS_TO_PROPERTY[type(self)][0]
+                    attr = montepy.Cell._CARDS_TO_PROPERTY[type(self)][0]
                     modifier = getattr(cell, attr)
                     if modifier.has_information:
                         set_in_cell_block = modifier.set_in_cell_block

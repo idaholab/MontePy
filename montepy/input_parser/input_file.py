@@ -1,5 +1,5 @@
 import itertools as it
-from mcnpy.utilities import *
+from montepy.utilities import *
 
 
 class MCNP_InputFile:

@@ -1,9 +1,9 @@
-from mcnpy.surfaces.axis_plane import AxisPlane
-from mcnpy.surfaces.surface import Surface
-from mcnpy.surfaces.surface_type import SurfaceType
-from mcnpy.surfaces.cylinder_on_axis import CylinderOnAxis
-from mcnpy.surfaces.cylinder_par_axis import CylinderParAxis
-from mcnpy.surfaces.general_plane import GeneralPlane
+from montepy.surfaces.axis_plane import AxisPlane
+from montepy.surfaces.surface import Surface
+from montepy.surfaces.surface_type import SurfaceType
+from montepy.surfaces.cylinder_on_axis import CylinderOnAxis
+from montepy.surfaces.cylinder_par_axis import CylinderParAxis
+from montepy.surfaces.general_plane import GeneralPlane
 
 
 def surface_builder(input):

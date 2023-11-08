@@ -1,6 +1,6 @@
-from mcnpy.data_inputs.isotope import Isotope
-from mcnpy.input_parser.syntax_node import PaddingNode, ValueNode
-from mcnpy.utilities import make_prop_val_node
+from montepy.data_inputs.isotope import Isotope
+from montepy.input_parser.syntax_node import PaddingNode, ValueNode
+from montepy.utilities import make_prop_val_node
 
 
 def _enforce_positive(self, val):

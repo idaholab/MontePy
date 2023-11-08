@@ -1,7 +1,7 @@
-""" MCNPy is a library for reading, editing, and writing MCNP input files.
+""" MontePy is a library for reading, editing, and writing MCNP input files.
 
 This creates a semantic understanding of the MCNP input file.
-start by running mcnpy.read_input().
+start by running montepy.read_input().
 
 You will receive an MCNP_Problem object that you will interact with.
 """
@@ -16,7 +16,7 @@ __credits__ = [
     "Brenna Carbno",
 ]
 
-name = "mcnpy"
+name = "montepy"
 __version__ = "0.2.0.alpha9"
 __maintainer__ = "Micah Gale"
 __email__ = "micah.gale@inl.gov"
@@ -26,16 +26,16 @@ __all__ = ["cell", "surfaces", "mcnp_object.py", "input_parser"]
 from . import input_parser
 from . import constants
 from .input_parser.input_reader import read_input
-from mcnpy.cell import Cell
-from mcnpy.mcnp_problem import MCNP_Problem
-from mcnpy.data_inputs.material import Material
-from mcnpy.data_inputs.transform import Transform
-from mcnpy.geometry_operators import Operator
-from mcnpy import geometry_operators
-from mcnpy.input_parser.mcnp_input import Jump
-from mcnpy.particle import Particle
-from mcnpy.surfaces.surface_type import SurfaceType
-from mcnpy.universe import Universe
+from montepy.cell import Cell
+from montepy.mcnp_problem import MCNP_Problem
+from montepy.data_inputs.material import Material
+from montepy.data_inputs.transform import Transform
+from montepy.geometry_operators import Operator
+from montepy import geometry_operators
+from montepy.input_parser.mcnp_input import Jump
+from montepy.particle import Particle
+from montepy.surfaces.surface_type import SurfaceType
+from montepy.universe import Universe
 import sys
 
 # enable deprecated warnings for users

@@ -1,6 +1,6 @@
-from mcnpy.data_inputs.data_input import DataInputAbstract
-from mcnpy.input_parser import syntax_node
-from mcnpy.particle import Particle
+from montepy.data_inputs.data_input import DataInputAbstract
+from montepy.input_parser import syntax_node
+from montepy.particle import Particle
 
 
 class Mode(DataInputAbstract):
@@ -43,7 +43,7 @@ class Mode(DataInputAbstract):
         """
         The type of particles involved in this problem.
 
-        The set will contain instances of :class:`mcnpy.particle.Particle`.
+        The set will contain instances of :class:`montepy.particle.Particle`.
 
         :rtype: set
         """

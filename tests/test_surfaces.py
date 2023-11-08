@@ -1,17 +1,17 @@
 from unittest import TestCase
 
-import mcnpy
+import montepy
 
-from mcnpy.errors import MalformedInputError
-from mcnpy.input_parser.block_type import BlockType
-from mcnpy.input_parser.mcnp_input import Input
-from mcnpy.surfaces.axis_plane import AxisPlane
-from mcnpy.surfaces.cylinder_on_axis import CylinderOnAxis
-from mcnpy.surfaces.cylinder_par_axis import CylinderParAxis
-from mcnpy.surfaces.general_plane import GeneralPlane
-from mcnpy.surfaces.surface import Surface
-from mcnpy.surfaces.surface_builder import surface_builder
-from mcnpy.surfaces.surface_type import SurfaceType
+from montepy.errors import MalformedInputError
+from montepy.input_parser.block_type import BlockType
+from montepy.input_parser.mcnp_input import Input
+from montepy.surfaces.axis_plane import AxisPlane
+from montepy.surfaces.cylinder_on_axis import CylinderOnAxis
+from montepy.surfaces.cylinder_par_axis import CylinderParAxis
+from montepy.surfaces.general_plane import GeneralPlane
+from montepy.surfaces.surface import Surface
+from montepy.surfaces.surface_builder import surface_builder
+from montepy.surfaces.surface_type import SurfaceType
 
 
 class testSurfaces(TestCase):
@@ -81,51 +81,51 @@ class testSurfaces(TestCase):
 
     def test_validator(self):
         surf = Surface()
-        with self.assertRaises(mcnpy.errors.IllegalState):
+        with self.assertRaises(montepy.errors.IllegalState):
             surf.validate()
-        with self.assertRaises(mcnpy.errors.IllegalState):
+        with self.assertRaises(montepy.errors.IllegalState):
             surf.format_for_mcnp_input((6, 2, 0))
         # cylinder on axis
         surf = CylinderOnAxis()
-        with self.assertRaises(mcnpy.errors.IllegalState):
+        with self.assertRaises(montepy.errors.IllegalState):
             surf.validate()
-        with self.assertRaises(mcnpy.errors.IllegalState):
+        with self.assertRaises(montepy.errors.IllegalState):
             surf.format_for_mcnp_input((6, 2, 0))
         surf._surface_type = SurfaceType.CX
-        with self.assertRaises(mcnpy.errors.IllegalState):
+        with self.assertRaises(montepy.errors.IllegalState):
             surf.validate()
         # cylinder par axis
         surf = CylinderParAxis()
-        with self.assertRaises(mcnpy.errors.IllegalState):
+        with self.assertRaises(montepy.errors.IllegalState):
             surf.validate()
-        with self.assertRaises(mcnpy.errors.IllegalState):
+        with self.assertRaises(montepy.errors.IllegalState):
             surf.format_for_mcnp_input((6, 2, 0))
         surf._surface_type = SurfaceType.C_X
-        with self.assertRaises(mcnpy.errors.IllegalState):
+        with self.assertRaises(montepy.errors.IllegalState):
             surf.validate()
         surf.radius = 5.0
-        with self.assertRaises(mcnpy.errors.IllegalState):
+        with self.assertRaises(montepy.errors.IllegalState):
             surf.validate()
         # axis plane
         surf = AxisPlane()
-        with self.assertRaises(mcnpy.errors.IllegalState):
+        with self.assertRaises(montepy.errors.IllegalState):
             surf.validate()
-        with self.assertRaises(mcnpy.errors.IllegalState):
+        with self.assertRaises(montepy.errors.IllegalState):
             surf.format_for_mcnp_input((6, 2, 0))
         surf._surface_type = SurfaceType.PX
-        with self.assertRaises(mcnpy.errors.IllegalState):
+        with self.assertRaises(montepy.errors.IllegalState):
             surf.validate()
         surf.location = 0.0
         # ensure that this doesn't raise an error
         surf.validate()
         # general plane
         surf = GeneralPlane()
-        with self.assertRaises(mcnpy.errors.IllegalState):
+        with self.assertRaises(montepy.errors.IllegalState):
             surf.validate()
-        with self.assertRaises(mcnpy.errors.IllegalState):
+        with self.assertRaises(montepy.errors.IllegalState):
             surf.format_for_mcnp_input((6, 2, 0))
         surf._surface_type = SurfaceType.P
-        with self.assertRaises(mcnpy.errors.IllegalState):
+        with self.assertRaises(montepy.errors.IllegalState):
             surf.validate()
 
     def test_surface_is_reflecting_setter(self):
@@ -232,7 +232,7 @@ class testSurfaces(TestCase):
         bad_inputs = ["1 P 0.0", "1 PZ 0.0 10.0"]
         for bad_input in bad_inputs:
             with self.assertRaises(ValueError):
-                surf = mcnpy.surfaces.axis_plane.AxisPlane(
+                surf = montepy.surfaces.axis_plane.AxisPlane(
                     Input([bad_input], BlockType.SURFACE)
                 )
 
@@ -240,7 +240,7 @@ class testSurfaces(TestCase):
         bad_inputs = ["1 P 0.0", "1 CZ 0.0 10.0"]
         for bad_input in bad_inputs:
             with self.assertRaises(ValueError):
-                surf = mcnpy.surfaces.cylinder_on_axis.CylinderOnAxis(
+                surf = montepy.surfaces.cylinder_on_axis.CylinderOnAxis(
                     Input([bad_input], BlockType.SURFACE)
                 )
 
@@ -248,7 +248,7 @@ class testSurfaces(TestCase):
         bad_inputs = ["1 P 0.0", "1 C/Z 0.0"]
         for bad_input in bad_inputs:
             with self.assertRaises(ValueError):
-                surf = mcnpy.surfaces.cylinder_par_axis.CylinderParAxis(
+                surf = montepy.surfaces.cylinder_par_axis.CylinderParAxis(
                     Input([bad_input], BlockType.SURFACE)
                 )
 
@@ -256,7 +256,7 @@ class testSurfaces(TestCase):
         bad_inputs = ["1 PZ 0.0", "1 P 0.0"]
         for bad_input in bad_inputs:
             with self.assertRaises(ValueError):
-                surf = mcnpy.surfaces.general_plane.GeneralPlane(
+                surf = montepy.surfaces.general_plane.GeneralPlane(
                     Input([bad_input], BlockType.SURFACE)
                 )
 

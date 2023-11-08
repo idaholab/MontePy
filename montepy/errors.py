@@ -149,7 +149,7 @@ class UnknownElement(ValueError):
     """
 
     def __init__(self, missing_val):
-        self.message = f"An element identified by: {missing_val} is unknown to MCNPy."
+        self.message = f"An element identified by: {missing_val} is unknown to MontePy."
         super().__init__(self.message)
 
 

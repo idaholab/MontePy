@@ -1,7 +1,7 @@
 import glob
-import mcnpy
-from mcnpy import __main__ as main
-from mcnpy.errors import *
+import montepy
+from montepy import __main__ as main
+from montepy.errors import *
 from unittest import TestCase
 import os
 
@@ -50,4 +50,4 @@ class TestMainRunner(TestCase):
                 and os.path.basename(file) not in ignore
             ):
                 print(f"Testing no errors are raised for file: {file}")
-                mcnpy.read_input(file)
+                montepy.read_input(file)

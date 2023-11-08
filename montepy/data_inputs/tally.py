@@ -1,6 +1,6 @@
-import mcnpy
-from mcnpy.data_inputs.data_input import DataInputAbstract
-from mcnpy.input_parser.tally_parser import TallyParser
+import montepy
+from montepy.data_inputs.data_input import DataInputAbstract
+from montepy.input_parser.tally_parser import TallyParser
 
 
 class Tally(DataInputAbstract):

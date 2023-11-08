@@ -1,14 +1,19 @@
 from abc import ABC, abstractmethod
 import itertools as it
-from mcnpy.errors import *
-from mcnpy.constants import BLANK_SPACE_CONTINUE, get_max_line_length, rel_tol, abs_tol
-from mcnpy.input_parser.syntax_node import (
+from montepy.errors import *
+from montepy.constants import (
+    BLANK_SPACE_CONTINUE,
+    get_max_line_length,
+    rel_tol,
+    abs_tol,
+)
+from montepy.input_parser.syntax_node import (
     CommentNode,
     PaddingNode,
     ParametersNode,
     ValueNode,
 )
-import mcnpy
+import montepy
 import numpy as np
 import textwrap
 import warnings
@@ -33,7 +38,7 @@ class MCNP_Object(ABC):
         self._parameters = ParametersNode()
         self._input = None
         if input:
-            if not isinstance(input, mcnpy.input_parser.mcnp_input.Input):
+            if not isinstance(input, montepy.input_parser.mcnp_input.Input):
                 raise TypeError("input must be an Input")
             try:
                 try:
@@ -78,7 +83,7 @@ class MCNP_Object(ABC):
             padding_node = PaddingNode(padding)
         else:
             padding_node = None
-        if default is None or isinstance(default, mcnpy.input_parser.mcnp_input.Jump):
+        if default is None or isinstance(default, montepy.input_parser.mcnp_input.Jump):
             return ValueNode(default, value_type, padding_node)
         return ValueNode(str(default), value_type, padding_node)
 
@@ -100,8 +105,8 @@ class MCNP_Object(ABC):
         """
         Method to update values in syntax tree with new values.
 
-        Generally when :func:`~mcnpy.utilities.make_prop_val_node` this is not necessary to do,
-        but when :func:`~mcnpy.utilities.make_prop_pointer` is used it is necessary.
+        Generally when :func:`~montepy.utilities.make_prop_val_node` this is not necessary to do,
+        but when :func:`~montepy.utilities.make_prop_pointer` is used it is necessary.
         The most common need is to update a value based on the number for an object pointed at,
         e.g., the material number in a cell definition.
 
@@ -239,7 +244,7 @@ class MCNP_Object(ABC):
         :param problem: The problem to link this input to.
         :type problem: MCNP_Problem
         """
-        if not isinstance(problem, mcnpy.mcnp_problem.MCNP_Problem):
+        if not isinstance(problem, montepy.mcnp_problem.MCNP_Problem):
             raise TypeError("problem must be an MCNP_Problem")
         self._problem = problem
 
@@ -330,7 +335,7 @@ class MCNP_Object(ABC):
             repeat_counter = 0
 
         for value in values:
-            if isinstance(value, mcnpy.input_parser.mcnp_input.Jump):
+            if isinstance(value, montepy.input_parser.mcnp_input.Jump):
                 ret.append(value)
                 last_value = None
             elif last_value:
@@ -380,7 +385,7 @@ class MCNP_Object(ABC):
             jump_counter = 0
 
         for value in values:
-            if isinstance(value, mcnpy.input_parser.mcnp_input.Jump):
+            if isinstance(value, montepy.input_parser.mcnp_input.Jump):
                 jump_counter += 1
             else:
                 flush_jumps()
@@ -412,7 +417,7 @@ class MCNP_Object(ABC):
 
         .. deprecated:: 0.2.0
             This is no longer needed. Instead this is specified in
-            :func:`mcnpy.input_parser.tokens.MCNP_Lexer._KEYWORDS`.
+            :func:`montepy.input_parser.tokens.MCNP_Lexer._KEYWORDS`.
 
         :returns: A set of the allowed keywords. If there are none this should return the empty set.
         :rtype: set

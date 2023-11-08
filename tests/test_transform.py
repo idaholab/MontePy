@@ -2,11 +2,11 @@ import copy
 from unittest import TestCase
 
 import numpy as np
-import mcnpy
-from mcnpy.data_inputs.transform import Transform
-from mcnpy.errors import MalformedInputError
-from mcnpy.input_parser.block_type import BlockType
-from mcnpy.input_parser.mcnp_input import Input
+import montepy
+from montepy.data_inputs.transform import Transform
+from montepy.errors import MalformedInputError
+from montepy.input_parser.block_type import BlockType
+from montepy.input_parser.mcnp_input import Input
 
 
 class testTransformClass(TestCase):
@@ -102,9 +102,9 @@ class testTransformClass(TestCase):
 
     def test_validate(self):
         transform = Transform()
-        with self.assertRaises(mcnpy.errors.IllegalState):
+        with self.assertRaises(montepy.errors.IllegalState):
             transform.validate()
-        with self.assertRaises(mcnpy.errors.IllegalState):
+        with self.assertRaises(montepy.errors.IllegalState):
             transform.format_for_mcnp_input((6, 2, 0))
 
     def test_transform_degrees_setter(self):

@@ -1,6 +1,6 @@
 import argparse
 import glob
-import mcnpy
+import montepy
 from pathlib import Path
 import sys
 
@@ -21,7 +21,8 @@ def define_args(args):
     :rtype: argparse.NameSpace
     """
     parser = argparse.ArgumentParser(
-        prog="mcnpy", description="Tool for editing and working with MCNP input files."
+        prog="montepy",
+        description="Tool for editing and working with MCNP input files.",
     )
     parser.add_argument(
         "-c",
@@ -48,7 +49,7 @@ def check_inputs(files):
             raise FileNotFoundError(f"File: {file} not found.")
     for file in files:
         print(f"\n********** Checking: {file} *********\n")
-        problem = mcnpy.MCNP_Problem(file)
+        problem = montepy.MCNP_Problem(file)
         problem.parse_input(True)
 
 

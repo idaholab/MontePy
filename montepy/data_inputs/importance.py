@@ -1,13 +1,13 @@
 import collections
 import copy
 import math
-from mcnpy.data_inputs.cell_modifier import CellModifierInput
-from mcnpy.errors import *
-from mcnpy.constants import DEFAULT_VERSION, rel_tol, abs_tol
-from mcnpy.input_parser import syntax_node
-from mcnpy.mcnp_object import MCNP_Object
-from mcnpy.particle import Particle
-from mcnpy.utilities import *
+from montepy.data_inputs.cell_modifier import CellModifierInput
+from montepy.errors import *
+from montepy.constants import DEFAULT_VERSION, rel_tol, abs_tol
+from montepy.input_parser import syntax_node
+from montepy.mcnp_object import MCNP_Object
+from montepy.particle import Particle
+from montepy.utilities import *
 import numbers
 
 

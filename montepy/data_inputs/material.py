@@ -1,11 +1,11 @@
 import copy
-from mcnpy.data_inputs import data_input, thermal_scattering
-from mcnpy.data_inputs.isotope import Isotope
-from mcnpy.data_inputs.material_component import MaterialComponent
-from mcnpy import mcnp_object
-from mcnpy.numbered_mcnp_object import Numbered_MCNP_Object
-from mcnpy.errors import *
-from mcnpy.utilities import *
+from montepy.data_inputs import data_input, thermal_scattering
+from montepy.data_inputs.isotope import Isotope
+from montepy.data_inputs.material_component import MaterialComponent
+from montepy import mcnp_object
+from montepy.numbered_mcnp_object import Numbered_MCNP_Object
+from montepy.errors import *
+from montepy.utilities import *
 import itertools
 import re
 

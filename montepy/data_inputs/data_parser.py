@@ -1,4 +1,4 @@
-from mcnpy.data_inputs import (
+from montepy.data_inputs import (
     data_input,
     fill,
     importance,
@@ -11,7 +11,7 @@ from mcnpy.data_inputs import (
     universe_input,
     volume,
 )
-from mcnpy.data_inputs import transform
+from montepy.data_inputs import transform
 import re
 
 PREFIX_MATCHES = {
