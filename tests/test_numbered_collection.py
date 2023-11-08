@@ -1,17 +1,17 @@
 import copy
-import mcnpy
-import mcnpy.cells
-from mcnpy.errors import NumberConflictError
+import montepy
+import montepy.cells
+from montepy.errors import NumberConflictError
 import unittest
 
 
 class TestNumberedObjectCollection(unittest.TestCase):
     def setUp(self):
-        self.simple_problem = mcnpy.read_input("tests/inputs/test.imcnp")
+        self.simple_problem = montepy.read_input("tests/inputs/test.imcnp")
 
     def test_bad_init(self):
         with self.assertRaises(TypeError):
-            mcnpy.cells.Cells(5)
+            montepy.cells.Cells(5)
 
     def test_numbers(self):
         cell_numbers = [1, 2, 3, 99, 5]
@@ -26,7 +26,7 @@ class TestNumberedObjectCollection(unittest.TestCase):
         cells = list(self.simple_problem.cells)
         cells.append(cells[1])
         with self.assertRaises(NumberConflictError):
-            mcnpy.cells.Cells(cells)
+            montepy.cells.Cells(cells)
 
     def test_check_number(self):
         with self.assertRaises(NumberConflictError):
@@ -176,7 +176,7 @@ class TestNumberedObjectCollection(unittest.TestCase):
         with self.assertRaises(NumberConflictError):
             cells += list_cells
         with self.assertRaises(NumberConflictError):
-            cells += mcnpy.cells.Cells(list_cells)
+            cells += montepy.cells.Cells(list_cells)
 
         with self.assertRaises(TypeError):
             cells += 5
@@ -269,7 +269,7 @@ class TestNumberedObjectCollection(unittest.TestCase):
         cells = self.simple_problem.cells
         self.assertEqual(str(cells), "Cells: [1, 2, 3, 99, 5]")
         key_phrases = [
-            "Numbered_object_collection: obj_class: <class 'mcnpy.cell.Cell'>",
+            "Numbered_object_collection: obj_class: <class 'montepy.cell.Cell'>",
             "Objects: [CELL: 1",
             "Number cache: {1: CELL: 1",
         ]

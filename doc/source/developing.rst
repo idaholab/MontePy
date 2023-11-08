@@ -1,7 +1,7 @@
 Developer's Guide
 =================
 
-MCNPy can be thought of as having two layers: the syntax, and the semantic layers.
+MontePy can be thought of as having two layers: the syntax, and the semantic layers.
 The syntax layers handle the boring syntax things: like multi-line cards, and comments, etc.
 The semantic layer takes this information and makes sense of it, like what the material number in a cell card is.
 
@@ -17,22 +17,22 @@ Setting up and Typical Development Workflow
 #. Clone the repository.
 
 #. Install the required packages. 
-   MCNPy comes with two requirements files. 
-   One (``requirements/common.txt``) is for packages MCNPy depends on.
+   MontePy comes with two requirements files. 
+   One (``requirements/common.txt``) is for packages MontePy depends on.
    The other (``requirements/dev.txt``) is for packages that are generally necessary for developing.
    To install these simply run: 
    
    ``pip install -r requirements/dev.txt``
 
-#. Tie your work to an issue. All work on MCNPy is tracked through issues. 
+#. Tie your work to an issue. All work on MontePy is tracked through issues. 
    If you are working on a new feature or bug that is not covered by an issue, please file an issue first.
 
 #. Work on a new branch. The branches: ``develop`` and ``main`` are protected. 
-   All new code must be accepted through a merge request. 
-   The easiest way to make this branch is to "create merge request" from gitlab.
+   All new code must be accepted through a merge request or pull request. 
+   The easiest way to make this branch is to "create pull request" from github.
    This will create a new branch (though with an unwieldy name) that you can checkout and work on.
 
-#. Run the test cases. MCNPy relies heavily on its over 200 tests for the development process.
+#. Run the test cases. MontePy relies heavily on its over 200 tests for the development process.
    These are configured so if you run: ``python -m pytest`` from the root of the git repository 
    all tests will be found and ran.
 
@@ -42,19 +42,19 @@ Setting up and Typical Development Workflow
    To achieve this, it is recommended that you commit the test first, and push it to gitlab.
    This way there will be a record of the CI pipeline failing that can be quickly reviewed as part of the merge request.
 
-   Though MCNPy uses ``pytest`` for running the tests,
+   Though MontePy uses ``pytest`` for running the tests,
    it actually uses `unittest <https://docs.python.org/3/library/unittest.html>`_ for setting up all test fixtures. 
    Generally unit tests of new features go in the test file with the closest class name. 
    Integration tests have all been dumped in ``tests/test_integration.py``. 
    For integration tests you can likely use the ``tests/inputs/test.imcnp`` input file.
-   This is pre-loaded as an :class:`~mcnpy.mcnp_problem.MCNP_Problem` stored as: ``self.simple_problem``.
+   This is pre-loaded as an :class:`~montepy.mcnp_problem.MCNP_Problem` stored as: ``self.simple_problem``.
    If you need to mutate it at all you must first make a ``copy.deepcopy`` of it.
 
 #. Write the code.
 
-#. Document all new classes and functions. MCNPy uses `Sphinx docstrings <https://sphinx-rtd-tutorial.readthedocs.io/en/latest/docstrings.html>`_.
+#. Document all new classes and functions. MontePy uses `Sphinx docstrings <https://sphinx-rtd-tutorial.readthedocs.io/en/latest/docstrings.html>`_.
 
-#. Format the code with ``black``. You can simply run ``black mcnpy tests``
+#. Format the code with ``black``. You can simply run ``black montepy tests``
 
 #. Add more test cases as necessary. The merge request should show you the code coverage.
    The general goal is near 100\% coverage.
@@ -64,15 +64,15 @@ Setting up and Typical Development Workflow
    Otherwise just the docstrings may suffice.
    Another option is to write an example in the "Tips and Tricks" guide.
 
-#. Update the version, and authors as necessary. The version is stored in ``mcnpy/__init__.py``. See the version numbering system described in ``README.md``.
-   The authors information is in ``AUTHORS`` and ``mcnpy/__init__.py``. 
+#. Update the version, and authors as necessary. The version is stored in ``montepy/__init__.py``. See the version numbering system described in ``README.md``.
+   The authors information is in ``AUTHORS`` and ``montepy/__init__.py``. 
 
 #. Start a merge request review. Generally Micah or Travis are good reviewers.
 
 
 Deploy Process
 ^^^^^^^^^^^^^^
-MCNPy currently does not use a continuous deploy process.
+MontePy currently does not use a continuous deploy process.
 Rather changes are staged on the ``develop`` branch prior to a release.
 Both ``develop`` and ``main`` are protected branches.
 ``main`` should only be used for releases.
@@ -93,7 +93,7 @@ Here are some common issues to check before approving a merge request.
 #. If this is a bug fix did the new testing fail without the fix?
 #. Was the version number incremented?
 #. Were the authors and credits properly updated?
-#. Check also the authors in ``mcnpy/__init__.py``
+#. Check also the authors in ``montepy/__init__.py``
 #. Is this merge request tied to an issue?
 
 Package Structure
@@ -102,30 +102,30 @@ Package Structure
 Top Level 
 ^^^^^^^^^
 The top level of the package is reserved for only a select few objects.
-All children of :class:`~mcnpy.numbered_object_collection.NumberedObjectCollection` can live here.
-The other allowed classes are: ``Exceptions``, :class:`~mcnpy.mcnp_card.MCNP_Card`, :class:`~mcnpy.mcnp_problem.MCNP_Problem`, :class:`~mcnpy.cell.Cell`,
-:class:`~mcnpy.particle.Particle`, and :class:`~mcnpy.universe.Universe`.
+All children of :class:`~montepy.numbered_object_collection.NumberedObjectCollection` can live here.
+The other allowed classes are: ``Exceptions``, :class:`~montepy.mcnp_card.MCNP_Card`, :class:`~montepy.mcnp_problem.MCNP_Problem`, :class:`~montepy.cell.Cell`,
+:class:`~montepy.particle.Particle`, and :class:`~montepy.universe.Universe`.
 Utility functions are allowed at this level as well.
 
 
 input_parser
 ^^^^^^^^^^^^
-The :mod:`mcnpy.input_parser` contains all functions and classes involved in syntax parsing.
-Generally this is all invoked through :func:`~mcnpy.input_parser.input_reader.read_input`,
-which returns an :class:`~mcnpy.mcnp_problem.MCNP_Problem` instance.
+The :mod:`montepy.input_parser` contains all functions and classes involved in syntax parsing.
+Generally this is all invoked through :func:`~montepy.input_parser.input_reader.read_input`,
+which returns an :class:`~montepy.mcnp_problem.MCNP_Problem` instance.
 
 data_cards
 ^^^^^^^^^^
-This package is for all :class:`~mcnpy.mcnp_card.MCNP_Card` children that should exist
+This package is for all :class:`~montepy.mcnp_card.MCNP_Card` children that should exist
 in the data block in an MCNP input. 
-For example :class:`~mcnpy.data_cards.material.Material` lives here.
+For example :class:`~montepy.data_cards.material.Material` lives here.
 
 surfaces
 ^^^^^^^^
 This package contains all surface classes.
-All classes need to be children of :class:`~mcnpy.surfaces.surface.Surface`.
+All classes need to be children of :class:`~montepy.surfaces.surface.Surface`.
 When possible new surface classes should combine similar planes.
-For example :class:`~mcnpy.surfaces.axis_plane.AxisPlane` covers ``PX``, ``PY``, and ``PZ``.
+For example :class:`~montepy.surfaces.axis_plane.AxisPlane` covers ``PX``, ``PY``, and ``PZ``.
 
 Design Philosophy
 -----------------
@@ -139,7 +139,7 @@ Design Philosophy
 #. Do it right the first time. 
 #. Document all functions.
 #. Expect everything to mutate at any time.
-#. Avoid relative imports when possible. Use top level ones instead: e.g., ``import mcnpy.cell.Cell``.
+#. Avoid relative imports when possible. Use top level ones instead: e.g., ``import montepy.cell.Cell``.
 #. Defer to vanilla python, and only use the standard library. Currently the only dependency is ``numpy``. 
    There must be good justification for breaking from this convention and complicating things for the user.
 
@@ -158,11 +158,11 @@ Inheritance
 
 There are many abstract or simply parent classes that are designed to be subclassed extensively.
 
-Card: :class:`~mcnpy.mcnp_card.MCNP_Card`
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Card: :class:`~montepy.mcnp_card.MCNP_Card`
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 All classes that represent a single input card *must* subclass this. 
-For example: some children are: :class:`~mcnpy.cell.Cell`, :class:`~mcnpy.surfaces.surface.Surface`.
+For example: some children are: :class:`~montepy.cell.Cell`, :class:`~montepy.surfaces.surface.Surface`.
 
 How to __init__
 """""""""""""""
@@ -181,16 +181,16 @@ New classes need to support "from scratch" creation e.g., ``cell = Cell()``.
    This system will be changed drastically with 0.2.0.
 
 How to __str__ vs __repr__
-""""""""""""""""""""""""""""
+""""""""""""""""""""""""""
 All objects must implement ``__str__`` (called by ``str()``), 
 and ``__repr__`` (called by ``repr()``).
-See `this issue <https://hpcgitlab.hpc.inl.gov/experiment_analysis/mcnpy/-/issues/41>`_ for a more detailed discussion.
+See `this issue <https://hpcgitlab.hpc.inl.gov/experiment_analysis/montepy/-/issues/41>`_ for a more detailed discussion.
 In general ``__str__`` should return a one line string with enough information to uniquely identify the object.
 For numbered objects this should include their number, and a few high level details.
 For ``__repr__`` this should include debugging information.
 This should include most if not all internal state information.
 
-See this example for :class:`~mcnpy.cell.Cell`
+See this example for :class:`~montepy.cell.Cell`
 
 >>> str(cell)
 CELL: 2, mat: 2, DENS: 8.0 g/cm3
@@ -203,7 +203,7 @@ SURFACE: 1005, RCC
 
 Mutation
 """"""""
-MCNPy supports copying the exact input unless an object changes at all,
+MontePy supports copying the exact input unless an object changes at all,
 which is inconvenient.
 This is handled by ``self._mutated``. 
 Whenever an object parameter is set the setter must set ``self._mutated=True``. 
@@ -214,7 +214,7 @@ Whenever an object parameter is set the setter must set ``self._mutated=True``.
 Format for MCNP Input
 """""""""""""""""""""
 All children must implement this abstract method.
-This is the method for how :func:`~mcnpy.mcnp_problem.MCNP_Problem.write_to_file` writes
+This is the method for how :func:`~montepy.mcnp_problem.MCNP_Problem.write_to_file` writes
 this class to the file.
 It must return a list of strings that faithfully represent this objects state.
 Each string in the list represents one line in the MCNP input file to be written.
@@ -227,9 +227,9 @@ the surface's number has changed.
 
 You have three helper functions to achieve this end goal. 
 You should not try to count the number of characters in a line!
-These are :func:`~mcnpy.mcnp_card.MCNP_Card.format_for_mcnp_input`,
-:func:`~mcnpy.mcnp_card.MCNP_Card.wrap_words_for_mcnp`,
-and :func:`~mcnpy.mcnp_card.MCNP_Card.wrap_string_for_mcnp`.
+These are :func:`~montepy.mcnp_card.MCNP_Card.format_for_mcnp_input`,
+:func:`~montepy.mcnp_card.MCNP_Card.wrap_words_for_mcnp`,
+and :func:`~montepy.mcnp_card.MCNP_Card.wrap_string_for_mcnp`.
 First you need to store a list from ``super().format_for_mcnp_input``.
 This function will handle adding comments, etc.
 If you don't care about the formatting just create a list of strings,
@@ -239,7 +239,7 @@ If you care more about formatting create the string for each line you desire.
 Then pass these strings through ``self.wrap_string_for_mcnp``,
 which will then wrap any long lines to ensure it doesn't break MCNP.
 
-Example taken from :class:`~mcnpy.data_cards.mode.Mode`
+Example taken from :class:`~montepy.data_cards.mode.Mode`
 
 .. code-block:: python
 
@@ -255,8 +255,8 @@ Example taken from :class:`~mcnpy.data_cards.mode.Mode`
         return ret
 
 
-Collection: :class:`~mcnpy.numbered_object_collection.NumberedObjectCollection`
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Collection: :class:`~montepy.numbered_object_collection.NumberedObjectCollection`
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 This should be subclassed for any collection of objects that will are numbered.
 For example: cells, surfaces, materials, universes, tallies, etc.
 By default you need to do almost nothing.
@@ -272,10 +272,11 @@ For example the init function for ``Cells``
 .. code-block:: python
 
         def __init__(self, cells=None):
-            super().__init__(mcnpy.Cell, cells)
+            super().__init__(montepy.Cell, cells)
 
-Numbered Object :class:`~mcnpy.numbered_mcnp_card.Numbered_MCNP_Card`
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Numbered Object :class:`~montepy.numbered_mcnp_card.Numbered_MCNP_Card`
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
 MCNP allows many types of number objects like cells, surfaces, and tallies. 
 The only thing special about this is that it requires there be the properties:
 ``number`` and ``old_number``.
@@ -284,7 +285,7 @@ The ``number`` is the object's current number and should mutate.
 The parent class provides a system to link to a problem via ``self._problem``.
 Note this field can be ``None``. 
 When setting a number you must check for numbering collisions with the method:
-:func:`~mcnpy.numbered_object_collection.NumberedObjectCollection.check_number`.
+:func:`~montepy.numbered_object_collection.NumberedObjectCollection.check_number`.
 This function returns nothing, but will raise an error when a number collision occurs.
 For example the ``Surface`` number setter looks like::
         
@@ -298,10 +299,10 @@ For example the ``Surface`` number setter looks like::
         self._surface_number = number
 
 
-Surface: :class:`~mcnpy.surfaces.surface.Surface`
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Surface: :class:`~montepy.surfaces.surface.Surface`
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 This is the parent class for all Surface classes.
-You will also need to update :func:`~mcnpy.surfaces.surface_builder.surface_builder`.
+You will also need to update :func:`~montepy.surfaces.surface_builder.surface_builder`.
 You should expose clear parameters such as ``radius`` or ``location``.
 ``format_for_mcnp_input()`` is handled by default.
 
@@ -312,8 +313,8 @@ You need to first run ``super().__init__(input_card, comment)``.
 You will then have access to ``self.surface_type``, and ``self.surface_constants``.
 You then need to verify that the surface type is correct, and there are the correct number of surface constants. 
 
-:func:`~mcnpy.surfaces.surface.Surface.find_duplicate_surfaces`
-"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+:func:`~montepy.surfaces.surface.Surface.find_duplicate_surfaces`
+"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 This function is meant to find very similar surfaces that cause geometry errors,
 such as two ``PZ`` surfaces that are 1 micron apart.
 This should return a list of surfaces that are within the provided tolerance similar to this one.
@@ -324,13 +325,13 @@ Things to consider.
    being a white surface. To say that two surfaces are duplicate all of these factors must be considered. 
 
 
-Data Cards: :class:`~mcnpy.data_cards.data_card.DataCardAbstract`
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Data Cards: :class:`~montepy.data_cards.data_card.DataCardAbstract`
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 This class is the parent for all cards that show up in the data block. 
 When adding a child you will also need to update the 
-:func:`~mcnpy.data_cards.data_parser.parse_data` function.
-In general first comply with standards for this class's parent: :class:`~mcnpy.mcnp_card.MCNP_Card`.
-In addition you will need to implement :func:`~mcnpy.data_cards.data_card.DataCard.update_pointers` 
+:func:`~montepy.data_cards.data_parser.parse_data` function.
+In general first comply with standards for this class's parent: :class:`~montepy.mcnp_card.MCNP_Card`.
+In addition you will need to implement :func:`~montepy.data_cards.data_card.DataCard.update_pointers` 
 if you need it.
 
 During init the cards' "name word" (e.g., ``M3``, ``kcode``, ``f7:n``) is validated and parsed.
@@ -347,14 +348,14 @@ See the documentation for how to set these.
 
 Using the ``data_parser`` function:
 """""""""""""""""""""""""""""""""""
-The function :func:`~mcnpy.data_cards.data_parser.parse_data` handles converting a ``data_card`` to the correct class automatically.
+The function :func:`~montepy.data_cards.data_parser.parse_data` handles converting a ``data_card`` to the correct class automatically.
 It uses the dictionary ``PREFIX_MATCH`` to do this. 
 This maps the prefix describes above to a specific class.
 
 
 How to add an object to ``MCNP_Problem``
 """"""""""""""""""""""""""""""""""""""""
-the :class:`~mcnpy.mcnp_problem.MCNP_Problem` automatically consumes problem level data cards,
+the :class:`~montepy.mcnp_problem.MCNP_Problem` automatically consumes problem level data cards,
 and adds them to itself.
 Cards this would be appropriate for would be things like ``mode`` and ``kcode``. 
 To do this it uses the dictionary ``cards_to_property`` in the ``__load_data_cards_to_object`` method.
@@ -363,14 +364,14 @@ To add a problem level data Object you need to
 #. Add it ``cards_to_property``. The key will be the object class, and the value will be a string for the attribute it should be loaded to.
 #. Add a property that exposes this attribute in a desirable way.
 
-Making a numbered Object :class:`~mcnpy.numbered_mcnp_card.Numbered_MCNP_Card`
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Making a numbered Object :class:`~montepy.numbered_mcnp_card.Numbered_MCNP_Card`
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 MCNP allows many types of number objects like cells, surfaces, and tallies. 
 First you need to provide the property ``number``, and ``old_number``.
 The parent class provides a system to link to a problem via ``self._problem``.
 Note this field can be ``None``. 
 When setting a number you must check for numbering collisions with the method:
-:func:`~mcnpy.numbered_object_collection.NumberedObjectCollection.check_number`.
+:func:`~montepy.numbered_object_collection.NumberedObjectCollection.check_number`.
 This function returns nothing, but will raise an error when a number collision occurs.
 For example the ``Surface`` number setter looks like::
         
@@ -383,8 +384,8 @@ For example the ``Surface`` number setter looks like::
         self._mutated = True
         self._surface_number = number
 
-Data Cards that Modify Cells :class:`~mcnpy.data_cards.cell_modifier.CellModifierCard`
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Data Cards that Modify Cells :class:`~montepy.data_cards.cell_modifier.CellModifierCard`
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 This is a subclass of ``DataCardAbstract`` that is meant to handle data cards that specify information about,
 and modify cells.
 For example ``IMP`` changes the importance of a cell and ``VOL`` specifies its volume.
@@ -442,7 +443,7 @@ If this boolean is false repeats of this object are allowed and they will be mer
 (e.g., ``IMP:N,P=1 IMP:E=0`` makes sense despite there being two ``IMP`` specified.
 If True only one instance of the object is allowed.
 (e.g., ``VOL=5 VOL=10`` makes no sense).
-For finding which class to use the :func:`~mcnpy.data_cards.data_parser.PREFIX_MATCHES` dict is used. See above.
+For finding which class to use the :func:`~montepy.data_cards.data_parser.PREFIX_MATCHES` dict is used. See above.
 The key, value pairs in ``Cell.parameters`` is iterated over. 
 If any of the keys is a partial match to the ``PREFIX_MATCHES`` dict then that class is used,
 and constructed. 
@@ -480,11 +481,11 @@ This means that this will *not* be the first line in this case. ::
 For the data_block case the output should be a complete MCNP input that stands on its own.
 You should check ``self.has_changed_print_style`` to help determine if the output has mutated.
 Next you also need to check the modifier object owned by every cell for if any of them have mutated.
-See the :class:`~mcnpy.data_cards.universe_card.UniverseCard` implementation for an example.
+See the :class:`~montepy.data_cards.universe_card.UniverseCard` implementation for an example.
 
 For printing in the data block though you need to remember that this object being called will have no data.
 You will need to iterate over: ``self._problem.cells`` and retrieve the data from there.
-You may find the new function: :func:`~mcnpy.mcnp_card.MCNP_Card.compress_repeat_values` helpful.
+You may find the new function: :func:`~montepy.mcnp_card.MCNP_Card.compress_repeat_values` helpful.
 
 ``merge``
 """""""""
@@ -501,7 +502,7 @@ This is how data provided in the data block are provided to the ``Cell`` objects
 There should be a ``self.in_cell_block`` guard.
 
 You need to check that there was no double specifying of data in both the cell and data block.
-This should raise :class:`~mcnpy.errors.MalformedInputError`.
+This should raise :class:`~montepy.errors.MalformedInputError`.
 This checking and error handling is handled by the method ``self._check_redundant_definitions()``.
 
 ``_clear_data``
@@ -514,7 +515,7 @@ and get into weird end-use behavior.
 ``problem.print_in_data_block``
 """""""""""""""""""""""""""""""
 There is a flag system for controlling if data are output in the cell block or the data block.
-This is controlled by :func:`~mcnpy.mcnp_problem.MCNP_Problem.print_in_data_block`.
+This is controlled by :func:`~montepy.mcnp_problem.MCNP_Problem.print_in_data_block`.
 This acts like a dictionary.
 The key is the string prefix that mcnp uses but is case insensitive.
 So controlling the printing of ``cell.importance`` data is handled by:
@@ -522,8 +523,8 @@ So controlling the printing of ``cell.importance`` data is handled by:
 Most of the work with this property is automated.
 
 
-Syntax Objects: :class:`~mcnpy.input_parser.mcnp_input.MCNP_Input`
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Syntax Objects: :class:`~montepy.input_parser.mcnp_input.MCNP_Input`
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 This represents all low level components in MCNP syntax, such as:
 Comments, Messages, titles, and Cards. 
 Similar to ``MCNP_Card`` you will need to implement ``format_for_mcnp_input``.
@@ -543,7 +544,7 @@ First you might be saying there are no pointers in python.
 There are pointers you just don't see them. 
 If these examples aren't clear reach out to one of the core developers.
 
-MCNPy abuses pointers a lot. 
+MontePy abuses pointers a lot. 
 This will talk a lot like a Rust reference book about ownership and borrowing.
 There aren't true parallels in python though.
 In this section ownership is considered the first instance of an object, 
@@ -584,7 +585,7 @@ With generators!
 First, one effectively bi-directional pointer is allowed;
 cards are allowed to point to the parent problem.
 This is provided through ``self._problem``, and
-is established by: :func:`~mcnpy.mcnp_card.MCNP_Card.link_to_problem`.
+is established by: :func:`~montepy.mcnp_card.MCNP_Card.link_to_problem`.
 With this the surface can find its cells by::
 
     @property

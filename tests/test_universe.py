@@ -1,16 +1,16 @@
 from unittest import TestCase
 
-from mcnpy.input_parser.constants import DEFAULT_VERSION
-import mcnpy
-from mcnpy.cell import Cell
-from mcnpy.errors import *
-from mcnpy.input_parser.block_type import BlockType
-from mcnpy.input_parser.mcnp_input import Card, Comment, Jump
-from mcnpy.universe import Universe
-from mcnpy.data_cards.fill import Fill
-from mcnpy.data_cards.lattice import Lattice
-from mcnpy.data_cards.lattice_card import LatticeCard
-from mcnpy.data_cards.universe_card import UniverseCard
+from montepy.input_parser.constants import DEFAULT_VERSION
+import montepy
+from montepy.cell import Cell
+from montepy.errors import *
+from montepy.input_parser.block_type import BlockType
+from montepy.input_parser.mcnp_input import Card, Comment, Jump
+from montepy.universe import Universe
+from montepy.data_cards.fill import Fill
+from montepy.data_cards.lattice import Lattice
+from montepy.data_cards.lattice_card import LatticeCard
+from montepy.data_cards.universe_card import UniverseCard
 import numpy as np
 
 
@@ -248,7 +248,7 @@ class TestFill(TestCase):
 
     def test_fill_universe_setter(self):
         fill = Fill(in_cell_block=True, key="fill", value="5")
-        uni = mcnpy.Universe(6)
+        uni = montepy.Universe(6)
         fill.universe = uni
         self.assertEqual(fill.universe.number, uni.number)
         self.assertTrue(fill.mutated)
@@ -268,7 +268,7 @@ class TestFill(TestCase):
 
     def test_fill_universes_setter(self):
         fill = Fill(in_cell_block=True, key="fill", value="0:1 0:1 0:1 1 2 3 4 5 6 7 8")
-        uni = mcnpy.Universe(10)
+        uni = montepy.Universe(10)
         fill_array = np.array([[[uni, uni], [uni, uni]], [[uni, uni], [uni, uni]]])
         fill.universes = fill_array
         self.assertTrue((fill.universes == fill_array).all())
