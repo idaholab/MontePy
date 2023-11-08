@@ -10,7 +10,7 @@ setup(
     author_email=__email__,
     maintainer=__maintainer__,
     maintainer_email=__email__,
-    url="",
+    url="https://github.com/idaholab/montepy",
     install_requires=[
         "numpy",
     ],
