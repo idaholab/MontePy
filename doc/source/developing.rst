@@ -28,8 +28,8 @@ Setting up and Typical Development Workflow
    If you are working on a new feature or bug that is not covered by an issue, please file an issue first.
 
 #. Work on a new branch. The branches: ``develop`` and ``main`` are protected. 
-   All new code must be accepted through a merge request. 
-   The easiest way to make this branch is to "create merge request" from gitlab.
+   All new code must be accepted through a merge request or pull request. 
+   The easiest way to make this branch is to "create pull request" from github.
    This will create a new branch (though with an unwieldy name) that you can checkout and work on.
 
 #. Run the test cases. Montepy relies heavily on its over 200 tests for the development process.
