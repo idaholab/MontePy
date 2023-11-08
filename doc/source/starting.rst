@@ -12,6 +12,12 @@ and will link the cell with its material object.
     but there may be issues due to new features in MCNP 6.2, not being backwards compatible.
     Use earlier versions of MCNP with Montepy at your own risk.
 
+    MCNP 6.3 is not fully supported yet either. 
+    An MCNP 6.3 file that is backwards compatible with 6.2 should work fine,
+    but when using the new syntaxes in 6.3,
+    especially for materials,
+    Montepy will likely break.
+
     Due to the manuals for these earlier versions of MCNP being export controlled, these versions will likely never be fully supported.
 
 Reading a File
