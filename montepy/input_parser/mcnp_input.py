@@ -93,6 +93,10 @@ class ParsingNode(ABC):
         return self._input_lines
 
     @property
+    def input_text(self):
+        return "\n".join(self.input_lines) + "\n"
+
+    @property
     def mutated(self):
         """If true this input has been mutated by the user, and needs to be formatted
 
