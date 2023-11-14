@@ -116,3 +116,15 @@ class EdgeCaseTests(TestCase):
             montepy.input_parser.block_type.BlockType.CELL,
         )
         cell = montepy.Cell(input)
+
+    def test_interpolate_geometry(self):
+        lines = [
+            "10234   30  1.2456780      -3103  3104 -3133  3136",
+            "                            3201  15i   3217",
+            "                            u=20",
+        ]
+        input = montepy.input_parser.mcnp_input.Input(
+            lines,
+            montepy.input_parser.block_type.BlockType.CELL,
+        )
+        cell = montepy.Cell(input)

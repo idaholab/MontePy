@@ -22,7 +22,7 @@ class testMaterialClass(TestCase):
         with self.assertRaises(MalformedInputError):
             Material(input_card)
 
-        in_str = "M20 1001.80c 0.5 8016.80c 0.5"
+        in_str = "M20 1001.80c 0.5 8016.710nc 0.5"
         input_card = Input([in_str], BlockType.DATA)
         material = Material(input_card)
         self.assertEqual(material.number, 20)

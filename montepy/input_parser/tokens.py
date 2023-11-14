@@ -26,7 +26,13 @@ class MCNP_Lexer(Lexer):
         LOG_INTERPOLATE,
         MESSAGE,
         MULTIPLY,
+        NUM_INTERPOLATE,
+        NUM_JUMP,
+        NUM_LOG_INTERPOLATE,
+        NUM_MULTIPLY,
+        NUM_REPEAT,
         NUMBER,
+        NUMBER_WORD,
         NULL,
         PARTICLE,
         PARTICLE_SPECIAL,
@@ -153,7 +159,7 @@ class MCNP_Lexer(Lexer):
         self.lineno += t.value.count("\n")
         return t
 
-    @_(r"\d{4,6}\.(\d{2}[a-z]|\d{3}[a-z]2)")
+    @_(r"\d{4,6}\.(\d{2}[a-z]|\d{3}[a-z]{2})")
     def ZAID(self, t):
         """
         A ZAID isotope definition in the MCNP format.
@@ -162,11 +168,19 @@ class MCNP_Lexer(Lexer):
         """
         return t
 
-    LIBRARY_SUFFIX = r"(\d{2}[a-z]|\d{3}[a-z]2)"
-    """
-    A material library suffix for an isotope definition in the MCNP format.
+    @_(r"\d+[a-z]+")
+    def NUMBER_WORD(self, t):
+        if update := self._parse_shortcut(t):
+            update.type = f"NUM_{update.type}"
+            return update
+        return t
 
-    E.g.: ``80c``.
+    """
+    An integer followed by letters. 
+
+    Can be used for library numbers, as well as shortcuts.
+
+    E.g.: ``80c``, or ``15i``.
     """
 
     # note: / is not escaping - since this doesn't not need escape in this position
@@ -228,13 +242,27 @@ class MCNP_Lexer(Lexer):
     """
     An interpolate shortcut.
     """
+    NUM_INTERPOLATE = r"\d+I"
+    """
+    An interpolate shortcut with a number.
+    """
 
     JUMP = r"\d*J"
     """
     A jump shortcut.
     """
 
+    NUM_JUMP = r"\d+J"
+    """
+    A jump shortcut with a number.
+    """
+
     LOG_INTERPOLATE = r"\d*I?LOG"
+    """
+    A logarithmic interpolate shortcut.
+    """
+
+    NUM_LOG_INTERPOLATE = r"\d+I?LOG"
     """
     A logarithmic interpolate shortcut.
     """
@@ -244,9 +272,19 @@ class MCNP_Lexer(Lexer):
     A multiply shortcut.
     """
 
+    NUM_MULTIPLY = r"[+\-]?[0-9]+\.?[0-9]*E?[+\-]?[0-9]*M"
+    """
+    A multiply shortcut with a number.
+    """
+
     REPEAT = r"\d*R"
     """
     A repeat shortcut.
+    """
+
+    NUM_REPEAT = r"\d+R"
+    """
+    A repeat shortcut with a number.
     """
 
     FILE_PATH = r'[^><:"%,;=&\(\)|?*\s]+'
@@ -297,6 +335,7 @@ class ParticleLexer(MCNP_Lexer):
         MESSAGE,
         MULTIPLY,
         NUMBER,
+        NUMBER_WORD,
         NULL,
         PARTICLE,
         PARTICLE_DESIGNATOR,
@@ -453,6 +492,7 @@ class SurfaceLexer(MCNP_Lexer):
         MESSAGE,
         MULTIPLY,
         NUMBER,
+        NUMBER_WORD,
         NULL,
         REPEAT,
         SPACE,
