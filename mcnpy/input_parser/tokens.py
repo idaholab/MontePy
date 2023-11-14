@@ -27,6 +27,7 @@ class MCNP_Lexer(Lexer):
         MESSAGE,
         MULTIPLY,
         NUMBER,
+        NUMBER_WORD,
         NULL,
         PARTICLE,
         PARTICLE_SPECIAL,
@@ -162,11 +163,13 @@ class MCNP_Lexer(Lexer):
         """
         return t
 
-    LIBRARY_SUFFIX = r"(\d{2}[a-z]|\d{3}[a-z]{2})"
+    NUMBER_WORD = r"\d+[a-z]+"
     """
-    A material library suffix for an isotope definition in the MCNP format.
+    An integer followed by letters. 
 
-    E.g.: ``80c``.
+    Can be used for library numbers, as well as shortcuts.
+
+    E.g.: ``80c``, or ``15i``.
     """
 
     # note: / is not escaping - since this doesn't not need escape in this position
@@ -297,6 +300,7 @@ class ParticleLexer(MCNP_Lexer):
         MESSAGE,
         MULTIPLY,
         NUMBER,
+        NUMBER_WORD,
         NULL,
         PARTICLE,
         PARTICLE_DESIGNATOR,
@@ -453,6 +457,7 @@ class SurfaceLexer(MCNP_Lexer):
         MESSAGE,
         MULTIPLY,
         NUMBER,
+        NUMBER_WORD,
         NULL,
         REPEAT,
         SPACE,
