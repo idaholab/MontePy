@@ -7,8 +7,8 @@ The semantic layer takes this information and makes sense of it, like what the m
 
 .. note::
    Punchcards are dead.
-   For this reason MCNPy refrains from using antiquated terminology like "cards" and "decks".
-   Instead MCNPy refers to "inputs", and "files" or "problems". 
+   For this reason MontePy refrains from using antiquated terminology like "cards" and "decks".
+   Instead MontePy refers to "inputs", and "files" or "problems". 
 
 Contributing
 ------------
@@ -158,10 +158,10 @@ Style Guide
 Introduction to SLY and Syntax Trees
 ------------------------------------
 
-In MCNPy 0.2.0 the core of MCNPy was radically changed. 
+In MontePy 0.2.0 the core of MontePy was radically changed. 
 A *real* syntax parser was actually used that actually does things like work with a Lexer, and an L-R table.
 This parsing engine is `SLY (Sly Lex-Yacc) <https://sly.readthedocs.io/en/latest/>`_.
-The parsers used by MCNPy are designed to return "syntax trees".
+The parsers used by MontePy are designed to return "syntax trees".
 These are based on `Abstract Syntax Tree <https://en.wikipedia.org/wiki/Abstract_syntax_tree>`_, but are not true sytax trees per se.
 These trees are not abstract. The white-space, and comment information is preserved.
 
@@ -267,7 +267,7 @@ Working with Parsers, and the Syntax Tree
 The parent class init function requires an instance of a parser object.
 Note this is an instance, and not the class itself.
 The init function will then run ``parser.parse()``. 
-Most objects in MCNPy will initialize and keep the parser object at the (MCNPy) class level, to reduce overhead.
+Most objects in MontePy will initialize and keep the parser object at the (MontePy) class level, to reduce overhead.
 
 .. code-block:: python
 
@@ -674,7 +674,7 @@ and this will provide by ``self.input_lines``.
 Parsers: :class:`~montepy.input_parser.parser_base.MCNP_Parser` 
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-This is the base class for all parsers in MCNPy.
+This is the base class for all parsers in MontePy.
 It is a wrapper for a :class:`sly.Parser` instance.
 It has had to implement some janky metaclass properties in order to allow subclassing.
 
