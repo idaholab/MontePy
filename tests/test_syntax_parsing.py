@@ -764,7 +764,7 @@ class TestIsotopesNode(TestCase):
 
 class TestShortcutNode(TestCase):
     def test_basic_shortcut_init(self):
-        with self.assertRaises(ValueError):
+        with self.assertRaises(TypeError):
             syntax_node.ShortcutNode("")
         # test a blank init
         shortcut = syntax_node.ShortcutNode(
