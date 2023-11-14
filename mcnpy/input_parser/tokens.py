@@ -26,6 +26,11 @@ class MCNP_Lexer(Lexer):
         LOG_INTERPOLATE,
         MESSAGE,
         MULTIPLY,
+        NUM_INTERPOLATE,
+        NUM_JUMP,
+        NUM_LOG_INTERPOLATE,
+        NUM_MULTIPLY,
+        NUM_REPEAT,
         NUMBER,
         NUMBER_WORD,
         NULL,
@@ -163,7 +168,14 @@ class MCNP_Lexer(Lexer):
         """
         return t
 
-    NUMBER_WORD = r"\d+[a-z]+"
+    @_(r"\d+[a-z]+")
+    def NUMBER_WORD(self, t):
+        if update := self._parse_shortcut(t):
+            update.type = f"NUM_{update.type}"
+            print(update)
+            return update
+        return t
+
     """
     An integer followed by letters. 
 
@@ -231,13 +243,27 @@ class MCNP_Lexer(Lexer):
     """
     An interpolate shortcut.
     """
+    NUM_INTERPOLATE = r"\d+I"
+    """
+    An interpolate shortcut with a number.
+    """
 
     JUMP = r"\d*J"
     """
     A jump shortcut.
     """
 
+    NUM_JUMP = r"\d+J"
+    """
+    A jump shortcut with a number.
+    """
+
     LOG_INTERPOLATE = r"\d*I?LOG"
+    """
+    A logarithmic interpolate shortcut.
+    """
+
+    NUM_LOG_INTERPOLATE = r"\d+I?LOG"
     """
     A logarithmic interpolate shortcut.
     """
@@ -247,9 +273,19 @@ class MCNP_Lexer(Lexer):
     A multiply shortcut.
     """
 
+    NUM_MULTIPLY = r"[+\-]?[0-9]+\.?[0-9]*E?[+\-]?[0-9]*M"
+    """
+    A multiply shortcut with a number.
+    """
+
     REPEAT = r"\d*R"
     """
     A repeat shortcut.
+    """
+
+    NUM_REPEAT = r"\d+R"
+    """
+    A repeat shortcut with a number.
     """
 
     FILE_PATH = r'[^><:"%,;=&\(\)|?*\s]+'
