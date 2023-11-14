@@ -599,6 +599,7 @@ class Cell(Numbered_MCNP_Object):
             raise IllegalState(
                 f"Cell {self.number} has a non-void material but no density"
             )
+        if self.geometry is None or len(self.geometry) == 0:
             raise IllegalState(f"Cell {self.number} has no geometry defined.")
 
     def link_to_problem(self, problem):

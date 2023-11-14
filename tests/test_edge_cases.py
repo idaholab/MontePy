@@ -125,6 +125,6 @@ class EdgeCaseTests(TestCase):
         ]
         input = montepy.input_parser.mcnp_input.Input(
             lines,
-            mcnpy.input_parser.block_type.BlockType.CELL,
+            montepy.input_parser.block_type.BlockType.CELL,
         )
-        cell = mcnpy.Cell(input)
+        cell = montepy.Cell(input)
