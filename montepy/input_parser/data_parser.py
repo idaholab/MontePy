@@ -99,7 +99,22 @@ class DataParser(MCNP_Parser):
     def particle_phrase(self, p):
         return self._flush_phrase(p, str)
 
-    @_("LIBRARY_SUFFIX", "LIBRARY_SUFFIX padding")
+    def library_end(self, p):
+        return p[0]
+
+    # Manually specifying because more levels break SLY. Might be hitting some hard coded limit.
+    @_(
+        "NUMBER_WORD",
+        "NUM_INTERPOLATE",
+        "NUM_JUMP",
+        "NUM_MULTIPLY",
+        "NUM_REPEAT",
+        "NUMBER_WORD padding ",
+        "INTERPOLATE padding",
+        "NUM_JUMP padding",
+        "NUM_MULTIPLY padding",
+        "NUM_REPEAT padding",
+    )
     def text_phrase(self, p):
         self._flush_phrase(p, str)
 
