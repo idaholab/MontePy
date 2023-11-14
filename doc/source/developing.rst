@@ -391,8 +391,6 @@ For example the init function for ``Cells``
         def __init__(self, cells=None):
             super().__init__(montepy.Cell, cells)
 
-Numbered Object :class:`~montepy.numbered_mcnp_card.Numbered_MCNP_Card`
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 Numbered Object :class:`~montepy.numbered_mcnp_object.Numbered_MCNP_Object`
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -563,7 +561,7 @@ See more below.
 
 
 How these objects are added to :class:`~montepy.cell.Cell` and :class:`~montepy.cells.Cells`
-""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 
 Due to the number of classes that will ultimately be subclasses of this class,
 some automated hooks have been developed.
@@ -596,7 +594,7 @@ and the corresponding object just needs to be loaded into an attribute.
 Once again none of these attributes should be exposed through ``@property`` at the ``Cells`` level.
 
 :func:`~montepy.data_inputs.cell_modifier.CellModifierInput.format_for_mcnp_input`
-""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 
 For the most part the complexity of switching between the cell and data block printing is automatically handled by this parent function.
 In general this looks a lot like the workflow for the base ``format_for_mcnp_input`` implementation.
@@ -629,7 +627,7 @@ If merging isn't allowed :class:`~montepy.errors.MalformedInputError` should be 
 
 
 :func:`~montepy.data_inputs.cell_modifier.CellModifierInput.push_to_cells`
-""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 
 This is how data provided in the data block are provided to the ``Cell`` objects.
 There should be a ``self.in_cell_block`` guard.
@@ -647,7 +645,7 @@ so that if a user goes crazy and somehow access this object they cannot modify t
 and get into weird end-use behavior.
 
 :func:`~montepy.mcnp_problem.MCNP_Problem.print_in_data_block`
-""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 
 There is a flag system for controlling if data are output in the cell block or the data block.
 This is controlled by :func:`~montepy.mcnp_problem.MCNP_Problem.print_in_data_block`.
@@ -674,7 +672,7 @@ You need to call ``super().__init__(input_lines)``,
 and this will provide by ``self.input_lines``.
 
 Parsers: :class:`~montepy.input_parser.parser_base.MCNP_Parser` 
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 This is the base class for all parsers in MCNPy.
 It is a wrapper for a :class:`sly.Parser` instance.
