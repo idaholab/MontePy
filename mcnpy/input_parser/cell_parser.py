@@ -92,9 +92,13 @@ class CellParser(MCNP_Parser):
         return syntax_node.GeometryTree("intersection", nodes, "*", left, right)
 
     @_(
+        "geometry_term NUM_REPEAT",
         "geometry_term REPEAT",
+        "geometry_term NUM_MULTIPLY",
         "geometry_term MULTIPLY",
+        "geometry_term NUM_INTERPOLATE padding number_phrase",
         "geometry_term INTERPOLATE padding number_phrase",
+        "geometry_term NUM_LOG_INTERPOLATE padding number_phrase",
         "geometry_term LOG_INTERPOLATE padding number_phrase",
     )
     def geometry_term(self, p):

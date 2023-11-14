@@ -1484,11 +1484,11 @@ class ShortcutNode(ListNode):
     """
 
     _shortcut_names = {
-        "REPEAT": Shortcuts.REPEAT,
-        "JUMP": Shortcuts.JUMP,
-        "INTERPOLATE": Shortcuts.INTERPOLATE,
-        "LOG_INTERPOLATE": Shortcuts.LOG_INTERPOLATE,
-        "MULTIPLY": Shortcuts.MULTIPLY,
+        ("REPEAT", "NUM_REPEAT"): Shortcuts.REPEAT,
+        ("JUMP", "NUM_JUMP"): Shortcuts.JUMP,
+        ("INTERPOLATE", "NUM_INTERPOLATE"): Shortcuts.INTERPOLATE,
+        ("LOG_INTERPOLATE", "NUM_LOG_INTERPOLATE"): Shortcuts.LOG_INTERPOLATE,
+        ("MULTIPLY", "NUM_MULTIPLY"): Shortcuts.MULTIPLY,
     }
     _num_finder = re.compile(r"\d+")
 
@@ -1500,10 +1500,11 @@ class ShortcutNode(ListNode):
         self._full = False
         self._num_node = ValueNode(None, float)
         if p is not None:
-            for search_str, shortcut in self._shortcut_names.items():
-                if hasattr(p, search_str):
-                    super().__init__(search_str.lower())
-                    self._type = shortcut
+            for search_strs, shortcut in self._shortcut_names.items():
+                for search_str in search_strs:
+                    if hasattr(p, search_str):
+                        super().__init__(search_str.lower())
+                        self._type = shortcut
             if self._type is None:
                 raise ValueError("must use a valid shortcut")
             self._original = list(p)
@@ -1601,7 +1602,7 @@ class ShortcutNode(ListNode):
             self._nodes.append(ValueNode(input_parser.mcnp_input.Jump(), float))
 
     def _expand_interpolate(self, p):
-        if hasattr(p, "LOG_INTERPOLATE"):
+        if self._type == Shortcuts.LOG_INTERPOLATE:
             is_log = True
         else:
             is_log = False

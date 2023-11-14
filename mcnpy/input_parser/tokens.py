@@ -172,7 +172,6 @@ class MCNP_Lexer(Lexer):
     def NUMBER_WORD(self, t):
         if update := self._parse_shortcut(t):
             update.type = f"NUM_{update.type}"
-            print(update)
             return update
         return t
 
