@@ -207,9 +207,19 @@ class MCNP_Parser(Parser, metaclass=MetaBuilder):
     def shortcut_start(self, p):
         return p[0]
 
+    @_("REPEAT", "MULTIPLY")
+    def terminal_shortcut_glue(self, p):
+        return p[0]
+
+    @_("INTERPOLATE", "LOG_INTERPOLATE")
+    def middle_shortcut_glue(self, p):
+        return p[0]
+
     @_(
+        "shortcut_start middle_shortcut_glue padding number_phrase",
+        "shortcut_start NUMBER_WORD  padding number_phrase",
+        "shortcut_start terminal_shortcut_glue",
         "shortcut_start NUMBER_WORD",
-        "shortcut_start NUMBER_WORD padding number_phrase",
         "JUMP",
     )
     def shortcut_sequence(self, p):

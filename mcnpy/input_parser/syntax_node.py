@@ -1514,7 +1514,7 @@ class ShortcutNode(ListNode):
                 raise TypeError(
                     f"Shortcut must be created with from a SLY production. {p} given"
                 )
-            self._type, short_num = self._parse_shortcut_type(p.NUMBER_WORD)
+            self._type, short_num = self._parse_shortcut_type(p[1])
             if self._type is None:
                 raise ValueError("must use a valid shortcut")
             self._original = list(p)
