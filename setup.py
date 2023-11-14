@@ -1,5 +1,5 @@
 from setuptools import setup, find_packages
-from mcnpy import __version__, __author__, __email__, __maintainer__
+from montepy import __version__, __author__, __email__, __maintainer__
 
 setup(
     name="montepy",
