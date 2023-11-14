@@ -97,6 +97,7 @@ class CellParser(MCNP_Parser):
         "geometry_term INTERPOLATE padding number_phrase",
         "geometry_term LOG_INTERPOLATE padding number_phrase",
     )
+    # TODO
     def geometry_term(self, p):
         shortcut = syntax_node.ShortcutNode(p)
         node_iter = iter(shortcut.nodes)

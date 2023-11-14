@@ -13,6 +13,7 @@ from mcnpy.geometry_operators import Operator
 from mcnpy.particle import Particle
 from mcnpy.utilities import fortran_float
 import re
+import sly
 import warnings
 
 
@@ -1490,7 +1491,16 @@ class ShortcutNode(ListNode):
         "LOG_INTERPOLATE": Shortcuts.LOG_INTERPOLATE,
         "MULTIPLY": Shortcuts.MULTIPLY,
     }
-    _num_finder = re.compile(r"\d+")
+    _num_finder = re.compile(
+        r"""
+        ([+\-]?[0-9]*\.?[0-9]*E?[+\-]?[0-9]*)
+        ((?P<LOG_INTERPOLATE>I?LOG)|
+        (?P<INTERPOLATE>I)|
+        (?P<MULTIPLY>M)|
+        (?P<REPEAT>R)|
+        (?P<JUMP>J))""",
+        re.X | re.I,
+    )
 
     def __init__(self, p=None, short_type=None):
         self._type = None
@@ -1500,10 +1510,11 @@ class ShortcutNode(ListNode):
         self._full = False
         self._num_node = ValueNode(None, float)
         if p is not None:
-            for search_str, shortcut in self._shortcut_names.items():
-                if hasattr(p, search_str):
-                    super().__init__(search_str.lower())
-                    self._type = shortcut
+            if not isinstance(p, sly.yacc.YaccProduction):
+                raise TypeError(
+                    f"Shortcut must be created with from a SLY production. {p} given"
+                )
+            self._type, short_num = self._parse_shortcut_type(p.NUMBER_WORD)
             if self._type is None:
                 raise ValueError("must use a valid shortcut")
             self._original = list(p)
@@ -1527,6 +1538,14 @@ class ShortcutNode(ListNode):
             }:
                 self._num_node = ValueNode(None, int)
             self._end_pad = PaddingNode(" ")
+
+    def _parse_shortcut_type(self, num_word):
+        if match := self._num_finder.match(num_word):
+            groups = match.groupdict()
+            actual_match = [k for k, v in groups.items() if v is not None][0]
+            return (self._shortcut_names[actual_match], match.group(1))
+        else:
+            raise ValueError(f"{num_word} broke everything")
 
     @property
     def end_padding(self):
@@ -1601,7 +1620,7 @@ class ShortcutNode(ListNode):
             self._nodes.append(ValueNode(input_parser.mcnp_input.Jump(), float))
 
     def _expand_interpolate(self, p):
-        if hasattr(p, "LOG_INTERPOLATE"):
+        if self._type == Shortcuts.LOG_INTERPOLATE:
             is_log = True
         else:
             is_log = False
@@ -1621,10 +1640,9 @@ class ShortcutNode(ListNode):
         self._nodes = self._get_last_node(p)
         if begin is None:
             raise ValueError(f"Interpolates cannot follow a jump. Given: {list(p)}")
-        match = self._num_finder.search(p[1])
-        if match:
-            number = int(match.group(0))
-            self._num_node = ValueNode(match.group(0), int)
+        if match := self._num_finder.search(p[1]):
+            number = int(match.group(1))
+            self._num_node = ValueNode(match.group(1), int)
         else:
             number = 1
             self._num_node = ValueNode(None, int)

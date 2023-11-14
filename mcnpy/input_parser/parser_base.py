@@ -208,10 +208,8 @@ class MCNP_Parser(Parser, metaclass=MetaBuilder):
         return p[0]
 
     @_(
-        "shortcut_start REPEAT",
-        "shortcut_start MULTIPLY",
-        "shortcut_start INTERPOLATE padding number_phrase",
-        "shortcut_start LOG_INTERPOLATE padding number_phrase",
+        "shortcut_start NUMBER_WORD",
+        "shortcut_start NUMBER_WORD padding number_phrase",
         "JUMP",
     )
     def shortcut_sequence(self, p):
