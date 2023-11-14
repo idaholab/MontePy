@@ -9,7 +9,7 @@ Here's a random collection of some tips and tricks that should make your life ea
 Getting The Highest Plane
 -------------------------
 
-With the :class:`mcnpy.surface_collection.Surfaces` mnemonic generators you can quickly 
+With the :class:`montepy.surface_collection.Surfaces` mnemonic generators you can quickly 
 get the "extreme" surfaces, using the max and min function.
 
 By default though these functions will sort the surfaces by surface number.

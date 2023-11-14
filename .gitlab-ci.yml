@@ -23,8 +23,8 @@ install:
     - python setup.py sdist bdist_wheel
     - pip install --user dist/*.whl --force-reinstall
       # test the extras installation
-    - python setup.py install easy_install --user mcnpy[test]
-    - python setup.py install easy_install --user mcnpy[doc]
+    - python setup.py install easy_install --user montepy[test]
+    - python setup.py install easy_install --user montepy[doc]
     - pip freeze
 
 
@@ -36,7 +36,7 @@ unit_test:
     - echo "Executing unit tests"
     - which python
     - pip freeze
-    - coverage run --source mcnpy -m pytest --junitxml=test_report.xml
+    - coverage run --source montepy -m pytest --junitxml=test_report.xml
     - coverage report -m --precision=2
     - coverage xml
   artifacts:
@@ -65,7 +65,7 @@ format_test:
   script: 
     - echo "Testing if anything is unformatted"
     - echo "If error occurs changes were not formatted using black"
-    - black --check mcnpy/ tests/
+    - black --check montepy/ tests/
 
 
 deploy1:

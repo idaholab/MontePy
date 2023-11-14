@@ -1,8 +1,8 @@
 from unittest import TestCase
 
-import mcnpy
+import montepy
 
-from mcnpy.mcnp_problem import MCNP_Problem
+from montepy.mcnp_problem import MCNP_Problem
 
 
 class testMCNP_problem(TestCase):
