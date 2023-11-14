@@ -123,7 +123,7 @@ class EdgeCaseTests(TestCase):
             "                            3201  15i   3217",
             "                            u=20",
         ]
-        input = mcnpy.input_parser.mcnp_input.Input(
+        input = montepy.input_parser.mcnp_input.Input(
             lines,
             mcnpy.input_parser.block_type.BlockType.CELL,
         )
