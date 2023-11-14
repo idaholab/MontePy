@@ -216,6 +216,7 @@ class MCNP_Parser(Parser, metaclass=MetaBuilder):
         "shortcut_start INTERPOLATE padding number_phrase",
         "shortcut_start NUM_LOG_INTERPOLATE padding number_phrase",
         "shortcut_start LOG_INTERPOLATE padding number_phrase",
+        "NUM_JUMP",
         "JUMP",
     )
     def shortcut_sequence(self, p):
