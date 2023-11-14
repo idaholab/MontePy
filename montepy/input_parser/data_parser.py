@@ -1,4 +1,5 @@
 from montepy.errors import *
+from montepy.input_parser.tokens import DataLexer
 from montepy.input_parser.parser_base import MCNP_Parser, MetaBuilder
 from montepy.input_parser import syntax_node
 
@@ -98,7 +99,13 @@ class DataParser(MCNP_Parser):
     def particle_phrase(self, p):
         return self._flush_phrase(p, str)
 
-    @_("LIBRARY_SUFFIX", "LIBRARY_SUFFIX padding")
+    # Manually specifying because more levels break SLY. Might be hitting some hard coded limit.
+    @_(
+        "NUMBER_WORD",
+        "NUM_MULTIPLY",
+        "NUMBER_WORD padding ",
+        "NUM_MULTIPLY padding",
+    )
     def text_phrase(self, p):
         self._flush_phrase(p, str)
 
