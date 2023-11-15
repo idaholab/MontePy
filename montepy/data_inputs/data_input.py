@@ -328,9 +328,9 @@ class DataInput(DataInputAbstract):
         return None
 
     @property
-    def _has_number(self):
+    def _has_number(self):  # pragma: no cover
         return None
 
     @property
-    def _has_classifier(self):
+    def _has_classifier(self):  # pragma: no cover
         return None
