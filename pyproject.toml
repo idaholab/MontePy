@@ -1,0 +1,44 @@
+[project]
+name = "montepy"
+version = "0.2.0.alpha9"
+description = "A library for reading, editing, and writing MCNP input files"
+readme = "README.md"
+requires-python = ">=3.8"
+maintainers = [
+	{name = "Micah Gale", email = "micah.gale@inl.gov"}
+]
+authors = [
+	{name = "Micah Gale", email = "micah.gale@inl.gov"},
+	{name = "Travis Labossiere-Hickman", email = "Travis.LabossiereHickman@inl.gov"},
+	{name = "Brenna Carbno"}
+]
+keywords = ["MCNP", "neutronics", "imcnp", "input file"]
+dependencies = [
+	"numpy",
+	"sly"
+]
+
+[project.optional-dependencies]
+test = ["coverage", "pytest"]
+doc = ["sphinx", "sphinxcontrib-apidoc", "sphinx_rtd_theme"]
+
+[project.urls]
+Homepage = "https://github.com/idaholab/montepy"
+Repository = "https://github.com/idaholab/montepy.git"
+
+[build-system]
+requires = ["setuptools  >= 40.6.0"]
+build-backend = "setuptools.build_meta"
+
+[tool.coverage.run]
+source = ["montepy"]
+
+[tool.coverage.report]
+skip_covered = true
+precision = 2
+show_missing = true
+fail_under = 90.0
+
+[tool.pytest.ini_options]
+minversion = "6.0"
+junit_logging = "all"
