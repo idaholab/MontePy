@@ -23,9 +23,9 @@ test = ["coverage", "pytest"]
 doc = ["sphinx", "sphinxcontrib-apidoc", "sphinx_rtd_theme"]
 
 [project.urls]
-Homepage = "https://hpcgitlab.hpc.inl.gov/experiment_analysis_all/software/mcnpy/"
-Documentation = "https://experiment_analysis_all.pages.hpc.inl.gov/software/mcnpy"
-Repository = "https://hpcgitlab.hpc.inl.gov/experiment_analysis_all/software/mcnpy.git"
+Homepage = "https://github.com/idaholab/montepy"
+Documentation = ""
+Repository = "https://github.com/idaholab/montepy.git"
 
 [build-system]
 requires = ["setuptools  >= 40.6.0"]
