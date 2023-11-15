@@ -47,9 +47,14 @@ class TestMode(TestCase):
         self.assertEqual(len(mode), 0)
         self.assertTrue(Particle.NEUTRON not in mode)
         mode.add("p")
+        # force update of syntax tree
+        output = mode.format_for_mcnp_input((6, 2, 0))
         mode.remove(Particle.PHOTON)
         self.assertEqual(len(mode), 0)
         self.assertTrue(Particle.PHOTON not in mode)
+        output = mode.format_for_mcnp_input((6, 2, 0))
+        self.assertNotIn("p", output)
+        self.assertNotIn("P", output)
 
     def test_mode_iter(self):
         mode = Mode()
