@@ -175,7 +175,7 @@ class MCNP_Object(ABC):
 
     @leading_comments.deleter
     def leading_comments(self):
-        self._tree["start_pad"]._nodes = None
+        self._tree["start_pad"]._delete_trailing_comment()
 
     @staticmethod
     def wrap_string_for_mcnp(string, mcnp_version, is_first_line):

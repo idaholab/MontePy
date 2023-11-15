@@ -999,7 +999,7 @@ class testFullFileIntegration(TestCase):
         leading_comments = cell.leading_comments
         self.assertIn("cells", leading_comments[0].contents)
         del cell.leading_comments
-        self.assertIsNone(cell.leading_comments)
+        self.assertFalse(cell.leading_comments)
         cell.leading_comments = leading_comments[0:1]
-        self.assertIn("Cells", leading_comments[0].contents)
-        self.assertEqual(len(leading_comments), 1)
+        self.assertIn("cells", cell.leading_comments[0].contents)
+        self.assertEqual(len(cell.leading_comments), 1)
