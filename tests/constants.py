@@ -10,6 +10,9 @@ BAD_INPUTS = {
     "test_broken_mat_link.imcnp",
     "test_broken_complement.imcnp",
     "test_bad_syntax.imcnp",
+    "test_extra_params.imcnp",
+    "test_extra_data_param.imcnp",
+    "test_extra_data_imp.imcnp",
 }
 IGNORE_FILES = {
     "testReadRec1.imcnp",
