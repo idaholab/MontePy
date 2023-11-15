@@ -49,8 +49,8 @@ class MCNP_Object(ABC):
                 self._tree = parser.parse(input.tokenize(), input)
                 self._input = input
             except ValueError as e:
-                raise ValueError(
-                    f"Error parsing object of type: {type(self)}: {e.args[0]}"
+                raise MalformedInputError(
+                    input, f"Error parsing object of type: {type(self)}: {e.args[0]}"
                 )
             if self._tree is None:
                 raise ParsingError(

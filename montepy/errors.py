@@ -114,6 +114,20 @@ class BrokenObjectLinkError(MalformedInputError):
         )
 
 
+class RedundantParameterSpecification(ValueError):
+    """
+    Raised when multiple conflicting parameters are given.
+
+    e.g., ``1 0 -1 imp:n=5 imp:n=0``
+    """
+
+    def __init__(self, key, new_value):
+        self.message = (
+            f"Multiple values given for parameter: {key}. new_value given: {new_value}."
+        )
+        super().__init__(self.message)
+
+
 class ParticleTypeNotInProblem(ValueError):
     """
     Raised when data are set for a particle type not in
