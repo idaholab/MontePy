@@ -993,3 +993,13 @@ class testFullFileIntegration(TestCase):
         in_file = os.path.join("tests", "inputs", "test_bad_syntax.imcnp")
         with self.assertRaises(montepy.errors.ParsingError):
             problem = montepy.read_input(in_file)
+
+    def test_leading_comments(self):
+        cell = copy.deepcopy(self.simple_problem.cells[1])
+        leading_comments = cell.leading_comments
+        self.assertIn("cells", leading_comments[0].contents)
+        del cell.leading_comments
+        self.assertIsNone(cell.leading_comments)
+        cell.leading_comments = leading_comments[0:1]
+        self.assertIn("Cells", leading_comments[0].contents)
+        self.assertEqual(len(leading_comments), 1)
