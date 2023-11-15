@@ -988,3 +988,8 @@ class testFullFileIntegration(TestCase):
                 os.remove(out_file)
             except FileNotFoundError:
                 pass
+
+    def test_parsing_error(self):
+        in_file = os.path.join("tests", "inputs", "test_bad_syntax.imcnp")
+        with self.assertRaises(montepy.errors.ParsingError):
+            problem = montepy.read_input(in_file)
