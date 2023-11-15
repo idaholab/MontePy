@@ -1003,3 +1003,11 @@ class testFullFileIntegration(TestCase):
         cell.leading_comments = leading_comments[0:1]
         self.assertIn("cells", cell.leading_comments[0].contents)
         self.assertEqual(len(cell.leading_comments), 1)
+
+    def test_wrap_warning(self):
+        cell = self.simple_problem.cells[1]
+        with self.assertWarns(montepy.errors.LineExpansionWarning):
+            output = cell.wrap_string_for_mcnp("h" * 130, (6, 2, 0), True)
+            self.assertEqual(len(output), 2)
+        output = cell.wrap_string_for_mcnp("h" * 127, (6, 2, 0), True)
+        self.assertEqual(len(output), 1)
