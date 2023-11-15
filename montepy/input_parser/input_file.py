@@ -60,6 +60,10 @@ class MCNP_InputFile:
         """
         Opens the underlying file, and returns self.
 
+        This should only ever be completed from within a ``with`` statement.
+        For this reason, a ``close`` functional is intentionally 
+        not provided. 
+
         :param mode: the mode to open the file in
         :type mode: str
         :returns: self
