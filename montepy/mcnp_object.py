@@ -174,8 +174,8 @@ class MCNP_Object(ABC):
         self._tree["start_pad"]._nodes = new_nodes
 
     @leading_comments.deleter
-    def leading_comments(self, comments):
-        self._tree["start_pad"] = None
+    def leading_comments(self):
+        self._tree["start_pad"]._nodes = None
 
     @staticmethod
     def wrap_string_for_mcnp(string, mcnp_version, is_first_line):
