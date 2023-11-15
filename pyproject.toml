@@ -24,7 +24,6 @@ doc = ["sphinx", "sphinxcontrib-apidoc", "sphinx_rtd_theme"]
 
 [project.urls]
 Homepage = "https://github.com/idaholab/montepy"
-Documentation = ""
 Repository = "https://github.com/idaholab/montepy.git"
 
 [build-system]
