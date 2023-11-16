@@ -128,3 +128,10 @@ class EdgeCaseTests(TestCase):
             montepy.input_parser.block_type.BlockType.CELL,
         )
         cell = montepy.Cell(input)
+
+    def test_material_float(self):
+        in_strs = ["m171 1001.80c 1E-24"]
+        input = montepy.input_parser.mcnp_input.Input(
+            in_strs, montepy.input_parser.block_type.BlockType.CELL
+        )
+        material = montepy.data_inputs.material.Material(input)
