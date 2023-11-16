@@ -621,7 +621,7 @@ class ValueNode(SyntaxNodeBase):
 
     def __init__(self, token, token_type, padding=None):
         super().__init__("")
-        self._token = token
+        self._token = str(token)
         self._type = token_type
         self._formatter = self._FORMATTERS[token_type].copy()
         self._is_neg_id = False
