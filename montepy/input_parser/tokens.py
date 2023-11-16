@@ -176,16 +176,7 @@ class MCNP_Lexer(Lexer):
     e.g.: ``lwtr.20t``. 
     """
 
-    @_(r"[+\-]?[0-9]+\.?[0-9]*E?[+\-]?[0-9]*", r"[+\-]?[0-9]*\.?[0-9]+E?[+\-]?[0-9]*")
-    def NUMBER(self, t):
-        """
-        A float, or int number, including "fortran floats".
-        """
-        if fortran_float(t.value) == 0:
-            t.type = "NULL"
-        return t
-
-    @_(r"\d+[a-z]+")
+    @_(r"[+\-]?\d+(?!e)[a-z]+")
     def NUMBER_WORD(self, t):
         """
         An integer followed by letters.
@@ -197,6 +188,15 @@ class MCNP_Lexer(Lexer):
         if update := self._parse_shortcut(t):
             update.type = f"NUM_{update.type}"
             return update
+        return t
+
+    @_(r"[+\-]?[0-9]+\.?[0-9]*E?[+\-]?[0-9]*", r"[+\-]?[0-9]*\.?[0-9]+E?[+\-]?[0-9]*")
+    def NUMBER(self, t):
+        """
+        A float, or int number, including "fortran floats".
+        """
+        if fortran_float(t.value) == 0:
+            t.type = "NULL"
         return t
 
     @_(r"[+\-]?[0-9]*\.?[0-9]*E?[+\-]?[0-9]*[ijrml]+[a-z\./]*", r"[a-z]+[a-z\./]*")
