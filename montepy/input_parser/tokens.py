@@ -168,21 +168,6 @@ class MCNP_Lexer(Lexer):
         """
         return t
 
-    @_(r"\d+[a-z]+")
-    def NUMBER_WORD(self, t):
-        if update := self._parse_shortcut(t):
-            update.type = f"NUM_{update.type}"
-            return update
-        return t
-
-    """
-    An integer followed by letters. 
-
-    Can be used for library numbers, as well as shortcuts.
-
-    E.g.: ``80c``, or ``15i``.
-    """
-
     # note: / is not escaping - since this doesn't not need escape in this position
     THERMAL_LAW = r"[a-z][a-z\d/-]+\.\d+[a-z]"
     """
@@ -190,6 +175,29 @@ class MCNP_Lexer(Lexer):
 
     e.g.: ``lwtr.20t``. 
     """
+
+    @_(r"[+\-]?\d+(?!e)[a-z]+")
+    def NUMBER_WORD(self, t):
+        """
+        An integer followed by letters.
+
+        Can be used for library numbers, as well as shortcuts.
+
+        E.g.: ``80c``, or ``15i``.
+        """
+        if update := self._parse_shortcut(t):
+            update.type = f"NUM_{update.type}"
+            return update
+        return t
+
+    @_(r"[+\-]?[0-9]+\.?[0-9]*E?[+\-]?[0-9]*", r"[+\-]?[0-9]*\.?[0-9]+E?[+\-]?[0-9]*")
+    def NUMBER(self, t):
+        """
+        A float, or int number, including "fortran floats".
+        """
+        if fortran_float(t.value) == 0:
+            t.type = "NULL"
+        return t
 
     @_(r"[+\-]?[0-9]*\.?[0-9]*E?[+\-]?[0-9]*[ijrml]+[a-z\./]*", r"[a-z]+[a-z\./]*")
     def TEXT(self, t):
@@ -200,15 +208,6 @@ class MCNP_Lexer(Lexer):
             return update
         if t.value.lower() in self._KEYWORDS:
             t.type = "KEYWORD"
-        return t
-
-    @_(r"[+\-]?[0-9]+\.?[0-9]*E?[+\-]?[0-9]*", r"[+\-]?[0-9]*\.?[0-9]+E?[+\-]?[0-9]*")
-    def NUMBER(self, t):
-        """
-        A float, or int number, including "fortran floats".
-        """
-        if fortran_float(t.value) == 0:
-            t.type = "NULL"
         return t
 
     NULL = r"0+"
