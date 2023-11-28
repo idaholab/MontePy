@@ -115,7 +115,8 @@ class testFullFileIntegration(TestCase):
     def test_write_to_file(self):
         out = "foo.imcnp"
         try:
-            self.simple_problem.write_to_file(out)
+            problem = copy.deepcopy(self.simple_problem)
+            problem.write_to_file(out)
             with open(out, "r") as fh:
                 for line in fh:
                     print(line.rstrip())
@@ -147,7 +148,7 @@ class testFullFileIntegration(TestCase):
                 os.remove(out)
 
     def test_cell_material_setter(self):
-        cell = self.simple_problem.cells[1]
+        cell = copy.deepcopy(self.simple_problem.cells[1])
         mat = self.simple_problem.materials[2]
         cell.material = mat
         self.assertEqual(cell.material, mat)
@@ -158,7 +159,7 @@ class testFullFileIntegration(TestCase):
 
     def test_problem_cells_setter(self):
         problem = copy.deepcopy(self.simple_problem)
-        cells = self.simple_problem.cells
+        cells = copy.deepcopy(self.simple_problem.cells)
         cells.remove(cells[1])
         with self.assertRaises(TypeError):
             problem.cells = 5
@@ -174,7 +175,7 @@ class testFullFileIntegration(TestCase):
         output = problem.cells._importance.format_for_mcnp_input((6, 2, 0))
 
     def test_problem_test_setter(self):
-        problem = copy.copy(self.simple_problem)
+        problem = copy.deepcopy(self.simple_problem)
         sample_title = "This is a title"
         problem.title = sample_title
         self.assertEqual(problem.title.title, sample_title)
@@ -182,7 +183,7 @@ class testFullFileIntegration(TestCase):
             problem.title = 5
 
     def test_problem_children_adder(self):
-        problem = copy.copy(self.simple_problem)
+        problem = copy.deepcopy(self.simple_problem)
         BT = montepy.input_parser.block_type.BlockType
         in_str = "5 SO 5.0"
         card = montepy.input_parser.mcnp_input.Input([in_str], BT.SURFACE)
@@ -219,7 +220,7 @@ class testFullFileIntegration(TestCase):
             self.assertIn("U=350", "\n".join(output).upper())
 
     def test_problem_mcnp_version_setter(self):
-        problem = copy.copy(self.simple_problem)
+        problem = copy.deepcopy(self.simple_problem)
         with self.assertRaises(ValueError):
             problem.mcnp_version = (4, 5, 3)
         problem.mcnp_version = (6, 2, 5)
@@ -1006,7 +1007,7 @@ class testFullFileIntegration(TestCase):
         self.assertEqual(len(cell.leading_comments), 1)
 
     def test_wrap_warning(self):
-        cell = self.simple_problem.cells[1]
+        cell = copy.deepcopy(self.simple_problem.cells[1])
         with self.assertWarns(montepy.errors.LineExpansionWarning):
             output = cell.wrap_string_for_mcnp("h" * 130, (6, 2, 0), True)
             self.assertEqual(len(output), 2)
