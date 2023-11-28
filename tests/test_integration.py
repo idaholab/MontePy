@@ -19,13 +19,13 @@ import numpy as np
 
 class testFullFileIntegration(TestCase):
     @classmethod
-    def setUpClass(self):
+    def setUpClass(cls):
         file_name = "tests/inputs/test.imcnp"
-        self.simple_problem = montepy.read_input(file_name)
-        self.importance_problem = montepy.read_input(
+        cls.simple_problem = montepy.read_input(file_name)
+        cls.importance_problem = montepy.read_input(
             os.path.join("tests", "inputs", "test_importance.imcnp")
         )
-        self.universe_problem = montepy.read_input(
+        cls.universe_problem = montepy.read_input(
             os.path.join("tests", "inputs", "test_universe.imcnp")
         )
 
