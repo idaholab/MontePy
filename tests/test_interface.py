@@ -26,10 +26,8 @@ class TestBrinyFermentation(unittest.TestCase):
                 print(file)
                 problem = montepy.read_input(file)
                 with io.BytesIO() as fh:
-                    for write, read in (
-                        (pickle.dump, pickle.load),
-                        (pickle.dumps, pickle.loads),
-                    ):
-                        write(problem, fh)
-                        fh.seek(0)
-                        new_problem = read(fh)
+                    pickle.dump(problem, fh)
+                    fh.seek(0)
+                    new_problem = pickle.load(fh)
+                data = pickle.dumps(problem)
+                new_problem = pickle.loads(data)
