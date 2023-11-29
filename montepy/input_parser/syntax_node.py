@@ -1664,15 +1664,13 @@ class ShortcutNode(ListNode):
 
         # REPEAT
         elif self._type == Shortcuts.REPEAT:
-            if len(self.nodes) == 0 and not isinstance(
-                node, input_parser.mcnp_input.Jump
-            ):
+            if len(self.nodes) == 0 and node.value is not None:
                 return True
             if direction == 1:
                 edge = self.nodes[-1]
             else:
                 edge = self.nodes[0]
-            if edge.type != node.type:
+            if edge.type != node.type or edge.value is None or node.value is None:
                 return False
             if edge.type in {int, float} and math.isclose(
                 edge.value, node.value, rel_tol=rel_tol, abs_tol=abs_tol
@@ -1686,6 +1684,9 @@ class ShortcutNode(ListNode):
             return self._is_valid_interpolate_edge(node, direction)
         # Multiply can only ever have 1 value
         elif self._type == Shortcuts.MULTIPLY:
+            # can't do a multiply with a Jump
+            if node.value is None:
+                return False
             if len(self.nodes) == 0:
                 # clear out old state if needed
                 self._full = False
@@ -1707,6 +1708,9 @@ class ShortcutNode(ListNode):
         :returns: true it can be consumed.
         :rtype: bool
         """
+        # kill jumps immediately
+        if node.value is None:
+            return False
         if len(self.nodes) == 0:
             new_val = self._begin if direction == 1 else self._end
             if self._type == Shortcuts.LOG_INTERPOLATE:

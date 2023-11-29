@@ -959,6 +959,20 @@ class TestShortcutListIntegration(TestCase):
         list_node.update_with_new_values(values)
         self.assertEqual(list(list_node), values)
 
+    def test_shortcut_then_jump_compress(self):
+        for input_str, index in [
+            ("1 2 3 5R 3 3 4R 0 0", -2),
+            ("1 2 3M 4", -2),
+            ("1 2ilog 10", -2),
+        ]:
+            print(input_str)
+            input = Input([input_str], BlockType.DATA)
+            list_node = self.parser.parse(input.tokenize())
+            values = list(list_node)
+            values[index].value = None
+            list_node.update_with_new_values(values)
+            self.assertEqual(list(list_node), values)
+
     def test_shortcut_list_shortcut_cant_consume(self):
         # try with wrong type
         input = Input(["1 2 3 5R 3 3 4R "], BlockType.DATA)
