@@ -205,6 +205,7 @@ class TestValueNode(TestCase):
         for input, val, answer, expand in [
             ("1.23", 1.23, "1.23", False),
             ("1.23", 4.56, "4.56", False),
+            (1.23, 4.56, "4.56", False),
             ("-1.23", 4.56, " 4.56", False),
             ("1.0e-2", 2, "2.0e+0", False),
             ("1.602-19", 6.02e23, "6.020+23", False),
@@ -292,6 +293,14 @@ class TestValueNode(TestCase):
         for input, val, enum_class, args, answer, expand in [
             (
                 "1",
+                lat.HEXAGONAL,
+                lat,
+                {"format_type": int, "switch_to_upper": False},
+                "2",
+                False,
+            ),
+            (
+                1,
                 lat.HEXAGONAL,
                 lat,
                 {"format_type": int, "switch_to_upper": False},
