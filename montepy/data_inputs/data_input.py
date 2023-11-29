@@ -11,6 +11,28 @@ from montepy.mcnp_object import MCNP_Object
 import re
 
 
+class _ClassifierInput(Input):
+    """
+    A specialized subclass that returns only 1 useful token.
+    """
+
+    def tokenize(self):
+        """
+        Returns one token after all starting comments and spaces.
+        """
+        last_in_comment = True
+        for token in super().tokenize():
+            if token is None:
+                break
+            if last_in_comment:
+                if token.type not in {"COMMENT", "SPACE"}:
+                    last_in_comment = False
+            else:
+                if token.type == "SPACE":
+                    break
+            yield token
+
+
 class DataInputAbstract(MCNP_Object):
     """
     Parent class to describe all MCNP data inputs.
@@ -26,27 +48,6 @@ class DataInputAbstract(MCNP_Object):
     _classifier_parser = ClassifierParser()
 
     def __init__(self, input=None, fast_parse=False):
-        class ClassifierInput(Input):
-            """
-            A specialized subclass that returns only 1 useful token.
-            """
-
-            def tokenize(self):
-                """
-                Returns one token after all starting comments and spaces.
-                """
-                last_in_comment = True
-                for token in super().tokenize():
-                    if token is None:
-                        break
-                    if last_in_comment:
-                        if token.type not in {"COMMENT", "SPACE"}:
-                            last_in_comment = False
-                    else:
-                        if token.type == "SPACE":
-                            break
-                    yield token
-
         self._particles = None
         if not fast_parse:
             super().__init__(input, self._parser)
@@ -54,7 +55,7 @@ class DataInputAbstract(MCNP_Object):
                 self.__split_name(input)
         else:
             input = copy.copy(input)
-            input.__class__ = ClassifierInput
+            input.__class__ = _ClassifierInput
             super().__init__(input, self._classifier_parser)
             self.__split_name(input)
 
