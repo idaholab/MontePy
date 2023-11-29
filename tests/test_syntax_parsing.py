@@ -142,6 +142,7 @@ class TestValueNode(TestCase):
         self.assertEqual(output, answer)
         for input, val, answer, expand in [
             ("1", 5, "5", False),
+            (1, 5, "5", False),
             ("-1", 2, " 2", False),
             ("-1", -2, "-2", False),
             ("+1", 5, "+5", False),
