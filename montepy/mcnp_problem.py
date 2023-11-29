@@ -477,6 +477,9 @@ class MCNP_Problem:
                 inputs_loaded.add(type(input))
 
     def __str__(self):
+        return f"MCNP problem for: {self._input_file}, {self._title}"
+
+    def __repr__(self):
         ret = f"MCNP problem for: {self._input_file}\n"
         if self.message:
             ret += str(self._message) + "\n"
