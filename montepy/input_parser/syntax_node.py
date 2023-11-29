@@ -771,6 +771,8 @@ class ValueNode(SyntaxNodeBase):
             token = self._token
             if isinstance(token, input_parser.mcnp_input.Jump):
                 token = "J"
+            if isinstance(token, (int, float)):
+                token = str(token)
             self._formatter["value_length"] = len(token)
             if self.padding:
                 if self.padding.is_space(0):
@@ -793,6 +795,8 @@ class ValueNode(SyntaxNodeBase):
 
     def _reverse_engineer_float(self):
         token = self._token
+        if isinstance(token, float):
+            token = str(token)
         if isinstance(token, input_parser.mcnp_input.Jump):
             token = "J"
         if match := self._SCIENTIFIC_FINDER.match(token):
