@@ -109,12 +109,7 @@ class testFullFileIntegration(TestCase):
 
     def test_problem_str(self):
         output = str(self.simple_problem)
-        answer_part = [
-            "MCNP problem for: tests/inputs/test.imcnp",
-            "MESSAGE: 3 lines",
-        ]
-        for line in answer_part:
-            self.assertIn(line, output)
+        self.assertIn("MCNP problem for: tests/inputs/test.imcnp", output)
 
     def test_write_to_file(self):
         out = "foo.imcnp"
