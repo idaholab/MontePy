@@ -3,6 +3,7 @@ import montepy
 from montepy import __main__ as main
 from montepy.errors import *
 from unittest import TestCase
+from tests import constants
 import os
 
 
@@ -20,34 +21,14 @@ class TestMainRunner(TestCase):
             main.check_inputs(["foo"])
 
     def test_check_warning(self):
-        bad_inputs = {
-            "test_excess_mt.imcnp",
-            "test_vol_redundant.imcnp",
-            "testVerticalMode.imcnp",
-            "test_missing_mat_for_mt.imcnp",
-            "test_imp_redundant.imcnp",
-            "test_broken_cell_surf_link.imcnp",
-            "test_broken_surf_link.imcnp",
-            "test_broken_transform_link.imcnp",
-            "test_broken_mat_link.imcnp",
-            "test_broken_complement.imcnp",
-            "testVerticalMode.imcnp",
-        }
-        ignore = {
-            "testReadRec1.imcnp",
-            "testReadRec2.imcnp",
-            "testReadRec3.imcnp",
-            "testReadTarget.imcnp",
-        }
-
-        for bad_input in bad_inputs:
+        for bad_input in constants.BAD_INPUTS:
             with self.assertWarns(Warning):
                 print(f"Testing that a warning is issued for: {bad_input}")
                 main.check_inputs([os.path.join("tests", "inputs", bad_input)])
         for file in glob.glob(os.path.join("tests", "inputs", "*.imcnp")):
             if (
-                os.path.basename(file) not in bad_inputs
-                and os.path.basename(file) not in ignore
+                os.path.basename(file) not in constants.BAD_INPUTS
+                and os.path.basename(file) not in constants.IGNORE_FILES
             ):
                 print(f"Testing no errors are raised for file: {file}")
                 montepy.read_input(file)
