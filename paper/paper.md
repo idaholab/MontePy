@@ -24,7 +24,21 @@ date: 1 February 2024
 bibliography: paper.bib
 
 # Summary
+The Monte Carlo N-Particle (MCNP) radiation transport code,
+is a highly capable and accurate code with a long legacy.
+Unfortunately, part of that legacy is having a history that predates many modern
+software conventions.
+MCNP operates by being provided an input file by the user,
+creating an internal representation of the problem,
+and then starting Monte Carlo radiation transport on that problem.
+MCNP predates most all modern human readable markup languages,
+such as the extensible markup language (XML),
+yet another markup language (YAML),
+and javascript object notation (JSON).
+Due to this MCNP uses an entirely custom defined syntax language for its input,
+making off the shelf libraries for XML, YAML, and JSON impossible to use for scripting
+various operations on MCNP input files.
 
 # Statement of need
 
-
+# References
