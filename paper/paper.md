@@ -41,4 +41,13 @@ various operations on MCNP input files.
 
 # Statement of need
 
+# Example Usage 
+
+# Acknowledgments
+
+This research made use of Idaho National Laboratory's High Performance Computing systems located at the Collaborative Computing Center and supported by the Office of Nuclear Energy of the U.S. Department of Energy and the Nuclear Science User Facilities under Contract No. DE-AC07-05ID14517.
+
+TODO: check previous reviewers and users
+
+TODO: acknowledge AFC and DOE-IP
 # References
