@@ -251,7 +251,7 @@ class DataInputAbstract(MCNP_Object):
             return self._input_number.value < other._input_number.value
 
     @property
-    def class_prefix(self):
+    def class_prefix(self):  # pragma: no cover
         """The text part of the card identifier.
 
         For example: for a material the prefix is ``m``
@@ -272,7 +272,7 @@ class DataInputAbstract(MCNP_Object):
         )
 
     @property
-    def has_number(self):
+    def has_number(self):  # pragma: no cover
         """Whether or not this class supports numbering.
 
         For example: ``kcode`` doesn't allow numbers but tallies do allow it e.g., ``f7``
@@ -291,7 +291,7 @@ class DataInputAbstract(MCNP_Object):
         )
 
     @property
-    def has_classifier(self):
+    def has_classifier(self):  # pragma: no cover
         """Whether or not this class supports particle classifiers.
 
         For example: ``kcode`` doesn't allow particle types but tallies do allow it e.g., ``f7:n``
@@ -328,9 +328,9 @@ class DataInput(DataInputAbstract):
         return None
 
     @property
-    def _has_number(self):
+    def _has_number(self):  # pragma: no cover
         return None
 
     @property
-    def _has_classifier(self):
+    def _has_classifier(self):  # pragma: no cover
         return None

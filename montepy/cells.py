@@ -139,8 +139,11 @@ class Cells(NumberedObjectCollection):
                     setattr(self, attr, input)
                     problem.print_in_data_block[input._class_prefix()] = True
                 else:
-                    getattr(self, attr).merge(input)
-                    data_inputs.remove(input)
+                    try:
+                        getattr(self, attr).merge(input)
+                        data_inputs.remove(input)
+                    except MalformedInputError as e:
+                        handle_error(e)
                 if cant_repeat:
                     inputs_loaded.add(type(input))
         for cell in self:

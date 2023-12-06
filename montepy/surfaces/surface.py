@@ -70,7 +70,9 @@ class Surface(Numbered_MCNP_Object):
             try:
                 # enforce enums
                 self._surface_type._convert_to_enum(SurfaceType, switch_to_upper=True)
-            except ValueError:
+            # this should never be reached due to SLY rules.
+            # still if it is somehow reached this error is more helpful to the user.
+            except ValueError:  # pragma: no cover
                 raise MalformedInputError(
                     input,
                     f"{self._surface_type.value} could not be parsed as a surface type mnemonic.",

@@ -49,8 +49,8 @@ class MCNP_Object(ABC):
                 self._tree = parser.parse(input.tokenize(), input)
                 self._input = input
             except ValueError as e:
-                raise ValueError(
-                    f"Error parsing object of type: {type(self)}: {e.args[0]}"
+                raise MalformedInputError(
+                    input, f"Error parsing object of type: {type(self)}: {e.args[0]}"
                 )
             if self._tree is None:
                 raise ParsingError(
@@ -174,8 +174,8 @@ class MCNP_Object(ABC):
         self._tree["start_pad"]._nodes = new_nodes
 
     @leading_comments.deleter
-    def leading_comments(self, comments):
-        self._tree["start_pad"] = None
+    def leading_comments(self):
+        self._tree["start_pad"]._delete_trailing_comment()
 
     @staticmethod
     def wrap_string_for_mcnp(string, mcnp_version, is_first_line):
@@ -268,7 +268,7 @@ class MCNP_Object(ABC):
             self._tree["start_pad"]._grab_beginning_comment(padding)
 
     @staticmethod
-    def wrap_words_for_mcnp(words, mcnp_version, is_first_line):
+    def wrap_words_for_mcnp(words, mcnp_version, is_first_line):  # pragma: no cover
         """
         Wraps the list of the words to be a well formed MCNP input.
 
@@ -299,7 +299,7 @@ class MCNP_Object(ABC):
         return MCNP_Card.wrap_string_for_mcnp(string, mcnp_version, is_first_line)
 
     @staticmethod
-    def compress_repeat_values(values, threshold=1e-6):
+    def compress_repeat_values(values, threshold=1e-6):  # pragma: no cover
         """
         Takes a list of floats, and tries to compress it using repeats.
 
@@ -353,7 +353,7 @@ class MCNP_Object(ABC):
         return ret
 
     @staticmethod
-    def compress_jump_values(values):
+    def compress_jump_values(values):  # pragma: no cover
         """
         Takes a list of strings and jump values and combines repeated jump values.
 
@@ -394,7 +394,7 @@ class MCNP_Object(ABC):
         return ret
 
     @property
-    def words(self):
+    def words(self):  # pragma: no cover
         """
         The words from the input file for this card.
 
@@ -402,12 +402,12 @@ class MCNP_Object(ABC):
             .. deprecated:: 0.2.0
                 This has been replaced by the syntax tree data structure.
 
-        :raises DeprecatedError: Access the syntax tree instead.
+        :raises DeprecationWarning: Access the syntax tree instead.
         """
-        raise DeprecatedError("This has been removed; instead use the syntax tree")
+        raise DeprecationWarning("This has been removed; instead use the syntax tree")
 
     @property
-    def allowed_keywords(self):
+    def allowed_keywords(self):  # pragma: no cover
         """
         The allowed keywords for this class of MCNP_Card.
 

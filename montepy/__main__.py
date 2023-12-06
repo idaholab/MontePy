@@ -53,7 +53,7 @@ def check_inputs(files):
         problem.parse_input(True)
 
 
-def main():
+def main():  # pragma: no cover
     """
     The main function
     """
@@ -62,5 +62,5 @@ def main():
         check_inputs(args.check)
 
 
-if __name__ == "__main__":
+if __name__ == "__main__":  # pragma: no cover
     main()

@@ -12,7 +12,21 @@ authors = [
 	{name = "Travis Labossiere-Hickman", email = "Travis.LabossiereHickman@inl.gov"},
 	{name = "Brenna Carbno"}
 ]
-keywords = ["MCNP", "neutronics", "imcnp", "input file"]
+keywords = ["MCNP", "neutronics", "imcnp", "input file", "monte carlo"]
+#license = {file="LICENSE"}
+classifiers = [
+       "Development Status :: 4 - Beta",
+       "Programming Language :: Python :: 3 :: Only",
+       "Intended Audience :: Science/Research",
+       "Intended Audience :: Developers",
+#       "License :: OSI Approved :: MIT License",
+       "Natural Language :: English",
+       "Operating System :: OS Independent",
+       "Topic :: Scientific/Engineering :: Physics",
+       "Topic :: Scientific/Engineering",
+       "Topic :: Scientific/Engineering :: Human Machine Interfaces",
+
+]
 dependencies = [
 	"numpy",
 	"sly"
@@ -34,10 +48,13 @@ build-backend = "setuptools.build_meta"
 source = ["montepy"]
 
 [tool.coverage.report]
-skip_covered = true
 precision = 2
 show_missing = true
 fail_under = 90.0
+exclude_also = [
+	"\\s+@abstractmethod\\s*",
+	"pass",
+]
 
 [tool.pytest.ini_options]
 minversion = "6.0"

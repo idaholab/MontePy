@@ -2044,7 +2044,7 @@ class ParametersNode(SyntaxNodeBase):
             + (str(classifier.particles) if classifier.particles else "")
         ).lower()
         if key in self._nodes:
-            raise ValueError(f"Second parameter given for {key}.")
+            raise RedundantParameterSpecification(key, val)
         self._nodes[key] = val
 
     def __str__(self):
