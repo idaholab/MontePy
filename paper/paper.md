@@ -37,7 +37,7 @@ yet another markup language (YAML),
 and javascript object notation (JSON).
 Due to this MCNP uses an entirely custom defined syntax language for its input,
 making off the shelf libraries for XML, YAML, and JSON impossible to use for scripting
-various operations on MCNP input files.
+various operations on MCNP input files `[@Armstrong:2017]`.
 
 # Statement of need
 
