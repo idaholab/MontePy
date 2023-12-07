@@ -1,12 +1,12 @@
 import montepy
 from montepy.numbered_object_collection import NumberedObjectCollection
 
-Material = montepy.data_cards.material.Material
+Material = montepy.data_inputs.material.Material
 
 
 class Materials(NumberedObjectCollection):
     """
-    A container of multiple :class:`montepy.data_cards.material.Material` instances.
+    A container of multiple :class:`~montepy.data_inputs.material.Material` instances.
 
     :param objects: the list of materials to start with if needed
     :type objects: list

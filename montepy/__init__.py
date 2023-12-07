@@ -6,30 +6,24 @@ start by running montepy.read_input().
 You will receive an MCNP_Problem object that you will interact with.
 """
 
-__author__ = "Micah Gale, Travis Labossiere-Hickman, Brenna Carbno"
-__credits__ = [
-    "Micah Gale",
-    "Travis Labossiere-Hickman",
-    "Austin Carter",
-    "Andrew Bascom",
-    "Roberto Fairhurst Agosta",
-    "Brenna Carbno",
-]
-
-name = "montepy"
-__version__ = "0.1.6"
-__maintainer__ = "Micah Gale"
-__email__ = "micah.gale@inl.gov"
-__status__ = "Development"
-__all__ = ["cell", "surfaces", "mcnp_card", "input_parser"]
-
 from . import input_parser
+from . import constants
 from .input_parser.input_reader import read_input
 from montepy.cell import Cell
-from montepy.data_cards.material import Material
-from montepy.data_cards.transform import Transform
-from montepy.input_parser.mcnp_input import Comment
+from montepy.mcnp_problem import MCNP_Problem
+from montepy.data_inputs.material import Material
+from montepy.data_inputs.transform import Transform
+from montepy.geometry_operators import Operator
+from montepy import geometry_operators
 from montepy.input_parser.mcnp_input import Jump
 from montepy.particle import Particle
 from montepy.surfaces.surface_type import SurfaceType
 from montepy.universe import Universe
+import sys
+
+# enable deprecated warnings for users
+if not sys.warnoptions:
+    import os, warnings
+
+    warnings.simplefilter("default")  # Change the filter in this process
+    os.environ["PYTHONWARNINGS"] = "default"  # Also affect subprocesses

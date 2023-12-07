@@ -1,17 +1,20 @@
+from enum import Enum
 import itertools
+from montepy.data_inputs import mode, transform
 from montepy._cell_data_control import CellDataPrintController
-from montepy.data_cards import mode, transform
 from montepy.cell import Cell
 from montepy.cells import Cells
 from montepy.errors import *
-from montepy.input_parser.constants import DEFAULT_VERSION
+from montepy.constants import DEFAULT_VERSION
 from montepy.materials import Materials
 from montepy.surfaces import surface_builder
 from montepy.surface_collection import Surfaces
-from montepy.data_cards import Material, parse_data
+from montepy.data_inputs import Material, parse_data
 from montepy.input_parser import input_syntax_reader, block_type, mcnp_input
+from montepy.input_parser.input_file import MCNP_InputFile
 from montepy.universes import Universes
 from montepy.transforms import Transforms
+import warnings
 
 
 class MCNP_Problem:
@@ -23,7 +26,7 @@ class MCNP_Problem:
     """
 
     def __init__(self, file_name):
-        self._input_file = file_name
+        self._input_file = MCNP_InputFile(file_name)
         self._title = None
         self._message = None
         self._print_in_data_block = CellDataPrintController()
@@ -32,7 +35,7 @@ class MCNP_Problem:
         self._surfaces = Surfaces(problem=self)
         self._universes = Universes(problem=self)
         self._transforms = Transforms(problem=self)
-        self._data_cards = []
+        self._data_inputs = []
         self._materials = Materials(problem=self)
         self._mcnp_version = DEFAULT_VERSION
         self._mode = mode.Mode()
@@ -42,10 +45,13 @@ class MCNP_Problem:
         """
         A list of the MCNP_Inputs read from the original file.
 
-        This should not be mutated, and should be used a reference to maintain
+        This should not be mutated, and should be used as a reference to maintain
         the structure
 
-        :return: A list of the MCNP_Input objects representing the file as it was read
+        .. deprecated:: 0.2.0
+            This will likely be removed soon, and it's functionality will not be necessary to reproduce.
+
+        :return: A list of the MCNP_Object objects representing the file as it was read
         :rtype: list
         """
         return self._original_inputs
@@ -150,7 +156,7 @@ class MCNP_Problem:
     @property
     def print_in_data_block(self):
         """
-        Controls whether or not the specific card gets printed in the cell block or the data block.
+        Controls whether or not the specific input gets printed in the cell block or the data block.
 
         This acts like a dictionary. The key is the case insensitive name of the card.
         For example to enable printing importance data in the data block run:
@@ -162,21 +168,21 @@ class MCNP_Problem:
         return self._print_in_data_block
 
     @property
-    def data_cards(self):
+    def data_inputs(self):
         """
-        A list of the DataCard objects in this problem.
+        A list of the DataInput objects in this problem.
 
-        :return: a list of the :class:`montepy.data_cards.data_card.DataCardAbstract` objects, ordered by the order they were in the input file.
+        :return: a list of the :class:`~montepy.data_cards.data_card.DataCardAbstract` objects, ordered by the order they were in the input file.
         :rtype: list
         """
-        return self._data_cards
+        return self._data_inputs
 
     @property
     def input_file(self):
         """
         The file name of the original file name this problem was read from.
 
-        :rtype: str
+        :rtype: MCNP_InputFile
         """
         return self._input_file
 
@@ -209,69 +215,130 @@ class MCNP_Problem:
     def universes(self):
         """
         The Universes object holding all problem universes.
+
+        :returns: a collection of universes in the problem.
+        :rtype: Universes
         """
         return self._universes
 
     @property
     def transforms(self):
         """
-        The transform objects in this problem.
+        The collection of transform objects in this problem.
+
+        :returns: a collection of transforms in the problem.
+        :rtype: Transforms
         """
         return self._transforms
 
-    def parse_input(self):
+    def parse_input(self, check_input=False):
         """
         Semantically parses the MCNP file provided to the constructor.
+
+        :param check_input: If true, will try to find all errors with input and collect them as warnings to log.
+        :type check_input: bool
         """
-        comment_queue = []
-        for i, input_card in enumerate(
-            input_syntax_reader.read_input_syntax(self._input_file, self.mcnp_version)
-        ):
-            self._original_inputs.append(input_card)
-            if i == 0 and isinstance(input_card, mcnp_input.Message):
-                self._message = input_card
+        trailing_comment = None
+        last_obj = None
+        OBJ_MATCHER = {
+            block_type.BlockType.CELL: (Cell, self._cells),
+            block_type.BlockType.SURFACE: (
+                surface_builder.surface_builder,
+                self._surfaces,
+            ),
+            block_type.BlockType.DATA: (parse_data, self._data_inputs),
+        }
+        try:
+            for i, input in enumerate(
+                input_syntax_reader.read_input_syntax(
+                    self._input_file, self.mcnp_version
+                )
+            ):
+                self._original_inputs.append(input)
+                if i == 0 and isinstance(input, mcnp_input.Message):
+                    self._message = input
 
-            elif isinstance(input_card, mcnp_input.Title) and self._title is None:
-                self._title = input_card
+                elif isinstance(input, mcnp_input.Title) and self._title is None:
+                    self._title = input
 
-            elif isinstance(input_card, mcnp_input.Comment):
-                if len(comment_queue) > 0:
-                    input_card.snip()
-                comment_queue.append(input_card)
+                elif isinstance(input, mcnp_input.Input):
+                    obj_parser, obj_container = OBJ_MATCHER[input.block_type]
+                    if len(input.input_lines) > 0:
+                        try:
+                            obj = obj_parser(input)
+                            obj.link_to_problem(self)
+                            obj_container.append(obj)
+                        except (
+                            MalformedInputError,
+                            NumberConflictError,
+                            ParsingError,
+                            UnknownElement,
+                        ) as e:
+                            if check_input:
+                                warnings.warn(
+                                    f"{type(e).__name__}: {e.message}", stacklevel=2
+                                )
+                                continue
+                            else:
+                                raise e
+                        if isinstance(obj, Material):
+                            self._materials.append(obj)
+                        if isinstance(obj, transform.Transform):
+                            self._transforms.append(obj)
+                    if trailing_comment is not None and last_obj is not None:
+                        obj._grab_beginning_comment(trailing_comment)
+                        last_obj._delete_trailing_comment()
+                    trailing_comment = obj.trailing_comment
+                    last_obj = obj
+        except UnsupportedFeature as e:
+            if check_input:
+                warnings.warn(f"{type(e).__name__}: {e.message}", stacklevel=2)
+            else:
+                raise e
+        self.__update_internal_pointers(check_input)
 
-            elif isinstance(input_card, mcnp_input.Card):
-                if len(input_card.words) > 0:
-                    if input_card.block_type == block_type.BlockType.CELL:
-                        cell = Cell(input_card, comment_queue)
-                        cell.link_to_problem(self)
-                        self._cells.append(cell)
-                    if input_card.block_type == block_type.BlockType.SURFACE:
-                        surface = surface_builder.surface_builder(
-                            input_card, comment_queue
-                        )
-                        surface.link_to_problem(self)
-                        self._surfaces.append(surface)
-                    if input_card.block_type == block_type.BlockType.DATA:
-                        data = parse_data(input_card, comment_queue)
-                        data.link_to_problem(self)
-                        if isinstance(data, Material):
-                            self._materials.append(data)
-                        if isinstance(data, transform.Transform):
-                            self._transforms.append(data)
-                        self._data_cards.append(data)
-                    comment_queue = []
-        self.__update_internal_pointers()
+    def __update_internal_pointers(self, check_input=False):
+        """Updates the internal pointers between objects
 
-    def __update_internal_pointers(self):
-        """Updates the internal pointers between objects"""
-        self.__load_data_cards_to_object(self._data_cards)
+        :param check_input: If true, will try to find all errors with input and collect them as warnings to log.
+        :type check_input: bool
+        """
+
+        def handle_error(e):
+            if check_input:
+                warnings.warn(f"{type(e).__name__}: {e.message}", stacklevel=3)
+            else:
+                raise e
+
+        self.__load_data_inputs_to_object(self._data_inputs)
         self._cells.update_pointers(
-            self.cells, self.materials, self.surfaces, self._data_cards, self
+            self.cells,
+            self.materials,
+            self.surfaces,
+            self._data_inputs,
+            self,
+            check_input,
         )
         for surface in self._surfaces:
-            surface.update_pointers(self.surfaces, self._data_cards)
-        for card in self._data_cards:
-            card.update_pointers(self._data_cards)
+            try:
+                surface.update_pointers(self.surfaces, self._data_inputs)
+            except (
+                BrokenObjectLinkError,
+                ParticleTypeNotInProblem,
+                ParticleTypeNotInCell,
+            ) as e:
+                handle_error(e)
+        for input in self._data_inputs:
+            try:
+                input.update_pointers(self._data_inputs)
+            except (
+                BrokenObjectLinkError,
+                MalformedInputError,
+                ParticleTypeNotInProblem,
+                ParticleTypeNotInCell,
+            ) as e:
+                handle_error(e)
+                continue
 
     def remove_duplicate_surfaces(self, tolerance):
         """Finds duplicate surfaces in the problem, and remove them.
@@ -296,11 +363,11 @@ class MCNP_Problem:
 
     def add_cell_children_to_problem(self):
         """
-        Adds the surfaces and materials of all cells in this problem to this problem to the
+        Adds the surfaces, materials, and transforms of all cells in this problem to this problem to the
         internal lists to allow them to be written to file.
 
         .. warning::
-            this does not move complement cells, and probably others.
+            this does not move complement cells, and probably other objects.
         """
         surfaces = set(self.surfaces)
         materials = set(self.materials)
@@ -318,7 +385,7 @@ class MCNP_Problem:
         self._surfaces = Surfaces(surfaces)
         self._materials = Materials(materials)
         self._transforms = Transforms(transforms)
-        self._data_cards = sorted(set(self._data_cards + materials + transforms))
+        self._data_inputs = sorted(set(self._data_inputs + materials + transforms))
 
     def write_to_file(self, new_problem):
         """
@@ -328,57 +395,98 @@ class MCNP_Problem:
         :type new_problem: str
         :raises IllegalState: if an object in the problem has not been fully initialized.
         """
-        with open(new_problem, "w") as fh:
+        new_file = MCNP_InputFile(new_problem)
+        with new_file.open("w") as fh, warnings.catch_warnings(
+            record=True
+        ) as warning_catch:
+            objects_list = []
             if self.message:
-                for line in self.message.format_for_mcnp_input(self.mcnp_version):
-                    fh.write(line + "\n")
-            lines = self.title.format_for_mcnp_input(self.mcnp_version)
-            fh.write(lines[0] + "\n")
-            for cell in self.cells:
-                for line in cell.format_for_mcnp_input(self.mcnp_version):
-                    fh.write(line + "\n")
-            # block terminator
-            fh.write("\n")
-            for surface in self.surfaces:
-                for line in surface.format_for_mcnp_input(self.mcnp_version):
-                    fh.write(line + "\n")
-            fh.write("\n")
-            for card in self.data_cards:
-                for line in card.format_for_mcnp_input(self.mcnp_version):
-                    fh.write(line + "\n")
+                objects_list.append(([self.message], False))
+            objects_list += [
+                ([self.title], False),
+                (self.cells, True),
+                (self.surfaces, True),
+                (self.data_inputs, True),
+            ]
+            for objects, terminate in objects_list:
+                for obj in objects:
+                    lines = obj.format_for_mcnp_input(self.mcnp_version)
+                    if warning_catch and not getattr(
+                        warning_catch[-1], "handled", None
+                    ):
+                        warning = warning_catch[-1]
+                        warning.lineno = fh.lineno
+                        warning.path = fh.name
+                        warning.obj = obj
+                        warning.lines = lines
+                        warning.handled = True
+                    for line in lines:
+                        fh.write(line + "\n")
+                if terminate:
+                    fh.write("\n")
             for line in self.cells._run_children_format_for_mcnp(
-                self.data_cards, self.mcnp_version
+                self.data_inputs, self.mcnp_version
             ):
                 fh.write(line + "\n")
 
             fh.write("\n")
+        self._handle_warnings(warning_catch)
 
-    def __load_data_cards_to_object(self, data_cards):
-        """
-        Loads data cards into their appropriate problem attribute.
+    def _handle_warnings(self, warning_queue):
+        class WarningLevels(Enum):
+            SUPRESS = 0
+            MINIMAL = 1
+            MAXIMAL = 5
 
-        Problem-level cards should be loaded this way like: mode and kcode.
+        warning_level = WarningLevels.MAXIMAL
+
+        for warning_message in warning_queue:
+            warning = warning_message.message
+            message = f"The input starting on Line {warning_message.lineno} of: {warning_message.path} expanded. "
+            if warning_level == WarningLevels.SUPRESS:
+                continue
+            elif warning_level == WarningLevels.MINIMAL:
+                if warning.cause == "value":
+                    message += f"The new value is: {warning.new_value}"
+                else:
+                    message += f"The new lines are: {warning.new_value}"
+            elif warning_level == WarningLevels.MAXIMAL:
+                message += "\nThe new input is:\n"
+                for i, line in enumerate(warning_message.lines):
+                    message += f"     {warning_message.lineno + i:5g}| {line}\n"
+                message += warning.message
+            warning = LineExpansionWarning(message)
+            warnings.warn(warning, stacklevel=3)
+
+    def __load_data_inputs_to_object(self, data_inputs):
         """
-        cards_to_property = {mode.Mode: "_mode"}
-        cards_loaded = set()
-        for card in data_cards:
-            if type(card) in cards_to_property:
-                if type(card) in cards_loaded:
+        Loads data input into their appropriate problem attribute.
+
+        Problem-level input should be loaded this way like: mode and kcode.
+        """
+        inputs_to_property = {mode.Mode: "_mode"}
+        inputs_loaded = set()
+        for input in data_inputs:
+            if type(input) in inputs_to_property:
+                if type(input) in inputs_loaded:
                     raise MalformedInputError(
-                        card,
-                        f"The card: {type(card)} is only allowed once in a problem",
+                        input,
+                        f"The input: {type(input)} is only allowed once in a problem",
                     )
-                setattr(self, cards_to_property[type(card)], card)
-                cards_loaded.add(type(card))
+                setattr(self, inputs_to_property[type(input)], input)
+                inputs_loaded.add(type(input))
 
     def __str__(self):
+        return f"MCNP problem for: {self._input_file}, {self._title}"
+
+    def __repr__(self):
         ret = f"MCNP problem for: {self._input_file}\n"
         if self.message:
             ret += str(self._message) + "\n"
         ret += str(self._title) + "\n"
         for cell in self._cells:
             ret += str(cell) + "\n"
-        for data_card in self._data_cards:
-            if not isinstance(data_card, Material):
-                ret += str(data_card) + "\n"
+        for input in self._data_inputs:
+            if not isinstance(input, Material):
+                ret += str(input) + "\n"
         return ret

@@ -33,6 +33,9 @@ C materials
 C UO2 5 atpt enriched
 m1        92235.80c           5 &
 92238.80c          95
+c testing comments
+sc1 This is a high quality source comment
+Fc5 Such a good tally comment.
 C Iron
 m2        26054.80c        5.85
           26056.80c       91.75

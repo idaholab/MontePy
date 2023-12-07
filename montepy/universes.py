@@ -4,7 +4,7 @@ from montepy.universe import Universe
 
 class Universes(NumberedObjectCollection):
     """
-    A container of multiple :class:`montepy.universe.Universe` instances.
+    A container of multiple :class:`~montepy.universe.Universe` instances.
     """
 
     def __init__(self, objects=None, problem=None):

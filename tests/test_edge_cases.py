@@ -32,11 +32,11 @@ class EdgeCaseTests(TestCase):
 
     def test_orphaning_mt(self):
         problem = montepy.read_input(os.path.join("tests", "inputs", "test.imcnp"))
-        card = montepy.input_parser.mcnp_input.Card(
+        card = montepy.input_parser.mcnp_input.Input(
             ["MT5 lwtr.01t"],
             montepy.input_parser.block_type.BlockType.DATA,
         )
-        problem.data_cards.append(montepy.data_cards.data_parser.parse_data(card))
+        problem.data_inputs.append(montepy.data_inputs.data_parser.parse_data(card))
         try:
             with self.assertRaises(MalformedInputError):
                 problem.write_to_file("out")
@@ -47,15 +47,15 @@ class EdgeCaseTests(TestCase):
 
     def test_shortcuts_in_special_comment(self):
         in_str = "fc247 experiment in I24 Cell Specific Heating"
-        card = montepy.input_parser.mcnp_input.Card(
+        card = montepy.input_parser.mcnp_input.Input(
             [in_str], montepy.input_parser.block_type.BlockType.DATA
         )
-        self.assertEqual(card.words, in_str.split())
+        self.assertEqual(card.input_lines, [in_str])
         in_str = in_str.replace("fc247", "sc247")
-        card = montepy.input_parser.mcnp_input.Card(
+        card = montepy.input_parser.mcnp_input.Input(
             [in_str], montepy.input_parser.block_type.BlockType.DATA
         )
-        self.assertEqual(card.words, in_str.split())
+        self.assertEqual(card.input_lines, [in_str])
 
     def test_long_lines(self):
         with self.assertWarns(montepy.errors.LineOverRunWarning):
@@ -63,7 +63,7 @@ class EdgeCaseTests(TestCase):
                 "tests/inputs/test_long_lines.imcnp", (5, 1, 60)
             )
             comment = problem.cells[1].comments[0]
-            self.assertTrue(len(comment.lines[0]) <= 80)
+            self.assertTrue(len(comment.contents[0]) <= 80)
             self.assertEqual(len(problem.surfaces), 3)
 
     def test_confused_key_word(self):
@@ -74,9 +74,64 @@ class EdgeCaseTests(TestCase):
             "          ( 500024 -500025 500062 -500061 )  $ Outer Capsule Lower Endcap",
             "                u= 106 $ Outer Capsule Lower Endcap",
         ]
-        input = montepy.input_parser.mcnp_input.Card(
+        input = montepy.input_parser.mcnp_input.Input(
             in_strs, montepy.input_parser.block_type.BlockType.CELL
         )
         cell = montepy.Cell(input)
         self.assertNotIn("", cell.parameters)
-        self.assertEqual(len(cell.parameters), 0)
+        print(cell.parameters)
+        allowed_keys = {"u", "imp:n", "fill", "lat", "vol"}
+        self.assertEqual(len(cell.parameters), 5)
+        self.assertEqual(cell.parameters.nodes.keys(), allowed_keys)
+
+    def test_confused_union_geometry(self):
+        # based on issue #122
+        in_strs = [
+            "9800     10    -0.123000 +101 -200 -905 +213 (-216:+217)",
+        ]
+        input = montepy.input_parser.mcnp_input.Input(
+            in_strs, montepy.input_parser.block_type.BlockType.CELL
+        )
+        cell = montepy.Cell(input)
+
+    def test_confused_trcl(self):
+        for line in [
+            "340 0 (94 -209 -340) fill=2 trcl=(0 0 0  0.7071 -0.7071 0  0.7071 0.7071 0  0 0 1)",
+            "340 0 (94 -209 -340) fill=2 trcl=(0 0 0  0.7071 -0.7071 0  0.7071 0.7071 0  0 0 1)  $ Comment",
+        ]:
+            input = montepy.input_parser.mcnp_input.Input(
+                [line],
+                montepy.input_parser.block_type.BlockType.CELL,
+            )
+            cell = montepy.Cell(input)
+
+    def test_space_after_equals(self):
+        lines = [
+            "35000 3690   0.01000    35100   -35105",
+            "                        35110   -35115",
+            "                        35150   -35155   U = 35100",
+        ]
+        input = montepy.input_parser.mcnp_input.Input(
+            lines,
+            montepy.input_parser.block_type.BlockType.CELL,
+        )
+        cell = montepy.Cell(input)
+
+    def test_interpolate_geometry(self):
+        lines = [
+            "10234   30  1.2456780      -3103  3104 -3133  3136",
+            "                            3201  15i   3217",
+            "                            u=20",
+        ]
+        input = montepy.input_parser.mcnp_input.Input(
+            lines,
+            montepy.input_parser.block_type.BlockType.CELL,
+        )
+        cell = montepy.Cell(input)
+
+    def test_material_float(self):
+        in_strs = ["m171 1001.80c 1E-24"]
+        input = montepy.input_parser.mcnp_input.Input(
+            in_strs, montepy.input_parser.block_type.BlockType.CELL
+        )
+        material = montepy.data_inputs.material.Material(input)

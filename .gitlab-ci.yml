@@ -14,17 +14,19 @@ after_script:
 install:
   stage: build
   script:
+    - if [[ -d dist ]]; then rm -r dist ; fi; 
     - echo "setting up conda"
-    - conda create -n experiment_analysis_mcnpy python
+    - conda create -y -n experiment_analysis_mcnpy python==3.8.0
     - echo "Installing dependencies"
     - which python
     - which pip
     - pip install -r requirements/dev.txt
-    - python setup.py sdist bdist_wheel
+    - python -m build --sdist --wheel
+    - pip install . --force-reinstall
     - pip install --user dist/*.whl --force-reinstall
       # test the extras installation
-    - python setup.py install easy_install --user montepy[test]
-    - python setup.py install easy_install --user montepy[doc]
+    - pip install --user montepy[test]
+    - pip install --user montepy[doc]
     - pip freeze
 
 
@@ -36,8 +38,8 @@ unit_test:
     - echo "Executing unit tests"
     - which python
     - pip freeze
-    - coverage run --source montepy -m pytest --junitxml=test_report.xml
-    - coverage report -m --precision=2
+    - coverage run -m pytest --junitxml=test_report.xml
+    - coverage report 
     - coverage xml
   artifacts:
     reports:
@@ -49,7 +51,6 @@ unit_test:
 doc_test:
    stage: test
    script:
-      - if [[ -d doc/source/api ]]; then rm -r doc/source/api ; fi; 
       - echo "Executing Sphinx build to detect syntax errors"
       - sphinx-build doc/source/ doc/build/ -W --keep-going -E
       - sphinx-build -b html doc/source/ doc/build/html
@@ -79,11 +80,10 @@ pages:
   script:
     - echo "Building documentation with Sphinx."
     - cd doc/
-    - if [[ -d doc/source/api ]]; then rm -r doc/source/api ; fi; 
     - make html
     - cd ..
     - mv doc/build/html public
-    - python setup.py bdist_wheel
+    - python -m build --sdist --wheel
     - mv dist/ public/dist
   artifacts:
     paths:
