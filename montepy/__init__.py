@@ -8,7 +8,6 @@ You will receive an MCNP_Problem object that you will interact with.
 
 from . import input_parser
 from . import constants
-from .input_parser.input_reader import read_input
 import importlib.metadata
 from montepy.cell import Cell
 from montepy.mcnp_problem import MCNP_Problem
@@ -22,7 +21,7 @@ from montepy.surfaces.surface_type import SurfaceType
 from montepy.universe import Universe
 import sys
 
-__version__ = importlib.metadata.version(__package__)
+__version__ = "0.2.0"
 # enable deprecated warnings for users
 if not sys.warnoptions:
     import os, warnings
