@@ -2,7 +2,10 @@ from abc import ABC, abstractmethod
 import math
 from montepy.errors import *
 from montepy.input_parser.block_type import BlockType
-from montepy.input_parser.constants import BLANK_SPACE_CONTINUE, get_max_line_length
+from montepy.constants import BLANK_SPACE_CONTINUE, get_max_line_length
+from montepy.input_parser.read_parser import ReadParser
+from montepy.input_parser.tokens import CellLexer, SurfaceLexer, DataLexer
+from montepy.utilities import *
 import re
 
 
@@ -61,9 +64,12 @@ class Jump:
         return "J"
 
 
-class MCNP_Input(ABC):
+class ParsingNode(ABC):
     """
-    Object to represent a single coherent MCNP input, such as a card.
+    Object to represent a single coherent MCNP input, such as an input.
+
+    .. versionadded:: 0.2.0
+        This was added as part of the parser rework.
 
     :param input_lines: the lines read straight from the input file.
     :type input_lines: list
@@ -76,7 +82,6 @@ class MCNP_Input(ABC):
             if not isinstance(line, str):
                 raise TypeError(f"element: {line} in input_lines must be a string")
         self._input_lines = input_lines
-        self._mutated = False
 
     @property
     def input_lines(self):
@@ -87,35 +92,55 @@ class MCNP_Input(ABC):
         return self._input_lines
 
     @property
-    def mutated(self):
-        """If true this input has been mutated by the user, and needs to be formatted
-
-        :rtype: bool
-        """
-        return self._mutated
+    def input_text(self):
+        return "\n".join(self.input_lines) + "\n"
 
     @abstractmethod
     def format_for_mcnp_input(self, mcnp_version):
         """
-        Creates a string representation of this card that can be
+        Creates a string representation of this input that can be
         written to file.
 
         :param mcnp_version: The tuple for the MCNP version that must be exported to.
         :type mcnp_version: tuple
-        :return: a list of strings for the lines that this card will occupy.
+        :return: a list of strings for the lines that this input will occupy.
         :rtype: list
         """
         pass
 
 
-class Card(MCNP_Input):
+class Card(ParsingNode):  # pragma: no cover
     """
-    Represents a single MCNP "card" e.g. a single cell definition.
+    .. warning::
+
+        .. deprecated:: 0.2.0
+            Punch cards are dead. Use :class:`~montepy.input_parser.mcnp_input.Input` instead.
+
+    :raises DeprecatedError: punch cards are dead.
+    """
+
+    def __init__(self, *args, **kwargs):
+        raise DeprecatedError(
+            "This has been deprecated. Use montepy.input_parser.mcnp_input.Input instead"
+        )
+
+
+class Input(ParsingNode):
+    """
+    Represents a single MCNP "Input" e.g. a single cell definition.
+
+    .. versionadded:: 0.2.0
+        This was added as part of the parser rework, and rename.
+        This was a replacement for :class:`Card`.
 
     :param input_lines: the lines read straight from the input file.
     :type input_lines: list
     :param block_type: An enum showing which of three MCNP blocks this was inside of.
     :type block_type: BlockType
+    :param input_file: the wrapper for the input file this is read from.
+    :type input_file: MCNP_InputFile
+    :param lineno: the line number this input started at. 1-indexed.
+    :type lineno: int
     """
 
     SPECIAL_COMMENT_PREFIXES = ["fc", "sc"]
@@ -124,39 +149,20 @@ class Card(MCNP_Input):
     :rtype: list
     """
 
-    def __init__(self, input_lines, block_type):
+    def __init__(self, input_lines, block_type, input_file=None, lineno=None):
         super().__init__(input_lines)
         if not isinstance(block_type, BlockType):
             raise TypeError("block_type must be BlockType")
-        words = []
-        for line in input_lines:
-            line = line.split("$")[0]
-            words += line.replace(" &", "").split()
-        self._words = words
         self._block_type = block_type
-        found = False
-        for prefix in self.SPECIAL_COMMENT_PREFIXES:
-            if prefix in words[0].lower():
-                found = True
-        if not found:
-            self._words = parse_card_shortcuts(words, self)
+        self._input_file = input_file
+        self._lineno = lineno
+        self._lexer = None
 
     def __str__(self):
-        return f"CARD: {self._block_type}"
+        return f"INPUT: {self._block_type}"
 
     def __repr__(self):
-        return f"CARD: {self._block_type}: {self._words}"
-
-    @property
-    def words(self):
-        """
-        A list of the string representation of the words for the card definition.
-
-        For example a material definition may contain: 'M10', '10001.70c', '0.1'
-
-        :rtype: list
-        """
-        return self._words
+        return f"INPUT: {self._block_type}: {self.input_lines}"
 
     @property
     def block_type(self):
@@ -167,236 +173,172 @@ class Card(MCNP_Input):
         """
         return self._block_type
 
+    @make_prop_pointer("_input_file")
+    def input_file(self):
+        """
+        The file this input file was read from.
+
+        :rtype: MCNP_InputFile
+        """
+        pass
+
+    @make_prop_pointer("_lineno")
+    def line_number(self):
+        """
+        The line number this input started on.
+
+        This is 1-indexed.
+
+        :rtype: int
+        """
+        pass
+
     def format_for_mcnp_input(self, mcnp_version):
         pass
 
+    def tokenize(self):
+        """
+        Tokenizes this input as a stream of Tokens.
 
-def parse_card_shortcuts(words, card=None):
-    """
-    Parses MCNP input shortcuts.
+        This is a generator of Tokens.
+        This is context dependent based on :func:`block_type`.
 
-    E.g., ``2R``, ``1 10I 100``, ``2J``
+        * In a cell block :class:`~montepy.input_parser.tokens.CellLexer` is used.
+        * In a surface block :class:`~montepy.input_parser.tokens.SurfaceLexer` is used.
+        * In a data block :class:`~montepy.input_parser.tokens.DataLexer` is used.
 
-    Returns a list of strings with all shortcuts decompressed or changed out.
-    Jumps will be changed to :class:`montepy.input_parser.mcnp_input.Jump`.
-
-    :param words: the list of strings or "words".
-    :type words: list
-    :returns: modified version of words with all compressions expanded.
-    :rtype: list
-    """
-    number_parser = re.compile(r"(\d+\.*\d*[e\+\-]*\d*)")
-    ret = []
-    for i, word in enumerate(words):
-        if i == 0:
-            ret.append(word)
-            continue
-        letters = "".join(c for c in word if c.isalpha()).lower()
-        if len(letters) >= 1:
-            number = number_parser.search(word)
-            if number:
-                number = float(number.group(1))
-            if letters == "r":
-                try:
-                    last_val = ret[-1]
-                    assert (
-                        not isinstance(last_val, Jump) and last_val and len(ret) > 1
-                    )  # force last_val to be truthy
-                    if number:
-                        number = int(number)
-                    else:
-                        number = 1
-                    ret += [last_val] * number
-                except (IndexError, AssertionError) as e:
-                    raise MalformedInputError(
-                        card, "The repeat shortcut must come after a value"
-                    )
-            elif letters == "i":
-                try:
-                    begin = float(number_parser.search(ret[-1]).group(1))
-                    for char in ["i", "m", "r", "i", "log"]:
-                        if char in words[i + 1].lower():
-                            raise IndexError
-
-                    end = float(number_parser.search(words[i + 1]).group(1))
-                    if number:
-                        number = int(number)
-                    else:
-                        number = 1
-                    spacing = (end - begin) / (number + 1)
-                    for i in range(number):
-                        new_val = begin + spacing * (i + 1)
-                        ret.append(f"{new_val:g}")
-                except (IndexError, TypeError, ValueError, AttributeError) as e:
-                    raise MalformedInputError(
-                        card,
-                        "The interpolate shortcut must come between two values",
-                    )
-            elif letters == "m":
-                try:
-                    last_val = float(number_parser.search(ret[-1]).group(1))
-                    if number is None:
-                        raise MalformedInputError(
-                            card,
-                            "The multiply shortcut must have a multiplying value",
-                        )
-                    new_val = number * last_val
-                    ret.append(f"{new_val:g}")
-
-                except (IndexError, TypeError, ValueError, AttributeError) as e:
-                    raise MalformedInputError(
-                        card, "The multiply shortcut must come after a value"
-                    )
-
-            elif letters == "j":
-                if number:
-                    number = int(number)
-                else:
-                    number = 1
-                ret += [Jump()] * number
-            elif letters in {"ilog", "log"}:
-                try:
-                    begin = math.log(float(number_parser.search(ret[-1]).group(1)), 10)
-                    end = math.log(
-                        float(number_parser.search(words[i + 1]).group(1)), 10
-                    )
-                    if number:
-                        number = int(number)
-                    else:
-                        number = 1
-                    spacing = (end - begin) / (number + 1)
-                    for i in range(number):
-                        new_val = 10 ** (begin + spacing * (i + 1))
-                        ret.append(f"{new_val:g}")
-
-                except (IndexError, TypeError, ValueError, AttributeError) as e:
-                    raise MalformedInputError(
-                        card,
-                        "The log interpolation shortcut must come between two values",
-                    )
-            else:
-                ret.append(word)
+        :returns: a generator of tokens.
+        :rtype: Token
+        """
+        if self.block_type == BlockType.CELL:
+            lexer = CellLexer()
+        elif self.block_type == BlockType.SURFACE:
+            lexer = SurfaceLexer()
         else:
-            ret.append(word)
-    return ret
+            lexer = DataLexer()
+        self._lexer = lexer
+        # hacky way to capture final new line and remove it after lexing.
+        generator = lexer.tokenize(self.input_text)
+        token = None
+        next_token = None
+        try:
+            token = next(generator)
+            while True:
+                if next_token:
+                    token = next_token
+                next_token = next(generator)
+                yield token
+        except StopIteration:
+            if not token:
+                return
+            token.value = token.value.rstrip("\n")
+            if token.value:
+                yield token
+        self._lexer = None
+
+    @make_prop_pointer("_lexer")
+    def lexer(self):
+        """
+        The current lexer being used to parse this input.
+
+        If not currently tokenizing this will be None.
+        :rtype:MCNP_Lexer
+        """
+        pass
+
+    @property
+    def words(self):  # pragma: no cover
+        """
+        .. warning::
+            .. deprecated:: 0.2.0
+
+            This has been deprecated, and removed.
+
+        :raises DeprecationWarning: use the parser and tokenize workflow instead.
+        """
+        raise DeprecationWarning(
+            "This has been deprecated. Use a parser and tokenize instead"
+        )
 
 
-class ReadCard(Card):
+class Comment(ParsingNode):  # pragma: no cover
     """
-    A card for the read card that reads another input file
+    .. warning::
+        .. deprecated:: 0.2.0
+            This has been replaced by :class:`~montepy.input_parser.syntax_node.CommentNode`.
+
+    :raises DeprecationWarning: Can not be created anymore.
+    """
+
+    def __init__(self, *args, **kwargs):
+        raise DeprecationWarning(
+            "This has been deprecated and replaced by montepy.input_parser.syntax_node.CommentNode."
+        )
+
+
+class ReadInput(Input):
+    """
+    A input for the read input that reads another input file
 
     :param input_lines: the lines read straight from the input file.
     :type input_lines: list
     :param block_type: An enum showing which of three MCNP blocks this was inside of.
     :type block_type: BlockType
+    :param input_file: the wrapper for the input file this is read from.
+    :type input_file: MCNP_InputFile
+    :param lineno: the line number this input started at. 1-indexed.
+    :type lineno: int
     """
 
-    def __init__(self, input_lines, block_type):
-        super().__init__(input_lines, block_type)
-        file_finder = re.compile(r"file=(?P<file>[\S]+)", re.I)
-        for word in self.words[1:]:
-            match = file_finder.match(word)
-            if match:
-                self._file_name = match.group("file")
+    _parser = ReadParser()
+
+    def __init__(self, input_lines, block_type, input_file=None, lineno=None):
+        super().__init__(input_lines, block_type, input_file, lineno)
+        parse_result = self._parser.parse(self.tokenize(), self)
+        first_word = input_lines[0].split()[0].lower()
+        if not parse_result:
+            if first_word != "read":
+                raise ValueError("Not a valid Read Input")
+            else:
+                raise ParsingError(self, "", self._parser.log.clear_queue())
+        self._tree = parse_result
+        self._parameters = self._tree["parameters"]
 
     @property
     def file_name(self):
         """
-        The relative path to the filename specified in this read card.
+        The relative path to the filename specified in this read input.
 
         :rtype: str
         """
-        return self._file_name
+        return self._parameters["file"]["data"].value
 
     def __str__(self):
-        return f"READ CARD: Block_Type: {self.block_type}"
+        return f"READ INPUT: Block_Type: {self.block_type}"
 
     def __repr__(self):
-        return f"READ CARD: {self._block_type}: {self._words}"
+        return (
+            f"READ INPUT: {self._block_type}: {self.input_lines} File: {self.file_name}"
+        )
 
 
-class Comment(MCNP_Input):
+class ReadCard(Card):  # pragma: no cover
     """
-    Object to represent a full line comment in an MCNP problem.
+    .. warning::
 
-    This represents only ``C`` style comments and not ``$`` style comments.
+        .. deprecated:: 0.2.0
+            Punch cards are dead. Use :class:`~montepy.input_parser.mcnp_input.ReadInput` instead.
 
-    :param input_lines: the lines read straight from the input file.
-    :type input_lines: list
-    :param card_line: The line number in a parent input card where this Comment appeared
-    :type card_line: int
+    :raises DeprecatedError: punch cards are dead.
     """
 
-    def __init__(self, input_lines, card_line=0):
-        super().__init__(input_lines)
-        buff = []
-        for line in input_lines:
-            fragments = re.split(
-                rf"^\s{{0,{BLANK_SPACE_CONTINUE-1}}}C\s", line, flags=re.I
-            )
-            if len(fragments) > 1:
-                comment_line = fragments[1].rstrip()
-            else:
-                comment_line = ""
-            buff.append(comment_line)
-        self._lines = buff
-        self._cutting = False
-        self._card_line = card_line
-
-    def __str__(self):
-        return f"COMMENT: {len(self._lines)} lines"
-
-    def __repr__(self):
-        ret = "COMMENT:\n"
-        for line in self._lines:
-            ret += line + "\n"
-        return ret
-
-    @property
-    def lines(self):
-        """
-        The lines of input in this comment block.
-
-        Each entry is a string of that line in the message block.
-        The comment beginning "C " has been stripped out
-
-        :rtype: list
-        """
-        return self._lines
-
-    def format_for_mcnp_input(self, mcnp_version):
-        line_length = get_max_line_length(mcnp_version)
-        ret = []
-        for line in self.lines:
-            ret.append("C " + line[0 : line_length - 3])
-        return ret
-
-    @property
-    def is_cutting_comment(self):
-        """
-        Whether or not this Comment "cuts" an input card.
-
-        :rtype: bool
-        """
-        return self._cutting
-
-    @property
-    def card_line(self):
-        """
-        Which line of the parent card this comment came from.
-
-        :rtype: int
-        """
-        return self._card_line
-
-    def snip(self):
-        """
-        Set this Comment to be a cutting comment.
-        """
-        self._cutting = True
+    def __init__(self, *args, **kwargs):
+        raise DeprecatedError(
+            "This has been deprecated. Use montepy.input_parser.mcnp_input.ReadInput instead"
+        )
 
 
-class Message(MCNP_Input):
+class Message(ParsingNode):
     """
     Object to represent an MCNP message.
 
@@ -452,7 +394,7 @@ class Message(MCNP_Input):
         return ret
 
 
-class Title(MCNP_Input):
+class Title(ParsingNode):
     """
     Object to represent the title for an MCNP problem
 
@@ -489,3 +431,16 @@ class Title(MCNP_Input):
         line_length = 0
         line_length = get_max_line_length(mcnp_version)
         return [self.title[0 : line_length - 1]]
+
+
+def parse_card_shortcuts(*args, **kwargs):  # pragma: no cover
+    """
+    .. warning::
+        .. deprecated:: 0.2.0
+            This is no longer necessary and should not be called.
+
+    :raises DeprecationWarning: This is not needed anymore.
+    """
+    raise DeprecationWarning(
+        "This is deprecated and unnecessary. This will be automatically handled by montepy.input_parser.parser_base.MCNP_Parser."
+    )

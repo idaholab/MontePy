@@ -1,5 +1,5 @@
 from montepy import mcnp_problem
-from montepy.input_parser.constants import DEFAULT_VERSION
+from montepy.constants import DEFAULT_VERSION
 
 
 def read_input(input_file, mcnp_version=DEFAULT_VERSION):

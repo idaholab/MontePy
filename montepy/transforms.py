@@ -1,10 +1,10 @@
 from montepy.numbered_object_collection import NumberedObjectCollection
-from montepy.data_cards.transform import Transform
+from montepy.data_inputs.transform import Transform
 
 
 class Transforms(NumberedObjectCollection):
     """
-    A container of multiple :class:`montepy.data_cards.transform.Transform` instances.
+    A container of multiple :class:`~montepy.data_inputs.transform.Transform` instances.
     """
 
     def __init__(self, objects=None, problem=None):

@@ -6,28 +6,28 @@ from montepy.surfaces.cylinder_par_axis import CylinderParAxis
 from montepy.surfaces.general_plane import GeneralPlane
 
 
-def surface_builder(input_card, comments=None):
+def surface_builder(input):
     """
     Builds a Surface object for the type of Surface
 
-    :param input_card: The Card object representing the input
-    :type input_card: Card
-    :param comments: the Comment object representing the
-                    preceding comments block.
-    :type comments: Comment
+    .. versionchanged:: 0.2.0
+        The ``comments`` argument has been removed with the simpler init function.
+
+    :param input: The Input object representing the input
+    :type input: Input
     :returns: A Surface object properly parsed. If supported a sub-class of Surface will be given.
     :rtype: Surface
     """
     ST = SurfaceType
-    buffer_surface = Surface(input_card, comments)
+    buffer_surface = Surface(input)
     type_of_surface = buffer_surface.surface_type
     if type_of_surface in [ST.C_X, ST.C_Y, ST.C_Z]:
-        return CylinderParAxis(input_card, comments)
+        return CylinderParAxis(input)
     elif type_of_surface in [ST.CX, ST.CY, ST.CZ]:
-        return CylinderOnAxis(input_card, comments)
+        return CylinderOnAxis(input)
     elif type_of_surface in [ST.PX, ST.PY, ST.PZ]:
-        return AxisPlane(input_card, comments)
+        return AxisPlane(input)
     elif type_of_surface == ST.P:
-        return GeneralPlane(input_card, comments)
+        return GeneralPlane(input)
     else:
         return buffer_surface

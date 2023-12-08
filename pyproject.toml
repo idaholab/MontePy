@@ -1,0 +1,64 @@
+[project]
+name = "montepy"
+dynamic = ["version"]
+description = "A library for reading, editing, and writing MCNP input files"
+readme = "README.md"
+requires-python = ">=3.8"
+maintainers = [
+	{name = "Micah Gale", email = "micah.gale@inl.gov"}
+]
+authors = [
+	{name = "Micah Gale", email = "micah.gale@inl.gov"},
+	{name = "Travis Labossiere-Hickman", email = "Travis.LabossiereHickman@inl.gov"},
+	{name = "Brenna Carbno"}
+]
+keywords = ["MCNP", "neutronics", "imcnp", "input file", "monte carlo"]
+#license = {file="LICENSE"}
+classifiers = [
+       "Development Status :: 4 - Beta",
+       "Programming Language :: Python :: 3 :: Only",
+       "Intended Audience :: Science/Research",
+       "Intended Audience :: Developers",
+#       "License :: OSI Approved :: MIT License",
+       "Natural Language :: English",
+       "Operating System :: OS Independent",
+       "Topic :: Scientific/Engineering :: Physics",
+       "Topic :: Scientific/Engineering",
+       "Topic :: Scientific/Engineering :: Human Machine Interfaces",
+
+]
+dependencies = [
+	"numpy",
+	"sly"
+]
+
+[project.optional-dependencies]
+test = ["coverage", "pytest"]
+doc = ["sphinx", "sphinxcontrib-apidoc", "sphinx_rtd_theme"]
+
+[project.urls]
+Homepage = "https://github.com/idaholab/montepy"
+Repository = "https://github.com/idaholab/montepy.git"
+
+[build-system]
+requires = ["setuptools  >= 61.0.0"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools.dynamic]
+version = {attr = "montepy.__version__"}
+
+[tool.coverage.run]
+source = ["montepy"]
+
+[tool.coverage.report]
+precision = 2
+show_missing = true
+fail_under = 90.0
+exclude_also = [
+	"\\s+@abstractmethod\\s*",
+	"pass",
+]
+
+[tool.pytest.ini_options]
+minversion = "6.0"
+junit_logging = "all"

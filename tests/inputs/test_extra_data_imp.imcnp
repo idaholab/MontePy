@@ -1,0 +1,9 @@
+Too many importances
+1 0 -1 
+
+1 SO 10
+
+mode n p
+imp:n 10
+imp:p 0.1
+imp:n 0.1

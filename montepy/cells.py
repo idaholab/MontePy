@@ -1,6 +1,7 @@
 import montepy
 from montepy.numbered_object_collection import NumberedObjectCollection
-from montepy.errors import MalformedInputError
+from montepy.errors import *
+import warnings
 
 
 class Cells(NumberedObjectCollection):
@@ -17,22 +18,31 @@ class Cells(NumberedObjectCollection):
         super().__init__(montepy.Cell, cells, problem)
         self.__setup_blank_cell_modifiers()
 
-    def __setup_blank_cell_modifiers(self, problem=None):
-        cards_to_always_update = {"_universe", "_fill"}
-        cards_to_property = montepy.Cell._CARDS_TO_PROPERTY
-        for card_class, (attr, _) in cards_to_property.items():
-            if not hasattr(self, attr):
-                card = card_class()
-                self.__blank_modifiers.add(attr)
-                setattr(self, attr, card)
-            else:
-                card = getattr(self, attr)
-            if problem is not None:
-                card.link_to_problem(problem)
-                if attr not in self.__blank_modifiers or attr in cards_to_always_update:
-                    card.push_to_cells()
-                    card._clear_data()
-            card._mutated = False
+    def __setup_blank_cell_modifiers(self, problem=None, check_input=False):
+        inputs_to_always_update = {"_universe", "_fill"}
+        inputs_to_property = montepy.Cell._INPUTS_TO_PROPERTY
+        for card_class, (attr, _) in inputs_to_property.items():
+            try:
+                if not hasattr(self, attr):
+                    card = card_class()
+                    self.__blank_modifiers.add(attr)
+                    setattr(self, attr, card)
+                else:
+                    card = getattr(self, attr)
+                if problem is not None:
+                    card.link_to_problem(problem)
+                    if (
+                        attr not in self.__blank_modifiers
+                        or attr in inputs_to_always_update
+                    ):
+                        card.push_to_cells()
+                        card._clear_data()
+            except MalformedInputError as e:
+                if check_input:
+                    warnings.warn(f"{type(e).__name__}: {e.message}", stacklevel=3)
+                    continue
+                else:
+                    raise e
 
     def set_equal_importance(self, importance, vacuum_cells=tuple()):
         """
@@ -78,39 +88,81 @@ class Cells(NumberedObjectCollection):
             raise TypeError("allow_mcnp_volume_calc must be set to a bool")
         self._volume.is_mcnp_calculated = value
 
-    def update_pointers(self, cells, materials, surfaces, data_cards, problem):
-        cards_to_property = montepy.Cell._CARDS_TO_PROPERTY
-        cards_to_always_update = {"_universe", "_fill"}
-        cards_loaded = set()
+    def update_pointers(
+        self, cells, materials, surfaces, data_inputs, problem, check_input=False
+    ):
+        """
+        Attaches this object to the appropriate objects for surfaces and materials.
+
+        This will also update each cell with data from the data block,
+        for instance with cell volume from the data block.
+
+        :param cells: a Cells collection of the cells in the problem.
+        :type cells: Cells
+        :param materials: a materials collection of the materials in the problem
+        :type materials: Materials
+        :param surfaces: a surfaces collection of the surfaces in the problem
+        :type surfaces: Surfaces
+        :param problem: The MCNP_Problem these cells are associated with
+        :type problem: MCNP_Problem
+        :param check_input: If true, will try to find all errors with input and collect them as warnings to log.
+        :type check_input: bool
+        """
+
+        def handle_error(e):
+            if check_input:
+                warnings.warn(f"{type(e).__name__}: {e.message}", stacklevel=3)
+            else:
+                raise e
+
+        inputs_to_property = montepy.Cell._INPUTS_TO_PROPERTY
+        inputs_to_always_update = {"_universe", "_fill"}
+        inputs_loaded = set()
         # start fresh for loading cell modifiers
         for attr in self.__blank_modifiers:
             delattr(self, attr)
         self.__blank_modifiers = set()
         # make a copy of the list
-        for card in list(data_cards):
-            if type(card) in cards_to_property:
-                card_class = type(card)
-                attr, cant_repeat = cards_to_property[card_class]
-                if cant_repeat and card_class in cards_loaded:
-                    raise MalformedInputError(
-                        card,
-                        f"The card: {type(card)} is only allowed once in a problem",
-                    )
+        for input in list(data_inputs):
+            if type(input) in inputs_to_property:
+                input_class = type(input)
+                attr, cant_repeat = inputs_to_property[input_class]
+                if cant_repeat and input_class in inputs_loaded:
+                    try:
+                        raise MalformedInputError(
+                            input,
+                            f"The input: {type(input)} is only allowed once in a problem",
+                        )
+                    except MalformedInputError as e:
+                        handle_error(e)
                 if not hasattr(self, attr):
-                    setattr(self, attr, card)
-                    problem.print_in_data_block[card.class_prefix] = True
+                    setattr(self, attr, input)
+                    problem.print_in_data_block[input._class_prefix()] = True
                 else:
-                    getattr(self, attr).merge(card)
-                    data_cards.remove(card)
+                    try:
+                        getattr(self, attr).merge(input)
+                        data_inputs.remove(input)
+                    except MalformedInputError as e:
+                        handle_error(e)
                 if cant_repeat:
-                    cards_loaded.add(type(card))
+                    inputs_loaded.add(type(input))
         for cell in self:
-            cell.update_pointers(cells, materials, surfaces)
-        self.__setup_blank_cell_modifiers(problem)
+            try:
+                cell.update_pointers(cells, materials, surfaces)
+            except (
+                BrokenObjectLinkError,
+                MalformedInputError,
+                ParticleTypeNotInProblem,
+                ParticleTypeNotInCell,
+            ) as e:
+                handle_error(e)
+                continue
+        self.__setup_blank_cell_modifiers(problem, check_input)
 
-    def _run_children_format_for_mcnp(self, data_cards, mcnp_version):
+    def _run_children_format_for_mcnp(self, data_inputs, mcnp_version):
         ret = []
-        for attr, _ in montepy.Cell._CARDS_TO_PROPERTY.values():
-            if getattr(self, attr) not in data_cards:
-                ret += getattr(self, attr).format_for_mcnp_input(mcnp_version)
+        for attr, _ in montepy.Cell._INPUTS_TO_PROPERTY.values():
+            if getattr(self, attr) not in data_inputs:
+                if buf := getattr(self, attr).format_for_mcnp_input(mcnp_version):
+                    ret += buf
         return ret

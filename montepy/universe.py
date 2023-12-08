@@ -1,11 +1,12 @@
 import montepy
 from montepy.cells import Cells
-from montepy.input_parser.mcnp_input import Card
+from montepy.input_parser.mcnp_input import Input
 from montepy.input_parser.block_type import BlockType
-from montepy.numbered_mcnp_card import Numbered_MCNP_Card
+from montepy.input_parser import syntax_node
+from montepy.numbered_mcnp_object import Numbered_MCNP_Object
 
 
-class Universe(Numbered_MCNP_Card):
+class Universe(Numbered_MCNP_Object):
     """
     Class to represent an MCNP universe, but not handle the input
     directly.
@@ -15,12 +16,17 @@ class Universe(Numbered_MCNP_Card):
     """
 
     def __init__(self, number):
-        super().__init__(Card(["U"], BlockType.DATA))
         if not isinstance(number, int):
             raise TypeError("number must be int")
         if number < 0:
-            raise ValueError("Universe number must be ≥ 0")
+            raise ValueError(f"Universe number must be ≥ 0. {number} given.")
         self._number = number
+
+        class Parser:
+            def parse(self, token_gen, input):
+                return syntax_node.SyntaxNode("fake universe", {})
+
+        super().__init__(Input(["U"], BlockType.DATA), Parser())
 
     @property
     def cells(self):
@@ -73,7 +79,6 @@ class Universe(Numbered_MCNP_Card):
             raise ValueError("Universe number must be > 0")
         if self._problem:
             self._problem.universes.check_number(number)
-        self._mutated = True
         self._number = number
 
     @property
@@ -83,12 +88,8 @@ class Universe(Numbered_MCNP_Card):
         """
         return self._number
 
-    def format_for_mcnp_input(self, mcnp_version):
+    def _update_values(self):
         pass
-
-    @property
-    def allowed_keywords(self):
-        return set()
 
     def __str__(self):
         return f"Universe({self.number})"
