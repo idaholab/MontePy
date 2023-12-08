@@ -49,8 +49,11 @@ repository is located at ``~/dev/montepy``, and your project is located at ``~/f
 #. Clone this repository: ``git clone https://github.com/idaholab/montepy.git`` 
 #. Enter the repository: ``cd montepy``
 #. Checkout the specific version you want. These are tagged with git tags
+
     #. You can list all tags with ``git tag``
+
     #. You can then checkout that tag: ``git checkout <tag>``
+
 #. Install the dependent requirements: ``pip install -r requirements/common.txt``
 #. Move to your project folder: ``cd ~/foo/bar``
 #. Create a symbolic link in the project folder to the repository: ``ln -s ~/dev/montepy/montepy montepy``
