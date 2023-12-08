@@ -4,38 +4,8 @@ A python library to read, edit, and write MCNP input files.
 
 ## Installing
 
+See the [Installing section in the user guide](https://experiment_analysis_all.pages.hpc.inl.gov/software/montepy/starting.html#installing).
 
-### System Wide (for the current user).
-
->>>
-Note: If you are planning to use this in a jupyter notebook on an HPC, 
-the HPC may use modules for python, which may make it so the installed MontePy package doesn't show up in the jupyter environment.
-In this case the easiest way to deal with this is to open a teminal inside of `jupyter lab` and to install the package there.
->>>
-
-1. Install it from [PyPI](https://pypi.org) by running `pip install --user montepy`.
-
-### Install specific version for a project
-
-The best way maybe to setup a project-specific [conda](https://docs.conda.io/projects/conda/en/latest/user-guide/tasks/manage-environments.html), 
-[Mamba](https://mamba.readthedocs.io/en/latest/user_guide/concepts.html), 
-a [venv](https://docs.python.org/3/library/venv.html) environment.
-The steps for installing inside one of those environments are the same as the previous steps.
-
-Another option is to clone the repository and to use symbolic-links. In this scenario we'll assume that your local
-repository is located at `~/dev/montepy`, and your project is located at `~/foo/bar`. 
-
-1. Move to the repository parent folder: `cd ~/dev`
-1. Clone this repository: `git clone TODO` 
-1. Enter the repository: `cd montepy`
-1. Checkout the specific version you want. These are tagged with git tags
-    1. You can list all tags with `git tag`
-    1. You can then checkout that tag: `git checkout <tag>`
-1. Install the dependent requirements: `pip install -r requirements/common.txt`
-1. Move to your project folder: `cd ~/foo/bar`
-1. Create a symbolic link in the project folder to the repository: `ln -s ~/dev/montepy/montepy montepy`
-
-Now when you run a python script in that folder (*and only in that folder*) `import montepy` will use the specific version you want. 
 
 ## User Documentation
 
