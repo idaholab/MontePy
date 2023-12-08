@@ -1,6 +1,6 @@
 [project]
 name = "montepy"
-version = "0.2.0.alpha9"
+dynamic = ["version"]
 description = "A library for reading, editing, and writing MCNP input files"
 readme = "README.md"
 requires-python = ">=3.8"
@@ -41,8 +41,11 @@ Homepage = "https://github.com/idaholab/montepy"
 Repository = "https://github.com/idaholab/montepy.git"
 
 [build-system]
-requires = ["setuptools  >= 40.6.0"]
+requires = ["setuptools  >= 61.0.0"]
 build-backend = "setuptools.build_meta"
+
+[tool.setuptools.dynamic]
+version = {attr = "montepy.__version__"}
 
 [tool.coverage.run]
 source = ["montepy"]
