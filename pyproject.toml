@@ -46,6 +46,9 @@ Repository = "https://github.com/idaholab/montepy.git"
 requires = ["setuptools  >= 61.0.0"]
 build-backend = "setuptools.build_meta"
 
+[tool.setuptools]
+py-modules=["montepy"]
+
 [tool.setuptools.dynamic]
 version = {attr = "montepy.__version__"}
 
