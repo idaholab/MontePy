@@ -15,15 +15,17 @@ install:
   stage: build
   script:
     - if [[ -d dist ]]; then rm -r dist ; fi; 
-    - echo "setting up conda"
-    - conda create -y -n experiment_analysis_mcnpy python==3.8.0
+      #- echo "setting up conda"
+      #- conda create -y -n experiment_analysis_mcnpy python==3.8.0
     - echo "Installing dependencies"
     - which python
     - which pip
     - pip install -r requirements/dev.txt
+    - pip uninstall -y montepy
     - python -m build --sdist --wheel
-    - pip install . --force-reinstall
-    - pip install --user dist/*.whl --force-reinstall
+    - pip install . 
+    - pip uninstall montepy
+    - pip install --user dist/*.whl 
       # test the extras installation
     - pip install --user montepy[test]
     - pip install --user montepy[doc]
