@@ -1,7 +1,7 @@
 image: python:latest
 
 include: 
-  - install
+  - templates/install.yml
 
 before_script:
   - python --version
@@ -18,7 +18,7 @@ install:
   stage: build
   extends: .install
   variables:
-    PYTHON_VER: 3.8
+    PYTHON_VER: "3.8"
 
 
 
