@@ -8,6 +8,10 @@ variables:
   PYTHON_VER: "3.8"
   CONDA_BASE_NAME: experiment_analysis_montepy
 
+default:
+  artifacts:
+    expire_in: 7 day
+
 after_script:
   - export PATH=$(echo "$PATH" | sed -e 's/:\/data\/gitlab-runner\/.conda\/envs\/experiment_analysis_mcnpy\/$//')
   - echo $PATH

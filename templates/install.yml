@@ -27,3 +27,6 @@ variables:
     - pip install --user montepy[test]
     - pip install --user montepy[doc]
     - pip freeze
+  artifacts:
+    paths:
+      - dist/
