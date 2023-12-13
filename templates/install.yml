@@ -28,6 +28,7 @@ variables:
     - pip install --user montepy[doc]
     - pip freeze
   artifacts:
+    name: "packages"
     paths:
       - dist/
      expire_in: 7 day
