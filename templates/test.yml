@@ -12,4 +12,5 @@ variables:
   artifacts:
     reports:
       junit: test_report.xml
+     expire_in: 1 day
 
