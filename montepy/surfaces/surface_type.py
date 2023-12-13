@@ -18,6 +18,9 @@ class SurfaceType(str, Enum):
         obj.description = description
         return obj
 
+    def __str__(self):
+        return self.value
+
     # planes
     P = ("P", "general plane")
     PX = ("PX", "plane normal to x-axis")
