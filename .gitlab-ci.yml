@@ -14,13 +14,35 @@ after_script:
   - echo $PATH
   - conda deactivate
 
-install:
+install-3.8:
   stage: build
   extends: .install
   variables:
     PYTHON_VER: "3.8"
 
+install-3.9:
+  stage: build
+  extends: .install
+  variables:
+    PYTHON_VER: "3.9"
 
+install-3.8:
+  stage: build
+  extends: .install
+  variables:
+    PYTHON_VER: "3.10"
+
+install-3.11:
+  stage: build
+  extends: .install
+  variables:
+    PYTHON_VER: "3.11"
+
+install-3.12:
+  stage: build
+  extends: .install
+  variables:
+    PYTHON_VER: "3.12"
 
 unit_test:
   stage: test
