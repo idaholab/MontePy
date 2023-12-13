@@ -31,7 +31,7 @@ install-3.9:
   variables:
     PYTHON_VER: "3.9"
 
-install-3.8:
+install-3.10:
   stage: build
   extends: .install
   variables:
