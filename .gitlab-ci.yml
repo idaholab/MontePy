@@ -67,11 +67,7 @@ coverage_unit_test:
          coverage_format: cobertura
          path: coverage.xml
 
-unit_test-3.8:
-  stage: test
-  extends: .test_no_cover
-  variables:
-    PYTHON_VER: "3.8"
+# skip 3.8 because of coverage test
 
 unit_test-3.9:
   stage: test
