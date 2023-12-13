@@ -2,12 +2,17 @@ image: python:latest
 
 include: 
   - templates/install.yml
+  - templates/test.yml
+
+variables:
+  PYTHON_VER: "3.8"
+  CONDA_BASE_NAME: experiment_analysis_montepy
 
 before_script:
   - python --version
   - export PATH="~/.local/bin/:/data/gitlab-runner/.conda/envs/experiment_analysis_mcnpy/bin:$PATH"
   - echo $PATH
-  #- conda activate experiment_analysis_mcnpy
+  - conda activate $CONDA_BASE_NAME-3.8
 
 after_script:
   - export PATH=$(echo "$PATH" | sed -e 's/:\/data\/gitlab-runner\/.conda\/envs\/experiment_analysis_mcnpy\/$//')
@@ -48,6 +53,7 @@ unit_test:
   stage: test
   coverage: '/TOTAL.+ ([0-9\.]{1,5}%)/'
   script:
+    - conda activate 
     - echo "Executing unit tests"
     - which python
     - pip freeze
@@ -60,6 +66,12 @@ unit_test:
       coverage_report:
          coverage_format: cobertura
          path: coverage.xml
+
+test-3.12:
+  stage: test
+  extends: .test_no_cover
+  variables:
+    PYTHON_VER: "3.12"
 
 doc_test:
    stage: test

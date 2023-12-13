@@ -1,0 +1,10 @@
+variables:
+  PYTHON_VER: "3.8"
+  CONDA_BASE_NAME: experiment_analysis_montepy
+
+.test_no_cover:
+  script:
+    - conda activate $CONDA_BASE_NAME-3.8
+    - which python
+    - pip freeze
+    - python -m pytest
