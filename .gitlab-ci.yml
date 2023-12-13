@@ -70,6 +70,7 @@ unit_test-3.9:
   extends: .test_no_cover
   variables:
     PYTHON_VER: "3.9"
+  needs: ["install-3.9"]
 
 unit_test-3.10:
   stage: test

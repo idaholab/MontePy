@@ -8,4 +8,8 @@ variables:
     - export PATH="~/.local/bin/:/data/gitlab-runner/.conda/envs/$CONDA_BASE_NAME-$PYTHON_VER/bin:$PATH"
     - which python
     - pip freeze
-    - python -m pytest
+    - python -m pytest --junitxml=test_report.xml
+  artifacts:
+    reports:
+      junit: test_report.xml
+
