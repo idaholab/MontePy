@@ -7,14 +7,15 @@ variables:
     - if [[ -d dist ]]; then rm -r dist ; fi; 
     - if [[ `conda env list` == *"$CONDA_BASE_NAME-$PYTHON_VER"* ]]; then
     - else
-      #- conda env create -n $CONDA_BASE_NAME-$PYTHON_VER -y python==$PYTHON_VER
     - echo $CONDA_BASE_NAME-$PYTHON_VER -y python==$PYTHON_VER
     - fi
+    - conda activate $CONDA_BASE_NAME-$PYTHON_VER
     - echo "Installing dependencies"
     - which python
     - which pip
-    - pip install -r requirements/dev.txt
     - pip uninstall -y montepy
+    # install base requirements first
+    - pip install -r requirements/common.txt
     - python -m build --sdist --wheel
     - pip install . 
     - pip uninstall -y montepy
