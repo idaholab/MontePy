@@ -62,6 +62,7 @@ coverage_unit_test:
       coverage_report:
          coverage_format: cobertura
          path: coverage.xml
+  needs: ["install-3.8"]
 
 # skip 3.8 because of coverage test
 
@@ -77,18 +78,21 @@ unit_test-3.10:
   extends: .test_no_cover
   variables:
     PYTHON_VER: "3.10"
+  needs: ["install-3.10"]
 
 unit_test-3.11:
   stage: test
   extends: .test_no_cover
   variables:
     PYTHON_VER: "3.11"
+  needs: ["install-3.11"]
 
 unit_test-3.12:
   stage: test
   extends: .test_no_cover
   variables:
     PYTHON_VER: "3.12"
+  needs: ["install-3.12"]
 
 doc_test:
    stage: test
@@ -104,6 +108,7 @@ doc_test:
      paths: 
        - html
      expire_in: 1 day
+  needs: ["install-3.8"]
 
 format_test:
   stage: test
@@ -113,6 +118,7 @@ format_test:
     - echo "Testing if anything is unformatted"
     - echo "If error occurs changes were not formatted using black"
     - black --check montepy/ tests/
+  needs: ["install-3.8"]
 
 
 
@@ -131,6 +137,7 @@ pages:
   artifacts:
     paths:
       - public
+  needs: ["install-3.8"]
   only:
     - master
     - main
