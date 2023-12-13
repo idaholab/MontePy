@@ -8,12 +8,6 @@ variables:
   PYTHON_VER: "3.8"
   CONDA_BASE_NAME: experiment_analysis_montepy
 
-before_script:
-  - python --version
-    #- export PATH="~/.local/bin/:/data/gitlab-runner/.conda/envs/experiment_analysis_mcnpy/bin:$PATH"
-  - echo $PATH
-    #- conda activate $CONDA_BASE_NAME-3.8
-
 after_script:
   - export PATH=$(echo "$PATH" | sed -e 's/:\/data\/gitlab-runner\/.conda\/envs\/experiment_analysis_mcnpy\/$//')
   - echo $PATH
@@ -54,6 +48,8 @@ coverage_unit_test:
   coverage: '/TOTAL.+ ([0-9\.]{1,5}%)/'
   script:
     - conda activate $CONDA_BASE_NAME-$PYTHON_VER
+    - export PATH="~/.local/bin/:/data/gitlab-runner/.conda/envs/$CONDA_BASE_NAME-$PYTHON_VER/bin:$PATH"
+    - echo $PATH
     - echo "Executing unit tests"
     - which python
     - pip freeze
