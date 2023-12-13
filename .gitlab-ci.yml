@@ -49,11 +49,11 @@ install-3.12:
   variables:
     PYTHON_VER: "3.12"
 
-unit_test:
+coverage_unit_test:
   stage: test
   coverage: '/TOTAL.+ ([0-9\.]{1,5}%)/'
   script:
-    - conda activate 
+    - conda activate $CONDA_BASE_NAME-$PYTHON_VER
     - echo "Executing unit tests"
     - which python
     - pip freeze
@@ -67,7 +67,31 @@ unit_test:
          coverage_format: cobertura
          path: coverage.xml
 
-test-3.12:
+unit_test-3.8:
+  stage: test
+  extends: .test_no_cover
+  variables:
+    PYTHON_VER: "3.8"
+
+unit_test-3.9:
+  stage: test
+  extends: .test_no_cover
+  variables:
+    PYTHON_VER: "3.9"
+
+unit_test-3.10:
+  stage: test
+  extends: .test_no_cover
+  variables:
+    PYTHON_VER: "3.10"
+
+unit_test-3.11:
+  stage: test
+  extends: .test_no_cover
+  variables:
+    PYTHON_VER: "3.11"
+
+unit_test-3.12:
   stage: test
   extends: .test_no_cover
   variables:
@@ -76,6 +100,7 @@ test-3.12:
 doc_test:
    stage: test
    script:
+      - conda activate $CONDA_BASE_NAME-$PYTHON_VER
       - echo "Executing Sphinx build to detect syntax errors"
       - sphinx-build doc/source/ doc/build/ -W --keep-going -E
       - sphinx-build -b html doc/source/ doc/build/html
@@ -89,20 +114,17 @@ doc_test:
 format_test:
   stage: test
   script: 
+    - conda activate $CONDA_BASE_NAME-$PYTHON_VER
     - echo "Testing if anything is unformatted"
     - echo "If error occurs changes were not formatted using black"
     - black --check montepy/ tests/
 
 
-deploy1:
-  stage: deploy
-  script:
-    - echo "No deploy required for the moment"
-
 
 pages:
   stage: deploy
   script:
+    - conda activate $CONDA_BASE_NAME-$PYTHON_VER
     - echo "Building documentation with Sphinx."
     - cd doc/
     - make html
