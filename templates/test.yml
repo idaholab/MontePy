@@ -4,7 +4,7 @@ variables:
 
 .test_no_cover:
   script:
-    - conda activate $CONDA_BASE_NAME-3.8
+    - conda activate $CONDA_BASE_NAME-$PYTHON_VER
     - which python
     - pip freeze
     - python -m pytest
