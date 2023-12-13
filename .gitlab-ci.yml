@@ -103,12 +103,12 @@ doc_test:
       - sphinx-build doc/source/ doc/build/ -W --keep-going -E
       - sphinx-build -b html doc/source/ doc/build/html
       - mv doc/build/html html
+   needs: ["install-3.8"]
    artifacts:
      expose_as: 'Updated Documentation'
      paths: 
        - html
      expire_in: 1 day
-  needs: ["install-3.8"]
 
 format_test:
   stage: test
