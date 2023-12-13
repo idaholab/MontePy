@@ -1,12 +1,14 @@
 variables:
   PYTHON_VER: "3.8"
+  CONDA_BASE_NAME: experiment_analysis_montepy
 
 .install:
   script:
     - if [[ -d dist ]]; then rm -r dist ; fi; 
-    - if [[ `conda env list` = "*experiment_analysis_mcnpy*" ]]; then
+    - if [[ `conda env list` == *"$CONDA_BASE_NAME-$PYTHON_VER"* ]]; then
     - else
-    - conda env create -n experiment_analysis_mcnpy
+      #- conda env create -n $CONDA_BASE_NAME-$PYTHON_VER -y python==$PYTHON_VER
+    - echo $CONDA_BASE_NAME-$PYTHON_VER -y python==$PYTHON_VER
     - fi
     - echo "Installing dependencies"
     - which python
