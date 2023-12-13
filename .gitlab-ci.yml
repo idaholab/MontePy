@@ -1,10 +1,13 @@
 image: python:latest
 
+include: 
+  - install
+
 before_script:
   - python --version
   - export PATH="~/.local/bin/:/data/gitlab-runner/.conda/envs/experiment_analysis_mcnpy/bin:$PATH"
   - echo $PATH
-  - conda activate experiment_analysis_mcnpy
+  #- conda activate experiment_analysis_mcnpy
 
 after_script:
   - export PATH=$(echo "$PATH" | sed -e 's/:\/data\/gitlab-runner\/.conda\/envs\/experiment_analysis_mcnpy\/$//')
@@ -13,21 +16,9 @@ after_script:
 
 install:
   stage: build
-  script:
-    - if [[ -d dist ]]; then rm -r dist ; fi; 
-    - echo "Installing dependencies"
-    - which python
-    - which pip
-    - pip install -r requirements/dev.txt
-    - pip uninstall -y montepy
-    - python -m build --sdist --wheel
-    - pip install . 
-    - pip uninstall -y montepy
-    - pip install --user dist/*.whl 
-      # test the extras installation
-    - pip install --user montepy[test]
-    - pip install --user montepy[doc]
-    - pip freeze
+  extends: .install
+  variables:
+    PYTHON_VER: 3.8
 
 
 
