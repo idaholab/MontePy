@@ -97,6 +97,7 @@ doc_test:
    stage: test
    script:
       - conda activate $CONDA_BASE_NAME-$PYTHON_VER
+      - export PATH="~/.local/bin/:/data/gitlab-runner/.conda/envs/$CONDA_BASE_NAME-$PYTHON_VER/bin:$PATH"
       - echo "Executing Sphinx build to detect syntax errors"
       - sphinx-build doc/source/ doc/build/ -W --keep-going -E
       - sphinx-build -b html doc/source/ doc/build/html
@@ -111,6 +112,7 @@ format_test:
   stage: test
   script: 
     - conda activate $CONDA_BASE_NAME-$PYTHON_VER
+    - export PATH="~/.local/bin/:/data/gitlab-runner/.conda/envs/$CONDA_BASE_NAME-$PYTHON_VER/bin:$PATH"
     - echo "Testing if anything is unformatted"
     - echo "If error occurs changes were not formatted using black"
     - black --check montepy/ tests/
@@ -121,6 +123,7 @@ pages:
   stage: deploy
   script:
     - conda activate $CONDA_BASE_NAME-$PYTHON_VER
+    - export PATH="~/.local/bin/:/data/gitlab-runner/.conda/envs/$CONDA_BASE_NAME-$PYTHON_VER/bin:$PATH"
     - echo "Building documentation with Sphinx."
     - cd doc/
     - make html

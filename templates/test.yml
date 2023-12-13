@@ -5,6 +5,7 @@ variables:
 .test_no_cover:
   script:
     - conda activate $CONDA_BASE_NAME-$PYTHON_VER
+    - export PATH="~/.local/bin/:/data/gitlab-runner/.conda/envs/$CONDA_BASE_NAME-$PYTHON_VER/bin:$PATH"
     - which python
     - pip freeze
     - python -m pytest
