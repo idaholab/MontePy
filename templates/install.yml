@@ -14,6 +14,11 @@ variables:
     - which python
     - which pip
     - pip uninstall -y montepy
+    # make alternate package to confuse the builder.
+    - if [[ -d fake_py ]]; then mkdir fake_py; fi;
+    - if [[ -f fake_py/__init__.py ]]; then
+    - touch fake_py/__init__.py
+    - fi
     # install base requirements first
     - pip install -r requirements/common.txt
     # needed to build. Users shouldn't be doing this on their own.
