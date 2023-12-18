@@ -153,4 +153,4 @@ class EdgeCaseTests(TestCase):
             output = cell.format_for_mcnp_input((6, 2, 0))
         print(output)
         parts = output[0].split()
-        self.assertAlmostEqual(float(parts[2]), 5.0)
+        self.assertAlmostEqual(float(parts[2]), -5.0)
