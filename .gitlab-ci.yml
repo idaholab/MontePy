@@ -17,6 +17,14 @@ after_script:
   - echo $PATH
   - conda deactivate
 
+.job_template: &install_config
+  stage: build
+  extends: .install
+  when: delayed
+  start_in: 1 minutes
+  variables:
+    PYTHON_VER: "3.8"
+
 install-3.8:
   stage: build
   extends: .install
@@ -24,37 +32,25 @@ install-3.8:
     PYTHON_VER: "3.8"
 
 install-3.9:
-  stage: build
-  extends: .install
+  <<: *install-boiler 
   variables:
     PYTHON_VER: "3.9"
-  when: delayed
-  start_in: 1 minutes
 
 
 install-3.10:
-  stage: build
-  extends: .install
+  <<: *install-boiler 
   variables:
     PYTHON_VER: "3.10"
-  when: delayed
-  start_in: 1 minutes
 
 install-3.11:
-  stage: build
-  extends: .install
+  <<: *install-boiler 
   variables:
     PYTHON_VER: "3.11"
-  when: delayed
-  start_in: 1 minutes
 
 install-3.12:
-  stage: build
-  extends: .install
+  <<: *install-boiler 
   variables:
     PYTHON_VER: "3.12"
-  when: delayed
-  start_in: 1 minutes
 
 coverage_unit_test:
   stage: test
@@ -79,41 +75,32 @@ coverage_unit_test:
 
 # skip 3.8 because of coverage test
 
-unit_test-3.9:
+.job_template: &test_config
   stage: test
   extends: .test_no_cover
+  needs: ["install-$PYTHON_VER"]
+  when: delayed
+  start_in: 1 minutes
+
+unit_test-3.9:
+  <<: *test_config
   variables:
     PYTHON_VER: "3.9"
-  needs: ["install-3.9"]
-  when: delayed
-  start_in: 1 minutes
 
 unit_test-3.10:
-  stage: test
-  extends: .test_no_cover
+  <<: *test_config
   variables:
     PYTHON_VER: "3.10"
-  needs: ["install-3.10"]
-  when: delayed
-  start_in: 1 minutes
 
 unit_test-3.11:
-  stage: test
-  extends: .test_no_cover
+  <<: *test_config
   variables:
     PYTHON_VER: "3.11"
-  needs: ["install-3.11"]
-  when: delayed
-  start_in: 1 minutes
 
 unit_test-3.12:
-  stage: test
-  extends: .test_no_cover
+  <<: *test_config
   variables:
     PYTHON_VER: "3.12"
-  needs: ["install-3.12"]
-  when: delayed
-  start_in: 1 minutes
 
 doc_test:
    stage: test
