@@ -76,7 +76,6 @@ coverage_unit_test:
 # skip 3.8 because of coverage test
 
 .job_template: &test_config
-  needs: ["coverage_unit_test"]  
   stage: test
   extends: .test_no_cover
 
@@ -84,25 +83,25 @@ unit_test-3.9:
   <<: *test_config
   variables:
     PYTHON_VER: "3.9"
-  needs: ["install-3.9"]
+  needs: ["coverage_unit_test","install-3.9"]
 
 unit_test-3.10:
   <<: *test_config
   variables:
     PYTHON_VER: "3.10"
-  needs: ["install-3.10"]
+  needs: ["coverage_unit_test","install-3.10"]
 
 unit_test-3.11:
   <<: *test_config
   variables:
     PYTHON_VER: "3.11"
-  needs: ["install-3.11"]
+  needs: ["coverage_unit_test","install-3.11"]
 
 unit_test-3.12:
   <<: *test_config
   variables:
     PYTHON_VER: "3.12"
-  needs: ["install-3.12"]
+  needs: ["coverage_unit_test","install-3.12"]
 
 doc_test:
    stage: test
