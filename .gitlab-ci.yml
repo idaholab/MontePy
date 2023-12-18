@@ -76,8 +76,8 @@ coverage_unit_test:
 # skip 3.8 because of coverage test
 
 .job_template: &test_config
-needs: ["coverage_unit_test"]  
-stage: test
+  needs: ["coverage_unit_test"]  
+  stage: test
   extends: .test_no_cover
 
 unit_test-3.9:
