@@ -1034,16 +1034,8 @@ class ValueNode(SyntaxNodeBase):
         if value is None or self.value is not None or self._never_pad:
             return
         # if not followed by a trailing space
-        if self.padding is None or (
-            self.padding is not None and not self.padding.is_space(0)
-        ):
-            if self.padding is None:
-                self.padding = PaddingNode(" ")
-            else:
-                old_pad = self.padding
-                self.padding = PaddingNode(" ")
-                for node in old_pad.nodes:
-                    self.padding.append(node)
+        if self.padding is None:
+            self.padding = PaddingNode(" ")
 
     def __eq__(self, other):
         if not isinstance(other, (type(self), str, int, float)):
