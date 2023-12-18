@@ -17,7 +17,7 @@ after_script:
   - echo $PATH
   - conda deactivate
 
-.job_template: &install_config
+.job_template: &install-boiler
   stage: build
   extends: .install
   when: delayed
@@ -78,7 +78,6 @@ coverage_unit_test:
 .job_template: &test_config
   stage: test
   extends: .test_no_cover
-  needs: ["install-$PYTHON_VER"]
   when: delayed
   start_in: 1 minutes
 
@@ -86,21 +85,25 @@ unit_test-3.9:
   <<: *test_config
   variables:
     PYTHON_VER: "3.9"
+  needs: ["install-3.9"]
 
 unit_test-3.10:
   <<: *test_config
   variables:
     PYTHON_VER: "3.10"
+  needs: ["install-3.10"]
 
 unit_test-3.11:
   <<: *test_config
   variables:
     PYTHON_VER: "3.11"
+  needs: ["install-3.11"]
 
 unit_test-3.12:
   <<: *test_config
   variables:
     PYTHON_VER: "3.12"
+  needs: ["install-3.12"]
 
 doc_test:
    stage: test
