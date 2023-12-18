@@ -154,3 +154,6 @@ class EdgeCaseTests(TestCase):
         print(output)
         parts = output[0].split()
         self.assertAlmostEqual(float(parts[2]), -5.0)
+
+    def test_fail(self):
+        assert False
