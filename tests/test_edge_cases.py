@@ -135,3 +135,22 @@ class EdgeCaseTests(TestCase):
             in_strs, montepy.input_parser.block_type.BlockType.CELL
         )
         material = montepy.data_inputs.material.Material(input)
+
+    def test_void_cell_set_material(self):
+        in_strs = ["2 0 -63 -62 64  imp:n=1 $ COBALT_TARGET_PELLET2"]
+        input = montepy.input_parser.mcnp_input.Input(
+            in_strs, montepy.input_parser.block_type.BlockType.CELL
+        )
+        cell = montepy.Cell(input)
+        in_strs = ["m171 1001.80c 1E-24"]
+        input = montepy.input_parser.mcnp_input.Input(
+            in_strs, montepy.input_parser.block_type.BlockType.CELL
+        )
+        material = montepy.data_inputs.material.Material(input)
+        cell.material = material
+        cell.mass_density = 5.0
+        with self.assertWarns(montepy.errors.LineExpansionWarning):
+            output = cell.format_for_mcnp_input((6, 2, 0))
+        print(output)
+        parts = output[0].split()
+        self.assertAlmostEqual(float(parts[2]), 5.0)
