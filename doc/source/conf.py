@@ -25,7 +25,7 @@ copyright = "2021 – 2023, Battelle Energy Alliance LLC."
 author = "Micah D. Gale (@galemica), Travis J. Labossiere-Hickman (@tjlaboss)"
 
 
-release = importlib.metadata.version('montepy')
+release = importlib.metadata.version("montepy")
 # -- General configuration ---------------------------------------------------
 
 # Add any Sphinx extension module names here, as strings. They can be
