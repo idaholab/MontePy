@@ -411,15 +411,16 @@ class MCNP_Problem:
             for objects, terminate in objects_list:
                 for obj in objects:
                     lines = obj.format_for_mcnp_input(self.mcnp_version)
-                    if warning_catch and not getattr(
-                        warning_catch[-1], "handled", None
-                    ):
-                        warning = warning_catch[-1]
-                        warning.lineno = fh.lineno
-                        warning.path = fh.name
-                        warning.obj = obj
-                        warning.lines = lines
-                        warning.handled = True
+                    if warning_catch:
+                        # handle ALL new warnings
+                        for warning in warning_catch[::-1]:
+                            if getattr(warning, "handled", None):
+                                break
+                            warning.lineno = fh.lineno
+                            warning.path = fh.name
+                            warning.obj = obj
+                            warning.lines = lines
+                            warning.handled = True
                     for line in lines:
                         fh.write(line + "\n")
                 if terminate:
