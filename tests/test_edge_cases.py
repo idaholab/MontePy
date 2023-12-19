@@ -148,9 +148,11 @@ class EdgeCaseTests(TestCase):
         )
         material = montepy.data_inputs.material.Material(input)
         cell.material = material
-        cell.mass_density = 5.0
-        with self.assertWarns(montepy.errors.LineExpansionWarning):
-            output = cell.format_for_mcnp_input((6, 2, 0))
-        print(output)
-        parts = output[0].split()
-        self.assertAlmostEqual(float(parts[2]), -5.0)
+        for dens_value in {5.0, 1e-23, 1e24}:
+            print(dens_value)
+            cell.mass_density = dens_value
+            with self.assertWarns(montepy.errors.LineExpansionWarning):
+                output = cell.format_for_mcnp_input((6, 2, 0))
+            print(output)
+            parts = output[0].split()
+        self.assertAlmostEqual(float(parts[2]), -dens_value)
