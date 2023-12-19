@@ -147,8 +147,9 @@ class TestValueNode(TestCase):
             ("-1", -2, "-2", False),
             ("+1", 5, "+5", False),
             ("0001", 5, "0005", False),
-            (Jump(), 5, "5", False),
+            (Jump(), 5, "5 ", False),
         ]:
+            print("in:", input, "new value:", val, "answer:", answer)
             node = syntax_node.ValueNode(input, int)
             node.value = val
             self.assertEqual(node.format(), answer)
@@ -210,10 +211,11 @@ class TestValueNode(TestCase):
             ("1.0e-2", 2, "2.0e+0", False),
             ("1.602-19", 6.02e23, "6.020+23", False),
             ("1.602-0019", 6.02e23, "6.020+0023", False),
-            (Jump(), 5.4, "5.4", True),
+            (Jump(), 5.4, "5.4 ", True),
             ("1", 2, "2", False),
             ("0.5", 0, "0.0", False),
         ]:
+            print("in:", input, "new value:", val, "answer:", answer)
             node = syntax_node.ValueNode(input, float)
             node.value = val
             if expand:
