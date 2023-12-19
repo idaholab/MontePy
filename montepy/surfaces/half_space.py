@@ -590,7 +590,7 @@ class UnitHalfSpace(HalfSpace):
                 num = self.divider
             else:
                 num = self.divider.number
-            node = ValueNode(None, int)
+            node = ValueNode(None, int, never_pad=True)
             node.value = num
             node.is_negatable_identifier = True
             node.is_negative = not self.side

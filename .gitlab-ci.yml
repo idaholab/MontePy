@@ -1,40 +1,64 @@
 image: python:latest
 
-before_script:
-  - python --version
-  - export PATH="~/.local/bin/:/data/gitlab-runner/.conda/envs/experiment_analysis_mcnpy/bin:$PATH"
-  - echo $PATH
-  - conda activate experiment_analysis_mcnpy
+include: 
+  - templates/install.yml
+  - templates/test.yml
+
+variables:
+  PYTHON_VER: "3.8"
+  CONDA_BASE_NAME: experiment_analysis_montepy
+
+default:
+  artifacts:
+    expire_in: 7 day
 
 after_script:
   - export PATH=$(echo "$PATH" | sed -e 's/:\/data\/gitlab-runner\/.conda\/envs\/experiment_analysis_mcnpy\/$//')
   - echo $PATH
   - conda deactivate
 
-install:
+.job_template: &install-boiler
   stage: build
-  script:
-    - if [[ -d dist ]]; then rm -r dist ; fi; 
-    - echo "setting up conda"
-    - conda create -y -n experiment_analysis_mcnpy python==3.8.0
-    - echo "Installing dependencies"
-    - which python
-    - which pip
-    - pip install -r requirements/dev.txt
-    - python -m build --sdist --wheel
-    - pip install . --force-reinstall
-    - pip install --user dist/*.whl --force-reinstall
-      # test the extras installation
-    - pip install --user montepy[test]
-    - pip install --user montepy[doc]
-    - pip freeze
+  extends: .install
+  when: delayed
+  start_in: 1 minutes
+  variables:
+    PYTHON_VER: "3.8"
+
+install-3.8:
+  stage: build
+  extends: .install
+  variables:
+    PYTHON_VER: "3.8"
+
+install-3.9:
+  <<: *install-boiler 
+  variables:
+    PYTHON_VER: "3.9"
 
 
+install-3.10:
+  <<: *install-boiler 
+  variables:
+    PYTHON_VER: "3.10"
 
-unit_test:
+install-3.11:
+  <<: *install-boiler 
+  variables:
+    PYTHON_VER: "3.11"
+
+install-3.12:
+  <<: *install-boiler 
+  variables:
+    PYTHON_VER: "3.12"
+
+coverage_unit_test:
   stage: test
   coverage: '/TOTAL.+ ([0-9\.]{1,5}%)/'
   script:
+    - conda activate $CONDA_BASE_NAME-$PYTHON_VER
+    - export PATH="~/.local/bin/:/data/gitlab-runner/.conda/envs/$CONDA_BASE_NAME-$PYTHON_VER/bin:$PATH"
+    - echo $PATH
     - echo "Executing unit tests"
     - which python
     - pip freeze
@@ -47,14 +71,48 @@ unit_test:
       coverage_report:
          coverage_format: cobertura
          path: coverage.xml
+  needs: ["install-3.8"]
+
+# skip 3.8 because of coverage test
+
+.job_template: &test_config
+  stage: test
+  extends: .test_no_cover
+
+unit_test-3.9:
+  <<: *test_config
+  variables:
+    PYTHON_VER: "3.9"
+  needs: ["coverage_unit_test","install-3.9"]
+
+unit_test-3.10:
+  <<: *test_config
+  variables:
+    PYTHON_VER: "3.10"
+  needs: ["coverage_unit_test","install-3.10"]
+
+unit_test-3.11:
+  <<: *test_config
+  variables:
+    PYTHON_VER: "3.11"
+  needs: ["coverage_unit_test","install-3.11"]
+
+unit_test-3.12:
+  <<: *test_config
+  variables:
+    PYTHON_VER: "3.12"
+  needs: ["coverage_unit_test","install-3.12"]
 
 doc_test:
    stage: test
    script:
+      - conda activate $CONDA_BASE_NAME-$PYTHON_VER
+      - export PATH="~/.local/bin/:/data/gitlab-runner/.conda/envs/$CONDA_BASE_NAME-$PYTHON_VER/bin:$PATH"
       - echo "Executing Sphinx build to detect syntax errors"
       - sphinx-build doc/source/ doc/build/ -W --keep-going -E
       - sphinx-build -b html doc/source/ doc/build/html
       - mv doc/build/html html
+   needs: ["install-3.8"]
    artifacts:
      expose_as: 'Updated Documentation'
      paths: 
@@ -64,20 +122,20 @@ doc_test:
 format_test:
   stage: test
   script: 
+    - conda activate $CONDA_BASE_NAME-$PYTHON_VER
+    - export PATH="~/.local/bin/:/data/gitlab-runner/.conda/envs/$CONDA_BASE_NAME-$PYTHON_VER/bin:$PATH"
     - echo "Testing if anything is unformatted"
     - echo "If error occurs changes were not formatted using black"
     - black --check montepy/ tests/
+  needs: ["install-3.8"]
 
-
-deploy1:
-  stage: deploy
-  script:
-    - echo "No deploy required for the moment"
 
 
 pages:
   stage: deploy
   script:
+    - conda activate $CONDA_BASE_NAME-$PYTHON_VER
+    - export PATH="~/.local/bin/:/data/gitlab-runner/.conda/envs/$CONDA_BASE_NAME-$PYTHON_VER/bin:$PATH"
     - echo "Building documentation with Sphinx."
     - cd doc/
     - make html
@@ -92,3 +150,18 @@ pages:
     - master
     - main
     - doc
+
+
+packaging:
+  stage: deploy
+  script:
+    - rm dist/*
+    - conda activate $CONDA_BASE_NAME-$PYTHON_VER
+    - export PATH="~/.local/bin/:/data/gitlab-runner/.conda/envs/$CONDA_BASE_NAME-$PYTHON_VER/bin:$PATH"
+    - pip install build twine
+    - python -m build --sdists --wheel
+    - TWINE_PASSWORD=${CI_JOB_TOKEN} TWINE_USERNAME=gitlab-ci-token python -m twine upload --repository-url ${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/packages/pypi dist/*
+
+  only:
+    - master
+    - main

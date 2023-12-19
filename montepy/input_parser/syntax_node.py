@@ -583,12 +583,14 @@ class ValueNode(SyntaxNodeBase):
     :type token_type: class
     :param padding: the padding for this node.
     :type padding: PaddingNode
+    :param never_pad: If true an ending space will never be added to this.
+    :type never_pad: bool
     """
 
     _FORMATTERS = {
         float: {
             "value_length": 0,
-            "precision": 16,
+            "precision": 5,
             "zero_padding": 0,
             "sign": "-",
             "divider": "e",
@@ -596,6 +598,7 @@ class ValueNode(SyntaxNodeBase):
             "exponent_zero_pad": 0,
             "as_int": False,
             "int_tolerance": 1e-6,
+            "is_scientific": True,
         },
         int: {"value_length": 0, "zero_padding": 0, "sign": "-"},
         str: {"value_length": 0},
@@ -619,7 +622,7 @@ class ValueNode(SyntaxNodeBase):
     A regex for finding scientific notation.
     """
 
-    def __init__(self, token, token_type, padding=None):
+    def __init__(self, token, token_type, padding=None, never_pad=False):
         super().__init__("")
         self._token = token
         self._type = token_type
@@ -627,6 +630,7 @@ class ValueNode(SyntaxNodeBase):
         self._is_neg_id = False
         self._is_neg_val = False
         self._og_value = None
+        self._never_pad = never_pad
         if token is None:
             self._value = None
         elif isinstance(token, input_parser.mcnp_input.Jump):
@@ -640,7 +644,6 @@ class ValueNode(SyntaxNodeBase):
         self._og_value = self.value
         self._padding = padding
         self._nodes = [self]
-        self._is_scientific = False
         self._is_reversed = False
 
     def _convert_to_int(self):
@@ -801,7 +804,7 @@ class ValueNode(SyntaxNodeBase):
             token = "J"
         if match := self._SCIENTIFIC_FINDER.match(token):
             groups = match.groupdict(default="")
-            self._is_scientific = True
+            self._formatter["is_scientific"] = True
             significand = groups["significand"]
             self._formatter["divider"] = groups["e"]
             # extra space for the "e" in scientific and... stuff
@@ -812,6 +815,7 @@ class ValueNode(SyntaxNodeBase):
                 self._formatter["exponent_length"] = len(exponent)
                 self._formatter["exponent_zero_pad"] = len(exponent)
         else:
+            self._formatter["is_scientific"] = False
             significand = token
         parts = significand.split(".")
         if len(parts) == 2:
@@ -887,7 +891,12 @@ class ValueNode(SyntaxNodeBase):
                 value=int(value), **self._formatter
             )
         elif self._type == float:
-            if self._is_scientific:
+            # default to python general if new value
+            if not self._is_reversed:
+                temp = "{value:0={sign}{zero_padding}.{precision}g}".format(
+                    value=value, **self._formatter
+                )
+            elif self._formatter["is_scientific"]:
                 temp = "{value:0={sign}{zero_padding}.{precision}e}".format(
                     value=value, **self._formatter
                 )
@@ -1024,7 +1033,15 @@ class ValueNode(SyntaxNodeBase):
     def value(self, value):
         if self.is_negative is not None and value is not None:
             value = abs(value)
+        self._check_if_needs_end_padding(value)
         self._value = value
+
+    def _check_if_needs_end_padding(self, value):
+        if value is None or self.value is not None or self._never_pad:
+            return
+        # if not followed by a trailing space
+        if self.padding is None:
+            self.padding = PaddingNode(" ")
 
     def __eq__(self, other):
         if not isinstance(other, (type(self), str, int, float)):
@@ -1502,7 +1519,7 @@ class ShortcutNode(ListNode):
         self._nodes = collections.deque()
         self._original = []
         self._full = False
-        self._num_node = ValueNode(None, float)
+        self._num_node = ValueNode(None, float, never_pad=True)
         if p is not None:
             for search_strs, shortcut in self._shortcut_names.items():
                 for search_str in search_strs:
@@ -1530,7 +1547,7 @@ class ShortcutNode(ListNode):
                 Shortcuts.JUMP,
                 Shortcuts.JUMP,
             }:
-                self._num_node = ValueNode(None, int)
+                self._num_node = ValueNode(None, int, never_pad=True)
             self._end_pad = PaddingNode(" ")
 
     @property
@@ -1565,10 +1582,10 @@ class ShortcutNode(ListNode):
         try:
             repeat_num_str = repeat.lower().replace("r", "")
             repeat_num = int(repeat_num_str)
-            self._num_node = ValueNode(repeat_num, int)
+            self._num_node = ValueNode(repeat_num, int, never_pad=True)
         except ValueError:
             repeat_num = 1
-            self._num_node = ValueNode(None, int)
+            self._num_node = ValueNode(None, int, never_pad=True)
         if isinstance(p[0], ValueNode):
             last_val = p[0]
         else:
@@ -1584,7 +1601,7 @@ class ShortcutNode(ListNode):
         self._nodes = self._get_last_node(p)
         mult_str = p[1].lower().replace("m", "")
         mult_val = fortran_float(mult_str)
-        self._num_node = ValueNode(mult_str, float)
+        self._num_node = ValueNode(mult_str, float, never_pad=True)
         if isinstance(p[0], ValueNode):
             last_val = self.nodes[-1]
         else:
@@ -1598,12 +1615,14 @@ class ShortcutNode(ListNode):
         try:
             jump_str = p[0].lower().replace("j", "")
             jump_num = int(jump_str)
-            self._num_node = ValueNode(jump_str, int)
+            self._num_node = ValueNode(jump_str, int, never_pad=True)
         except ValueError:
             jump_num = 1
-            self._num_node = ValueNode(None, int)
+            self._num_node = ValueNode(None, int, never_pad=True)
         for i in range(jump_num):
-            self._nodes.append(ValueNode(input_parser.mcnp_input.Jump(), float))
+            self._nodes.append(
+                ValueNode(input_parser.mcnp_input.Jump(), float, never_pad=True)
+            )
 
     def _expand_interpolate(self, p):
         if self._type == Shortcuts.LOG_INTERPOLATE:
@@ -1629,10 +1648,10 @@ class ShortcutNode(ListNode):
         match = self._num_finder.search(p[1])
         if match:
             number = int(match.group(0))
-            self._num_node = ValueNode(match.group(0), int)
+            self._num_node = ValueNode(match.group(0), int, never_pad=True)
         else:
             number = 1
-            self._num_node = ValueNode(None, int)
+            self._num_node = ValueNode(None, int, never_pad=True)
         if is_log:
             begin = math.log(begin, 10)
             end = math.log(end, 10)
@@ -1642,7 +1661,7 @@ class ShortcutNode(ListNode):
                 new_val = 10 ** (begin + spacing * (i + 1))
             else:
                 new_val = begin + spacing * (i + 1)
-            self.append(ValueNode(str(new_val), float))
+            self.append(ValueNode(str(new_val), float, never_pad=True))
         self._begin = begin
         self._end = end
         self._spacing = spacing

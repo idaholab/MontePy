@@ -96,7 +96,7 @@ class UniverseInput(CellModifierInput):
     @property
     def has_information(self):
         if self.in_cell_block:
-            return self.universe.number != 0
+            return self.universe is not None and self.universe.number != 0
 
     @make_prop_pointer("_universe", Universe)
     def universe(self):

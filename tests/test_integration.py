@@ -1013,3 +1013,20 @@ class testFullFileIntegration(TestCase):
             self.assertEqual(len(output), 2)
         output = cell.wrap_string_for_mcnp("h" * 127, (6, 2, 0), True)
         self.assertEqual(len(output), 1)
+
+    def test_expansion_warning_crash(self):
+        problem = copy.deepcopy(self.simple_problem)
+        cell = problem.cells[99]
+        cell.material = problem.materials[1]
+        cell.mass_density = 10.0
+        problem.materials[1].number = 987654321
+        problem.surfaces[1010].number = 123456789
+        out = "bad_warning.imcnp"
+        try:
+            with self.assertWarns(montepy.errors.LineExpansionWarning):
+                problem.write_to_file(out)
+        finally:
+            try:
+                os.remove(out)
+            except FileNotFoundError:
+                pass
