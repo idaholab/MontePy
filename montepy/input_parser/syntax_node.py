@@ -891,7 +891,12 @@ class ValueNode(SyntaxNodeBase):
                 value=int(value), **self._formatter
             )
         elif self._type == float:
-            if self._is_scientific:
+            # default to python general if new value
+            if not self._is_reversed:
+                temp = "{value:0={sign}{zero_padding}.{precision}g}".format(
+                    value=value, **self._formatter
+                )
+            elif self._formatter["is_scientific"]:
                 temp = "{value:0={sign}{zero_padding}.{precision}e}".format(
                     value=value, **self._formatter
                 )
