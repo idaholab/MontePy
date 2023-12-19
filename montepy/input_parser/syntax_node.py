@@ -598,6 +598,7 @@ class ValueNode(SyntaxNodeBase):
             "exponent_zero_pad": 0,
             "as_int": False,
             "int_tolerance": 1e-6,
+            "is_scientific": True,
         },
         int: {"value_length": 0, "zero_padding": 0, "sign": "-"},
         str: {"value_length": 0},
@@ -643,7 +644,6 @@ class ValueNode(SyntaxNodeBase):
         self._og_value = self.value
         self._padding = padding
         self._nodes = [self]
-        self._is_scientific = False
         self._is_reversed = False
 
     def _convert_to_int(self):
@@ -804,7 +804,7 @@ class ValueNode(SyntaxNodeBase):
             token = "J"
         if match := self._SCIENTIFIC_FINDER.match(token):
             groups = match.groupdict(default="")
-            self._is_scientific = True
+            self._formatter["is_scientific"] = True
             significand = groups["significand"]
             self._formatter["divider"] = groups["e"]
             # extra space for the "e" in scientific and... stuff
@@ -815,6 +815,7 @@ class ValueNode(SyntaxNodeBase):
                 self._formatter["exponent_length"] = len(exponent)
                 self._formatter["exponent_zero_pad"] = len(exponent)
         else:
+            self._formatter["is_scientific"] = False
             significand = token
         parts = significand.split(".")
         if len(parts) == 2:
