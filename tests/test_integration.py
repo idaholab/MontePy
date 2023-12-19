@@ -1016,11 +1016,15 @@ class testFullFileIntegration(TestCase):
 
     def test_expansion_warning_crash(self):
         problem = copy.deepcopy(self.simple_problem)
-        cell = problem.cells[1]
-        cell.number = 6500
+        cell = problem.cells[99]
+        cell.material = problem.materials[1]
+        cell.mass_density = 10.0
+        problem.materials[1].number = 987654321
+        problem.surfaces[1010].number = 123456789
         out = "bad_warning.imcnp"
         try:
-            problem.write_to_file(out)
+            with self.assertWarns(montepy.errors.LineExpansionWarning):
+                problem.write_to_file(out)
         finally:
             try:
                 os.remove(out)
