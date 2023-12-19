@@ -1013,3 +1013,16 @@ class testFullFileIntegration(TestCase):
             self.assertEqual(len(output), 2)
         output = cell.wrap_string_for_mcnp("h" * 127, (6, 2, 0), True)
         self.assertEqual(len(output), 1)
+
+    def test_expansion_warning_crash(self):
+        problem = copy.deepcopy(self.simple_problem)
+        cell = problem.cells[1]
+        cell.number = 6500
+        out = "bad_warning.imcnp"
+        try:
+            problem.write_to_file(out)
+        finally:
+            try:
+                os.remove(out)
+            except FileNotFoundError:
+                pass
