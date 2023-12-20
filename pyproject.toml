@@ -15,7 +15,7 @@ authors = [
 	{name = "Brenna Carbno"}
 ]
 keywords = ["MCNP", "neutronics", "imcnp", "input file", "monte carlo"]
-#license = {file="LICENSE"}
+license = {file="LICENSE"}
 classifiers = [
        "Development Status :: 4 - Beta",
        "Programming Language :: Python :: 3 :: Only",
