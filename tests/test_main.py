@@ -1,3 +1,4 @@
+# Copyright 2023, Battelle Energy Alliance, LLC All Rights Reserved.
 import glob
 import montepy
 from montepy import __main__ as main

@@ -1,3 +1,4 @@
+# Copyright 2023, Battelle Energy Alliance, LLC All Rights Reserved.
 from abc import ABC, abstractmethod
 import math
 from montepy.errors import *

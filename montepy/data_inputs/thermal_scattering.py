@@ -1,3 +1,4 @@
+# Copyright 2023, Battelle Energy Alliance, LLC All Rights Reserved.
 from montepy.data_inputs.data_input import DataInputAbstract
 from montepy.input_parser.thermal_parser import ThermalParser
 from montepy import mcnp_object

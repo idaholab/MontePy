@@ -1,3 +1,4 @@
+# Copyright 2023, Battelle Energy Alliance, LLC All Rights Reserved.
 import itertools as it
 from montepy.data_inputs.cell_modifier import CellModifierInput
 from montepy.data_inputs.transform import Transform

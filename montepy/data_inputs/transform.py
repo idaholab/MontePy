@@ -1,3 +1,4 @@
+# Copyright 2023, Battelle Energy Alliance, LLC All Rights Reserved.
 import copy
 from montepy import mcnp_object
 from montepy.data_inputs import data_input

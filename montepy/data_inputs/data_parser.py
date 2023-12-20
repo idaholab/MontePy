@@ -1,3 +1,4 @@
+# Copyright 2023, Battelle Energy Alliance, LLC All Rights Reserved.
 from montepy.data_inputs import (
     data_input,
     fill,

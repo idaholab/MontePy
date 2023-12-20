@@ -1,3 +1,4 @@
+# Copyright 2023, Battelle Energy Alliance, LLC All Rights Reserved.
 from unittest import TestCase
 
 from montepy.utilities import fortran_float

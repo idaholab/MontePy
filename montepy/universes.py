@@ -1,3 +1,4 @@
+# Copyright 2023, Battelle Energy Alliance, LLC All Rights Reserved.
 from montepy.numbered_object_collection import NumberedObjectCollection
 from montepy.universe import Universe
 

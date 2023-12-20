@@ -1,3 +1,4 @@
+# Copyright 2023, Battelle Energy Alliance, LLC All Rights Reserved.
 import montepy
 from montepy.data_inputs.data_parser import parse_data
 from montepy.input_parser.block_type import BlockType

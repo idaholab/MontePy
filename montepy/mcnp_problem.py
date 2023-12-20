@@ -1,3 +1,4 @@
+# Copyright 2023, Battelle Energy Alliance, LLC All Rights Reserved.
 from enum import Enum
 import itertools
 from montepy.data_inputs import mode, transform

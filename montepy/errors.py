@@ -1,3 +1,4 @@
+# Copyright 2023, Battelle Energy Alliance, LLC All Rights Reserved.
 class LineOverRunWarning(UserWarning):
     """
     Raised when non-comment inputs exceed the allowed line length in an input.

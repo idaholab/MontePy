@@ -1,3 +1,4 @@
+# Copyright 2023, Battelle Energy Alliance, LLC All Rights Reserved.
 from abc import abstractmethod
 import montepy
 from montepy.data_inputs.data_input import DataInputAbstract

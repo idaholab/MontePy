@@ -1,3 +1,4 @@
+# Copyright 2023, Battelle Energy Alliance, LLC All Rights Reserved.
 from .block_type import BlockType
 from collections import deque
 from .. import errors

@@ -1,3 +1,4 @@
+# Copyright 2023, Battelle Energy Alliance, LLC All Rights Reserved.
 from montepy.input_parser.tokens import MCNP_Lexer
 from montepy.input_parser import syntax_node
 from sly import Parser

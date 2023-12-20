@@ -1,3 +1,4 @@
+# Copyright 2023, Battelle Energy Alliance, LLC All Rights Reserved.
 __name__ = "montepy.data_inputs"
 from .data_input import DataInput
 from .material import Material

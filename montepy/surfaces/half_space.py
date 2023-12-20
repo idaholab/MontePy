@@ -1,3 +1,4 @@
+# Copyright 2023, Battelle Energy Alliance, LLC All Rights Reserved.
 import montepy
 from montepy.errors import *
 from montepy.geometry_operators import Operator
