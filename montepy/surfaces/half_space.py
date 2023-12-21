@@ -1,7 +1,12 @@
 import montepy
 from montepy.errors import *
 from montepy.geometry_operators import Operator
-from montepy.input_parser.syntax_node import GeometryTree, PaddingNode, ValueNode
+from montepy.input_parser.syntax_node import (
+    GeometryTree,
+    PaddingNode,
+    ValueNode,
+    CommentNode,
+)
 from montepy.utilities import *
 
 
@@ -297,7 +302,9 @@ class HalfSpace:
         """
         operator_node = self.node.nodes["operator"]
         operator_node._nodes = [
-            n.replace("#", " ").replace(":", " ") for n in operator_node.nodes
+            n.replace("#", " ").replace(":", " ")
+            for n in operator_node.nodes
+            if not isinstance(n, CommentNode)
         ]
         if new_symbol == "#":
             operator_node._nodes[-1] = operator_node.nodes[-1][:-1] + "#"

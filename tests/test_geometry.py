@@ -307,6 +307,15 @@ class TestGeometryIntegration(TestCase):
         self.assertIsNone(half_space.right)
         self.assertEqual(half_space.left.operator, Operator.INTERSECTION)
 
+    def test_update_tree_with_comment(self):
+        input = montepy.input_parser.mcnp_input.Input(
+            ["1 0 -1 $hi there", "      2"],
+            montepy.input_parser.block_type.BlockType.CELL,
+        )
+        cell = montepy.Cell(input)
+        geometry = cell.geometry
+        geometry._update_values()
+
     def test_parse_input_value_node(self):
         node = montepy.input_parser.syntax_node.ValueNode("-1", float)
         half_space = UnitHalfSpace.parse_input_node(node)
