@@ -618,9 +618,9 @@ class Cell(Numbered_MCNP_Object):
             mat_num = 0
         if self._density:
             if self.is_atom_dens:
-                units = "g/cm3"
-            else:
                 units = "atom/b-cm"
+            else:
+                units = "g/cm3"
             dens_str = f"DENS: {self._density} {units}"
         else:
             dens_str = "DENS: None"
