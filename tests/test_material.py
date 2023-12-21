@@ -82,9 +82,9 @@ class testMaterialClass(TestCase):
         input_card = Input([in_str], BlockType.DATA)
         material = Material(input_card)
         answers = """MATERIAL: 20 fractions: atom
- H-1   (80c) (Value, 0.5, padding: (Padding, [' ']))
- O-16  (80c) (Value, 0.4, padding: (Padding, [' ']))
-Pu-239 (80c) (Value, 0.1, padding: None)
+ H-1   (80c) 0.5
+ O-16  (80c) 0.4
+Pu-239 (80c) 0.1
 """
         output = repr(material)
         print(output)
