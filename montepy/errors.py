@@ -91,6 +91,7 @@ class NumberConflictError(Exception):
     """
 
     def __init__(self, message):
+        self.message = message
         super().__init__(message)
 
 
@@ -135,6 +136,7 @@ class ParticleTypeNotInProblem(ValueError):
     """
 
     def __init__(self, message):
+        self.message = message
         super().__init__(message)
 
 
@@ -145,6 +147,7 @@ class ParticleTypeNotInCell(ValueError):
     """
 
     def __init__(self, message):
+        self.message = message
         super().__init__(message)
 
 
