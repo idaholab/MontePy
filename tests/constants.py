@@ -13,6 +13,7 @@ BAD_INPUTS = {
     "test_extra_params.imcnp",
     "test_extra_data_param.imcnp",
     "test_extra_data_imp.imcnp",
+    "number_conflict_pin_cell.imcnp",
 }
 IGNORE_FILES = {
     "testReadRec1.imcnp",
