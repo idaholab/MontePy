@@ -5,7 +5,6 @@ from montepy.input_parser.syntax_node import (
     GeometryTree,
     PaddingNode,
     ValueNode,
-    CommentNode,
 )
 from montepy.utilities import *
 
@@ -304,7 +303,7 @@ class HalfSpace:
         operator_node._nodes = [
             n.replace("#", " ").replace(":", " ")
             for n in operator_node.nodes
-            if not isinstance(n, CommentNode)
+            if isinstance(n, GeometryTree)
         ]
         if new_symbol == "#":
             operator_node._nodes[-1] = operator_node.nodes[-1][:-1] + "#"
