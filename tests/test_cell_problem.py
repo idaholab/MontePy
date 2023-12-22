@@ -147,7 +147,7 @@ class TestCellClass(TestCase):
         in_str = "1 1 0.5 2"
         card = Input([in_str], BlockType.CELL)
         cell = Cell(card)
-        self.assertEqual(str(cell), "CELL: 1, mat: 0, DENS: 0.5 g/cm3")
+        self.assertEqual(str(cell), "CELL: 1, mat: 0, DENS: 0.5 atom/b-cm")
         self.assertEqual(
             repr(cell), "CELL: 1 \nVoid material \ndensity: 0.5 atom/b-cm\n\n"
         )

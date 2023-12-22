@@ -57,4 +57,4 @@ class MaterialComponent:
         return f"{self.isotope} {self.fraction}"
 
     def __repr__(self):
-        return f"{self.isotope} {self._fraction}"
+        return f"{self.isotope} {self.fraction}"
