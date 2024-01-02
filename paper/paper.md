@@ -16,6 +16,7 @@ authors :
   - name: Brenna A. Carbno
     affiliation: 1
   - name: Andrew J. Bascom
+    orcid: 0009-0005-6691-5128
     affiliation: 1
 affiliations:
   - name: Idaho National Laboratory, USA
@@ -23,7 +24,10 @@ affiliations:
 date: 1 February 2024
 bibliography: paper.bib
 
+---
+
 # Summary
+
 The Monte Carlo N-Particle (MCNP) radiation transport code,
 is a highly capable and accurate code with a long legacy.
 Unfortunately, part of that legacy is having a history that predates many modern
@@ -50,4 +54,5 @@ This research made use of Idaho National Laboratory's High Performance Computing
 TODO: check previous reviewers and users
 
 TODO: acknowledge AFC and DOE-IP
+
 # References
