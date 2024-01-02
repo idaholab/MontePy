@@ -1,4 +1,4 @@
-# Copyright 2023, Battelle Energy Alliance, LLC All Rights Reserved.
+# Copyright 2024, Battelle Energy Alliance, LLC All Rights Reserved.
 from montepy.surfaces.axis_plane import AxisPlane
 from montepy.surfaces.surface import Surface
 from montepy.surfaces.surface_type import SurfaceType

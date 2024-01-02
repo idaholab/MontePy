@@ -1,4 +1,4 @@
-# Copyright 2023, Battelle Energy Alliance, LLC All Rights Reserved.
+# Copyright 2024, Battelle Energy Alliance, LLC All Rights Reserved.
 from montepy.data_inputs.cell_modifier import CellModifierInput
 from montepy.errors import *
 from montepy.constants import DEFAULT_VERSION

@@ -1,4 +1,4 @@
-# Copyright 2023, Battelle Energy Alliance, LLC All Rights Reserved.
+# Copyright 2024, Battelle Energy Alliance, LLC All Rights Reserved.
 from abc import abstractmethod
 from montepy.mcnp_object import MCNP_Object
 

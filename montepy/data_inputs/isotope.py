@@ -1,4 +1,4 @@
-# Copyright 2023, Battelle Energy Alliance, LLC All Rights Reserved.
+# Copyright 2024, Battelle Energy Alliance, LLC All Rights Reserved.
 from montepy.data_inputs.element import Element
 from montepy.errors import *
 from montepy.input_parser.syntax_node import ValueNode

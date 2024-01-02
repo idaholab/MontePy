@@ -1,4 +1,4 @@
-# Copyright 2023, Battelle Energy Alliance, LLC All Rights Reserved.
+# Copyright 2024, Battelle Energy Alliance, LLC All Rights Reserved.
 from montepy.errors import *
 from montepy.input_parser.parser_base import MCNP_Parser
 from montepy.input_parser import syntax_node

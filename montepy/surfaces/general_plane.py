@@ -1,4 +1,4 @@
-# Copyright 2023, Battelle Energy Alliance, LLC All Rights Reserved.
+# Copyright 2024, Battelle Energy Alliance, LLC All Rights Reserved.
 from montepy.errors import *
 from montepy.surfaces.surface_type import SurfaceType
 from montepy.surfaces.surface import Surface

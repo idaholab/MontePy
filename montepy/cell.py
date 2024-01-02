@@ -1,4 +1,4 @@
-# Copyright 2023, Battelle Energy Alliance, LLC All Rights Reserved.
+# Copyright 2024, Battelle Energy Alliance, LLC All Rights Reserved.
 import copy
 from montepy.cells import Cells
 from montepy.constants import BLANK_SPACE_CONTINUE

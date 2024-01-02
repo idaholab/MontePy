@@ -1,4 +1,4 @@
-# Copyright 2023, Battelle Energy Alliance, LLC All Rights Reserved.
+# Copyright 2024, Battelle Energy Alliance, LLC All Rights Reserved.
 BAD_INPUTS = {
     "test_excess_mt.imcnp",
     "test_vol_redundant.imcnp",
