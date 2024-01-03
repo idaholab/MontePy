@@ -23,7 +23,7 @@ from montepy.surfaces.surface_type import SurfaceType
 from montepy.universe import Universe
 import sys
 
-__version__ = "0.2.3dev3"
+__version__ = "0.2.3"
 # enable deprecated warnings for users
 if not sys.warnoptions:
     import os, warnings
