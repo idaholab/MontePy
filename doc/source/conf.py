@@ -21,7 +21,7 @@ import montepy
 # -- Project information -----------------------------------------------------
 
 project = "MontePy"
-copyright = "2021 – 2023, Battelle Energy Alliance LLC."
+copyright = "Copyright 2024, Battelle Energy Alliance, LLC All Rights Reserved."
 author = "Micah D. Gale (@galemica), Travis J. Labossiere-Hickman (@tjlaboss)"
 
 
