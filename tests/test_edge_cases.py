@@ -160,3 +160,19 @@ class EdgeCaseTests(TestCase):
             print(output)
             parts = output[0].split()
             self.assertAlmostEqual(float(parts[2]), -dens_value, places=9)
+
+    def test_geometry_comments(self):
+        in_strs = """21073   130 0.010000   (-11516    97  -401 )  $ C 1 Lower water
+      :(-11526    97  -401 )  $ C 2 Lower water
+      :(-11536    97  -401 )  $ C 3 Lower water
+      :(-11546    97  -401 )  $ C 4 Lower water
+      :(-11556    97  -401 )  $ C 5 Lower water
+      :(-11576    97  -401 ) imp:n=1 $ C 7 Lower water""".split(
+            "\n"
+        )
+        input = montepy.input_parser.mcnp_input.Input(
+            in_strs, montepy.input_parser.block_type.BlockType.CELL
+        )
+        cell = montepy.Cell(input)
+        # this step caused an error for #163
+        cell.comments
