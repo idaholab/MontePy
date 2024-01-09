@@ -1,3 +1,4 @@
+# Copyright 2024, Battelle Energy Alliance, LLC All Rights Reserved.
 from montepy.data_cards import data_card, thermal_scattering
 from montepy.data_cards.isotope import Isotope
 from montepy.data_cards.material_component import MaterialComponent

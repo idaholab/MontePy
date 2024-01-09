@@ -1,3 +1,4 @@
+# Copyright 2024, Battelle Energy Alliance, LLC All Rights Reserved.
 from montepy.errors import *
 from montepy.data_cards import transform
 from montepy.numbered_mcnp_card import Numbered_MCNP_Card

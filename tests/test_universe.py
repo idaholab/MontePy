@@ -1,3 +1,4 @@
+# Copyright 2024, Battelle Energy Alliance, LLC All Rights Reserved.
 from unittest import TestCase
 
 from montepy.input_parser.constants import DEFAULT_VERSION

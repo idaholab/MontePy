@@ -1,3 +1,4 @@
+# Copyright 2024, Battelle Energy Alliance, LLC All Rights Reserved.
 import itertools
 from montepy.data_cards.cell_modifier import CellModifierCard
 from montepy.errors import *

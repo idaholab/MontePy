@@ -1,3 +1,4 @@
+# Copyright 2024, Battelle Energy Alliance, LLC All Rights Reserved.
 import itertools
 from montepy.cells import Cells
 from montepy.data_cards import fill, importance, lattice_card, universe_card, volume

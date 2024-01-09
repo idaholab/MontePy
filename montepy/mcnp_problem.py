@@ -1,3 +1,4 @@
+# Copyright 2024, Battelle Energy Alliance, LLC All Rights Reserved.
 import itertools
 from montepy._cell_data_control import CellDataPrintController
 from montepy.data_cards import mode, transform

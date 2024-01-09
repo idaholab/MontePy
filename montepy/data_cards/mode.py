@@ -1,3 +1,4 @@
+# Copyright 2024, Battelle Energy Alliance, LLC All Rights Reserved.
 from montepy.data_cards.data_card import DataCardAbstract
 from montepy.particle import Particle
 

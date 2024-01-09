@@ -1,3 +1,4 @@
+# Copyright 2024, Battelle Energy Alliance, LLC All Rights Reserved.
 from montepy import mcnp_problem
 from montepy.input_parser.constants import DEFAULT_VERSION
 

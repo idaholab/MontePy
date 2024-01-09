@@ -1,3 +1,4 @@
+# Copyright 2024, Battelle Energy Alliance, LLC All Rights Reserved.
 from abc import ABC, abstractmethod
 from montepy.errors import *
 from montepy.input_parser.constants import BLANK_SPACE_CONTINUE, get_max_line_length

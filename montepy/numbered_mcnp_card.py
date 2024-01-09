@@ -1,3 +1,4 @@
+# Copyright 2024, Battelle Energy Alliance, LLC All Rights Reserved.
 from abc import abstractmethod
 from montepy.mcnp_card import MCNP_Card
 

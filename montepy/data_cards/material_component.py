@@ -1,3 +1,4 @@
+# Copyright 2024, Battelle Energy Alliance, LLC All Rights Reserved.
 class MaterialComponent:
     """
     A class to represent a single component in a material.
