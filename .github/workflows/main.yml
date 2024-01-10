@@ -29,7 +29,7 @@ jobs:
       - name: Upload build artifacts
         uses: actions/upload-artifact@v3
         with: 
-           name: build
+           name: build-$${{ matrix.python-version }}
            path: dist/*
 
   test:
@@ -133,9 +133,14 @@ jobs:
       - name: Deploy to GitHub Pages
         id: deployment 
         uses: actions/deploy-pages@v3
+        with: 
+          name: deploy-pages
       
 
   deploy-pypi: 
+    environment:
+      name: test-pypi
+      url: https://test.pypi.org/p/montepy  # Replace <package-name> with your PyPI project name
     needs: [deploy-pages]
     runs-on: ubuntu-latest
     steps:
@@ -143,8 +148,12 @@ jobs:
       - uses: actions/setup-python@v4
         with:
           python-version: 3.8
-      - run: pip install --user build
-      - run: python -m build --sdist --wheel .
+      - uses: actions/download-artifact@v4
+        with:
+          name: build-3.8
+          path: dist/
+      - name: Publish distribution 📦 to PyPI
+        uses: pypa/gh-action-pypi-publish@release/v1
   
         
        
