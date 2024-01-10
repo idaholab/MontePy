@@ -11,4 +11,5 @@ jobs:
           python-version: 3.8
       - run: pip install --user montepy[doc]
       - run: cd doc
+      - run: ls
       - run: make html
