@@ -118,8 +118,6 @@ jobs:
            name: deploy-pages
            path: doc/build/html/
       - uses: actions/deploy-pages@v4
-        with:
-          path: doc/build/html/*
 
   deploy-pypi: 
     needs: [deploy-pages]
