@@ -10,5 +10,4 @@ jobs:
         with:
           python-version: 3.8
       - run: pip install --user montepy[doc]
-      - run: cd doc
-             make html
+      - run: cd doc && make html
