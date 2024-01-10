@@ -29,7 +29,7 @@ jobs:
       - name: Upload build artifacts
         uses: actions/upload-artifact@v3
         with: 
-           name: build-${{ matrix.python-version }}
+           name: build
            path: dist/*
 
   test:
@@ -150,7 +150,7 @@ jobs:
           python-version: 3.8
       - uses: actions/download-artifact@v4
         with:
-          name: build-3.8
+          name: build
           path: dist/
       - name: Publish distribution 📦 to PyPI
         uses: pypa/gh-action-pypi-publish@release/v1
