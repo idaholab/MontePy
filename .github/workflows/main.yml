@@ -142,6 +142,9 @@ jobs:
       name: test-pypi
       url: https://test.pypi.org/p/montepy  # Replace <package-name> with your PyPI project name
     needs: [deploy-pages, build]
+    permissions:
+      contents: read
+      id-token: write
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
