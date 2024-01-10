@@ -108,7 +108,6 @@ jobs:
       - run: pip install --user montepy[doc]
       - run: cd doc && make html
       - uses: actions/configure-pages@v4
-      - run: tar -czf deploy-pages.tar.gz doc/build/html/*
       - uses: actions/upload-pages-artifact@v3
         with: 
            name: deploy-pages
@@ -126,7 +125,10 @@ jobs:
     needs: build-pages
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/deploy-pages@v3
+      - name: Deploy to GitHub Pages
+        id: deployment 
+        uses: actions/deploy-pages@v3
+      
 
   deploy-pypi: 
     needs: [deploy-pages]
