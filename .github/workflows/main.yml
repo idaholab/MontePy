@@ -89,13 +89,8 @@ jobs:
       - run: black --check montepy/ tests/
       
 
-  deploy-pages:
+  build-pages:
     needs: [build, test, doc-test, format-test]
-
-    permissions:
-      contents: read
-      pages: write      # to deploy to Pages
-      id-token: write   # to verify the deployment originates from an appropriate source
 
     environment:
       name: github-pages
@@ -118,6 +113,19 @@ jobs:
         with: 
            name: deploy-pages
            path: doc/build/html/
+
+  deploy-pages:
+    permissions:
+      contents: read
+      pages: write      # to deploy to Pages
+      id-token: write   # to verify the deployment originates from an appropriate source
+
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    needs: build-pages
+    runs-on: ubuntu-latest
+    steps:
       - uses: actions/deploy-pages@v3
 
   deploy-pypi: 
