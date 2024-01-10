@@ -148,10 +148,8 @@ jobs:
       - uses: actions/setup-python@v4
         with:
           python-version: 3.8
-      - uses: actions/download-artifact@v4
-        with:
-          name: build
-          path: dist/
+      - run: python -m pip install build
+      - run: python -m build --sdist/ --wheel
       - name: Publish distribution 📦 to PyPI
         uses: pypa/gh-action-pypi-publish@release/v1
   
