@@ -134,7 +134,7 @@ jobs:
         id: deployment 
         uses: actions/deploy-pages@v3
         with: 
-          name: deploy-pages
+          artifact_name: deploy-pages
       
 
   deploy-pypi: 
