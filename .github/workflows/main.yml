@@ -112,11 +112,12 @@ jobs:
           python-version: 3.8
       - run: pip install --user montepy[doc]
       - run: cd doc && make html
+      - uses: actions/configure-pages@v4
       - run: tar -czf deploy-pages.tar.gz doc/build/html/*
       - uses: actions/upload-pages-artifact@v3
         with: 
            name: deploy-pages
-           path: doc/build/html/
+           path: deploy-pages.tar.gz
       - uses: actions/deploy-pages@v3
 
   deploy-pypi: 
