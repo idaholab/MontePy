@@ -113,7 +113,7 @@ jobs:
       - run: pip install --user montepy[doc]
       - run: cd doc && make html
       - run: tar -czf deploy-pages.tar.gz doc/build/html
-      - uses: actions/upload-artifact@v3
+      - uses: actions/artifact@v4
         with:
           path: deploy-pages.tar.gz
       - uses: actions/deploy-pages@v4
