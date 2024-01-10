@@ -69,17 +69,29 @@ jobs:
         uses: actions/setup-python@v4
         with: 
           python-version: 3.8
-      - run: pip install --user -r requirements/dev.txt
+      - run: pip install montepy[doc]
       - run: sphinx-build doc/source/ doc/build/ -W --keep-going -E
       - run: sphinx-build -b html doc/source/ doc/build/html
       - uses: actions/upload-artifact@v3
         with:
-          name: test
-          path: test_report.xml
+          name: website
+          path: doc/build/html
+
+  format-test:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - uses: actions/checkout@v4
+      - name: set up python 3.8
+        uses: actions/setup-python@v4
+        with: 
+          python-version: 3.8
+      - run: pip install --user -r requirements/dev.txt
+      - run: black --check montepy/ tests/
       
 
   deploy-pages:
-    needs: [build, test]
+    needs: [build, test, doc-test, format-test]
 
     permissions:
       pages: write      # to deploy to Pages
