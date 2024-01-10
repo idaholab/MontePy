@@ -16,7 +16,7 @@ jobs:
         with: 
           python-version: ${{ matrix.python-version }}
       - run: pip install --upgrade pip build
-      - run: pip instal -r requirements/common.txt
+      - run: pip install -r requirements/common.txt
       - run: python -m build --sdist --wheel
       - run: pip install .
       - run: pip uninstall -y montepy
