@@ -60,7 +60,6 @@ jobs:
           path: coverage.xml
 
   doc-test:
-    needs: [build]
     runs-on: ubuntu-latest
     
     steps:
@@ -102,6 +101,10 @@ jobs:
       url: ${{ steps.deployment.outputs.page_url }}
     runs-on: ubuntu-latest
     steps:
+      - name: Configure git
+        env:
+           TOKEN: ${{ secrets.ACCESS_TOKEN }}
+        run: git config --global url."https://${TOKEN}:x-oauth-basic@github.com/".insteadOf "https://github.com/"
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v4
         with:
