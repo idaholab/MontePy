@@ -117,7 +117,7 @@ jobs:
       - uses: actions/upload-pages-artifact@v3
         with: 
            name: deploy-pages
-           path: deploy-pages.tar.gz
+           path: doc/build/html/
       - uses: actions/deploy-pages@v3
 
   deploy-pypi: 
