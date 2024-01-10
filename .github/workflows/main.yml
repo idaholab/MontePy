@@ -117,8 +117,6 @@ jobs:
         with:
           path: deploy-pages.tar.gz
       - uses: actions/deploy-pages@v4
-        with: 
-          path: deploy-pages.tar.gz
 
   deploy-pypi: 
     needs: [deploy-pages]
