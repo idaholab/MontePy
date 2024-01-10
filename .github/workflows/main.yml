@@ -45,12 +45,19 @@ jobs:
         with: 
           python-version: ${{ matrix.python-version }}
       - run: pip install --user -r requirements/dev.txt
-      - run: python -m pytest --junitxml=test_report.xml
+      - run: coverage run -m pytest --junitxml=test_report.xml
+      - run: coverage report
+      - run: coverage xml
       - name: Upload test report
         uses: actions/upload-artifact@v3
         with:
           name: test
           path: test_report.xml
+      - name: Upload coverage report
+        uses: actions/upload-artifact@v3
+        with:
+          name: coverage
+          path: coverage.xml
         
        
         
