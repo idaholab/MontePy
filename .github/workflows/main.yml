@@ -1,0 +1,36 @@
+name: Package Test and Deploy
+
+on: [push]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: ["3.8", "3.9", "3.10", "3.11", "3.12"]
+
+    steps:
+      - uses: actions/checkout@v4
+      - name: set up python  ${{ matrix.python-version }}
+        uses: action setup-python@v4
+        with: 
+          python-version: ${{ matrix.python-version }}
+      - name: Build $${{ matrix.python-version }}
+      - run: pip install --upgrade pip build
+      - run: pip instal -r requirements/common.txt
+      - run: python -m build --sdist --wheel
+      - run: pip install .
+      - run: pip uninstall -y montepy
+      - run: pip install --user dist/*.whl
+      - run: pip uninstall -y montepy
+      - run: pip install --user dist/*.tar.gz
+      - run: pip install --user montepy[test]
+      - run: pip install --user montepy[doc]
+      - run: ip freeze
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@v3
+        with: 
+           name: build
+           path: dist/*
+       
+        
