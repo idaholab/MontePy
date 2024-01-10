@@ -15,7 +15,6 @@ jobs:
         uses: actions/setup-python@v4
         with: 
           python-version: ${{ matrix.python-version }}
-      - name: Build $${{ matrix.python-version }}
       - run: pip install --upgrade pip build
       - run: pip instal -r requirements/common.txt
       - run: python -m build --sdist --wheel
@@ -26,7 +25,7 @@ jobs:
       - run: pip install --user dist/*.tar.gz
       - run: pip install --user montepy[test]
       - run: pip install --user montepy[doc]
-      - run: ip freeze
+      - run: pip freeze
       - name: Upload build artifacts
         uses: actions/upload-artifact@v3
         with: 
