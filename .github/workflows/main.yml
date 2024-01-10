@@ -31,5 +31,26 @@ jobs:
         with: 
            name: build
            path: dist/*
+
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: ["3.8", "3.9", "3.10", "3.11", "3.12"]
+    
+    steps:
+      - uses: actions/checkout@v4
+      - name: set up python  ${{ matrix.python-version }}
+        uses: actions/setup-python@v4
+        with: 
+          python-version: ${{ matrix.python-version }}
+      - run: pip install --user requirements/dev.txt
+      - run: python -m pytest --junitxml=test_report.xml
+      - name: Upload test report
+        uses: actions/upload-artifact@v3
+        with:
+          name: test
+          path: test_report.xml
+        
        
         
