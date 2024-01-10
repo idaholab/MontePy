@@ -116,7 +116,7 @@ jobs:
       - uses: actions/upload-pages-artifact@v3
         with: 
            name: deploy-pages
-           path: doc/build/html/*
+           path: doc/build/html/
       - uses: actions/deploy-pages@v4
         with:
           path: doc/build/html/*
