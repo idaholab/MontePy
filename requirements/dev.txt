@@ -1,0 +1,8 @@
+-r common.txt
+build
+sphinx~=4.3
+sphinxcontrib-apidoc
+sphinx_rtd_theme
+coverage[toml]>=6.3.2
+pytest
+black==23.3.0

@@ -1,0 +1,7 @@
+Test case with missing surfaces
+1 1 10.0 #2
+
+1 SO 5
+
+nps 100
+m1 1001.80c 1.0

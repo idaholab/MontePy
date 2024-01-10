@@ -1,0 +1,12 @@
+__pycache__/
+build/*
+dist/*
+*egg-info/*
+*.mcnp
+.coverage
+.idea/*
+*.*.sw*
+doc/build/*
+.coverage
+.idea/
+.ipynb_checkpoints/

@@ -1,0 +1,15 @@
+variables:
+  PYTHON_VER: "3.8"
+  CONDA_BASE_NAME: experiment_analysis_montepy
+
+.test_no_cover:
+  script:
+    - conda activate $CONDA_BASE_NAME-$PYTHON_VER
+    - export PATH="~/.local/bin/:/data/gitlab-runner/.conda/envs/$CONDA_BASE_NAME-$PYTHON_VER/bin:$PATH"
+    - which python
+    - pip freeze
+    - python -m pytest --junitxml=test_report.xml
+  artifacts:
+    reports:
+      junit: test_report.xml
+

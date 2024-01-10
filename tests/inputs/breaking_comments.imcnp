@@ -1,0 +1,15 @@
+MCNP Test Model cutting comment
+C cells
+1 2 20
+         -1000  $ dollar comment
+c this is a cutting comment
+     imp:n,p=1 U=350 trcl=5
+
+1000 SO 1
+
+c Iron
+m2        26054.80c        5.85
+          26056.80c       91.75
+c          26057.80c        2.12
+          26058.80c        0.28
+mode n p
