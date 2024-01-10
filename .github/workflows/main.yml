@@ -44,7 +44,7 @@ jobs:
         uses: actions/setup-python@v4
         with: 
           python-version: ${{ matrix.python-version }}
-      - run: pip install --user requirements/dev.txt
+      - run: pip install --user -r requirements/dev.txt
       - run: python -m pytest --junitxml=test_report.xml
       - name: Upload test report
         uses: actions/upload-artifact@v3
