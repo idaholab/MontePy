@@ -141,7 +141,7 @@ jobs:
     environment:
       name: test-pypi
       url: https://test.pypi.org/p/montepy  # Replace <package-name> with your PyPI project name
-    needs: [deploy-pages]
+    needs: [deploy-pages, build]
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
