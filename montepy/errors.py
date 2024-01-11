@@ -10,8 +10,7 @@ class LineOverRunWarning(UserWarning):
 
 class MalformedInputError(ValueError):
     """
-    <<<<<<< HEAD
-        Raised when there is an error with the MCNP input not related to the parser.
+    Raised when there is an error with the MCNP input not related to the parser.
     """
 
     def __init__(self, input, message):
