@@ -14,14 +14,14 @@ authors = [
 	{name = "Travis Labossiere-Hickman", email = "Travis.LabossiereHickman@inl.gov"},
 	{name = "Brenna Carbno"}
 ]
-keywords = ["MCNP", "neutronics", "imcnp", "input file", "monte carlo"]
+keywords = ["MCNP", "neutronics", "imcnp", "input file", "monte carlo", "radiation transport"]
 license = {file="LICENSE"}
 classifiers = [
        "Development Status :: 4 - Beta",
        "Programming Language :: Python :: 3 :: Only",
        "Intended Audience :: Science/Research",
        "Intended Audience :: Developers",
-#       "License :: OSI Approved :: MIT License",
+       "License :: OSI Approved :: MIT License",
        "Natural Language :: English",
        "Operating System :: OS Independent",
        "Topic :: Scientific/Engineering :: Physics",
@@ -39,8 +39,10 @@ test = ["coverage", "pytest"]
 doc = ["sphinx", "sphinxcontrib-apidoc", "sphinx_rtd_theme"]
 
 [project.urls]
-Homepage = "https://github.com/idaholab/montepy"
+Homepage = "https://idaholab.github.io/MontePy/index.html"
 Repository = "https://github.com/idaholab/montepy.git"
+Documentation = "https://idaholab.github.io/MontePy/index.html"
+"Bug Tracker" = "https://github.com/idaholab/MontePy/issues"
 
 [build-system]
 requires = ["setuptools  >= 61.0.0"]
