@@ -18,7 +18,7 @@ __credits__ = [
 ]
 
 name = "montepy"
-__version__ = "0.1.7dev1"
+__version__ = "0.1.7"
 __maintainer__ = "Micah Gale"
 __email__ = "micah.gale@inl.gov"
 __status__ = "Development"
