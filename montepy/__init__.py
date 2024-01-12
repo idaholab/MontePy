@@ -24,6 +24,7 @@ from montepy.universe import Universe
 import sys
 
 __version__ = "0.2.5"
+
 # enable deprecated warnings for users
 if not sys.warnoptions:
     import os, warnings
