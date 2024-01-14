@@ -9,6 +9,7 @@ from montepy.errors import *
 from montepy.constants import DEFAULT_VERSION
 from montepy.materials import Materials
 from montepy.surfaces import surface_builder
+from montepy.tallies import Tallies
 from montepy.surface_collection import Surfaces
 from montepy.data_inputs import Material, parse_data
 from montepy.input_parser import input_syntax_reader, block_type, mcnp_input
@@ -36,6 +37,7 @@ class MCNP_Problem:
         self._surfaces = Surfaces(problem=self)
         self._universes = Universes(problem=self)
         self._transforms = Transforms(problem=self)
+        self._tallies = Tallies(problem=self)
         self._data_inputs = []
         self._materials = Materials(problem=self)
         self._mcnp_version = DEFAULT_VERSION
