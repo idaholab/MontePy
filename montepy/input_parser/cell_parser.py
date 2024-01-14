@@ -178,7 +178,7 @@ class CellParser(MCNP_Parser):
     def number_sequence(self, p):
         if isinstance(p[0], str):
             sequence = syntax_node.ListNode("parenthetical statement")
-            sequence.append(p[0])
+            sequence.append(syntax_node.ValueNode(p[0], str))
         else:
             sequence = p[0]
         for node in list(p)[1:]:
@@ -186,7 +186,7 @@ class CellParser(MCNP_Parser):
                 for val in node.nodes:
                     sequence.append(val)
             elif isinstance(node, str):
-                sequence.append(syntax_node.PaddingNode(node))
+                sequence.append(syntax_node.ValueNode(node, str))
             else:
                 sequence.append(node)
         return sequence
