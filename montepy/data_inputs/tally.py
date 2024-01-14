@@ -37,8 +37,6 @@ class Tally(DataInputAbstract, Numbered_MCNP_Object):
             num = self._input_number
             self._old_number = copy.deepcopy(num)
             self._number = num
-            print(self._tree["tally"])
-            assert False
             try:
                 tally_type = TallyType(self.number % _TALLY_TYPE_MODULUS)
             except ValueError as e:
