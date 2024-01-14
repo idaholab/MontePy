@@ -1,13 +1,48 @@
 # Copyright 2024, Battelle Energy Alliance, LLC All Rights Reserved.
+import copy
+
 import montepy
+from montepy.cells import Cells
 from montepy.data_inputs.data_input import DataInputAbstract
+from montepy.data_inputs.tally_type import TallyType
 from montepy.input_parser.tally_parser import TallyParser
+from montepy.numbered_mcnp_object import Numbered_MCNP_Object
+from montepy.utilities import *
+
+_TALLY_TYPE_MODULUS = 10
 
 
-class Tally(DataInputAbstract):
+def _number_validator(self, number):
+    if number <= 0:
+        raise ValueError("number must be > 0")
+    if number % _TALL_TYPE_MODULUS != self._type.value:
+        raise ValueError(f"Tally Type cannot be changed.")
+    if self._problem:
+        self._problem.tallies.check_number(number)
+
+
+class Tally(DataInputAbstract, Numbered_MCNP_Object):
     """ """
 
     _parser = TallyParser()
+
+    __slots__ = {"_groups", "_type", "_number", "_old_number"}
+
+    def __init__(self, input=None):
+        self._cells = Cells()
+        self._old_number = None
+        self._number = self._generate_default_node(int, -1)
+        super().__init__(input)
+        if input:
+            num = self._input_number
+            self._old_number = copy.deepcopy(num)
+            self._number = num
+            print(self._tree["tally"])
+            assert False
+            try:
+                tally_type = TallyType(self.number % _TALLY_TYPE_MODULUS)
+            except ValueError as e:
+                raise MalformedInputEror(input, f"Tally Type provided not allowed: {e}")
 
     @staticmethod
     def _class_prefix():
@@ -19,4 +54,31 @@ class Tally(DataInputAbstract):
 
     @staticmethod
     def _has_classifier():
-        return 1
+        return 2
+
+    @make_prop_val_node("_old_number")
+    def old_number(self):
+        """
+        The material number that was used in the read file
+
+        :rtype: int
+        """
+        pass
+
+    @make_prop_val_node("_number", int, validator=_number_validator)
+    def number(self):
+        """
+        The number to use to identify the material by
+
+        :rtype: int
+        """
+        pass
+
+
+class TallyGroup:
+    __slots__ = {"_cells"}
+
+    def __init__(
+        self,
+    ):
+        self._cells = montepy.cells.Cells()
