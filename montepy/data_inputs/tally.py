@@ -24,9 +24,10 @@ def _number_validator(self, number):
 class Tally(DataInputAbstract, Numbered_MCNP_Object):
     """ """
 
+    # todo type enforcement
     _parser = TallyParser()
 
-    __slots__ = {"_groups", "_type", "_number", "_old_number"}
+    __slots__ = {"_groups", "_type", "_number", "_old_number", "_include_total"}
 
     def __init__(self, input=None):
         self._cells = Cells()
@@ -41,6 +42,11 @@ class Tally(DataInputAbstract, Numbered_MCNP_Object):
                 tally_type = TallyType(self.number % _TALLY_TYPE_MODULUS)
             except ValueError as e:
                 raise MalformedInputEror(input, f"Tally Type provided not allowed: {e}")
+            groups, has_total = TallyGroup.parse_tally_specification(
+                self._tree["tally"]
+            )
+            self._groups = group
+            self._include_total = has_total
 
     @staticmethod
     def _class_prefix():
@@ -76,7 +82,31 @@ class Tally(DataInputAbstract, Numbered_MCNP_Object):
 class TallyGroup:
     __slots__ = {"_cells"}
 
-    def __init__(
-        self,
-    ):
+    def __init__(self, cells=None, nodes=None):
         self._cells = montepy.cells.Cells()
+
+    @staticmethod
+    def parse_tally_specification(tally_spec):
+        # TODO type enforcement
+        ret = []
+        in_parens = False
+        buff = None
+        has_total = False
+        for node in tally_spec:
+            # TODO handle total
+            if in_parens:
+                if node.value == ")":
+                    in_parens = False
+                    buff.append(node)
+                    ret.append(buff)
+                    buff = None
+                else:
+                    buff.apend(node)
+            else:
+                if node.value == "(":
+                    in_parens = True
+                    buff = TallyGroup()
+                    buff.append(node)
+                else:
+                    ret.append(TallyGroup(nodes=[node]))
+        return (ret, has_total)
