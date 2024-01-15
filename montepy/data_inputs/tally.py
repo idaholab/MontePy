@@ -117,3 +117,6 @@ class TallyGroup:
         if not isinstance(node, syntax_node.ValueNode):
             raise ValueError(f"Can only append ValueNode. {node} given")
         self._old_numbers.append(node)
+
+    def append(self, cell):
+        self._cells.append(cell)
