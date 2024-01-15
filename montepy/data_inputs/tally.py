@@ -6,6 +6,7 @@ from montepy.cells import Cells
 from montepy.data_inputs.data_input import DataInputAbstract
 from montepy.data_inputs.tally_type import TallyType
 from montepy.input_parser.tally_parser import TallyParser
+from montepy.input_parser import syntax_node
 from montepy.numbered_mcnp_object import Numbered_MCNP_Object
 from montepy.utilities import *
 
@@ -45,7 +46,7 @@ class Tally(DataInputAbstract, Numbered_MCNP_Object):
             groups, has_total = TallyGroup.parse_tally_specification(
                 self._tree["tally"]
             )
-            self._groups = group
+            self._groups = groups
             self._include_total = has_total
 
     @staticmethod
@@ -80,10 +81,11 @@ class Tally(DataInputAbstract, Numbered_MCNP_Object):
 
 
 class TallyGroup:
-    __slots__ = {"_cells"}
+    __slots__ = {"_cells", "_old_numbers"}
 
     def __init__(self, cells=None, nodes=None):
         self._cells = montepy.cells.Cells()
+        self._old_numbers = []
 
     @staticmethod
     def parse_tally_specification(tally_spec):
@@ -97,16 +99,21 @@ class TallyGroup:
             if in_parens:
                 if node.value == ")":
                     in_parens = False
-                    buff.append(node)
+                    buff._append_node(node)
                     ret.append(buff)
                     buff = None
                 else:
-                    buff.apend(node)
+                    buff._append_node(node)
             else:
                 if node.value == "(":
                     in_parens = True
                     buff = TallyGroup()
-                    buff.append(node)
+                    buff._append_node(node)
                 else:
                     ret.append(TallyGroup(nodes=[node]))
         return (ret, has_total)
+
+    def _append_node(self, node):
+        if not isinstance(node, syntax_node.ValueNode):
+            raise ValueError(f"Can only append ValueNode. {node} given")
+        self._old_numbers.append(node)
