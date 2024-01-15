@@ -2,7 +2,7 @@
 name: Feature request
 about: Suggest an idea for this project
 title: ''
-labels: ''
+labels: 'feature request'
 assignees: ''
 
 ---
@@ -19,5 +19,5 @@ A clear and concise description of any alternative solutions or features you've 
 **Additional context**
 Add any other context or screenshots about the feature request here.
 
-** Reminder **
+**Reminder**
 Only the MCNP 6.2 and 6.3 user manuals are public. If this discusses a feature of MCNP you could only know by running MCNP please do not include it.
