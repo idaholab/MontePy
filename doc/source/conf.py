@@ -21,8 +21,8 @@ import montepy
 # -- Project information -----------------------------------------------------
 
 project = "MontePy"
-copyright = "2021 – 2023, Battelle Energy Alliance LLC."
-author = "Micah D. Gale (@galemica), Travis J. Labossiere-Hickman (@tjlaboss)"
+copyright = "2021 – 2024, Battelle Energy Alliance LLC."
+author = "Micah D. Gale (@micahgale), Travis J. Labossiere-Hickman (@tjlaboss)"
 
 
 release = importlib.metadata.version("montepy")
