@@ -44,7 +44,7 @@ def read_input_syntax(input_file, mcnp_version=DEFAULT_VERSION, encoding="ascii"
     """
     global reading_queue
     reading_queue = deque()
-    with input_file.open("r") as fh:
+    with input_file.open("r", encoding=encoding) as fh:
         yield from read_front_matters(fh, mcnp_version)
         yield from read_data(fh, mcnp_version)
 
