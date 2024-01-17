@@ -21,4 +21,5 @@ IGNORE_FILES = {
     "testReadRec2.imcnp",
     "testReadRec3.imcnp",
     "testReadTarget.imcnp",
+    "bad_encoding.imcnp"
 }
