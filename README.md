@@ -1,15 +1,17 @@
 # MontePy
 
+<img src="https://raw.githubusercontent.com/idaholab/MontePy/develop/graphics/monty.svg" width="180" alt="MontePY: a cute snek on a red over white circle"/>
+
 A python library to read, edit, and write MCNP input files. 
 
 ## Installing
 
-See the [Installing section in the user guide](https://experiment_analysis_all.pages.hpc.inl.gov/software/montepy/starting.html#installing).
+See the [Installing section in the user guide](https://idaholab.github.io/MontePy/starting.html#installing).
 
 
 ## User Documentation
 
-MontePy has a [sphinx website](https://experiment_analysis_all.pages.hpc.inl.gov/software/montepy/). 
+MontePy has a [sphinx website](https://idaholab.github.io/MontePy/index.html). 
 This has a getting started guide for users,
 as well as API documentation. 
 There is also a developer's guide covering the design and approach of MontePy, and how to contribute.
@@ -19,9 +21,9 @@ There is also a developer's guide covering the design and approach of MontePy, a
 * Handles almost all MCNP input syntax including: message blocks, & continue, comments, etc.
 * Parses Cells, surfaces, materials, and transforms very well.	
 * Can parse the following surfaces exactly P(X|Y|Z), C(X|Y|Z), C/(X|Y|Z) (I mean it can do PX, and PY, etc.)
-* Can read in all other cards but not understand them	
-* Can write out full MCNP problem even if it doesn't fully understand a card.	
-* Can write out the MCNP problem verbatim, if it has not been modified at all.
+* Can read in all other inputs but not understand them	
+* Can write out full MCNP problem even if it doesn't fully understand an input.	
+* Can write out the MCNP problem verbatim, and try to match 
 * Can quickly access cells, surfaces, and materials by their numbers. For example: `cell = problem.cells[105]`.
 * Can quickly update cell importances. For example `cell.importance.neutron = 2.0`.
 * Has over 240 test cases right now 
@@ -56,7 +58,7 @@ So MontePy doesn't do what you want? Right now development is done with a  Just-
 If there's a feature you want add an issue here with the feature request tag. 
 If you want to add a feature on your own talk to Micah Gale (but still add the issue). 
 The system is very modular and you should be able to develop it pretty quickly.
-Also read the [developer's guide](https://experiment_analysis_all.pages.hpc.inl.gov/software/montepy/developing.html).
+Also read the [developer's guide](https://idaholab.github.io/MontePy/developing.html).
 
 # Version Numbering Scheme
 
@@ -70,4 +72,4 @@ Also read the [developer's guide](https://experiment_analysis_all.pages.hpc.inl.
    Official shall not change. New merges to main shall have a version number incremented.
 
  
-# Finally: make objects not regexs!
+# Finally: make objects not regexes!
