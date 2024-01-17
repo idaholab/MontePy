@@ -57,7 +57,7 @@ class MCNP_InputFile:
         """
         pass
 
-    def open(self, mode):
+    def open(self, mode, encoding="ascii"):
         """
         Opens the underlying file, and returns self.
 
@@ -65,8 +65,18 @@ class MCNP_InputFile:
         For this reason, a ``close`` functional is intentionally
         not provided.
 
+
+        .. Note::
+            For different encoding schemes see the available list
+            `here <https://docs.python.org/3.9/library/codecs.html#standard-encodings>`_.
+
+            CP1252 is commonly referred to as "extended-ASCII".
+            You may have success with this encoding for working with special characters.
+
         :param mode: the mode to open the file in
         :type mode: str
+        :param encoding: The encoding scheme to use.
+        :type encoding: str
         :returns: self
         """
         self._fh = open(self.path, mode, encoding="ascii")
