@@ -261,7 +261,7 @@ class MCNP_Problem:
         try:
             for i, input in enumerate(
                 input_syntax_reader.read_input_syntax(
-                    self._input_file, self.mcnp_version
+                    self._input_file, self.mcnp_version, encoding=encoding
                 )
             ):
                 self._original_inputs.append(input)
