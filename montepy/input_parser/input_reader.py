@@ -32,5 +32,5 @@ def read_input(input_file, mcnp_version=DEFAULT_VERSION, encoding="ascii"):
     """
     problem = mcnp_problem.MCNP_Problem(input_file)
     problem.mcnp_version = mcnp_version
-    problem.parse_input()
+    problem.parse_input(encoding=encoding)
     return problem

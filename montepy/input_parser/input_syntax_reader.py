@@ -15,7 +15,7 @@ import warnings
 reading_queue = []
 
 
-def read_input_syntax(input_file, mcnp_version=DEFAULT_VERSION):
+def read_input_syntax(input_file, mcnp_version=DEFAULT_VERSION, encoding="ascii"):
     """
     Creates a generator function to return a new MCNP input for
     every new one that is encountered.
@@ -25,11 +25,20 @@ def read_input_syntax(input_file, mcnp_version=DEFAULT_VERSION):
 
     The version must be a three component tuple e.g., (6, 2, 0) and (5, 1, 60).
 
+    .. Note::
+        For different encoding schemes see the available list
+        `here <https://docs.python.org/3.9/library/codecs.html#standard-encodings>`_.
+
+        CP1252 is commonly referred to as "extended-ASCII".
+        You may have success with this encoding for working with special characters.
+
 
     :param input_file: the path to the input file to be read
     :type input_file: MCNP_InputFile
     :param mcnp_version: The version of MCNP that the input is intended for.
     :type mcnp_version: tuple
+    :param encoding: The encoding scheme to use.
+    :type encoding: str
     :returns: a generator of MCNP_Object objects
     :rtype: generator
     """
