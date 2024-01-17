@@ -1034,5 +1034,9 @@ class testFullFileIntegration(TestCase):
 
     def test_alternate_encoding(self):
         with self.assertRaises(UnicodeDecodeError):
-            problem = montepy.read_input(os.path.join("tests", "inputs", "bad_encoding.imcnp"))
-        problem = montepy.read_input(os.path.join("tests", "inputs", "bad_encoding.imcnp"), encoding="cp1252")
+            problem = montepy.read_input(
+                os.path.join("tests", "inputs", "bad_encoding.imcnp")
+            )
+        problem = montepy.read_input(
+            os.path.join("tests", "inputs", "bad_encoding.imcnp"), encoding="cp1252"
+        )
