@@ -60,16 +60,21 @@ class TestChangeAsciiScript(TestCase):
                         in_line.decode("ascii")
                         self.assertEqual(in_line, out_line)
                     except UnicodeError:
-                        try:
-                            print(in_line.decode())
-                        except UnicodeError:
-                            pass
                         new_line = []
-                        for char in in_line:
-                            if char <= 128:
-                                new_line.append(chr(char))
-                            else:
-                                new_line.append(" ")
+                        try:
+                            # try to change to utf-8
+                            for char in in_line.decode():
+                                if ord(char) <= 128:
+                                    new_line.append(char)
+                                else:
+                                    new_line.append(" ")
+                        except UnicodeError:
+                            # try to go bit by bit
+                            for char in in_line:
+                                if char <= 128:
+                                    new_line.append(chr(char))
+                                else:
+                                    new_line.append(" ")
                         self.assertEqual("".join(new_line), out_line.decode("ascii"))
 
     def test_bad_arguments(self):
