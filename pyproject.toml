@@ -45,7 +45,7 @@ Documentation = "https://idaholab.github.io/MontePy/index.html"
 "Bug Tracker" = "https://github.com/idaholab/MontePy/issues"
 
 [project.scripts]
-"change_to_ascii" = "scripts.change_to_ascii:main"
+"change_to_ascii" = "montepy._scripts.change_to_ascii:main"
 
 [build-system]
 requires = ["setuptools  >= 61.0.0"]

@@ -56,7 +56,9 @@ def strip_characters(args):
                 )
 
 
-def main(args):
+def main(args=None):
+    if args is None:
+        args = sys.argv[1:]
     args = define_args(args)
     strip_characters(args)
 

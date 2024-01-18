@@ -31,7 +31,7 @@ class TestChangeAsciiScript(TestCase):
     @staticmethod
     def run_script(args):
         return subprocess.run(
-            ["python", os.path.join("scripts", "change_to_ascii.py")] + args
+            ["python", os.path.join("montepy", "_scripts", "change_to_ascii.py")] + args
         )
 
     def test_delete_bad(self):
