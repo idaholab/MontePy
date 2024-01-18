@@ -7,15 +7,15 @@ def define_args(args):
         prog="Change_to_ascii",
         description="Change the encoding of a file to strict ASCII. Everything not compliant will be removed.",
     )
-    parser.add_argument(
+    group = parser.add_mutually_exclusive_group()
+    group.add_argument(
         "-d",
         "--delete",
         dest="delete",
         action="store_true",
-        help="Delete any non-ascii characters",
-        default=True,
+        help="Delete any non-ascii characters. This is the default.",
     )
-    parser.add_argument(
+    group.add_argument(
         "-w",
         "--whitespace",
         dest="whitespace",
@@ -33,14 +33,16 @@ def strip_characters(args):
         replacer = " "
     elif "delete" in args:
         replacer = ""
-    with open(args.in_file[0], "rb") as in_fh, open(args.out_file[0], "w") as out_fh:
+    # default to delete
+    else:
+        replacer = ""
+    with open(args.in_file[0], "rb") as in_fh, open(args.out_file[0], "wb") as out_fh:
         for line in in_fh:
             utf8_line = line.decode(encoding="utf8", errors="replace")
             utf8_line = utf8_line.replace("�", replacer)
+
             try:
-                out_fh.write(
-                    utf8_line.encode(encoding="ascii", errors="strict").decode()
-                )
+                out_fh.write(utf8_line.encode(encoding="ascii", errors="strict"))
             except UnicodeError as e:
                 new_line = []
                 # find the bad characters character by character
@@ -50,7 +52,7 @@ def strip_characters(args):
                     else:
                         new_line.append(char)
                 out_fh.write(
-                    "".join(new_line).encode(encoding="ascii", errors="strict").decode()
+                    "".join(new_line).encode(encoding="ascii", errors="strict")
                 )
 
 
