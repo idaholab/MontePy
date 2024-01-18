@@ -3,6 +3,14 @@ import sys
 
 
 def define_args(args):
+    """
+    Parses the arguments from the command line.
+
+    :param args: the arguments from the command line.
+    :type args: list
+    :returns: the parsed arguments (with argparse)
+    :rtype: argparse.Namespace
+    """
     parser = argparse.ArgumentParser(
         prog="Change_to_ascii",
         description="Change the encoding of a file to strict ASCII. Everything not compliant will be removed.",
@@ -29,6 +37,12 @@ def define_args(args):
 
 
 def strip_characters(args):
+    """
+    Strips non-ascii characters from the input file, and writes out the output file.
+
+    :param args: the parsed command line arguments.
+    :type args: argparse.Namespace
+    """
     if args.whitespace:
         replacer = " "
     elif args.delete:
@@ -57,6 +71,12 @@ def strip_characters(args):
 
 
 def main(args=None):
+    """
+    Main runner function.
+
+    :param args: The arguments passed from the command line.
+    :type args: list
+    """
     if args is None:
         args = sys.argv[1:]
     args = define_args(args)
