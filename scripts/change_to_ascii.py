@@ -29,9 +29,9 @@ def define_args(args):
 
 
 def strip_characters(args):
-    if "whitespace" in args:
+    if args.whitespace:
         replacer = " "
-    elif "delete" in args:
+    elif args.delete:
         replacer = ""
     # default to delete
     else:
