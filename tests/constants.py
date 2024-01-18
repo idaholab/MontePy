@@ -24,3 +24,8 @@ IGNORE_FILES = {
     "bad_encoding.imcnp",
     "unicode.imcnp",
 }
+
+BAD_ENCODING_FILES = {
+    "bad_encoding.imcnp",
+    "unicode.imcnp",
+}
