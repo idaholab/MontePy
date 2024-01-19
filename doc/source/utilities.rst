@@ -32,6 +32,8 @@ To use this run:
 
    python -m montepy -c [files]
 
+.. _convert_ascii:
+
 Converting Encoding to ASCII
 ----------------------------
 
@@ -54,6 +56,8 @@ Command Line Options
           -d, --delete      Delete any non-ascii characters. This is the default.
           -w, --whitespace  Replace non-ascii characters with a space.
 
+
+.. _encoding_background:
 
 Background
 ++++++++++
