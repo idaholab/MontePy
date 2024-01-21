@@ -23,11 +23,11 @@ jobs:
       - run: pip install --user dist/*.whl
       - run: pip uninstall -y montepy
       - run: pip install --user dist/*.tar.gz
-      - run: pip install --user montepy[test]
-      - run: pip install --user montepy[doc]
-      - run: pip install --user montepy[format]
-      - run: pip install --user montepy[build]
-      - run: pip install --user montepy[develop]
+      - run: pip install --user . montepy[test]
+      - run: pip install --user . montepy[doc]
+      - run: pip install --user . montepy[format]
+      - run: pip install --user . montepy[build]
+      - run: pip install --user . montepy[develop]
       - run: pip freeze
       - name: Upload build artifacts
         uses: actions/upload-artifact@v3
@@ -47,7 +47,7 @@ jobs:
         uses: actions/setup-python@v4
         with: 
           python-version: ${{ matrix.python-version }}
-      - run: pip install --user montepy[test]
+      - run: pip install --user . montepy[test]
       - run: coverage run -m pytest --junitxml=test_report.xml
       - run: coverage report
       - run: coverage xml
@@ -71,7 +71,7 @@ jobs:
         uses: actions/setup-python@v4
         with: 
           python-version: 3.8
-      - run: pip install montepy[doc]
+      - run: pip install . montepy[doc]
       - run: sphinx-build doc/source/ doc/build/ -W --keep-going -E
       - run: sphinx-build -b html doc/source/ doc/build/html
       - uses: actions/upload-artifact@v3
@@ -88,7 +88,7 @@ jobs:
         uses: actions/setup-python@v4
         with: 
           python-version: 3.8
-      - run: pip install montepy[format]
+      - run: pip install . montepy[format]
       - run: black --check montepy/ tests/
            
         
