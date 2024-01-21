@@ -6,9 +6,7 @@ description = "A library for reading, editing, and writing MCNP input files"
 # gitlab limits the readme to 4,000 chars.
 readme = "README.md"
 requires-python = ">=3.8"
-maintainers = [
-	{name = "Micah Gale", email = "micah.gale@inl.gov"}
-]
+maintainers = {name="Micah Gale", email="micah.gale@inl.gov"}
 authors = [
 	{name = "Micah Gale", email = "micah.gale@inl.gov"},
 	{name = "Travis Labossiere-Hickman", email = "Travis.LabossiereHickman@inl.gov"},
@@ -30,13 +28,26 @@ classifiers = [
 
 ]
 dependencies = [
-	"numpy",
+	"numpy>=1.18",
 	"sly==0.5"
 ]
 
 [project.optional-dependencies]
-test = ["coverage", "pytest"]
+test = ["coverage[toml]>=6.3.2", "pytest"]
 doc = ["sphinx", "sphinxcontrib-apidoc", "sphinx_rtd_theme"]
+format = ["black>23.3.0"]
+build = [
+	"build",
+	"setuptool_scm",
+	"bump2version"
+]
+develop = [
+	"montepy[test]",
+	"montepy[doc]",
+	"montepy[format]",
+	"montepy[build]",
+]
+
 
 [project.urls]
 Homepage = "https://idaholab.github.io/MontePy/index.html"
