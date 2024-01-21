@@ -41,7 +41,6 @@ format = ["black>=23.3.0"]
 build = [
 	"build",
 	"setuptools_scm>=8",
-	"bump2version"
 ]
 develop = [
 	"montepy[test]",
