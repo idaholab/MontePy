@@ -1,4 +1,4 @@
-name: Test package
+name: CI testing
 
 on: [push]
 
@@ -67,7 +67,7 @@ jobs:
         if: ${{ matrix.python-version == '3.9' }}
         uses: dorny/test-reporter@v1.7.0
         with:
-          name: CI
+          name: CI-test-report
           path: test_report.xml
           reporter: java-junit
       - name: Coveralls GitHub Action
