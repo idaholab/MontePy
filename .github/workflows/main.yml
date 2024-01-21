@@ -57,10 +57,14 @@ jobs:
           name: test
           path: test_report.xml
       - name: Upload coverage report
-        uses: actions/upload-artifact@v3
+        if: ${{ matrix.python-version == '3.9' }}
+        uses: actions/upload-artifact@v4
         with:
           name: coverage
           path: coverage.xml
+      - name: Coveralls GitHub Action
+        if: ${{ matrix.python-version == '3.9' }}
+        uses: coverallsapp/github-action@v2.2.3
 
   doc-test:
     runs-on: ubuntu-latest
