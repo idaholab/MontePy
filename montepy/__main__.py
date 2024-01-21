@@ -34,6 +34,12 @@ def define_args(args):
         help="Check the given input file(s) for errors. Accepts globs, and multiple arguments.",
         metavar="input_file",
     )
+    parser.add_argument(
+        "-v",
+        "--version",
+        action="store_true",
+        help="Print the version number",
+    )
     args = parser.parse_args(args)
     return args
 
@@ -59,8 +65,10 @@ def main():  # pragma: no cover
     The main function
     """
     args = define_args(sys.argv[1:])
-    if "check" in args:
+    if "check" in args and args.check:
         check_inputs(args.check)
+    if args.version:
+        print(montepy.__version__)
 
 
 if __name__ == "__main__":  # pragma: no cover
