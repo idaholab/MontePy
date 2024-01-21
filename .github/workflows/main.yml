@@ -65,6 +65,8 @@ jobs:
       - name: Coveralls GitHub Action
         if: ${{ matrix.python-version == '3.9' }}
         uses: coverallsapp/github-action@v2.2.3
+        with:
+          file: coverage.xml
 
   doc-test:
     runs-on: ubuntu-latest
