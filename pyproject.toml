@@ -40,7 +40,7 @@ doc = ["sphinx", "sphinxcontrib-apidoc", "sphinx_rtd_theme"]
 format = ["black>=23.3.0"]
 build = [
 	"build",
-	"setuptool_scm",
+	"setuptools_scm>=8",
 	"bump2version"
 ]
 develop = [
@@ -58,8 +58,11 @@ Documentation = "https://idaholab.github.io/MontePy/index.html"
 "Bug Tracker" = "https://github.com/idaholab/MontePy/issues"
 
 [build-system]
-requires = ["setuptools  >= 61.0.0"]
+requires = ["setuptools  >= 64.0.0", "setuptools_scm>=8"]
 build-backend = "setuptools.build_meta"
+
+[tool.setuptools_scm]
+version_file = "montepy/_version.py"
 
 [tool.setuptools.packages.find]
 include = ["montepy*"]
