@@ -67,6 +67,7 @@ jobs:
         if: ${{ matrix.python-version == '3.9' }}
         uses: dorny/test-reporter@v1.7.0
         with:
+          name: CI
           path: test_report.xml
       - name: Coveralls GitHub Action
         if: ${{ matrix.python-version == '3.9' }}
