@@ -37,7 +37,7 @@ dependencies = [
 [project.optional-dependencies]
 test = ["coverage[toml]>=6.3.2", "pytest"]
 doc = ["sphinx", "sphinxcontrib-apidoc", "sphinx_rtd_theme"]
-format = ["black>23.3.0"]
+format = ["black>=23.3.0"]
 build = [
 	"build",
 	"setuptool_scm",
