@@ -67,9 +67,6 @@ version_file = "montepy/_version.py"
 [tool.setuptools.packages.find]
 include = ["montepy*"]
 
-[tool.setuptools.dynamic]
-version = {attr = "montepy.__version__"}
-
 [tool.coverage.run]
 source = ["montepy"]
 omit = ["montepy/_version.py"]
