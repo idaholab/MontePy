@@ -232,21 +232,14 @@ class MCNP_Problem:
         """
         return self._transforms
 
-    def parse_input(self, check_input=False, encoding="ascii"):
+    def parse_input(self, check_input=False, replace=True):
         """
         Semantically parses the MCNP file provided to the constructor.
 
-        .. Note::
-            For different encoding schemes see the available list
-            `here <https://docs.python.org/3.9/library/codecs.html#standard-encodings>`_.
-
-            CP1252 is commonly referred to as "extended-ASCII".
-            You may have success with this encoding for working with special characters.
-
-        :param encoding: The encoding scheme to use.
-        :type encoding: str
         :param check_input: If true, will try to find all errors with input and collect them as warnings to log.
         :type check_input: bool
+        :param replace: replace all non-ASCII characters with a space (0x20)
+        :type replace: bool
         """
         trailing_comment = None
         last_obj = None
@@ -261,7 +254,7 @@ class MCNP_Problem:
         try:
             for i, input in enumerate(
                 input_syntax_reader.read_input_syntax(
-                    self._input_file, self.mcnp_version, encoding=encoding
+                    self._input_file, self.mcnp_version, replace=replace
                 )
             ):
                 self._original_inputs.append(input)

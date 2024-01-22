@@ -60,7 +60,7 @@ class MCNP_InputFile:
         """
         pass
 
-    def open(self, mode, encoding="ascii", replace=False):
+    def open(self, mode, encoding="ascii", replace=True):
         """
         Opens the underlying file, and returns self.
 
@@ -78,8 +78,10 @@ class MCNP_InputFile:
 
         :param mode: the mode to open the file in
         :type mode: str
-        :param encoding: The encoding scheme to use.
+        :param encoding: The encoding scheme to use. If replace is true, this is ignored, and changed to ASCII
         :type encoding: str
+        :param replace: replace all non-ASCII characters with a space (0x20)
+        :type replace: bool
         :returns: self
         """
         if "r" in mode:
