@@ -1,5 +1,6 @@
 # Copyright 2024, Battelle Energy Alliance, LLC All Rights Reserved.
 import itertools as it
+from montepy.constants import ASCII_CEILING
 from montepy.utilities import *
 
 
@@ -20,6 +21,8 @@ class MCNP_InputFile:
         self._path = path
         self._parent_file = parent_file
         self._lineno = 1
+        self._replace_with_space = False
+        self._mode = None
         self._fh = None
 
     @make_prop_pointer("_path")
@@ -57,7 +60,7 @@ class MCNP_InputFile:
         """
         pass
 
-    def open(self, mode, encoding="ascii"):
+    def open(self, mode, encoding="ascii", replace=False):
         """
         Opens the underlying file, and returns self.
 
@@ -79,6 +82,12 @@ class MCNP_InputFile:
         :type encoding: str
         :returns: self
         """
+        if "r" in mode:
+            if replace:
+                self._replace_with_space = True
+                mode = "rb"
+                encoding = None
+        self._mode = mode
         self._fh = open(self.path, mode, encoding=encoding)
         return self
 
@@ -94,12 +103,23 @@ class MCNP_InputFile:
     def __iter__(self):
         for lineno, line in enumerate(self._fh):
             self._lineno = lineno + 1
+            if self._mode == "rb" and self._replace_with_space:
+                line = self._clean_line(line)
             yield line
+
+    @staticmethod
+    def _clean_line(line):
+        new_line = bytes([code if code < ASCII_CEILING else ord(" ") for code in line])
+        line = new_line.decode("ascii")
+        line = line.replace("\r\n", "\n").replace("\r", "\n")
+        return line
 
     def read(self, size=-1):
         """ """
         if self._fh:
             ret = self._fh.read(size)
+            if self._mode == "rb" and self._replace_with_space:
+                ret = self._clean_line(ret)
             self._lineno += ret.count("\n")
             return ret
 
@@ -107,6 +127,8 @@ class MCNP_InputFile:
         """ """
         if self._fh:
             ret = self._fh.readline(size)
+            if self._mode == "rb" and self._replace_with_space:
+                ret = self._clean_line(ret)
             self._lineno += ret.count("\n")
             return ret
 
