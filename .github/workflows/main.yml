@@ -2,10 +2,7 @@ name: CI testing
 
 on: [pull_request]
 
-permissions:
-  contents: read
-  actions: read
-  checks: write
+
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -41,6 +38,10 @@ jobs:
 
   test:
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      actions: read
+      checks: write
     strategy:
       matrix:
         python-version: ["3.8", "3.9", "3.10", "3.11", "3.12"]
