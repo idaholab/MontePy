@@ -38,10 +38,7 @@ jobs:
 
   test:
     runs-on: ubuntu-latest
-    permissions:
-      contents: read
-      actions: read
-      checks: write
+    permissions: write-all
     strategy:
       matrix:
         python-version: ["3.8", "3.9", "3.10", "3.11", "3.12"]
