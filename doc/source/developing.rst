@@ -77,18 +77,39 @@ Setting up and Typical Development Workflow
 
 Deploy Process
 ^^^^^^^^^^^^^^
-MontePy currently does not use a continuous deploy process.
-Rather changes are staged on the ``develop`` branch prior to a release.
+MontePy currently does not use a continuous deploy (CD) process.
+Changes are staged on the ``develop`` branch prior to a release.
 Both ``develop`` and ``main`` are protected branches.
-``main`` should only be used for releases.
+``main`` is only be used for releases.
 If someone clones ``main`` they will get the most recent official release.
 Only a select few core-developers are allowed to approve a merge to ``main`` and therefore a new release.
-``develop`` should be production quality code that has been approved for release,
+``develop`` is for production quality code that has been approved for release,
 but is waiting on the next release.
 So all new features and bug fixes must first be merged onto ``develop``. 
 
 The expectation is that features once merged onto ``develop`` are stable,
 well tested, well documented, and well-formatted.
+
+Automated Versioning
+^^^^^^^^^^^^^^^^^^^^
+
+As part of the CD process a new version number is created. 
+The `GitHub action <https://github.com/laputansoft/github-tag-action>`_ that does this goes through the following process:
+
+1. Finds the last release version as git tags.
+2. Analyzes all commit messages since then to determine if this is a Major, Minor, or Patch release.
+3. Creates a tag with the apropriately incremented new release version.
+
+This means that git commit messages needs to convey the appropriate level of information.
+The library uses `angular's commit message conventions <https://github.com/angular/angular.js/blob/master/DEVELOPERS.md#-git-commit-guidelines>`_.
+This convention will not be enforced for all commits,
+but will be for all merge commits from Pull Requests.
+
+Additional References:
+
+1. `github action <https://github.com/laputansoft/github-tag-action>`_
+1. `angular's commit message conventions <https://github.com/angular/angular.js/blob/master/DEVELOPERS.md#-git-commit-guidelines>`_
+1. `Semantic versioning standard <https://semver.org/>`_
 
 Merge Checklist
 ^^^^^^^^^^^^^^^
