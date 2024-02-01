@@ -3,7 +3,7 @@ import os
 import sys
 import warnings
 
-ignored = {"__pycache__", "_version.py", "__main__.py"}
+ignored = {"__pycache__", "_version.py", "__main__.py", "_cell_data_control.py"}
 
 base = os.path.join("..", "..")
 
