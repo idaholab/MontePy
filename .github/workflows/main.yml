@@ -94,6 +94,8 @@ jobs:
         with:
           name: website
           path: doc/build/html
+      - run: cd doc/source
+      - run: python _test_for_missing_docs.py  
 
   format-test:
     runs-on: ubuntu-latest
