@@ -18,8 +18,9 @@ def crawl_path(rel_path):
             crawl_path(f_name)
         elif os.path.isfile(os.path.join(base, f_name)) and ".py" in f:
             if f == "__init__.py":
-                f_name = os.path.join(rel_path, ".py")
-            path = f_name.replace("/", ".").replace(".py", ".rst")
+                path = f_name.replace("/", ".").replace(".__init__.py", ".rst")
+            else:
+                path = f_name.replace("/", ".").replace(".py", ".rst")
             if not os.path.exists(os.path.join("api", path)):
                 missing = True
                 warnings.warn(
