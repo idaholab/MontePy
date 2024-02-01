@@ -6,7 +6,7 @@
 [![Coverage Status](https://coveralls.io/repos/github/idaholab/MontePy/badge.svg?branch=develop)](https://coveralls.io/github/idaholab/MontePy?branch=develop)
 [![PyPI version](https://badge.fury.io/py/montepy.svg)](https://badge.fury.io/py/montepy)
 
-A python library to read, edit, and write MCNP input files. 
+MontePy is a python library to read, edit, and write MCNP input files. 
 
 ## Installing
 
