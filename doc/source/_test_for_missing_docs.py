@@ -1,0 +1,33 @@
+import glob
+import os
+import sys
+import warnings
+
+ignored = {"__pycache__", "_version.py", "__main__.py"}
+
+base = os.path.join("..", "..")
+
+
+def crawl_path(rel_path):
+    missing = False
+    for f in os.listdir(os.path.join(base, rel_path)):
+        f_name = os.path.join(rel_path, f)
+        if f in ignored:
+            continue
+        if os.path.isdir(os.path.join(base, f_name)):
+            crawl_path(f_name)
+        elif os.path.isfile(os.path.join(base, f_name)) and ".py" in f:
+            if f == "__init__.py":
+                f_name = os.path.join(rel_path, ".py")
+            path = f_name.replace("/", ".").replace(".py", ".rst")
+            if not os.path.exists(os.path.join("api", path)):
+                missing = True
+                warnings.warn(
+                    f"Missing sphinx documentation for {os.path.join(rel_path, f)}"
+                )
+    return missing
+
+
+missing = crawl_path("montepy")
+if missing:
+    sys.exit(314)
