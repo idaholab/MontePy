@@ -94,7 +94,8 @@ jobs:
         with:
           name: website
           path: doc/build/html
-      - run: | 
+      - name: Test for missing API documentation  
+        run: | 
              cd doc/source
              python _test_for_missing_docs.py  
 
