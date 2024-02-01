@@ -27,7 +27,7 @@ There is also a developer's guide covering the design and approach of MontePy, a
 * Can parse the following surfaces exactly P(X|Y|Z), C(X|Y|Z), C/(X|Y|Z) (I mean it can do PX, and PY, etc.)
 * Can read in all other inputs but not understand them	
 * Can write out full MCNP problem even if it doesn't fully understand an input.	
-* Can write out the MCNP problem verbatim, and try to match 
+* Can write out the MCNP problem verbatim, and try to match the original user formatting. 
 * Can quickly access cells, surfaces, and materials by their numbers. For example: `cell = problem.cells[105]`.
 * Can quickly update cell importances. For example `cell.importance.neutron = 2.0`.
 * Has over 240 test cases right now 
