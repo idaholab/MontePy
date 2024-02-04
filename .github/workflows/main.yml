@@ -1,6 +1,9 @@
 name: CI testing
 
-on: [pull_request]
+on: 
+  pull_request:
+  push: 
+     branches: [develop, main, alpha-test]
 
 jobs:
   build:
