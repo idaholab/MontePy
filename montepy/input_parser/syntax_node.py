@@ -222,6 +222,7 @@ class GeometryTree(SyntaxNodeBase):
 
     def __init__(self, name, tokens, op, left, right=None):
         super().__init__(name)
+        assert all(list(map(lambda v: isinstance(v, SyntaxNodeBase), tokens.values())))
         self._nodes = tokens
         self._operator = Operator(op)
         self._left_side = left
