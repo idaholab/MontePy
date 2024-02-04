@@ -242,19 +242,8 @@ class GeometryTree(SyntaxNodeBase):
 
     @property
     def comments(self):
-        for key, node in self.nodes.items():
-            if isinstance(node, SyntaxNodeBase):
-                yield from node.comments
-            elif isinstance(node, dict):
-                yield from GeometryTree._recurse_comments(node)
-
-    @staticmethod
-    def _recurse_comments(tree):
-        for node in tree.values():
-            if isinstance(node, SyntaxNodeBase):
-                yield from node.comments
-            elif isinstance(node, dict):
-                yield from GeometryTree._recurse_comments(node)
+        for node in self.nodes.values():
+            yield from node.comments
 
     @property
     def left(self):
