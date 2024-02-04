@@ -322,7 +322,7 @@ How to __str__ vs __repr__
 """"""""""""""""""""""""""
 All objects must implement ``__str__`` (called by ``str()``), 
 and ``__repr__`` (called by ``repr()``).
-See `this issue <https://hpcgitlab.hpc.inl.gov/experiment_analysis/montepy/-/issues/41>`_ for a more detailed discussion.
+See `this issue <https://github.com/idaholab/MontePy/issues/82>`_ for a more detailed discussion.
 In general ``__str__`` should return a one line string with enough information to uniquely identify the object.
 For numbered objects this should include their number, and a few high level details.
 For ``__repr__`` this should include debugging information.

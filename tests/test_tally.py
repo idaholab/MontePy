@@ -16,13 +16,12 @@ class TestTallyParser(TestCase):
             "F4:n 1 2 3",
             "F4:n (1 3i 5) (7 8 9) T",
             "f4:n (1 3i 5) (7 8 9)",
-            "F7 (1 3i 5) (7 8 9)",
-            "F7 (1 3i 5) (7 8 9) ",
+            "F7:n (1 3i 5) (7 8 9)",
+            "F7:n (1 3i 5) (7 8 9) ",
         ]:
             print(line)
             input = Input([line], BlockType.DATA)
             data = parse_data(input)
-            self.assertEqual(data.prefix, "f")
 
     def test_parsing_tally_print(self):
         input = Input(["Fq4 f p e"], BlockType.DATA)

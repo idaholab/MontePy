@@ -166,17 +166,15 @@ class CellParser(MCNP_Parser):
                 nodes["start_pad"].append(node)
         return syntax_node.GeometryTree("geom parens", nodes, ">", p.geometry_expr)
 
+    # note: this has global impact on number_sequence
     # support for fill card weirdness
     @_(
-        'number_sequence "(" number_sequence ")"',
-        'number_sequence "(" number_sequence ")" padding',
         'number_sequence ":" numerical_phrase',
         # support for TRCL syntax
-        '"(" number_sequence ")"',
-        '"(" number_sequence ")" padding',
+        "paren_number_group",
     )
     def number_sequence(self, p):
-        if isinstance(p[0], str):
+        if isinstance(p[0], syntax_node.PaddingNode):
             sequence = syntax_node.ListNode("parenthetical statement")
             sequence.append(p[0])
         else:
@@ -186,7 +184,7 @@ class CellParser(MCNP_Parser):
                 for val in node.nodes:
                     sequence.append(val)
             elif isinstance(node, str):
-                sequence.append(syntax_node.PaddingNode(node))
+                sequence.append(syntax_node.PaddingNode(node, str))
             else:
                 sequence.append(node)
         return sequence

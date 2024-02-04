@@ -170,6 +170,7 @@ class MCNP_Parser(Parser, metaclass=MetaBuilder):
         "numerical_phrase",
         "shortcut_phrase",
         "number_sequence numerical_phrase",
+        "number_sequence paren_number_group",
         "number_sequence shortcut_phrase",
     )
     def number_sequence(self, p):
@@ -191,6 +192,17 @@ class MCNP_Parser(Parser, metaclass=MetaBuilder):
             else:
                 sequence.append(p[1])
         return sequence
+
+    @_(
+        "open_paren_phrase number_sequence close_paren_phrase",
+    )
+    def paren_number_group(self, p):
+        ret = syntax_node.ListNode("tally group")
+        ret.append(p[0])
+        for node in p.number_sequence.nodes:
+            ret.append(node)
+        ret.append(p[2])
+        return ret
 
     @_("number_phrase", "null_phrase")
     def numerical_phrase(self, p):
@@ -276,7 +288,25 @@ class MCNP_Parser(Parser, metaclass=MetaBuilder):
         """
         return self._flush_phrase(p, str)
 
-    def _flush_phrase(self, p, token_type):
+    @_('"("', '"(" padding')
+    def open_paren_phrase(self, p):
+        """ """
+        ret = syntax_node.PaddingNode(p[0])
+        if "padding" in p:
+            for node in p.padding.nodes:
+                ret.append(node)
+        return ret
+
+    @_('")"', '")" padding')
+    def close_paren_phrase(self, p):
+        """ """
+        ret = syntax_node.PaddingNode(p[0])
+        if "padding" in p:
+            for node in p.padding.nodes:
+                ret.append(node)
+        return ret
+
+    def _flush_phrase(self, p, token_type, never_pad=False):
         """
         Creates a ValueNode.
         """
@@ -284,7 +314,7 @@ class MCNP_Parser(Parser, metaclass=MetaBuilder):
             padding = p[1]
         else:
             padding = None
-        return syntax_node.ValueNode(p[0], token_type, padding)
+        return syntax_node.ValueNode(p[0], token_type, padding, never_pad)
 
     @_("SPACE", "DOLLAR_COMMENT", "COMMENT")
     def padding(self, p):

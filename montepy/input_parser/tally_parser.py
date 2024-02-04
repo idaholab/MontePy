@@ -13,7 +13,7 @@ class TallyParser(DataParser):
         ret = {}
         for key, node in p.introduction.nodes.items():
             ret[key] = node
-        ret["tally"] = p.tally_specification
+        ret["tally"] = p.tally_specification["tally"]
         return syntax_node.SyntaxNode("data", ret)
 
     @_("tally_numbers", "tally_numbers end_phrase")
@@ -40,32 +40,13 @@ class TallyParser(DataParser):
     @_(
         "tally_numbers tally_numbers",
         "number_sequence",
-        "tally_group",
-        "tally_numbers padding",
+        "paren_number_group",
     )
     def tally_numbers(self, p):
-        if hasattr(p, "tally_numbers"):
-            ret = p.tally_numbers
-            ret.nodes["right"] += p.padding
-            return ret
         if hasattr(p, "tally_numbers1"):
-            return syntax_node.SyntaxNode("tally tree", {"left": p[0], "right": p[1]})
+            ret = p.tally_numbers0
+            for node in p.tally_numbers1.nodes:
+                ret.append(node)
+            return ret
         else:
-            left = syntax_node.PaddingNode(None)
-            right = syntax_node.PaddingNode(None)
-            return syntax_node.SyntaxNode(
-                "tally set", {"left": left, "tally": p[0], "right": right}
-            )
-
-    @_(
-        '"(" number_sequence ")"',
-        '"(" padding number_sequence ")"',
-    )
-    def tally_group(self, p):
-        left = syntax_node.PaddingNode(p[0])
-        if hasattr(p, "padding"):
-            left.append(p.padding)
-        right = syntax_node.PaddingNode(p[-1])
-        return syntax_node.SyntaxNode(
-            "tally set", {"left": left, "tally": p.number_sequence, "right": right}
-        )
+            return p[0]

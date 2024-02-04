@@ -29,6 +29,8 @@ PREFIX_MATCHES = {
     universe_input.UniverseInput,
 }
 
+SPECIAL_MATCHES = {tally.Tally: tally.Tally.parse_tally_input}
+
 
 def parse_data(input):
     """
@@ -48,5 +50,7 @@ def parse_data(input):
 
     for data_class in PREFIX_MATCHES:
         if prefix == data_class._class_prefix():
+            if data_class in SPECIAL_MATCHES:
+                return SPECIAL_MATCHES[data_class](input)
             return data_class(input)
     return data_input.DataInput(input)
