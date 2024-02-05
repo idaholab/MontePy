@@ -65,7 +65,7 @@ def main():  # pragma: no cover
     The main function
     """
     args = define_args()
-    if "check" in args and args.check:
+    if args.check:
         check_inputs(args.check)
     if args.version:
         print(montepy.__version__)
