@@ -14,7 +14,7 @@ Module to make module executable from CLI.
 """
 
 
-def define_args(args):
+def define_args(args=None):
     """
     Sets and parses the command line arguments.
 
@@ -64,7 +64,7 @@ def main():  # pragma: no cover
     """
     The main function
     """
-    args = define_args(sys.argv[1:])
+    args = define_args()
     if "check" in args and args.check:
         check_inputs(args.check)
     if args.version:
