@@ -4,8 +4,6 @@ on:
   push:
     branches: [main]
 
-env:
-  RELEASE_LEVEL: patch
 
 jobs:
   last-minute-test:
