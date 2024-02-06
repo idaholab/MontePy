@@ -32,6 +32,12 @@ class testMaterialClass(TestCase):
         for component in material.material_components:
             self.assertEqual(material.material_components[component].fraction, 0.5)
 
+        # test implicit library with syntax tree errors
+        in_str = """m1 1001 0.33
+    8016 0.666667"""
+        input_card = Input(in_str.split("\n"), BlockType.DATA)
+        material = Material(input_card)
+
         # test implicit library
         in_str = "M20 1001 0.5 2001 0.3 8016.710nc 0.5"
         input_card = Input([in_str], BlockType.DATA)
@@ -42,6 +48,7 @@ class testMaterialClass(TestCase):
         for component in material.material_components:
             self.assertEqual(material.material_components[component].fraction, 0.5)
 
+        # test weight fraction
         in_str = "M20 1001.80c -0.5 8016.80c -0.5"
         input_card = Input([in_str], BlockType.DATA)
         material = Material(input_card)
