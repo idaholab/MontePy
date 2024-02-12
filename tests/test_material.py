@@ -37,9 +37,8 @@ class testMaterialClass(TestCase):
     8016 0.666667"""
         input_card = Input(in_str.split("\n"), BlockType.DATA)
         material = Material(input_card)
-
         # test implicit library
-        in_str = "M20 1001 0.5 2001 0.3 8016.710nc 0.5"
+        in_str = "M20 1001 0.5 2001 0.5 8016.710nc 0.5"
         input_card = Input([in_str], BlockType.DATA)
         material = Material(input_card)
         self.assertEqual(material.number, 20)
