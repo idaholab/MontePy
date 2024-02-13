@@ -188,7 +188,7 @@ def read_data(fh, mcnp_version, block_type=None, recursion=False):
         ):
             yield from flush_input()
         # die if it is a vertical syntax format
-        if "#" in line[0:BLANK_SPACE_CONTINUE]:
+        if "#" in line[0:BLANK_SPACE_CONTINUE] and not line_is_comment:
             raise errors.UnsupportedFeature("Vertical Input format is not allowed")
         # cut line down to allowed length
         old_line = line

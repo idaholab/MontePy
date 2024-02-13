@@ -4,6 +4,7 @@ foo
 
 MCNP Test Model for MOAA
 C cells
+c # hidden vertical Do not touch 
 c
 1 1 20
          -1000  $ dollar comment
