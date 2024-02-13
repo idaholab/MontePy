@@ -19,7 +19,6 @@ Submodules
    montepy.input_parser.input_file
    montepy.input_parser.input_reader
    montepy.input_parser.input_syntax_reader
-   montepy.input_parser.input_file
    montepy.input_parser.mcnp_input
    montepy.input_parser.parser_base
    montepy.input_parser.read_parser
