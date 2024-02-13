@@ -24,6 +24,8 @@ jobs:
       - run: pip install .
       - run: pip uninstall -y montepy
       - run: pip install --user dist/*.whl
+        # run scripts
+      - run: change_to_ascii -h
       - run: pip uninstall -y montepy
       - run: pip install --user dist/*.tar.gz
       - run: pip install --user . montepy[test]

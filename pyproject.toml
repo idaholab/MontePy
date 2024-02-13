@@ -56,6 +56,9 @@ Repository = "https://github.com/idaholab/montepy.git"
 Documentation = "https://idaholab.github.io/MontePy/index.html"
 "Bug Tracker" = "https://github.com/idaholab/MontePy/issues"
 
+[project.scripts]
+"change_to_ascii" = "montepy._scripts.change_to_ascii:main"
+
 [build-system]
 requires = ["setuptools  >= 64.0.0", "setuptools_scm>=8"]
 build-backend = "setuptools.build_meta"

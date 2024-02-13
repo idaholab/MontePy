@@ -16,6 +16,7 @@ Submodules
    montepy.input_parser.block_type
    montepy.input_parser.cell_parser
    montepy.input_parser.data_parser
+   montepy.input_parser.input_file
    montepy.input_parser.input_reader
    montepy.input_parser.input_syntax_reader
    montepy.input_parser.input_file
