@@ -15,7 +15,7 @@ import warnings
 reading_queue = []
 
 
-def read_input_syntax(input_file, mcnp_version=DEFAULT_VERSION):
+def read_input_syntax(input_file, mcnp_version=DEFAULT_VERSION, replace=True):
     """
     Creates a generator function to return a new MCNP input for
     every new one that is encountered.
@@ -30,12 +30,14 @@ def read_input_syntax(input_file, mcnp_version=DEFAULT_VERSION):
     :type input_file: MCNP_InputFile
     :param mcnp_version: The version of MCNP that the input is intended for.
     :type mcnp_version: tuple
+    :param replace: replace all non-ASCII characters with a space (0x20)
+    :type replace: bool
     :returns: a generator of MCNP_Object objects
     :rtype: generator
     """
     global reading_queue
     reading_queue = deque()
-    with input_file.open("r") as fh:
+    with input_file.open("r", replace=replace) as fh:
         yield from read_front_matters(fh, mcnp_version)
         yield from read_data(fh, mcnp_version)
 

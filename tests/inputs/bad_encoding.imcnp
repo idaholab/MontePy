@@ -1,0 +1,52 @@
+MESSAGE: this is a message
+it should show up at the beginning
+foo
+Note: this file in encoded in "extended ascii": "CP-1252"
+
+MCNP Test Model for MOAA
+C cells  ÿ
+c
+1 1 20
+         -1000  $ dollar comment
+	imp:n,p=1 U=350 trcl=5
+2 2 8
+      -1005
+     imp:n=1
+     imp:p=0.5
+3 3 -1
+      1000 1005 -1010
+     imp:n,p=1
+99 0
+      1010
+     imp:n,p=0
+5 0 
+      #99
+      imp:n,p=3 fill=350 (1 0 0 )
+c foo end comment
+
+C surfaces
+1000 SO 1
+1005 RCC 0 1.5 -0.5 0 0 1 0.25
+1010 SO 3
+
+C data
+C materials
+C UO2 5 atpt enriched
+m1        92235.80c           5 &
+92238.80c          95
+C Iron
+m2        26054.80c        5.85
+          26056.80c       91.75
+          26057.80c        2.12
+          26058.80c        0.28
+C water
+C foo
+m3        1001.80c           2
+           8016.80c           1
+MT3 lwtr.23t h-zr.20t h/zr.28t
+C execution
+ksrc 0 0 0
+kcode 100000 1.000 50 1050
+phys:p j 1 2j 1
+mode n p
+vol NO 2J 1 1.5 J
