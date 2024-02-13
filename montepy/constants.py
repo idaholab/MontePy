@@ -40,6 +40,13 @@ TABSIZE = 8
 How many spaces a tab is expand to.
 """
 
+ASCII_CEILING = 127
+"""
+The maximum allowed code point allowed by ASCII.
+
+Source: `Wikipedia <https://en.wikipedia.org/wiki/ASCII>`_
+"""
+
 
 def get_max_line_length(mcnp_version=DEFAULT_VERSION):
     """

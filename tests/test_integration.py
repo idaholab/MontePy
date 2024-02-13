@@ -342,6 +342,7 @@ class testFullFileIntegration(TestCase):
         # test input pass-through
         answer = [
             "C cells",
+            "c # hidden vertical Do not touch",
             "c",
             "1 1 20",
             "         -1000  $ dollar comment",
@@ -354,20 +355,20 @@ class testFullFileIntegration(TestCase):
         cell = new_prob.cells[1]
         output = cell.format_for_mcnp_input((6, 2, 0))
         print(output)
-        self.assertEqual(int(output[3].split("$")[0]), -5)
+        self.assertEqual(int(output[4].split("$")[0]), -5)
         # test mass density printer
         cell.mass_density = 10.0
         with self.assertWarns(LineExpansionWarning):
             output = cell.format_for_mcnp_input((6, 2, 0))
         print(output)
-        self.assertAlmostEqual(float(output[2].split()[2]), -10)
+        self.assertAlmostEqual(float(output[3].split()[2]), -10)
         # ensure that surface number updated
         # Test material number change
         new_prob = copy.deepcopy(problem)
         new_prob.materials[1].number = 5
         cell = new_prob.cells[1]
         output = cell.format_for_mcnp_input((6, 2, 0))
-        self.assertEqual(int(output[2].split()[1]), 5)
+        self.assertEqual(int(output[3].split()[1]), 5)
 
     def test_thermal_scattering_pass_through(self):
         problem = copy.deepcopy(self.simple_problem)
@@ -1031,3 +1032,12 @@ class testFullFileIntegration(TestCase):
                 os.remove(out)
             except FileNotFoundError:
                 pass
+
+    def test_alternate_encoding(self):
+        with self.assertRaises(UnicodeDecodeError):
+            problem = montepy.read_input(
+                os.path.join("tests", "inputs", "bad_encoding.imcnp"), replace=False
+            )
+        problem = montepy.read_input(
+            os.path.join("tests", "inputs", "bad_encoding.imcnp"), replace=True
+        )
