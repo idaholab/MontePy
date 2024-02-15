@@ -310,8 +310,11 @@ class ReadInput(Input):
             if not is_comment(line):
                 first_non_comment = line
                 break
-        first_word = first_non_comment.split()[0].lower()
-        return first_word == "read"
+        words = first_non_comment.split()
+        if len(words) > 0:
+            first_word = words[0].lower()
+            return first_word == "read"
+        return False
 
     @property
     def file_name(self):
