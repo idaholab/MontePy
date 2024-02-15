@@ -1,4 +1,5 @@
 # Copyright 2024, Battelle Energy Alliance, LLC All Rights Reserved.
+from montepy.constants import BLANK_SPACE_CONTINUE
 import functools
 import re
 
@@ -29,6 +30,27 @@ def fortran_float(number_string):
             return float(update_number)
         except ValueError:
             raise ValueError(f"Value Not parsable as float: {number_string}") from e
+
+
+def is_comment(line):
+    """
+    Determines if the line is a `C ` style comment.
+
+    :param line: the line to analyze
+    :type line: str
+    :returns: True if the line is a comment
+    :rtype: bool
+    """
+    upper_start = line[0 : BLANK_SPACE_CONTINUE + 1].upper()
+    non_blank_comment = upper_start and line.lstrip().upper().startswith("C ")
+    if non_blank_comment:
+        return True
+    blank_comment = (
+        "C\n" == upper_start.lstrip()
+        or "C\r\n" == upper_start.lstrip()
+        or ("C" == upper_start and "\n" not in line)
+    )
+    return blank_comment or non_blank_comment
 
 
 def make_prop_val_node(
