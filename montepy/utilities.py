@@ -34,7 +34,7 @@ def fortran_float(number_string):
 
 def is_comment(line):
     """
-    Determines if the line is a `C ` style comment.
+    Determines if the line is a ``C comment`` style comment.
 
     :param line: the line to analyze
     :type line: str
