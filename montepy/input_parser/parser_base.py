@@ -374,7 +374,7 @@ class MCNP_Parser(Parser, metaclass=MetaBuilder):
         "SURFACE_TYPE",
         "THERMAL_LAW",
         "ZAID",
-        "NUMBER_WORD"
+        "NUMBER_WORD",
     )
     def file_atom(self, p):
         return p[0]
