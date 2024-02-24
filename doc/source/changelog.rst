@@ -5,6 +5,7 @@ MontePy Changelog
 -----------------------
 
 **Documentation**
+
 * Added changelog
 * Added code of conduct
 * Added contribution guideline
@@ -15,45 +16,56 @@ MontePy Changelog
 -------------------
 
 **Added**
+
 * Implemented Github actions
 * Added default github issue templates
 
 **Changed**
+
 * Improved readme and documentation hyperlinks
 
 **Fixed**
+
 * bug with comments in complex geometry.
 
 
 0.2.4
 -------------------
 **Added**
+
 * Public release
 
 0.2.3
 --------------------
 **Added**
+
 * A license
 * A logo
 
 **Changed**
+
 * Explicitly set file encoding for read/write. #159.
+
 **Fixed**
+
 * Bug with not detecting comments with no space e.g., `c\n`. #158.
 
 0.2.2
 --------------------
 **Fixed**
+
 * TODO
 
 0.2.1
 ---------------------
 **Fixed**
+
 * A bug with the packaging process
 
 0.2.0
 ----------------------
 **Added**
+
 * User formatting is preserved automatically
 * Cell geometry is now stored in `cell.geometry` and can be set with bitwise operators. e.g., `cell.geometry = + inner_sphere & - outer_sphere`. This was heavily influenced by OpenMC.
 * You can now check an input file for errors from the command line. `python -m montepy -c /path/to/inputs/*.imcnp`
@@ -72,13 +84,16 @@ MontePy Changelog
 
 0.1.7
 -----------------
+
 **Added**
+
 * License information
 
 0.1.6
 -------------------
 
 **fixed**
+
 * Fixed bug that `+=` didn't work with Numbered object collections
 * Updated the Documentation URL for sphinx
 * Improved (and then removed) guidance on weird gitlab installation workflow.
@@ -100,6 +115,7 @@ MontePy Changelog
 
 
 **Added**
+
 * Added infrastructure to support cell modifier inputs easily
 * Added support for importances, and particle modes: `imp`, `mode`.
 * Added support for cell volumes `vol`.
@@ -111,10 +127,12 @@ MontePy Changelog
 
 
 **Fixed**
+
 * Supported parameters that don't have equal signs. MCNP supports `1 0 -1 u 1`
 * Now doesn't try to expand shortcuts inside of `FC` and `SC` comments.
 
 **Code Quality**
+
 * Removed magic numbers for number of characters in a line.
 * Reduced the usage of regular expressions
 * Made error messages related to invalid user set attributes clearer.
@@ -134,7 +152,9 @@ MontePy Changelog
 
 
 **Changed:**
+
 * Object numbers are now generalized: e.g., `cell.cell_number` has changed to `cell.number`. The `.number` property is standardized across all numbered objects.
 
 **Fixed:**
+
 * Comments in the middle of an input no longer breaks the input into two.
