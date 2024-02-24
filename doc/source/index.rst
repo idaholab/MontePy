@@ -21,6 +21,8 @@ Welcome to MontePy's documentation!
    developing
 
    api/modules
+   
+   changelog
 
 See Also
 ========
