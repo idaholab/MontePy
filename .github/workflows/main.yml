@@ -89,5 +89,22 @@ jobs:
           python-version: 3.8
       - run: pip install --user -r requirements/dev.txt
       - run: black --check montepy/ tests/
-           
-        
+          
+
+  changelog-test:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - uses: actions/checkout@v4
+      - name: Check for changes
+        uses: dorny/paths-filter@v3.0.1
+        id: changes
+        with:
+          filters: |
+            change:
+              - 'doc/source/changelog.rst'
+      - if: steps.changes.outputs.change == 'false'
+        run: |
+          echo "Changelog not updated"
+          exit 1
+
