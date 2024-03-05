@@ -1,6 +1,9 @@
-name: Test package
+name: CI testing
 
-on: [push]
+on: 
+  pull_request:
+  push: 
+     branches: [develop, main, alpha-test]
 
 jobs:
   build:
@@ -16,7 +19,7 @@ jobs:
         with: 
           python-version: ${{ matrix.python-version }}
       - run: pip install --upgrade pip build
-      - run: pip install -r requirements/common.txt
+      - run: pip install build
       - run: python -m build --sdist --wheel
       - run: pip install .
       - run: pip uninstall -y montepy
@@ -25,8 +28,11 @@ jobs:
       - run: change_to_ascii -h
       - run: pip uninstall -y montepy
       - run: pip install --user dist/*.tar.gz
-      - run: pip install --user montepy[test]
-      - run: pip install --user montepy[doc]
+      - run: pip install --user . montepy[test]
+      - run: pip install --user . montepy[doc]
+      - run: pip install --user . montepy[format]
+      - run: pip install --user . montepy[build]
+      - run: pip install --user . montepy[develop]
       - run: pip freeze
       - name: Upload build artifacts
         uses: actions/upload-artifact@v3
@@ -36,6 +42,7 @@ jobs:
 
   test:
     runs-on: ubuntu-latest
+    permissions: write-all
     strategy:
       matrix:
         python-version: ["3.8", "3.9", "3.10", "3.11", "3.12"]
@@ -46,20 +53,35 @@ jobs:
         uses: actions/setup-python@v4
         with: 
           python-version: ${{ matrix.python-version }}
-      - run: pip install --user -r requirements/dev.txt
+      - run: pip install --user . montepy[test]
       - run: coverage run -m pytest --junitxml=test_report.xml
       - run: coverage report
       - run: coverage xml
       - name: Upload test report
-        uses: actions/upload-artifact@v3
+        if: ${{ matrix.python-version == '3.9' }}
+        uses: actions/upload-artifact@v4
         with:
           name: test
           path: test_report.xml
       - name: Upload coverage report
-        uses: actions/upload-artifact@v3
+        if: ${{ matrix.python-version == '3.9' }}
+        uses: actions/upload-artifact@v4
         with:
           name: coverage
           path: coverage.xml
+      - name: Test Reporter
+        if: ${{ matrix.python-version == '3.9' }}
+        uses: dorny/test-reporter@v1.7.0
+        with:
+          name: CI-test-report
+          path: test_report.xml
+          reporter: java-junit
+      - name: Coveralls GitHub Action
+        if: ${{ matrix.python-version == '3.9' }}
+        uses: coverallsapp/github-action@v2.2.3
+        with:
+          file: coverage.xml
+
 
   doc-test:
     runs-on: ubuntu-latest
@@ -70,13 +92,17 @@ jobs:
         uses: actions/setup-python@v4
         with: 
           python-version: 3.8
-      - run: pip install montepy[doc]
+      - run: pip install . montepy[doc]
       - run: sphinx-build doc/source/ doc/build/ -W --keep-going -E
       - run: sphinx-build -b html doc/source/ doc/build/html
       - uses: actions/upload-artifact@v3
         with:
           name: website
           path: doc/build/html
+      - name: Test for missing API documentation  
+        run: | 
+             cd doc/source
+             python _test_for_missing_docs.py  
 
   format-test:
     runs-on: ubuntu-latest
@@ -87,7 +113,7 @@ jobs:
         uses: actions/setup-python@v4
         with: 
           python-version: 3.8
-      - run: pip install --user -r requirements/dev.txt
+      - run: pip install . montepy[format]
       - run: black --check montepy/ tests/
           
 

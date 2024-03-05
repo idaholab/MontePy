@@ -24,6 +24,8 @@ Welcome to MontePy's documentation!
    
    changelog
 
+   publications
+
 See Also
 ========
 

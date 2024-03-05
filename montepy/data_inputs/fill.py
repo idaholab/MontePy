@@ -525,9 +525,11 @@ class Fill(CellModifierInput):
                         payload.append(self.universes[i][j][k].number)
         else:
             payload = [
-                self.universe.number
-                if self.universe is not None
-                else self.old_universe_number
+                (
+                    self.universe.number
+                    if self.universe is not None
+                    else self.old_universe_number
+                )
             ]
         try:
             start_transform = new_vals.index("(")
