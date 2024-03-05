@@ -51,7 +51,9 @@ class Material(data_input.DataInputAbstract, Numbered_MCNP_Object):
                 iterator = batch_gen()
             elif isinstance(isotope_fractions, syntax_node.IsotopesNode):
                 iterator = iter(isotope_fractions)
-            else:
+            else:  # pragma: no cover
+                # this is a fall through error, that should never be raised,
+                # but is here just in case
                 raise MalformedInputError(
                     input,
                     f"Material definitions for material: {self.number} is not valid.",
