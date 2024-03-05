@@ -22,6 +22,8 @@ Welcome to MontePy's documentation!
 
    api/modules
 
+   publications
+
 See Also
 ========
 

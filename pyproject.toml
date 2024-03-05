@@ -30,13 +30,25 @@ classifiers = [
 
 ]
 dependencies = [
-	"numpy",
+	"numpy>=1.18",
 	"sly==0.5"
 ]
 
 [project.optional-dependencies]
-test = ["coverage", "pytest"]
+test = ["coverage[toml]>=6.3.2", "pytest"]
 doc = ["sphinx", "sphinxcontrib-apidoc", "sphinx_rtd_theme"]
+format = ["black>=23.3.0"]
+build = [
+	"build",
+	"setuptools_scm>=8",
+]
+develop = [
+	"montepy[test]",
+	"montepy[doc]",
+	"montepy[format]",
+	"montepy[build]",
+]
+
 
 [project.urls]
 Homepage = "https://idaholab.github.io/MontePy/index.html"
@@ -48,17 +60,18 @@ Documentation = "https://idaholab.github.io/MontePy/index.html"
 "change_to_ascii" = "montepy._scripts.change_to_ascii:main"
 
 [build-system]
-requires = ["setuptools  >= 61.0.0"]
+requires = ["setuptools  >= 64.0.0", "setuptools_scm>=8"]
 build-backend = "setuptools.build_meta"
+
+[tool.setuptools_scm]
+version_file = "montepy/_version.py"
 
 [tool.setuptools.packages.find]
 include = ["montepy*"]
 
-[tool.setuptools.dynamic]
-version = {attr = "montepy.__version__"}
-
 [tool.coverage.run]
 source = ["montepy"]
+omit = ["montepy/_version.py"]
 
 [tool.coverage.report]
 precision = 2
@@ -72,3 +85,5 @@ exclude_also = [
 [tool.pytest.ini_options]
 minversion = "6.0"
 junit_logging = "all"
+junit_family="xunit2"
+filterwarnings="error"
