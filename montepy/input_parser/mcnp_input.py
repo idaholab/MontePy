@@ -314,7 +314,8 @@ class ReadInput(Input):
         if len(words) > 0:
             first_word = words[0].lower()
             return first_word == "read"
-        return False
+        # this is a fall through catch that only happens for a blank input
+        return False  # pragma: no cover
 
     @property
     def file_name(self):
