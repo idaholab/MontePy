@@ -25,5 +25,6 @@ Submodules
    montepy.input_parser.shortcuts
    montepy.input_parser.surface_parser
    montepy.input_parser.syntax_node
+   montepy.input_parser.tally_parser
    montepy.input_parser.thermal_parser
    montepy.input_parser.tokens
