@@ -19,6 +19,8 @@ Welcome to MontePy's documentation!
    faq
 
    developing
+   
+   scope
 
    api/modules
    
