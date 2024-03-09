@@ -15,7 +15,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: set up python  ${{ matrix.python-version }}
-        uses: actions/setup-python@v4
+        uses: actions/setup-python@v5
         with: 
           python-version: ${{ matrix.python-version }}
       - run: pip install --upgrade pip build
@@ -35,7 +35,8 @@ jobs:
       - run: pip install --user . montepy[develop]
       - run: pip freeze
       - name: Upload build artifacts
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4.3.1
+        if: ${{ matrix.python-version == '3.9' }}
         with: 
            name: build
            path: dist/*
@@ -50,7 +51,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: set up python  ${{ matrix.python-version }}
-        uses: actions/setup-python@v4
+        uses: actions/setup-python@v5
         with: 
           python-version: ${{ matrix.python-version }}
       - run: pip install --user . montepy[test]
@@ -59,19 +60,19 @@ jobs:
       - run: coverage xml
       - name: Upload test report
         if: ${{ matrix.python-version == '3.9' }}
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v4.3.1
         with:
           name: test
           path: test_report.xml
       - name: Upload coverage report
         if: ${{ matrix.python-version == '3.9' }}
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v4.3.1
         with:
           name: coverage
           path: coverage.xml
       - name: Test Reporter
         if: ${{ matrix.python-version == '3.9' }}
-        uses: dorny/test-reporter@v1.7.0
+        uses: dorny/test-reporter@v1.8.0
         with:
           name: CI-test-report
           path: test_report.xml
@@ -88,17 +89,30 @@ jobs:
     
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          fetch-tags: true
       - name: set up python 3.8
-        uses: actions/setup-python@v4
+        uses: actions/setup-python@v5
         with: 
           python-version: 3.8
       - run: pip install . montepy[doc]
+      - uses: mathieudutour/github-tag-action@v6.1
+        name: Get next version number
+        id: version_num
+        with: 
+          dry_run: True
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+      - name: Update changelog version 
+        run: |
+          sed -i "s/#Next Version#/${{steps.version_num.outputs.new_version}}/w changes" doc/source/changelog.rst
+          [[ -s changes ]] || exit 1
       - run: sphinx-build doc/source/ doc/build/ -W --keep-going -E
-      - run: sphinx-build -b html doc/source/ doc/build/html
-      - uses: actions/upload-artifact@v3
+        name: Build site strictly
+      - uses: actions/upload-artifact@v4.3.1
         with:
           name: website
-          path: doc/build/html
+          path: doc/build
       - name: Test for missing API documentation  
         run: | 
              cd doc/source
@@ -110,7 +124,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: set up python 3.8
-        uses: actions/setup-python@v4
+        uses: actions/setup-python@v5
         with: 
           python-version: 3.8
       - run: pip install . montepy[format]
