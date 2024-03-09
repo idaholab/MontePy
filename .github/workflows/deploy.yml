@@ -18,6 +18,7 @@ jobs:
       - run: python -m pytest
       
   build-pages:
+    needs: [last-minute-test, build-packages]
     environment:
       name: github-pages
     runs-on: ubuntu-latest
@@ -57,6 +58,21 @@ jobs:
         with: 
           python-version: 3.8
       - run: pip install . montepy[build]
+      - uses: mathieudutour/github-tag-action@v6.1
+        name: Get next version number (dry)
+        id: version_num
+        with: 
+          dry_run: True
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+      - name: Update changelog version 
+        run: |
+          sed -i "s/#Next Version#/${{steps.version_num.outputs.new_version}}/w changes" doc/source/changelog.rst
+          [[ -s changes ]] || exit 1
+      - name: Commit new changelog
+        uses: actions4git/add-commit-push@v1.0.0
+        with: 
+          add-pathspec: doc/source
+          commit-message: Update Changelog version to ${{steps.version_num.outputs.new_version}}
       - name: GitHub Actions Create Tag
         id: tag_version
         uses: mathieudutour/github-tag-action@v6.1
