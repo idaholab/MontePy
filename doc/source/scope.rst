@@ -72,11 +72,19 @@ Style Guide
 #. Spaces for indentation, tabs for alignment. Use spaces to build python syntax (4 spaces per level), and tabs for aligning text inside of docstrings.
 #. Follow `PEP 8 <https://peps.python.org/pep-0008/>`_.
 
-MontePy is:
-===========
 
-MontePy isn't:
-==============
+Support of MCNP Output Files
+----------------------------
+This is a common question: "Will MontePy support MCNP output files?"
+The short answer is no.
+This is due to a few reasons:
+
+#. MCNP is export controlled, and none of the public manuals document the formatting of the output files.
+   So out of an abundance of caution we treat the format of MCNP output files as being export controlled.
+#. The output format is not documented. This makes it hard to robustly handle, and also means that the format may
+   change.
+#. `MCNPtools <https://github.com/lanl/mcnptools>`_ exists and may be a better tool than what we can implement.  
+
 
 Note on use of other languages
 ------------------------------
