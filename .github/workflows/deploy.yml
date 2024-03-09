@@ -85,7 +85,7 @@ jobs:
           gh release upload
           '${{ steps.tag_version.outputs.new_tag }}' dist/**
           --repo '${{ github.repository }}'
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v4.3.1
         with: 
            name: build
            path: |
