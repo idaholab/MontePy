@@ -111,7 +111,7 @@ jobs:
       - uses: actions/upload-artifact@v3
         with:
           name: website
-          path: doc/build/html
+          path: doc/build
       - name: Test for missing API documentation  
         run: | 
              cd doc/source
