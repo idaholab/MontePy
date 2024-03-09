@@ -62,19 +62,19 @@ jobs:
       - run: coverage xml
       - name: Upload test report
         if: ${{ matrix.python-version == '3.9' }}
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v4.3.1
         with:
           name: test
           path: test_report.xml
       - name: Upload coverage report
         if: ${{ matrix.python-version == '3.9' }}
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v4.3.1
         with:
           name: coverage
           path: coverage.xml
       - name: Test Reporter
         if: ${{ matrix.python-version == '3.9' }}
-        uses: dorny/test-reporter@v1.7.0
+        uses: dorny/test-reporter@v1.8.0
         with:
           name: CI-test-report
           path: test_report.xml
