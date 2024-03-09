@@ -28,6 +28,8 @@ jobs:
            TOKEN: ${{ secrets.ACCESS_TOKEN }}
         run: git config --global url."https://${TOKEN}:x-oauth-basic@github.com/".insteadOf "https://github.com/"
       - uses: actions/checkout@v4
+        with: 
+          ref: main
       - uses: actions/setup-python@v5
         with:
           python-version: 3.8
