@@ -36,6 +36,7 @@ jobs:
       - run: pip freeze
       - name: Upload build artifacts
         uses: actions/upload-artifact@v4.3.1
+        if: ${{ matrix.python-version == '3.9' }}
         with: 
            name: build
            path: dist/*
