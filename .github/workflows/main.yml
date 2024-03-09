@@ -106,6 +106,9 @@ jobs:
         run: | 
              cd doc/source
              python _test_for_missing_docs.py  
+      - run: |
+             cd doc
+             make html
 
   format-test:
     runs-on: ubuntu-latest
