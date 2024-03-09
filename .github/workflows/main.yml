@@ -38,7 +38,7 @@ jobs:
       - run: pip install --user . montepy[develop]
       - run: pip freeze
       - name: Upload build artifacts
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4.3.1
         with: 
            name: build
            path: dist/*
@@ -108,7 +108,7 @@ jobs:
           [[ -s changes ]] || exit 1
       - run: sphinx-build doc/source/ doc/build/ -W --keep-going -E
         name: Build site strictly
-      - uses: actions/upload-artifact@v3
+      - uses: actions/upload-artifact@v4.3.1
         with:
           name: website
           path: doc/build
