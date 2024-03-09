@@ -1,23 +1,24 @@
 .. _scope:
 
 MontePy Scope
--------------
+=============
 
 This document defines the scope of MontePy so it easier to decide if a feature should live in MontePy or possibly another repository.
 This isn't meant to be fully static and is subject to change.
 This is less focused on defining a strict scope and more-so on providing guidelines.
 
 Mission
-=======
+-------
 
 MontePy's mission is to improve the user experience for working with MCNP input files through the power of python automation?
 
 Principles 
-==========
+----------
+
 Here are the guiding principles of what MontePy should be, and what it aspires to be.
 
 MontePy should be:
-------------------
+^^^^^^^^^^^^^^^^^^
 
 #. Easy to install. 
 
@@ -41,15 +42,17 @@ MontePy should be:
 
 
 MontePy shouldn't be:
----------------------
+^^^^^^^^^^^^^^^^^^^^^
 
 #. A collection of scripts for every use case.
 #. A linking code to other software.
 #. Written in other languages*
 
 Design Philosophy
-=================
+-----------------
+
 #. **Do Not Repeat Yourself (DRY)**
+#. If it's worth doing, it's worth doing well.
 #. Use abstraction and inheritance smartly.
 #. Use ``_private`` fields mostly. Use ``__private`` for very private things that should never be touched.
 #. Use ``@property`` getters, and if needed setters. Setters must verify and clean user inputs. For the most part use :func:`~montepy.utilities.make_prop_val_node`, and :func:`~montepy.utilities.make_prop_pointer`.
