@@ -14,9 +14,6 @@ jobs:
 
     steps:
       - uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-          fetch-tags: true
       - name: set up python  ${{ matrix.python-version }}
         uses: actions/setup-python@v5
         with: 
@@ -91,6 +88,9 @@ jobs:
     
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          fetch-tags: true
       - name: set up python 3.8
         uses: actions/setup-python@v5
         with: 
