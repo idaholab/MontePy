@@ -28,9 +28,11 @@ class TestVersion(TestCase):
             # try with setuptools_scm
             del sys.modules["setuptools_scm"]
             importlib.reload(montepy)
+            print(f"From setuptools_scm: {montepy.__version__}")
             self.assertTrue(len(montepy.__version__.split(".")) >= 3)
         finally:
             os.rename(new_file, old_file)
         # do base with _version
         importlib.reload(montepy)
+        print(f"From _version.py: {montepy.__version__}")
         self.assertTrue(len(montepy.__version__.split(".")) >= 3)
