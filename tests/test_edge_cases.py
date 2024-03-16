@@ -176,3 +176,4 @@ class EdgeCaseTests(TestCase):
         cell = montepy.Cell(input)
         # this step caused an error for #163
         cell.comments
+        cell._tree.format()

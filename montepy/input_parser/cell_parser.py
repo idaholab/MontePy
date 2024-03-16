@@ -75,7 +75,7 @@ class CellParser(MCNP_Parser):
     def geometry_expr(self, p):
         left = p.geometry_expr
         right = p.geometry_term
-        nodes = {"left": left.nodes, "operator": p.union, "right": right.nodes}
+        nodes = {"left": left, "operator": p.union, "right": right}
         return syntax_node.GeometryTree("union", nodes, ":", left, right)
 
     @_("geometry_term")
@@ -112,7 +112,7 @@ class CellParser(MCNP_Parser):
         for node in node_iter:
             new_tree = syntax_node.GeometryTree(
                 "intersection",
-                {"left": left, "operator": None, "right": node},
+                {"left": left, "operator": syntax_node.PaddingNode(), "right": node},
                 "*",
                 left,
                 node,
@@ -142,7 +142,10 @@ class CellParser(MCNP_Parser):
 
     @_("COMPLEMENT geometry_factory")
     def geometry_factor(self, p):
-        nodes = {"operator": p.COMPLEMENT, "left": p.geometry_factory}
+        nodes = {
+            "operator": syntax_node.PaddingNode(p.COMPLEMENT),
+            "left": p.geometry_factory,
+        }
         return syntax_node.GeometryTree(
             "complement",
             nodes,
