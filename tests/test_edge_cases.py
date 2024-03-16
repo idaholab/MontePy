@@ -176,6 +176,7 @@ class EdgeCaseTests(TestCase):
         cell = montepy.Cell(input)
         # this step caused an error for #163
         cell.comments
+        cell._tree.format()
 
     def test_bad_read(self):
         problem = montepy.read_input(
