@@ -9,6 +9,7 @@ from montepy.errors import *
 from montepy.input_parser.input_file import MCNP_InputFile
 from montepy.input_parser.mcnp_input import Input, Message, ReadInput, Title
 from montepy.input_parser.read_parser import ReadParser
+from montepy.utilities import is_comment
 import os
 import warnings
 
@@ -86,20 +87,6 @@ def read_front_matters(fh, mcnp_version):
         else:
             yield Title([line], line)
             break
-
-
-def is_comment(line):
-    """"""
-    upper_start = line[0 : BLANK_SPACE_CONTINUE + 1].upper()
-    non_blank_comment = upper_start and line.lstrip().upper().startswith("C ")
-    if non_blank_comment:
-        return True
-    blank_comment = (
-        "C\n" == upper_start.lstrip()
-        or "C\r\n" == upper_start.lstrip()
-        or ("C" == upper_start and "\n" not in line)
-    )
-    return blank_comment or non_blank_comment
 
 
 def read_data(fh, mcnp_version, block_type=None, recursion=False):
