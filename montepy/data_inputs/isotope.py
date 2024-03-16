@@ -20,20 +20,22 @@ class Isotope:
 
     def __init__(self, ZAID="", node=None):
         if node is not None and isinstance(node, ValueNode):
+            if node.type == float:
+                node = ValueNode(node.token, str, node.padding)
             self._tree = node
             ZAID = node.value
-        if "." in ZAID:
-            parts = ZAID.split(".")
-            try:
-                assert len(parts) == 2
-                int(parts[0])
-            except (AssertionError, ValueError) as e:
-                raise ValueError(f"ZAID: {ZAID} could not be parsed as a valid isotope")
-            self._ZAID = parts[0]
-            self.__parse_zaid()
+        parts = ZAID.split(".")
+        try:
+            assert len(parts) <= 2
+            int(parts[0])
+        except (AssertionError, ValueError) as e:
+            raise ValueError(f"ZAID: {ZAID} could not be parsed as a valid isotope")
+        self._ZAID = parts[0]
+        self.__parse_zaid()
+        if len(parts) == 2:
             self._library = parts[1]
         else:
-            raise ValueError(f"ZAID: {ZAID} could not be parsed as a valid isotope")
+            self._library = ""
 
     def __parse_zaid(self):
         """
