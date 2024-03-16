@@ -3,8 +3,7 @@ it should show up at the beginning
 foo
 
 MCNP Test Model for MOAA
-C cells
-c # hidden vertical Do not touch 
+C cells 🔴⚪🐍 MontePy is great
 c
 1 1 20
          -1000  $ dollar comment
@@ -50,5 +49,4 @@ kcode 100000 1.000 50 1050
 phys:p j 1 2j 1
 mode n p
 vol NO 2J 1 1.5 J
-
 

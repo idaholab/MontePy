@@ -10,3 +10,4 @@ doc/build/*
 .coverage
 .idea/
 .ipynb_checkpoints/
+montepy/_version.py
