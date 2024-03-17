@@ -1,7 +1,6 @@
 MontePy Changelog
 =================
 
-
 #Next Version#
 -----------------------
 

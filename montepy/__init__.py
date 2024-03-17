@@ -36,6 +36,7 @@ except ImportError:
     except ImportError:
         __version__ = "Undefined"
 
+
 # enable deprecated warnings for users
 if not sys.warnoptions:
     import os, warnings
