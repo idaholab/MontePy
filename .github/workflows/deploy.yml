@@ -60,7 +60,7 @@ jobs:
         with: 
           python-version: 3.8
       - run: pip install . montepy[build]
-      - uses: mathieudutour/github-tag-action@v6.1
+      - uses: mathieudutour/github-tag-action@v6.2
         name: Get next version number (dry)
         id: version_num
         with: 
@@ -77,7 +77,7 @@ jobs:
           commit-message: Update Changelog version to ${{steps.version_num.outputs.new_version}}
       - name: GitHub Actions Create Tag
         id: tag_version
-        uses: mathieudutour/github-tag-action@v6.1
+        uses: mathieudutour/github-tag-action@v6.2
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
        # ensure tags are up to date
