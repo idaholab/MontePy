@@ -97,7 +97,7 @@ jobs:
         with: 
           python-version: 3.8
       - run: pip install . montepy[doc]
-      - uses: mathieudutour/github-tag-action@v6
+      - uses: mathieudutour/github-tag-action@v6.2
         name: Get next version number
         id: version_num
         with: 
