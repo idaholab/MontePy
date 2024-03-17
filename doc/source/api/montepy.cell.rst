@@ -2,7 +2,7 @@ montepy.cell module
 ===================
 
 
-.. automodule:: montepy.cell
+.. autoclass:: montepy.cell.Cell
    :members:
    :undoc-members:
    :show-inheritance:

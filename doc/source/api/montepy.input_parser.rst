@@ -7,11 +7,8 @@ montepy.input\_parser package
    :undoc-members:
    :show-inheritance:
 
-Submodules
-----------
-
 .. toctree::
-   :maxdepth: 4
+   :maxdepth: 2
 
    montepy.input_parser.block_type
    montepy.input_parser.cell_parser

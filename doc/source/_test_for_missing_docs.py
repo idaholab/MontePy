@@ -3,7 +3,7 @@ import os
 import sys
 import warnings
 
-ignored = {"__pycache__", "_version.py", "__main__.py", "_cell_data_control.py"}
+ignored = {"__pycache__", "_scripts", "_version.py", "__main__.py", "_cell_data_control.py"}
 
 base = os.path.join("..", "..")
 
@@ -13,6 +13,8 @@ def crawl_path(rel_path):
     for f in os.listdir(os.path.join(base, rel_path)):
         f_name = os.path.join(rel_path, f)
         if f in ignored:
+            continue
+        if f_name == "montepy/__init__.py":
             continue
         if os.path.isdir(os.path.join(base, f_name)):
             crawl_path(f_name)
