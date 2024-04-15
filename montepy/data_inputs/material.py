@@ -137,6 +137,21 @@ class Material(data_input.DataInputAbstract, Numbered_MCNP_Object):
                 if cell.material == self:
                     yield cell
 
+    def format_for_mcnp_input(self, mcnp_version):
+        """
+        Creates a string representation of this MCNP_Object that can be
+        written to file.
+
+        :param mcnp_version: The tuple for the MCNP version that must be exported to.
+        :type mcnp_version: tuple
+        :return: a list of strings for the lines that this input will occupy.
+        :rtype: list
+        """
+        lines = super().format_for_mcnp_input(mcnp_version)
+        if self.thermal_scattering is not None:
+            lines += self.thermal_scattering.format_for_mcnp_input(mcnp_version)
+        return lines
+
     def add_thermal_scattering(self, law):
         """
         Adds thermal scattering law to the material
