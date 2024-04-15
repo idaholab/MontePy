@@ -138,6 +138,10 @@ class testFullFileIntegration(TestCase):
             for i, data in enumerate(self.simple_problem.data_inputs):
                 if isinstance(data, material.Material):
                     self.assertEqual(data.number, test_problem.data_inputs[i].number)
+                    if data.thermal_scattering is not None:
+                        assert (
+                            test_problem.data_inputs[i].thermal_scattering is not None
+                        )
                 elif isinstance(data, volume.Volume):
                     self.assertEqual(str(data), str(test_problem.data_inputs[i]))
                 else:
