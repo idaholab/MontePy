@@ -12,11 +12,17 @@ Welcome to MontePy's documentation!
 
    starting
 
+   utilities
+
    tricks
+
+   faq
 
    developing
 
    api/modules
+
+   publications
 
 See Also
 ========

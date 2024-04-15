@@ -23,7 +23,19 @@ from montepy.surfaces.surface_type import SurfaceType
 from montepy.universe import Universe
 import sys
 
-__version__ = "0.2.5"
+
+try:
+    from . import _version
+
+    __version__ = _version.version
+except ImportError:
+    try:
+        from setuptools_scm import get_version
+
+        __version__ = get_version()
+    except ImportError:
+        __version__ = "Undefined"
+
 
 # enable deprecated warnings for users
 if not sys.warnoptions:
