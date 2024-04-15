@@ -3,6 +3,8 @@ import copy
 from montepy.data_inputs import data_input, thermal_scattering
 from montepy.data_inputs.isotope import Isotope
 from montepy.data_inputs.material_component import MaterialComponent
+from montepy.input_parser import syntax_node
+from montepy.input_parser.material_parser import MaterialParser
 from montepy import mcnp_object
 from montepy.numbered_mcnp_object import Numbered_MCNP_Object
 from montepy.errors import *
@@ -26,6 +28,8 @@ class Material(data_input.DataInputAbstract, Numbered_MCNP_Object):
     :type input: Input
     """
 
+    _parser = MaterialParser()
+
     def __init__(self, input=None):
         self._material_components = {}
         self._thermal_scattering = None
@@ -37,7 +41,24 @@ class Material(data_input.DataInputAbstract, Numbered_MCNP_Object):
             self._number = num
             set_atom_frac = False
             isotope_fractions = self._tree["data"]
-            for isotope_node, fraction in isotope_fractions:
+            if isinstance(isotope_fractions, syntax_node.ListNode):
+                # in python 3.12 this can be replaced with itertools.batched
+                def batch_gen():
+                    it = iter(isotope_fractions)
+                    while batch := tuple(itertools.islice(it, 2)):
+                        yield batch
+
+                iterator = batch_gen()
+            elif isinstance(isotope_fractions, syntax_node.IsotopesNode):
+                iterator = iter(isotope_fractions)
+            else:  # pragma: no cover
+                # this is a fall through error, that should never be raised,
+                # but is here just in case
+                raise MalformedInputError(
+                    input,
+                    f"Material definitions for material: {self.number} is not valid.",
+                )
+            for isotope_node, fraction in iterator:
                 isotope = Isotope(node=isotope_node)
                 fraction.is_negatable_float = True
                 if not set_atom_frac:
