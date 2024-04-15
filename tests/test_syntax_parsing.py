@@ -1101,6 +1101,10 @@ test title
             input = ReadInput([f"Read FILE={file}"], BlockType.CELL)
             self.assertEqual(input.file_name, file)
 
+    def testReadCardBadSyntax(self):
+        with self.assertRaises(ParsingError):
+            card = ReadInput(["Read 1"], BlockType.CELL)
+
     def testTitleFinder(self):
         test_title = "Richard Stallman writes GNU"
         test_string = f"""{test_title}

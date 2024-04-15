@@ -295,15 +295,27 @@ class ReadInput(Input):
 
     def __init__(self, input_lines, block_type, input_file=None, lineno=None):
         super().__init__(input_lines, block_type, input_file, lineno)
+        if not self.is_read_input(input_lines):
+            raise ValueError("Not a valid Read Input")
         parse_result = self._parser.parse(self.tokenize(), self)
-        first_word = input_lines[0].split()[0].lower()
         if not parse_result:
-            if first_word != "read":
-                raise ValueError("Not a valid Read Input")
-            else:
-                raise ParsingError(self, "", self._parser.log.clear_queue())
+            raise ParsingError(self, "", self._parser.log.clear_queue())
         self._tree = parse_result
         self._parameters = self._tree["parameters"]
+
+    @staticmethod
+    def is_read_input(input_lines):
+        first_non_comment = ""
+        for line in input_lines:
+            if not is_comment(line):
+                first_non_comment = line
+                break
+        words = first_non_comment.split()
+        if len(words) > 0:
+            first_word = words[0].lower()
+            return first_word == "read"
+        # this is a fall through catch that only happens for a blank input
+        return False  # pragma: no cover
 
     @property
     def file_name(self):
