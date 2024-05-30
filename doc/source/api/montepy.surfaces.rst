@@ -7,11 +7,9 @@ montepy.surfaces package
    :undoc-members:
    :show-inheritance:
 
-Submodules
-----------
 
 .. toctree::
-   :maxdepth: 4
+   :maxdepth: 2
 
    montepy.surfaces.axis_plane
    montepy.surfaces.cylinder_on_axis

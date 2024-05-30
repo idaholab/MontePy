@@ -70,7 +70,7 @@ version_file = "montepy/_version.py"
 include = ["montepy*"]
 
 [tool.coverage.run]
-omit = ["montepy/_version.py","tests/*"]
+omit = ["tests/*"]
 
 [tool.coverage.report]
 precision = 2

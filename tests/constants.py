@@ -23,6 +23,7 @@ IGNORE_FILES = {
     "testReadTarget.imcnp",
     "bad_encoding.imcnp",
     "unicode.imcnp",
+    "file2read.imcnp",
 }
 
 BAD_ENCODING_FILES = {

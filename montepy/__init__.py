@@ -33,7 +33,7 @@ except ImportError:
         from setuptools_scm import get_version
 
         __version__ = get_version()
-    except ImportError:
+    except (ImportError, LookupError):
         __version__ = "Undefined"
 
 
