@@ -2,14 +2,30 @@ MontePy Changelog
 =================
 
 #Next Version#
+----------------------
+
+**Bug fixes**
+
+
+0.2.7
 -----------------------
+
+**Bug fixes**
+
+* Made versioning system more robust for all situations (#386).
+* Fixed bug with handling `read` inputs, and made parser more efficient (#206)
+* Fixed bug that couldn't read materials without a library. E.g., `1001` vs. `1001.80c` (#365). 
 
 **Documentation**
 
 * Added changelog
-* Added code of conduct
 * Added contribution guideline
 * Added pull request template
+
+**CI/CD**
+
+* Improved coveralls integration so actual source code can be shown.
+* Improved sphinx build process (#388)
 
 
 0.2.5
