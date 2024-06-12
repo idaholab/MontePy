@@ -6,6 +6,8 @@ MontePy Changelog
 
 **Bug fixes**
 
+**CI/CD**
+* Fixed project metadata for author to show up correctly on PyPI (#408)
 
 0.2.7
 -----------------------
