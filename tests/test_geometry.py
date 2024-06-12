@@ -10,7 +10,7 @@ from montepy.surfaces.half_space import HalfSpace, UnitHalfSpace
 class TestHalfSpaceUnit(TestCase):
     def test_init(self):
         surface = montepy.surfaces.CylinderOnAxis()
-        node = montepy.input_parser.syntax_node.GeometryTree("hi", [], "*", " ", " ")
+        node = montepy.input_parser.syntax_node.GeometryTree("hi", {}, "*", " ", " ")
         half_space = HalfSpace(+surface, Operator.UNION, -surface, node)
         self.assertIs(half_space.operator, Operator.UNION)
         self.assertEqual(half_space.left, +surface)

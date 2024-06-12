@@ -3,20 +3,30 @@
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 
-Welcome to MontePy's documentation!
-===================================
+MontePy: a Python library for MCNP input files.
+===============================================
+
+MontePy is a Python library for reading, editing, and writing MCNP input files.
+MontePy provides an object-oriented interface for MCNP input files. 
+This allows for easy automation of many different tasks for working with MCNP input files.
+
+Installing
+----------
+
+MontePy can be installed with pip:
+
+.. code-block:: shell
+
+   pip install montepy
+
 
 .. toctree::
-   :maxdepth: 1
-   :caption: Contents:
-
-   starting
-
-   tricks
-
-   developing
+   :maxdepth: 2
+   :caption: Table of Contents:
 
    api/modules
+   users
+   dev_tree
 
 See Also
 ========
