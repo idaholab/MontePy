@@ -5,6 +5,7 @@ MontePy Changelog
 ----------------------
 
 **Bug fixes**
+* Fixed bug with parsing tally segments (#377)
 
 **CI/CD**
 * Fixed project metadata for author to show up correctly on PyPI (#408)
