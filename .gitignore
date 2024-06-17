@@ -12,3 +12,5 @@ doc/build/*
 .idea/
 .ipynb_checkpoints/
 montepy/_version.py
+*.pdf
+*.jats
