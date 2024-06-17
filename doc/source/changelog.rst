@@ -7,7 +7,12 @@ MontePy Changelog
 **Bug fixes**
 * Fixed bug with parsing tally segments (#377)
 
+**Documentation**
+
+* Added link to the PyPI project on the Sphinx site (#410)
+
 **CI/CD**
+
 * Fixed project metadata for author to show up correctly on PyPI (#408)
 
 0.2.7
