@@ -106,10 +106,6 @@ MontePy follows the semantic versioning standard to the best of our abilities.
 
 Additional References:
 
-<<<<<<< HEAD
-=======
-#. `github action <https://github.com/laputansoft/github-tag-action>`_
->>>>>>> df0e0fc (Fixed typo in numbered list.)
 #. `Semantic versioning standard <https://semver.org/>`_
 
 Merge Checklist
