@@ -102,14 +102,12 @@ The `GitHub action <https://github.com/laputansoft/github-tag-action>`_ that doe
 3. Creates a tag with the apropriately incremented new release version.
 
 This means that git commit messages needs to convey the appropriate level of information.
-The library uses `angular's commit message conventions <https://github.com/angular/angular.js/blob/master/DEVELOPERS.md#-git-commit-guidelines>`_.
 This convention will not be enforced for all commits,
 but will be for all merge commits from Pull Requests.
 
 Additional References:
 
 1. `github action <https://github.com/laputansoft/github-tag-action>`_
-1. `angular's commit message conventions <https://github.com/angular/angular.js/blob/master/DEVELOPERS.md#-git-commit-guidelines>`_
 1. `Semantic versioning standard <https://semver.org/>`_
 
 Merge Checklist
