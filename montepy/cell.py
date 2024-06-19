@@ -37,15 +37,14 @@ class Cell(Numbered_MCNP_Object):
     .. versionchanged:: 0.2.0
         Removed the ``comments`` argument due to overall simplification of init process.
 
-    .. seealso::
-
-        Input syntax
-
-            * MCNP 6.3 § :manual63:`5.2`
-            * MCNP 6.2 § :manual63:`3.2.1`
 
     :param input: the input for the cell definition
     :type input: Input
+
+    .. seealso::
+
+            * :manual63:`5.2`
+            * :manual62:`55`
     """
 
     _ALLOWED_KEYWORDS = {
