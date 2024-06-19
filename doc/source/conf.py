@@ -47,14 +47,20 @@ html_logo = "monty.svg"
 # This pattern also affects html_static_path and html_extra_path.
 exclude_patterns = []
 
-wheel = f"montepy-{release}-py3-none-any.whl"
-
 # -- External link configuration ---------------------------------------------
-UM63 = "https://mcnp.lanl.gov/pdf_files/TechReport_2022_LANL_LA-UR-22-30006" \
-       "Rev.1_KuleszaAdamsEtAl.pdf"
+UM63 = (
+    "https://mcnp.lanl.gov/pdf_files/TechReport_2022_LANL_LA-UR-22-30006"
+    "Rev.1_KuleszaAdamsEtAl.pdf"
+)
+UM62 = (
+    "https://mcnp.lanl.gov/pdf_files/TechReport_2017_LANL_LA-UR-17-29981"
+    "_WernerArmstrongEtAl.pdf"
+)
 extlinks = {
     # MCNP 6.3 User's Manual
-    "manual63" : (UM63 + "#subsection.%s", "%s"),
+    "manual63": (UM63 + "#section%s", "MCNP 6.3 manual § %s"),
+    "manual63sub": (UM63 + "#subsection%s", "MCNP 6.3 manual § %s"),
+    "manual62": (UM62 + "#page=%s", "MCNP 6.2 manual p. %s"),
 }
 
 
