@@ -39,7 +39,7 @@ class Cell(Numbered_MCNP_Object):
 
     .. seealso::
 
-        See more about Cells in the MCNP manuals
+        Input syntax
 
             * MCNP 6.3 § :manual63:`5.2`
             * MCNP 6.2 § :manual63:`3.2.1`
