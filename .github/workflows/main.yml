@@ -120,6 +120,10 @@ jobs:
         run: | 
              cd doc/source
              python _test_for_missing_docs.py  
+      - name: Test for broken hyperlinks
+        run: |
+             cd doc
+             make linkcheck
 
   format-test:
     runs-on: ubuntu-latest
