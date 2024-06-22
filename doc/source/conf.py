@@ -65,6 +65,14 @@ extlinks = {
     "pull": ("https://github.com/idaholab/MontePy/pull/%s", "#%s"),
 }
 
+# -- External link configuration ---------------------------------------------
+UM63 = "https://mcnp.lanl.gov/pdf_files/TechReport_2022_LANL_LA-UR-22-30006" \
+       "Rev.1_KuleszaAdamsEtAl.pdf"
+extlinks = {
+    # MCNP 6.3 User's Manual
+    "manual63" : (UM63 + "#subsection.%s", "%s"),
+}
+
 
 # -- Options for HTML output -------------------------------------------------
 
