@@ -55,12 +55,12 @@ jobs:
         uses: actions/setup-python@v5
         with: 
           python-version: 3.8
+      - run: pip install . montepy[build]
       - name: Get Version
         id: get_version
         run: echo "version=`python -m setuptools_scm`" >> $GITHUB_OUTPUT
       - name: Verify that this is a non-dev release
         run: .github/scripts/check_version.sh ${{ steps.get_version.outputs.version }}
-      - run: pip install . montepy[build]
       - run: python -m build .
       - name: Sign the dists with Sigstore
         uses: sigstore/gh-action-sigstore-python@v2.1.1
