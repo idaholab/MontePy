@@ -127,8 +127,9 @@ Deploy Checklist
 
 For a deployment you need to:
 
-#. Update changelog version number.
-#. Tag the next version number.
+#. Run the deploy script : ``.github/scripts/deploy.sh``
+#. Manually merge onto main without creating a new commit. 
+   This is necessary because there's no way to do a github PR that will not create a new commit, which will break setuptools_scm.
 
 
 Package Structure
