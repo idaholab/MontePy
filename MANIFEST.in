@@ -1,4 +1,5 @@
 exclude tests/test_version.py
-exclude doc/
-exclude demo/
-exclude graphics/ 
+recursive-exclude doc *
+recursive-exclude demo *
+recursive-exclude graphics * 
+recursive-exclude .github *
