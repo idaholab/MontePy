@@ -47,8 +47,8 @@ Setting up and Typical Development Workflow
    To achieve this, it is recommended that you commit the test first, and push it to gitlab.
    This way there will be a record of the CI pipeline failing that can be quickly reviewed as part of the merge request.
 
-   Though MontePy uses ``pytest`` for running the tests,
-   it actually uses `unittest <https://docs.python.org/3/library/unittest.html>`_ for setting up all test fixtures. 
+   MontePy is currently working on migrating from ``unittest`` to ``pytest`` for test fixtures.
+   All new tests should use a ``pytest`` architecture.
    Generally unit tests of new features go in the test file with the closest class name. 
    Integration tests have all been dumped in ``tests/test_integration.py``. 
    For integration tests you can likely use the ``tests/inputs/test.imcnp`` input file.
