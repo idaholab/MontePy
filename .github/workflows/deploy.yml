@@ -68,6 +68,9 @@ jobs:
           inputs: >-
             ./dist/*.tar.gz
             ./dist/*.whl
+      - name: Get Version
+        id: get_version
+        run: echo "version=`python -m setuptools_scm`" >> $GITHUB_OUTPUT
       - name: Create a GitHub release
         uses: ncipollo/release-action@v1
         with:

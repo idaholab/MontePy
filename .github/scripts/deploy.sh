@@ -25,3 +25,4 @@ then
 		git commit -t commit_template && rm commit_template && 	echo "Tagging next release" && 	git tag "v$new_ver" && 	git push --tags
 	fi
 fi
+
