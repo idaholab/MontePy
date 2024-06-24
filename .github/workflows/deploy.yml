@@ -23,10 +23,6 @@ jobs:
       name: github-pages
     runs-on: ubuntu-latest
     steps:
-      - name: Configure git
-        env:
-           TOKEN: ${{ secrets.ACCESS_TOKEN }}
-        run: git config --global url."https://${TOKEN}:x-oauth-basic@github.com/".insteadOf "https://github.com/"
       - uses: actions/checkout@v4
         with: 
           ref: main
