@@ -22,7 +22,7 @@ then
 
 		echo "Updating changelog to next version: " > commit_template
 
-		git commit -t commit_template && rm commit_template && 	echo "Tagging next release" && 	git tag "v$new_ver" && 	git push --tags
+		git commit -t commit_template && rm commit_template && 	echo "Tagging next release" && 	git tag "v$new_ver" && 	git push --tags && git push
 	fi
 fi
 
