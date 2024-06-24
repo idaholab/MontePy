@@ -58,8 +58,10 @@ UM62 = (
 )
 extlinks = {
     # MCNP 6.3 User's Manual
-    "manual63": (UM63 + "#section%s", "MCNP 6.3 manual § %s"),
-    "manual63sub": (UM63 + "#subsection%s", "MCNP 6.3 manual § %s"),
+    "manual63sec": (UM63 + "#section.%s", "MCNP 6.3 manual § %s"),
+    "manual63": (UM63 + "#subsection.%s", "MCNP 6.3 manual § %s"),
+    "manual63part": (UM63 + "#part.%s", "MCNP 6.3 manual § %s"),
+    "manual63chapter": (UM63 + "#chapter.%s", "MCNP 6.3 manual § %s"),
     "manual62": (UM62 + "#page=%s", "MCNP 6.2 manual p. %s"),
     "issue": ("https://github.com/idaholab/MontePy/issues/%s", "#%s"),
     "pull": ("https://github.com/idaholab/MontePy/pull/%s", "#%s"),
