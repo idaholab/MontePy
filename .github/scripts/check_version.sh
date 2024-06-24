@@ -1,3 +1,6 @@
 #!/bin/bash
 
-[[ "$1" != *"dev"* ]]
+if [[ "$1" == *"dev"* ]]; 
+then
+	exit 1
+fi
