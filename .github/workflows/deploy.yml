@@ -76,7 +76,7 @@ jobs:
           draft: true
       - run: >-
           gh release upload
-          '${{ steps.tag_version.outputs.new_tag }}' dist/**
+          '${{ steps.get_version.outputs.version }}' dist/**
           --repo '${{ github.repository }}'
       - uses: actions/upload-artifact@v4
         with: 
