@@ -59,7 +59,7 @@ jobs:
         id: get_version
         run: echo "version=`python -m setuptools_scm`" >> $GITHUB_OUTPUT
       - name: Verify that this is a non-dev release
-        run: .github/scripts/check_version.sh
+        run: .github/scripts/check_version.sh ${{ steps.get_version.outputs.version }}
       - run: pip install . montepy[build]
       - run: python -m build .
       - name: Sign the dists with Sigstore
