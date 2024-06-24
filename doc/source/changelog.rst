@@ -13,6 +13,7 @@ MontePy Changelog
 **CI/CD**
 
 * Fixed project metadata for author to show up correctly on PyPI (#408)
+* Removed automated versioning from CI/CD, and simplified deploy process (:pull:`418`)
 
 0.2.7
 -----------------------
