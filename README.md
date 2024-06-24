@@ -64,16 +64,5 @@ If you want to add a feature on your own talk to Micah Gale (but still add the i
 The system is very modular and you should be able to develop it pretty quickly.
 Also read the [developer's guide](https://idaholab.github.io/MontePy/developing.html).
 
-# Version Numbering Scheme
-
-* Software on `develop` and feature branches are subject to change without a version number increment. These version
-  may be suffixed as dev (e.g., `0.1.0.dev2`) and may change as features and bug fixes are implemented.
-
-* Versions are official if and only if they are:
-   1. on the branch `main`.
-   1. has a release git tag assigned
-   1. has distribution packages created and released
-   Official shall not change. New merges to main shall have a version number incremented.
-
  
 # Finally: make objects not regexes!
