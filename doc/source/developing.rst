@@ -122,6 +122,15 @@ Here are some common issues to check before approving a merge request.
 #. Check also the authors in ``pyproject.toml``
 #. Is this merge request tied to an issue?
 
+Deploy Checklist
+^^^^^^^^^^^^^^^^
+
+For a deployment you need to:
+
+#. Update changelog version number.
+#. Tag the next version number.
+
+
 Package Structure
 -----------------
 
