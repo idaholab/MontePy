@@ -43,7 +43,7 @@ class Cell(Numbered_MCNP_Object):
 
     .. seealso::
 
-            * :manual63:`5.2`
+            * :manual63sec:`5.2`
             * :manual62:`55`
     """
 
