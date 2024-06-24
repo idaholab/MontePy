@@ -97,9 +97,9 @@ Automated Versioning
 As part of the CD process a new version number is created. 
 The `GitHub action <https://github.com/laputansoft/github-tag-action>`_ that does this goes through the following process:
 
-1. Finds the last release version as git tags.
-2. Analyzes all commit messages since then to determine if this is a Major, Minor, or Patch release.
-3. Creates a tag with the apropriately incremented new release version.
+#. Finds the last release version as git tags.
+#. Analyzes all commit messages since then to determine if this is a Major, Minor, or Patch release.
+#. Creates a tag with the apropriately incremented new release version.
 
 This means that git commit messages needs to convey the appropriate level of information.
 This convention will not be enforced for all commits,
@@ -107,8 +107,8 @@ but will be for all merge commits from Pull Requests.
 
 Additional References:
 
-1. `github action <https://github.com/laputansoft/github-tag-action>`_
-1. `Semantic versioning standard <https://semver.org/>`_
+#. `github action <https://github.com/laputansoft/github-tag-action>`_
+#. `Semantic versioning standard <https://semver.org/>`_
 
 Merge Checklist
 ^^^^^^^^^^^^^^^
