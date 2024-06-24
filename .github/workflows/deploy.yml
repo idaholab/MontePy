@@ -76,7 +76,7 @@ jobs:
           draft: true
       - run: >-
           gh release upload
-          '${{ steps.get_version.outputs.version }}' dist/**
+          'v${{ steps.get_version.outputs.version }}' dist/**
           --repo '${{ github.repository }}'
       - uses: actions/upload-artifact@v4
         with: 
