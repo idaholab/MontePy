@@ -106,10 +106,6 @@ jobs:
         with: 
           dry_run: True
           github_token: ${{ secrets.GITHUB_TOKEN }}
-      - name: Update changelog version 
-        run: |
-          sed -i "s/#Next Version#/${{steps.version_num.outputs.new_version}}/w changes" doc/source/changelog.rst
-          [[ -s changes ]] || exit 1
       - run: sphinx-build doc/source/ doc/build/ -W --keep-going -E
         name: Build site strictly
       - uses: actions/upload-artifact@v4
@@ -140,6 +136,7 @@ jobs:
 
   changelog-test:
     runs-on: ubuntu-latest
+    if: github.ref != 'refs/heads/main'
     
     steps:
       - uses: actions/checkout@v4

@@ -23,10 +23,6 @@ jobs:
       name: github-pages
     runs-on: ubuntu-latest
     steps:
-      - name: Configure git
-        env:
-           TOKEN: ${{ secrets.ACCESS_TOKEN }}
-        run: git config --global url."https://${TOKEN}:x-oauth-basic@github.com/".insteadOf "https://github.com/"
       - uses: actions/checkout@v4
         with: 
           ref: main
@@ -60,31 +56,11 @@ jobs:
         with: 
           python-version: 3.8
       - run: pip install . montepy[build]
-      - uses: mathieudutour/github-tag-action@v6.2
-        name: Get next version number (dry)
-        id: version_num
-        with: 
-          dry_run: True
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-      - name: Update changelog version 
-        run: |
-          sed -i "s/#Next Version#/${{steps.version_num.outputs.new_version}}/w changes" doc/source/changelog.rst
-          [[ -s changes ]] || exit 1
-      - name: Commit new changelog
-        uses: actions4git/add-commit-push@v1.0.0
-        with: 
-          add-pathspec: doc/source
-          commit-message: Update Changelog version to ${{steps.version_num.outputs.new_version}}
-      - name: GitHub Actions Create Tag
-        id: tag_version
-        uses: mathieudutour/github-tag-action@v6.2
-        with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-       # ensure tags are up to date
-      - uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-          fetch-tags: true
+      - name: Get Version
+        id: get_version
+        run: echo "version=`python -m setuptools_scm`" >> $GITHUB_OUTPUT
+      - name: Verify that this is a non-dev release
+        run: .github/scripts/check_version.sh ${{ steps.get_version.outputs.version }}
       - run: python -m build .
       - name: Sign the dists with Sigstore
         uses: sigstore/gh-action-sigstore-python@v2.1.1
@@ -95,15 +71,14 @@ jobs:
       - name: Create a GitHub release
         uses: ncipollo/release-action@v1
         with:
-          tag: ${{ steps.tag_version.outputs.new_tag }}
-          name: Release ${{ steps.tag_version.outputs.new_tag }}
-          body: ${{ steps.tag_version.outputs.changelog }}
+          tag: v${{ steps.get_version.outputs.version }}
+          name: Release ${{ steps.get_version.outputs.version }}
           draft: true
       - run: >-
           gh release upload
-          '${{ steps.tag_version.outputs.new_tag }}' dist/**
+          'v${{ steps.get_version.outputs.version }}' dist/**
           --repo '${{ github.repository }}'
-      - uses: actions/upload-artifact@v4.3.1
+      - uses: actions/upload-artifact@v4
         with: 
            name: build
            path: |

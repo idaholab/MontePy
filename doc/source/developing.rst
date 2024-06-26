@@ -90,23 +90,22 @@ So all new features and bug fixes must first be merged onto ``develop``.
 The expectation is that features once merged onto ``develop`` are stable,
 well tested, well documented, and well-formatted.
 
-Automated Versioning
-^^^^^^^^^^^^^^^^^^^^
+Versioning
+^^^^^^^^^^
 
-As part of the CD process a new version number is created. 
-The `GitHub action <https://github.com/laputansoft/github-tag-action>`_ that does this goes through the following process:
+Version information is stored in git tags,
+and retrieved using `setuptools scm <https://setuptools-scm.readthedocs.io/en/latest/>`_.
+The version tag shall match the regular expression:
 
-#. Finds the last release version as git tags.
-#. Analyzes all commit messages since then to determine if this is a Major, Minor, or Patch release.
-#. Creates a tag with the apropriately incremented new release version.
+``v\d.\d+.\d+``.
 
-This means that git commit messages needs to convey the appropriate level of information.
-This convention will not be enforced for all commits,
-but will be for all merge commits from Pull Requests.
+These tags will be applied by a maintainer during the release process,
+and cannot be applied by normal users.
+
+MontePy follows the semantic versioning standard to the best of our abilities. 
 
 Additional References:
 
-#. `github action <https://github.com/laputansoft/github-tag-action>`_
 #. `Semantic versioning standard <https://semver.org/>`_
 
 Merge Checklist
@@ -124,8 +123,9 @@ Deploy Checklist
 
 For a deployment you need to:
 
-#. Update changelog version number.
-#. Tag the next version number.
+#. Run the deploy script : ``.github/scripts/deploy.sh``
+#. Manually merge onto main without creating a new commit. 
+   This is necessary because there's no way to do a github PR that will not create a new commit, which will break setuptools_scm.
 
 
 Package Structure
