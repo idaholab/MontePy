@@ -68,3 +68,11 @@ To solve this problem you can:
         ---> 26     return codecs.ascii_decode(input, self.errors)[0]
 
         UnicodeDecodeError: 'ascii' codec can't decode byte 0xff in position 159: ordinal not in range(128)
+
+
+Will MCNP Output Files Ever be Supported?
+-----------------------------------------
+
+Short answer: no.
+
+For a longer answer see this discussion in the scope of MontePy: :ref:`output-support`.

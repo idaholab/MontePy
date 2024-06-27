@@ -72,6 +72,7 @@ Style Guide
 #. Spaces for indentation, tabs for alignment. Use spaces to build python syntax (4 spaces per level), and tabs for aligning text inside of docstrings.
 #. Follow `PEP 8 <https://peps.python.org/pep-0008/>`_.
 
+.. _output-support:
 
 Support of MCNP Output Files
 ----------------------------
