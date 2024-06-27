@@ -10,6 +10,7 @@ MontePy Changelog
 
 * Added link to the PyPI project on the Sphinx site (:issue:`410`)
 * Added link shortcuts for MCNP manual, and github issues and pull requests (:pull:`417`).
+* Added discussion of MCNP output files to FAQ (:issue:`400`).
 
 **CI/CD**
 
