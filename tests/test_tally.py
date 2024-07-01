@@ -6,6 +6,7 @@ from montepy.input_parser.mcnp_input import Input
 
 
 from unittest import TestCase
+import pytest
 
 
 class TestTallyParser(TestCase):
@@ -38,3 +39,18 @@ class TestTallyParser(TestCase):
             print(test)
             input = Input([test], BlockType.DATA)
             data = parse_data(input)
+
+
+@pytest.mark.parametrize(
+    "line",
+    [
+        "fs14 -123",
+        "fs12 -456 t",
+        "fs11 -1 -2",
+        "fs16 +1 +2 c",
+        "fs17 -1 -2 t c",
+    ],
+)
+def test_tally_segment_init(line):
+    input = Input([line], BlockType.DATA)
+    data = parse_data(input)

@@ -8,6 +8,7 @@ MontePy Changelog
 ----------------------
 
 **Bug fixes**
+* Fixed bug with parsing tally segments (#377)
 
 **Documentation**
 
