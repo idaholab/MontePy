@@ -4,25 +4,32 @@ MontePy Changelog
 #Next Version#
 ----------------------
 
+0.2.8
+----------------------
+
 **Bug fixes**
 * Fixed bug with parsing tally segments (#377)
 
 **Documentation**
 
-* Added link to the PyPI project on the Sphinx site (#410)
+* Added link to the PyPI project on the Sphinx site (:issue:`410`)
+* Added link shortcuts for MCNP manual, and github issues and pull requests (:pull:`417`).
+* Added discussion of MCNP output files to FAQ (:issue:`400`).
+* Updated MCNP 6.3 manual link to point to OSTI/DOI (:issue:`424`).
 
 **CI/CD**
 
-* Fixed project metadata for author to show up correctly on PyPI (#408)
+* Fixed project metadata for author to show up correctly on PyPI (:pull:`408`)
+* Removed automated versioning from CI/CD, and simplified deploy process (:pull:`418`)
 
 0.2.7
 -----------------------
 
 **Bug fixes**
 
-* Made versioning system more robust for all situations (#386).
-* Fixed bug with handling `read` inputs, and made parser more efficient (#206)
-* Fixed bug that couldn't read materials without a library. E.g., `1001` vs. `1001.80c` (#365). 
+* Made versioning system more robust for all situations (:issue:`386`).
+* Fixed bug with handling `read` inputs, and made parser more efficient (:issue:`206`)
+* Fixed bug that couldn't read materials without a library. E.g., `1001` vs. `1001.80c` (:issue:`365`). 
 
 **Documentation**
 
@@ -33,7 +40,7 @@ MontePy Changelog
 **CI/CD**
 
 * Improved coveralls integration so actual source code can be shown.
-* Improved sphinx build process (#388)
+* Improved sphinx build process (:issue:`388`)
 
 
 0.2.5
@@ -68,11 +75,11 @@ MontePy Changelog
 
 **Changed**
 
-* Explicitly set file encoding for read/write. #159.
+* Explicitly set file encoding for read/write. :issue:`159`.
 
 **Fixed**
 
-* Bug with not detecting comments with no space e.g., `c\n`. #158.
+* Bug with not detecting comments with no space e.g., `c\n`. :issue:`158`.
 
 0.2.2
 --------------------
