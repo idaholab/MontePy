@@ -10,12 +10,12 @@ MontePy is a python library to read, edit, and write MCNP input files.
 
 ## Installing
 
-See the [Installing section in the user guide](https://idaholab.github.io/MontePy/starting.html#installing).
+See the [Installing section in the user guide](https://www.montepy.org/starting.html#installing).
 
 
 ## User Documentation
 
-MontePy has a [sphinx website](https://idaholab.github.io/MontePy/index.html). 
+MontePy has a [sphinx website](https://www.montepy.org/). 
 This has a getting started guide for users,
 as well as API documentation. 
 There is also a developer's guide covering the design and approach of MontePy, and how to contribute.
@@ -62,7 +62,7 @@ So MontePy doesn't do what you want? Right now development is done with a  Just-
 If there's a feature you want add an issue here with the feature request tag. 
 If you want to add a feature on your own talk to Micah Gale (but still add the issue). 
 The system is very modular and you should be able to develop it pretty quickly.
-Also read the [developer's guide](https://idaholab.github.io/MontePy/developing.html).
+Also read the [developer's guide](https://www.montepy.org/developing.html).
 
  
 # Finally: make objects not regexes!
