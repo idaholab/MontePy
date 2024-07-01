@@ -4,11 +4,13 @@ MontePy Changelog
 #Next Version#
 ----------------------
 
+**Bug fixes**
+
+* Fixed bug with parsing tally segments (:issue:`377`)
+
 0.2.8
 ----------------------
 
-**Bug fixes**
-* Fixed bug with parsing tally segments (#377)
 
 **Documentation**
 
