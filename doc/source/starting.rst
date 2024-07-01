@@ -143,7 +143,7 @@ So what does MontePy keep, and what does it forget?
 
 Information Kept
 ^^^^^^^^^^^^^^^^
-#. The optional message block at the beginning of the problem (it's a niche feature checkout section 2.4 of the user manual)
+#. The optional message block at the beginning of the problem (it's a niche feature; check out section :manual63:`4.4.1` of the user manual)
 #. The problem title
 #. ``C`` style comments (e.g., ``C this is a banana``)
 #. (Almost) all MCNP inputs (cards). Only the read input is discarded.

@@ -9,6 +9,7 @@ from montepy.errors import *
 from montepy.constants import DEFAULT_VERSION
 from montepy.materials import Materials
 from montepy.surfaces import surface_builder
+from montepy.tallies import Tallies
 from montepy.surface_collection import Surfaces
 from montepy.data_inputs import Material, parse_data
 from montepy.input_parser import input_syntax_reader, block_type, mcnp_input
@@ -36,6 +37,7 @@ class MCNP_Problem:
         self._surfaces = Surfaces(problem=self)
         self._universes = Universes(problem=self)
         self._transforms = Transforms(problem=self)
+        self._tallies = Tallies(problem=self)
         self._data_inputs = []
         self._materials = Materials(problem=self)
         self._mcnp_version = DEFAULT_VERSION
@@ -232,12 +234,14 @@ class MCNP_Problem:
         """
         return self._transforms
 
-    def parse_input(self, check_input=False):
+    def parse_input(self, check_input=False, replace=True):
         """
         Semantically parses the MCNP file provided to the constructor.
 
         :param check_input: If true, will try to find all errors with input and collect them as warnings to log.
         :type check_input: bool
+        :param replace: replace all non-ASCII characters with a space (0x20)
+        :type replace: bool
         """
         trailing_comment = None
         last_obj = None
@@ -252,7 +256,7 @@ class MCNP_Problem:
         try:
             for i, input in enumerate(
                 input_syntax_reader.read_input_syntax(
-                    self._input_file, self.mcnp_version
+                    self._input_file, self.mcnp_version, replace=replace
                 )
             ):
                 self._original_inputs.append(input)

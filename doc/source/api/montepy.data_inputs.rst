@@ -7,8 +7,6 @@ montepy.data\_inputs package
    :undoc-members:
    :show-inheritance:
 
-Submodules
-----------
 
 .. toctree::
    :maxdepth: 4
@@ -26,6 +24,8 @@ Submodules
    montepy.data_inputs.material_component
    montepy.data_inputs.mode
    montepy.data_inputs.thermal_scattering
+   montepy.data_inputs.tally
+   montepy.data_inputs.tally_multiplier
    montepy.data_inputs.transform
    montepy.data_inputs.universe_input
    montepy.data_inputs.volume

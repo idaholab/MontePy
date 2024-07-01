@@ -15,6 +15,7 @@ Contributing
 
 Here is a getting started guide to contributing. 
 If you have any questions Micah and Travis are available to give input and answer your questions.
+Before contributing you should review the :ref:`scope` and design philosophy.
 
 Setting up and Typical Development Workflow
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -22,12 +23,11 @@ Setting up and Typical Development Workflow
 #. Clone the repository.
 
 #. Install the required packages. 
-   MontePy comes with two requirements files. 
-   One (``requirements/common.txt``) is for packages MontePy depends on.
-   The other (``requirements/dev.txt``) is for packages that are generally necessary for developing.
-   To install these simply run: 
+   MontePy comes with the requirements specfied in ``pyproject.toml``.
+   Optional packages are also specified.
+   To install all packages needed for development simply run: 
    
-   ``pip install -r requirements/dev.txt``
+   ``pip install .[develop]``
 
 #. Tie your work to an issue. All work on MontePy is tracked through issues. 
    If you are working on a new feature or bug that is not covered by an issue, please file an issue first.
@@ -37,8 +37,8 @@ Setting up and Typical Development Workflow
    The easiest way to make this branch is to "create pull request" from github.
    This will create a new branch (though with an unwieldy name) that you can checkout and work on.
 
-#. Run the test cases. MontePy relies heavily on its over 200 tests for the development process.
-   These are configured so if you run: ``python -m pytest`` from the root of the git repository 
+#. Run the test cases. MontePy relies heavily on its over 380 tests for the development process.
+   These are configured so if you run: ``pytest`` from the root of the git repository 
    all tests will be found and ran.
 
 #. Develop test cases. This is especially important if you are working on a bug fix.
@@ -47,8 +47,8 @@ Setting up and Typical Development Workflow
    To achieve this, it is recommended that you commit the test first, and push it to gitlab.
    This way there will be a record of the CI pipeline failing that can be quickly reviewed as part of the merge request.
 
-   Though MontePy uses ``pytest`` for running the tests,
-   it actually uses `unittest <https://docs.python.org/3/library/unittest.html>`_ for setting up all test fixtures. 
+   MontePy is currently working on migrating from ``unittest`` to ``pytest`` for test fixtures.
+   All new tests should use a ``pytest`` architecture.
    Generally unit tests of new features go in the test file with the closest class name. 
    Integration tests have all been dumped in ``tests/test_integration.py``. 
    For integration tests you can likely use the ``tests/inputs/test.imcnp`` input file.
@@ -69,26 +69,44 @@ Setting up and Typical Development Workflow
    Otherwise just the docstrings may suffice.
    Another option is to write an example in the "Tips and Tricks" guide.
 
-#. Update the version, and authors as necessary. The version is stored in ``montepy/__init__.py``. See the version numbering system described in ``README.md``.
-   The authors information is in ``AUTHORS`` and ``montepy/__init__.py``. 
+#. Update the authors as necessary. 
+   The authors information is in ``AUTHORS`` and ``pyproject.toml``. 
 
-#. Start a merge request review. Generally Micah or Travis are good reviewers.
+#. Start a merge request review. Generally Micah (@micahgale) or Travis (@tjlaboss) are good reviewers.
 
 
 Deploy Process
 ^^^^^^^^^^^^^^
-MontePy currently does not use a continuous deploy process.
-Rather changes are staged on the ``develop`` branch prior to a release.
+MontePy currently does not use a continuous deploy (CD) process.
+Changes are staged on the ``develop`` branch prior to a release.
 Both ``develop`` and ``main`` are protected branches.
-``main`` should only be used for releases.
+``main`` is only be used for releases.
 If someone clones ``main`` they will get the most recent official release.
 Only a select few core-developers are allowed to approve a merge to ``main`` and therefore a new release.
-``develop`` should be production quality code that has been approved for release,
+``develop`` is for production quality code that has been approved for release,
 but is waiting on the next release.
 So all new features and bug fixes must first be merged onto ``develop``. 
 
 The expectation is that features once merged onto ``develop`` are stable,
 well tested, well documented, and well-formatted.
+
+Versioning
+^^^^^^^^^^
+
+Version information is stored in git tags,
+and retrieved using `setuptools scm <https://setuptools-scm.readthedocs.io/en/latest/>`_.
+The version tag shall match the regular expression:
+
+``v\d.\d+.\d+``.
+
+These tags will be applied by a maintainer during the release process,
+and cannot be applied by normal users.
+
+MontePy follows the semantic versioning standard to the best of our abilities. 
+
+Additional References:
+
+#. `Semantic versioning standard <https://semver.org/>`_
 
 Merge Checklist
 ^^^^^^^^^^^^^^^
@@ -96,10 +114,19 @@ Merge Checklist
 Here are some common issues to check before approving a merge request.
 
 #. If this is a bug fix did the new testing fail without the fix?
-#. Was the version number incremented?
 #. Were the authors and credits properly updated?
-#. Check also the authors in ``montepy/__init__.py``
+#. Check also the authors in ``pyproject.toml``
 #. Is this merge request tied to an issue?
+
+Deploy Checklist
+^^^^^^^^^^^^^^^^
+
+For a deployment you need to:
+
+#. Run the deploy script : ``.github/scripts/deploy.sh``
+#. Manually merge onto main without creating a new commit. 
+   This is necessary because there's no way to do a github PR that will not create a new commit, which will break setuptools_scm.
+
 
 Package Structure
 -----------------
@@ -132,27 +159,6 @@ This package contains all surface classes.
 All classes need to be children of :class:`~montepy.surfaces.surface.Surface`.
 When possible new surface classes should combine similar planes.
 For example :class:`~montepy.surfaces.axis_plane.AxisPlane` covers ``PX``, ``PY``, and ``PZ``.
-
-Design Philosophy
------------------
-#. **Do Not Repeat Yourself (DRY)**
-#. Use abstraction and inheritance smartly.
-#. Use ``_private`` fields mostly. Use ``__private`` for very private things that should never be touched.
-#. Use ``@property`` getters, and if needed setters. Setters must verify and clean user inputs. For the most part use :func:`~montepy.utilities.make_prop_val_node`, and :func:`~montepy.utilities.make_prop_pointer`.
-#. Fail early and politely. If there's something that might be bad: the user should get a helpful error as
-   soon as the error is apparent. 
-#. Test. test. test. The goal is to achieve 100% test coverage. Unit test first, then do integration testing. A new feature merge request will ideally have around a dozen new test cases.
-#. Do it right the first time. 
-#. Document all functions.
-#. Expect everything to mutate at any time.
-#. Avoid relative imports when possible. Use top level ones instead: e.g., ``import montepy.cell.Cell``.
-#. Defer to vanilla python, and only use the standard library. Currently the only dependencies are `numpy <https://numpy.org/>`_ and `sly <https://github.com/dabeaz/sly>`_. 
-   There must be good justification for breaking from this convention and complicating things for the user.
-
-Style Guide
------------
-#. Use ``black`` to autoformat all code.
-#. Spaces for indentation, tabs for alignment. Use spaces to build python syntax (4 spaces per level), and tabs for aligning text inside of docstrings.
 
 
 Introduction to SLY and Syntax Trees
@@ -322,7 +328,7 @@ How to __str__ vs __repr__
 """"""""""""""""""""""""""
 All objects must implement ``__str__`` (called by ``str()``), 
 and ``__repr__`` (called by ``repr()``).
-See `this issue <https://hpcgitlab.hpc.inl.gov/experiment_analysis/montepy/-/issues/41>`_ for a more detailed discussion.
+See `this issue <https://github.com/idaholab/MontePy/issues/82>`_ for a more detailed discussion.
 In general ``__str__`` should return a one line string with enough information to uniquely identify the object.
 For numbered objects this should include their number, and a few high level details.
 For ``__repr__`` this should include debugging information.
