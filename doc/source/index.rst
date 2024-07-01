@@ -31,9 +31,10 @@ MontePy can be installed with pip:
 See Also
 ========
 
-* `MontePy github Repository <https://github.com/idaholab/montepy>`_ 
+* `MontePy github Repository <https://github.com/idaholab/montepy>`_
+* `MontePy PyPI Project <https://pypi.org/project/montepy/>`_
+* `MCNP 6.3 User Manual <https://www.osti.gov/biblio/1889957>`_ DOI: `10.2172/1889957 <https://doi.org/10.2172/1889957>`_
 * `MCNP 6.2 User Manual <https://mcnp.lanl.gov/pdf_files/TechReport_2017_LANL_LA-UR-17-29981_WernerArmstrongEtAl.pdf>`_
-* `MCNP 6.3 User Manual <https://mcnp.lanl.gov/pdf_files/TechReport_2022_LANL_LA-UR-22-30006Rev.1_KuleszaAdamsEtAl.pdf>`_
 
 Indices and tables
 ==================
