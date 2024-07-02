@@ -166,3 +166,56 @@ class ClassifierParser(DataParser):
         return syntax_node.SyntaxNode(
             "data input classifier", {"start_pad": padding, "classifier": p.classifier}
         )
+
+
+class ParamOnlyDataParser(DataParser):
+    """
+    A parser for parsing parameter (key-value pair) only data inputs.
+
+    .e.g., SDEF
+
+    .. versionadded:: 0.2.11
+
+    :returns: a syntax tree for the data input.
+    :rtype: SyntaxNode
+    """
+
+    @_(
+        "param_introduction parameters",
+    )
+    def param_data_input(self, p):
+        ret = {}
+        for key, node in p.introduction.nodes.items():
+            ret[key] = node
+        if hasattr(p, "data"):
+            ret["data"] = p.data
+        else:
+            ret["data"] = syntax_node.ListNode("empty data")
+        if hasattr(p, "parameters"):
+            ret["parameters"] = p.parameters
+        return syntax_node.SyntaxNode("data", ret)
+
+    @_(
+        "classifier_phrase",
+        "padding classifier_phrase",
+    )
+    def param_introduction(self, p):
+        ret = {}
+        if isinstance(p[0], syntax_node.PaddingNode):
+            ret["start_pad"] = p[0]
+        else:
+            ret["start_pad"] = syntax_node.PaddingNode()
+        ret["classifier"] = p.classifier_phrase
+        ret["keyword"] = syntax_node.ValueNode(None, str, padding=None)
+        return syntax_node.SyntaxNode("data intro", ret)
+
+    @_("classifier param_seperator data")
+    def parameter(self, p):
+        return syntax_node.SyntaxNode(
+            p.classifier.prefix.value,
+            {
+                "classifier": p.classifier,
+                "seperator": p.param_seperator,
+                "data": p.data,
+            },
+        )
