@@ -6,7 +6,6 @@ from montepy.data_inputs import (
     lattice_input,
     material,
     mode,
-    tally_multiplier,
     thermal_scattering,
     universe_input,
     volume,
