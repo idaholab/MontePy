@@ -4,7 +4,11 @@ import copy
 
 import montepy
 from montepy.errors import *
-from montepy.input_parser.data_parser import ClassifierParser, DataParser
+from montepy.input_parser.data_parser import (
+    ClassifierParser,
+    DataParser,
+    ParamOnlyDataParser,
+)
 from montepy.input_parser.mcnp_input import Input
 from montepy.particle import Particle
 from montepy.mcnp_object import MCNP_Object
@@ -322,7 +326,16 @@ class DataInput(DataInputAbstract):
 
     :param input: the Input object representing this data input
     :type input: Input
+    :param fast_parse: Whether or not to only parse the first word for the type of data.
+    :type fast_parse: bool
+    :param prefix: The input prefix found during parsing (internal use only)
+    :type prefix: str
     """
+
+    def __init__(self, input=None, fast_parse=False, prefix=None):
+        if prefix:
+            self._load_correct_parser(prefix)
+        super().__init__(input, fast_parse)
 
     @property
     def _class_prefix(self):
@@ -335,3 +348,20 @@ class DataInput(DataInputAbstract):
     @property
     def _has_classifier(self):  # pragma: no cover
         return None
+
+    def _load_correct_parser(self, prefix):
+        """
+        Decides if a specialized parser needs to be loaded for barebone
+        special cases.
+
+        .. versionadded:: 0.2.11
+        """
+        PARAM_PARSER = ParamOnlyDataParser
+        PARSER_PREFIX_MAP = {
+            "f": montepy.input_parser.tally_parser.TallyParser,
+            "fm": 1,
+            "fs": montepy.input_parser.tally_seg_parser.TallySegmentParser,
+            "sdef": PARAM_PARSER,
+        }
+        if prefix.lower() in PARSER_PREFIX_MAP:
+            self._parser = PARSER_PREFIX_MAP[prefix.lower()]()

@@ -6,8 +6,6 @@ from montepy.data_inputs import (
     lattice_input,
     material,
     mode,
-    tally,
-    tally_segment,
     tally_multiplier,
     thermal_scattering,
     universe_input,
@@ -22,9 +20,6 @@ PREFIX_MATCHES = {
     lattice_input.LatticeInput,
     material.Material,
     mode.Mode,
-    tally.Tally,
-    tally_multiplier.TallyMultiplier,
-    tally_segment.TallySegment,
     thermal_scattering.ThermalScatteringLaw,
     transform.Transform,
     volume.Volume,
@@ -47,8 +42,7 @@ def parse_data(input):
 
     base_input = data_input.DataInput(input, fast_parse=True)
     prefix = base_input.prefix
-
     for data_class in PREFIX_MATCHES:
         if prefix == data_class._class_prefix():
             return data_class(input)
-    return data_input.DataInput(input)
+    return data_input.DataInput(input, prefix=prefix)
