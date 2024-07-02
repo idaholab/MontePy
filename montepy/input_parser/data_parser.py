@@ -16,7 +16,7 @@ class DataParser(MCNP_Parser):
     :rtype: SyntaxNode
     """
 
-    debugfile = None
+    debugfile = "parser.out"
 
     @_(
         "introduction",
@@ -181,7 +181,7 @@ class ParamOnlyDataParser(DataParser):
     """
 
     @_(
-        "param_introduction parameters",
+        "param_introduction spec_parameters",
     )
     def param_data_input(self, p):
         ret = {}
@@ -209,8 +209,26 @@ class ParamOnlyDataParser(DataParser):
         ret["keyword"] = syntax_node.ValueNode(None, str, padding=None)
         return syntax_node.SyntaxNode("data intro", ret)
 
+    @_("spec_parameter", "spec_parameters spec_parameter")
+    def spec_parameters(self, p):
+        """
+        A list of the parameters (key, value pairs) for this input.
+
+        :returns: all parameters
+        :rtype: ParametersNode
+        """
+        print(list(p))
+        if len(p) == 1:
+            params = syntax_node.ParametersNode()
+            param = p[0]
+        else:
+            params = p[0]
+            param = p[1]
+        params.append(param)
+        return params
+
     @_("classifier param_seperator data")
-    def parameter(self, p):
+    def spec_parameter(self, p):
         return syntax_node.SyntaxNode(
             p.classifier.prefix.value,
             {
