@@ -503,6 +503,7 @@ class MCNP_Parser(Parser, metaclass=MetaBuilder):
         :param token: the token that broke the parsing rules.
         :type token: Token
         """
+        self._debug_parsing_error(token)
         if token:
             lineno = getattr(token, "lineno", 0)
             if self._input and self._input.lexer:
@@ -523,3 +524,18 @@ class MCNP_Parser(Parser, metaclass=MetaBuilder):
                 )
         else:
             self.log.parse_error("sly: Parse error in input. EOF\n")
+
+    def _debug_parsing_error(self, token):  # pragma: no cover
+        """
+        A function that should be called from error when debugging a parsing error.
+
+        Call this from the method error. Also you will need the relevant debugfile to be set and saving the parser
+        tables to file. e.g.,
+
+        debugfile = 'parser.out'
+        """
+        print("********* New Parsing Error ************ ")
+        print(f"Token: {token}")
+        print(f"State: {self.state}, statestack: {self.statestack}")
+        print(f"Symstack: {self.symstack}")
+        print()
