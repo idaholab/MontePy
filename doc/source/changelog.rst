@@ -1,6 +1,13 @@
 MontePy Changelog
 =================
 
+#Next Version#
+-------------------
+
+**Bug fixes**
+
+* Fixed bug with ``SDEF`` input, and made parser more robust (:issue:`396`).
+
 0.2.10
 ----------------------
 
