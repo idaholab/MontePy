@@ -357,9 +357,10 @@ class DataInput(DataInputAbstract):
         .. versionadded:: 0.2.11
         """
         PARAM_PARSER = ParamOnlyDataParser
+        TALLY_PARSER = montepy.input_parser.tally_parser.TallyParser,
         PARSER_PREFIX_MAP = {
-            "f": montepy.input_parser.tally_parser.TallyParser,
-            "fm": 1,
+            "f": TALLY_PARSER,
+            "fm": TALLY_PARSER,
             "fs": montepy.input_parser.tally_seg_parser.TallySegmentParser,
             "sdef": PARAM_PARSER,
         }
