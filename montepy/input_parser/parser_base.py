@@ -105,6 +105,9 @@ class SLY_Supressor:
         self._parse_fail_queue = []
         return ret
 
+    def __len__(self):
+        return len(self._parse_fail_queue)
+
 
 class MCNP_Parser(Parser, metaclass=MetaBuilder):
     """
@@ -142,7 +145,11 @@ class MCNP_Parser(Parser, metaclass=MetaBuilder):
         :rtype: SyntaxNode
         """
         self._input = input
-        return super().parse(token_generator)
+        tree = super().parse(token_generator)
+        # treat any previous errors as being fatal even if it recovered.
+        if len(self.log) > 0:
+            return None
+        return tree
 
     precedence = (("left", SPACE), ("left", TEXT))
 
