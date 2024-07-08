@@ -145,6 +145,15 @@ class MCNP_Parser(Parser, metaclass=MetaBuilder):
         :rtype: SyntaxNode
         """
         self._input = input
+
+        # debug every time a token is taken
+        def gen_wrapper():
+            while True:
+                token = next(token_generator, None)
+                self._debug_parsing_error(token)
+                yield token
+
+        # change to using `gen_wrapper()` to debug
         tree = super().parse(token_generator)
         # treat any previous errors as being fatal even if it recovered.
         if len(self.log) > 0:
@@ -510,7 +519,6 @@ class MCNP_Parser(Parser, metaclass=MetaBuilder):
         :param token: the token that broke the parsing rules.
         :type token: Token
         """
-        self._debug_parsing_error(token)
         if token:
             lineno = getattr(token, "lineno", 0)
             if self._input and self._input.lexer:
