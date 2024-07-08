@@ -375,6 +375,15 @@ class PaddingNode(SyntaxNodeBase):
             return False
         return len(val.strip()) == 0 and val != "\n"
 
+    def has_space(self):
+        """
+        Determines if there is syntactically significant space anywhere in this node.
+
+        :returns: True if there is syntactically significant (not in a comment) space.
+        :rtype: bool
+        """
+        return any([self.is_space(i) for i in range(len(self))])
+
     def append(self, val, is_comment=False):
         """
         Append the node to this node.
@@ -1031,6 +1040,20 @@ class ValueNode(SyntaxNodeBase):
         """
         return self._value
 
+    @property
+    def never_pad(self):
+        """
+        Whether or not this value node will not have extra spaces added.
+
+        :returns: true if extra padding is not adding at the end if missing.
+        :rtype: bool
+        """
+        return self._never_pad
+
+    @never_pad.setter
+    def never_pad(self, never_pad):
+        self._never_pad = never_pad
+
     @value.setter
     def value(self, value):
         if self.is_negative is not None and value is not None:
@@ -1335,6 +1358,12 @@ class ListNode(SyntaxNodeBase):
         """
         if isinstance(val, ShortcutNode):
             self._shortcuts.append(val)
+        if len(self) > 0:
+            last = self[-1]
+            if isinstance(last, ValueNode) and (
+                (last.padding and not last.padding.has_space) or last.padding is None
+            ):
+                self[-1].never_pad = True
         super().append(val)
 
     @property
