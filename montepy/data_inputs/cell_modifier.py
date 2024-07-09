@@ -255,10 +255,10 @@ class CellModifierInput(DataInputAbstract):
         C = is_worth_pring
 
         Logic:
-            A!BC + !ABC
-            C *(A!B + !AB)
-            C * (A xor B)
-            C * (A != B)
+            1. A!BC + !ABC
+            2. C *(A!B + !AB)
+            3. C * (A xor B)
+            4. C * (A != B)
         """
         # print in either block
         if (self.in_cell_block != print_in_data_block) and self._is_worth_printing:
