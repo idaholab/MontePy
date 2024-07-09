@@ -4,6 +4,7 @@ montepy.surfaces package
 
 .. automodule:: montepy.surfaces
    :members:
+   :inherited-members:
    :undoc-members:
    :show-inheritance:
 
