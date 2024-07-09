@@ -187,12 +187,12 @@ class MCNP_Object(ABC):
         and not the "&" method.
 
         :param string: A long string with new lines in it,
-                       that needs to be chunked appropriately for MCNP inputs
+                    that needs to be chunked appropriately for MCNP inputs
         :type string: str
         :param mcnp_version: the tuple for the MCNP that must be formatted for.
         :type mcnp_version: tuple
-        :param is_first_line: If true, this will be the beginning of an MCNP input.
-                              The first line will not be indented.
+        :param is_first_line: If true this will be the beginning of an MCNP input.
+                             The first line will not be indented.
         :type is_first_line: bool
         :returns: A list of strings that can be written to an input file, one item to a line.
         :rtype: list
