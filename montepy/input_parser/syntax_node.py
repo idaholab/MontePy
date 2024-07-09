@@ -1349,16 +1349,18 @@ class ListNode(SyntaxNodeBase):
                 else:
                     check_for_orphan_jump(new_vals[i])
 
-    def append(self, val):
+    def append(self, val, from_parsing=False):
         """
         Append the node to this node.
 
         :param node: node
         :type node: ValueNode, ShortcutNode
+        :param from_parsing: If this is being append from the parsers, and not elsewhere.
+        :type from_parsing: bool
         """
         if isinstance(val, ShortcutNode):
             self._shortcuts.append(val)
-        if len(self) > 0:
+        if len(self) > 0 and from_parsing:
             last = self[-1]
             if isinstance(last, ValueNode) and (
                 (last.padding and not last.padding.has_space) or last.padding is None

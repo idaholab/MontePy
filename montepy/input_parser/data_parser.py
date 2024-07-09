@@ -86,10 +86,10 @@ class DataParser(MCNP_Parser):
     def particle_sequence(self, p):
         if len(p) == 1:
             sequence = syntax_node.ListNode("particle sequence")
-            sequence.append(p[0])
+            sequence.append(p[0], True)
         else:
             sequence = p[0]
-            sequence.append(p[1])
+            sequence.append(p[1], True)
         return sequence
 
     @_("PARTICLE", "SURFACE_TYPE", "PARTICLE_SPECIAL")
@@ -114,10 +114,10 @@ class DataParser(MCNP_Parser):
     def text_sequence(self, p):
         if len(p) == 1:
             sequence = syntax_node.ListNode("text sequence")
-            sequence.append(p[0])
+            sequence.append(p[0], True)
         else:
             sequence = p[0]
-            sequence.append(p[1])
+            sequence.append(p[1], True)
         return sequence
 
     @_("kitchen_junk", "kitchen_sink kitchen_junk")
@@ -125,7 +125,7 @@ class DataParser(MCNP_Parser):
         sequence = p[0]
         if len(p) != 1:
             for node in p[1].nodes:
-                sequence.append(node)
+                sequence.append(node, True)
         return sequence
 
     @_("number_sequence", "text_sequence", "particle_sequence")
