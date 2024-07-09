@@ -4,6 +4,7 @@ montepy.input\_parser package
 
 .. automodule:: montepy.input_parser
    :members:
+   :inherited-members:
    :undoc-members:
    :show-inheritance:
 

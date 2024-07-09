@@ -4,6 +4,7 @@ montepy.data\_inputs package
 
 .. automodule:: montepy.data_inputs
    :members:
+   :inherited-members:
    :undoc-members:
    :show-inheritance:
 
