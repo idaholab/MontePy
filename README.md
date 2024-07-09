@@ -10,7 +10,14 @@ MontePy is a python library to read, edit, and write MCNP input files.
 
 ## Installing
 
-See the [Installing section in the user guide](https://www.montepy.org/starting.html#installing).
+Simply run:
+
+```
+pip install montepy
+```
+
+For more complicated setups
+see the [Installing section in the user guide](https://www.montepy.org/starting.html#installing).
 
 
 ## User Documentation
