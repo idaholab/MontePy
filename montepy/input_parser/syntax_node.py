@@ -1382,6 +1382,7 @@ class ListNode(SyntaxNodeBase):
                 and node.padding is None
                 and i < length - 1
                 and not isinstance(self.nodes[i + 1], PaddingNode)
+                and not node.never_pad
             ):
                 node.padding = PaddingNode(" ")
             if isinstance(last_node, ShortcutNode) and isinstance(node, ShortcutNode):
