@@ -145,10 +145,11 @@ jobs:
         id: changes
         with:
           filters: |
-            change:
+            changelog:
               - 'doc/source/changelog.rst'
-      - if: steps.changes.outputs.change == 'false'
+            code:
+              - 'montepy/**'
+      - if: (steps.changes.outputs.changelog == 'false') && steps.changes.outputs.code == 'true'
         run: |
           echo "Changelog not updated"
           exit 1
-
