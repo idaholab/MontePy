@@ -140,22 +140,18 @@ jobs:
     
     steps:
       - uses: actions/checkout@v4
-      - name: Check for Changelog changes
+      - name: Check for changes
         uses: dorny/paths-filter@v3
-        id: changelog
+        id: changes
         with:
           filters: |
-            change:
+            changelog:
               - 'doc/source/changelog.rst'
-      - name: Check for MontePy code changes
-        uses: dorny/paths-filter@v3
-        id: code
-        with:
           filters: |
-            change:
+            code:
               - 'montepy/**'
-      - if: steps.changelog.outputs.change == 'false'
-        - if: steps.code.outputs.change == 'true'
+      - if: steps.changes.outputs.changelog == 'false'
+        - if: steps.changes.outputs.code == 'true'
           run: |
             echo "Changelog not updated"
             exit 1
