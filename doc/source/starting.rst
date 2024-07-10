@@ -7,7 +7,7 @@ The library provides a semantic interface for working with input files, or our p
 It understands that the second entry on a cell card is the material number,
 and will link the cell with its material object.
 
-.. warning::
+.. note::
     MontePy is built primarily to support MCNP 6.2. Some success maybe achieved with MCNP 6.1, and 5.1.60, 
     but there may be issues due to new features in MCNP 6.2, not being backwards compatible.
     Use earlier versions of MCNP with MontePy at your own risk.
