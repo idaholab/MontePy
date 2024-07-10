@@ -33,7 +33,7 @@ System Wide (for the current user)
    In this case the easiest way to deal with this is to open a teminal inside of `jupyter lab` and to install the package there.
 
 
-#. Install it from `PyPI <https://pypi.org>`_ by running ``pip install montepy``. 
+#. Install it from `PyPI <https://pypi.org/project/montepy>`_ by running ``pip install montepy``. 
    You may need to run ``pip install --user montepy`` if you are not allowed to install the package.
 
 Install specific version for a project
@@ -42,7 +42,9 @@ The best way maybe to setup a project-specific `conda <https://docs.conda.io/pro
 `Mamba <https://mamba.readthedocs.io/en/latest/user_guide/concepts.html>`_, 
 or a `venv <https://docs.python.org/3/library/venv.html>`_ environment.
 The steps for installing inside one of those environments are the same as the previous steps.
-You can specify a specific version from [PyPI](https://pypi.org/project/montepy/) be installed using ``pip install montepy==version``.
+You can specify a specific version from `PyPI`_ be installed using:
+
+``pip install montepy==<version>``
 
 
 Best Practices
