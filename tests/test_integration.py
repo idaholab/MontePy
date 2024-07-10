@@ -783,7 +783,7 @@ class testFullFileIntegration(TestCase):
         with self.assertWarns(LineExpansionWarning):
             output = problem.cells._universe.format_for_mcnp_input((6, 2, 0))
         print(output)
-        self.assertIn("u 350 2J -1 J 350", output)
+        self.assertIn("u 350 2J -1 J 350 ", output)
 
     def test_universe_number_collision(self):
         problem = montepy.read_input(
