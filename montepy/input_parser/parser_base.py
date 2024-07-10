@@ -52,7 +52,6 @@ class MetaBuilder(sly.yacc.ParserMeta):
         for par_basis in parent:
             if par_basis != Parser:
                 return
-                MetaBuilder._flatten_rules(classname, par_basis, attributes)
 
 
 class SLY_Supressor:
