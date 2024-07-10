@@ -45,6 +45,24 @@ The steps for installing inside one of those environments are the same as the pr
 You can specify a specific version from [PyPI](https://pypi.org/project/montepy/) be installed using ``pip install montepy==version``.
 
 
+Best Practices
+--------------
+
+Before we begin here are some guidelines to keep in mind while scripting your work with MCNP models.
+
+#. *Always* version control your input files (not output files) with [git](https://git-scm.com/) or another tool.
+   If you are working with very large input models, like [the ITER model](https://www.iter.org/mach) you may want to consider [git-lfs](https://git-lfs.com/)
+
+#. *Always* have backups. Don't be that person that loses the last months of work when your laptop falls in a pond. 
+   Make sure there's a cloud backup (could be OneDrive, GitHub, etc.). 
+   Just make sure you comply with any applicable corporate policies. 
+
+#. Don't overwrite your original file. Generally your script should open file "A", modify it, and then save it to file "B".
+   This way if there is a bug in your script you can debug it and rerun it because "A" still exists.
+   Also if down the road you need to make changes you can modify your script and rerun it. 
+   This is especially true if your script ever becomes qualified under an [ASME NQA-1](https://en.wikipedia.org/wiki/ASME_NQA) compliant Software Quality Assurance program,
+   which requires that the inputs and outputs of software be preserved.
+
 Reading a File
 --------------
 
@@ -65,9 +83,9 @@ state as a valid MCNP input file.
 >>> problem.write_to_file("bar.imcnp")
 
 .. warning::
-   Be careful with overwriting the original file when writing a modified file out.
-   This will wipe out the original version, and if you have no version control,
-   may lead to losing information.
+   Overwriting the original file when writing a modified file out is discouraged.
+   This is because if your script using MontePy is buggy you have no real way to debug,
+   and recover from the issue if your original file has been been modified.
 
 If no changes are made to the problem in MontePy the entire file will be just parroted out as it was in the original file.
 However any objects (e.g., two cells) that were changed (i.e., mutated) may have their formatting changed slightly.
