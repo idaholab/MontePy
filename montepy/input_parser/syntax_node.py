@@ -1654,9 +1654,7 @@ class ShortcutNode(ListNode):
             jump_num = 1
             self._num_node = ValueNode(None, int, never_pad=True)
         for i in range(jump_num):
-            self._nodes.append(
-                ValueNode(input_parser.mcnp_input.Jump(), float, never_pad=True)
-            )
+            self._nodes.append(ValueNode(input_parser.mcnp_input.Jump(), float))
 
     def _expand_interpolate(self, p):
         if self._type == Shortcuts.LOG_INTERPOLATE:
