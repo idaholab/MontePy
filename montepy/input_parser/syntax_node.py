@@ -1062,10 +1062,7 @@ class ValueNode(SyntaxNodeBase):
         self._value = value
 
     def _check_if_needs_end_padding(self, value):
-        # disable never pad for former jump
-        if value is not None and self.value is None:
-            self.never_pad = False
-        if value is None or self.value is None or self._never_pad:
+        if value is None or self.value is not None or self._never_pad:
             return
         # if not followed by a trailing space
         if self.padding is None:
