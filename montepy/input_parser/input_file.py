@@ -15,13 +15,16 @@ class MCNP_InputFile:
     :type path: str
     :param parent_file: the parent file for this file if any. This occurs when a "read" input is used.
     :type parent_file: str
+    :param overwrite: Whether to overwrite the file 'path' if it exists
+    :type overwrite: bool
     """
 
-    def __init__(self, path, parent_file=None):
+    def __init__(self, path, parent_file=None, overwrite=False):
         self._path = path
         self._parent_file = parent_file
         self._lineno = 1
         self._replace_with_space = False
+        self._overwrite = overwrite
         self._mode = None
         self._fh = None
 
@@ -90,6 +93,15 @@ class MCNP_InputFile:
                 mode = "rb"
                 encoding = None
         self._mode = mode
+        if "w" in mode:
+            if os.path.isfile(self.path) and self._overwrite is not True:
+                raise FileExistsError(
+                    f"{self.path} already exists, and overwrite is not set."
+                )
+            if os.path.isdir(self.path):
+                raise IsADirectoryError(
+                    f"{self.path} is a directory, and cannot be overwritten."
+                )
         self._fh = open(self.path, mode, encoding=encoding)
         return self
 

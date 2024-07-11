@@ -390,15 +390,17 @@ class MCNP_Problem:
         self._transforms = Transforms(transforms)
         self._data_inputs = sorted(set(self._data_inputs + materials + transforms))
 
-    def write_to_file(self, new_problem):
+    def write_to_file(self, new_problem, overwrite=False):
         """
         Writes the problem to a file.
 
         :param new_problem: the file name to write this problem to
         :type new_problem: str
         :raises IllegalState: if an object in the problem has not been fully initialized.
+        :param overwrite: Whether to overwrite the file at 'new_problem' if it exists
+        :type overwrite: bool
         """
-        new_file = MCNP_InputFile(new_problem)
+        new_file = MCNP_InputFile(new_problem, overwrite=overwrite)
         with new_file.open("w") as fh, warnings.catch_warnings(
             record=True
         ) as warning_catch:
