@@ -3,6 +3,9 @@ MontePy Changelog
 
 0.2.10
 ----------------------
+**Miscellanious Changes**
+
+* ``overwrite`` argument added to `MCNP_Problem.write_to_file` to ensure files are only overwritten if the user really wants to do so (:pull:`443`).
 
 **Bug fixes**
 
