@@ -2,6 +2,7 @@
 import itertools as it
 from montepy.constants import ASCII_CEILING
 from montepy.utilities import *
+import os
 
 
 class MCNP_InputFile:
