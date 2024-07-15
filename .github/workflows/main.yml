@@ -119,7 +119,7 @@ jobs:
       - name: Test for broken hyperlinks
         run: |
              cd doc
-             make linkcheck || true
+             make linkcheck
 
   format-test:
     runs-on: ubuntu-latest
