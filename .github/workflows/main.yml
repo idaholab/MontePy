@@ -34,6 +34,7 @@ jobs:
       - run: pip install --user . montepy[format]
       - run: pip install --user . montepy[build]
       - run: pip install --user . montepy[develop]
+        if: ${{ matrix.python-version != '3.8'}}
       - run: pip freeze
       - name: Upload build artifacts
         uses: actions/upload-artifact@v4.3.1
