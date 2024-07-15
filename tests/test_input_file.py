@@ -1,6 +1,7 @@
 # Copyright 2024, Battelle Energy Alliance, LLC All Rights Reserved.
 import os
 import unittest
+import pytest
 
 import montepy
 from montepy.input_parser.input_file import MCNP_InputFile
@@ -69,3 +70,34 @@ class testInputFileWrapper(unittest.TestCase):
         finally:
             if os.path.exists(out):
                 os.remove(out)
+
+
+def _write_file(out_file):
+    with open(out_file, "w") as fh:
+        fh.write("")
+
+
+@pytest.mark.parametrize(
+    "writer,exception, clearer",
+    (
+        (_write_file, FileExistsError, lambda out_file: os.remove(out_file)),
+        (
+            lambda out_file: os.makedirs(out_file),
+            IsADirectoryError,
+            lambda out_file: os.rmdir(out_file),
+        ),
+    ),
+)
+def test_write_guardrails(writer, exception, clearer):
+    out_file = "foo_bar.imcnp"
+    try:
+        writer(out_file)
+        with pytest.raises(exception):
+            test = MCNP_InputFile(out_file)
+            with test.open("w") as _:
+                pass
+    finally:
+        try:
+            clearer(out_file)
+        except FileNotFoundError:
+            pass
