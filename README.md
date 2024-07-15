@@ -5,7 +5,7 @@
 [![license](https://img.shields.io/github/license/idaholab/MontePy.svg)](https://github.com/idaholab/MontePy/blob/develop/LICENSE)
 [![Coverage Status](https://coveralls.io/repos/github/idaholab/MontePy/badge.svg?branch=develop)](https://coveralls.io/github/idaholab/MontePy?branch=develop)
 [![PyPI version](https://badge.fury.io/py/montepy.svg)](https://badge.fury.io/py/montepy)
-[![status](https://joss.theoj.org/papers/04749c75d05fbad296833e3f0fe7c822/status.svg)](https://joss.theoj.org/papers/04749c75d05fbad296833e3f0fe7c822)
+[![status](https://joss.theoj.org/papers/e5b5dc8cea19605a1507dd4d420d5199/status.svg)](https://joss.theoj.org/papers/e5b5dc8cea19605a1507dd4d420d5199)
 
 MontePy is a python library to read, edit, and write MCNP input files. 
 
