@@ -394,11 +394,16 @@ class MCNP_Problem:
         """
         Writes the problem to a file.
 
+        .. versionchanged:: 0.2.11
+            The overwrite parameter was added.
+
         :param new_problem: the file name to write this problem to
         :type new_problem: str
-        :raises IllegalState: if an object in the problem has not been fully initialized.
         :param overwrite: Whether to overwrite the file at 'new_problem' if it exists
         :type overwrite: bool
+        :raises IllegalState: if an object in the problem has not been fully initialized.
+        :raises FileExistsError: if a file already exists with the same path.
+        :raises IsADirectoryError: if the path given is actually a directory.
         """
         new_file = MCNP_InputFile(new_problem, overwrite=overwrite)
         with new_file.open("w") as fh, warnings.catch_warnings(

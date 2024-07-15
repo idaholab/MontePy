@@ -12,6 +12,9 @@ class MCNP_InputFile:
     .. Note::
         this is a bare bones implementation to be fleshed out in the future.
 
+    .. versionchanged:: 0.2.11
+        Added the overwrite attribute.
+
     :param path: the path to the input file
     :type path: str
     :param parent_file: the parent file for this file if any. This occurs when a "read" input is used.
@@ -80,6 +83,9 @@ class MCNP_InputFile:
             CP1252 is commonly referred to as "extended-ASCII".
             You may have success with this encoding for working with special characters.
 
+        .. versionchanged:: 0.2.11
+            Added guardrails to raise FileExistsError and IsADirectoryError.
+
         :param mode: the mode to open the file in
         :type mode: str
         :param encoding: The encoding scheme to use. If replace is true, this is ignored, and changed to ASCII
@@ -87,6 +93,8 @@ class MCNP_InputFile:
         :param replace: replace all non-ASCII characters with a space (0x20)
         :type replace: bool
         :returns: self
+        :raises FileExistsError: if a file already exists with the same path while writing.
+        :raises IsADirectoryError: if the path given is actually a directory while writing.
         """
         if "r" in mode:
             if replace:
