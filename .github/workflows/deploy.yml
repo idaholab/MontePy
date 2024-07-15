@@ -30,7 +30,7 @@ jobs:
           ref: main
       - uses: actions/setup-python@v5
         with:
-          python-version: 3.8
+          python-version: 3.12
       - run: pip install --user . montepy[doc]
       - run: cd doc && make html
       - uses: actions/configure-pages@v4
