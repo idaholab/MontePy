@@ -12,7 +12,7 @@ class MCNP_InputFile:
     .. Note::
         this is a bare bones implementation to be fleshed out in the future.
 
-    .. versionchanged:: 0.2.11
+    .. versionchanged:: 0.3.0
         Added the overwrite attribute.
 
     :param path: the path to the input file

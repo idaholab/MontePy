@@ -394,7 +394,7 @@ class MCNP_Problem:
         """
         Writes the problem to a file.
 
-        .. versionchanged:: 0.2.11
+        .. versionchanged:: 0.3.0
             The overwrite parameter was added.
 
         :param new_problem: the file name to write this problem to
