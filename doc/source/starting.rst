@@ -79,8 +79,12 @@ state as a valid MCNP input file.
 
 >>> problem.write_to_file("bar.imcnp")
 
+The :func:`~montepy.mcnp_problem.MCNP_Problem.write_to_file` method does take an optional argument: ``overwrite``. 
+By default if the file exists, it will not be overwritten and an error will be raised.
+This can be changed by ``overwrite=True``.
+
 .. warning::
-   Be careful with overwriting the original file when writing a modified file out.
+   Be careful with overwriting the original file (and ``overwrite=True`` in general) when writing a modified file out.
    This will wipe out the original version, and if you have no version control,
    may lead to losing information.
 
