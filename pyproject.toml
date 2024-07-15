@@ -36,7 +36,8 @@ dependencies = [
 
 [project.optional-dependencies]
 test = ["coverage[toml]>=6.3.2", "pytest"]
-doc = ["sphinx", "sphinxcontrib-apidoc", "sphinx_rtd_theme"]
+# This is needed for a sphinx bug. See #414.
+doc = ["sphinx>=7.4.0", "sphinxcontrib-apidoc", "sphinx_rtd_theme"]
 format = ["black>=23.3.0"]
 build = [
 	"build",
