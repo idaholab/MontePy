@@ -24,9 +24,9 @@ MontePy can be installed with pip:
    :maxdepth: 2
    :caption: Table of Contents:
 
-   api/modules
    users
    dev_tree
+   api/modules
 
 See Also
 ========
