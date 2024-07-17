@@ -10,10 +10,10 @@ jobs:
     runs-on: ubuntu-latest    
     steps:
       - uses: actions/checkout@v4
-      - name: set up python  3.8
+      - name: set up python  3.12
         uses: actions/setup-python@v5
         with: 
-          python-version: 3.8
+          python-version: 3.12
       - run: pip install . montepy[develop]
       - run: python -m pytest
       
@@ -53,10 +53,10 @@ jobs:
         with:
           fetch-depth: 0
           fetch-tags: true
-      - name: set up python  3.8
+      - name: set up python  3.12
         uses: actions/setup-python@v5
         with: 
-          python-version: 3.8
+          python-version: 3.12
       - run: pip install . montepy[build]
       - name: Get Version
         id: get_version
