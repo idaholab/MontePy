@@ -52,7 +52,6 @@ class MetaBuilder(sly.yacc.ParserMeta):
         for par_basis in parent:
             if par_basis != Parser:
                 return
-                MetaBuilder._flatten_rules(classname, par_basis, attributes)
 
 
 class SLY_Supressor:
@@ -105,6 +104,9 @@ class SLY_Supressor:
         self._parse_fail_queue = []
         return ret
 
+    def __len__(self):
+        return len(self._parse_fail_queue)
+
 
 class MCNP_Parser(Parser, metaclass=MetaBuilder):
     """
@@ -142,7 +144,20 @@ class MCNP_Parser(Parser, metaclass=MetaBuilder):
         :rtype: SyntaxNode
         """
         self._input = input
-        return super().parse(token_generator)
+
+        # debug every time a token is taken
+        def gen_wrapper():
+            while True:
+                token = next(token_generator, None)
+                self._debug_parsing_error(token)
+                yield token
+
+        # change to using `gen_wrapper()` to debug
+        tree = super().parse(token_generator)
+        # treat any previous errors as being fatal even if it recovered.
+        if len(self.log) > 0:
+            return None
+        return tree
 
     precedence = (("left", SPACE), ("left", TEXT))
 
@@ -523,3 +538,18 @@ class MCNP_Parser(Parser, metaclass=MetaBuilder):
                 )
         else:
             self.log.parse_error("sly: Parse error in input. EOF\n")
+
+    def _debug_parsing_error(self, token):  # pragma: no cover
+        """
+        A function that should be called from error when debugging a parsing error.
+
+        Call this from the method error. Also you will need the relevant debugfile to be set and saving the parser
+        tables to file. e.g.,
+
+        debugfile = 'parser.out'
+        """
+        print("********* New Parsing Error ************ ")
+        print(f"Token: {token}")
+        print(f"State: {self.state}, statestack: {self.statestack}")
+        print(f"Symstack: {self.symstack}")
+        print()

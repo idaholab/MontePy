@@ -1,6 +1,7 @@
 # Copyright 2024, Battelle Energy Alliance, LLC All Rights Reserved.
 import copy
 from io import StringIO
+import pytest
 from unittest import TestCase
 
 import montepy
@@ -565,6 +566,22 @@ class TestPaddingNode(TestCase):
         self.assertTrue(comment.is_dollar)
         self.assertEqual(len(list(comment.comments)), 1)
         self.assertEqual(len(comment.contents), 0)
+
+
+@pytest.mark.parametrize(
+    "padding,expect",
+    [
+        (["$ hi"], False),
+        ([" c style comment"], False),
+        ([" "], True),
+        (["$ hi", "    ", "c hi"], True),
+    ],
+)
+def test_padding_has_space(padding, expect):
+    node = syntax_node.PaddingNode(padding[0])
+    for pad in padding[1:]:
+        node.append(pad)
+    assert node.has_space() == expect
 
 
 class TestParticlesNode(TestCase):
