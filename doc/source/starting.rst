@@ -8,7 +8,7 @@ It understands that the second entry on a cell card is the material number,
 and will link the cell with its material object.
 
 .. note::
-    MontePy is built primarily to support MCNP 6.2. Some success maybe achieved with MCNP 6.1, and 5.1.60, 
+    MontePy is built primarily to support MCNP 6.2, and MCNP 6.3. Some success maybe achieved with MCNP 6.1, and 5.1.60, 
     but there may be issues due to new features in MCNP 6.2, not being backwards compatible.
     Use earlier versions of MCNP with MontePy at your own risk.
 
@@ -50,7 +50,7 @@ You can specify a specific version from `PyPI`_ be installed using:
 Best Practices
 --------------
 
-Before we begin here are some guidelines to keep in mind while scripting your work with MCNP models.
+Before we begin, here are some guidelines to keep in mind while scripting your work with MCNP models.
 
 #. *Always* version control your input files (not output files) with `git <https://git-scm.com/>`_ or another tool.
    If you are working with very large input models, like `the ITER model <https://doi.org/10.1038/s41560-020-00753-x>`_ you may want to consider `git-lfs <https://git-lfs.com/>`_.
@@ -62,8 +62,8 @@ Before we begin here are some guidelines to keep in mind while scripting your wo
    Just make sure you comply with any applicable corporate policies. 
 
 #. Don't overwrite your original file. Generally your script should open file "A", modify it, and then save it to file "B".
-   This way if there is a bug in your script you can debug it and rerun it because "A" still exists.
-   Also if down the road you need to make changes you can modify your script and rerun it. 
+   This way, when there is a bug in your script, you can debug it and rerun it because "A" still exists.
+   Later, if you need to make changes you can modify your script and rerun it. 
    This is especially true if your script ever becomes qualified under an `ASME NQA-1 <https://en.wikipedia.org/wiki/ASME_NQA>`_ compliant Software Quality Assurance program,
    which requires that the inputs and outputs of software be preserved.
 
@@ -94,6 +94,8 @@ This can be changed by ``overwrite=True``.
    Overwriting the original file (with ``overwrite=True``) when writing a modified file out is discouraged.
    This is because if your script using MontePy is buggy you have no real way to debug,
    and recover from the issue if your original file has been been modified.
+   Instead of constantly having to override the same file you can add a timestamp to the output file,
+   or create an always unique file name with the `UUID <https://docs.python.org/3/library/uuid.html>`_ library.
 
 
 If no changes are made to the problem in MontePy the entire file will be just parroted out as it was in the original file.
