@@ -30,9 +30,11 @@ jobs:
       - run: pip install --user dist/*.tar.gz
       - run: pip install --user . montepy[test]
       - run: pip install --user . montepy[doc]
+        if: ${{ matrix.python-version != '3.8'}}
       - run: pip install --user . montepy[format]
       - run: pip install --user . montepy[build]
       - run: pip install --user . montepy[develop]
+        if: ${{ matrix.python-version != '3.8'}}
       - run: pip freeze
       - name: Upload build artifacts
         uses: actions/upload-artifact@v4.3.1
@@ -95,10 +97,10 @@ jobs:
         with:
           fetch-depth: 0
           fetch-tags: true
-      - name: set up python 3.8
+      - name: set up python 3.12
         uses: actions/setup-python@v5
         with: 
-          python-version: 3.8
+          python-version: 3.12
       - run: pip install . montepy[doc,build]
       - uses: mathieudutour/github-tag-action@v6.2
         name: Get next version number
@@ -119,7 +121,7 @@ jobs:
       - name: Test for broken hyperlinks
         run: |
              cd doc
-             make linkcheck || true
+             make linkcheck
 
   format-test:
     runs-on: ubuntu-latest
