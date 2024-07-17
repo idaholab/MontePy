@@ -174,7 +174,7 @@ class ParamOnlyDataParser(DataParser):
 
     .e.g., SDEF
 
-    .. versionadded:: 0.2.11
+    .. versionadded:: 0.3.0
 
     :returns: a syntax tree for the data input.
     :rtype: SyntaxNode

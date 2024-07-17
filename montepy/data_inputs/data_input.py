@@ -354,7 +354,7 @@ class DataInput(DataInputAbstract):
         Decides if a specialized parser needs to be loaded for barebone
         special cases.
 
-        .. versionadded:: 0.2.11
+        .. versionadded:: 0.3.0
         """
         PARAM_PARSER = ParamOnlyDataParser
         TALLY_PARSER = montepy.input_parser.tally_parser.TallyParser
