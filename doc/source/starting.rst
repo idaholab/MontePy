@@ -53,7 +53,7 @@ Best Practices
 Before we begin here are some guidelines to keep in mind while scripting your work with MCNP models.
 
 #. *Always* version control your input files (not output files) with `git <https://git-scm.com/>`_ or another tool.
-   If you are working with very large input models, like `the ITER model <https://www.iter.org/mach>`_ you may want to consider `git-lfs <https://git-lfs.com/>`_.
+   If you are working with very large input models, like `the ITER model <https://doi.org/10.1038/s41560-020-00753-x>`_ you may want to consider `git-lfs <https://git-lfs.com/>`_.
 
    #. Do learn some `git best practices <https://sethrobertson.github.io/GitBestPractices/>`_. "Update" is not a useful commit message.
 
