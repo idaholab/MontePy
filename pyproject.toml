@@ -53,7 +53,7 @@ develop = [
 
 
 [project.urls]
-Homepage = "https://idaholab.github.io/MontePy/index.html"
+Homepage = "https://www.montepy.org/"
 Repository = "https://github.com/idaholab/montepy.git"
 Documentation = "https://idaholab.github.io/MontePy/index.html"
 "Bug Tracker" = "https://github.com/idaholab/MontePy/issues"
