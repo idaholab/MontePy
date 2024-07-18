@@ -20,6 +20,9 @@ jobs:
           python-version: ${{ matrix.python-version }}
       - run: pip install --upgrade pip build
       - run: pip install build
+      - name: Get Version
+        id: get_version
+        run: echo "version=`python -m setuptools_scm`" >> $GITHUB_OUTPUT
       - run: python -m build --sdist --wheel
       - run: pip install .
       - run: pip uninstall -y montepy
