@@ -41,7 +41,7 @@ doc = ["sphinx>=7.4.0", "sphinxcontrib-apidoc", "sphinx_rtd_theme"]
 format = ["black>=23.3.0"]
 build = [
 	"build",
-	"setuptools_scm>=8",
+	"setuptools-scm>=8",
 ]
 develop = [
 	"montepy[test]",
