@@ -14,12 +14,18 @@ jobs:
 
     steps:
       - uses: actions/checkout@v4
+        with: 
+          fetch-depth: 0
+          fetch-tags: true
       - name: set up python  ${{ matrix.python-version }}
         uses: actions/setup-python@v5
         with: 
           python-version: ${{ matrix.python-version }}
-      - run: pip install --upgrade pip build
-      - run: pip install build
+      - run: pip install --upgrade pip
+      - run: pip install .[build]
+      - name: Get Version
+        id: get_version
+        run: python -m setuptools_scm
       - run: python -m build --sdist --wheel
       - run: pip install .
       - run: pip uninstall -y montepy
@@ -75,13 +81,6 @@ jobs:
         with:
           name: coverage
           path: coverage.xml
-      - name: Test Reporter
-        if: ${{ matrix.python-version == '3.9' && (success() || failure() )}}
-        uses: dorny/test-reporter@v1.7.0
-        with:
-          name: CI-test-report
-          path: test_report.xml
-          reporter: java-junit
       - name: Coveralls GitHub Action
         if: ${{ matrix.python-version == '3.9' && (success() || failure() )}}
         uses: coverallsapp/github-action@v2
