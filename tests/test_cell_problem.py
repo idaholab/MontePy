@@ -125,7 +125,14 @@ class TestCellClass(TestCase):
             None,
             {"TRCL": 5.0, "U": 5.0, "VOL": 20.0},
         ),
-        ("1 1 -1.0 1000 (-3000:-4000:-5000)(-6000:-7000:8000) -2000 -9000", False, 1, 1, False, None)
+        (
+            "1 1 -1.0 1000 (-3000:-4000:-5000)(-6000:-7000:8000) -2000 -9000",
+            False,
+            1,
+            1,
+            False,
+            None,
+        ),
     ],
 )
 def test_init(line, is_void, mat_number, density, atom_dens, parameters):
