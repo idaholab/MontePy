@@ -18,8 +18,8 @@ jobs:
         uses: actions/setup-python@v5
         with: 
           python-version: ${{ matrix.python-version }}
-      - run: pip install --upgrade pip build
-      - run: pip install build
+      - run: pip install --upgrade pip
+      - run: pip install .[build]
       - name: Get Version
         id: get_version
         run: echo "version=`python -m setuptools_scm`" >> $GITHUB_OUTPUT
