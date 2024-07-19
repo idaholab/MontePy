@@ -85,11 +85,20 @@ class CellParser(MCNP_Parser):
             term = syntax_node.GeometryTree("shift", {"left": term}, ">", term)
         return term
 
+    # handle intersection
     @_("geometry_term padding geometry_factor")
     def geometry_term(self, p):
         left = p.geometry_term
         right = p.geometry_factor
         nodes = {"left": left, "operator": p.padding, "right": right}
+        return syntax_node.GeometryTree("intersection", nodes, "*", left, right)
+
+    # handle implicit intersection of: ( )( )
+    @_("geometry_term geometry_factory")
+    def geometry_term(self, p):
+        left = p.geometry_term
+        right = p.geometry_factory
+        nodes = {"left": left, "operator": syntax_node.PaddingNode(), "right": right}
         return syntax_node.GeometryTree("intersection", nodes, "*", left, right)
 
     @_(
