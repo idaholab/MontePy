@@ -1,6 +1,14 @@
 MontePy Changelog
 =================
 
+#Next Version#
+----------------
+
+**Bug fixes**
+
+* Fixed parser bug with parsing cells with implicit intersection, e.g., ``(1:-2)(3:-4)``. (:issue:`355`).
+
+
 0.3.0
 -------------------
 
