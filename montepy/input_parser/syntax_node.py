@@ -96,7 +96,7 @@ class SyntaxNodeBase(ABC):
 
     def get_trailing_comment(self):
         """
-        Get the trailing comments if any.
+        Get the trailing ``c`` style  comments if any.
 
         :returns: The trailing comments of this tree.
         :rtype: list
@@ -427,13 +427,13 @@ class PaddingNode(SyntaxNodeBase):
 
     def _get_first_comment(self):
         """
-        Get the first index that is a comment.
+        Get the first index that is a ``c`` style comment.
 
         :returns: the index of the first comment, if there is no comment then None.
         :rtype: int, None
         """
         for i, item in enumerate(self.nodes):
-            if isinstance(item, CommentNode):
+            if isinstance(item, CommentNode) and not item.is_dollar:
                 return i
         return None
 
