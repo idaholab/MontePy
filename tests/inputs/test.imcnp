@@ -38,7 +38,7 @@ C Iron
 m2        26054.80c        5.85
           26056.80c       91.75
           26057.80c        2.12
-          26058.80c        0.28
+          26058.80c        0.28 $ trailing comment shouldn't move #458.
 C water
 C foo
 m3        1001.80c           2
