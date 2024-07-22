@@ -1,6 +1,13 @@
 MontePy Changelog
 =================
 
+#Next Version#
+-------------
+
+**Bug fixes**
+
+* Fixed bug with trailing dollar sign comments that moved them to a new line. (:issue:`458`).
+
 0.3.1
 ----------------
 
