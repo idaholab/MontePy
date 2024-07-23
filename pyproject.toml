@@ -7,10 +7,10 @@ description = "A library for reading, editing, and writing MCNP input files"
 readme = "README.md"
 requires-python = ">=3.8"
 maintainers = [
-	{name = "Micah Gale", email = "micah.gale@inl.gov"}
+	{name = "Micah Gale", email = "mgale@montepy.org"}
 ]
 authors = [
-	{name = "Micah Gale", email = "micah.gale@inl.gov"},
+	{name = "Micah Gale", email = "mgale@montepy.org"},
 	{name = "Travis Labossiere-Hickman", email = "Travis.LabossiereHickman@inl.gov"},
 	{name = "Brenna Carbno", email="brenna.carbno@inl.gov"}
 ]
@@ -36,11 +36,13 @@ dependencies = [
 
 [project.optional-dependencies]
 test = ["coverage[toml]>=6.3.2", "pytest"]
-doc = ["sphinx", "sphinxcontrib-apidoc", "sphinx_rtd_theme"]
+# This is needed for a sphinx bug. See #414.
+doc = ["sphinx>=7.4.0", "sphinxcontrib-apidoc", "sphinx_rtd_theme"]
 format = ["black>=23.3.0"]
 build = [
 	"build",
-	"setuptools_scm>=8",
+	"setuptools>=64.0.0",
+	"setuptools-scm>=8",
 ]
 develop = [
 	"montepy[test]",
@@ -51,7 +53,7 @@ develop = [
 
 
 [project.urls]
-Homepage = "https://idaholab.github.io/MontePy/index.html"
+Homepage = "https://www.montepy.org/"
 Repository = "https://github.com/idaholab/montepy.git"
 Documentation = "https://idaholab.github.io/MontePy/index.html"
 "Bug Tracker" = "https://github.com/idaholab/MontePy/issues"
@@ -60,7 +62,7 @@ Documentation = "https://idaholab.github.io/MontePy/index.html"
 "change_to_ascii" = "montepy._scripts.change_to_ascii:main"
 
 [build-system]
-requires = ["setuptools  >= 64.0.0", "setuptools_scm>=8"]
+requires = ["setuptools>=64.0.0", "setuptools_scm>=8"]
 build-backend = "setuptools.build_meta"
 
 [tool.setuptools_scm]

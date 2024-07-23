@@ -1,6 +1,33 @@
 MontePy Changelog
 =================
 
+0.3.2
+--------------
+
+**Bug fixes**
+
+* Fixed bug with trailing dollar sign comments that moved them to a new line. (:issue:`458`).
+
+0.3.1
+----------------
+
+**Bug fixes**
+
+* Fixed parser bug with parsing cells with implicit intersection, e.g., ``(1:-2)(3:-4)``. (:issue:`355`).
+
+
+0.3.0
+-------------------
+
+**Features Added**
+
+* ``overwrite`` argument added to ``MCNP_Problem.write_to_file`` to ensure files are only overwritten if the user really wants to do so (:pull:`443`).
+
+**Bug fixes**
+
+* Fixed bug with ``SDEF`` input, and made parser more robust (:issue:`396`).
+
+
 0.2.10
 ----------------------
 

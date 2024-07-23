@@ -96,7 +96,7 @@ class SyntaxNodeBase(ABC):
 
     def get_trailing_comment(self):
         """
-        Get the trailing comments if any.
+        Get the trailing ``c`` style  comments if any.
 
         :returns: The trailing comments of this tree.
         :rtype: list
@@ -375,6 +375,15 @@ class PaddingNode(SyntaxNodeBase):
             return False
         return len(val.strip()) == 0 and val != "\n"
 
+    def has_space(self):
+        """
+        Determines if there is syntactically significant space anywhere in this node.
+
+        :returns: True if there is syntactically significant (not in a comment) space.
+        :rtype: bool
+        """
+        return any([self.is_space(i) for i in range(len(self))])
+
     def append(self, val, is_comment=False):
         """
         Append the node to this node.
@@ -418,13 +427,13 @@ class PaddingNode(SyntaxNodeBase):
 
     def _get_first_comment(self):
         """
-        Get the first index that is a comment.
+        Get the first index that is a ``c`` style comment.
 
         :returns: the index of the first comment, if there is no comment then None.
         :rtype: int, None
         """
         for i, item in enumerate(self.nodes):
-            if isinstance(item, CommentNode):
+            if isinstance(item, CommentNode) and not item.is_dollar:
                 return i
         return None
 
@@ -1031,6 +1040,20 @@ class ValueNode(SyntaxNodeBase):
         """
         return self._value
 
+    @property
+    def never_pad(self):
+        """
+        Whether or not this value node will not have extra spaces added.
+
+        :returns: true if extra padding is not adding at the end if missing.
+        :rtype: bool
+        """
+        return self._never_pad
+
+    @never_pad.setter
+    def never_pad(self, never_pad):
+        self._never_pad = never_pad
+
     @value.setter
     def value(self, value):
         if self.is_negative is not None and value is not None:
@@ -1326,15 +1349,23 @@ class ListNode(SyntaxNodeBase):
                 else:
                     check_for_orphan_jump(new_vals[i])
 
-    def append(self, val):
+    def append(self, val, from_parsing=False):
         """
         Append the node to this node.
 
         :param node: node
         :type node: ValueNode, ShortcutNode
+        :param from_parsing: If this is being append from the parsers, and not elsewhere.
+        :type from_parsing: bool
         """
         if isinstance(val, ShortcutNode):
             self._shortcuts.append(val)
+        if len(self) > 0 and from_parsing:
+            last = self[-1]
+            if isinstance(last, ValueNode) and (
+                (last.padding and not last.padding.has_space) or last.padding is None
+            ):
+                self[-1].never_pad = True
         super().append(val)
 
     @property
@@ -1353,6 +1384,7 @@ class ListNode(SyntaxNodeBase):
                 and node.padding is None
                 and i < length - 1
                 and not isinstance(self.nodes[i + 1], PaddingNode)
+                and not node.never_pad
             ):
                 node.padding = PaddingNode(" ")
             if isinstance(last_node, ShortcutNode) and isinstance(node, ShortcutNode):
@@ -1622,9 +1654,7 @@ class ShortcutNode(ListNode):
             jump_num = 1
             self._num_node = ValueNode(None, int, never_pad=True)
         for i in range(jump_num):
-            self._nodes.append(
-                ValueNode(input_parser.mcnp_input.Jump(), float, never_pad=True)
-            )
+            self._nodes.append(ValueNode(input_parser.mcnp_input.Jump(), float))
 
     def _expand_interpolate(self, p):
         if self._type == Shortcuts.LOG_INTERPOLATE:

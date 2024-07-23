@@ -4,6 +4,7 @@ montepy.data\_inputs package
 
 .. automodule:: montepy.data_inputs
    :members:
+   :inherited-members:
    :undoc-members:
    :show-inheritance:
 
@@ -24,8 +25,6 @@ montepy.data\_inputs package
    montepy.data_inputs.material_component
    montepy.data_inputs.mode
    montepy.data_inputs.thermal_scattering
-   montepy.data_inputs.tally
-   montepy.data_inputs.tally_multiplier
    montepy.data_inputs.transform
    montepy.data_inputs.universe_input
    montepy.data_inputs.volume

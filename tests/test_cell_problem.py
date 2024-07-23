@@ -1,5 +1,6 @@
 # Copyright 2024, Battelle Energy Alliance, LLC All Rights Reserved.
 from unittest import TestCase
+import pytest
 
 import montepy
 from montepy.cell import Cell
@@ -11,56 +12,6 @@ class TestCellClass(TestCase):
     def test_bad_init(self):
         with self.assertRaises(TypeError):
             Cell("5")
-
-    def test_init(self):
-        # test invalid cell number
-        in_str = "foo"
-        card = Input([in_str, f"c {in_str}"], BlockType.CELL)
-        with self.assertRaises(montepy.errors.MalformedInputError):
-            in_str = "foo bar"
-            cell = Cell(card)
-        # test like feature unsupported
-        in_str = "1 like 2"
-        card = Input([in_str, f"c {in_str}"], BlockType.CELL)
-        with self.assertRaises(montepy.errors.UnsupportedFeature):
-            in_str = "foo bar"
-            cell = Cell(card)
-        # test invalid material number
-        in_str = "1 foo"
-        card = Input([in_str], BlockType.CELL)
-        with self.assertRaises(montepy.errors.MalformedInputError):
-            cell = Cell(card)
-        # test invalid material density
-        in_str = "1 1 foo"
-        card = Input([in_str], BlockType.CELL)
-        with self.assertRaises(montepy.errors.MalformedInputError):
-            cell = Cell(card)
-        # tests void cell
-        in_str = "1 0 2"
-        card = Input([in_str], BlockType.CELL)
-        cell = Cell(card)
-        self.assertEqual(cell.old_number, 1)
-        self.assertEqual(cell.number, 1)
-        self.assertIsNone(cell.material)
-        self.assertEqual(cell.old_mat_number, 0)
-
-        # test material cell
-        for atom_dens, density in [(False, "-0.5"), (True, "0.5")]:
-            in_str = f"1 1 {density} 2"
-            card = Input([in_str], BlockType.CELL)
-            cell = Cell(card)
-            self.assertEqual(cell.old_mat_number, 1)
-            if atom_dens:
-                self.assertAlmostEqual(cell.atom_density, 0.5)
-            else:
-                self.assertAlmostEqual(cell.mass_density, 0.5)
-            self.assertTrue(atom_dens == cell.is_atom_dens)
-
-        # test parameter input
-        in_str = "1 0 #2 u= 5 vol=20 trcl=5"
-        card = Input([in_str], BlockType.CELL)
-        cell = Cell(card)
-        self.assertEqual(cell.parameters["TRCL"]["data"][0].value, 5.0)
 
     # TODO test updating cell geometry once done
     def test_cell_validator(self):
@@ -158,3 +109,65 @@ class TestCellClass(TestCase):
         card = Input([in_str], BlockType.CELL)
         cell = Cell(card)
         self.assertEqual(cell.parameters["PWT"]["data"][0].value, 1.0)
+
+
+@pytest.mark.parametrize(
+    "line, is_void, mat_number, density, atom_dens, parameters",
+    [
+        ("1 0 2", True, 0, None, None, None),
+        ("1 1 -10 2", False, 1, 10.0, False, None),
+        ("1 1 10 2", False, 1, 10.0, True, None),
+        (
+            "1 0 #2 u= 5 vol=20 trcl=5",
+            True,
+            0,
+            None,
+            None,
+            {"TRCL": 5.0, "U": 5.0, "VOL": 20.0},
+        ),
+        (
+            "1 1 -1.0 1000 (-3000:-4000:-5000)(-6000:-7000:8000) -2000 -9000",
+            False,
+            1,
+            1,
+            False,
+            None,
+        ),
+    ],
+)
+def test_init(line, is_void, mat_number, density, atom_dens, parameters):
+    # test like feature unsupported
+    # tests void cell
+    input = Input([line], BlockType.CELL)
+    cell = Cell(input)
+    assert cell.old_number == 1
+    assert cell.number == 1
+    if is_void:
+        assert cell.material is None
+    else:
+        assert cell.old_mat_number != 0
+        if atom_dens:
+            assert cell.is_atom_dens
+            assert cell.atom_density == pytest.approx(density)
+        else:
+            assert not cell.is_atom_dens
+            assert cell.mass_density == pytest.approx(density)
+    assert cell.old_mat_number == mat_number
+    if not parameters:
+        return
+    for parameter, value in parameters.items():
+        assert cell.parameters[parameter]["data"][0].value == pytest.approx(value)
+
+
+@pytest.mark.parametrize("line", ["foo", "foo bar", "1 foo", "1 1 foo"])
+def test_malformed_init(line):
+    with pytest.raises(montepy.errors.MalformedInputError):
+        input = Input([line], BlockType.CELL)
+        Cell(input)
+
+
+@pytest.mark.parametrize("line", ["1 like 2"])
+def test_malformed_init(line):
+    with pytest.raises(montepy.errors.UnsupportedFeature):
+        input = Input([line], BlockType.CELL)
+        Cell(input)

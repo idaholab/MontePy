@@ -545,7 +545,7 @@ class testFullFileIntegration(TestCase):
                     pass
 
     def test_importance_write_data(self):
-        out_file = "test_import_data"
+        out_file = "test_import_data_2"
         problem = copy.deepcopy(self.simple_problem)
         problem.print_in_data_block["imp"] = True
         try:
@@ -783,7 +783,7 @@ class testFullFileIntegration(TestCase):
         with self.assertWarns(LineExpansionWarning):
             output = problem.cells._universe.format_for_mcnp_input((6, 2, 0))
         print(output)
-        self.assertIn("u 350 2J -1 J 350", output)
+        self.assertIn("u 350 2J -1 J 350 ", output)
 
     def test_universe_number_collision(self):
         problem = montepy.read_input(
@@ -968,12 +968,13 @@ class testFullFileIntegration(TestCase):
             cell.validate()
 
     def test_importance_rewrite(self):
-        out_file = "test_import_data"
+        out_file = "test_import_data_1"
         problem = copy.deepcopy(self.simple_problem)
         problem.print_in_data_block["imp"] = True
         try:
             problem.write_to_file(out_file)
             problem = montepy.read_input(out_file)
+            os.remove(out_file)
             problem.print_in_data_block["imp"] = False
             problem.write_to_file(out_file)
             found_n = False

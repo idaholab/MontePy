@@ -7,8 +7,8 @@ The library provides a semantic interface for working with input files, or our p
 It understands that the second entry on a cell card is the material number,
 and will link the cell with its material object.
 
-.. warning::
-    MontePy is built primarily to support MCNP 6.2. Some success maybe achieved with MCNP 6.1, and 5.1.60, 
+.. note::
+    MontePy is built primarily to support MCNP 6.2, and MCNP 6.3. Some success maybe achieved with MCNP 6.1, and 5.1.60, 
     but there may be issues due to new features in MCNP 6.2, not being backwards compatible.
     Use earlier versions of MCNP with MontePy at your own risk.
 
@@ -33,7 +33,8 @@ System Wide (for the current user)
    In this case the easiest way to deal with this is to open a teminal inside of `jupyter lab` and to install the package there.
 
 
-#. Install it from `PyPI <https://pypi.org>`_ by running ``pip install --user montepy``.
+#. Install it from `PyPI <https://pypi.org/project/montepy>`_ by running ``pip install montepy``. 
+   You may need to run ``pip install --user montepy`` if you are not allowed to install the package.
 
 Install specific version for a project
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -41,24 +42,30 @@ The best way maybe to setup a project-specific `conda <https://docs.conda.io/pro
 `Mamba <https://mamba.readthedocs.io/en/latest/user_guide/concepts.html>`_, 
 or a `venv <https://docs.python.org/3/library/venv.html>`_ environment.
 The steps for installing inside one of those environments are the same as the previous steps.
+You can specify a specific version from `PyPI`_ be installed using:
 
-Another option is to clone the repository and to use symbolic-links. In this scenario we'll assume that your local
-repository is located at ``~/dev/montepy``, and your project is located at ``~/foo/bar``. 
+``pip install montepy==<version>``
 
-#. Move to the repository parent folder: ``cd ~/dev``
-#. Clone this repository: ``git clone https://github.com/idaholab/montepy.git`` 
-#. Enter the repository: ``cd montepy``
-#. Checkout the specific version you want. These are tagged with git tags
 
-    #. You can list all tags with ``git tag``
+Best Practices
+--------------
 
-    #. You can then checkout that tag: ``git checkout <tag>``
+Before we begin, here are some guidelines to keep in mind while scripting your work with MCNP models.
 
-#. Install the dependent requirements: ``pip install -r requirements/common.txt``
-#. Move to your project folder: ``cd ~/foo/bar``
-#. Create a symbolic link in the project folder to the repository: ``ln -s ~/dev/montepy/montepy montepy``
+#. *Always* version control your input files (not output files) with `git <https://git-scm.com/>`_ or another tool.
+   If you are working with very large input models, like `the ITER model <https://doi.org/10.1038/s41560-020-00753-x>`_ you may want to consider `git-lfs <https://git-lfs.com/>`_.
 
-Now when you run a python script in that folder (*and only in that folder*) ``import montepy`` will use the specific version you want. 
+   #. Do learn some `git best practices <https://sethrobertson.github.io/GitBestPractices/>`_. "Update" is not a useful commit message.
+
+#. *Always* have backups. Don't be that person that loses the last months of work when your laptop falls in a pond. 
+   Make sure there's a cloud backup (could be OneDrive, GitHub, etc.). 
+   Just make sure you comply with any applicable corporate policies. 
+
+#. Don't overwrite your original file. Generally your script should open file "A", modify it, and then save it to file "B".
+   This way, when there is a bug in your script, you can debug it and rerun it because "A" still exists.
+   Later, if you need to make changes you can modify your script and rerun it. 
+   This is especially true if your script ever becomes qualified under an `ASME NQA-1 <https://en.wikipedia.org/wiki/ASME_NQA>`_ compliant Software Quality Assurance program,
+   which requires that the inputs and outputs of software be preserved.
 
 Reading a File
 --------------
@@ -79,10 +86,17 @@ state as a valid MCNP input file.
 
 >>> problem.write_to_file("bar.imcnp")
 
+The :func:`~montepy.mcnp_problem.MCNP_Problem.write_to_file` method does take an optional argument: ``overwrite``. 
+By default if the file exists, it will not be overwritten and an error will be raised.
+This can be changed by ``overwrite=True``.
+
 .. warning::
-   Be careful with overwriting the original file when writing a modified file out.
-   This will wipe out the original version, and if you have no version control,
-   may lead to losing information.
+   Overwriting the original file (with ``overwrite=True``) when writing a modified file out is discouraged.
+   This is because if your script using MontePy is buggy you have no real way to debug,
+   and recover from the issue if your original file has been been modified.
+   Instead of constantly having to override the same file you can add a timestamp to the output file,
+   or create an always unique file name with the `UUID <https://docs.python.org/3/library/uuid.html>`_ library.
+
 
 If no changes are made to the problem in MontePy the entire file will be just parroted out as it was in the original file.
 However any objects (e.g., two cells) that were changed (i.e., mutated) may have their formatting changed slightly.

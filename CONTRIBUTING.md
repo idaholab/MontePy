@@ -7,8 +7,7 @@ up to speed.
 ## Code of Conduct
 
 Participants in the MontePy project are expected to follow and uphold the [Code
-of Conduct](CODE_OF_CONDUCT.md). Please report any unacceptable behavior to
-micah.gale@inl.gov.
+of Conduct](CODE_OF_CONDUCT.md). Please report any unacceptable behavior to mgale@montepy.org.
 
 ## Resources
 

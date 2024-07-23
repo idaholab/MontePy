@@ -126,7 +126,7 @@ For a deployment you need to:
 #. Run the deploy script : ``.github/scripts/deploy.sh``
 #. Manually merge onto main without creating a new commit. 
    This is necessary because there's no way to do a github PR that will not create a new commit, which will break setuptools_scm.
-
+#. Update the release notes on the draft release, and finalize it on GitHub.
 
 Package Structure
 -----------------

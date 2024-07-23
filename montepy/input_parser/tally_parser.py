@@ -4,7 +4,14 @@ from montepy.input_parser import syntax_node
 
 
 class TallyParser(DataParser):
-    """ """
+    """
+    A barebone parser for parsing tallies before they are fully implemented.
+
+    .. versionadded:: 0.2.0
+
+    :returns: a syntax tree for the data input.
+    :rtype: SyntaxNode
+    """
 
     debugfile = None
 
