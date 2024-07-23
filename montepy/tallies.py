@@ -2,8 +2,6 @@
 import montepy
 from montepy.numbered_object_collection import NumberedObjectCollection
 
-Tally = montepy.data_inputs.tally.Tally
-
 
 class Tallies(NumberedObjectCollection):
     """
@@ -14,4 +12,4 @@ class Tallies(NumberedObjectCollection):
     """
 
     def __init__(self, objects=None, problem=None):
-        super().__init__(Tally, objects, problem)
+        super().__init__(montepy.data_inputs.tally.Tally, objects, problem)
