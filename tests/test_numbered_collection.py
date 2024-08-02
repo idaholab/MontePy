@@ -115,6 +115,12 @@ class TestNumberedObjectCollection(unittest.TestCase):
         self.assertEqual(cell.number, 4)
         self.assertEqual(len(cells), size + 2)
 
+    def test_append_renumber_problems(self):
+        prob1 = copy.deepcopy(self.simple_problem)
+        prob2 = copy.deepcopy(self.simple_problem)
+        prob2.materials.remove(prob2.materials[2])
+        prob2.materials.append_renumber(prob1.materials[1])
+
     def test_request_number(self):
         cells = self.simple_problem.cells
         self.assertEqual(cells.request_number(6), 6)
