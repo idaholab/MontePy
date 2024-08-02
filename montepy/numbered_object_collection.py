@@ -230,6 +230,8 @@ class NumberedObjectCollection(ABC):
         if not isinstance(step, int):
             raise TypeError("The step number must be an int")
         number = obj.number
+        if self._problem:
+            obj.link_to_problem(self._problem)
         try:
             self.append(obj)
         except NumberConflictError:
@@ -237,8 +239,6 @@ class NumberedObjectCollection(ABC):
             obj.number = number
             self.append(obj)
 
-        if self._problem:
-            obj.link_to_problem(self._problem)
         return number
 
     def request_number(self, start_num=1, step=1):
