@@ -393,7 +393,7 @@ class PaddingNode(SyntaxNodeBase):
         :param is_comment: whether or not the node is a comment.
         :type is_comment: bool
         """
-        if is_comment:
+        if is_comment or isinstance(val, CommentNode):
             if not isinstance(val, CommentNode):
                 val = CommentNode(val)
             self.nodes.append(val)
