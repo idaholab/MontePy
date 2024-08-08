@@ -166,8 +166,8 @@ class Isotope:
             raise TypeError("library must be a string")
         self._library = library
 
-    def __str__(self):
-        return f"{self.element.symbol:>2}-{self.A:<3} ({self._library})"
+    def __repr__(self):
+        return f"{self.__class__.__name__}({repr(self.mcnp_str())})"
 
     def mcnp_str(self):
         """
@@ -191,7 +191,7 @@ class Isotope:
         """
         return self.Z * 1000 + self.A
 
-    def __repr__(self):
+    def __str__(self):
         return f"ZAID={self.ZAID}, Z={self.Z}, A={self.A}, element={self.element}, library={self.library}"
 
     def __hash__(self):
