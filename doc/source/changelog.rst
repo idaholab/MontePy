@@ -1,6 +1,14 @@
 MontePy Changelog
 =================
 
+#Next Version#
+--------------
+
+**Bug fixes**
+
+* Fixed bug with appending and renumbeing numbered objects from other MCNP problems (:issue:`466`).
+
+
 0.3.2
 --------------
 
