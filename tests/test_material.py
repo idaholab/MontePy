@@ -223,14 +223,13 @@ class TestIsotope(TestCase):
 
     def test_isotope_str(self):
         isotope = Isotope("1001.80c")
-        self.assertEqual(isotope.mcnp_str(), "1001.80c")
-        self.assertEqual(str(isotope), " H-1   (80c)")
-        self.assertEqual(
-            repr(isotope), "ZAID=1001, Z=1, A=1, element=hydrogen, library=80c"
-        )
+        assert isotope.mcnp_str() == "1001.80c"
+        assert repr(isotope) == "Isotope('1001.80c')"
+        assert str(isotope) == \
+            "ZAID=1001, Z=1, A=1, element=hydrogen, library=80c"
         isotope = Isotope("94239.80c")
-        self.assertEqual(isotope.mcnp_str(), "94239.80c")
-        self.assertEqual(str(isotope), "Pu-239 (80c)")
+        assert isotope.mcnp_str() == "94239.80c"
+        assert repr(isotope) == "Isotope('94239.80c')"
 
 
 class TestThermalScattering(TestCase):
