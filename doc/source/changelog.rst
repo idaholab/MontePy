@@ -8,6 +8,10 @@ MontePy Changelog
 
 * Fixed bug with appending and renumbeing numbered objects from other MCNP problems (:issue:`466`).
 
+**Code Quality**
+
+* Simpler ``Isotope`` representation (:issue:`473`).
+
 
 0.3.2
 --------------
