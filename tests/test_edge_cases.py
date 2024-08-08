@@ -163,6 +163,14 @@ class EdgeCaseTests(TestCase):
             "                            3201  15i   3217",
             "                            u=20",
         ],
+        # issue #461
+        [
+            "43    0",
+            "      (                 $ a dollar comment here",
+            "        -1 2",
+            "      )",
+            "      IMP:N=1.000000 IMP:P=1.000000",
+        ],
     ],
 )
 def test_complex_cell_parsing(lines):
