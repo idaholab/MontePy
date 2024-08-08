@@ -162,13 +162,31 @@ def test_material_comp_fraction_str():
     repr(comp)
 
 
-def test_material_card_pass_through():
+def test_material_update_format():
     in_str = "M20 1001.80c 0.5 8016.80c 0.5"
     input_card = Input([in_str], BlockType.DATA)
     material = Material(input_card)
     assert material.format_for_mcnp_input((6, 2, 0)) == [in_str]
     material.number = 5
-    assert "8016" not in material.format_for_mcnp_input((6, 2, 0))
+    print(material.format_for_mcnp_input((6, 2, 0)))
+    assert "8016" in material.format_for_mcnp_input((6, 2, 0))[0]
+    # addition
+    isotope = Isotope("2004.80c")
+    material.material_components[isotope] = MaterialComponent(isotope, 0.1)
+    print(material.format_for_mcnp_input((6, 2, 0)))
+    assert "2004" in material.format_for_mcnp_input((6, 2, 0))[0]
+    # update
+    isotope = Isotope("8016.80c")
+    material.material_components[isotope].fraction = 0.7
+    print(material.format_for_mcnp_input((6, 2, 0)))
+    assert "0.7" in material.format_for_mcnp_input((6, 2, 0))[0]
+    material.material_components[isotope] = MaterialComponent(isotope, 0.6)
+    print(material.format_for_mcnp_input((6, 2, 0)))
+    assert "0.6" in material.format_for_mcnp_input((6, 2, 0))[0]
+    # delete
+    del material.material_components[isotope]
+    print(material.format_for_mcnp_input((6, 2, 0)))
+    assert "8016" in material.format_for_mcnp_input((6, 2, 0))[0]
 
 
 class TestIsotope(TestCase):
