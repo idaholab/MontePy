@@ -44,6 +44,16 @@ C foo
 m3        1001.80c           2
            8016.80c           1
 MT3 lwtr.23t h-zr.20t h/zr.28t
+C tallies
+fc1 Surface current
+f1:n,p 1000
+fc2 Average surface flux
+f2:p 1005
+fc4  2-group flux
+f4:n 1 2 3
+e4   0.625e-6
+f6:p 1
+f7:n 1
 C execution
 ksrc 0 0 0
 kcode 100000 1.000 50 1050
