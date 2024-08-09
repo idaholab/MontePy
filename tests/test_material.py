@@ -1,5 +1,6 @@
 # Copyright 2024, Battelle Energy Alliance, LLC All Rights Reserved.
 from unittest import TestCase
+import pytest
 
 import montepy
 
@@ -14,62 +15,6 @@ from montepy.input_parser.mcnp_input import Input
 
 
 class testMaterialClass(TestCase):
-    def test_material_init(self):
-        # test invalid material number
-        input_card = Input(["Mfoo"], BlockType.DATA)
-        with self.assertRaises(MalformedInputError):
-            Material(input_card)
-        input_card = Input(["M-20"], BlockType.DATA)
-        with self.assertRaises(MalformedInputError):
-            Material(input_card)
-
-        in_str = "M20 1001.80c 0.5 8016.710nc 0.5"
-        input_card = Input([in_str], BlockType.DATA)
-        material = Material(input_card)
-        self.assertEqual(material.number, 20)
-        self.assertEqual(material.old_number, 20)
-        self.assertTrue(material.is_atom_fraction)
-        for component in material.material_components:
-            self.assertEqual(material.material_components[component].fraction, 0.5)
-
-        # test implicit library with syntax tree errors
-        in_str = """m1 1001 0.33
-    8016 0.666667"""
-        input_card = Input(in_str.split("\n"), BlockType.DATA)
-        material = Material(input_card)
-        # test implicit library
-        in_str = "M20 1001 0.5 2001 0.5 8016.710nc 0.5"
-        input_card = Input([in_str], BlockType.DATA)
-        material = Material(input_card)
-        self.assertEqual(material.number, 20)
-        self.assertEqual(material.old_number, 20)
-        self.assertTrue(material.is_atom_fraction)
-        for component in material.material_components:
-            self.assertEqual(material.material_components[component].fraction, 0.5)
-
-        # test weight fraction
-        in_str = "M20 1001.80c -0.5 8016.80c -0.5"
-        input_card = Input([in_str], BlockType.DATA)
-        material = Material(input_card)
-        self.assertFalse(material.is_atom_fraction)
-        for component in material.material_components:
-            self.assertEqual(material.material_components[component].fraction, 0.5)
-
-        # test bad fraction
-        in_str = "M20 1001.80c foo"
-        input_card = Input([in_str], BlockType.DATA)
-        with self.assertRaises(MalformedInputError):
-            material = Material(input_card)
-        # test mismatch fraction
-        in_str = "M20 1001.80c 0.5 8016.80c -0.5"
-        input_card = Input([in_str], BlockType.DATA)
-        with self.assertRaises(MalformedInputError):
-            material = Material(input_card)
-        # test parameters
-        in_str = "M20 1001.80c 0.5 8016.80c 0.5 Gas=1"
-        input_card = Input([in_str], BlockType.DATA)
-        material = Material(input_card)
-        self.assertEqual(material.parameters["gas"]["data"][0].value, 1.0)
 
     def test_material_parameter_parsing(self):
         for line in ["M20 1001.80c 1.0 gas=0", "M20 1001.80c 1.0 gas = 0 nlib = 00c"]:
@@ -166,6 +111,40 @@ Pu-239 (80c) 0.1
         self.assertEqual(material.format_for_mcnp_input((6, 2, 0)), [in_str])
         material.number = 5
         self.assertNotIn("8016", material.format_for_mcnp_input((6, 2, 0)))
+
+
+@pytest.mark.parametrize(
+    "line, mat_number, is_atom, fractions",
+    [
+        ("M20 1001.80c 0.5 8016.710nc 0.5", 20, True, [0.5, 0.5]),
+        ("m1 1001 0.33 8016 0.666667", 1, True, [0.33, 0.666667]),
+        ("M20 1001 0.5 8016 0.5", 20, True, [0.5, 0.5]),
+        ("M20 1001.80c -0.5 8016.80c -0.5", 20, False, [0.5, 0.5]),
+        ("M20 1001.80c -0.5 8016.710nc -0.5", 20, False, [0.5, 0.5]),
+        ("M20 1001.80c 0.5 8016.80c 0.5 Gas=1", 20, True, [0.5, 0.5]),
+    ],
+)
+def test_material_init(line, mat_number, is_atom, fractions):
+
+    input = Input([line], BlockType.DATA)
+    material = Material(input)
+    assert material.number == mat_number
+    assert material.old_number == mat_number
+    assert material.is_atom_fraction == is_atom
+    for component, gold in zip(material.material_components.values(), fractions):
+        assert component.fraction == pytest.approx(gold)
+    if "gas" in line:
+        assert material.parameters["gas"]["data"][0].value == pytest.approx(1.0)
+
+
+@pytest.mark.parametrize(
+    "line", ["Mfoo", "M-20", "M20 1001.80c foo", "M20 1001.80c 0.5 8016.80c -0.5"]
+)
+def test_bad_init(line):
+    # test invalid material number
+    input = Input([line], BlockType.DATA)
+    with pytest.raises(MalformedInputError):
+        Material(input)
 
 
 class TestIsotope(TestCase):
