@@ -8,6 +8,7 @@ MontePy Changelog
 
 * Fixed bug with appending and renumbering numbered objects from other MCNP problems (:issue:`466`).
 * Fixed bug with dynamic typing and the parsers that only appear in edge cases (:issue:`461`).
+* Fixed parser bug with having spaces in the start of the transform input for the fill of a cell (:pull:`479`).
 
 
 0.3.2
