@@ -178,7 +178,7 @@ class Isotope:
         :returns: a string that can be used in MCNP
         :rtype: str
         """
-        return f"{self.ZAID}.{self.library}"
+        return f"{self.ZAID}.{self.library}" if self.library else self.ZAID
 
     def get_base_zaid(self):
         """
