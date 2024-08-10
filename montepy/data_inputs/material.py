@@ -148,7 +148,11 @@ class Material(data_input.DataInputAbstract, Numbered_MCNP_Object):
         return lines
 
     def _update_values(self):
-        print(self._tree)
+        new_list = syntax_node.IsotopesNode("new isotope list")
+        for isotope, component in self.material_components.items():
+            isotope._tree.value = isotope.mcnp_str()
+            new_list.append(("_", isotope._tree, component._tree))
+        self._tree.nodes["data"] = new_list
 
     def add_thermal_scattering(self, law):
         """
