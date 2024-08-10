@@ -176,7 +176,8 @@ def test_material_update_format():
     print(material.format_for_mcnp_input((6, 2, 0)))
     assert "2004" in material.format_for_mcnp_input((6, 2, 0))[0]
     # update
-    isotope = Isotope("8016.80c")
+    isotope = list(material.material_components.keys())[-1]
+    print(material.material_components.keys())
     material.material_components[isotope].fraction = 0.7
     print(material.format_for_mcnp_input((6, 2, 0)))
     assert "0.7" in material.format_for_mcnp_input((6, 2, 0))[0]
