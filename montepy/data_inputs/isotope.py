@@ -1,4 +1,5 @@
 # Copyright 2024, Battelle Energy Alliance, LLC All Rights Reserved.
+from montepy.constants import MAX_ATOMIC_SYMBOL_LENGTH
 from montepy.data_inputs.element import Element
 from montepy.errors import *
 from montepy.input_parser.syntax_node import ValueNode
@@ -18,7 +19,18 @@ class Isotope:
     Points on bounding curve for determining if "valid" isotope
     """
 
-    def __init__(self, ZAID="", node=None):
+    _NAME_PARSER = re.compile(
+        r"""(
+                (?P<ZAID>\d{4,6})|
+                ((?P<element>[a-z]+)-?(?P<A>\d*))
+            )
+            (m(?P<meta>\d+))?
+            (\.(?P<library>\d{2,}[a-z]+))?""",
+        re.I | re.VERBOSE,
+    )
+    """"""
+
+    def __init__(self, ZAID="", element=None, Z=None, A=None, node=None):
         if node is not None and isinstance(node, ValueNode):
             if node.type == float:
                 node = ValueNode(node.token, str, node.padding)
@@ -190,6 +202,34 @@ class Isotope:
         :rtype: int
         """
         return self.Z * 1000 + self.A
+
+    @classmethod
+    def get_from_fancy_name(cls, identifier):
+        """
+        :param identifier:
+        :type idenitifer: str | int
+        """
+        if isinstance(identifier, (int, float)):
+            pass
+        elif isinstance(identifier, str):
+            if match := cls._NAME_PARSER.match(identifier):
+                A = 0
+                isomer = 0
+                library = None
+                if "ZAID" in match:
+                    ZAID = int(match["ZAID"])
+                else:
+                    element_name = match["element"]
+                    if len(element_name) <= MAX_ATOMIC_SYMBOL_LENGTH:
+                        element = Element.get_by_symbol(element_name)
+                    else:
+                        element = Element.get_by_name(element_name)
+                        if "A" in match:
+                            A = int(match["A"])
+                if "meta" in match:
+                    isomer = int(match["meta"])
+                if "library" in match:
+                    library = match["library"]
 
     def __repr__(self):
         return f"ZAID={self.ZAID}, Z={self.Z}, A={self.A}, element={self.element}, library={self.library}"

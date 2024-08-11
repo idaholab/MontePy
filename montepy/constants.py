@@ -47,6 +47,11 @@ The maximum allowed code point allowed by ASCII.
 Source: `Wikipedia <https://en.wikipedia.org/wiki/ASCII>`_
 """
 
+MAX_ATOMIC_SYMBOL_LENGTH = 2
+"""
+The maximum length of an atomic symbol.
+"""
+
 
 def get_max_line_length(mcnp_version=DEFAULT_VERSION):
     """

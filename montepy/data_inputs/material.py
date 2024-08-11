@@ -33,10 +33,6 @@ class Material(data_input.DataInputAbstract, Numbered_MCNP_Object):
 
     _parser = MaterialParser()
 
-    _NAME_PARSER = re.compile(
-        r"((\d{4,6})|([a-z]+-?\d*))(m\d+)?(\.\d{2,}[a-z]+)?", re.I | re.VERBOSE
-    )
-
     def __init__(self, input=None):
         self._material_components = co.defaultdict(dict)
         self._thermal_scattering = None
