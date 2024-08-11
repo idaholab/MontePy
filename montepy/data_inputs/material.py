@@ -1,5 +1,8 @@
 # Copyright 2024, Battelle Energy Alliance, LLC All Rights Reserved.
+import collections as co
 import copy
+import itertools
+
 from montepy.data_inputs import data_input, thermal_scattering
 from montepy.data_inputs.isotope import Isotope
 from montepy.data_inputs.material_component import MaterialComponent
@@ -9,7 +12,7 @@ from montepy import mcnp_object
 from montepy.numbered_mcnp_object import Numbered_MCNP_Object
 from montepy.errors import *
 from montepy.utilities import *
-import itertools
+
 import re
 
 
@@ -30,8 +33,12 @@ class Material(data_input.DataInputAbstract, Numbered_MCNP_Object):
 
     _parser = MaterialParser()
 
+    _NAME_PARSER = re.compile(
+        r"((\d{4,6})|([a-z]+-?\d*))(m\d+)?(\.\d{2,}[a-z]+)?", re.I | re.VERBOSE
+    )
+
     def __init__(self, input=None):
-        self._material_components = {}
+        self._material_components = co.defaultdict(dict)
         self._thermal_scattering = None
         self._number = self._generate_default_node(int, -1)
         super().__init__(input)
