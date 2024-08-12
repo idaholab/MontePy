@@ -34,7 +34,8 @@ class Material(data_input.DataInputAbstract, Numbered_MCNP_Object):
     _parser = MaterialParser()
 
     def __init__(self, input=None):
-        self._material_components = co.defaultdict(dict)
+        self._material_components = {}
+        self._pointers = co.defaultdict(co.defaultdict(dict))
         self._thermal_scattering = None
         self._number = self._generate_default_node(int, -1)
         super().__init__(input)
@@ -115,9 +116,61 @@ class Material(data_input.DataInputAbstract, Numbered_MCNP_Object):
         """
         The internal dictionary containing all the components of this material.
 
+        .. deprecated:: 0.4.0
+            Accessing this dictionary directly is deprecated.
+            Instead access the nuclides directly with the keys.
+
         :rtype: dict
         """
         return self._material_components
+
+    def __getitem__(self, key):
+        """ """
+        # TODO handle slices
+        pointer = self.__get_pointer_iso(key)
+        return self.material_components[pointer].fraction
+
+    def __get_pointer_iso(self, key):
+        base_isotope = Isotope.get_from_fancy_name(key)
+        element = self._pointers[base_isotope.element]
+        try:
+            # TODO handle ambiguous libraries
+            isotope_pointer = element[(base_isotope.A, base_isotope.meta_state)]
+            # only one library, and it's ambiguous
+            if len(isotope_pointer) == 1 and base_isotope.library == "":
+                pointer = next(isotope_pointer)
+            else:
+                pointer = isotope_pointer[base_isotope.library]
+            return pointer
+        except KeyError as e:
+            # TODO
+            pass
+
+    def __setitem__(self, key, newvalue):
+        """ """
+        try:
+            pointer = self.__get_pointer_iso(key)
+        except KeyError as e:
+            pointer = Isotope.get_from_fancy_name(key)
+        try:
+            self.material_components[pointer].fraction = newvalue
+        except KeyError as e:
+            new_comp = MaterialComponent(pointer, newvalue)
+            self.material_components[pointer] = new_comp
+            self._pointers[pointer.element][(pointer.A, pointer.meta_state)][
+                pointer.library
+            ] = pointer
+
+    def __delitem__(self, key):
+        try:
+            pointer = self.__get_pointer_iso(key)
+        except KeyError as e:
+            # TODO
+            pass
+        del self.material_components[pointer]
+        del self._pointers[pointer.element][(pointer.A, pointer.meta_state)][
+            pointer.library
+        ]
 
     @make_prop_pointer("_thermal_scattering", thermal_scattering.ThermalScatteringLaw)
     def thermal_scattering(self):
