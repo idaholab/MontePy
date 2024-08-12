@@ -7,7 +7,7 @@ c
 2 2 8
       -1005
      imp:n=1
-     imp:p=0.5
+     imp:p=0.5 $ graveyard
 3 3 -1
       1000 1005 -1010
      imp:n,p=1
