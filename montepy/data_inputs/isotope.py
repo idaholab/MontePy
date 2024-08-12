@@ -4,6 +4,8 @@ from montepy.data_inputs.element import Element
 from montepy.errors import *
 from montepy.input_parser.syntax_node import ValueNode
 
+import re
+
 
 class Isotope:
     """
@@ -30,26 +32,70 @@ class Isotope:
     )
     """"""
 
-    def __init__(self, ZAID="", element=None, Z=None, A=None, node=None):
+    def __init__(
+        self,
+        ZAID="",
+        element=None,
+        Z=None,
+        A=None,
+        meta_state=None,
+        library="",
+        node=None,
+    ):
         if node is not None and isinstance(node, ValueNode):
             if node.type == float:
                 node = ValueNode(node.token, str, node.padding)
             self._tree = node
             ZAID = node.value
-        parts = ZAID.split(".")
-        try:
-            assert len(parts) <= 2
-            int(parts[0])
-        except (AssertionError, ValueError) as e:
-            raise ValueError(f"ZAID: {ZAID} could not be parsed as a valid isotope")
-        self._ZAID = parts[0]
-        self.__parse_zaid()
-        if len(parts) == 2:
-            self._library = parts[1]
+        if ZAID:
+            parts = ZAID.split(".")
+            try:
+                assert len(parts) <= 2
+                int(parts[0])
+            except (AssertionError, ValueError) as e:
+                raise ValueError(f"ZAID: {ZAID} could not be parsed as a valid isotope")
+            self._ZAID = parts[0]
+            new_vals = self._parse_zaid(int(self._ZAID))
+            for key, value in new_vals.items():
+                setattr(self, key, value)
+            if len(parts) == 2:
+                self._library = parts[1]
+            else:
+                self._library = ""
+            return
+        elif element is not None:
+            if not isinstance(element, Element):
+                raise TypeError(
+                    f"Only type Element is allowed for element argument. {element} given."
+                )
+            self._element = element
+            self._Z = self._element.Z
+        elif Z is not None:
+            if not isinstance(Z, int):
+                raise TypeError(f"Z number must be an int. {Z} given.")
+            self._Z = Z
+            self._element = Element(Z)
+        if A is not None:
+            if not isinstance(A, int):
+                raise TypeError(f"A number must be an int. {A} given.")
+            self._A = A
         else:
-            self._library = ""
+            self._A = 0
+        if not isinstance(meta_state, (int, type(None))):
+            raise TypeError(f"Meta state must be an int. {meta_state} given.")
+        if meta_state:
+            self._is_metastable = True
+            self._meta_state = meta_state
+        else:
+            self._is_metastable = False
+            self._meta_state = None
+        if not isinstance(library, str):
+            raise TypeError(f"Library can only be str. {library} given.")
+        self._library = library
+        self._ZAID = str(self.get_full_zaid())
 
-    def __parse_zaid(self):
+    @classmethod
+    def _parse_zaid(cls, ZAID):
         """
         Parses the ZAID fully including metastable isomers.
 
@@ -58,7 +104,7 @@ class Isotope:
         """
 
         def is_probably_an_isotope(Z, A):
-            for lim_Z, lim_A in self._BOUNDING_CURVE:
+            for lim_Z, lim_A in cls._BOUNDING_CURVE:
                 if Z <= lim_Z:
                     if A <= lim_A:
                         return True
@@ -69,24 +115,24 @@ class Isotope:
             # if you are above Lv it's probably legit.
             return True
 
-        ZAID = int(self._ZAID)
-        self._Z = int(ZAID / 1000)
-        self._element = Element(self.Z)
+        ret = {}
+        ret["_Z"] = int(ZAID / 1000)
+        ret["_element"] = Element(ret["_Z"])
         A = int(ZAID % 1000)
-        if not is_probably_an_isotope(self.Z, A):
-            self._is_metastable = True
+        if not is_probably_an_isotope(ret["_Z"], A):
+            ret["_is_metastable"] = True
             true_A = A - 300
             # only m1,2,3,4 allowed
             found = False
             for i in range(1, 5):
                 true_A -= 100
                 # assumes that can only vary 40% from A = 2Z
-                if is_probably_an_isotope(self.Z, true_A):
+                if is_probably_an_isotope(ret["_Z"], true_A):
                     found = True
                     break
             if found:
-                self._meta_state = i
-                self._A = true_A
+                ret["_meta_state"] = i
+                ret["_A"] = true_A
             else:
                 raise ValueError(
                     f"ZAID: {ZAID} cannot be parsed as a valid metastable isomer. "
@@ -94,9 +140,10 @@ class Isotope:
                 )
 
         else:
-            self._is_metastable = False
-            self._meta_state = None
-            self._A = A
+            ret["_is_metastable"] = False
+            ret["_meta_state"] = None
+            ret["_A"] = A
+        return ret
 
     @property
     def ZAID(self):
@@ -202,6 +249,16 @@ class Isotope:
         :rtype: int
         """
         return self.Z * 1000 + self.A
+    
+    def get_full_zaid(self):
+        """
+        Get the ZAID identifier of this isomer.
+
+        :returns: the mcnp ZAID of this isotope.
+        :rtype: int
+        """
+        meta_adder = 300 + 100 * self.meta_state if self.is_metastable else 0
+        return self.Z * 1000 + self.A + meta_adder
 
     @classmethod
     def get_from_fancy_name(cls, identifier):
@@ -209,27 +266,46 @@ class Isotope:
         :param identifier:
         :type idenitifer: str | int
         """
+        A = 0
+        isomer = None
+        base_meta = 0
+        library = ""
         if isinstance(identifier, (int, float)):
-            pass
+            parts = cls._parse_zaid(int(identifier))
+            element, A, isomer = (
+                parts["_element"],
+                parts["_A"],
+                parts["_meta_state"],
+            )
         elif isinstance(identifier, str):
             if match := cls._NAME_PARSER.match(identifier):
-                A = 0
-                isomer = 0
-                library = None
-                if "ZAID" in match:
-                    ZAID = int(match["ZAID"])
+                print(match)
+                match = match.groupdict()
+                print(match)
+                if match["ZAID"]:
+                    parts = cls._parse_zaid(int(match["ZAID"]))
+                    element, A, base_meta = (
+                        parts["_element"],
+                        parts["_A"],
+                        parts["_meta_state"],
+                    )
+
                 else:
                     element_name = match["element"]
                     if len(element_name) <= MAX_ATOMIC_SYMBOL_LENGTH:
-                        element = Element.get_by_symbol(element_name)
+                        element = Element.get_by_symbol(element_name.capitalize())
                     else:
                         element = Element.get_by_name(element_name)
-                        if "A" in match:
-                            A = int(match["A"])
-                if "meta" in match:
+                    if "A" in match:
+                        A = int(match["A"])
+                if match["meta"]:
                     isomer = int(match["meta"])
-                if "library" in match:
+                    if base_meta:
+                        isomer += base_meta
+                if match["library"]:
                     library = match["library"]
+
+        return cls(element=element, A=A, meta_state=isomer, library=library)
 
     def __repr__(self):
         return f"ZAID={self.ZAID}, Z={self.Z}, A={self.A}, element={self.element}, library={self.library}"
