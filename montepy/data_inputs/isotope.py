@@ -249,7 +249,7 @@ class Isotope:
         :rtype: int
         """
         return self.Z * 1000 + self.A
-    
+
     def get_full_zaid(self):
         """
         Get the ZAID identifier of this isomer.
@@ -279,9 +279,7 @@ class Isotope:
             )
         elif isinstance(identifier, str):
             if match := cls._NAME_PARSER.match(identifier):
-                print(match)
                 match = match.groupdict()
-                print(match)
                 if match["ZAID"]:
                     parts = cls._parse_zaid(int(match["ZAID"]))
                     element, A, base_meta = (
@@ -295,8 +293,8 @@ class Isotope:
                     if len(element_name) <= MAX_ATOMIC_SYMBOL_LENGTH:
                         element = Element.get_by_symbol(element_name.capitalize())
                     else:
-                        element = Element.get_by_name(element_name)
-                    if "A" in match:
+                        element = Element.get_by_name(element_name.lower())
+                    if match["A"]:
                         A = int(match["A"])
                 if match["meta"]:
                     isomer = int(match["meta"])
@@ -304,6 +302,44 @@ class Isotope:
                         isomer += base_meta
                 if match["library"]:
                     library = match["library"]
+        # handle the tuple case
+        elif isinstance(identifier, (tuple, list)):
+            if len(identifier) == 0:
+                raise ValueError(f"0-length identifiers not allowed.")
+            # handle element
+            element = identifier[0]
+            if isinstance(element, int):
+                element = Element(element)
+            elif isinstance(element, str):
+                if len(element) <= MAX_ATOMIC_SYMBOL_LENGTH:
+                    element = Element.get_by_symbol(element.capitalize())
+                else:
+                    element = Element.get_by_name(element.lower())
+            elif not isinstance(element, Element):
+                raise TypeError(
+                    f"Element identifier must be int, str, or Element. {identifier[0]} given."
+                )
+            # handle A
+            if len(identifier) >= 2:
+                if not isinstance(identifier[1], int):
+                    raise TypeError(f"A number must be an int. {identifier[1]} given.")
+                A = identifier[1]
+            # handle isomer
+            if len(identifier) >= 3:
+                if not isinstance(identifier[1], int):
+                    raise TypeError(
+                        f"Isomeric state number must be an int. {identifier[1]} given."
+                    )
+                isomer = identifier[2]
+            # handle library
+            if len(identifier) == 4:
+                if not isinstance(identifier[3], str):
+                    raise TypeError(f"Library must be a str. {identifier[3]} given.")
+                library = identifier[3]
+        else:
+            raise TypeError(
+                f"Isotope fancy names only supports str, ints, and iterables. {identifier} given."
+            )
 
         return cls(element=element, A=A, meta_state=isomer, library=library)
 
