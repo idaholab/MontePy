@@ -167,7 +167,7 @@ class Isotope:
         self._library = library
 
     def __repr__(self):
-        return f"{self.__class__.__name__}({repr(self.mcnp_str())})"
+        return f"{self.__class__.__name__}({repr(self.nuclide_str())})"
 
     def mcnp_str(self):
         """
@@ -179,6 +179,9 @@ class Isotope:
         :rtype: str
         """
         return f"{self.ZAID}.{self.library}"
+
+    def nuclide_str(self):
+        return f"{self.element.symbol}-{self.A}.{self._library}"
 
     def get_base_zaid(self):
         """
