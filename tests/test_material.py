@@ -1,5 +1,6 @@
 # Copyright 2024, Battelle Energy Alliance, LLC All Rights Reserved.
 from unittest import TestCase
+import pytest
 
 import montepy
 
@@ -231,6 +232,34 @@ class TestIsotope(TestCase):
         isotope = Isotope("94239.80c")
         self.assertEqual(isotope.mcnp_str(), "94239.80c")
         self.assertEqual(str(isotope), "Pu-239 (80c)")
+
+
+@pytest.mark.parametrize(
+    "input, Z, A, meta, library",
+    [
+        (1001, 1, 1, None, ""),
+        ("1001.80c", 1, 1, None, "80c"),
+        ("h1", 1, 1, None, ""),
+        ("h-1", 1, 1, None, ""),
+        ("h", 1, 0, None, ""),
+        ("hydrogen-1", 1, 1, None, ""),
+        ("hydrogen", 1, 0, None, ""),
+        ("hydrogen1", 1, 1, None, ""),
+        ("hydrogen1m3", 1, 1, 3, ""),
+        ("hydrogen1m3.80c", 1, 1, 3, "80c"),
+        ("92635m2.710nc", 92, 235, 3, "710nc"),
+        ((92, 235, 1, "80c"), 92, 235, 1, "80c"),
+        ((Element(92), 235, 1, "80c"), 92, 235, 1, "80c"),
+        ((Element(92), 235), 92, 235, None, ""),
+        ((Element(92),), 92, 0, None, ""),
+    ],
+)
+def test_fancy_names(input, Z, A, meta, library):
+    isotope = Isotope.get_from_fancy_name(input)
+    assert isotope.A == A
+    assert isotope.Z == Z
+    assert isotope.meta_state == meta
+    assert isotope.library == library
 
 
 class TestThermalScattering(TestCase):
