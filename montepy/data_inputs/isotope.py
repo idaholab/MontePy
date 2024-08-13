@@ -196,7 +196,8 @@ class Isotope:
         return self.Z * 1000 + self.A
 
     def __str__(self):
-        return f"ZAID={self.ZAID}, Z={self.Z}, A={self.A}, element={self.element}, library={self.library}"
+        suffix = f" ({self._library})" if self._library else ""
+        return f"{self.element.symbol:>2}-{self.A:<3}{suffix}"
 
     def __hash__(self):
         return hash(self._ZAID)

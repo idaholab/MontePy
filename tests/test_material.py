@@ -100,9 +100,9 @@ class testMaterialClass(TestCase):
         material = Material(input_card)
         answers = """\
 MATERIAL: 20 fractions: atom
-ZAID=1001, Z=1, A=1, element=hydrogen, library=80c 0.5
-ZAID=8016, Z=8, A=16, element=oxygen, library=80c 0.4
-ZAID=94239, Z=94, A=239, element=plutonium, library=80c 0.1
+ H-1   (80c) 0.5
+ O-16  (80c) 0.4
+Pu-239 (80c) 0.1
 """
         output = repr(material)
         print(output)
@@ -225,11 +225,11 @@ class TestIsotope(TestCase):
     def test_isotope_str(self):
         isotope = Isotope("1001.80c")
         assert isotope.mcnp_str() == "1001.80c"
-        assert repr(isotope) == "Isotope('1001.80c')"
-        assert str(isotope) == "ZAID=1001, Z=1, A=1, element=hydrogen, library=80c"
+        assert repr(isotope) == "Isotope('H-1.80c')"
+        assert str(isotope) == " H-1   (80c)"
         isotope = Isotope("94239.80c")
         assert isotope.mcnp_str() == "94239.80c"
-        assert repr(isotope) == "Isotope('94239.80c')"
+        assert repr(isotope) == "Isotope('Pu-239.80c')"
 
 
 class TestThermalScattering(TestCase):
