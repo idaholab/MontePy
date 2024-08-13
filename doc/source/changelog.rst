@@ -1,7 +1,7 @@
 MontePy Changelog
 =================
 
-#Next Version#
+0.3.3
 --------------
 
 **Bug fixes**
