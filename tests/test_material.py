@@ -5,7 +5,7 @@ import pytest
 import montepy
 
 from montepy.data_inputs.element import Element
-from montepy.data_inputs.isotope import Isotope
+from montepy.data_inputs.isotope import Isotope, Library
 from montepy.data_inputs.material import Material
 from montepy.data_inputs.material_component import MaterialComponent
 from montepy.data_inputs.thermal_scattering import ThermalScatteringLaw
@@ -263,7 +263,7 @@ def test_fancy_names(input, Z, A, meta, library):
     assert isotope.A == A
     assert isotope.Z == Z
     assert isotope.meta_state == meta
-    assert isotope.library == library
+    assert isotope.library == Library(library)
 
 
 class TestThermalScattering(TestCase):

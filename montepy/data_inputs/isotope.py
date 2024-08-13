@@ -59,9 +59,9 @@ class Isotope:
             for key, value in new_vals.items():
                 setattr(self, key, value)
             if len(parts) == 2:
-                self._library = parts[1]
+                self._library = Library(parts[1])
             else:
-                self._library = ""
+                self._library = Library("")
             return
         elif element is not None:
             if not isinstance(element, Element):
@@ -91,7 +91,7 @@ class Isotope:
             self._meta_state = None
         if not isinstance(library, str):
             raise TypeError(f"Library can only be str. {library} given.")
-        self._library = library
+        self._library = Library(library)
         self._ZAID = str(self.get_full_zaid())
 
     @classmethod
@@ -356,3 +356,28 @@ class Isotope:
 
     def __format__(self, format_str):
         return str(self).__format__(format_str)
+
+
+class Library:
+    def __init__(self, library):
+        if not isinstance(library, str):
+            raise TypeError(f"library must be a str. {library} given.")
+        self._library = library
+
+    @property
+    def library(self):
+        """"""
+        return self._library
+
+    def __hash__(self):
+        return hash(self._library)
+
+    def __eq__(self, other):
+        if not isinstance(other, (type(self), str)):
+            raise TypeError(f"Can only compare Library instances.")
+        if isinstance(other, type(self)):
+            return self.library == other.library
+        return self.library == other
+
+    def __str__(self):
+        return self.library
