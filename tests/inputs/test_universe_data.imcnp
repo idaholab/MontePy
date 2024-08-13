@@ -3,20 +3,20 @@ C cells
 c
 1 1 20
          -1000  $ dollar comment
-     imp:n,p=1 trcl=5
+     imp:n,p=1 trcl=5 $ graveyard
 2 2 8
       -1005
      imp:n=1
      imp:p=0.5 $ graveyard
 3 3 -1
       1000 1005 -1010
-     imp:n,p=1
+     imp:n,p=1 $graveyard
 99 0
       1010
-     imp:n,p=0
+     imp:n,p=0 $graveyard
 5 0 
       #99
-      imp:n,p=3
+      imp:n,p=3 $graveyard
 c foo end comment
 
 C surfaces

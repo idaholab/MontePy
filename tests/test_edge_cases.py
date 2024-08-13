@@ -180,20 +180,27 @@ def test_complex_cell_parsing(lines):
     )
     montepy.Cell(input)
 
+
 @pytest.mark.filterwarnings("ignore")
 def test_universe_after_comment():
     problem = montepy.read_input(
         os.path.join("tests", "inputs", "test_universe_data.imcnp")
     )
-    problem.print_in_data_block["U"] = True
+    problem.print_in_data_block["u"] = True
+    universes = [cell.universe.number for cell in problem.cells]
     try:
         out_file = "universe_after_comment"
         problem.write_to_file(out_file)
         # TODO check that the Universe does show up
+        found = False
         with open(out_file, "r") as fh:
             for line in fh:
-                print(line)
-        assert False
+                if "U=" in line:
+                    found == True
+        assert found
+        problem = montepy.read_input(out_file)
+        new_universes = [cell.universe.number for cell in problem.cells]
+        assert universes == new_universes
     finally:
         try:
             os.remove(out_file)
