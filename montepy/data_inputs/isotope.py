@@ -14,6 +14,10 @@ class Isotope:
 
     #                   Cl-52      Br-101     Xe-150      Os-203    Cm-251     Og-296
     _BOUNDING_CURVE = [(17, 52), (35, 101), (54, 150), (76, 203), (96, 251), (118, 296)]
+    _STUPID_MAP = {
+        "95642": {"_is_metastable": False, "_meta_state": None},
+        "95242": {"_is_metastable": True, "_meta_state": 1},
+    }
     """
     Points on bounding curve for determining if "valid" isotope
     """
@@ -38,6 +42,14 @@ class Isotope:
             self._library = ""
         if node is None:
             self._tree = ValueNode(self.mcnp_str(), str, PaddingNode(" "))
+        self._handle_stupid_legacy_stupidity()
+
+    def _handle_stupid_legacy_stupidity(self):
+        # TODO work on this for mat_redesign
+        if self.ZAID in self._STUPID_MAP:
+            stupid_overwrite = self._STUPID_MAP[self.ZAID]
+            for key, value in stupid_overwrite.items():
+                setattr(self, key, value)
 
     def __parse_zaid(self):
         """
