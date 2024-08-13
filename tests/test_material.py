@@ -225,11 +225,17 @@ class TestIsotope(TestCase):
     def test_isotope_str(self):
         isotope = Isotope("1001.80c")
         assert isotope.mcnp_str() == "1001.80c"
+        assert isotope.nuclide_str() == "H-1.80c"
         assert repr(isotope) == "Isotope('H-1.80c')"
         assert str(isotope) == " H-1   (80c)"
         isotope = Isotope("94239.80c")
+        assert isotope.nuclide_str() == "Pu-239.80c"
         assert isotope.mcnp_str() == "94239.80c"
         assert repr(isotope) == "Isotope('Pu-239.80c')"
+        isotope = Isotope("95642")
+        assert isotope.nuclide_str() == "Am-242"
+        assert isotope.mcnp_str() == "95642"
+        assert repr(isotope) == "Isotope('Am-242')"
 
 
 class TestThermalScattering(TestCase):
