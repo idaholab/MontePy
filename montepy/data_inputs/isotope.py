@@ -266,6 +266,8 @@ class Isotope:
         :param identifier:
         :type idenitifer: str | int
         """
+        if isinstance(identifier, cls):
+            return identifier
         A = 0
         isomer = None
         base_meta = 0
