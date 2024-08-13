@@ -247,9 +247,9 @@ class TestIsotope(TestCase):
         assert isotope.mcnp_str() == "95642"
         assert repr(isotope) == "Isotope('Am-242')"
         isotope = Isotope("95242")
-        assert isotope.nuclide_str() == "Am-242"
-        assert isotope.mcnp_str() == "95642"
-        assert repr(isotope) == "Isotope('Am-242')"
+        assert isotope.nuclide_str() == "Am-242m1"
+        assert isotope.mcnp_str() == "95242"
+        assert repr(isotope) == "Isotope('Am-242m1')"
 
 
 class TestThermalScattering(TestCase):
