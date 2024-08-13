@@ -35,7 +35,7 @@ class Material(data_input.DataInputAbstract, Numbered_MCNP_Object):
 
     def __init__(self, input=None):
         self._material_components = {}
-        self._pointers = co.defaultdict(co.defaultdict(dict))
+        self._pointers = co.defaultdict(lambda: co.defaultdict(dict))
         self._thermal_scattering = None
         self._number = self._generate_default_node(int, -1)
         super().__init__(input)
