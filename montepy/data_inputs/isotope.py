@@ -178,7 +178,8 @@ class Isotope:
         :returns: a string that can be used in MCNP
         :rtype: str
         """
-        return f"{self.ZAID}.{self.library}"
+        suffix = f".{self.library}" if self._library else ""
+        return f"{self.ZAID}{suffix}"
 
     def nuclide_str(self):
         suffix = f".{self._library}" if self._library else ""
