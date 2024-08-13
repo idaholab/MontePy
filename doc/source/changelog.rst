@@ -1,6 +1,13 @@
 MontePy Changelog
 =================
 
+#Next Version#
+--------------
+
+**Bug Fixes**
+
+* Fixed bug that didn't show metastable states for pretty printing and isotope. Also handled the case that Am-241 metstable states break convention (:issue:`486`).
+
 0.3.3
 --------------
 
