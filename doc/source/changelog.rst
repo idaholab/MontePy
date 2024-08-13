@@ -10,6 +10,10 @@ MontePy Changelog
 * Fixed bug with appending and renumbering numbered objects from other MCNP problems (:issue:`466`).
 * Fixed bug with dynamic typing and the parsers that only appear in edge cases (:issue:`461`).
 
+**Code Quality**
+
+* Simpler ``Isotope`` representation (:issue:`473`).
+
 
 0.3.2
 --------------

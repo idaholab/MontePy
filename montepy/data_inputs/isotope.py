@@ -168,8 +168,8 @@ class Isotope:
             raise TypeError("library must be a string")
         self._library = library
 
-    def __str__(self):
-        return f"{self.element.symbol:>2}-{self.A:<3} ({self._library})"
+    def __repr__(self):
+        return f"{self.__class__.__name__}({repr(self.nuclide_str())})"
 
     def mcnp_str(self):
         """
@@ -182,6 +182,10 @@ class Isotope:
         """
         return f"{self.ZAID}.{self.library}" if self.library else self.ZAID
 
+    def nuclide_str(self):
+        suffix = f".{self._library}" if self._library else ""
+        return f"{self.element.symbol}-{self.A}{suffix}"
+
     def get_base_zaid(self):
         """
         Get the ZAID identifier of the base isotope this is an isomer of.
@@ -193,8 +197,9 @@ class Isotope:
         """
         return self.Z * 1000 + self.A
 
-    def __repr__(self):
-        return f"ZAID={self.ZAID}, Z={self.Z}, A={self.A}, element={self.element}, library={self.library}"
+    def __str__(self):
+        suffix = f" ({self._library})" if self._library else ""
+        return f"{self.element.symbol:>2}-{self.A:<3}{suffix}"
 
     def __hash__(self):
         return hash(self._ZAID)
