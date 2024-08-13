@@ -6,6 +6,7 @@ MontePy Changelog
 
 **Bug fixes**
 
+* Fixed bug with material compositions not being updated when written to file (:issue:`470`).
 * Fixed bug with appending and renumbering numbered objects from other MCNP problems (:issue:`466`).
 * Fixed bug with dynamic typing and the parsers that only appear in edge cases (:issue:`461`).
 
