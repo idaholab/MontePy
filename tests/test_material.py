@@ -44,9 +44,9 @@ class testMaterialClass(TestCase):
         material = Material(input_card)
         answers = """\
 MATERIAL: 20 fractions: atom
- H-1   (80c) 0.5
- O-16  (80c) 0.4
-Pu-239 (80c) 0.1
+ H-1     (80c) 0.5
+ O-16    (80c) 0.4
+Pu-239   (80c) 0.1
 """
         output = repr(material)
         print(output)
@@ -231,7 +231,7 @@ class TestIsotope(TestCase):
         assert isotope.mcnp_str() == "1001.80c"
         assert isotope.nuclide_str() == "H-1.80c"
         assert repr(isotope) == "Isotope('H-1.80c')"
-        assert str(isotope) == " H-1   (80c)"
+        assert str(isotope) == " H-1     (80c)"
         isotope = Isotope("94239.80c")
         assert isotope.nuclide_str() == "Pu-239.80c"
         assert isotope.mcnp_str() == "94239.80c"
