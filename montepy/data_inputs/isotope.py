@@ -1,7 +1,7 @@
 # Copyright 2024, Battelle Energy Alliance, LLC All Rights Reserved.
 from montepy.data_inputs.element import Element
 from montepy.errors import *
-from montepy.input_parser.syntax_node import ValueNode
+from montepy.input_parser.syntax_node import PaddingNode, ValueNode
 
 
 class Isotope:
@@ -36,6 +36,8 @@ class Isotope:
             self._library = parts[1]
         else:
             self._library = ""
+        if node is None:
+            self._tree = ValueNode(self.mcnp_str(), str, PaddingNode(" "))
 
     def __parse_zaid(self):
         """
@@ -178,7 +180,7 @@ class Isotope:
         :returns: a string that can be used in MCNP
         :rtype: str
         """
-        return f"{self.ZAID}.{self.library}"
+        return f"{self.ZAID}.{self.library}" if self.library else self.ZAID
 
     def get_base_zaid(self):
         """
