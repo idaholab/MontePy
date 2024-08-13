@@ -181,7 +181,8 @@ class Isotope:
         return f"{self.ZAID}.{self.library}"
 
     def nuclide_str(self):
-        return f"{self.element.symbol}-{self.A}.{self._library}"
+        suffix = f".{self._library}" if self._library else ""
+        return f"{self.element.symbol}-{self.A}{suffix}"
 
     def get_base_zaid(self):
         """
