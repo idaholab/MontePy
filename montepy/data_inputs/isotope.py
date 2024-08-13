@@ -183,8 +183,9 @@ class Isotope:
         return f"{self.ZAID}.{self.library}" if self.library else self.ZAID
 
     def nuclide_str(self):
+        meta_suffix = f"m{self.meta_state}" if self.is_metastable else ""
         suffix = f".{self._library}" if self._library else ""
-        return f"{self.element.symbol}-{self.A}{suffix}"
+        return f"{self.element.symbol}-{self.A}{meta_suffix}{suffix}"
 
     def get_base_zaid(self):
         """
@@ -198,8 +199,9 @@ class Isotope:
         return self.Z * 1000 + self.A
 
     def __str__(self):
+        meta_suffix = f"m{self.meta_state}" if self.is_metastable else ""
         suffix = f" ({self._library})" if self._library else ""
-        return f"{self.element.symbol:>2}-{self.A:<3}{suffix}"
+        return f"{self.element.symbol:>2}-{self.A:<3}{meta_suffix:<2}{suffix}"
 
     def __hash__(self):
         return hash(self._ZAID)
