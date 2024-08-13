@@ -11,6 +11,10 @@ MontePy Changelog
 * Fixed bug with dynamic typing and the parsers that only appear in edge cases (:issue:`461`).
 * Fixed bug with trying to get trailing comments from non-existant parts of the syntax tree (:pull:`480`).
 
+**Code Quality**
+
+* Simpler ``Isotope`` representation (:issue:`473`).
+
 
 0.3.2
 --------------

@@ -43,16 +43,17 @@ class testMaterialClass(TestCase):
         in_str = "M20 1001.80c 0.5 8016.80c 0.4 94239.80c 0.1"
         input_card = Input([in_str], BlockType.DATA)
         material = Material(input_card)
-        answers = """MATERIAL: 20 fractions: atom
+        answers = """\
+MATERIAL: 20 fractions: atom
  H-1   (80c) 0.5
  O-16  (80c) 0.4
 Pu-239 (80c) 0.1
 """
         output = repr(material)
         print(output)
-        self.assertEqual(output, answers)
+        assert output == answers
         output = str(material)
-        self.assertEqual(output, "MATERIAL: 20, ['hydrogen', 'oxygen', 'plutonium']")
+        assert output == "MATERIAL: 20, ['hydrogen', 'oxygen', 'plutonium']"
 
     def test_material_sort(self):
         in_str = "M20 1001.80c 0.5 8016.80c 0.5"
@@ -229,14 +230,18 @@ class TestIsotope(TestCase):
 
     def test_isotope_str(self):
         isotope = Isotope("1001.80c")
-        self.assertEqual(isotope.mcnp_str(), "1001.80c")
-        self.assertEqual(str(isotope), " H-1   (80c)")
-        self.assertEqual(
-            repr(isotope), "ZAID=1001, Z=1, A=1, element=hydrogen, library=80c"
-        )
+        assert isotope.mcnp_str() == "1001.80c"
+        assert isotope.nuclide_str() == "H-1.80c"
+        assert repr(isotope) == "Isotope('H-1.80c')"
+        assert str(isotope) == " H-1   (80c)"
         isotope = Isotope("94239.80c")
-        self.assertEqual(isotope.mcnp_str(), "94239.80c")
-        self.assertEqual(str(isotope), "Pu-239 (80c)")
+        assert isotope.nuclide_str() == "Pu-239.80c"
+        assert isotope.mcnp_str() == "94239.80c"
+        assert repr(isotope) == "Isotope('Pu-239.80c')"
+        isotope = Isotope("95642")
+        assert isotope.nuclide_str() == "Am-242"
+        assert isotope.mcnp_str() == "95642"
+        assert repr(isotope) == "Isotope('Am-242')"
 
 
 class TestThermalScattering(TestCase):
