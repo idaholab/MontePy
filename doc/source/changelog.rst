@@ -4,10 +4,24 @@ MontePy Changelog
 #Next Version#
 --------------
 
+**Bug Fixes**
+
+* Fixed bug that didn't show metastable states for pretty printing and isotope. Also handled the case that Am-241 metstable states break convention (:issue:`486`).
+
+0.3.3
+--------------
+
 **Bug fixes**
 
+* Fixed bug with material compositions not being updated when written to file (:issue:`470`).
 * Fixed bug with appending and renumbering numbered objects from other MCNP problems (:issue:`466`).
 * Fixed bug with dynamic typing and the parsers that only appear in edge cases (:issue:`461`).
+* Fixed parser bug with having spaces in the start of the transform input for the fill of a cell (:pull:`479`).
+* Fixed bug with trying to get trailing comments from non-existant parts of the syntax tree (:pull:`480`).
+
+**Code Quality**
+
+* Simpler ``Isotope`` representation (:issue:`473`).
 
 
 0.3.2
