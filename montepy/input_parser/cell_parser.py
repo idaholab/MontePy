@@ -181,11 +181,15 @@ class CellParser(MCNP_Parser):
     # support for fill card weirdness
     @_(
         'number_sequence "(" number_sequence ")"',
+        'number_sequence "(" padding number_sequence ")"',
         'number_sequence "(" number_sequence ")" padding',
+        'number_sequence "(" padding number_sequence ")" padding',
         'number_sequence ":" numerical_phrase',
+        'number_sequence ":" padding numerical_phrase',
         # support for TRCL syntax
         '"(" number_sequence ")"',
         '"(" number_sequence ")" padding',
+        '"(" padding number_sequence ")" padding',
     )
     def number_sequence(self, p):
         if isinstance(p[0], str):

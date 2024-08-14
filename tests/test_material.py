@@ -1,5 +1,6 @@
 # Copyright 2024, Battelle Energy Alliance, LLC All Rights Reserved.
 from unittest import TestCase
+import pytest
 
 import montepy
 
@@ -14,63 +15,6 @@ from montepy.input_parser.mcnp_input import Input
 
 
 class testMaterialClass(TestCase):
-    def test_material_init(self):
-        # test invalid material number
-        input_card = Input(["Mfoo"], BlockType.DATA)
-        with self.assertRaises(MalformedInputError):
-            Material(input_card)
-        input_card = Input(["M-20"], BlockType.DATA)
-        with self.assertRaises(MalformedInputError):
-            Material(input_card)
-
-        in_str = "M20 1001.80c 0.5 8016.710nc 0.5"
-        input_card = Input([in_str], BlockType.DATA)
-        material = Material(input_card)
-        self.assertEqual(material.number, 20)
-        self.assertEqual(material.old_number, 20)
-        self.assertTrue(material.is_atom_fraction)
-        for component in material.material_components:
-            self.assertEqual(material.material_components[component].fraction, 0.5)
-
-        # test implicit library with syntax tree errors
-        in_str = """m1 1001 0.33
-    8016 0.666667"""
-        input_card = Input(in_str.split("\n"), BlockType.DATA)
-        material = Material(input_card)
-        # test implicit library
-        in_str = "M20 1001 0.5 2001 0.5 8016.710nc 0.5"
-        input_card = Input([in_str], BlockType.DATA)
-        material = Material(input_card)
-        self.assertEqual(material.number, 20)
-        self.assertEqual(material.old_number, 20)
-        self.assertTrue(material.is_atom_fraction)
-        for component in material.material_components:
-            self.assertEqual(material.material_components[component].fraction, 0.5)
-
-        # test weight fraction
-        in_str = "M20 1001.80c -0.5 8016.80c -0.5"
-        input_card = Input([in_str], BlockType.DATA)
-        material = Material(input_card)
-        self.assertFalse(material.is_atom_fraction)
-        for component in material.material_components:
-            self.assertEqual(material.material_components[component].fraction, 0.5)
-
-        # test bad fraction
-        in_str = "M20 1001.80c foo"
-        input_card = Input([in_str], BlockType.DATA)
-        with self.assertRaises(MalformedInputError):
-            material = Material(input_card)
-        # test mismatch fraction
-        in_str = "M20 1001.80c 0.5 8016.80c -0.5"
-        input_card = Input([in_str], BlockType.DATA)
-        with self.assertRaises(MalformedInputError):
-            material = Material(input_card)
-        # test parameters
-        in_str = "M20 1001.80c 0.5 8016.80c 0.5 Gas=1"
-        input_card = Input([in_str], BlockType.DATA)
-        material = Material(input_card)
-        self.assertEqual(material.parameters["gas"]["data"][0].value, 1.0)
-
     def test_material_parameter_parsing(self):
         for line in ["M20 1001.80c 1.0 gas=0", "M20 1001.80c 1.0 gas = 0 nlib = 00c"]:
             input = Input([line], BlockType.CELL)
@@ -98,16 +42,17 @@ class testMaterialClass(TestCase):
         in_str = "M20 1001.80c 0.5 8016.80c 0.4 94239.80c 0.1"
         input_card = Input([in_str], BlockType.DATA)
         material = Material(input_card)
-        answers = """MATERIAL: 20 fractions: atom
- H-1   (80c) 0.5
- O-16  (80c) 0.4
-Pu-239 (80c) 0.1
+        answers = """\
+MATERIAL: 20 fractions: atom
+ H-1     (80c) 0.5
+ O-16    (80c) 0.4
+Pu-239   (80c) 0.1
 """
         output = repr(material)
         print(output)
-        self.assertEqual(output, answers)
+        assert output == answers
         output = str(material)
-        self.assertEqual(output, "MATERIAL: 20, ['hydrogen', 'oxygen', 'plutonium']")
+        assert output == "MATERIAL: 20, ['hydrogen', 'oxygen', 'plutonium']"
 
     def test_material_sort(self):
         in_str = "M20 1001.80c 0.5 8016.80c 0.5"
@@ -121,51 +66,111 @@ Pu-239 (80c) 0.1
         for i, mat in enumerate(sort_list):
             self.assertEqual(mat, answers[i])
 
-    def test_material_format_mcnp(self):
-        in_strs = ["M20 1001.80c 0.5", "     8016.80c         0.5"]
-        input_card = Input(in_strs, BlockType.DATA)
-        material = Material(input_card)
-        material.number = 25
-        answers = ["M25 1001.80c 0.5", "     8016.80c         0.5"]
-        output = material.format_for_mcnp_input((6, 2, 0))
-        self.assertEqual(len(answers), len(output))
-        for i, line in enumerate(output):
-            self.assertEqual(line, answers[i])
 
-    def test_material_comp_init(self):
-        # test fraction test
-        with self.assertRaises(ValueError):
-            MaterialComponent(Isotope("1001.80c"), -0.1)
+def test_material_format_mcnp():
+    in_strs = ["M20 1001.80c 0.5", "     8016.80c         0.5"]
+    input_card = Input(in_strs, BlockType.DATA)
+    material = Material(input_card)
+    material.number = 25
+    answers = ["M25 1001.80c 0.5", "     8016.80c         0.5"]
+    output = material.format_for_mcnp_input((6, 2, 0))
+    assert output == answers
 
-        # test bad fraction
-        with self.assertRaises(TypeError):
-            MaterialComponent(Isotope("1001.80c"), "hi")
 
-        # test bad isotope
-        with self.assertRaises(TypeError):
-            MaterialComponent("hi", 1.0)
+@pytest.mark.parametrize(
+    "isotope, conc, error",
+    [
+        ("1001.80c", -0.1, ValueError),
+        ("1001.80c", "hi", TypeError),
+        ("hi", 1.0, ValueError),
+    ],
+)
+def test_material_comp_init(isotope, conc, error):
+    with pytest.raises(error):
+        MaterialComponent(Isotope(isotope), conc)
 
-    def test_material_comp_fraction_setter(self):
-        comp = MaterialComponent(Isotope("1001.80c"), 0.1)
-        comp.fraction = 5.0
-        self.assertEqual(comp.fraction, 5.0)
-        with self.assertRaises(ValueError):
-            comp.fraction = -1.0
-        with self.assertRaises(TypeError):
-            comp.fraction = "hi"
 
-    def test_material_comp_fraction_str(self):
-        comp = MaterialComponent(Isotope("1001.80c"), 0.1)
-        str(comp)
-        repr(comp)
+def test_material_comp_fraction_setter():
+    comp = MaterialComponent(Isotope("1001.80c"), 0.1)
+    comp.fraction = 5.0
+    assert comp.fraction == pytest.approx(5.0)
+    with pytest.raises(ValueError):
+        comp.fraction = -1.0
+    with pytest.raises(TypeError):
+        comp.fraction = "hi"
 
-    def test_material_card_pass_through(self):
-        in_str = "M20 1001.80c 0.5 8016.80c 0.5"
-        input_card = Input([in_str], BlockType.DATA)
-        material = Material(input_card)
-        self.assertEqual(material.format_for_mcnp_input((6, 2, 0)), [in_str])
-        material.number = 5
-        self.assertNotIn("8016", material.format_for_mcnp_input((6, 2, 0)))
+
+def test_material_comp_fraction_str():
+    comp = MaterialComponent(Isotope("1001.80c"), 0.1)
+    str(comp)
+    repr(comp)
+
+
+def test_material_update_format():
+    in_str = "M20 1001.80c 0.5 8016.80c 0.5"
+    input_card = Input([in_str], BlockType.DATA)
+    material = Material(input_card)
+    assert material.format_for_mcnp_input((6, 2, 0)) == [in_str]
+    material.number = 5
+    print(material.format_for_mcnp_input((6, 2, 0)))
+    assert "8016" in material.format_for_mcnp_input((6, 2, 0))[0]
+    # addition
+    isotope = Isotope("2004.80c")
+    material.material_components[isotope] = MaterialComponent(isotope, 0.1)
+    print(material.format_for_mcnp_input((6, 2, 0)))
+    assert "2004" in material.format_for_mcnp_input((6, 2, 0))[0]
+    # update
+    isotope = list(material.material_components.keys())[-1]
+    print(material.material_components.keys())
+    material.material_components[isotope].fraction = 0.7
+    print(material.format_for_mcnp_input((6, 2, 0)))
+    assert "0.7" in material.format_for_mcnp_input((6, 2, 0))[0]
+    material.material_components[isotope] = MaterialComponent(isotope, 0.6)
+    print(material.format_for_mcnp_input((6, 2, 0)))
+    assert "0.6" in material.format_for_mcnp_input((6, 2, 0))[0]
+    # delete
+    del material.material_components[isotope]
+    print(material.format_for_mcnp_input((6, 2, 0)))
+    assert "8016" in material.format_for_mcnp_input((6, 2, 0))[0]
+
+
+@pytest.mark.parametrize(
+    "line, mat_number, is_atom, fractions",
+    [
+        ("M20 1001.80c 0.5 8016.710nc 0.5", 20, True, [0.5, 0.5]),
+        ("m1 1001 0.33 8016 0.666667", 1, True, [0.33, 0.666667]),
+        ("M20 1001 0.5 8016 0.5", 20, True, [0.5, 0.5]),
+        ("M20 1001.80c -0.5 8016.80c -0.5", 20, False, [0.5, 0.5]),
+        ("M20 1001.80c -0.5 8016.710nc -0.5", 20, False, [0.5, 0.5]),
+        ("M20 1001.80c 0.5 8016.80c 0.5 Gas=1", 20, True, [0.5, 0.5]),
+        (
+            "m1      8016.71c  2.6999999-02 8017.71c  9.9999998-01 plib=84p",
+            1,
+            True,
+            [2.6999999e-2, 9.9999998e-01],
+        ),
+    ],
+)
+def test_material_init(line, mat_number, is_atom, fractions):
+    input = Input([line], BlockType.DATA)
+    material = Material(input)
+    assert material.number == mat_number
+    assert material.old_number == mat_number
+    assert material.is_atom_fraction == is_atom
+    for component, gold in zip(material.material_components.values(), fractions):
+        assert component.fraction == pytest.approx(gold)
+    if "gas" in line:
+        assert material.parameters["gas"]["data"][0].value == pytest.approx(1.0)
+
+
+@pytest.mark.parametrize(
+    "line", ["Mfoo", "M-20", "M20 1001.80c foo", "M20 1001.80c 0.5 8016.80c -0.5"]
+)
+def test_bad_init(line):
+    # test invalid material number
+    input = Input([line], BlockType.DATA)
+    with pytest.raises(MalformedInputError):
+        Material(input)
 
 
 class TestIsotope(TestCase):
@@ -223,14 +228,28 @@ class TestIsotope(TestCase):
 
     def test_isotope_str(self):
         isotope = Isotope("1001.80c")
-        self.assertEqual(isotope.mcnp_str(), "1001.80c")
-        self.assertEqual(str(isotope), " H-1   (80c)")
-        self.assertEqual(
-            repr(isotope), "ZAID=1001, Z=1, A=1, element=hydrogen, library=80c"
-        )
+        assert isotope.mcnp_str() == "1001.80c"
+        assert isotope.nuclide_str() == "H-1.80c"
+        assert repr(isotope) == "Isotope('H-1.80c')"
+        assert str(isotope) == " H-1     (80c)"
         isotope = Isotope("94239.80c")
-        self.assertEqual(isotope.mcnp_str(), "94239.80c")
-        self.assertEqual(str(isotope), "Pu-239 (80c)")
+        assert isotope.nuclide_str() == "Pu-239.80c"
+        assert isotope.mcnp_str() == "94239.80c"
+        assert repr(isotope) == "Isotope('Pu-239.80c')"
+        isotope = Isotope("92635.80c")
+        assert isotope.nuclide_str() == "U-235m1.80c"
+        assert isotope.mcnp_str() == "92635.80c"
+        assert str(isotope) == " U-235m1 (80c)"
+        assert repr(isotope) == "Isotope('U-235m1.80c')"
+        # stupid legacy stupidity #486
+        isotope = Isotope("95642")
+        assert isotope.nuclide_str() == "Am-242"
+        assert isotope.mcnp_str() == "95642"
+        assert repr(isotope) == "Isotope('Am-242')"
+        isotope = Isotope("95242")
+        assert isotope.nuclide_str() == "Am-242m1"
+        assert isotope.mcnp_str() == "95242"
+        assert repr(isotope) == "Isotope('Am-242m1')"
 
 
 class TestThermalScattering(TestCase):

@@ -193,8 +193,9 @@ class SyntaxNode(SyntaxNodeBase):
     def get_trailing_comment(self):
         if len(self.nodes) == 0:
             return
-        tail = next(reversed(self.nodes.items()))
-        return tail[1].get_trailing_comment()
+        for node in reversed(self.nodes.values()):
+            if node is not None:
+                return node.get_trailing_comment()
 
     def _delete_trailing_comment(self):
         tail = next(reversed(self.nodes.items()))
@@ -393,9 +394,9 @@ class PaddingNode(SyntaxNodeBase):
         :param is_comment: whether or not the node is a comment.
         :type is_comment: bool
         """
-        if is_comment:
-            if not isinstance(val, CommentNode):
-                val = CommentNode(val)
+        if is_comment and not isinstance(val, CommentNode):
+            val = CommentNode(val)
+        if isinstance(val, CommentNode):
             self.nodes.append(val)
             return
         parts = val.split("\n")

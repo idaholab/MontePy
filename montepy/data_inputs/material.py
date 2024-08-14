@@ -41,15 +41,7 @@ class Material(data_input.DataInputAbstract, Numbered_MCNP_Object):
             self._number = num
             set_atom_frac = False
             isotope_fractions = self._tree["data"]
-            if isinstance(isotope_fractions, syntax_node.ListNode):
-                # in python 3.12 this can be replaced with itertools.batched
-                def batch_gen():
-                    it = iter(isotope_fractions)
-                    while batch := tuple(itertools.islice(it, 2)):
-                        yield batch
-
-                iterator = batch_gen()
-            elif isinstance(isotope_fractions, syntax_node.IsotopesNode):
+            if isinstance(isotope_fractions, syntax_node.IsotopesNode):
                 iterator = iter(isotope_fractions)
             else:  # pragma: no cover
                 # this is a fall through error, that should never be raised,
@@ -112,6 +104,9 @@ class Material(data_input.DataInputAbstract, Numbered_MCNP_Object):
         """
         The internal dictionary containing all the components of this material.
 
+        The keys are :class:`~montepy.data_inputs.isotope.Isotope` instances, and the values are
+        :class:`~montepy.data_inputs.material_component.MaterialComponent` instances.
+
         :rtype: dict
         """
         return self._material_components
@@ -151,6 +146,13 @@ class Material(data_input.DataInputAbstract, Numbered_MCNP_Object):
         if self.thermal_scattering is not None:
             lines += self.thermal_scattering.format_for_mcnp_input(mcnp_version)
         return lines
+
+    def _update_values(self):
+        new_list = syntax_node.IsotopesNode("new isotope list")
+        for isotope, component in self.material_components.items():
+            isotope._tree.value = isotope.mcnp_str()
+            new_list.append(("_", isotope._tree, component._tree))
+        self._tree.nodes["data"] = new_list
 
     def add_thermal_scattering(self, law):
         """
