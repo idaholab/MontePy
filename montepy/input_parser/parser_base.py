@@ -548,8 +548,9 @@ class MCNP_Parser(Parser, metaclass=MetaBuilder):
 
         debugfile = 'parser.out'
         """
-        print("********* New Parsing Error ************ ")
+        print(f"********* New Parsing Error from: {type(self)} ************ ")
         print(f"Token: {token}")
         print(f"State: {self.state}, statestack: {self.statestack}")
         print(f"Symstack: {self.symstack}")
+        print(f"Log length: {len(self.log)}")
         print()
