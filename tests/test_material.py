@@ -15,7 +15,6 @@ from montepy.input_parser.mcnp_input import Input
 
 
 class testMaterialClass(TestCase):
-
     def test_material_parameter_parsing(self):
         for line in ["M20 1001.80c 1.0 gas=0", "M20 1001.80c 1.0 gas = 0 nlib = 00c"]:
             input = Input([line], BlockType.CELL)
@@ -45,9 +44,9 @@ class testMaterialClass(TestCase):
         material = Material(input_card)
         answers = """\
 MATERIAL: 20 fractions: atom
- H-1   (80c) 0.5
- O-16  (80c) 0.4
-Pu-239 (80c) 0.1
+ H-1     (80c) 0.5
+ O-16    (80c) 0.4
+Pu-239   (80c) 0.1
 """
         output = repr(material)
         print(output)
@@ -153,7 +152,6 @@ def test_material_update_format():
     ],
 )
 def test_material_init(line, mat_number, is_atom, fractions):
-
     input = Input([line], BlockType.DATA)
     material = Material(input)
     assert material.number == mat_number
@@ -233,15 +231,25 @@ class TestIsotope(TestCase):
         assert isotope.mcnp_str() == "1001.80c"
         assert isotope.nuclide_str() == "H-1.80c"
         assert repr(isotope) == "Isotope('H-1.80c')"
-        assert str(isotope) == " H-1   (80c)"
+        assert str(isotope) == " H-1     (80c)"
         isotope = Isotope("94239.80c")
         assert isotope.nuclide_str() == "Pu-239.80c"
         assert isotope.mcnp_str() == "94239.80c"
         assert repr(isotope) == "Isotope('Pu-239.80c')"
+        isotope = Isotope("92635.80c")
+        assert isotope.nuclide_str() == "U-235m1.80c"
+        assert isotope.mcnp_str() == "92635.80c"
+        assert str(isotope) == " U-235m1 (80c)"
+        assert repr(isotope) == "Isotope('U-235m1.80c')"
+        # stupid legacy stupidity #486
         isotope = Isotope("95642")
         assert isotope.nuclide_str() == "Am-242"
         assert isotope.mcnp_str() == "95642"
         assert repr(isotope) == "Isotope('Am-242')"
+        isotope = Isotope("95242")
+        assert isotope.nuclide_str() == "Am-242m1"
+        assert isotope.mcnp_str() == "95242"
+        assert repr(isotope) == "Isotope('Am-242m1')"
 
 
 class TestThermalScattering(TestCase):
