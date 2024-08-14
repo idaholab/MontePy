@@ -107,7 +107,7 @@ class Material(data_input.DataInputAbstract, Numbered_MCNP_Object):
     def material_components(self):
         """
         The internal dictionary containing all the components of this material.
-        
+
         The keys are :class:`~montepy.data_inputs.isotope.Isotope` instances, and the values are
         :class:`~montepy.data_inputs.material_component.MaterialComponent` instances.
 

@@ -62,6 +62,19 @@ class MCNP_Object(ABC):
             if "parameters" in self._tree:
                 self._parameters = self._tree["parameters"]
 
+    def __setattr__(self, key, value):
+        # handle properties first
+        if hasattr(type(self), key):
+            descriptor = getattr(type(self), key)
+            if isinstance(descriptor, property):
+                descriptor.__set__(self, value)
+                return
+        # handle _private second
+        if key.startswith("_"):
+            self.__dict__[key] = value
+        else:
+            raise AttributeError()
+
     @staticmethod
     def _generate_default_node(value_type, default, padding=" "):
         """
