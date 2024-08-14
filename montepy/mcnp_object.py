@@ -73,7 +73,11 @@ class MCNP_Object(ABC):
         if key.startswith("_"):
             self.__dict__[key] = value
         else:
-            raise AttributeError()
+            raise AttributeError(
+                f"'{type(self).__name__}' object has no attribute '{key}'",
+                obj=self,
+                name=key,
+            )
 
     @staticmethod
     def _generate_default_node(value_type, default, padding=" "):
