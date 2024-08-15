@@ -440,12 +440,16 @@ class NumberedDataObjectCollection(NumberedObjectCollection):
         :type insert_in_data: bool
         :raises NumberConflictError: if this object has a number that is already in use.
         """
+        # TODO delete from data_inputs?
         super().append(obj)
         if self._problem and insert_in_data:
             if self._last_index:
                 index = self._last_index
             elif len(self) > 0:
-                index = self._problem.data_inputs.index(self._objects[-1])
+                try:
+                    index = self._problem.data_inputs.index(self._objects[-1])
+                except ValueError:
+                    index = len(self._problem.data_inputs)
             else:
                 index = len(self._problem.data_inputs)
             self._problem.data_inputs.insert(index + 1, obj)
