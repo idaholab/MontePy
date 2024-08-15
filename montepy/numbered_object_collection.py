@@ -364,10 +364,8 @@ class NumberedObjectCollection(ABC):
                 )
             else:
                 self.__num_cache[obj.number] = obj
-        self._objects += other_list
-        if self._problem:
-            for obj in other_list:
-                obj.link_to_problem(self._problem)
+        for obj in other_list:
+            self.append(obj)
         return self
 
     def __contains__(self, other):
@@ -424,3 +422,29 @@ class NumberedObjectCollection(ABC):
         """
         for o in self._objects:
             yield o.number, o
+
+
+class NumberedDataObjectCollection(NumberedObjectCollection):
+    def __init__(self, obj_class, objects=None, problem=None):
+        self._last_index = None
+        if problem and objects:
+            self._last_index = problem.data_inputs.index(objects[-1])
+        super().__init__(obj_class, objects, problem)
+
+    def append(self, obj, insert_in_data=True):
+        """Appends the given object to the end of this collection.
+
+        :param obj: the object to add.
+        :type obj: Numbered_MCNP_Object
+        :raises NumberConflictError: if this object has a number that is already in use.
+        """
+        super().append(obj)
+        if self._problem and insert_in_data:
+            if self._last_index:
+                index = self._last_index
+            elif len(self) > 0:
+                index = self._problem.data_inputs.index(self._objects[-1])
+            else:
+                index = len(self._problem.data_inputs)
+            self._problem.data_inputs.insert(index + 1, obj)
+            self._last_index = index + 1
