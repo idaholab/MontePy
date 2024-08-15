@@ -128,6 +128,8 @@ class MCNP_Object(ABC):
         """
         self.validate()
         self._update_values()
+        # TODO check for overrides
+        self._tree.check_for_graveyard_comments()
         lines = self.wrap_string_for_mcnp(self._tree.format(), mcnp_version, True)
         return lines
 

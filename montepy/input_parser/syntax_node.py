@@ -117,6 +117,39 @@ class SyntaxNodeBase(ABC):
         if isinstance(tail, SyntaxNodeBase):
             tail._delete_trailing_comment()
 
+    def check_for_graveyard_comments(self):
+        flatpack = self.flatten()
+        if len(flatpack) == 0:
+            return
+        first = flatpack[0]
+        print(flatpack)
+        for second in flatpack[1:]:
+            # print(first, second)
+            if isinstance(first, ValueNode):
+                padding = first.padding
+            elif isinstance(first, PaddingNode):
+                padding = first
+            else:
+                padding = None
+            if padding:
+                #   print(first, second, padding.has_graveyard_comment())
+                if padding.has_graveyard_comment() and not isinstance(
+                    second, PaddingNode
+                ):
+                    print("hi")
+                    padding.append("\n")
+                    padding.append(" " * constants.BLANK_SPACE_CONTINUE)
+            first = second
+
+    def flatten(self):
+        ret = []
+        for node in self.nodes:
+            if isinstance(node, (ValueNode, PaddingNode, CommentNode, str)):
+                ret.append(node)
+            else:
+                ret += node.flatten()
+        return ret
+
 
 class SyntaxNode(SyntaxNodeBase):
     """
@@ -200,6 +233,15 @@ class SyntaxNode(SyntaxNodeBase):
     def _delete_trailing_comment(self):
         tail = next(reversed(self.nodes.items()))
         tail[1]._delete_trailing_comment()
+
+    def flatten(self):
+        ret = []
+        for node in self.nodes.values():
+            if isinstance(node, (ValueNode, PaddingNode)):
+                ret.append(node)
+            else:
+                ret += node.flatten()
+        return ret
 
 
 class GeometryTree(SyntaxNodeBase):
@@ -467,6 +509,25 @@ class PaddingNode(SyntaxNodeBase):
             other = other.format()
         return self.format() == other
 
+    def has_graveyard_comment(self):
+        """ """
+        found = False
+        for i, item in enumerate(self.nodes):
+            if isinstance(item, CommentNode):
+                found = True
+                break
+        if not found:
+            return False
+        trail = self.nodes[i:]
+        if len(trail) == 1:
+            if trail[0].format().endswith("\n"):
+                return False
+            return True
+        for node in trail[1:]:
+            if node == "\n":
+                return False
+        return True
+
 
 class CommentNode(SyntaxNodeBase):
     """
@@ -573,7 +634,7 @@ class CommentNode(SyntaxNodeBase):
         return self.format()
 
     def __repr__(self):
-        ret = f"COMMENT:\n"
+        ret = f"COMMENT: "
         for node in self.nodes:
             ret += node.format()
         return ret
@@ -1523,6 +1584,12 @@ class IsotopesNode(SyntaxNodeBase):
         tail = tail[1]
         tail._delete_trailing_comment()
 
+    def flatten(self):
+        ret = []
+        for node_group in self.nodes:
+            ret += node_group
+        return ret
+
 
 class ShortcutNode(ListNode):
     """
@@ -2045,6 +2112,19 @@ class ClassifierNode(SyntaxNodeBase):
         else:
             yield from []
 
+    def flatten(self):
+        ret = []
+        if self.modifier:
+            ret.append(self.modifier)
+        ret.append(self.prefix)
+        if self.number:
+            ret.append(self.number)
+        if self.particles:
+            ret.append(self.particles)
+        if self.padding:
+            ret.append(self.padding)
+        return ret
+
 
 class ParametersNode(SyntaxNodeBase):
     """
@@ -2130,3 +2210,12 @@ class ParametersNode(SyntaxNodeBase):
         for node in self.nodes.values():
             if isinstance(node, SyntaxNodeBase):
                 yield from node.comments
+
+    def flatten(self):
+        ret = []
+        for node in self.nodes.values():
+            if isinstance(node, (ValueNode, PaddingNode)):
+                ret.append(node)
+            else:
+                ret += node.flatten()
+        return ret
