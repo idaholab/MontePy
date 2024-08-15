@@ -436,6 +436,8 @@ class NumberedDataObjectCollection(NumberedObjectCollection):
 
         :param obj: the object to add.
         :type obj: Numbered_MCNP_Object
+        :param insert_in_data: Whether or not to add the object to the linked problem's data_inputs.
+        :type insert_in_data: bool
         :raises NumberConflictError: if this object has a number that is already in use.
         """
         super().append(obj)
