@@ -675,6 +675,8 @@ class Cell(Numbered_MCNP_Object):
         """
         self.validate()
         self._update_values()
+        self._tree.check_for_graveyard_comments()
+        print(self._tree)
         modifier_keywords = {
             cls._class_prefix(): cls for cls in self._INPUTS_TO_PROPERTY.keys()
         }
@@ -694,6 +696,7 @@ class Cell(Numbered_MCNP_Object):
                 ret += node.format()
             else:
                 printed_importance = False
+                final_param = next(reversed(node.nodes.values()))
                 for param in node.nodes.values():
                     if param["classifier"].prefix.value.lower() in modifier_keywords:
                         cls = modifier_keywords[
@@ -707,7 +710,9 @@ class Cell(Numbered_MCNP_Object):
                         # add trailing space to comment if necessary
                         ret = cleanup_last_line(ret)
                         ret += "\n".join(
-                            getattr(self, attr).format_for_mcnp_input(mcnp_version)
+                            getattr(self, attr).format_for_mcnp_input(
+                                mcnp_version, param is not final_param
+                            )
                         )
                     else:
                         # add trailing space to comment if necessary

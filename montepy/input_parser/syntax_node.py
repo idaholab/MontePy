@@ -117,12 +117,13 @@ class SyntaxNodeBase(ABC):
         if isinstance(tail, SyntaxNodeBase):
             tail._delete_trailing_comment()
 
-    def check_for_graveyard_comments(self):
+    def check_for_graveyard_comments(self, has_following_input=False):
         flatpack = self.flatten()
         if len(flatpack) == 0:
             return
         first = flatpack[0]
-        print(flatpack)
+        if has_following_input:
+            flatpack.append("")
         for second in flatpack[1:]:
             # print(first, second)
             if isinstance(first, ValueNode):
