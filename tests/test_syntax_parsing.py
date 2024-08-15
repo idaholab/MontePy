@@ -567,6 +567,15 @@ class TestPaddingNode(TestCase):
         self.assertEqual(len(list(comment.comments)), 1)
         self.assertEqual(len(comment.contents), 0)
 
+def test_graveyard_comment():
+    padding = syntax_node.PaddingNode(" ")
+    padding.append("$ test", True)
+    assert padding.has_graveyard_comment()
+    padding.append(" ")
+    assert padding.has_graveyard_comment()
+    padding.append("\n")
+    assert not padding.has_graveyard_comment()
+
 
 @pytest.mark.parametrize(
     "padding,expect",
