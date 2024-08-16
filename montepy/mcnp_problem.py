@@ -406,9 +406,17 @@ class MCNP_Problem:
         :raises IsADirectoryError: if the path given is actually a directory.
         """
         new_file = MCNP_InputFile(new_problem, overwrite=overwrite)
-        with new_file.open("w") as fh, warnings.catch_warnings(
-            record=True
-        ) as warning_catch:
+        with new_file.open("w") as fh:
+            self.write_to_stream(fh)
+    
+    def write_to_stream(self, fh):
+        """
+        Writes the problem to a writeable stream.
+        
+        :param fh: Writable object
+        :type fh: {MCNP_InputFile, io.TextIOBase}
+        """
+        with warnings.catch_warnings(record=True) as warning_catch:
             objects_list = []
             if self.message:
                 objects_list.append(([self.message], False))
@@ -442,6 +450,7 @@ class MCNP_Problem:
 
             fh.write("\n")
         self._handle_warnings(warning_catch)
+        # Todo: Consider implementing and calling MCNP_InputFile.tell()
 
     def _handle_warnings(self, warning_queue):
         class WarningLevels(Enum):
