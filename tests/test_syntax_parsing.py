@@ -1,6 +1,7 @@
 # Copyright 2024, Battelle Energy Alliance, LLC All Rights Reserved.
 import copy
 from io import StringIO
+import pytest
 from unittest import TestCase
 
 import montepy
@@ -339,7 +340,7 @@ class TestValueNode(TestCase):
         self.assertIsNone(value_node.get_trailing_comment())
         value_node._delete_trailing_comment()
         self.assertIsNone(value_node.get_trailing_comment())
-        padding = syntax_node.PaddingNode("$ hi", True)
+        padding = syntax_node.PaddingNode("c hi", True)
         value_node.padding = padding
         comment = value_node.get_trailing_comment()
         self.assertEqual(len(comment), 1)
@@ -430,7 +431,7 @@ class TestSyntaxNode(TestCase):
         test = copy.deepcopy(self.test_node)
         test["bar2"].nodes["foo"] = syntax_node.ValueNode("1.23", float)
         self.assertIsNone(test.get_trailing_comment())
-        test["bar2"]["foo"].padding = syntax_node.PaddingNode("$ hi", True)
+        test["bar2"]["foo"].padding = syntax_node.PaddingNode("c hi", True)
         self.assertEqual(len(test.get_trailing_comment()), 1)
         test._delete_trailing_comment()
         self.assertIsNone(test.get_trailing_comment())
@@ -567,6 +568,22 @@ class TestPaddingNode(TestCase):
         self.assertEqual(len(comment.contents), 0)
 
 
+@pytest.mark.parametrize(
+    "padding,expect",
+    [
+        (["$ hi"], False),
+        ([" c style comment"], False),
+        ([" "], True),
+        (["$ hi", "    ", "c hi"], True),
+    ],
+)
+def test_padding_has_space(padding, expect):
+    node = syntax_node.PaddingNode(padding[0])
+    for pad in padding[1:]:
+        node.append(pad)
+    assert node.has_space() == expect
+
+
 class TestParticlesNode(TestCase):
     def test_particle_init(self):
         parts = syntax_node.ParticleNode("test", ":n,p,e")
@@ -674,7 +691,7 @@ class TestListNode(TestCase):
         list_node1 = syntax_node.ListNode("list")
         for i in range(20):
             list_node1.append(syntax_node.ValueNode("1.0", float))
-        padding = syntax_node.PaddingNode("$ hi", True)
+        padding = syntax_node.PaddingNode("c hi", True)
         list_node1[-1].padding = padding
         comments = list(list_node1.get_trailing_comment())
         self.assertEqual(len(comments), 1)
@@ -1464,7 +1481,9 @@ class TestParametersNode(TestCase):
         padding = syntax_node.PaddingNode("$ hi", True)
         param["vol"]["data"][0].padding = padding
         comment = param.get_trailing_comment()
-        self.assertEqual(len(comment), 1)
+        self.assertIsNone(comment)
+        padding.append(syntax_node.CommentNode("c hi"), True)
+        comment = param.get_trailing_comment()
         self.assertEqual(comment[0].contents, "hi")
         param._delete_trailing_comment()
         self.assertIsNone(param.get_trailing_comment())

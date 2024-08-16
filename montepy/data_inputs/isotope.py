@@ -1,7 +1,7 @@
 # Copyright 2024, Battelle Energy Alliance, LLC All Rights Reserved.
 from montepy.data_inputs.element import Element
 from montepy.errors import *
-from montepy.input_parser.syntax_node import ValueNode
+from montepy.input_parser.syntax_node import PaddingNode, ValueNode
 
 
 class Isotope:
@@ -14,6 +14,10 @@ class Isotope:
 
     #                   Cl-52      Br-101     Xe-150      Os-203    Cm-251     Og-296
     _BOUNDING_CURVE = [(17, 52), (35, 101), (54, 150), (76, 203), (96, 251), (118, 296)]
+    _STUPID_MAP = {
+        "95642": {"_is_metastable": False, "_meta_state": None},
+        "95242": {"_is_metastable": True, "_meta_state": 1},
+    }
     """
     Points on bounding curve for determining if "valid" isotope
     """
@@ -36,6 +40,16 @@ class Isotope:
             self._library = parts[1]
         else:
             self._library = ""
+        if node is None:
+            self._tree = ValueNode(self.mcnp_str(), str, PaddingNode(" "))
+        self._handle_stupid_legacy_stupidity()
+
+    def _handle_stupid_legacy_stupidity(self):
+        # TODO work on this for mat_redesign
+        if self.ZAID in self._STUPID_MAP:
+            stupid_overwrite = self._STUPID_MAP[self.ZAID]
+            for key, value in stupid_overwrite.items():
+                setattr(self, key, value)
 
     def __parse_zaid(self):
         """
@@ -166,8 +180,8 @@ class Isotope:
             raise TypeError("library must be a string")
         self._library = library
 
-    def __str__(self):
-        return f"{self.element.symbol:>2}-{self.A:<3} ({self._library})"
+    def __repr__(self):
+        return f"{self.__class__.__name__}({repr(self.nuclide_str())})"
 
     def mcnp_str(self):
         """
@@ -178,7 +192,12 @@ class Isotope:
         :returns: a string that can be used in MCNP
         :rtype: str
         """
-        return f"{self.ZAID}.{self.library}"
+        return f"{self.ZAID}.{self.library}" if self.library else self.ZAID
+
+    def nuclide_str(self):
+        meta_suffix = f"m{self.meta_state}" if self.is_metastable else ""
+        suffix = f".{self._library}" if self._library else ""
+        return f"{self.element.symbol}-{self.A}{meta_suffix}{suffix}"
 
     def get_base_zaid(self):
         """
@@ -191,8 +210,10 @@ class Isotope:
         """
         return self.Z * 1000 + self.A
 
-    def __repr__(self):
-        return f"ZAID={self.ZAID}, Z={self.Z}, A={self.A}, element={self.element}, library={self.library}"
+    def __str__(self):
+        meta_suffix = f"m{self.meta_state}" if self.is_metastable else ""
+        suffix = f" ({self._library})" if self._library else ""
+        return f"{self.element.symbol:>2}-{self.A:<3}{meta_suffix:<2}{suffix}"
 
     def __hash__(self):
         return hash(self._ZAID)

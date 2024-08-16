@@ -5,6 +5,7 @@ import montepy
 from montepy.errors import *
 import os
 
+import pytest
 from unittest import TestCase
 
 
@@ -87,58 +88,6 @@ class EdgeCaseTests(TestCase):
         self.assertEqual(len(cell.parameters), 5)
         self.assertEqual(cell.parameters.nodes.keys(), allowed_keys)
 
-    def test_confused_union_geometry(self):
-        # based on issue #122
-        in_strs = [
-            "9800     10    -0.123000 +101 -200 -905 +213 (-216:+217)",
-        ]
-        input = montepy.input_parser.mcnp_input.Input(
-            in_strs, montepy.input_parser.block_type.BlockType.CELL
-        )
-        cell = montepy.Cell(input)
-
-    def test_confused_trcl(self):
-        for line in [
-            "340 0 (94 -209 -340) fill=2 trcl=(0 0 0  0.7071 -0.7071 0  0.7071 0.7071 0  0 0 1)",
-            "340 0 (94 -209 -340) fill=2 trcl=(0 0 0  0.7071 -0.7071 0  0.7071 0.7071 0  0 0 1)  $ Comment",
-        ]:
-            input = montepy.input_parser.mcnp_input.Input(
-                [line],
-                montepy.input_parser.block_type.BlockType.CELL,
-            )
-            cell = montepy.Cell(input)
-
-    def test_space_after_equals(self):
-        lines = [
-            "35000 3690   0.01000    35100   -35105",
-            "                        35110   -35115",
-            "                        35150   -35155   U = 35100",
-        ]
-        input = montepy.input_parser.mcnp_input.Input(
-            lines,
-            montepy.input_parser.block_type.BlockType.CELL,
-        )
-        cell = montepy.Cell(input)
-
-    def test_interpolate_geometry(self):
-        lines = [
-            "10234   30  1.2456780      -3103  3104 -3133  3136",
-            "                            3201  15i   3217",
-            "                            u=20",
-        ]
-        input = montepy.input_parser.mcnp_input.Input(
-            lines,
-            montepy.input_parser.block_type.BlockType.CELL,
-        )
-        cell = montepy.Cell(input)
-
-    def test_material_float(self):
-        in_strs = ["m171 1001.80c 1E-24"]
-        input = montepy.input_parser.mcnp_input.Input(
-            in_strs, montepy.input_parser.block_type.BlockType.CELL
-        )
-        material = montepy.data_inputs.material.Material(input)
-
     def test_void_cell_set_material(self):
         in_strs = ["2 0 -63 -62 64  imp:n=1 $ COBALT_TARGET_PELLET2"]
         input = montepy.input_parser.mcnp_input.Input(
@@ -182,3 +131,59 @@ class EdgeCaseTests(TestCase):
         problem = montepy.read_input(
             os.path.join("tests", "inputs", "readEdgeCase.imcnp")
         )
+
+    def test_material_float(self):
+        in_strs = ["m171 1001.80c 1E-24"]
+        input = montepy.input_parser.mcnp_input.Input(
+            in_strs, montepy.input_parser.block_type.BlockType.CELL
+        )
+        material = montepy.data_inputs.material.Material(input)
+
+
+@pytest.mark.parametrize(
+    "lines",
+    [
+        # issue #122
+        [
+            "9800     10    -0.123000 +101 -200 -905 +213 (-216:+217)",
+        ],
+        [
+            "340 0 (94 -209 -340) fill=2 trcl=(0 0 0  0.7071 -0.7071 0  0.7071 0.7071 0  0 0 1)",
+        ],
+        [
+            "340 0 (94 -209 -340) fill=2 trcl=(0 0 0  0.7071 -0.7071 0  0.7071 0.7071 0  0 0 1)  $ Comment",
+        ],
+        [
+            "35000 3690   0.01000    35100   -35105",
+            "                        35110   -35115",
+            "                        35150   -35155   U = 35100",
+        ],
+        [
+            "10234   30  1.2456780      -3103  3104 -3133  3136",
+            "                            3201  15i   3217",
+            "                            u=20",
+        ],
+        # issue #461
+        [
+            "43    0",
+            "      (                 $ a dollar comment here",
+            "        -1 2",
+            "      )",
+            "      IMP:N=1.000000 IMP:P=1.000000",
+        ],
+        [
+            "1    0  3 -2",
+            "    IMP:N=1.000000  IMP:P=1.000000",
+            "    *FILL=1  ( 0.000        0.000  0.000",
+            "           30.000      120.000 90.000",
+            "           60.000       30.000 90.000",
+            "           90.000       90.000  0.000)",
+        ],
+    ],
+)
+def test_complex_cell_parsing(lines):
+    input = montepy.input_parser.mcnp_input.Input(
+        lines,
+        montepy.input_parser.block_type.BlockType.CELL,
+    )
+    montepy.Cell(input)

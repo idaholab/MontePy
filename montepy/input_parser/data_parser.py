@@ -86,10 +86,10 @@ class DataParser(MCNP_Parser):
     def particle_sequence(self, p):
         if len(p) == 1:
             sequence = syntax_node.ListNode("particle sequence")
-            sequence.append(p[0])
+            sequence.append(p[0], True)
         else:
             sequence = p[0]
-            sequence.append(p[1])
+            sequence.append(p[1], True)
         return sequence
 
     @_("PARTICLE", "SURFACE_TYPE", "PARTICLE_SPECIAL")
@@ -114,10 +114,10 @@ class DataParser(MCNP_Parser):
     def text_sequence(self, p):
         if len(p) == 1:
             sequence = syntax_node.ListNode("text sequence")
-            sequence.append(p[0])
+            sequence.append(p[0], True)
         else:
             sequence = p[0]
-            sequence.append(p[1])
+            sequence.append(p[1], True)
         return sequence
 
     @_("kitchen_junk", "kitchen_sink kitchen_junk")
@@ -125,7 +125,7 @@ class DataParser(MCNP_Parser):
         sequence = p[0]
         if len(p) != 1:
             for node in p[1].nodes:
-                sequence.append(node)
+                sequence.append(node, True)
         return sequence
 
     @_("number_sequence", "text_sequence", "particle_sequence")
@@ -166,3 +166,107 @@ class ClassifierParser(DataParser):
         return syntax_node.SyntaxNode(
             "data input classifier", {"start_pad": padding, "classifier": p.classifier}
         )
+
+
+class ParamOnlyDataParser(DataParser):
+    """
+    A parser for parsing parameter (key-value pair) only data inputs.
+
+    .e.g., SDEF
+
+    .. versionadded:: 0.3.0
+
+    :returns: a syntax tree for the data input.
+    :rtype: SyntaxNode
+    """
+
+    debugfile = None
+
+    @_(
+        "param_introduction spec_parameters",
+    )
+    def param_data_input(self, p):
+        ret = {}
+        for key, node in p.param_introduction.nodes.items():
+            ret[key] = node
+        if hasattr(p, "spec_parameters"):
+            ret["parameters"] = p.spec_parameters
+        return syntax_node.SyntaxNode("data", ret)
+
+    @_(
+        "classifier_phrase",
+        "padding classifier_phrase",
+    )
+    def param_introduction(self, p):
+        ret = {}
+        if isinstance(p[0], syntax_node.PaddingNode):
+            ret["start_pad"] = p[0]
+        else:
+            ret["start_pad"] = syntax_node.PaddingNode()
+        ret["classifier"] = p.classifier_phrase
+        ret["keyword"] = syntax_node.ValueNode(None, str, padding=None)
+        return syntax_node.SyntaxNode("data intro", ret)
+
+    @_("spec_parameter", "spec_parameters spec_parameter")
+    def spec_parameters(self, p):
+        """
+        A list of the parameters (key, value pairs) for this input.
+
+        :returns: all parameters
+        :rtype: ParametersNode
+        """
+        if len(p) == 1:
+            params = syntax_node.ParametersNode()
+            param = p[0]
+        else:
+            params = p[0]
+            param = p[1]
+        params.append(param)
+        return params
+
+    @_("spec_classifier param_seperator data")
+    def spec_parameter(self, p):
+        return syntax_node.SyntaxNode(
+            p.spec_classifier.prefix.value,
+            {
+                "classifier": p.spec_classifier,
+                "seperator": p.param_seperator,
+                "data": p.data,
+            },
+        )
+
+    @_(
+        "KEYWORD",
+    )
+    def spec_data_prefix(self, p):
+        return syntax_node.ValueNode(p[0], str)
+
+    @_(
+        "modifier spec_data_prefix",
+        "spec_data_prefix",
+        "spec_classifier NUMBER",
+        "spec_classifier particle_type",
+    )
+    def spec_classifier(self, p):
+        """
+        The classifier of a data input.
+
+        This represents the first word of the data input.
+        E.g.: ``M4``, `IMP:N`, ``F104:p``
+
+        :rtype: ClassifierNode
+        """
+        if hasattr(p, "spec_classifier"):
+            classifier = p.spec_classifier
+        else:
+            classifier = syntax_node.ClassifierNode()
+
+        if hasattr(p, "modifier"):
+            classifier.modifier = syntax_node.ValueNode(p.modifier, str)
+        if hasattr(p, "spec_data_prefix"):
+            classifier.prefix = p.spec_data_prefix
+        if hasattr(p, "NUMBER"):
+            classifier.number = syntax_node.ValueNode(p.NUMBER, int)
+        if hasattr(p, "particle_type"):
+            classifier.particles = p.particle_type
+        return classifier

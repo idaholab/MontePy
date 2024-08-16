@@ -94,6 +94,31 @@ class MCNP_Lexer(Lexer):
         "refs",
         # volume
         "no",
+        # sdef
+        "cel",
+        "sur",
+        "erg",
+        "tme",
+        "dir",
+        "vec",
+        "nrm",
+        "pos",
+        "rad",
+        "ext",
+        "axs",
+        "x",
+        "y",
+        "z",
+        "ccc",
+        "ara",
+        "wgt",
+        "tr",
+        "eff",
+        "par",
+        "dat",
+        "loc",
+        "bem",
+        "bap",
     }
     """
     Defines allowed keywords in MCNP.
