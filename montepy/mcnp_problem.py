@@ -458,9 +458,12 @@ class MCNP_Problem:
                         for warning in warning_catch[::-1]:
                             if getattr(warning, "handled", None):
                                 break
-                            # FIXME: Begin are MCNP_InputFile attributes.
-                            warning.lineno = fh.get("lineno")
-                            warning.path = fh.get("name")
+                            # FIXME:
+                            # Begin MCNP_InputFile attributes.
+                            # Either an MCNP_InputFile should work like a stream,
+                            # or these next two lines should be removed.
+                            warning.lineno = getattr(fh, "lineno", -1)
+                            warning.path = getattr(fh, "name", None)
                             # End MCNP_InputFile attributes.
                             warning.obj = obj
                             warning.lines = lines
