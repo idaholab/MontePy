@@ -1,4 +1,5 @@
 # Copyright 2024, Battelle Energy Alliance, LLC All Rights Reserved.
+import os
 from enum import Enum
 import itertools
 from montepy.data_inputs import mode, transform
@@ -389,6 +390,22 @@ class MCNP_Problem:
         self._materials = Materials(materials)
         self._transforms = Transforms(transforms)
         self._data_inputs = sorted(set(self._data_inputs + materials + transforms))
+    
+    def write_problem(self, destination, overwrite=False):
+        """
+        Write the problem to a file or writeable object.
+        
+        :param destination: File path or writable object
+        :type destination: object
+        :param overwrite: Whether to overwrite 'destination' if it is an existing file
+        :type overwrite: bool
+        """
+        if hasattr(destination, "write") and callable(getattr(destination, "write")):
+            # TODO: May need to ensure it also has `.tell()`
+            return self.write_to_stream(destination)
+        if isinstance(destination, (str, os.PathLike)):
+            return self.write_to_file(destination, overwrite)
+        raise TypeError(f"destination f{destination} is not a file path or writable object")
 
     def write_to_file(self, new_problem, overwrite=False):
         """
