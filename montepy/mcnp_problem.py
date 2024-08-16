@@ -408,14 +408,19 @@ class MCNP_Problem:
         new_file = MCNP_InputFile(new_problem, overwrite=overwrite)
         with new_file.open("w") as fh:
             self.write_to_stream(fh)
+        # Consider returning result of write_to_stream()
     
     def write_to_stream(self, fh):
         """
         Writes the problem to a writeable stream.
         
+        TODO: Expand MCNP_InputFile or adjust this method
+              to fully suppport generic file handles.
+        
         :param fh: Writable object
         :type fh: {MCNP_InputFile, io.TextIOBase}
         """
+        # Todo: Consider implementing and calling MCNP_InputFile.tell()
         with warnings.catch_warnings(record=True) as warning_catch:
             objects_list = []
             if self.message:
@@ -434,8 +439,10 @@ class MCNP_Problem:
                         for warning in warning_catch[::-1]:
                             if getattr(warning, "handled", None):
                                 break
-                            warning.lineno = fh.lineno
-                            warning.path = fh.name
+                            # FIXME: Begin are MCNP_InputFile attributes.
+                            warning.lineno = fh.get("lineno")
+                            warning.path = fh.get("name")
+                            # End MCNP_InputFile attributes.
                             warning.obj = obj
                             warning.lines = lines
                             warning.handled = True
@@ -450,7 +457,7 @@ class MCNP_Problem:
 
             fh.write("\n")
         self._handle_warnings(warning_catch)
-        # Todo: Consider implementing and calling MCNP_InputFile.tell()
+        # Todo: return fh.tell() minus starting position
 
     def _handle_warnings(self, warning_queue):
         class WarningLevels(Enum):
