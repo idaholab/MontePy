@@ -409,22 +409,22 @@ class MCNP_Problem:
             f"destination f{destination} is not a file path or writable object"
         )
 
-    def write_to_file(self, new_problem, overwrite=False):
+    def write_to_file(self, file_path, overwrite=False):
         """
         Writes the problem to a file.
 
         .. versionchanged:: 0.3.0
             The overwrite parameter was added.
 
-        :param new_problem: the file name to write this problem to
-        :type new_problem: str
+        :param file_path: the file path to write this problem to
+        :type file_path: str
         :param overwrite: Whether to overwrite the file at 'new_problem' if it exists
         :type overwrite: bool
         :raises IllegalState: if an object in the problem has not been fully initialized.
         :raises FileExistsError: if a file already exists with the same path.
         :raises IsADirectoryError: if the path given is actually a directory.
         """
-        new_file = MCNP_InputFile(new_problem, overwrite=overwrite)
+        new_file = MCNP_InputFile(file_path, overwrite=overwrite)
         with new_file.open("w") as fh:
             self.write_to_stream(fh)
         # Consider returning result of write_to_stream()
