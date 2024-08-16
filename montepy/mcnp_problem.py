@@ -390,11 +390,11 @@ class MCNP_Problem:
         self._materials = Materials(materials)
         self._transforms = Transforms(transforms)
         self._data_inputs = sorted(set(self._data_inputs + materials + transforms))
-    
+
     def write_problem(self, destination, overwrite=False):
         """
         Write the problem to a file or writeable object.
-        
+
         :param destination: File path or writable object
         :type destination: object
         :param overwrite: Whether to overwrite 'destination' if it is an existing file
@@ -405,7 +405,9 @@ class MCNP_Problem:
             return self.write_to_stream(destination)
         if isinstance(destination, (str, os.PathLike)):
             return self.write_to_file(destination, overwrite)
-        raise TypeError(f"destination f{destination} is not a file path or writable object")
+        raise TypeError(
+            f"destination f{destination} is not a file path or writable object"
+        )
 
     def write_to_file(self, new_problem, overwrite=False):
         """
@@ -426,14 +428,14 @@ class MCNP_Problem:
         with new_file.open("w") as fh:
             self.write_to_stream(fh)
         # Consider returning result of write_to_stream()
-    
+
     def write_to_stream(self, fh):
         """
         Writes the problem to a writeable stream.
-        
+
         TODO: Expand MCNP_InputFile or adjust this method
               to fully suppport generic file handles.
-        
+
         :param fh: Writable object
         :type fh: {MCNP_InputFile, io.TextIOBase}
         """
