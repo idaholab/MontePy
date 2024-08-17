@@ -470,3 +470,29 @@ class NumberedDataObjectCollection(NumberedObjectCollection):
         super().remove(delete)
         if self._problem:
             self._problem.data_inputs.remove(delete)
+
+    def pop(self, pos=-1):
+        """
+        Pop the final items off of the collection
+
+        :param pos: The index of the element to pop from the internal list.
+        :type pos: int
+        :return: the final elements
+        :rtype: Numbered_MCNP_Object
+        """
+        if not isinstance(pos, int):
+            raise TypeError("The index for popping must be an int")
+        obj = self._objects.pop(pos)
+        super().pop(pos)
+        if self._problem:
+            self._problem.data_inputs.remove(obj)
+        return obj
+
+    def clear(self):
+        """
+        Removes all objects from this collection.
+        """
+        if self._problem:
+            for obj in self._objects:
+                self._problem.data_inputs.remove(obj)
+        super().clear()
