@@ -101,12 +101,6 @@ jobs:
         with: 
           python-version: 3.12
       - run: pip install . montepy[doc,build]
-      - uses: mathieudutour/github-tag-action@v6.2
-        name: Get next version number
-        id: version_num
-        with: 
-          dry_run: True
-          github_token: ${{ secrets.GITHUB_TOKEN }}
       - run: sphinx-build doc/source/ doc/build/ -W --keep-going -E
         name: Build site strictly
       - uses: actions/upload-artifact@v4
