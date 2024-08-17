@@ -14,7 +14,11 @@ def discover_urls():
 def test_urls(urls):
     passed = 0
     for url in urls:
-        code = urllib.request.urlopen(url).getcode()
+        code = 404
+        try:
+            code = urllib.request.urlopen(url).getcode()
+        except urllib.error.HTTPError as e:
+            print(url, e)
         if code == 200:
             passed += 1
         else:

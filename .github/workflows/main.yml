@@ -121,6 +121,8 @@ jobs:
         run: |
              cd doc
              make linkcheck
+      - name: Test for broken sitemap URLs
+        run: python .github/scripts/check_sitemap.xml
 
   format-test:
     runs-on: ubuntu-latest
