@@ -4,6 +4,8 @@ import montepy
 import montepy.cells
 from montepy.errors import NumberConflictError
 import unittest
+import pytest
+import os
 
 
 class TestNumberedObjectCollection(unittest.TestCase):
@@ -288,3 +290,18 @@ class TestNumberedObjectCollection(unittest.TestCase):
         ]
         for phrase in key_phrases:
             self.assertIn(phrase, repr(cells))
+
+
+# test data numbered object
+@pytest.fixture(scope="module")
+def read_simple_problem():
+    return montepy.read_input(os.path.join("tests", "inputs", "test.imcnp"))
+
+
+@pytest.fixture
+def cp_simple_problem(read_simple_problem):
+    return copy.deepcopy(read_simple_problem)
+
+
+def test_data_append(cp_simple_problem):
+    pass
