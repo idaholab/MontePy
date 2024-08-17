@@ -303,5 +303,72 @@ def cp_simple_problem(read_simple_problem):
     return copy.deepcopy(read_simple_problem)
 
 
+def test_data_init(cp_simple_problem):
+    new_mats = montepy.materials.Materials(
+        list(cp_simple_problem.materials), problem=cp_simple_problem
+    )
+    assert list(new_mats) == list(cp_simple_problem.materials)
+
+
 def test_data_append(cp_simple_problem):
-    pass
+    prob = cp_simple_problem
+    new_mat = copy.deepcopy(next(iter(prob.materials)))
+    new_mat.number = prob.materials.request_number()
+    prob.materials.append(new_mat)
+    assert new_mat in prob.materials
+    assert new_mat in prob.data_inputs
+    # trigger getting data_inputs end
+    prob.materials.clear()
+    prob.materials.append(new_mat)
+    assert new_mat in prob.materials
+    assert new_mat in prob.data_inputs
+    prob.data_inputs.clear()
+    prob.materials._last_index = None
+    new_mat = copy.deepcopy(next(iter(prob.materials)))
+    new_mat.number = prob.materials.request_number()
+    prob.materials.append(new_mat)
+    assert new_mat in prob.materials
+    assert new_mat in prob.data_inputs
+    # trigger getting index of last material
+    prob.materials._last_index = None
+    new_mat = copy.deepcopy(next(iter(prob.materials)))
+    new_mat.number = prob.materials.request_number()
+    prob.materials.append(new_mat)
+    assert new_mat in prob.materials
+    assert new_mat in prob.data_inputs
+
+
+def test_data_remove(cp_simple_problem):
+    prob = cp_simple_problem
+    old_mat = next(iter(prob.materials))
+    prob.materials.remove(old_mat)
+    assert old_mat not in prob.materials
+    assert old_mat not in prob.data_inputs
+
+
+def test_data_delete(cp_simple_problem):
+    prob = cp_simple_problem
+    old_mat = next(iter(prob.materials))
+    del prob.materials[old_mat.number]
+    assert old_mat not in prob.materials
+    assert old_mat not in prob.data_inputs
+    with pytest.raises(TypeError):
+        del prob.materials["foo"]
+
+
+def test_data_clear(cp_simple_problem):
+    data_len = len(cp_simple_problem.data_inputs)
+    mat_len = len(cp_simple_problem.materials)
+    cp_simple_problem.materials.clear()
+    assert len(cp_simple_problem.materials) == 0
+    assert len(cp_simple_problem.data_inputs) == data_len - mat_len
+
+
+def test_data_pop(cp_simple_problem):
+    old_mat = next(reversed(list(cp_simple_problem.materials)))
+    popper = cp_simple_problem.materials.pop()
+    assert popper is old_mat
+    assert old_mat not in cp_simple_problem.materials
+    assert old_mat not in cp_simple_problem.data_inputs
+    with pytest.raises(TypeError):
+        cp_simple_problem.materials.pop("foo")
