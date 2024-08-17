@@ -103,8 +103,7 @@ jobs:
       - run: pip install . montepy[doc,build]
       - run: |
              sphinx-build doc/source/ doc/build/ -W --keep-going -E
-             pwd
-             ls
+             ls doc/build/html
              python .github/scripts/check_sitemap.py 
         name: Build site strictly and check sitemap
       - uses: actions/upload-artifact@v4
