@@ -9,6 +9,10 @@ class Materials(NumberedDataObjectCollection):
     """
     A container of multiple :class:`~montepy.data_inputs.material.Material` instances.
 
+    .. note::
+        When items are added to this (and this object is linked to a problem),
+        they will also be added to :func:`montepy.mcnp_problem.MCNP_Problem.data_inputs`.
+
     :param objects: the list of materials to start with if needed
     :type objects: list
     """
