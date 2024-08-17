@@ -401,12 +401,16 @@ class MCNP_Problem:
         :type overwrite: bool
         """
         if hasattr(destination, "write") and callable(getattr(destination, "write")):
-            return self.write_to_stream(destination)
-        if isinstance(destination, (str, os.PathLike)):
-            return self.write_to_file(destination, overwrite)
-        raise TypeError(
-            f"destination f{destination} is not a file path or writable object"
-        )
+            new_file = MCNP_InputFile.from_open_stream(destination)
+            self._write_to_stream(new_file)
+        elif isinstance(destination, (str, os.PathLike)):
+            new_file = MCNP_InputFile(destination, overwrite=overwrite)
+            with new_file.open("w") as fh:
+                self._write_to_stream(fh)
+        else:
+            raise TypeError(
+                f"destination f{destination} is not a file path or writable object"
+            )
 
     def write_to_file(self, file_path, overwrite=False):
         """
@@ -423,19 +427,17 @@ class MCNP_Problem:
         :raises FileExistsError: if a file already exists with the same path.
         :raises IsADirectoryError: if the path given is actually a directory.
         """
-        new_file = MCNP_InputFile(file_path, overwrite=overwrite)
-        with new_file.open("w") as fh:
-            self.write_to_stream(fh)
+        cn = self.__class__.__name__
+        msg = f"{cn}.write_to_file() is deprecated. Use {cn}.write_problem()"
+        warnings.warn(msg, DeprecationWarning)
+        return self.write_problem(file_path, overwrite)
 
-    def write_to_stream(self, fh):
+    def _write_to_stream(self, inp):
         """
         Writes the problem to a writeable stream.
 
-        TODO: Expand MCNP_InputFile or adjust this method
-              to fully suppport generic file handles.
-
-        :param fh: Writable object
-        :type fh: {MCNP_InputFile, io.TextIOBase}
+        :param inp: Writable input file
+        :type inp: MCNP_InputFile
         """
         with warnings.catch_warnings(record=True) as warning_catch:
             objects_list = []
@@ -455,26 +457,21 @@ class MCNP_Problem:
                         for warning in warning_catch[::-1]:
                             if getattr(warning, "handled", None):
                                 break
-                            # FIXME:
-                            # Begin MCNP_InputFile attributes.
-                            # Either an MCNP_InputFile should work like a stream,
-                            # or these next two lines should be removed.
-                            warning.lineno = getattr(fh, "lineno", -1)
-                            warning.path = getattr(fh, "name", None)
-                            # End MCNP_InputFile attributes.
+                            warning.lineno = inp.lineno
+                            warning.path = inp.name
                             warning.obj = obj
                             warning.lines = lines
                             warning.handled = True
                     for line in lines:
-                        fh.write(line + "\n")
+                        inp.write(line + "\n")
                 if terminate:
-                    fh.write("\n")
+                    inp.write("\n")
             for line in self.cells._run_children_format_for_mcnp(
                 self.data_inputs, self.mcnp_version
             ):
-                fh.write(line + "\n")
+                inp.write(line + "\n")
 
-            fh.write("\n")
+            inp.write("\n")
         self._handle_warnings(warning_catch)
 
     def _handle_warnings(self, warning_queue):
