@@ -331,8 +331,7 @@ class NumberedObjectCollection(ABC):
             raise TypeError("index must be an int")
         obj = self[idx]
         self.__num_cache.pop(obj.number, None)
-        idx = self._objects.index(obj)
-        del self._objects[idx]
+        self._objects.remove(obj)
 
     def __setitem__(self, key, newvalue):
         if not isinstance(key, int):
@@ -440,7 +439,6 @@ class NumberedDataObjectCollection(NumberedObjectCollection):
         :type insert_in_data: bool
         :raises NumberConflictError: if this object has a number that is already in use.
         """
-        # TODO delete from data_inputs?
         super().append(obj)
         if self._problem and insert_in_data:
             if self._last_index:
@@ -454,3 +452,21 @@ class NumberedDataObjectCollection(NumberedObjectCollection):
                 index = len(self._problem.data_inputs)
             self._problem.data_inputs.insert(index + 1, obj)
             self._last_index = index + 1
+
+    def __delitem__(self, idx):
+        if not isinstance(idx, int):
+            raise TypeError("index must be an int")
+        super().__delitem__(idx)
+        if self._problem:
+            self._problem.data_inputs.remove(obj)
+
+    def remove(self, delete):
+        """
+        Removes the given object from the collection.
+
+        :param delete: the object to delete
+        :type delete: Numbered_MCNP_Object
+        """
+        super().remove(delete)
+        if self._problem:
+            self._problem.data_inputs.remove(delete)
