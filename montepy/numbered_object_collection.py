@@ -439,8 +439,8 @@ class NumberedDataObjectCollection(NumberedObjectCollection):
         :type insert_in_data: bool
         :raises NumberConflictError: if this object has a number that is already in use.
         """
-        super().append(obj)
-        if self._problem and insert_in_data:
+        if self._problem:
+            print(self._last_index, len(self))
             if self._last_index:
                 index = self._last_index
             elif len(self) > 0:
@@ -450,12 +450,15 @@ class NumberedDataObjectCollection(NumberedObjectCollection):
                     index = len(self._problem.data_inputs)
             else:
                 index = len(self._problem.data_inputs)
-            self._problem.data_inputs.insert(index + 1, obj)
+            if insert_in_data:
+                self._problem.data_inputs.insert(index + 1, obj)
             self._last_index = index + 1
+        super().append(obj)
 
     def __delitem__(self, idx):
         if not isinstance(idx, int):
             raise TypeError("index must be an int")
+        obj = self[idx]
         super().__delitem__(idx)
         if self._problem:
             self._problem.data_inputs.remove(obj)
@@ -495,4 +498,5 @@ class NumberedDataObjectCollection(NumberedObjectCollection):
         if self._problem:
             for obj in self._objects:
                 self._problem.data_inputs.remove(obj)
+        self._last_index = None
         super().clear()
