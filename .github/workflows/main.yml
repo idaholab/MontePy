@@ -101,8 +101,10 @@ jobs:
         with: 
           python-version: 3.12
       - run: pip install . montepy[doc,build]
-      - run: sphinx-build doc/source/ doc/build/ -W --keep-going -E
-        name: Build site strictly
+      - run: |
+             sphinx-build doc/source/ doc/build/ -W --keep-going -E
+             python .github/scripts/check_sitemap.py 
+        name: Build site strictly and check sitemap
       - uses: actions/upload-artifact@v4
         with:
           name: website
@@ -115,8 +117,6 @@ jobs:
         run: |
              cd doc
              make linkcheck
-      - name: Test for broken sitemap URLs
-        run: python .github/scripts/check_sitemap.py 
 
   format-test:
     runs-on: ubuntu-latest
