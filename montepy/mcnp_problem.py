@@ -401,7 +401,6 @@ class MCNP_Problem:
         :type overwrite: bool
         """
         if hasattr(destination, "write") and callable(getattr(destination, "write")):
-            # TODO: May need to ensure it also has `.tell()`
             return self.write_to_stream(destination)
         if isinstance(destination, (str, os.PathLike)):
             return self.write_to_file(destination, overwrite)
@@ -427,7 +426,6 @@ class MCNP_Problem:
         new_file = MCNP_InputFile(file_path, overwrite=overwrite)
         with new_file.open("w") as fh:
             self.write_to_stream(fh)
-        # Consider returning result of write_to_stream()
 
     def write_to_stream(self, fh):
         """
@@ -439,7 +437,6 @@ class MCNP_Problem:
         :param fh: Writable object
         :type fh: {MCNP_InputFile, io.TextIOBase}
         """
-        # Todo: Consider implementing and calling MCNP_InputFile.tell()
         with warnings.catch_warnings(record=True) as warning_catch:
             objects_list = []
             if self.message:
@@ -479,7 +476,6 @@ class MCNP_Problem:
 
             fh.write("\n")
         self._handle_warnings(warning_catch)
-        # Todo: return fh.tell() minus starting position
 
     def _handle_warnings(self, warning_queue):
         class WarningLevels(Enum):
