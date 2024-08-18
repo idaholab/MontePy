@@ -1,5 +1,7 @@
 # Copyright 2024, Battelle Energy Alliance, LLC All Rights Reserved.
 import copy
+import io
+
 import pytest
 import os
 
@@ -127,7 +129,8 @@ def test_write_to_file(simple_problem):
     out = "foo.imcnp"
     try:
         problem = copy.deepcopy(simple_problem)
-        problem.write_to_file(out)
+        with pytest.deprecated_call():
+            problem.write_to_file(out)
         with open(out, "r") as fh:
             for line in fh:
                 print(line.rstrip())
@@ -466,111 +469,91 @@ def test_importance_format_mutated(importance_problem):
     assert "imp:n 0.5 1 1 0 3" in output
 
 def test_importance_write_unmutated(importance_problem):
-    out_file = "test_import_unmute"
-    try:
-        importance_problem.write_to_file(out_file)
-        found_np = False
-        found_e = False
-        with open(out_file, "r") as fh:
-            for line in fh:
-                print(line.rstrip())
-                if "imp:n,p 1" in line:
-                    found_np = True
-                elif "imp:e" in line:
-                    found_e = True
-        assert found_np
-        assert found_e
-    finally:
-        try:
-            os.remove(out_file)
-        except FileNotFoundError:
-            pass
+    fh = io.StringIO()
+    importance_problem.write_problem(fh)
+    found_np = False
+    found_e = False
+    fh.seek(0)
+    for line in fh.readlines():
+        print(line.rstrip())
+        if "imp:n,p 1" in line:
+            found_np = True
+        elif "imp:e" in line:
+            found_e = True
+    assert found_np
+    assert found_e
+    fh.close()
 
 def test_importance_write_mutated(importance_problem):
-    out_file = "test_import_mute"
+    fh = io.StringIO()
     problem = copy.deepcopy(importance_problem)
     problem.cells[1].importance.neutron = 0.5
-    try:
-        with pytest.warns(LineExpansionWarning):
-            problem.write_to_file(out_file)
-        found_n = False
-        found_e = False
-        with open(out_file, "r") as fh:
-            for line in fh:
-                print(line.rstrip())
-                if "imp:n 0.5" in line:
-                    found_n = True
-                elif "imp:e" in line:
-                    found_e = True
-        assert found_n
-        assert found_e
-    finally:
-        try:
-            os.remove(out_file)
-        except FileNotFoundError:
-            pass
+    with pytest.warns(LineExpansionWarning):
+        problem.write_problem(fh)
+    found_n = False
+    found_e = False
+    fh.seek(0)
+    for line in fh.readlines():
+        print(line.rstrip())
+        if "imp:n 0.5" in line:
+            found_n = True
+        elif "imp:e" in line:
+            found_e = True
+    assert found_n
+    assert found_e
+    fh.close()
 
 def test_importance_write_cell(importance_problem):
     for state in ["no change", "new unmutated cell", "new mutated cell"]:
-        out_file = "test_import_cell"
+        fh = io.StringIO()
         problem = copy.deepcopy(importance_problem)
         if "new" in state:
             cell = copy.deepcopy(problem.cells[5])
             cell.number = 999
             problem.cells.append(cell)
         problem.print_in_data_block["imp"] = False
-        try:
-            if "new" in state:
-                with pytest.warns(LineExpansionWarning):
-                    problem.write_to_file(out_file)
-            else:
-                problem.write_to_file(out_file)
-            found_np = False
-            found_e = False
-            found_data_np = False
-            with open(out_file, "r") as fh:
-                for line in fh:
-                    print(line.rstrip())
-                    if "imp:n,p=1" in line:
-                        found_np = True
-                    elif "imp:e=1" in line:
-                        found_e = True
-                    elif "imp:e 1" in line.lower():
-                        found_data_np = True
-            assert found_np
-            assert found_e
-            assert not found_data_np
-        finally:
-            try:
-                os.remove(out_file)
-            except FileNotFoundError:
-                pass
+        if "new" in state:
+            with pytest.warns(LineExpansionWarning):
+                problem.write_problem(fh)
+        else:
+            problem.write_problem(fh)
+        found_np = False
+        found_e = False
+        found_data_np = False
+        fh.seek(0)
+        for line in fh.readlines():
+            print(line.rstrip())
+            if "imp:n,p=1" in line:
+                found_np = True
+            elif "imp:e=1" in line:
+                found_e = True
+            elif "imp:e 1" in line.lower():
+                found_data_np = True
+        assert found_np
+        assert found_e
+        assert not found_data_np
+        fh.close()
 
 def test_importance_write_data(simple_problem):
-    out_file = "test_import_data_2"
+    fh = io.StringIO()
     problem = copy.deepcopy(simple_problem)
     problem.print_in_data_block["imp"] = True
-    try:
-        problem.write_to_file(out_file)
-        found_n = False
-        found_p = False
-        with open(out_file, "r") as fh:
-            for line in fh:
-                print(line.rstrip())
-                if "imp:n 1" in line:
-                    found_n = True
-                if "imp:p 1 0.5" in line:
-                    found_p = True
-        assert found_n
-        assert found_p
-    finally:
-        try:
-            os.remove(out_file)
-        except FileNotFoundError:
-            pass
+    problem.write_problem(fh)
+    found_n = False
+    found_p = False
+    fh.seek(0)
+    for line in fh:
+        print(line.rstrip())
+        if "imp:n 1" in line:
+            found_n = True
+        if "imp:p 1 0.5" in line:
+            found_p = True
+    assert found_n
+    assert found_p
+    fh.close()
 
 def test_avoid_blank_cell_modifier_write(simple_problem):
-    out_file = "test_modifier_data"
+    fh = io.StringIO()
     problem = copy.deepcopy(simple_problem)
     problem.print_in_data_block["U"] = True
     problem.print_in_data_block["FILL"] = True
@@ -581,32 +564,27 @@ def test_avoid_blank_cell_modifier_write(simple_problem):
     for cell in problem.cells:
         del cell.volume
     problem.cells.allow_mcnp_volume_calc = True
-    try:
-        problem.write_to_file(out_file)
-        found_universe = False
-        found_lattice = False
-        found_vol = False
-        found_fill = False
-        with open(out_file, "r") as fh:
-            for line in fh:
-                print(line.rstrip())
-                if "U " in line:
-                    found_universe = True
-                if "LAT " in line:
-                    found_lattice = True
-                if "FILL " in line:
-                    found_fill = True
-                if "VOL " in line:
-                    found_vol = True
-        assert not found_universe
-        assert not found_lattice
-        assert not found_vol
-        assert not found_fill
-    finally:
-        try:
-            os.remove(out_file)
-        except FileNotFoundError:
-            pass
+    problem.write_problem(fh)
+    found_universe = False
+    found_lattice = False
+    found_vol = False
+    found_fill = False
+    fh.seek(0)
+    for line in fh.readlines():
+        print(line.rstrip())
+        if "U " in line:
+            found_universe = True
+        if "LAT " in line:
+            found_lattice = True
+        if "FILL " in line:
+            found_fill = True
+        if "VOL " in line:
+            found_vol = True
+    assert not found_universe
+    assert not found_lattice
+    assert not found_vol
+    assert not found_fill
+    fh.close()
 
 def test_set_mode(importance_problem):
     problem = copy.deepcopy(importance_problem)
@@ -958,11 +936,11 @@ def test_importance_rewrite(simple_problem):
     problem = copy.deepcopy(simple_problem)
     problem.print_in_data_block["imp"] = True
     try:
-        problem.write_to_file(out_file)
+        problem.write_problem(out_file)
         problem = montepy.read_input(out_file)
         os.remove(out_file)
         problem.print_in_data_block["imp"] = False
-        problem.write_to_file(out_file)
+        problem.write_problem(out_file)
         found_n = False
         found_p = False
         found_vol = False
@@ -1014,15 +992,9 @@ def test_expansion_warning_crash(simple_problem):
     cell.mass_density = 10.0
     problem.materials[1].number = 987654321
     problem.surfaces[1010].number = 123456789
-    out = "bad_warning.imcnp"
-    try:
+    with io.StringIO() as fh:
         with pytest.warns(montepy.errors.LineExpansionWarning):
-            problem.write_to_file(out)
-    finally:
-        try:
-            os.remove(out)
-        except FileNotFoundError:
-            pass
+            problem.write_problem(fh)
 
 def test_alternate_encoding():
     with pytest.raises(UnicodeDecodeError):

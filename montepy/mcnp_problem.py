@@ -415,6 +415,9 @@ class MCNP_Problem:
     def write_to_file(self, file_path, overwrite=False):
         """
         Writes the problem to a file.
+        
+        .. versionchanged:: 0.4.0
+            Deprecated in favor of self.write_problem()
 
         .. versionchanged:: 0.3.0
             The overwrite parameter was added.
