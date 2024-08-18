@@ -1,6 +1,6 @@
 # Copyright 2024, Battelle Energy Alliance, LLC All Rights Reserved.
 import copy
-import math
+import io
 import montepy
 from montepy.errors import *
 import os
@@ -41,13 +41,9 @@ class EdgeCaseTests(TestCase):
             montepy.input_parser.block_type.BlockType.DATA,
         )
         problem.data_inputs.append(montepy.data_inputs.data_parser.parse_data(card))
-        try:
+        with io.StringIO() as stream:
             with self.assertRaises(MalformedInputError):
-                problem.write_to_file("out")
-        finally:
-            if os.path.exists("out"):
-                pass
-                os.remove("out")
+                problem.write_problem(stream)
 
     def test_shortcuts_in_special_comment(self):
         in_str = "fc247 experiment in I24 Cell Specific Heating"
