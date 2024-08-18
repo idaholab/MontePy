@@ -20,21 +20,18 @@ import numpy as np
 
 @pytest.fixture
 def simple_problem():
-    return montepy.read_input(
-        os.path.join("tests", "inputs", "test.imcnp")
-    )
+    return montepy.read_input(os.path.join("tests", "inputs", "test.imcnp"))
+
 
 @pytest.fixture
 def importance_problem():
-    return montepy.read_input(
-        os.path.join("tests", "inputs", "test_importance.imcnp")
-    )
+    return montepy.read_input(os.path.join("tests", "inputs", "test_importance.imcnp"))
+
 
 @pytest.fixture
 def universe_problem():
-    return montepy.read_input(
-        os.path.join("tests", "inputs", "test_universe.imcnp")
-    )
+    return montepy.read_input(os.path.join("tests", "inputs", "test_universe.imcnp"))
+
 
 @pytest.fixture
 def data_universe_problem():
@@ -48,19 +45,20 @@ def test_original_input(simple_problem):
     for i, input_ob in enumerate(simple_problem.original_inputs):
         assert isinstance(input_ob, cell_order[i])
 
+
 def test_original_input_dos():
-    dos_problem = montepy.read_input(
-        os.path.join("tests", "inputs", "test_dos.imcnp")
-    )
+    dos_problem = montepy.read_input(os.path.join("tests", "inputs", "test_dos.imcnp"))
     cell_order = [Message, Title] + [Input] * 16
     for i, input_ob in enumerate(dos_problem.original_inputs):
         assert isinstance(input_ob, cell_order[i])
+
 
 def test_original_input_tabs():
     problem = montepy.read_input(os.path.join("tests", "inputs", "test_tab.imcnp"))
     cell_order = [Message, Title] + [Input] * 17
     for i, input_ob in enumerate(problem.original_inputs):
         assert isinstance(input_ob, cell_order[i])
+
 
 # TODO formalize this or see if this is covered by other tests.
 def test_lazy_comments_check(simple_problem):
@@ -69,15 +67,18 @@ def test_lazy_comments_check(simple_problem):
         print(repr(comment))
     print(material2._tree.get_trailing_comment())
 
+
 def test_material_parsing(simple_problem):
     mat_numbers = [1, 2, 3]
     for i, mat in enumerate(simple_problem.materials):
         assert mat.number == mat_numbers[i]
 
+
 def test_surface_parsing(simple_problem):
     surf_numbers = [1000, 1005, 1010]
     for i, surf in enumerate(simple_problem.surfaces):
         assert surf.number == surf_numbers[i]
+
 
 def test_data_card_parsing(simple_problem):
     M = material.Material
@@ -90,6 +91,7 @@ def test_data_card_parsing(simple_problem):
             assert isinstance(card, cards[i])
         if i == 2:
             assert card.thermal_scattering is not None
+
 
 def test_cells_parsing_linking(simple_problem):
     cell_numbers = [1, 2, 3, 99, 5]
@@ -106,14 +108,17 @@ def test_cells_parsing_linking(simple_problem):
         assert surfaces.union(surf_answer[i]) == surfaces
         assert set(cell.complements).union(complements[i]) == complements[i]
 
+
 def test_message(simple_problem):
     lines = ["this is a message", "it should show up at the beginning", "foo"]
     for i, line in enumerate(simple_problem.message.lines):
         assert line == lines[i]
 
+
 def test_title(simple_problem):
     answer = "MCNP Test Model for MOAA"
     assert answer == simple_problem.title.title
+
 
 def test_read_card_recursion():
     problem = montepy.read_input("tests/inputs/testReadRec1.imcnp")
@@ -121,9 +126,11 @@ def test_read_card_recursion():
     assert len(problem.surfaces) == 1
     assert montepy.particle.Particle.PHOTON in problem.mode
 
+
 def test_problem_str(simple_problem):
     output = str(simple_problem)
     assert "MCNP problem for: tests/inputs/test.imcnp" in output
+
 
 def test_write_to_file(simple_problem):
     out = "foo.imcnp"
@@ -163,6 +170,7 @@ def test_write_to_file(simple_problem):
         if os.path.exists(out):
             os.remove(out)
 
+
 def test_cell_material_setter(simple_problem):
     cell = copy.deepcopy(simple_problem.cells[1])
     mat = simple_problem.materials[2]
@@ -172,6 +180,7 @@ def test_cell_material_setter(simple_problem):
     assert cell.material is None
     with pytest.raises(TypeError):
         cell.material = 5
+
 
 def test_problem_cells_setter(simple_problem):
     problem = copy.deepcopy(simple_problem)
@@ -190,6 +199,7 @@ def test_problem_cells_setter(simple_problem):
     # test that cell modifiers are still there
     problem.cells._importance.format_for_mcnp_input((6, 2, 0))
 
+
 def test_problem_test_setter(simple_problem):
     problem = copy.deepcopy(simple_problem)
     sample_title = "This is a title"
@@ -197,6 +207,7 @@ def test_problem_test_setter(simple_problem):
     assert problem.title.title == sample_title
     with pytest.raises(TypeError):
         problem.title = 5
+
 
 def test_problem_children_adder(simple_problem):
     problem = copy.deepcopy(simple_problem)
@@ -235,12 +246,14 @@ def test_problem_children_adder(simple_problem):
         print(output)
         assert "U=350" in "\n".join(output).upper()
 
+
 def test_problem_mcnp_version_setter(simple_problem):
     problem = copy.deepcopy(simple_problem)
     with pytest.raises(ValueError):
         problem.mcnp_version = (4, 5, 3)
     problem.mcnp_version = (6, 2, 5)
     assert problem.mcnp_version == (6, 2, 5)
+
 
 def test_problem_duplicate_surface_remover():
     problem = montepy.read_input("tests/inputs/test_redundant_surf.imcnp")
@@ -252,6 +265,7 @@ def test_problem_duplicate_surface_remover():
     assert list(problem.surfaces.numbers) == survivors
     cell_surf_answer = "-1 3 -6"
     assert cell_surf_answer in problem.cells[2].format_for_mcnp_input((6, 2, 0))[1]
+
 
 def test_surface_periodic():
     problem = montepy.read_input("tests/inputs/test_surfaces.imcnp")
@@ -265,6 +279,7 @@ def test_surface_periodic():
     assert surf.periodic_surface is None
     with pytest.raises(TypeError):
         surf.periodic_surface = 5
+
 
 def test_surface_transform():
     problem = montepy.read_input("tests/inputs/test_surfaces.imcnp")
@@ -280,6 +295,7 @@ def test_surface_transform():
     with pytest.raises(TypeError):
         surf.transform = 5
 
+
 def test_materials_setter(simple_problem):
     problem = copy.deepcopy(simple_problem)
     with pytest.raises(TypeError):
@@ -292,6 +308,7 @@ def test_materials_setter(simple_problem):
     problem.materials = problem.materials
     assert len(problem.materials) == size
 
+
 def test_reverse_pointers(simple_problem):
     problem = simple_problem
     complements = list(problem.cells[99].cells_complementing_this)
@@ -303,6 +320,7 @@ def test_reverse_pointers(simple_problem):
     cells = list(problem.surfaces[1005].cells)
     assert problem.cells[2] in problem.surfaces[1005].cells
     assert len(cells) == 2
+
 
 def test_surface_card_pass_through():
     problem = montepy.read_input("tests/inputs/test_surfaces.imcnp")
@@ -326,25 +344,28 @@ def test_surface_card_pass_through():
     surf.location = 2.5
     assert float(surf.format_for_mcnp_input((6, 2, 0))[0].split()[-1]) == 2.5
 
+
 def test_surface_broken_link():
     with pytest.raises(montepy.errors.MalformedInputError):
         montepy.read_input("tests/inputs/test_broken_surf_link.imcnp")
     with pytest.raises(montepy.errors.MalformedInputError):
         montepy.read_input("tests/inputs/test_broken_transform_link.imcnp")
 
+
 def test_material_broken_link():
     with pytest.raises(montepy.errors.BrokenObjectLinkError):
         problem = montepy.read_input("tests/inputs/test_broken_mat_link.imcnp")
 
+
 def test_cell_surf_broken_link():
     with pytest.raises(montepy.errors.BrokenObjectLinkError):
-        problem = montepy.read_input(
-            "tests/inputs/test_broken_cell_surf_link.imcnp"
-        )
+        problem = montepy.read_input("tests/inputs/test_broken_cell_surf_link.imcnp")
+
 
 def test_cell_complement_broken_link():
     with pytest.raises(montepy.errors.BrokenObjectLinkError):
         problem = montepy.read_input("tests/inputs/test_broken_complement.imcnp")
+
 
 def test_cell_card_pass_through(simple_problem):
     problem = copy.deepcopy(simple_problem)
@@ -380,15 +401,14 @@ def test_cell_card_pass_through(simple_problem):
     output = cell.format_for_mcnp_input((6, 2, 0))
     assert int(output[3].split()[1]) == 5
 
+
 def test_thermal_scattering_pass_through(simple_problem):
     problem = copy.deepcopy(simple_problem)
     mat = problem.materials[3]
     therm = mat.thermal_scattering
     mat.number = 5
-    assert (
-        therm.format_for_mcnp_input((6, 2, 0)) ==
-        ["MT5 lwtr.23t h-zr.20t h/zr.28t"]
-    )
+    assert therm.format_for_mcnp_input((6, 2, 0)) == ["MT5 lwtr.23t h-zr.20t h/zr.28t"]
+
 
 def test_cutting_comments_parse():
     problem = montepy.read_input("tests/inputs/breaking_comments.imcnp")
@@ -397,6 +417,7 @@ def test_cutting_comments_parse():
     assert "this is a cutting comment" in list(comments)[2].contents
     comments = problem.materials[2].comments
     assert len(comments) == 2
+
 
 def test_cutting_comments_print_no_mutate():
     problem = montepy.read_input("tests/inputs/breaking_comments.imcnp")
@@ -407,7 +428,8 @@ def test_cutting_comments_print_no_mutate():
     material2 = problem.materials[2]
     output = material2.format_for_mcnp_input((6, 2, 0))
     assert len(output) == 5
-    assert "c          26057.80c        2.12"== output[3]
+    assert "c          26057.80c        2.12" == output[3]
+
 
 def test_cutting_comments_print_mutate():
     problem = montepy.read_input("tests/inputs/breaking_comments.imcnp")
@@ -424,6 +446,7 @@ def test_cutting_comments_print_mutate():
     assert len(output) == 5
     assert "c          26057.80c        2.12" == output[3]
 
+
 def test_comments_setter(simple_problem):
     cell = copy.deepcopy(simple_problem.cells[1])
     comment = simple_problem.surfaces[1000].comments[0]
@@ -436,10 +459,12 @@ def test_comments_setter(simple_problem):
     with pytest.raises(TypeError):
         cell.leading_comments = 5
 
+
 def test_problem_linker():
     cell = montepy.Cell()
     with pytest.raises(TypeError):
         cell.link_to_problem(5)
+
 
 def test_importance_parsing(importance_problem, simple_problem):
     cell = importance_problem.cells[1]
@@ -450,6 +475,7 @@ def test_importance_parsing(importance_problem, simple_problem):
     assert cell.importance.neutron == 1.0
     assert cell.importance.photon == 1.0
 
+
 def test_importance_format_unmutated(importance_problem):
     imp = importance_problem.cells._importance
     output = imp.format_for_mcnp_input((6, 2, 0))
@@ -457,6 +483,7 @@ def test_importance_format_unmutated(importance_problem):
     assert len(output) == 2
     assert "imp:n,p 1 1 1 0 3" == output[0]
     assert "imp:e   0 0 0 1 2" == output[1]
+
 
 def test_importance_format_mutated(importance_problem):
     problem = copy.deepcopy(importance_problem)
@@ -467,6 +494,7 @@ def test_importance_format_mutated(importance_problem):
     print(output)
     assert len(output) == 3
     assert "imp:n 0.5 1 1 0 3" in output
+
 
 def test_importance_write_unmutated(importance_problem):
     fh = io.StringIO()
@@ -483,6 +511,7 @@ def test_importance_write_unmutated(importance_problem):
     assert found_np
     assert found_e
     fh.close()
+
 
 def test_importance_write_mutated(importance_problem):
     fh = io.StringIO()
@@ -502,6 +531,7 @@ def test_importance_write_mutated(importance_problem):
     assert found_n
     assert found_e
     fh.close()
+
 
 def test_importance_write_cell(importance_problem):
     for state in ["no change", "new unmutated cell", "new mutated cell"]:
@@ -534,6 +564,7 @@ def test_importance_write_cell(importance_problem):
         assert not found_data_np
         fh.close()
 
+
 def test_importance_write_data(simple_problem):
     fh = io.StringIO()
     problem = copy.deepcopy(simple_problem)
@@ -551,6 +582,7 @@ def test_importance_write_data(simple_problem):
     assert found_n
     assert found_p
     fh.close()
+
 
 def test_avoid_blank_cell_modifier_write(simple_problem):
     fh = io.StringIO()
@@ -586,6 +618,7 @@ def test_avoid_blank_cell_modifier_write(simple_problem):
     assert not found_fill
     fh.close()
 
+
 def test_set_mode(importance_problem):
     problem = copy.deepcopy(importance_problem)
     problem.set_mode("e p")
@@ -593,6 +626,7 @@ def test_set_mode(importance_problem):
     assert len(problem.mode) == 2
     for part in particles:
         assert part in problem.mode
+
 
 def test_set_equal_importance(importance_problem):
     problem = copy.deepcopy(importance_problem)
@@ -623,19 +657,21 @@ def test_set_equal_importance(importance_problem):
     with pytest.raises(TypeError):
         problem.cells.set_equal_importance(5, ["a"])
 
+
 def test_check_volume_calculated(simple_problem):
     assert not simple_problem.cells[1].volume_mcnp_calc
 
+
 def test_redundant_volume():
     with pytest.raises(montepy.errors.MalformedInputError):
-        montepy.read_input(
-            os.path.join("tests", "inputs", "test_vol_redundant.imcnp")
-        )
+        montepy.read_input(os.path.join("tests", "inputs", "test_vol_redundant.imcnp"))
+
 
 def test_delete_vol(simple_problem):
     problem = copy.deepcopy(simple_problem)
     del problem.cells[1].volume
     assert not problem.cells[1].volume_is_set
+
 
 def test_enable_mcnp_vol_calc(simple_problem):
     problem = copy.deepcopy(simple_problem)
@@ -647,18 +683,19 @@ def test_enable_mcnp_vol_calc(simple_problem):
     with pytest.raises(TypeError):
         problem.cells.allow_mcnp_volume_calc = 5
 
+
 def test_cell_multi_volume():
     in_str = "1 0 -1 VOL=1 VOL 5"
     with pytest.raises(ValueError):
-        montepy.Cell(
-            Input([in_str], montepy.input_parser.block_type.BlockType.CELL)
-        )
+        montepy.Cell(Input([in_str], montepy.input_parser.block_type.BlockType.CELL))
+
 
 def test_universe_cell_parsing(simple_problem):
     answers = [350] + [0] * 4
     for cell, answer in zip(simple_problem.cells, answers):
         print(cell, answer)
         assert cell.universe.number == answer
+
 
 def test_universe_fill_data_parsing(data_universe_problem):
     answers = [350, 0, 0, 1]
@@ -680,11 +717,15 @@ def test_universe_fill_data_parsing(data_universe_problem):
         else:
             assert cell.fill.universe.number == answer
 
+
 def test_universe_cells1(data_universe_problem):
     answers = {350: [1], 0: [2, 3, 5], 1: [99]}
     for uni_number, cell_answers in answers.items():
-        for cell, answer in zip(data_universe_problem.universes[uni_number].cells, cell_answers):
+        for cell, answer in zip(
+            data_universe_problem.universes[uni_number].cells, cell_answers
+        ):
             assert cell.number == answer
+
 
 def test_cell_not_truncate_setter(simple_problem):
     problem = copy.deepcopy(simple_problem)
@@ -694,6 +735,7 @@ def test_cell_not_truncate_setter(simple_problem):
     with pytest.raises(ValueError):
         cell = problem.cells[2]
         cell.not_truncated = True
+
 
 def test_universe_setter(simple_problem):
     problem = copy.deepcopy(simple_problem)
@@ -705,6 +747,7 @@ def test_universe_setter(simple_problem):
     with pytest.raises(TypeError):
         cell.universe = 5
 
+
 def test_universe_cell_formatter(simple_problem):
     problem = copy.deepcopy(simple_problem)
     universe = problem.universes[350]
@@ -714,6 +757,7 @@ def test_universe_cell_formatter(simple_problem):
     with pytest.warns(LineExpansionWarning):
         output = cell.format_for_mcnp_input((6, 2, 0))
     assert "U=-350" in " ".join(output)
+
 
 def test_universe_data_formatter(data_universe_problem):
     problem = copy.deepcopy(data_universe_problem)
@@ -756,6 +800,7 @@ def test_universe_data_formatter(data_universe_problem):
     print(output)
     assert "u 350 2J -1 J 350 " in output
 
+
 def test_universe_number_collision():
     problem = montepy.read_input(
         os.path.join("tests", "inputs", "test_universe_data.imcnp")
@@ -766,12 +811,14 @@ def test_universe_number_collision():
     with pytest.raises(ValueError):
         problem.universes[350].number = 0
 
+
 def test_universe_repr(simple_problem):
     uni = simple_problem.universes[0]
     output = repr(uni)
     assert "Number: 0" in output
     assert "Problem: set" in output
     assert "Cells: [2" in output
+
 
 def test_lattice_format_data(simple_problem):
     problem = copy.deepcopy(simple_problem)
@@ -781,6 +828,7 @@ def test_lattice_format_data(simple_problem):
     answer = "LAT 1 2J 2"
     output = cells._lattice.format_for_mcnp_input((6, 2, 0))
     assert answer in output[0]
+
 
 def test_lattice_push_to_cells(simple_problem):
     problem = copy.deepcopy(simple_problem)
@@ -799,12 +847,14 @@ def test_lattice_push_to_cells(simple_problem):
         else:
             assert cell.lattice is None
 
+
 def test_universe_problem_parsing(universe_problem):
     for cell in universe_problem.cells:
         if cell.number == 1:
             assert cell.universe.number == 1
         else:
             assert cell.universe.number == 0
+
 
 def test_importance_end_repeat(universe_problem):
     problem = copy.deepcopy(universe_problem)
@@ -817,6 +867,7 @@ def test_importance_end_repeat(universe_problem):
     output = problem.cells._importance.format_for_mcnp_input((6, 2, 0))
     # OG value was 0.5 so 0.0 is correct.
     assert "imp:p 0 0.0" in output
+
 
 def test_fill_parsing(universe_problem):
     answers = [None, np.array([[[1], [0]], [[0], [1]]]), None, 1, 1]
@@ -833,6 +884,7 @@ def test_fill_parsing(universe_problem):
         else:
             assert cell.fill.universe.number == answer
 
+
 def test_fill_transform_setter(universe_problem):
     problem = copy.deepcopy(universe_problem)
     transform = problem.transforms[5]
@@ -847,6 +899,7 @@ def test_fill_transform_setter(universe_problem):
     cell.fill.transform = transform
     del cell.fill.transform
     assert cell.fill.transform is None
+
 
 def test_fill_cell_format(simple_problem, universe_problem):
     problem = copy.deepcopy(universe_problem)
@@ -887,6 +940,7 @@ def test_fill_cell_format(simple_problem, universe_problem):
     output = problem.cells._fill.format_for_mcnp_input((6, 2, 0))
     assert output == ["FILL 4J 350 "]
 
+
 def test_universe_cells_claim(universe_problem):
     problem = copy.deepcopy(universe_problem)
     universe = problem.universes[1]
@@ -902,6 +956,7 @@ def test_universe_cells_claim(universe_problem):
     with pytest.raises(TypeError):
         universe.claim(["hi"])
 
+
 def test_universe_cells2(universe_problem):
     answers = [1]
     universe = universe_problem.universes[1]
@@ -909,11 +964,13 @@ def test_universe_cells2(universe_problem):
     for cell, answer in zip(universe.cells, answers):
         assert cell.number == answer
 
+
 def test_data_print_control_str(simple_problem):
     assert (
-            str(simple_problem.print_in_data_block) ==
-            "Print data in data block: {'imp': False, 'u': False, 'fill': False, 'vol': True}"
+        str(simple_problem.print_in_data_block)
+        == "Print data in data block: {'imp': False, 'u': False, 'fill': False, 'vol': True}"
     )
+
 
 def test_cell_validator(simple_problem):
     problem = copy.deepcopy(simple_problem)
@@ -930,6 +987,7 @@ def test_cell_validator(simple_problem):
     # test surface added but geomtry not defined
     with pytest.raises(montepy.errors.IllegalState):
         cell.validate()
+
 
 def test_importance_rewrite(simple_problem):
     out_file = "test_import_data_1"
@@ -962,10 +1020,12 @@ def test_importance_rewrite(simple_problem):
         except FileNotFoundError:
             pass
 
+
 def test_parsing_error():
     in_file = os.path.join("tests", "inputs", "test_bad_syntax.imcnp")
     with pytest.raises(montepy.errors.ParsingError):
         problem = montepy.read_input(in_file)
+
 
 def test_leading_comments(simple_problem):
     cell = copy.deepcopy(simple_problem.cells[1])
@@ -977,6 +1037,7 @@ def test_leading_comments(simple_problem):
     assert "cells" in cell.leading_comments[0].contents
     assert len(cell.leading_comments) == 1
 
+
 def test_wrap_warning(simple_problem):
     cell = copy.deepcopy(simple_problem.cells[1])
     with pytest.warns(montepy.errors.LineExpansionWarning):
@@ -984,6 +1045,7 @@ def test_wrap_warning(simple_problem):
         assert len(output) == 2
     output = cell.wrap_string_for_mcnp("h" * 127, (6, 2, 0), True)
     assert len(output) == 1
+
 
 def test_expansion_warning_crash(simple_problem):
     problem = copy.deepcopy(simple_problem)
@@ -995,6 +1057,7 @@ def test_expansion_warning_crash(simple_problem):
     with io.StringIO() as fh:
         with pytest.warns(montepy.errors.LineExpansionWarning):
             problem.write_problem(fh)
+
 
 def test_alternate_encoding():
     with pytest.raises(UnicodeDecodeError):

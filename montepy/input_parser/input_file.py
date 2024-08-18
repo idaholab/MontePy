@@ -31,12 +31,12 @@ class MCNP_InputFile:
         self._overwrite = overwrite
         self._mode = None
         self._fh = None
-    
+
     @classmethod
     def from_open_stream(cls, fh):
         """
         Create an MCNP Input File from an open, writable stream
-        
+
         :param fh: An open and writable object, such as a file handle.
         :type fh: io.TextIOBase
         """
