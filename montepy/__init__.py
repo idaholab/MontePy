@@ -21,6 +21,7 @@ from montepy.input_parser.mcnp_input import Jump
 from montepy.particle import Particle
 from montepy.surfaces.surface_type import SurfaceType
 from montepy.universe import Universe
+import montepy.errors
 import sys
 
 
