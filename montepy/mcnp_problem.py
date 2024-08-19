@@ -396,7 +396,7 @@ class MCNP_Problem:
         Write the problem to a file or writeable object.
 
         :param destination: File path or writable object
-        :type destination: {io.TextIOBase, str, os.PathLike}
+        :type destination: io.TextIOBase, str, os.PathLike
         :param overwrite: Whether to overwrite 'destination' if it is an existing file
         :type overwrite: bool
         """
@@ -423,7 +423,7 @@ class MCNP_Problem:
             The overwrite parameter was added.
 
         :param file_path: the file path to write this problem to
-        :type file_path: {str, os.PathLike}
+        :type file_path: str, os.PathLike
         :param overwrite: Whether to overwrite the file at 'new_problem' if it exists
         :type overwrite: bool
         :raises IllegalState: if an object in the problem has not been fully initialized.
