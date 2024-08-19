@@ -18,22 +18,22 @@ from montepy.particle import Particle
 import numpy as np
 
 
-@pytest.fixture
+@pytest.fixture(scope="module")
 def simple_problem():
     return montepy.read_input(os.path.join("tests", "inputs", "test.imcnp"))
 
 
-@pytest.fixture
+@pytest.fixture(scope="module")
 def importance_problem():
     return montepy.read_input(os.path.join("tests", "inputs", "test_importance.imcnp"))
 
 
-@pytest.fixture
+@pytest.fixture(scope="module")
 def universe_problem():
     return montepy.read_input(os.path.join("tests", "inputs", "test_universe.imcnp"))
 
 
-@pytest.fixture
+@pytest.fixture(scope="module")
 def data_universe_problem():
     return montepy.read_input(
         os.path.join("tests", "inputs", "test_universe_data.imcnp")
