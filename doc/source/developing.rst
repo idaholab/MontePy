@@ -397,6 +397,12 @@ For example the init function for ``Cells``
         def __init__(self, cells=None):
             super().__init__(montepy.Cell, cells)
 
+Collection: :class:`~montepy.numbered_object_collection.NumberedDataObjectCollection`
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+This is a subclass of :class:`~montepy.numbered_object_collection.NumberedObjectCollection`,
+which is designed for :class:`~montepy.data_inputs.data_input.DataInputAbstract` instances.
+It is a wrapper that will ensure that all of its items are also in :func:`~montepy.mcnp_problem.MCNP_Problem.data_inputs`.
+
 
 Numbered Object :class:`~montepy.numbered_mcnp_object.Numbered_MCNP_Object`
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
