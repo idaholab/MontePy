@@ -195,7 +195,7 @@ def test_the_dissapearing_parens():
                 if char in {"(", ")"}:
                     parens_count += 1
     fh = io.StringIO()
-    problem.write_to_file(fh)
+    problem.write_problem(fh)
     new_parens_count = 0
     fh.seek(0)
     for line in fh:
