@@ -23,3 +23,8 @@ def test_problem_init(problem, problem_path):
 
 def test_problem_str(problem, problem_path):
     assert f"MCNP problem for: {problem_path}" in str(problem)
+
+def test_problem_write_type(problem):
+    unwritable = object()
+    with pytest.raises(TypeError):
+        problem.write_problem(unwritable)
