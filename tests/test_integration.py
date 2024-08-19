@@ -136,8 +136,7 @@ def test_write_to_file(simple_problem):
     out = "foo.imcnp"
     try:
         problem = copy.deepcopy(simple_problem)
-        with pytest.deprecated_call():
-            problem.write_to_file(out)
+        problem.write_to_file(out)
         with open(out, "r") as fh:
             for line in fh:
                 print(line.rstrip())

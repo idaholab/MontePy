@@ -416,9 +416,6 @@ class MCNP_Problem:
         """
         Writes the problem to a file.
 
-        .. versionchanged:: 0.4.0
-            Deprecated in favor of self.write_problem()
-
         .. versionchanged:: 0.3.0
             The overwrite parameter was added.
 
@@ -430,9 +427,6 @@ class MCNP_Problem:
         :raises FileExistsError: if a file already exists with the same path.
         :raises IsADirectoryError: if the path given is actually a directory.
         """
-        cn = self.__class__.__name__
-        msg = f"{cn}.write_to_file() is deprecated. Use {cn}.write_problem()"
-        warnings.warn(msg, DeprecationWarning)
         return self.write_problem(file_path, overwrite)
 
     def _write_to_stream(self, inp):
