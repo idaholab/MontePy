@@ -184,6 +184,7 @@ def test_complex_cell_parsing(lines):
     )
     montepy.Cell(input)
 
+
 def test_the_dissapearing_parens():
     in_file = os.path.join("tests", "inputs", "test_paren_groups.imcnp")
     problem = montepy.read_input(in_file)
@@ -193,19 +194,13 @@ def test_the_dissapearing_parens():
             for char in line:
                 if char in {"(", ")"}:
                     parens_count += 1
-    try:
-        out_file = "test_parens"
-        problem.write_to_file(out_file)
-        new_parens_count = 0
-        with open(out_file, "r") as fh:
-            for line in fh:
-                print(line.rstrip())
-                for char in line:
-                    if char in {"(", ")"}:
-                        new_parens_count += 1
-        assert new_parens_count == parens_count
-    finally:
-        try:
-            os.remove(out_file)
-        except FileNotFoundError:
-            pass
+    fh = io.StringIO()
+    problem.write_to_file(fh)
+    new_parens_count = 0
+    fh.seek(0)
+    for line in fh:
+        print(line.rstrip())
+        for char in line:
+            if char in {"(", ")"}:
+                new_parens_count += 1
+    assert new_parens_count == parens_count
