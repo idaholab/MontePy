@@ -42,7 +42,7 @@ class EdgeCaseTests(TestCase):
         )
         problem.data_inputs.append(montepy.data_inputs.data_parser.parse_data(card))
         with io.StringIO() as stream:
-            with self.assertRaises(MalformedInputError):
+            with pytest.raises(MalformedInputError):
                 problem.write_problem(stream)
 
     def test_shortcuts_in_special_comment(self):
