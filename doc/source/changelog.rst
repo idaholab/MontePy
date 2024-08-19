@@ -1,15 +1,15 @@
 MontePy Changelog
 =================
 
-0.4.0
------
-**Bug Fixes**
-
-* Fixed bug that didn't show metastable states for pretty printing and isotope. Also handled the case that Am-241 metstable states break convention (:issue:`486`).
-
+#Next Version#
+--------------
 **Features Added**
 
 * Write problems to either file paths or streams (file handles) with MCNP_Problem.write_problem() (:issue:`492`).
+
+**Bug Fixes**
+
+* Fixed bug that didn't show metastable states for pretty printing and isotope. Also handled the case that Am-241 metstable states break convention (:issue:`486`).
 
 
 0.3.3
