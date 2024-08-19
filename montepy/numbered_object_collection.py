@@ -440,7 +440,6 @@ class NumberedDataObjectCollection(NumberedObjectCollection):
         :raises NumberConflictError: if this object has a number that is already in use.
         """
         if self._problem:
-            print(self._last_index, len(self))
             if self._last_index:
                 index = self._last_index
             elif len(self) > 0:

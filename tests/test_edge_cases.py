@@ -191,16 +191,12 @@ def test_the_dissapearing_parens():
     parens_count = 0
     with open(in_file, "r") as fh:
         for line in fh:
-            for char in line:
-                if char in {"(", ")"}:
-                    parens_count += 1
+            parens_count += line.count("(") + line.count(")")
     fh = io.StringIO()
     problem.write_problem(fh)
     new_parens_count = 0
     fh.seek(0)
     for line in fh:
         print(line.rstrip())
-        for char in line:
-            if char in {"(", ")"}:
-                new_parens_count += 1
+        parens_count += line.count("(") + line.count(")")
     assert new_parens_count == parens_count
