@@ -201,6 +201,7 @@ def test_universe_after_comment():
         with open(out_file, "r") as fh:
             for line in fh:
                 print(line.rstrip())
+                assert "c IMP:n=0.0" not in line
                 if "U=" in line:
                     found = True
         assert found

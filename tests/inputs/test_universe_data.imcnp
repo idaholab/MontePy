@@ -13,8 +13,9 @@ c
 99 0 1000:-1005 1010 $graveyard
 5 0 
       #99
-      imp:n,p=3 $graveyard
+c
 c foo end comment
+c
 
 C surfaces
 1000 SO 1
@@ -24,7 +25,7 @@ C surfaces
 C data
 C materials
 C UO2 5 atpt enriched
-u 350 2J -1 
+u 350 2J -1 5 
 FILL 2J 350 
 m1        92235.80c           5 &
 92238.80c          95
