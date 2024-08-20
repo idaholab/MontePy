@@ -11,6 +11,7 @@ MontePy Changelog
 **Bug Fixes**
 
 * Fixed bug that didn't show metastable states for pretty printing and isotope. Also handled the case that Am-241 metstable states break convention (:issue:`486`).
+* Fixed bug where cell modifiers could be made irrelevant by being added after a comment (:issue:`483).
 
 
 0.3.3
