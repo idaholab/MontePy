@@ -10,9 +10,7 @@ c
 3 3 -1
       1000 1005 -1010
      imp:n,p=1 $graveyard
-99 0
-      1010
-     imp:n,p=0 $graveyard
+99 0 1000:-1005 1010 $graveyard
 5 0 
       #99
       imp:n,p=3 $graveyard
