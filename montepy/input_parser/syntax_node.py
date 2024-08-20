@@ -390,6 +390,15 @@ class GeometryTree(SyntaxNodeBase):
                 raise StopIteration
             return next(self)
 
+    def flatten(self):
+        ret = []
+        for node in self.nodes.values():
+            if isinstance(node, (ValueNode, PaddingNode)):
+                ret.append(node)
+            else:
+                ret += node.flatten()
+        return ret
+
 
 class PaddingNode(SyntaxNodeBase):
     """
