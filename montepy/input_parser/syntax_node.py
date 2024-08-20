@@ -125,7 +125,6 @@ class SyntaxNodeBase(ABC):
         if has_following_input:
             flatpack.append("")
         for second in flatpack[1:]:
-            # print(first, second)
             if isinstance(first, ValueNode):
                 padding = first.padding
             elif isinstance(first, PaddingNode):
@@ -133,11 +132,9 @@ class SyntaxNodeBase(ABC):
             else:
                 padding = None
             if padding:
-                #   print(first, second, padding.has_graveyard_comment())
                 if padding.has_graveyard_comment() and not isinstance(
                     second, PaddingNode
                 ):
-                    print("hi")
                     padding.append("\n")
                     padding.append(" " * constants.BLANK_SPACE_CONTINUE)
             first = second
@@ -145,6 +142,8 @@ class SyntaxNodeBase(ABC):
     def flatten(self):
         ret = []
         for node in self.nodes:
+            if node is None:
+                continue
             if isinstance(node, (ValueNode, PaddingNode, CommentNode, str)):
                 ret.append(node)
             else:
