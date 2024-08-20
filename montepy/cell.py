@@ -676,7 +676,6 @@ class Cell(Numbered_MCNP_Object):
         self.validate()
         self._update_values()
         self._tree.check_for_graveyard_comments()
-        print(self._tree)
         modifier_keywords = {
             cls._class_prefix(): cls for cls in self._INPUTS_TO_PROPERTY.keys()
         }
@@ -718,4 +717,6 @@ class Cell(Numbered_MCNP_Object):
                         # add trailing space to comment if necessary
                         ret = cleanup_last_line(ret)
                         ret += param.format()
+        # check for accidental empty lines from subsequent cell modifiers that didn't print
+        ret = "\n".join([l for l in ret.splitlines() if l.strip()])
         return self.wrap_string_for_mcnp(ret, mcnp_version, True)
