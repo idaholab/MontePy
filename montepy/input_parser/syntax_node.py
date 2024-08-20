@@ -118,6 +118,28 @@ class SyntaxNodeBase(ABC):
             tail._delete_trailing_comment()
 
     def check_for_graveyard_comments(self, has_following_input=False):
+        """
+        Checks if there is a graveyard comment that is preventing information from being part of the tree, and handles
+        them.
+
+        A graveyard comment is one that accidentally suppresses important information in the syntax tree.
+
+        For example::
+
+            imp:n=1 $ grave yard Vol=1
+
+        Should be::
+
+            imp:n=1 $ grave yard
+            Vol=1
+
+        These graveyards are handled by appending a new line, and the required number of continue spaces to the
+        comment.
+
+        :param has_following_input: Whether there is another input (cell modifier) after this tree that should be continued.
+        :type has_following_input: bool
+        :rtype: None
+        """
         flatpack = self.flatten()
         if len(flatpack) == 0:
             return
@@ -140,6 +162,12 @@ class SyntaxNodeBase(ABC):
             first = second
 
     def flatten(self):
+        """
+        Flattens this tree structure into a list of leaves.
+
+        :returns: a list of ValueNode and PaddingNode objects from this tree.
+        :rtype: list
+        """
         ret = []
         for node in self.nodes:
             if node is None:
@@ -510,7 +538,23 @@ class PaddingNode(SyntaxNodeBase):
         return self.format() == other
 
     def has_graveyard_comment(self):
-        """ """
+        """
+        Checks if there is a graveyard comment that is preventing information from being part of the tree.
+
+        A graveyard comment is one that accidentally suppresses important information in the syntax tree.
+
+        For example::
+
+            imp:n=1 $ grave yard Vol=1
+
+        Should be::
+
+            imp:n=1 $ grave yard
+            Vol=1
+
+        :returns: True if this PaddingNode contains a graveyard comment.
+        :rtype: bool
+        """
         found = False
         for i, item in enumerate(self.nodes):
             if isinstance(item, CommentNode):
