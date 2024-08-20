@@ -136,6 +136,8 @@ class SyntaxNodeBase(ABC):
         These graveyards are handled by appending a new line, and the required number of continue spaces to the
         comment.
 
+        .. versionadded:: 0.4.0
+
         :param has_following_input: Whether there is another input (cell modifier) after this tree that should be continued.
         :type has_following_input: bool
         :rtype: None
@@ -164,6 +166,8 @@ class SyntaxNodeBase(ABC):
     def flatten(self):
         """
         Flattens this tree structure into a list of leaves.
+
+        .. versionadded:: 0.4.0
 
         :returns: a list of ValueNode and PaddingNode objects from this tree.
         :rtype: list
@@ -551,6 +555,8 @@ class PaddingNode(SyntaxNodeBase):
 
             imp:n=1 $ grave yard
             Vol=1
+
+        .. versionadded:: 0.4.0
 
         :returns: True if this PaddingNode contains a graveyard comment.
         :rtype: bool
