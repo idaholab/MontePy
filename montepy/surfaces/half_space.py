@@ -144,6 +144,7 @@ class HalfSpace:
             else:
                 sides.append(HalfSpace.parse_input_node(side))
         # ignore shifts, and simplify the tree
+        # TODO how to handle
         if node.operator == Operator._SHIFT:
             return sides[0]
         if len(sides) == 1:
@@ -605,6 +606,7 @@ class UnitHalfSpace(HalfSpace):
             self._node = node
 
     def _update_node(self):
+        # TODO how to detect need for parentheses
         if isinstance(self.divider, int):
             self._node.value = self.divider
         else:
