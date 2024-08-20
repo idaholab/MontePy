@@ -3,7 +3,6 @@ C cells
 c
 1 1 20
          -1000  $ dollar comment
-     imp:n,p=1 trcl=5 $ graveyard
 2 2 8
       -1005
      imp:n=1
