@@ -571,7 +571,7 @@ class PaddingNode(SyntaxNodeBase):
         :rtype: bool
         """
         found = False
-        for i, item in enumerate(self.nodes):
+        for i, item in reversed(list(enumerate(self.nodes))):
             if isinstance(item, CommentNode):
                 found = True
                 break
