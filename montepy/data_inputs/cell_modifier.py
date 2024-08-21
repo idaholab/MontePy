@@ -230,7 +230,7 @@ class CellModifierInput(DataInputAbstract):
         """
         return self._tree.format()
 
-    def format_for_mcnp_input(self, mcnp_version):
+    def format_for_mcnp_input(self, mcnp_version, has_following=False):
         """
         Creates a string representation of this MCNP_Object that can be
         written to file.
@@ -241,6 +241,7 @@ class CellModifierInput(DataInputAbstract):
         :rtype: list
         """
         self.validate()
+        self._tree.check_for_graveyard_comments(has_following)
         if not self._problem:
             print_in_data_block = not self.in_cell_block
         else:
