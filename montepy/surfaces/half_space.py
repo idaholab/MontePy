@@ -70,7 +70,7 @@ class HalfSpace:
             raise TypeError(f"operator must be of type Operator. {operator} given.")
         if not isinstance(node, (GeometryTree, type(None))):
             raise TypeError(f"node must be a GeometryTree or None. {node} given.")
-        if right is None and operator != Operator.COMPLEMENT:
+        if right is None and operator not in {Operator.COMPLEMENT, Operator._SHIFT}:
             raise ValueError(f"Both sides required for: {operator}")
         self._left = left
         self._operator = operator
@@ -143,10 +143,8 @@ class HalfSpace:
                 sides.append(UnitHalfSpace.parse_input_node(side, is_cell))
             else:
                 sides.append(HalfSpace.parse_input_node(side))
-        # ignore shifts, and simplify the tree
-        # TODO how to handle
         if node.operator == Operator._SHIFT:
-            return sides[0]
+            return HalfSpace(sides[0], node.operator, None, node)
         if len(sides) == 1:
             sides.append(None)
         return HalfSpace(sides[0], node.operator, sides[1], node)
