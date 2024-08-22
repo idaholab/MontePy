@@ -286,13 +286,13 @@ class HalfSpace:
         # detect need for parens and make child handle it with shift
         if self.operator == Operator.INTERSECTION:
             if type(self) == type(self.left) and self.left.operator == Operator.UNION:
-                self.left = HalfSpace(self.left, operator.GROUP)
+                self.left = HalfSpace(self.left, Operator.GROUP)
             if (
                 self.right is not None
                 and type(self) == type(self.right)
                 and self.right.operator == Operator.UNION
             ):
-                self.right = HalfSpace(self.right, operator.GROUP)
+                self.right = HalfSpace(self.right, Operator.GROUP)
 
     def _update_node(self):
         """
