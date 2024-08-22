@@ -39,7 +39,7 @@ There is also a developer's guide covering the design and approach of MontePy, a
 * Can write out the MCNP problem verbatim, and try to match the original user formatting. 
 * Can quickly access cells, surfaces, and materials by their numbers. For example: `cell = problem.cells[105]`.
 * Can quickly update cell importances. For example `cell.importance.neutron = 2.0`.
-* Has over 240 test cases right now 
+* Currently has over 430 test cases.
 
  
 Quick example for renumbering all of the cells in a problem:
