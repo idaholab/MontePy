@@ -51,6 +51,12 @@ class HalfSpace:
 
         half_space = ~ other_half_space
 
+    Parantheses are allowed, and handled properly
+
+    .. code-block:: python
+
+        half_space = +bottom & (-left | +right)
+
     :param left: The left side of the binary tree.
     :type left: HalfSpace
     :param operator: the operator to apply between the two branches.
@@ -344,8 +350,9 @@ class HalfSpace:
         operator_node = self.node.nodes["operator"]
         operator_node._nodes = [
             n.replace("#", " ").replace(":", " ")
-            for n in operator_node.nodes
             if not isinstance(n, CommentNode)
+            else n
+            for n in operator_node.nodes
         ]
         if new_symbol == "#":
             operator_node._nodes[-1] = operator_node.nodes[-1][:-1] + "#"
