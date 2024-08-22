@@ -8,7 +8,7 @@
 [![PyPI version](https://badge.fury.io/py/montepy.svg)](https://badge.fury.io/py/montepy)
 [![Project Status: Active – The project has reached a stable, usable state and is being actively developed.](https://www.repostatus.org/badges/latest/active.svg)](https://www.repostatus.org/#active)
 
-MontePy is a python library to read, edit, and write MCNP input files. 
+MontePy is a Python library to read, edit, and write MCNP input files. 
 
 ## Installing
 
@@ -25,20 +25,20 @@ see the [Installing section in the user guide](https://www.montepy.org/starting.
 ## User Documentation
 
 MontePy has a [sphinx website](https://www.montepy.org/). 
-This has a getting started guide for users,
-as well as API documentation. 
-There is also a developer's guide covering the design and approach of MontePy, and how to contribute.
+The website contains a user's guide for getting started, 
+a developer's guide covering the design and approach of MontePy,
+instructions for contributing, 
+and the Python API documentation.
 
 ## Features
 	
-* Handles almost all MCNP input syntax including: message blocks, & continue, comments, etc.
-* Parses Cells, surfaces, materials, and transforms very well.	
-* Can parse the following surfaces exactly P(X|Y|Z), C(X|Y|Z), C/(X|Y|Z) (I mean it can do PX, and PY, etc.)
-* Can read in all other inputs but not understand them	
-* Can write out full MCNP problem even if it doesn't fully understand an input.	
-* Can write out the MCNP problem verbatim, and try to match the original user formatting. 
+* Handles almost all MCNP input syntax.
+* Parses Cells, Surfaces, Materials, and Transforms very well.	
+* Can parse all surface types except macrobody facets ([Issue #354](https://github.com/idaholab/MontePy/issues/354)).
+* Can read and write out all other MCNP inputs, even if it doesn't not understand them	
+* Attempts to write out the MCNP problem verbatim, even matching the original user formatting. (See [Issues](https://github.com/idaholab/MontePy/issues).)
 * Can quickly access cells, surfaces, and materials by their numbers. For example: `cell = problem.cells[105]`.
-* Can quickly update cell importances. For example `cell.importance.neutron = 2.0`.
+* Can quickly update cell parameters, such as importances. For example `cell.importance.neutron = 2.0`.
 * Currently has over 430 test cases.
 
  
@@ -62,16 +62,16 @@ Here a few of the known bugs and limitations:
 
 	
 * Cannot handle vertical input mode.
-* Does not support tallies in an easy way.
-* Does not support source definition in an easy way.
+* Does not support editing tallies in an easy way.
+* Does not support editing source definition in an easy way.
 	
 ## Bugs, Requests and Development
 
-So MontePy doesn't do what you want? Right now development is done with a  Just-In-Time development approach, as in features are added JIT for a developer to use them on my current projects. 
-If there's a feature you want add an issue here with the feature request tag. 
+So MontePy doesn't do what you want? 
+Add an issue here with the "feature request" tag. 
 If you want to add a feature on your own talk to Micah Gale (but still add the issue). 
 The system is very modular and you should be able to develop it pretty quickly.
 Also read the [developer's guide](https://www.montepy.org/developing.html).
 
  
-# Finally: make objects not regexes!
+# Finally: make objects, not regexes!
