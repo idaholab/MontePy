@@ -339,6 +339,34 @@ def test_parse_input_tree():
     assert nested.operator == Operator.INTERSECTION
     assert nested.right is not None
     assert nested.left.operator == Operator.INTERSECTION
+    # test nested parens
+    input = montepy.input_parser.mcnp_input.Input(
+        ["1 0 (1 : 2:3) 4"], montepy.input_parser.block_type.BlockType.CELL
+    )
+    parser = montepy.input_parser.cell_parser.CellParser()
+    tree = parser.parse(input.tokenize())
+    geometry = tree["geometry"]
+    half_space = HalfSpace.parse_input_node(geometry)
+    assert len(half_space) == 4
+    assert half_space.operator == Operator.INTERSECTION
+    assert half_space.left.operator == Operator.GROUP
+    assert half_space.left.left.operator == Operator.UNION
+
+
+def test_update_new_parens():
+    input = montepy.input_parser.mcnp_input.Input(
+        ["1 0 1 2"], montepy.input_parser.block_type.BlockType.CELL
+    )
+    parser = montepy.input_parser.cell_parser.CellParser()
+    tree = parser.parse(input.tokenize())
+    geometry = tree["geometry"]
+    half_space = HalfSpace.parse_input_node(geometry)
+    surf3 = montepy.surfaces.cylinder_on_axis.CylinderOnAxis()
+    surf3.number = 3
+    half2 = half_space.right
+    half_space.right = half2 | +surf3
+    half_space._update_values()
+    assert half_space.node.format() == "1 (2 : 3)"
 
 
 def test_update_tree_with_comment():
