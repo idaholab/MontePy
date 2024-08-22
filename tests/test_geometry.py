@@ -318,7 +318,11 @@ def test_parse_input_tree():
     half_space = HalfSpace.parse_input_node(geometry)
     assert half_space.operator == Operator.COMPLEMENT
     assert half_space.right is None
-    assert half_space.left.operator == Operator.INTERSECTION
+    assert half_space.left.operator == Operator.GROUP
+    nested = half_space.left.left
+    assert nested.operator == Operator.INTERSECTION
+    assert nested.right is not None
+    assert nested.left.operator == Operator.INTERSECTION
 
 
 def test_update_tree_with_comment():
