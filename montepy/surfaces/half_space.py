@@ -349,9 +349,11 @@ class HalfSpace:
         """
         operator_node = self.node.nodes["operator"]
         operator_node._nodes = [
-            n.replace("#", " ").replace(":", " ")
-            if not isinstance(n, CommentNode)
-            else n
+            (
+                n.replace("#", " ").replace(":", " ")
+                if not isinstance(n, CommentNode)
+                else n
+            )
             for n in operator_node.nodes
         ]
         if new_symbol == "#":
