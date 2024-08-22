@@ -198,7 +198,7 @@ def test_the_dissapearing_parens():
     fh.seek(0)
     for line in fh:
         print(line.rstrip())
-        parens_count += line.count("(") + line.count(")")
+        new_parens_count += line.count("(") + line.count(")")
     assert new_parens_count == parens_count
 
 
