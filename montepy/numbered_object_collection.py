@@ -331,8 +331,7 @@ class NumberedObjectCollection(ABC):
             raise TypeError("index must be an int")
         obj = self[idx]
         self.__num_cache.pop(obj.number, None)
-        idx = self._objects.index(obj)
-        del self._objects[idx]
+        self._objects.remove(obj)
 
     def __setitem__(self, key, newvalue):
         if not isinstance(key, int):
@@ -364,10 +363,8 @@ class NumberedObjectCollection(ABC):
                 )
             else:
                 self.__num_cache[obj.number] = obj
-        self._objects += other_list
-        if self._problem:
-            for obj in other_list:
-                obj.link_to_problem(self._problem)
+        for obj in other_list:
+            self.append(obj)
         return self
 
     def __contains__(self, other):
@@ -424,3 +421,81 @@ class NumberedObjectCollection(ABC):
         """
         for o in self._objects:
             yield o.number, o
+
+
+class NumberedDataObjectCollection(NumberedObjectCollection):
+    def __init__(self, obj_class, objects=None, problem=None):
+        self._last_index = None
+        if problem and objects:
+            self._last_index = problem.data_inputs.index(objects[-1])
+        super().__init__(obj_class, objects, problem)
+
+    def append(self, obj, insert_in_data=True):
+        """Appends the given object to the end of this collection.
+
+        :param obj: the object to add.
+        :type obj: Numbered_MCNP_Object
+        :param insert_in_data: Whether to add the object to the linked problem's data_inputs.
+        :type insert_in_data: bool
+        :raises NumberConflictError: if this object has a number that is already in use.
+        """
+        if self._problem:
+            if self._last_index:
+                index = self._last_index
+            elif len(self) > 0:
+                try:
+                    index = self._problem.data_inputs.index(self._objects[-1])
+                except ValueError:
+                    index = len(self._problem.data_inputs)
+            else:
+                index = len(self._problem.data_inputs)
+            if insert_in_data:
+                self._problem.data_inputs.insert(index + 1, obj)
+            self._last_index = index + 1
+        super().append(obj)
+
+    def __delitem__(self, idx):
+        if not isinstance(idx, int):
+            raise TypeError("index must be an int")
+        obj = self[idx]
+        super().__delitem__(idx)
+        if self._problem:
+            self._problem.data_inputs.remove(obj)
+
+    def remove(self, delete):
+        """
+        Removes the given object from the collection.
+
+        :param delete: the object to delete
+        :type delete: Numbered_MCNP_Object
+        """
+        super().remove(delete)
+        if self._problem:
+            self._problem.data_inputs.remove(delete)
+
+    def pop(self, pos=-1):
+        """
+        Pop the final items off of the collection
+
+        :param pos: The index of the element to pop from the internal list.
+        :type pos: int
+        :return: the final elements
+        :rtype: Numbered_MCNP_Object
+        """
+        if not isinstance(pos, int):
+            raise TypeError("The index for popping must be an int")
+        obj = self._objects.pop(pos)
+        super().pop(pos)
+        if self._problem:
+            self._problem.data_inputs.remove(obj)
+        return obj
+
+    def clear(self):
+        """
+        Removes all objects from this collection.
+        """
+        if self._problem:
+            for obj in self._objects:
+                self._problem.data_inputs.remove(obj)
+        self._last_index = None
+        super().clear()

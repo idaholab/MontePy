@@ -117,6 +117,71 @@ class SyntaxNodeBase(ABC):
         if isinstance(tail, SyntaxNodeBase):
             tail._delete_trailing_comment()
 
+    def check_for_graveyard_comments(self, has_following_input=False):
+        """
+        Checks if there is a graveyard comment that is preventing information from being part of the tree, and handles
+        them.
+
+        A graveyard comment is one that accidentally suppresses important information in the syntax tree.
+
+        For example::
+
+            imp:n=1 $ grave yard Vol=1
+
+        Should be::
+
+            imp:n=1 $ grave yard
+            Vol=1
+
+        These graveyards are handled by appending a new line, and the required number of continue spaces to the
+        comment.
+
+        .. versionadded:: 0.4.0
+
+        :param has_following_input: Whether there is another input (cell modifier) after this tree that should be continued.
+        :type has_following_input: bool
+        :rtype: None
+        """
+        flatpack = self.flatten()
+        if len(flatpack) == 0:
+            return
+        first = flatpack[0]
+        if has_following_input:
+            flatpack.append("")
+        for second in flatpack[1:]:
+            if isinstance(first, ValueNode):
+                padding = first.padding
+            elif isinstance(first, PaddingNode):
+                padding = first
+            else:
+                padding = None
+            if padding:
+                if padding.has_graveyard_comment() and not isinstance(
+                    second, PaddingNode
+                ):
+                    padding.append("\n")
+                    padding.append(" " * constants.BLANK_SPACE_CONTINUE)
+            first = second
+
+    def flatten(self):
+        """
+        Flattens this tree structure into a list of leaves.
+
+        .. versionadded:: 0.4.0
+
+        :returns: a list of ValueNode and PaddingNode objects from this tree.
+        :rtype: list
+        """
+        ret = []
+        for node in self.nodes:
+            if node is None:
+                continue
+            if isinstance(node, (ValueNode, PaddingNode, CommentNode, str)):
+                ret.append(node)
+            else:
+                ret += node.flatten()
+        return ret
+
 
 class SyntaxNode(SyntaxNodeBase):
     """
@@ -200,6 +265,15 @@ class SyntaxNode(SyntaxNodeBase):
     def _delete_trailing_comment(self):
         tail = next(reversed(self.nodes.items()))
         tail[1]._delete_trailing_comment()
+
+    def flatten(self):
+        ret = []
+        for node in self.nodes.values():
+            if isinstance(node, (ValueNode, PaddingNode)):
+                ret.append(node)
+            else:
+                ret += node.flatten()
+        return ret
 
 
 class GeometryTree(SyntaxNodeBase):
@@ -315,6 +389,15 @@ class GeometryTree(SyntaxNodeBase):
             else:
                 raise StopIteration
             return next(self)
+
+    def flatten(self):
+        ret = []
+        for node in self.nodes.values():
+            if isinstance(node, (ValueNode, PaddingNode)):
+                ret.append(node)
+            else:
+                ret += node.flatten()
+        return ret
 
 
 class PaddingNode(SyntaxNodeBase):
@@ -467,6 +550,43 @@ class PaddingNode(SyntaxNodeBase):
             other = other.format()
         return self.format() == other
 
+    def has_graveyard_comment(self):
+        """
+        Checks if there is a graveyard comment that is preventing information from being part of the tree.
+
+        A graveyard comment is one that accidentally suppresses important information in the syntax tree.
+
+        For example::
+
+            imp:n=1 $ grave yard Vol=1
+
+        Should be::
+
+            imp:n=1 $ grave yard
+            Vol=1
+
+        .. versionadded:: 0.4.0
+
+        :returns: True if this PaddingNode contains a graveyard comment.
+        :rtype: bool
+        """
+        found = False
+        for i, item in reversed(list(enumerate(self.nodes))):
+            if isinstance(item, CommentNode):
+                found = True
+                break
+        if not found:
+            return False
+        trail = self.nodes[i:]
+        if len(trail) == 1:
+            if trail[0].format().endswith("\n"):
+                return False
+            return True
+        for node in trail[1:]:
+            if node == "\n":
+                return False
+        return True
+
 
 class CommentNode(SyntaxNodeBase):
     """
@@ -573,7 +693,7 @@ class CommentNode(SyntaxNodeBase):
         return self.format()
 
     def __repr__(self):
-        ret = f"COMMENT:\n"
+        ret = f"COMMENT: "
         for node in self.nodes:
             ret += node.format()
         return ret
@@ -1523,6 +1643,12 @@ class IsotopesNode(SyntaxNodeBase):
         tail = tail[1]
         tail._delete_trailing_comment()
 
+    def flatten(self):
+        ret = []
+        for node_group in self.nodes:
+            ret += node_group
+        return ret
+
 
 class ShortcutNode(ListNode):
     """
@@ -2045,6 +2171,19 @@ class ClassifierNode(SyntaxNodeBase):
         else:
             yield from []
 
+    def flatten(self):
+        ret = []
+        if self.modifier:
+            ret.append(self.modifier)
+        ret.append(self.prefix)
+        if self.number:
+            ret.append(self.number)
+        if self.particles:
+            ret.append(self.particles)
+        if self.padding:
+            ret.append(self.padding)
+        return ret
+
 
 class ParametersNode(SyntaxNodeBase):
     """
@@ -2130,3 +2269,12 @@ class ParametersNode(SyntaxNodeBase):
         for node in self.nodes.values():
             if isinstance(node, SyntaxNodeBase):
                 yield from node.comments
+
+    def flatten(self):
+        ret = []
+        for node in self.nodes.values():
+            if isinstance(node, (ValueNode, PaddingNode)):
+                ret.append(node)
+            else:
+                ret += node.flatten()
+        return ret
