@@ -25,3 +25,4 @@ class Operator(Enum):
 
     This is used to properly handle parentheses while parsing.
     """
+    # TODO decide on group

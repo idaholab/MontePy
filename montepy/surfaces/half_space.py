@@ -143,8 +143,8 @@ class HalfSpace:
                 sides.append(UnitHalfSpace.parse_input_node(side, is_cell))
             else:
                 sides.append(HalfSpace.parse_input_node(side))
-        if node.operator == Operator._SHIFT:
-            return HalfSpace(sides[0], node.operator, None, node)
+        if node.operator == Operator._SHIFT and isinstance(sides[0], UnitHalfSpace):
+            return sides[0]
         if len(sides) == 1:
             sides.append(None)
         return HalfSpace(sides[0], node.operator, sides[1], node)
@@ -237,29 +237,36 @@ class HalfSpace:
         """
         Ensures this HalfSpace and its children has the necessary syntax nodes.
         """
+        self._ensure_has_parens()
         self.left._ensure_has_nodes()
         if self.right is not None:
             self.right._ensure_has_nodes()
         if self.node is None:
+            # TODO check on __str__
             if self.operator == Operator.INTERSECTION:
                 operator = " "
             elif self.operator == Operator.UNION:
                 operator = " : "
             elif self.operator == Operator.COMPLEMENT:
                 operator = " #"
+            elif self.operator == Operator._SHIFT:
+                operator = None
             operator = PaddingNode(operator)
+            # Update trees
             if self.operator in {Operator.INTERSECTION, Operator.UNION}:
                 ret = {"left": self.left.node, "operator": operator}
+            elif self.operator == Operator.COMPLEMENT and isinstance(
+                self.left, UnitHalfSpace
+            ):
+                ret = {"operator": operator, "left": self.left.node}
             else:
-                if isinstance(self.left, UnitHalfSpace):
-                    ret = {"operator": operator, "left": self.left.node}
-                else:
-                    ret = {
-                        "operator": operator,
-                        "start_pad": PaddingNode("("),
-                        "left": self.left.node,
-                        "end_pad": PaddingNode(")"),
-                    }
+                ret = {
+                    "operator": operator,
+                    "start_pad": PaddingNode("("),
+                    "left": self.left.node,
+                    "end_pad": PaddingNode(")"),
+                }
+            # handle right side of tree
             if self.right is not None:
                 ret["right"] = self.right.node
             self._node = GeometryTree(
@@ -269,12 +276,34 @@ class HalfSpace:
         if self.right is not None:
             self.node.nodes["right"] = self.right.node
 
+    def _ensure_has_parens(self):
+        """
+
+        ignoring parens needed for complements.
+
+        :rtype: BrokenObjectLinkError
+        """
+        # detect need for parens and make child handle it with shift
+        if self.operator == Operator.INTERSECTION:
+            if type(self) == type(self.left) and self.left.operator == Operator.UNION:
+                self.left = HalfSpace(self.left, operator._SHIFT)
+            if (
+                self.right is not None
+                and type(self) == type(self.right)
+                and self.right.operator == Operator.UNION
+            ):
+                self.right = HalfSpace(self.right, operator._SHIFT)
+
     def _update_node(self):
         """
         Ensures that the syntax node properly reflects the current HalfSpace structure
         """
-        operator_node = self.node.nodes["operator"]
-        output = operator_node.format()
+        # TODO update
+        try:
+            operator_node = self.node.nodes["operator"]
+            output = operator_node.format()
+        except KeyError:
+            output = ""
         if self.operator == Operator.INTERSECTION:
             if not output.isspace():
                 self.__switch_operator(" ")
@@ -292,8 +321,21 @@ class HalfSpace:
                         "left": self.node.nodes["left"],
                     },
                     self.operator.value,
-                    self.left,
-                    self.right,
+                    self.left.node,
+                    None,
+                )
+        elif self.operator == Operator._SHIFT:
+            if "start_pad" not in self.node.nodes:
+                self._node = GeometryTree(
+                    "default Geometry",
+                    {
+                        "start_pad": PaddingNode("("),
+                        "left": self.node.nodes["left"],
+                        "end_pad": PaddingNode(")"),
+                    },
+                    self.operator.value,
+                    self.left.node,
+                    None,
                 )
 
     def __switch_operator(self, new_symbol):
