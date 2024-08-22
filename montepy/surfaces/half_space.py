@@ -242,7 +242,6 @@ class HalfSpace:
         if self.right is not None:
             self.right._ensure_has_nodes()
         if self.node is None:
-            # TODO check on __str__
             if self.operator == Operator.INTERSECTION:
                 operator = " "
             elif self.operator == Operator.UNION:
@@ -298,7 +297,6 @@ class HalfSpace:
         """
         Ensures that the syntax node properly reflects the current HalfSpace structure
         """
-        # TODO update
         try:
             operator_node = self.node.nodes["operator"]
             output = operator_node.format()
@@ -648,7 +646,6 @@ class UnitHalfSpace(HalfSpace):
             self._node = node
 
     def _update_node(self):
-        # TODO how to detect need for parentheses
         if isinstance(self.divider, int):
             self._node.value = self.divider
         else:
