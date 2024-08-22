@@ -70,7 +70,7 @@ class HalfSpace:
             raise TypeError(f"operator must be of type Operator. {operator} given.")
         if not isinstance(node, (GeometryTree, type(None))):
             raise TypeError(f"node must be a GeometryTree or None. {node} given.")
-        if right is None and operator not in {Operator.COMPLEMENT, Operator._SHIFT}:
+        if right is None and operator not in {Operator.COMPLEMENT, Operator.GROUP}:
             raise ValueError(f"Both sides required for: {operator}")
         self._left = left
         self._operator = operator
@@ -249,7 +249,7 @@ class HalfSpace:
                 operator = " : "
             elif self.operator == Operator.COMPLEMENT:
                 operator = " #"
-            elif self.operator == Operator._SHIFT:
+            elif self.operator == Operator.GROUP:
                 operator = None
             operator = PaddingNode(operator)
             # Update trees
@@ -286,13 +286,13 @@ class HalfSpace:
         # detect need for parens and make child handle it with shift
         if self.operator == Operator.INTERSECTION:
             if type(self) == type(self.left) and self.left.operator == Operator.UNION:
-                self.left = HalfSpace(self.left, operator._SHIFT)
+                self.left = HalfSpace(self.left, operator.GROUP)
             if (
                 self.right is not None
                 and type(self) == type(self.right)
                 and self.right.operator == Operator.UNION
             ):
-                self.right = HalfSpace(self.right, operator._SHIFT)
+                self.right = HalfSpace(self.right, operator.GROUP)
 
     def _update_node(self):
         """
@@ -324,7 +324,7 @@ class HalfSpace:
                     self.left.node,
                     None,
                 )
-        elif self.operator == Operator._SHIFT:
+        elif self.operator == Operator.GROUP:
             if "start_pad" not in self.node.nodes:
                 self._node = GeometryTree(
                     "default Geometry",

@@ -176,7 +176,7 @@ class CellParser(MCNP_Parser):
         if hasattr(p, "padding"):
             for node in p.padding.nodes:
                 nodes["start_pad"].append(node)
-        return syntax_node.GeometryTree("geom parens", nodes, ">", p.geometry_expr)
+        return syntax_node.GeometryTree("geom parens", nodes, "()", p.geometry_expr)
 
     # support for fill card weirdness
     @_(
