@@ -41,4 +41,4 @@ C execution
 ksrc -1.1 0 0.01
 kcode 100000 1.000 50 1050
 mode n
-vol NO 2J 1 1.5 J
+vol NO 2J 1 1.5 2J
