@@ -8,7 +8,7 @@ from montepy.input_parser import syntax_node
 from montepy.surfaces.half_space import HalfSpace, UnitHalfSpace
 
 
-def test_init():
+def test_halfspace_init():
     surface = montepy.surfaces.CylinderOnAxis()
     node = montepy.input_parser.syntax_node.GeometryTree("hi", {}, "*", " ", " ")
     half_space = HalfSpace(+surface, Operator.UNION, -surface, node)
@@ -39,14 +39,14 @@ def test_get_leaves():
     assert surfaces == {surface}
 
 
-def test_len():
+def test_half_len():
     surface = montepy.surfaces.CylinderOnAxis()
     cell = montepy.Cell()
     half_space = -surface & ~cell
     assert len(half_space) == 2
 
 
-def test_eq():
+def test_half_eq():
     cell1 = montepy.Cell()
     cell2 = montepy.Cell()
     half1 = ~cell1 & ~cell2
@@ -64,7 +64,7 @@ def test_eq():
         half1 == "hi"
 
 
-def test_str():
+def test_half_str():
     cell1 = montepy.Cell()
     cell1.number = 1
     cell2 = montepy.Cell()
@@ -79,7 +79,7 @@ def test_str():
     repr(half_space)
 
 
-def test_init():
+def test_unit_half_init():
     node = montepy.input_parser.syntax_node.ValueNode("123", float)
     half_space = UnitHalfSpace(123, True, False, node)
     assert half_space.divider == 123
@@ -96,7 +96,7 @@ def test_init():
         half_space = UnitHalfSpace(123, True, False, "hi")
 
 
-def test_eq():
+def test_unit_eq():
     half1 = UnitHalfSpace(1, True, False)
     assert half1 == half1
     half2 = UnitHalfSpace(2, True, False)
@@ -109,7 +109,7 @@ def test_eq():
         half1 == "hi"
 
 
-def test_str():
+def test_unit_str():
     half_space = UnitHalfSpace(1, True, False)
     assert str(half_space) == "+1"
     half_space.side = False
