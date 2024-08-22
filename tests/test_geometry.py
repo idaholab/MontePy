@@ -159,6 +159,22 @@ def test_cell_half_space():
         half_space = -cell
 
 
+def test_parens_node_export():
+    surf1 = montepy.surfaces.cylinder_on_axis.CylinderOnAxis()
+    surf2 = montepy.surfaces.cylinder_on_axis.CylinderOnAxis()
+    surf3 = montepy.surfaces.cylinder_on_axis.CylinderOnAxis()
+    surf1.number = 1
+    surf2.number = 2
+    surf3.number = 3
+    for half_space, form_answer, str_answer in [
+        (-surf1 & (+surf2 | -surf3), "-1 (2 : -3)", "(-1*(+2:-3))"),
+        ((-surf1 | +surf2) & -surf3, "(-1 : 2) -3", "((-1:+2)*-3)"),
+    ]:
+        half_space._update_values()
+        assert half_space.node.format() == form_answer
+        assert str(half_space) == str_answer
+
+
 def test_intersect_half_space():
     cell1 = ~montepy.Cell()
     cell2 = ~montepy.Cell()
