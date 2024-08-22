@@ -138,7 +138,10 @@ class CellParser(MCNP_Parser):
             else:
                 ret.padding = p.padding
         else:
-            ret.nodes["end_pad"] = p.padding
+            if "end_pad" in ret.nodes:
+                ret.nodes["end_pad"] += p.padding
+            else:
+                ret.nodes["end_pad"] = p.padding
         return ret
 
     @_("geometry_factor")
