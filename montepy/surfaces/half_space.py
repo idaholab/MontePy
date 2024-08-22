@@ -277,12 +277,13 @@ class HalfSpace:
 
     def _ensure_has_parens(self):
         """
+        Ensures that when a parentheses is needed it is added.
 
-        ignoring parens needed for complements.
+        This detects unions below an intersection. It then "adds" a parentheses
+        by adding a GROUP to the tree.
 
-        :rtype: BrokenObjectLinkError
+        This ignores parentheses needed for complements as its handled in _update_node.
         """
-        # detect need for parens and make child handle it with shift
         if self.operator == Operator.INTERSECTION:
             if type(self) == type(self.left) and self.left.operator == Operator.UNION:
                 self.left = HalfSpace(self.left, Operator.GROUP)
