@@ -440,6 +440,8 @@ class HalfSpace:
     def __str__(self):
         if self.operator == Operator.COMPLEMENT:
             return f"{self.operator.value}{self.left}"
+        if self.operator == Operator.GROUP:
+            return str(self.left)
         return f"({self.left}{self.operator.value}{self.right})"
 
     def __repr__(self):
