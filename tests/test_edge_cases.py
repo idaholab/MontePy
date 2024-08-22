@@ -196,9 +196,11 @@ def test_the_dissapearing_parens():
     problem.write_problem(fh)
     new_parens_count = 0
     fh.seek(0)
-    for line in fh:
-        print(line.rstrip())
-        new_parens_count += line.count("(") + line.count(")")
+    with open(in_file, "r") as gold_fh:
+        for line, gold_line in zip(fh, gold_fh):
+            print(line.rstrip())
+            new_parens_count += line.count("(") + line.count(")")
+            assert line.rstrip() == gold_line.rstrip()
     assert new_parens_count == parens_count
 
 
@@ -213,7 +215,6 @@ def test_universe_after_comment():
     try:
         out_file = "universe_after_comment"
         problem.write_to_file(out_file)
-        # TODO check that the Universe does show up
         found = False
         with open(out_file, "r") as fh:
             for line in fh:
