@@ -52,7 +52,7 @@ for cell in foo.cells:
   cell.number = i
   i = i + 5
   
-foo.write_to_file("foo_update.imcnp")
+foo.write_problem("foo_update.imcnp")
 
 ```
 
