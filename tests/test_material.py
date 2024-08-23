@@ -138,6 +138,19 @@ def test_material_update_format():
 
 
 @pytest.mark.parametrize(
+    "libraries, slicer, answers",
+    [
+        (["00c", "04c"], slice("00c", None), [True, True]),
+        (["00c", "04c", "80c"], slice("00c", "10c"), [True, True, False]),
+        (["00c", "04c", "80c"], slice("10c"), [True, True, False]),
+        (["00c", "04p"], slice("00c", None), [True, False]),
+    ],
+)
+def test_material_library_slicer(libraries, slicer, answers):
+    assert Material._match_library_slice(libraries, slicer) == answers
+
+
+@pytest.mark.parametrize(
     "line, mat_number, is_atom, fractions",
     [
         ("M20 1001.80c 0.5 8016.710nc 0.5", 20, True, [0.5, 0.5]),
