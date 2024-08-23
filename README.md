@@ -90,9 +90,9 @@ Here a few of the known bugs and limitations:
 
 So MontePy doesn't do what you want? 
 Add an issue here with the "feature request" tag. 
-If you want to add a feature on your own talk to Micah Gale (but still add the issue). 
 The system is very modular and you should be able to develop it pretty quickly.
-Also read the [developer's guide](https://www.montepy.org/developing.html).
+Read the [developer's guide](https://www.montepy.org/developing.html) for more details.
+If you have any questions feel free to ask [@micahgale](mailto:mgale@montepy.org).
 
  
 # Finally: make objects, not regexes!
