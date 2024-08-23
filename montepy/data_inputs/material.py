@@ -153,39 +153,41 @@ class Material(data_input.DataInputAbstract, Numbered_MCNP_Object):
             return pointer
         except KeyError as e:
             # TODO
-            pass
+            raise e
 
     def __get_slice(self, key):
         # pad to full key if necessary
         if len(key) < 4:
+            key = list(key)
             for _ in range(4 - len(key)):
                 key.append(slice(None))
+            key = tuple(key)
         # detect if can do optimized search through pointers
         is_slice = [isinstance(s, slice) for s in key]
         num_slices = is_slice.count(True)
         # test if all tuples at end
         if all(is_slice[-num_slices:]):
-            return self.__get_optimal_slice(key)
+            return self.__get_optimal_slice(key, num_slices)
         return self.__get_brute_slice(key)
 
     def __get_optimal_slice(self, key, num_slices):
         slicer_funcs = (
             self._match_el_slice,
-            self._match_a_slice,
-            self._match_meta_slice,
+            self._match_a_meta_slice,
             self._match_library_slice,
         )
+        key = (key[0], key[1:3], key[3])
         if num_slices == 4:
             return self._crawl_pointer(self._pointers, slicer_funcs, key)
-        element = Isotope.get_from_francy_name(key[0]).element
+        element = Isotope.get_from_fancy_name(key[0]).element
         elem_dict = self._pointers[element]
-        if num_slices == 3:
+        print(elem_dict)
+        if num_slices in {3, 2}:
             return self._crawl_pointer(elem_dict, slicer_funcs[1:], key[1:])
-        if num_slices == 2:
-            pass
+        isotope_dict = elem_dict[key[1]]
+        return self._crawl_pointer(isotope_dict, slicer_funcs[2:], key[2:])
 
     def _crawl_pointer(self, start_point, slicer_funcs, slicers):
-        # TODO slice it
         slicer_func, slicer_funcs = slicer_funcs[0], slicer_funcs[1:]
         slicer, slicers = slicers[0], slicers[1:]
         matches = slicer_func(start_points.keys(), slicer)
@@ -204,8 +206,17 @@ class Material(data_input.DataInputAbstract, Numbered_MCNP_Object):
         return cls._match_slice([e.Z for e in elements], slicer)
 
     @classmethod
-    def _match_a_slice(cls, keys, slicer):
-        return cls._match_slice(keys, slicer)
+    def _match_a_meta_slice(cls, keys, slicers):
+        a_slice, meta_slice = slicers
+        if isinstance(a_slice, slice):
+            a_match = cls._match_slice([key[0] for key in keys], a_slice)
+        else:
+            a_match = [a == a_slice for a, _ in keys]
+        if isinstance(meta_slice, slice):
+            meta_match = cls._match_slice([key[1] for key in keys], meta_slice)
+        else:
+            meta_match = [meta == meta_slice for _, meta in keys]
+        return [a and meta for a, meta in zip(a_match, meta_match)]
 
     @classmethod
     def _match_meta_slice(cls, keys, slicer):
@@ -280,9 +291,10 @@ class Material(data_input.DataInputAbstract, Numbered_MCNP_Object):
         except KeyError as e:
             new_comp = MaterialComponent(pointer, newvalue)
             self.material_components[pointer] = new_comp
-            self._pointers[pointer.element][(pointer.A, pointer.meta_state)][
-                pointer.library
-            ] = pointer
+        # TODO change meta state to 0
+        self._pointers[pointer.element][(pointer.A, pointer.meta_state)][
+            pointer.library
+        ] = pointer
 
     def __delitem__(self, key):
         try:
