@@ -46,8 +46,8 @@ def test_material_str():
     material = Material(input_card)
     answers = """\
 MATERIAL: 20 fractions: atom
-H-1     (80c) 0.5
-O-16    (80c) 0.4
+ H-1     (80c) 0.5
+ O-16    (80c) 0.4
 Pu-239   (80c) 0.1
 """
     output = repr(material)
