@@ -290,6 +290,8 @@ class Isotope:
         """
         if isinstance(identifier, cls):
             return identifier
+        if isinstance(identifier, Element):
+            identifier = (identifier,)
         A = 0
         isomer = None
         base_meta = 0
