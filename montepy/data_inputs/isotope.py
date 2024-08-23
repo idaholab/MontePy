@@ -324,12 +324,15 @@ class Isotope:
         base_meta = 0
         library = ""
         if isinstance(identifier, (int, float)):
-            parts = cls._parse_zaid(int(identifier))
-            element, A, isomer = (
-                parts["_element"],
-                parts["_A"],
-                parts["_meta_state"],
-            )
+            if identifier > _ZAID_A_ADDER:
+                parts = cls._parse_zaid(int(identifier))
+                element, A, isomer = (
+                    parts["_element"],
+                    parts["_A"],
+                    parts["_meta_state"],
+                )
+            else:
+                element, A, isomer = Element(int(identifier)), 0, 0
         elif isinstance(identifier, str):
             if match := cls._NAME_PARSER.match(identifier):
                 match = match.groupdict()
