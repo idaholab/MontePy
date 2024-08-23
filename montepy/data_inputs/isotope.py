@@ -2,9 +2,38 @@
 from montepy.constants import MAX_ATOMIC_SYMBOL_LENGTH
 from montepy.data_inputs.element import Element
 from montepy.errors import *
+from montepy.utilities import *
 from montepy.input_parser.syntax_node import PaddingNode, ValueNode
 
 import re
+
+
+class Library:
+    def __init__(self, library):
+        if not isinstance(library, str):
+            raise TypeError(f"library must be a str. {library} given.")
+        self._library = library
+
+    @property
+    def library(self):
+        """"""
+        return self._library
+
+    def __hash__(self):
+        return hash(self._library)
+
+    def __eq__(self, other):
+        if not isinstance(other, (type(self), str)):
+            raise TypeError(f"Can only compare Library instances.")
+        if isinstance(other, type(self)):
+            return self.library == other.library
+        return self.library == other
+
+    def __str__(self):
+        return self.library
+
+    def __repr__(self):
+        return str(self)
 
 
 class Isotope:
@@ -227,7 +256,7 @@ class Isotope:
         """
         return self._meta_state
 
-    @property
+    @make_prop_pointer("_library", (str, Library), Library)
     def library(self):
         """
          The MCNP library identifier e.g. 80c
@@ -235,12 +264,6 @@ class Isotope:
         :rtype: str
         """
         return self._library
-
-    @library.setter
-    def library(self, library):
-        if not isinstance(library, str):
-            raise TypeError("library must be a string")
-        self._library = library
 
     def __repr__(self):
         return f"{self.__class__.__name__}({repr(self.nuclide_str())})"
@@ -385,28 +408,3 @@ class Isotope:
 
     def __format__(self, format_str):
         return str(self).__format__(format_str)
-
-
-class Library:
-    def __init__(self, library):
-        if not isinstance(library, str):
-            raise TypeError(f"library must be a str. {library} given.")
-        self._library = library
-
-    @property
-    def library(self):
-        """"""
-        return self._library
-
-    def __hash__(self):
-        return hash(self._library)
-
-    def __eq__(self, other):
-        if not isinstance(other, (type(self), str)):
-            raise TypeError(f"Can only compare Library instances.")
-        if isinstance(other, type(self)):
-            return self.library == other.library
-        return self.library == other
-
-    def __str__(self):
-        return self.library
