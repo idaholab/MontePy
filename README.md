@@ -43,17 +43,37 @@ and the Python API documentation.
 * Currently has over 430 test cases.
 
  
-Quick example for renumbering all of the cells in a problem:
+Here is a quick example showing multiple tasks in MontePy:
 
 ```python
 import montepy
-foo = montepy.read_input("foo.imcnp")
-i = 9500
-for cell in foo.cells:
-  cell.number = i
-  i = i + 5
+# read in file
+problem = montepy.read_input("foo.imcnp")
   
-foo.write_problem("foo_update.imcnp")
+# set photon importance for multiple cells
+importances = {1: 0.005,
+    2: 0.1,
+    3: 1.0,
+    99: 1.235
+}
+for cell_num, importance in importances.items():
+    problem.cells[cell_num].importance.photon = importance
+
+#create a universe and fill another cell with it
+universe = montepy.Universe(123)
+problem.univeres.append(universe)
+# add all cells with numbers between 1 and 4
+universe.claim(problem.cells[1:5])
+# fill cell 99 with universe 123
+problem.cells[99].fill.universe = universe
+
+# update all surfaces numbers by adding 1000 to them
+for surface in problem.surfaces:
+    surface.number += 1000
+# all cells using these surfaces will be automatically updated as well
+
+#write out an updated file
+problem.write_problem("foo_update.imcnp")
 
 ```
 
