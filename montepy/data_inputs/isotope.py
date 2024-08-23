@@ -404,8 +404,8 @@ class Isotope:
 
     def __str__(self):
         meta_suffix = f"m{self.meta_state}" if self.is_metastable else ""
-        suffix = f" ({self._library})" if str(self._library) else ""
-        return f"{self.element.symbol:>2}-{self.A:<3}{meta_suffix:<2}{suffix}"
+        suffix = f" ({self._library})" if str(self._library) else "()"
+        return f"{self.element.symbol:>2}-{self.A:<3}{meta_suffix:<2}{suffix:>5}"
 
     def __hash__(self):
         return hash(self._ZAID)
