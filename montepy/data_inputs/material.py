@@ -131,7 +131,7 @@ class Material(data_input.DataInputAbstract, Numbered_MCNP_Object):
             # TODO think about upper limit
             if len(key) <= 3:
                 return self.__get_slice(key)
-            if any([isinstance(s) for s in key]):
+            if any([isinstance(s, slice) for s in key]):
                 return self.__get_slice(key)
         pointer = self.__get_pointer_iso(key)
         return self.material_components[pointer].fraction
