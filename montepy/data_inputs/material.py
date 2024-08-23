@@ -5,6 +5,7 @@ import itertools
 
 from montepy.data_inputs import data_input, thermal_scattering
 from montepy.data_inputs.isotope import Isotope
+from montepy.data_inputs.element import Element
 from montepy.data_inputs.material_component import MaterialComponent
 from montepy.input_parser import syntax_node
 from montepy.input_parser.material_parser import MaterialParser
@@ -125,9 +126,10 @@ class Material(data_input.DataInputAbstract, Numbered_MCNP_Object):
 
     def __getitem__(self, key):
         """ """
-        # TODO handle slices
         # decide if this is a slice
-        if isinstance(key, tuple):
+        if isinstance(key, (tuple, Element)):
+            if isinstance(key, Element):
+                return self.__get_slice((key,))
             # TODO think about upper limit
             if len(key) <= 3:
                 return self.__get_slice(key)
@@ -181,7 +183,6 @@ class Material(data_input.DataInputAbstract, Numbered_MCNP_Object):
             return self._crawl_pointer(self._pointers, slicer_funcs, key)
         element = Isotope.get_from_fancy_name(key[0]).element
         elem_dict = self._pointers[element]
-        print(elem_dict)
         if num_slices in {3, 2}:
             return self._crawl_pointer(elem_dict, slicer_funcs[1:], key[1:])
         isotope_dict = elem_dict[key[1]]
@@ -291,7 +292,6 @@ class Material(data_input.DataInputAbstract, Numbered_MCNP_Object):
         except KeyError as e:
             new_comp = MaterialComponent(pointer, newvalue)
             self.material_components[pointer] = new_comp
-        # TODO change meta state to 0
         self._pointers[pointer.element][(pointer.A, pointer.meta_state)][
             pointer.library
         ] = pointer
