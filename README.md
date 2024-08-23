@@ -36,7 +36,7 @@ and the Python API documentation.
 * Parses Cells, Surfaces, Materials, and Transforms very well.	
 * Can parse all surface types except macrobody facets ([Issue #354](https://github.com/idaholab/MontePy/issues/354)).
 * Can read and write out all other MCNP inputs, even if it doesn't not understand them	
-* Attempts to write out the MCNP problem verbatim, even matching the original user formatting. (See [Issues](https://github.com/idaholab/MontePy/issues).)
+* Attempts to write out the MCNP problem verbatim, even matching the original user formatting. (See some of the [open issues](https://github.com/idaholab/MontePy/issues).)
 * Can quickly [access cells, surfaces, and materials by their numbers](https://www.montepy.org/starting.html#collections-are-accessible-by-number). For example: `cell = problem.cells[105]`.
 * Can quickly update cell parameters, [such as importances](https://www.montepy.org/starting.html#setting-cell-importances). For example `cell.importance.neutron = 2.0`.
 * Can easily [create universes, and fill other cells with universes](https://www.montepy.org/starting.html#universes).
