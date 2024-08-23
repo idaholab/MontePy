@@ -51,6 +51,12 @@ class HalfSpace:
 
         half_space = ~ other_half_space
 
+    Parantheses are allowed, and handled properly
+
+    .. code-block:: python
+
+        half_space = +bottom & (-left | +right)
+
     :param left: The left side of the binary tree.
     :type left: HalfSpace
     :param operator: the operator to apply between the two branches.
@@ -70,7 +76,7 @@ class HalfSpace:
             raise TypeError(f"operator must be of type Operator. {operator} given.")
         if not isinstance(node, (GeometryTree, type(None))):
             raise TypeError(f"node must be a GeometryTree or None. {node} given.")
-        if right is None and operator != Operator.COMPLEMENT:
+        if right is None and operator not in {Operator.COMPLEMENT, Operator.GROUP}:
             raise ValueError(f"Both sides required for: {operator}")
         self._left = left
         self._operator = operator
@@ -143,8 +149,7 @@ class HalfSpace:
                 sides.append(UnitHalfSpace.parse_input_node(side, is_cell))
             else:
                 sides.append(HalfSpace.parse_input_node(side))
-        # ignore shifts, and simplify the tree
-        if node.operator == Operator._SHIFT:
+        if node.operator == Operator._SHIFT and isinstance(sides[0], UnitHalfSpace):
             return sides[0]
         if len(sides) == 1:
             sides.append(None)
@@ -238,6 +243,7 @@ class HalfSpace:
         """
         Ensures this HalfSpace and its children has the necessary syntax nodes.
         """
+        self._ensure_has_parens()
         self.left._ensure_has_nodes()
         if self.right is not None:
             self.right._ensure_has_nodes()
@@ -248,19 +254,24 @@ class HalfSpace:
                 operator = " : "
             elif self.operator == Operator.COMPLEMENT:
                 operator = " #"
+            elif self.operator == Operator.GROUP:
+                operator = None
             operator = PaddingNode(operator)
+            # Update trees
             if self.operator in {Operator.INTERSECTION, Operator.UNION}:
                 ret = {"left": self.left.node, "operator": operator}
+            elif self.operator == Operator.COMPLEMENT and isinstance(
+                self.left, UnitHalfSpace
+            ):
+                ret = {"operator": operator, "left": self.left.node}
             else:
-                if isinstance(self.left, UnitHalfSpace):
-                    ret = {"operator": operator, "left": self.left.node}
-                else:
-                    ret = {
-                        "operator": operator,
-                        "start_pad": PaddingNode("("),
-                        "left": self.left.node,
-                        "end_pad": PaddingNode(")"),
-                    }
+                ret = {
+                    "operator": operator,
+                    "start_pad": PaddingNode("("),
+                    "left": self.left.node,
+                    "end_pad": PaddingNode(")"),
+                }
+            # handle right side of tree
             if self.right is not None:
                 ret["right"] = self.right.node
             self._node = GeometryTree(
@@ -270,12 +281,34 @@ class HalfSpace:
         if self.right is not None:
             self.node.nodes["right"] = self.right.node
 
+    def _ensure_has_parens(self):
+        """
+        Ensures that when a parentheses is needed it is added.
+
+        This detects unions below an intersection. It then "adds" a parentheses
+        by adding a GROUP to the tree.
+
+        This ignores parentheses needed for complements as its handled in _update_node.
+        """
+        if self.operator == Operator.INTERSECTION:
+            if type(self) == type(self.left) and self.left.operator == Operator.UNION:
+                self.left = HalfSpace(self.left, Operator.GROUP)
+            if (
+                self.right is not None
+                and type(self) == type(self.right)
+                and self.right.operator == Operator.UNION
+            ):
+                self.right = HalfSpace(self.right, Operator.GROUP)
+
     def _update_node(self):
         """
         Ensures that the syntax node properly reflects the current HalfSpace structure
         """
-        operator_node = self.node.nodes["operator"]
-        output = operator_node.format()
+        try:
+            operator_node = self.node.nodes["operator"]
+            output = operator_node.format()
+        except KeyError:
+            output = ""
         if self.operator == Operator.INTERSECTION:
             if not output.isspace():
                 self.__switch_operator(" ")
@@ -293,8 +326,21 @@ class HalfSpace:
                         "left": self.node.nodes["left"],
                     },
                     self.operator.value,
-                    self.left,
-                    self.right,
+                    self.left.node,
+                    None,
+                )
+        elif self.operator == Operator.GROUP:
+            if "start_pad" not in self.node.nodes:
+                self._node = GeometryTree(
+                    "default Geometry",
+                    {
+                        "start_pad": PaddingNode("("),
+                        "left": self.node.nodes["left"],
+                        "end_pad": PaddingNode(")"),
+                    },
+                    self.operator.value,
+                    self.left.node,
+                    None,
                 )
 
     def __switch_operator(self, new_symbol):
@@ -303,9 +349,12 @@ class HalfSpace:
         """
         operator_node = self.node.nodes["operator"]
         operator_node._nodes = [
-            n.replace("#", " ").replace(":", " ")
+            (
+                n.replace("#", " ").replace(":", " ")
+                if not isinstance(n, CommentNode)
+                else n
+            )
             for n in operator_node.nodes
-            if not isinstance(n, CommentNode)
         ]
         if new_symbol == "#":
             operator_node._nodes[-1] = operator_node.nodes[-1][:-1] + "#"
@@ -399,6 +448,8 @@ class HalfSpace:
     def __str__(self):
         if self.operator == Operator.COMPLEMENT:
             return f"{self.operator.value}{self.left}"
+        if self.operator == Operator.GROUP:
+            return str(self.left)
         return f"({self.left}{self.operator.value}{self.right})"
 
     def __repr__(self):

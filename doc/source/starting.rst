@@ -81,12 +81,13 @@ It will read the specified MCNP input file, and return an MontePy :class:`~monte
 Writing a File
 --------------
 
-The :class:`~montepy.mcnp_problem.MCNP_Problem` object has the method :func:`~montepy.mcnp_problem.MCNP_Problem.write_to_file`, which writes the problem's current 
+The :class:`~montepy.mcnp_problem.MCNP_Problem` object has
+the method :func:`~montepy.mcnp_problem.MCNP_Problem.write_problem`, which writes the problem's current
 state as a valid MCNP input file.
 
->>> problem.write_to_file("bar.imcnp")
+>>> problem.write_problem("bar.imcnp")
 
-The :func:`~montepy.mcnp_problem.MCNP_Problem.write_to_file` method does take an optional argument: ``overwrite``. 
+The :func:`~montepy.mcnp_problem.MCNP_Problem.write_problem` method does take an optional argument: ``overwrite``.
 By default if the file exists, it will not be overwritten and an error will be raised.
 This can be changed by ``overwrite=True``.
 
@@ -97,8 +98,15 @@ This can be changed by ``overwrite=True``.
    Instead of constantly having to override the same file you can add a timestamp to the output file,
    or create an always unique file name with the `UUID <https://docs.python.org/3/library/uuid.html>`_ library.
 
+The method :func:`~montepy.mcnp_problem.MCNP_Problem.write_problem`
+also accepts an open file handle, stream, or other object with a ``write()`` method.
 
-If no changes are made to the problem in MontePy the entire file will be just parroted out as it was in the original file.
+>>> with open("/path/to/file", "w") as fh:
+...     problem.write_problem(fh)
+
+
+If no changes are made to the problem in MontePy, the entire file should just be parroted out as it was in the original file
+(see Issues :issue:`397` and :issue:`492`).
 However any objects (e.g., two cells) that were changed (i.e., mutated) may have their formatting changed slightly.
 MontePy will do its best to guess the formatting of the original value and to replicate it with the new value. 
 However, this may not always be possible, especially if more digits are needed to keep information (e.g., ``10`` versus ``1000``).
@@ -127,7 +135,7 @@ We can then open this file in MontePy, and then modify it slightly, and save it 
         problem = montepy.read_input("foo.imcnp")
         problem.cells[1].number = 5
         problem.surfaces[1].number = 1000
-        problem.write_to_file("bar.imcnp")
+        problem.write_problem("bar.imcnp")
 
 This new file we can see is now reformatted according to MontePy's preferences for formatting::
 
