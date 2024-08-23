@@ -304,6 +304,58 @@ def test_fancy_names(input, Z, A, meta, library):
     assert isotope.library == Library(library)
 
 
+@pytest.fixture
+def big_material():
+    components = [
+        "h1.00c",
+        "h1.04c",
+        "h1.80c",
+        "h1.04p",
+        "h2",
+        "h3",
+        "th232",
+        "U235",
+        "u238",
+        "am242",
+        "am242m1",
+        "Pu239",
+    ]
+    mat = Material()
+    mat.number = 1
+    for component in components:
+        mat[component] = 0.05
+    return mat
+
+
+@pytest.mark.parametrize(
+    "index",
+    [
+        1001,
+        "1001.80c",
+        "h1",
+        "h-1",
+        "h",
+        "hydrogen-1",
+        "hydrogen",
+        "hydrogen1",
+        "hydrogen1m3",
+        "hydrogen1m3.80c",
+        "92635m2.710nc",
+        (Isotope("1001.80c"),),
+        (92, 235, 1, "80c"),
+        (Element(92), 235, 1, "80c"),
+        (Element(92), 235),
+        ("U", 235),
+        (92, 235),
+        ("uRanium", 235),
+        (Element(92)),
+    ],
+)
+def test_material_access(big_material, index):
+    big_material[index]
+    # TODO actually test
+
+
 def test_thermal_scattering_init():
     # test wrong input type assertion
     input_card = Input(["M20"], BlockType.DATA)
