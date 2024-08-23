@@ -267,7 +267,7 @@ class Isotope:
 
         :rtype: str
         """
-        return self._library
+        pass
 
     def __repr__(self):
         return f"{self.__class__.__name__}({repr(self.nuclide_str())})"
