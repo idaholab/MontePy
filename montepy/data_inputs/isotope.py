@@ -46,6 +46,8 @@ class Isotope:
         library="",
         node=None,
     ):
+        self._library = Library("")
+        self._ZAID = None
         if node is not None and isinstance(node, ValueNode):
             if node.type == float:
                 node = ValueNode(node.token, str, node.padding)
@@ -66,7 +68,6 @@ class Isotope:
                 self._library = Library(parts[1])
             else:
                 self._library = Library("")
-            return
         elif element is not None:
             if not isinstance(element, Element):
                 raise TypeError(
@@ -79,6 +80,11 @@ class Isotope:
                 raise TypeError(f"Z number must be an int. {Z} given.")
             self._Z = Z
             self._element = Element(Z)
+        if node is None:
+            self._tree = ValueNode(self.mcnp_str(), str, PaddingNode(" "))
+        self._handle_stupid_legacy_stupidity()
+        if ZAID:
+            return
         if A is not None:
             if not isinstance(A, int):
                 raise TypeError(f"A number must be an int. {A} given.")
@@ -97,9 +103,6 @@ class Isotope:
             raise TypeError(f"Library can only be str. {library} given.")
         self._library = Library(library)
         self._ZAID = str(self.get_full_zaid())
-        if node is None:
-            self._tree = ValueNode(self.mcnp_str(), str, PaddingNode(" "))
-        self._handle_stupid_legacy_stupidity()
 
     def _handle_stupid_legacy_stupidity(self):
         # TODO work on this for mat_redesign
