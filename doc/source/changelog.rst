@@ -3,6 +3,7 @@ MontePy Changelog
 
 0.4.0
 --------------
+
 **Features Added**
 
 * Write problems to either file paths or streams (file handles) with MCNP_Problem.write_problem() (:issue:`492`).
