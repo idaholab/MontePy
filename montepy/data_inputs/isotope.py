@@ -36,6 +36,9 @@ class Library:
         return str(self)
 
 
+_ZAID_A_ADDER = 1000
+
+
 class Isotope:
     """
     A class to represent an MCNP isotope
@@ -162,9 +165,9 @@ class Isotope:
             return True
 
         ret = {}
-        ret["_Z"] = int(ZAID / 1000)
+        ret["_Z"] = int(ZAID / _ZAID_A_ADDER)
         ret["_element"] = Element(ret["_Z"])
-        A = int(ZAID % 1000)
+        A = int(ZAID % _ZAID_A_ADDER)
         if not is_probably_an_isotope(ret["_Z"], A):
             ret["_is_metastable"] = True
             true_A = A - 300
@@ -256,6 +259,7 @@ class Isotope:
         """
         return self._meta_state
 
+    # TODO verify _update_values plays nice
     @make_prop_pointer("_library", (str, Library), Library)
     def library(self):
         """
@@ -293,7 +297,7 @@ class Isotope:
         :returns: the mcnp ZAID of the ground state of this isotope.
         :rtype: int
         """
-        return self.Z * 1000 + self.A
+        return self.Z * _ZAID_A_ADDER + self.A
 
     def get_full_zaid(self):
         """
@@ -303,7 +307,7 @@ class Isotope:
         :rtype: int
         """
         meta_adder = 300 + 100 * self.meta_state if self.is_metastable else 0
-        return self.Z * 1000 + self.A + meta_adder
+        return self.Z * _ZAID_A_ADDER + self.A + meta_adder
 
     @classmethod
     def get_from_fancy_name(cls, identifier):
