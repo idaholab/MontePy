@@ -8,7 +8,7 @@
 [![PyPI version](https://badge.fury.io/py/montepy.svg)](https://badge.fury.io/py/montepy)
 [![Project Status: Active – The project has reached a stable, usable state and is being actively developed.](https://www.repostatus.org/badges/latest/active.svg)](https://www.repostatus.org/#active)
 
-MontePy is a Python library to read, edit, and write MCNP input files. 
+MontePy is the most user friendly Python library for reading, editing, and writing MCNP input files. 
 
 ## Installing
 
