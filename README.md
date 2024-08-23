@@ -83,8 +83,8 @@ Here a few of the known bugs and limitations:
 
 	
 * Cannot handle vertical input mode.
-* Does not support editing tallies in an easy way.
-* Does not support editing source definition in an easy way.
+* Does not support editing tallies in a user-friendly way.
+* Does not support editing source definition in a user-friendly way.
 	
 ## Bugs, Requests and Development
 
