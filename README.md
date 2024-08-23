@@ -24,7 +24,7 @@ see the [Installing section in the user guide](https://www.montepy.org/starting.
 
 ## User Documentation
 
-MontePy has a [sphinx website](https://www.montepy.org/). 
+MontePy has a website [documenting how to work with MCNP in python with MontePy](https://www.montepy.org/). 
 The website contains a user's guide for getting started, 
 a developer's guide covering the design and approach of MontePy,
 instructions for contributing, 
