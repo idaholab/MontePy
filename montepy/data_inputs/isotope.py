@@ -130,7 +130,7 @@ class Isotope:
             self._meta_state = meta_state
         else:
             self._is_metastable = False
-            self._meta_state = None
+            self._meta_state = 0
         if not isinstance(library, str):
             raise TypeError(f"Library can only be str. {library} given.")
         self._library = Library(library)
@@ -190,7 +190,7 @@ class Isotope:
 
         else:
             ret["_is_metastable"] = False
-            ret["_meta_state"] = None
+            ret["_meta_state"] = 0
             ret["_A"] = A
         return ret
 
