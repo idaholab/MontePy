@@ -15,6 +15,9 @@ from montepy.utilities import *
 
 import re
 
+# TODO implement default library for problem and material
+# TODO implement change all libraries
+
 
 def _number_validator(self, number):
     if number <= 0:
@@ -122,14 +125,24 @@ class Material(data_input.DataInputAbstract, Numbered_MCNP_Object):
     def __getitem__(self, key):
         """ """
         # TODO handle slices
+        # decide if this is a slice
+        if isinstance(key, tuple):
+            # TODO think about upper limit
+            if len(key) <= 3:
+                return self.__get_slice(key)
+            if any([isinstance(s) for s in key]):
+                return self.__get_slice(key)
         pointer = self.__get_pointer_iso(key)
         return self.material_components[pointer].fraction
 
     def __get_pointer_iso(self, key):
+        # TODO write up better
+        """
+        structure: self._pointers[Element][(A,meta)][library]
+        """
         base_isotope = Isotope.get_from_fancy_name(key)
         element = self._pointers[base_isotope.element]
         try:
-            # TODO handle ambiguous libraries
             isotope_pointer = element[(base_isotope.A, base_isotope.meta_state)]
             # only one library, and it's ambiguous
             if len(isotope_pointer) == 1 and base_isotope.library == "":
@@ -140,6 +153,120 @@ class Material(data_input.DataInputAbstract, Numbered_MCNP_Object):
         except KeyError as e:
             # TODO
             pass
+
+    def __get_slice(self, key):
+        # pad to full key if necessary
+        if len(key) < 4:
+            for _ in range(4 - len(key)):
+                key.append(slice(None))
+        # detect if can do optimized search through pointers
+        is_slice = [isinstance(s, slice) for s in key]
+        num_slices = is_slice.count(True)
+        # test if all tuples at end
+        if all(is_slice[-num_slices:]):
+            return self.__get_optimal_slice(key)
+        return self.__get_brute_slice(key)
+
+    def __get_optimal_slice(self, key, num_slices):
+        slicer_funcs = (
+            self._match_el_slice,
+            self._match_a_slice,
+            self._match_meta_slice,
+            self._match_library_slice,
+        )
+        if num_slices == 4:
+            return self._crawl_pointer(self._pointers, slicer_funcs, key)
+        element = Isotope.get_from_francy_name(key[0]).element
+        elem_dict = self._pointers[element]
+        if num_slices == 3:
+            return self._crawl_pointer(elem_dict, slicer_funcs[1:], key[1:])
+        if num_slices == 2:
+            pass
+
+    def _crawl_pointer(self, start_point, slicer_funcs, slicers):
+        # TODO slice it
+        slicer_func, slicer_funcs = slicer_funcs[0], slicer_funcs[1:]
+        slicer, slicers = slicers[0], slicers[1:]
+        matches = slicer_func(start_points.keys(), slicer)
+        for node, match in zip(start_point.values(), matches):
+            # TODO handle tuples in second level
+            if not match:
+                continue
+            if isinstance(node, Isotope):
+                # TODO handle keyerror
+                yield self.material_component[isotope].fraction
+            else:
+                yield from self._crawl_pointer(node, slicer_funcs, slicers)
+
+    @classmethod
+    def _match_el_slice(cls, elements, slicer):
+        return cls._match_slice([e.Z for e in elements], slicer)
+
+    @classmethod
+    def _match_a_slice(cls, keys, slicer):
+        return cls._match_slice(keys, slicer)
+
+    @classmethod
+    def _match_meta_slice(cls, keys, slicer):
+        return cls._match_slice(keys, slicer)
+
+    _LIB_PARSER = re.compile(r"\.?(?P<num>\d{2,})(?P<type>[a-z]+)", re.I)
+
+    @classmethod
+    def _match_library_slice(cls, keys, slicer):
+        if all((a is None for a in (slicer.start, slicer.stop, slicer.step))):
+            return [True for _ in keys]
+        # TODO handle non-matches
+        matches = [cls._LIB_PARSER.match(k).groupdict() for k in keys]
+        if slicer.start:
+            start_match = cls._LIB_PARSER.match(slicer.start).groupdict()
+        else:
+            start_match = None
+        if slicer.stop:
+            stop_match = cls._LIB_PARSER.match(slicer.stop).groupdict()
+        else:
+            stop_match = None
+        # TODO this feels janky and verbose
+        if start_match and stop_match:
+            # TODO
+            assert start_match["type"] == stop_match["type"]
+        if start_match:
+            lib_type = start_match["type"].lower()
+        elif stop_match:
+            lib_type = stop_match["type"].lower()
+        assert start_match or stop_match
+        ret = [m["type"].lower() == lib_type for m in matches]
+        start_num = int(start_match["num"]) if start_match else None
+        stop_num = int(stop_match["num"]) if stop_match else None
+        num_match = cls._match_slice(
+            [int(m["num"]) for m in matches], slice(start_num, stop_num, slicer.step)
+        )
+        return [old and num for old, num in zip(ret, num_match)]
+
+    @staticmethod
+    def _match_slice(keys, slicer):
+        if all((a is None for a in (slicer.start, slicer.stop, slicer.step))):
+            return [True for _ in keys]
+        if slicer.start:
+            ret = [key >= slicer.start for key in keys]
+        else:
+            ret = [True for _ in keys]
+        if slicer.step not in {None, 1}:
+            if slicer.start:
+                start = slicer.start
+            else:
+                start = 0
+            ret = [
+                old and ((key - start) % slicer.step == 0)
+                for old, key in zip(ret, keys)
+            ]
+        if slicer.stop in {None, -1}:
+            return ret
+        if slicer.stop > 0:
+            end = slicer.stop
+        else:
+            end = keys[slicer.end]
+        return [old and key < end for key, old in zip(keys, ret)]
 
     def __setitem__(self, key, newvalue):
         """ """
