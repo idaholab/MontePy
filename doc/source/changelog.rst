@@ -1,6 +1,17 @@
 MontePy Changelog
 =================
 
+#Next Version#
+--------------
+
+**Features Added**
+
+* Redesigned how Materials hold Material_Components. See migration plan *TODO* (:pull:`507`). 
+
+**Breaking Changes**
+
+* Removed ``Material.material_components``. See migration plan *TODO* (:pull:`507`).
+
 0.4.0
 --------------
 
