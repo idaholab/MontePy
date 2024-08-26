@@ -9,5 +9,6 @@ User Guide
    utilities
    tricks
    faq
+   migrate0_1
    changelog
    publications
