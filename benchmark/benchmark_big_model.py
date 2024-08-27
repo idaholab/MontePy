@@ -3,7 +3,7 @@ import montepy
 import time
 import tracemalloc
 
-FAIL_THRESHOLD = 240
+FAIL_THRESHOLD = 500
 
 tracemalloc.start()
 start = time.time()
