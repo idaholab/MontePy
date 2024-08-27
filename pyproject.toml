@@ -35,7 +35,7 @@ dependencies = [
 ]
 
 [project.optional-dependencies]
-test = ["coverage[toml]>=6.3.2", "pytest"]
+test = ["coverage[toml]>=6.3.2", "pytest", "pytest-profiling"]
 # This is needed for a sphinx bug. See #414.
 doc = [
 	"sphinx>=7.4.0", 
