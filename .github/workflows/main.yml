@@ -144,7 +144,7 @@ jobs:
         name: Profile test suite
       - run: python prof/dump_results.py
         name: Display pytest profiling data
-      - run: python profile_big_model.py
+      - run: python prof/profile_big_model.py
         name: Profile against big model
   
   benchmark:
