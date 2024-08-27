@@ -2,11 +2,14 @@ import cProfile
 import montepy
 import pstats
 
-prof = cProfile.Profile()
-prof.enable()
+stats = cProfile.run(
+    'montepy.read_input("benchmark/big_model.imcnp")',
+    "prof/big.prof",
+    sort=pstats.SortKey.CUMULATIVE,
+)
 
-montepy.read_input("benchmark/big_model.imcnp")
-
-stats = prof.create_stats()
-stats.sort_stats(SortKey.CUMULATIVE, SortKey.TIME).print_stats(300, "montepy")
-stats.sort_stats(SortKey.CUMULATIVE, SortKey.TIME).print_stats(100, "sly")
+stats = pstats.Stats("prof/big.prof")
+stats.sort_stats(pstats.SortKey.CUMULATIVE, pstats.SortKey.TIME).print_stats(
+    100, "montepy"
+)
+stats.sort_stats(pstats.SortKey.CUMULATIVE, pstats.SortKey.TIME).print_stats(100, "sly")
