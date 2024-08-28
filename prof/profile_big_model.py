@@ -10,6 +10,6 @@ stats = cProfile.run(
 
 stats = pstats.Stats("prof/big.prof")
 stats.sort_stats(pstats.SortKey.CUMULATIVE, pstats.SortKey.TIME).print_stats(
-    100, "montepy"
+    "montepy", 70
 )
-stats.sort_stats(pstats.SortKey.CUMULATIVE, pstats.SortKey.TIME).print_stats(100, "sly")
+stats.sort_stats(pstats.SortKey.CUMULATIVE, pstats.SortKey.TIME).print_stats("sly", 20)
