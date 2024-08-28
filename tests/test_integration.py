@@ -1,6 +1,7 @@
 # Copyright 2024, Battelle Energy Alliance, LLC All Rights Reserved.
 import copy
 import io
+from pathlib import Path
 
 import pytest
 import os
@@ -16,6 +17,8 @@ from montepy.input_parser.mcnp_input import (
 from montepy.errors import *
 from montepy.particle import Particle
 import numpy as np
+
+from tests import constants
 
 
 @pytest.fixture(scope="module")
@@ -1066,3 +1069,20 @@ def test_alternate_encoding():
     montepy.read_input(
         os.path.join("tests", "inputs", "bad_encoding.imcnp"), replace=True
     )
+
+
+@pytest.mark.parametrize(
+    "file",
+    set((Path("tests") / "inputs").iterdir())
+    - {
+        Path("tests") / "inputs" / p
+        for p in constants.BAD_INPUTS | constants.IGNORE_FILES
+    },
+)
+def test_read_write_cycle(file):
+    print(f"Testing against {file} *********************")
+    problem = montepy.read_input(file)
+    fh = io.StringIO()
+    problem.write_problem(fh)
+    fh.seek(0)
+    new_problem = montepy.MCNP_Problem("foo")
