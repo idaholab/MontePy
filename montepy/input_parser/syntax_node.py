@@ -1970,21 +1970,14 @@ class ShortcutNode(ListNode):
         def can_use_last_node(node):
             """Last node can be used if
             - it's a basic ValueNode that matches this repeat
-            - it's a different shortcut that concludes itself well.
-            - it's also a repeat, with the same edge values.
+            - it's also a shortcut, with the same edge values.
             """
             return (
                 isinstance(node, ValueNode)
                 and math.isclose(node.value, self.nodes[0].value)
             ) or (
                 isinstance(node, type(self))
-                and (
-                    leading_node._type != Shortcuts.REPEAT
-                    or (
-                        leading_node._type == Shortcuts.REPEAT
-                        and math.isclose(self.nodes[0].value, node.nodes[-1].value)
-                    )
-                )
+                and (math.isclose(self.nodes[0].value, node.nodes[-1].value))
             )
 
         if can_use_last_node(leading_node):
