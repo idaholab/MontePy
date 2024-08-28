@@ -129,7 +129,36 @@ jobs:
           python-version: 3.12
       - run: pip install . montepy[format]
       - run: black --check montepy/ tests/
-          
+  
+  profile:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - uses: actions/checkout@v4
+      - name: set up python 3.12
+        uses: actions/setup-python@v5
+        with: 
+          python-version: 3.12
+      - run: pip install . montepy[test]
+      - run: pytest --profile
+        name: Profile test suite
+      - run: python prof/dump_results.py
+        name: Display pytest profiling data
+      - run: python prof/profile_big_model.py
+        name: Profile against big model
+  
+  benchmark:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - uses: actions/checkout@v4
+      - name: set up python 3.12
+        uses: actions/setup-python@v5
+        with: 
+          python-version: 3.12
+      - run: pip install . montepy[test]
+      - run: python benchmark/benchmark_big_model.py  
+        name: Benchmark against big model
 
   changelog-test:
     runs-on: ubuntu-latest
