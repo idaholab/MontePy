@@ -1834,7 +1834,7 @@ class ShortcutNode(ListNode):
         :type node: ValueNode
         :param direction: the direct to go in. Must be in {-1, 1}
         :type direction: int
-        :param last_edge_shortcut: Whether or the previous node in the list was
+        :param last_edge_shortcut: Whether or not the previous node in the list was
             part of a different shortcut
         :type last_edge_shortcut: bool
         :returns: true it can be consumed.
@@ -1967,7 +1967,24 @@ class ShortcutNode(ListNode):
         return f"{num_jumps.format()}{j}"
 
     def _format_repeat(self, leading_node=None):
-        if leading_node is not None:
+        def can_use_last_node(node):
+            """Last node can be used if
+            - it's a basic ValueNode
+            - it's a different shortcut that concludes itself well.
+            - it's also a repeat, with the same edge values.
+            """
+            return isinstance(node, ValueNode) or (
+                isinstance(node, type(self))
+                and (
+                    leading_node._type != Shortcuts.REPEAT
+                    or (
+                        leading_node._type == Shortcuts.REPEAT
+                        and math.isclose(self.nodes[0].value, node.nodes[-1].value)
+                    )
+                )
+            )
+
+        if can_use_last_node(leading_node):
             first_val = ""
             num_extra = 0
         else:
