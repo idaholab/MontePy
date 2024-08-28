@@ -179,6 +179,8 @@ class DataInputAbstract(MCNP_Object):
 
         :param data_inputs: a list of the data inputs in the problem
         :type data_inputs: list
+        :returns: True iff this input should be removed from ``problem.data_inputs``
+        :rtype: bool, None
         """
         pass
 
