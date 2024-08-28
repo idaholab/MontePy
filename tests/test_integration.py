@@ -484,7 +484,7 @@ def test_importance_format_unmutated(importance_problem):
     print(output)
     assert len(output) == 2
     assert "imp:n,p 1 1 1 0 3" == output[0]
-    assert "imp:e   0 0 0 1 2" == output[1]
+    assert "imp:e   0 2R 1 2" == output[1]
 
 
 def test_importance_format_mutated(importance_problem):
@@ -1093,4 +1093,4 @@ def test_read_write_cycle(file):
     [print(line) for line in lines]
     with open(file, "r") as gold_fh:
         for gold_line, new_line in zip(gold_fh, lines):
-            assert new_line == gold_line.rstrip()
+            assert new_line == gold_line.rstrip().expandtabs(8)
