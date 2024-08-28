@@ -1073,18 +1073,15 @@ def test_alternate_encoding():
 
 @pytest.mark.parametrize(
     "file",
-    {"tests/inputs/test_importance.imcnp"},
-    # set((Path("tests") / "inputs").iterdir())
-    # - {
-    #    Path("tests") / "inputs" / p
-    #    for p in constants.BAD_INPUTS | constants.IGNORE_FILES
-    # },
+    set((Path("tests") / "inputs").iterdir())
+    - {
+        Path("tests") / "inputs" / p
+        for p in constants.BAD_INPUTS | constants.IGNORE_FILES
+    },
 )
 def test_read_write_cycle(file):
     print(f"Testing against {file} *********************")
     problem = montepy.read_input(file)
-    print(problem.cells._importance._real_tree[montepy.particle.Particle.ELECTRON])
-    print()
     fh = io.StringIO()
     problem.write_problem(fh)
     fh.seek(0)
