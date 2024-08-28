@@ -1089,8 +1089,8 @@ def test_read_write_cycle(file):
     new_problem = montepy.MCNP_Problem("foo")
     # verify lines are similar
     fh.seek(0)
+    lines = [line.rstrip() for line in fh]
+    [print(line) for line in lines]
     with open(file, "r") as gold_fh:
-        for gold_line, new_line in zip(gold_fh, fh):
-            pretty_line = new_line.rstrip()
-            print(pretty_line)
-            assert pretty_line == gold_line.rstrip()
+        for gold_line, new_line in zip(gold_fh, lines):
+            assert new_line == gold_line.rstrip()
