@@ -23,12 +23,18 @@ class MCNP_Problem:
     """
     A class to represent an entire MCNP problem in a semantic way.
 
-    :param file_name: the path to the file that will be read.
-    :type file_name: str
+    .. note::
+        If a stream is provided. It will not be closed by this function.
+
+    :param destination: the path to the input file to read, or a readable stream.
+    :type destination: io.TextIOBase, str, os.PathLike
     """
 
-    def __init__(self, file_name):
-        self._input_file = MCNP_InputFile(file_name)
+    def __init__(self, destination):
+        if hasattr(destination, "read") and callable(getattr(destination, "read")):
+            self._input_file = MCNP_InputFile.from_open_stream(destination)
+        elif isinstance(destination, (str, os.PathLike)):
+            self._input_file = MCNP_InputFile(destination)
         self._title = None
         self._message = None
         self._print_in_data_block = CellDataPrintController()
