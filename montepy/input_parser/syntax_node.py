@@ -1972,13 +1972,15 @@ class ShortcutNode(ListNode):
             - it's a basic ValueNode that matches this repeat
             - it's also a shortcut, with the same edge values.
             """
-            return (
-                isinstance(node, ValueNode)
-                and math.isclose(node.value, self.nodes[0].value)
-            ) or (
-                isinstance(node, type(self))
-                and (math.isclose(self.nodes[0].value, node.nodes[-1].value))
-            )
+            if isinstance(node, ValueNode):
+                value = node.value
+            elif isinstance(node, ShortcutNode):
+                value = node.nodes[-1].value
+            else:
+                return False
+            if value is None:
+                return False
+            return math.isclose(self.nodes[0].value, value)
 
         if can_use_last_node(leading_node):
             first_val = ""
