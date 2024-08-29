@@ -335,7 +335,13 @@ class GeometryTree(SyntaxNodeBase):
         return True
 
     def _format_shortcut(self):
-        pass
+        new_vals = [n for n in self.flatten() if isinstance(n, ValueNode)]
+        list_wrap = ListNode("list wrapper")
+        short = ShortcutNode(short_type=self._short_type)
+        short.load_nodes(new_vals)
+        list_wrap.append(short)
+        list_wrap.update_with_new_values(new_vals)
+        return list_wrap.format()
 
     @property
     def comments(self):
