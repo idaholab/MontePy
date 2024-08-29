@@ -295,25 +295,31 @@ class GeometryTree(SyntaxNodeBase):
     :type right: GeometryTree, ValueNode
     """
 
-    def __init__(self, name, tokens, op, left, right=None):
+    def __init__(self, name, tokens, op, left, right=None, is_shortcut=False):
         super().__init__(name)
         assert all(list(map(lambda v: isinstance(v, SyntaxNodeBase), tokens.values())))
         self._nodes = tokens
         self._operator = Operator(op)
         self._left_side = left
         self._right_side = right
+        self._is_shortcut = is_shortcut
 
     def __str__(self):
-        return f"Geometry: ( {self._left_side} {self._operator} {self._right_side} )"
+        return f"Geometry: ( {self._left_side} {self._operator} {self._right_side} {'Short' if self._is_shortcut else ''})"
 
     def __repr__(self):
         return str(self)
 
     def format(self):
+        if self._is_shortcut:
+            return self._format_shortcut()
         ret = ""
         for node in self.nodes.values():
             ret += node.format()
         return ret
+
+    def _format_shortcut(self):
+        pass
 
     @property
     def comments(self):
