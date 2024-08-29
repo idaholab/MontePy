@@ -1,4 +1,4 @@
-.. _migrate01:
+.. _migrate 0 1:
 
 Migration plan for MontePy 1.0.0
 ================================

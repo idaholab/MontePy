@@ -18,7 +18,7 @@ class MaterialComponent:
     .. deprecated:: 0.4.1
         MaterialComponent has been deprecated as part of a redesign for the material
         interface due to a critical bug in how MontePy handles duplicate nuclides.
-        See `migrate01`_.
+        See :ref:`migrate 0 1`.
 
     :param isotope: the Isotope object representing this isotope
     :type isotope: Isotope
