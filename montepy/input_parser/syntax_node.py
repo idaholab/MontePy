@@ -1751,6 +1751,13 @@ class ShortcutNode(ListNode):
             )
         self._end_pad = padding
 
+    @property
+    def type(self):
+        """
+        TODO
+        """
+        return self._type
+
     def __repr__(self):
         return f"(shortcut:{self._type}: {self.nodes})"
 
