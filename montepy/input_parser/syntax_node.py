@@ -295,28 +295,44 @@ class GeometryTree(SyntaxNodeBase):
     :type right: GeometryTree, ValueNode
     """
 
-    def __init__(self, name, tokens, op, left, right=None, is_shortcut=False):
+    def __init__(self, name, tokens, op, left, right=None, short_type=None):
         super().__init__(name)
         assert all(list(map(lambda v: isinstance(v, SyntaxNodeBase), tokens.values())))
         self._nodes = tokens
         self._operator = Operator(op)
         self._left_side = left
         self._right_side = right
-        self._is_shortcut = is_shortcut
+        self._short_type = short_type
 
     def __str__(self):
-        return f"Geometry: ( {self._left_side} {self._operator} {self._right_side} {'Short' if self._is_shortcut else ''})"
+        return (
+            f"Geometry: ( {self._left_side} {self._operator} {self._right_side} "
+            f"{f'Short:{self._short_type.value}' if self._short_type else ''})"
+        )
 
     def __repr__(self):
         return str(self)
 
     def format(self):
-        if self._is_shortcut:
+        if self._check_all_shortcut():
             return self._format_shortcut()
         ret = ""
         for node in self.nodes.values():
             ret += node.format()
         return ret
+
+    def _check_all_shortcut(self):
+        if not self._short_type:
+            return False
+        if isinstance(self.left, type(self)) and not self.left._check_all_shortcut():
+            return False
+        if (
+            self.right is not None
+            and isinstance(self.right, type(self))
+            and self.right._check_all_shortcut()
+        ):
+            return False
+        return True
 
     def _format_shortcut(self):
         pass

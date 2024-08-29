@@ -126,7 +126,7 @@ class CellParser(MCNP_Parser):
                 "*",
                 left,
                 node,
-                is_shortcut=True,
+                short_type=shortcut.type,
             )
             left = new_tree
         return new_tree
