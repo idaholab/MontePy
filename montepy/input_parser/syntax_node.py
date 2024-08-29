@@ -1674,13 +1674,14 @@ class ShortcutNode(ListNode):
     }
     _num_finder = re.compile(r"\d+")
 
-    def __init__(self, p=None, short_type=None):
+    def __init__(self, p=None, short_type=None, data_type=float):
         self._type = None
         self._end_pad = None
         self._nodes = collections.deque()
         self._original = []
         self._full = False
         self._num_node = ValueNode(None, float, never_pad=True)
+        self._data_type = data_type
         if p is not None:
             for search_strs, shortcut in self._shortcut_names.items():
                 for search_str in search_strs:
@@ -1820,7 +1821,11 @@ class ShortcutNode(ListNode):
                 new_val = 10 ** (begin + spacing * (i + 1))
             else:
                 new_val = begin + spacing * (i + 1)
-            self.append(ValueNode(str(new_val), float, never_pad=True))
+            self.append(
+                ValueNode(
+                    str(self._data_type(new_val)), self._data_type, never_pad=True
+                )
+            )
         self._begin = begin
         self._end = end
         self._spacing = spacing
