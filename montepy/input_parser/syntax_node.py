@@ -1734,6 +1734,19 @@ class ShortcutNode(ListNode):
                 self._num_node = ValueNode(None, int, never_pad=True)
             self._end_pad = PaddingNode(" ")
 
+    def load_nodes(self, nodes):
+        """
+        TODO
+        """
+        self._nodes = collections.deque(nodes)
+        if self.type in {Shortcuts.INTERPOLATE, Shortcuts.LOG_INTERPOLATE}:
+            self._begin = nodes[0].value
+            self._end = nodes[-1].value
+            if self.type == Shortcuts.LOG_INTERPOLATE:
+                self._begin = math.log10(self._begin)
+                self._end = math.log10(self._end)
+            self._spacing = (self._end - self._begin) / (len(nodes) - 1)
+
     @property
     def end_padding(self):
         """
