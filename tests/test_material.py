@@ -116,22 +116,23 @@ def test_material_update_format():
     assert "8016" in material.format_for_mcnp_input((6, 2, 0))[0]
     # addition
     isotope = Isotope("2004.80c")
-    material.material_components[isotope] = MaterialComponent(isotope, 0.1)
-    print(material.format_for_mcnp_input((6, 2, 0)))
-    assert "2004" in material.format_for_mcnp_input((6, 2, 0))[0]
-    # update
-    isotope = list(material.material_components.keys())[-1]
-    print(material.material_components.keys())
-    material.material_components[isotope].fraction = 0.7
-    print(material.format_for_mcnp_input((6, 2, 0)))
-    assert "0.7" in material.format_for_mcnp_input((6, 2, 0))[0]
-    material.material_components[isotope] = MaterialComponent(isotope, 0.6)
-    print(material.format_for_mcnp_input((6, 2, 0)))
-    assert "0.6" in material.format_for_mcnp_input((6, 2, 0))[0]
-    # delete
-    del material.material_components[isotope]
-    print(material.format_for_mcnp_input((6, 2, 0)))
-    assert "8016" in material.format_for_mcnp_input((6, 2, 0))[0]
+    with pytest.deprecated_call():
+        material.material_components[isotope] = MaterialComponent(isotope, 0.1)
+        print(material.format_for_mcnp_input((6, 2, 0)))
+        assert "2004" in material.format_for_mcnp_input((6, 2, 0))[0]
+        # update
+        isotope = list(material.material_components.keys())[-1]
+        print(material.material_components.keys())
+        material.material_components[isotope].fraction = 0.7
+        print(material.format_for_mcnp_input((6, 2, 0)))
+        assert "0.7" in material.format_for_mcnp_input((6, 2, 0))[0]
+        material.material_components[isotope] = MaterialComponent(isotope, 0.6)
+        print(material.format_for_mcnp_input((6, 2, 0)))
+        assert "0.6" in material.format_for_mcnp_input((6, 2, 0))[0]
+        # delete
+        del material.material_components[isotope]
+        print(material.format_for_mcnp_input((6, 2, 0)))
+        assert "8016" in material.format_for_mcnp_input((6, 2, 0))[0]
 
 
 @pytest.mark.parametrize(
@@ -157,8 +158,9 @@ def test_material_init(line, mat_number, is_atom, fractions):
     assert material.number == mat_number
     assert material.old_number == mat_number
     assert material.is_atom_fraction == is_atom
-    for component, gold in zip(material.material_components.values(), fractions):
-        assert component.fraction == pytest.approx(gold)
+    with pytest.deprecated_call():
+        for component, gold in zip(material.material_components.values(), fractions):
+            assert component.fraction == pytest.approx(gold)
     if "gas" in line:
         assert material.parameters["gas"]["data"][0].value == pytest.approx(1.0)
 
