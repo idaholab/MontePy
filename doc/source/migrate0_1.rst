@@ -4,7 +4,7 @@ Migration plan for MontePy 1.0.0
 ================================
 
 .. meta::
-   :description: Foo bar
+   :description: Migration plan for moving from MontePy 0.x to MontePy 1.0.0
 
 Necessity
 ---------
