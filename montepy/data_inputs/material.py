@@ -190,18 +190,7 @@ See <https://www.montepy.org/migrate0_1.html> for more information """,
         :param data_inputs: a list of the data inputs in the problem
         :type data_inputs: list
         """
-        for input in list(data_inputs):
-            if isinstance(input, thermal_scattering.ThermalScatteringLaw):
-                if input.old_number == self.number:
-                    if not self._thermal_scattering:
-                        self._thermal_scattering = input
-                        input._parent_material = self
-                        data_inputs.remove(input)
-                    else:
-                        raise MalformedInputError(
-                            self,
-                            f"Multiple MT inputs were specified for this material: {self.number}.",
-                        )
+        pass
 
     @staticmethod
     def _class_prefix():
