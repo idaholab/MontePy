@@ -12,6 +12,8 @@ from montepy.utilities import *
 import itertools
 import re
 
+import warnings
+
 
 def _number_validator(self, number):
     if number <= 0:
@@ -68,6 +70,7 @@ class Material(data_input.DataInputAbstract, Numbered_MCNP_Object):
                             input,
                             f"Material definitions for material: {self.number} cannot use atom and mass fraction at the same time",
                         )
+
                 self._material_components[isotope] = MaterialComponent(
                     isotope, fraction
                 )
@@ -102,13 +105,23 @@ class Material(data_input.DataInputAbstract, Numbered_MCNP_Object):
     @property
     def material_components(self):
         """
-        The internal dictionary containing all the components of this material.
+            The internal dictionary containing all the components of this material.
 
-        The keys are :class:`~montepy.data_inputs.isotope.Isotope` instances, and the values are
-        :class:`~montepy.data_inputs.material_component.MaterialComponent` instances.
+        .. deprecated:: 0.4.1
+            MaterialComponent has been deprecated as part of a redesign for the material
+            interface due to a critical bug in how MontePy handles duplicate nuclides.
+            See :ref:`migrate 0 1`.
 
-        :rtype: dict
+            The keys are :class:`~montepy.data_inputs.isotope.Isotope` instances, and the values are
+            :class:`~montepy.data_inputs.material_component.MaterialComponent` instances.
+
+            :rtype: dict
         """
+        warnings.warn(
+            f"""material_components is deprecated, and will be removed in MontePy 1.0.0.
+See <https://www.montepy.org/migrate0_1.html> for more information """,
+            DeprecationWarning,
+        )
         return self._material_components
 
     @make_prop_pointer("_thermal_scattering", thermal_scattering.ThermalScatteringLaw)
