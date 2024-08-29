@@ -162,7 +162,7 @@ See <https://www.montepy.org/migrate0_1.html> for more information """,
 
     def _update_values(self):
         new_list = syntax_node.IsotopesNode("new isotope list")
-        for isotope, component in self.material_components.items():
+        for isotope, component in self._material_components.items():
             isotope._tree.value = isotope.mcnp_str()
             new_list.append(("_", isotope._tree, component._tree))
         self._tree.nodes["data"] = new_list
@@ -222,8 +222,8 @@ See <https://www.montepy.org/migrate0_1.html> for more information """,
         else:
             ret += "mass\n"
 
-        for component in self.material_components:
-            ret += repr(self.material_components[component]) + "\n"
+        for component in self._material_components:
+            ret += repr(self._material_components[component]) + "\n"
         if self.thermal_scattering:
             ret += f"Thermal Scattering: {self.thermal_scattering}"
 
@@ -236,7 +236,7 @@ See <https://www.montepy.org/migrate0_1.html> for more information """,
     def _get_material_elements(self):
         sortable_components = [
             (iso, component.fraction)
-            for iso, component in self.material_components.items()
+            for iso, component in self._material_components.items()
         ]
         sorted_comps = sorted(sortable_components)
         elements_set = set()
@@ -248,7 +248,7 @@ See <https://www.montepy.org/migrate0_1.html> for more information """,
         return elements
 
     def validate(self):
-        if len(self.material_components) == 0:
+        if len(self._material_components) == 0:
             raise IllegalState(
                 f"Material: {self.number} does not have any components defined."
             )
@@ -261,10 +261,10 @@ See <https://www.montepy.org/migrate0_1.html> for more information """,
 
         """
         temp_hash = ""
-        sorted_isotopes = sorted(list(self.material_components.keys()))
+        sorted_isotopes = sorted(list(self._material_components.keys()))
         for isotope in sorted_isotopes:
             temp_hash = hash(
-                (temp_hash, str(isotope), self.material_components[isotope].fraction)
+                (temp_hash, str(isotope), self._material_components[isotope].fraction)
             )
 
         return hash((temp_hash, self.number))
