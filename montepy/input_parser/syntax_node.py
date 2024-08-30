@@ -259,7 +259,7 @@ class SyntaxNode(SyntaxNodeBase):
         if len(self.nodes) == 0:
             return
         for node in reversed(self.nodes.values()):
-            if node is not None:
+            if node is not None and len(node) > 0:
                 return node.get_trailing_comment()
 
     def _delete_trailing_comment(self):
