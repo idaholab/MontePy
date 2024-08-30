@@ -250,6 +250,7 @@ class MCNP_Problem:
         """
         trailing_comment = None
         last_obj = None
+        last_block = None
         OBJ_MATCHER = {
             block_type.BlockType.CELL: (Cell, self._cells),
             block_type.BlockType.SURFACE: (
@@ -272,6 +273,9 @@ class MCNP_Problem:
                     self._title = input
 
                 elif isinstance(input, mcnp_input.Input):
+                    if last_block != input.block_type:
+                        trailing_comment = None
+                        last_block = input.block_type
                     obj_parser, obj_container = OBJ_MATCHER[input.block_type]
                     if len(input.input_lines) > 0:
                         try:
