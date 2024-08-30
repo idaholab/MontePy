@@ -2329,14 +2329,16 @@ class ParametersNode(SyntaxNodeBase):
         return ret
 
     def get_trailing_comment(self):
-        for key, node in reversed(self.nodes.items()):
+        for node in reversed(self.nodes.values()):
             if hasattr(node, "_is_default"):
                 continue
             return node.get_trailing_comment()
 
     def _delete_trailing_comment(self):
-        tail = next(reversed(self.nodes.items()))
-        tail[1]._delete_trailing_comment()
+        for node in reversed(self.nodes.values()):
+            if hasattr(node, "_is_default"):
+                continue
+            node._delete_trailing_comment()
 
     @property
     def comments(self):
