@@ -2287,7 +2287,7 @@ class ParametersNode(SyntaxNodeBase):
         super().__init__("parameters")
         self._nodes = {}
 
-    def append(self, val):
+    def append(self, val, is_default=False):
         """
         Append the node to this node.
 
@@ -2296,6 +2296,8 @@ class ParametersNode(SyntaxNodeBase):
 
         :param val: the parameter to append.
         :type val: SyntaxNode
+        :param is_default: whether this parameter was added as a default tree not from the user.
+        :type is_default: bool
         """
         classifier = val["classifier"]
         key = (
@@ -2304,6 +2306,8 @@ class ParametersNode(SyntaxNodeBase):
         ).lower()
         if key in self._nodes:
             raise RedundantParameterSpecification(key, val)
+        if is_default:
+            val._is_default = True
         self._nodes[key] = val
 
     def __str__(self):
@@ -2325,8 +2329,10 @@ class ParametersNode(SyntaxNodeBase):
         return ret
 
     def get_trailing_comment(self):
-        tail = next(reversed(self.nodes.items()))
-        return tail[1].get_trailing_comment()
+        for key, node in reversed(self.nodes.items()):
+            if hasattr(node, "_is_default"):
+                continue
+            return node.get_trailing_comment()
 
     def _delete_trailing_comment(self):
         tail = next(reversed(self.nodes.items()))
