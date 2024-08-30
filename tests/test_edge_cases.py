@@ -238,7 +238,4 @@ def test_trailing_comment_edge():
     problem = montepy.read_input(
         Path("tests") / "inputs" / "test_trail_comment_edge.imcnp"
     )
-    print(problem.cells[100103]._tree)
-    print(problem.cells[2]._tree)
-    assert len(problem.cells[2].leading_comments) == 1
-    assert False
+    assert len(problem.cells[2].leading_comments) == 3
