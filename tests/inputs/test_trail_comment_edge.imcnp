@@ -1,0 +1,11 @@
+Model with issues trailing comments
+100103  3926  5.00000E-02 (-1          -1  1):   $ Lower Rodlet Sodium Bond
+                          (-1  1  -1   1)    u=424 
+c
+c comment for next cell... 
+c
+2 0 -1
+
+1 SO 5
+
+M3926 1001.80c 1.0

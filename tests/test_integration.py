@@ -71,6 +71,16 @@ def test_lazy_comments_check(simple_problem):
     print(material2._tree.get_trailing_comment())
 
 
+def test_moving_trail_comments(universe_problem):
+    problem = copy.deepcopy(universe_problem)
+    mat = problem.materials[2]
+    idx = problem.data_inputs.index(mat)
+    print(problem.data_inputs[idx - 1]._tree)
+    print(mat._tree)
+    assert len(mat.comments) == 1
+    assert len(mat.leading_comments) == 1
+
+
 def test_material_parsing(simple_problem):
     mat_numbers = [1, 2, 3]
     for i, mat in enumerate(simple_problem.materials):
