@@ -863,7 +863,10 @@ class TestShortcutNode(TestCase):
         ("1 1 2M 3r ", [1, 1, 2, 2, 2, 2], None),
         ("1 -2M ", [1, -2], None),
         ("1 2i 4 ", [1, 2, 3, 4], None),
+        ("1 2i 4 ", [1, 2, 3, 4], None),
         ("1 1 2i 4 ", [1, 1, 2, 3, 4], None),
+        ("1 1 2i 4 5 6 ", [1, 1, 2, 3, 4, 5, 6], None),
+        ("1 1 2i 4:5 6 ", [1, 1, 2, 3, 4, 5, 6], None),
         ("1 ilog 100 ", [1, 10, 100], "1 1ILOG 100"),
         # secretly test iterator
         ("#1", [1], None),
@@ -877,6 +880,7 @@ def test_shortcut_geometry_expansion(test, answer, form_ans):
     print(test)
     input = Input([test], BlockType.CELL)
     parsed = parser.parse(input.tokenize())
+    print(parsed)
     for val, gold in zip(parsed, answer):
         assert val.value == gold
     if form_ans:
