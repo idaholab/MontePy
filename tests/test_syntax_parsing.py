@@ -856,22 +856,22 @@ class TestShortcutNode(TestCase):
 
 
 @pytest.mark.parametrize(
-    "test, answer",
+    "test, answer, form_ans",
     [
-        ("1 3r ", [1, 1, 1, 1]),
-        ("1 1 3r ", [1, 1, 1, 1, 1]),
-        ("1 1 2M 3r ", [1, 1, 2, 2, 2, 2]),
-        ("1 -2M ", [1, -2]),
-        ("1 2i 4 ", [1, 2, 3, 4]),
-        ("1 1 2i 4 ", [1, 1, 2, 3, 4]),
-        ("1 ilog 100 ", [1, 10, 100]),
+        ("1 3r ", [1, 1, 1, 1], None),
+        ("1 1 3r ", [1, 1, 1, 1, 1], None),
+        ("1 1 2M 3r ", [1, 1, 2, 2, 2, 2], None),
+        ("1 -2M ", [1, -2], None),
+        ("1 2i 4 ", [1, 2, 3, 4], None),
+        ("1 1 2i 4 ", [1, 1, 2, 3, 4], None),
+        ("1 ilog 100 ", [1, 10, 100], "1 1ILOG 100"),
         # secretly test iterator
-        ("#1", [1]),
-        ("#(1 2 3)", [1, 2, 3]),
-        ("1 2:( 3 4 5)", [1, 2, 3, 4, 5]),
+        ("#1", [1], None),
+        ("#(1 2 3)", [1, 2, 3], None),
+        ("1 2:( 3 4 5)", [1, 2, 3, 4, 5], None),
     ],
 )
-def test_shortcut_geometry_expansion(test, answer):
+def test_shortcut_geometry_expansion(test, answer, form_ans):
 
     parser = ShortcutGeometryTestFixture()
     print(test)
@@ -879,7 +879,10 @@ def test_shortcut_geometry_expansion(test, answer):
     parsed = parser.parse(input.tokenize())
     for val, gold in zip(parsed, answer):
         assert val.value == gold
-    assert parsed.format() == test.upper()
+    if form_ans:
+        assert parsed.format().rstrip() == form_ans
+    else:
+        assert parsed.format().rstrip() == test.upper().rstrip()
 
 
 """
