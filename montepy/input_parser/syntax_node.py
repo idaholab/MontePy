@@ -1823,6 +1823,11 @@ class ShortcutNode(ListNode):
         self._num_node = ValueNode(mult_str, float, never_pad=True)
         if isinstance(p[0], ValueNode):
             last_val = self.nodes[-1]
+        elif isinstance(p[0], GeometryTree):
+            if "right" in p[0].nodes:
+                last_val = p[0].nodes["right"]
+            else:
+                last_val = p[0].nodes["left"]
         else:
             last_val = p[0].nodes[-1]
         if last_val.value is None:
@@ -2073,10 +2078,10 @@ class ShortcutNode(ListNode):
         else:
             first_val = self.nodes[0]
             first_val_str = first_val
-        if "M" in self._original[-1]:
-            m = "M"
-        else:
+        if self._original and "m" in self._original[-1]:
             m = "m"
+        else:
+            m = "M"
         self._num_node.value = self.nodes[-1].value / first_val.value
         return f"{first_val_str.format()}{self._num_node.format()}{m}"
 
