@@ -256,19 +256,24 @@ class SyntaxNode(SyntaxNodeBase):
             yield from node.comments
 
     def get_trailing_comment(self):
+        node = self._get_trailing_node()
+        if node:
+            return node.get_trailing_comment()
+
+    def _get_trailing_node(self):
         if len(self.nodes) == 0:
             return
         for node in reversed(self.nodes.values()):
             if node is not None:
                 if isinstance(node, ValueNode):
                     if node.value is not None:
-                        return node.get_trailing_comment()
+                        return node
                 elif len(node) > 0:
-                    return node.get_trailing_comment()
+                    return node
 
     def _delete_trailing_comment(self):
-        tail = next(reversed(self.nodes.items()))
-        tail[1]._delete_trailing_comment()
+        node = self._get_trailing_node()
+        node._delete_trailing_comment()
 
     def flatten(self):
         ret = []
@@ -2247,6 +2252,11 @@ class ClassifierNode(SyntaxNodeBase):
     def get_trailing_comment(self):
         if self.padding:
             return self.padding.get_trailing_comment()
+
+    def _delete_trailing_comment(self):
+        print("hi")
+        if self.padding:
+            self.padding._delete_trailing_comment()
 
     def flatten(self):
         ret = []
