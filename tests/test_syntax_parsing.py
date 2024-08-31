@@ -854,27 +854,32 @@ class TestShortcutNode(TestCase):
                 if parsed is None:
                     raise montepy.errors.MalformedInputError("", "")
 
-    def test_shortcut_geometry_expansion(self):
-        tests = {
-            "1 3r ": [1, 1, 1, 1],
-            "1 1 3r ": [1, 1, 1, 1, 1],
-            "1 -2M ": [1, -2],
-            "1 2i 4 ": [1, 2, 3, 4],
-            "1 1 2i 4 ": [1, 1, 2, 3, 4],
-            "1 ilog 100 ": [1, 10, 100],
-            # secretly test iterator
-            "#1": [1],
-            "#(1 2 3)": [1, 2, 3],
-            "1 2:( 3 4 5)": [1, 2, 3, 4, 5],
-        }
 
-        parser = ShortcutGeometryTestFixture()
-        for test, answer in tests.items():
-            print(test)
-            input = Input([test], BlockType.CELL)
-            parsed = parser.parse(input.tokenize())
-            for val, gold in zip(parsed, answer):
-                self.assertAlmostEqual(val.value, gold)
+@pytest.mark.parametrize(
+    "test, answer",
+    [
+        ("1 3r ", [1, 1, 1, 1]),
+        ("1 1 3r ", [1, 1, 1, 1, 1]),
+        ("1 1 2M 3r ", [1, 1, 2, 2, 2, 2]),
+        ("1 -2M ", [1, -2]),
+        ("1 2i 4 ", [1, 2, 3, 4]),
+        ("1 1 2i 4 ", [1, 1, 2, 3, 4]),
+        ("1 ilog 100 ", [1, 10, 100]),
+        # secretly test iterator
+        ("#1", [1]),
+        ("#(1 2 3)", [1, 2, 3]),
+        ("1 2:( 3 4 5)", [1, 2, 3, 4, 5]),
+    ],
+)
+def test_shortcut_geometry_expansion(test, answer):
+
+    parser = ShortcutGeometryTestFixture()
+    print(test)
+    input = Input([test], BlockType.CELL)
+    parsed = parser.parse(input.tokenize())
+    for val, gold in zip(parsed, answer):
+        assert val.value == gold
+    assert parsed.format() == test.upper()
 
 
 """
