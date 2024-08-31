@@ -75,10 +75,11 @@ def test_moving_trail_comments(universe_problem):
     problem = copy.deepcopy(universe_problem)
     mat = problem.materials[2]
     idx = problem.data_inputs.index(mat)
-    print(problem.data_inputs[idx - 1]._tree)
-    print(mat._tree)
+    dat = problem.data_inputs[idx - 1]
     assert len(mat.comments) == 1
     assert len(mat.leading_comments) == 1
+    assert len(dat.leading_comments) == 0
+    assert len(dat.comments) == 0
 
 
 def test_material_parsing(simple_problem):
