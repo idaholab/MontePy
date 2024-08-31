@@ -2229,7 +2229,8 @@ class ClassifierNode(SyntaxNodeBase):
     def __repr__(self):
         return (
             f"(Classifier: mod: {self.modifier}, prefix: {self.prefix}, "
-            f"number: {self.number}, particles: {self.particles})"
+            f"number: {self.number}, particles: {self.particles},"
+            f" padding: {self.padding})"
         )
 
     @property
@@ -2238,6 +2239,10 @@ class ClassifierNode(SyntaxNodeBase):
             yield from self.padding.comments
         else:
             yield from []
+
+    def get_trailing_comment(self):
+        if self.padding:
+            return self.padding.get_trailing_comment()
 
     def flatten(self):
         ret = []
