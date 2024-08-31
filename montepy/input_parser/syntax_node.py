@@ -323,6 +323,9 @@ class GeometryTree(SyntaxNodeBase):
         return str(self)
 
     def format(self):
+        # TODO flatten
+        # TODO label each node as shortcut
+        print(self._check_all_shortcut())
         if self._check_all_shortcut():
             return self._format_shortcut()
         ret = ""
@@ -334,6 +337,8 @@ class GeometryTree(SyntaxNodeBase):
         if not self._short_type:
             return False
         if isinstance(self.left, type(self)) and not self.left._check_all_shortcut():
+            print(self)
+            print(self.left._check_all_shortcut())
             return False
         if (
             self.right is not None
@@ -349,7 +354,9 @@ class GeometryTree(SyntaxNodeBase):
         short = ShortcutNode(short_type=self._short_type)
         short.load_nodes(new_vals)
         list_wrap.append(short)
+        print(new_vals)
         list_wrap.update_with_new_values(new_vals)
+        print(list_wrap)
         return list_wrap.format()
 
     @property
