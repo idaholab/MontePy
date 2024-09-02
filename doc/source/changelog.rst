@@ -4,6 +4,16 @@ MontePy Changelog
 #Next Version#
 --------------
 
+**Features Added**
+
+* Added support for reading an input from either file paths or streams (file handles) with ``montepy.read_input`` (:issue:`519`).
+
+**Bug Fixes**
+
+* Fixed bug with shortcuts right after another shortcut (e.g., ``1 2M 3R``) not being properly recompressed on export (:issue:`499`).
+* Fixed bug with shortcuts in cell geometry definitions not being recompressed on export (:issue:`489`).
+* Fixed bug where leading comments were not always transferred to the appropriate input. (:issue:`352`, :issue:`526`).
+
 **Performance Improvement**
 
 * Fixed method of linking ``Material`` to ``ThermalScattering`` objects, avoiding a very expensive O(N:sup:`2`) (:issue:`510`).
