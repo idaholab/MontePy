@@ -335,40 +335,72 @@ class GeometryTree(SyntaxNodeBase):
         return str(self)
 
     def format(self):
-        # TODO flatten
-        # TODO label each node as shortcut
-        print(self._check_all_shortcut())
-        if self._check_all_shortcut():
+        if self._left_short_type or self._right_short_type:
             return self._format_shortcut()
         ret = ""
         for node in self.nodes.values():
             ret += node.format()
         return ret
 
-    def _check_all_shortcut(self):
-        if not self._short_type:
-            return False
-        if isinstance(self.left, type(self)) and not self.left._check_all_shortcut():
-            print(self)
-            print(self.left._check_all_shortcut())
-            return False
-        if (
-            self.right is not None
-            and isinstance(self.right, type(self))
-            and self.right._check_all_shortcut()
-        ):
-            return False
-        return True
+    def mark_last_leaf_shortcut(self, short_type):
+        if self.right is not None:
+            node = self.right
+        else:
+            node = self.left
+        if isinstance(node, type(self)):
+            return node.mark_last_leaf_shortcut(short_type)
+        if self.right is not None:
+            self._right_short_type = short_type
+        else:
+            self._left_short_type = short_type
+
+    def _flatten_shortcut(self):
+        def add_leaf(list_node, leaf, short_type):
+            end = list_node.nodes[-1] if len(list_node) > 0 else None
+
+            def flush_shortcut():
+                # TODO this will probably blow up
+                end.load_nodes(end.nodes)
+                list_node.append(leaf)
+
+            def start_shortcut():
+                short = ShortcutNode(short_type=short_type)
+                short.append(leaf)
+                if not leaf.padding:
+                    leaf.padding = PaddingNode(" ")
+                list_node.append(short)
+
+            if short_type:
+                if isinstance(end, ShortcutNode):
+                    if end.type == short_type:
+                        end.append(leaf)
+                    else:
+                        flush_shortcut()
+                        start_shortcut()
+                else:
+                    start_shortcut()
+            else:
+                if isinstance(end, ShortcutNode):
+                    flush_shortcut()
+                else:
+                    list_node.append(leaf)
+
+        if isinstance(self.left, ValueNode):
+            ret = ListNode("list wrapper")
+            add_leaf(ret, self.left, self._left_short_type)
+        else:
+            ret = self.left._flatten_shortcut()
+        if self.right is not None:
+            if isinstance(self.right, ValueNode):
+                add_leaf(ret, self.right, self._right_short_type)
+            else:
+                [ret.append(n) for n in self.right.right._flatten_shortcut()]
+        print(ret)
+        return ret
 
     def _format_shortcut(self):
-        new_vals = [n for n in self.flatten() if isinstance(n, ValueNode)]
-        list_wrap = ListNode("list wrapper")
-        short = ShortcutNode(short_type=self._short_type)
-        short.load_nodes(new_vals)
-        list_wrap.append(short)
-        print(new_vals)
-        list_wrap.update_with_new_values(new_vals)
-        print(list_wrap)
+        # TODO how to handle operators
+        list_wrap = self._flatten_shortcut()
         return list_wrap.format()
 
     @property
