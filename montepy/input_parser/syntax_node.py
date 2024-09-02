@@ -345,8 +345,12 @@ class GeometryTree(SyntaxNodeBase):
     def mark_last_leaf_shortcut(self, short_type):
         if self.right is not None:
             node = self.right
+            if self._right_short_type:
+                return
         else:
             node = self.left
+            if self._left_short_type:
+                return
         if isinstance(node, type(self)):
             return node.mark_last_leaf_shortcut(short_type)
         if self.right is not None:
