@@ -365,7 +365,6 @@ class GeometryTree(SyntaxNodeBase):
             def flush_shortcut():
                 # TODO this will probably blow up
                 end.load_nodes(end.nodes)
-                list_node.append(leaf)
 
             def start_shortcut():
                 short = ShortcutNode(short_type=short_type)
@@ -386,6 +385,7 @@ class GeometryTree(SyntaxNodeBase):
             else:
                 if isinstance(end, ShortcutNode):
                     flush_shortcut()
+                    list_node.append(leaf)
                 else:
                     list_node.append(leaf)
 
@@ -399,11 +399,9 @@ class GeometryTree(SyntaxNodeBase):
                 add_leaf(ret, self.right, self._right_short_type)
             else:
                 [ret.append(n) for n in self.right.right._flatten_shortcut()]
-        print(ret)
         return ret
 
     def _format_shortcut(self):
-        # TODO how to handle operators
         list_wrap = self._flatten_shortcut()
         return list_wrap.format()
 
@@ -2314,7 +2312,6 @@ class ClassifierNode(SyntaxNodeBase):
             return self.padding.get_trailing_comment()
 
     def _delete_trailing_comment(self):
-        print("hi")
         if self.padding:
             self.padding._delete_trailing_comment()
 
