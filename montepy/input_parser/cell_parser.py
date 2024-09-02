@@ -112,13 +112,18 @@ class CellParser(MCNP_Parser):
         "geometry_term LOG_INTERPOLATE padding number_phrase",
     )
     def geometry_term(self, p):
-        # TODO mark this is a shortcut
         shortcut = syntax_node.ShortcutNode(p, data_type=int)
         node_iter = iter(shortcut.nodes)
         if isinstance(p.geometry_term, syntax_node.GeometryTree):
             left = p.geometry_term
+            left.mark_last_leaf_shortcut(shortcut.type)
         else:
             left = next(node_iter)
+        left_type = (
+            shortcut.type
+            if isinstance(left, syntax_node.ValueNode) and left == shortcut.nodes[0]
+            else None
+        )
         for node in node_iter:
             new_tree = syntax_node.GeometryTree(
                 "intersection",
@@ -126,7 +131,8 @@ class CellParser(MCNP_Parser):
                 "*",
                 left,
                 node,
-                short_type=shortcut.type,
+                left_short_type=left_type,
+                right_short_type=shortcut.type,
             )
             left = new_tree
         return new_tree

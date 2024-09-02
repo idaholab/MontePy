@@ -304,19 +304,31 @@ class GeometryTree(SyntaxNodeBase):
     :type right: GeometryTree, ValueNode
     """
 
-    def __init__(self, name, tokens, op, left, right=None, short_type=None):
+    def __init__(
+        self,
+        name,
+        tokens,
+        op,
+        left,
+        right=None,
+        left_short_type=None,
+        right_short_type=None,
+    ):
         super().__init__(name)
         assert all(list(map(lambda v: isinstance(v, SyntaxNodeBase), tokens.values())))
         self._nodes = tokens
         self._operator = Operator(op)
         self._left_side = left
         self._right_side = right
-        self._short_type = short_type
+        self._left_short_type = left_short_type
+        self._right_short_type = right_short_type
 
     def __str__(self):
         return (
-            f"Geometry: ( {self._left_side} {self._operator} {self._right_side} "
-            f"{f'Short:{self._short_type.value}' if self._short_type else ''})"
+            f"Geometry: ( {self._left_side}"
+            f" {f'Short:{self._left_short_type.value}' if self._left_short_type else ''}"
+            f" {self._operator} {self._right_side} "
+            f"{f'Short:{self._right_short_type.value}' if self._right_short_type else ''})"
         )
 
     def __repr__(self):
