@@ -3,6 +3,8 @@ from montepy.data_inputs.element import Element
 from montepy.errors import *
 from montepy.input_parser.syntax_node import PaddingNode, ValueNode
 
+import warnings
+
 
 class Isotope:
     """
@@ -14,6 +16,8 @@ class Isotope:
 
     :param ZAID: the MCNP isotope identifier
     :type ZAID: str
+    :param suppress_warning: Whether to suppress the ``FutureWarning``.
+    :type suppress_warning: bool
     """
 
     #                   Cl-52      Br-101     Xe-150      Os-203    Cm-251     Og-296
@@ -26,7 +30,14 @@ class Isotope:
     Points on bounding curve for determining if "valid" isotope
     """
 
-    def __init__(self, ZAID="", node=None):
+    def __init__(self, ZAID="", node=None, suppress_warning=False):
+        if not suppress_warning:
+            warnings.warn(
+                "montepy.data_inputs.isotope.Isotope is deprecated and will be renamed: Nuclide.\n"
+                "See <https://www.montepy.org/migrations/migrate0_1.html> for more information ",
+                FutureWarning,
+            )
+
         if node is not None and isinstance(node, ValueNode):
             if node.type == float:
                 node = ValueNode(node.token, str, node.padding)

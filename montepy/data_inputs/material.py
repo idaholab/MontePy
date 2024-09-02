@@ -53,7 +53,7 @@ class Material(data_input.DataInputAbstract, Numbered_MCNP_Object):
                     f"Material definitions for material: {self.number} is not valid.",
                 )
             for isotope_node, fraction in iterator:
-                isotope = Isotope(node=isotope_node)
+                isotope = Isotope(node=isotope_node, suppress_warning=True)
                 fraction.is_negatable_float = True
                 if not set_atom_frac:
                     set_atom_frac = True
@@ -72,7 +72,7 @@ class Material(data_input.DataInputAbstract, Numbered_MCNP_Object):
                         )
 
                 self._material_components[isotope] = MaterialComponent(
-                    isotope, fraction
+                    isotope, fraction, suppress_warning=True
                 )
 
     @make_prop_val_node("_old_number")
@@ -119,7 +119,7 @@ class Material(data_input.DataInputAbstract, Numbered_MCNP_Object):
         """
         warnings.warn(
             f"""material_components is deprecated, and will be removed in MontePy 1.0.0.
-See <https://www.montepy.org/migrate0_1.html> for more information """,
+See <https://www.montepy.org/migrations/migrate0_1.html> for more information """,
             DeprecationWarning,
         )
         return self._material_components

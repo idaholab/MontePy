@@ -3,6 +3,8 @@ from montepy.data_inputs.isotope import Isotope
 from montepy.input_parser.syntax_node import PaddingNode, ValueNode
 from montepy.utilities import make_prop_val_node
 
+import warnings
+
 
 def _enforce_positive(self, val):
     if val <= 0:
@@ -24,9 +26,17 @@ class MaterialComponent:
     :type isotope: Isotope
     :param fraction: the fraction of this component in the material
     :type fraction: ValueNode
+    :param suppress_warning: Whether to suppress the ``DeprecationWarning``.
+    :type suppress_warning: bool
     """
 
-    def __init__(self, isotope, fraction):
+    def __init__(self, isotope, fraction, suppress_warning=False):
+        if not suppress_warning:
+            warnings.warn(
+                f"""MaterialComponent is deprecated, and will be removed in MontePy 1.0.0.
+See <https://www.montepy.org/migrations/migrate0_1.html> for more information """,
+                DeprecationWarning,
+            )
         if not isinstance(isotope, Isotope):
             raise TypeError(f"Isotope must be an Isotope. {isotope} given")
         if isinstance(fraction, (float, int)):
