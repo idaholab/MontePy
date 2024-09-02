@@ -38,6 +38,11 @@ and will be removed in MontePy 1.0.0.
   It is largely excess object wrapping, that makes the material interface 
   overly complex.
 
+* :class:`montepy.data_inputs.Isotope` will be renamed to ``Nuclide``. 
+  This is to better align with MCNP documentation,
+  and better reflect that the nuclear data for a nuclide can represent 
+  isotopic, isomeric, or atomic data.
+
 
 New Interface
 -------------

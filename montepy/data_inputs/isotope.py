@@ -8,6 +8,10 @@ class Isotope:
     """
     A class to represent an MCNP isotope
 
+    .. deprecated:: 0.4.1
+        This will class is deprecated, and will be renamed: ``Nuclde``.
+        For more details see the :ref:`migrate 0 1`.
+
     :param ZAID: the MCNP isotope identifier
     :type ZAID: str
     """
