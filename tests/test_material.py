@@ -87,11 +87,16 @@ def test_material_format_mcnp():
 )
 def test_material_comp_init(isotope, conc, error):
     with pytest.raises(error):
-        MaterialComponent(Isotope(isotope), conc)
+        MaterialComponent(Isotope(isotope, suppress_warning=True), conc, True)
+
+
+def test_mat_comp_init_warn():
+    with pytest.warns(DeprecationWarning):
+        MaterialComponent(Isotope("1001.80c", suppress_warning=True), 0.1)
 
 
 def test_material_comp_fraction_setter():
-    comp = MaterialComponent(Isotope("1001.80c"), 0.1)
+    comp = MaterialComponent(Isotope("1001.80c", suppress_warning=True), 0.1, True)
     comp.fraction = 5.0
     assert comp.fraction == pytest.approx(5.0)
     with pytest.raises(ValueError):
@@ -101,7 +106,7 @@ def test_material_comp_fraction_setter():
 
 
 def test_material_comp_fraction_str():
-    comp = MaterialComponent(Isotope("1001.80c"), 0.1)
+    comp = MaterialComponent(Isotope("1001.80c", suppress_warning=True), 0.1, True)
     str(comp)
     repr(comp)
 
@@ -115,9 +120,9 @@ def test_material_update_format():
     print(material.format_for_mcnp_input((6, 2, 0)))
     assert "8016" in material.format_for_mcnp_input((6, 2, 0))[0]
     # addition
-    isotope = Isotope("2004.80c")
+    isotope = Isotope("2004.80c", suppress_warning=True)
     with pytest.deprecated_call():
-        material.material_components[isotope] = MaterialComponent(isotope, 0.1)
+        material.material_components[isotope] = MaterialComponent(isotope, 0.1, True)
         print(material.format_for_mcnp_input((6, 2, 0)))
         assert "2004" in material.format_for_mcnp_input((6, 2, 0))[0]
         # update
@@ -126,7 +131,7 @@ def test_material_update_format():
         material.material_components[isotope].fraction = 0.7
         print(material.format_for_mcnp_input((6, 2, 0)))
         assert "0.7" in material.format_for_mcnp_input((6, 2, 0))[0]
-        material.material_components[isotope] = MaterialComponent(isotope, 0.6)
+        material.material_components[isotope] = MaterialComponent(isotope, 0.6, True)
         print(material.format_for_mcnp_input((6, 2, 0)))
         assert "0.6" in material.format_for_mcnp_input((6, 2, 0))[0]
         # delete
@@ -177,28 +182,29 @@ def test_bad_init(line):
 
 class TestIsotope(TestCase):
     def test_isotope_init(self):
-        isotope = Isotope("1001.80c")
+        with pytest.warns(FutureWarning):
+            isotope = Isotope("1001.80c")
         self.assertEqual(isotope.ZAID, "1001")
         self.assertEqual(isotope.Z, 1)
         self.assertEqual(isotope.A, 1)
         self.assertEqual(isotope.element.Z, 1)
         self.assertEqual(isotope.library, "80c")
         with self.assertRaises(ValueError):
-            Isotope("1001.80c.5")
+            Isotope("1001.80c.5", suppress_warning=True)
         with self.assertRaises(ValueError):
-            Isotope("hi.80c")
+            Isotope("hi.80c", suppress_warning=True)
 
     def test_isotope_metastable_init(self):
-        isotope = Isotope("13426.02c")
+        isotope = Isotope("13426.02c", suppress_warning=True)
         self.assertEqual(isotope.ZAID, "13426")
         self.assertEqual(isotope.Z, 13)
         self.assertEqual(isotope.A, 26)
         self.assertTrue(isotope.is_metastable)
         self.assertEqual(isotope.meta_state, 1)
-        isotope = Isotope("92635.02c")
+        isotope = Isotope("92635.02c", suppress_warning=True)
         self.assertEqual(isotope.A, 235)
         self.assertEqual(isotope.meta_state, 1)
-        isotope = Isotope("92935.02c")
+        isotope = Isotope("92935.02c", suppress_warning=True)
         self.assertEqual(isotope.A, 235)
         self.assertEqual(isotope.meta_state, 4)
         self.assertEqual(isotope.mcnp_str(), "92935.02c")
@@ -210,45 +216,45 @@ class TestIsotope(TestCase):
             ("77764", 77, 164, 3),
         ]
         for ZA, Z_ans, A_ans, isomer_ans in edge_cases:
-            isotope = Isotope(ZA + ".80c")
+            isotope = Isotope(ZA + ".80c", suppress_warning=True)
             self.assertEqual(isotope.Z, Z_ans)
             self.assertEqual(isotope.A, A_ans)
             self.assertEqual(isotope.meta_state, isomer_ans)
         with self.assertRaises(ValueError):
-            isotope = Isotope("13826.02c")
+            isotope = Isotope("13826.02c", suppress_warning=True)
 
     def test_isotope_get_base_zaid(self):
-        isotope = Isotope("92635.02c")
+        isotope = Isotope("92635.02c", suppress_warning=True)
         self.assertEqual(isotope.get_base_zaid(), 92235)
 
     def test_isotope_library_setter(self):
-        isotope = Isotope("1001.80c")
+        isotope = Isotope("1001.80c", suppress_warning=True)
         isotope.library = "70c"
         self.assertEqual(isotope.library, "70c")
         with self.assertRaises(TypeError):
             isotope.library = 1
 
     def test_isotope_str(self):
-        isotope = Isotope("1001.80c")
+        isotope = Isotope("1001.80c", suppress_warning=True)
         assert isotope.mcnp_str() == "1001.80c"
         assert isotope.nuclide_str() == "H-1.80c"
         assert repr(isotope) == "Isotope('H-1.80c')"
         assert str(isotope) == " H-1     (80c)"
-        isotope = Isotope("94239.80c")
+        isotope = Isotope("94239.80c", suppress_warning=True)
         assert isotope.nuclide_str() == "Pu-239.80c"
         assert isotope.mcnp_str() == "94239.80c"
         assert repr(isotope) == "Isotope('Pu-239.80c')"
-        isotope = Isotope("92635.80c")
+        isotope = Isotope("92635.80c", suppress_warning=True)
         assert isotope.nuclide_str() == "U-235m1.80c"
         assert isotope.mcnp_str() == "92635.80c"
         assert str(isotope) == " U-235m1 (80c)"
         assert repr(isotope) == "Isotope('U-235m1.80c')"
         # stupid legacy stupidity #486
-        isotope = Isotope("95642")
+        isotope = Isotope("95642", suppress_warning=True)
         assert isotope.nuclide_str() == "Am-242"
         assert isotope.mcnp_str() == "95642"
         assert repr(isotope) == "Isotope('Am-242')"
-        isotope = Isotope("95242")
+        isotope = Isotope("95242", suppress_warning=True)
         assert isotope.nuclide_str() == "Am-242m1"
         assert isotope.mcnp_str() == "95242"
         assert repr(isotope) == "Isotope('Am-242m1')"
