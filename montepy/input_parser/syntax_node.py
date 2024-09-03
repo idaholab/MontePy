@@ -403,6 +403,8 @@ class GeometryTree(SyntaxNodeBase):
 
     def _format_shortcut(self):
         list_wrap = self._flatten_shortcut()
+        if isinstance(list_wrap.nodes[-1], ShortcutNode):
+            list_wrap.nodes[-1].load_nodes(list_wrap.nodes[-1].nodes)
         return list_wrap.format()
 
     @property
