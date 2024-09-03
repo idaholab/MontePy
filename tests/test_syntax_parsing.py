@@ -11,6 +11,7 @@ from montepy.input_parser.mcnp_input import Input, Jump, Message, ReadInput, Tit
 from montepy.input_parser.block_type import BlockType
 from montepy.input_parser.input_file import MCNP_InputFile
 from montepy.input_parser.parser_base import MCNP_Parser
+from montepy.input_parser.shortcuts import Shortcuts
 from montepy.input_parser import syntax_node
 from montepy.particle import Particle
 import warnings
@@ -483,6 +484,38 @@ class TestGeometryTree(TestCase):
         test.left.padding = syntax_node.PaddingNode("$ hi", True)
         comments = list(test.comments)
         self.assertEqual(len(comments), 1)
+
+
+def test_geometry_tree_mark_last_leaf_shortcut():
+    # test left leaf
+    tree = {
+        "left": syntax_node.ValueNode("123", int),
+        "operator": syntax_node.PaddingNode(" "),
+    }
+    geom = syntax_node.GeometryTree(
+        "test", tree, montepy.Operator.INTERSECTION, tree["left"]
+    )
+    geom.mark_last_leaf_shortcut(Shortcuts.REPEAT)
+    assert geom._left_short_type == Shortcuts.REPEAT
+    # try overriding old shortcut
+    geom.mark_last_leaf_shortcut(Shortcuts.MULTIPLY)
+    assert geom._left_short_type == Shortcuts.REPEAT
+    tree["right"] = syntax_node.ValueNode("789", int)
+    geom = syntax_node.GeometryTree(
+        "test", tree, montepy.Operator.INTERSECTION, tree["left"], tree["right"]
+    )
+    del tree["right"]
+    tree["left"] = syntax_node.ValueNode("456", int)
+    # make unbalanced tree in the other way for rigor
+    geom = syntax_node.GeometryTree(
+        "test", tree, montepy.Operator.INTERSECTION, tree["left"], geom
+    )
+    # test a right-side leaf
+    geom.mark_last_leaf_shortcut(Shortcuts.REPEAT)
+    assert geom.right._right_short_type == Shortcuts.REPEAT
+    # try overriding old shortcut
+    geom.mark_last_leaf_shortcut(Shortcuts.MULTIPLY)
+    assert geom.right._right_short_type == Shortcuts.REPEAT
 
 
 class TestPaddingNode(TestCase):
