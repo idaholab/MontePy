@@ -924,16 +924,16 @@ def test_shortcut_geometry_expansion(test, answer, form_ans):
 @pytest.mark.parametrize(
     "test, length, indices",
     [
-        ("1 3r ", 2, {1: Shortcuts.REPEAT}),
-        ("1 1 3r ", 3, {2: Shortcuts.REPEAT}),
-        ("1 1 2M 3r ", 4, {2: Shortcuts.MULTIPLY, 3: Shortcuts.REPEAT}),
-        ("1 -2M ", 2, {1: Shortcuts.MULTIPLY}),
+        ("1 3r ", 1, {0: Shortcuts.REPEAT}),
+        ("1 1 3r ", 2, {1: Shortcuts.REPEAT}),
+        ("1 1 2M 3r ", 3, {1: Shortcuts.MULTIPLY, 2: Shortcuts.REPEAT}),
+        ("1 -2M ", 1, {0: Shortcuts.MULTIPLY}),
         ("1 2i 4 ", 1, {0: Shortcuts.INTERPOLATE}),
         ("1 2i 4 ", 1, {0: Shortcuts.INTERPOLATE}),
         ("1 1 2i 4 ", 2, {1: Shortcuts.INTERPOLATE}),
         ("1 1 2i 4 5 6 ", 4, {1: Shortcuts.INTERPOLATE}),
         ("1 1 2i 4:5 6 ", 4, {1: Shortcuts.INTERPOLATE}),
-        ("1 ilog 100 ", 1, {0: Shortcuts.INTERPOLATE}),
+        ("1 ilog 100 ", 1, {0: Shortcuts.LOG_INTERPOLATE}),
         # secretly test iterator
         ("#1", 1, {}),
         ("#(1 2 3)", 3, {}),
