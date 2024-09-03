@@ -363,11 +363,19 @@ class GeometryTree(SyntaxNodeBase):
             end = list_node.nodes[-1] if len(list_node) > 0 else None
 
             def flush_shortcut():
-                # TODO this will probably blow up
                 end.load_nodes(end.nodes)
 
             def start_shortcut():
                 short = ShortcutNode(short_type=short_type)
+                # give an interpolate it's old beginning to give it right
+                # start value
+                if short_type in {
+                    Shortcuts.LOG_INTERPOLATE,
+                    Shortcuts.INTERPOLATE,
+                } and isinstance(end, ShortcutNode):
+                    short.append(end.nodes[-1])
+                    short._has_pseudo_start = True
+
                 short.append(leaf)
                 if not leaf.padding:
                     leaf.padding = PaddingNode(" ")
@@ -2131,7 +2139,8 @@ class ShortcutNode(ListNode):
         return f"{first_val}{num_repeats.format()}{r}"
 
     def _format_multiply(self, leading_node=None):
-        if self._can_use_last_node(leading_node):
+        # Multiply doesn't usually consume other nodes
+        if leading_node is not None and len(self) == 1:
             first_val = leading_node.nodes[-1]
             first_val_str = ""
         else:
@@ -2151,6 +2160,8 @@ class ShortcutNode(ListNode):
         if self._can_use_last_node(leading_node, begin):
             start = ""
             num_extra_nodes = 1
+            if hasattr(self, "_has_pseudo_start"):
+                num_extra_nodes += 1
         else:
             start = self.nodes[0]
             num_extra_nodes = 2
