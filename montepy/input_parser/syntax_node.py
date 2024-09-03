@@ -292,6 +292,9 @@ class GeometryTree(SyntaxNodeBase):
     .. versionadded:: 0.2.0
         This was added with the major parser rework.
 
+    .. versionchanged:: 0.4.1
+        Added left/right_short_type
+
     :param name: a name for labeling this node.
     :type name: str
     :param tokens: The nodes that are in the tree.
@@ -302,6 +305,10 @@ class GeometryTree(SyntaxNodeBase):
     :type left: GeometryTree, ValueNode
     :param right: the node of the right side of the binary tree.
     :type right: GeometryTree, ValueNode
+    :param left_short_type: The type of Shortcut that right left leaf is involved in.
+    :type left_short_type: Shortcuts
+    :param right_short_type: The type of Shortcut that the right leaf is involved in.
+    :type right_short_type: Shortcuts
     """
 
     def __init__(
@@ -343,6 +350,12 @@ class GeometryTree(SyntaxNodeBase):
         return ret
 
     def mark_last_leaf_shortcut(self, short_type):
+        """
+        Mark the final (rightmost) leaf node in this tree as being a shortcut.
+
+        :param short_type: the type of shortcut that this leaf is.
+        :type short_type: Shortcuts
+        """
         if self.right is not None:
             node = self.right
             if self._right_short_type:
@@ -359,6 +372,14 @@ class GeometryTree(SyntaxNodeBase):
             self._left_short_type = short_type
 
     def _flatten_shortcut(self):
+        """
+        Flattens this tree into a ListNode.
+
+        This will add ShortcutNodes as well.
+
+        :rtype: ListNode
+        """
+
         def add_leaf(list_node, leaf, short_type):
             end = list_node.nodes[-1] if len(list_node) > 0 else None
 
@@ -410,6 +431,9 @@ class GeometryTree(SyntaxNodeBase):
         return ret
 
     def _format_shortcut(self):
+        """
+        Handles formatting a subset of tree that has shortcuts in it.
+        """
         list_wrap = self._flatten_shortcut()
         if isinstance(list_wrap.nodes[-1], ShortcutNode):
             list_wrap.nodes[-1].load_nodes(list_wrap.nodes[-1].nodes)
@@ -1814,7 +1838,13 @@ class ShortcutNode(ListNode):
 
     def load_nodes(self, nodes):
         """
-        TODO
+        Loads the given nodes into this shortcut, and update needed information.
+
+        For interpolate nodes should start and end with the beginning/end of
+        the interpolation.
+
+        :param nodes: the nodes to be loaded.
+        :type nodes: list
         """
         self._nodes = collections.deque(nodes)
         if self.type in {Shortcuts.INTERPOLATE, Shortcuts.LOG_INTERPOLATE}:
@@ -1845,7 +1875,9 @@ class ShortcutNode(ListNode):
     @property
     def type(self):
         """
-        TODO
+        The Type of shortcut this ShortcutNode represents.
+
+        :rtype: Shortcuts
         """
         return self._type
 
@@ -2098,9 +2130,20 @@ class ShortcutNode(ListNode):
         return f"{num_jumps.format()}{j}"
 
     def _can_use_last_node(self, node, start=None):
-        """Last node can be used if
+        """
+        Determine if the previous node can be used as the start to this node
+        (and therefore skip the start of this one).
+
+        Last node can be used if
         - it's a basic ValueNode that matches this repeat
         - it's also a shortcut, with the same edge values.
+
+        :param node: the previous node to test.
+        :type node: ValueNode, ShortcutNode
+        :param start: the starting value for this node (specifically for interpolation)
+        :type start: float
+        :returns: True if the node given can be used.
+        :rtype: bool
         """
         if isinstance(node, ValueNode):
             value = node.value
