@@ -949,8 +949,8 @@ def test_shortcut_flatten(test, length, indices):
     flatpack = parsed._flatten_shortcut()
     assert len(flatpack) == length
     for index, short_type in indices.items():
-        assert isinstance(flatpack[index], ShortcutNode)
-        assert flatpack[index].type == short_type
+        assert isinstance(flatpack.nodes[index], syntax_node.ShortcutNode)
+        assert flatpack.nodes[index].type == short_type
 
 
 """
