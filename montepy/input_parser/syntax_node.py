@@ -398,7 +398,7 @@ class GeometryTree(SyntaxNodeBase):
             if isinstance(self.right, ValueNode):
                 add_leaf(ret, self.right, self._right_short_type)
             else:
-                [ret.append(n) for n in self.right.right._flatten_shortcut()]
+                [ret.append(n) for n in self.right._flatten_shortcut()]
         return ret
 
     def _format_shortcut(self):
