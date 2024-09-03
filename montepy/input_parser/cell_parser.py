@@ -119,11 +119,9 @@ class CellParser(MCNP_Parser):
             left.mark_last_leaf_shortcut(shortcut.type)
         else:
             left = next(node_iter)
-        left_type = (
-            shortcut.type
-            if isinstance(left, syntax_node.ValueNode) and left == shortcut.nodes[0]
-            else None
-        )
+        left_type = None
+        if isinstance(left, syntax_node.ValueNode) and left == shortcut.nodes[0]:
+            left_type = shortcut.type
         for node in node_iter:
             new_tree = syntax_node.GeometryTree(
                 "intersection",

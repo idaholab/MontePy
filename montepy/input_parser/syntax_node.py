@@ -1954,8 +1954,7 @@ class ShortcutNode(ListNode):
         :type node: ValueNode
         :param direction: the direct to go in. Must be in {-1, 1}
         :type direction: int
-        :param last_edge_shortcut: Whether or not the previous node in the list was
-            part of a different shortcut
+        :param last_edge_shortcut: Whether the previous node in the list was part of a different shortcut
         :type last_edge_shortcut: bool
         :returns: true it can be consumed.
         :rtype: bool
