@@ -2056,8 +2056,10 @@ class ShortcutNode(ListNode):
         # repeat
         elif self._type == Shortcuts.REPEAT:
             temp = self._format_repeat(leading_node)
+        # multiply
         elif self._type == Shortcuts.MULTIPLY:
             temp = self._format_multiply(leading_node)
+        # interpolate
         elif self._type in {Shortcuts.INTERPOLATE, Shortcuts.LOG_INTERPOLATE}:
             temp = self._format_interpolate(leading_node)
         if self.end_padding:
@@ -2085,23 +2087,26 @@ class ShortcutNode(ListNode):
 
         return f"{num_jumps.format()}{j}"
 
-    def _format_repeat(self, leading_node=None):
-        def can_use_last_node(node):
-            """Last node can be used if
-            - it's a basic ValueNode that matches this repeat
-            - it's also a shortcut, with the same edge values.
-            """
-            if isinstance(node, ValueNode):
-                value = node.value
-            elif isinstance(node, ShortcutNode):
-                value = node.nodes[-1].value
-            else:
-                return False
-            if value is None:
-                return False
-            return math.isclose(self.nodes[0].value, value)
+    def _can_use_last_node(self, node, start=None):
+        """Last node can be used if
+        - it's a basic ValueNode that matches this repeat
+        - it's also a shortcut, with the same edge values.
+        """
+        if isinstance(node, ValueNode):
+            value = node.value
+        elif isinstance(node, ShortcutNode):
+            value = node.nodes[-1].value
+        else:
+            return False
+        if value is None:
+            return False
+        if start is None:
+            start = self.nodes[0].value
+        return math.isclose(start, value)
 
-        if can_use_last_node(leading_node):
+    def _format_repeat(self, leading_node=None):
+
+        if self._can_use_last_node(leading_node):
             first_val = ""
             num_extra = 0
         else:
@@ -2124,7 +2129,7 @@ class ShortcutNode(ListNode):
         return f"{first_val}{num_repeats.format()}{r}"
 
     def _format_multiply(self, leading_node=None):
-        if leading_node is not None:
+        if self._can_use_last_node(leading_node):
             first_val = leading_node.nodes[-1]
             first_val_str = ""
         else:
@@ -2138,7 +2143,10 @@ class ShortcutNode(ListNode):
         return f"{first_val_str.format()}{self._num_node.format()}{m}"
 
     def _format_interpolate(self, leading_node=None):
-        if leading_node is not None:
+        begin = self._begin
+        if self.type == Shortcuts.LOG_INTERPOLATE:
+            begin = 10**begin
+        if self._can_use_last_node(leading_node, begin):
             start = ""
             num_extra_nodes = 1
         else:
