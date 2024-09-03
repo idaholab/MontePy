@@ -856,36 +856,75 @@ class TestShortcutNode(TestCase):
         with self.assertRaises(TypeError):
             short.end_padding = " "
 
-    def test_shortcut_expansion(self):
-        invalid = [
-            "3J 4R",
-            "1 4I 3M",
-            # last official test
-            "1 4I J",
-            "1 2Ilog J",
-            "J 2Ilog 5",
-            "3J 2M",
-            "10 M",
-            "2R",
-        ]
 
-        parser = ShortcutTestFixture()
-        for test, answer in tests.items():
-            print(test)
-            input = Input([test], BlockType.DATA)
-            parsed = parser.parse(input.tokenize())
-            for val, gold in zip(parsed, answer):
-                if val.value is None:
-                    self.assertEqual(gold, montepy.Jump())
-                else:
-                    self.assertAlmostEqual(val.value, gold)
-        for test in invalid:
-            print(test)
-            with self.assertRaises(ValueError):
-                input = Input([test], BlockType.DATA)
-                parsed = parser.parse(input.tokenize())
-                if parsed is None:
-                    raise montepy.errors.MalformedInputError("", "")
+"""
+Most examples, unless otherwise noted are taken from Section 2.8.1
+of LA-UR-17-29981.
+"""
+tests = {
+    "1 3M 2r": [1, 3, 3, 3],
+    # unofficial
+    "0.01 2ILOG 10": [0.01, 0.1, 1, 10],
+    "1 3M I 4": [1, 3, 3.5, 4],
+    "1 3M 3M": [1, 3, 9],
+    "1 2R 2I 2.5": [1, 1, 1, 1.5, 2, 2.5],
+    "1 R 2m": [1, 1, 2],
+    "1 R R": [1, 1, 1],
+    "1 2i 4 3m": [1, 2, 3, 4, 12],
+    # unofficial
+    "1 i 3": [1, 2, 3],
+    # unofficial
+    "1 ilog 100": [1, 10, 100],
+    # last official one
+    "1 2i 4 2i 10": [
+        1,
+        2,
+        3,
+        4,
+        6,
+        8,
+        10,
+    ],
+    "1 2j 4": [1, montepy.Jump(), montepy.Jump(), 4],
+    "1 j": [1, montepy.Jump()],
+}
+
+
+@pytest.mark.parametrize("test, answer", tests.items())
+def test_shortcut_expansion_valid(test, answer):
+    parser = ShortcutTestFixture()
+    print(test)
+    input = Input([test], BlockType.DATA)
+    parsed = parser.parse(input.tokenize())
+    for val, gold in zip(parsed, answer):
+        if val.value is None:
+            assert gold == montepy.Jump()
+        else:
+            assert val.value == pytest.approx(gold)
+
+
+@pytest.mark.parametrize(
+    "test",
+    [
+        ("3J 4R"),
+        ("1 4I 3M"),
+        # last official test
+        ("1 4I J"),
+        ("1 2Ilog J"),
+        ("J 2Ilog 5"),
+        ("3J 2M"),
+        ("10 M"),
+        ("2R"),
+    ],
+)
+def test_shortcut_expansion_invalid(test):
+    print(test)
+    parser = ShortcutTestFixture()
+    with pytest.raises(ValueError):
+        input = Input([test], BlockType.DATA)
+        parsed = parser.parse(input.tokenize())
+        if parsed is None:
+            raise montepy.errors.MalformedInputError("", "")
 
 
 @pytest.mark.parametrize(
@@ -953,39 +992,6 @@ def test_shortcut_flatten(test, length, indices):
         assert flatpack.nodes[index].type == short_type
 
 
-"""
-Most examples, unless otherwise noted are taken from Section 2.8.1
-of LA-UR-17-29981.
-"""
-tests = {
-    "1 3M 2r": [1, 3, 3, 3],
-    # unofficial
-    "0.01 2ILOG 10": [0.01, 0.1, 1, 10],
-    "1 3M I 4": [1, 3, 3.5, 4],
-    "1 3M 3M": [1, 3, 9],
-    "1 2R 2I 2.5": [1, 1, 1, 1.5, 2, 2.5],
-    "1 R 2m": [1, 1, 2],
-    "1 R R": [1, 1, 1],
-    "1 2i 4 3m": [1, 2, 3, 4, 12],
-    # unofficial
-    "1 i 3": [1, 2, 3],
-    # unofficial
-    "1 ilog 100": [1, 10, 100],
-    # last official one
-    "1 2i 4 2i 10": [
-        1,
-        2,
-        3,
-        4,
-        6,
-        8,
-        10,
-    ],
-    "1 2j 4": [1, montepy.Jump(), montepy.Jump(), 4],
-    "1 j": [1, montepy.Jump()],
-}
-
-
 @pytest.mark.parametrize(
     "in_str, answer",
     [
@@ -1006,6 +1012,7 @@ tests = {
         ("2j", "2j"),
         ("2J ", "2J "),
         ("J", "J"),
+        ("0 2i 3 10 2i 16 1", "0 2i 3 10 2i 16 1"),
     ],
 )
 def test_shortcut_format(in_str, answer):
