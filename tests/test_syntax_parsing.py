@@ -875,6 +875,7 @@ tests = {
     "1 i 3": [1, 2, 3],
     # unofficial
     "1 ilog 100": [1, 10, 100],
+    "1 1r ilog 100": [1, 1, 10, 100],
     # last official one
     "1 2i 4 2i 10": [
         1,
@@ -901,6 +902,7 @@ def test_shortcut_expansion_valid(test, answer):
             assert gold == montepy.Jump()
         else:
             assert val.value == pytest.approx(gold)
+    assert parsed.format() == test
 
 
 @pytest.mark.parametrize(
@@ -940,6 +942,7 @@ def test_shortcut_expansion_invalid(test):
         ("1 1 2i 4 5 6 ", [1, 1, 2, 3, 4, 5, 6], "1 1 2I 4  5 6"),
         ("1 1 2i 4:5 6 ", [1, 1, 2, 3, 4, 5, 6], "1 1 2I 4 :5 6"),
         ("1 ilog 100 ", [1, 10, 100], "1 1ILOG 100"),
+        ("1 1r ilog 100 ", [1, 1, 10, 100], "1 1r 1ILOG 100"),
         # secretly test iterator
         ("#1", [1], None),
         ("#(1 2 3)", [1, 2, 3], None),
@@ -997,6 +1000,7 @@ def test_shortcut_flatten(test, length, indices):
     [
         ("1 5R", "1 5R"),
         ("1 5r", "1 5r"),
+        ("1 5r 2m", "1 5r 2m"),
         ("1 r", "1 r"),
         ("1 r 2 2r", "1 r 2 2r"),
         ("1 J 5 2R", "1 J 5 2R"),
@@ -1017,18 +1021,12 @@ def test_shortcut_flatten(test, length, indices):
 )
 def test_shortcut_format(in_str, answer):
     parser = ShortcutTestFixture()
-    print(in_str, answer)
     input = Input([in_str], BlockType.CELL)
     shortcut = parser.parse(input.tokenize())
     assert shortcut.format() == answer
     # try jump with empty jump shortcut
     shortcut.nodes.clear()
     assert shortcut.format() == ""
-    for in_str in tests.keys():
-        print(in_str)
-        input = Input([in_str], BlockType.CELL)
-        shortcut = parser.parse(input.tokenize())
-        assert shortcut.format() == in_str
 
 
 class ShortcutTestFixture(MCNP_Parser):
