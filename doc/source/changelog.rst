@@ -12,6 +12,13 @@ MontePy Changelog
 
 * Removed ``Material.material_components``. See migration plan *TODO* (:pull:`507`).
 
+0.4.1
+----------------
+
+**Performance Improvement**
+
+* Fixed method of linking ``Material`` to ``ThermalScattering`` objects, avoiding a very expensive O(N:sup:`2`) (:issue:`510`).
+
 0.4.0
 --------------
 

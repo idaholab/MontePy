@@ -332,9 +332,11 @@ class MCNP_Problem:
                 ParticleTypeNotInCell,
             ) as e:
                 handle_error(e)
-        for input in self._data_inputs:
+        to_delete = []
+        for data_index, data_input in enumerate(self._data_inputs):
             try:
-                input.update_pointers(self._data_inputs)
+                if data_input.update_pointers(self._data_inputs):
+                    to_delete.append(data_index)
             except (
                 BrokenObjectLinkError,
                 MalformedInputError,
@@ -343,6 +345,8 @@ class MCNP_Problem:
             ) as e:
                 handle_error(e)
                 continue
+        for delete_index in to_delete[::-1]:
+            del self._data_inputs[delete_index]
 
     def remove_duplicate_surfaces(self, tolerance):
         """Finds duplicate surfaces in the problem, and remove them.

@@ -407,6 +407,67 @@ def test_thermal_scatter_validate():
     thermal._old_number = montepy.input_parser.syntax_node.ValueNode("2", int)
     with pytest.raises(montepy.errors.MalformedInputError):
         thermal.update_pointers([material])
+        with self.assertRaises(montepy.errors.IllegalState):
+            thermal.validate()
+        thermal._old_number = montepy.input_parser.syntax_node.ValueNode("2", int)
+        with self.assertRaises(montepy.errors.MalformedInputError):
+            thermal.update_pointers([material])
+
+    def test_thermal_scattering_add(self):
+        in_str = "Mt20 grph.20t"
+        input_card = Input([in_str], BlockType.DATA)
+        card = ThermalScatteringLaw(input_card)
+        card.add_scattering_law("grph.21t")
+        self.assertEqual(len(card.thermal_scattering_laws), 2)
+        self.assertEqual(card.thermal_scattering_laws, ["grph.20t", "grph.21t"])
+        card.thermal_scattering_laws = ["grph.22t"]
+        self.assertEqual(card.thermal_scattering_laws, ["grph.22t"])
+
+    def test_thermal_scattering_setter(self):
+        in_str = "Mt20 grph.20t"
+        input_card = Input([in_str], BlockType.DATA)
+        card = ThermalScatteringLaw(input_card)
+        laws = ["grph.21t"]
+        card.thermal_scattering_laws = laws
+        self.assertEqual(card.thermal_scattering_laws, laws)
+        with self.assertRaises(TypeError):
+            card.thermal_scattering_laws = 5
+        with self.assertRaises(TypeError):
+            card.thermal_scattering_laws = [5]
+
+    def test_thermal_scattering_material_add(self):
+        in_str = "M20 1001.80c 1.0"
+        input_card = Input([in_str], BlockType.DATA)
+        card = Material(input_card)
+        card.add_thermal_scattering("grph.21t")
+        self.assertEqual(len(card.thermal_scattering.thermal_scattering_laws), 1)
+        self.assertEqual(card.thermal_scattering.thermal_scattering_laws, ["grph.21t"])
+        card.thermal_scattering_laws = ["grph.22t"]
+        self.assertEqual(card.thermal_scattering_laws, ["grph.22t"])
+        with self.assertRaises(TypeError):
+            card.add_thermal_scattering(5)
+
+    def test_thermal_scattering_format_mcnp(self):
+        in_str = "Mt20 grph.20t"
+        input_card = Input([in_str], BlockType.DATA)
+        card = ThermalScatteringLaw(input_card)
+        in_str = "M20 1001.80c 0.5 8016.80c 0.5"
+        input_card = Input([in_str], BlockType.DATA)
+        material = Material(input_card)
+        material.thermal_scattering = card
+        card._parent_material = material
+        material.thermal_scattering.thermal_scattering_laws = ["grph.20t"]
+        self.assertEqual(card.format_for_mcnp_input((6, 2, 0)), ["Mt20 grph.20t "])
+
+    def test_thermal_str(self):
+        in_str = "Mt20 grph.20t"
+        input_card = Input([in_str], BlockType.DATA)
+        card = ThermalScatteringLaw(input_card)
+        self.assertEqual(str(card), "THERMAL SCATTER: ['grph.20t']")
+        self.assertEqual(
+            repr(card),
+            "THERMAL SCATTER: material: None, old_num: 20, scatter: ['grph.20t']",
+        )
 
 
 def test_thermal_scattering_add():
