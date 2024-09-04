@@ -376,21 +376,6 @@ class Cell(Numbered_MCNP_Object):
         """
         pass
 
-    @property
-    def geometry_logic_string(self):  # pragma: no cover
-        """
-        The original geoemtry input string for the cell.
-
-        .. warning::
-            .. deprecated:: 0.2.0
-                This was removed to allow for :func:`geometry` to truly implement CSG geometry.
-
-        :raise DeprecationWarning: Will always be raised as an error (which will cause program to halt).
-        """
-        raise DeprecationWarning(
-            "Geometry_logic_string has been removed from cell. Use Cell.geometry instead."
-        )
-
     @make_prop_val_node(
         "_density_node", (float, int, type(None)), base_type=float, deletable=True
     )
