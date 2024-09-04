@@ -6,18 +6,41 @@ MontePy Changelog
 
 **Features Added**
 
-* Redesigned how Materials hold Material_Components. See migration plan *TODO* (:pull:`507`). 
+* Redesigned how Materials hold Material_Components. See :ref:`migrate 0 1` (:pull:`507`). 
 
 **Breaking Changes**
 
-* Removed ``Material.material_components``. See migration plan *TODO* (:pull:`507`).
+* Removed ``Material.material_components``. See :ref:`migrate 0 1` (:pull:`507`).
+
+**Deprecated code Removed**
+
+* ``montepy.Cell.geometry_logic_string``
+* ``montepy.data_inputs.cell_modifier.CellModifier.has_changed_print_style``
+* ``montepy.data_inputs.data_input.DataInputAbstract``
+ 
+  * ``class_prefix``
+  * ``has_number``
+  * ``has_classifier``
+
+* ``montepy.input_parser.mcnp_input.Card``
+* ``montepy.input_parser.mcnp_input.ReadCard``
+* ``montepy.input_parser.mcnp_input.Input.words``
+* ``montepy.input_parser.mcnp_input.Comment``
+* ``montepy.input_parser.mcnp_input.parse_card_shortcuts``
+* ``montepy.mcnp_object.MCNP_Object``
+
+  * ``wrap_words_for_mcnp``
+  * ``compress_repeat_values``
+  * ``compress_jump_values``
+  * ``words``
+  * ``allowed_keywords``
 
 0.4.1
 ----------------
 
 **Performance Improvement**
 
-* Fixed method of linking ``Material`` to ``ThermalScattering`` objects, avoiding a very expensive O(N:sup:`2`) (:issue:`510`).
+* Fixed method of linking ``Material`` to ``ThermalScattering`` objects, avoiding a very expensive O(N :sup:`2`) (:issue:`510`).
 
 0.4.0
 --------------
