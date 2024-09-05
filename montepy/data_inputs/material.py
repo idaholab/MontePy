@@ -1,5 +1,4 @@
 # Copyright 2024, Battelle Energy Alliance, LLC All Rights Reserved.
-import collections as co
 import copy
 import itertools
 
@@ -38,8 +37,7 @@ class Material(data_input.DataInputAbstract, Numbered_MCNP_Object):
     _parser = MaterialParser()
 
     def __init__(self, input=None):
-        self._material_components = {}
-        self._pointers = co.defaultdict(lambda: co.defaultdict(dict))
+        self._components = []
         self._thermal_scattering = None
         self._is_atom_fraction = False
         self._number = self._generate_default_node(int, -1)
@@ -77,9 +75,7 @@ class Material(data_input.DataInputAbstract, Numbered_MCNP_Object):
                             input,
                             f"Material definitions for material: {self.number} cannot use atom and mass fraction at the same time",
                         )
-                self._material_components[isotope] = MaterialComponent(
-                    isotope, fraction
-                )
+                self._components.append((isotope, fraction))
 
     @make_prop_val_node("_old_number")
     def old_number(self):
