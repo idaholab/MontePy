@@ -112,33 +112,79 @@ class Material(data_input.DataInputAbstract, Numbered_MCNP_Object):
         The keys are :class:`~montepy.data_inputs.isotope.Isotope` instances, and the values are
         :class:`~montepy.data_inputs.material_component.MaterialComponent` instances.
 
-        .. deprecated:: 0.4.0
-            Accessing this dictionary directly is deprecated.
-            Instead access the nuclides directly with the keys.
+        .. deprecated:: 0.4.1
+            MaterialComponent has been deprecated as part of a redesign for the material
+            interface due to a critical bug in how MontePy handles duplicate nuclides.
+            See :ref:`migrate 0 1`.
 
-        :rtype: dict
+        :raises DeprecationWarning: This has been fully deprecated and cannot be used.
         """
-        return self._material_components
+        raise DeprecationWarning(
+            f"""material_components is deprecated, and has been removed in MontePy 1.0.0.
+See <https://www.montepy.org/migrations/migrate0_1.html> for more information """
+        )
 
-    def __getitem__(self, key):
+    def __getitem__(self, idx):
         """ """
-        # decide if this is a slice
-        if isinstance(key, (tuple, Element)):
-            if isinstance(key, Element):
-                return self.__get_slice((key,))
-            # TODO think about upper limit
-            if len(key) <= 3:
-                return self.__get_slice(key)
-            if any([isinstance(s, slice) for s in key]):
-                return self.__get_slice(key)
-        pointer = self.__get_pointer_iso(key)
-        return self.material_components[pointer].fraction
+        if not isinstance(idx, (int, slice)):
+            raise TypeError(f"Not a valid index. {idx} given.")
+        return self._components[idx]
+
+    def __iter__(self):
+        return iter(self._components)
+
+    def __setitem__(self, key, newvalue):
+        """ """
+        if not isinstance(idx, (int, slice)):
+            raise TypeError(f"Not a valid index. {idx} given.")
+        self._check_valid_comp(newvalue)
+        self._components[idx] = newvalue
+
+    def _check_valid_comp(self, newvalue):
+        if not isinstance(newvalue, tuple):
+            raise TypeError(
+                f"Invalid component given. Must be tuple of Isotope, fraction. {newvalue} given."
+            )
+        if len(newvalue) != 2:
+            raise ValueError(
+                f"Invalid component given. Must be tuple of Isotope, fraction. {newvalue} given."
+            )
+        if not isinstance(newvalue[0], Isotope):
+            raise TypeError(f"First element must be an Isotope. {newvalue[0]} given.")
+        if not isinstance(newvalue[1], (float, int)):
+            raise TypeError(
+                f"Second element must be a fraction greater than 0. {newvalue[1]} given."
+            )
+        if newvalue[1] < 0.0:
+            raise TypeError(
+                f"Second element must be a fraction greater than 0. {newvalue[1]} given."
+            )
+
+    def __delitem__(self, idx):
+        if not isinstance(idx, (int, slice)):
+            raise TypeError(f"Not a valid index. {idx} given.")
+        del self._components[idx]
+
+    def append(self, obj):
+        self._check_valid_comp(obj)
+        self._components.append(obj)
+
+    def find(
+        self, fancy_name=None, element=None, A=None, meta_isomer=None, library=None
+    ):
+        """ """
+        pass
+
+    def __iadd__(self, other):
+        pass
+
+    def __bool__(self):
+        pass
+
+    def __add__(self, other):
+        pass
 
     def __get_pointer_iso(self, key):
-        # TODO write up better
-        """
-        structure: self._pointers[Element][(A,meta)][library]
-        """
         base_isotope = Isotope.get_from_fancy_name(key)
         element = self._pointers[base_isotope.element]
         try:
@@ -167,57 +213,6 @@ class Material(data_input.DataInputAbstract, Numbered_MCNP_Object):
         if all(is_slice[-num_slices:]):
             return self.__get_optimal_slice(key, num_slices)
         return self.__get_brute_slice(key)
-
-    def __get_optimal_slice(self, key, num_slices):
-        slicer_funcs = (
-            self._match_el_slice,
-            self._match_a_meta_slice,
-            self._match_library_slice,
-        )
-        key = (key[0], key[1:3], key[3])
-        if num_slices == 4:
-            return self._crawl_pointer(self._pointers, slicer_funcs, key)
-        element = Isotope.get_from_fancy_name(key[0]).element
-        elem_dict = self._pointers[element]
-        if num_slices in {3, 2}:
-            return self._crawl_pointer(elem_dict, slicer_funcs[1:], key[1:])
-        isotope_dict = elem_dict[key[1]]
-        return self._crawl_pointer(isotope_dict, slicer_funcs[2:], key[2:])
-
-    def _crawl_pointer(self, start_point, slicer_funcs, slicers):
-        slicer_func, slicer_funcs = slicer_funcs[0], slicer_funcs[1:]
-        slicer, slicers = slicers[0], slicers[1:]
-        matches = slicer_func(start_points.keys(), slicer)
-        for node, match in zip(start_point.values(), matches):
-            # TODO handle tuples in second level
-            if not match:
-                continue
-            if isinstance(node, Isotope):
-                # TODO handle keyerror
-                yield self.material_component[isotope].fraction
-            else:
-                yield from self._crawl_pointer(node, slicer_funcs, slicers)
-
-    @classmethod
-    def _match_el_slice(cls, elements, slicer):
-        return cls._match_slice([e.Z for e in elements], slicer)
-
-    @classmethod
-    def _match_a_meta_slice(cls, keys, slicers):
-        a_slice, meta_slice = slicers
-        if isinstance(a_slice, slice):
-            a_match = cls._match_slice([key[0] for key in keys], a_slice)
-        else:
-            a_match = [a == a_slice for a, _ in keys]
-        if isinstance(meta_slice, slice):
-            meta_match = cls._match_slice([key[1] for key in keys], meta_slice)
-        else:
-            meta_match = [meta == meta_slice for _, meta in keys]
-        return [a and meta for a, meta in zip(a_match, meta_match)]
-
-    @classmethod
-    def _match_meta_slice(cls, keys, slicer):
-        return cls._match_slice(keys, slicer)
 
     _LIB_PARSER = re.compile(r"\.?(?P<num>\d{2,})(?P<type>[a-z]+)", re.I)
 
@@ -276,32 +271,6 @@ class Material(data_input.DataInputAbstract, Numbered_MCNP_Object):
         else:
             end = keys[slicer.end]
         return [old and key < end for key, old in zip(keys, ret)]
-
-    def __setitem__(self, key, newvalue):
-        """ """
-        try:
-            pointer = self.__get_pointer_iso(key)
-        except KeyError as e:
-            pointer = Isotope.get_from_fancy_name(key)
-        try:
-            self.material_components[pointer].fraction = newvalue
-        except KeyError as e:
-            new_comp = MaterialComponent(pointer, newvalue)
-            self.material_components[pointer] = new_comp
-        self._pointers[pointer.element][(pointer.A, pointer.meta_state)][
-            pointer.library
-        ] = pointer
-
-    def __delitem__(self, key):
-        try:
-            pointer = self.__get_pointer_iso(key)
-        except KeyError as e:
-            # TODO
-            pass
-        del self.material_components[pointer]
-        del self._pointers[pointer.element][(pointer.A, pointer.meta_state)][
-            pointer.library
-        ]
 
     @make_prop_pointer("_thermal_scattering", thermal_scattering.ThermalScatteringLaw)
     def thermal_scattering(self):
@@ -434,7 +403,7 @@ class Material(data_input.DataInputAbstract, Numbered_MCNP_Object):
             temp_hash = hash(
                 (temp_hash, str(isotope), self.material_components[isotope].fraction)
             )
-
+        # TODO
         return hash((temp_hash, self.number))
 
     def __eq__(self, other):
