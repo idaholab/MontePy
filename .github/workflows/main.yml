@@ -64,7 +64,10 @@ jobs:
           python-version: ${{ matrix.python-version }}
       - run: pip install --user . montepy[test]
       - run: pip install --user . montepy[build]
-      - run: coverage run -m pytest --junitxml=test_report.xml
+      - run: coverage run -m pytest tests/unit --junitxml=test_report.xml
+        name: Collect unit test coverage
+      - run: pytest tests/integr
+        name: Run integration tests
       - run: coverage report
         if:  ${{ success() || failure() }}
       - run: coverage xml
