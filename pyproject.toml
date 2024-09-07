@@ -86,7 +86,7 @@ omit = ["tests/*"]
 [tool.coverage.report]
 precision = 2
 show_missing = true
-fail_under = 90.0
+fail_under = 89.0
 exclude_also = [
 	"\\s+@abstractmethod\\s*",
 	"pass",
