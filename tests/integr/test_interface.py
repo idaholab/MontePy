@@ -4,7 +4,7 @@ import glob
 import montepy
 import os
 import unittest
-from tests import constants
+from .. import constants
 
 import pickle
 
