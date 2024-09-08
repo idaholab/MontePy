@@ -38,6 +38,7 @@ dependencies = [
 test = [
 	"coverage[toml]>=6.3.2", 
 	"pytest", 
+	"pytest-cov", 
 	"pytest-profiling",
 	"montepy[build]",
 ]
