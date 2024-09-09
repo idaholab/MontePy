@@ -57,7 +57,7 @@ class MaterialParser(DataParser):
     )
     def mat_parameters(self, p):
         """
-        A list of the parameters (key, value pairs) for this input.
+        A list of the parameters (key, value pairs) that allows material libraries.
 
         :returns: all parameters
         :rtype: ParametersNode
@@ -76,7 +76,7 @@ class MaterialParser(DataParser):
     )
     def mat_parameter(self, p):
         """
-        A singular Key-value pair.
+        A singular Key-value pair that includes a material library.
 
         :returns: the parameter.
         :rtype: SyntaxNode
@@ -89,4 +89,7 @@ class MaterialParser(DataParser):
     @_("NUMBER_WORD")
     @_("NUMBER_WORD padding")
     def library(self, p):
+        """
+        A library name.
+        """
         return self._flush_phrase(p, str)

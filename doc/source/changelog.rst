@@ -4,6 +4,10 @@ MontePy Changelog
 #Next Version#
 --------------
 
+**Bugs Fixed**
+
+* Fixed bug where material-level library specifications (e.g., ``m1 plib=84p``) could not be fully parsed (:issue:`521`).
+
 **Performance Improvement**
 
 * Fixed method of linking ``Material`` to ``ThermalScattering`` objects, avoiding a very expensive O(N:sup:`2`) (:issue:`510`).
