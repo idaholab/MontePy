@@ -339,6 +339,16 @@ def test_data_append(cp_simple_problem):
     prob.materials.append(new_mat)
     assert new_mat in prob.materials
     assert new_mat in prob.data_inputs
+    assert prob.data_inputs.count(new_mat) == 1
+
+
+def test_data_append_renumber(cp_simple_problem):
+    prob = cp_simple_problem
+    new_mat = copy.deepcopy(next(iter(prob.materials)))
+    prob.materials.append_renumber(new_mat)
+    assert new_mat in prob.materials
+    assert new_mat in prob.data_inputs
+    assert prob.data_inputs.count(new_mat) == 1
 
 
 def test_data_remove(cp_simple_problem):
