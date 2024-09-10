@@ -23,5 +23,9 @@ class Operator(Enum):
     """
     Internal operator essentially equivalent to No-op.
 
-    This is used to properly handle parentheses while parsing.
+    This is used to properly handle some leaf nodes.
+    """
+    GROUP = "()"
+    """
+    Grouping operator that represents parentheses.
     """

@@ -3,21 +3,18 @@ C cells
 c
 1 1 20
          -1000  $ dollar comment
-     imp:n,p=1 trcl=5
 2 2 8
       -1005
      imp:n=1
-     imp:p=0.5
+     imp:p=0.5 $ graveyard
 3 3 -1
       1000 1005 -1010
-     imp:n,p=1
-99 0
-      1010
-     imp:n,p=0
+c
+c foo end comment
+c
+99 0 1000:-1005 1010 $graveyard
 5 0 
       #99
-      imp:n,p=3
-c foo end comment
 
 C surfaces
 1000 SO 1

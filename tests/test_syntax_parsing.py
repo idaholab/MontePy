@@ -568,6 +568,16 @@ class TestPaddingNode(TestCase):
         self.assertEqual(len(comment.contents), 0)
 
 
+def test_graveyard_comment():
+    padding = syntax_node.PaddingNode(" ")
+    padding.append("$ test", True)
+    assert padding.has_graveyard_comment()
+    padding.append(" ")
+    assert padding.has_graveyard_comment()
+    padding.append("\n")
+    assert not padding.has_graveyard_comment()
+
+
 @pytest.mark.parametrize(
     "padding,expect",
     [
@@ -1197,8 +1207,7 @@ test title
         card = montepy.input_parser.syntax_node.CommentNode(in_strs[0])
         output = card.format()
         answer = "c foo"
-        str_answer = """COMMENT:
-c foo"""
+        str_answer = "COMMENT: c foo"
         self.assertEqual(repr(card), str_answer)
         self.assertEqual("c foo", str(card))
         self.assertEqual(len(answer), len(output))

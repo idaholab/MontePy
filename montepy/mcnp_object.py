@@ -128,6 +128,7 @@ class MCNP_Object(ABC):
         """
         self.validate()
         self._update_values()
+        self._tree.check_for_graveyard_comments()
         lines = self.wrap_string_for_mcnp(self._tree.format(), mcnp_version, True)
         return lines
 
@@ -212,21 +213,20 @@ class MCNP_Object(ABC):
         )
         ret = []
         for line in strings:
-            if line.strip():
-                buffer = wrapper.wrap(line)
-                if len(buffer) > 1:
-                    warning = LineExpansionWarning(
-                        f"The line exceeded the maximum length allowed by MCNP, and was split. The line was:\n{line}"
-                    )
-                    warning.cause = "line"
-                    warning.og_value = line
-                    warning.new_value = buffer
-                    warnings.warn(
-                        warning,
-                        LineExpansionWarning,
-                        stacklevel=2,
-                    )
-                ret += buffer
+            buffer = wrapper.wrap(line)
+            if len(buffer) > 1:
+                warning = LineExpansionWarning(
+                    f"The line exceeded the maximum length allowed by MCNP, and was split. The line was:\n{line}"
+                )
+                warning.cause = "line"
+                warning.og_value = line
+                warning.new_value = buffer
+                warnings.warn(
+                    warning,
+                    LineExpansionWarning,
+                    stacklevel=2,
+                )
+            ret += buffer
         return ret
 
     def validate(self):

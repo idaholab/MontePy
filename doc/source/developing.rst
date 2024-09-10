@@ -347,8 +347,8 @@ SURFACE: 1005, RCC
 
 Writing to File (Format for MCNP Input)
 """""""""""""""""""""""""""""""""""""""
-MontePy (via :func:`~montepy.mcnp_problem.MCNP_Problem.write_to_file`) writes
-a class to file by calling its :func:`~montepy.mcnp_object.MCNP_Object.format_for_mcnp_input` method.
+MontePy (via :func:`~montepy.mcnp_problem.MCNP_Problem.write_problem`) writes
+a class to file path or file handle  by calling its :func:`~montepy.mcnp_object.MCNP_Object.format_for_mcnp_input` method.
 This must return a list of strings that faithfully represent this objects state, and tries to replicate the user formatting.
 Each string in the list represents one line in the MCNP input file to be written.
 
@@ -396,6 +396,12 @@ For example the init function for ``Cells``
 
         def __init__(self, cells=None):
             super().__init__(montepy.Cell, cells)
+
+Collection: :class:`~montepy.numbered_object_collection.NumberedDataObjectCollection`
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+This is a subclass of :class:`~montepy.numbered_object_collection.NumberedObjectCollection`,
+which is designed for :class:`~montepy.data_inputs.data_input.DataInputAbstract` instances.
+It is a wrapper that will ensure that all of its items are also in :func:`~montepy.mcnp_problem.MCNP_Problem.data_inputs`.
 
 
 Numbered Object :class:`~montepy.numbered_mcnp_object.Numbered_MCNP_Object`
