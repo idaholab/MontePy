@@ -65,7 +65,10 @@ class MCNP_Problem:
 
     def __relink_objs(self):
         if self.__unpickled:
-            for collection in {"_cells", "_surfaces", "_data_inputs"}:
+            self._cells.update_pointers(
+                self._cells, self._materials, self._surfaces, self._data_inputs, self
+            )
+            for collection in {"_surfaces", "_data_inputs"}:
                 for obj in getattr(self, collection):
                     obj.link_to_problem(self)
             self.__unpickled = False
