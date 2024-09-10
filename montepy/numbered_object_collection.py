@@ -439,6 +439,7 @@ class NumberedDataObjectCollection(NumberedObjectCollection):
         :type insert_in_data: bool
         :raises NumberConflictError: if this object has a number that is already in use.
         """
+        super().append(obj)
         if self._problem:
             if self._last_index:
                 index = self._last_index
@@ -452,7 +453,6 @@ class NumberedDataObjectCollection(NumberedObjectCollection):
             if insert_in_data:
                 self._problem.data_inputs.insert(index + 1, obj)
             self._last_index = index + 1
-        super().append(obj)
 
     def __delitem__(self, idx):
         if not isinstance(idx, int):
