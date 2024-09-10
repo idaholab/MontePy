@@ -6,7 +6,26 @@ MontePy Changelog
 
 **Bug Fixes**
 
+* Fixed a bug where ``problem.materials.append_renumber`` would double add a material to ``problem.data_inputs`` (:issue:`516`).
+
+**Performance Improvement**
+
+* Fixed method of linking ``Material`` to ``ThermalScattering`` objects, avoiding a very expensive O(N:sup:`2`) (:issue:`510`).
+
+0.4.0
+--------------
+
+**Features Added**
+
+* Write problems to either file paths or streams (file handles) with MCNP_Problem.write_problem() (:issue:`492`).
+* When adding a material to problem.materials it will also be added to problem.data_inputs, ensuring it is printed to the file (:pull:`488`).
+
+**Bug Fixes**
+
 * Fixed bug that didn't show metastable states for pretty printing and isotope. Also handled the case that Am-241 metstable states break convention (:issue:`486`).
+* Fixed bug where cell modifiers could be made irrelevant by being added after a comment (:issue:`483`).
+* Fixed bug where parentheses in cell geometry are not properly exported (:pull:`491`).
+
 
 0.3.3
 --------------

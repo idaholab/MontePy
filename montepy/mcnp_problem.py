@@ -1,4 +1,5 @@
 # Copyright 2024, Battelle Energy Alliance, LLC All Rights Reserved.
+import os
 from enum import Enum
 import itertools
 from montepy.data_inputs import mode, transform
@@ -287,7 +288,7 @@ class MCNP_Problem:
                             else:
                                 raise e
                         if isinstance(obj, Material):
-                            self._materials.append(obj)
+                            self._materials.append(obj, False)
                         if isinstance(obj, transform.Transform):
                             self._transforms.append(obj)
                     if trailing_comment is not None and last_obj is not None:
@@ -333,9 +334,11 @@ class MCNP_Problem:
                 ParticleTypeNotInCell,
             ) as e:
                 handle_error(e)
-        for input in self._data_inputs:
+        to_delete = []
+        for data_index, data_input in enumerate(self._data_inputs):
             try:
-                input.update_pointers(self._data_inputs)
+                if data_input.update_pointers(self._data_inputs):
+                    to_delete.append(data_index)
             except (
                 BrokenObjectLinkError,
                 MalformedInputError,
@@ -344,6 +347,8 @@ class MCNP_Problem:
             ) as e:
                 handle_error(e)
                 continue
+        for delete_index in to_delete[::-1]:
+            del self._data_inputs[delete_index]
 
     def remove_duplicate_surfaces(self, tolerance):
         """Finds duplicate surfaces in the problem, and remove them.
@@ -392,25 +397,52 @@ class MCNP_Problem:
         self._transforms = Transforms(transforms)
         self._data_inputs = sorted(set(self._data_inputs + materials + transforms))
 
-    def write_to_file(self, new_problem, overwrite=False):
+    def write_problem(self, destination, overwrite=False):
+        """
+        Write the problem to a file or writeable object.
+
+        :param destination: File path or writable object
+        :type destination: io.TextIOBase, str, os.PathLike
+        :param overwrite: Whether to overwrite 'destination' if it is an existing file
+        :type overwrite: bool
+        """
+        if hasattr(destination, "write") and callable(getattr(destination, "write")):
+            new_file = MCNP_InputFile.from_open_stream(destination)
+            self._write_to_stream(new_file)
+        elif isinstance(destination, (str, os.PathLike)):
+            new_file = MCNP_InputFile(destination, overwrite=overwrite)
+            with new_file.open("w") as fh:
+                self._write_to_stream(fh)
+        else:
+            raise TypeError(
+                f"destination f{destination} is not a file path or writable object"
+            )
+
+    def write_to_file(self, file_path, overwrite=False):
         """
         Writes the problem to a file.
 
         .. versionchanged:: 0.3.0
             The overwrite parameter was added.
 
-        :param new_problem: the file name to write this problem to
-        :type new_problem: str
+        :param file_path: the file path to write this problem to
+        :type file_path: str, os.PathLike
         :param overwrite: Whether to overwrite the file at 'new_problem' if it exists
         :type overwrite: bool
         :raises IllegalState: if an object in the problem has not been fully initialized.
         :raises FileExistsError: if a file already exists with the same path.
         :raises IsADirectoryError: if the path given is actually a directory.
         """
-        new_file = MCNP_InputFile(new_problem, overwrite=overwrite)
-        with new_file.open("w") as fh, warnings.catch_warnings(
-            record=True
-        ) as warning_catch:
+        return self.write_problem(file_path, overwrite)
+
+    def _write_to_stream(self, inp):
+        """
+        Writes the problem to a writeable stream.
+
+        :param inp: Writable input file
+        :type inp: MCNP_InputFile
+        """
+        with warnings.catch_warnings(record=True) as warning_catch:
             objects_list = []
             if self.message:
                 objects_list.append(([self.message], False))
@@ -428,21 +460,21 @@ class MCNP_Problem:
                         for warning in warning_catch[::-1]:
                             if getattr(warning, "handled", None):
                                 break
-                            warning.lineno = fh.lineno
-                            warning.path = fh.name
+                            warning.lineno = inp.lineno
+                            warning.path = inp.name
                             warning.obj = obj
                             warning.lines = lines
                             warning.handled = True
                     for line in lines:
-                        fh.write(line + "\n")
+                        inp.write(line + "\n")
                 if terminate:
-                    fh.write("\n")
+                    inp.write("\n")
             for line in self.cells._run_children_format_for_mcnp(
                 self.data_inputs, self.mcnp_version
             ):
-                fh.write(line + "\n")
+                inp.write(line + "\n")
 
-            fh.write("\n")
+            inp.write("\n")
         self._handle_warnings(warning_catch)
 
     def _handle_warnings(self, warning_queue):

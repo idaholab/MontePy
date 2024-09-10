@@ -129,7 +129,7 @@ def make_prop_pointer(
 
     :param hidden_param: The string representing the parameter name of the internally stored ValueNode.
     :type hidden_param: str
-    :param types: the acceptable types for the settable, which is passed to isinstance.
+    :param types: the acceptable types for the settable, which is passed to isinstance, if an empty tuple is provided the type will be self.
     :type types: Class, tuple
     :param validator: A validator function to run on values before setting. Must accept func(self, value).
     :type validator: function
