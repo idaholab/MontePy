@@ -31,6 +31,7 @@ class MCNP_Problem:
         self._input_file = MCNP_InputFile(file_name)
         self._title = None
         self._message = None
+        self.__unpickled = False
         self._print_in_data_block = CellDataPrintController()
         self._original_inputs = []
         self._cells = Cells(problem=self)
@@ -44,9 +45,7 @@ class MCNP_Problem:
 
     def __setstate__(self, nom_nom):
         self.__dict__.update(nom_nom)
-        for collection in {"cells", "surfaces", "data_inputs"}:
-            for obj in getattr(self, collection):
-                obj.link_to_problem(self)
+        self.__unpickled = True
 
     @property
     def original_inputs(self):
@@ -64,6 +63,13 @@ class MCNP_Problem:
         """
         return self._original_inputs
 
+    def __relink_objs(self):
+        if self.__unpickled:
+            for collection in {"_cells", "_surfaces", "_data_inputs"}:
+                for obj in getattr(self, collection):
+                    obj.link_to_problem(self)
+            self.__unpickled = False
+
     @property
     def cells(self):
         """
@@ -72,6 +78,7 @@ class MCNP_Problem:
         :return: a collection of the Cell objects, ordered by the order they were in the input file.
         :rtype: Cells
         """
+        self.__relink_objs()
         return self._cells
 
     @cells.setter
@@ -141,6 +148,7 @@ class MCNP_Problem:
         :return: a collection of the Surface objects, ordered by the order they were in the input file.
         :rtype: Surfaces
         """
+        self.__relink_objs()
         return self._surfaces
 
     @property
@@ -151,6 +159,7 @@ class MCNP_Problem:
         :return: a colection of the Material objects, ordered by the order they were in the input file.
         :rtype: Materials
         """
+        self.__relink_objs()
         return self._materials
 
     @materials.setter
@@ -183,6 +192,7 @@ class MCNP_Problem:
         :return: a list of the :class:`~montepy.data_cards.data_card.DataCardAbstract` objects, ordered by the order they were in the input file.
         :rtype: list
         """
+        self.__relink_objs()
         return self._data_inputs
 
     @property
