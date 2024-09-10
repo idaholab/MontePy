@@ -18,6 +18,7 @@ import montepy
 import numpy as np
 import textwrap
 import warnings
+import weakref
 
 
 class MCNP_Object(ABC):
@@ -35,7 +36,7 @@ class MCNP_Object(ABC):
     """
 
     def __init__(self, input, parser):
-        self._problem = None
+        self.__problem = None
         self._parameters = ParametersNode()
         self._input = None
         if input:
@@ -247,7 +248,20 @@ class MCNP_Object(ABC):
         """
         if not isinstance(problem, montepy.mcnp_problem.MCNP_Problem):
             raise TypeError("problem must be an MCNP_Problem")
-        self._problem = problem
+        self.__problem = weakref.ref(problem)
+
+    @property
+    def _problem(self):
+        if self.__problem is not None:
+            return self.__problem()
+        return None
+
+    @_problem.setter
+    def _problem(self, problem):
+        if problem is None:
+            self.__problem = None
+            return
+        self.link_to_problem(problem)
 
     @property
     def trailing_comment(self):
