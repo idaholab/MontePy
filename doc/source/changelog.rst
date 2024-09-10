@@ -4,8 +4,9 @@ MontePy Changelog
 #Next Version#
 --------------
 
-**Bugs Fixed**
+**Bug Fixes**
 
+* Fixed a bug where ``problem.materials.append_renumber`` would double add a material to ``problem.data_inputs`` (:issue:`516`).
 * Fixed bug where material-level library specifications (e.g., ``m1 plib=84p``) could not be fully parsed (:issue:`521`).
 
 **Performance Improvement**
