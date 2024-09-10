@@ -340,6 +340,41 @@ class Importance(CellModifierInput):
     def _update_cell_values(self):
         pass
 
+    @property
+    def trailing_comment(self):
+        """
+        The trailing comments and padding of an input.
+
+        Generally this will be blank as these will be moved to be a leading comment for the next input.
+
+        :returns: the trailing ``c`` style comments and intermixed padding (e.g., new lines)
+        :rtype: list
+        """
+        last_tree = list(self._real_tree.values())[-1]
+        if last_tree:
+            return last_tree.get_trailing_comment()
+
+    def _delete_trailing_comment(self):
+        last_tree = list(self._real_tree.values())[-1]
+        if last_tree:
+            last_tree._delete_trailing_comment()
+
+    def _grab_beginning_comment(self, new_padding):
+        last_tree = None
+        last_padding = None
+        print(self._real_tree.keys())
+        for tree in self._real_tree.values():
+            print(tree)
+            if last_padding is not None and last_tree is not None:
+                last_tree._grab_beginning_comment(last_padding)
+                last_tree._delete_trailing_comment()
+            last_padding = tree.get_trailing_comment()
+            last_tree = tree
+        if new_padding:
+            next(iter(self._real_tree.values()))["start_pad"]._grab_beginning_comment(
+                new_padding
+            )
+
 
 def _generate_default_data_tree(particle):
     list_node = syntax_node.ListNode("number sequence")
