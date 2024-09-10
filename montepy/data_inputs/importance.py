@@ -355,15 +355,11 @@ class Importance(CellModifierInput):
             return last_tree.get_trailing_comment()
 
     def _delete_trailing_comment(self):
-        for part, tree in self._real_tree.items():
+        for part, tree in reversed(self._real_tree.items()):
             tree._delete_trailing_comment()
-            for cell in reversed(list(self._problem.cells)):
-                print(cell.importance._particle_importances)
-                tree = cell.importance._particle_importances
-                if part in tree and tree[part].get_trailing_comment():
-                    tree._delete_trailing_comment()
-                    break
-        print(self._real_tree)
+            part_tree = self._particle_importances[part]
+            part_tree["data"]._delete_trailing_comment()
+            break
 
     def _grab_beginning_comment(self, new_padding):
         last_tree = None
