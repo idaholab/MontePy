@@ -443,3 +443,14 @@ class MCNP_Object(ABC):
             stacklevel=2,
         )
         return set()
+
+    def __getstate__(self):
+        state = self.__dict__.copy()
+        weakref_key = "_MCNP_Object__problem"
+        if weakref_key in state:
+            del state[weakref_key]
+        return state
+
+    def __setstate__(self, crunchy_data):
+        crunchy_data["_MCNP_Object__problem"] = None
+        self.__dict__.update(crunchy_data)

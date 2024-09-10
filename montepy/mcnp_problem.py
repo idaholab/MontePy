@@ -42,6 +42,12 @@ class MCNP_Problem:
         self._mcnp_version = DEFAULT_VERSION
         self._mode = mode.Mode()
 
+    def __setstate__(self, nom_nom):
+        self.__dict__.update(nom_nom)
+        for collection in {"cells", "surfaces", "data_inputs"}:
+            for obj in getattr(self, collection):
+                obj.link_to_problem(self)
+
     @property
     def original_inputs(self):
         """
