@@ -182,7 +182,7 @@ class Volume(CellModifierInput):
         ret = (
             f"VOLUME: in_cell: {self._in_cell_block}, calc_by_mcnp: {self.is_mcnp_calculated},"
             f" set_in_block: {self.set_in_cell_block}, "
-            f"Volume : {self._volume}"
+            f"Volume : {self._volume if hasattr(self, '_volume') else ''}"
         )
         return ret
 
