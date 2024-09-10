@@ -505,7 +505,7 @@ def test_importance_format_mutated(importance_problem):
     with pytest.warns(LineExpansionWarning):
         output = imp.format_for_mcnp_input((6, 2, 0))
     print(output)
-    assert len(output) == 3
+    assert len(output) == 4
     assert "imp:n 0.5 1 1 0 3" in output
 
 
