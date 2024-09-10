@@ -11,7 +11,11 @@ MontePy Changelog
 
 **Performance Improvement**
 
-* Fixed method of linking ``Material`` to ``ThermalScattering`` objects, avoiding a very expensive O(N:sup:`2`) (:issue:`510`).
+* Fixed method of linking ``Material`` to ``ThermalScattering`` objects, avoiding a very expensive O(N :sup:`2`) (:issue:`510`).
+
+**Deprecations**
+
+* Marked ``Material.material_components`` as deprecated, and created migration plan describing what to expect moving forward (:issue:`506`).
 
 0.4.0
 --------------
