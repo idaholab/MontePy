@@ -507,6 +507,8 @@ def test_importance_format_mutated(importance_problem):
     print(output)
     assert len(output) == 4
     assert "imp:n 0.5 1 1 0 3" in output
+    assert "c special comment related to #520" == output[2]
+    assert False
 
 
 def test_importance_write_unmutated(importance_problem):
