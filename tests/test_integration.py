@@ -493,9 +493,9 @@ def test_importance_format_unmutated(importance_problem):
     imp = importance_problem.cells._importance
     output = imp.format_for_mcnp_input((6, 2, 0))
     print(output)
-    assert len(output) == 2
+    assert len(output) == 3
     assert "imp:n,p 1 1 1 0 3" == output[0]
-    assert "imp:e   0 2r 1 r" == output[1]
+    assert "imp:e   0 2r 1 r" == output[2]
 
 
 def test_importance_format_mutated(importance_problem):
