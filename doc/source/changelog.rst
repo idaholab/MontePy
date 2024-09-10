@@ -4,6 +4,10 @@ MontePy Changelog
 #Next Version#
 --------------
 
+**Bug Fixes**
+
+* Fixed a bug where ``problem.materials.append_renumber`` would double add a material to ``problem.data_inputs`` (:issue:`516`).
+
 **Performance Improvement**
 
 * Fixed method of linking ``Material`` to ``ThermalScattering`` objects, avoiding a very expensive O(N:sup:`2`) (:issue:`510`).
