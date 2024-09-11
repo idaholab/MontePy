@@ -24,9 +24,8 @@ project = "MontePy"
 copyright = "2021 – 2024, Battelle Energy Alliance LLC."
 author = "Micah D. Gale (@micahgale), Travis J. Labossiere-Hickman (@tjlaboss)"
 
-# FIXME: This displays the latest build, not the latest release.
 version = importlib.metadata.version("montepy")
-release = version
+release = version  # Will be true at website deployment.
 # -- General configuration ---------------------------------------------------
 
 # Add any Sphinx extension module names here, as strings. They can be
