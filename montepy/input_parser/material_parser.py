@@ -18,8 +18,8 @@ class MaterialParser(DataParser):
         for key, node in p.introduction.nodes.items():
             ret[key] = node
         ret["data"] = p.isotopes
-        if hasattr(p, "parameters"):
-            ret["parameters"] = p.parameters
+        if len(p) > 2:
+            ret["parameters"] = p[2]
         return syntax_node.SyntaxNode("data", ret)
 
     @_("isotope_fractions", "number_sequence", "isotope_hybrid_fractions")
