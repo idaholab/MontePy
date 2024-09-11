@@ -29,6 +29,7 @@ class Importance(CellModifierInput):
     def __init__(self, input=None, in_cell_block=False, key=None, value=None):
         self._particle_importances = {}
         self._real_tree = {}
+        self._part_combos = []
         super().__init__(input, in_cell_block, key, value)
         if self.in_cell_block:
             if key:
@@ -39,6 +40,7 @@ class Importance(CellModifierInput):
                     raise ValueError(
                         f"Cell importance must be a number ≥ 0. {val.value} was given"
                     )
+                self._part_combos.append(self.particle_classifiers)
                 for particle in self.particle_classifiers:
                     self._particle_importances[particle] = value
         elif input:
@@ -52,6 +54,7 @@ class Importance(CellModifierInput):
                     raise MalformedInputError(
                         input, f"Importances must be ≥ 0 value: {node} given"
                     )
+            self._part_combos.append(self.particle_classifiers)
             for particle in self.particle_classifiers:
                 self._particle_importances[particle] = copy.deepcopy(self._tree)
                 self._real_tree[particle] = copy.deepcopy(self._tree)
