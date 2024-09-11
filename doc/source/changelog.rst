@@ -4,10 +4,17 @@ MontePy Changelog
 #Next Version#
 --------------
 
+**Features Added**
+
+* Added support for reading an input from either file paths or streams (file handles) with ``montepy.read_input`` (:issue:`519`).
+
 **Bug Fixes**
 
 * Fixed a bug where ``problem.materials.append_renumber`` would double add a material to ``problem.data_inputs`` (:issue:`516`).
 * Fixed bug where material-level library specifications (e.g., ``m1 plib=84p``) could not be fully parsed (:issue:`521`).
+* Fixed bug with shortcuts right after another shortcut (e.g., ``1 2M 3R``) not being properly recompressed on export (:issue:`499`).
+* Fixed bug with shortcuts in cell geometry definitions not being recompressed on export (:issue:`489`).
+* Fixed bug where leading comments were not always transferred to the appropriate input. (:issue:`352`, :issue:`526`).
 
 **Performance Improvement**
 
