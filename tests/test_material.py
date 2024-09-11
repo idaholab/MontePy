@@ -155,6 +155,16 @@ def test_material_update_format():
             True,
             [2.6999999e-2, 9.9999998e-01],
         ),
+        *[
+            (f"M20 1001.80c 0.5 8016.80c 0.5 {part}={lib}", 20, True, [0.5, 0.5])
+            for part, lib in [
+                ("nlib", "80c"),
+                ("nlib", "701nc"),
+                ("estep", 1),
+                ("pnlib", "710nc"),
+                ("slib", "80c"),
+            ]
+        ],
     ],
 )
 def test_material_init(line, mat_number, is_atom, fractions):
