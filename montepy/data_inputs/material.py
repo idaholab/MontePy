@@ -171,16 +171,23 @@ See <https://www.montepy.org/migrations/migrate0_1.html> for more information ""
         self, fancy_name=None, element=None, A=None, meta_isomer=None, library=None
     ):
         """ """
-        pass
+        filters = []
+        for component in self._components:
+            for filt in filters:
+                found = filt(component[0])
+                if not found:
+                    break
+            if found:
+                yield component
 
-    def __iadd__(self, other):
+    def find_vals(
+        self, fancy_name=None, element=None, A=None, meta_isomer=None, library=None
+    ):
+        """ """
         pass
 
     def __bool__(self):
-        pass
-
-    def __add__(self, other):
-        pass
+        return bool(self._components)
 
     def __get_pointer_iso(self, key):
         base_isotope = Nuclide.get_from_fancy_name(key)
