@@ -421,21 +421,5 @@ See <https://www.montepy.org/migrations/migrate0_1.html> for more information ""
                 f"Material: {self.number} does not have any components defined."
             )
 
-    def __hash__(self):
-        """WARNING: this is a temporary solution to make sets remove duplicate materials.
-
-        This should be fixed in the future to avoid issues with object mutation:
-            <https://eng.lyft.com/hashing-and-equality-in-python-2ea8c738fb9d>
-
-        """
-        temp_hash = ""
-        sorted_isotopes = sorted(list(self._material_components.keys()))
-        for isotope in sorted_isotopes:
-            temp_hash = hash(
-                (temp_hash, str(isotope), self._material_components[isotope].fraction)
-            )
-        # TODO
-        return hash((temp_hash, self.number))
-
     def __eq__(self, other):
         return hash(self) == hash(other)
