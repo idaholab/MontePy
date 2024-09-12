@@ -7,10 +7,17 @@ class MaterialComponent:
 
     For example: this may be H-1 in water: like 1001.80c — 0.6667
 
+    .. deprecated:: 0.4.1
+        MaterialComponent has been deprecated as part of a redesign for the material
+        interface due to a critical bug in how MontePy handles duplicate nuclides.
+        See :ref:`migrate 0 1`.
+
     :param isotope: the Isotope object representing this isotope
     :type isotope: Isotope
     :param fraction: the fraction of this component in the material
     :type fraction: ValueNode
+    :param suppress_warning: Whether to suppress the ``DeprecationWarning``.
+    :type suppress_warning: bool
     """
 
     def __init__(self, isotope, fraction):

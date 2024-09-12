@@ -3,6 +3,7 @@ import copy
 import io
 import montepy
 from montepy.errors import *
+from pathlib import Path
 import os
 
 import pytest
@@ -231,3 +232,10 @@ def test_universe_after_comment():
             os.remove(out_file)
         except FileNotFoundError:
             pass
+
+
+def test_trailing_comment_edge():
+    problem = montepy.read_input(
+        Path("tests") / "inputs" / "test_trail_comment_edge.imcnp"
+    )
+    assert len(problem.cells[2].leading_comments) == 3

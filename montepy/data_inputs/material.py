@@ -14,6 +14,7 @@ from montepy.errors import *
 from montepy.utilities import *
 
 import re
+import warnings
 
 # TODO implement default library for problem and material
 # TODO implement change all libraries
@@ -58,7 +59,7 @@ class Material(data_input.DataInputAbstract, Numbered_MCNP_Object):
                     f"Material definitions for material: {self.number} is not valid.",
                 )
             for isotope_node, fraction in iterator:
-                isotope = Isotope(node=isotope_node)
+                isotope = Isotope(node=isotope_node, suppress_warning=True)
                 fraction.is_negatable_float = True
                 if not set_atom_frac:
                     set_atom_frac = True
@@ -107,10 +108,7 @@ class Material(data_input.DataInputAbstract, Numbered_MCNP_Object):
     @property
     def material_components(self):
         """
-        The internal dictionary containing all the components of this material.
-
-        The keys are :class:`~montepy.data_inputs.isotope.Isotope` instances, and the values are
-        :class:`~montepy.data_inputs.material_component.MaterialComponent` instances.
+            The internal dictionary containing all the components of this material.
 
         .. deprecated:: 0.4.1
             MaterialComponent has been deprecated as part of a redesign for the material
@@ -310,7 +308,7 @@ See <https://www.montepy.org/migrations/migrate0_1.html> for more information ""
 
     def _update_values(self):
         new_list = syntax_node.IsotopesNode("new isotope list")
-        for isotope, component in self.material_components.items():
+        for isotope, component in self._material_components.items():
             isotope._tree.value = isotope.mcnp_str()
             new_list.append(("_", isotope._tree, component._tree))
         self._tree.nodes["data"] = new_list
@@ -359,8 +357,8 @@ See <https://www.montepy.org/migrations/migrate0_1.html> for more information ""
         else:
             ret += "mass\n"
 
-        for component in self.material_components:
-            ret += repr(self.material_components[component]) + "\n"
+        for component in self._material_components:
+            ret += repr(self._material_components[component]) + "\n"
         if self.thermal_scattering:
             ret += f"Thermal Scattering: {self.thermal_scattering}"
 
@@ -373,7 +371,7 @@ See <https://www.montepy.org/migrations/migrate0_1.html> for more information ""
     def _get_material_elements(self):
         sortable_components = [
             (iso, component.fraction)
-            for iso, component in self.material_components.items()
+            for iso, component in self._material_components.items()
         ]
         sorted_comps = sorted(sortable_components)
         elements_set = set()
@@ -385,7 +383,7 @@ See <https://www.montepy.org/migrations/migrate0_1.html> for more information ""
         return elements
 
     def validate(self):
-        if len(self.material_components) == 0:
+        if len(self._material_components) == 0:
             raise IllegalState(
                 f"Material: {self.number} does not have any components defined."
             )
@@ -398,10 +396,10 @@ See <https://www.montepy.org/migrations/migrate0_1.html> for more information ""
 
         """
         temp_hash = ""
-        sorted_isotopes = sorted(list(self.material_components.keys()))
+        sorted_isotopes = sorted(list(self._material_components.keys()))
         for isotope in sorted_isotopes:
             temp_hash = hash(
-                (temp_hash, str(isotope), self.material_components[isotope].fraction)
+                (temp_hash, str(isotope), self._material_components[isotope].fraction)
             )
         # TODO
         return hash((temp_hash, self.number))

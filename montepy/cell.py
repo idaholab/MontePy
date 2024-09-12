@@ -142,7 +142,7 @@ class Cell(Numbered_MCNP_Object):
                         break
             if (class_pref == "imp" and not has_imp) or class_pref != "imp":
                 tree = getattr(self, attr)._tree
-                self._tree["parameters"].append(tree)
+                self._tree["parameters"].append(tree, True)
 
     def _load_blank_modifiers(self):
         """
