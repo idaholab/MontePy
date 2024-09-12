@@ -65,9 +65,9 @@ class Nuclide:
     """
 
     _NAME_PARSER = re.compile(
-        r"""(
+        rf"""(
                 (?P<ZAID>\d{4,6})|
-                ((?P<element>[a-z]+)-?(?P<A>\d*))
+                ((?P<element>[a-z]{{1,{MAX_ATOMIC_SYMBOL_LENGTH}}})-?(?P<A>\d*))
             )
             (m(?P<meta>\d+))?
             (\.(?P<library>\d{2,}[a-z]+))?""",
@@ -326,7 +326,7 @@ class Nuclide:
         if isinstance(identifier, cls):
             return identifier
         if isinstance(identifier, Element):
-            identifier = (identifier,)
+            element = identifier
         A = 0
         isomer = None
         base_meta = 0
@@ -354,10 +354,7 @@ class Nuclide:
 
                 else:
                     element_name = match["element"]
-                    if len(element_name) <= MAX_ATOMIC_SYMBOL_LENGTH:
-                        element = Element.get_by_symbol(element_name.capitalize())
-                    else:
-                        element = Element.get_by_name(element_name.lower())
+                    element = Element.get_by_symbol(element_name.capitalize())
                     if match["A"]:
                         A = int(match["A"])
                 if match["meta"]:
@@ -366,40 +363,6 @@ class Nuclide:
                         isomer += base_meta
                 if match["library"]:
                     library = match["library"]
-        # handle the tuple case
-        elif isinstance(identifier, (tuple, list)):
-            if len(identifier) == 0:
-                raise ValueError(f"0-length identifiers not allowed.")
-            # handle element
-            element = identifier[0]
-            if isinstance(element, int):
-                element = Element(element)
-            elif isinstance(element, str):
-                if len(element) <= MAX_ATOMIC_SYMBOL_LENGTH:
-                    element = Element.get_by_symbol(element.capitalize())
-                else:
-                    element = Element.get_by_name(element.lower())
-            elif not isinstance(element, Element):
-                raise TypeError(
-                    f"Element identifier must be int, str, or Element. {identifier[0]} given."
-                )
-            # handle A
-            if len(identifier) >= 2:
-                if not isinstance(identifier[1], int):
-                    raise TypeError(f"A number must be an int. {identifier[1]} given.")
-                A = identifier[1]
-            # handle isomer
-            if len(identifier) >= 3:
-                if not isinstance(identifier[1], int):
-                    raise TypeError(
-                        f"Isomeric state number must be an int. {identifier[1]} given."
-                    )
-                isomer = identifier[2]
-            # handle library
-            if len(identifier) == 4:
-                if not isinstance(identifier[3], str):
-                    raise TypeError(f"Library must be a str. {identifier[3]} given.")
-                library = identifier[3]
         else:
             raise TypeError(
                 f"Isotope fancy names only supports str, ints, and iterables. {identifier} given."
