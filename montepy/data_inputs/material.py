@@ -250,36 +250,6 @@ See <https://www.montepy.org/migrations/migrate0_1.html> for more information ""
     def __bool__(self):
         return bool(self._components)
 
-    def __get_pointer_iso(self, key):
-        base_isotope = Nuclide.get_from_fancy_name(key)
-        element = self._pointers[base_isotope.element]
-        try:
-            isotope_pointer = element[(base_isotope.A, base_isotope.meta_state)]
-            # only one library, and it's ambiguous
-            if len(isotope_pointer) == 1 and base_isotope.library == "":
-                pointer = next(isotope_pointer)
-            else:
-                pointer = isotope_pointer[base_isotope.library]
-            return pointer
-        except KeyError as e:
-            # TODO
-            raise e
-
-    def __get_slice(self, key):
-        # pad to full key if necessary
-        if len(key) < 4:
-            key = list(key)
-            for _ in range(4 - len(key)):
-                key.append(slice(None))
-            key = tuple(key)
-        # detect if can do optimized search through pointers
-        is_slice = [isinstance(s, slice) for s in key]
-        num_slices = is_slice.count(True)
-        # test if all tuples at end
-        if all(is_slice[-num_slices:]):
-            return self.__get_optimal_slice(key, num_slices)
-        return self.__get_brute_slice(key)
-
     _LIB_PARSER = re.compile(r"\.?(?P<num>\d{2,})(?P<type>[a-z]+)", re.I)
 
     @classmethod
