@@ -1,6 +1,7 @@
 # Copyright 2024, Battelle Energy Alliance, LLC All Rights Reserved.
 import copy
 import itertools
+import math
 
 from montepy.data_inputs import data_input, thermal_scattering
 from montepy.data_inputs.nuclide import Nuclide
@@ -76,6 +77,7 @@ class Material(data_input.DataInputAbstract, Numbered_MCNP_Object):
                             input,
                             f"Material definitions for material: {self.number} cannot use atom and mass fraction at the same time",
                         )
+                # TODO where to store the fractions
                 self._components.append((isotope, fraction))
 
     @make_prop_val_node("_old_number")
@@ -131,12 +133,15 @@ See <https://www.montepy.org/migrations/migrate0_1.html> for more information ""
     def __iter__(self):
         return iter(self._components)
 
-    def __setitem__(self, key, newvalue):
+    def __setitem__(self, idx, newvalue):
         """ """
         if not isinstance(idx, (int, slice)):
             raise TypeError(f"Not a valid index. {idx} given.")
         self._check_valid_comp(newvalue)
         self._components[idx] = newvalue
+
+    def __len__(self):
+        return len(self._components)
 
     def _check_valid_comp(self, newvalue):
         if not isinstance(newvalue, tuple):
@@ -162,7 +167,8 @@ See <https://www.montepy.org/migrations/migrate0_1.html> for more information ""
         if not isinstance(idx, (int, slice)):
             raise TypeError(f"Not a valid index. {idx} given.")
         del self._components[idx]
-
+    
+    # TODO create an add fancy name
     def append(self, obj):
         self._check_valid_comp(obj)
         self._components.append(obj)
@@ -427,4 +433,15 @@ See <https://www.montepy.org/migrations/migrate0_1.html> for more information ""
             )
 
     def __eq__(self, other):
-        return hash(self) == hash(other)
+        if not isinstance(other, Material):
+            return False
+        if len(self) != len(other):
+            return False
+        my_comp = sorted(self, key= lambda c: c[0])
+        other_comp = sorted(other, key= lambda c: c[0])
+        for mine, yours in zip(my_comp, other_comp):
+            if mine[0] != yours[0]:
+                return False
+            if not math.isclose(mine[1], yours[1]):
+                return False
+        return True
