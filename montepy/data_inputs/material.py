@@ -167,13 +167,23 @@ See <https://www.montepy.org/migrations/migrate0_1.html> for more information ""
         self._check_valid_comp(obj)
         self._components.append(obj)
 
-    def __prep_filter(filter_obj):
+    def __prep_element_filter(self, filter_obj):
+        if isinstance(filter_obj, "str"):
+            filter_obj = Element.get_by_symbol(filter_obj).Z
+        if isinstance(filter_obj, Element):
+            filter_obj = filter_obj.Z
+        wrapped_filter = self.__prep_filter(filter_obj, "Z")
+        return wrapped_filter
+
+    def __prep_filter(self, filter_obj, attr=None):
         if callable(filter_obj):
             return filter_obj
 
         elif isinstance(filter_obj, slice):
 
             def slicer(val):
+                if attr is not None:
+                    val = getattr(val, attr)
                 if filter_obj.start:
                     start = filter_obj.start
                     if val < filter_obj.start:
@@ -196,8 +206,33 @@ See <https://www.montepy.org/migrations/migrate0_1.html> for more information ""
     def find(
         self, fancy_name=None, element=None, A=None, meta_isomer=None, library=None
     ):
-        """ """
-        filters = []
+        """
+        Finds all components that meet the given criteria.
+
+        The criteria are additive, and a component must match all criteria.
+
+        ... Examples
+
+        :param fancy_name: TODO
+        :type fancy_name: str
+        :param element: the element to filter by, slices must be slices of integers.
+        :type element: Element, str, int, slice
+        :param A: the filter for the nuclide A number.
+        :type A: int, slice
+        :param meta_isomer: the metastable isomer filter.
+        :type meta_isomer: int, slice
+        :param library: the libraries to limit the search to.
+        :type library: str, slice
+        """
+        # TODO type enforcement
+        # TODO allow broad fancy name "U"
+        filters = [
+            self.__prep_filter(Nuclide.get_from_fancy_name(fancy_name)),
+            self.__prep_element_filter(element),
+            self.__prep_filter(A, "A"),
+            self.__prep_filter(meta_isomer, "meta_state"),
+            self.__prep_filter(library, "library"),
+        ]
         for component in self._components:
             for filt in filters:
                 found = filt(component[0])
