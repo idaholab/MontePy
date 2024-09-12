@@ -1,5 +1,6 @@
 # Copyright 2024, Battelle Energy Alliance, LLC All Rights Reserved.
 import pytest
+from hypothesis import assume, given, strategies as st
 
 import montepy
 
@@ -307,6 +308,29 @@ def test_fancy_names(input, Z, A, meta, library):
     assert isotope.Z == Z
     assert isotope.meta_state == meta
     assert isotope.library == Library(library)
+
+
+@given(
+    st.integers(1, 118),
+    st.integers(1, 350),
+    st.integers(0, 4),
+    st.integers(0, 1000),
+    st.characters(min_codepoint=97, max_codepoint=122),
+)
+def test_fancy_names_zaid_pbt(Z, A, meta, library_base, library_extension):
+    # avoid Am-242 metastable legacy
+    assume(not (Z == 95 and A == 242))
+    library = f"{library_base}{library_extension}"
+    inputs = [f"{Z* 1000 + A}{f'm{meta}' if meta > 0 else ''}.{library}"]
+
+    if meta:
+        inputs.append(f"{Z* 1000 + A + 300 + 100 * meta}.{library}")
+    for input in inputs:
+        isotope = Nuclide.get_from_fancy_name(input)
+        assert isotope.A == A
+        assert isotope.Z == Z
+        assert isotope.meta_state == meta
+        assert isotope.library == Library(library)
 
 
 @pytest.fixture
