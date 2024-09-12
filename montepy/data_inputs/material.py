@@ -346,7 +346,7 @@ See <https://www.montepy.org/migrations/migrate0_1.html> for more information ""
 
     def _update_values(self):
         new_list = syntax_node.NuclidesNode("new isotope list")
-        for isotope, component in self._material_components.items():
+        for isotope, component in self._components.items():
             isotope._tree.value = isotope.mcnp_str()
             new_list.append(("_", isotope._tree, component._tree))
         self._tree.nodes["data"] = new_list
@@ -395,8 +395,9 @@ See <https://www.montepy.org/migrations/migrate0_1.html> for more information ""
         else:
             ret += "mass\n"
 
-        for component in self._material_components:
-            ret += repr(self._material_components[component]) + "\n"
+        # TODO fix
+        for component in self._components:
+            ret += repr(self._components[component]) + "\n"
         if self.thermal_scattering:
             ret += f"Thermal Scattering: {self.thermal_scattering}"
 
@@ -408,8 +409,7 @@ See <https://www.montepy.org/migrations/migrate0_1.html> for more information ""
 
     def _get_material_elements(self):
         sortable_components = [
-            (iso, component.fraction)
-            for iso, component in self._material_components.items()
+            (iso, component.fraction) for iso, component in self._components
         ]
         sorted_comps = sorted(sortable_components)
         elements_set = set()
@@ -421,7 +421,7 @@ See <https://www.montepy.org/migrations/migrate0_1.html> for more information ""
         return elements
 
     def validate(self):
-        if len(self._material_components) == 0:
+        if len(self._components) == 0:
             raise IllegalState(
                 f"Material: {self.number} does not have any components defined."
             )
