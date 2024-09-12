@@ -40,7 +40,7 @@ class Library:
 _ZAID_A_ADDER = 1000
 
 
-class Isotope:
+class Nuclide:
     """
     A class to represent an MCNP isotope
 
@@ -87,12 +87,6 @@ class Isotope:
     ):
         self._library = Library("")
         self._ZAID = None
-        if not suppress_warning:
-            warnings.warn(
-                "montepy.data_inputs.isotope.Isotope is deprecated and will be renamed: Nuclide.\n"
-                "See <https://www.montepy.org/migrations/migrate0_1.html> for more information ",
-                FutureWarning,
-            )
 
         if node is not None and isinstance(node, ValueNode):
             if node.type == float:

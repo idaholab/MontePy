@@ -4,7 +4,7 @@ import pytest
 import montepy
 
 from montepy.data_inputs.element import Element
-from montepy.data_inputs.isotope import Isotope, Library
+from montepy.data_inputs.nuclide import Nuclide, Library
 from montepy.data_inputs.material import Material
 from montepy.data_inputs.material_component import MaterialComponent
 from montepy.data_inputs.thermal_scattering import ThermalScatteringLaw
@@ -90,16 +90,16 @@ def test_material_format_mcnp():
 )
 def test_material_comp_init(isotope, conc, error):
     with pytest.raises(error):
-        MaterialComponent(Isotope(isotope, suppress_warning=True), conc, True)
+        MaterialComponent(Nuclide(isotope, suppress_warning=True), conc, True)
 
 
 def test_mat_comp_init_warn():
     with pytest.warns(DeprecationWarning):
-        MaterialComponent(Isotope("1001.80c", suppress_warning=True), 0.1)
+        MaterialComponent(Nuclide("1001.80c", suppress_warning=True), 0.1)
 
 
 def test_material_comp_fraction_setter():
-    comp = MaterialComponent(Isotope("1001.80c", suppress_warning=True), 0.1, True)
+    comp = MaterialComponent(Nuclide("1001.80c", suppress_warning=True), 0.1, True)
     comp.fraction = 5.0
     assert comp.fraction == pytest.approx(5.0)
     with pytest.raises(ValueError):
@@ -109,7 +109,7 @@ def test_material_comp_fraction_setter():
 
 
 def test_material_comp_fraction_str():
-    comp = MaterialComponent(Isotope("1001.80c", suppress_warning=True), 0.1, True)
+    comp = MaterialComponent(Nuclide("1001.80c", suppress_warning=True), 0.1, True)
     str(comp)
     repr(comp)
 
@@ -123,7 +123,7 @@ def test_material_update_format():
     print(material.format_for_mcnp_input((6, 2, 0)))
     assert "8016" in material.format_for_mcnp_input((6, 2, 0))[0]
     # addition
-    isotope = Isotope("2004.80c", suppress_warning=True)
+    isotope = Nuclide("2004.80c", suppress_warning=True)
     with pytest.deprecated_call():
         material.material_components[isotope] = MaterialComponent(isotope, 0.1, True)
         print(material.format_for_mcnp_input((6, 2, 0)))
@@ -208,29 +208,29 @@ def test_bad_init(line):
 
 # test isotope
 def test_isotope_init():
-    isotope = Isotope("1001.80c")
+    isotope = Nuclide("1001.80c")
     assert isotope.ZAID == "1001"
     assert isotope.Z == 1
     assert isotope.A == 1
     assert isotope.element.Z == 1
     assert isotope.library == "80c"
     with pytest.raises(ValueError):
-        Isotope("1001.80c.5")
+        Nuclide("1001.80c.5")
     with pytest.raises(ValueError):
-        Isotope("hi.80c")
+        Nuclide("hi.80c")
 
 
 def test_isotope_metastable_init():
-    isotope = Isotope("13426.02c")
+    isotope = Nuclide("13426.02c")
     assert isotope.ZAID == "13426"
     assert isotope.Z == 13
     assert isotope.A == 26
     assert isotope.is_metastable
     assert isotope.meta_state == 1
-    isotope = Isotope("92635.02c")
+    isotope = Nuclide("92635.02c")
     assert isotope.A == 235
     assert isotope.meta_state == 1
-    isotope = Isotope("92935.02c")
+    isotope = Nuclide("92935.02c")
     assert isotope.A == 235
     assert isotope.meta_state == 4
     assert isotope.mcnp_str() == "92935.02c"
@@ -242,21 +242,21 @@ def test_isotope_metastable_init():
         ("77764", 77, 164, 3),
     ]
     for ZA, Z_ans, A_ans, isomer_ans in edge_cases:
-        isotope = Isotope(ZA + ".80c")
+        isotope = Nuclide(ZA + ".80c")
         assert isotope.Z == Z_ans
         assert isotope.A == A_ans
         assert isotope.meta_state == isomer_ans
     with pytest.raises(ValueError):
-        isotope = Isotope("13826.02c")
+        isotope = Nuclide("13826.02c")
 
 
 def test_isotope_get_base_zaid():
-    isotope = Isotope("92635.02c")
+    isotope = Nuclide("92635.02c")
     assert isotope.get_base_zaid() == 92235
 
 
 def test_isotope_library_setter():
-    isotope = Isotope("1001.80c")
+    isotope = Nuclide("1001.80c")
     isotope.library = "70c"
     assert isotope.library == "70c"
     with pytest.raises(TypeError):
@@ -264,29 +264,29 @@ def test_isotope_library_setter():
 
 
 def test_isotope_str():
-    isotope = Isotope("1001.80c")
+    isotope = Nuclide("1001.80c")
     assert isotope.mcnp_str() == "1001.80c"
     assert isotope.nuclide_str() == "H-1.80c"
-    assert repr(isotope) == "Isotope('H-1.80c')"
+    assert repr(isotope) == "Nuclide('H-1.80c')"
     assert str(isotope) == " H-1     (80c)"
-    isotope = Isotope("94239.80c")
+    isotope = Nuclide("94239.80c")
     assert isotope.nuclide_str() == "Pu-239.80c"
     assert isotope.mcnp_str() == "94239.80c"
-    assert repr(isotope) == "Isotope('Pu-239.80c')"
-    isotope = Isotope("92635.80c")
+    assert repr(isotope) == "Nuclide('Pu-239.80c')"
+    isotope = Nuclide("92635.80c")
     assert isotope.nuclide_str() == "U-235m1.80c"
     assert isotope.mcnp_str() == "92635.80c"
     assert str(isotope) == " U-235m1 (80c)"
-    assert repr(isotope) == "Isotope('U-235m1.80c')"
+    assert repr(isotope) == "Nuclide('U-235m1.80c')"
     # stupid legacy stupidity #486
-    isotope = Isotope("95642")
+    isotope = Nuclide("95642")
     assert isotope.nuclide_str() == "Am-242"
     assert isotope.mcnp_str() == "95642"
-    assert repr(isotope) == "Isotope('Am-242')"
-    isotope = Isotope("95242")
+    assert repr(isotope) == "Nuclide('Am-242')"
+    isotope = Nuclide("95242")
     assert isotope.nuclide_str() == "Am-242m1"
     assert isotope.mcnp_str() == "95242"
-    assert repr(isotope) == "Isotope('Am-242m1')"
+    assert repr(isotope) == "Nuclide('Am-242m1')"
 
 
 @pytest.mark.parametrize(
@@ -303,7 +303,7 @@ def test_isotope_str():
         ("hydrogen1m3", 1, 1, 3, ""),
         ("hydrogen1m3.80c", 1, 1, 3, "80c"),
         ("92635m2.710nc", 92, 235, 3, "710nc"),
-        (Isotope("1001.80c"), 1, 1, 0, "80c"),
+        (Nuclide("1001.80c"), 1, 1, 0, "80c"),
         ((92, 235, 1, "80c"), 92, 235, 1, "80c"),
         ((Element(92), 235, 1, "80c"), 92, 235, 1, "80c"),
         ((Element(92), 235), 92, 235, 0, ""),
@@ -314,7 +314,7 @@ def test_isotope_str():
     ],
 )
 def test_fancy_names(input, Z, A, meta, library):
-    isotope = Isotope.get_from_fancy_name(input)
+    isotope = Nuclide.get_from_fancy_name(input)
     assert isotope.A == A
     assert isotope.Z == Z
     assert isotope.meta_state == meta
@@ -362,7 +362,7 @@ def big_material():
         "hydrogen1m3.00c",
         "Th232.710nc",
         "92635",
-        (Isotope("1001.80c"),),
+        (Nuclide("1001.80c"),),
         (92, 235, 1, "80c"),
         (Element(92), 235, 1, "80c"),
         (Element(92), 235),

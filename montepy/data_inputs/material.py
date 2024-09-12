@@ -3,7 +3,7 @@ import copy
 import itertools
 
 from montepy.data_inputs import data_input, thermal_scattering
-from montepy.data_inputs.isotope import Isotope
+from montepy.data_inputs.nuclide import Nuclide
 from montepy.data_inputs.element import Element
 from montepy.data_inputs.material_component import MaterialComponent
 from montepy.input_parser import syntax_node
@@ -59,7 +59,7 @@ class Material(data_input.DataInputAbstract, Numbered_MCNP_Object):
                     f"Material definitions for material: {self.number} is not valid.",
                 )
             for isotope_node, fraction in iterator:
-                isotope = Isotope(node=isotope_node, suppress_warning=True)
+                isotope = Nuclide(node=isotope_node, suppress_warning=True)
                 fraction.is_negatable_float = True
                 if not set_atom_frac:
                     set_atom_frac = True
@@ -141,14 +141,14 @@ See <https://www.montepy.org/migrations/migrate0_1.html> for more information ""
     def _check_valid_comp(self, newvalue):
         if not isinstance(newvalue, tuple):
             raise TypeError(
-                f"Invalid component given. Must be tuple of Isotope, fraction. {newvalue} given."
+                f"Invalid component given. Must be tuple of Nuclide, fraction. {newvalue} given."
             )
         if len(newvalue) != 2:
             raise ValueError(
-                f"Invalid component given. Must be tuple of Isotope, fraction. {newvalue} given."
+                f"Invalid component given. Must be tuple of Nuclide, fraction. {newvalue} given."
             )
-        if not isinstance(newvalue[0], Isotope):
-            raise TypeError(f"First element must be an Isotope. {newvalue[0]} given.")
+        if not isinstance(newvalue[0], Nuclide):
+            raise TypeError(f"First element must be an Nuclide. {newvalue[0]} given.")
         if not isinstance(newvalue[1], (float, int)):
             raise TypeError(
                 f"Second element must be a fraction greater than 0. {newvalue[1]} given."
@@ -183,7 +183,7 @@ See <https://www.montepy.org/migrations/migrate0_1.html> for more information ""
         pass
 
     def __get_pointer_iso(self, key):
-        base_isotope = Isotope.get_from_fancy_name(key)
+        base_isotope = Nuclide.get_from_fancy_name(key)
         element = self._pointers[base_isotope.element]
         try:
             isotope_pointer = element[(base_isotope.A, base_isotope.meta_state)]
@@ -307,7 +307,7 @@ See <https://www.montepy.org/migrations/migrate0_1.html> for more information ""
         return lines
 
     def _update_values(self):
-        new_list = syntax_node.IsotopesNode("new isotope list")
+        new_list = syntax_node.NuclidesNode("new isotope list")
         for isotope, component in self._material_components.items():
             isotope._tree.value = isotope.mcnp_str()
             new_list.append(("_", isotope._tree, component._tree))
