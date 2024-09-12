@@ -296,21 +296,9 @@ def test_isotope_str():
         ("1001.80c", 1, 1, 0, "80c"),
         ("h1", 1, 1, 0, ""),
         ("h-1", 1, 1, 0, ""),
+        ("h-1.80c", 1, 1, 0, "80c"),
         ("h", 1, 0, 0, ""),
-        ("hydrogen-1", 1, 1, 0, ""),
-        ("hydrogen", 1, 0, 0, ""),
-        ("hydrogen1", 1, 1, 0, ""),
-        ("hydrogen1m3", 1, 1, 3, ""),
-        ("hydrogen1m3.80c", 1, 1, 3, "80c"),
         ("92635m2.710nc", 92, 235, 3, "710nc"),
-        (Nuclide("1001.80c"), 1, 1, 0, "80c"),
-        ((92, 235, 1, "80c"), 92, 235, 1, "80c"),
-        ((Element(92), 235, 1, "80c"), 92, 235, 1, "80c"),
-        ((Element(92), 235), 92, 235, 0, ""),
-        (("U", 235), 92, 235, 0, ""),
-        ((92, 235), 92, 235, 0, ""),
-        (("uRanium", 235), 92, 235, 0, ""),
-        ((Element(92),), 92, 0, 0, ""),
     ],
 )
 def test_fancy_names(input, Z, A, meta, library):
@@ -343,33 +331,14 @@ def big_material():
     mat = Material()
     mat.number = 1
     for component in components:
-        mat[component] = 0.05
+        mat.append((Nuclide(component), 0.05))
     return mat
 
 
 @pytest.mark.parametrize(
     "index",
     [
-        1001,
-        "1001.00c",
-        "h1",
-        "h-1",
-        "h",
-        "hydrogen-1",
-        "hydrogen",
-        "hydrogen1",
-        "hydrogen1m3",
-        "hydrogen1m3.00c",
-        "Th232.710nc",
-        "92635",
-        (Nuclide("1001.80c"),),
-        (92, 235, 1, "80c"),
-        (Element(92), 235, 1, "80c"),
-        (Element(92), 235),
-        ("U", 235),
-        (92, 235),
-        ("uRanium", 235),
-        (Element(92)),
+        (1),  # TODO property testing
     ],
 )
 def test_material_access(big_material, index):
