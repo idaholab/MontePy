@@ -59,7 +59,7 @@ class Material(data_input.DataInputAbstract, Numbered_MCNP_Object):
                     f"Material definitions for material: {self.number} is not valid.",
                 )
             for isotope_node, fraction in iterator:
-                isotope = Nuclide(node=isotope_node, suppress_warning=True)
+                isotope = Nuclide(node=isotope_node)
                 fraction.is_negatable_float = True
                 if not set_atom_frac:
                     set_atom_frac = True
