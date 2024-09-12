@@ -167,6 +167,32 @@ See <https://www.montepy.org/migrations/migrate0_1.html> for more information ""
         self._check_valid_comp(obj)
         self._components.append(obj)
 
+    def __prep_filter(filter_obj):
+        if callable(filter_obj):
+            return filter_obj
+
+        elif isinstance(filter_obj, slice):
+
+            def slicer(val):
+                if filter_obj.start:
+                    start = filter_obj.start
+                    if val < filter_obj.start:
+                        return False
+                else:
+                    start = 0
+                if filter_obj.stop:
+                    if val >= filter_obj.stop:
+                        return False
+                if filter_obj.step:
+                    if (val - start) % filter_obj.step != 0:
+                        return False
+                return True
+
+            return slicer
+
+        else:
+            return lambda val: val == filter_obj
+
     def find(
         self, fancy_name=None, element=None, A=None, meta_isomer=None, library=None
     ):
