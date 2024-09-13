@@ -312,13 +312,14 @@ def test_fancy_names(input, Z, A, meta, library):
 
 @given(
     st.integers(1, 118),
-    st.integers(1, 350),
+    st.floats(1.5, 2.7),
     st.integers(0, 4),
     st.integers(0, 1000),
     st.characters(min_codepoint=97, max_codepoint=122),
 )
-def test_fancy_names_zaid_pbt(Z, A, meta, library_base, library_extension):
+def test_fancy_names_zaid_pbt(Z, A_multiplier, meta, library_base, library_extension):
     # avoid Am-242 metastable legacy
+    A = int(Z * A_multiplier)
     assume(not (Z == 95 and A == 242))
     # ignore H-*m* as it's nonsense
     assume(not (Z == 1 and meta > 0))
