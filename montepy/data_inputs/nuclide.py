@@ -327,7 +327,7 @@ class Nuclide:
         if isinstance(identifier, Element):
             element = identifier
         A = 0
-        isomer = None
+        isomer = 0
         base_meta = 0
         library = ""
         if isinstance(identifier, (int, float)):
@@ -339,7 +339,7 @@ class Nuclide:
                     parts["_meta_state"],
                 )
             else:
-                element, A, isomer = Element(int(identifier)), 0, 0
+                element = Element(int(identifier))
         elif isinstance(identifier, str):
             if match := cls._NAME_PARSER.match(identifier):
                 match = match.groupdict()
@@ -362,6 +362,8 @@ class Nuclide:
                         isomer += base_meta
                 if match["library"]:
                     library = match["library"]
+            else:
+                raise ValueError(f"Not a valid nuclide identifier. {identifier} given")
         else:
             raise TypeError(
                 f"Isotope fancy names only supports str, ints, and iterables. {identifier} given."
