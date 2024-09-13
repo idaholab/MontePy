@@ -63,14 +63,13 @@ class Nuclide:
     """
     Points on bounding curve for determining if "valid" isotope
     """
-
     _NAME_PARSER = re.compile(
         rf"""(
-                (?P<ZAID>\d{4,6})|
+                (?P<ZAID>\d{{4,6}})|
                 ((?P<element>[a-z]{{1,{MAX_ATOMIC_SYMBOL_LENGTH}}})-?(?P<A>\d*))
             )
             (m(?P<meta>\d+))?
-            (\.(?P<library>\d{2,}[a-z]+))?""",
+            (\.(?P<library>\d{{2,}}[a-z]+))?""",
         re.I | re.VERBOSE,
     )
     """"""
