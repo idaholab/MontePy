@@ -167,7 +167,7 @@ See <https://www.montepy.org/migrations/migrate0_1.html> for more information ""
         if not isinstance(idx, (int, slice)):
             raise TypeError(f"Not a valid index. {idx} given.")
         del self._components[idx]
-    
+
     # TODO create an add fancy name
     def append(self, obj):
         self._check_valid_comp(obj)
@@ -437,11 +437,11 @@ See <https://www.montepy.org/migrations/migrate0_1.html> for more information ""
             return False
         if len(self) != len(other):
             return False
-        my_comp = sorted(self, key= lambda c: c[0])
-        other_comp = sorted(other, key= lambda c: c[0])
+        my_comp = sorted(self, key=lambda c: c[0])
+        other_comp = sorted(other, key=lambda c: c[0])
         for mine, yours in zip(my_comp, other_comp):
             if mine[0] != yours[0]:
                 return False
-            if not math.isclose(mine[1], yours[1]):
+            if not math.isclose(mine[1].value, yours[1].value):
                 return False
         return True
