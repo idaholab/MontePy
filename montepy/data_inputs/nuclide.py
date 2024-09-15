@@ -251,7 +251,7 @@ class Nuclide:
         """
         return self._is_metastable
 
-    @property
+    @make_prop_pointer("_meta_state")
     def meta_state(self):
         """
         If this is a metastable isomer, which state is it?
@@ -264,7 +264,7 @@ class Nuclide:
                 if this is a ground state isomer.
         :rtype: int
         """
-        return self._meta_state
+        pass
 
     # TODO verify _update_values plays nice
     @make_prop_pointer("_library", (str, Library), Library)
@@ -328,7 +328,6 @@ class Nuclide:
             element = identifier
         A = 0
         isomer = 0
-        base_meta = 0
         library = ""
         if isinstance(identifier, (int, float)):
             if identifier > _ZAID_A_ADDER:
@@ -345,21 +344,19 @@ class Nuclide:
                 match = match.groupdict()
                 if match["ZAID"]:
                     parts = cls._parse_zaid(int(match["ZAID"]))
-                    element, A, base_meta = (
+                    element, A, isomer = (
                         parts["_element"],
                         parts["_A"],
                         parts["_meta_state"],
                     )
-
                 else:
                     element_name = match["element"]
                     element = Element.get_by_symbol(element_name.capitalize())
                     if match["A"]:
                         A = int(match["A"])
                 if match["meta"]:
-                    isomer = int(match["meta"])
-                    if base_meta:
-                        isomer += base_meta
+                    extra_isomer = int(match["meta"])
+                    isomer += extra_isomer
                 if match["library"]:
                     library = match["library"]
             else:
