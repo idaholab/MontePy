@@ -316,10 +316,14 @@ def test_fancy_names(input, Z, A, meta, library):
     st.integers(0, 4),
     st.integers(0, 1000),
     st.characters(min_codepoint=97, max_codepoint=122),
+    st.booleans(),
 )
-def test_fancy_names_zaid_pbt(Z, A_multiplier, meta, library_base, library_extension):
+def test_fancy_names_pbt(
+    Z, A_multiplier, meta, library_base, library_extension, hyphen
+):
     # avoid Am-242 metastable legacy
     A = int(Z * A_multiplier)
+    element = Element(Z)
     assume(not (Z == 95 and A == 242))
     # ignore H-*m* as it's nonsense
     assume(not (Z == 1 and meta > 0))
@@ -328,17 +332,26 @@ def test_fancy_names_zaid_pbt(Z, A_multiplier, meta, library_base, library_exten
             break
     assume(A <= lim_A)
     library = f"{library_base:02}{library_extension}"
-    inputs = [f"{Z* 1000 + A}{f'm{meta}' if meta > 0 else ''}.{library}"]
+    inputs = [
+        f"{Z* 1000 + A}{f'm{meta}' if meta > 0 else ''}.{library}",
+        f"{Z* 1000 + A}{f'm{meta}' if meta > 0 else ''}",
+        f"{element.symbol}{'-' if hyphen else ''}{A}{f'm{meta}' if meta > 0 else ''}.{library}",
+        f"{element.symbol}{'-' if hyphen else ''}{A}{f'm{meta}' if meta > 0 else ''}",
+    ]
 
     if meta:
         inputs.append(f"{Z* 1000 + A + 300 + 100 * meta}.{library}")
     note(inputs)
     for input in inputs:
+        note(input)
         isotope = Nuclide.get_from_fancy_name(input)
         assert isotope.A == A
         assert isotope.Z == Z
         assert isotope.meta_state == meta
-        assert isotope.library == Library(library)
+        if library in input:
+            assert isotope.library == Library(library)
+        else:
+            assert isotope.library == Library("")
 
 
 @pytest.fixture
