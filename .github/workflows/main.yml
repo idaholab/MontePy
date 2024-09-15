@@ -43,7 +43,7 @@ jobs:
       - run: pip freeze
       - name: Upload build artifacts
         uses: actions/upload-artifact@v4.3.1
-        if: ${{ matrix.python-version == '3.12' }}
+        if: ${{ matrix.python-version == '3.12'  && matrix.numpy-version == "2.0" }}
         with: 
            name: build
            path: dist/*
@@ -74,19 +74,19 @@ jobs:
       - run: coverage xml
         if:  ${{ success() || failure() }}
       - name: Upload test report
-        if: ${{ matrix.python-version == '3.12' && (success() || failure() )}}
+        if: ${{ matrix.python-version == '3.12' && matrix.numpy-version == "2.0" && (success() || failure() )}}
         uses: actions/upload-artifact@v4
         with:
           name: test
           path: test_report.xml
       - name: Upload coverage report
-        if: ${{ matrix.python-version == '3.12' && (success() || failure() )}}
+        if: ${{ matrix.python-version == '3.12' && matrix.numpy-version == "2.0" && (success() || failure() )}}
         uses: actions/upload-artifact@v4
         with:
           name: coverage
           path: coverage.xml
       - name: Coveralls GitHub Action
-        if: ${{ matrix.python-version == '3.12' && (success() || failure() )}}
+        if: ${{ matrix.python-version == '3.12' && matrix.numpy-version == "2.0" && (success() || failure() )}}
         uses: coverallsapp/github-action@v2
         with:
           file: coverage.xml
