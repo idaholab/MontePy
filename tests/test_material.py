@@ -5,7 +5,7 @@ from hypothesis import assume, given, note, strategies as st
 import montepy
 
 from montepy.data_inputs.element import Element
-from montepy.data_inputs.nuclide import Nuclide, Library
+from montepy.data_inputs.nuclide import Nucleus, Nuclide, Library
 from montepy.data_inputs.material import Material
 from montepy.data_inputs.material_component import MaterialComponent
 from montepy.data_inputs.thermal_scattering import ThermalScatteringLaw
@@ -315,7 +315,7 @@ def test_fancy_names_pbt(
     assume(not (Z == 95 and A == 242))
     # ignore H-*m* as it's nonsense
     assume(not (Z == 1 and meta > 0))
-    for lim_Z, lim_A in Nuclide._BOUNDING_CURVE:
+    for lim_Z, lim_A in Nucleus._BOUNDING_CURVE:
         if Z <= lim_Z:
             break
     assume(A <= lim_A)
