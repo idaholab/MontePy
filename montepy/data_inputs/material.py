@@ -1,5 +1,6 @@
 # Copyright 2024, Battelle Energy Alliance, LLC All Rights Reserved.
 import copy
+import collections as co
 import itertools
 import math
 
@@ -19,6 +20,8 @@ import warnings
 
 # TODO implement default library for problem and material
 # TODO implement change all libraries
+
+MAX_PRINT_ELEMENTS = 5
 
 
 def _number_validator(self, number):
@@ -110,7 +113,7 @@ class Material(data_input.DataInputAbstract, Numbered_MCNP_Object):
     @property
     def material_components(self):
         """
-            The internal dictionary containing all the components of this material.
+        The internal dictionary containing all the components of this material.
 
         .. deprecated:: 0.4.1
             MaterialComponent has been deprecated as part of a redesign for the material
@@ -403,27 +406,38 @@ See <https://www.montepy.org/migrations/migrate0_1.html> for more information ""
 
         # TODO fix
         for component in self._components:
-            ret += repr(self._components[component]) + "\n"
+            ret += f"{component[0]} {component[1].value}\n"
         if self.thermal_scattering:
             ret += f"Thermal Scattering: {self.thermal_scattering}"
 
         return ret
 
     def __str__(self):
-        elements = self._get_material_elements()
-        return f"MATERIAL: {self.number}, {elements}"
-
-    def _get_material_elements(self):
-        sortable_components = [
-            (iso, component.fraction) for iso, component in self._components
+        elements = self.get_material_elements()
+        print_el = []
+        if len(elements) > MAX_PRINT_ELEMENTS:
+            print_elements = elements[0:MAX_PRINT_ELEMENTS]
+            print_elements.append("...")
+            print_elements.append(elements[-1])
+        else:
+            print_elements = elements
+        print_elements = [
+            element.name if isinstance(element, Element) else element
+            for element in print_elements
         ]
-        sorted_comps = sorted(sortable_components)
-        elements_set = set()
-        elements = []
-        for isotope, _ in sorted_comps:
-            if isotope.element not in elements_set:
-                elements_set.add(isotope.element)
-                elements.append(isotope.element.name)
+        return f"MATERIAL: {self.number}, {print_elements}"
+
+    def get_material_elements(self):
+        """
+
+        :returns: a sorted list of elements by total fraction
+        :rtype: list
+        """
+        element_frac = co.Counter()
+        for nuclide, fraction in self:
+            element_frac[nuclide.element] += fraction
+        element_sort = sorted(element_frac.items(), key=lambda p: p[1], reverse=True)
+        elements = [p[0] for p in element_sort]
         return elements
 
     def validate(self):
