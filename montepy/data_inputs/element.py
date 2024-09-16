@@ -13,6 +13,8 @@ class Element:
     :raises UnknownElement: if there is no element with that Z number.
     """
 
+    __slots__ = "_Z"
+
     def __init__(self, Z):
         self._Z = Z
         if Z not in self.__Z_TO_SYMBOL:
