@@ -40,6 +40,60 @@ class Library:
 _ZAID_A_ADDER = 1000
 
 
+class Nucleus:
+
+    __slots__ = "_element", "_a", "_meta_state"
+
+    def __init__(
+        self,
+        ZAID="",
+        element=None,
+        Z=None,
+        A=None,
+        meta_state=None,
+    ):
+        if ZAID:
+            parts = ZAID.split(".")
+            try:
+                assert len(parts) <= 2
+                int(parts[0])
+            except (AssertionError, ValueError) as e:
+                raise ValueError(f"ZAID: {ZAID} could not be parsed as a valid isotope")
+            new_vals = self._parse_zaid(int(self._ZAID))
+            for key, value in new_vals.items():
+                setattr(self, key, value)
+        elif element is not None:
+            if not isinstance(element, Element):
+                raise TypeError(
+                    f"Only type Element is allowed for element argument. {element} given."
+                )
+            self._element = element
+
+        elif Z is not None:
+            if not isinstance(Z, int):
+                raise TypeError(f"Z number must be an int. {Z} given.")
+            self._element = Element(Z)
+        self._handle_stupid_legacy_stupidity()
+        if ZAID:
+            return
+        if A is not None:
+            if not isinstance(A, int):
+                raise TypeError(f"A number must be an int. {A} given.")
+            self._A = A
+        else:
+            self._A = 0
+        if not isinstance(meta_state, (int, type(None))):
+            raise TypeError(f"Meta state must be an int. {meta_state} given.")
+        if meta_state:
+            self._meta_state = meta_state
+        else:
+            self._meta_state = 0
+        if not isinstance(library, str):
+            raise TypeError(f"Library can only be str. {library} given.")
+        self._library = Library(library)
+        self._ZAID = str(self.get_full_zaid())
+
+
 class Nuclide:
     """
     A class to represent an MCNP isotope
@@ -84,6 +138,7 @@ class Nuclide:
         library="",
         node=None,
     ):
+        # TODO invoke Nucleus
         self._library = Library("")
         self._ZAID = None
 
