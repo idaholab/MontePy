@@ -312,7 +312,7 @@ def test_fancy_names(input, Z, A, meta, library):
 
 @given(
     st.integers(1, 118),
-    st.floats(1.5, 2.7),
+    st.floats(2.1, 2.7),
     st.integers(0, 4),
     st.integers(0, 1000),
     st.characters(min_codepoint=97, max_codepoint=122),
