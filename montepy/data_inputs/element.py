@@ -1,6 +1,8 @@
 # Copyright 2024, Battelle Energy Alliance, LLC All Rights Reserved.
 from montepy.errors import *
 
+MAX_Z_NUM = 118
+
 
 class Element:
     """

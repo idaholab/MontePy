@@ -19,3 +19,28 @@ class Materials(NumberedDataObjectCollection):
 
     def __init__(self, objects=None, problem=None):
         super().__init__(Material, objects, problem)
+
+
+def __create_mat_generator(element):
+    """ """
+
+    def closure(obj):
+        for material in obj:
+            if element in material:
+                yield material
+
+    return closure
+
+
+def __setup_element_generators():
+    elements = [
+        montepy.data_inputs.element.Element(z)
+        for z in range(1, montepy.data_inputs.element.MAX_Z_NUM + 1)
+    ]
+    for element in elements:
+        doc = f"Generator for all material containing element: {element.name}"
+        getter = property(__create_mat_generator(element), doc=doc)
+        setattr(Materials, element.symbol, getter)
+
+
+__setup_element_generators()
