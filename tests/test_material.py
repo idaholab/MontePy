@@ -364,7 +364,7 @@ def big_material():
     mat = Material()
     mat.number = 1
     for component in components:
-        mat.append((Nuclide(component), 0.05))
+        mat.add_nuclide(component, 0.05)
     return mat
 
 
