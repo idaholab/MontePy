@@ -47,9 +47,10 @@ class Nucleus:
     #                   Cl-52      Br-101     Xe-150      Os-203    Cm-251     Og-296
     _BOUNDING_CURVE = [(17, 52), (35, 101), (54, 150), (76, 203), (96, 251), (118, 296)]
     _STUPID_MAP = {
-        "95642": {"_is_metastable": False, "_meta_state": None},
-        "95242": {"_is_metastable": True, "_meta_state": 1},
+        "95642": {"_meta_state": 0},
+        "95242": {"_meta_state": 1},
     }
+    _STUPID_ZAID_SWAP = {95242: 95642, 95642: 95242}
     """
     Points on bounding curve for determining if "valid" isotope
     """
@@ -72,6 +73,7 @@ class Nucleus:
             new_vals = self._parse_zaid(int(ZAID))
             for key, value in new_vals.items():
                 setattr(self, key, value)
+            self._handle_stupid_legacy_stupidity(ZAID)
         elif element is not None:
             if not isinstance(element, Element):
                 raise TypeError(
@@ -83,7 +85,6 @@ class Nucleus:
             if not isinstance(Z, int):
                 raise TypeError(f"Z number must be an int. {Z} given.")
             self._element = Element(Z)
-        self._handle_stupid_legacy_stupidity(ZAID)
         if ZAID:
             return
         if A is not None:
@@ -101,8 +102,9 @@ class Nucleus:
 
     def _handle_stupid_legacy_stupidity(self, ZAID):
         # TODO work on this for mat_redesign
+        ZAID = str(ZAID)
         if ZAID in self._STUPID_MAP:
-            stupid_overwrite = self._STUPID_MAP[self.ZAID]
+            stupid_overwrite = self._STUPID_MAP[ZAID]
             for key, value in stupid_overwrite.items():
                 setattr(self, key, value)
 
@@ -114,7 +116,10 @@ class Nucleus:
         :rtype: int
         """
         meta_adder = 300 + 100 * self.meta_state if self.is_metastable else 0
-        return self.Z * _ZAID_A_ADDER + self.A + meta_adder
+        temp = self.Z * _ZAID_A_ADDER + self.A + meta_adder
+        if temp in self._STUPID_ZAID_SWAP:
+            return self._STUPID_ZAID_SWAP[temp]
+        return temp
 
     @property
     def Z(self):
@@ -232,6 +237,10 @@ class Nucleus:
             and self.meta_state == other.meta_state
         )
 
+    def __str__(self):
+        meta_suffix = f"m{self.meta_state}" if self.is_metastable else ""
+        return f"{self.element.symbol:>2}-{self.A:<3}{meta_suffix:<2}"
+
 
 class Nuclide:
     """
@@ -270,7 +279,6 @@ class Nuclide:
     ):
         # TODO invoke Nucleus
         self._library = Library("")
-        self._ZAID = None
 
         if node is not None and isinstance(node, ValueNode):
             if node.type == float:
@@ -278,10 +286,12 @@ class Nuclide:
             self._tree = node
             ZAID = node.value
         self._nucleus = Nucleus(ZAID, element, Z, A, meta_state)
+        parts = ZAID.split(".")
+        if len(parts) > 1 and library == "":
+            library = parts[1]
         if not isinstance(library, str):
             raise TypeError(f"Library can only be str. {library} given.")
         self._library = Library(library)
-        self._ZAID = str(self.get_full_zaid())
 
     @property
     def ZAID(self):
@@ -291,7 +301,7 @@ class Nuclide:
         :rtype: int
         """
         # if this is made mutable this cannot be user provided, but must be calculated.
-        return self._ZAID
+        return self._nucleus.ZAID
 
     @property
     def Z(self):
@@ -387,16 +397,6 @@ class Nuclide:
         :rtype: int
         """
         return self.Z * _ZAID_A_ADDER + self.A
-
-    def get_full_zaid(self):
-        """
-        Get the ZAID identifier of this isomer.
-
-        :returns: the mcnp ZAID of this isotope.
-        :rtype: int
-        """
-        meta_adder = 300 + 100 * self.meta_state if self.is_metastable else 0
-        return self.Z * _ZAID_A_ADDER + self.A + meta_adder
 
     @classmethod
     def get_from_fancy_name(cls, identifier):
