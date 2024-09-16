@@ -134,7 +134,11 @@ See <https://www.montepy.org/migrations/migrate0_1.html> for more information ""
         return self._components[idx]
 
     def __iter__(self):
-        return iter(self._components)
+        def gen_wrapper():
+            for comp in self._components:
+                yield (comp[0], comp[1].value)
+
+        return gen_wrapper()
 
     def __setitem__(self, idx, newvalue):
         """ """
