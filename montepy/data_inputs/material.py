@@ -191,6 +191,20 @@ See <https://www.montepy.org/migrations/migrate0_1.html> for more information ""
         self._elements.add(obj[0].element)
         self._components.append(obj)
 
+    def add_nuclide(self, nuclide, fraction):
+        """
+
+        :param nuclide: The nuclide to add, which can be a string indentifier.
+        :type nuclide: Nuclide, str, int
+        """
+        if not isinstance(nuclide, (Nuclide, str, int)):
+            raise TypeError("")
+        if not isinstance(fraction, (float, int)):
+            raise TypeError("")
+        if isinstance(nuclide, (str, int)):
+            nuclide = Nuclide.get_from_fancy_name(nuclide)
+        self.append((nuclide, fraction))
+
     def __prep_element_filter(self, filter_obj):
         if isinstance(filter_obj, "str"):
             filter_obj = Element.get_by_symbol(filter_obj).Z
