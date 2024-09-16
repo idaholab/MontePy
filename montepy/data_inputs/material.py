@@ -185,6 +185,22 @@ See <https://www.montepy.org/migrations/migrate0_1.html> for more information ""
             self._elements.remove(element)
         del self._components[idx]
 
+    def __contains__(self, nuclide):
+        # TODO support fancy stuff?
+        if not isinstance(nuclide, (Nuclide, Element)):
+            raise TypeError("")
+        # TODO how to handle libraries?
+        # TODO hash nuclides?
+        if isinstance(nuclide, Nuclide):
+            for self_nuc, _ in self:
+                if self_nuc == nuclide:
+                    return True
+            return False
+        if isinstance(nuclide, Element):
+            element = nuclide
+            return element in self._elements
+        return False
+
     # TODO create an add fancy name
     def append(self, obj):
         self._check_valid_comp(obj)

@@ -55,6 +55,7 @@ Pu-239   (80c) 0.1
     print(output)
     assert output == answers
     output = str(material)
+    print(output)
     assert output == "MATERIAL: 20, ['hydrogen', 'oxygen', 'plutonium']"
 
 
