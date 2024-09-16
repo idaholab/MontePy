@@ -501,6 +501,6 @@ See <https://www.montepy.org/migrations/migrate0_1.html> for more information ""
         for mine, yours in zip(my_comp, other_comp):
             if mine[0] != yours[0]:
                 return False
-            if not math.isclose(mine[1].value, yours[1].value):
+            if not math.isclose(mine[1], yours[1]):
                 return False
         return True
