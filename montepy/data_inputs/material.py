@@ -46,6 +46,7 @@ class Material(data_input.DataInputAbstract, Numbered_MCNP_Object):
         self._thermal_scattering = None
         self._is_atom_fraction = False
         self._number = self._generate_default_node(int, -1)
+        self._elements = set()
         super().__init__(input)
         if input:
             num = self._input_number
@@ -81,6 +82,7 @@ class Material(data_input.DataInputAbstract, Numbered_MCNP_Object):
                             f"Material definitions for material: {self.number} cannot use atom and mass fraction at the same time",
                         )
                 # TODO where to store the fractions
+                self._elements.add(isotope.element)
                 self._components.append((isotope, fraction))
 
     @make_prop_val_node("_old_number")
@@ -173,11 +175,20 @@ See <https://www.montepy.org/migrations/migrate0_1.html> for more information ""
     def __delitem__(self, idx):
         if not isinstance(idx, (int, slice)):
             raise TypeError(f"Not a valid index. {idx} given.")
+        element = self[idx][0].element
+        found = False
+        for nuclide, _ in self:
+            if nuclide.element == element:
+                found = True
+                break
+        if not found:
+            self._elements.remove(element)
         del self._components[idx]
 
     # TODO create an add fancy name
     def append(self, obj):
         self._check_valid_comp(obj)
+        self._elements.add(obj[0].element)
         self._components.append(obj)
 
     def __prep_element_filter(self, filter_obj):
