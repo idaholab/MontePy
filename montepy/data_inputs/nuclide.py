@@ -246,9 +246,8 @@ class Nuclide:
     """
     A class to represent an MCNP isotope
 
-    .. deprecated:: 0.4.1
-        This will class is deprecated, and will be renamed: ``Nuclde``.
-        For more details see the :ref:`migrate 0 1`.
+    ..versionadded: 1.0.0
+        This was added as replacement for ``montepy.data_inputs.Isotope``.
 
     :param ZAID: the MCNP isotope identifier
     :type ZAID: str
@@ -332,6 +331,10 @@ class Nuclide:
         :rtype: Element
         """
         return self._nucleus.element
+
+    @make_prop_pointer("_nucleus")
+    def nucleus(self):
+        """ """
 
     @property
     def is_metastable(self):
