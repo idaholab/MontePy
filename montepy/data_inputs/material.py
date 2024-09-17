@@ -5,7 +5,7 @@ import itertools
 import math
 
 from montepy.data_inputs import data_input, thermal_scattering
-from montepy.data_inputs.nuclide import Nuclide
+from montepy.data_inputs.nuclide import Library, Nucleus, Nuclide
 from montepy.data_inputs.element import Element
 from montepy.data_inputs.material_component import MaterialComponent
 from montepy.input_parser import syntax_node
@@ -14,6 +14,7 @@ from montepy import mcnp_object
 from montepy.numbered_mcnp_object import Numbered_MCNP_Object
 from montepy.errors import *
 from montepy.utilities import *
+from montepy.particle import LibraryType
 
 import re
 import warnings
@@ -29,6 +30,37 @@ def _number_validator(self, number):
         raise ValueError("number must be > 0")
     if self._problem:
         self._problem.materials.check_number(number)
+
+
+class _DefaultLibraries:
+
+    __slots__ = "_libraries"
+
+    def __init__(self):
+        self._libraries = {}
+
+    def __getitem__(self, key):
+        key = self._validate_key(key)
+        return self._libraries[key]
+
+    def __setitem__(self, key, value):
+        key = self._validate_key(key)
+        if not isinstance(value, Library):
+            raise TypeError("")
+        self._libraries[key] = value
+
+    def __delitem__(self, key):
+        key = self._validate_key(key)
+        del self._libraries[key]
+
+    def __str__(self):
+        return str(self._libraries)
+
+    @staticmethod
+    def _validate_key(key):
+        if not isinstance(key, LibraryType):
+            raise TypeError("")
+        return key
 
 
 class Material(data_input.DataInputAbstract, Numbered_MCNP_Object):
@@ -48,6 +80,7 @@ class Material(data_input.DataInputAbstract, Numbered_MCNP_Object):
         self._number = self._generate_default_node(int, -1)
         self._elements = set()
         self._nuclei = set()
+        self._default_libs = _DefaultLibraries()
         super().__init__(input)
         if input:
             num = self._input_number
@@ -85,6 +118,16 @@ class Material(data_input.DataInputAbstract, Numbered_MCNP_Object):
                 self._elements.add(isotope.element)
                 self._nuclei.add(isotope.nucleus)
                 self._components.append((isotope, fraction))
+            self._grab_defaults()
+
+    def _grab_defaults(self):
+        if "parameters" not in self._tree:
+            return
+        params = self._tree["parameters"]
+        for param, value in params.nodes.items():
+            lib_type = LibraryType(param.upper())
+            self._default_libs[lib_type] = Library(value["data"].value)
+        # TODO update in update_values for default_libraries
 
     @make_prop_val_node("_old_number")
     def old_number(self):
@@ -129,6 +172,13 @@ class Material(data_input.DataInputAbstract, Numbered_MCNP_Object):
             f"""material_components is deprecated, and has been removed in MontePy 1.0.0.
 See <https://www.montepy.org/migrations/migrate0_1.html> for more information """
         )
+
+    @make_prop_pointer("_default_libs")
+    def default_libraries(self):
+        """
+        TODO
+        """
+        pass
 
     def __getitem__(self, idx):
         """ """
