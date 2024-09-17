@@ -461,8 +461,10 @@ class Nuclide:
         suffix = f" ({self._library})" if str(self._library) else "()"
         return f"{self.element.symbol:>2}-{self.A:<3}{meta_suffix:<2}{suffix:>5}"
 
-    def __hash__(self):
-        return hash(self._ZAID)
+    def __eq__(self, other):
+        if not isinstance(other, type(self)):
+            raise TypeError("")
+        return self.nucleus == other.nucleus and self.library == other.library
 
     def __lt__(self, other):
         return int(self.ZAID) < int(other.ZAID)
