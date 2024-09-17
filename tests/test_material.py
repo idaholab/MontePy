@@ -82,17 +82,9 @@ def test_material_format_mcnp():
     assert output == answers
 
 
-@pytest.mark.parametrize(
-    "isotope, conc, error",
-    [
-        ("1001.80c", -0.1, ValueError),
-        ("1001.80c", "hi", TypeError),
-        ("hi", 1.0, ValueError),
-    ],
-)
-def test_material_comp_init(isotope, conc, error):
-    with pytest.raises(error):
-        MaterialComponent(Nuclide(isotope, suppress_warning=True), conc, True)
+def test_material_comp_init():
+    with pytest.raises(DeprecationWarning):
+        MaterialComponent(Nuclide("1001"), 0.1)
 
 
 def test_mat_comp_init_warn():
