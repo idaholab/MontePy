@@ -125,8 +125,12 @@ class Material(data_input.DataInputAbstract, Numbered_MCNP_Object):
             return
         params = self._tree["parameters"]
         for param, value in params.nodes.items():
-            lib_type = LibraryType(param.upper())
-            self._default_libs[lib_type] = Library(value["data"].value)
+            try:
+                lib_type = LibraryType(param.upper())
+                self._default_libs[lib_type] = Library(value["data"].value)
+            # skip extra parameters
+            except ValueError:
+                pass
         # TODO update in update_values for default_libraries
 
     @make_prop_val_node("_old_number")
