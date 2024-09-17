@@ -380,7 +380,7 @@ class Nuclide:
         :returns: a string that can be used in MCNP
         :rtype: str
         """
-        return f"{self.ZAID}.{self.library}" if str(self.library) else self.ZAID
+        return f"{self.ZAID}.{self.library}" if str(self.library) else str(self.ZAID)
 
     def nuclide_str(self):
         meta_suffix = f"m{self.meta_state}" if self.is_metastable else ""

@@ -97,7 +97,7 @@ def test_material_comp_init(isotope, conc, error):
 
 def test_mat_comp_init_warn():
     with pytest.raises(DeprecationWarning):
-        MaterialComponent(Nuclide("1001.80c", suppress_warning=True), 0.1)
+        MaterialComponent(Nuclide("1001.80c"), 0.1)
 
 
 def test_material_update_format():
@@ -198,7 +198,7 @@ def test_bad_init(line):
 # test isotope
 def test_isotope_init():
     isotope = Nuclide("1001.80c")
-    assert isotope.ZAID == "1001"
+    assert isotope.ZAID == 1001
     assert isotope.Z == 1
     assert isotope.A == 1
     assert isotope.element.Z == 1
@@ -211,7 +211,7 @@ def test_isotope_init():
 
 def test_isotope_metastable_init():
     isotope = Nuclide("13426.02c")
-    assert isotope.ZAID == "13426"
+    assert isotope.ZAID == 13426
     assert isotope.Z == 13
     assert isotope.A == 26
     assert isotope.is_metastable
