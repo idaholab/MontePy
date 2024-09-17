@@ -47,6 +47,7 @@ class Material(data_input.DataInputAbstract, Numbered_MCNP_Object):
         self._is_atom_fraction = False
         self._number = self._generate_default_node(int, -1)
         self._elements = set()
+        self._nuclei = set()
         super().__init__(input)
         if input:
             num = self._input_number
@@ -81,8 +82,8 @@ class Material(data_input.DataInputAbstract, Numbered_MCNP_Object):
                             input,
                             f"Material definitions for material: {self.number} cannot use atom and mass fraction at the same time",
                         )
-                # TODO where to store the fractions
                 self._elements.add(isotope.element)
+                self._nuclei.add(isotope.nucleus)
                 self._components.append((isotope, fraction))
 
     @make_prop_val_node("_old_number")
@@ -176,35 +177,49 @@ See <https://www.montepy.org/migrations/migrate0_1.html> for more information ""
         if not isinstance(idx, (int, slice)):
             raise TypeError(f"Not a valid index. {idx} given.")
         element = self[idx][0].element
-        found = False
-        for nuclide, _ in self:
+        nucleus = self[idx][0].nucleus
+        found_el = False
+        found_nuc = False
+        for i, (nuclide, _) in enumerate(self):
+            if i == idx:
+                continue
             if nuclide.element == element:
-                found = True
+                found_el = True
+            if nuclide.nucleus == nucleus:
+                found_nuc = True
+            if found_el and found_nuc:
                 break
-        if not found:
+        if not found_el:
             self._elements.remove(element)
+        if not found_nuc:
+            self._nuclei.remove(nucleus)
         del self._components[idx]
 
     def __contains__(self, nuclide):
         # TODO support fancy stuff?
-        if not isinstance(nuclide, (Nuclide, Element)):
+        if not isinstance(nuclide, (Nuclide, Nucleus, Element)):
             raise TypeError("")
-        # TODO how to handle libraries?
-        # TODO hash nuclides?
-        if isinstance(nuclide, Nuclide):
-            for self_nuc, _ in self:
-                if self_nuc == nuclide:
-                    return True
-            return False
+        if isinstance(nuclide, (Nucleus, Nuclide)):
+            # shortcut with hashes first
+            if nuclide not in self._nuclei:
+                return False
+            # do it slowly with search
+            if isinstance(nuclide, Nucleus):
+                for self_nuc, _ in self:
+                    if self_nuc == nuclide:
+                        return True
+                return False
+            # fall through for only Nucleus
+            return True
         if isinstance(nuclide, Element):
             element = nuclide
             return element in self._elements
         return False
 
-    # TODO create an add fancy name
     def append(self, obj):
         self._check_valid_comp(obj)
         self._elements.add(obj[0].element)
+        self._nuclei.add(obj[0].nucleus)
         self._components.append(obj)
 
     def add_nuclide(self, nuclide, fraction):
