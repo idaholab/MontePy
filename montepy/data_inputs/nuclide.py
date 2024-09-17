@@ -36,6 +36,13 @@ class Library:
     def __repr__(self):
         return str(self)
 
+    def __lt__(self, other):
+        if not isinstance(other, (type(self), str)):
+            raise TypeError(f"Can only compare Library instances.")
+        if isinstance(other, type(self)):
+            return self.library < other.library
+        return self.library < other
+
 
 _ZAID_A_ADDER = 1000
 
@@ -236,6 +243,11 @@ class Nucleus:
             and self.Z == other.Z
             and self.meta_state == other.meta_state
         )
+
+    def __lt__(self, other):
+        if not isinstance(other, type(self)):
+            raise TypeError("")
+        return (self.Z, self.A, self.meta_state) < (self.Z, self.A, self.meta_state)
 
     def __str__(self):
         meta_suffix = f"m{self.meta_state}" if self.is_metastable else ""
@@ -467,7 +479,9 @@ class Nuclide:
         return self.nucleus == other.nucleus and self.library == other.library
 
     def __lt__(self, other):
-        return int(self.ZAID) < int(other.ZAID)
+        if not isinstance(other, type(self)):
+            raise TypeError("")
+        return (self.nucleus, str(self.library)) < (self.nucleus, str(self.library))
 
     def __format__(self, format_str):
         return str(self).__format__(format_str)
