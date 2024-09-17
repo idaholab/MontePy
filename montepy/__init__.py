@@ -28,7 +28,7 @@ from montepy.input_parser.mcnp_input import Jump
 from .input_parser.input_reader import read_input
 
 # top level
-from montepy.particle import Particle
+from montepy.particle import Particle, LibraryType
 from montepy.universe import Universe
 from montepy.cell import Cell
 from montepy.mcnp_problem import MCNP_Problem
