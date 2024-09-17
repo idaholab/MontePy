@@ -399,10 +399,10 @@ See <https://www.montepy.org/migrations/migrate0_1.html> for more information ""
         return lines
 
     def _update_values(self):
-        new_list = syntax_node.NuclidesNode("new isotope list")
-        for isotope, component in self._components.items():
+        new_list = syntax_node.IsotopesNode("new isotope list")
+        for isotope, component in self._components:
             isotope._tree.value = isotope.mcnp_str()
-            new_list.append(("_", isotope._tree, component._tree))
+            new_list.append(("_", isotope._tree, component))
         self._tree.nodes["data"] = new_list
 
     def add_thermal_scattering(self, law):
