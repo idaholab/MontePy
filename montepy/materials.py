@@ -20,27 +20,28 @@ class Materials(NumberedDataObjectCollection):
     def __init__(self, objects=None, problem=None):
         super().__init__(Material, objects, problem)
 
+    def get_containing(self, nuclide, *args, threshold=0.0):
+        """ """
+        nuclides = []
+        for nuclide in [nuclide] + args:
+            if not isinstance(nuclide, (str, int, Element, Nucleus, Nuclide)):
+                raise TypeError("")  # foo
+            if isinstance(nuclide, (str, int)):
+                nuclide = montepy.Nuclide.get_from_fancy_name(nuclide)
+            nuclides.append(nuclide)
 
-def __create_mat_generator(element):
-    """ """
+        def sort_by_type(nuclide):
+            type_map = {
+                montepy.data_inputs.element.Element: 0,
+                montepy.data_inputs.nuclide.Nucleus: 1,
+                montepy.data_inputs.nuclide.Nuclide: 2,
+            }
+            return type_map[type(nuclide)]
 
-    def closure(obj):
-        for material in obj:
-            if element in material:
+        # optimize by most hashable and fail fast
+        nuclides = sorted(nuclides, key=sort_by_type)
+        for material in self:
+            if material.contains(*nuclides, threshold):
+                # maybe? Maybe not?
+                # should Materials act like a set?
                 yield material
-
-    return closure
-
-
-def __setup_element_generators():
-    elements = [
-        montepy.data_inputs.element.Element(z)
-        for z in range(1, montepy.data_inputs.element.MAX_Z_NUM + 1)
-    ]
-    for element in elements:
-        doc = f"Generator for all material containing element: {element.name}"
-        getter = property(__create_mat_generator(element), doc=doc)
-        setattr(Materials, element.symbol, getter)
-
-
-__setup_element_generators()

@@ -236,6 +236,30 @@ See <https://www.montepy.org/migrations/migrate0_1.html> for more information ""
             nuclide = Nuclide.get_from_fancy_name(nuclide)
         self.append((nuclide, fraction))
 
+    def contains(self, nuclide, *args, threshold):
+        nuclides = []
+        for nuclide in [nuclide] + args:
+            if not isinstance(nuclide, (str, int, Element, Nucleus, Nuclide)):
+                raise TypeError("")  # foo
+            if isinstance(nuclide, (str, int)):
+                nuclide = montepy.Nuclide.get_from_fancy_name(nuclide)
+            nuclides.append(nuclide)
+
+        # fail fast
+        for nuclide in nuclides:
+            if isinstance(nuclide, (Nucleus, Element)):
+                if nuclide not in self:
+                    return False
+
+        # do exhaustive search
+        nuclides_search = {str(nuclide): False for nuclide in nuclides}
+
+        for nuclide, fraction in self:
+            if str(nuclide) in nuclides_search:
+                if fraction >= threshold:
+                    nuclides_search[str(nuclide)] = True
+        return all(nuclide_search)
+
     def __prep_element_filter(self, filter_obj):
         if isinstance(filter_obj, "str"):
             filter_obj = Element.get_by_symbol(filter_obj).Z
