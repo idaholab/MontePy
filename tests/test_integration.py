@@ -1,6 +1,7 @@
 # Copyright 2024, Battelle Energy Alliance, LLC All Rights Reserved.
 import copy
 import io
+from pathlib import Path
 
 import pytest
 import os
@@ -16,6 +17,8 @@ from montepy.input_parser.mcnp_input import (
 from montepy.errors import *
 from montepy.particle import Particle
 import numpy as np
+
+from tests import constants
 
 
 @pytest.fixture(scope="module")
@@ -66,6 +69,17 @@ def test_lazy_comments_check(simple_problem):
     for comment in material2._tree.comments:
         print(repr(comment))
     print(material2._tree.get_trailing_comment())
+
+
+def test_moving_trail_comments(universe_problem):
+    problem = copy.deepcopy(universe_problem)
+    mat = problem.materials[2]
+    idx = problem.data_inputs.index(mat)
+    dat = problem.data_inputs[idx - 1]
+    assert len(mat.comments) == 1
+    assert len(mat.leading_comments) == 1
+    assert len(dat.leading_comments) == 0
+    assert len(dat.comments) == 0
 
 
 def test_material_parsing(simple_problem):
@@ -479,9 +493,9 @@ def test_importance_format_unmutated(importance_problem):
     imp = importance_problem.cells._importance
     output = imp.format_for_mcnp_input((6, 2, 0))
     print(output)
-    assert len(output) == 2
+    assert len(output) == 3
     assert "imp:n,p 1 1 1 0 3" == output[0]
-    assert "imp:e   0 0 0 1 2" == output[1]
+    assert "imp:e   0 2r 1 r" == output[2]
 
 
 def test_importance_format_mutated(importance_problem):
@@ -491,8 +505,9 @@ def test_importance_format_mutated(importance_problem):
     with pytest.warns(LineExpansionWarning):
         output = imp.format_for_mcnp_input((6, 2, 0))
     print(output)
-    assert len(output) == 3
+    assert len(output) == 4
     assert "imp:n 0.5 1 1 0 3" in output
+    assert "c special comment related to #520" == output[2]
 
 
 def test_importance_write_unmutated(importance_problem):
@@ -1066,3 +1081,60 @@ def test_alternate_encoding():
     montepy.read_input(
         os.path.join("tests", "inputs", "bad_encoding.imcnp"), replace=True
     )
+
+
+_SKIP_LINES = {
+    # skip lines of added implied importances
+    "tests/inputs/test_universe_data.imcnp": {5: True, 14: True, 15: True},
+}
+
+
+@pytest.mark.parametrize(
+    "file",
+    set((Path("tests") / "inputs").iterdir())
+    - {
+        Path("tests")
+        / "inputs"
+        / p  #                           Skip complexity of read
+        for p in constants.BAD_INPUTS
+        | constants.IGNORE_FILES
+        | {"testRead.imcnp", "readEdgeCase.imcnp"}
+    },
+)
+def test_read_write_cycle(file):
+    print(f"Testing against {file} *********************")
+    problem = montepy.read_input(file)
+    SKIPPERS = _SKIP_LINES.get(str(file), {})
+    fh = io.StringIO()
+    problem.write_problem(fh)
+    fh.seek(0)
+    # test valid syntax
+    new_problem = montepy.MCNP_Problem("foo")
+    # verify lines are similar
+    fh.seek(0)
+    lines = [line.rstrip() for line in fh]
+    [print(line) for line in lines]
+    with open(file, "r") as gold_fh:
+        gold_fh_iter = iter(gold_fh)
+        lines_iter = iter(lines)
+        for i, (gold_line, new_line) in enumerate(zip(gold_fh_iter, lines_iter)):
+            if i in SKIPPERS:
+                # True means skip new file line
+                if SKIPPERS[i]:
+                    new_line = next(lines_iter)
+                else:
+                    gold_line = next(gold_fh_iter)
+            # edge case override for not fixing #527.
+            if str(file) == "tests/inputs/test_interp_edge.imcnp" and i == 1:
+                assert new_line == "10214   0    (1  2I 4 )"
+                continue
+            try:
+                assert new_line == gold_line.rstrip().expandtabs(8)
+            except AssertionError as e:
+                # handle case of making importance explicit
+                if "IMP:n=0.0" in new_line:
+                    assert (
+                        new_line.replace("IMP:n=0.0", "").rstrip() == gold_line.rstrip()
+                    )
+                else:
+                    raise e

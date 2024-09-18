@@ -24,8 +24,8 @@ project = "MontePy"
 copyright = "2021 – 2024, Battelle Energy Alliance LLC."
 author = "Micah D. Gale (@micahgale), Travis J. Labossiere-Hickman (@tjlaboss)"
 
-
-release = importlib.metadata.version("montepy")
+version = importlib.metadata.version("montepy")
+release = version  # Will be true at website deployment.
 # -- General configuration ---------------------------------------------------
 
 # Add any Sphinx extension module names here, as strings. They can be
@@ -51,6 +51,9 @@ html_extra_path = ["robots.txt"]
 # directories to ignore when looking for source files.
 # This pattern also affects html_static_path and html_extra_path.
 exclude_patterns = []
+
+# Display the version
+display_version = True
 
 # -- External link configuration ---------------------------------------------
 UM63 = (
