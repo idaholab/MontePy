@@ -36,7 +36,7 @@ class MCNP_Object(ABC):
     """
 
     def __init__(self, input, parser):
-        self.__problem = None
+        self._problem_ref = None
         self._parameters = ParametersNode()
         self._input = None
         if input:
@@ -246,20 +246,23 @@ class MCNP_Object(ABC):
         :param problem: The problem to link this input to.
         :type problem: MCNP_Problem
         """
-        if not isinstance(problem, montepy.mcnp_problem.MCNP_Problem):
+        if not isinstance(problem, (montepy.mcnp_problem.MCNP_Problem, type(None))):
             raise TypeError("problem must be an MCNP_Problem")
-        self.__problem = weakref.ref(problem)
+        if problem is None:
+            self._problem_ref = None
+        else:
+            self._problem_ref = weakref.ref(problem)
 
     @property
     def _problem(self):
-        if self.__problem is not None:
-            return self.__problem()
+        if self._problem_ref is not None:
+            return self._problem_ref()
         return None
 
     @_problem.setter
     def _problem(self, problem):
         if problem is None:
-            self.__problem = None
+            self._problem_ref = None
             return
         self.link_to_problem(problem)
 
@@ -446,11 +449,11 @@ class MCNP_Object(ABC):
 
     def __getstate__(self):
         state = self.__dict__.copy()
-        weakref_key = "_MCNP_Object__problem"
+        weakref_key = "_problem_ref"
         if weakref_key in state:
             del state[weakref_key]
         return state
 
     def __setstate__(self, crunchy_data):
-        crunchy_data["_MCNP_Object__problem"] = None
+        crunchy_data["_problem_ref"] = None
         self.__dict__.update(crunchy_data)
