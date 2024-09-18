@@ -1,7 +1,8 @@
 # Copyright 2024, Battelle Energy Alliance, LLC All Rights Reserved.
-import os
+import copy
 from enum import Enum
 import itertools
+
 from montepy.data_inputs import mode, transform
 from montepy._cell_data_control import CellDataPrintController
 from montepy.cell import Cell
@@ -16,6 +17,9 @@ from montepy.input_parser import input_syntax_reader, block_type, mcnp_input
 from montepy.input_parser.input_file import MCNP_InputFile
 from montepy.universes import Universes
 from montepy.transforms import Transforms
+import montepy
+
+import os
 import warnings
 
 
@@ -71,13 +75,39 @@ class MCNP_Problem:
 
     def __relink_objs(self):
         if self.__unpickled:
-            self._cells.update_pointers(
-                self._cells, self._materials, self._surfaces, self._data_inputs, self
-            )
+            self._cells.link_to_problem(self)
             for collection in {"_surfaces", "_data_inputs"}:
-                for obj in getattr(self, collection):
-                    obj.link_to_problem(self)
+                collection = getattr(self, collection)
+                if isinstance(
+                    collection,
+                    montepy.numbered_object_collection.NumberedObjectCollection,
+                ):
+                    collection.link_to_problem(self)
+                else:
+                    for obj in collection:
+                        obj.link_to_problem(self)
             self.__unpickled = False
+
+    def __unlink_objs(self):
+        for collection in {"_surfaces", "_data_inputs"}:
+            collection = getattr(self, collection)
+            if isinstance(
+                collection,
+                montepy.numbered_object_collection.NumberedObjectCollection,
+            ):
+                collection.link_to_problem(None)
+            else:
+                for obj in collection:
+                    obj.link_to_problem(None)
+
+    def __deepcopy__(self, memo):
+        cls = type(self)
+        result = cls.__new__(cls)
+        memo[id(self)] = result
+        for k, v in self.__dict__.items():
+            setattr(result, k, copy.deepcopy(v, memo))
+        result.__unlink_objs()
+        return result
 
     @property
     def cells(self):

@@ -118,8 +118,10 @@ class TestNumberedObjectCollection(unittest.TestCase):
         self.assertEqual(len(cells), size + 2)
 
     def test_append_renumber_problems(self):
+        print(hex(id(self.simple_problem.materials._problem)))
         prob1 = copy.deepcopy(self.simple_problem)
         prob2 = copy.deepcopy(self.simple_problem)
+        print(hex(id(self.simple_problem.materials._problem)))
         # Delete Material 2, making its number available.
         prob2.materials.remove(prob2.materials[2])
         len_mats = len(prob2.materials)
