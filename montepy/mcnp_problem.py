@@ -177,6 +177,7 @@ class MCNP_Problem:
             raise TypeError("materials must be of type list and Materials")
         if isinstance(mats, list):
             mats = Materials(mats)
+        mats.link_to_problem(self)
         self._materials = mats
 
     @property
@@ -419,9 +420,9 @@ class MCNP_Problem:
         surfaces = sorted(surfaces)
         materials = sorted(materials)
         transforms = sorted(transforms)
-        self._surfaces = Surfaces(surfaces)
-        self._materials = Materials(materials)
-        self._transforms = Transforms(transforms)
+        self._surfaces = Surfaces(surfaces, problem=self)
+        self._materials = Materials(materials, problem=self)
+        self._transforms = Transforms(transforms, problem=self)
         self._data_inputs = sorted(set(self._data_inputs + materials + transforms))
 
     def write_problem(self, destination, overwrite=False):
