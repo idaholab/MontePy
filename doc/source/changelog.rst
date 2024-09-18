@@ -1,6 +1,13 @@
 MontePy Changelog
 =================
 
+#Next Version#
+--------------
+
+**Performance Improvement**
+
+* Fixed cyclic memory reference that lead to memory leak in ``copy.deepcopy`` (:issue:`514`).
+
 0.4.1
 --------------
 
