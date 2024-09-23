@@ -61,7 +61,7 @@ class Element(metaclass=SingletonGroup):
         return hash(self.Z)
 
     def __eq__(self, other):
-        return self.Z == other.Z
+        return self is other
 
     @classmethod
     def get_by_symbol(cls, symbol):

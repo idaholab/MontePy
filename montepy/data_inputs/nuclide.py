@@ -32,7 +32,8 @@ class Library(metaclass=SingletonGroup):
             raise TypeError(f"Can only compare Library instances.")
         if isinstance(other, type(self)):
             return self.library == other.library
-        return self.library == other
+        # due to SingletonGroup
+        return self is other
 
     def __str__(self):
         return self.library
@@ -242,11 +243,8 @@ class Nucleus(metaclass=SingletonGroup):
     def __eq__(self, other):
         if not isinstance(other, type(self)):
             raise TypeError("")
-        return (
-            self.element == other.element
-            and self.Z == other.Z
-            and self.meta_state == other.meta_state
-        )
+        # due to SingletonGroup
+        return self is other
 
     def __lt__(self, other):
         if not isinstance(other, type(self)):
