@@ -388,6 +388,7 @@ class NumberedObjectCollection(ABC):
         except KeyError:
             pass
         for obj in self._objects:
+            self.__num_cache[o.number] = o
             if obj.number == i:
                 self.__num_cache[i] = obj
                 return obj
@@ -400,6 +401,7 @@ class NumberedObjectCollection(ABC):
         :rtype: int
         """
         for o in self._objects:
+            self.__num_cache[o.number] = o
             yield o.number
 
     def values(self) -> typing.Generator[Numbered_MCNP_Object, None, None]:
@@ -409,6 +411,7 @@ class NumberedObjectCollection(ABC):
         :rtype: Numbered_MCNP_Object
         """
         for o in self._objects:
+            self.__num_cache[o.number] = o
             yield o
 
     def items(
