@@ -1,10 +1,11 @@
 # Copyright 2024, Battelle Energy Alliance, LLC All Rights Reserved.
 from montepy.errors import *
+from montepy._singleton import SingletonGroup
 
 MAX_Z_NUM = 118
 
 
-class Element:
+class Element(metaclass=SingletonGroup):
     """
     Class to represent an element e.g., Aluminum.
 

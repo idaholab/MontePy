@@ -1,5 +1,6 @@
 # Copyright 2024, Battelle Energy Alliance, LLC All Rights Reserved.
 from montepy.constants import MAX_ATOMIC_SYMBOL_LENGTH
+from montepy._singleton import SingletonGroup
 from montepy.data_inputs.element import Element
 from montepy.errors import *
 from montepy.utilities import *
@@ -9,7 +10,10 @@ import re
 import warnings
 
 
-class Library:
+class Library(metaclass=SingletonGroup):
+
+    __slots__ = "_library"
+
     def __init__(self, library):
         if not isinstance(library, str):
             raise TypeError(f"library must be a str. {library} given.")
@@ -47,7 +51,7 @@ class Library:
 _ZAID_A_ADDER = 1000
 
 
-class Nucleus:
+class Nucleus(metaclass=SingletonGroup):
 
     __slots__ = "_element", "_A", "_meta_state"
 
