@@ -1,6 +1,13 @@
 MontePy Changelog
 =================
 
+#Next Version#
+--------------
+
+**Bug Fixes**
+
+* Fixed bug where file streams couldn't actually be read (:pull:`553`).
+
 0.4.1
 --------------
 
