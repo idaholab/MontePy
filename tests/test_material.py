@@ -283,7 +283,7 @@ def test_isotope_str():
     ],
 )
 def test_fancy_names(input, Z, A, meta, library):
-    isotope = Nuclide.get_from_fancy_name(input)
+    isotope = Nuclide(input)
     assert isotope.A == A
     assert isotope.Z == Z
     assert isotope.meta_state == meta
@@ -324,7 +324,7 @@ def test_fancy_names_pbt(
     note(inputs)
     for input in inputs:
         note(input)
-        isotope = Nuclide.get_from_fancy_name(input)
+        isotope = Nuclide(input)
         assert isotope.A == A
         assert isotope.Z == Z
         assert isotope.meta_state == meta

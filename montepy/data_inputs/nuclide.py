@@ -284,7 +284,7 @@ class Nuclide:
 
     def __init__(
         self,
-        ZAID="",
+        name="",
         element=None,
         Z=None,
         A=None,
@@ -292,9 +292,13 @@ class Nuclide:
         library="",
         node=None,
     ):
-        # TODO invoke Nucleus
         self._library = Library("")
+        ZAID = ""
 
+        if not isinstance(name, (str, int, Element, Nucleus)):
+            raise TypeError(f"")
+        if name:
+            element, A, meta_state, library = self._parse_fancy_name(name)
         if node is not None and isinstance(node, ValueNode):
             if node.type == float:
                 node = ValueNode(node.token, str, node.padding)
@@ -418,13 +422,17 @@ class Nuclide:
         return self.Z * _ZAID_A_ADDER + self.A
 
     @classmethod
-    def get_from_fancy_name(cls, identifier):
+    def _parse_fancy_name(cls, identifier):
         """
         :param identifier:
         :type idenitifer: str | int
         """
-        if isinstance(identifier, cls):
-            return identifier
+        if isinstance(identifier, (Nucleus, Nuclide)):
+            if isinstance(identifier, Nuclide):
+                lib = identifier.library
+            else:
+                lib = ""
+            return (identifier.element, identifier.A, identifier.meta_state, lib)
         if isinstance(identifier, Element):
             element = identifier
         A = 0
@@ -467,7 +475,7 @@ class Nuclide:
                 f"Isotope fancy names only supports str, ints, and iterables. {identifier} given."
             )
 
-        return cls(element=element, A=A, meta_state=isomer, library=library)
+        return (element, A, isomer, library)
 
     def __repr__(self):
         return f"{self.__class__.__name__}({repr(self.nuclide_str())})"
