@@ -38,7 +38,11 @@ def read_input_syntax(input_file, mcnp_version=DEFAULT_VERSION, replace=True):
     """
     global reading_queue
     reading_queue = deque()
-    with input_file.open("r", replace=replace) as fh:
+    if input_file.is_stream:
+        context = input_file
+    else:
+        context = input_file.open("r", replace=replace)
+    with context as fh:
         yield from read_front_matters(fh, mcnp_version)
         yield from read_data(fh, mcnp_version)
 
