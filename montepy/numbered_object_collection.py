@@ -370,6 +370,28 @@ class NumberedObjectCollection(ABC):
     def __contains__(self, other):
         return other in self._objects
 
+    def __set_logic(self, other, operator):
+        # TODO type enforcement
+        # force a num_cache update
+        self_nums = set(self.keys())
+        other_nums = set(other.keys())
+        new_nums = operator(self_nums, other_nums)
+        new_obs = []
+        # TODO should we verify all the objects are the same?
+        for obj in self:
+            if obj.number in new_nums:
+                new_objs.append(obj)
+        return type(self)(new_objs)
+
+    def __and__(self, other):
+        """
+        Create set-like behavior
+        """
+        return self.__set_logic(other, lambda a, b: a & b)
+
+    def __or__(self, other):
+        return self.__set_logic(other, lambda a, b: a | b)
+
     def get(self, i: int, default=None) -> (Numbered_MCNP_Object, None):
         """
         Get ``i`` if possible, or else return ``default``.
