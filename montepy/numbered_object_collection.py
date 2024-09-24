@@ -189,6 +189,19 @@ class NumberedObjectCollection(ABC):
             f"Number cache: {self.__num_cache}"
         )
 
+    def add(self, obj):
+        # TODO type enforcement
+        # TODO propagate to Data Numbered
+        if obj.number in self.numbers:
+            # already in there can ignore
+            if obj == self[obj.number]:
+                return
+            raise NumberConflictError(f"")
+        self.__num_cache[obj.number] = obj
+        self._objects.append(obj)
+        if self._problem:
+            obj.link_to_problem(self._problem)
+
     def append(self, obj):
         """Appends the given object to the end of this collection.
 
@@ -391,6 +404,64 @@ class NumberedObjectCollection(ABC):
 
     def __or__(self, other):
         return self.__set_logic(other, lambda a, b: a | b)
+
+    def __sub__(self, other):
+        return self.__set_logic(other, lambda a, b: a - b)
+
+    def __xor__(self, other):
+        return self.__set_logic(other, lambda a, b: a ^ b)
+
+    def __set_logic_test(self, other, operator):
+        # TODO type
+        self_nums = set(self.keys())
+        other_nums = set(other.keys())
+        return operator(self_nums, other_nums)
+
+    def __leq__(self, other):
+        return self.__set_logic_test(other, lambda a, b: a <= b)
+
+    def __lt__(self, other):
+        return self.__set_logic_test(other, lambda a, b: a < b)
+
+    def __leq__(self, other):
+        return self.__set_logic_test(other, lambda a, b: a >= b)
+
+    def __gt__(self, other):
+        return self.__set_logic_test(other, lambda a, b: a > b)
+
+    def issubset(self, other):
+        return self.__set_logic_test(other, lambda a, b: a.issubset(b))
+
+    def isdisjoint(self, other):
+        return self.__set_logic_test(other, lambda a, b: a.isdisjoint(b))
+
+    def issuperset(self, other):
+        return self.__set_logic_test(other, lambda a, b: a.issuperset(b))
+
+    def __set_logic_multi(self, others, operator, iterate_all=False):
+        self_nums = set(self.keys())
+        other_sets = []
+        for other in others:
+            other_sets.append(set(other.keys()))
+        valid_nums = operator(self, *others)
+        to_iterate = [self]
+        if iterate_all:
+            to_iterate += others
+        objs = []
+        for collection in to_iterate:
+            for obj in collection:
+                if obj.number in valid_nums:
+                    objs.append(obj)
+        return type(self)(objs)
+
+    def intersection(self, *others):
+        self.__set_logic_multi(others, lambda a, b: a.intersection(b))
+
+    def union(self, *others):
+        self.__set_logic_multi(others, lambda a, b: a.union(b))
+
+    def difference(self, *others):
+        self.__set_logic_multi(others, lambda a, b: a.difference(b))
 
     def get(self, i: int, default=None) -> (Numbered_MCNP_Object, None):
         """
