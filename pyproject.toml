@@ -46,7 +46,8 @@ doc = [
 	"sphinx>=7.4.0", 
 	"sphinxcontrib-apidoc", 
 	"sphinx_rtd_theme",
-	"sphinx-sitemap"
+	"sphinx-sitemap",
+	"sphinx-favicon",
 ]
 format = ["black>=23.3.0"]
 build = [

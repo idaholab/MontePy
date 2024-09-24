@@ -37,11 +37,16 @@ extensions = [
     "sphinx.ext.intersphinx",
     "sphinx.ext.extlinks",
     "sphinx_sitemap",
+    "sphinx_favicon",
 ]
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ["_templates"]
-html_favicon = "monty.svg"
+favicons = [
+    "monty.svg",
+    "monty-192.png",
+    "monty-32.png"
+]
 html_logo = "monty.svg"
 
 html_baseurl = "https://www.montepy.org/"
