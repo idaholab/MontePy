@@ -45,7 +45,8 @@ templates_path = ["_templates"]
 favicons = [
     "monty.svg",
     "monty-192.png",
-    "monty-32.png"
+    "monty-32.png",
+    "monty-32.ico",
 ]
 html_logo = "monty.svg"
 
