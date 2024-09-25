@@ -9,9 +9,11 @@ from montepy.cell import Cell
 from montepy.cells import Cells
 from montepy.errors import *
 from montepy.constants import DEFAULT_VERSION
-from montepy.materials import Materials
-from montepy.surfaces import surface_builder
+from montepy.materials import Material, Materials
+from montepy.surfaces import surface, surface_builder
 from montepy.surface_collection import Surfaces
+
+# weird way to avoid circular imports
 from montepy.data_inputs import Material, parse_data
 from montepy.input_parser import input_syntax_reader, block_type, mcnp_input
 from montepy.input_parser.input_file import MCNP_InputFile
@@ -34,6 +36,14 @@ class MCNP_Problem:
     :type destination: io.TextIOBase, str, os.PathLike
     """
 
+    _NUMBERED_OBJ_MAP = {
+        Cell: Cells,
+        surface.Surface: Surfaces,
+        Material: Materials,
+        transform.Transform: Transforms,
+        montepy.universe: Universes,
+    }
+
     def __init__(self, destination):
         if hasattr(destination, "read") and callable(getattr(destination, "read")):
             self._input_file = MCNP_InputFile.from_open_stream(destination)
@@ -44,18 +54,20 @@ class MCNP_Problem:
         self.__unpickled = False
         self._print_in_data_block = CellDataPrintController()
         self._original_inputs = []
-        self._cells = Cells(problem=self)
-        self._surfaces = Surfaces(problem=self)
-        self._universes = Universes(problem=self)
-        self._transforms = Transforms(problem=self)
+        for collect_type in self._NUMBERED_OBJ_MAP.values():
+            attr_name = f"_{collect_type.__name__.lower()}"
+            setattr(self, attr_name, collect_type(problem=self))
         self._data_inputs = []
-        self._materials = Materials(problem=self)
         self._mcnp_version = DEFAULT_VERSION
         self._mode = mode.Mode()
 
     def __setstate__(self, nom_nom):
         self.__dict__.update(nom_nom)
         self.__unpickled = True
+
+    @staticmethod
+    def __get_collect_attr_name(collect_type):
+        return f"_{collect_type.__name__.lower()}"
 
     @property
     def original_inputs(self):
