@@ -721,8 +721,26 @@ class Cell(Numbered_MCNP_Object):
         ret = "\n".join([l for l in ret.splitlines() if l.strip()])
         return self.wrap_string_for_mcnp(ret, mcnp_version, True)
 
-    def clone(self, clone_material=True, clone_region=True, starting_number=0, step=1):
-        """ """
+    def clone(self, clone_material=True, clone_region=True, starting_number=1, step=1):
+        """
+        Create a new almost independent instance of this cell with a new number.
+
+        This relies mostly on ``copy.deepcopy``.
+        All properties and attributes will be a deep copy unless otherwise requested.
+        The one exception is this will still be internally linked to the original problem.
+        Even if ``clone_region`` is ``True`` the actual region object will be a copy.
+        This means that changes to the new cell's geometry will be independent, but may or may not
+        refer to the original surfaces.
+
+        :param clone_material: Whether to create a new clone of the material.
+        :type clone_material: bool
+        :param clone_region: Whether to clone the underlying objects (Surfaces, Cells) of this cell's region.
+        :type clone_region: bool
+        :param starting_number: The starting number to request for a new cell number.
+        :type starting_number: int
+        :param step: the step size to use to find a new valid number.
+        :type step: int
+        """
         # get which properties to copy over
         keys = set()
         for key in self.__dict__.keys():
@@ -734,12 +752,15 @@ class Cell(Numbered_MCNP_Object):
                 keys.add(key)
         if not clone_material:
             keys.remove("_material")
-        if not clone_region:
-            keys -= {"_surfaces", "_complements"}
+        keys -= {"_surfaces", "_complements"}
         result = Cell.__new__(Cell)
         for key in keys:
             attr = getattr(self, key)
             setattr(result, key, copy.deepcopy(attr))
+        # TODO handle surfaces and complements through clone
+        # TODO clone material
+        if clone_region:
+            pass
         if self._problem:
             result.number = self._problem.cells.request_number(starting_number, step)
         else:
