@@ -143,25 +143,7 @@ class NumberedObjectCollection(ABC):
         """
         if not isinstance(other_list, (list, type(self))):
             raise TypeError("The extending list must be a list")
-        for obj in other_list:
-            if not isinstance(obj, self._obj_class):
-                raise TypeError(
-                    "The object in the list {obj} is not of type: {self._obj_class}"
-                )
-            if obj.number in self.numbers:
-                raise NumberConflictError(
-                    (
-                        f"When adding to {type(self)} there was a number collision due to "
-                        f"adding {obj} which conflicts with {self[obj.number]}"
-                    )
-                )
-            # if this number is a ghost; remove it.
-            else:
-                self.__num_cache.pop(obj.number, None)
-        self._objects.extend(other_list)
-        if self._problem:
-            for obj in other_list:
-                obj.link_to_problem(self._problem)
+        self.update(other_list)
 
     def remove(self, delete):
         """
@@ -189,6 +171,12 @@ class NumberedObjectCollection(ABC):
             f"Number cache: {self.__num_cache}"
         )
 
+    def __internal_append(self, obj):
+        self.__num_cache[obj.number] = obj
+        self._objects.append(obj)
+        if self._problem:
+            obj.link_to_problem(self._problem)
+
     def add(self, obj):
         # TODO type enforcement
         # TODO propagate to Data Numbered
@@ -197,10 +185,21 @@ class NumberedObjectCollection(ABC):
             if obj == self[obj.number]:
                 return
             raise NumberConflictError(f"")
-        self.__num_cache[obj.number] = obj
-        self._objects.append(obj)
-        if self._problem:
-            obj.link_to_problem(self._problem)
+        self.__internal_append(obj)
+
+    def update(self, objs):
+        # TODO type enforcement
+        # TODO propagate to Data Numbered
+        # not thread safe
+        nums = set(self.numbers)
+        new_nums = set()
+        for obj in objs:
+            if obj.number in nums or obj.number in new_news:
+                if obj == self[obj.number]:
+                    continue
+                raise NumberConflictError(f"")
+            self.__internal_append(obj)
+            new_nums.add(obj.number)
 
     def append(self, obj):
         """Appends the given object to the end of this collection.
@@ -218,11 +217,7 @@ class NumberedObjectCollection(ABC):
                     f"{obj} to {type(self)}. Conflict was with {self[obj.number]}"
                 )
             )
-        else:
-            self.__num_cache[obj.number] = obj
-        self._objects.append(obj)
-        if self._problem:
-            obj.link_to_problem(self._problem)
+        self.__internal_append(obj)
 
     def append_renumber(self, obj, step=1):
         """Appends the object, but will renumber the object if collision occurs.
