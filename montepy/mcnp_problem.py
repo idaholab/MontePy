@@ -590,9 +590,8 @@ class MCNP_Problem:
         if self.message:
             ret += str(self._message) + "\n"
         ret += str(self._title) + "\n"
-        for cell in self._cells:
-            ret += str(cell) + "\n"
-        for input in self._data_inputs:
-            if not isinstance(input, Material):
-                ret += str(input) + "\n"
+        for collection in [self.cells, self.surfaces, self.data_inputs]:
+            for obj in collection:
+                ret += f"{obj}\n"
+            ret += "\n"
         return ret
