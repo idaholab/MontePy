@@ -87,8 +87,9 @@ class MCNP_Problem:
 
     def __relink_objs(self):
         if self.__unpickled:
-            self._cells.link_to_problem(self)
-            for collection in {"_surfaces", "_data_inputs"}:
+            for collection in set(self._NUMBERED_OBJ_MAP.values()) | {"_data_inputs"}:
+                if not isinstance(collection, str):
+                    collection = self.__get_collect_attr_name(collection)
                 collection = getattr(self, collection)
                 if isinstance(
                     collection,
@@ -101,16 +102,20 @@ class MCNP_Problem:
             self.__unpickled = False
 
     def __unlink_objs(self):
-        for collection in {"_surfaces", "_data_inputs"}:
+        for collection in set(self._NUMBERED_OBJ_MAP.values()) | {"_data_inputs"}:
+            if not isinstance(collection, str):
+                collection = self.__get_collect_attr_name(collection)
             collection = getattr(self, collection)
-            if isinstance(
-                collection,
-                montepy.numbered_object_collection.NumberedObjectCollection,
-            ):
-                collection.link_to_problem(None)
-            else:
-                for obj in collection:
-                    obj.link_to_problem(None)
+        if isinstance(
+            collection,
+            montepy.numbered_object_collection.NumberedObjectCollection,
+        ):
+            collection.link_to_problem(None)
+        else:
+            for obj in collection:
+                obj.link_to_problem(None)
+        self.__unpickled = True
+        self.__relink_objs()
 
     def __deepcopy__(self, memo):
         cls = type(self)
