@@ -89,13 +89,13 @@ class NumberedObjectCollection(ABC):
 
     def __getstate__(self):
         state = self.__dict__.copy()
-        weakref_key = "_NumberedObjectCollection__problem"
+        weakref_key = "_problem_ref"
         if weakref_key in state:
             del state[weakref_key]
         return state
 
     def __setstate__(self, crunchy_data):
-        crunchy_data["_NumberedObjectCollection__problem"] = None
+        crunchy_data["_problem_ref"] = None
         self.__dict__.update(crunchy_data)
 
     @property
@@ -453,7 +453,10 @@ class NumberedDataObjectCollection(NumberedObjectCollection):
     def __init__(self, obj_class, objects=None, problem=None):
         self._last_index = None
         if problem and objects:
-            self._last_index = problem.data_inputs.index(objects[-1])
+            try:
+                self._last_index = problem.data_inputs.index(objects[-1])
+            except ValueError:
+                pass
         super().__init__(obj_class, objects, problem)
 
     def append(self, obj, insert_in_data=True):
