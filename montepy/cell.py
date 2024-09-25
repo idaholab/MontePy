@@ -720,3 +720,28 @@ class Cell(Numbered_MCNP_Object):
         # check for accidental empty lines from subsequent cell modifiers that didn't print
         ret = "\n".join([l for l in ret.splitlines() if l.strip()])
         return self.wrap_string_for_mcnp(ret, mcnp_version, True)
+
+    def clone(self, clone_material=True, clone_region=True, starting_number=0, step=1):
+        """ """
+        # get which properties to copy over
+        keys = set()
+        for key in self.__dict__.keys():
+            if hasattr(Cell, key):
+                descriptor = getattr(Cell, key)
+                if not isinstance(descriptor, property):
+                    keys.add(key)
+            else:
+                keys.add(key)
+        if not clone_material:
+            keys.remove("_material")
+        if not clone_region:
+            keys -= {"_surfaces", "_complements"}
+        result = Cell.__new__(Cell)
+        for key in keys:
+            attr = getattr(self, key)
+            setattr(result, key, copy.deepcopy(attr))
+        if self._problem:
+            result.number = self._problem.cells.request_number(starting_number, step)
+        else:
+            result.number += step
+        return result

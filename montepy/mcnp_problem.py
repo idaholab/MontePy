@@ -109,6 +109,9 @@ class MCNP_Problem:
         result.__unlink_objs()
         return result
 
+    def clone(self):
+        return copy.deepcopy(self)
+
     @property
     def cells(self):
         """

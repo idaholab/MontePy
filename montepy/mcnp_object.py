@@ -1,5 +1,6 @@
 # Copyright 2024, Battelle Energy Alliance, LLC All Rights Reserved.
 from abc import ABC, abstractmethod
+import copy
 import itertools as it
 from montepy.errors import *
 from montepy.constants import (
@@ -457,3 +458,7 @@ class MCNP_Object(ABC):
     def __setstate__(self, crunchy_data):
         crunchy_data["_problem_ref"] = None
         self.__dict__.update(crunchy_data)
+
+    def clone(self):
+        """ """
+        return copy.deepcopy(self)

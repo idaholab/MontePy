@@ -1,5 +1,8 @@
 # Copyright 2024, Battelle Energy Alliance, LLC All Rights Reserved.
 from abc import abstractmethod
+import copy
+import itertools
+from montepy.errors import NumberConflictError
 from montepy.mcnp_object import MCNP_Object
 
 
@@ -23,3 +26,13 @@ class Numbered_MCNP_Object(MCNP_Object):
         :rtype: int
         """
         pass
+
+    def clone(self, starting_number=1, step=1):
+        """ """
+        ret = copy.deepcopy(self)
+        for number in itertools.count(starting_number, step=1):
+            try:
+                ret.number = number
+                return ret
+            except NumberConflictError:
+                pass
