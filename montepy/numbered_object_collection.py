@@ -412,13 +412,13 @@ class NumberedObjectCollection(ABC):
         other_nums = set(other.keys())
         return operator(self_nums, other_nums)
 
-    def __leq__(self, other):
+    def __le__(self, other):
         return self.__set_logic_test(other, lambda a, b: a <= b)
 
     def __lt__(self, other):
         return self.__set_logic_test(other, lambda a, b: a < b)
 
-    def __leq__(self, other):
+    def __ge__(self, other):
         return self.__set_logic_test(other, lambda a, b: a >= b)
 
     def __gt__(self, other):
