@@ -5,6 +5,8 @@ dist/*
 *egg-info/*
 *.mcnp
 .coverage
+htmlcov/
+htmlcov
 .idea/*
 *.*.sw*
 *.prof
