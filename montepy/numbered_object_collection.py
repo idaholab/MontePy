@@ -199,6 +199,28 @@ class NumberedObjectCollection(ABC):
         self.__num_cache.pop(delete.number, None)
         self._objects.remove(delete)
 
+    def clone(self, starting_number=1, step=1):
+        """
+        Create a new instance of this collection, with all new independent
+        objects with new numbers.
+
+        This relies mostly on ``copy.deepcopy``.
+
+        :param starting_number: The starting number to request for a new object numbers.
+        :type starting_number: int
+        :param step: the step size to use to find a new valid number.
+        :type step: int
+        :returns: a cloned copy of this object.
+        :rtype: type(self)
+
+        """
+        objs = []
+        for obj in self:
+            new_obj = obj.clone(starting_number, step)
+            starting_number = new_obj.number
+            objs.append()
+        return type(self)(objs)
+
     def __iter__(self):
         self._iter = self._objects.__iter__()
         return self._iter

@@ -740,6 +740,8 @@ class Cell(Numbered_MCNP_Object):
         :type starting_number: int
         :param step: the step size to use to find a new valid number.
         :type step: int
+        :returns: a cloned copy of this cell.
+        :rtype: Cell
         """
         # get which properties to copy over
         keys = set()
@@ -752,7 +754,14 @@ class Cell(Numbered_MCNP_Object):
                 keys.add(key)
         if not clone_material:
             keys.remove("_material")
-        keys -= {"_surfaces", "_complements"}
+        if not clone_region:
+            special_keys = {"_surfaces", "_complements"}
+            keys -= special_keys
+            for special in special_keys:
+                setattr(
+                    result, special, getattr(self, special).clone(starting_number, step)
+                )
+
         result = Cell.__new__(Cell)
         for key in keys:
             attr = getattr(self, key)
