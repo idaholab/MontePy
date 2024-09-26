@@ -171,3 +171,15 @@ def test_malformed_init(line):
     with pytest.raises(montepy.errors.UnsupportedFeature):
         input = Input([line], BlockType.CELL)
         Cell(input)
+
+
+def test_cell_clone():
+    input = Input(["1 0 2"], BlockType.CELL)
+    cell = Cell(input)
+    new_cell = cell.clone()
+    assert new_cell is not cell
+    assert new_cell.number == 2
+    for attr in {"importance", "volume", "fill"}:
+        assert getattr(cell, attr) is not getattr(new_cell, attr)
+    for attr in {"density", "old_number", "old_mat_number"}:
+        assert getattr(cell, attr) == getattr(new_cell, attr)
