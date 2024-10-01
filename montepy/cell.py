@@ -774,9 +774,7 @@ class Cell(Numbered_MCNP_Object):
                 )
         else:
             for special in special_keys:
-                setattr(
-                    result, special, copy.copy(getattr(self, special))
-                )
+                setattr(result, special, copy.copy(getattr(self, special)))
         if self._problem:
             result.number = self._problem.cells.request_number(starting_number, step)
         else:
