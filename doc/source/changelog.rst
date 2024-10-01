@@ -1,6 +1,13 @@
 MontePy Changelog
 =================
 
+#Next Version#
+---------------
+
+**Bug Fixes**
+
+* Fixed bug with parsing an ``EO`` input (:issue:`551`).
+
 0.4.1
 --------------
 
