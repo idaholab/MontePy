@@ -744,14 +744,7 @@ class Cell(Numbered_MCNP_Object):
         :rtype: Cell
         """
         # get which properties to copy over
-        keys = set()
-        for key in self.__dict__.keys():
-            if hasattr(Cell, key):
-                descriptor = getattr(Cell, key)
-                if not isinstance(descriptor, property):
-                    keys.add(key)
-            else:
-                keys.add(key)
+        keys = set(self.__dict__.keys())
         if not clone_material:
             keys.remove("_material")
         if not clone_region:
@@ -761,7 +754,6 @@ class Cell(Numbered_MCNP_Object):
                 setattr(
                     result, special, getattr(self, special).clone(starting_number, step)
                 )
-
         result = Cell.__new__(Cell)
         for key in keys:
             attr = getattr(self, key)
