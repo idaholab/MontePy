@@ -176,14 +176,21 @@ def test_malformed_init(line):
 
 @given(st.booleans(), st.booleans(), st.integers(), st.integers())
 def test_cell_clone(clone_region, clone_material, start_num, step):
-    input = Input(["1 0 2"], BlockType.CELL)
+    input = Input(["1 1 -0.5 2"], BlockType.CELL)
+    surf = montepy.surfaces.surface.Surface()
+    surf.number = 2
+    mat = montepy.data_inputs.material.Material()
+    mat.number = 1
+    surfs = montepy.surface_collection.Surfaces([surf])
+    mats = montepy.materials.Materials([mat])
     cell = Cell(input)
+    cell.update_pointers([], mats, surfs)
     problem = montepy.MCNP_Problem("foo")
     for prob in {None, problem}:
         cell.link_to_problem(prob)
-        if start_num <= 0:
+        if start_num <= 0 or step == 0:
             with pytest.raises(ValueError):
-                cell.clone(start_num, step)
+                cell.clone(clone_material, clone_region, start_num, step)
             return
         new_cell = cell.clone(clone_material, clone_region, start_num, step)
         assert new_cell is not cell
@@ -191,7 +198,7 @@ def test_cell_clone(clone_region, clone_material, start_num, step):
         if start_num != 1:
             assert new_cell.number == start_num
         else:
-            assert new_cell.number == 2
+            assert new_cell.number == start_num + step
         # force it to use the step
         if prob is not None:
             new_cell2 = cell.clone(clone_material, clone_region, start_num, step)
