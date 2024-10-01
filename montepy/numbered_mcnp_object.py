@@ -51,10 +51,12 @@ class Numbered_MCNP_Object(MCNP_Object):
         if step <= 0:
             raise ValueError(f"step must be >= 1. {step} given.")
         ret = copy.deepcopy(self)
-        if ret._problem:
+        if self._problem:
+            ret.link_to_problem(self._problem)
             collection_type = montepy.MCNP_Problem._NUMBERED_OBJ_MAP[type(self)]
-            collection = getattr(ret._problem, collection_type.__name__.lower())
+            collection = getattr(self._problem, collection_type.__name__.lower())
             ret.number = collection.request_number(starting_number, step)
+            collection.append(ret)
         for number in itertools.count(starting_number, step=1):
             try:
                 ret.number = number
