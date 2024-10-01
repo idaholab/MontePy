@@ -42,6 +42,14 @@ class Numbered_MCNP_Object(MCNP_Object):
         :rtype: type(self)
 
         """
+        if not isinstance(starting_number, int):
+            raise TypeError(f"Starting_number must be an int. {starting_number} given.")
+        if not isinstance(step, int):
+            raise TypeError(f"step must be an int. {step} given.")
+        if starting_number <= 0:
+            raise ValueError(f"starting_number must be >= 1. {starting_number} given.")
+        if step == 0:
+            raise ValueError(f"step must be non-zero. {step} given.")
         ret = copy.deepcopy(self)
         if ret._problem:
             collection_type = montepy.MCNP_Problem._NUMBERED_OBJ_MAP[type(self)]
