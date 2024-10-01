@@ -1030,6 +1030,14 @@ def test_shortcut_format(in_str, answer):
     assert shortcut.format() == ""
 
 
+@pytest.mark.parametrize("testee, outcome", [("(", False), ("1", True)])
+def test_shortcut_contains(testee, outcome):
+    parser = ShortcutTestFixture()
+    input = Input(["1 0 2R"], BlockType.CELL)
+    node = parser.parse(input.tokenize())
+    assert testee in node == outcome, "Contains result was incorrect."
+
+
 class ShortcutTestFixture(MCNP_Parser):
     @_("number_sequence", "shortcut_sequence")
     def shortcut_magic(self, p):
