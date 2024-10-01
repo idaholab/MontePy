@@ -743,27 +743,40 @@ class Cell(Numbered_MCNP_Object):
         :returns: a cloned copy of this cell.
         :rtype: Cell
         """
+        if not isinstance(clone_material, bool):
+            raise TypeError(
+                f"clone_material must be a boolean. {clone_material} given."
+            )
+        if not isinstance(clone_region, bool):
+            raise TypeError(f"clone_region must be a boolean. {clone_region} given.")
+        if not isinstance(starting_number, int):
+            raise TypeError(f"Starting_number must be an int. {starting_number} given.")
+        if not isinstance(step, int):
+            raise TypeError(f"step must be an int. {step} given.")
+        if starting_number <= 0:
+            raise ValueError(f"starting_number must be >= 1. {starting_number} given.")
+        if step == 0:
+            raise ValueError(f"step must be non-zero. {step} given.")
         # get which properties to copy over
         keys = set(self.__dict__.keys())
         if not clone_material:
             keys.remove("_material")
-        if not clone_region:
-            special_keys = {"_surfaces", "_complements"}
-            keys -= special_keys
+        result = Cell.__new__(Cell)
+        special_keys = {"_surfaces", "_complements"}
+        keys -= special_keys
+        for key in keys:
+            attr = getattr(self, key)
+            setattr(result, key, copy.deepcopy(attr))
+        if clone_region:
             for special in special_keys:
                 setattr(
                     result, special, getattr(self, special).clone(starting_number, step)
                 )
-        result = Cell.__new__(Cell)
-        for key in keys:
-            attr = getattr(self, key)
-            setattr(result, key, copy.deepcopy(attr))
-        # TODO handle surfaces and complements through clone
-        # TODO clone material
-        if clone_region:
-            pass
         if self._problem:
             result.number = self._problem.cells.request_number(starting_number, step)
         else:
-            result.number += step
+            if self.number != starting_number:
+                result.number = starting_number
+            else:
+                result.number = starting_number + step
         return result
