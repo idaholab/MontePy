@@ -1,5 +1,5 @@
 # Copyright 2024, Battelle Energy Alliance, LLC All Rights Reserved.
-from hypothesis import assume, given, strategies as st
+from hypothesis import given, strategies as st
 from unittest import TestCase
 import pytest
 
@@ -199,7 +199,7 @@ def test_mat_clone(start_num, step):
     problem = montepy.MCNP_Problem("foo")
     for prob in {None, problem}:
         mat.link_to_problem(prob)
-        if start_num <= 0 or step == 0:
+        if start_num <= 0 or step <= 0:
             with pytest.raises(ValueError):
                 mat.clone(start_num, step)
             return
@@ -221,6 +221,7 @@ def test_mat_clone(start_num, step):
         ((-1, 1), ValueError),
         ((0, 1), ValueError),
         ((1, 0), ValueError),
+        ((1, -1), ValueError),
     ],
 )
 def test_cell_clone_bad(args, error):

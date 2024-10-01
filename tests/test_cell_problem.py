@@ -188,7 +188,7 @@ def test_cell_clone(clone_region, clone_material, start_num, step):
     problem = montepy.MCNP_Problem("foo")
     for prob in {None, problem}:
         cell.link_to_problem(prob)
-        if start_num <= 0 or step == 0:
+        if start_num <= 0 or step <= 0:
             with pytest.raises(ValueError):
                 cell.clone(clone_material, clone_region, start_num, step)
             return
@@ -228,6 +228,7 @@ def test_cell_clone(clone_region, clone_material, start_num, step):
         ((False, False, -1, 1), ValueError),
         ((False, False, 0, 1), ValueError),
         ((False, False, 1, 0), ValueError),
+        ((False, False, 1, -1), ValueError),
     ],
 )
 def test_cell_clone_bad(args, error):
