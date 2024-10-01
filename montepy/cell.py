@@ -759,9 +759,13 @@ class Cell(Numbered_MCNP_Object):
             raise ValueError(f"step must be >= 1. {step} given.")
         # get which properties to copy over
         keys = set(self.__dict__.keys())
-        if not clone_material:
-            keys.remove("_material")
+        keys.remove("_material")
         result = Cell.__new__(Cell)
+        if clone_material:
+            result._material = self._material.clone(starting_number, step)
+        else:
+            result._material = self._material
+
         special_keys = {"_surfaces", "_complements"}
         keys -= special_keys
         for key in keys:
@@ -777,6 +781,7 @@ class Cell(Numbered_MCNP_Object):
                 setattr(result, special, copy.copy(getattr(self, special)))
         if self._problem:
             result.number = self._problem.cells.request_number(starting_number, step)
+            self._problem.cells.append(result)
         else:
             if self.number != starting_number:
                 result.number = starting_number
