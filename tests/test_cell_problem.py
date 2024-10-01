@@ -179,7 +179,7 @@ def test_cell_clone():
     new_cell = cell.clone()
     assert new_cell is not cell
     assert new_cell.number == 2
-    for attr in {"importance", "volume", "fill"}:
+    for attr in {"_importance", "_volume", "_fill"}:
         assert getattr(cell, attr) is not getattr(new_cell, attr)
-    for attr in {"density", "old_number", "old_mat_number"}:
+    for attr in {"mass_density", "atom_density", "old_number", "old_mat_number"}:
         assert getattr(cell, attr) == getattr(new_cell, attr)
