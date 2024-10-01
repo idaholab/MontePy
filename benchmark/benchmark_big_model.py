@@ -1,3 +1,4 @@
+import gc
 import montepy
 
 import time
@@ -13,7 +14,10 @@ problem = montepy.read_input("benchmark/big_model.imcnp")
 stop = time.time()
 
 print(f"Took {stop - start} seconds")
-print(f"Memory usage report: {tracemalloc.get_traced_memory()}")
+print(f"Memory usage report: {tracemalloc.get_traced_memory()/1024/1024} MB")
+del problem
+gc.collect()
+print(f"Memory usage report after GC: {tracemalloc.get_traced_memory()/1024/1024} MB")
 
 if (stop - start) > FAIL_THRESHOLD:
     raise RuntimeError(
