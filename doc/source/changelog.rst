@@ -1,6 +1,13 @@
 MontePy Changelog
 =================
 
+#Next Version#
+--------------
+
+**Bug Fixes**
+
+* Fixed bug with having a shortcut in a cell fill (:issue:`552`).
+
 0.4.1
 --------------
 
