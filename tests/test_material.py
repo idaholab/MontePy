@@ -199,6 +199,8 @@ def test_mat_clone(start_num, step):
     problem = montepy.MCNP_Problem("foo")
     for prob in {None, problem}:
         mat.link_to_problem(prob)
+        if prob is not None:
+            problem.materials.append(mat)
         if start_num <= 0 or step <= 0:
             with pytest.raises(ValueError):
                 mat.clone(start_num, step)

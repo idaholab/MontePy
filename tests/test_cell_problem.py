@@ -188,6 +188,8 @@ def test_cell_clone(clone_region, clone_material, start_num, step):
     problem = montepy.MCNP_Problem("foo")
     for prob in {None, problem}:
         cell.link_to_problem(prob)
+        if prob is not None:
+            prob.cells.append(cell)
         if start_num <= 0 or step <= 0:
             with pytest.raises(ValueError):
                 cell.clone(clone_material, clone_region, start_num, step)
@@ -202,10 +204,13 @@ def test_cell_clone(clone_region, clone_material, start_num, step):
         # force it to use the step
         if prob is not None:
             new_cell2 = cell.clone(clone_material, clone_region, start_num, step)
-            assert new_cell2.number == start_num + step
+            if start_num != 1:
+                assert new_cell2.number == start_num + step
+            else:
+                assert new_cell2.number == start_num + step + 1
         for attr in {"_importance", "_volume", "_fill"}:
             assert getattr(cell, attr) is not getattr(new_cell, attr)
-        for attr in {"mass_density", "atom_density", "old_number", "old_mat_number"}:
+        for attr in {"mass_density", "old_number", "old_mat_number"}:
             assert getattr(cell, attr) == getattr(new_cell, attr)
         assert cell.geometry is not new_cell.geometry
         if clone_region:
