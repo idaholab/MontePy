@@ -214,6 +214,12 @@ class NumberedObjectCollection(ABC):
         :rtype: type(self)
 
         """
+        if not isinstance(starting_number, int):
+            raise TypeError(f"Starting_number must be an int. {starting_number} given.")
+        if not isinstance(step, int):
+            raise TypeError(f"step must be an int. {step} given.")
+        if starting_number <= 0:
+            raise ValueError(f"starting_number must be >= 1. {starting_number} given.")
         objs = []
         for obj in self:
             new_obj = obj.clone(starting_number, step)
