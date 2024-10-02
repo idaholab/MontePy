@@ -143,21 +143,20 @@ class NumberedObjectCollection(ABC):
         """
         if not isinstance(other_list, (list, type(self))):
             raise TypeError("The extending list must be a list")
+        nums = set(self.numbers)
         for obj in other_list:
             if not isinstance(obj, self._obj_class):
                 raise TypeError(
                     "The object in the list {obj} is not of type: {self._obj_class}"
                 )
-            if obj.number in self.numbers:
+            if obj.number in nums:
                 raise NumberConflictError(
                     (
                         f"When adding to {type(self)} there was a number collision due to "
                         f"adding {obj} which conflicts with {self[obj.number]}"
                     )
                 )
-            # if this number is a ghost; remove it.
-            else:
-                self.__num_cache.pop(obj.number, None)
+            self.__num_cache[obj.number] = obj
         self._objects.extend(other_list)
         if self._problem:
             for obj in other_list:
@@ -342,29 +341,7 @@ class NumberedObjectCollection(ABC):
         return len(self._objects)
 
     def __iadd__(self, other):
-        if not isinstance(other, (type(self), list)):
-            raise TypeError(f"Appended item must be a list or of type {type(self)}")
-        for obj in other:
-            if not isinstance(obj, self._obj_class):
-                raise TypeError(
-                    f"Appended object {obj} must be of type: {self._obj_class}"
-                )
-        if isinstance(other, type(self)):
-            other_list = other.objects
-        else:
-            other_list = other
-        for obj in other_list:
-            if obj.number in self.numbers:
-                raise NumberConflictError(
-                    (
-                        "There was a numbering conflict when attempting to add "
-                        f"{obj} to {type(self)}. Conflict was with {self[obj.number]}"
-                    )
-                )
-            else:
-                self.__num_cache[obj.number] = obj
-        for obj in other_list:
-            self.append(obj)
+        self.extend(other)
         return self
 
     def __contains__(self, other):
