@@ -21,7 +21,7 @@ class Universe(Numbered_MCNP_Object):
             raise TypeError("number must be int")
         if number < 0:
             raise ValueError(f"Universe number must be ≥ 0. {number} given.")
-        self._number = number
+        self._number = montepy.input_parser.syntax_node.ValueNode(number, int)
 
         class Parser:
             def parse(self, token_gen, input):

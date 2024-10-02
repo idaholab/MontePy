@@ -135,7 +135,10 @@ class NumberedObjectCollection(ABC):
 
     def _update_number(self, old_num, new_num, obj):
         """ """
-        del self.__num_cache[old_num]
+        try:
+            del self.__num_cache[old_num]
+        except KeyError:
+            pass
         self.__num_cache[new_num] = obj
 
     @property
