@@ -133,6 +133,11 @@ class NumberedObjectCollection(ABC):
                 f"Number {number} is already in use for the collection: {type(self)} by {self[number]}"
             )
 
+    def _update_number(self, old_num, new_num, obj):
+        """ """
+        del self.__num_cache[old_num]
+        self.__num_cache[new_num] = obj
+
     @property
     def objects(self):
         """
