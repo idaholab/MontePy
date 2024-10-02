@@ -720,3 +720,71 @@ class Cell(Numbered_MCNP_Object):
         # check for accidental empty lines from subsequent cell modifiers that didn't print
         ret = "\n".join([l for l in ret.splitlines() if l.strip()])
         return self.wrap_string_for_mcnp(ret, mcnp_version, True)
+
+    def clone(self, clone_material=True, clone_region=True, starting_number=1, step=1):
+        """
+        Create a new almost independent instance of this cell with a new number.
+
+        This relies mostly on ``copy.deepcopy``.
+        All properties and attributes will be a deep copy unless otherwise requested.
+        The one exception is this will still be internally linked to the original problem.
+        Even if ``clone_region`` is ``True`` the actual region object will be a copy.
+        This means that changes to the new cell's geometry will be independent, but may or may not
+        refer to the original surfaces.
+
+        :param clone_material: Whether to create a new clone of the material.
+        :type clone_material: bool
+        :param clone_region: Whether to clone the underlying objects (Surfaces, Cells) of this cell's region.
+        :type clone_region: bool
+        :param starting_number: The starting number to request for a new cell number.
+        :type starting_number: int
+        :param step: the step size to use to find a new valid number.
+        :type step: int
+        :returns: a cloned copy of this cell.
+        :rtype: Cell
+        """
+        if not isinstance(clone_material, bool):
+            raise TypeError(
+                f"clone_material must be a boolean. {clone_material} given."
+            )
+        if not isinstance(clone_region, bool):
+            raise TypeError(f"clone_region must be a boolean. {clone_region} given.")
+        if not isinstance(starting_number, int):
+            raise TypeError(f"Starting_number must be an int. {starting_number} given.")
+        if not isinstance(step, int):
+            raise TypeError(f"step must be an int. {step} given.")
+        if starting_number <= 0:
+            raise ValueError(f"starting_number must be >= 1. {starting_number} given.")
+        if step <= 0:
+            raise ValueError(f"step must be >= 1. {step} given.")
+        # get which properties to copy over
+        keys = set(self.__dict__.keys())
+        keys.remove("_material")
+        result = Cell.__new__(Cell)
+        if clone_material:
+            result._material = self._material.clone(starting_number, step)
+        else:
+            result._material = self._material
+
+        special_keys = {"_surfaces", "_complements"}
+        keys -= special_keys
+        for key in keys:
+            attr = getattr(self, key)
+            setattr(result, key, copy.deepcopy(attr))
+        if clone_region:
+            for special in special_keys:
+                setattr(
+                    result, special, getattr(self, special).clone(starting_number, step)
+                )
+        else:
+            for special in special_keys:
+                setattr(result, special, copy.copy(getattr(self, special)))
+        if self._problem:
+            result.number = self._problem.cells.request_number(starting_number, step)
+            self._problem.cells.append(result)
+        else:
+            if self.number != starting_number:
+                result.number = starting_number
+            else:
+                result.number = starting_number + step
+        return result
