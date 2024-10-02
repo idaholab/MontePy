@@ -11,11 +11,6 @@ from montepy.utilities import *
 import re
 
 
-def _enforce_numbers(self, value):
-    if value <= 0:
-        raise ValueError(f"The number be greater than 0; {value} given.")
-
-
 class Surface(Numbered_MCNP_Object):
     """
     Object to hold a single MCNP surface
@@ -189,15 +184,6 @@ class Surface(Numbered_MCNP_Object):
     def old_number(self):
         """
         The surface number that was used in the read file
-
-        :rtype: int
-        """
-        pass
-
-    @make_prop_val_node("_number", int, validator=_enforce_numbers)
-    def number(self):
-        """
-        The surface number to use.
 
         :rtype: int
         """

@@ -8,9 +8,19 @@ import montepy
 from montepy.utilities import *
 
 
+def _number_validator(self, number):
+    if number < 0:
+        raise ValueError("number must be >= 0")
+    if self._problem:
+        collection_type = montepy.MCNP_Problem._NUMBERED_OBJ_MAP[type(self)]
+        collection = getattr(self._problem, collection_type.__name__.lower())
+        collection.check_number(number)
+        collection._update_number(self.number, number, self)
+
+
 class Numbered_MCNP_Object(MCNP_Object):
-    @property
-    @abstractmethod
+
+    @make_prop_val_node("_number", int, validator=_number_validator)
     def number(self):
         """
         The current number of the object that will be written out to a new input.

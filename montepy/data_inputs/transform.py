@@ -9,11 +9,6 @@ import numpy as np
 import re
 
 
-def _enforce_number(self, val):
-    if val <= 0:
-        raise ValueError(f"Transform number must be > 0. {val} given.")
-
-
 class Transform(data_input.DataInputAbstract, Numbered_MCNP_Object):
     """
     Input to represent a transform input (TR).
@@ -106,16 +101,6 @@ class Transform(data_input.DataInputAbstract, Numbered_MCNP_Object):
         The rotation matrix is in degrees and not in cosines
 
         :rtype: bool
-        """
-        pass
-
-    @make_prop_val_node("_number", (int, float), int, _enforce_number)
-    def number(self):
-        """
-        The transform number for this transform
-
-        :rtype: int
-
         """
         pass
 

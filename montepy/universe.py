@@ -63,26 +63,6 @@ class Universe(Numbered_MCNP_Object):
             cell.universe = self
 
     @property
-    def number(self):
-        """
-        The number for this Universe.
-
-        Universe 0 is protected, and a Universe cannot be set 0,
-        if it is not already Universe 0.
-        """
-        return self._number
-
-    @number.setter
-    def number(self, number):
-        if not isinstance(number, int):
-            raise TypeError("number must be int")
-        if number <= 0:
-            raise ValueError("Universe number must be > 0")
-        if self._problem:
-            self._problem.universes.check_number(number)
-        self._number = number
-
-    @property
     def old_number(self):
         """
         Original universe number from the input file.
