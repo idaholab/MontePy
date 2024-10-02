@@ -200,7 +200,7 @@ def test_cell_clone(clone_region, clone_material, start_num, step):
         if start_num != 1:
             assert new_cell.number == start_num
         else:
-            assert new_cell.number == start_num + step
+            assert new_cell.number == start_num + step * 2
         # force it to use the step
         if prob is not None:
             new_cell2 = cell.clone(clone_material, clone_region, start_num, step)

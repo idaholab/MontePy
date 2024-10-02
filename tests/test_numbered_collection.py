@@ -395,7 +395,7 @@ def test_data_pop(cp_simple_problem):
 @settings(suppress_health_check=[hypothesis.HealthCheck.function_scoped_fixture])
 @given(start_num=st.integers(), step=st.integers())
 def test_mat_clone(cp_simple_problem, start_num, step):
-    surfs = cp_simple_problem.surfaces
+    surfs = copy.deepcopy(cp_simple_problem.surfaces)
     if start_num <= 0 or step <= 0:
         with pytest.raises(ValueError):
             surfs.clone(start_num, step)
