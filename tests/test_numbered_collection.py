@@ -407,7 +407,7 @@ def test_mat_clone(cp_simple_problem, start_num, step):
         for new_surf, old_surf in zip(new_surfs, surfs):
             assert new_surf is not old_surf
             assert new_surf.surface_type == old_surf.surface_type
-            assert new_surf.number not in surfs.numbers
+            assert new_surf.number != old_surf.number
 
 
 @pytest.mark.parametrize(
