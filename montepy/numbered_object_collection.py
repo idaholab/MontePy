@@ -263,15 +263,8 @@ class NumberedObjectCollection(ABC):
         """
         if not isinstance(obj, self._obj_class):
             raise TypeError(f"object being appended must be of type: {self._obj_class}")
-        if obj.number in self.numbers:
-            raise NumberConflictError(
-                (
-                    "There was a numbering conflict when attempting to add "
-                    f"{obj} to {type(self)}. Conflict was with {self[obj.number]}"
-                )
-            )
-        else:
-            self.__num_cache[obj.number] = obj
+        self.check_number(obj.number)
+        self.__num_cache[obj.number] = obj
         self._objects.append(obj)
         if self._problem:
             obj.link_to_problem(self._problem)
@@ -325,8 +318,12 @@ class NumberedObjectCollection(ABC):
         if not isinstance(step, int):
             raise TypeError("step must be an int")
         number = start_num
-        while number in self.numbers:
-            number += step
+        while True:
+            try:
+                self.check_number(number)
+                break
+            except NumberConflictError:
+                number += step
         return number
 
     def next_number(self, step=1):
