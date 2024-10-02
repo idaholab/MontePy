@@ -5,6 +5,7 @@ import itertools
 from montepy.errors import NumberConflictError
 from montepy.mcnp_object import MCNP_Object
 import montepy
+from montepy.utilities import *
 
 
 class Numbered_MCNP_Object(MCNP_Object):

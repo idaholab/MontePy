@@ -120,7 +120,15 @@ class NumberedObjectCollection(ABC):
         """
         if not isinstance(number, int):
             raise TypeError("The number must be an int")
-        if number in self.numbers:
+        conflict = False
+        # only can trust cache if being
+        if self._problem:
+            if number in self.__num_cache:
+                conflict = True
+        else:
+            if number in self.numbers:
+                conflict = True
+        if conflict:
             raise NumberConflictError(
                 f"Number {number} is already in use for the collection: {type(self)} by {self[number]}"
             )
