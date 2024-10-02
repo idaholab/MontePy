@@ -1,6 +1,13 @@
 MontePy Changelog
 =================
 
+#Next Version#
+--------------
+
+**Bug Fixes**
+
+* Fixed a bug raised in an edge case when editing cell geometry, by making the error clearer (:issue:`558`).
+
 0.4.1
 --------------
 
