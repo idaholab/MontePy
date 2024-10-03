@@ -11,6 +11,7 @@ MontePy Changelog
 **Performance Improvement**
 
 * Fixed cyclic memory reference that lead to memory leak in ``copy.deepcopy`` (:issue:`514`).
+* Fixed O(N<sup>2</sup>) operation in how append works for object collections like Cells (:issue:`556`).
 
 0.4.1
 --------------
