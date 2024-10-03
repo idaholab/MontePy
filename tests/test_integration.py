@@ -822,7 +822,7 @@ def test_universe_number_collision():
     with pytest.raises(montepy.errors.NumberConflictError):
         problem.universes[0].number = 350
 
-    with pytest.raises(ValueError):
+    with pytest.raises(montepy.errors.NumberConflictError):
         problem.universes[350].number = 0
 
 
