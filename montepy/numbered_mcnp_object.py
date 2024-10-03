@@ -12,7 +12,18 @@ def _number_validator(self, number):
     if number < 0:
         raise ValueError("number must be >= 0")
     if self._problem:
-        collection_type = montepy.MCNP_Problem._NUMBERED_OBJ_MAP[type(self)]
+        obj_map = montepy.MCNP_Problem._NUMBERED_OBJ_MAP
+        try:
+            collection_type = obj_map[type(self)]
+        except KeyError as e:
+            found = False
+            for obj_class in obj_map:
+                if isinstance(self, obj_class):
+                    collection_type = obj_map[obj_class]
+                    found = True
+                    break
+            if not found:
+                raise e
         collection = getattr(self._problem, collection_type.__name__.lower())
         collection.check_number(number)
         collection._update_number(self.number, number, self)
