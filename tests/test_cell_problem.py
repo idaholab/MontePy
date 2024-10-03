@@ -195,6 +195,7 @@ def test_cell_clone(clone_region, clone_material, start_num, step):
                 cell.clone(clone_material, clone_region, start_num, step)
             return
         new_cell = cell.clone(clone_material, clone_region, start_num, step)
+        verify_internal_links(new_cell)
         assert new_cell is not cell
         assert new_cell.number != 1
         if start_num != 1:
@@ -221,6 +222,14 @@ def test_cell_clone(clone_region, clone_material, start_num, step):
             assert cell.material is not new_cell.material
         else:
             assert cell.material is new_cell.material
+
+
+def verify_internal_links(cell):
+    # verify _number is linked in tree
+    assert cell._number is cell._tree["cell_num"]
+    assert cell._old_mat_number is cell._tree["material"]["mat_num"]
+    # TODO geometry
+    # TODO importance links
 
 
 @pytest.mark.parametrize(
