@@ -768,9 +768,10 @@ class Cell(Numbered_MCNP_Object):
 
         special_keys = {"_surfaces", "_complements"}
         keys -= special_keys
+        memo = {}
         for key in keys:
             attr = getattr(self, key)
-            setattr(result, key, copy.deepcopy(attr))
+            setattr(result, key, copy.deepcopy(attr, memo))
         if clone_region:
             for special in special_keys:
                 setattr(
