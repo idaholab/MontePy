@@ -238,7 +238,12 @@ def verify_internal_links(cell):
 
 def verify_clone_format(cell):
     output = cell.format_for_mcnp_input((6, 3, 0))
-    # TODO
+    input = montepy.input_parser.mcnp_input.Input(
+        output, montepy.input_parser.block_type.BlockType.CELL
+    )
+    new_cell = montepy.Cell(input)
+    for attr in {"number", "mass_density", "old_mat_number"}:
+        assert getattr(cell, attr) == getattr(new_cell, attr)
 
 
 @pytest.mark.parametrize(
