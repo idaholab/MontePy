@@ -762,7 +762,10 @@ class Cell(Numbered_MCNP_Object):
         keys.remove("_material")
         result = Cell.__new__(Cell)
         if clone_material:
-            result._material = self._material.clone(starting_number, step)
+            if self.material is not None:
+                result._material = self._material.clone(starting_number, step)
+            else:
+                result._material = None
         else:
             result._material = self._material
 
