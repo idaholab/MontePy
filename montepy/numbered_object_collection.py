@@ -105,7 +105,6 @@ class NumberedObjectCollection(ABC):
 
         :rtype: generator
         """
-        self.__num_cache
         for obj in self._objects:
             # update cache every time we go through all objects
             self.__num_cache[obj.number] = obj
@@ -185,7 +184,10 @@ class NumberedObjectCollection(ABC):
         """
         if not isinstance(other_list, (list, type(self))):
             raise TypeError("The extending list must be a list")
-        nums = set(self.numbers)
+        if self._problem:
+            nums = set(self.__num_cache.keys())
+        else:
+            nums = set(self.numbers)
         for obj in other_list:
             if not isinstance(obj, self._obj_class):
                 raise TypeError(
@@ -198,8 +200,9 @@ class NumberedObjectCollection(ABC):
                         f"adding {obj} which conflicts with {self[obj.number]}"
                     )
                 )
-            self.__num_cache[obj.number] = obj
+            nums.add(obj.number)
         self._objects.extend(other_list)
+        self.__num_cache.update({obj.number: obj for obj in other_list})
         if self._problem:
             for obj in other_list:
                 obj.link_to_problem(self._problem)
