@@ -174,9 +174,12 @@ def test_malformed_init(line):
         Cell(input)
 
 
-@given(st.booleans(), st.booleans(), st.integers(), st.integers())
-def test_cell_clone(clone_region, clone_material, start_num, step):
-    input = Input(["1 1 -0.5 2"], BlockType.CELL)
+@given(st.booleans(), st.booleans(), st.booleans(), st.integers(), st.integers())
+def test_cell_clone(has_mat, clone_region, clone_material, start_num, step):
+    if has_mat:
+        input = Input(["1 1 -0.5 2"], BlockType.CELL)
+    else:
+        input = Input(["1 0 2"], BlockType.CELL)
     surf = montepy.surfaces.surface.Surface()
     surf.number = 2
     mat = montepy.data_inputs.material.Material()
@@ -222,10 +225,12 @@ def test_cell_clone(clone_region, clone_material, start_num, step):
         else:
             assert list(cell.surfaces)[0] is list(new_cell.surfaces)[0]
         if clone_material:
-            assert cell.material is not new_cell.material
+            if cell.material is None:
+                assert new_cell.material is None
+            else:
+                assert cell.material is not new_cell.material
         else:
             assert cell.material is new_cell.material
-        assert False
 
 
 def verify_internal_links(cell):
