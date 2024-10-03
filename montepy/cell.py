@@ -746,15 +746,19 @@ class Cell(Numbered_MCNP_Object):
         keys.remove("_material")
         result = Cell.__new__(Cell)
         if clone_material:
-            result._material = self._material.clone(starting_number, step)
+            if self.material is not None:
+                result._material = self._material.clone(starting_number, step)
+            else:
+                result._material = None
         else:
             result._material = self._material
 
         special_keys = {"_surfaces", "_complements"}
         keys -= special_keys
+        memo = {}
         for key in keys:
             attr = getattr(self, key)
-            setattr(result, key, copy.deepcopy(attr))
+            setattr(result, key, copy.deepcopy(attr, memo))
         if clone_region:
             for special in special_keys:
                 setattr(
