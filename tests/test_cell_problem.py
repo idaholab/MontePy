@@ -227,7 +227,7 @@ def test_cell_clone(clone_region, clone_material, start_num, step):
 def verify_internal_links(cell):
     # verify _number is linked in tree
     assert cell._number is cell._tree["cell_num"]
-    assert cell._old_mat_number is cell._tree["material"]["mat_num"]
+    assert cell._old_mat_number is cell._tree["material"]["mat_number"]
     # TODO geometry
     # TODO importance links
 
