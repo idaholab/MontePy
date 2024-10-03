@@ -194,7 +194,7 @@ def test_bad_init(line):
 @pytest.mark.filterwarnings("ignore")
 @given(st.integers(), st.integers())
 def test_mat_clone(start_num, step):
-    input = Input(["m1 1001.80c 0.3 8016.80c 0.67"], BlockType.CELL)
+    input = Input(["m1 1001.80c 0.3 8016.80c 0.67"], BlockType.DATA)
     mat = Material(input)
     problem = montepy.MCNP_Problem("foo")
     for prob in {None, problem}:
@@ -213,6 +213,11 @@ def test_mat_clone(start_num, step):
             assert iso is not gold_iso
             assert iso.ZAID == gold_iso.ZAID
             assert fraction.fraction == pytest.approx(gold_fraction.fraction)
+        assert new_mat._number is new_mat._tree["classifier"].number
+        output = new_mat.format_for_mcnp_input((6, 3, 0))
+        input = Input(output, BlockType.DATA)
+        newer_mat = Material(input)
+        assert newer_mat.number == new_mat.number
 
 
 @pytest.mark.parametrize(
