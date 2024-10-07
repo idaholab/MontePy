@@ -6,6 +6,7 @@ MontePy Changelog
 
 **Bug Fixes**
 
+* Fixed bug with parsing an ``EO`` input (:issue:`551`).
 * Fixed a bug raised in an edge case when editing cell geometry, by making the error clearer (:issue:`558`).
 * Fixed bug with having a shortcut in a cell fill (:issue:`552`).
 * Fixed bug where file streams couldn't actually be read (:pull:`553`).
