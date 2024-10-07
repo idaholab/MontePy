@@ -376,6 +376,16 @@ class NumberedObjectCollection(ABC):
         return self
 
     def __contains__(self, other):
+        if not isinstance(other, self._obj_class):
+            return False
+        # if cache can be trusted from #563
+        if self._problem:
+            try:
+                if other is self[other.number]:
+                    return True
+                return False
+            except KeyError:
+                return False
         return other in self._objects
 
     def __set_logic(self, other, operator):
@@ -397,14 +407,39 @@ class NumberedObjectCollection(ABC):
         """
         return self.__set_logic(other, lambda a, b: a & b)
 
+    def __iand__(self, other):
+        new_vals = self & other
+        self.__num_cache.clear()
+        self._objects.clear()
+        self.update(new_vals)
+        return self
+
     def __or__(self, other):
         return self.__set_logic(other, lambda a, b: a | b)
+
+    def __ior__(self, other):
+        new_vals = other - self
+        self.update(new_vals)
+        return self
 
     def __sub__(self, other):
         return self.__set_logic(other, lambda a, b: a - b)
 
+    def __isub__(self, other):
+        excess_values = self - other
+        for excess in excess_values:
+            del self[excess.number]
+        return self
+
     def __xor__(self, other):
         return self.__set_logic(other, lambda a, b: a ^ b)
+
+    def __ixor__(self, other):
+        new_values = self ^ other
+        self._objects.clear()
+        self.__num_cache.clear()
+        self.update(new_values)
+        return self
 
     def __set_logic_test(self, other, operator):
         # TODO type
@@ -457,6 +492,34 @@ class NumberedObjectCollection(ABC):
 
     def difference(self, *others):
         self.__set_logic_multi(others, lambda a, b: a.difference(b))
+
+    def difference_update(self, *others):
+        new_vals = self.difference(*others)
+        self.clear()
+        self.update(new_vals)
+        return self
+
+    def symmetric_difference(self, other):
+        return self ^ other
+
+    def symmetric_difference_update(self, other):
+        self ^= other
+        return self
+
+    def discard(self, obj):
+        try:
+            self.remove(obj)
+        except (TypeError, KeyError) as e:
+            pass
+
+    def remove(self, obj):
+        if not isinstance(obj, self._obj_class):
+            raise TypeError("")
+        candidate = self[obj.number]
+        if obj is candidate:
+            del self[obj.number]
+        else:
+            raise KeyError(f"This object is not in this collection")
 
     def get(self, i: int, default=None) -> (Numbered_MCNP_Object, None):
         """
