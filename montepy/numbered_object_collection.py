@@ -638,8 +638,7 @@ class NumberedDataObjectCollection(NumberedObjectCollection):
         """
         if not isinstance(pos, int):
             raise TypeError("The index for popping must be an int")
-        obj = self._objects.pop(pos)
-        super().pop(pos)
+        obj = super().pop(pos)
         if self._problem:
             self._problem.data_inputs.remove(obj)
         return obj
