@@ -12,6 +12,12 @@ MontePy Changelog
 
 * Fixed cyclic memory reference that lead to memory leak in ``copy.deepcopy`` (:issue:`514`).
 
+**Bug Fixes**
+
+* Fixed a bug raised in an edge case when editing cell geometry, by making the error clearer (:issue:`558`).
+* Fixed bug with having a shortcut in a cell fill (:issue:`552`).
+* Fixed bug where file streams couldn't actually be read (:pull:`553`).
+
 0.4.1
 --------------
 
