@@ -149,14 +149,15 @@ class Material(data_input.DataInputAbstract, Numbered_MCNP_Object):
         """
         pass
 
-    @property
+    # TODO ensure update_values
+    @make_prop_pointer("_is_atom_fraction", bool)
     def is_atom_fraction(self):
         """
         If true this constituent is in atom fraction, not weight fraction.
 
         :rtype: bool
         """
-        return self._is_atom_fraction
+        pass
 
     @property
     def material_components(self):
