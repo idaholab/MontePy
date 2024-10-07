@@ -458,6 +458,7 @@ class MCNP_Parser(Parser, metaclass=MetaBuilder):
         "modifier data_prefix",
         "data_prefix",
         "classifier NUMBER",
+        "classifier NULL",
         "classifier particle_type",
     )
     def classifier(self, p):
@@ -478,8 +479,12 @@ class MCNP_Parser(Parser, metaclass=MetaBuilder):
             classifier.modifier = syntax_node.ValueNode(p.modifier, str)
         if hasattr(p, "data_prefix"):
             classifier.prefix = p.data_prefix
-        if hasattr(p, "NUMBER"):
-            classifier.number = syntax_node.ValueNode(p.NUMBER, int)
+        if hasattr(p, "NUMBER") or hasattr(p, "NULL"):
+            if hasattr(p, "NUMBER"):
+                num = p.NUMBER
+            else:
+                num = p.NULL
+            classifier.number = syntax_node.ValueNode(num, int)
         if hasattr(p, "particle_type"):
             classifier.particles = p.particle_type
         return classifier
