@@ -7,6 +7,7 @@ MontePy Changelog
 **Bug Fixes**
 
 * Fixed bug with having a shortcut in a cell fill (:issue:`552`).
+* Fixed bug where file streams couldn't actually be read (:pull:`553`).
 
 0.4.1
 --------------

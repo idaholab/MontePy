@@ -1106,10 +1106,12 @@ def test_read_write_cycle(file):
     problem = montepy.read_input(file)
     SKIPPERS = _SKIP_LINES.get(str(file), {})
     fh = io.StringIO()
+    # make string unclosable to keep open after reading.
+    fh.close = lambda: None
     problem.write_problem(fh)
     fh.seek(0)
     # test valid syntax
-    new_problem = montepy.MCNP_Problem("foo")
+    new_problem = montepy.read_input(fh)
     # verify lines are similar
     fh.seek(0)
     lines = [line.rstrip() for line in fh]
