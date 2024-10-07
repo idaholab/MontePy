@@ -539,7 +539,7 @@ class NumberedObjectCollection(ABC):
         except KeyError:
             pass
         for obj in self._objects:
-            self.__num_cache[o.number] = o
+            self.__num_cache[obj.number] = obj
             if obj.number == i:
                 self.__num_cache[i] = obj
                 return obj
