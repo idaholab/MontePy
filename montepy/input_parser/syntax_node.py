@@ -1646,6 +1646,12 @@ class ListNode(SyntaxNodeBase):
             else:
                 yield node
 
+    def __contains__(self, value):
+        for node in self:
+            if node == value:
+                return True
+        return False
+
     def __getitem__(self, indx):
         if isinstance(indx, slice):
             return self.__get_slice(indx)
