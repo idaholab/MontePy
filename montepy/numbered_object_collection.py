@@ -225,12 +225,11 @@ class NumberedObjectCollection(ABC):
         if step <= 0:
             raise ValueError(f"step must be >= 1. {step} given.")
         objs = []
-        prev_num = starting_number
         for obj in self:
-            new_obj = obj.clone(prev_num, step)
+            new_obj = obj.clone(starting_number, step)
             starting_number = new_obj.number
             objs.append(new_obj)
-            prev_num = new_obj.number + step
+            starting_number = new_obj.number + step
         return type(self)(objs)
 
     def __iter__(self):

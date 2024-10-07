@@ -760,7 +760,7 @@ class Cell(Numbered_MCNP_Object):
         if step <= 0:
             raise ValueError(f"step must be >= 1. {step} given.")
         # get which properties to copy over
-        keys = set(self.__dict__.keys())
+        keys = set(vars(self))
         keys.remove("_material")
         result = Cell.__new__(Cell)
         if clone_material:
