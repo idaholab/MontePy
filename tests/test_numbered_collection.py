@@ -379,8 +379,10 @@ def test_data_clear(cp_simple_problem):
 
 def test_data_pop(cp_simple_problem):
     old_mat = next(reversed(list(cp_simple_problem.materials)))
+    old_len = len(cp_simple_problem.materials)
     popper = cp_simple_problem.materials.pop()
     assert popper is old_mat
+    assert len(cp_simple_problem.materials) == old_len - 1
     assert old_mat not in cp_simple_problem.materials
     assert old_mat not in cp_simple_problem.data_inputs
     with pytest.raises(TypeError):
