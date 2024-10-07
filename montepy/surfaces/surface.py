@@ -286,21 +286,8 @@ class Surface(Numbered_MCNP_Object):
         return self.number < other.number
 
     def __eq__(self, other):
-        return (
-            self.number == other.number
-            and self.surface_type == other.surface_type
-            and self.is_reflecting == other.is_reflecting
-            and self.is_white_boundary == other.is_white_boundary
-            and self.surface_constants == other.surface_constants
-        )
-
-    def __ne__(self, other):
-        return not self == other
-
-    def __hash__(self):
-        return hash((self.number, str(self.surface_type)))
-
-    def __eq__(self, other):
+        if not isinstance(other, type(self)):
+            return False
         return (
             self.number == other.number
             and self.surface_type == other.surface_type
