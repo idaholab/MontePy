@@ -394,7 +394,7 @@ def test_data_pop(cp_simple_problem):
 # disable function scoped fixtures
 @settings(suppress_health_check=[hypothesis.HealthCheck.function_scoped_fixture])
 @given(start_num=st.integers(), step=st.integers())
-def test_mat_clone(cp_simple_problem, start_num, step):
+def test_num_collect_clone(cp_simple_problem, start_num, step):
     surfs = copy.deepcopy(cp_simple_problem.surfaces)
     if start_num <= 0 or step <= 0:
         with pytest.raises(ValueError):
@@ -421,7 +421,7 @@ def test_mat_clone(cp_simple_problem, start_num, step):
         ((1, -1), ValueError),
     ],
 )
-def test_cell_clone_bad(cp_simple_problem, args, error):
+def test_num_collect_clone_bad(cp_simple_problem, args, error):
     surfs = cp_simple_problem.surfaces
     with pytest.raises(error):
         surfs.clone(*args)
