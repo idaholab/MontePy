@@ -460,5 +460,10 @@ class MCNP_Object(ABC):
         self.__dict__.update(crunchy_data)
 
     def clone(self):
-        """ """
+        """
+        Create a new independent instance of this object.
+
+        :returns: a new instance identical to this object.
+        :rtype: type(self)
+        """
         return copy.deepcopy(self)
