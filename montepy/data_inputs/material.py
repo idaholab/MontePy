@@ -19,8 +19,6 @@ from montepy.particle import LibraryType
 import re
 import warnings
 
-# TODO implement default library for problem and material
-# TODO implement change all libraries
 
 MAX_PRINT_ELEMENTS = 5
 
@@ -275,6 +273,15 @@ See <https://www.montepy.org/migrations/migrate0_1.html> for more information ""
         self._elements.add(obj[0].element)
         self._nuclei.add(obj[0].nucleus)
         self._components.append(obj)
+
+    def change_libraries(self, new_library):
+        """ """
+        if not isinstance(new_library, (Library, str)):
+            raise TypeError(
+                f"new_library must be a Library or str. {new_library} given."
+            )
+        for nuclide, _ in self:
+            nuclide.library = new_library
 
     def add_nuclide(self, nuclide, fraction):
         """

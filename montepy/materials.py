@@ -45,3 +45,19 @@ class Materials(NumberedDataObjectCollection):
                 # maybe? Maybe not?
                 # should Materials act like a set?
                 yield material
+
+    @property
+    def default_libraries(self):
+        """
+        The default libraries for this problem defined by ``M0``.
+
+        :returns: the default libraries in use
+        :rtype: dict
+        """
+        try:
+            return self[0].default_libraries
+        except KeyError:
+            default = Material()
+            default.number = 0
+            self.append(default)
+            return self.default_libraries
