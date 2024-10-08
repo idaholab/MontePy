@@ -232,11 +232,11 @@ class NumberedObjectCollection(ABC):
             raise TypeError(
                 f"Starting_number must be an int. {type(starting_number)} given."
             )
-        if not isinstance(step, (int, Type(None))):
+        if not isinstance(step, (int, type(None))):
             raise TypeError(f"step must be an int. {type(step)} given.")
-        if starting_number and starting_number <= 0:
+        if starting_number is not None and starting_number <= 0:
             raise ValueError(f"starting_number must be >= 1. {starting_number} given.")
-        if step and step <= 0:
+        if step is not None and step <= 0:
             raise ValueError(f"step must be >= 1. {step} given.")
         if starting_number is None:
             starting_number = self.starting_number
