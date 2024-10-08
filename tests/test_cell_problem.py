@@ -174,9 +174,19 @@ def test_malformed_init(line):
         Cell(input)
 
 
-@given(st.booleans(), st.booleans(), st.booleans(), st.integers(), st.integers())
+@given(
+    st.booleans(),
+    st.booleans(),
+    st.booleans(),
+    st.integers(),
+    st.integers(),
+    st.integers(1),
+    st.integers(1),
+)
 @pytest.mark.filterwarnings("ignore::montepy.errors.LineExpansionWarning")
-def test_cell_clone(has_mat, clone_region, clone_material, start_num, step):
+def test_cell_clone(
+    has_mat, clone_region, clone_material, start_num, step, other_start, other_step
+):
     if has_mat:
         input = Input(["1 1 -0.5 2"], BlockType.CELL)
     else:
@@ -187,6 +197,17 @@ def test_cell_clone(has_mat, clone_region, clone_material, start_num, step):
     mat.number = 1
     surfs = montepy.surface_collection.Surfaces([surf])
     mats = montepy.materials.Materials([mat])
+    problem = montepy.MCNP_Problem("")
+    problem.surfaces = surfs
+    problem.materials = mats
+    if other_start <= 0 or other_step <= 0:
+        with pytest.raises(ValueError):
+            mats.starting_number = other_start
+            mats.step = other_step
+    else:
+        for collect in (surfs, mats):
+            collect.starting_number = other_start
+            collect.step = other_step
     cell = Cell(input)
     cell.update_pointers([], mats, surfs)
     problem = montepy.MCNP_Problem("foo")
@@ -224,11 +245,23 @@ def test_cell_clone(has_mat, clone_region, clone_material, start_num, step):
         assert cell.geometry is not new_cell.geometry
         if clone_region:
             assert list(cell.surfaces)[0] is not list(new_cell.surfaces)[0]
+            if other_start >= 0 and step >= 0:
+                if other_start == 2:
+                    num =  2+ step
+                else:
+                    num = other_start = step
+                assert list(cell.surfaces)[0].number == num
         else:
             assert list(cell.surfaces)[0] is list(new_cell.surfaces)[0]
         if clone_material:
             if cell.material is None:
                 assert new_cell.material is None
+                if other_start >= 0 and step >= 0:
+                    if other_start == 1:
+                        num =  1+ step
+                    else:
+                        num = other_start = step
+                    assert cell.material.number == num 
             else:
                 assert cell.material is not new_cell.material
         else:
