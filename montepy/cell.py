@@ -809,7 +809,9 @@ class Cell(Numbered_MCNP_Object):
                 (leaves[1], self.surfaces),
             ]:
                 for surf in geom_collect:
-                    region_change_map[surf] = collect[surf.number]
+                    region_change_map[surf] = collect[
+                        surf.number if isinstance(surf, (Surface, Cell)) else surf
+                    ]
         result.geometry.remove_duplicate_surfaces(region_change_map)
         if self._problem:
             result.number = self._problem.cells.request_number(starting_number, step)
