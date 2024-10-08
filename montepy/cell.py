@@ -734,6 +734,8 @@ class Cell(Numbered_MCNP_Object):
         This means that changes to the new cell's geometry will be independent, but may or may not
         refer to the original surfaces.
 
+        .. versionadded:: 0.5.0
+
         :param clone_material: Whether to create a new clone of the material.
         :type clone_material: bool
         :param clone_region: Whether to clone the underlying objects (Surfaces, Cells) of this cell's region.

@@ -126,6 +126,13 @@ class MCNP_Problem:
         return result
 
     def clone(self):
+        """
+        Creates a complete independent copy of this problem.
+
+        .. versionadded:: 0.5.0
+
+        :rtype: MCNP_Problem
+        """
         return copy.deepcopy(self)
 
     @property
