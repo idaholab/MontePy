@@ -87,7 +87,18 @@ extlinks = {
 # The theme to use for HTML and HTML Help pages.  See the documentation for
 # a list of builtin themes.
 #
-html_theme = "sphinx_rtd_theme"
+html_theme = "pydata_sphinx_theme"
+html_theme_options = {
+    "navbar_start": ["navbar-logo", "version"],
+    "icon_links": [
+        {
+            "name": "GitHub",
+            "url": "https://github.com/idaholab/MontePy",
+            "icon": "fa-brands fa-square-github",
+            "type": "fontawesome",
+        },
+    ],
+}
 apidoc_module_dir = "../../montepy"
 apidoc_module_first = True
 apidoc_separate_modules = True
