@@ -721,7 +721,9 @@ class Cell(Numbered_MCNP_Object):
         ret = "\n".join([l for l in ret.splitlines() if l.strip()])
         return self.wrap_string_for_mcnp(ret, mcnp_version, True)
 
-    def clone(self, clone_material=True, clone_region=True, starting_number=1, step=1):
+    def clone(
+        self, clone_material=False, clone_region=False, starting_number=1, step=1
+    ):
         """
         Create a new almost independent instance of this cell with a new number.
 
