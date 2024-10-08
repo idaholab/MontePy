@@ -175,6 +175,7 @@ def test_malformed_init(line):
 
 
 @given(st.booleans(), st.booleans(), st.booleans(), st.integers(), st.integers())
+@pytest.mark.filterwarnings("ignore::montepy.errors.LineExpansionWarning")
 def test_cell_clone(has_mat, clone_region, clone_material, start_num, step):
     if has_mat:
         input = Input(["1 1 -0.5 2"], BlockType.CELL)
@@ -251,7 +252,11 @@ def verify_clone_format(cell):
         output, montepy.input_parser.block_type.BlockType.CELL
     )
     new_cell = montepy.Cell(input)
-    new_cell.update_pointers([], [], montepy.surface_collection.Surfaces([surf]))
+    if cell.material:
+        mats = montepy.materials.Materials([cell.material])
+    else:
+        mats = []
+    new_cell.update_pointers([], mats, montepy.surface_collection.Surfaces([surf]))
     for attr in {"number", "mass_density", "old_mat_number"}:
         assert getattr(cell, attr) == getattr(new_cell, attr)
     new_surf = list(new_cell.surfaces)[0]
