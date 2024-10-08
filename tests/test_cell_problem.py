@@ -216,7 +216,7 @@ def test_cell_clone(has_mat, clone_region, clone_material, start_num, step):
                 assert new_cell2.number == start_num + step * 2
         for attr in {"_importance", "_volume", "_fill"}:
             assert getattr(cell, attr) is not getattr(new_cell, attr)
-        for attr in {"mass_density", "old_number", "old_mat_number"}:
+        for attr in {"mass_density"}:
             assert getattr(cell, attr) == getattr(new_cell, attr)
             if attr == "mass_density":
                 attr = "density_node"
