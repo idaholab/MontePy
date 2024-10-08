@@ -1,5 +1,5 @@
 # Copyright 2024, Battelle Energy Alliance, LLC All Rights Reserved.
-from hypothesis import given, strategies as st
+from hypothesis import given, note, strategies as st
 from unittest import TestCase
 import pytest
 
@@ -197,9 +197,6 @@ def test_cell_clone(
     mat.number = 1
     surfs = montepy.surface_collection.Surfaces([surf])
     mats = montepy.materials.Materials([mat])
-    problem = montepy.MCNP_Problem("")
-    problem.surfaces = surfs
-    problem.materials = mats
     if other_start <= 0 or other_step <= 0:
         with pytest.raises(ValueError):
             mats.starting_number = other_start
@@ -211,6 +208,8 @@ def test_cell_clone(
     cell = Cell(input)
     cell.update_pointers([], mats, surfs)
     problem = montepy.MCNP_Problem("foo")
+    problem.surfaces = surfs
+    problem.materials = mats
     for prob in {None, problem}:
         cell.link_to_problem(prob)
         if prob is not None:
@@ -245,25 +244,15 @@ def test_cell_clone(
         assert cell.geometry is not new_cell.geometry
         if clone_region:
             assert list(cell.surfaces)[0] is not list(new_cell.surfaces)[0]
-            if other_start >= 0 and step >= 0:
-                if other_start == 2:
-                    num =  2+ step
-                else:
-                    num = other_start = step
-                assert list(cell.surfaces)[0].number == num
+            assert list(new_cell.surfaces)[0].number != list(cell.surfaces)[0].number
         else:
             assert list(cell.surfaces)[0] is list(new_cell.surfaces)[0]
         if clone_material:
             if cell.material is None:
                 assert new_cell.material is None
-                if other_start >= 0 and step >= 0:
-                    if other_start == 1:
-                        num =  1+ step
-                    else:
-                        num = other_start = step
-                    assert cell.material.number == num 
             else:
                 assert cell.material is not new_cell.material
+                assert new_cell.material.number != cell.material.number
         else:
             assert cell.material is new_cell.material
 
@@ -278,6 +267,7 @@ def verify_internal_links(cell):
 
 def verify_clone_format(cell):
     surf = list(cell.surfaces)[0]
+    old_num = surf.number
     num = 1000
     surf.number = num
     output = cell.format_for_mcnp_input((6, 3, 0))
@@ -294,6 +284,7 @@ def verify_clone_format(cell):
         assert getattr(cell, attr) == getattr(new_cell, attr)
     new_surf = list(new_cell.surfaces)[0]
     assert new_surf.number == num
+    surf.number = old_num
 
 
 @pytest.mark.parametrize(
