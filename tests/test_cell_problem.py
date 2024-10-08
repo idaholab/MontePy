@@ -287,6 +287,16 @@ def verify_clone_format(cell):
     surf.number = old_num
 
 
+def test_cell_clone_default():
+    input = Input(["1 1 -0.5 2"], BlockType.CELL)
+    cell = Cell(input)
+    problem = montepy.MCNP_Problem("")
+    for prob in {problem, None}:
+        cell.link_to_problem(prob)
+        new_cell = cell.clone()
+        assert new_cell.number != cell.number
+
+
 @pytest.mark.parametrize(
     "args, error",
     [
@@ -303,5 +313,9 @@ def verify_clone_format(cell):
 def test_cell_clone_bad(args, error):
     input = Input(["1 0 2"], BlockType.CELL)
     cell = Cell(input)
+    surf = montepy.surfaces.surface.Surface()
+    surf.number = 2
+    surfs = montepy.surface_collection.Surfaces([surf])
+    cell.update_pointers([], [], surfs)
     with pytest.raises(error):
         cell.clone(*args)
