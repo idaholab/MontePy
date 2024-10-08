@@ -769,7 +769,7 @@ class Cell(Numbered_MCNP_Object):
         result = Cell.__new__(Cell)
         if clone_material:
             if self.material is not None:
-                result._material = self._material.clone(starting_number, step)
+                result._material = self._material.clone()
             else:
                 result._material = None
         else:
@@ -788,7 +788,7 @@ class Cell(Numbered_MCNP_Object):
                 collection = getattr(self, special)
                 new_objs = []
                 for obj in collection:
-                    new_obj = obj.clone(starting_number, step)
+                    new_obj = obj.clone()
                     region_change_map[obj] = new_obj
                     new_objs.append(new_obj)
                 setattr(result, special, type(collection)(new_objs))
