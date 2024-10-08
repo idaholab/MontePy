@@ -798,6 +798,7 @@ class Cell(Numbered_MCNP_Object):
                     region_change_map[obj] = new_obj
                     new_objs.append(new_obj)
                 setattr(result, special, type(collection)(new_objs))
+
         else:
             region_change_map = {}
             for special in special_keys:

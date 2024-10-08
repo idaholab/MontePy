@@ -76,7 +76,9 @@ class Numbered_MCNP_Object(MCNP_Object):
             return ret
         if starting_number is None:
             starting_number = 1
-        for number in itertools.count(starting_number, step=1):
+        if step is None:
+            step = 1
+        for number in itertools.count(starting_number, step):
             # only reached if not tied to a problem
             ret.number = number
             if number != self.number:
