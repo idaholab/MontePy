@@ -59,9 +59,9 @@ class Numbered_MCNP_Object(MCNP_Object):
             collection = getattr(self._problem, collection_type.__name__.lower())
             ret.number = collection.request_number(starting_number, step)
             collection.append(ret)
+            return ret
         for number in itertools.count(starting_number, step=1):
-            try:
-                ret.number = number
+            # only reached if not tied to a problem
+            ret.number = number
+            if number != self.number:
                 return ret
-            except NumberConflictError:
-                pass
