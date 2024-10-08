@@ -329,6 +329,16 @@ Oh no! When we made a list of the numbers we broke the link, and the new list wo
 and you can cause issues this way.
 The simple solution is to just access the generators directly; don't try to make copies for your own use.
 
+Cloning Objects
+^^^^^^^^^^^^^^^
+
+In the past the only way to make a copy of a MontePy object was with `copy.deepcopy <https://docs.python.org/3/library/copy.html#copy.deepcopy>`_.
+In MontePy 0.5.0 a better way was introduced: :func:`~montepy.mcnp_object.MCNP_Object.clone`.
+How numbered objects, for instance :class:`~montepy.cell.Cell`, is more complicated.
+If a ``Cell`` or a group of ``Cells`` are cloned their numbers will be to changed to avoid collisions.
+However, if a whole :class:`~montepy.mcnp_problem.MCNP_Problem` is cloned these objects will not have their numbers changed.
+For an example for how to clone a numbered object see :ref:`Cloning a Cell`.
+
 Surfaces
 --------
 
