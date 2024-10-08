@@ -609,6 +609,17 @@ True
 >>> new_cell.material is cell.material
 False
 
+When children objects (:class:`~montepy.data_inputs.material.Material`, :class:`~montepy.surfaces.surface.Surface`, and :class:`~montepy.cell.Cell`)
+are cloned the numbering behavior is defined by the problem's instance's instance of the respective collection (e.g., :class:`~montepy.materials.Materials`)
+by the properties: :func:`~montepy.numbered_object_collection.NumberedObjectCollection.starting_number` and :func:`~montepy.numbered_object_collection.NumberedObjectCollection.step`.
+For example:
+
+>>> problem.materials.starting_number = 100
+>>> problem.cells[1].material.number
+1
+>>> new_cell = problem.cells[1].clone(clone_material=True)
+>>> new_cell.material.number 
+100
 
 Universes
 ---------
