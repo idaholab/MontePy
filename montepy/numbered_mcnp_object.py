@@ -28,11 +28,21 @@ class Numbered_MCNP_Object(MCNP_Object):
         """
         pass
 
-    def clone(self, starting_number=1, step=1):
+    def clone(self, starting_number=None, step=None):
         """
         Create a new independent instance of this object with a new number.
 
         This relies mostly on ``copy.deepcopy``.
+
+        .. note ::
+            If starting_number, or step are not specified
+            :func:`~montepy.numbered_object_collection.NumberedObjectCollection.starting_number`,
+            and :func:`~montepy.numbered_object_collection.NumberedObjectCollection.step` are used as default values,
+            if this object is tied to a problem.
+            For instance a ``Material`` will use ``problem.materials`` default information.
+            Otherwise ``1`` will be used as default values
+
+        .. versionadded:: 0.5.0
 
         :param starting_number: The starting number to request for a new object number.
         :type starting_number: int
@@ -57,9 +67,15 @@ class Numbered_MCNP_Object(MCNP_Object):
             ret.link_to_problem(self._problem)
             collection_type = montepy.MCNP_Problem._NUMBERED_OBJ_MAP[type(self)]
             collection = getattr(self._problem, collection_type.__name__.lower())
+            if starting_number is None:
+                starting_number = collection.starting_number
+            if step is None:
+                step = collection.step
             ret.number = collection.request_number(starting_number, step)
             collection.append(ret)
             return ret
+        if starting_number is None:
+            starting_number = 1
         for number in itertools.count(starting_number, step=1):
             # only reached if not tied to a problem
             ret.number = number
