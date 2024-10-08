@@ -90,6 +90,14 @@ extlinks = {
 html_theme = "pydata_sphinx_theme"
 html_theme_options = {
     "navbar_start": ["navbar-logo", "version"],
+    "icon_links": [
+        {
+            "name": "GitHub",
+            "url": "https://github.com/idaholab/MontePy",
+            "icon": "fa-brands fa-square-github",
+            "type": "fontawesome",
+        },
+    ],
 }
 apidoc_module_dir = "../../montepy"
 apidoc_module_first = True
