@@ -722,7 +722,7 @@ class Cell(Numbered_MCNP_Object):
         return self.wrap_string_for_mcnp(ret, mcnp_version, True)
 
     def clone(
-        self, clone_material=False, clone_region=False, starting_number=1, step=1
+        self, clone_material=False, clone_region=False, starting_number=None, step=None
     ):
         """
         Create a new almost independent instance of this cell with a new number.
@@ -753,16 +753,22 @@ class Cell(Numbered_MCNP_Object):
             )
         if not isinstance(clone_region, bool):
             raise TypeError(f"clone_region must be a boolean. {clone_region} given.")
-        if not isinstance(starting_number, int):
+        if not isinstance(starting_number, (int, type(None))):
             raise TypeError(
                 f"Starting_number must be an int. {type(starting_number)} given."
             )
-        if not isinstance(step, int):
+        if not isinstance(step, (int, type(None))):
             raise TypeError(f"step must be an int. {type(step)} given.")
-        if starting_number <= 0:
+        if starting_number is not None and starting_number <= 0:
             raise ValueError(f"starting_number must be >= 1. {starting_number} given.")
-        if step <= 0:
+        if step is not None and step <= 0:
             raise ValueError(f"step must be >= 1. {step} given.")
+        if starting_number is None:
+            starting_number = (
+                self._problem.cells.starting_number if self._problem else 1
+            )
+        if step is None:
+            step = self._problem.cells.step if self._problem else 1
         # get which properties to copy over
         keys = set(vars(self))
         keys.remove("_material")
