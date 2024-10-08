@@ -88,6 +88,9 @@ extlinks = {
 # a list of builtin themes.
 #
 html_theme = "pydata_sphinx_theme"
+html_theme_options = {
+    "navbar_start": ["navbar-logo", "version"],
+}
 apidoc_module_dir = "../../montepy"
 apidoc_module_first = True
 apidoc_separate_modules = True
