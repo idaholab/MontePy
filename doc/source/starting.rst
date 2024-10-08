@@ -566,6 +566,50 @@ This will completely redefine the cell's geometry. You can also modify the geome
 
         ((+1000*+1005)*-1010)
 
+.. _Cloning a Cell:
+
+Cloning a Cell
+^^^^^^^^^^^^^^
+When a cell is cloned with :func:`~montepy.cell.Cell.clone` a new number will be assigned.
+If the cell is linked to a problem---either through being added to :class:`~montepy.cells.Cells`, or with :func:`~montepy.cell.Cell.link_to_problem`---
+the next available number in the problem will be used.
+Otherwise the ``starting_number`` will be used unless that is the original cell's number.
+How the number is picked is controlled by ``starting_number`` and ``step``. 
+The new cell will attempt to use ``starting_number`` as its number. 
+If this number is taken ``step`` will be added to it until an available number is found.
+For example:
+
+>>> base_cell = montepy.Cell()
+>>> base_cell.number = 1
+>>> # clone with an available number
+>>> new_cell = base_cell.clone(starting_number=1000)
+>>> new_cell.number
+1000
+>>> # force a number collision
+>>> new_cell = base_cell.clone(starting_number= 1, step =5)
+>>> new_cell.number
+6
+
+Cells can also clone their material, and their dividers. 
+By default this is not done, and only a new ``HalfSpace`` instance is created that points to the same objects.
+This is done so that the geometry definitions of the two cells can be edited without impacting the other cell.
+For a lot of problems this is preferred in order to avoid creating geometry gaps due to not using the same surfaces in geometry definitions.
+For example, if you have a problem read in already:
+
+>>> cell = problem.cells[1]
+>>> cell.material.number
+1
+>>> new_cell = cell.clone()
+>>> #the material didn't change
+>>> new_cell.material is cell.material
+True
+>>> new_cell = cell.clone(clone_material=True)
+>>> new_cell.material.number
+2 
+>>> new_cell.material is cell.material
+False
+
+
 Universes
 ---------
 
