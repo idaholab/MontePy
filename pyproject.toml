@@ -46,7 +46,7 @@ test = [
 doc = [
 	"sphinx>=7.4.0", 
 	"sphinxcontrib-apidoc", 
-	"sphinx_rtd_theme",
+	"pydata_sphinx_theme",
 	"sphinx-sitemap",
 	"sphinx-favicon",
 ]
