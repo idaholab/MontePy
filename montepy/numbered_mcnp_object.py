@@ -65,9 +65,11 @@ class Numbered_MCNP_Object(MCNP_Object):
 
         """
         if not isinstance(starting_number, int):
-            raise TypeError(f"Starting_number must be an int. {starting_number} given.")
+            raise TypeError(
+                f"Starting_number must be an int. {type(starting_number)} given."
+            )
         if not isinstance(step, int):
-            raise TypeError(f"step must be an int. {step} given.")
+            raise TypeError(f"step must be an int. {type(step)} given.")
         if starting_number <= 0:
             raise ValueError(f"starting_number must be >= 1. {starting_number} given.")
         if step <= 0:
@@ -79,9 +81,9 @@ class Numbered_MCNP_Object(MCNP_Object):
             collection = getattr(self._problem, collection_type.__name__.lower())
             ret.number = collection.request_number(starting_number, step)
             collection.append(ret)
+            return ret
         for number in itertools.count(starting_number, step=1):
-            try:
-                ret.number = number
+            # only reached if not tied to a problem
+            ret.number = number
+            if number != self.number:
                 return ret
-            except NumberConflictError:
-                pass

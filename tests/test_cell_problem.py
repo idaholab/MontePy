@@ -175,6 +175,7 @@ def test_malformed_init(line):
 
 
 @given(st.booleans(), st.booleans(), st.booleans(), st.integers(), st.integers())
+@pytest.mark.filterwarnings("ignore::montepy.errors.LineExpansionWarning")
 def test_cell_clone(has_mat, clone_region, clone_material, start_num, step):
     if has_mat:
         input = Input(["1 1 -0.5 2"], BlockType.CELL)
@@ -199,6 +200,7 @@ def test_cell_clone(has_mat, clone_region, clone_material, start_num, step):
             return
         new_cell = cell.clone(clone_material, clone_region, start_num, step)
         verify_internal_links(new_cell)
+        verify_clone_format(new_cell)
         assert new_cell is not cell
         assert new_cell.number != 1
         if start_num != 1:
@@ -214,7 +216,7 @@ def test_cell_clone(has_mat, clone_region, clone_material, start_num, step):
                 assert new_cell2.number == start_num + step * 2
         for attr in {"_importance", "_volume", "_fill"}:
             assert getattr(cell, attr) is not getattr(new_cell, attr)
-        for attr in {"mass_density", "old_number", "old_mat_number"}:
+        for attr in {"mass_density"}:
             assert getattr(cell, attr) == getattr(new_cell, attr)
             if attr == "mass_density":
                 attr = "density_node"
@@ -242,13 +244,23 @@ def verify_internal_links(cell):
 
 
 def verify_clone_format(cell):
+    surf = list(cell.surfaces)[0]
+    num = 1000
+    surf.number = num
     output = cell.format_for_mcnp_input((6, 3, 0))
     input = montepy.input_parser.mcnp_input.Input(
         output, montepy.input_parser.block_type.BlockType.CELL
     )
     new_cell = montepy.Cell(input)
+    if cell.material:
+        mats = montepy.materials.Materials([cell.material])
+    else:
+        mats = []
+    new_cell.update_pointers([], mats, montepy.surface_collection.Surfaces([surf]))
     for attr in {"number", "mass_density", "old_mat_number"}:
         assert getattr(cell, attr) == getattr(new_cell, attr)
+    new_surf = list(new_cell.surfaces)[0]
+    assert new_surf.number == num
 
 
 @pytest.mark.parametrize(

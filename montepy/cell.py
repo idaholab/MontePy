@@ -705,7 +705,9 @@ class Cell(Numbered_MCNP_Object):
         ret = "\n".join([l for l in ret.splitlines() if l.strip()])
         return self.wrap_string_for_mcnp(ret, mcnp_version, True)
 
-    def clone(self, clone_material=True, clone_region=True, starting_number=1, step=1):
+    def clone(
+        self, clone_material=False, clone_region=False, starting_number=1, step=1
+    ):
         """
         Create a new almost independent instance of this cell with a new number.
 
@@ -734,15 +736,17 @@ class Cell(Numbered_MCNP_Object):
         if not isinstance(clone_region, bool):
             raise TypeError(f"clone_region must be a boolean. {clone_region} given.")
         if not isinstance(starting_number, int):
-            raise TypeError(f"Starting_number must be an int. {starting_number} given.")
+            raise TypeError(
+                f"Starting_number must be an int. {type(starting_number)} given."
+            )
         if not isinstance(step, int):
-            raise TypeError(f"step must be an int. {step} given.")
+            raise TypeError(f"step must be an int. {type(step)} given.")
         if starting_number <= 0:
             raise ValueError(f"starting_number must be >= 1. {starting_number} given.")
         if step <= 0:
             raise ValueError(f"step must be >= 1. {step} given.")
         # get which properties to copy over
-        keys = set(self.__dict__.keys())
+        keys = set(vars(self))
         keys.remove("_material")
         result = Cell.__new__(Cell)
         if clone_material:
@@ -760,13 +764,29 @@ class Cell(Numbered_MCNP_Object):
             attr = getattr(self, key)
             setattr(result, key, copy.deepcopy(attr, memo))
         if clone_region:
+            region_change_map = {}
+            # ensure the new geometry gets mapped to the new surfaces
             for special in special_keys:
-                setattr(
-                    result, special, getattr(self, special).clone(starting_number, step)
-                )
+                collection = getattr(self, special)
+                new_objs = []
+                for obj in collection:
+                    new_obj = obj.clone(starting_number, step)
+                    region_change_map[obj] = new_obj
+                    new_objs.append(new_obj)
+                setattr(result, special, type(collection)(new_objs))
         else:
+            region_change_map = {}
             for special in special_keys:
                 setattr(result, special, copy.copy(getattr(self, special)))
+            leaves = result.geometry._get_leaf_objects()
+            # undo deepcopy of surfaces in cell.geometry
+            for geom_collect, collect in [
+                (leaves[0], self.complements),
+                (leaves[1], self.surfaces),
+            ]:
+                for surf in geom_collect:
+                    region_change_map[surf] = collect[surf.number]
+        result.geometry.remove_duplicate_surfaces(region_change_map)
         if self._problem:
             result.number = self._problem.cells.request_number(starting_number, step)
             self._problem.cells.append(result)

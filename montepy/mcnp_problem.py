@@ -2,6 +2,8 @@
 import copy
 from enum import Enum
 import itertools
+import os
+import warnings
 
 from montepy.data_inputs import mode, transform
 from montepy._cell_data_control import CellDataPrintController
@@ -14,15 +16,12 @@ from montepy.surfaces import surface, surface_builder
 from montepy.surface_collection import Surfaces
 
 # weird way to avoid circular imports
-from montepy.data_inputs import Material, parse_data
+from montepy.data_inputs import parse_data
 from montepy.input_parser import input_syntax_reader, block_type, mcnp_input
 from montepy.input_parser.input_file import MCNP_InputFile
 from montepy.universes import Universes
 from montepy.transforms import Transforms
 import montepy
-
-import os
-import warnings
 
 
 class MCNP_Problem:
@@ -106,14 +105,14 @@ class MCNP_Problem:
             if not isinstance(collection, str):
                 collection = self.__get_collect_attr_name(collection)
             collection = getattr(self, collection)
-        if isinstance(
-            collection,
-            montepy.numbered_object_collection.NumberedObjectCollection,
-        ):
-            collection.link_to_problem(None)
-        else:
-            for obj in collection:
-                obj.link_to_problem(None)
+            if isinstance(
+                collection,
+                montepy.numbered_object_collection.NumberedObjectCollection,
+            ):
+                collection.link_to_problem(None)
+            else:
+                for obj in collection:
+                    obj.link_to_problem(None)
         self.__unpickled = True
         self.__relink_objs()
 

@@ -233,20 +233,21 @@ class NumberedObjectCollection(ABC):
 
         """
         if not isinstance(starting_number, int):
-            raise TypeError(f"Starting_number must be an int. {starting_number} given.")
+            raise TypeError(
+                f"Starting_number must be an int. {type(starting_number)} given."
+            )
         if not isinstance(step, int):
-            raise TypeError(f"step must be an int. {step} given.")
+            raise TypeError(f"step must be an int. {type(step)} given.")
         if starting_number <= 0:
             raise ValueError(f"starting_number must be >= 1. {starting_number} given.")
         if step <= 0:
             raise ValueError(f"step must be >= 1. {step} given.")
         objs = []
-        prev_num = starting_number
         for obj in self:
-            new_obj = obj.clone(prev_num, step)
+            new_obj = obj.clone(starting_number, step)
             starting_number = new_obj.number
             objs.append(new_obj)
-            prev_num = new_obj.number + step
+            starting_number = new_obj.number + step
         return type(self)(objs)
 
     def __iter__(self):
