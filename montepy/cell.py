@@ -1,5 +1,8 @@
 # Copyright 2024, Battelle Energy Alliance, LLC All Rights Reserved.
 import copy
+import itertools
+import numbers
+
 from montepy.cells import Cells
 from montepy.constants import BLANK_SPACE_CONTINUE
 from montepy.data_inputs import importance, fill, lattice_input, universe_input, volume
@@ -15,7 +18,6 @@ from montepy.surfaces.surface import Surface
 from montepy.surface_collection import Surfaces
 from montepy.universe import Universe
 from montepy.utilities import *
-import numbers
 
 
 def _number_validator(self, number):
@@ -810,9 +812,13 @@ class Cell(Numbered_MCNP_Object):
                 (leaves[1], self.surfaces),
             ]:
                 for surf in geom_collect:
-                    region_change_map[surf] = collect[
-                        surf.number if isinstance(surf, (Surface, Cell)) else surf
-                    ]
+                    try:
+                        region_change_map[surf] = collect[
+                            surf.number if isinstance(surf, (Surface, Cell)) else surf
+                        ]
+                    except KeyError:
+                        # ignore empty surfaces on clone
+                        pass
         result.geometry.remove_duplicate_surfaces(region_change_map)
         if self._problem:
             result.number = self._problem.cells.request_number(starting_number, step)
