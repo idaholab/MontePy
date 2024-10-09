@@ -338,7 +338,7 @@ class NumberedObjectCollection(ABC):
 
         return number
 
-    def request_number(self, start_num=1, step=None):
+    def request_number(self, start_num=None, step=None):
         """Requests a new available number.
 
         This method does not "reserve" this number. Objects
