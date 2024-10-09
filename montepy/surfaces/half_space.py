@@ -191,6 +191,14 @@ class HalfSpace:
             (cells, surfaces), (self._cell.complements, self._cell.surfaces)
         ):
             for item in container:
+                if not isinstance(
+                    item, (montepy.surfaces.surface.Surface, montepy.Cell)
+                ):
+                    raise IllegalState(
+                        f"The geometry was not fully initialized, and cannot be changed. "
+                        f"The offending cell is {self._cell}. "
+                        f"Run cell.update_pointers."
+                    )
                 if item not in parent:
                     parent.append(item)
 

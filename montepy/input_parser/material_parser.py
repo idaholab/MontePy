@@ -11,14 +11,15 @@ class MaterialParser(DataParser):
     @_(
         "introduction isotopes",
         "introduction isotopes parameters",
+        "introduction isotopes mat_parameters",
     )
     def material(self, p):
         ret = {}
         for key, node in p.introduction.nodes.items():
             ret[key] = node
         ret["data"] = p.isotopes
-        if hasattr(p, "parameters"):
-            ret["parameters"] = p.parameters
+        if len(p) > 2:
+            ret["parameters"] = p[2]
         return syntax_node.SyntaxNode("data", ret)
 
     @_("isotope_fractions", "number_sequence", "isotope_hybrid_fractions")
@@ -47,3 +48,48 @@ class MaterialParser(DataParser):
         for group in batch_gen():
             new_list.append(("foo", *group))
         return new_list
+
+    @_(
+        "mat_parameter",
+        "parameter",
+        "mat_parameters mat_parameter",
+        "mat_parameters parameter",
+    )
+    def mat_parameters(self, p):
+        """
+        A list of the parameters (key, value pairs) that allows material libraries.
+
+        :returns: all parameters
+        :rtype: ParametersNode
+        """
+        if len(p) == 1:
+            params = syntax_node.ParametersNode()
+            param = p[0]
+        else:
+            params = p[0]
+            param = p[1]
+        params.append(param)
+        return params
+
+    @_(
+        "classifier param_seperator library",
+    )
+    def mat_parameter(self, p):
+        """
+        A singular Key-value pair that includes a material library.
+
+        :returns: the parameter.
+        :rtype: SyntaxNode
+        """
+        return syntax_node.SyntaxNode(
+            p.classifier.prefix.value,
+            {"classifier": p.classifier, "seperator": p.param_seperator, "data": p[2]},
+        )
+
+    @_("NUMBER_WORD")
+    @_("NUMBER_WORD padding")
+    def library(self, p):
+        """
+        A library name.
+        """
+        return self._flush_phrase(p, str)

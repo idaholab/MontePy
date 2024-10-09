@@ -24,8 +24,8 @@ project = "MontePy"
 copyright = "2021 – 2024, Battelle Energy Alliance LLC."
 author = "Micah D. Gale (@micahgale), Travis J. Labossiere-Hickman (@tjlaboss)"
 
-
-release = importlib.metadata.version("montepy")
+version = importlib.metadata.version("montepy")
+release = version  # Will be true at website deployment.
 # -- General configuration ---------------------------------------------------
 
 # Add any Sphinx extension module names here, as strings. They can be
@@ -37,11 +37,17 @@ extensions = [
     "sphinx.ext.intersphinx",
     "sphinx.ext.extlinks",
     "sphinx_sitemap",
+    "sphinx_favicon",
 ]
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ["_templates"]
-html_favicon = "monty.svg"
+favicons = [
+    "monty.svg",
+    "monty-192.png",
+    "monty-32.png",
+    "monty-32.ico",
+]
 html_logo = "monty.svg"
 
 html_baseurl = "https://www.montepy.org/"
@@ -51,6 +57,9 @@ html_extra_path = ["robots.txt"]
 # directories to ignore when looking for source files.
 # This pattern also affects html_static_path and html_extra_path.
 exclude_patterns = []
+
+# Display the version
+display_version = True
 
 # -- External link configuration ---------------------------------------------
 UM63 = (
@@ -78,7 +87,18 @@ extlinks = {
 # The theme to use for HTML and HTML Help pages.  See the documentation for
 # a list of builtin themes.
 #
-html_theme = "sphinx_rtd_theme"
+html_theme = "pydata_sphinx_theme"
+html_theme_options = {
+    "navbar_start": ["navbar-logo", "version"],
+    "icon_links": [
+        {
+            "name": "GitHub",
+            "url": "https://github.com/idaholab/MontePy",
+            "icon": "fa-brands fa-square-github",
+            "type": "fontawesome",
+        },
+    ],
+}
 apidoc_module_dir = "../../montepy"
 apidoc_module_first = True
 apidoc_separate_modules = True

@@ -5,11 +5,15 @@ dist/*
 *egg-info/*
 *.mcnp
 .coverage
+htmlcov/
+htmlcov
+.mutmut-cache
 .idea/*
 *.*.sw*
 *.prof
 doc/build/*
 .coverage
+.hypothesis/
 .idea/
 .ipynb_checkpoints/
 montepy/_version.py
