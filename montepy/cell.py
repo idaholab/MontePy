@@ -824,8 +824,8 @@ class Cell(Numbered_MCNP_Object):
             result.number = self._problem.cells.request_number(starting_number, step)
             self._problem.cells.append(result)
         else:
-            if self.number != starting_number:
-                result.number = starting_number
-            else:
-                result.number = starting_number + step
+            for number in itertools.count(starting_number, step):
+                result.number = number
+                if number != self.number:
+                    break
         return result
