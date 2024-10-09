@@ -291,6 +291,7 @@ def test_cell_clone_default():
     input = Input(["1 1 -0.5 2"], BlockType.CELL)
     cell = Cell(input)
     problem = montepy.MCNP_Problem("")
+    problem.cells.append(cell)
     for prob in {problem, None}:
         cell.link_to_problem(prob)
         new_cell = cell.clone()
