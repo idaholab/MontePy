@@ -410,6 +410,18 @@ def test_num_collect_clone(cp_simple_problem, start_num, step):
             assert new_surf.number != old_surf.number
 
 
+def test_num_collect_clone_default(cp_simple_problem):
+    surfs = copy.deepcopy(cp_simple_problem.surfaces)
+    for clear in [False, True]:
+        if clear:
+            surfs.link_to_problem(None)
+        new_surfs = surfs.clone()
+        for new_surf, old_surf in zip(new_surfs, surfs):
+            assert new_surf is not old_surf
+            assert new_surf.surface_type == old_surf.surface_type
+            assert new_surf.number != old_surf.number
+
+
 @pytest.mark.parametrize(
     "args, error",
     [
