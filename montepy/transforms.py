@@ -1,9 +1,9 @@
 # Copyright 2024, Battelle Energy Alliance, LLC All Rights Reserved.
-from montepy.numbered_object_collection import NumberedObjectCollection
+from montepy.numbered_object_collection import NumberedDataObjectCollection
 from montepy.data_inputs.transform import Transform
 
 
-class Transforms(NumberedObjectCollection):
+class Transforms(NumberedDataObjectCollection):
     """
     A container of multiple :class:`~montepy.data_inputs.transform.Transform` instances.
     """

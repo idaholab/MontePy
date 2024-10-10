@@ -89,6 +89,19 @@ class Cells(NumberedObjectCollection):
             raise TypeError("allow_mcnp_volume_calc must be set to a bool")
         self._volume.is_mcnp_calculated = value
 
+    def link_to_problem(self, problem):
+        """Links the input to the parent problem for this input.
+
+        This is done so that inputs can find links to other objects.
+
+        :param problem: The problem to link this input to.
+        :type problem: MCNP_Problem
+        """
+        super().link_to_problem(problem)
+        inputs_to_property = montepy.Cell._INPUTS_TO_PROPERTY
+        for attr, _ in inputs_to_property.values():
+            getattr(self, attr).link_to_problem(problem)
+
     def update_pointers(
         self, cells, materials, surfaces, data_inputs, problem, check_input=False
     ):

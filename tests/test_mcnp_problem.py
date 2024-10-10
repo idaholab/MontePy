@@ -36,3 +36,14 @@ def test_problem_write_type(problem):
     unwritable = object()
     with pytest.raises(TypeError):
         problem.write_problem(unwritable)
+
+
+def test_problem_clone(problem):
+    problem.parse_input()
+    new_problem = problem.clone()
+    for collection in {"cells", "surfaces", "materials"}:
+        for old_obj, new_obj in zip(
+            getattr(problem, collection), getattr(new_problem, collection)
+        ):
+            assert old_obj is not new_obj
+            assert new_obj._problem is new_problem
