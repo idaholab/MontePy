@@ -141,7 +141,16 @@ class NumberedObjectCollection(ABC):
             )
 
     def _update_number(self, old_num, new_num, obj):
-        """ """
+        """
+        Updates the number associated with a specific object in the internal cache.
+
+        :param old_num: the previous number the object had.
+        :type old_num: int
+        :param new_num: the number that is being set to.
+        :type new_num: int
+        :param obj: the object being updated.
+        :type obj: self._obj_class
+        """
         # don't update numbers you don't own
         if self.__num_cache.get(old_num, None) is not obj:
             return
