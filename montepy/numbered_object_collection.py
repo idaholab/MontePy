@@ -193,7 +193,7 @@ class NumberedObjectCollection(ABC):
         if not isinstance(other_list, (list, type(self))):
             raise TypeError("The extending list must be a list")
         if self._problem:
-            nums = set(self.__num_cache.keys())
+            nums = set(self.__num_cache)
         else:
             nums = set(self.numbers)
         for obj in other_list:
