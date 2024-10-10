@@ -1,9 +1,17 @@
 # Copyright 2024, Battelle Energy Alliance, LLC All Rights Reserved.
 from abc import ABC, abstractmethod
 import typing
+import weakref
+
 import montepy
 from montepy.numbered_mcnp_object import Numbered_MCNP_Object
 from montepy.errors import *
+from montepy.utilities import *
+
+
+def _enforce_positive(self, num):
+    if num <= 0:
+        raise ValueError(f"Value must be greater than 0. {num} given.")
 
 
 class NumberedObjectCollection(ABC):
@@ -41,7 +49,11 @@ class NumberedObjectCollection(ABC):
         assert issubclass(obj_class, Numbered_MCNP_Object)
         self._obj_class = obj_class
         self._objects = []
-        self._problem = problem
+        self._start_num = 1
+        self._step = 1
+        self._problem_ref = None
+        if problem is not None:
+            self._problem_ref = weakref.ref(problem)
         if objects:
             if not isinstance(objects, list):
                 raise TypeError("NumberedObjectCollection must be built from a list")
@@ -68,9 +80,31 @@ class NumberedObjectCollection(ABC):
         :param problem: The problem to link this card to.
         :type problem: MCNP_Problem
         """
-        if not isinstance(problem, montepy.mcnp_problem.MCNP_Problem):
+        if not isinstance(problem, (montepy.mcnp_problem.MCNP_Problem, type(None))):
             raise TypeError("problem must be an MCNP_Problem")
-        self._problem = problem
+        if problem is None:
+            self._problem_ref = None
+        else:
+            self._problem_ref = weakref.ref(problem)
+        for obj in self:
+            obj.link_to_problem(problem)
+
+    @property
+    def _problem(self):
+        if self._problem_ref is not None:
+            return self._problem_ref()
+        return None
+
+    def __getstate__(self):
+        state = self.__dict__.copy()
+        weakref_key = "_problem_ref"
+        if weakref_key in state:
+            del state[weakref_key]
+        return state
+
+    def __setstate__(self, crunchy_data):
+        crunchy_data["_problem_ref"] = None
+        self.__dict__.update(crunchy_data)
 
     @property
     def numbers(self):
@@ -173,6 +207,69 @@ class NumberedObjectCollection(ABC):
         self.__num_cache.pop(delete.number, None)
         self._objects.remove(delete)
 
+    def clone(self, starting_number=None, step=None):
+        """
+        Create a new instance of this collection, with all new independent
+        objects with new numbers.
+
+        This relies mostly on ``copy.deepcopy``.
+
+        .. note ::
+            If starting_number, or step are not specified :func:`starting_number`,
+            and :func:`step` are used as default values.
+
+        .. versionadded:: 0.5.0
+
+        :param starting_number: The starting number to request for a new object numbers.
+        :type starting_number: int
+        :param step: the step size to use to find a new valid number.
+        :type step: int
+        :returns: a cloned copy of this object.
+        :rtype: type(self)
+
+        """
+        if not isinstance(starting_number, (int, type(None))):
+            raise TypeError(
+                f"Starting_number must be an int. {type(starting_number)} given."
+            )
+        if not isinstance(step, (int, type(None))):
+            raise TypeError(f"step must be an int. {type(step)} given.")
+        if starting_number is not None and starting_number <= 0:
+            raise ValueError(f"starting_number must be >= 1. {starting_number} given.")
+        if step is not None and step <= 0:
+            raise ValueError(f"step must be >= 1. {step} given.")
+        if starting_number is None:
+            starting_number = self.starting_number
+        if step is None:
+            step = self.step
+        objs = []
+        for obj in self:
+            new_obj = obj.clone(starting_number, step)
+            starting_number = new_obj.number
+            objs.append(new_obj)
+            starting_number = new_obj.number + step
+        return type(self)(objs)
+
+    @make_prop_pointer("_start_num", int, validator=_enforce_positive)
+    def starting_number(self):
+        """
+        The starting number to use when an object is cloned.
+
+        :returns: the starting number
+        :rtype: int
+        """
+        pass
+
+    @make_prop_pointer("_step", int, validator=_enforce_positive)
+    def step(self):
+        """
+        The step size to use to find a valid number during cloning.
+
+        :returns: the step size
+        :rtype: int
+        """
+        pass
+
     def __iter__(self):
         self._iter = self._objects.__iter__()
         return self._iter
@@ -241,12 +338,19 @@ class NumberedObjectCollection(ABC):
 
         return number
 
-    def request_number(self, start_num=1, step=1):
+    def request_number(self, start_num=None, step=None):
         """Requests a new available number.
 
         This method does not "reserve" this number. Objects
         should be immediately added to avoid possible collisions
         caused by shifting numbers of other objects in the collection.
+
+        .. note ::
+            If starting_number, or step are not specified :func:`starting_number`,
+            and :func:`step` are used as default values.
+
+        .. versionchanged:: 0.5.0
+            In 0.5.0 the default values were changed to reference :func:`starting_number` and :func:`step`.
 
         :param start_num: the starting number to check.
         :type start_num: int
@@ -255,10 +359,14 @@ class NumberedObjectCollection(ABC):
         :returns: an available number
         :rtype: int
         """
-        if not isinstance(start_num, int):
+        if not isinstance(start_num, (int, type(None))):
             raise TypeError("start_num must be an int")
-        if not isinstance(step, int):
+        if not isinstance(step, (int, type(None))):
             raise TypeError("step must be an int")
+        if start_num is None:
+            start_num = self.starting_number
+        if step is None:
+            step = self.step
         number = start_num
         while number in self.numbers:
             number += step
@@ -427,7 +535,10 @@ class NumberedDataObjectCollection(NumberedObjectCollection):
     def __init__(self, obj_class, objects=None, problem=None):
         self._last_index = None
         if problem and objects:
-            self._last_index = problem.data_inputs.index(objects[-1])
+            try:
+                self._last_index = problem.data_inputs.index(objects[-1])
+            except ValueError:
+                pass
         super().__init__(obj_class, objects, problem)
 
     def append(self, obj, insert_in_data=True):

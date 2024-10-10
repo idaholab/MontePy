@@ -4,6 +4,14 @@ MontePy Changelog
 #Next Version#
 --------------
 
+**Features Added**
+
+* Added ``clone`` method to simplify making copies of objects (:issue:`469`).
+
+**Performance Improvement**
+
+* Fixed cyclic memory reference that lead to memory leak in ``copy.deepcopy`` (:issue:`514`).
+
 **Bug Fixes**
 
 * Fixed bug with parsing an ``EO`` input (:issue:`551`).

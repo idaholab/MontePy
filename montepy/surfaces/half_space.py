@@ -208,7 +208,7 @@ class HalfSpace:
         This will ensure any new surfaces or complements properly get added to the parent
         cell's :func:`~montepy.cell.Cell.surfaces` and :func:`~montepy.cell.Cell.complements`.
 
-        :param deleting_dict: a dict of the surfaces to delete.
+        :param deleting_dict: a dict of the surfaces to delete, mapping the old surface to the new surface to replace it.
         :type deleting_dict: dict
         """
         _, surfaces = self._get_leaf_objects()
