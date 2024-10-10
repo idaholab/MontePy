@@ -6,6 +6,12 @@ import weakref
 import montepy
 from montepy.numbered_mcnp_object import Numbered_MCNP_Object
 from montepy.errors import *
+from montepy.utilities import *
+
+
+def _enforce_positive(self, num):
+    if num <= 0:
+        raise ValueError(f"Value must be greater than 0. {num} given.")
 
 
 class NumberedObjectCollection(ABC):
@@ -43,6 +49,8 @@ class NumberedObjectCollection(ABC):
         assert issubclass(obj_class, Numbered_MCNP_Object)
         self._obj_class = obj_class
         self._objects = []
+        self._start_num = 1
+        self._step = 1
         self._problem_ref = None
         if problem is not None:
             self._problem_ref = weakref.ref(problem)
@@ -217,12 +225,18 @@ class NumberedObjectCollection(ABC):
         self.__num_cache.pop(delete.number, None)
         self._objects.remove(delete)
 
-    def clone(self, starting_number=1, step=1):
+    def clone(self, starting_number=None, step=None):
         """
         Create a new instance of this collection, with all new independent
         objects with new numbers.
 
         This relies mostly on ``copy.deepcopy``.
+
+        .. note ::
+            If starting_number, or step are not specified :func:`starting_number`,
+            and :func:`step` are used as default values.
+
+        .. versionadded:: 0.5.0
 
         :param starting_number: The starting number to request for a new object numbers.
         :type starting_number: int
@@ -232,16 +246,20 @@ class NumberedObjectCollection(ABC):
         :rtype: type(self)
 
         """
-        if not isinstance(starting_number, int):
+        if not isinstance(starting_number, (int, type(None))):
             raise TypeError(
                 f"Starting_number must be an int. {type(starting_number)} given."
             )
-        if not isinstance(step, int):
+        if not isinstance(step, (int, type(None))):
             raise TypeError(f"step must be an int. {type(step)} given.")
-        if starting_number <= 0:
+        if starting_number is not None and starting_number <= 0:
             raise ValueError(f"starting_number must be >= 1. {starting_number} given.")
-        if step <= 0:
+        if step is not None and step <= 0:
             raise ValueError(f"step must be >= 1. {step} given.")
+        if starting_number is None:
+            starting_number = self.starting_number
+        if step is None:
+            step = self.step
         objs = []
         for obj in self:
             new_obj = obj.clone(starting_number, step)
@@ -249,6 +267,26 @@ class NumberedObjectCollection(ABC):
             objs.append(new_obj)
             starting_number = new_obj.number + step
         return type(self)(objs)
+
+    @make_prop_pointer("_start_num", int, validator=_enforce_positive)
+    def starting_number(self):
+        """
+        The starting number to use when an object is cloned.
+
+        :returns: the starting number
+        :rtype: int
+        """
+        pass
+
+    @make_prop_pointer("_step", int, validator=_enforce_positive)
+    def step(self):
+        """
+        The step size to use to find a valid number during cloning.
+
+        :returns: the step size
+        :rtype: int
+        """
+        pass
 
     def __iter__(self):
         self._iter = self._objects.__iter__()
@@ -311,12 +349,19 @@ class NumberedObjectCollection(ABC):
 
         return number
 
-    def request_number(self, start_num=1, step=1):
+    def request_number(self, start_num=None, step=None):
         """Requests a new available number.
 
         This method does not "reserve" this number. Objects
         should be immediately added to avoid possible collisions
         caused by shifting numbers of other objects in the collection.
+
+        .. note ::
+            If starting_number, or step are not specified :func:`starting_number`,
+            and :func:`step` are used as default values.
+
+        .. versionchanged:: 0.5.0
+            In 0.5.0 the default values were changed to reference :func:`starting_number` and :func:`step`.
 
         :param start_num: the starting number to check.
         :type start_num: int
@@ -325,10 +370,14 @@ class NumberedObjectCollection(ABC):
         :returns: an available number
         :rtype: int
         """
-        if not isinstance(start_num, int):
+        if not isinstance(start_num, (int, type(None))):
             raise TypeError("start_num must be an int")
-        if not isinstance(step, int):
+        if not isinstance(step, (int, type(None))):
             raise TypeError("step must be an int")
+        if start_num is None:
+            start_num = self.starting_number
+        if step is None:
+            step = self.step
         number = start_num
         while True:
             try:

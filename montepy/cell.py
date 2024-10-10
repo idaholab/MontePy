@@ -1,5 +1,8 @@
 # Copyright 2024, Battelle Energy Alliance, LLC All Rights Reserved.
 import copy
+import itertools
+import numbers
+
 from montepy.cells import Cells
 from montepy.constants import BLANK_SPACE_CONTINUE
 from montepy.data_inputs import importance, fill, lattice_input, universe_input, volume
@@ -15,7 +18,6 @@ from montepy.surfaces.surface import Surface
 from montepy.surface_collection import Surfaces
 from montepy.universe import Universe
 from montepy.utilities import *
-import numbers
 
 
 def _link_geometry_to_cell(self, geom):
@@ -706,7 +708,7 @@ class Cell(Numbered_MCNP_Object):
         return self.wrap_string_for_mcnp(ret, mcnp_version, True)
 
     def clone(
-        self, clone_material=False, clone_region=False, starting_number=1, step=1
+        self, clone_material=False, clone_region=False, starting_number=None, step=None
     ):
         """
         Create a new almost independent instance of this cell with a new number.
@@ -717,6 +719,8 @@ class Cell(Numbered_MCNP_Object):
         Even if ``clone_region`` is ``True`` the actual region object will be a copy.
         This means that changes to the new cell's geometry will be independent, but may or may not
         refer to the original surfaces.
+
+        .. versionadded:: 0.5.0
 
         :param clone_material: Whether to create a new clone of the material.
         :type clone_material: bool
@@ -735,23 +739,29 @@ class Cell(Numbered_MCNP_Object):
             )
         if not isinstance(clone_region, bool):
             raise TypeError(f"clone_region must be a boolean. {clone_region} given.")
-        if not isinstance(starting_number, int):
+        if not isinstance(starting_number, (int, type(None))):
             raise TypeError(
                 f"Starting_number must be an int. {type(starting_number)} given."
             )
-        if not isinstance(step, int):
+        if not isinstance(step, (int, type(None))):
             raise TypeError(f"step must be an int. {type(step)} given.")
-        if starting_number <= 0:
+        if starting_number is not None and starting_number <= 0:
             raise ValueError(f"starting_number must be >= 1. {starting_number} given.")
-        if step <= 0:
+        if step is not None and step <= 0:
             raise ValueError(f"step must be >= 1. {step} given.")
+        if starting_number is None:
+            starting_number = (
+                self._problem.cells.starting_number if self._problem else 1
+            )
+        if step is None:
+            step = self._problem.cells.step if self._problem else 1
         # get which properties to copy over
         keys = set(vars(self))
         keys.remove("_material")
         result = Cell.__new__(Cell)
         if clone_material:
             if self.material is not None:
-                result._material = self._material.clone(starting_number, step)
+                result._material = self._material.clone()
             else:
                 result._material = None
         else:
@@ -770,10 +780,11 @@ class Cell(Numbered_MCNP_Object):
                 collection = getattr(self, special)
                 new_objs = []
                 for obj in collection:
-                    new_obj = obj.clone(starting_number, step)
+                    new_obj = obj.clone()
                     region_change_map[obj] = new_obj
                     new_objs.append(new_obj)
                 setattr(result, special, type(collection)(new_objs))
+
         else:
             region_change_map = {}
             for special in special_keys:
@@ -785,14 +796,20 @@ class Cell(Numbered_MCNP_Object):
                 (leaves[1], self.surfaces),
             ]:
                 for surf in geom_collect:
-                    region_change_map[surf] = collect[surf.number]
+                    try:
+                        region_change_map[surf] = collect[
+                            surf.number if isinstance(surf, (Surface, Cell)) else surf
+                        ]
+                    except KeyError:
+                        # ignore empty surfaces on clone
+                        pass
         result.geometry.remove_duplicate_surfaces(region_change_map)
         if self._problem:
             result.number = self._problem.cells.request_number(starting_number, step)
             self._problem.cells.append(result)
         else:
-            if self.number != starting_number:
-                result.number = starting_number
-            else:
-                result.number = starting_number + step
+            for number in itertools.count(starting_number, step):
+                result.number = number
+                if number != self.number:
+                    break
         return result

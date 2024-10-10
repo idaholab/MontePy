@@ -28,6 +28,7 @@ class Material(data_input.DataInputAbstract, Numbered_MCNP_Object):
     def __init__(self, input=None):
         self._material_components = {}
         self._thermal_scattering = None
+        self._is_atom_fraction = True
         self._number = self._generate_default_node(int, -1)
         super().__init__(input)
         if input:

@@ -126,6 +126,13 @@ class MCNP_Problem:
         return result
 
     def clone(self):
+        """
+        Creates a complete independent copy of this problem.
+
+        .. versionadded:: 0.5.0
+
+        :rtype: MCNP_Problem
+        """
         return copy.deepcopy(self)
 
     @property
@@ -208,6 +215,15 @@ class MCNP_Problem:
         """
         self.__relink_objs()
         return self._surfaces
+
+    @surfaces.setter
+    def surfaces(self, surfs):
+        if not isinstance(surfs, (list, Surfaces)):
+            raise TypeError("Surfaces must be of type list or Surfaces")
+        if isinstance(surfs, list):
+            surfs = Surfaces(surfs)
+        surfs.link_to_problem(self)
+        self._surfaces = surfs
 
     @property
     def materials(self):
