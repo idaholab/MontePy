@@ -25,7 +25,6 @@ class MaterialParser(DataParser):
         else:
             ret = p.mat_data
         datum = p.mat_datum
-        print(datum)
         if isinstance(datum, tuple):
             if datum[0] == "isotope_fraction":
                 ret.append_nuclide(datum)

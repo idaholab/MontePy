@@ -2,6 +2,7 @@
 from abc import ABC, abstractmethod
 import collections
 import copy
+import itertools as it
 import enum
 import math
 
@@ -1751,8 +1752,8 @@ class MaterialsNode(SyntaxNodeBase):
 
     def format(self):
         ret = ""
-        for isotope, concentration in self.nodes:
-            ret += isotope.format() + concentration.format()
+        for node in it.chain(*self.nodes):
+            ret += node.format()
         return ret
 
     def __repr__(self):
@@ -1769,12 +1770,12 @@ class MaterialsNode(SyntaxNodeBase):
 
     def get_trailing_comment(self):
         tail = self.nodes[-1]
-        tail = tail[1]
+        tail = tail[-1]
         return tail.get_trailing_comment()
 
     def _delete_trailing_comment(self):
         tail = self.nodes[-1]
-        tail = tail[1]
+        tail = tail[-1]
         tail._delete_trailing_comment()
 
     def flatten(self):
