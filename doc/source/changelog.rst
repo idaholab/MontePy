@@ -20,6 +20,10 @@ MontePy Changelog
 * Fixed bug with having a shortcut in a cell fill (:issue:`552`).
 * Fixed bug where file streams couldn't actually be read (:pull:`553`).
 
+**Support**
+
+* Added support for Python 3.13, and removed support for Python 3.8, and officially added support NumPy 1 & 2 (:pull:`548`).
+
 0.4.1
 --------------
 
