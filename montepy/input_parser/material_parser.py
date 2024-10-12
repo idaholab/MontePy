@@ -9,34 +9,28 @@ class MaterialParser(DataParser):
     debugfile = None
 
     @_(
-        "introduction isotopes",
-        "introduction isotopes parameters",
-        "introduction isotopes mat_parameters",
+        "introduction mat_data",
     )
     def material(self, p):
         ret = {}
         for key, node in p.introduction.nodes.items():
             ret[key] = node
-        ret["data"] = p.isotopes
-        if len(p) > 2:
-            ret["parameters"] = p[2]
+        ret["data"] = p.mat_data
         return syntax_node.SyntaxNode("data", ret)
-
-    @_("isotope_fractions", "number_sequence", "isotope_hybrid_fractions")
-    def isotopes(self, p):
-        if hasattr(p, "number_sequence"):
-            return self._convert_to_isotope(p.number_sequence)
-        return p[0]
-
-    @_("number_sequence isotope_fraction", "isotope_hybrid_fractions isotope_fraction")
-    def isotope_hybrid_fractions(self, p):
-        if hasattr(p, "number_sequence"):
-            ret = self._convert_to_isotope(p.number_sequence)
+    
+    @_("mat_datum", "mat_data mat_datum")
+    def mat_data(self, p):
+        if len(p) == 1:
+            ret = syntax_node.MaterialsNode("mat stuff")
         else:
-            ret = p[0]
-        ret.append(p.isotope_fraction)
+            ret = p.mat_data
+        ret.append(p.mat_datum)
         return ret
 
+    @_("isotope_fraction", "number_sequence", "parameter", "mat_parameter")
+    def mat_datum(self, p):
+        return p
+    
     def _convert_to_isotope(self, old):
         new_list = syntax_node.IsotopesNode("converted isotopes")
 
@@ -49,27 +43,6 @@ class MaterialParser(DataParser):
             new_list.append(("foo", *group))
         return new_list
 
-    @_(
-        "mat_parameter",
-        "parameter",
-        "mat_parameters mat_parameter",
-        "mat_parameters parameter",
-    )
-    def mat_parameters(self, p):
-        """
-        A list of the parameters (key, value pairs) that allows material libraries.
-
-        :returns: all parameters
-        :rtype: ParametersNode
-        """
-        if len(p) == 1:
-            params = syntax_node.ParametersNode()
-            param = p[0]
-        else:
-            params = p[0]
-            param = p[1]
-        params.append(param)
-        return params
 
     @_(
         "classifier param_seperator library",
