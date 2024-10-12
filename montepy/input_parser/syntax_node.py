@@ -1733,18 +1733,21 @@ class MaterialsNode(SyntaxNodeBase):
     def __init__(self, name):
         super().__init__(name)
 
-    def append(self, isotope_fraction):
+    def append_nuclide(self, isotope_fraction):
         """
-        Append the node to this node.
+        Append the isotope fraction to this node.
 
         :param isotope_fraction: the isotope_fraction to add. This must be a tuple from
             A Yacc production. This will consist of: the string identifying the Yacc production,
             a ValueNode that is the ZAID, and a ValueNode of the concentration.
         :type isotope_fraction: tuple
         """
-        # TODO
         isotope, concentration = isotope_fraction[1:3]
         self._nodes.append((isotope, concentration))
+
+    def append_param(self, param):
+        """ """
+        self._nodes.append((param,))
 
     def format(self):
         ret = ""

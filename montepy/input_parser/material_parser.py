@@ -17,20 +17,40 @@ class MaterialParser(DataParser):
             ret[key] = node
         ret["data"] = p.mat_data
         return syntax_node.SyntaxNode("data", ret)
-    
+
     @_("mat_datum", "mat_data mat_datum")
     def mat_data(self, p):
         if len(p) == 1:
             ret = syntax_node.MaterialsNode("mat stuff")
         else:
             ret = p.mat_data
-        ret.append(p.mat_datum)
+        datum = p.mat_datum
+        print(datum)
+        if isinstance(datum, tuple):
+            if datum[0] == "isotope_fraction":
+                ret.append_nuclide(datum)
+            elif datum[0] == "number_sequence":
+                [ret.append_nuclide(n) for n in datum]
+        else:
+            ret.append_param(datum)
         return ret
+
+    def _convert_to_isotope(self, old):
+        new_list = []
+
+        def batch_gen():
+            it = iter(old)
+            while batch := tuple(itertools.islice(it, 2)):
+                yield batch
+
+        for group in batch_gen():
+            new_list.append(("foo", *group))
+        return new_list
 
     @_("isotope_fraction", "number_sequence", "parameter", "mat_parameter")
     def mat_datum(self, p):
-        return p
-    
+        return p[0]
+
     def _convert_to_isotope(self, old):
         new_list = syntax_node.IsotopesNode("converted isotopes")
 
@@ -42,7 +62,6 @@ class MaterialParser(DataParser):
         for group in batch_gen():
             new_list.append(("foo", *group))
         return new_list
-
 
     @_(
         "classifier param_seperator library",
