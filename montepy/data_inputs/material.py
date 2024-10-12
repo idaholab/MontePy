@@ -494,7 +494,7 @@ See <https://www.montepy.org/migrations/migrate0_1.html> for more information ""
         return lines
 
     def _update_values(self):
-        new_list = syntax_node.IsotopesNode("new isotope list")
+        new_list = syntax_node.MaterialsNode("new isotope list")
         for isotope, component in self._components:
             isotope._tree.value = isotope.mcnp_str()
             new_list.append(("_", isotope._tree, component))

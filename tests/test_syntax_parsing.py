@@ -762,14 +762,14 @@ class TestListNode(TestCase):
         self.assertEqual(len(comments), 1)
 
 
-class TestIsotopesNode(TestCase):
+class TestMaterialssNode(TestCase):
     def test_isotopes_init(self):
-        isotope = syntax_node.IsotopesNode("test")
+        isotope = syntax_node.MaterialsNode("test")
         self.assertEqual(isotope.name, "test")
         self.assertIsInstance(isotope.nodes, list)
 
     def test_isotopes_append(self):
-        isotopes = syntax_node.IsotopesNode("test")
+        isotopes = syntax_node.MaterialsNode("test")
         zaid = syntax_node.ValueNode("1001.80c", str)
         concentration = syntax_node.ValueNode("1.5", float)
         isotopes.append(("isotope_fraction", zaid, concentration))
@@ -778,7 +778,7 @@ class TestIsotopesNode(TestCase):
 
     def test_isotopes_format(self):
         padding = syntax_node.PaddingNode(" ")
-        isotopes = syntax_node.IsotopesNode("test")
+        isotopes = syntax_node.MaterialsNode("test")
         zaid = syntax_node.ValueNode("1001.80c", str)
         zaid.padding = padding
         concentration = syntax_node.ValueNode("1.5", float)
@@ -787,7 +787,7 @@ class TestIsotopesNode(TestCase):
         self.assertEqual(isotopes.format(), "1001.80c 1.5 ")
 
     def test_isotopes_str(self):
-        isotopes = syntax_node.IsotopesNode("test")
+        isotopes = syntax_node.MaterialsNode("test")
         zaid = syntax_node.ValueNode("1001.80c", str)
         concentration = syntax_node.ValueNode("1.5", float)
         isotopes.append(("isotope_fraction", zaid, concentration))
@@ -795,7 +795,7 @@ class TestIsotopesNode(TestCase):
         repr(isotopes)
 
     def test_isotopes_iter(self):
-        isotopes = syntax_node.IsotopesNode("test")
+        isotopes = syntax_node.MaterialsNode("test")
         zaid = syntax_node.ValueNode("1001.80c", str)
         concentration = syntax_node.ValueNode("1.5", float)
         isotopes.append(("isotope_fraction", zaid, concentration))
@@ -805,7 +805,7 @@ class TestIsotopesNode(TestCase):
 
     def test_isotopes_comments(self):
         padding = syntax_node.PaddingNode(" ")
-        isotopes = syntax_node.IsotopesNode("test")
+        isotopes = syntax_node.MaterialsNode("test")
         zaid = syntax_node.ValueNode("1001.80c", str)
         zaid.padding = padding
         concentration = syntax_node.ValueNode("1.5", float)
@@ -819,7 +819,7 @@ class TestIsotopesNode(TestCase):
 
     def test_isotopes_trailing_comment(self):
         padding = syntax_node.PaddingNode(" ")
-        isotopes = syntax_node.IsotopesNode("test")
+        isotopes = syntax_node.MaterialsNode("test")
         zaid = syntax_node.ValueNode("1001.80c", str)
         zaid.padding = padding
         concentration = syntax_node.ValueNode("1.5", float)
