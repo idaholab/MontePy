@@ -86,49 +86,43 @@ class Material(data_input.DataInputAbstract, Numbered_MCNP_Object):
             self._number = num
             set_atom_frac = False
             isotope_fractions = self._tree["data"]
-            if isinstance(isotope_fractions, syntax_node.IsotopesNode):
-                iterator = iter(isotope_fractions)
-            else:  # pragma: no cover
-                # this is a fall through error, that should never be raised,
-                # but is here just in case
+            is_first = True
+            for group in isotope_fractions:
+                if len(group) == 2:
+                    self._grab_isotope(*group, is_first=is_first)
+                    is_first = False
+                else:
+                    self._grab_default(*group)
+
+    def _grab_isotope(self, nuclide, fraction, is_first=False):
+        """ """
+        isotope = Nuclide(node=nuclide)
+        fraction.is_negatable_float = True
+        if is_first:
+            if not fraction.is_negative:
+                self._is_atom_fraction = True
+            else:
+                self._is_atom_fraction = False
+        else:
+            # if switching fraction formatting
+            if (not fraction.is_negative and not self._is_atom_fraction) or (
+                fraction.is_negative and self._is_atom_fraction
+            ):
                 raise MalformedInputError(
                     input,
-                    f"Material definitions for material: {self.number} is not valid.",
+                    f"Material definitions for material: {self.number} cannot use atom and mass fraction at the same time",
                 )
-            for isotope_node, fraction in iterator:
-                isotope = Nuclide(node=isotope_node)
-                fraction.is_negatable_float = True
-                if not set_atom_frac:
-                    set_atom_frac = True
-                    if not fraction.is_negative:
-                        self._is_atom_fraction = True
-                    else:
-                        self._is_atom_fraction = False
-                else:
-                    # if switching fraction formatting
-                    if (not fraction.is_negative and not self._is_atom_fraction) or (
-                        fraction.is_negative and self._is_atom_fraction
-                    ):
-                        raise MalformedInputError(
-                            input,
-                            f"Material definitions for material: {self.number} cannot use atom and mass fraction at the same time",
-                        )
-                self._elements.add(isotope.element)
-                self._nuclei.add(isotope.nucleus)
-                self._components.append((isotope, fraction))
-            self._grab_defaults()
+        self._elements.add(isotope.element)
+        self._nuclei.add(isotope.nucleus)
+        self._components.append((isotope, fraction))
 
-    def _grab_defaults(self):
-        if "parameters" not in self._tree:
-            return
-        params = self._tree["parameters"]
-        for param, value in params.nodes.items():
-            try:
-                lib_type = LibraryType(param.upper())
-                self._default_libs[lib_type] = Library(value["data"].value)
-            # skip extra parameters
-            except ValueError:
-                pass
+    def _grab_default(self, param):
+        try:
+            lib_type = LibraryType(param["classifier"].prefix.value.upper())
+            self._default_libs[lib_type] = Library(param["data"].value)
+        # skip extra parameters
+        except ValueError:
+            pass
         # TODO update in update_values for default_libraries
 
     @make_prop_val_node("_old_number")
