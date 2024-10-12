@@ -1717,7 +1717,7 @@ class ListNode(SyntaxNodeBase):
         return True
 
 
-class IsotopesNode(SyntaxNodeBase):
+class MaterialsNode(SyntaxNodeBase):
     """
     A node for representing isotopes and their concentration.
 
@@ -1742,6 +1742,7 @@ class IsotopesNode(SyntaxNodeBase):
             a ValueNode that is the ZAID, and a ValueNode of the concentration.
         :type isotope_fraction: tuple
         """
+        # TODO
         isotope, concentration = isotope_fraction[1:3]
         self._nodes.append((isotope, concentration))
 
