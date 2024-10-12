@@ -16,8 +16,12 @@ from montepy.input_parser.mcnp_input import Input
 
 # test material
 def test_material_parameter_parsing():
-    for line in ["M20 1001.80c 1.0 gas=0", "M20 1001.80c 1.0 gas = 0 nlib = 00c"]:
-        input = Input([line], BlockType.CELL)
+    for line in [
+        "M20 1001.80c 1.0 gas=0",
+        "M20 1001.80c 1.0 gas = 0 nlib = 00c",
+        "M120 nlib=80c 1001 1.0",
+    ]:
+        input = Input([line], BlockType.DATA)
         material = Material(input)
 
 
