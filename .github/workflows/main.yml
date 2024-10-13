@@ -90,6 +90,7 @@ jobs:
         uses: coverallsapp/github-action@v2
         with:
           file: coverage.xml
+          github-token: ${{ secrets.github_token }}
 
 
   doc-test:
