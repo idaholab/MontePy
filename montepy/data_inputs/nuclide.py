@@ -30,8 +30,8 @@ class Library(metaclass=SingletonGroup):
     def __eq__(self, other):
         if not isinstance(other, (type(self), str)):
             raise TypeError(f"Can only compare Library instances.")
-        if isinstance(other, type(self)):
-            return self.library == other.library
+        if not isinstance(other, type(self)):
+            return self.library == other
         # due to SingletonGroup
         return self is other
 
