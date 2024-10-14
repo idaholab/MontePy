@@ -1463,8 +1463,8 @@ bar
             (5, 1, 60): 80,
             (6, 1, 0): 80,
             (6, 2, 0): 128,
-            (6, 2, 3): 128,
             (6, 3, 0): 128,
+            (6, 3, 3): 128,  # Test for newer not released versions
             (7, 4, 0): 128,
         }
         for version, answer in answers.items():
