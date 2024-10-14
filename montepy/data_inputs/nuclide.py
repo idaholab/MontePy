@@ -86,7 +86,6 @@ class Nucleus(metaclass=SingletonGroup):
             new_vals = self._parse_zaid(int(ZAID))
             for key, value in new_vals.items():
                 setattr(self, key, value)
-            self._handle_stupid_legacy_stupidity(ZAID)
         elif element is not None:
             if not isinstance(element, Element):
                 raise TypeError(
@@ -113,13 +112,16 @@ class Nucleus(metaclass=SingletonGroup):
         else:
             self._meta_state = 0
 
-    def _handle_stupid_legacy_stupidity(self, ZAID):
+    @classmethod
+    def _handle_stupid_legacy_stupidity(cls, ZAID):
         # TODO work on this for mat_redesign
         ZAID = str(ZAID)
-        if ZAID in self._STUPID_MAP:
-            stupid_overwrite = self._STUPID_MAP[ZAID]
+        ret = {}
+        if ZAID in cls._STUPID_MAP:
+            stupid_overwrite = cls._STUPID_MAP[ZAID]
             for key, value in stupid_overwrite.items():
-                setattr(self, key, value)
+                ret[key] = value
+        return ret
 
     @property
     def ZAID(self):
@@ -236,6 +238,7 @@ class Nucleus(metaclass=SingletonGroup):
         else:
             ret["_meta_state"] = 0
             ret["_A"] = A
+        ret.update(cls._handle_stupid_legacy_stupidity(ZAID))
         return ret
 
     def __hash__(self):
