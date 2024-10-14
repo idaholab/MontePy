@@ -26,10 +26,11 @@ class MaterialParser(DataParser):
             ret = p.mat_data
         datum = p.mat_datum
         if isinstance(datum, tuple):
-            if datum[0] == "isotope_fraction":
-                ret.append_nuclide(datum)
-            elif datum[0] == "number_sequence":
-                [ret.append_nuclide(n) for n in datum]
+            ret.append_nuclide(datum)
+        elif isinstance(datum, list):
+            [ret.append_nuclide(n) for n in datum]
+        elif isinstance(datum, syntax_node.ListNode):
+            [ret.append_nuclide(n) for n in self._convert_to_isotope(datum)]
         else:
             ret.append_param(datum)
         return ret
@@ -49,18 +50,6 @@ class MaterialParser(DataParser):
     @_("isotope_fraction", "number_sequence", "parameter", "mat_parameter")
     def mat_datum(self, p):
         return p[0]
-
-    def _convert_to_isotope(self, old):
-        new_list = syntax_node.IsotopesNode("converted isotopes")
-
-        def batch_gen():
-            it = iter(old)
-            while batch := tuple(itertools.islice(it, 2)):
-                yield batch
-
-        for group in batch_gen():
-            new_list.append(("foo", *group))
-        return new_list
 
     @_(
         "classifier param_seperator library",
