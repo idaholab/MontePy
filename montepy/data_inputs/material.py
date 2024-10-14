@@ -289,7 +289,7 @@ See <https://www.montepy.org/migrations/migrate0_1.html> for more information ""
         if not isinstance(fraction, (float, int)):
             raise TypeError("")
         if isinstance(nuclide, (str, int)):
-            nuclide = Nuclide.get_from_fancy_name(nuclide)
+            nuclide = Nuclide(nuclide)
         self.append((nuclide, fraction))
 
     def contains(self, nuclide, *args, threshold):
