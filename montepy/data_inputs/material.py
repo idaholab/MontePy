@@ -497,7 +497,7 @@ See <https://www.montepy.org/migrations/migrate0_1.html> for more information ""
         new_list = syntax_node.MaterialsNode("new isotope list")
         for isotope, component in self._components:
             isotope._tree.value = isotope.mcnp_str()
-            new_list.append(("_", isotope._tree, component))
+            new_list.append_nuclide(("_", isotope._tree, component))
         self._tree.nodes["data"] = new_list
 
     def add_thermal_scattering(self, law):

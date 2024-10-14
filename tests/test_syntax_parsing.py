@@ -772,7 +772,7 @@ class TestMaterialssNode(TestCase):
         isotopes = syntax_node.MaterialsNode("test")
         zaid = syntax_node.ValueNode("1001.80c", str)
         concentration = syntax_node.ValueNode("1.5", float)
-        isotopes.append(("isotope_fraction", zaid, concentration))
+        isotopes.append_nuclide(("isotope_fraction", zaid, concentration))
         self.assertEqual(isotopes.nodes[-1][0], zaid)
         self.assertEqual(isotopes.nodes[-1][1], concentration)
 
@@ -783,14 +783,14 @@ class TestMaterialssNode(TestCase):
         zaid.padding = padding
         concentration = syntax_node.ValueNode("1.5", float)
         concentration.padding = padding
-        isotopes.append(("isotope_fraction", zaid, concentration))
+        isotopes.append_nuclide(("isotope_fraction", zaid, concentration))
         self.assertEqual(isotopes.format(), "1001.80c 1.5 ")
 
     def test_isotopes_str(self):
         isotopes = syntax_node.MaterialsNode("test")
         zaid = syntax_node.ValueNode("1001.80c", str)
         concentration = syntax_node.ValueNode("1.5", float)
-        isotopes.append(("isotope_fraction", zaid, concentration))
+        isotopes.append_nuclide(("isotope_fraction", zaid, concentration))
         str(isotopes)
         repr(isotopes)
 
@@ -798,8 +798,8 @@ class TestMaterialssNode(TestCase):
         isotopes = syntax_node.MaterialsNode("test")
         zaid = syntax_node.ValueNode("1001.80c", str)
         concentration = syntax_node.ValueNode("1.5", float)
-        isotopes.append(("isotope_fraction", zaid, concentration))
-        isotopes.append(("isotope_fraction", zaid, concentration))
+        isotopes.append_nuclide(("isotope_fraction", zaid, concentration))
+        isotopes.append_nuclide(("isotope_fraction", zaid, concentration))
         for combo in isotopes:
             self.assertEqual(len(combo), 2)
 
@@ -812,7 +812,7 @@ class TestMaterialssNode(TestCase):
         padding = copy.deepcopy(padding)
         padding.append("$ hi", True)
         concentration.padding = padding
-        isotopes.append(("isotope_fraction", zaid, concentration))
+        isotopes.append_nuclide(("isotope_fraction", zaid, concentration))
         comments = list(isotopes.comments)
         self.assertEqual(len(comments), 1)
         self.assertEqual(comments[0].contents, "hi")
@@ -826,7 +826,7 @@ class TestMaterialssNode(TestCase):
         padding = copy.deepcopy(padding)
         padding.append("c hi", True)
         concentration.padding = padding
-        isotopes.append(("isotope_fraction", zaid, concentration))
+        isotopes.append_nuclide(("isotope_fraction", zaid, concentration))
         comments = isotopes.get_trailing_comment()
         self.assertEqual(len(comments), 1)
         self.assertEqual(comments[0].contents, "hi")
