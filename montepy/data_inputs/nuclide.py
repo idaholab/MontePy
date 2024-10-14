@@ -76,6 +76,7 @@ class Nucleus(metaclass=SingletonGroup):
         meta_state=None,
     ):
         if ZAID:
+            # TODO simplify this. Should never get library
             parts = ZAID.split(".")
             try:
                 assert len(parts) <= 2
@@ -447,7 +448,7 @@ class Nuclide:
             else:
                 element = Element(int(identifier))
         elif isinstance(identifier, str):
-            if match := cls._NAME_PARSER.match(identifier):
+            if match := cls._NAME_PARSER.fullmatch(identifier):
                 match = match.groupdict()
                 if match["ZAID"]:
                     parts = Nucleus._parse_zaid(int(match["ZAID"]))
