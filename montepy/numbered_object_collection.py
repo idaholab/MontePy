@@ -194,7 +194,7 @@ class NumberedObjectCollection(ABC):
         nums = set(self.numbers)
         new_nums = set()
         for obj in objs:
-            if obj.number in nums or obj.number in new_news:
+            if obj.number in nums or obj.number in new_nums:
                 if obj == self[obj.number]:
                     continue
                 raise NumberConflictError(f"")

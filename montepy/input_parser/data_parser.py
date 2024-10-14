@@ -74,8 +74,8 @@ class DataParser(MCNP_Parser):
         if hasattr(p, "isotope_fractions"):
             fractions = p.isotope_fractions
         else:
-            fractions = syntax_node.IsotopesNode("isotope list")
-        fractions.append(p.isotope_fraction)
+            fractions = syntax_node.MaterialsNode("isotope list")
+        fractions.append_nuclide(p.isotope_fraction)
         return fractions
 
     @_("ZAID", "ZAID padding")
