@@ -50,8 +50,8 @@ class testDataInputClass(TestCase):
         input_card = Input([in_str], BlockType.DATA)
         comment = "foo"
         data_card = DataInput(input_card)
-        data_card.comment = comment
-        self.assertEqual(comment, data_card.comment)
+        data_card.comments = [comment]
+        self.assertEqual(comment, data_card.comments)
 
     def test_data_parser(self):
         identifiers = {
