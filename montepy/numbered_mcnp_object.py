@@ -5,11 +5,33 @@ import itertools
 from montepy.errors import NumberConflictError
 from montepy.mcnp_object import MCNP_Object
 import montepy
+from montepy.utilities import *
+
+
+def _number_validator(self, number):
+    if number < 0:
+        raise ValueError("number must be >= 0")
+    if self._problem:
+        obj_map = montepy.MCNP_Problem._NUMBERED_OBJ_MAP
+        try:
+            collection_type = obj_map[type(self)]
+        except KeyError as e:
+            found = False
+            for obj_class in obj_map:
+                if isinstance(self, obj_class):
+                    collection_type = obj_map[obj_class]
+                    found = True
+                    break
+            if not found:
+                raise e
+        collection = getattr(self._problem, collection_type.__name__.lower())
+        collection.check_number(number)
+        collection._update_number(self.number, number, self)
 
 
 class Numbered_MCNP_Object(MCNP_Object):
-    @property
-    @abstractmethod
+
+    @make_prop_val_node("_number", int, validator=_number_validator)
     def number(self):
         """
         The current number of the object that will be written out to a new input.

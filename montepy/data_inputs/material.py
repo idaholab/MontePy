@@ -15,16 +15,14 @@ import re
 import warnings
 
 
-def _number_validator(self, number):
-    if number <= 0:
-        raise ValueError("number must be > 0")
-    if self._problem:
-        self._problem.materials.check_number(number)
-
-
 class Material(data_input.DataInputAbstract, Numbered_MCNP_Object):
     """
     A class to represent an MCNP material.
+
+    .. note::
+
+        There is a known bug (:issue:`182`) that valid MCNP material definitions cannot be parsed.
+
 
     :param input: the input card that contains the data
     :type input: Input
@@ -80,15 +78,6 @@ class Material(data_input.DataInputAbstract, Numbered_MCNP_Object):
     def old_number(self):
         """
         The material number that was used in the read file
-
-        :rtype: int
-        """
-        pass
-
-    @make_prop_val_node("_number", int, validator=_number_validator)
-    def number(self):
-        """
-        The number to use to identify the material by
 
         :rtype: int
         """

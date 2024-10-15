@@ -1,7 +1,11 @@
+*****************
 MontePy Changelog
-=================
+*****************
 
-#Next Version#
+0.5 releases
+============
+
+0.5.0
 --------------
 
 **Features Added**
@@ -11,6 +15,7 @@ MontePy Changelog
 **Performance Improvement**
 
 * Fixed cyclic memory reference that lead to memory leak in ``copy.deepcopy`` (:issue:`514`).
+* Fixed O(N<sup>2</sup>) operation in how append works for object collections like Cells (:issue:`556`).
 
 **Bug Fixes**
 
@@ -18,6 +23,13 @@ MontePy Changelog
 * Fixed a bug raised in an edge case when editing cell geometry, by making the error clearer (:issue:`558`).
 * Fixed bug with having a shortcut in a cell fill (:issue:`552`).
 * Fixed bug where file streams couldn't actually be read (:pull:`553`).
+
+**Support**
+
+* Added support for Python 3.13, and removed support for Python 3.8, and officially added support NumPy 1 & 2 (:pull:`548`).
+
+0.4 releases
+============
 
 0.4.1
 --------------
@@ -56,6 +68,9 @@ MontePy Changelog
 * Fixed bug where cell modifiers could be made irrelevant by being added after a comment (:issue:`483`).
 * Fixed bug where parentheses in cell geometry are not properly exported (:pull:`491`).
 
+
+0.3 releases
+=============
 
 0.3.3
 --------------
@@ -99,6 +114,9 @@ MontePy Changelog
 
 * Fixed bug with ``SDEF`` input, and made parser more robust (:issue:`396`).
 
+
+0.2 releases
+============
 
 0.2.10
 ----------------------
@@ -213,6 +231,9 @@ MontePy Changelog
 * Much of the internal functions with how objects are written to file were changed and/or deprecated.
 * `montepy.data_cards.data_card.DataCard.class_prefix` was moved to `_class_prefix` as the user usually shouldn't see this. Same goes for `has_classifier` and `has_number`.
 * Most of the data types inside `montepy.input_parser.mcnp_input` were deprecated or changed
+
+0.1 releases
+============
 
 0.1.7
 -----------------

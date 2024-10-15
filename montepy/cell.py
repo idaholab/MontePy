@@ -20,13 +20,6 @@ from montepy.universe import Universe
 from montepy.utilities import *
 
 
-def _number_validator(self, number):
-    if number <= 0:
-        raise ValueError("number must be > 0")
-    if self._problem:
-        self._problem.cells.check_number(number)
-
-
 def _link_geometry_to_cell(self, geom):
     geom._cell = self
     geom._add_new_children_to_cell(geom)
@@ -308,15 +301,6 @@ class Cell(Numbered_MCNP_Object):
     def old_number(self):
         """
         The original cell number provided in the input file
-
-        :rtype: int
-        """
-        pass
-
-    @make_prop_val_node("_number", int, validator=_number_validator)
-    def number(self):
-        """
-        The current cell number that will be written out to a new input.
 
         :rtype: int
         """
