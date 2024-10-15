@@ -26,6 +26,11 @@ class Material(data_input.DataInputAbstract, Numbered_MCNP_Object):
     """
     A class to represent an MCNP material.
 
+    .. note::
+
+        There is a known bug (:issue:`182`) that valid MCNP material definitions cannot be parsed.
+
+
     :param input: the input card that contains the data
     :type input: Input
     """
