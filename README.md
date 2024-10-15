@@ -85,6 +85,10 @@ Here a few of the known bugs and limitations:
 * Cannot handle vertical input mode.
 * Does not support editing tallies in a user-friendly way.
 * Does not support editing source definition in a user-friendly way.
+* Cannot parse all valid material definitions. There is a known bug (#182) that MontePy can only parse materials where all
+    keyword-value pairs show up after the nuclide definitions. For example:
+   * `M1 1001.80c 1.0 plib=80p` can be parsed.
+   * `M1 plib=80p 1001.80c 1.0` cannot be parsed, despite it being a valid input.
 	
 ## Bugs, Requests and Development
 
