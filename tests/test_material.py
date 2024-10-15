@@ -1,4 +1,5 @@
 # Copyright 2024, Battelle Energy Alliance, LLC All Rights Reserved.
+from hypothesis import given, strategies as st
 import pytest
 from hypothesis import assume, given, note, strategies as st
 
@@ -203,6 +204,53 @@ def test_isotope_init():
         Nuclide("1001.80c.5")
     with pytest.raises(ValueError):
         Nuclide("hi.80c")
+
+
+@pytest.mark.filterwarnings("ignore")
+@given(st.integers(), st.integers())
+def test_mat_clone(start_num, step):
+    input = Input(["m1 1001.80c 0.3 8016.80c 0.67"], BlockType.DATA)
+    mat = Material(input)
+    problem = montepy.MCNP_Problem("foo")
+    for prob in {None, problem}:
+        mat.link_to_problem(prob)
+        if prob is not None:
+            problem.materials.append(mat)
+        if start_num <= 0 or step <= 0:
+            with pytest.raises(ValueError):
+                mat.clone(start_num, step)
+            return
+        new_mat = mat.clone(start_num, step)
+        assert new_mat is not mat
+        for (iso, fraction), (gold_iso, gold_fraction) in zip(
+            new_mat.material_components.items(), mat.material_components.items()
+        ):
+            assert iso is not gold_iso
+            assert iso.ZAID == gold_iso.ZAID
+            assert fraction.fraction == pytest.approx(gold_fraction.fraction)
+        assert new_mat._number is new_mat._tree["classifier"].number
+        output = new_mat.format_for_mcnp_input((6, 3, 0))
+        input = Input(output, BlockType.DATA)
+        newer_mat = Material(input)
+        assert newer_mat.number == new_mat.number
+
+
+@pytest.mark.parametrize(
+    "args, error",
+    [
+        (("c", 1), TypeError),
+        ((1, "d"), TypeError),
+        ((-1, 1), ValueError),
+        ((0, 1), ValueError),
+        ((1, 0), ValueError),
+        ((1, -1), ValueError),
+    ],
+)
+def test_cell_clone_bad(args, error):
+    input = Input(["m1 1001.80c 0.3 8016.80c 0.67"], BlockType.CELL)
+    mat = Material(input)
+    with pytest.raises(error):
+        mat.clone(*args)
 
 
 def test_isotope_metastable_init():

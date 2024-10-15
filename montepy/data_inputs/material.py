@@ -23,13 +23,6 @@ import warnings
 MAX_PRINT_ELEMENTS = 5
 
 
-def _number_validator(self, number):
-    if number <= 0:
-        raise ValueError("number must be > 0")
-    if self._problem:
-        self._problem.materials.check_number(number)
-
-
 class _DefaultLibraries:
 
     __slots__ = "_libraries"
@@ -79,7 +72,7 @@ class Material(data_input.DataInputAbstract, Numbered_MCNP_Object):
     def __init__(self, input=None):
         self._components = []
         self._thermal_scattering = None
-        self._is_atom_fraction = False
+        self._is_atom_fraction = True
         self._number = self._generate_default_node(int, -1)
         self._elements = set()
         self._nuclei = set()
@@ -134,15 +127,6 @@ class Material(data_input.DataInputAbstract, Numbered_MCNP_Object):
     def old_number(self):
         """
         The material number that was used in the read file
-
-        :rtype: int
-        """
-        pass
-
-    @make_prop_val_node("_number", int, validator=_number_validator)
-    def number(self):
-        """
-        The number to use to identify the material by
 
         :rtype: int
         """

@@ -1,5 +1,8 @@
 # Copyright 2024, Battelle Energy Alliance, LLC All Rights Reserved.
 import copy
+import itertools
+import numbers
+
 from montepy.cells import Cells
 from montepy.constants import BLANK_SPACE_CONTINUE
 from montepy.data_inputs import importance, fill, lattice_input, universe_input, volume
@@ -15,14 +18,6 @@ from montepy.surfaces.surface import Surface
 from montepy.surface_collection import Surfaces
 from montepy.universe import Universe
 from montepy.utilities import *
-import numbers
-
-
-def _number_validator(self, number):
-    if number <= 0:
-        raise ValueError("number must be > 0")
-    if self._problem:
-        self._problem.cells.check_number(number)
 
 
 def _link_geometry_to_cell(self, geom):
@@ -306,15 +301,6 @@ class Cell(Numbered_MCNP_Object):
     def old_number(self):
         """
         The original cell number provided in the input file
-
-        :rtype: int
-        """
-        pass
-
-    @make_prop_val_node("_number", int, validator=_number_validator)
-    def number(self):
-        """
-        The current cell number that will be written out to a new input.
 
         :rtype: int
         """
@@ -705,3 +691,110 @@ class Cell(Numbered_MCNP_Object):
         # check for accidental empty lines from subsequent cell modifiers that didn't print
         ret = "\n".join([l for l in ret.splitlines() if l.strip()])
         return self.wrap_string_for_mcnp(ret, mcnp_version, True)
+
+    def clone(
+        self, clone_material=False, clone_region=False, starting_number=None, step=None
+    ):
+        """
+        Create a new almost independent instance of this cell with a new number.
+
+        This relies mostly on ``copy.deepcopy``.
+        All properties and attributes will be a deep copy unless otherwise requested.
+        The one exception is this will still be internally linked to the original problem.
+        Even if ``clone_region`` is ``True`` the actual region object will be a copy.
+        This means that changes to the new cell's geometry will be independent, but may or may not
+        refer to the original surfaces.
+
+        .. versionadded:: 0.5.0
+
+        :param clone_material: Whether to create a new clone of the material.
+        :type clone_material: bool
+        :param clone_region: Whether to clone the underlying objects (Surfaces, Cells) of this cell's region.
+        :type clone_region: bool
+        :param starting_number: The starting number to request for a new cell number.
+        :type starting_number: int
+        :param step: the step size to use to find a new valid number.
+        :type step: int
+        :returns: a cloned copy of this cell.
+        :rtype: Cell
+        """
+        if not isinstance(clone_material, bool):
+            raise TypeError(
+                f"clone_material must be a boolean. {clone_material} given."
+            )
+        if not isinstance(clone_region, bool):
+            raise TypeError(f"clone_region must be a boolean. {clone_region} given.")
+        if not isinstance(starting_number, (int, type(None))):
+            raise TypeError(
+                f"Starting_number must be an int. {type(starting_number)} given."
+            )
+        if not isinstance(step, (int, type(None))):
+            raise TypeError(f"step must be an int. {type(step)} given.")
+        if starting_number is not None and starting_number <= 0:
+            raise ValueError(f"starting_number must be >= 1. {starting_number} given.")
+        if step is not None and step <= 0:
+            raise ValueError(f"step must be >= 1. {step} given.")
+        if starting_number is None:
+            starting_number = (
+                self._problem.cells.starting_number if self._problem else 1
+            )
+        if step is None:
+            step = self._problem.cells.step if self._problem else 1
+        # get which properties to copy over
+        keys = set(vars(self))
+        keys.remove("_material")
+        result = Cell.__new__(Cell)
+        if clone_material:
+            if self.material is not None:
+                result._material = self._material.clone()
+            else:
+                result._material = None
+        else:
+            result._material = self._material
+
+        special_keys = {"_surfaces", "_complements"}
+        keys -= special_keys
+        memo = {}
+        for key in keys:
+            attr = getattr(self, key)
+            setattr(result, key, copy.deepcopy(attr, memo))
+        if clone_region:
+            region_change_map = {}
+            # ensure the new geometry gets mapped to the new surfaces
+            for special in special_keys:
+                collection = getattr(self, special)
+                new_objs = []
+                for obj in collection:
+                    new_obj = obj.clone()
+                    region_change_map[obj] = new_obj
+                    new_objs.append(new_obj)
+                setattr(result, special, type(collection)(new_objs))
+
+        else:
+            region_change_map = {}
+            for special in special_keys:
+                setattr(result, special, copy.copy(getattr(self, special)))
+            leaves = result.geometry._get_leaf_objects()
+            # undo deepcopy of surfaces in cell.geometry
+            for geom_collect, collect in [
+                (leaves[0], self.complements),
+                (leaves[1], self.surfaces),
+            ]:
+                for surf in geom_collect:
+                    try:
+                        region_change_map[surf] = collect[
+                            surf.number if isinstance(surf, (Surface, Cell)) else surf
+                        ]
+                    except KeyError:
+                        # ignore empty surfaces on clone
+                        pass
+        result.geometry.remove_duplicate_surfaces(region_change_map)
+        if self._problem:
+            result.number = self._problem.cells.request_number(starting_number, step)
+            self._problem.cells.append(result)
+        else:
+            for number in itertools.count(starting_number, step):
+                result.number = number
+                if number != self.number:
+                    break
+        return result

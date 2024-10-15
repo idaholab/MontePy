@@ -32,3 +32,10 @@ class TestBrinyFermentation(unittest.TestCase):
                     new_problem = pickle.load(fh)
                 data = pickle.dumps(problem)
                 new_problem = pickle.loads(data)
+                for attr in {"cells", "surfaces", "materials", "data_inputs"}:
+                    assert len(getattr(problem, attr)) == len(
+                        getattr(new_problem, attr)
+                    )
+                    for obj in getattr(new_problem, attr):
+                        assert obj._problem is not None
+                        assert obj._problem is new_problem

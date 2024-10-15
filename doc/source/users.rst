@@ -6,6 +6,7 @@ User Guide
    :caption: Contents:
 
    starting
+   bugs
    utilities
    tricks
    faq
