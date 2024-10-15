@@ -40,7 +40,7 @@ class MCNP_Problem:
         surface.Surface: Surfaces,
         Material: Materials,
         transform.Transform: Transforms,
-        montepy.universe: Universes,
+        montepy.universe.Universe: Universes,
     }
 
     def __init__(self, destination):

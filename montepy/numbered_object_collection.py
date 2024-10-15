@@ -113,7 +113,6 @@ class NumberedObjectCollection(ABC):
 
         :rtype: generator
         """
-        self.__num_cache
         for obj in self._objects:
             # update cache every time we go through all objects
             self.__num_cache[obj.number] = obj
@@ -128,10 +127,35 @@ class NumberedObjectCollection(ABC):
         """
         if not isinstance(number, int):
             raise TypeError("The number must be an int")
-        if number in self.numbers:
+        conflict = False
+        # only can trust cache if being
+        if self._problem:
+            if number in self.__num_cache:
+                conflict = True
+        else:
+            if number in self.numbers:
+                conflict = True
+        if conflict:
             raise NumberConflictError(
                 f"Number {number} is already in use for the collection: {type(self)} by {self[number]}"
             )
+
+    def _update_number(self, old_num, new_num, obj):
+        """
+        Updates the number associated with a specific object in the internal cache.
+
+        :param old_num: the previous number the object had.
+        :type old_num: int
+        :param new_num: the number that is being set to.
+        :type new_num: int
+        :param obj: the object being updated.
+        :type obj: self._obj_class
+        """
+        # don't update numbers you don't own
+        if self.__num_cache.get(old_num, None) is not obj:
+            return
+        self.__num_cache.pop(old_num, None)
+        self.__num_cache[new_num] = obj
 
     @property
     def objects(self):
@@ -177,22 +201,25 @@ class NumberedObjectCollection(ABC):
         """
         if not isinstance(other_list, (list, type(self))):
             raise TypeError("The extending list must be a list")
+        if self._problem:
+            nums = set(self.__num_cache)
+        else:
+            nums = set(self.numbers)
         for obj in other_list:
             if not isinstance(obj, self._obj_class):
                 raise TypeError(
                     "The object in the list {obj} is not of type: {self._obj_class}"
                 )
-            if obj.number in self.numbers:
+            if obj.number in nums:
                 raise NumberConflictError(
                     (
                         f"When adding to {type(self)} there was a number collision due to "
                         f"adding {obj} which conflicts with {self[obj.number]}"
                     )
                 )
-            # if this number is a ghost; remove it.
-            else:
-                self.__num_cache.pop(obj.number, None)
+            nums.add(obj.number)
         self._objects.extend(other_list)
+        self.__num_cache.update({obj.number: obj for obj in other_list})
         if self._problem:
             for obj in other_list:
                 obj.link_to_problem(self._problem)
@@ -295,15 +322,8 @@ class NumberedObjectCollection(ABC):
         """
         if not isinstance(obj, self._obj_class):
             raise TypeError(f"object being appended must be of type: {self._obj_class}")
-        if obj.number in self.numbers:
-            raise NumberConflictError(
-                (
-                    "There was a numbering conflict when attempting to add "
-                    f"{obj} to {type(self)}. Conflict was with {self[obj.number]}"
-                )
-            )
-        else:
-            self.__num_cache[obj.number] = obj
+        self.check_number(obj.number)
+        self.__num_cache[obj.number] = obj
         self._objects.append(obj)
         if self._problem:
             obj.link_to_problem(self._problem)
@@ -368,8 +388,12 @@ class NumberedObjectCollection(ABC):
         if step is None:
             step = self.step
         number = start_num
-        while number in self.numbers:
-            number += step
+        while True:
+            try:
+                self.check_number(number)
+                break
+            except NumberConflictError:
+                number += step
         return number
 
     def next_number(self, step=1):
@@ -450,29 +474,7 @@ class NumberedObjectCollection(ABC):
         return len(self._objects)
 
     def __iadd__(self, other):
-        if not isinstance(other, (type(self), list)):
-            raise TypeError(f"Appended item must be a list or of type {type(self)}")
-        for obj in other:
-            if not isinstance(obj, self._obj_class):
-                raise TypeError(
-                    f"Appended object {obj} must be of type: {self._obj_class}"
-                )
-        if isinstance(other, type(self)):
-            other_list = other.objects
-        else:
-            other_list = other
-        for obj in other_list:
-            if obj.number in self.numbers:
-                raise NumberConflictError(
-                    (
-                        "There was a numbering conflict when attempting to add "
-                        f"{obj} to {type(self)}. Conflict was with {self[obj.number]}"
-                    )
-                )
-            else:
-                self.__num_cache[obj.number] = obj
-        for obj in other_list:
-            self.append(obj)
+        self.extend(other)
         return self
 
     def __contains__(self, other):
