@@ -29,6 +29,7 @@ MontePy Changelog
 * Added support for Python 3.13, and removed support for Python 3.8, and officially added support NumPy 1 & 2 (:pull:`548`).
 
 0.4 releases
+============
 
 0.4.1
 --------------
