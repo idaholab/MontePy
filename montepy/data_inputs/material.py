@@ -65,6 +65,11 @@ class Material(data_input.DataInputAbstract, Numbered_MCNP_Object):
     """
     A class to represent an MCNP material.
 
+    .. seealso::
+
+            * :manual63:`5.6.1`
+            * :manual62:`106`
+
     :param input: the input card that contains the data
     :type input: Input
     """
