@@ -112,7 +112,9 @@ class Fill(CellModifierInput):
                     )
 
         data = value["data"]
-        if "(" in data.nodes:
+        if not isinstance(data, syntax_node.ListNode):
+            data = data.nodes
+        if "(" in data:
             get_universe(value)
             trans_data = value["data"][
                 list(value["data"]).index("(") + 1 : list(value["data"]).index(")") - 1

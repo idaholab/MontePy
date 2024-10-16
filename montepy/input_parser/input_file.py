@@ -31,6 +31,7 @@ class MCNP_InputFile:
         self._overwrite = overwrite
         self._mode = None
         self._fh = None
+        self._is_stream = False
 
     @classmethod
     def from_open_stream(cls, fh):
@@ -43,6 +44,7 @@ class MCNP_InputFile:
         name = getattr(fh, "name", fh.__class__.__name__)
         inpfile = cls(path=name)
         inpfile._fh = fh
+        inpfile._is_stream = True
         return inpfile
 
     @make_prop_pointer("_path")
@@ -56,7 +58,11 @@ class MCNP_InputFile:
 
     @property
     def name(self):
-        return self.path
+        return self._path
+
+    @property
+    def is_stream(self):
+        return self._is_stream
 
     @make_prop_pointer("_parent_file")
     def parent_file(self):

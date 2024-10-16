@@ -11,6 +11,7 @@ from montepy.input_parser.mcnp_input import Input, Jump, Message, ReadInput, Tit
 from montepy.input_parser.block_type import BlockType
 from montepy.input_parser.input_file import MCNP_InputFile
 from montepy.input_parser.parser_base import MCNP_Parser
+from montepy.input_parser.shortcuts import Shortcuts
 from montepy.input_parser import syntax_node
 from montepy.particle import Particle
 import warnings
@@ -485,6 +486,38 @@ class TestGeometryTree(TestCase):
         self.assertEqual(len(comments), 1)
 
 
+def test_geometry_tree_mark_last_leaf_shortcut():
+    # test left leaf
+    tree = {
+        "left": syntax_node.ValueNode("123", int),
+        "operator": syntax_node.PaddingNode(" "),
+    }
+    geom = syntax_node.GeometryTree(
+        "test", tree, montepy.Operator.INTERSECTION, tree["left"]
+    )
+    geom.mark_last_leaf_shortcut(Shortcuts.REPEAT)
+    assert geom._left_short_type == Shortcuts.REPEAT
+    # try overriding old shortcut
+    geom.mark_last_leaf_shortcut(Shortcuts.MULTIPLY)
+    assert geom._left_short_type == Shortcuts.REPEAT
+    tree["right"] = syntax_node.ValueNode("789", int)
+    geom = syntax_node.GeometryTree(
+        "test", tree, montepy.Operator.INTERSECTION, tree["left"], tree["right"]
+    )
+    del tree["right"]
+    tree["left"] = syntax_node.ValueNode("456", int)
+    # make unbalanced tree in the other way for rigor
+    geom = syntax_node.GeometryTree(
+        "test", tree, montepy.Operator.INTERSECTION, tree["left"], geom
+    )
+    # test a right-side leaf
+    geom.mark_last_leaf_shortcut(Shortcuts.REPEAT)
+    assert geom.right._right_short_type == Shortcuts.REPEAT
+    # try overriding old shortcut
+    geom.mark_last_leaf_shortcut(Shortcuts.MULTIPLY)
+    assert geom.right._right_short_type == Shortcuts.REPEAT
+
+
 class TestPaddingNode(TestCase):
     def test_padding_init(self):
         pad = syntax_node.PaddingNode(" ")
@@ -823,120 +856,189 @@ class TestShortcutNode(TestCase):
         with self.assertRaises(TypeError):
             short.end_padding = " "
 
-    """
-    Most examples, unless otherwise noted are taken from Section 2.8.1
-    of LA-UR-17-29981.
-    """
-    tests = {
-        "1 3M 2r": [1, 3, 3, 3],
-        # unofficial
-        "0.01 2ILOG 10": [0.01, 0.1, 1, 10],
-        "1 3M I 4": [1, 3, 3.5, 4],
-        "1 3M 3M": [1, 3, 9],
-        "1 2R 2I 2.5": [1, 1, 1, 1.5, 2, 2.5],
-        "1 R 2m": [1, 1, 2],
-        "1 R R": [1, 1, 1],
-        "1 2i 4 3m": [1, 2, 3, 4, 12],
-        # unofficial
-        "1 i 3": [1, 2, 3],
-        # unofficial
-        "1 ilog 100": [1, 10, 100],
-        # last official one
-        "1 2i 4 2i 10": [
-            1,
-            2,
-            3,
-            4,
-            6,
-            8,
-            10,
-        ],
-        "1 2j 4": [1, montepy.Jump(), montepy.Jump(), 4],
-        "1 j": [1, montepy.Jump()],
-    }
 
-    def test_shortcut_expansion(self):
-        invalid = [
-            "3J 4R",
-            "1 4I 3M",
-            # last official test
-            "1 4I J",
-            "1 2Ilog J",
-            "J 2Ilog 5",
-            "3J 2M",
-            "10 M",
-            "2R",
-        ]
+"""
+Most examples, unless otherwise noted are taken from Section 2.8.1
+of LA-UR-17-29981.
+"""
+tests = {
+    "1 3M 2r": [1, 3, 3, 3],
+    # unofficial
+    "0.01 2ILOG 10": [0.01, 0.1, 1, 10],
+    "1 3M I 4": [1, 3, 3.5, 4],
+    "1 3M 3M": [1, 3, 9],
+    "1 2R 2I 2.5": [1, 1, 1, 1.5, 2, 2.5],
+    "1 R 2m": [1, 1, 2],
+    "1 R R": [1, 1, 1],
+    "1 2i 4 3m": [1, 2, 3, 4, 12],
+    # unofficial
+    "1 i 3": [1, 2, 3],
+    # unofficial
+    "1 ilog 100": [1, 10, 100],
+    "1 1r ilog 100": [1, 1, 10, 100],
+    # last official one
+    "1 2i 4 2i 10": [
+        1,
+        2,
+        3,
+        4,
+        6,
+        8,
+        10,
+    ],
+    "1 2j 4": [1, montepy.Jump(), montepy.Jump(), 4],
+    "1 j": [1, montepy.Jump()],
+}
 
-        parser = ShortcutTestFixture()
-        for test, answer in self.tests.items():
-            print(test)
-            input = Input([test], BlockType.DATA)
-            parsed = parser.parse(input.tokenize())
-            for val, gold in zip(parsed, answer):
-                if val.value is None:
-                    self.assertEqual(gold, montepy.Jump())
-                else:
-                    self.assertAlmostEqual(val.value, gold)
-        for test in invalid:
-            print(test)
-            with self.assertRaises(ValueError):
-                input = Input([test], BlockType.DATA)
-                parsed = parser.parse(input.tokenize())
-                if parsed is None:
-                    raise montepy.errors.MalformedInputError("", "")
 
-    def test_shortcut_geometry_expansion(self):
-        tests = {
-            "1 3r ": [1, 1, 1, 1],
-            "1 1 3r ": [1, 1, 1, 1, 1],
-            "1 -2M ": [1, -2],
-            "1 2i 4 ": [1, 2, 3, 4],
-            "1 1 2i 4 ": [1, 1, 2, 3, 4],
-            "1 ilog 100 ": [1, 10, 100],
-            # secretly test iterator
-            "#1": [1],
-            "#(1 2 3)": [1, 2, 3],
-            "1 2:( 3 4 5)": [1, 2, 3, 4, 5],
-        }
+@pytest.mark.parametrize("test, answer", tests.items())
+def test_shortcut_expansion_valid(test, answer):
+    parser = ShortcutTestFixture()
+    print(test)
+    input = Input([test], BlockType.DATA)
+    parsed = parser.parse(input.tokenize())
+    print(parsed)
+    for val, gold in zip(parsed, answer):
+        if val.value is None:
+            assert gold == montepy.Jump()
+        else:
+            assert val.value == pytest.approx(gold)
+    assert parsed.format() == test
 
-        parser = ShortcutGeometryTestFixture()
-        for test, answer in tests.items():
-            print(test)
-            input = Input([test], BlockType.CELL)
-            parsed = parser.parse(input.tokenize())
-            for val, gold in zip(parsed, answer):
-                self.assertAlmostEqual(val.value, gold)
 
-    def test_shortcut_format(self):
-        parser = ShortcutTestFixture()
-        for in_str, answer in [
-            ("1 5R", "1 5R"),
-            ("1 5r", "1 5r"),
-            ("1 r", "1 r"),
-            ("1 2i 5", "1 2i 5"),
-            ("1 2ilog 5", "1 2ilog 5"),
-            ("1 r 2i 5", "1 r 2i 5"),
-            ("1 r 2ilog 5", "1 r 2ilog 5"),
-            ("1 5M", "1 5M"),
-            ("1 5m", "1 5m"),
-            ("2j ", "2j "),
-            ("2j", "2j"),
-            ("2J ", "2J "),
-            ("J", "J"),
-        ]:
-            print(in_str, answer)
-            input = Input([in_str], BlockType.CELL)
-            shortcut = parser.parse(input.tokenize())
-            self.assertEqual(shortcut.format(), answer)
-        # try jump with empty jump shortcut
-        shortcut.nodes.clear()
-        self.assertEqual(shortcut.format(), "")
-        for in_str in self.tests.keys():
-            print(in_str)
-            input = Input([in_str], BlockType.CELL)
-            shortcut = parser.parse(input.tokenize())
-            self.assertEqual(shortcut.format(), in_str)
+@pytest.mark.parametrize(
+    "test",
+    [
+        ("3J 4R"),
+        ("1 4I 3M"),
+        # last official test
+        ("1 4I J"),
+        ("1 2Ilog J"),
+        ("J 2Ilog 5"),
+        ("3J 2M"),
+        ("10 M"),
+        ("2R"),
+    ],
+)
+def test_shortcut_expansion_invalid(test):
+    print(test)
+    parser = ShortcutTestFixture()
+    with pytest.raises(ValueError):
+        input = Input([test], BlockType.DATA)
+        parsed = parser.parse(input.tokenize())
+        if parsed is None:
+            raise montepy.errors.MalformedInputError("", "")
+
+
+@pytest.mark.parametrize(
+    "test, answer, form_ans",
+    [
+        ("1 3r ", [1, 1, 1, 1], None),
+        ("1 1 3r ", [1, 1, 1, 1, 1], None),
+        ("1 1 2M 3r ", [1, 1, 2, 2, 2, 2], None),
+        ("1 -2M ", [1, -2], None),
+        ("1 2i 4 ", [1, 2, 3, 4], None),
+        ("1 2i 4 ", [1, 2, 3, 4], None),
+        ("1 1 2i 4 ", [1, 1, 2, 3, 4], None),
+        ("1 1 2i 4 5 6 ", [1, 1, 2, 3, 4, 5, 6], "1 1 2I 4  5 6"),
+        ("1 1 2i 4:5 6 ", [1, 1, 2, 3, 4, 5, 6], "1 1 2I 4 :5 6"),
+        ("1 ilog 100 ", [1, 10, 100], "1 1ILOG 100"),
+        ("1 1r ilog 100 ", [1, 1, 10, 100], "1 1R 1ILOG 100"),
+        # secretly test iterator
+        ("#1", [1], None),
+        ("#(1 2 3)", [1, 2, 3], None),
+        ("1 2:( 3 4 5)", [1, 2, 3, 4, 5], None),
+    ],
+)
+def test_shortcut_geometry_expansion(test, answer, form_ans):
+
+    parser = ShortcutGeometryTestFixture()
+    print(test)
+    input = Input([test], BlockType.CELL)
+    parsed = parser.parse(input.tokenize())
+    for val, gold in zip(parsed, answer):
+        assert val.value == gold
+    if form_ans:
+        assert parsed.format().rstrip() == form_ans
+    else:
+        assert parsed.format().rstrip() == test.upper().rstrip()
+
+
+@pytest.mark.parametrize(
+    "test, length, indices",
+    [
+        ("1 3r ", 1, {0: Shortcuts.REPEAT}),
+        ("1 1 3r ", 2, {1: Shortcuts.REPEAT}),
+        ("1 1 2M 3r ", 3, {1: Shortcuts.MULTIPLY, 2: Shortcuts.REPEAT}),
+        ("1 -2M ", 1, {0: Shortcuts.MULTIPLY}),
+        ("1 2i 4 ", 1, {0: Shortcuts.INTERPOLATE}),
+        ("1 2i 4 ", 1, {0: Shortcuts.INTERPOLATE}),
+        ("1 1 2i 4 ", 2, {1: Shortcuts.INTERPOLATE}),
+        ("1 1 2i 4 5 6 ", 4, {1: Shortcuts.INTERPOLATE}),
+        ("1 1 2i 4:5 6 ", 4, {1: Shortcuts.INTERPOLATE}),
+        ("1 ilog 100 ", 1, {0: Shortcuts.LOG_INTERPOLATE}),
+        # secretly test iterator
+        ("#1", 1, {}),
+        ("#(1 2 3)", 3, {}),
+        ("1 2:( 3 4 5)", 5, {}),
+    ],
+)
+def test_shortcut_flatten(test, length, indices):
+
+    parser = ShortcutGeometryTestFixture()
+    print(test)
+    input = Input([test], BlockType.CELL)
+    parsed = parser.parse(input.tokenize())
+    flatpack = parsed._flatten_shortcut()
+    assert len(flatpack) == length
+    for index, short_type in indices.items():
+        assert isinstance(flatpack.nodes[index], syntax_node.ShortcutNode)
+        assert flatpack.nodes[index].type == short_type
+
+
+@pytest.mark.parametrize(
+    "in_str, answer",
+    [
+        ("1 5R", "1 5R"),
+        ("1 5r", "1 5r"),
+        ("1 5r 2m", "1 5r 2m"),
+        ("1 r", "1 r"),
+        ("1 r 2 2r", "1 r 2 2r"),
+        ("1 J 5 2R", "1 J 5 2R"),
+        ("1 2i 5", "1 2i 5"),
+        ("1 2ilog 5", "1 2ilog 5"),
+        ("1 r 2i 5", "1 r 2i 5"),
+        ("1 2i 5 r", "1 2i 5 r"),
+        ("1 r 2ilog 5", "1 r 2ilog 5"),
+        ("1 5M", "1 5M"),
+        ("1 5m", "1 5m"),
+        ("1 5m 2r", "1 5m 2r"),
+        ("2j ", "2j "),
+        ("2j", "2j"),
+        ("2J ", "2J "),
+        ("J", "J"),
+        ("0 2i 3 10 2i 16 1", "0 2i 3 10 2i 16 1"),
+    ],
+)
+def test_shortcut_format(in_str, answer):
+    parser = ShortcutTestFixture()
+    input = Input([in_str], BlockType.CELL)
+    shortcut = parser.parse(input.tokenize())
+    assert shortcut.format() == answer
+    # try jump with empty jump shortcut
+    shortcut.nodes.clear()
+    assert shortcut.format() == ""
+
+
+@pytest.mark.parametrize(
+    "testee, outcome",
+    [("(", False), (1.0, True), (0.0, True), ("s", False), (5.0, False)],
+)
+def test_shortcut_contains(testee, outcome):
+    parser = ShortcutTestFixture()
+    input = Input(["1 0 2R"], BlockType.CELL)
+    node = parser.parse(input.tokenize())
+    assert (testee in node) == outcome, "Contains result was incorrect."
 
 
 class ShortcutTestFixture(MCNP_Parser):

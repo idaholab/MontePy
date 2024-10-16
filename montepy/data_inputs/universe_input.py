@@ -194,7 +194,7 @@ class UniverseInput(CellModifierInput):
             f"UNIVERSE: in_cell: {self._in_cell_block}"
             f" set_in_block: {self.set_in_cell_block}, "
             f"Universe : {self._universe}, "
-            f"Old Numbers: {self._old_numbers}"
+            f"Old Numbers: {self._old_numbers if hasattr(self, '_old_numbers') else ''}"
         )
         return ret
 

@@ -1,9 +1,17 @@
 # Copyright 2024, Battelle Energy Alliance, LLC All Rights Reserved.
 from abc import ABC, abstractmethod
 import typing
+import weakref
+
 import montepy
 from montepy.numbered_mcnp_object import Numbered_MCNP_Object
 from montepy.errors import *
+from montepy.utilities import *
+
+
+def _enforce_positive(self, num):
+    if num <= 0:
+        raise ValueError(f"Value must be greater than 0. {num} given.")
 
 
 class NumberedObjectCollection(ABC):
@@ -41,7 +49,11 @@ class NumberedObjectCollection(ABC):
         assert issubclass(obj_class, Numbered_MCNP_Object)
         self._obj_class = obj_class
         self._objects = []
-        self._problem = problem
+        self._start_num = 1
+        self._step = 1
+        self._problem_ref = None
+        if problem is not None:
+            self._problem_ref = weakref.ref(problem)
         if objects:
             if not isinstance(objects, list):
                 raise TypeError("NumberedObjectCollection must be built from a list")
@@ -68,9 +80,31 @@ class NumberedObjectCollection(ABC):
         :param problem: The problem to link this card to.
         :type problem: MCNP_Problem
         """
-        if not isinstance(problem, montepy.mcnp_problem.MCNP_Problem):
+        if not isinstance(problem, (montepy.mcnp_problem.MCNP_Problem, type(None))):
             raise TypeError("problem must be an MCNP_Problem")
-        self._problem = problem
+        if problem is None:
+            self._problem_ref = None
+        else:
+            self._problem_ref = weakref.ref(problem)
+        for obj in self:
+            obj.link_to_problem(problem)
+
+    @property
+    def _problem(self):
+        if self._problem_ref is not None:
+            return self._problem_ref()
+        return None
+
+    def __getstate__(self):
+        state = self.__dict__.copy()
+        weakref_key = "_problem_ref"
+        if weakref_key in state:
+            del state[weakref_key]
+        return state
+
+    def __setstate__(self, crunchy_data):
+        crunchy_data["_problem_ref"] = None
+        self.__dict__.update(crunchy_data)
 
     @property
     def numbers(self):
@@ -79,7 +113,6 @@ class NumberedObjectCollection(ABC):
 
         :rtype: generator
         """
-        self.__num_cache
         for obj in self._objects:
             # update cache every time we go through all objects
             self.__num_cache[obj.number] = obj
@@ -94,10 +127,35 @@ class NumberedObjectCollection(ABC):
         """
         if not isinstance(number, int):
             raise TypeError("The number must be an int")
-        if number in self.numbers:
+        conflict = False
+        # only can trust cache if being
+        if self._problem:
+            if number in self.__num_cache:
+                conflict = True
+        else:
+            if number in self.numbers:
+                conflict = True
+        if conflict:
             raise NumberConflictError(
                 f"Number {number} is already in use for the collection: {type(self)} by {self[number]}"
             )
+
+    def _update_number(self, old_num, new_num, obj):
+        """
+        Updates the number associated with a specific object in the internal cache.
+
+        :param old_num: the previous number the object had.
+        :type old_num: int
+        :param new_num: the number that is being set to.
+        :type new_num: int
+        :param obj: the object being updated.
+        :type obj: self._obj_class
+        """
+        # don't update numbers you don't own
+        if self.__num_cache.get(old_num, None) is not obj:
+            return
+        self.__num_cache.pop(old_num, None)
+        self.__num_cache[new_num] = obj
 
     @property
     def objects(self):
@@ -143,22 +201,25 @@ class NumberedObjectCollection(ABC):
         """
         if not isinstance(other_list, (list, type(self))):
             raise TypeError("The extending list must be a list")
+        if self._problem:
+            nums = set(self.__num_cache)
+        else:
+            nums = set(self.numbers)
         for obj in other_list:
             if not isinstance(obj, self._obj_class):
                 raise TypeError(
                     "The object in the list {obj} is not of type: {self._obj_class}"
                 )
-            if obj.number in self.numbers:
+            if obj.number in nums:
                 raise NumberConflictError(
                     (
                         f"When adding to {type(self)} there was a number collision due to "
                         f"adding {obj} which conflicts with {self[obj.number]}"
                     )
                 )
-            # if this number is a ghost; remove it.
-            else:
-                self.__num_cache.pop(obj.number, None)
+            nums.add(obj.number)
         self._objects.extend(other_list)
+        self.__num_cache.update({obj.number: obj for obj in other_list})
         if self._problem:
             for obj in other_list:
                 obj.link_to_problem(self._problem)
@@ -172,6 +233,69 @@ class NumberedObjectCollection(ABC):
         """
         self.__num_cache.pop(delete.number, None)
         self._objects.remove(delete)
+
+    def clone(self, starting_number=None, step=None):
+        """
+        Create a new instance of this collection, with all new independent
+        objects with new numbers.
+
+        This relies mostly on ``copy.deepcopy``.
+
+        .. note ::
+            If starting_number, or step are not specified :func:`starting_number`,
+            and :func:`step` are used as default values.
+
+        .. versionadded:: 0.5.0
+
+        :param starting_number: The starting number to request for a new object numbers.
+        :type starting_number: int
+        :param step: the step size to use to find a new valid number.
+        :type step: int
+        :returns: a cloned copy of this object.
+        :rtype: type(self)
+
+        """
+        if not isinstance(starting_number, (int, type(None))):
+            raise TypeError(
+                f"Starting_number must be an int. {type(starting_number)} given."
+            )
+        if not isinstance(step, (int, type(None))):
+            raise TypeError(f"step must be an int. {type(step)} given.")
+        if starting_number is not None and starting_number <= 0:
+            raise ValueError(f"starting_number must be >= 1. {starting_number} given.")
+        if step is not None and step <= 0:
+            raise ValueError(f"step must be >= 1. {step} given.")
+        if starting_number is None:
+            starting_number = self.starting_number
+        if step is None:
+            step = self.step
+        objs = []
+        for obj in self:
+            new_obj = obj.clone(starting_number, step)
+            starting_number = new_obj.number
+            objs.append(new_obj)
+            starting_number = new_obj.number + step
+        return type(self)(objs)
+
+    @make_prop_pointer("_start_num", int, validator=_enforce_positive)
+    def starting_number(self):
+        """
+        The starting number to use when an object is cloned.
+
+        :returns: the starting number
+        :rtype: int
+        """
+        pass
+
+    @make_prop_pointer("_step", int, validator=_enforce_positive)
+    def step(self):
+        """
+        The step size to use to find a valid number during cloning.
+
+        :returns: the step size
+        :rtype: int
+        """
+        pass
 
     def __iter__(self):
         self._iter = self._objects.__iter__()
@@ -198,15 +322,8 @@ class NumberedObjectCollection(ABC):
         """
         if not isinstance(obj, self._obj_class):
             raise TypeError(f"object being appended must be of type: {self._obj_class}")
-        if obj.number in self.numbers:
-            raise NumberConflictError(
-                (
-                    "There was a numbering conflict when attempting to add "
-                    f"{obj} to {type(self)}. Conflict was with {self[obj.number]}"
-                )
-            )
-        else:
-            self.__num_cache[obj.number] = obj
+        self.check_number(obj.number)
+        self.__num_cache[obj.number] = obj
         self._objects.append(obj)
         if self._problem:
             obj.link_to_problem(self._problem)
@@ -241,12 +358,19 @@ class NumberedObjectCollection(ABC):
 
         return number
 
-    def request_number(self, start_num=1, step=1):
+    def request_number(self, start_num=None, step=None):
         """Requests a new available number.
 
         This method does not "reserve" this number. Objects
         should be immediately added to avoid possible collisions
         caused by shifting numbers of other objects in the collection.
+
+        .. note ::
+            If starting_number, or step are not specified :func:`starting_number`,
+            and :func:`step` are used as default values.
+
+        .. versionchanged:: 0.5.0
+            In 0.5.0 the default values were changed to reference :func:`starting_number` and :func:`step`.
 
         :param start_num: the starting number to check.
         :type start_num: int
@@ -255,13 +379,21 @@ class NumberedObjectCollection(ABC):
         :returns: an available number
         :rtype: int
         """
-        if not isinstance(start_num, int):
+        if not isinstance(start_num, (int, type(None))):
             raise TypeError("start_num must be an int")
-        if not isinstance(step, int):
+        if not isinstance(step, (int, type(None))):
             raise TypeError("step must be an int")
+        if start_num is None:
+            start_num = self.starting_number
+        if step is None:
+            step = self.step
         number = start_num
-        while number in self.numbers:
-            number += step
+        while True:
+            try:
+                self.check_number(number)
+                break
+            except NumberConflictError:
+                number += step
         return number
 
     def next_number(self, step=1):
@@ -342,29 +474,7 @@ class NumberedObjectCollection(ABC):
         return len(self._objects)
 
     def __iadd__(self, other):
-        if not isinstance(other, (type(self), list)):
-            raise TypeError(f"Appended item must be a list or of type {type(self)}")
-        for obj in other:
-            if not isinstance(obj, self._obj_class):
-                raise TypeError(
-                    f"Appended object {obj} must be of type: {self._obj_class}"
-                )
-        if isinstance(other, type(self)):
-            other_list = other.objects
-        else:
-            other_list = other
-        for obj in other_list:
-            if obj.number in self.numbers:
-                raise NumberConflictError(
-                    (
-                        "There was a numbering conflict when attempting to add "
-                        f"{obj} to {type(self)}. Conflict was with {self[obj.number]}"
-                    )
-                )
-            else:
-                self.__num_cache[obj.number] = obj
-        for obj in other_list:
-            self.append(obj)
+        self.extend(other)
         return self
 
     def __contains__(self, other):
@@ -427,7 +537,10 @@ class NumberedDataObjectCollection(NumberedObjectCollection):
     def __init__(self, obj_class, objects=None, problem=None):
         self._last_index = None
         if problem and objects:
-            self._last_index = problem.data_inputs.index(objects[-1])
+            try:
+                self._last_index = problem.data_inputs.index(objects[-1])
+            except ValueError:
+                pass
         super().__init__(obj_class, objects, problem)
 
     def append(self, obj, insert_in_data=True):
@@ -439,6 +552,7 @@ class NumberedDataObjectCollection(NumberedObjectCollection):
         :type insert_in_data: bool
         :raises NumberConflictError: if this object has a number that is already in use.
         """
+        super().append(obj)
         if self._problem:
             if self._last_index:
                 index = self._last_index
@@ -452,7 +566,6 @@ class NumberedDataObjectCollection(NumberedObjectCollection):
             if insert_in_data:
                 self._problem.data_inputs.insert(index + 1, obj)
             self._last_index = index + 1
-        super().append(obj)
 
     def __delitem__(self, idx):
         if not isinstance(idx, int):

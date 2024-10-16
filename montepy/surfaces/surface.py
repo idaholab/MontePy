@@ -11,11 +11,6 @@ from montepy.utilities import *
 import re
 
 
-def _enforce_numbers(self, value):
-    if value <= 0:
-        raise ValueError(f"The number be greater than 0; {value} given.")
-
-
 class Surface(Numbered_MCNP_Object):
     """
     Object to hold a single MCNP surface
@@ -194,15 +189,6 @@ class Surface(Numbered_MCNP_Object):
         """
         pass
 
-    @make_prop_val_node("_number", int, validator=_enforce_numbers)
-    def number(self):
-        """
-        The surface number to use.
-
-        :rtype: int
-        """
-        pass
-
     @property
     def cells(self):
         """
@@ -286,21 +272,8 @@ class Surface(Numbered_MCNP_Object):
         return self.number < other.number
 
     def __eq__(self, other):
-        return (
-            self.number == other.number
-            and self.surface_type == other.surface_type
-            and self.is_reflecting == other.is_reflecting
-            and self.is_white_boundary == other.is_white_boundary
-            and self.surface_constants == other.surface_constants
-        )
-
-    def __ne__(self, other):
-        return not self == other
-
-    def __hash__(self):
-        return hash((self.number, str(self.surface_type)))
-
-    def __eq__(self, other):
+        if not isinstance(other, type(self)):
+            return False
         return (
             self.number == other.number
             and self.surface_type == other.surface_type

@@ -29,6 +29,7 @@ class Importance(CellModifierInput):
     def __init__(self, input=None, in_cell_block=False, key=None, value=None):
         self._particle_importances = {}
         self._real_tree = {}
+        self._part_combos = []
         super().__init__(input, in_cell_block, key, value)
         if self.in_cell_block:
             if key:
@@ -39,6 +40,7 @@ class Importance(CellModifierInput):
                     raise ValueError(
                         f"Cell importance must be a number ≥ 0. {val.value} was given"
                     )
+                self._part_combos.append(self.particle_classifiers)
                 for particle in self.particle_classifiers:
                     self._particle_importances[particle] = value
         elif input:
@@ -52,6 +54,7 @@ class Importance(CellModifierInput):
                     raise MalformedInputError(
                         input, f"Importances must be ≥ 0 value: {node} given"
                     )
+            self._part_combos.append(self.particle_classifiers)
             for particle in self.particle_classifiers:
                 self._particle_importances[particle] = copy.deepcopy(self._tree)
                 self._real_tree[particle] = copy.deepcopy(self._tree)
@@ -339,6 +342,48 @@ class Importance(CellModifierInput):
 
     def _update_cell_values(self):
         pass
+
+    @property
+    def trailing_comment(self):
+        """
+        The trailing comments and padding of an input.
+
+        Generally this will be blank as these will be moved to be a leading comment for the next input.
+
+        :returns: the trailing ``c`` style comments and intermixed padding (e.g., new lines)
+        :rtype: list
+        """
+        last_tree = list(self._real_tree.values())[-1]
+        if last_tree:
+            return last_tree.get_trailing_comment()
+
+    def _delete_trailing_comment(self):
+        for part, tree in reversed(self._real_tree.items()):
+            tree._delete_trailing_comment()
+            self.__delete_common_trailing(part)
+            break
+
+    def __delete_common_trailing(self, part):
+        to_delete = {part}
+        for combo_set in self._part_combos:
+            if part in combo_set:
+                to_delete |= combo_set
+        for part in to_delete:
+            self._particle_importances[part]["data"]._delete_trailing_comment()
+
+    def _grab_beginning_comment(self, new_padding):
+        last_tree = None
+        last_padding = None
+        for part, tree in self._particle_importances.items():
+            if last_padding is not None and last_tree is not None:
+                last_tree._grab_beginning_comment(last_padding)
+                self.__delete_common_trailing(part)
+            last_padding = tree.get_trailing_comment()
+            last_tree = tree
+        if new_padding:
+            next(iter(self._particle_importances.values()))[
+                "start_pad"
+            ]._grab_beginning_comment(new_padding)
 
 
 def _generate_default_data_tree(particle):

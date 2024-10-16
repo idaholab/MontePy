@@ -36,9 +36,10 @@ class TestChangeAsciiScript(TestCase):
 
     def test_delete_bad(self):
         for in_file in self.files:
-            with open(os.path.join("tests", "inputs", in_file), "rb") as in_fh, open(
-                self.files[in_file]["-d"], "rb"
-            ) as out_fh:
+            with (
+                open(os.path.join("tests", "inputs", in_file), "rb") as in_fh,
+                open(self.files[in_file]["-d"], "rb") as out_fh,
+            ):
                 for in_line, out_line in zip(in_fh, out_fh):
                     try:
                         in_line.decode("ascii")
@@ -52,9 +53,10 @@ class TestChangeAsciiScript(TestCase):
 
     def test_whitespace_bad(self):
         for in_file in self.files:
-            with open(os.path.join("tests", "inputs", in_file), "rb") as in_fh, open(
-                self.files[in_file]["-w"], "rb"
-            ) as out_fh:
+            with (
+                open(os.path.join("tests", "inputs", in_file), "rb") as in_fh,
+                open(self.files[in_file]["-w"], "rb") as out_fh,
+            ):
                 for in_line, out_line in zip(in_fh, out_fh):
                     try:
                         in_line.decode("ascii")
