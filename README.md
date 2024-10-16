@@ -10,7 +10,7 @@
 
 [![PyPI version](https://badge.fury.io/py/montepy.svg)](https://badge.fury.io/py/montepy)
 [![Docs Deployment](https://github.com/idaholab/MontePy/actions/workflows/deploy.yml/badge.svg?branch=main)](https://www.montepy.org/)
-[![PyPI pyversions](https://img.shields.io/pypi/pyversions/montepy.svg)](https://pypi.python.org/pypi/montepy/)
+[![PyPI pyversions](https://img.shields.io/pypi/pyversions/montepy.svg)](https://pypi.org/project/montepy/)
 
 
 MontePy is the most user friendly Python library for reading, editing, and writing MCNP input files. 
@@ -102,6 +102,16 @@ Add an issue here with the "feature request" tag.
 The system is very modular and you should be able to develop it pretty quickly.
 Read the [developer's guide](https://www.montepy.org/developing.html) for more details.
 If you have any questions feel free to ask [@micahgale](mailto:mgale@montepy.org).
+
+## Citation
+
+For citing MontePy in a publication a [Journal of Open Source Software](https://joss.readthedocs.io/en/latest/) article is under review. 
+In the meantime there is a DOI for the software from [OSTI](https://osti.gov): [DOI:10.11578/dc.20240115.1](https://doi.org/10.11578/dc.20240115.1).
+
+You can cite MontePy as:
+
+> M. Gale, T. Labossiere-Hickman, B. Carbno, A. Bascom, and MontePy contributors, "MontePy", 2024, [doi: 10.11578/dc.20240115.1](https://doi.org/10.11578/dc.20240115.1).
+
 
  
 # Finally: make objects, not regexes!
