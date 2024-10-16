@@ -1,9 +1,16 @@
 import importlib
 import os
+import subprocess
 import sys
+from pathlib import Path
 
 
 def test_version():
+    version_file = Path("montepy") / "_version.py"
+    if not version_file.exists():
+        subprocess.run(
+            ["python", "-m", "setuptools_scm", "--force-write-version-files"]
+        )
     assert os.path.exists(os.path.join("montepy", "_version.py"))
     # Test without version.py
     try:
