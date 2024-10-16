@@ -7,6 +7,7 @@
 [![Coverage Status](https://coveralls.io/repos/github/idaholab/MontePy/badge.svg?branch=develop)](https://coveralls.io/github/idaholab/MontePy?branch=develop)
 [![PyPI version](https://badge.fury.io/py/montepy.svg)](https://badge.fury.io/py/montepy)
 [![Project Status: Active – The project has reached a stable, usable state and is being actively developed.](https://www.repostatus.org/badges/latest/active.svg)](https://www.repostatus.org/#active)
+[![Docs Deployment](https://github.com/idaholab/MontePy/actions/workflows/deploy.yml/badge.svg)](https://www.montepy.org/)
 
 MontePy is the most user friendly Python library for reading, editing, and writing MCNP input files. 
 
