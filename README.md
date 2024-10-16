@@ -94,6 +94,44 @@ Here a few of the known bugs and limitations:
     keyword-value pairs show up after the nuclide definitions. For example:
    * `M1 1001.80c 1.0 plib=80p` can be parsed.
    * `M1 plib=80p 1001.80c 1.0` cannot be parsed; despite it being a valid input.
+
+## Alternatives
+
+There are some python packages that offer some of the same features as MontePy,
+    but don't offer the same level of robustness, ease of installation, and user friendliness.
+
+For reading, editing, and writing input files there are:
+
+* [MCNP™y](https://github.rpi.edu/NuCoMP/mcnpy). MontePy differs by being:
+   * On PyPI, and can be installed via pip.
+   * Only requires a python interpreter, and not a Java virtual machine. 
+   * Allowing contributions from anyone with a public GitHub account
+
+* [pyMCNP](https://github.com/FSIBT/PyMCNP). MontePy differs by:
+  * being on PyPI.
+  * Using a context-free parser that can understand cell geometry, and preserve user formatting.
+  * Supporting more edge cases of MCNP syntax (usually covered by foot notes in the manual).
+
+* [MCNP-Input-Reader](https://github.com/ENEA-Fusion-Neutronics/MCNP-Input-Reader). MontePy differs by:
+  * Being well documented
+  * Using a context-free parser.
+  * Being actively maintained.
+
+* [numjuggler](https://github.com/inr-kit/numjuggler). MontePy differs by:
+  * Using a context-free-parser.
+  * Focusing an object oriented user interface rather than trying to be a one-off command line utility.
+  * Being actively maintained.
+
+For only writing, or templating an input file there are also some great tools out there. 
+These packages don't provide the same functionality as MontePy inherently,
+    but could be the right tool for the job depending on the user's needs.
+
+* [Workflow and Template Toolkit for Simulation (WATTS)](https://github.com/watts-dev/watts)
+* [Advanced Reactor Modeling Interface (ARMI)](https://github.com/terrapower/armi)
+
+Another honorable mention that doesn't replicate the features of MontePy,
+    but could be a great supplement to MontePy for defining materials, performing activations, etc.
+    is [PyNE --- the Nuclear Engineering Toolkit](https://pyne.io/).
 	
 ## Bugs, Requests and Development
 
