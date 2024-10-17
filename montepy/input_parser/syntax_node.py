@@ -2,6 +2,7 @@
 from abc import ABC, abstractmethod
 import collections
 import copy
+import itertools as it
 import enum
 import math
 
@@ -1717,7 +1718,7 @@ class ListNode(SyntaxNodeBase):
         return True
 
 
-class IsotopesNode(SyntaxNodeBase):
+class MaterialsNode(SyntaxNodeBase):
     """
     A node for representing isotopes and their concentration.
 
@@ -1733,9 +1734,9 @@ class IsotopesNode(SyntaxNodeBase):
     def __init__(self, name):
         super().__init__(name)
 
-    def append(self, isotope_fraction):
+    def append_nuclide(self, isotope_fraction):
         """
-        Append the node to this node.
+        Append the isotope fraction to this node.
 
         :param isotope_fraction: the isotope_fraction to add. This must be a tuple from
             A Yacc production. This will consist of: the string identifying the Yacc production,
@@ -1745,10 +1746,18 @@ class IsotopesNode(SyntaxNodeBase):
         isotope, concentration = isotope_fraction[1:3]
         self._nodes.append((isotope, concentration))
 
+    @property
+    def append(self):
+        raise DeprecationWarning()
+
+    def append_param(self, param):
+        """ """
+        self._nodes.append((param,))
+
     def format(self):
         ret = ""
-        for isotope, concentration in self.nodes:
-            ret += isotope.format() + concentration.format()
+        for node in it.chain(*self.nodes):
+            ret += node.format()
         return ret
 
     def __repr__(self):
@@ -1765,12 +1774,12 @@ class IsotopesNode(SyntaxNodeBase):
 
     def get_trailing_comment(self):
         tail = self.nodes[-1]
-        tail = tail[1]
+        tail = tail[-1]
         return tail.get_trailing_comment()
 
     def _delete_trailing_comment(self):
         tail = self.nodes[-1]
-        tail = tail[1]
+        tail = tail[-1]
         tail._delete_trailing_comment()
 
     def flatten(self):

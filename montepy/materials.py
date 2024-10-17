@@ -19,3 +19,45 @@ class Materials(NumberedDataObjectCollection):
 
     def __init__(self, objects=None, problem=None):
         super().__init__(Material, objects, problem)
+
+    def get_containing(self, nuclide, *args, threshold=0.0):
+        """ """
+        nuclides = []
+        for nuclide in [nuclide] + args:
+            if not isinstance(nuclide, (str, int, Element, Nucleus, Nuclide)):
+                raise TypeError("")  # foo
+            if isinstance(nuclide, (str, int)):
+                nuclide = montepy.Nuclide.get_from_fancy_name(nuclide)
+            nuclides.append(nuclide)
+
+        def sort_by_type(nuclide):
+            type_map = {
+                montepy.data_inputs.element.Element: 0,
+                montepy.data_inputs.nuclide.Nucleus: 1,
+                montepy.data_inputs.nuclide.Nuclide: 2,
+            }
+            return type_map[type(nuclide)]
+
+        # optimize by most hashable and fail fast
+        nuclides = sorted(nuclides, key=sort_by_type)
+        for material in self:
+            if material.contains(*nuclides, threshold):
+                # maybe? Maybe not?
+                # should Materials act like a set?
+                yield material
+
+    @property
+    def default_libraries(self):
+        """
+        The default libraries for this problem defined by ``M0``.
+
+        :returns: the default libraries in use
+        :rtype: dict
+        """
+        try:
+            return self[0].default_libraries
+        except KeyError:
+            default = Material()
+            default.number = 0
+            self.append(default)
+            return self.default_libraries
