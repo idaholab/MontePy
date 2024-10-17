@@ -117,9 +117,12 @@ jobs:
         run: tar xzf montepy.tar.gz
       - name: Get version from archive 
         id: get_new_version
-        run: echo "old_version=`python -m setuptools_scm`" >> $GITHUB_OUTPUT
+        run: echo "new_version=`python -m setuptools_scm`" >> $GITHUB_OUTPUT
       - name: Check match
-        run: echo foo 
+        if (steps.get_version.output.old_version != steps.get_new_version.output.new_version)
+        run: | 
+          echo "Versions didn't match"
+          exit 1
 
 
 
