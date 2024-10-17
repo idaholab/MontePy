@@ -109,7 +109,9 @@ jobs:
         run: pip install setuptools-scm
       - name: Get Base Version
         id: get_version
-        run: echo "old_version=`python -m setuptools_scm`" >> $GITHUB_OUTPUT
+        run: |
+          python -m setuptools_scm
+          echo "old_version=`python -m setuptools_scm`" >> $GITHUB_OUTPUT
       - name: Git-archive-all
         uses: qmonnet/git-archive-all-action@v1
         with:
@@ -120,7 +122,9 @@ jobs:
         run: tar xzf montepy.tar.gz
       - name: Get version from archive 
         id: get_new_version
-        run: echo "new_version=`python -m setuptools_scm`" >> $GITHUB_OUTPUT
+        run:|
+          python -m setuptools_scm
+        echo "new_version=`python -m setuptools_scm`" >> $GITHUB_OUTPUT
       - name: Check match
         if: (steps.get_version.output.old_version != steps.get_new_version.output.new_version)
         run: | 
