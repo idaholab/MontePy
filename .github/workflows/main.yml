@@ -119,7 +119,7 @@ jobs:
         id: get_new_version
         run: echo "new_version=`python -m setuptools_scm`" >> $GITHUB_OUTPUT
       - name: Check match
-        if (steps.get_version.output.old_version != steps.get_new_version.output.new_version)
+        if: (steps.get_version.output.old_version != steps.get_new_version.output.new_version)
         run: | 
           echo "Versions didn't match"
           exit 1
