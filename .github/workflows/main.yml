@@ -93,6 +93,22 @@ jobs:
         with:
           file: coverage.xml
           github-token: ${{ secrets.github_token }}
+  
+  test-archive:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-tags: true
+      - name: Git-archive-all
+        uses: qmonnet/git-archive-all-action@v1
+        with:
+          output-files: montepy.tar.gz
+      - name: delete git tree
+        run: rm -rf .git
+      - name: open tar ball
+        run: tar xzf montepy.tar.gz
+
 
 
   doc-test:
