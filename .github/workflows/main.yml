@@ -104,6 +104,8 @@ jobs:
         uses: actions/setup-python@v5
         with: 
           python-version: 3.12
+      - name: install depencies
+        run: pip install setuptools-scm
       - name: Get Base Version
         id: get_version
         run: echo "old_version=`python -m setuptools_scm`" >> $GITHUB_OUTPUT
