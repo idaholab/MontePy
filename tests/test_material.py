@@ -222,12 +222,10 @@ def test_mat_clone(start_num, step):
             return
         new_mat = mat.clone(start_num, step)
         assert new_mat is not mat
-        for (iso, fraction), (gold_iso, gold_fraction) in zip(
-            new_mat.material_components.items(), mat.material_components.items()
-        ):
+        for (iso, fraction), (gold_iso, gold_fraction) in zip(new_mat, mat):
             assert iso is not gold_iso
             assert iso.ZAID == gold_iso.ZAID
-            assert fraction.fraction == pytest.approx(gold_fraction.fraction)
+            assert fraction == pytest.approx(gold_fraction)
         assert new_mat._number is new_mat._tree["classifier"].number
         output = new_mat.format_for_mcnp_input((6, 3, 0))
         input = Input(output, BlockType.DATA)
