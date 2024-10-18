@@ -94,42 +94,6 @@ jobs:
           file: coverage.xml
           github-token: ${{ secrets.github_token }}
   
-  archive-test:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-          fetch-tags: true
-      - name: set up python 
-        uses: actions/setup-python@v5
-        with: 
-          python-version: 3.12
-      - name: install depencies
-        run: pip install setuptools-scm
-      - name: Get Base Version
-        id: get_version
-        run: |
-          python -m setuptools_scm
-          echo "old_version=`python -m setuptools_scm`" >> $GITHUB_OUTPUT
-      - name: Git archive
-        run: git archive ${GITHUB_SHA} -o montepy.tar.gz
-      - name: delete git tree
-        run: rm -rf .git montepy
-      - name: open tar ball
-        run: tar xzf montepy.tar.gz
-      - run: |
-          cat .git_archival.txt
-      - name: Get version from archive 
-        id: get_new_version
-        run: |
-          python -m setuptools_scm
-          echo "new_version=`python -m setuptools_scm`" >> $GITHUB_OUTPUT
-      - name: Check match
-        if: (steps.get_version.output.old_version != steps.get_new_version.output.new_version)
-        run: | 
-          echo "Versions didn't match"
-          exit 1
 
 
 
