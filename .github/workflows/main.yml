@@ -121,7 +121,7 @@ jobs:
       - name: open tar ball
         run: tar xzf montepy.tar.gz
       - run: |
-          ls -la
+          cat .git_archival.txt
       - name: Get version from archive 
         id: get_new_version
         run: |
