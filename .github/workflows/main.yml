@@ -112,10 +112,8 @@ jobs:
         run: |
           python -m setuptools_scm
           echo "old_version=`python -m setuptools_scm`" >> $GITHUB_OUTPUT
-      - name: Git-archive-all
-        uses: qmonnet/git-archive-all-action@v1
-        with:
-          output-files: montepy.tar.gz
+      - name: Git archive
+        run: git archive ${{ GITHUB_HEAD_REF }} -o montepy.tar.gz
       - name: delete git tree
         run: rm -rf .git montepy
       - name: open tar ball
