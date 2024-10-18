@@ -120,6 +120,10 @@ jobs:
         run: rm -rf .git montepy
       - name: open tar ball
         run: tar xzf montepy.tar.gz
+      - run: |
+          ls
+          ls * 
+          tree
       - name: Get version from archive 
         id: get_new_version
         run: |
