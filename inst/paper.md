@@ -174,7 +174,7 @@ This tool is a prime example of a real-life case where MontePy could be applied 
 
 # Status of MontePy
 
-As of MontePy 0.2.6 many of the most commonly used MCNP inputs (cards) are supported.
+As of MontePy 0.5.0 many of the most commonly used MCNP inputs (cards) are supported.
 These include:
 
 * Cells, which are the base of an MCNP geometry and contain a material and a CSG geometry definition.
