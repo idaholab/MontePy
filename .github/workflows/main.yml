@@ -141,8 +141,8 @@ jobs:
       - run: python -m doctest README.md
         name: Test readme code
       - run: | 
-        cd doc
-        make doctest
+          cd doc
+          make doctest
         name: Test all example code in documentation.
       - run: for file in demo/*.ipynb; do papermill $file demo/foo.ipynb; done
         name: Test all demo notebooks 
