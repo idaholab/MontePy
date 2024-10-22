@@ -1,8 +1,11 @@
 # Copyright 2024, Battelle Energy Alliance, LLC All Rights Reserved.
 from montepy.errors import *
+from montepy._singleton import SingletonGroup
+
+MAX_Z_NUM = 118
 
 
-class Element:
+class Element(metaclass=SingletonGroup):
     """
     Class to represent an element e.g., Aluminum.
 
@@ -10,6 +13,8 @@ class Element:
     :type Z: int
     :raises UnknownElement: if there is no element with that Z number.
     """
+
+    __slots__ = "_Z"
 
     def __init__(self, Z):
         self._Z = Z
@@ -56,7 +61,7 @@ class Element:
         return hash(self.Z)
 
     def __eq__(self, other):
-        return self.Z == other.Z
+        return self is other
 
     @classmethod
     def get_by_symbol(cls, symbol):

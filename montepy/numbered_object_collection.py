@@ -201,6 +201,8 @@ class NumberedObjectCollection(ABC):
         """
         if not isinstance(other_list, (list, type(self))):
             raise TypeError("The extending list must be a list")
+        # TODO combine with update
+        # this is the optimized version
         if self._problem:
             nums = set(self.__num_cache)
         else:
@@ -312,6 +314,36 @@ class NumberedObjectCollection(ABC):
             f"Objects: {self._objects}\n"
             f"Number cache: {self.__num_cache}"
         )
+
+    def __internal_append(self, obj):
+        self.__num_cache[obj.number] = obj
+        self._objects.append(obj)
+        if self._problem:
+            obj.link_to_problem(self._problem)
+
+    def add(self, obj):
+        # TODO type enforcement
+        # TODO propagate to Data Numbered
+        if obj.number in self.numbers:
+            # already in there can ignore
+            if obj == self[obj.number]:
+                return
+            raise NumberConflictError(f"")
+        self.__internal_append(obj)
+
+    def update(self, objs):
+        # TODO type enforcement
+        # TODO propagate to Data Numbered
+        # not thread safe
+        nums = set(self.numbers)
+        new_nums = set()
+        for obj in objs:
+            if obj.number in nums or obj.number in new_nums:
+                if obj == self[obj.number]:
+                    continue
+                raise NumberConflictError(f"")
+            self.__internal_append(obj)
+            new_nums.add(obj.number)
 
     def append(self, obj):
         """Appends the given object to the end of this collection.
@@ -478,7 +510,150 @@ class NumberedObjectCollection(ABC):
         return self
 
     def __contains__(self, other):
+        if not isinstance(other, self._obj_class):
+            return False
+        # if cache can be trusted from #563
+        if self._problem:
+            try:
+                if other is self[other.number]:
+                    return True
+                return False
+            except KeyError:
+                return False
         return other in self._objects
+
+    def __set_logic(self, other, operator):
+        # TODO type enforcement
+        # force a num_cache update
+        self_nums = set(self.keys())
+        other_nums = set(other.keys())
+        new_nums = operator(self_nums, other_nums)
+        new_obs = []
+        # TODO should we verify all the objects are the same?
+        for obj in self:
+            if obj.number in new_nums:
+                new_objs.append(obj)
+        return type(self)(new_objs)
+
+    def __and__(self, other):
+        """
+        Create set-like behavior
+        """
+        return self.__set_logic(other, lambda a, b: a & b)
+
+    def __iand__(self, other):
+        new_vals = self & other
+        self.__num_cache.clear()
+        self._objects.clear()
+        self.update(new_vals)
+        return self
+
+    def __or__(self, other):
+        return self.__set_logic(other, lambda a, b: a | b)
+
+    def __ior__(self, other):
+        new_vals = other - self
+        self.update(new_vals)
+        return self
+
+    def __sub__(self, other):
+        return self.__set_logic(other, lambda a, b: a - b)
+
+    def __isub__(self, other):
+        excess_values = self - other
+        for excess in excess_values:
+            del self[excess.number]
+        return self
+
+    def __xor__(self, other):
+        return self.__set_logic(other, lambda a, b: a ^ b)
+
+    def __ixor__(self, other):
+        new_values = self ^ other
+        self._objects.clear()
+        self.__num_cache.clear()
+        self.update(new_values)
+        return self
+
+    def __set_logic_test(self, other, operator):
+        # TODO type
+        self_nums = set(self.keys())
+        other_nums = set(other.keys())
+        return operator(self_nums, other_nums)
+
+    def __le__(self, other):
+        return self.__set_logic_test(other, lambda a, b: a <= b)
+
+    def __lt__(self, other):
+        return self.__set_logic_test(other, lambda a, b: a < b)
+
+    def __ge__(self, other):
+        return self.__set_logic_test(other, lambda a, b: a >= b)
+
+    def __gt__(self, other):
+        return self.__set_logic_test(other, lambda a, b: a > b)
+
+    def issubset(self, other):
+        return self.__set_logic_test(other, lambda a, b: a.issubset(b))
+
+    def isdisjoint(self, other):
+        return self.__set_logic_test(other, lambda a, b: a.isdisjoint(b))
+
+    def issuperset(self, other):
+        return self.__set_logic_test(other, lambda a, b: a.issuperset(b))
+
+    def __set_logic_multi(self, others, operator, iterate_all=False):
+        self_nums = set(self.keys())
+        other_sets = []
+        for other in others:
+            other_sets.append(set(other.keys()))
+        valid_nums = operator(self, *others)
+        to_iterate = [self]
+        if iterate_all:
+            to_iterate += others
+        objs = []
+        for collection in to_iterate:
+            for obj in collection:
+                if obj.number in valid_nums:
+                    objs.append(obj)
+        return type(self)(objs)
+
+    def intersection(self, *others):
+        self.__set_logic_multi(others, lambda a, b: a.intersection(b))
+
+    def union(self, *others):
+        self.__set_logic_multi(others, lambda a, b: a.union(b))
+
+    def difference(self, *others):
+        self.__set_logic_multi(others, lambda a, b: a.difference(b))
+
+    def difference_update(self, *others):
+        new_vals = self.difference(*others)
+        self.clear()
+        self.update(new_vals)
+        return self
+
+    def symmetric_difference(self, other):
+        return self ^ other
+
+    def symmetric_difference_update(self, other):
+        self ^= other
+        return self
+
+    def discard(self, obj):
+        try:
+            self.remove(obj)
+        except (TypeError, KeyError) as e:
+            pass
+
+    def remove(self, obj):
+        if not isinstance(obj, self._obj_class):
+            raise TypeError("")
+        candidate = self[obj.number]
+        if obj is candidate:
+            del self[obj.number]
+        else:
+            raise KeyError(f"This object is not in this collection")
 
     def get(self, i: int, default=None) -> (Numbered_MCNP_Object, None):
         """
@@ -498,6 +673,7 @@ class NumberedObjectCollection(ABC):
         except KeyError:
             pass
         for obj in self._objects:
+            self.__num_cache[obj.number] = obj
             if obj.number == i:
                 self.__num_cache[i] = obj
                 return obj
@@ -510,6 +686,7 @@ class NumberedObjectCollection(ABC):
         :rtype: int
         """
         for o in self._objects:
+            self.__num_cache[o.number] = o
             yield o.number
 
     def values(self) -> typing.Generator[Numbered_MCNP_Object, None, None]:
@@ -519,6 +696,7 @@ class NumberedObjectCollection(ABC):
         :rtype: Numbered_MCNP_Object
         """
         for o in self._objects:
+            self.__num_cache[o.number] = o
             yield o
 
     def items(
@@ -597,8 +775,7 @@ class NumberedDataObjectCollection(NumberedObjectCollection):
         """
         if not isinstance(pos, int):
             raise TypeError("The index for popping must be an int")
-        obj = self._objects.pop(pos)
-        super().pop(pos)
+        obj = super().pop(pos)
         if self._problem:
             self._problem.data_inputs.remove(obj)
         return obj
