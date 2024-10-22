@@ -95,7 +95,7 @@ jobs:
           github-token: ${{ secrets.github_token }}
 
 
-  doc-test:
+  doc-build:
     runs-on: ubuntu-latest
     
     steps:
@@ -124,6 +124,28 @@ jobs:
              make linkcheck
       - name: test sitemap
         run: python .github/scripts/check_sitemap.py 
+  
+  doc-test:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          fetch-tags: true
+      - name: set up python 3.12
+        uses: actions/setup-python@v5
+        with: 
+          python-version: 3.12
+      - run: pip install . montepy[doc,build,demo-test]
+      - run: python -m doctest README.md
+        name: Test readme code
+      - run: | 
+        cd doc
+        make doctest
+        name: Test all example code in documentation.
+      - run: for file in demo/*.ipynb; do papermill $file demo/foo.ipynb; done
+        name: Test all demo notebooks 
 
   format-test:
     runs-on: ubuntu-latest
