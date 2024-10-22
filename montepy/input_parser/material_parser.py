@@ -9,12 +9,16 @@ class MaterialParser(DataParser):
     debugfile = None
 
     @_(
-        "introduction mat_data",
+        "classifier_phrase mat_data",
+        "padding classifier_phrase mat_data",
     )
     def material(self, p):
         ret = {}
-        for key, node in p.introduction.nodes.items():
-            ret[key] = node
+        if isinstance(p[0], syntax_node.PaddingNode):
+            ret["start_pad"] = p.padding
+        else:
+            ret["start_pad"] = syntax_node.PaddingNode()
+        ret["classifier"] = p.classifier_phrase
         ret["data"] = p.mat_data
         return syntax_node.SyntaxNode("data", ret)
 
