@@ -378,6 +378,8 @@ def test_fancy_names_pbt(
         assert isotope.A == A
         assert isotope.Z == Z
         assert isotope.meta_state == meta
+        # this fixes a bug with the test????
+        note((input, library))
         if library in input:
             assert isotope.library == Library(library)
         else:
