@@ -396,7 +396,8 @@ class MCNP_Problem:
                             message = f"{message}\nError came from line: {obj._input.line_number} of {obj._input.input_file}.\n"
                             message += '\n'.join(obj._input.input_lines)
                             args = (message,) + args[1:]
-                            raise type(e)(*args) from e
+                            e.args = args
+                            raise e
                         last_obj._delete_trailing_comment()
                     trailing_comment = obj.trailing_comment
                     last_obj = obj
