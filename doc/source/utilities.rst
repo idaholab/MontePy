@@ -93,7 +93,8 @@ Dealing with Encoding Issues
 
 You are likely here because you got an error message something like this:
 
->>> montepy.read_input("example.imcnp")
+>>> import montepy   # doctest: +SKIP
+>>> montepy.read_input("example.imcnp") # doctest: +SKIP
 UnicodeDecodeError                        Traceback (most recent call last)
 <snip>
 UnicodeDecodeError: 'ascii' codec can't decode byte 0xc2 in position 1132: ordinal not in range(128)

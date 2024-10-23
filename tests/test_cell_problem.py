@@ -102,7 +102,7 @@ class TestCellClass(TestCase):
         cell = Cell(card)
         self.assertEqual(str(cell), "CELL: 1, mat: 0, DENS: 0.5 atom/b-cm")
         self.assertEqual(
-            repr(cell), "CELL: 1 \nVoid material \ndensity: 0.5 atom/b-cm\n\n"
+            repr(cell), "CELL: 1 \nVoid material \ndensity: 0.5 atom/b-cm\n"
         )
 
     def test_cell_paremeters_no_eq(self):

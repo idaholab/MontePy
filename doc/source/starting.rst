@@ -1,6 +1,9 @@
 Getting Started with MontePy
 ============================
 
+.. testsetup:: *
+   import montepy
+
 MontePy is a python API for reading, editing, and writing MCNP input files.
 It does not run MCNP nor does it parse MCNP output files.
 The library provides a semantic interface for working with input files, or our preferred terminology: problems.
@@ -74,9 +77,9 @@ MontePy offers the :func:`montepy.read_input` (actually :func:`~montepy.input_pa
 It will read the specified MCNP input file, and return an MontePy :class:`~montepy.mcnp_problem.MCNP_Problem` object.
 
 >>> import montepy
->>> problem = montepy.read_input("foo.imcnp")
+>>> problem = montepy.read_input("tests/inputs/test.imcnp")
 >>> len(problem.cells)
-4
+5
 
 Writing a File
 --------------
@@ -101,8 +104,11 @@ This can be changed by ``overwrite=True``.
 The method :func:`~montepy.mcnp_problem.MCNP_Problem.write_problem`
 also accepts an open file handle, stream, or other object with a ``write()`` method.
 
->>> with open("/path/to/file", "w") as fh:
+>>> with open("foo_bar.imcnp", "w") as fh:
 ...     problem.write_problem(fh)
+>>> new_problem = montepy.read_input("foo_bar.imcnp")
+>>> len(new_problem.cells)
+5
 
 
 If no changes are made to the problem in MontePy, the entire file should just be parroted out as it was in the original file
@@ -129,8 +135,9 @@ For example say we have this simple MCNP input file (saved as foo.imcnp) ::
         TR1 0 0 1.0
         TR2 0 0 1.00001
 
-We can then open this file in MontePy, and then modify it slightly, and save it again::
+We can then open this file in MontePy, and then modify it slightly, and save it again:
 
+.. doctest::
         import montepy
         problem = montepy.read_input("foo.imcnp")
         problem.cells[1].number = 5
@@ -220,6 +227,7 @@ by its number.
 
 So say you want to access cell 2 from a problem it is accessible quickly by:
 
+>>> prob = montepy.read_input("tests/inputs/test.imcnp") 
 >>> prob.cells[2]
 CELL: 2
 MATERIAL: 2, ['iron']
@@ -244,27 +252,13 @@ The ``NumberedObjectCollection`` has various mechanisms internally to avoid numb
 (two objects having the same number).
 
 >>> import montepy
->>> prob = montepy.read_input("foo.i")
+>>> prob = montepy.read_input("tests/inputs/test.imcnp")
 >>> cell = montepy.Cell()
 >>> cell.number = 2
-prob.cells.append(cell)
----------------------------------------------------------------------------
-NumberConflictError                       Traceback (most recent call last)
-<ipython-input-5-52c64b5ddb4b> in <module>
-----> 1 prob.cells.append(cell)
-~/dev/montepy/doc/montepy/numbered_object_collection.py in append(self, obj)
-    130         assert isinstance(obj, self._obj_class)
-    131         if obj.number in self.numbers:
---> 132             raise NumberConflictError(
-    133                 (
-    134                     "There was a numbering conflict when attempting to add "
-NumberConflictError: There was a numbering conflict when attempting to add CELL: 2
-None
- to <class 'montepy.cells.Cells'>. Conflict was with CELL: 2
-None
-SURFACE: 4, CZ
-SURFACE: 5, PZ
-SURFACE: 6, PZ
+>>> prob.cells.append(cell)
+Traceback (most recent call last):
+   ...
+montepy.errors.NumberConflictError: Number 2 is already in use for the collection: <class 'montepy.cells.Cells'> by CELL: 2, mat: 2, DENS: 8.0 atom/b-cm
 
 There are a number of tools to avoid this though:
 
@@ -298,10 +292,14 @@ You can iterate over a generator, as well as check if an item is in the generato
 
 First it is iterable:
 
+>>> problem = montepy.read_input("tests/inputs/test.imcnp")
 >>> for number in problem.cells.numbers:
->>>    print(number)
+...    print(number)
 1
 2
+3
+99
+5
 
 You can also check if a number is in use:
 
@@ -315,12 +313,15 @@ by making "stale" information.
 This can be done by making a copy of it with ``list()``. 
 
 >>> for num in problem.cells.numbers:
->>>   print(num)
+...   print(num)
 1
 2
+3
+99
+5
 >>> numbers = list(problem.cells.numbers)
 >>> numbers
-[1,2]
+[1, 2, 3, 99, 5]
 >>> problem.cells[1].number = 1000
 >>> 1000 in problem.cells.numbers
 True
@@ -372,11 +373,11 @@ So there is a convenient way to update a surface, but how do you easily get the 
 For instance what if you want to shift a cell up in Z by 10 cm? 
 It would be horrible to have to get each surface by their number, and hoping you don't change the numbers along the way.
 
-One way you might think of is: oh let's just filter the surfaces by their type?::
+One way you might think of is: oh let's just filter the surfaces by their type?:
 
-  for surface in cell.surfaces:
-    if surface.surface_type == montepy.surfaces.surface_type.SurfaceType.PZ:
-      surface.location += 10
+>>> for surface in cell.surfaces:
+...    if surface.surface_type == montepy.surfaces.surface_type.SurfaceType.PZ:
+...      surface.location += 10
 
 Wow that's rather verbose. 
 This was the only way to do this with the API for awhile.
@@ -387,8 +388,8 @@ These are very easy to find: they are just the lower case version of the
 MCNP surface mnemonic. 
 This previous code is much simpler now::
 
-  for surface in cell.surfaces.pz:
-    surface.location += 10
+>>> for surface in cell.surfaces.pz:
+...    surface.location += 10
 
 Cells 
 -----
@@ -403,18 +404,26 @@ For example: ``cell.importance.neutron`` or ``cell.importance.photon``.
 For a complete list see :class:`~montepy.particle.Particle`.
 
 You can also quickly get the information by passing an instance of :class:`~montepy.particle.Particle` as a key to importance.
-For example: ::
+For example:
     
-    for particle in problem.mode:
-        print(cell.importance[particle])
-    print(cell.importance[montepy.Particle.NEUTRON])
+>>> for particle in sorted(problem.mode):
+...     print(particle, cell.importance[particle])
+neutron 0.0
+photon 0.0
+>>> print(cell.importance[montepy.Particle.NEUTRON])
+0.0
 
 There's also a lot of convenient ways to do bulk modifications.
 There is the :func:`~montepy.data_inputs.importance.Importance.all` property that lets you set the importance for all particles in the problem at once.
-For example: ::
+For example: 
 
-    problem.set_mode("n p")
-    cell.importance.all = 2.0
+>>> problem.set_mode("n p e")
+>>> cell.importance.all = 2.0
+>>> for particle in sorted(problem.mode):
+...     print(particle, cell.importance[particle])
+electron 2.0
+neutron 2.0
+photon 2.0
 
 This will set the importances for the neutron and photon. 
 
@@ -453,13 +462,19 @@ If the cell density is set to a mass density ``cell.atom_density`` will return `
 Setting the value for one of these densities will change the density mode.
 MontePy does not convert mass density to atom density and vice versa.
 
+>>> problem = montepy.read_input("tests/inputs/test.imcnp")
+>>> cell = problem.cells[3]
 >>> cell.mass_density
-9.8
+1.0
 >>> cell.atom_density 
-None
+Traceback (most recent call last):
+    ...
+AttributeError: Cell 3 is in mass density.. Did you mean: 'mass_density'?
 >>> cell.atom_density = 0.5
 >>> cell.mass_density
-None
+Traceback (most recent call last):
+    ...
+AttributeError: Cell 3 is in atom density.. Did you mean: 'atom_density'?
 
 Geometry
 ^^^^^^^^
@@ -496,16 +511,19 @@ This is done very simply and pythonic.
 For a :class:`~montepy.surfaces.surface.Surface` you just need to mark the surface as positive (``+``) or negative (``-``) (using the unary operators).
 This actually creates a new object so don't worry about modifying the surface.
 
+>>> bottom_plane = montepy.surfaces.surface.Surface()
+>>> top_plane = montepy.surfaces.surface.Surface()
 >>> type(+bottom_plane)
-montepy.surfaces.half_space.UnitHalfSpace
+<class 'montepy.surfaces.half_space.UnitHalfSpace'>
 >>> type(-bottom_plane)
-montepy.surfaces.half_space.UnitHalfSpace
+<class 'montepy.surfaces.half_space.UnitHalfSpace'>
 
 For cells the plus/minus operator doesn't make sense. 
 Instead you use the binary not operator (``~``).
 
+>>> capsule_cell = montepy.Cell()
 >>> type(~capsule_cell)
-montepy.surfaces.half_space.HalfSpace
+<class 'montepy.surfaces.half_space.HalfSpace'>
 
 
 Combining Half-Spaces
@@ -581,14 +599,15 @@ The new cell will attempt to use ``starting_number`` as its number.
 If this number is taken ``step`` will be added to it until an available number is found.
 For example:
 
->>> base_cell = montepy.Cell()
->>> base_cell.number = 1
+>>> base_cell = problem.cells[1]
+>>> base_cell.number
+1
 >>> # clone with an available number
 >>> new_cell = base_cell.clone(starting_number=1000)
 >>> new_cell.number
 1000
 >>> # force a number collision
->>> new_cell = base_cell.clone(starting_number= 1, step =5)
+>>> new_cell = base_cell.clone(starting_number=1, step=5)
 >>> new_cell.number
 6
 
@@ -606,8 +625,8 @@ For example, if you have a problem read in already:
 >>> new_cell.material is cell.material
 True
 >>> new_cell = cell.clone(clone_material=True)
->>> new_cell.material.number
-2 
+>>> new_cell.material.number # materials 2,3 are taken.
+4
 >>> new_cell.material is cell.material
 False
 
@@ -633,16 +652,14 @@ If a cell is not assigned to any universe it will be assigned to Universe 0, *no
 To change what cells are in a universe you can set this at the cell level.
 This is done to prevent a cell from being assigned to multiple universes
 
-.. code-block:: python
-    
-    universe = problem.universes[350]
-    for cell in problem.cells[1:5]:
-        cell.universe = universe
+>>> universe = problem.universes[350]
+>>> for cell in problem.cells[1:5]:
+...   cell.universe = universe
     
 We can confirm this worked with the generator ``universe.cells``:
 
 >>> [cell.number for cell in universe.cells]
-[1, 2, 3, 4, 5]
+[1, 2, 3, 5, 4]
 
 Claiming Cells
 ^^^^^^^^^^^^^^

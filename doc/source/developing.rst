@@ -426,7 +426,6 @@ For example the ``Surface`` number setter looks like:
         assert number > 0
         if self._problem:
             self._problem.surfaces.check_number(number)
-        self._mutated = True
         self._surface_number = number
 
 
@@ -524,7 +523,6 @@ For example the ``Surface`` number setter looks like::
         assert number > 0
         if self._problem:
             self._problem.surfaces.check_number(number)
-        self._mutated = True
         self._surface_number = number
 
 Data Cards that Modify Cells :class:`~montepy.data_inputs.cell_modifier.CellModifierInput`
@@ -727,14 +725,14 @@ For a ``Surface`` it is owned by the ``Surfaces`` collection owned by the ``MCNP
 A cell then borrows this object by referencing it in its own ``Surfaces`` collections. 
 For example:
 
+>>> import montepy
 >>> # owns
->>> x = Cell()
->>> hex(id(x))
-'0x7f4c6c89dc30'
+>>> x = montepy.Cell()
+>>> id = hex(id(x))
 >>> # borrows
 >>> new_list = [x]
->>> hex(id(new_list[0]))
-'0x7f4c6c89dc30'
+>>> id == hex(id(new_list[0]))
+True
 
 The general principle is that only one-directional pointers should be used,
 and bidirectional pointers should never be used.
