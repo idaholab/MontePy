@@ -107,3 +107,4 @@ minversion = "6.0"
 junit_logging = "all"
 junit_family="xunit2"
 filterwarnings="error"
+testpaths = ["tests"]
