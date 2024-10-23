@@ -117,6 +117,19 @@ class SyntaxNodeBase(ABC):
         if isinstance(tail, SyntaxNodeBase):
             tail._delete_trailing_comment()
 
+    def _grab_beginning_comment(self, extra_padding):
+        """
+        Consumes the provided comment, and moves it to the beginning of this node.
+
+        :param extra_padding: the padding comment to add to the beginning of this padding.
+        :type extra_padding: list
+        """
+        if len(self.nodes) == 0 or extra_padding is None:
+            return
+        head = self.nodes[0]
+        if isinstance(head, SyntaxNodeBase):
+            head._grab_beginning_comment(extra_padding)
+
     def check_for_graveyard_comments(self, has_following_input=False):
         """
         Checks if there is a graveyard comment that is preventing information from being part of the tree, and handles
@@ -259,6 +272,19 @@ class SyntaxNode(SyntaxNodeBase):
         node = self._get_trailing_node()
         if node:
             return node.get_trailing_comment()
+
+    def _grab_beginning_comment(self, extra_padding):
+        """
+        Consumes the provided comment, and moves it to the beginning of this node.
+
+        :param extra_padding: the padding comment to add to the beginning of this padding.
+        :type extra_padding: list
+        """
+        if len(self.nodes) == 0 or extra_padding is None:
+            return
+        head = next(iter(self.nodes.values()))
+        if isinstance(head, SyntaxNodeBase):
+            head._grab_beginning_comment(extra_padding)
 
     def _get_trailing_node(self):
         if len(self.nodes) == 0:

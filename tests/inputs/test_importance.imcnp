@@ -40,7 +40,7 @@ m3        1001.80c           2
 MT3 lwtr.23t
 C execution
 ksrc 0 0 0
-c
+c other special comment for #580
 imp:n,p 1 1 1 0 3
 c special comment related to #520
 imp:e   0 2r 1 r
