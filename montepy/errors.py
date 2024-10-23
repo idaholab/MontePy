@@ -189,3 +189,28 @@ class LineExpansionWarning(Warning):
     def __init__(self, message):
         self.message = message
         super().__init__(self.message)
+
+
+def add_line_number_to_exception(error, broken_robot):
+    """ """
+    try:
+        input_obj = broken_robot._input
+        assert input_obj is not None
+    except (AttributeError, AssertionError) as e:
+        lineno = "unknown"
+        file = "unknown"
+        lines = []
+    else:
+        lineno = input_obj.line_number
+        file = str(input_obj.input_file)
+        lines = input_obj.input_lines
+    args = e.args
+    if len(args) > 0:
+        message = args[0]
+    else:
+        message = ""
+    message = f"{message}\nError came from line: {lineno} of {file}.\n"
+    f"{'\n'.join(lines)}"
+    args = (message,) + args[1:]
+    e.args = args
+    raise e
