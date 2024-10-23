@@ -59,7 +59,9 @@ For some problems you can quickly move a whole problem axially (in z) with a sim
 
 .. note::
    Make sure you loop over all the surfaces in the problem, and not over all the cells. For instance:
-   
+  
+   >>> import montepy
+   >>> problem = montepy.MCNP_Problem("foo.imcnp")
    >>> for cell in problem.cells:
    >>>     for surface in cell.surfaces:
    >>>         surface.location += 10
