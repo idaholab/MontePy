@@ -388,11 +388,15 @@ class MCNP_Problem:
                         try:
                             obj._grab_beginning_comment(trailing_comment)
                         except Exception as e:
-                            message = e.message
-                            message = f"Error came from line: {obj._input.lineno} of {obj._input.input_file}.\n"
-                            f"{'\n'.join(obj._input.lines)}\n{message}"
-                            e.mesage = message
-                            raise e from e
+                            args = e.args
+                            if len(args) > 0:
+                                message = args[0]
+                            else:
+                                message = ""
+                            message = f"{message}\nError came from line: {obj._input.line_number} of {obj._input.input_file}.\n"
+                            f"{'\n'.join(obj._input.input_lines)}"
+                            args = (message,) + args[1:]
+                            raise type(e)(*args) from e
                         last_obj._delete_trailing_comment()
                     trailing_comment = obj.trailing_comment
                     last_obj = obj
