@@ -637,9 +637,8 @@ class Cell(Numbered_MCNP_Object):
                 ret += "atom/b-cm\n"
             else:
                 ret += "g/cc\n"
-        for surface in self._surfaces:
-            ret += str(surface) + "\n"
-        ret += "\n"
+        surf_strs = [str(s) for s in self.surfaces]
+        ret += "\n".join(surf_strs)
         return ret
 
     def __lt__(self, other):
