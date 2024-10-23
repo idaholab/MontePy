@@ -180,4 +180,4 @@ class MCNP_InputFile:
             return self._fh.write(to_write)
 
     def __str__(self):
-        return self.name
+        return str(self.name)
