@@ -11,6 +11,19 @@ from montepy.particle import Particle
 from montepy.utilities import *
 import numbers
 
+#
+# ********************* Developer Notes ********************************************
+#
+# How Importance handles syntax trees is complicated.
+# One object holds information for N particle types.
+# This can be associated with between 1 and N syntax trees (imp:n,p v. imp:n imp:p)
+#
+#Variables
+#
+# * _tree      : the syntax tree from parsing. Only used on initial parsing
+# * _real_tree : 
+# * _particle_importances :
+# * _part_combos :
 
 class Importance(CellModifierInput):
     """
