@@ -848,6 +848,9 @@ class CommentNode(SyntaxNodeBase):
             ret += node.format()
         return ret
 
+    def __eq__(self, other):
+        return str(self) == str(other)
+
 
 class ValueNode(SyntaxNodeBase):
     """
