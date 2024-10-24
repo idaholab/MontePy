@@ -18,12 +18,13 @@ import numbers
 # One object holds information for N particle types.
 # This can be associated with between 1 and N syntax trees (imp:n,p v. imp:n imp:p)
 #
-#Variables
+# Variables
 #
 # * _tree      : the syntax tree from parsing. Only used on initial parsing
-# * _real_tree : 
-# * _particle_importances :
-# * _part_combos :
+# * _real_tree : holds unique trees for every particle type. This is used in data block formatting.
+# * _particle_importances : a dictionary of ParameterNodes that maps a particle to it's ParameterNode
+# * _part_combos : a list of ParticleNode that show which particles were combined on the original input
+
 
 class Importance(CellModifierInput):
     """
