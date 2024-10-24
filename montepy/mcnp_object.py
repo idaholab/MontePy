@@ -282,7 +282,7 @@ class MCNP_Object(ABC):
     def _delete_trailing_comment(self):
         self._tree._delete_trailing_comment()
 
-    def _grab_beginning_comment(self, padding):
+    def _grab_beginning_comment(self, padding, last_obj=None):
         if padding:
             self._tree["start_pad"]._grab_beginning_comment(padding)
 

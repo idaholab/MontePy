@@ -385,7 +385,7 @@ class MCNP_Problem:
                         if isinstance(obj, transform.Transform):
                             self._transforms.append(obj, False)
                     if trailing_comment is not None and last_obj is not None:
-                        obj._grab_beginning_comment(trailing_comment)
+                        obj._grab_beginning_comment(trailing_comment, last_obj)
                         last_obj._delete_trailing_comment()
                     trailing_comment = obj.trailing_comment
                     last_obj = obj

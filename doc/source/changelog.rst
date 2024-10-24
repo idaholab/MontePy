@@ -5,6 +5,13 @@ MontePy Changelog
 0.5 releases
 ============
 
+#Next Version#
+--------------
+
+**Bug Fixes**
+
+* Fixed ``AttributeError`` that occured when a data block ``IMP`` was preceded by a comment (:issue:`580`).
+
 0.5.0
 --------------
 
