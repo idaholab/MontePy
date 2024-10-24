@@ -382,22 +382,48 @@ class Importance(CellModifierInput):
         for combo_set in self._part_combos:
             if part in combo_set:
                 to_delete |= combo_set
-        for part in to_delete:
-            self._particle_importances[part]["data"]._delete_trailing_comment()
+        if self._in_cell_block:
+            for part in to_delete:
+                self._particle_importances[part]["data"]._delete_trailing_comment()
+        else:
+            for part in to_delete:
+                self._real_tree[part]._delete_trailing_comment()
 
-    def _grab_beginning_comment(self, new_padding):
+    def _grab_beginning_comment(self, new_padding, last_obj=None):
         last_tree = None
         last_padding = None
-        for part, tree in self._particle_importances.items():
-            if last_padding is not None and last_tree is not None:
-                last_tree._grab_beginning_comment(last_padding)
-                self.__delete_common_trailing(part)
-            last_padding = tree.get_trailing_comment()
-            last_tree = tree
-        if new_padding:
-            next(iter(self._particle_importances.values()))[
-                "start_pad"
-            ]._grab_beginning_comment(new_padding)
+        if self._in_cell_block:
+            if not isinstance(last_obj, Importance):
+                for part, tree in self._particle_importances.items():
+                    if last_padding is not None and last_tree is not None:
+                        last_tree._grab_beginning_comment(last_padding)
+                        self.__delete_common_trailing(part)
+                    last_padding = tree.get_trailing_comment()
+                    last_tree = tree
+                if new_padding:
+                    next(iter(self._particle_importances.values()))[
+                        "start_pad"
+                    ]._grab_beginning_comment(new_padding)
+        else:
+            # if not inside a block of importances
+            if not isinstance(last_obj, Importance):
+                for part, tree in self._real_tree.items():
+                    if tree.get_trailing_comment() == last_padding:
+                        continue
+                    if last_padding is not None and last_tree is not None:
+                        last_tree._grab_beginning_comment(last_padding)
+                        self.__delete_common_trailing(part)
+                    last_padding = tree.get_trailing_comment()
+                    last_tree = tree
+                if new_padding:
+                    next(iter(self._real_tree.values()))[
+                        "start_pad"
+                    ]._grab_beginning_comment(new_padding)
+            # otherwise keep it as is inside the block
+            else:
+                list(self._real_tree.values())[-1]["start_pad"]._grab_beginning_comment(
+                    new_padding
+                )
 
 
 def _generate_default_data_tree(particle):
