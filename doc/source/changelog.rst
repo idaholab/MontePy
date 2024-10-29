@@ -5,6 +5,13 @@ MontePy Changelog
 0.5 releases
 ============
 
+#Next version#
+--------------
+
+**Bug Fixes**
+
+* Fixed bug where tally inputs in a file prevented the file from being pickled or copied (:issue:`463`).
+
 0.5.0
 --------------
 

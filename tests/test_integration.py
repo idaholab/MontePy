@@ -44,7 +44,7 @@ def data_universe_problem():
 
 
 def test_original_input(simple_problem):
-    cell_order = [Message, Title] + [Input] * 17
+    cell_order = [Message, Title] + [Input] * 26
     for i, input_ob in enumerate(simple_problem.original_inputs):
         assert isinstance(input_ob, cell_order[i])
 
@@ -97,7 +97,25 @@ def test_surface_parsing(simple_problem):
 def test_data_card_parsing(simple_problem):
     M = material.Material
     V = volume.Volume
-    cards = [M, M, M, "KSRC", "KCODE", "PHYS:P", "MODE", V]
+    cards = [
+        M,
+        M,
+        M,
+        "FC1 SURFACE CURRENT",
+        "F1:N,P",
+        "FC2 AVERAGE SURFACE FLUX",
+        "F2:P",
+        "FC4  2-GROUP FLUX",
+        "F4:N",
+        "E4",
+        "F6:P",
+        "F7:N",
+        "KSRC",
+        "KCODE",
+        "PHYS:P",
+        "MODE",
+        V,
+    ]
     for i, card in enumerate(simple_problem.data_inputs):
         if isinstance(cards[i], str):
             assert card.classifier.format().upper().rstrip() == cards[i]
@@ -178,7 +196,7 @@ def test_write_to_file(simple_problem):
             else:
                 print("Rewritten data", data.data)
                 print("Original input data", test_problem.data_inputs[i].data)
-                assert data.data == test_problem.data_inputs[i].data
+                assert str(data.data) == str(test_problem.data_inputs[i].data)
     finally:
         if os.path.exists(out):
             os.remove(out)
