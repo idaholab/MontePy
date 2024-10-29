@@ -450,9 +450,10 @@ class MCNP_Object(ABC):
 
     def __getstate__(self):
         state = self.__dict__.copy()
-        weakref_key = "_problem_ref"
-        if weakref_key in state:
-            del state[weakref_key]
+        bad_keys = {"_problem_ref", "_parser"}
+        for key in bad_keys:
+            if key in state:
+                del state[key]
         return state
 
     def __setstate__(self, crunchy_data):
