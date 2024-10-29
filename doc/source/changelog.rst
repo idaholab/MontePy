@@ -6,6 +6,7 @@ MontePy Changelog
 ============
 
 #Next Version#
+--------------
 
 **Bug Fixes**
 
