@@ -52,6 +52,8 @@ class _ExceptionContextAdder(ABCMeta):
         """
         new_attrs = {}
         for key, value in attributes.items():
+            if key.startswith("_"):
+                new_attrs[key] = value
             if callable(value):
                 new_attrs[key] = _ExceptionContextAdder._wrap_attr_call(value)
             elif isinstance(value, property):
