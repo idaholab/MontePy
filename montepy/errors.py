@@ -193,6 +193,7 @@ class LineExpansionWarning(Warning):
 
 def add_line_number_to_exception(error, broken_robot):
     """ """
+    raise error
     try:
         input_obj = broken_robot._input
         assert input_obj is not None
