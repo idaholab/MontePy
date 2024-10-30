@@ -45,7 +45,7 @@ and the Python API documentation.
 * Can quickly [access cells, surfaces, and materials by their numbers](https://www.montepy.org/starting.html#collections-are-accessible-by-number). For example: `cell = problem.cells[105]`.
 * Can quickly update cell parameters, [such as importances](https://www.montepy.org/starting.html#setting-cell-importances). For example `cell.importance.neutron = 2.0`.
 * Can easily [create universes, and fill other cells with universes](https://www.montepy.org/starting.html#universes).
-* Currently has over 430 test cases.
+* Currently has over 550 test cases.
 
  
 Here is a quick example showing multiple tasks in MontePy:
@@ -79,8 +79,6 @@ Here is a quick example showing multiple tasks in MontePy:
 
 >>> #write out an updated file
 >>> problem.write_problem("foo_update.imcnp")
-
-```
 
 ## Limitations
 
