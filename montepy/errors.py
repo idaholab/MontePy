@@ -194,24 +194,27 @@ class LineExpansionWarning(Warning):
 def add_line_number_to_exception(error, broken_robot):
     """ """
     raise error
+    # avoid calling this n times recursively
+    if hasattr(error, "montepy_handled"):
+        raise error
     try:
         input_obj = broken_robot._input
         assert input_obj is not None
     except (AttributeError, AssertionError) as e:
-        lineno = "unknown"
-        file = "unknown"
-        lines = []
+        extra_message = f"Error came from {broken_robot} from an unknown file."
     else:
         lineno = input_obj.line_number
         file = str(input_obj.input_file)
         lines = input_obj.input_lines
+        #extra_message = f"Error came from line: {lineno} of {file}.\n"
+        extra_message = ""
     args = error.args
     if len(args) > 0:
         message = args[0]
     else:
         message = ""
-    message = f"{message}\nError came from line: {lineno} of {file}.\n"
-    f"{'\n'.join(lines)}"
+    message = f"{message}\n{extra_message}"
     args = (message,) + args[1:]
     error.args = args
+    error.montepy_handled = True
     raise error
