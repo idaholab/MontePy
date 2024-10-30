@@ -394,7 +394,7 @@ class MCNP_Problem:
                             else:
                                 message = ""
                             message = f"{message}\nError came from line: {obj._input.line_number} of {obj._input.input_file}.\n"
-                            message += '\n'.join(obj._input.input_lines)
+                            message += "\n".join(obj._input.input_lines)
                             args = (message,) + args[1:]
                             e.args = args
                             raise e
