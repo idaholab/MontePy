@@ -204,7 +204,7 @@ def add_line_number_to_exception(error, broken_robot):
         lineno = input_obj.line_number
         file = str(input_obj.input_file)
         lines = input_obj.input_lines
-    args = e.args
+    args = error.args
     if len(args) > 0:
         message = args[0]
     else:
@@ -212,5 +212,5 @@ def add_line_number_to_exception(error, broken_robot):
     message = f"{message}\nError came from line: {lineno} of {file}.\n"
     f"{'\n'.join(lines)}"
     args = (message,) + args[1:]
-    e.args = args
-    raise e
+    error.args = args
+    raise error
