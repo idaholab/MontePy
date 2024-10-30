@@ -98,27 +98,22 @@ Here a few of the known bugs and limitations:
 There are some python packages that offer some of the same features as MontePy,
     but don't offer the same level of robustness, ease of installation, and user friendliness.
 
-For reading, editing, and writing input files there are:
+Many of the competitors do not offer the robustness that MontePy does becuase,
+    they do not utilize context-free parsing (as of 2024). 
+These packages are:
 
-* [MCNP™y](https://github.rpi.edu/NuCoMP/mcnpy). MontePy differs by being:
-   * On PyPI, and can be installed via pip.
-   * Only requires a python interpreter, and not a Java virtual machine. 
-   * Allowing contributions from anyone with a public GitHub account
+* [pyMCNP](https://github.com/FSIBT/PyMCNP)
 
-* [pyMCNP](https://github.com/FSIBT/PyMCNP). MontePy differs by:
-  * being on PyPI.
-  * Using a context-free parser that can understand cell geometry, and preserve user formatting.
-  * Supporting more edge cases of MCNP syntax (usually covered by foot notes in the manual).
+* [MCNP-Input-Reader](https://github.com/ENEA-Fusion-Neutronics/MCNP-Input-Reader)
 
-* [MCNP-Input-Reader](https://github.com/ENEA-Fusion-Neutronics/MCNP-Input-Reader). MontePy differs by:
-  * Being well documented
-  * Using a context-free parser.
-  * Being actively maintained.
+* [numjuggler](https://github.com/inr-kit/numjuggler)
 
-* [numjuggler](https://github.com/inr-kit/numjuggler). MontePy differs by:
-  * Using a context-free-parser.
-  * Focusing an object oriented user interface rather than trying to be a one-off command line utility.
-  * Being actively maintained.
+The only other library that does utilize context-free parsing that we are aware is
+[MCNP™y](https://github.rpi.edu/NuCoMP/mcnpy). MontePy differs by being:
+* On PyPI, and can be installed via pip.
+* Only requires a python interpreter, and not a Java virtual machine. 
+* Allowing contributions from anyone with a public GitHub account
+
 
 For only writing, or templating an input file there are also some great tools out there. 
 These packages don't provide the same functionality as MontePy inherently,
