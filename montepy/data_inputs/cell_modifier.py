@@ -264,5 +264,10 @@ class CellModifierInput(DataInputAbstract):
         # print in either block
         if (self.in_cell_block != print_in_data_block) and self._is_worth_printing:
             self._update_values()
-            return self.wrap_string_for_mcnp(self._format_tree(), mcnp_version, True)
+            return self.wrap_string_for_mcnp(
+                self._format_tree(),
+                mcnp_version,
+                True,
+                suppress_blank_end=not self.in_cell_block,
+            )
         return []

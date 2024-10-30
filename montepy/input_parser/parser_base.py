@@ -157,6 +157,7 @@ class MCNP_Parser(Parser, metaclass=MetaBuilder):
         # treat any previous errors as being fatal even if it recovered.
         if len(self.log) > 0:
             return None
+        self.tokens = {}
         return tree
 
     precedence = (("left", SPACE), ("left", TEXT))
