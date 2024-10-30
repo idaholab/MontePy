@@ -511,9 +511,9 @@ def test_importance_format_unmutated(importance_problem):
     imp = importance_problem.cells._importance
     output = imp.format_for_mcnp_input((6, 2, 0))
     print(output)
-    assert len(output) == 3
-    assert "imp:n,p 1 1 1 0 3" == output[0]
-    assert "imp:e   0 2r 1 r" == output[2]
+    assert len(output) == 4
+    assert "imp:n,p 1 1 1 0 3" == output[1]
+    assert "imp:e   0 2r 1 r" == output[3]
 
 
 def test_importance_format_mutated(importance_problem):
@@ -523,7 +523,7 @@ def test_importance_format_mutated(importance_problem):
     with pytest.warns(LineExpansionWarning):
         output = imp.format_for_mcnp_input((6, 2, 0))
     print(output)
-    assert len(output) == 4
+    assert len(output) == 6
     assert "imp:n 0.5 1 1 0 3" in output
     assert "c special comment related to #520" == output[2]
 
