@@ -5,6 +5,14 @@ MontePy Changelog
 0.5 releases
 ============
 
+0.5.1
+--------------
+
+**Bug Fixes**
+
+* Fixed ``AttributeError`` that occured when a data block ``IMP`` was preceded by a comment (:issue:`580`).
+* Fixed bug where tally inputs in a file prevented the file from being pickled or copied (:issue:`463`).
+
 0.5.0
 --------------
 

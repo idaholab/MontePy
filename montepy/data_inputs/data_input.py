@@ -187,6 +187,9 @@ class DataInputAbstract(MCNP_Object):
     def __str__(self):
         return f"DATA INPUT: {self._tree['classifier']}"
 
+    def __repr__(self):
+        return str(self)
+
     def __split_name(self, input):
         """
         Parses the name of the data input as a prefix, number, and a particle classifier.
