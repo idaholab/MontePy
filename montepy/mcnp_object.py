@@ -1,6 +1,7 @@
 # Copyright 2024, Battelle Energy Alliance, LLC All Rights Reserved.
 from abc import ABC, ABCMeta, abstractmethod
 import copy
+import functools
 import itertools as it
 from montepy.errors import *
 from montepy.constants import (
@@ -23,21 +24,32 @@ import weakref
 
 
 class _ExceptionContextAdder(ABCMeta):
+    """
+
+    """
 
     @staticmethod
     def _wrap_attr_call(func):
-        print(func)
+        """
 
-        def wrapped(self, *args, **kwargs):
+        """
+        @functools.wraps(func)
+        def wrapped(*args, **kwargs):
             try:
-                print(args, kwargs)
-                func(self, *args, **kwargs)
+                return func(*args, **kwargs)
             except Exception as e:
-                add_line_number_to_exception(e, self)
+                if len(args) > 0 and isinstance(args[0], MCNP_Object):
+                    self = args[0]
+                    add_line_number_to_exception(e, self)
+                else:
+                    raise e
 
         return wrapped
 
     def __new__(meta, classname, bases, attributes):
+        """
+
+        """
         new_attrs = {}
         for key, value in attributes.items():
             if callable(value):
