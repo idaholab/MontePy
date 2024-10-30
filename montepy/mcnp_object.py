@@ -235,7 +235,7 @@ class MCNP_Object(ABC):
                 )
             # lazy final guard against extra lines
             if suppress_blank_end:
-                buffer = [s for s in buffer if s.strip() != ""]
+                buffer = [s for s in buffer if s.strip()]
             ret += buffer
         return ret
 
