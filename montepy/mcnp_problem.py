@@ -385,19 +385,7 @@ class MCNP_Problem:
                         if isinstance(obj, transform.Transform):
                             self._transforms.append(obj, False)
                     if trailing_comment is not None and last_obj is not None:
-                        try:
-                            obj._grab_beginning_comment(trailing_comment)
-                        except Exception as e:
-                            args = e.args
-                            if len(args) > 0:
-                                message = args[0]
-                            else:
-                                message = ""
-                            message = f"{message}\nError came from line: {obj._input.line_number} of {obj._input.input_file}.\n"
-                            message += "\n".join(obj._input.input_lines)
-                            args = (message,) + args[1:]
-                            e.args = args
-                            raise e
+                        obj._grab_beginning_comment(trailing_comment, last_obj)
                         last_obj._delete_trailing_comment()
                     trailing_comment = obj.trailing_comment
                     last_obj = obj

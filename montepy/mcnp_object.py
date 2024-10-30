@@ -220,7 +220,9 @@ class MCNP_Object(ABC, metaclass=_ExceptionContextAdder):
         self._tree["start_pad"]._delete_trailing_comment()
 
     @staticmethod
-    def wrap_string_for_mcnp(string, mcnp_version, is_first_line):
+    def wrap_string_for_mcnp(
+        string, mcnp_version, is_first_line, suppress_blank_end=True
+    ):
         """
         Wraps the list of the words to be a well formed MCNP input.
 
@@ -235,6 +237,9 @@ class MCNP_Object(ABC, metaclass=_ExceptionContextAdder):
         :param is_first_line: If true this will be the beginning of an MCNP input.
                              The first line will not be indented.
         :type is_first_line: bool
+        :param suppress_blank_end: Whether or not to suppress any blank lines that would be added to the end.
+                                    Good for anywhere but cell modifiers in the cell block.
+        :type suppress_blank_end: bool
         :returns: A list of strings that can be written to an input file, one item to a line.
         :rtype: list
         """
@@ -266,6 +271,9 @@ class MCNP_Object(ABC, metaclass=_ExceptionContextAdder):
                     LineExpansionWarning,
                     stacklevel=2,
                 )
+            # lazy final guard against extra lines
+            if suppress_blank_end:
+                buffer = [s for s in buffer if s.strip()]
             ret += buffer
         return ret
 
@@ -320,7 +328,7 @@ class MCNP_Object(ABC, metaclass=_ExceptionContextAdder):
     def _delete_trailing_comment(self):
         self._tree._delete_trailing_comment()
 
-    def _grab_beginning_comment(self, padding):
+    def _grab_beginning_comment(self, padding, last_obj=None):
         if padding:
             self._tree["start_pad"]._grab_beginning_comment(padding)
 
