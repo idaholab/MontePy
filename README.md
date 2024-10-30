@@ -79,6 +79,7 @@ Here is a quick example showing multiple tasks in MontePy:
 
 >>> #write out an updated file
 >>> problem.write_problem("foo_update.imcnp")
+```
 
 ## Limitations
 
