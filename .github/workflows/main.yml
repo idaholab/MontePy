@@ -146,7 +146,9 @@ jobs:
           cd doc
           make doctest
         name: Test all example code in documentation.
-      - run: for file in demo/*.ipynb; do papermill $file demo/foo.ipynb; done
+      - run: |
+        cd demo
+        for file in *.ipynb; do papermill $file foo.ipynb; done
         name: Test all demo notebooks 
 
   format-test:
