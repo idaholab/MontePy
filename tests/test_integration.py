@@ -44,7 +44,7 @@ def data_universe_problem():
 
 
 def test_original_input(simple_problem):
-    cell_order = [Message, Title] + [Input] * 26
+    cell_order = [Message, Title] + [Input] * 29
     for i, input_ob in enumerate(simple_problem.original_inputs):
         assert isinstance(input_ob, cell_order[i])
 
@@ -89,7 +89,7 @@ def test_material_parsing(simple_problem):
 
 
 def test_surface_parsing(simple_problem):
-    surf_numbers = [1000, 1005, 1010]
+    surf_numbers = [1000, 1005, 1010, 1015, 1020, 1025]
     for i, surf in enumerate(simple_problem.surfaces):
         assert surf.number == surf_numbers[i]
 
@@ -130,10 +130,18 @@ def test_cells_parsing_linking(simple_problem):
     mats = simple_problem.materials
     mat_answer = [mats[1], mats[2], mats[3], None, None]
     surfs = simple_problem.surfaces
-    surf_answer = [{surfs[1000]}, {surfs[1005]}, set(surfs), {surfs[1010]}, set()]
+    surf_answer = [
+        {surfs[1000]},
+        {surfs[1005], *surfs[1015:1026]},
+        set(surfs[1000:1011]),
+        {surfs[1010]},
+        set(),
+    ]
     cells = simple_problem.cells
     complements = [set()] * 4 + [{cells[99]}]
     for i, cell in enumerate(simple_problem.cells):
+        print(cell)
+        print(surf_answer[i])
         assert cell.number == cell_numbers[i]
         assert cell.material == mat_answer[i]
         surfaces = set(cell.surfaces)
