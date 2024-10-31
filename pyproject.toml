@@ -67,7 +67,7 @@ develop = [
 	"montepy[test,doc,format]",
 ]
 demos = ["jupyter"]
-demo-test = ["papermill"]
+demo-test = ["montepy[demos]", "papermill"]
 
 
 [project.urls]
