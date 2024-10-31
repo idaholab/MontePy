@@ -51,34 +51,34 @@ and the Python API documentation.
 Here is a quick example showing multiple tasks in MontePy:
 
 ```python
->>> import montepy
->>> # read in file
->>> problem = montepy.read_input("tests/inputs/test.imcnp")
+import montepy
+# read in file
+problem = montepy.read_input("tests/inputs/test.imcnp")
   
->>> # set photon importance for multiple cells
->>> importances = {1: 0.005,
-...    2: 0.1,
-...    3: 1.0,
-...    99: 1.235
-... }
->>> for cell_num, importance in importances.items():
-...    problem.cells[cell_num].importance.photon = importance
+# set photon importance for multiple cells
+importances = {1: 0.005,
+   2: 0.1,
+   3: 1.0,
+   99: 1.235
+}
+for cell_num, importance in importances.items():
+   problem.cells[cell_num].importance.photon = importance
 
->>> #create a universe and fill another cell with it
->>> universe = montepy.Universe(123)
->>> problem.universes.append(universe)
->>> # add all cells with numbers between 1 and 4
->>> universe.claim(problem.cells[1:5])
->>> # fill cell 99 with universe 123
->>> problem.cells[99].fill.universe = universe
+#create a universe and fill another cell with it
+universe = montepy.Universe(123)
+problem.universes.append(universe)
+# add all cells with numbers between 1 and 4
+universe.claim(problem.cells[1:5])
+# fill cell 99 with universe 123
+problem.cells[99].fill.universe = universe
 
->>> # update all surfaces numbers by adding 1000 to them
->>> for surface in problem.surfaces:
-...    surface.number += 1000
->>> # all cells using these surfaces will be automatically updated as well
+# update all surfaces numbers by adding 1000 to them
+for surface in problem.surfaces:
+   surface.number += 1000
+# all cells using these surfaces will be automatically updated as well
 
->>> #write out an updated file
->>> problem.write_problem("foo_update.imcnp")
+#write out an updated file
+problem.write_problem("foo_update.imcnp")
 ```
 
 ## Limitations
