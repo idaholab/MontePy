@@ -2,6 +2,7 @@ Getting Started with MontePy
 ============================
 
 .. testsetup:: *
+
    import montepy
 
 MontePy is a python API for reading, editing, and writing MCNP input files.
@@ -118,7 +119,7 @@ MontePy will do its best to guess the formatting of the original value and to re
 However, this may not always be possible, especially if more digits are needed to keep information (e.g., ``10`` versus ``1000``).
 In this case MontePy will warn you that value will take up more space which may break your pretty formatting.
 
-For example say we have this simple MCNP input file (saved as foo.imcnp) ::
+For example say we have this simple MCNP input file (saved as :download:`foo.imcnp`) ::
   
         Example Problem
         1 0  -1 2 -3
@@ -138,6 +139,7 @@ For example say we have this simple MCNP input file (saved as foo.imcnp) ::
 We can then open this file in MontePy, and then modify it slightly, and save it again:
 
 .. doctest::
+
         import montepy
         problem = montepy.read_input("foo.imcnp")
         problem.cells[1].number = 5
@@ -210,6 +212,7 @@ Technically these are :class:`~montepy.numbered_object_collection.NumberedObject
 but it looks like a ``dict``, walks like a ``dict``, and quacks like ``dict``, so most users can just treat it like that.
 
 .. note::
+
    Though these collections are based on a dict, they don't behave exactly like a dict.
    For a dict the iteration (e.g., ``for key in dict:``) iterates over the keys.
    Also when you check if an item is in a dict (e.g., ``if key in dict:``) it checks if the item is a key.
@@ -227,12 +230,19 @@ by its number.
 
 So say you want to access cell 2 from a problem it is accessible quickly by:
 
->>> prob = montepy.read_input("tests/inputs/test.imcnp") 
->>> prob.cells[2]
-CELL: 2
-MATERIAL: 2, ['iron']
-density: 8.0 atom/b-cm
-SURFACE: 1005, RCC
+
+.. doctest::
+   :skipif: True # skip because multi-line doc tests are kaputt
+
+        >>> prob = montepy.read_input("tests/inputs/test.imcnp") 
+        >>> prob.cells[2]
+        CELL: 2
+        MATERIAL: 2, ['iron']
+        density: 8.0 atom/b-cm
+        SURFACE: 1005, RCC
+        SURFACE: 1015, CZ
+        SURFACE: 1020, PZ
+        SURFACE: 1025, PZ
 
 
 Collections are Iterable
@@ -240,10 +250,12 @@ Collections are Iterable
 
 Collections are also iterable, meaning you can iterate through it quickly and easily.
 For instance say you want to increase all cell numbers by 1,000. 
-This can be done quickly with a for loop::
-        
-        for cell in problem.cells:
-          cell.number += 1000
+This can be done quickly with a for loop:
+
+.. testcode::
+
+   for cell in problem.cells:
+       cell.number += 1000
 
 Number Collisions (should) be Impossible
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -251,14 +263,19 @@ Number Collisions (should) be Impossible
 The ``NumberedObjectCollection`` has various mechanisms internally to avoid number collisions 
 (two objects having the same number).
 
->>> import montepy
->>> prob = montepy.read_input("tests/inputs/test.imcnp")
->>> cell = montepy.Cell()
->>> cell.number = 2
->>> prob.cells.append(cell)
-Traceback (most recent call last):
-   ...
-montepy.errors.NumberConflictError: Number 2 is already in use for the collection: <class 'montepy.cells.Cells'> by CELL: 2, mat: 2, DENS: 8.0 atom/b-cm
+.. testcode::
+
+        import montepy
+        prob = montepy.read_input("tests/inputs/test.imcnp")
+        cell = montepy.Cell()
+        cell.number = 2
+        prob.cells.append(cell)
+
+.. testoutput::
+
+        Traceback (most recent call last):
+           ...
+        montepy.errors.NumberConflictError: Number 2 is already in use for the collection: <class 'montepy.cells.Cells'> by CELL: 2, mat: 2, DENS: 8.0 atom/b-cm
 
 There are a number of tools to avoid this though:
 
@@ -292,14 +309,19 @@ You can iterate over a generator, as well as check if an item is in the generato
 
 First it is iterable:
 
->>> problem = montepy.read_input("tests/inputs/test.imcnp")
->>> for number in problem.cells.numbers:
-...    print(number)
-1
-2
-3
-99
-5
+.. testcode::
+
+        problem = montepy.read_input("tests/inputs/test.imcnp")
+        for number in problem.cells.numbers:
+            print(number)
+
+.. testoutput::
+
+   1
+   2
+   3
+   99
+   5
 
 You can also check if a number is in use:
 
@@ -375,9 +397,11 @@ It would be horrible to have to get each surface by their number, and hoping you
 
 One way you might think of is: oh let's just filter the surfaces by their type?:
 
->>> for surface in cell.surfaces:
-...    if surface.surface_type == montepy.surfaces.surface_type.SurfaceType.PZ:
-...      surface.location += 10
+.. testcode::
+
+    for surface in cell.surfaces:
+        if surface.surface_type == montepy.surfaces.surface_type.SurfaceType.PZ:
+            surface.location += 10
 
 Wow that's rather verbose. 
 This was the only way to do this with the API for awhile.
@@ -386,10 +410,12 @@ But MontePy 0.0.5 fixed this with: you guessed it: generators.
 The :class:`~montepy.surface_collection.Surfaces` collection has a generator for every type of surface in MCNP.
 These are very easy to find: they are just the lower case version of the 
 MCNP surface mnemonic. 
-This previous code is much simpler now::
+This previous code is much simpler now:
 
->>> for surface in cell.surfaces.pz:
-...    surface.location += 10
+.. testcode::
+
+    for surface in cell.surfaces.pz:
+        surface.location += 10
 
 Cells 
 -----
@@ -405,25 +431,29 @@ For a complete list see :class:`~montepy.particle.Particle`.
 
 You can also quickly get the information by passing an instance of :class:`~montepy.particle.Particle` as a key to importance.
 For example:
-    
->>> for particle in sorted(problem.mode):
-...     print(particle, cell.importance[particle])
-neutron 0.0
-photon 0.0
->>> print(cell.importance[montepy.Particle.NEUTRON])
-0.0
+
+.. doctest::
+
+    >>> for particle in sorted(problem.mode):
+    ...     print(particle, cell.importance[particle])
+    neutron 0.0
+    photon 0.0
+    >>> print(cell.importance[montepy.Particle.NEUTRON])
+    0.0
 
 There's also a lot of convenient ways to do bulk modifications.
 There is the :func:`~montepy.data_inputs.importance.Importance.all` property that lets you set the importance for all particles in the problem at once.
 For example: 
 
->>> problem.set_mode("n p e")
->>> cell.importance.all = 2.0
->>> for particle in sorted(problem.mode):
-...     print(particle, cell.importance[particle])
-electron 2.0
-neutron 2.0
-photon 2.0
+.. doctest::
+
+    >>> problem.set_mode("n p e")
+    >>> cell.importance.all = 2.0
+    >>> for particle in sorted(problem.mode):
+    ...     print(particle, cell.importance[particle])
+    electron 2.0
+    neutron 2.0
+    photon 2.0
 
 This will set the importances for the neutron and photon. 
 
@@ -462,19 +492,21 @@ If the cell density is set to a mass density ``cell.atom_density`` will return `
 Setting the value for one of these densities will change the density mode.
 MontePy does not convert mass density to atom density and vice versa.
 
->>> problem = montepy.read_input("tests/inputs/test.imcnp")
->>> cell = problem.cells[3]
->>> cell.mass_density
-1.0
->>> cell.atom_density 
-Traceback (most recent call last):
-    ...
-AttributeError: Cell 3 is in mass density.. Did you mean: 'mass_density'?
->>> cell.atom_density = 0.5
->>> cell.mass_density
-Traceback (most recent call last):
-    ...
-AttributeError: Cell 3 is in atom density.. Did you mean: 'atom_density'?
+.. doctest::
+
+    >>> problem = montepy.read_input("tests/inputs/test.imcnp")
+    >>> cell = problem.cells[3]
+    >>> cell.mass_density
+    1.0
+    >>> cell.atom_density 
+    Traceback (most recent call last):
+        ...
+    AttributeError: Cell 3 is in mass density.. Did you mean: 'mass_density'?
+    >>> cell.atom_density = 0.5
+    >>> cell.mass_density
+    Traceback (most recent call last):
+        ...
+    AttributeError: Cell 3 is in atom density.. Did you mean: 'atom_density'?
 
 Geometry
 ^^^^^^^^
@@ -511,19 +543,23 @@ This is done very simply and pythonic.
 For a :class:`~montepy.surfaces.surface.Surface` you just need to mark the surface as positive (``+``) or negative (``-``) (using the unary operators).
 This actually creates a new object so don't worry about modifying the surface.
 
->>> bottom_plane = montepy.surfaces.surface.Surface()
->>> top_plane = montepy.surfaces.surface.Surface()
->>> type(+bottom_plane)
-<class 'montepy.surfaces.half_space.UnitHalfSpace'>
->>> type(-bottom_plane)
-<class 'montepy.surfaces.half_space.UnitHalfSpace'>
+.. doctest::
+
+    >>> bottom_plane = montepy.surfaces.surface.Surface()
+    >>> top_plane = montepy.surfaces.surface.Surface()
+    >>> type(+bottom_plane)
+    <class 'montepy.surfaces.half_space.UnitHalfSpace'>
+    >>> type(-bottom_plane)
+    <class 'montepy.surfaces.half_space.UnitHalfSpace'>
 
 For cells the plus/minus operator doesn't make sense. 
 Instead you use the binary not operator (``~``).
 
->>> capsule_cell = montepy.Cell()
->>> type(~capsule_cell)
-<class 'montepy.surfaces.half_space.HalfSpace'>
+.. doctest::
+    
+    >>> capsule_cell = montepy.Cell()
+    >>> type(~capsule_cell)
+    <class 'montepy.surfaces.half_space.HalfSpace'>
 
 
 Combining Half-Spaces
@@ -537,25 +573,40 @@ As with OpenMC, the set logic operations have been mapped to python's bit logic 
 * ``~``, the not operator, represents a set complement.
 
 .. note::
+
    When you combine two half-spaces with a logical operator you create a new half-space.
    In this case the concept of a side becomes much more about "in" and "out".
 
 .. note::
+
    Half-spaces need not be contiguous.
 
 Order of precedence and grouping is automatically handled by python so you can easily write complicated geometry in one-line.
 
-.. code-block:: python
+.. testcode::
 
+   # build blank surfaces 
+   bottom_plane = montepy.surfaces.axis_plane.AxisPlane()
+   top_plane = montepy.surfaces.axis_plane.AxisPlane()
+   fuel_cylinder = montepy.surfaces.cylinder_on_axis.CylinderOnAxis()
+   clad_cylinder = montepy.surfaces.cylinder_on_axis.CylinderOnAxis()
+   clad_od = montepy.surfaces.cylinder_on_axis.CylinderOnAxis()
+   other_fuel = montepy.surfaces.cylinder_on_axis.CylinderOnAxis()
+   bottom_plane.number = 1
+   top_plane.number = 2
+   fuel_cylinder.number = 3
+   clad_cylinder.number = 4
+   clad_od.number = 5
+   
    #make weird truncated fuel sample
    slug_half_space = +bottom_plane & -top_plane & -fuel_cylinder
    gas_gap = ~slug_half_space & +bottom_plane & -top_plane & -clad_cylinder
    cladding = ~gas_gap & ~slug_half_space & +bottom_plane & -top_plane & -clad_od
-
    # make weird multi-part cell
-  slugs = (+bottom_plane & -top_plane & -fuel_cylinder) | (+bottom_plane & -top_plane & -other_fuel)
+   slugs = (+bottom_plane & -top_plane & -fuel_cylinder) |  (+bottom_plane & -top_plane & -other_fuel)
 
 .. note::
+
   MontePy does not check if the geometry definition is "rational".
   It doesn't check for being finite, existant (having any volumen at all), or being infinite.
   Nor does it check for overlapping geometry.
@@ -564,15 +615,22 @@ Setting and Modifying Geometry
 """"""""""""""""""""""""""""""
 
 The half-space defining a cell's geometry is stored in ``cell.geometry`` (:func:`~montepy.cell.Cell.geometry`).
-This property can be rather simply set.::
+This property can be rather simply set.
 
+.. testcode::
+
+    fuel_cell = montepy.Cell()
     fuel_cell.geometry = +bottom_plane & - top_plane & - fuel_cylinder
 
-This will completely redefine the cell's geometry. You can also modify the geometry with augmented assign operators, ``&=``, and ``|=``.::
+This will completely redefine the cell's geometry. You can also modify the geometry with augmented assign operators, ``&=``, and ``|=``.
 
-        fuel_cell.geometry |= other_fuel_region
+.. testcode::
+
+    other_fuel_region = -montepy.surfaces.cylinder_on_axis.CylinderOnAxis()
+    fuel_cell.geometry |= other_fuel_region 
 
 .. warning:: 
+
    Be careful when using ``&=`` and ``|=`` with complex geometries as the order of operations may not be what you expected.
    You can check the geometry logic by printing it.
    MontePy will show you its internal (`binary tree <https://en.wikipedia.org/wiki/Binary_tree>`_) representation of the logic.
@@ -599,17 +657,19 @@ The new cell will attempt to use ``starting_number`` as its number.
 If this number is taken ``step`` will be added to it until an available number is found.
 For example:
 
->>> base_cell = problem.cells[1]
->>> base_cell.number
-1
->>> # clone with an available number
->>> new_cell = base_cell.clone(starting_number=1000)
->>> new_cell.number
-1000
->>> # force a number collision
->>> new_cell = base_cell.clone(starting_number=1, step=5)
->>> new_cell.number
-6
+.. doctest::
+
+    >>> base_cell = problem.cells[1]
+    >>> base_cell.number
+    1
+    >>> # clone with an available number
+    >>> new_cell = base_cell.clone(starting_number=1000)
+    >>> new_cell.number
+    1000
+    >>> # force a number collision
+    >>> new_cell = base_cell.clone(starting_number=1, step=5)
+    >>> new_cell.number
+    6
 
 Cells can also clone their material, and their dividers. 
 By default this is not done, and only a new ``HalfSpace`` instance is created that points to the same objects.
@@ -617,30 +677,34 @@ This is done so that the geometry definitions of the two cells can be edited wit
 For a lot of problems this is preferred in order to avoid creating geometry gaps due to not using the same surfaces in geometry definitions.
 For example, if you have a problem read in already:
 
->>> cell = problem.cells[1]
->>> cell.material.number
-1
->>> new_cell = cell.clone()
->>> #the material didn't change
->>> new_cell.material is cell.material
-True
->>> new_cell = cell.clone(clone_material=True)
->>> new_cell.material.number # materials 2,3 are taken.
-4
->>> new_cell.material is cell.material
-False
+.. doctest::
+
+    >>> cell = problem.cells[1]
+    >>> cell.material.number
+    1
+    >>> new_cell = cell.clone()
+    >>> #the material didn't change
+    >>> new_cell.material is cell.material
+    True
+    >>> new_cell = cell.clone(clone_material=True)
+    >>> new_cell.material.number # materials 2,3 are taken.
+    4
+    >>> new_cell.material is cell.material
+    False
 
 When children objects (:class:`~montepy.data_inputs.material.Material`, :class:`~montepy.surfaces.surface.Surface`, and :class:`~montepy.cell.Cell`)
 are cloned the numbering behavior is defined by the problem's instance's instance of the respective collection (e.g., :class:`~montepy.materials.Materials`)
 by the properties: :func:`~montepy.numbered_object_collection.NumberedObjectCollection.starting_number` and :func:`~montepy.numbered_object_collection.NumberedObjectCollection.step`.
 For example:
 
->>> problem.materials.starting_number = 100
->>> problem.cells[1].material.number
-1
->>> new_cell = problem.cells[1].clone(clone_material=True)
->>> new_cell.material.number 
-100
+.. doctest::
+
+    >>> problem.materials.starting_number = 100
+    >>> problem.cells[1].material.number
+    1
+    >>> new_cell = problem.cells[1].clone(clone_material=True)
+    >>> new_cell.material.number 
+    100
 
 Universes
 ---------
@@ -652,14 +716,18 @@ If a cell is not assigned to any universe it will be assigned to Universe 0, *no
 To change what cells are in a universe you can set this at the cell level.
 This is done to prevent a cell from being assigned to multiple universes
 
->>> universe = problem.universes[350]
->>> for cell in problem.cells[1:5]:
-...   cell.universe = universe
+.. testcode::
+
+    universe = problem.universes[350]
+    for cell in problem.cells[1:5]:
+        cell.universe = universe
     
 We can confirm this worked with the generator ``universe.cells``:
 
->>> [cell.number for cell in universe.cells]
-[1, 2, 3, 5, 4]
+.. doctest:: 
+
+    >>> [cell.number for cell in universe.cells]
+    [1, 2, 3, 5, 4]
 
 Claiming Cells
 ^^^^^^^^^^^^^^
@@ -670,7 +738,7 @@ For all cells passed (either as a single ``Cell``, a ``list`` of cells, or a ``C
 will be removed from their current universe, and moved to this universe.
 This simplifies the above code to just being:
 
-.. code-block:: python
+.. testcode::
 
    universe = problem.universes[350]
    universe.claim(problem.cells[1:5])
@@ -682,7 +750,7 @@ Creating a new universe is very straight forward.
 You just need to initialize it with a new number,
 and then add it to the problem:
 
-.. code-block:: python
+.. testcode::
    
    universe = montepy.Universe(333)
    problem.universes.append(universe)
@@ -690,9 +758,11 @@ and then add it to the problem:
 Now you can add cells to this universe as you normally would.
 
 .. note::
+
    A universe with no cells assigned will not be written out to the MCNP input file, and will "dissapear".
 
 .. note::
+
    Universe number collisions are not checked for when a universe is created,
    but only when it is added to the problem.
    Make sure to plan accordingly, and consider using :func:`~montepy.numbered_object_collection.NumberedObjectCollection.request_number`.
@@ -707,16 +777,20 @@ Filling is handled by the :class:`~montepy.data_cards.fill.Fill` object in ``cel
 
 To fill a cell with a specific universe you can just run:
 
-.. code-block:: python
+.. testcode::
 
-        cell.fill.universe = universe
+    cell = problem.cells[2]
+    cell.fill.universe = universe
 
 This will then fill the cell with a single universe with no transform.
 You can also easy apply a transform to the filling universe with:
 
-.. code-block:: python
+.. testcode::
 
-        cell.fill.tranform = transform
+   transform = montepy.data_inputs.transform.Transform()
+   transform.number = 5
+   transform.displacement_vector = [1, 2, 0]
+   cell.fill.tranform = transform
 
 .. note::
 
@@ -752,7 +826,7 @@ If there are many errors not all may be found at once due to how errors are hand
 This is done by executing it with the ``-c`` flag, and specifying a file, or files to check.
 You can also use linux globs::
 
-        python -m montepy -c inputs/*.imcnp
+        python -m montepy -c tests/inputs/*.imcnp
 
 MontePy will then show which file it is reading, and show a warning for every potential error with the input file it has found.
 
@@ -764,13 +838,13 @@ If you want to try to troubleshoot errors in python you can do this with the fol
 
 1. Setup a new Problem object:
 
-   .. code-block:: python
+   .. testcode::
         
        problem = montepy.MCNP_Problem("foo.imcnp") 
 
 1. Next load the input file with the ``check_input`` set to ``True``.
 
-   .. code-block:: python
+   .. testcode::
         
         problem.parse_input(True)
 

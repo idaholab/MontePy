@@ -6,9 +6,19 @@ The syntax layers handle the boring syntax things: like multi-line cards, and co
 The semantic layer takes this information and makes sense of it, like what the material number in a cell card is.
 
 .. note::
+
    Punchcards are dead.
    For this reason MontePy refrains from using antiquated terminology like "cards" and "decks".
    Instead MontePy refers to "inputs", and "files" or "problems". 
+
+.. note:: 
+   Demo code is based on `tests/inputs/test.imcnp`. 
+   You can load this with:
+
+    .. testcode::
+
+        import montepy
+        problem = montepy.read_input("tests/inputs/test.imcnp")
 
 Contributing
 ------------
@@ -97,7 +107,7 @@ Version information is stored in git tags,
 and retrieved using `setuptools scm <https://setuptools-scm.readthedocs.io/en/latest/>`_.
 The version tag shall match the regular expression:
 
-``v\d.\d+.\d+``.
+``v\d\.\d+\.\d+``.
 
 These tags will be applied by a maintainer during the release process,
 and cannot be applied by normal users.
@@ -309,6 +319,7 @@ and :func:`~montepy.input_parser.syntax_node.ValueNode.is_negatable_identifier` 
 This will make it so that ``value`` always returns a positive value, and so :func:`~montepy.input_parser.syntax_node.ValueNode.is_negative` returns a boolean value.
 
 .. note::
+
    Setting :func:`~montepy.input_parser.syntax_node.ValueNode.is_negatable_identifier` to ``True`` 
    will convert the ValueNode to an integer ValueNode (via :func:`~montepy.input_parser.syntax_node.ValueNode._convert_to_int`).
 
@@ -336,14 +347,20 @@ This should include most if not all internal state information.
 
 See this example for :class:`~montepy.cell.Cell`
 
->>> str(cell)
-CELL: 2, mat: 2, DENS: 8.0 g/cm3
->>> repr(cell)
-CELL: 2
-MATERIAL: 2, ['iron']
-density: 8.0 atom/b-cm
-SURFACE: 1005, RCC
-
+.. doctest::
+   :skipif: True # skip because multi-line doc tests are kaputt
+    
+    >>> cell = problem.cells[2]
+    >>> print(str(cell))
+    CELL: 2, mat: 2, DENS: 8.0 atom/b-cm
+    >>> print(repr(cell))
+    CELL: 2
+    MATERIAL: 2, ['iron']
+    density: 8.0 atom/b-cm
+    SURFACE: 1005, RCC
+    SURFACE: 1015, CZ
+    SURFACE: 1020, PZ
+    SURFACE: 1025, PZ
 
 Writing to File (Format for MCNP Input)
 """""""""""""""""""""""""""""""""""""""
@@ -725,14 +742,16 @@ For a ``Surface`` it is owned by the ``Surfaces`` collection owned by the ``MCNP
 A cell then borrows this object by referencing it in its own ``Surfaces`` collections. 
 For example:
 
->>> import montepy
->>> # owns
->>> x = montepy.Cell()
->>> id = hex(id(x))
->>> # borrows
->>> new_list = [x]
->>> id == hex(id(new_list[0]))
-True
+.. doctest::
+
+    >>> import montepy
+    >>> # owns
+    >>> x = montepy.Cell()
+    >>> old_id = hex(id(x))
+    >>> # borrows
+    >>> new_list = [x]
+    >>> old_id == hex(id(new_list[0]))
+    True
 
 The general principle is that only one-directional pointers should be used,
 and bidirectional pointers should never be used.
