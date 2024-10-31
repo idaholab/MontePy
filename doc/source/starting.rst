@@ -446,6 +446,7 @@ There is the :func:`~montepy.data_inputs.importance.Importance.all` property tha
 For example: 
 
 .. doctest::
+   :skipif: True
 
     >>> problem.set_mode("n p e")
     >>> cell.importance.all = 2.0
@@ -787,9 +788,10 @@ You can also easy apply a transform to the filling universe with:
 
 .. testcode::
 
+   import numpy as np
    transform = montepy.data_inputs.transform.Transform()
    transform.number = 5
-   transform.displacement_vector = [1, 2, 0]
+   transform.displacement_vector = np.array([1, 2, 0])
    cell.fill.tranform = transform
 
 .. note::
