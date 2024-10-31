@@ -46,6 +46,7 @@ test = [
 	"hypothesis",
 	"pytest-profiling",
 	"montepy[build]",
+	"phmutest",
 ]
 # This is needed for a sphinx bug. See #414.
 doc = [
@@ -62,9 +63,7 @@ build = [
 	"setuptools-scm>=8",
 ]
 develop = [
-	"montepy[test]",
-	"montepy[doc]",
-	"montepy[format]",
+	"montepy[test,doc,format]",
 ]
 demos = ["jupyter"]
 demo-test = ["papermill"]

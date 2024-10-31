@@ -140,7 +140,7 @@ jobs:
         with: 
           python-version: 3.12
       - run: pip install . montepy[doc,build,demo-test]
-      - run: python -m doctest README.md
+      - run: python -m phmutest README.md --replmode --log
         name: Test readme code
       - run: | 
           cd doc
