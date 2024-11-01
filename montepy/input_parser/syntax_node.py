@@ -195,6 +195,12 @@ class SyntaxNodeBase(ABC):
                 ret += node.flatten()
         return ret
 
+    def __getstate__(self):
+        ret = []
+        for node in self.nodes:
+            ret.append(node.__getstate__())
+        return ret
+
 
 class SyntaxNode(SyntaxNodeBase):
     """
@@ -308,6 +314,12 @@ class SyntaxNode(SyntaxNodeBase):
                 ret.append(node)
             else:
                 ret += node.flatten()
+        return ret
+
+    def __getstate__(self):
+        ret = {}
+        for key, node in self.nodes.items():
+            ret[key] = node.__getstate__()
         return ret
 
 
@@ -547,6 +559,12 @@ class GeometryTree(SyntaxNodeBase):
                 ret.append(node)
             else:
                 ret += node.flatten()
+        return ret
+
+    def __getstate__(self):
+        ret = {}
+        for key, node in self.nodes.items():
+            ret[key] = node.__getstate__()
         return ret
 
 
@@ -850,6 +868,9 @@ class CommentNode(SyntaxNodeBase):
 
     def __eq__(self, other):
         return str(self) == str(other)
+
+    def __getstate__(self):
+        return ("comment", {"is_dollar": self._is_dollar, "nodes": self.nodes})
 
 
 class ValueNode(SyntaxNodeBase):
@@ -1240,6 +1261,12 @@ class ValueNode(SyntaxNodeBase):
                 stacklevel=2,
             )
         return buffer + extra_pad_str
+
+    def __getstate__(self):
+        return (
+            "value",
+            {"type": self._type.__name__, "token": self._token, "value": self.value},
+        )
 
     @property
     def comments(self):
