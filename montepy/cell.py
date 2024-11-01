@@ -813,3 +813,6 @@ class Cell(Numbered_MCNP_Object):
                 if number != self.number:
                     break
         return result
+
+    def default(self, o):
+        return self.__getstate__()

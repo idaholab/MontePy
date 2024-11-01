@@ -17,7 +17,9 @@ print(f"Took {stop - start} seconds")
 print(f"Memory usage report: {tracemalloc.get_traced_memory()[0]/1024/1024} MB")
 del problem
 gc.collect()
-print(f"Memory usage report after GC: {tracemalloc.get_traced_memory()[0]/1024/1024} MB")
+print(
+    f"Memory usage report after GC: {tracemalloc.get_traced_memory()[0]/1024/1024} MB"
+)
 
 if (stop - start) > FAIL_THRESHOLD:
     raise RuntimeError(

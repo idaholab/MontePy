@@ -9,6 +9,7 @@ You will receive an MCNP_Problem object that you will interact with.
 
 from . import input_parser
 from . import constants
+from . import json
 import importlib.metadata
 from .input_parser.input_reader import read_input
 from montepy.cell import Cell
