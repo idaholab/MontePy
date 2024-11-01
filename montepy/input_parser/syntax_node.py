@@ -199,7 +199,10 @@ class SyntaxNodeBase(ABC):
         ret = []
         for node in self.nodes:
             ret.append(node.__getstate__())
-        return ret
+        return (type(self), ret)
+
+    def __setstate__(self, crunchy_data):
+        print(crunchy_data)
 
 
 class SyntaxNode(SyntaxNodeBase):
@@ -320,7 +323,7 @@ class SyntaxNode(SyntaxNodeBase):
         ret = {}
         for key, node in self.nodes.items():
             ret[key] = node.__getstate__()
-        return ret
+        return (type(self), ret)
 
 
 class GeometryTree(SyntaxNodeBase):
@@ -565,7 +568,7 @@ class GeometryTree(SyntaxNodeBase):
         ret = {}
         for key, node in self.nodes.items():
             ret[key] = node.__getstate__()
-        return ret
+        return (type(self), ret)
 
 
 class PaddingNode(SyntaxNodeBase):
@@ -870,7 +873,7 @@ class CommentNode(SyntaxNodeBase):
         return str(self) == str(other)
 
     def __getstate__(self):
-        return ("comment", {"is_dollar": self._is_dollar, "nodes": self.nodes})
+        return (type(self), {"is_dollar": self._is_dollar, "nodes": self.nodes})
 
 
 class ValueNode(SyntaxNodeBase):
@@ -1264,9 +1267,21 @@ class ValueNode(SyntaxNodeBase):
 
     def __getstate__(self):
         return (
-            "value",
-            {"type": self._type.__name__, "token": self._token, "value": self.value},
+            type(self),
+            {
+                "_type": self._type.__name__,
+                "_token": self._token,
+                "_value": self.value,
+                "_padding": self._padding,
+            },
         )
+
+    __NAME_TYPE_MAP = {type.__name__: type for type in {int, float, str}}
+
+    def __setstate__(self, crunchy_data):
+        node_type, data = crunchy_data
+        data["_type"] = self.__NAME_TYPE_MAP[data["_type"]]
+        self.__dict__.update(data)
 
     @property
     def comments(self):
