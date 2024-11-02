@@ -1,4 +1,7 @@
 # Copyright 2024, Battelle Energy Alliance, LLC All Rights Reserved.
+
+import traceback
+
 class LineOverRunWarning(UserWarning):
     """
     Raised when non-comment inputs exceed the allowed line length in an input.
@@ -215,15 +218,19 @@ def add_line_number_to_exception(error, broken_robot):
         lineno = input_obj.line_number
         file = str(input_obj.input_file)
         lines = input_obj.input_lines
-        #extra_message = f"Error came from line: {lineno} of {file}.\n"
-        extra_message = ""
+        extra_message = f"Error came from line: {lineno} of {file}.\n"
     args = error.args
     if len(args) > 0:
         message = args[0]
     else:
         message = ""
     message = f"{message}\n{extra_message}"
+    tb = error.__traceback__
+    trace = tb
+    for _ in range(2):
+        trace = trace.tb_next
+
     args = (message,) + args[1:]
     error.args = args
     error.montepy_handled = True
-    raise error
+    raise error.with_traceback(trace)
