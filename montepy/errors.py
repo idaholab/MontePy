@@ -65,7 +65,7 @@ class ParsingError(MalformedInputError):
                     _print_input(
                         path,
                         start_line,
-                        error,
+                        error["message"],
                         line_no,
                         input,
                         token,
@@ -83,7 +83,7 @@ class ParsingError(MalformedInputError):
 def _print_input(
     path,
     start_line,
-    error,
+    error_msg,
     line_no=0,
     input=None,
     token=None,
@@ -105,7 +105,7 @@ def _print_input(
                 buffer.append(f"     {start_line + i:5g}| {line}")
         if base_message:
             buffer.append(base_message)
-        buffer.append(error.args[0])
+        buffer.append(error_msg)
     return "\n".join(buffer)
 
 
@@ -243,7 +243,7 @@ def add_line_number_to_exception(error, broken_robot):
         lineno = input_obj.line_number
         file = str(input_obj.input_file)
         lines = input_obj.input_lines
-        message = _print_input(file, lineno, error, input=input_obj)
+        message = _print_input(file, lineno, message, input=input_obj)
     except Exception as e:
         try:
             message = (
