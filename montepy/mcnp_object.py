@@ -34,6 +34,7 @@ class _ExceptionContextAdder(ABCMeta):
         """
         Wraps the function, and returns the modified function.
         """
+
         @functools.wraps(func)
         def wrapped(*args, **kwargs):
             try:
@@ -53,7 +54,7 @@ class _ExceptionContextAdder(ABCMeta):
 
     def __new__(meta, classname, bases, attributes):
         """
-        This will replace all properties and callable attributes with 
+        This will replace all properties and callable attributes with
         wrapped versions.
 
         """

@@ -2,6 +2,7 @@
 
 import traceback
 
+
 class LineOverRunWarning(UserWarning):
     """
     Raised when non-comment inputs exceed the allowed line length in an input.
@@ -65,27 +66,52 @@ class ParsingError(MalformedInputError):
                     line_no = 0
                     index = 0
                     base_message = f"The input ended prematurely."
-                buffer = [f"    {path}, line {start_line + line_no -1}", ""]
-                if input:
-                    for i, line in enumerate(input.input_lines):
-                        if i == line_no - 1:
-                            buffer.append(f"    >{start_line + i:5g}| {line}")
-                            if token:
-                                length = len(token.value)
-                                marker = "^" * length
-                                buffer.append(
-                                    f"{' '* 10}|{' ' * (index+1)}{marker} not expected here."
-                                )
-                        else:
-                            buffer.append(f"     {start_line + i:5g}| {line}")
-                    buffer.append(base_message)
-                    buffer.append(error["message"])
-                messages.append("\n".join(buffer))
+                messages.append(
+                    _print_input(
+                        path,
+                        start_line,
+                        error,
+                        line_no,
+                        input,
+                        token,
+                        base_message,
+                        index,
+                    )
+                )
             self.message = "\n".join(messages + [message])
         else:
             self.message = message
 
         ValueError.__init__(self, self.message)
+
+
+def _print_input(
+    path,
+    start_line,
+    error,
+    line_no=0,
+    input=None,
+    token=None,
+    base_message=None,
+    index=None,
+):
+    buffer = [f"    {path}, line {start_line + line_no -1}", ""]
+    if input:
+        for i, line in enumerate(input.input_lines):
+            if i == line_no - 1:
+                buffer.append(f"    >{start_line + i:5g}| {line}")
+                if token:
+                    length = len(token.value)
+                    marker = "^" * length
+                    buffer.append(
+                        f"{' '* 10}|{' ' * (index+1)}{marker} not expected here."
+                    )
+            else:
+                buffer.append(f"     {start_line + i:5g}| {line}")
+        if base_message:
+            buffer.append(base_message)
+        buffer.append(error["message"])
+    return "\n".join(buffer)
 
 
 class NumberConflictError(Exception):
@@ -216,7 +242,7 @@ def add_line_number_to_exception(error, broken_robot):
         lineno = input_obj.line_number
         file = str(input_obj.input_file)
         lines = input_obj.input_lines
-        extra_message = f"Error came from line: {lineno} of {file}.\n"
+        extra_message = _print_input(file, lineno, error)
     except Exception as e:
         try:
             extra_message = f"Error came from {broken_robot} from an unknown file."
