@@ -44,11 +44,21 @@ and will be removed in MontePy 1.0.0.
   isotopic, isomeric, or atomic data.
 
 
-New Interface
--------------
-Currently the replacement interface has not been fully designed yet.
-If you have input you can `join the discussion <https://github.com/idaholab/MontePy/discussions/475>`_.
-There will also be some alpha-testing announced in that discussion.
+New Interface & Migration
+-------------------------
 
-Once MontePy 1.0.0 is released this will be updated with information about the new interface,
-and how to migrate to it.
+.. note::
+
+        This design is not finalized and is subject to change.
+        This is the currently planned design for ``1.0.0a1``.
+        If you have input you can `join the discussion <https://github.com/idaholab/MontePy/discussions/475>`_.
+        This is alos where alpha-testing will be announced.
+
+``material_components``
+^^^^^^^^^^^^^^^^^^^^^^^
+
+Material composition data has moved from ``Material.material_components`` to the ``Material`` itself.
+``Material`` is now a list-like iterable.
+It is a list of tuples which are ``(nuclide, fraction)`` pairs.
+
+.. testcode::
