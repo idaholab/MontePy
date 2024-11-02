@@ -223,17 +223,12 @@ def add_line_number_to_exception(error, broken_robot):
         except Exception as e2:
             extra_message = f"Error came from an object of type {type(broken_robot)} from an unknown file."
     args = error.args
+    trace = error.__traceback__
     if len(args) > 0:
         message = args[0]
     else:
         message = ""
     message = f"{message}\n{extra_message}"
-    tb = error.__traceback__
-    trace = tb
-    for _ in range(2):
-        trace = trace.tb_next
-
     args = (message,) + args[1:]
     error.args = args
-    error.montepy_handled = True
     raise error.with_traceback(trace)
