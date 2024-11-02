@@ -40,8 +40,10 @@ m3        1001.80c           2
 MT3 lwtr.23t
 C execution
 ksrc 0 0 0
+c other special comment for #580
 imp:n,p 1 1 1 0 3
-imp:e   0 0 0 1 2
+c special comment related to #520
+imp:e   0 2r 1 r
 kcode 100000 1.000 50 1050
 phys:p j 1 2j 1
 mode n p e

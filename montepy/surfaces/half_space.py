@@ -191,6 +191,14 @@ class HalfSpace:
             (cells, surfaces), (self._cell.complements, self._cell.surfaces)
         ):
             for item in container:
+                if not isinstance(
+                    item, (montepy.surfaces.surface.Surface, montepy.Cell)
+                ):
+                    raise IllegalState(
+                        f"The geometry was not fully initialized, and cannot be changed. "
+                        f"The offending cell is {self._cell}. "
+                        f"Run cell.update_pointers."
+                    )
                 if item not in parent:
                     parent.append(item)
 
@@ -200,7 +208,7 @@ class HalfSpace:
         This will ensure any new surfaces or complements properly get added to the parent
         cell's :func:`~montepy.cell.Cell.surfaces` and :func:`~montepy.cell.Cell.complements`.
 
-        :param deleting_dict: a dict of the surfaces to delete.
+        :param deleting_dict: a dict of the surfaces to delete, mapping the old surface to the new surface to replace it.
         :type deleting_dict: dict
         """
         _, surfaces = self._get_leaf_objects()

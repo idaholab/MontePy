@@ -44,7 +44,7 @@ class CylinderOnAxis(Surface):
 
     def validate(self):
         super().validate()
-        if not self.radius:
+        if self.radius is None:
             raise IllegalState(f"Surface: {self.number} does not have a radius set.")
 
     def find_duplicate_surfaces(self, surfaces, tolerance):

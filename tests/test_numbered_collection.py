@@ -1,4 +1,6 @@
 # Copyright 2024, Battelle Energy Alliance, LLC All Rights Reserved.
+import hypothesis
+from hypothesis import given, settings, strategies as st
 import copy
 import montepy
 import montepy.cells
@@ -118,8 +120,10 @@ class TestNumberedObjectCollection(unittest.TestCase):
         self.assertEqual(len(cells), size + 2)
 
     def test_append_renumber_problems(self):
+        print(hex(id(self.simple_problem.materials._problem)))
         prob1 = copy.deepcopy(self.simple_problem)
         prob2 = copy.deepcopy(self.simple_problem)
+        print(hex(id(self.simple_problem.materials._problem)))
         # Delete Material 2, making its number available.
         prob2.materials.remove(prob2.materials[2])
         len_mats = len(prob2.materials)
@@ -385,3 +389,51 @@ def test_data_pop(cp_simple_problem):
     assert old_mat not in cp_simple_problem.data_inputs
     with pytest.raises(TypeError):
         cp_simple_problem.materials.pop("foo")
+
+
+# disable function scoped fixtures
+@settings(suppress_health_check=[hypothesis.HealthCheck.function_scoped_fixture])
+@given(start_num=st.integers(), step=st.integers())
+def test_num_collect_clone(cp_simple_problem, start_num, step):
+    surfs = copy.deepcopy(cp_simple_problem.surfaces)
+    if start_num <= 0 or step <= 0:
+        with pytest.raises(ValueError):
+            surfs.clone(start_num, step)
+        return
+    for clear in [False, True]:
+        if clear:
+            surfs.link_to_problem(None)
+        new_surfs = surfs.clone(start_num, step)
+        for new_surf, old_surf in zip(new_surfs, surfs):
+            assert new_surf is not old_surf
+            assert new_surf.surface_type == old_surf.surface_type
+            assert new_surf.number != old_surf.number
+
+
+def test_num_collect_clone_default(cp_simple_problem):
+    surfs = copy.deepcopy(cp_simple_problem.surfaces)
+    for clear in [False, True]:
+        if clear:
+            surfs.link_to_problem(None)
+        new_surfs = surfs.clone()
+        for new_surf, old_surf in zip(new_surfs, surfs):
+            assert new_surf is not old_surf
+            assert new_surf.surface_type == old_surf.surface_type
+            assert new_surf.number != old_surf.number
+
+
+@pytest.mark.parametrize(
+    "args, error",
+    [
+        (("c", 1), TypeError),
+        ((1, "d"), TypeError),
+        ((-1, 1), ValueError),
+        ((0, 1), ValueError),
+        ((1, 0), ValueError),
+        ((1, -1), ValueError),
+    ],
+)
+def test_num_collect_clone_bad(cp_simple_problem, args, error):
+    surfs = cp_simple_problem.surfaces
+    with pytest.raises(error):
+        surfs.clone(*args)

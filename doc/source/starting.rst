@@ -192,6 +192,8 @@ Information Lost
 
    This will hopefully change soon and read "subfiles" will be kept, and will automatically be written as their own files.
 
+
+
 What a Problem Looks Like
 -------------------------
 
@@ -328,6 +330,16 @@ False
 Oh no! When we made a list of the numbers we broke the link, and the new list won't update when the numbers of the cells change, 
 and you can cause issues this way.
 The simple solution is to just access the generators directly; don't try to make copies for your own use.
+
+Cloning Objects
+^^^^^^^^^^^^^^^
+
+In the past the only way to make a copy of a MontePy object was with `copy.deepcopy <https://docs.python.org/3/library/copy.html#copy.deepcopy>`_.
+In MontePy 0.5.0 a better way was introduced: :func:`~montepy.mcnp_object.MCNP_Object.clone`.
+How numbered objects, for instance :class:`~montepy.cell.Cell`, is more complicated.
+If a ``Cell`` or a group of ``Cells`` are cloned their numbers will be to changed to avoid collisions.
+However, if a whole :class:`~montepy.mcnp_problem.MCNP_Problem` is cloned these objects will not have their numbers changed.
+For an example for how to clone a numbered object see :ref:`Cloning a Cell`.
 
 Surfaces
 --------
@@ -555,6 +567,61 @@ This will completely redefine the cell's geometry. You can also modify the geome
    For instance the intersection of three surface-based half-spaces could print as:::
 
         ((+1000*+1005)*-1010)
+
+.. _Cloning a Cell:
+
+Cloning a Cell
+^^^^^^^^^^^^^^
+When a cell is cloned with :func:`~montepy.cell.Cell.clone` a new number will be assigned.
+If the cell is linked to a problem---either through being added to :class:`~montepy.cells.Cells`, or with :func:`~montepy.cell.Cell.link_to_problem`---
+the next available number in the problem will be used.
+Otherwise the ``starting_number`` will be used unless that is the original cell's number.
+How the number is picked is controlled by ``starting_number`` and ``step``. 
+The new cell will attempt to use ``starting_number`` as its number. 
+If this number is taken ``step`` will be added to it until an available number is found.
+For example:
+
+>>> base_cell = montepy.Cell()
+>>> base_cell.number = 1
+>>> # clone with an available number
+>>> new_cell = base_cell.clone(starting_number=1000)
+>>> new_cell.number
+1000
+>>> # force a number collision
+>>> new_cell = base_cell.clone(starting_number= 1, step =5)
+>>> new_cell.number
+6
+
+Cells can also clone their material, and their dividers. 
+By default this is not done, and only a new ``HalfSpace`` instance is created that points to the same objects.
+This is done so that the geometry definitions of the two cells can be edited without impacting the other cell.
+For a lot of problems this is preferred in order to avoid creating geometry gaps due to not using the same surfaces in geometry definitions.
+For example, if you have a problem read in already:
+
+>>> cell = problem.cells[1]
+>>> cell.material.number
+1
+>>> new_cell = cell.clone()
+>>> #the material didn't change
+>>> new_cell.material is cell.material
+True
+>>> new_cell = cell.clone(clone_material=True)
+>>> new_cell.material.number
+2 
+>>> new_cell.material is cell.material
+False
+
+When children objects (:class:`~montepy.data_inputs.material.Material`, :class:`~montepy.surfaces.surface.Surface`, and :class:`~montepy.cell.Cell`)
+are cloned the numbering behavior is defined by the problem's instance's instance of the respective collection (e.g., :class:`~montepy.materials.Materials`)
+by the properties: :func:`~montepy.numbered_object_collection.NumberedObjectCollection.starting_number` and :func:`~montepy.numbered_object_collection.NumberedObjectCollection.step`.
+For example:
+
+>>> problem.materials.starting_number = 100
+>>> problem.cells[1].material.number
+1
+>>> new_cell = problem.cells[1].clone(clone_material=True)
+>>> new_cell.material.number 
+100
 
 Universes
 ---------

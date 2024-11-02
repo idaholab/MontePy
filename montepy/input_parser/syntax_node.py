@@ -117,6 +117,19 @@ class SyntaxNodeBase(ABC):
         if isinstance(tail, SyntaxNodeBase):
             tail._delete_trailing_comment()
 
+    def _grab_beginning_comment(self, extra_padding):
+        """
+        Consumes the provided comment, and moves it to the beginning of this node.
+
+        :param extra_padding: the padding comment to add to the beginning of this padding.
+        :type extra_padding: list
+        """
+        if len(self.nodes) == 0 or extra_padding is None:
+            return
+        head = self.nodes[0]
+        if isinstance(head, SyntaxNodeBase):
+            head._grab_beginning_comment(extra_padding)
+
     def check_for_graveyard_comments(self, has_following_input=False):
         """
         Checks if there is a graveyard comment that is preventing information from being part of the tree, and handles
@@ -256,15 +269,37 @@ class SyntaxNode(SyntaxNodeBase):
             yield from node.comments
 
     def get_trailing_comment(self):
+        node = self._get_trailing_node()
+        if node:
+            return node.get_trailing_comment()
+
+    def _grab_beginning_comment(self, extra_padding):
+        """
+        Consumes the provided comment, and moves it to the beginning of this node.
+
+        :param extra_padding: the padding comment to add to the beginning of this padding.
+        :type extra_padding: list
+        """
+        if len(self.nodes) == 0 or extra_padding is None:
+            return
+        head = next(iter(self.nodes.values()))
+        if isinstance(head, SyntaxNodeBase):
+            head._grab_beginning_comment(extra_padding)
+
+    def _get_trailing_node(self):
         if len(self.nodes) == 0:
             return
         for node in reversed(self.nodes.values()):
             if node is not None:
-                return node.get_trailing_comment()
+                if isinstance(node, ValueNode):
+                    if node.value is not None:
+                        return node
+                elif len(node) > 0:
+                    return node
 
     def _delete_trailing_comment(self):
-        tail = next(reversed(self.nodes.items()))
-        tail[1]._delete_trailing_comment()
+        node = self._get_trailing_node()
+        node._delete_trailing_comment()
 
     def flatten(self):
         ret = []
@@ -283,6 +318,9 @@ class GeometryTree(SyntaxNodeBase):
     .. versionadded:: 0.2.0
         This was added with the major parser rework.
 
+    .. versionchanged:: 0.4.1
+        Added left/right_short_type
+
     :param name: a name for labeling this node.
     :type name: str
     :param tokens: The nodes that are in the tree.
@@ -293,27 +331,139 @@ class GeometryTree(SyntaxNodeBase):
     :type left: GeometryTree, ValueNode
     :param right: the node of the right side of the binary tree.
     :type right: GeometryTree, ValueNode
+    :param left_short_type: The type of Shortcut that right left leaf is involved in.
+    :type left_short_type: Shortcuts
+    :param right_short_type: The type of Shortcut that the right leaf is involved in.
+    :type right_short_type: Shortcuts
     """
 
-    def __init__(self, name, tokens, op, left, right=None):
+    def __init__(
+        self,
+        name,
+        tokens,
+        op,
+        left,
+        right=None,
+        left_short_type=None,
+        right_short_type=None,
+    ):
         super().__init__(name)
         assert all(list(map(lambda v: isinstance(v, SyntaxNodeBase), tokens.values())))
         self._nodes = tokens
         self._operator = Operator(op)
         self._left_side = left
         self._right_side = right
+        self._left_short_type = left_short_type
+        self._right_short_type = right_short_type
 
     def __str__(self):
-        return f"Geometry: ( {self._left_side} {self._operator} {self._right_side} )"
+        return (
+            f"Geometry: ( {self._left_side}"
+            f" {f'Short:{self._left_short_type.value}' if self._left_short_type else ''}"
+            f" {self._operator} {self._right_side} "
+            f"{f'Short:{self._right_short_type.value}' if self._right_short_type else ''})"
+        )
 
     def __repr__(self):
         return str(self)
 
     def format(self):
+        if self._left_short_type or self._right_short_type:
+            return self._format_shortcut()
         ret = ""
         for node in self.nodes.values():
             ret += node.format()
         return ret
+
+    def mark_last_leaf_shortcut(self, short_type):
+        """
+        Mark the final (rightmost) leaf node in this tree as being a shortcut.
+
+        :param short_type: the type of shortcut that this leaf is.
+        :type short_type: Shortcuts
+        """
+        if self.right is not None:
+            node = self.right
+            if self._right_short_type:
+                return
+        else:
+            node = self.left
+            if self._left_short_type:
+                return
+        if isinstance(node, type(self)):
+            return node.mark_last_leaf_shortcut(short_type)
+        if self.right is not None:
+            self._right_short_type = short_type
+        else:
+            self._left_short_type = short_type
+
+    def _flatten_shortcut(self):
+        """
+        Flattens this tree into a ListNode.
+
+        This will add ShortcutNodes as well.
+
+        :rtype: ListNode
+        """
+
+        def add_leaf(list_node, leaf, short_type):
+            end = list_node.nodes[-1] if len(list_node) > 0 else None
+
+            def flush_shortcut():
+                end.load_nodes(end.nodes)
+
+            def start_shortcut():
+                short = ShortcutNode(short_type=short_type)
+                # give an interpolate it's old beginning to give it right
+                # start value
+                if short_type in {
+                    Shortcuts.LOG_INTERPOLATE,
+                    Shortcuts.INTERPOLATE,
+                } and isinstance(end, ShortcutNode):
+                    short.append(end.nodes[-1])
+                    short._has_pseudo_start = True
+
+                short.append(leaf)
+                if not leaf.padding:
+                    leaf.padding = PaddingNode(" ")
+                list_node.append(short)
+
+            if short_type:
+                if isinstance(end, ShortcutNode):
+                    if end.type == short_type:
+                        end.append(leaf)
+                    else:
+                        flush_shortcut()
+                        start_shortcut()
+                else:
+                    start_shortcut()
+            else:
+                if isinstance(end, ShortcutNode):
+                    flush_shortcut()
+                    list_node.append(leaf)
+                else:
+                    list_node.append(leaf)
+
+        if isinstance(self.left, ValueNode):
+            ret = ListNode("list wrapper")
+            add_leaf(ret, self.left, self._left_short_type)
+        else:
+            ret = self.left._flatten_shortcut()
+        if self.right is not None:
+            if isinstance(self.right, ValueNode):
+                add_leaf(ret, self.right, self._right_short_type)
+            else:
+                [ret.append(n) for n in self.right._flatten_shortcut()]
+        return ret
+
+    def _format_shortcut(self):
+        """
+        Handles formatting a subset of tree that has shortcuts in it.
+        """
+        list_wrap = self._flatten_shortcut()
+        if isinstance(list_wrap.nodes[-1], ShortcutNode):
+            list_wrap.nodes[-1].load_nodes(list_wrap.nodes[-1].nodes)
+        return list_wrap.format()
 
     @property
     def comments(self):
@@ -697,6 +847,9 @@ class CommentNode(SyntaxNodeBase):
         for node in self.nodes:
             ret += node.format()
         return ret
+
+    def __eq__(self, other):
+        return str(self) == str(other)
 
 
 class ValueNode(SyntaxNodeBase):
@@ -1522,6 +1675,12 @@ class ListNode(SyntaxNodeBase):
             else:
                 yield node
 
+    def __contains__(self, value):
+        for node in self:
+            if node == value:
+                return True
+        return False
+
     def __getitem__(self, indx):
         if isinstance(indx, slice):
             return self.__get_slice(indx)
@@ -1674,13 +1833,14 @@ class ShortcutNode(ListNode):
     }
     _num_finder = re.compile(r"\d+")
 
-    def __init__(self, p=None, short_type=None):
+    def __init__(self, p=None, short_type=None, data_type=float):
         self._type = None
         self._end_pad = None
         self._nodes = collections.deque()
         self._original = []
         self._full = False
         self._num_node = ValueNode(None, float, never_pad=True)
+        self._data_type = data_type
         if p is not None:
             for search_strs, shortcut in self._shortcut_names.items():
                 for search_str in search_strs:
@@ -1711,6 +1871,25 @@ class ShortcutNode(ListNode):
                 self._num_node = ValueNode(None, int, never_pad=True)
             self._end_pad = PaddingNode(" ")
 
+    def load_nodes(self, nodes):
+        """
+        Loads the given nodes into this shortcut, and update needed information.
+
+        For interpolate nodes should start and end with the beginning/end of
+        the interpolation.
+
+        :param nodes: the nodes to be loaded.
+        :type nodes: list
+        """
+        self._nodes = collections.deque(nodes)
+        if self.type in {Shortcuts.INTERPOLATE, Shortcuts.LOG_INTERPOLATE}:
+            self._begin = nodes[0].value
+            self._end = nodes[-1].value
+            if self.type == Shortcuts.LOG_INTERPOLATE:
+                self._begin = math.log10(self._begin)
+                self._end = math.log10(self._end)
+            self._spacing = (self._end - self._begin) / (len(nodes) - 1)
+
     @property
     def end_padding(self):
         """
@@ -1727,6 +1906,15 @@ class ShortcutNode(ListNode):
                 f"End padding must be of type PaddingNode. {padding} given."
             )
         self._end_pad = padding
+
+    @property
+    def type(self):
+        """
+        The Type of shortcut this ShortcutNode represents.
+
+        :rtype: Shortcuts
+        """
+        return self._type
 
     def __repr__(self):
         return f"(shortcut:{self._type}: {self.nodes})"
@@ -1765,6 +1953,11 @@ class ShortcutNode(ListNode):
         self._num_node = ValueNode(mult_str, float, never_pad=True)
         if isinstance(p[0], ValueNode):
             last_val = self.nodes[-1]
+        elif isinstance(p[0], GeometryTree):
+            if "right" in p[0].nodes:
+                last_val = p[0].nodes["right"]
+            else:
+                last_val = p[0].nodes["left"]
         else:
             last_val = p[0].nodes[-1]
         if last_val.value is None:
@@ -1820,7 +2013,11 @@ class ShortcutNode(ListNode):
                 new_val = 10 ** (begin + spacing * (i + 1))
             else:
                 new_val = begin + spacing * (i + 1)
-            self.append(ValueNode(str(new_val), float, never_pad=True))
+            self.append(
+                ValueNode(
+                    str(self._data_type(new_val)), self._data_type, never_pad=True
+                )
+            )
         self._begin = begin
         self._end = end
         self._spacing = spacing
@@ -1834,8 +2031,7 @@ class ShortcutNode(ListNode):
         :type node: ValueNode
         :param direction: the direct to go in. Must be in {-1, 1}
         :type direction: int
-        :param last_edge_shortcut: Whether or the previous node in the list was
-            part of a different shortcut
+        :param last_edge_shortcut: Whether the previous node in the list was part of a different shortcut
         :type last_edge_shortcut: bool
         :returns: true it can be consumed.
         :rtype: bool
@@ -1937,8 +2133,10 @@ class ShortcutNode(ListNode):
         # repeat
         elif self._type == Shortcuts.REPEAT:
             temp = self._format_repeat(leading_node)
+        # multiply
         elif self._type == Shortcuts.MULTIPLY:
             temp = self._format_multiply(leading_node)
+        # interpolate
         elif self._type in {Shortcuts.INTERPOLATE, Shortcuts.LOG_INTERPOLATE}:
             temp = self._format_interpolate(leading_node)
         if self.end_padding:
@@ -1966,8 +2164,37 @@ class ShortcutNode(ListNode):
 
         return f"{num_jumps.format()}{j}"
 
+    def _can_use_last_node(self, node, start=None):
+        """
+        Determine if the previous node can be used as the start to this node
+        (and therefore skip the start of this one).
+
+        Last node can be used if
+        - it's a basic ValueNode that matches this repeat
+        - it's also a shortcut, with the same edge values.
+
+        :param node: the previous node to test.
+        :type node: ValueNode, ShortcutNode
+        :param start: the starting value for this node (specifically for interpolation)
+        :type start: float
+        :returns: True if the node given can be used.
+        :rtype: bool
+        """
+        if isinstance(node, ValueNode):
+            value = node.value
+        elif isinstance(node, ShortcutNode):
+            value = node.nodes[-1].value
+        else:
+            return False
+        if value is None:
+            return False
+        if start is None:
+            start = self.nodes[0].value
+        return math.isclose(start, value)
+
     def _format_repeat(self, leading_node=None):
-        if leading_node is not None:
+
+        if self._can_use_last_node(leading_node):
             first_val = ""
             num_extra = 0
         else:
@@ -1990,23 +2217,29 @@ class ShortcutNode(ListNode):
         return f"{first_val}{num_repeats.format()}{r}"
 
     def _format_multiply(self, leading_node=None):
-        if leading_node is not None:
+        # Multiply doesn't usually consume other nodes
+        if leading_node is not None and len(self) == 1:
             first_val = leading_node.nodes[-1]
             first_val_str = ""
         else:
             first_val = self.nodes[0]
             first_val_str = first_val
-        if "M" in self._original[-1]:
-            m = "M"
-        else:
+        if self._original and "m" in self._original[-1]:
             m = "m"
+        else:
+            m = "M"
         self._num_node.value = self.nodes[-1].value / first_val.value
         return f"{first_val_str.format()}{self._num_node.format()}{m}"
 
     def _format_interpolate(self, leading_node=None):
-        if leading_node is not None:
+        begin = self._begin
+        if self.type == Shortcuts.LOG_INTERPOLATE:
+            begin = 10**begin
+        if self._can_use_last_node(leading_node, begin):
             start = ""
             num_extra_nodes = 1
+            if hasattr(self, "_has_pseudo_start"):
+                num_extra_nodes += 1
         else:
             start = self.nodes[0]
             num_extra_nodes = 2
@@ -2161,7 +2394,8 @@ class ClassifierNode(SyntaxNodeBase):
     def __repr__(self):
         return (
             f"(Classifier: mod: {self.modifier}, prefix: {self.prefix}, "
-            f"number: {self.number}, particles: {self.particles})"
+            f"number: {self.number}, particles: {self.particles},"
+            f" padding: {self.padding})"
         )
 
     @property
@@ -2170,6 +2404,14 @@ class ClassifierNode(SyntaxNodeBase):
             yield from self.padding.comments
         else:
             yield from []
+
+    def get_trailing_comment(self):
+        if self.padding:
+            return self.padding.get_trailing_comment()
+
+    def _delete_trailing_comment(self):
+        if self.padding:
+            self.padding._delete_trailing_comment()
 
     def flatten(self):
         ret = []
@@ -2219,7 +2461,7 @@ class ParametersNode(SyntaxNodeBase):
         super().__init__("parameters")
         self._nodes = {}
 
-    def append(self, val):
+    def append(self, val, is_default=False):
         """
         Append the node to this node.
 
@@ -2228,6 +2470,8 @@ class ParametersNode(SyntaxNodeBase):
 
         :param val: the parameter to append.
         :type val: SyntaxNode
+        :param is_default: whether this parameter was added as a default tree not from the user.
+        :type is_default: bool
         """
         classifier = val["classifier"]
         key = (
@@ -2236,6 +2480,8 @@ class ParametersNode(SyntaxNodeBase):
         ).lower()
         if key in self._nodes:
             raise RedundantParameterSpecification(key, val)
+        if is_default:
+            val._is_default = True
         self._nodes[key] = val
 
     def __str__(self):
@@ -2257,12 +2503,16 @@ class ParametersNode(SyntaxNodeBase):
         return ret
 
     def get_trailing_comment(self):
-        tail = next(reversed(self.nodes.items()))
-        return tail[1].get_trailing_comment()
+        for node in reversed(self.nodes.values()):
+            if hasattr(node, "_is_default"):
+                continue
+            return node.get_trailing_comment()
 
     def _delete_trailing_comment(self):
-        tail = next(reversed(self.nodes.items()))
-        tail[1]._delete_trailing_comment()
+        for node in reversed(self.nodes.values()):
+            if hasattr(node, "_is_default"):
+                continue
+            node._delete_trailing_comment()
 
     @property
     def comments(self):

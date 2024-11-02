@@ -20,7 +20,7 @@ class TallyParser(DataParser):
         ret = {}
         for key, node in p.introduction.nodes.items():
             ret[key] = node
-        ret["tally"] = p.tally_specification["tally"]
+        ret["data"] = p.tally_specification
         return syntax_node.SyntaxNode("data", ret)
 
     @_("tally_numbers", "tally_numbers end_phrase")

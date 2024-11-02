@@ -12,17 +12,17 @@ from montepy.utilities import *
 import itertools
 import re
 
-
-def _number_validator(self, number):
-    if number <= 0:
-        raise ValueError("number must be > 0")
-    if self._problem:
-        self._problem.materials.check_number(number)
+import warnings
 
 
 class Material(data_input.DataInputAbstract, Numbered_MCNP_Object):
     """
     A class to represent an MCNP material.
+
+    .. note::
+
+        There is a known bug (:issue:`182`) that valid MCNP material definitions cannot be parsed.
+
 
     :param input: the input card that contains the data
     :type input: Input
@@ -33,6 +33,7 @@ class Material(data_input.DataInputAbstract, Numbered_MCNP_Object):
     def __init__(self, input=None):
         self._material_components = {}
         self._thermal_scattering = None
+        self._is_atom_fraction = True
         self._number = self._generate_default_node(int, -1)
         super().__init__(input)
         if input:
@@ -51,7 +52,7 @@ class Material(data_input.DataInputAbstract, Numbered_MCNP_Object):
                     f"Material definitions for material: {self.number} is not valid.",
                 )
             for isotope_node, fraction in iterator:
-                isotope = Isotope(node=isotope_node)
+                isotope = Isotope(node=isotope_node, suppress_warning=True)
                 fraction.is_negatable_float = True
                 if not set_atom_frac:
                     set_atom_frac = True
@@ -68,23 +69,15 @@ class Material(data_input.DataInputAbstract, Numbered_MCNP_Object):
                             input,
                             f"Material definitions for material: {self.number} cannot use atom and mass fraction at the same time",
                         )
+
                 self._material_components[isotope] = MaterialComponent(
-                    isotope, fraction
+                    isotope, fraction, suppress_warning=True
                 )
 
     @make_prop_val_node("_old_number")
     def old_number(self):
         """
         The material number that was used in the read file
-
-        :rtype: int
-        """
-        pass
-
-    @make_prop_val_node("_number", int, validator=_number_validator)
-    def number(self):
-        """
-        The number to use to identify the material by
 
         :rtype: int
         """
@@ -102,13 +95,23 @@ class Material(data_input.DataInputAbstract, Numbered_MCNP_Object):
     @property
     def material_components(self):
         """
-        The internal dictionary containing all the components of this material.
+            The internal dictionary containing all the components of this material.
 
-        The keys are :class:`~montepy.data_inputs.isotope.Isotope` instances, and the values are
-        :class:`~montepy.data_inputs.material_component.MaterialComponent` instances.
+        .. deprecated:: 0.4.1
+            MaterialComponent has been deprecated as part of a redesign for the material
+            interface due to a critical bug in how MontePy handles duplicate nuclides.
+            See :ref:`migrate 0 1`.
 
-        :rtype: dict
+            The keys are :class:`~montepy.data_inputs.isotope.Isotope` instances, and the values are
+            :class:`~montepy.data_inputs.material_component.MaterialComponent` instances.
+
+            :rtype: dict
         """
+        warnings.warn(
+            f"""material_components is deprecated, and will be removed in MontePy 1.0.0.
+See <https://www.montepy.org/migrations/migrate0_1.html> for more information """,
+            DeprecationWarning,
+        )
         return self._material_components
 
     @make_prop_pointer("_thermal_scattering", thermal_scattering.ThermalScatteringLaw)
@@ -149,7 +152,7 @@ class Material(data_input.DataInputAbstract, Numbered_MCNP_Object):
 
     def _update_values(self):
         new_list = syntax_node.IsotopesNode("new isotope list")
-        for isotope, component in self.material_components.items():
+        for isotope, component in self._material_components.items():
             isotope._tree.value = isotope.mcnp_str()
             new_list.append(("_", isotope._tree, component._tree))
         self._tree.nodes["data"] = new_list
@@ -198,8 +201,8 @@ class Material(data_input.DataInputAbstract, Numbered_MCNP_Object):
         else:
             ret += "mass\n"
 
-        for component in self.material_components:
-            ret += repr(self.material_components[component]) + "\n"
+        for component in self._material_components:
+            ret += repr(self._material_components[component]) + "\n"
         if self.thermal_scattering:
             ret += f"Thermal Scattering: {self.thermal_scattering}"
 
@@ -212,7 +215,7 @@ class Material(data_input.DataInputAbstract, Numbered_MCNP_Object):
     def _get_material_elements(self):
         sortable_components = [
             (iso, component.fraction)
-            for iso, component in self.material_components.items()
+            for iso, component in self._material_components.items()
         ]
         sorted_comps = sorted(sortable_components)
         elements_set = set()
@@ -224,7 +227,7 @@ class Material(data_input.DataInputAbstract, Numbered_MCNP_Object):
         return elements
 
     def validate(self):
-        if len(self.material_components) == 0:
+        if len(self._material_components) == 0:
             raise IllegalState(
                 f"Material: {self.number} does not have any components defined."
             )
@@ -237,10 +240,10 @@ class Material(data_input.DataInputAbstract, Numbered_MCNP_Object):
 
         """
         temp_hash = ""
-        sorted_isotopes = sorted(list(self.material_components.keys()))
+        sorted_isotopes = sorted(list(self._material_components.keys()))
         for isotope in sorted_isotopes:
             temp_hash = hash(
-                (temp_hash, str(isotope), self.material_components[isotope].fraction)
+                (temp_hash, str(isotope), self._material_components[isotope].fraction)
             )
 
         return hash((temp_hash, self.number))

@@ -1,48 +1,74 @@
 # Copyright 2024, Battelle Energy Alliance, LLC All Rights Reserved.
-import os
+import copy
 from enum import Enum
 import itertools
+import os
+import warnings
+
 from montepy.data_inputs import mode, transform
 from montepy._cell_data_control import CellDataPrintController
 from montepy.cell import Cell
 from montepy.cells import Cells
 from montepy.errors import *
 from montepy.constants import DEFAULT_VERSION
-from montepy.materials import Materials
-from montepy.surfaces import surface_builder
-from montepy.tallies import Tallies
+from montepy.materials import Material, Materials
+from montepy.surfaces import surface, surface_builder
 from montepy.surface_collection import Surfaces
-from montepy.data_inputs import Material, parse_data
+from montepy.tallies import Tallies
+
+# weird way to avoid circular imports
+from montepy.data_inputs import parse_data
 from montepy.input_parser import input_syntax_reader, block_type, mcnp_input
 from montepy.input_parser.input_file import MCNP_InputFile
 from montepy.universes import Universes
 from montepy.transforms import Transforms
-import warnings
+import montepy
 
 
 class MCNP_Problem:
     """
     A class to represent an entire MCNP problem in a semantic way.
 
-    :param file_name: the path to the file that will be read.
-    :type file_name: str
+    .. note::
+        If a stream is provided. It will not be closed by this function.
+
+    :param destination: the path to the input file to read, or a readable stream.
+    :type destination: io.TextIOBase, str, os.PathLike
     """
 
-    def __init__(self, file_name):
-        self._input_file = MCNP_InputFile(file_name)
+    _NUMBERED_OBJ_MAP = {
+        Cell: Cells,
+        surface.Surface: Surfaces,
+        Material: Materials,
+        transform.Transform: Transforms,
+        montepy.universe.Universe: Universes,
+        montepy.data_inputs.tally.Tally: Tallies,
+    }
+
+    def __init__(self, destination):
+        if hasattr(destination, "read") and callable(getattr(destination, "read")):
+            self._input_file = MCNP_InputFile.from_open_stream(destination)
+        elif isinstance(destination, (str, os.PathLike)):
+            self._input_file = MCNP_InputFile(destination)
         self._title = None
         self._message = None
+        self.__unpickled = False
         self._print_in_data_block = CellDataPrintController()
         self._original_inputs = []
-        self._cells = Cells(problem=self)
-        self._surfaces = Surfaces(problem=self)
-        self._universes = Universes(problem=self)
-        self._transforms = Transforms(problem=self)
-        self._tallies = Tallies(problem=self)
+        for collect_type in self._NUMBERED_OBJ_MAP.values():
+            attr_name = f"_{collect_type.__name__.lower()}"
+            setattr(self, attr_name, collect_type(problem=self))
         self._data_inputs = []
-        self._materials = Materials(problem=self)
         self._mcnp_version = DEFAULT_VERSION
         self._mode = mode.Mode()
+
+    def __setstate__(self, nom_nom):
+        self.__dict__.update(nom_nom)
+        self.__unpickled = True
+
+    @staticmethod
+    def __get_collect_attr_name(collect_type):
+        return f"_{collect_type.__name__.lower()}"
 
     @property
     def original_inputs(self):
@@ -60,6 +86,57 @@ class MCNP_Problem:
         """
         return self._original_inputs
 
+    def __relink_objs(self):
+        if self.__unpickled:
+            for collection in set(self._NUMBERED_OBJ_MAP.values()) | {"_data_inputs"}:
+                if not isinstance(collection, str):
+                    collection = self.__get_collect_attr_name(collection)
+                collection = getattr(self, collection)
+                if isinstance(
+                    collection,
+                    montepy.numbered_object_collection.NumberedObjectCollection,
+                ):
+                    collection.link_to_problem(self)
+                else:
+                    for obj in collection:
+                        obj.link_to_problem(self)
+            self.__unpickled = False
+
+    def __unlink_objs(self):
+        for collection in set(self._NUMBERED_OBJ_MAP.values()) | {"_data_inputs"}:
+            if not isinstance(collection, str):
+                collection = self.__get_collect_attr_name(collection)
+            collection = getattr(self, collection)
+            if isinstance(
+                collection,
+                montepy.numbered_object_collection.NumberedObjectCollection,
+            ):
+                collection.link_to_problem(None)
+            else:
+                for obj in collection:
+                    obj.link_to_problem(None)
+        self.__unpickled = True
+        self.__relink_objs()
+
+    def __deepcopy__(self, memo):
+        cls = type(self)
+        result = cls.__new__(cls)
+        memo[id(self)] = result
+        for k, v in self.__dict__.items():
+            setattr(result, k, copy.deepcopy(v, memo))
+        result.__unlink_objs()
+        return result
+
+    def clone(self):
+        """
+        Creates a complete independent copy of this problem.
+
+        .. versionadded:: 0.5.0
+
+        :rtype: MCNP_Problem
+        """
+        return copy.deepcopy(self)
+
     @property
     def cells(self):
         """
@@ -68,6 +145,7 @@ class MCNP_Problem:
         :return: a collection of the Cell objects, ordered by the order they were in the input file.
         :rtype: Cells
         """
+        self.__relink_objs()
         return self._cells
 
     @cells.setter
@@ -137,7 +215,17 @@ class MCNP_Problem:
         :return: a collection of the Surface objects, ordered by the order they were in the input file.
         :rtype: Surfaces
         """
+        self.__relink_objs()
         return self._surfaces
+
+    @surfaces.setter
+    def surfaces(self, surfs):
+        if not isinstance(surfs, (list, Surfaces)):
+            raise TypeError("Surfaces must be of type list or Surfaces")
+        if isinstance(surfs, list):
+            surfs = Surfaces(surfs)
+        surfs.link_to_problem(self)
+        self._surfaces = surfs
 
     @property
     def materials(self):
@@ -147,6 +235,7 @@ class MCNP_Problem:
         :return: a colection of the Material objects, ordered by the order they were in the input file.
         :rtype: Materials
         """
+        self.__relink_objs()
         return self._materials
 
     @materials.setter
@@ -155,6 +244,7 @@ class MCNP_Problem:
             raise TypeError("materials must be of type list and Materials")
         if isinstance(mats, list):
             mats = Materials(mats)
+        mats.link_to_problem(self)
         self._materials = mats
 
     @property
@@ -179,6 +269,7 @@ class MCNP_Problem:
         :return: a list of the :class:`~montepy.data_cards.data_card.DataCardAbstract` objects, ordered by the order they were in the input file.
         :rtype: list
         """
+        self.__relink_objs()
         return self._data_inputs
 
     @property
@@ -246,6 +337,7 @@ class MCNP_Problem:
         """
         trailing_comment = None
         last_obj = None
+        last_block = None
         OBJ_MATCHER = {
             block_type.BlockType.CELL: (Cell, self._cells),
             block_type.BlockType.SURFACE: (
@@ -268,6 +360,9 @@ class MCNP_Problem:
                     self._title = input
 
                 elif isinstance(input, mcnp_input.Input):
+                    if last_block != input.block_type:
+                        trailing_comment = None
+                        last_block = input.block_type
                     obj_parser, obj_container = OBJ_MATCHER[input.block_type]
                     if len(input.input_lines) > 0:
                         try:
@@ -290,9 +385,9 @@ class MCNP_Problem:
                         if isinstance(obj, Material):
                             self._materials.append(obj, False)
                         if isinstance(obj, transform.Transform):
-                            self._transforms.append(obj)
+                            self._transforms.append(obj, False)
                     if trailing_comment is not None and last_obj is not None:
-                        obj._grab_beginning_comment(trailing_comment)
+                        obj._grab_beginning_comment(trailing_comment, last_obj)
                         last_obj._delete_trailing_comment()
                     trailing_comment = obj.trailing_comment
                     last_obj = obj
@@ -392,9 +487,9 @@ class MCNP_Problem:
         surfaces = sorted(surfaces)
         materials = sorted(materials)
         transforms = sorted(transforms)
-        self._surfaces = Surfaces(surfaces)
-        self._materials = Materials(materials)
-        self._transforms = Transforms(transforms)
+        self._surfaces = Surfaces(surfaces, problem=self)
+        self._materials = Materials(materials, problem=self)
+        self._transforms = Transforms(transforms, problem=self)
         self._data_inputs = sorted(set(self._data_inputs + materials + transforms))
 
     def write_problem(self, destination, overwrite=False):
@@ -529,9 +624,8 @@ class MCNP_Problem:
         if self.message:
             ret += str(self._message) + "\n"
         ret += str(self._title) + "\n"
-        for cell in self._cells:
-            ret += str(cell) + "\n"
-        for input in self._data_inputs:
-            if not isinstance(input, Material):
-                ret += str(input) + "\n"
+        for collection in [self.cells, self.surfaces, self.data_inputs]:
+            for obj in collection:
+                ret += f"{obj}\n"
+            ret += "\n"
         return ret

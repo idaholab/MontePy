@@ -1,5 +1,6 @@
 # Copyright 2024, Battelle Energy Alliance, LLC All Rights Reserved.
 from abc import ABC, abstractmethod
+import copy
 import itertools as it
 from montepy.errors import *
 from montepy.constants import (
@@ -18,6 +19,7 @@ import montepy
 import numpy as np
 import textwrap
 import warnings
+import weakref
 
 
 class MCNP_Object(ABC):
@@ -35,7 +37,7 @@ class MCNP_Object(ABC):
     """
 
     def __init__(self, input, parser):
-        self._problem = None
+        self._problem_ref = None
         self._parameters = ParametersNode()
         self._input = None
         if input:
@@ -180,7 +182,9 @@ class MCNP_Object(ABC):
         self._tree["start_pad"]._delete_trailing_comment()
 
     @staticmethod
-    def wrap_string_for_mcnp(string, mcnp_version, is_first_line):
+    def wrap_string_for_mcnp(
+        string, mcnp_version, is_first_line, suppress_blank_end=True
+    ):
         """
         Wraps the list of the words to be a well formed MCNP input.
 
@@ -195,6 +199,9 @@ class MCNP_Object(ABC):
         :param is_first_line: If true this will be the beginning of an MCNP input.
                              The first line will not be indented.
         :type is_first_line: bool
+        :param suppress_blank_end: Whether or not to suppress any blank lines that would be added to the end.
+                                    Good for anywhere but cell modifiers in the cell block.
+        :type suppress_blank_end: bool
         :returns: A list of strings that can be written to an input file, one item to a line.
         :rtype: list
         """
@@ -226,6 +233,9 @@ class MCNP_Object(ABC):
                     LineExpansionWarning,
                     stacklevel=2,
                 )
+            # lazy final guard against extra lines
+            if suppress_blank_end:
+                buffer = [s for s in buffer if s.strip()]
             ret += buffer
         return ret
 
@@ -245,9 +255,25 @@ class MCNP_Object(ABC):
         :param problem: The problem to link this input to.
         :type problem: MCNP_Problem
         """
-        if not isinstance(problem, montepy.mcnp_problem.MCNP_Problem):
+        if not isinstance(problem, (montepy.mcnp_problem.MCNP_Problem, type(None))):
             raise TypeError("problem must be an MCNP_Problem")
-        self._problem = problem
+        if problem is None:
+            self._problem_ref = None
+        else:
+            self._problem_ref = weakref.ref(problem)
+
+    @property
+    def _problem(self):
+        if self._problem_ref is not None:
+            return self._problem_ref()
+        return None
+
+    @_problem.setter
+    def _problem(self, problem):
+        if problem is None:
+            self._problem_ref = None
+            return
+        self.link_to_problem(problem)
 
     @property
     def trailing_comment(self):
@@ -264,7 +290,7 @@ class MCNP_Object(ABC):
     def _delete_trailing_comment(self):
         self._tree._delete_trailing_comment()
 
-    def _grab_beginning_comment(self, padding):
+    def _grab_beginning_comment(self, padding, last_obj=None):
         if padding:
             self._tree["start_pad"]._grab_beginning_comment(padding)
 
@@ -429,3 +455,24 @@ class MCNP_Object(ABC):
             stacklevel=2,
         )
         return set()
+
+    def __getstate__(self):
+        state = self.__dict__.copy()
+        bad_keys = {"_problem_ref", "_parser"}
+        for key in bad_keys:
+            if key in state:
+                del state[key]
+        return state
+
+    def __setstate__(self, crunchy_data):
+        crunchy_data["_problem_ref"] = None
+        self.__dict__.update(crunchy_data)
+
+    def clone(self):
+        """
+        Create a new independent instance of this object.
+
+        :returns: a new instance identical to this object.
+        :rtype: type(self)
+        """
+        return copy.deepcopy(self)
