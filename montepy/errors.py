@@ -29,12 +29,7 @@ class MalformedInputError(ValueError):
             path = ""
             start_line = 0
             lines = ""
-        self.message = f"""
-: {path}, line {start_line}
-{message}
-
-the full input:
-{lines}"""
+        self.message = message
         super().__init__(self.message)
 
 
@@ -110,7 +105,7 @@ def _print_input(
                 buffer.append(f"     {start_line + i:5g}| {line}")
         if base_message:
             buffer.append(base_message)
-        buffer.append(error["message"])
+        buffer.append(error.args[0])
     return "\n".join(buffer)
 
 
@@ -236,25 +231,26 @@ def add_line_number_to_exception(error, broken_robot):
     if hasattr(error, "montepy_handled"):
         raise error
     error.montepy_handled = True
-    try:
-        input_obj = broken_robot._input
-        assert input_obj is not None
-        lineno = input_obj.line_number
-        file = str(input_obj.input_file)
-        lines = input_obj.input_lines
-        extra_message = _print_input(file, lineno, error)
-    except Exception as e:
-        try:
-            extra_message = f"Error came from {broken_robot} from an unknown file."
-        except Exception as e2:
-            extra_message = f"Error came from an object of type {type(broken_robot)} from an unknown file."
     args = error.args
     trace = error.__traceback__
     if len(args) > 0:
         message = args[0]
     else:
         message = ""
-    message = f"{message}\n{extra_message}"
+    try:
+        input_obj = broken_robot._input
+        assert input_obj is not None
+        lineno = input_obj.line_number
+        file = str(input_obj.input_file)
+        lines = input_obj.input_lines
+        message = _print_input(file, lineno, error, input=input_obj)
+    except Exception as e:
+        try:
+            message = (
+                f"{message}\n\nError came from {broken_robot} from an unknown file."
+            )
+        except Exception as e2:
+            message = f"{message}\n\nError came from an object of type {type(broken_robot)} from an unknown file."
     args = (message,) + args[1:]
     error.args = args
     raise error.with_traceback(trace)
