@@ -209,16 +209,19 @@ def add_line_number_to_exception(error, broken_robot):
     # avoid calling this n times recursively
     if hasattr(error, "montepy_handled"):
         raise error
+    error.montepy_handled = True
     try:
         input_obj = broken_robot._input
         assert input_obj is not None
-    except (AttributeError, AssertionError) as e:
-        extra_message = f"Error came from {broken_robot} from an unknown file."
-    else:
         lineno = input_obj.line_number
         file = str(input_obj.input_file)
         lines = input_obj.input_lines
         extra_message = f"Error came from line: {lineno} of {file}.\n"
+    except Exception as e:
+        try:
+            extra_message = f"Error came from {broken_robot} from an unknown file."
+        except Exception as e2:
+            extra_message = f"Error came from an object of type {type(broken_robot)} from an unknown file."
     args = error.args
     if len(args) > 0:
         message = args[0]
