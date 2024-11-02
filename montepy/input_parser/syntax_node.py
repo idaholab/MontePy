@@ -873,7 +873,7 @@ class CommentNode(SyntaxNodeBase):
         return str(self) == str(other)
 
     def __getstate__(self):
-        return (type(self), {"is_dollar": self._is_dollar, "nodes": self.nodes})
+        return (type(self), {"is_dollar": self._is_dollar, "nodes": self._nodes})
 
 
 class ValueNode(SyntaxNodeBase):
@@ -952,7 +952,7 @@ class ValueNode(SyntaxNodeBase):
             self._value = token
         self._og_value = self.value
         self._padding = padding
-        self._nodes = [self]
+        self._nodes = []
         self._is_reversed = False
 
     def _convert_to_int(self):
@@ -1537,6 +1537,12 @@ class ParticleNode(SyntaxNodeBase):
 
     def __iter__(self):
         return iter(self.particles)
+
+    def __getstate__(self):
+        ret = {}
+        for attr_name in {"_token", "_order", "_particles"}:
+            ret[attr_name] = getattr(self, attr_name)
+        return (type(self), ret)
 
 
 class ListNode(SyntaxNodeBase):
