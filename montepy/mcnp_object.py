@@ -44,6 +44,10 @@ class _ExceptionContextAdder(ABCMeta):
                 else:
                     raise e
 
+        if isinstance(func, staticmethod):
+            return staticmethod(wrapped)
+        if isinstance(func, classmethod):
+            return classmethod(wrapped)
         return wrapped
 
     def __new__(meta, classname, bases, attributes):
