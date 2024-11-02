@@ -192,8 +192,17 @@ class LineExpansionWarning(Warning):
 
 
 def add_line_number_to_exception(error, broken_robot):
-    """ """
-    raise error
+    """
+    Adds additional context to an Exception raised by an :class:`~montepy.mcnp_object.MCNP_Object`.
+
+    This will add the line, file name, and the input lines to the error.
+
+    :param error: The error that was raised.
+    :type error: Exception
+    :param broken_robot: The parent object that had the error raised.
+    :type broken_robot: MCNP_Object
+    :raises Exception: ... that's the whole point.
+    """
     # avoid calling this n times recursively
     if hasattr(error, "montepy_handled"):
         raise error

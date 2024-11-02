@@ -25,13 +25,14 @@ import weakref
 
 class _ExceptionContextAdder(ABCMeta):
     """
+    A metaclass for wrapping all class properties and methods in :func:`~montepy.errors.add_line_number_to_exception`.
 
     """
 
     @staticmethod
     def _wrap_attr_call(func):
         """
-
+        Wraps the function, and returns the modified function.
         """
         @functools.wraps(func)
         def wrapped(*args, **kwargs):
@@ -52,6 +53,8 @@ class _ExceptionContextAdder(ABCMeta):
 
     def __new__(meta, classname, bases, attributes):
         """
+        This will replace all properties and callable attributes with 
+        wrapped versions.
 
         """
         new_attrs = {}
