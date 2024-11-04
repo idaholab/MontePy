@@ -3,7 +3,7 @@ from enum import Enum, unique
 
 
 @unique
-class Particle(str, Enum):
+class Particle(Enum):
     """
     Supported MCNP supported particles.
 
