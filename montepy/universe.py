@@ -17,11 +17,12 @@ class Universe(Numbered_MCNP_Object):
     """
 
     def __init__(self, number):
+        self._number = self._generate_default_node(int, -1)
         if not isinstance(number, int):
             raise TypeError("number must be int")
         if number < 0:
             raise ValueError(f"Universe number must be ≥ 0. {number} given.")
-        self._number = montepy.input_parser.syntax_node.ValueNode(number, int)
+        self._number = self._generate_default_node(int, number)
 
         class Parser:
             def parse(self, token_gen, input):
