@@ -39,6 +39,13 @@ MontePy Changelog
 0.5 releases
 ============
 
+#Next Version#
+--------------
+
+**Error Handling**
+
+* Added the input file, line number, and the input text to almost all errors raised by ``MCNP_Object`` (:pull:`581`).
+
 0.5.1
 --------------
 
