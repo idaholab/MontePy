@@ -578,6 +578,8 @@ See <https://www.montepy.org/migrations/migrate0_1.html> for more information ""
     def __eq__(self, other):
         if not isinstance(other, Material):
             return False
+        if self.number != other.number:
+            return False
         if len(self) != len(other):
             return False
         my_comp = sorted(self, key=lambda c: c[0])
