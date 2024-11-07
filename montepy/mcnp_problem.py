@@ -475,23 +475,7 @@ class MCNP_Problem:
         .. deprecated:: 1.0.0
             TODO
         """
-        surfaces = set(self.surfaces)
-        materials = set(self.materials)
-        transforms = set(self.transforms)
-        for cell in self.cells:
-            surfaces.update(set(cell.surfaces))
-            for surf in cell.surfaces:
-                if surf.transform:
-                    transforms.add(surf.transform)
-            if cell.material:
-                materials.add(cell.material)
-        surfaces = sorted(surfaces)
-        materials = sorted(materials)
-        transforms = sorted(transforms)
-        self._surfaces = Surfaces(surfaces, problem=self)
-        self._materials = Materials(materials, problem=self)
-        self._transforms = Transforms(transforms, problem=self)
-        self._data_inputs = sorted(set(self._data_inputs + materials + transforms))
+        raise DeprecationWarning("It dead")
 
     def write_problem(self, destination, overwrite=False):
         """
