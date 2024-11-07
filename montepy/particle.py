@@ -3,7 +3,7 @@ from enum import unique, Enum
 
 
 @unique
-class Particle(Enum, str):
+class Particle(str, Enum):
     """
     Supported MCNP supported particles.
 
@@ -56,7 +56,7 @@ class Particle(Enum, str):
 
 
 @unique
-class LibraryType(Enum, str):
+class LibraryType(str, Enum):
     """
 
     Taken from section of 5.6.1 of LA-UR-22-30006

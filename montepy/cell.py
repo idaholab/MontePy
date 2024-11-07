@@ -70,15 +70,15 @@ class Cell(Numbered_MCNP_Object):
         fill.Fill: ("_fill", True),
     }
 
-    _CHILD_OBJ_MAP = {
-        "material": Material,
-        "surfaces": Surface,
-        "complements": Cell,
-        "_fill_transform": montepy.data_inputs.transform.Transform,
-    }
     _parser = CellParser()
 
     def __init__(self, input=None):
+        self._CHILD_OBJ_MAP = {
+            "material": Material,
+            "surfaces": Surface,
+            "complements": Cell,
+            "_fill_transform": montepy.data_inputs.transform.Transform,
+        }
         self._material = None
         self._old_number = self._generate_default_node(int, -1)
         self._load_blank_modifiers()

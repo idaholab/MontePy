@@ -21,10 +21,12 @@ class Surface(Numbered_MCNP_Object):
 
     _parser = SurfaceParser()
 
-    _CHILD_OBJ_MAP = {"periodic_surface": Surface, "transform": transform.Transform}
-
     def __init__(self, input=None):
         super().__init__(input, self._parser)
+        self._CHILD_OBJ_MAP = {
+            "periodic_surface": Surface,
+            "transform": transform.Transform,
+        }
         self._periodic_surface = None
         self._old_periodic_surface = self._generate_default_node(int, None)
         self._transform = None

@@ -332,7 +332,7 @@ class NumberedObjectCollection(ABC):
         """
         if obj.number in nums or obj.number in new_nums:
             if obj == self[obj.number]:
-                continue
+                return
             raise NumberConflictError(f"")
         self.__num_cache[obj.number] = obj
         self._objects.append(obj)
