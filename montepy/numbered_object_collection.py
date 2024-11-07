@@ -319,7 +319,8 @@ class NumberedObjectCollection(ABC):
         """
         TODO
         """
-        pass
+        if self._problem:
+            obj._add_children_objs(self._problem)
 
     def _delete_hook(self, obj, **kwargs):
         """ """

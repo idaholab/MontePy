@@ -32,14 +32,14 @@ class Cell(Numbered_MCNP_Object):
     .. versionchanged:: 0.2.0
         Removed the ``comments`` argument due to overall simplification of init process.
 
-
-    :param input: the input for the cell definition
-    :type input: Input
-
     .. seealso::
 
             * :manual63sec:`5.2`
             * :manual62:`55`
+
+    :param input: the input for the cell definition
+    :type input: Input
+
     """
 
     _ALLOWED_KEYWORDS = {
@@ -68,6 +68,13 @@ class Cell(Numbered_MCNP_Object):
         universe_input.UniverseInput: ("_universe", True),
         lattice_input.LatticeInput: ("_lattice", True),
         fill.Fill: ("_fill", True),
+    }
+
+    _CHILD_OBJ_MAP = {
+        "material": Material,
+        "surfaces": Surface,
+        "complements": Cell,
+        "_fill_transform": montepy.data_inputs.transform.Transform,
     }
     _parser = CellParser()
 
@@ -181,6 +188,12 @@ class Cell(Numbered_MCNP_Object):
         :rtype: Fill
         """
         return self._fill
+
+    @property
+    def _fill_transform(self):
+        if self.fill:
+            return self.fill.transform
+        return None
 
     @universe.setter
     def universe(self, value):

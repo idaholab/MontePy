@@ -31,6 +31,10 @@ def _number_validator(self, number):
 
 class Numbered_MCNP_Object(MCNP_Object):
 
+    _CHILD_OBJ_MAP = {}
+    """
+    """
+
     @make_prop_val_node("_number", int, validator=_number_validator)
     def number(self):
         """
@@ -49,6 +53,24 @@ class Numbered_MCNP_Object(MCNP_Object):
         :rtype: int
         """
         pass
+
+    def _add_children_objs(self, problem):
+        """
+        TODO
+        """
+        # TODO type enforcement
+        prob_attr_map = montepy.MCNP_Problem._NUMBERED_OBJ_MAP
+        for attr_name, obj_class in self._CHILD_OBJ_MAP.items():
+            child_collect = getattr(self, attr_name)
+            if child_collect:
+                prob_collect_name = prob_attr_map[obj_class].__name__.lower()
+                prob_collect = getattr(problem, prob_collect_name)
+                try:
+                    # check if iterable
+                    iter(child_collect)
+                    prob_collect.update(child_collect)
+                except TypeError:
+                    prob_collect.append(child_collect)
 
     def clone(self, starting_number=None, step=None):
         """
