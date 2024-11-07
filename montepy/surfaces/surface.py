@@ -287,9 +287,6 @@ class Surface(Numbered_MCNP_Object):
     def __ne__(self, other):
         return not self == other
 
-    def __hash__(self):
-        return hash((self.number, str(self.surface_type)))
-
     def find_duplicate_surfaces(self, surfaces, tolerance):
         """Finds all surfaces that are effectively the same as this one.
 
