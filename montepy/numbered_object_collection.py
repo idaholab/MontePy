@@ -315,11 +315,35 @@ class NumberedObjectCollection(ABC):
             f"Number cache: {self.__num_cache}"
         )
 
-    def __internal_append(self, obj):
+    def _append_hook(self, obj):
+        """
+        TODO
+        """
+        pass
+
+    def _delete_hook(self, obj, **kwargs):
+        """ """
+        pass
+
+    def __internal_append(self, obj, **kwargs):
+        """
+        TODO
+        """
+        if obj.number in nums or obj.number in new_nums:
+            if obj == self[obj.number]:
+                continue
+            raise NumberConflictError(f"")
         self.__num_cache[obj.number] = obj
         self._objects.append(obj)
+        self._append_hook(obj, **kwargs)
         if self._problem:
             obj.link_to_problem(self._problem)
+
+    def __internal_delete(self, obj, **kwargs):
+        """ """
+        self.__num_cache.pop(obj.number, None)
+        self._objects.remove(obj)
+        self._delete_hook(obj, **kwargs)
 
     def add(self, obj):
         # TODO type enforcement
@@ -338,14 +362,10 @@ class NumberedObjectCollection(ABC):
         nums = set(self.numbers)
         new_nums = set()
         for obj in objs:
-            if obj.number in nums or obj.number in new_nums:
-                if obj == self[obj.number]:
-                    continue
-                raise NumberConflictError(f"")
             self.__internal_append(obj)
             new_nums.add(obj.number)
 
-    def append(self, obj):
+    def append(self, obj, **kwargs):
         """Appends the given object to the end of this collection.
 
         :param obj: the object to add.
@@ -354,11 +374,7 @@ class NumberedObjectCollection(ABC):
         """
         if not isinstance(obj, self._obj_class):
             raise TypeError(f"object being appended must be of type: {self._obj_class}")
-        self.check_number(obj.number)
-        self.__num_cache[obj.number] = obj
-        self._objects.append(obj)
-        if self._problem:
-            obj.link_to_problem(self._problem)
+        self.__internal_append(obj, **kwargs)
 
     def append_renumber(self, obj, step=1):
         """Appends the object, but will renumber the object if collision occurs.
@@ -494,8 +510,7 @@ class NumberedObjectCollection(ABC):
         if not isinstance(idx, int):
             raise TypeError("index must be an int")
         obj = self[idx]
-        self.__num_cache.pop(obj.number, None)
-        self._objects.remove(obj)
+        self.__internal_delete(obj)
 
     def __setitem__(self, key, newvalue):
         if not isinstance(key, int):
@@ -654,6 +669,7 @@ class NumberedObjectCollection(ABC):
             del self[obj.number]
         else:
             raise KeyError(f"This object is not in this collection")
+        self.__internal_delete(obj)
 
     def get(self, i: int, default=None) -> (Numbered_MCNP_Object, None):
         """
@@ -721,7 +737,7 @@ class NumberedDataObjectCollection(NumberedObjectCollection):
                 pass
         super().__init__(obj_class, objects, problem)
 
-    def append(self, obj, insert_in_data=True):
+    def _append_hook(self, obj, insert_in_data=True):
         """Appends the given object to the end of this collection.
 
         :param obj: the object to add.
@@ -730,7 +746,6 @@ class NumberedDataObjectCollection(NumberedObjectCollection):
         :type insert_in_data: bool
         :raises NumberConflictError: if this object has a number that is already in use.
         """
-        super().append(obj)
         if self._problem:
             if self._last_index:
                 index = self._last_index
@@ -745,40 +760,9 @@ class NumberedDataObjectCollection(NumberedObjectCollection):
                 self._problem.data_inputs.insert(index + 1, obj)
             self._last_index = index + 1
 
-    def __delitem__(self, idx):
-        if not isinstance(idx, int):
-            raise TypeError("index must be an int")
-        obj = self[idx]
-        super().__delitem__(idx)
+    def _delete_hook(self, obj):
         if self._problem:
             self._problem.data_inputs.remove(obj)
-
-    def remove(self, delete):
-        """
-        Removes the given object from the collection.
-
-        :param delete: the object to delete
-        :type delete: Numbered_MCNP_Object
-        """
-        super().remove(delete)
-        if self._problem:
-            self._problem.data_inputs.remove(delete)
-
-    def pop(self, pos=-1):
-        """
-        Pop the final items off of the collection
-
-        :param pos: The index of the element to pop from the internal list.
-        :type pos: int
-        :return: the final elements
-        :rtype: Numbered_MCNP_Object
-        """
-        if not isinstance(pos, int):
-            raise TypeError("The index for popping must be an int")
-        obj = super().pop(pos)
-        if self._problem:
-            self._problem.data_inputs.remove(obj)
-        return obj
 
     def clear(self):
         """
