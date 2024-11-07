@@ -471,6 +471,9 @@ class MCNP_Problem:
 
         .. warning::
             this does not move complement cells, and probably other objects.
+
+        .. deprecated:: 1.0.0
+            TODO
         """
         surfaces = set(self.surfaces)
         materials = set(self.materials)
