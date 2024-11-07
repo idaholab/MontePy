@@ -5,6 +5,7 @@ from montepy.data_inputs.element import Element
 from montepy.errors import *
 from montepy.utilities import *
 from montepy.input_parser.syntax_node import PaddingNode, ValueNode
+from montepy.particle import LibraryType
 
 import re
 import warnings
@@ -14,15 +15,48 @@ class Library(metaclass=SingletonGroup):
 
     __slots__ = "_library"
 
+    _SUFFIX_MAP = {
+        "c": LibraryType.NEUTRON,
+        "nc": LibraryType.NEUTRON,
+        "d": LibraryType.NEUTRON,
+        "m": LibraryType.NEUTRON,  # coupled neutron photon, invokes `g`
+        # TODO do we need to handle this edge case?
+        "g": LibraryType.PHOTO_ATOMIC,
+        "p": LibraryType.PHOTO_ATOMIC,
+        "u": LibraryType.PHOTO_NUCLEAR,
+        "y": LibraryType.NEUTRON,  # TODO is this right?
+        "e": LibraryType.ELECTRON,
+        "h": LibraryType.PROTON,
+        "o": LibraryType.DEUTERON,
+        "r": LibraryType.TRITON,
+        "s": LibraryType.HELION,
+        "a": LibraryType.ALPHA_PARTICLE,
+    }
+    _LIBRARY_RE = re.compile(r"\d{2,3}([a-z]{1,2})", re.I)
+
     def __init__(self, library):
         if not isinstance(library, str):
             raise TypeError(f"library must be a str. {library} given.")
+        match = self._LIBRARY_RE.fullmatch(library)
+        if not match:
+            raise ValueError(f"Not a valid library extension. {library} given.")
+        extension = match.group(1)
+        try:
+            lib_type = self._SUFFIX_MAP[extension]
+        except KeyError:
+            raise ValueError(f"Not a valid library extension suffix. {library} given.")
+        self._lib_type = lib_type
         self._library = library
 
     @property
     def library(self):
         """"""
         return self._library
+
+    @property
+    def library_type(self):
+        """ """
+        return self._lib_type
 
     def __hash__(self):
         return hash(self._library)
