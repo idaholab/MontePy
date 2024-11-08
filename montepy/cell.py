@@ -18,6 +18,7 @@ from montepy.surfaces.surface import Surface
 from montepy.surface_collection import Surfaces
 from montepy.universe import Universe
 from montepy.utilities import *
+import montepy
 
 
 def _link_geometry_to_cell(self, geom):

@@ -13,7 +13,7 @@ import warnings
 
 class Library(metaclass=SingletonGroup):
 
-    __slots__ = "_library"
+    __slots__ = "_library", "_lib_type"
 
     _SUFFIX_MAP = {
         "c": LibraryType.NEUTRON,
@@ -36,15 +36,21 @@ class Library(metaclass=SingletonGroup):
     def __init__(self, library):
         if not isinstance(library, str):
             raise TypeError(f"library must be a str. {library} given.")
-        match = self._LIBRARY_RE.fullmatch(library)
-        if not match:
-            raise ValueError(f"Not a valid library extension. {library} given.")
-        extension = match.group(1)
-        try:
-            lib_type = self._SUFFIX_MAP[extension]
-        except KeyError:
-            raise ValueError(f"Not a valid library extension suffix. {library} given.")
-        self._lib_type = lib_type
+        if library:
+            match = self._LIBRARY_RE.fullmatch(library)
+            print(match)
+            if not match:
+                raise ValueError(f"Not a valid library extension. {library} given.")
+            extension = match.group(1)
+            try:
+                lib_type = self._SUFFIX_MAP[extension]
+            except KeyError:
+                raise ValueError(
+                    f"Not a valid library extension suffix. {library} given."
+                )
+            self._lib_type = lib_type
+        else:
+            self._lib_type = None
         self._library = library
 
     @property

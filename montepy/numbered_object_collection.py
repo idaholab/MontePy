@@ -330,7 +330,7 @@ class NumberedObjectCollection(ABC):
         """
         TODO
         """
-        if obj.number in nums or obj.number in new_nums:
+        if obj.number in self.__num_cache:
             if obj == self[obj.number]:
                 return
             raise NumberConflictError(f"")
@@ -360,11 +360,8 @@ class NumberedObjectCollection(ABC):
         # TODO type enforcement
         # TODO propagate to Data Numbered
         # not thread safe
-        nums = set(self.numbers)
-        new_nums = set()
         for obj in objs:
             self.__internal_append(obj)
-            new_nums.add(obj.number)
 
     def append(self, obj, **kwargs):
         """Appends the given object to the end of this collection.
