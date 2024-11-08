@@ -17,7 +17,6 @@ class Library(metaclass=SingletonGroup):
 
     _SUFFIX_MAP = {
         "c": LibraryType.NEUTRON,
-        "nc": LibraryType.NEUTRON,
         "d": LibraryType.NEUTRON,
         "m": LibraryType.NEUTRON,  # coupled neutron photon, invokes `g`
         # TODO do we need to handle this edge case?
@@ -32,7 +31,7 @@ class Library(metaclass=SingletonGroup):
         "s": LibraryType.HELION,
         "a": LibraryType.ALPHA_PARTICLE,
     }
-    _LIBRARY_RE = re.compile(r"\d{2,3}([a-z]{1,2})", re.I)
+    _LIBRARY_RE = re.compile(r"\d{2,3}[a-z]?([a-z])", re.I)
 
     def __init__(self, library):
         if not isinstance(library, str):
