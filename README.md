@@ -45,41 +45,41 @@ and the Python API documentation.
 * Can quickly [access cells, surfaces, and materials by their numbers](https://www.montepy.org/starting.html#collections-are-accessible-by-number). For example: `cell = problem.cells[105]`.
 * Can quickly update cell parameters, [such as importances](https://www.montepy.org/starting.html#setting-cell-importances). For example `cell.importance.neutron = 2.0`.
 * Can easily [create universes, and fill other cells with universes](https://www.montepy.org/starting.html#universes).
-* Currently has over 430 test cases.
+* Currently has over 550 test cases.
 
  
 Here is a quick example showing multiple tasks in MontePy:
 
-```python
->>> import montepy
->>> # read in file
->>> problem = montepy.read_input("tests/inputs/test.imcnp")
+
+``` python
+import montepy
+# read in file
+problem = montepy.read_input("tests/inputs/test.imcnp")
   
->>> # set photon importance for multiple cells
->>> importances = {1: 0.005,
-...    2: 0.1,
-...    3: 1.0,
-...    99: 1.235
-... }
->>> for cell_num, importance in importances.items():
-...    problem.cells[cell_num].importance.photon = importance
+# set photon importance for multiple cells
+importances = {1: 0.005,
+   2: 0.1,
+   3: 1.0,
+   99: 1.235
+}
+for cell_num, importance in importances.items():
+   problem.cells[cell_num].importance.photon = importance
 
->>> #create a universe and fill another cell with it
->>> universe = montepy.Universe(123)
->>> problem.universes.append(universe)
->>> # add all cells with numbers between 1 and 4
->>> universe.claim(problem.cells[1:5])
->>> # fill cell 99 with universe 123
->>> problem.cells[99].fill.universe = universe
+#create a universe and fill another cell with it
+universe = montepy.Universe(123)
+problem.universes.append(universe)
+# add all cells with numbers between 1 and 4
+universe.claim(problem.cells[1:5])
+# fill cell 99 with universe 123
+problem.cells[99].fill.universe = universe
 
->>> # update all surfaces numbers by adding 1000 to them
->>> for surface in problem.surfaces:
-...    surface.number += 1000
->>> # all cells using these surfaces will be automatically updated as well
+# update all surfaces numbers by adding 1000 to them
+for surface in problem.surfaces:
+   surface.number += 1000
+# all cells using these surfaces will be automatically updated as well
 
->>> #write out an updated file
->>> problem.write_problem("foo_update.imcnp")
-
+#write out an updated file
+problem.write_problem("foo_update.imcnp")
 ```
 
 ## Limitations
@@ -100,27 +100,23 @@ Here a few of the known bugs and limitations:
 There are some python packages that offer some of the same features as MontePy,
     but don't offer the same level of robustness, ease of installation, and user friendliness.
 
-For reading, editing, and writing input files there are:
 
-* [MCNP™y](https://github.rpi.edu/NuCoMP/mcnpy). MontePy differs by being:
-   * On PyPI, and can be installed via pip.
-   * Only requires a python interpreter, and not a Java virtual machine. 
-   * Allowing contributions from anyone with a public GitHub account
+Many of the competitors do not offer the robustness that MontePy does becuase,
+    they do not utilize context-free parsing (as of 2024). 
+These packages are:
 
-* [pyMCNP](https://github.com/FSIBT/PyMCNP). MontePy differs by:
-  * being on PyPI.
-  * Using a context-free parser that can understand cell geometry, and preserve user formatting.
-  * Supporting more edge cases of MCNP syntax (usually covered by foot notes in the manual).
+* [pyMCNP](https://github.com/FSIBT/PyMCNP)
 
-* [MCNP-Input-Reader](https://github.com/ENEA-Fusion-Neutronics/MCNP-Input-Reader). MontePy differs by:
-  * Being well documented
-  * Using a context-free parser.
-  * Being actively maintained.
+* [MCNP-Input-Reader](https://github.com/ENEA-Fusion-Neutronics/MCNP-Input-Reader)
 
-* [numjuggler](https://github.com/inr-kit/numjuggler). MontePy differs by:
-  * Using a context-free-parser.
-  * Focusing an object oriented user interface rather than trying to be a one-off command line utility.
-  * Being actively maintained.
+* [numjuggler](https://github.com/inr-kit/numjuggler)
+
+The only other library that does utilize context-free parsing that we are aware is
+[MCNP™y](https://github.rpi.edu/NuCoMP/mcnpy). MontePy differs by being:
+* On PyPI, and can be installed via pip.
+* Only requires a python interpreter, and not a Java virtual machine. 
+* Allowing contributions from anyone with a public GitHub account
+
 
 For only writing, or templating an input file there are also some great tools out there. 
 These packages don't provide the same functionality as MontePy inherently,
