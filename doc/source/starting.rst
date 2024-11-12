@@ -582,7 +582,7 @@ As with OpenMC, the set logic operations have been mapped to python's bit logic 
 
    Half-spaces need not be contiguous.
 
-Order of precedence and grouping is automatically handled by python so you can easily write complicated geometry in one-line.
+Order of precedence and grouping is automatically handled by Python so you can easily write complicated geometry in one-line.
 
 .. testcode::
 
@@ -609,7 +609,7 @@ Order of precedence and grouping is automatically handled by python so you can e
 .. note::
 
   MontePy does not check if the geometry definition is "rational".
-  It doesn't check for being finite, existant (having any volumen at all), or being infinite.
+  It doesn't check for being finite, existant (having any volume at all), or being infinite.
   Nor does it check for overlapping geometry.
 
 Setting and Modifying Geometry
