@@ -32,7 +32,10 @@ class _DefaultLibraries:
 
     def __getitem__(self, key):
         key = self._validate_key(key)
-        return self._libraries[key]
+        try:
+            return self._libraries[key]
+        except KeyError:
+            return None
 
     def __setitem__(self, key, value):
         key = self._validate_key(key)
@@ -49,8 +52,10 @@ class _DefaultLibraries:
 
     @staticmethod
     def _validate_key(key):
-        if not isinstance(key, LibraryType):
+        if not isinstance(key, (str, LibraryType)):
             raise TypeError("")
+        if isinstance(key, str):
+            key = LibraryType(key)
         return key
 
 
