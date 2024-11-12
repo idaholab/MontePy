@@ -39,7 +39,7 @@ MontePy Changelog
 0.5 releases
 ============
 
-#Next Version#
+0.5.2
 --------------
 
 **Error Handling**

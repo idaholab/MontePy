@@ -10,7 +10,7 @@ c
          -1000  $ dollar comment
 	imp:n,p=1 U=350 trcl=5
 2 2 8
-      -1005
+      -1005  -1015 1020 -1025
      imp:n=1
      imp:p=0.5
 3 3 -1
@@ -28,6 +28,9 @@ C surfaces
 1000 SO 1
 1005 RCC 0 1.5 -0.5 0 0 1 0.25
 1010 SO 3
+1015 CZ 5.0
+1020 PZ 10
+1025 PZ 15
 
 C data
 C materials

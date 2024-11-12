@@ -46,6 +46,7 @@ test = [
 	"hypothesis",
 	"pytest-profiling",
 	"montepy[build]",
+	"phmutest",
 ]
 # This is needed for a sphinx bug. See #414.
 doc = [
@@ -54,6 +55,7 @@ doc = [
 	"pydata_sphinx_theme",
 	"sphinx-sitemap",
 	"sphinx-favicon",
+    "sphinx-copybutton"
 ]
 format = ["black>=23.3.0"]
 build = [
@@ -62,10 +64,10 @@ build = [
 	"setuptools-scm>=8",
 ]
 develop = [
-	"montepy[test]",
-	"montepy[doc]",
-	"montepy[format]",
+	"montepy[test,doc,format]",
 ]
+demos = ["jupyter"]
+demo-test = ["montepy[demos]", "papermill"]
 
 
 [project.urls]
@@ -105,3 +107,4 @@ minversion = "6.0"
 junit_logging = "all"
 junit_family="xunit2"
 filterwarnings="error"
+testpaths = ["tests"]
