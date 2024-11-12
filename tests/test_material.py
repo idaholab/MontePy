@@ -344,8 +344,12 @@ def test_fancy_names(input, Z, A, meta, library):
     st.integers(1, 118),
     st.floats(2.1, 2.7),
     st.integers(0, 4),
-    st.integers(0, 1000),
-    st.characters(min_codepoint=97, max_codepoint=122),
+    st.integers(0, 999),
+    # based on Table B.1 of the 6.3.1 manual
+    # ignored `t` because that requires an `MT`
+    st.sampled_from(
+        [c for c in "cdmgpuyehporsa"]
+    ),  # lazy way to avoid so many quotation marks
     st.booleans(),
 )
 def test_fancy_names_pbt(

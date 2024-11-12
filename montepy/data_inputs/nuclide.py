@@ -38,7 +38,6 @@ class Library(metaclass=SingletonGroup):
             raise TypeError(f"library must be a str. {library} given.")
         if library:
             match = self._LIBRARY_RE.fullmatch(library)
-            print(match)
             if not match:
                 raise ValueError(f"Not a valid library extension. {library} given.")
             extension = match.group(1)
