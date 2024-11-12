@@ -52,7 +52,7 @@ New Interface & Migration
         This design is not finalized and is subject to change.
         This is the currently planned design for ``1.0.0a1``.
         If you have input you can `join the discussion <https://github.com/idaholab/MontePy/discussions/475>`_.
-        This is alos where alpha-testing will be announced.
+        This is also where alpha-testing will be announced.
 
 ``material_components`` removal
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
