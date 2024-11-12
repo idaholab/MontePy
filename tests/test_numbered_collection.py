@@ -177,6 +177,7 @@ class TestNumberedObjectCollection(unittest.TestCase):
         cells = copy.deepcopy(self.simple_problem.cells)
         cell = cells[1]
         size = len(cells)
+        cell = copy.deepcopy(cell)
         with self.assertRaises(NumberConflictError):
             cells[1] = cell
         with self.assertRaises(TypeError):
@@ -277,12 +278,12 @@ class TestNumberedObjectCollection(unittest.TestCase):
         new_surf.number = 5
         surfaces.append(new_surf)
         size = len(surfaces)
-        new_surf = copy.deepcopy(new_surf)
+        new_surf1 = copy.deepcopy(new_surf)
         with self.assertRaises(NumberConflictError):
-            surfaces.append(new_surf)
-        surfaces.append_renumber(new_surf)
+            surfaces.append(new_surf1)
+        surfaces.append_renumber(new_surf1)
         self.assertEqual(len(surfaces), size + 1)
-        self.assertEqual(new_surf.number, 6)
+        self.assertEqual(new_surf1.number, 6)
 
     def test_str(self):
         cells = self.simple_problem.cells
