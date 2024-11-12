@@ -1,4 +1,8 @@
 # Copyright 2024, Battelle Energy Alliance, LLC All Rights Reserved.
+
+import traceback
+
+
 class LineOverRunWarning(UserWarning):
     """
     Raised when non-comment inputs exceed the allowed line length in an input.
@@ -25,12 +29,7 @@ class MalformedInputError(ValueError):
             path = ""
             start_line = 0
             lines = ""
-        self.message = f"""
-: {path}, line {start_line}
-{message}
-
-the full input:
-{lines}"""
+        self.message = message
         super().__init__(self.message)
 
 
@@ -62,27 +61,52 @@ class ParsingError(MalformedInputError):
                     line_no = 0
                     index = 0
                     base_message = f"The input ended prematurely."
-                buffer = [f"    {path}, line {start_line + line_no -1}", ""]
-                if input:
-                    for i, line in enumerate(input.input_lines):
-                        if i == line_no - 1:
-                            buffer.append(f"    >{start_line + i:5g}| {line}")
-                            if token:
-                                length = len(token.value)
-                                marker = "^" * length
-                                buffer.append(
-                                    f"{' '* 10}|{' ' * (index+1)}{marker} not expected here."
-                                )
-                        else:
-                            buffer.append(f"     {start_line + i:5g}| {line}")
-                    buffer.append(base_message)
-                    buffer.append(error["message"])
-                messages.append("\n".join(buffer))
+                messages.append(
+                    _print_input(
+                        path,
+                        start_line,
+                        error["message"],
+                        line_no,
+                        input,
+                        token,
+                        base_message,
+                        index,
+                    )
+                )
             self.message = "\n".join(messages + [message])
         else:
             self.message = message
 
         ValueError.__init__(self, self.message)
+
+
+def _print_input(
+    path,
+    start_line,
+    error_msg,
+    line_no=0,
+    input=None,
+    token=None,
+    base_message=None,
+    index=None,
+):
+    buffer = [f"    {path}, line {start_line + line_no -1}", ""]
+    if input:
+        for i, line in enumerate(input.input_lines):
+            if i == line_no - 1:
+                buffer.append(f"    >{start_line + i:5g}| {line}")
+                if token:
+                    length = len(token.value)
+                    marker = "^" * length
+                    buffer.append(
+                        f"{' '* 10}|{' ' * (index+1)}{marker} not expected here."
+                    )
+            else:
+                buffer.append(f"     {start_line + i:5g}| {line}")
+        if base_message:
+            buffer.append(base_message)
+        buffer.append(error_msg)
+    return "\n".join(buffer)
 
 
 class NumberConflictError(Exception):
@@ -189,3 +213,44 @@ class LineExpansionWarning(Warning):
     def __init__(self, message):
         self.message = message
         super().__init__(self.message)
+
+
+def add_line_number_to_exception(error, broken_robot):
+    """
+    Adds additional context to an Exception raised by an :class:`~montepy.mcnp_object.MCNP_Object`.
+
+    This will add the line, file name, and the input lines to the error.
+
+    :param error: The error that was raised.
+    :type error: Exception
+    :param broken_robot: The parent object that had the error raised.
+    :type broken_robot: MCNP_Object
+    :raises Exception: ... that's the whole point.
+    """
+    # avoid calling this n times recursively
+    if hasattr(error, "montepy_handled"):
+        raise error
+    error.montepy_handled = True
+    args = error.args
+    trace = error.__traceback__
+    if len(args) > 0:
+        message = args[0]
+    else:
+        message = ""
+    try:
+        input_obj = broken_robot._input
+        assert input_obj is not None
+        lineno = input_obj.line_number
+        file = str(input_obj.input_file)
+        lines = input_obj.input_lines
+        message = _print_input(file, lineno, message, input=input_obj)
+    except Exception as e:
+        try:
+            message = (
+                f"{message}\n\nError came from {broken_robot} from an unknown file."
+            )
+        except Exception as e2:
+            message = f"{message}\n\nError came from an object of type {type(broken_robot)} from an unknown file."
+    args = (message,) + args[1:]
+    error.args = args
+    raise error.with_traceback(trace)
