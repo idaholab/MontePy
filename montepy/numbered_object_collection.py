@@ -180,8 +180,8 @@ class NumberedObjectCollection(ABC):
         """
         if not isinstance(pos, int):
             raise TypeError("The index for popping must be an int")
-        obj = self._objects.pop(pos)
-        self.__num_cache.pop(obj.number, None)
+        obj = self._objects[pos]
+        self.__internal_delete(obj)
         return obj
 
     def clear(self):
@@ -233,8 +233,13 @@ class NumberedObjectCollection(ABC):
         :param delete: the object to delete
         :type delete: Numbered_MCNP_Object
         """
-        self.__num_cache.pop(delete.number, None)
-        self._objects.remove(delete)
+        if not isinstance(delete, self._obj_class):
+            raise TypeError("")
+        candidate = self[delete.number]
+        if delete is candidate:
+            del self[delete.number]
+        else:
+            raise KeyError(f"This object is not in this collection")
 
     def clone(self, starting_number=None, step=None):
         """
@@ -331,7 +336,7 @@ class NumberedObjectCollection(ABC):
         TODO
         """
         if obj.number in self.__num_cache:
-            if obj == self[obj.number]:
+            if obj is self[obj.number]:
                 return
             raise NumberConflictError(f"")
         self.__num_cache[obj.number] = obj
@@ -349,11 +354,6 @@ class NumberedObjectCollection(ABC):
     def add(self, obj):
         # TODO type enforcement
         # TODO propagate to Data Numbered
-        if obj.number in self.numbers:
-            # already in there can ignore
-            if obj == self[obj.number]:
-                return
-            raise NumberConflictError(f"")
         self.__internal_append(obj)
 
     def update(self, objs):
@@ -365,6 +365,8 @@ class NumberedObjectCollection(ABC):
 
     def append(self, obj, **kwargs):
         """Appends the given object to the end of this collection.
+
+        # TODO: do I need to document that re append does nothing?
 
         :param obj: the object to add.
         :type obj: Numbered_MCNP_Object
@@ -658,16 +660,6 @@ class NumberedObjectCollection(ABC):
             self.remove(obj)
         except (TypeError, KeyError) as e:
             pass
-
-    def remove(self, obj):
-        if not isinstance(obj, self._obj_class):
-            raise TypeError("")
-        candidate = self[obj.number]
-        if obj is candidate:
-            del self[obj.number]
-        else:
-            raise KeyError(f"This object is not in this collection")
-        self.__internal_delete(obj)
 
     def get(self, i: int, default=None) -> (Numbered_MCNP_Object, None):
         """
