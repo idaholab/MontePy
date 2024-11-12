@@ -5,9 +5,9 @@ Getting Started with MontePy
 
    import montepy
 
-MontePy is a python API for reading, editing, and writing MCNP input files.
-It does not run MCNP nor does it parse MCNP output files.
-The library provides a semantic interface for working with input files, or our preferred terminology: problems.
+MontePy is a Python API for reading, editing, and writing MCNP input files.
+The library provides a semantic interface for working with input files ("MCNP problems").
+It does not run MCNP, nor does it parse MCNP output files.
 It understands that the second entry on a cell card is the material number,
 and will link the cell with its material object.
 
