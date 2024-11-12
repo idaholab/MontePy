@@ -50,7 +50,8 @@ and the Python API documentation.
  
 Here is a quick example showing multiple tasks in MontePy:
 
-```python
+
+``` python
 import montepy
 # read in file
 problem = montepy.read_input("tests/inputs/test.imcnp")
@@ -98,6 +99,7 @@ Here a few of the known bugs and limitations:
 
 There are some python packages that offer some of the same features as MontePy,
     but don't offer the same level of robustness, ease of installation, and user friendliness.
+
 
 Many of the competitors do not offer the robustness that MontePy does becuase,
     they do not utilize context-free parsing (as of 2024). 

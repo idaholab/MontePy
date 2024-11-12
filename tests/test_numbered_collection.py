@@ -20,7 +20,7 @@ class TestNumberedObjectCollection(unittest.TestCase):
 
     def test_numbers(self):
         cell_numbers = [1, 2, 3, 99, 5]
-        surf_numbers = [1000, 1005, 1010]
+        surf_numbers = [1000, 1005, 1010, 1015, 1020, 1025]
         mat_numbers = [1, 2, 3]
         problem = self.simple_problem
         self.assertEqual(list(problem.cells.numbers), cell_numbers)
@@ -225,9 +225,9 @@ class TestNumberedObjectCollection(unittest.TestCase):
         test_numbers = [c.number for c in self.simple_problem.cells[5::-1]]
         self.assertEqual([5, 3, 2, 1], test_numbers)
         test_numbers = [s.number for s in self.simple_problem.surfaces[1000::10]]
-        self.assertEqual([1000, 1010], test_numbers)
+        self.assertEqual([1000, 1010, 1020], test_numbers)
         test_numbers = [s.number for s in self.simple_problem.surfaces[:]]
-        self.assertEqual([1000, 1005, 1010], test_numbers)
+        self.assertEqual([1000, 1005, 1010, 1015, 1020, 1025], test_numbers)
         test_numbers = [m.number for m in self.simple_problem.materials[:2]]
         self.assertEqual([1, 2], test_numbers)
         test_numbers = [m.number for m in self.simple_problem.materials[::2]]
