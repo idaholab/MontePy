@@ -171,6 +171,25 @@ See <https://www.montepy.org/migrations/migrate0_1.html> for more information ""
         """
         pass
 
+    def get_nuclide_library(self, nuclide, library_type):
+        """ """
+        if not isinstance(nuclide, Nuclide):
+            raise TypeError(f"nuclide must be a Nuclide. {nuclide} given.")
+        if not isinstance(library_type, (str, LibraryType)):
+            raise TypeError(
+                f"Library_type must be a LibraryType. {library_type} given."
+            )
+        if isinstance(library_type, str):
+            library_type = LibraryType(library_type)
+        if nuclide.library.library_type == library_type:
+            return nuclide.library
+        lib = self.default_libraries[library_type]
+        if lib:
+            return lib
+        if self._problem:
+            return self._problem.materials.default_libraries[library_type]
+        return None
+
     def __getitem__(self, idx):
         """ """
         if not isinstance(idx, (int, slice)):
