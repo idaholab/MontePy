@@ -42,7 +42,11 @@ class _ExceptionContextAdder(ABCMeta):
             except Exception as e:
                 if len(args) > 0 and isinstance(args[0], MCNP_Object):
                     self = args[0]
+                    if hasattr(self, "_handling_exception"):
+                        raise e
+                    self._handling_exception = True
                     add_line_number_to_exception(e, self)
+                    del self._handling_exception
                 else:
                     raise e
 
