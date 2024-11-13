@@ -47,3 +47,42 @@ Design Philosophy
 
 Doc Strings
 -----------
+
+All public (not ``_private``) classes and functions *must* have doc strings.
+Most ``_private`` classes and functions should still be documented for other developers.
+
+Mandatory Elements
+^^^^^^^^^^^^^^^^^^
+
+#. One line descriptions.
+#. Description of all inputs.
+#. Description of return values (can be skipped for None).
+#. ``.. versionadded::`` information for all new functions and classes.
+
+.. note::
+
+    Class ``__init__`` arguments are documented in the class docstrings and not in ``__init__``. 
+
+Highly Recommended.
+^^^^^^^^^^^^^^^^^^^
+
+#. A class level ``.. seealso:`` section referencing the user manuals.
+
+.. note::
+
+   How to reference manual sections
+
+#. An examples code block. 
+
+Example 
+^^^^^^^
+
+.. code-block:: python
+
+    class Cell(Numbered_MCNP_Object):
+        """
+        Test
+
+        """
+
+
