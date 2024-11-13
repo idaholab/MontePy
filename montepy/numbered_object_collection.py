@@ -338,7 +338,9 @@ class NumberedObjectCollection(ABC):
         if obj.number in self.__num_cache:
             if obj is self[obj.number]:
                 return
-            raise NumberConflictError(f"")
+            raise NumberConflictError(
+                f"Number {obj.number} is already in use for the collection: {type(self)} by {self[obj.number]}"
+            )
         self.__num_cache[obj.number] = obj
         self._objects.append(obj)
         self._append_hook(obj, **kwargs)
