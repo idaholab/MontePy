@@ -366,7 +366,13 @@ class MCNP_Problem:
                         try:
                             obj = obj_parser(input)
                             obj.link_to_problem(self)
-                            obj_container.append(obj)
+                            if isinstance(
+                                obj_container,
+                                montepy.numbered_object_collection.NumberedObjectCollection,
+                            ):
+                                obj_container.append(obj, initial_load=True)
+                            else:
+                                obj_container.append(obj)
                         except (
                             MalformedInputError,
                             NumberConflictError,

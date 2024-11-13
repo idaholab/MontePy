@@ -320,10 +320,12 @@ class NumberedObjectCollection(ABC):
             f"Number cache: {self.__num_cache}"
         )
 
-    def _append_hook(self, obj):
+    def _append_hook(self, obj, initial_load=False):
         """
         TODO
         """
+        if initial_load:
+            return
         if self._problem:
             obj._add_children_objs(self._problem)
 
