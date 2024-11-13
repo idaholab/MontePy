@@ -59,9 +59,18 @@ class Numbered_MCNP_Object(MCNP_Object):
         TODO
         """
         # TODO type enforcement
+        # skip lambda transforms
+        filters = {montepy.Transform: lambda transform: not transform.hidden_transform}
         prob_attr_map = montepy.MCNP_Problem._NUMBERED_OBJ_MAP
         for attr_name, obj_class in self._CHILD_OBJ_MAP.items():
             child_collect = getattr(self, attr_name)
+            # allow skipping certain items
+            if (
+                obj_class in filters
+                and child_collect
+                and not filters[obj_class](child_collect)
+            ):
+                continue
             if child_collect:
                 prob_collect_name = prob_attr_map[obj_class].__name__.lower()
                 prob_collect = getattr(problem, prob_collect_name)
