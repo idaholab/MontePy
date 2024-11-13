@@ -1,9 +1,9 @@
 # Copyright 2024, Battelle Energy Alliance, LLC All Rights Reserved.
-from enum import unique, StrEnum
+from enum import unique, Enum
 
 
 @unique
-class SurfaceType(StrEnum):
+class SurfaceType(str, Enum):
     """
     An enumeration of the surface types allowed.
 
