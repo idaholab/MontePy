@@ -77,8 +77,10 @@ class Numbered_MCNP_Object(MCNP_Object):
                 try:
                     # check if iterable
                     iter(child_collect)
+                    assert not isinstance(child_collect, MCNP_Object)
+                    # ensure isn't a material or something
                     prob_collect.update(child_collect)
-                except TypeError:
+                except (TypeError, AssertionError):
                     prob_collect.append(child_collect)
 
     def clone(self, starting_number=None, step=None):
