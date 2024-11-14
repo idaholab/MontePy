@@ -137,7 +137,7 @@ class NumberedObjectCollection(ABC):
                 conflict = True
         if conflict:
             raise NumberConflictError(
-                f"Number {number} is already in use for the collection: {type(self)} by {self[number]}"
+                f"Number {number} is already in use for the collection: {type(self).__name__} by {self[number]}"
             )
 
     def _update_number(self, old_num, new_num, obj):
@@ -215,7 +215,7 @@ class NumberedObjectCollection(ABC):
             if obj.number in nums:
                 raise NumberConflictError(
                     (
-                        f"When adding to {type(self)} there was a number collision due to "
+                        f"When adding to {type(self).__name__} there was a number collision due to "
                         f"adding {obj} which conflicts with {self[obj.number]}"
                     )
                 )
@@ -341,7 +341,7 @@ class NumberedObjectCollection(ABC):
             if obj is self[obj.number]:
                 return
             raise NumberConflictError(
-                f"Number {obj.number} is already in use for the collection: {type(self)} by {self[obj.number]}"
+                f"Number {obj.number} is already in use for the collection: {type(self).__name__} by {self[obj.number]}"
             )
         self.__num_cache[obj.number] = obj
         self._objects.append(obj)

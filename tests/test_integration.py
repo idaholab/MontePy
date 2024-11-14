@@ -269,7 +269,6 @@ def test_problem_children_adder(simple_problem):
     cell.number = cell_num
     cell.universe = problem.universes[350]
     problem.cells.append(cell)
-    problem.add_cell_children_to_problem()
     assert surf in problem.surfaces
     assert mat in problem.materials
     assert mat in problem.data_inputs
