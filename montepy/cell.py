@@ -817,9 +817,16 @@ class Cell(Numbered_MCNP_Object):
             ]:
                 for surf in geom_collect:
                     try:
-                        region_change_map[surf] = collect[
-                            surf.number if isinstance(surf, (Surface, Cell)) else surf
-                        ]
+                        region_change_map[surf.number] = (
+                            surf,
+                            collect[
+                                (
+                                    surf.number
+                                    if isinstance(surf, (Surface, Cell))
+                                    else surf
+                                )
+                            ],
+                        )
                     except KeyError:
                         # ignore empty surfaces on clone
                         pass

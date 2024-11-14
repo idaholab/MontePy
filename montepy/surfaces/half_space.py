@@ -1,4 +1,5 @@
 # Copyright 2024, Battelle Energy Alliance, LLC All Rights Reserved.
+from __future__ import annotations
 import montepy
 from montepy.errors import *
 from montepy.geometry_operators import Operator
@@ -202,20 +203,31 @@ class HalfSpace:
                 if item not in parent:
                     parent.append(item)
 
-    def remove_duplicate_surfaces(self, deleting_dict):
+    def remove_duplicate_surfaces(
+        self,
+        deleting_dict: dict[
+            int, tuple[montepy.surfaces.Surface, montepy.surfaces.Surface]
+        ],
+    ):
         """Updates old surface numbers to prepare for deleting surfaces.
 
         This will ensure any new surfaces or complements properly get added to the parent
         cell's :func:`~montepy.cell.Cell.surfaces` and :func:`~montepy.cell.Cell.complements`.
 
+        .. versionchanged:: 1.0.0
+
+            The form of the deleting_dict was changed as :class:`~montepy.surfaces.Surface` is no longer hashable.
+
         :param deleting_dict: a dict of the surfaces to delete, mapping the old surface to the new surface to replace it.
-        :type deleting_dict: dict
+            The keys are the number of the old surface. The values are a tuple
+            of the old surface, and then the new surface.
+        :type deleting_dict: dict[int, tuple[Surface, Surface]]
         """
         _, surfaces = self._get_leaf_objects()
         new_deleting_dict = {}
-        for dead_surface, new_surface in deleting_dict.items():
+        for num, (dead_surface, new_surface) in deleting_dict.items():
             if dead_surface in surfaces:
-                new_deleting_dict[dead_surface] = new_surface
+                new_deleting_dict[num] = (dead_surface, new_surface)
         if len(new_deleting_dict) > 0:
             self.left.remove_duplicate_surfaces(new_deleting_dict)
             if self.right is not None:
@@ -681,16 +693,31 @@ class UnitHalfSpace(HalfSpace):
             montepy.surface_collection.Surface(self._divider),
         )
 
-    def remove_duplicate_surfaces(self, deleting_dict):
+    def remove_duplicate_surfaces(
+        self,
+        deleting_dict: dict[
+            int, tuple[montepy.surfaces.Surface, montepy.surfaces.Surface]
+        ],
+    ):
         """Updates old surface numbers to prepare for deleting surfaces.
 
-        :param deleting_dict: a dict of the surfaces to delete.
-        :type deleting_dict: dict
+        This will ensure any new surfaces or complements properly get added to the parent
+        cell's :func:`~montepy.cell.Cell.surfaces` and :func:`~montepy.cell.Cell.complements`.
+
+        .. versionchanged:: 1.0.0
+
+            The form of the deleting_dict was changed as :class:`~montepy.surfaces.Surface` is no longer hashable.
+
+        :param deleting_dict: a dict of the surfaces to delete, mapping the old surface to the new surface to replace it.
+            The keys are the number of the old surface. The values are a tuple
+            of the old surface, and then the new surface.
+        :type deleting_dict: dict[int, tuple[Surface, Surface]]
         """
         if not self.is_cell:
-            if self.divider in deleting_dict:
-                new_surface = deleting_dict[self.divider]
-                self.divider = new_surface
+            if self.divider.number in deleting_dict:
+                old_surf, new_surface = deleting_dict[self.divider.number]
+                if self.divider is old_surf:
+                    self.divider = new_surface
 
     def __len__(self):
         return 1

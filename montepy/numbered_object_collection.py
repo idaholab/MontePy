@@ -547,7 +547,7 @@ class NumberedObjectCollection(ABC):
         self_nums = set(self.keys())
         other_nums = set(other.keys())
         new_nums = operator(self_nums, other_nums)
-        new_obs = []
+        new_objs = []
         # TODO should we verify all the objects are the same?
         for obj in self:
             if obj.number in new_nums:
