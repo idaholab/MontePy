@@ -130,23 +130,23 @@ def test_cells_parsing_linking(simple_problem):
     mats = simple_problem.materials
     mat_answer = [mats[1], mats[2], mats[3], None, None]
     surfs = simple_problem.surfaces
+    Surfaces = montepy.surface_collection.Surfaces
     surf_answer = [
-        {surfs[1000]},
-        {surfs[1005], *surfs[1015:1026]},
-        set(surfs[1000:1011]),
-        {surfs[1010]},
-        set(),
+        Surfaces([surfs[1000]]),
+        Surfaces([surfs[1005], *surfs[1015:1026]]),
+        surfs[1000:1011],
+        Surfaces([surfs[1010]]),
+        Surfaces(),
     ]
     cells = simple_problem.cells
-    complements = [set()] * 4 + [{cells[99]}]
+    complements = [montepy.cells.Cells()] * 4 + [cells[99:100]]
     for i, cell in enumerate(simple_problem.cells):
         print(cell)
         print(surf_answer[i])
         assert cell.number == cell_numbers[i]
         assert cell.material == mat_answer[i]
-        surfaces = set(cell.surfaces)
-        assert surfaces.union(surf_answer[i]) == surfaces
-        assert set(cell.complements).union(complements[i]) == complements[i]
+        assert cell.surfaces.union(surf_answer[i]) == surf_answer[i]
+        assert cell.complements.union(complements[i]) == complements[i]
 
 
 def test_message(simple_problem):
