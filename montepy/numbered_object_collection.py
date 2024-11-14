@@ -720,6 +720,19 @@ class NumberedObjectCollection(ABC):
         for o in self._objects:
             yield o.number, o
 
+    def __eq__(self, other):
+        if not isinstance(other, type(self)):
+            raise TypeError(
+                f"Can only compare {type(self).__name__} to each other. {other} was given."
+            )
+        if len(self) != len(other):
+            return False
+        keys = sorted(self.keys())
+        for key in keys:
+            if self[key] != other[key]:
+                return False
+        return True
+
 
 class NumberedDataObjectCollection(NumberedObjectCollection):
     def __init__(self, obj_class, objects=None, problem=None):
