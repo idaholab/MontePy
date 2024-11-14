@@ -30,8 +30,31 @@ class Cell(Numbered_MCNP_Object):
     """
     Object to represent a single MCNP cell defined in CSG.
 
-    .. versionchanged:: 0.2.0
-        Removed the ``comments`` argument due to overall simplification of init process.
+    Examples
+    ^^^^^^^^
+
+    First the cell needs to be initialized.
+
+    .. code-block:: python
+
+        import montepy
+        cell = montepy.Cell()
+
+    Then a number can be set.
+    By default the cell is voided:
+
+    .. doctest:: python
+
+        >>> cell.number = 5
+        >>> cell.material
+        None
+        >>> mat = montepy.Material()
+        >>> mat.number = 20
+        >>> mat.append_nuclide("1001.80c", 1.0)
+        >>> cell.material = mat
+        >>> # mass and atom density are different
+        >>> cell.mass_density = 0.1
+
 
     .. seealso::
 
