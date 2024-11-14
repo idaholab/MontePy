@@ -455,7 +455,7 @@ class MCNP_Problem:
         :param tolerance: The amount of relative error to consider two surfaces identical
         :type tolerance: float
         """
-        to_delete = set()
+        to_delete = montepy.surface_collection.Surfaces()
         matching_map = {}
         for surface in self.surfaces:
             if surface not in to_delete:
@@ -463,7 +463,7 @@ class MCNP_Problem:
                 if matches:
                     for match in matches:
                         to_delete.add(match)
-                        matching_map[match] = surface
+                        matching_map[match.number] = (match, surface)
         for cell in self.cells:
             cell.remove_duplicate_surfaces(matching_map)
         self.__update_internal_pointers()
