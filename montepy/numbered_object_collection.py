@@ -626,7 +626,7 @@ class NumberedObjectCollection(ABC):
         other_sets = []
         for other in others:
             other_sets.append(set(other.keys()))
-        valid_nums = operator(self, *others)
+        valid_nums = operator(self_nums, *other_sets)
         to_iterate = [self]
         if iterate_all:
             to_iterate += others
@@ -638,13 +638,13 @@ class NumberedObjectCollection(ABC):
         return type(self)(objs)
 
     def intersection(self, *others):
-        self.__set_logic_multi(others, lambda a, b: a.intersection(b))
+        return self.__set_logic_multi(others, lambda a, b: a.intersection(b))
 
     def union(self, *others):
-        self.__set_logic_multi(others, lambda a, b: a.union(b))
+        return self.__set_logic_multi(others, lambda a, b: a.union(b))
 
     def difference(self, *others):
-        self.__set_logic_multi(others, lambda a, b: a.difference(b))
+        return self.__set_logic_multi(others, lambda a, b: a.difference(b))
 
     def difference_update(self, *others):
         new_vals = self.difference(*others)
