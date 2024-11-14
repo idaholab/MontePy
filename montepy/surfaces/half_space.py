@@ -685,12 +685,12 @@ class UnitHalfSpace(HalfSpace):
     def _get_leaf_objects(self):
         if self._is_cell:
             return (
-                montepy.cells.Cells(self._divider),
+                montepy.cells.Cells([self._divider]),
                 montepy.surface_collection.Surfaces(),
             )
         return (
             montepy.cells.Cells(),
-            montepy.surface_collection.Surface(self._divider),
+            montepy.surface_collection.Surfaces([self._divider]),
         )
 
     def remove_duplicate_surfaces(
