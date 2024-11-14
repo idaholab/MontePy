@@ -815,7 +815,7 @@ def test_universe_data_formatter(data_universe_problem):
     print(output)
     assert "u 350 J -350 -1" in output
     # test appending a new mutated cell
-    new_cell = copy.deepcopy(cell)
+    new_cell = cell.clone()
     new_cell.number = 1000
     new_cell.universe = universe
     new_cell.not_truncated = False
@@ -827,7 +827,7 @@ def test_universe_data_formatter(data_universe_problem):
     # test appending a new UNmutated cell
     problem = copy.deepcopy(data_universe_problem)
     cell = problem.cells[3]
-    new_cell = copy.deepcopy(cell)
+    new_cell = cell.clone()
     new_cell.number = 1000
     new_cell.universe = universe
     new_cell.not_truncated = False
