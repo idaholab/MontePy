@@ -578,7 +578,7 @@ class Cell(Numbered_MCNP_Object):
                 self.surfaces.remove(dead_surface)
 
     def _update_values(self):
-        if self.material:
+        if self.material is not None:
             mat_num = self.material.number
             self._tree["material"]["density"].is_negative = not self.is_atom_dens
         else:

@@ -271,11 +271,12 @@ def verify_clone_format(cell):
     num = 1000
     surf.number = num
     output = cell.format_for_mcnp_input((6, 3, 0))
+    note(output)
     input = montepy.input_parser.mcnp_input.Input(
         output, montepy.input_parser.block_type.BlockType.CELL
     )
     new_cell = montepy.Cell(input)
-    if cell.material:
+    if cell.material is not None:
         mats = montepy.materials.Materials([cell.material])
     else:
         mats = []
