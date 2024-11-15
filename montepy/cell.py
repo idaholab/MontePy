@@ -802,47 +802,26 @@ class Cell(Numbered_MCNP_Object):
                 return obj
             return obj.number
 
+        # copy simple stuff
         for key in keys:
             attr = getattr(self, key)
             setattr(result, key, copy.deepcopy(attr, memo))
-        if clone_region:
-            region_change_map = {}
-            # ensure the new geometry gets mapped to the new surfaces
-            for special in special_keys:
-                collection = getattr(self, special)
-                new_objs = []
+        # copy geometry
+        for special in special_keys:
+            new_objs = []
+            collection = getattr(self, special)
+            if clone_region:
+                region_change_map = {}
+                # ensure the new geometry gets mapped to the new surfaces
                 for obj in collection:
                     new_obj = obj.clone()
                     region_change_map[num(obj)] = (obj, new_obj)
                     new_objs.append(new_obj)
-                setattr(result, special, type(collection)(new_objs))
-
-        else:
-            region_change_map = {}
-            for special in special_keys:
-                setattr(result, special, copy.copy(getattr(self, special)))
-            leaves = result.geometry._get_leaf_objects()
-            # undo deepcopy of surfaces in cell.geometry
-            for geom_collect, collect in [
-                (leaves[0], self.complements),
-                (leaves[1], self.surfaces),
-            ]:
-                for surf in geom_collect:
-                    try:
-                        region_change_map[num(surf)] = (
-                            surf,
-                            collect[
-                                (
-                                    surf.number
-                                    if isinstance(surf, (Surface, Cell))
-                                    else surf
-                                )
-                            ],
-                        )
-                    except KeyError:
-                        # ignore empty surfaces on clone
-                        pass
-        result.geometry.remove_duplicate_surfaces(region_change_map)
+            else:
+                new_objs = list(collection)
+            setattr(result, special, type(collection)(new_objs))
+        if clone_region:
+            result.geometry.remove_duplicate_surfaces(region_change_map)
         if self._problem:
             result.number = self._problem.cells.request_number(starting_number, step)
             self._problem.cells.append(result)
