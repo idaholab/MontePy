@@ -683,15 +683,35 @@ class UnitHalfSpace(HalfSpace):
         self._node.is_negative = not self.side
 
     def _get_leaf_objects(self):
+        if isinstance(
+            self._divider, (montepy.cell.Cell, montepy.surfaces.surface.Surface)
+        ):
+
+            def cell_cont(div=None):
+                if div:
+                    return montepy.cells.Cells([div])
+                return montepy.cells.Cells()
+
+            def surf_cont(div=None):
+                if div:
+                    return montepy.surface_collection.Surfaces([div])
+                return montepy.surface_collection.Surfaces()
+
+        else:
+
+            def cell_cont(div=None):
+                if div:
+                    return {div}
+                return set()
+
+            def surf_cont(div=None):
+                if div:
+                    return {div}
+                return set()
+
         if self._is_cell:
-            return (
-                montepy.cells.Cells([self._divider]),
-                montepy.surface_collection.Surfaces(),
-            )
-        return (
-            montepy.cells.Cells(),
-            montepy.surface_collection.Surfaces([self._divider]),
-        )
+            return (cell_cont(self._divider), surf_cont())
+        return (cell_cont(), surf_cont(self._divider))
 
     def remove_duplicate_surfaces(
         self,
@@ -714,8 +734,14 @@ class UnitHalfSpace(HalfSpace):
         :type deleting_dict: dict[int, tuple[Surface, Surface]]
         """
         if not self.is_cell:
-            if self.divider.number in deleting_dict:
-                old_surf, new_surface = deleting_dict[self.divider.number]
+
+            def num(obj):
+                if isinstance(obj, int):
+                    return obj
+                return obj.number
+
+            if num(self.divider) in deleting_dict:
+                old_surf, new_surface = deleting_dict[num(self.divider)]
                 if self.divider is old_surf:
                     self.divider = new_surface
 

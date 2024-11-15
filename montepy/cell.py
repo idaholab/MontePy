@@ -563,9 +563,15 @@ class Cell(Numbered_MCNP_Object):
         :type deleting_dict: dict
         """
         new_deleting_dict = {}
-        for dead_surface, new_surface in deleting_dict.items():
+
+        def num(obj):
+            if isinstance(obj, int):
+                return obj
+            return obj.number
+
+        for num, (dead_surface, new_surface) in deleting_dict.items():
             if dead_surface in self.surfaces:
-                new_deleting_dict[dead_surface] = new_surface
+                new_deleting_dict[num(dead_surface)] = (dead_surface, new_surface)
         if len(new_deleting_dict) > 0:
             self.geometry.remove_duplicate_surfaces(new_deleting_dict)
             for dead_surface in new_deleting_dict:
@@ -790,6 +796,12 @@ class Cell(Numbered_MCNP_Object):
         special_keys = {"_surfaces", "_complements"}
         keys -= special_keys
         memo = {}
+
+        def num(obj):
+            if isinstance(obj, int):
+                return obj
+            return obj.number
+
         for key in keys:
             attr = getattr(self, key)
             setattr(result, key, copy.deepcopy(attr, memo))
@@ -801,7 +813,7 @@ class Cell(Numbered_MCNP_Object):
                 new_objs = []
                 for obj in collection:
                     new_obj = obj.clone()
-                    region_change_map[obj] = new_obj
+                    region_change_map[num(obj)] = (obj, new_obj)
                     new_objs.append(new_obj)
                 setattr(result, special, type(collection)(new_objs))
 
@@ -817,7 +829,7 @@ class Cell(Numbered_MCNP_Object):
             ]:
                 for surf in geom_collect:
                     try:
-                        region_change_map[surf.number] = (
+                        region_change_map[num(surf)] = (
                             surf,
                             collect[
                                 (
