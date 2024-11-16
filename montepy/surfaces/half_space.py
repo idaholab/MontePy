@@ -698,17 +698,9 @@ class UnitHalfSpace(HalfSpace):
                 return montepy.surface_collection.Surfaces()
 
         else:
-
-            def cell_cont(div=None):
-                if div:
-                    return {div}
-                return set()
-
-            def surf_cont(div=None):
-                if div:
-                    return {div}
-                return set()
-
+            raise IllegalState(
+                f"Geometry cannot be modified while not linked to surfaces. Run Cell.update_pointers"
+            )
         if self._is_cell:
             return (cell_cont(self._divider), surf_cont())
         return (cell_cont(), surf_cont(self._divider))
