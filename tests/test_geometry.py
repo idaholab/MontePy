@@ -35,8 +35,8 @@ def test_get_leaves():
     cell = montepy.Cell()
     half_space = -surface & ~cell
     cells, surfaces = half_space._get_leaf_objects()
-    assert cells == {cell}
-    assert surfaces == {surface}
+    assert cells == montepy.cells.Cells([cell])
+    assert surfaces == montepy.surface_collection.Surface([surface])
 
 
 def test_half_len():
