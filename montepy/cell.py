@@ -810,17 +810,16 @@ class Cell(Numbered_MCNP_Object):
         for special in special_keys:
             new_objs = []
             collection = getattr(self, special)
-            if clone_region:
-                region_change_map = {}
-                # ensure the new geometry gets mapped to the new surfaces
-                for obj in collection:
+            region_change_map = {}
+            # ensure the new geometry gets mapped to the new surfaces
+            for obj in collection:
+                if clone_region:
                     new_obj = obj.clone()
-                    region_change_map[num(obj)] = (obj, new_obj)
-                    new_objs.append(new_obj)
-            else:
-                new_objs = list(collection)
+                else:
+                    new_obj = obj
+                region_change_map[num(obj)] = (obj, new_obj)
+                new_objs.append(new_obj)
             setattr(result, special, type(collection)(new_objs))
-        if clone_region:
             result.geometry.remove_duplicate_surfaces(region_change_map)
         if self._problem:
             result.number = self._problem.cells.request_number(starting_number, step)

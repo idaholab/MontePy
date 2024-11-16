@@ -733,19 +733,20 @@ class UnitHalfSpace(HalfSpace):
             of the old surface, and then the new surface.
         :type deleting_dict: dict[int, tuple[Surface, Surface]]
         """
-        if not self.is_cell:
 
-            def num(obj):
-                if isinstance(obj, int):
-                    return obj
-                if isinstance(obj, ValueNode):
-                    return obj.value
-                return obj.number
+        def num(obj):
+            if isinstance(obj, int):
+                return obj
+            if isinstance(obj, ValueNode):
+                return obj.value
+            return obj.number
 
-            if num(self.divider) in deleting_dict:
-                old_surf, new_surface = deleting_dict[num(self.divider)]
-                if self.divider is old_surf:
-                    self.divider = new_surface
+        if num(self.divider) in deleting_dict:
+            old_obj, new_obj = deleting_dict[num(self.divider)]
+            if isinstance(self.divider, ValueNode) or type(new_obj) == type(
+                self.divider
+            ):
+                self.divider = new_obj
 
     def __len__(self):
         return 1
