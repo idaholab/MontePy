@@ -695,6 +695,8 @@ class NumberedObjectCollection(ABC):
 
         :rtype: int
         """
+        if len(self) == 0:
+            yield None
         for o in self._objects:
             self.__num_cache[o.number] = o
             yield o.number
@@ -729,7 +731,10 @@ class NumberedObjectCollection(ABC):
             return False
         keys = sorted(self.keys())
         for key in keys:
-            if self[key] != other[key]:
+            try:
+                if self[key] != other[key]:
+                    return False
+            except KeyError:
                 return False
         return True
 
