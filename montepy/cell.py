@@ -564,17 +564,17 @@ class Cell(Numbered_MCNP_Object):
         """
         new_deleting_dict = {}
 
-        def num(obj):
+        def get_num(obj):
             if isinstance(obj, int):
                 return obj
             return obj.number
 
         for num, (dead_surface, new_surface) in deleting_dict.items():
             if dead_surface in self.surfaces:
-                new_deleting_dict[num(dead_surface)] = (dead_surface, new_surface)
+                new_deleting_dict[get_num(dead_surface)] = (dead_surface, new_surface)
         if len(new_deleting_dict) > 0:
             self.geometry.remove_duplicate_surfaces(new_deleting_dict)
-            for dead_surface in new_deleting_dict:
+            for dead_surface, _ in new_deleting_dict.values():
                 self.surfaces.remove(dead_surface)
 
     def _update_values(self):
