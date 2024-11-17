@@ -577,7 +577,7 @@ def test_importance_write_cell(importance_problem):
         fh = io.StringIO()
         problem = copy.deepcopy(importance_problem)
         if "new" in state:
-            cell = copy.deepcopy(problem.cells[5])
+            cell = problem.cells[5].clone()
             cell.number = 999
             problem.cells.append(cell)
         problem.print_in_data_block["imp"] = False

@@ -371,6 +371,7 @@ class NumberedObjectCollection(ABC):
         """Appends the given object to the end of this collection.
 
         # TODO: do I need to document that re append does nothing?
+        TODO kwargs
 
         :param obj: the object to add.
         :type obj: Numbered_MCNP_Object
