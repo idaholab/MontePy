@@ -672,6 +672,10 @@ class Cell(Numbered_MCNP_Object):
         return self.number < other.number
 
     def __invert__(self):
+        if not self.number:
+            raise IllegalState(
+                f"Cell number must be set for a cell to be used in a geometry definition."
+            )
         base_node = UnitHalfSpace(self, True, True)
         return HalfSpace(base_node, Operator.COMPLEMENT)
 
