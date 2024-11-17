@@ -248,6 +248,13 @@ class MCNP_Object(ABC, metaclass=_ExceptionContextAdder):
             )
         if isinstance(comments, CommentNode):
             comments = [comments]
+        if isinstance(comments, (list, tuple)):
+            for comment in comments:
+                if not isinstance(comment, CommentNode):
+                    raise TypeError(
+                        f"Comments must be a CommentNode, or a list of Comments. {comment} given."
+                    )
+
         for i, comment in enumerate(comments):
             if not isinstance(comment, CommentNode):
                 raise TypeError(
