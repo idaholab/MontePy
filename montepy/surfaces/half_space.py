@@ -223,11 +223,11 @@ class HalfSpace:
             of the old surface, and then the new surface.
         :type deleting_dict: dict[int, tuple[Surface, Surface]]
         """
-        _, surfaces = self._get_leaf_objects()
+        cells, surfaces = self._get_leaf_objects()
         new_deleting_dict = {}
-        for num, (dead_surface, new_surface) in deleting_dict.items():
-            if dead_surface in surfaces:
-                new_deleting_dict[num] = (dead_surface, new_surface)
+        for num, (dead_obj, new_obj) in deleting_dict.items():
+            if dead_obj in surfaces or dead_obj in cells:
+                new_deleting_dict[num] = (dead_obj, new_obj)
         if len(new_deleting_dict) > 0:
             self.left.remove_duplicate_surfaces(new_deleting_dict)
             if self.right is not None:
