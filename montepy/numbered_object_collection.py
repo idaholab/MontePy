@@ -696,7 +696,7 @@ class NumberedObjectCollection(ABC):
         :rtype: int
         """
         if len(self) == 0:
-            yield None
+            yield from []
         for o in self._objects:
             self.__num_cache[o.number] = o
             yield o.number
