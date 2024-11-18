@@ -125,15 +125,10 @@ class Material(data_input.DataInputAbstract, Numbered_MCNP_Object):
         isotope = Nuclide(node=nuclide)
         fraction.is_negatable_float = True
         if is_first:
-            if not fraction.is_negative:
-                self._is_atom_fraction = True
-            else:
-                self._is_atom_fraction = False
+            self._is_atom_fraction = not fraction.is_negative
         else:
             # if switching fraction formatting
-            if (not fraction.is_negative and not self._is_atom_fraction) or (
-                fraction.is_negative and self._is_atom_fraction
-            ):
+            if fraction.is_negative == self._is_atom_fraction:
                 raise MalformedInputError(
                     input,
                     f"Material definitions for material: {self.number} cannot use atom and mass fraction at the same time",
