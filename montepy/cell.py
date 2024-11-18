@@ -35,7 +35,7 @@ class Cell(Numbered_MCNP_Object):
 
     First the cell needs to be initialized.
 
-    .. code-block:: python
+    .. testcode:: python
 
         import montepy
         cell = montepy.Cell()
@@ -50,7 +50,7 @@ class Cell(Numbered_MCNP_Object):
         None
         >>> mat = montepy.Material()
         >>> mat.number = 20
-        >>> mat.append_nuclide("1001.80c", 1.0)
+        >>> mat.add_nuclide("1001.80c", 1.0)
         >>> cell.material = mat
         >>> # mass and atom density are different
         >>> cell.mass_density = 0.1

@@ -547,7 +547,9 @@ This actually creates a new object so don't worry about modifying the surface.
 .. doctest::
 
     >>> bottom_plane = montepy.surfaces.surface.Surface()
+    >>> bottom_plane.number = 1
     >>> top_plane = montepy.surfaces.surface.Surface()
+    >>> top_plane.number = 2
     >>> type(+bottom_plane)
     <class 'montepy.surfaces.half_space.UnitHalfSpace'>
     >>> type(-bottom_plane)
@@ -559,6 +561,7 @@ Instead you use the binary not operator (``~``).
 .. doctest::
     
     >>> capsule_cell = montepy.Cell()
+    >>> capsule_cell.number = 1
     >>> type(~capsule_cell)
     <class 'montepy.surfaces.half_space.HalfSpace'>
 
@@ -798,7 +801,7 @@ You can also easy apply a transform to the filling universe with:
    transform = montepy.data_inputs.transform.Transform()
    transform.number = 5
    transform.displacement_vector = np.array([1, 2, 0])
-   cell.fill.tranform = transform
+   cell.fill.transform = transform
 
 .. note::
 
