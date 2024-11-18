@@ -95,7 +95,7 @@ class Library(metaclass=SingletonGroup):
         if not isinstance(other, type(self)):
             raise TypeError(f"Can only compare Library instances.")
         if self.suffix == other.suffix:
-            return self.number == other.number
+            return self.number < other.number
         return self.suffix < other.suffix
 
 

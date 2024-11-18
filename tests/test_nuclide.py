@@ -6,6 +6,7 @@ import montepy
 
 from montepy.data_inputs.element import Element
 from montepy.data_inputs.nuclide import Nucleus, Nuclide, Library
+from montepy.errors import *
 from montepy.particle import LibraryType
 
 
