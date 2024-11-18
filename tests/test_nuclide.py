@@ -1,12 +1,12 @@
 # Copyright 2024, Battelle Energy Alliance, LLC All Rights Reserved.
-from hypothesis import given, strategies as st
 import pytest
-from hypothesis import assume, given, note, strategies as st
+from hypothesis import assume, given, note, strategies as st, settings
 
 import montepy
 
 from montepy.data_inputs.element import Element
 from montepy.data_inputs.nuclide import Nucleus, Nuclide, Library
+from montepy.particle import LibraryType
 
 
 class TestNuclide:
@@ -150,7 +150,78 @@ class TestNuclide:
             assert isotope.meta_state == meta
             # this fixes a bug with the test????
             note((input, library))
-            if library in input:
+            if "." in input:
                 assert isotope.library == Library(library)
             else:
                 assert isotope.library == Library("")
+
+
+class TestLibrary:
+
+    @pytest.mark.parametrize(
+        "input, lib_type",
+        [
+            ("80c", LibraryType.NEUTRON),
+            ("710nc", LibraryType.NEUTRON),
+            ("50d", LibraryType.NEUTRON),
+            ("50M", LibraryType.NEUTRON),
+            ("01g", LibraryType.PHOTO_ATOMIC),
+            ("84P", LibraryType.PHOTO_ATOMIC),
+            ("24u", LibraryType.PHOTO_NUCLEAR),
+            ("30Y", LibraryType.NEUTRON),
+            ("03e", LibraryType.ELECTRON),
+            ("70H", LibraryType.PROTON),
+            ("70o", LibraryType.DEUTERON),
+            ("70r", LibraryType.TRITON),
+            ("70s", LibraryType.HELION),
+            ("70a", LibraryType.ALPHA_PARTICLE),
+        ],
+    )
+    def test_library_init(_, input, lib_type):
+        lib = Library(input)
+        assert lib.library_type == lib_type, "Library type not properly parsed"
+        assert str(lib) == input, "Original string not preserved."
+        assert lib.library == input, "Original string not preserved."
+
+    @given(
+        input_num=st.integers(min_value=0, max_value=999),
+        extra_char=st.characters(min_codepoint=97, max_codepoint=122),
+        lib_extend=st.sampled_from("cdmgpuyehorsa"),
+        capitalize=st.booleans(),
+    )
+    def test_library_mass_init(_, input_num, extra_char, lib_extend, capitalize):
+        if input_num > 100:
+            input = f"{input_num:02d}{extra_char}{lib_extend}"
+        else:
+            input = f"{input_num:02d}{lib_extend}"
+        if capitalize:
+            input = input.upper()
+        note(input)
+        lib = Library(input)
+        assert str(lib) == input, "Original string not preserved."
+        assert repr(lib) == input, "Original string not preserved."
+        assert lib.library == input, "Original string not preserved."
+        assert lib.number == input_num, "Library number not preserved."
+        assert lib.suffix == lib_extend, "Library suffix not preserved."
+        lib2 = Library(input)
+        assert lib == lib2, "Equality broke."
+        assert hash(lib) == hash(lib2), "Hashing broke for library."
+
+    @pytest.mark.parametrize(
+        "input, error", [(5, TypeError), ("hi", ValueError), ("75b", ValueError)]
+    )
+    def test_bad_library_init(_, input, error):
+        with pytest.raises(error):
+            Library(input)
+        lib = Library("00c")
+        if not isinstance(input, str):
+            with pytest.raises(TypeError):
+                lib == input, "Type enforcement for library equality failed."
+
+    def test_library_sorting(_):
+        lib = Library("00c")
+        with pytest.raises(TypeError):
+            lib < 5
+        libs = {Library(s) for s in ["00c", "70c", "70g", "50d", "80m", "24y", "90a"]}
+        gold_order = ["90a", "00c", "70c", "50d", "70g", "80m", "24y"]
+        assert [str(lib) for lib in sorted(libs)] == gold_order, "Sorting failed."
