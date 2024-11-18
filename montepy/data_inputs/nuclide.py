@@ -351,6 +351,8 @@ class Nuclide:
         if not isinstance(library, str):
             raise TypeError(f"Library can only be str. {library} given.")
         self._library = Library(library)
+        if not node:
+            self._tree = ValueNode(self.mcnp_str(), str)
 
     @property
     def ZAID(self):
