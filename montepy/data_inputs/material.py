@@ -119,6 +119,8 @@ class Material(data_input.DataInputAbstract, Numbered_MCNP_Object):
                     is_first = False
                 else:
                     self._grab_default(*group)
+        else:
+            self._create_default_tree()
 
     def _grab_isotope(self, nuclide, fraction, is_first=False):
         """ """
@@ -144,6 +146,21 @@ class Material(data_input.DataInputAbstract, Numbered_MCNP_Object):
         # skip extra parameters
         except ValueError:
             pass
+
+    def _create_default_tree(self):
+        classifier = syntax_node.ClassifierNode()
+        classifier.number = self._number
+        classifier.prefix = "M"
+        classifier.padding = syntax_node.PaddingNode(" ")
+        mats = syntax_node.MaterialsNode("mat stuff")
+        self._tree = syntax_node.SyntaxNode(
+            "mats",
+            {
+                "start_pad": syntax_node.PaddingNode(),
+                "classifier": classifier,
+                "data": mats,
+            },
+        )
 
     def _append_param_lib(self, node):
         self._tree["data"].append_param(node)
@@ -309,10 +326,19 @@ See <https://www.montepy.org/migrations/migrate0_1.html> for more information ""
         return False
 
     def append(self, obj):
+        # TODO type enforcement
         self._check_valid_comp(obj)
         self._elements.add(obj[0].element)
         self._nuclei.add(obj[0].nucleus)
+        if not isinstance(obj[1], syntax_node.ValueNode):
+            node = syntax_node.ValueNode(str(obj[1]), float)
+            node.is_negatable_float = True
+            node.is_negative = not self._is_atom_fraction
+            obj = (obj[0], node)
+        else:
+            node = obj[1]
         self._components.append(obj)
+        self._tree["data"].append_nuclide(("_", obj[0]._tree, node))
 
     def change_libraries(self, new_library):
         """ """
@@ -336,8 +362,6 @@ See <https://www.montepy.org/migrations/migrate0_1.html> for more information ""
         if isinstance(nuclide, (str, int)):
             nuclide = Nuclide(nuclide)
         self.append((nuclide, fraction))
-        val = syntax_node.ValueNode(str(fraction), float, syntax_node.PaddingNode(" "))
-        self._tree["data"].append_nuclide(("_", nuclide._node, val))
 
     def contains(self, nuclide, *args, threshold):
         nuclides = []
