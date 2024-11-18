@@ -25,15 +25,16 @@ MAX_PRINT_ELEMENTS = 5
 
 class _DefaultLibraries:
 
-    __slots__ = "_libraries"
+    __slots__ = "_libraries", "_parent"
 
-    def __init__(self):
+    def __init__(self, parent_mat):
         self._libraries = {}
+        self._parent = parent_mat
 
     def __getitem__(self, key):
         key = self._validate_key(key)
         try:
-            return self._libraries[key]
+            return Library(self._libraries[key]["data"].value)
         except KeyError:
             return None
 
@@ -41,11 +42,18 @@ class _DefaultLibraries:
         key = self._validate_key(key)
         if not isinstance(value, Library):
             raise TypeError("")
-        self._libraries[key] = value
+        try:
+            node = self._libraries[key]
+        except KeyError:
+            node = self._generate_default_node(key)
+            self._parent._append_param_lib(node)
+            self._libraries[key] = node
+        node["data"].value = str(value)
 
     def __delitem__(self, key):
         key = self._validate_key(key)
-        del self._libraries[key]
+        node = self._libraries.pop(key)
+        self._parent._delete_param_lib(node)
 
     def __str__(self):
         return str(self._libraries)
@@ -57,6 +65,21 @@ class _DefaultLibraries:
         if isinstance(key, str):
             key = LibraryType(key)
         return key
+
+    @staticmethod
+    def _generate_default_node(key: LibraryType):
+        classifier = syntax_node.ClassifierNode()
+        classifier.prefix = key.value
+        ret = {
+            "classifier": classifier,
+            "seperator": syntax_node.PaddingNode(" = "),
+            "data": syntax_node.ValueNode("", str),
+        }
+        return syntax_node.SyntaxNode("mat library", ret)
+
+    def _load_node(self, key, node):
+        key = self._validate_key(key)
+        self._libraries[key] = node
 
 
 class Material(data_input.DataInputAbstract, Numbered_MCNP_Object):
@@ -81,7 +104,7 @@ class Material(data_input.DataInputAbstract, Numbered_MCNP_Object):
         self._number = self._generate_default_node(int, -1)
         self._elements = set()
         self._nuclei = set()
-        self._default_libs = _DefaultLibraries()
+        self._default_libs = _DefaultLibraries(self)
         super().__init__(input)
         if input:
             num = self._input_number
@@ -122,11 +145,17 @@ class Material(data_input.DataInputAbstract, Numbered_MCNP_Object):
     def _grab_default(self, param):
         try:
             lib_type = LibraryType(param["classifier"].prefix.value.upper())
-            self._default_libs[lib_type] = Library(param["data"].value)
+            self._default_libs._load_node(lib_type, param)
         # skip extra parameters
         except ValueError:
             pass
         # TODO update in update_values for default_libraries
+
+    def _append_param_lib(self, node):
+        self._tree["data"].append_param(node)
+
+    def _delete_param_lib(self, node):
+        self._tree["data"].nodes.remove((node,))
 
     @make_prop_val_node("_old_number")
     def old_number(self):
