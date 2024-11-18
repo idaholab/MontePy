@@ -149,7 +149,6 @@ class Material(data_input.DataInputAbstract, Numbered_MCNP_Object):
         # skip extra parameters
         except ValueError:
             pass
-        # TODO update in update_values for default_libraries
 
     def _append_param_lib(self, node):
         self._tree["data"].append_param(node)
@@ -167,6 +166,7 @@ class Material(data_input.DataInputAbstract, Numbered_MCNP_Object):
         pass
 
     # TODO ensure update_values
+    # TODO ensure is negative is updated in append
     @make_prop_pointer("_is_atom_fraction", bool)
     def is_atom_fraction(self):
         """
@@ -223,7 +223,8 @@ See <https://www.montepy.org/migrations/migrate0_1.html> for more information ""
         """ """
         if not isinstance(idx, (int, slice)):
             raise TypeError(f"Not a valid index. {idx} given.")
-        return self._components[idx]
+        comp = self._components[idx]
+        return (comp[0], comp[1].value)
 
     def __iter__(self):
         def gen_wrapper():
@@ -236,8 +237,15 @@ See <https://www.montepy.org/migrations/migrate0_1.html> for more information ""
         """ """
         if not isinstance(idx, (int, slice)):
             raise TypeError(f"Not a valid index. {idx} given.")
+        old_vals = self._components[idx]
         self._check_valid_comp(newvalue)
-        self._components[idx] = newvalue
+        # grab fraction
+        old_vals[1].value = newvalue[1]
+        node_idx = self._tree["data"].nodes.index(
+            (old_vals[0]._tree, old_vals[1]), start=idx
+        )
+        self._tree["data"].nodes[node_idx] = (newvalue[0]._tree, old_vals[1])
+        self._components[idx] = (newvalue[0], old_vals[1])
 
     def __len__(self):
         return len(self._components)
@@ -333,6 +341,8 @@ See <https://www.montepy.org/migrations/migrate0_1.html> for more information ""
         if isinstance(nuclide, (str, int)):
             nuclide = Nuclide(nuclide)
         self.append((nuclide, fraction))
+        val = syntax_node.ValueNode(str(fraction), float, syntax_node.PaddingNode(" "))
+        self._tree["data"].append_nuclide(("_", nuclide._node, val))
 
     def contains(self, nuclide, *args, threshold):
         nuclides = []
@@ -536,11 +546,11 @@ See <https://www.montepy.org/migrations/migrate0_1.html> for more information ""
         return lines
 
     def _update_values(self):
-        new_list = syntax_node.MaterialsNode("new isotope list")
-        for isotope, component in self._components:
-            isotope._tree.value = isotope.mcnp_str()
-            new_list.append_nuclide(("_", isotope._tree, component))
-        self._tree.nodes["data"] = new_list
+        for nuclide, fraction in self:
+            node = nuclide._tree
+            parts = node.value.split(".")
+            if len(parts) > 1 and parts[-1] != str(nuclide.library):
+                node.value = nuclide.mcnp_str()
 
     def add_thermal_scattering(self, law):
         """
