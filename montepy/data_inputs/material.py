@@ -40,8 +40,10 @@ class _DefaultLibraries:
 
     def __setitem__(self, key, value):
         key = self._validate_key(key)
-        if not isinstance(value, Library):
+        if not isinstance(value, (Library, str)):
             raise TypeError("")
+        if isinstance(value, str):
+            value = Library(value)
         try:
             node = self._libraries[key]
         except KeyError:
