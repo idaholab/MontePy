@@ -155,6 +155,10 @@ class TestNuclide:
             else:
                 assert isotope.library == Library("")
 
+    def test_nuclide_bad_init(_):
+        with pytest.raises(TypeError):
+            Nuclide(1.23)
+
 
 class TestLibrary:
 
@@ -225,3 +229,53 @@ class TestLibrary:
         libs = {Library(s) for s in ["00c", "70c", "70g", "50d", "80m", "24y", "90a"]}
         gold_order = ["90a", "00c", "70c", "50d", "70g", "80m", "24y"]
         assert [str(lib) for lib in sorted(libs)] == gold_order, "Sorting failed."
+
+
+# test element
+class TestElement:
+    def test_element_init(_):
+        for Z in range(1, 119):
+            element = Element(Z)
+            assert element.Z == Z
+            # Test to ensure there are no missing elements
+            name = element.name
+            symbol = element.symbol
+
+        with pytest.raises(UnknownElement):
+            Element(119)
+
+        spot_check = {
+            1: ("H", "hydrogen"),
+            40: ("Zr", "zirconium"),
+            92: ("U", "uranium"),
+            94: ("Pu", "plutonium"),
+            29: ("Cu", "copper"),
+            13: ("Al", "aluminum"),
+        }
+        for z, (symbol, name) in spot_check.items():
+            element = Element(z)
+            assert z == element.Z
+            assert symbol == element.symbol
+            assert name == element.name
+
+    def test_element_str(_):
+        element = Element(1)
+        assert str(element) == "hydrogen"
+        assert repr(element) == "Z=1, symbol=H, name=hydrogen"
+
+    def test_get_by_symbol(_):
+        element = Element.get_by_symbol("Hg")
+        assert element.name == "mercury"
+        with pytest.raises(UnknownElement):
+            Element.get_by_symbol("Hi")
+
+    def test_get_by_name(_):
+        element = Element.get_by_name("mercury")
+        assert element.symbol == "Hg"
+        with pytest.raises(UnknownElement):
+            Element.get_by_name("hudrogen")
+
+    # particle
+    def test_particle_str(_):
+        part = montepy.Particle("N")
+        assert str(part) == "neutron"
