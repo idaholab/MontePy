@@ -54,6 +54,12 @@ class Particle(str, Enum):
     def __str__(self):
         return self.name.lower()
 
+    def __eq__(self, other):
+        return self.value == other.value
+
+    def __hash__(self):
+        return hash(self.value)
+
 
 @unique
 class LibraryType(str, Enum):
@@ -83,3 +89,9 @@ class LibraryType(str, Enum):
 
     def __lt__(self, other):
         return self.value < other.value
+
+    def __eq__(self, other):
+        return self.value == other.value
+
+    def __hash__(self):
+        return hash(self.value)
