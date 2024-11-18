@@ -13,7 +13,7 @@ import warnings
 
 class Library(metaclass=SingletonGroup):
 
-    __slots__ = "_library", "_lib_type"
+    __slots__ = "_library", "_lib_type", "_num", "_suffix"
 
     _SUFFIX_MAP = {
         "c": LibraryType.NEUTRON,
@@ -31,7 +31,7 @@ class Library(metaclass=SingletonGroup):
         "s": LibraryType.HELION,
         "a": LibraryType.ALPHA_PARTICLE,
     }
-    _LIBRARY_RE = re.compile(r"\d{2,3}[a-z]?([a-z])", re.I)
+    _LIBRARY_RE = re.compile(r"(\d{2,3})[a-z]?([a-z])", re.I)
 
     def __init__(self, library):
         if not isinstance(library, str):
@@ -39,13 +39,15 @@ class Library(metaclass=SingletonGroup):
         if library:
             match = self._LIBRARY_RE.fullmatch(library)
             if not match:
-                raise ValueError(f"Not a valid library extension. {library} given.")
-            extension = match.group(1)
+                raise ValueError(f"Not a valid library. {library} given.")
+            self._num = int(match.group(1))
+            extension = match.group(2).lower()
+            self._suffix = extension
             try:
                 lib_type = self._SUFFIX_MAP[extension]
             except KeyError:
                 raise ValueError(
-                    f"Not a valid library extension suffix. {library} given."
+                    f"Not a valid library extension suffix. {library} with extension: {extension} given."
                 )
             self._lib_type = lib_type
         else:
@@ -61,6 +63,16 @@ class Library(metaclass=SingletonGroup):
     def library_type(self):
         """ """
         return self._lib_type
+
+    @property
+    def number(self):
+        """ """
+        return self._num
+
+    @property
+    def suffix(self):
+        """ """
+        return self._suffix
 
     def __hash__(self):
         return hash(self._library)
@@ -80,11 +92,11 @@ class Library(metaclass=SingletonGroup):
         return str(self)
 
     def __lt__(self, other):
-        if not isinstance(other, (type(self), str)):
+        if not isinstance(other, type(self)):
             raise TypeError(f"Can only compare Library instances.")
-        if isinstance(other, type(self)):
-            return self.library < other.library
-        return self.library < other
+        if self.suffix == other.suffix:
+            return self.number == other.number
+        return self.suffix < other.suffix
 
 
 _ZAID_A_ADDER = 1000
