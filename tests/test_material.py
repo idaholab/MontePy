@@ -7,12 +7,13 @@ import montepy
 
 from montepy.data_inputs.element import Element
 from montepy.data_inputs.nuclide import Nucleus, Nuclide, Library
-from montepy.data_inputs.material import Material
+from montepy.data_inputs.material import Material, _DefaultLibraries as DL
 from montepy.data_inputs.material_component import MaterialComponent
 from montepy.data_inputs.thermal_scattering import ThermalScatteringLaw
 from montepy.errors import MalformedInputError, UnknownElement
 from montepy.input_parser.block_type import BlockType
 from montepy.input_parser.mcnp_input import Input
+from montepy.particle import LibraryType
 
 
 # test material
@@ -49,11 +50,11 @@ class TestMaterial:
         input_card = Input([in_str], BlockType.DATA)
         material = Material(input_card)
         answers = """\
-    MATERIAL: 20 fractions: atom
-     H-1     (80c) 0.5
-     O-16    (80c) 0.4
-    Pu-239   (80c) 0.1
-    """
+MATERIAL: 20 fractions: atom
+ H-1     (80c) 0.5
+ O-16    (80c) 0.4
+Pu-239   (80c) 0.1
+"""
         output = repr(material)
         print(output)
         assert output == answers
@@ -225,7 +226,7 @@ class TestMaterial:
             mat.clone(*args)
 
     @pytest.fixture
-    def big_material():
+    def big_material(_):
         components = [
             "h1.00c",
             "h1.04c",
@@ -423,3 +424,50 @@ class TestThermalScattering:
             repr(card)
             == "THERMAL SCATTER: material: None, old_num: 20, scatter: ['grph.20t']"
         )
+
+
+class TestDefaultLib:
+
+    @pytest.fixture
+    def mat(_):
+        mat = Material()
+        mat.number = 1
+        return mat
+
+    @pytest.fixture
+    def dl(_, mat):
+        return DL(mat)
+
+    def test_dl_init(_, dl):
+        assert isinstance(dl._parent, Material)
+        assert isinstance(dl._libraries, dict)
+
+    @pytest.mark.parametrize(
+        "lib_type, lib", [("nlib", "80c"), ("plib", "80p"), ("alib", "24a")]
+    )
+    def test_set_get(_, dl, lib_type, lib):
+        lib_type_load = LibraryType(lib_type.upper())
+        dl[lib_type] = lib
+        assert dl[lib_type] == Library(lib), "Library not properly stored."
+        assert (
+            len(dl._parent._tree["data"]) == 1
+        ), "library not added to parent material"
+        dl[lib_type_load] = Library(lib)
+        dl[lib_type_load] == Library(lib), "Library not properly stored."
+        del dl[lib_type]
+        assert (
+            len(dl._parent._tree["data"]) == 0
+        ), "library not deleted from parent material"
+        assert dl[lib_type] is None, "Default libraries did not delete"
+        assert dl["hlib"] is None, "Default value not set."
+
+    def test_bad_set_get(_, dl):
+        with pytest.raises(TypeError):
+            dl[5] = "80c"
+        with pytest.raises(TypeError):
+            dl["nlib"] = 5
+        with pytest.raises(TypeError):
+            del dl[5]
+
+    def test_dl_str(_, dl):
+        str(dl)
