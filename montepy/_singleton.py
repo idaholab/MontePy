@@ -3,7 +3,13 @@ import collections
 
 class SingletonGroup(type):
     """
-    Pass
+    A metaclass for implementing a Singleton-like data structure.
+
+    This treats immutable objects are Enums without having to list all.
+    This is used for: Element, Nucleus, Library. When a brand new instance
+    is requested it is created, cached and returned.
+    If an existing instance is requested it is returned.
+    This is done to reduce the memory usage for these objects.
     """
 
     _instances = collections.defaultdict(dict)

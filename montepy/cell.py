@@ -55,6 +55,13 @@ class Cell(Numbered_MCNP_Object):
         >>> # mass and atom density are different
         >>> cell.mass_density = 0.1
 
+    Cells can be inverted with ``~`` to make a geometry definition that is a compliment of
+    that cell.
+
+    .. testcode:: python
+
+        complement = ~cell
+
 
     .. seealso::
 
@@ -200,6 +207,12 @@ class Cell(Numbered_MCNP_Object):
         """
         return self._universe.universe
 
+    @universe.setter
+    def universe(self, value):
+        if not isinstance(value, Universe):
+            raise TypeError("universe must be set to a Universe")
+        self._universe.universe = value
+
     @property
     def fill(self):
         """
@@ -215,15 +228,12 @@ class Cell(Numbered_MCNP_Object):
 
     @property
     def _fill_transform(self):
+        """
+        A simple wrapper to get the transform of the fill or None.
+        """
         if self.fill:
             return self.fill.transform
         return None
-
-    @universe.setter
-    def universe(self, value):
-        if not isinstance(value, Universe):
-            raise TypeError("universe must be set to a Universe")
-        self._universe.universe = value
 
     @property
     def not_truncated(self):

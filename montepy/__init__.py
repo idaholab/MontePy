@@ -22,6 +22,7 @@ from montepy.data_inputs.element import Element
 from montepy.geometry_operators import Operator
 from montepy import geometry_operators
 from montepy.surfaces.surface_type import SurfaceType
+from montepy.surfaces import *
 
 # input parser
 from montepy.input_parser.mcnp_input import Jump

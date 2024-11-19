@@ -7,31 +7,55 @@ from montepy.utilities import *
 from montepy.input_parser.syntax_node import PaddingNode, ValueNode
 from montepy.particle import LibraryType
 
+import collections
 import re
 import warnings
 
 
-class Library(metaclass=SingletonGroup):
+class Singleton:
 
-    __slots__ = "_library", "_lib_type", "_num", "_suffix"
+    _instances = collections.defaultdict(dict)
 
-    _SUFFIX_MAP = {
-        "c": LibraryType.NEUTRON,
-        "d": LibraryType.NEUTRON,
-        "m": LibraryType.NEUTRON,  # coupled neutron photon, invokes `g`
-        # TODO do we need to handle this edge case?
-        "g": LibraryType.PHOTO_ATOMIC,
-        "p": LibraryType.PHOTO_ATOMIC,
-        "u": LibraryType.PHOTO_NUCLEAR,
-        "y": LibraryType.NEUTRON,  # TODO is this right?
-        "e": LibraryType.ELECTRON,
-        "h": LibraryType.PROTON,
-        "o": LibraryType.DEUTERON,
-        "r": LibraryType.TRITON,
-        "s": LibraryType.HELION,
-        "a": LibraryType.ALPHA_PARTICLE,
-    }
-    _LIBRARY_RE = re.compile(r"(\d{2,3})[a-z]?([a-z])", re.I)
+    def __new__(cls, *args, **kwargs):
+        kwargs_t = tuple([(k, v) for k, v in kwargs.items()])
+        try:
+            return cls._instances[cls][args + kwargs_t]
+        except KeyError:
+            cls._instances[cls][args + kwargs_t] = super().__new__(
+                cls,
+            )
+            cls._instances[cls][args + kwargs_t].__init__(*args, **kwargs)
+            return cls._instances[cls][args + kwargs_t]
+
+
+class Library(Singleton):
+    """
+    A class to represent an MCNP nuclear data library, e.g., ``80c``.
+
+    Examples
+    ^^^^^^^^
+
+    .. testcode:: python
+
+        import montepy
+        library = montepy.Library("710nc")
+        assert library.library == "710nc"
+        assert str(library) == "710nc"
+        assert library.library_type == montepy.LibraryType.NEUTRON
+        assert library.number == 710
+        assert library.suffix == "c"
+
+    .. Note::
+
+        This class is immutable, and hashable, meaning it is suitable as a dictionary key.
+
+    .. versionadded:: 1.0.0
+
+    :param library: The name of the library.
+    :type library: str
+    :raises TypeErrror: if a string is not provided.
+    :raises ValueError: if a valid library is not provided.
+    """
 
     def __init__(self, library):
         if not isinstance(library, str):
@@ -54,24 +78,74 @@ class Library(metaclass=SingletonGroup):
             self._lib_type = None
         self._library = library
 
+    __slots__ = "_library", "_lib_type", "_num", "_suffix"
+
+    _SUFFIX_MAP = {
+        "c": LibraryType.NEUTRON,
+        "d": LibraryType.NEUTRON,
+        "m": LibraryType.NEUTRON,  # coupled neutron photon, invokes `g`
+        # TODO do we need to handle this edge case?
+        "g": LibraryType.PHOTO_ATOMIC,
+        "p": LibraryType.PHOTO_ATOMIC,
+        "u": LibraryType.PHOTO_NUCLEAR,
+        "y": LibraryType.NEUTRON,  # TODO is this right?
+        "e": LibraryType.ELECTRON,
+        "h": LibraryType.PROTON,
+        "o": LibraryType.DEUTERON,
+        "r": LibraryType.TRITON,
+        "s": LibraryType.HELION,
+        "a": LibraryType.ALPHA_PARTICLE,
+    }
+    _LIBRARY_RE = re.compile(r"(\d{2,3})[a-z]?([a-z])", re.I)
+
     @property
     def library(self):
-        """"""
+        """
+        The full name of the library.
+
+        :rtype: str
+        """
         return self._library
 
     @property
     def library_type(self):
-        """ """
+        """
+        The :class:`~montepy.particle.LibraryType` of this library.
+
+        This corresponds to the type of library this would specified
+        in a material definition e.g., ``NLIB``, ``PLIB``, etc.
+
+        .. seealso::
+
+            * :manual63:`5.6.1`
+
+        :returns: the type of library this library is.
+        :rtype: LibraryType
+        """
         return self._lib_type
 
     @property
     def number(self):
-        """ """
+        """
+        The base number in the library.
+
+        For example: this would be ``80`` for the library: ``Library('80c')``.
+
+        :returns: the base number of the library.
+        :rtype: int
+        """
         return self._num
 
     @property
     def suffix(self):
-        """ """
+        """
+        The suffix of the library, or the final character of its definition.
+
+        For example this would be ``"c"`` for the library: ``Library('80c')``.
+
+        :returns: the suffix of the library.
+        :rtype: str
+        """
         return self._suffix
 
     def __hash__(self):
@@ -100,22 +174,42 @@ class Library(metaclass=SingletonGroup):
 
 
 _ZAID_A_ADDER = 1000
+"""
+How much to multiply Z by to form a ZAID.
+"""
 
 
 class Nucleus(metaclass=SingletonGroup):
+    """
+    A class to represent a nuclide irrespective of the nuclear data being used.
+
+    This is meant to be an immutable representation of the nuclide, no matter what nuclear data
+    library is used. ``U-235`` is always ``U-235``.
+    Generally users don't need to interact with this much as it is almost always wrapped
+    by: :class:`montepy.data_inputs.nuclide.Nuclide`.
+
+
+    .. Note::
+
+        This class is immutable, and hashable, meaning it is suitable as a dictionary key.
+
+    .. versionadded:: 1.0.0
+
+    :param ZAID: hi
+    """
 
     __slots__ = "_element", "_A", "_meta_state"
 
     #                   Cl-52      Br-101     Xe-150      Os-203    Cm-251     Og-296
     _BOUNDING_CURVE = [(17, 52), (35, 101), (54, 150), (76, 203), (96, 251), (118, 296)]
+    """
+    Points on bounding curve for determining if "valid" isotope
+    """
     _STUPID_MAP = {
         "95642": {"_meta_state": 0},
         "95242": {"_meta_state": 1},
     }
     _STUPID_ZAID_SWAP = {95242: 95642, 95642: 95242}
-    """
-    Points on bounding curve for determining if "valid" isotope
-    """
 
     def __init__(
         self,
@@ -314,7 +408,8 @@ class Nuclide:
     """
     A class to represent an MCNP isotope
 
-    ..versionadded: 1.0.0
+    .. versionadded:: 1.0.0
+
         This was added as replacement for ``montepy.data_inputs.Isotope``.
 
     :param ZAID: the MCNP isotope identifier

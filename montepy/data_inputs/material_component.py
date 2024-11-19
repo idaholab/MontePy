@@ -10,17 +10,13 @@ class MaterialComponent:
     .. deprecated:: 0.4.1
         MaterialComponent has been deprecated as part of a redesign for the material
         interface due to a critical bug in how MontePy handles duplicate nuclides.
+        It has been removed in 1.0.0.
         See :ref:`migrate 0 1`.
 
-    :param isotope: the Isotope object representing this isotope
-    :type isotope: Isotope
-    :param fraction: the fraction of this component in the material
-    :type fraction: ValueNode
-    :param suppress_warning: Whether to suppress the ``DeprecationWarning``.
-    :type suppress_warning: bool
+    :raises DeprecationWarning: whenever called.
     """
 
-    def __init__(self, isotope, fraction):
+    def __init__(self, *args):
         raise DeprecationWarning(
             f"""MaterialComponent is deprecated, and has been removed in MontePy 1.0.0.
 See <https://www.montepy.org/migrations/migrate0_1.html> for more information """,
