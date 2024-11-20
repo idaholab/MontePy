@@ -84,7 +84,7 @@ class Library(SingletonGroup):
         self._library = library
 
     @property
-    def library(self):
+    def library(self) -> str:
         """
         The full name of the library.
 
@@ -93,7 +93,7 @@ class Library(SingletonGroup):
         return self._library
 
     @property
-    def library_type(self):
+    def library_type(self) -> LibraryType:
         """
         The :class:`~montepy.particle.LibraryType` of this library.
 
@@ -110,7 +110,7 @@ class Library(SingletonGroup):
         return self._lib_type
 
     @property
-    def number(self):
+    def number(self) -> int:
         """
         The base number in the library.
 
@@ -122,7 +122,7 @@ class Library(SingletonGroup):
         return self._num
 
     @property
-    def suffix(self):
+    def suffix(self) -> str:
         """
         The suffix of the library, or the final character of its definition.
 
@@ -334,7 +334,7 @@ class Nucleus(SingletonGroup):
         return ret
 
     @property
-    def ZAID(self):
+    def ZAID(self) -> int:
         """
         The ZZZAAA identifier following MCNP convention.
 
@@ -349,7 +349,7 @@ class Nucleus(SingletonGroup):
         return temp
 
     @property
-    def Z(self):
+    def Z(self) -> int:
         """
         The Z number for this isotope.
 
@@ -359,7 +359,7 @@ class Nucleus(SingletonGroup):
         return self._element.Z
 
     @make_prop_pointer("_A")
-    def A(self):
+    def A(self) -> int:
         """
         The A number for this isotope.
 
@@ -369,7 +369,7 @@ class Nucleus(SingletonGroup):
         pass
 
     @make_prop_pointer("_element")
-    def element(self):
+    def element(self) -> Element:
         """
         The base element for this isotope.
 
@@ -379,7 +379,7 @@ class Nucleus(SingletonGroup):
         pass
 
     @property
-    def is_metastable(self):
+    def is_metastable(self) -> bool:
         """
         Whether or not this is a metastable isomer.
 
@@ -389,7 +389,7 @@ class Nucleus(SingletonGroup):
         return bool(self._meta_state)
 
     @make_prop_pointer("_meta_state")
-    def meta_state(self):
+    def meta_state(self) -> int:
         """
         If this is a metastable isomer, which state is it?
 
@@ -404,11 +404,12 @@ class Nucleus(SingletonGroup):
         pass
 
     @classmethod
-    def _parse_zaid(cls, ZAID):
+    def _parse_zaid(cls, ZAID) -> dict:
         """
         Parses the ZAID fully including metastable isomers.
 
         See Table 3-32 of LA-UR-17-29881
+        TODO actually document this
         """
 
         def is_probably_an_isotope(Z, A):
@@ -536,6 +537,10 @@ class Nuclide:
     :type A: int
     :param meta_state: The metastable state if this nuclide is isomer.
     :type meta_state: int
+    :param library: the library to use for this nuclide.
+    :type library: str
+    :param node: The ValueNode to build this off of. Should only be used by MontePy.
+    :type node: ValueNode
 
     :raises TypeError: if an parameter is the wrong type.
     :raises ValueError: if non-sensical values are given.
@@ -556,13 +561,13 @@ class Nuclide:
 
     def __init__(
         self,
-        name="",
-        element=None,
-        Z=None,
-        A=None,
-        meta_state=None,
-        library="",
-        node=None,
+        name: str = "",
+        element: Element = None,
+        Z: int = None,
+        A: int = None,
+        meta_state: int = None,
+        library: str = "",
+        node: ValueNode = None,
     ):
         self._library = Library("")
         ZAID = ""

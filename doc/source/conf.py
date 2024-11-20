@@ -37,6 +37,7 @@ extensions = [
     "sphinx.ext.intersphinx",
     "sphinx.ext.extlinks",
     "sphinx.ext.doctest",
+    "sphinx_autodoc_typehints",
     "sphinx_sitemap",
     "sphinx_favicon",
     "sphinx_copybutton",
@@ -61,7 +62,9 @@ html_extra_path = ["robots.txt", "foo.imcnp"]
 exclude_patterns = []
 
 # autodoc
-autodoc_typehints = "description"
+autodoc_typehints = "both"
+typehints_use_signature = True
+typehints_use_signature_return = True
 autodoc_typehints_description_target = "all"
 autodoc_member_order = "groupwise"
 # Display the version
