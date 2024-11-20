@@ -55,9 +55,12 @@ Mandatory Elements
 ^^^^^^^^^^^^^^^^^^
 
 #. One line descriptions.
+#. Type annotations in the function signature
 #. Description of all inputs.
 #. Description of return values (can be skipped for None).
-#. ``.. versionadded::`` information for all new functions and classes.
+#. ``.. versionadded::``/ ``.. versionchanged::`` information for all new functions and classes. This information can
+   be dropped with major releases.
+#. Example code for showing how to use objects that implement atypical ``__dunders__``, e.g., for ``__setitem__``, ``__iter__``, etc.
 
 .. note::
 
@@ -68,21 +71,75 @@ Highly Recommended.
 
 #. A class level ``.. seealso:`` section referencing the user manuals.
 
+
+#. An examples code block. These should start with a section header: "Exampes". All code blocks should use `sphinx doctest <https://www.sphinx-doc.org/en/master/usage/extensions/doctest.html>`_.
+
 .. note::
 
-   How to reference manual sections
+   MontePy docstrings features custom commands for linking to MCNP user manuals.
+   These in general follow the ``:manual62:``, ``:manual63:``, ``:manual631:`` pattern.
 
-#. An examples code block. 
+   The MCNP 6.2.0 manual only supports linking to a specific page, and not a section, so the argument it takes is a
+   page number: ``:manual62:`123```: becomes :manual62:`123`.
+
+   The MCNP 6.3 manuals do support linking to section anchors.
+   By default the command links to a ``\\subsubsection``, e.g., ``:manual63:`5.6.1``` becomes: :manual63:`5.6.1`.
+   For other sections see: ``doc/source/conf.py``. 
 
 Example 
 ^^^^^^^
+
+Here is the docstrings for :class:`~montepy.cell.Cell`.
 
 .. code-block:: python
 
     class Cell(Numbered_MCNP_Object):
         """
-        Test
+        Object to represent a single MCNP cell defined in CSG.
+
+        Examples
+        ^^^^^^^^
+
+        First the cell needs to be initialized.
+
+        .. testcode:: python
+
+            import montepy
+            cell = montepy.Cell()
+
+        Then a number can be set.
+        By default the cell is voided:
+
+        .. doctest:: python
+
+            >>> cell.number = 5
+            >>> cell.material
+            None
+            >>> mat = montepy.Material()
+            >>> mat.number = 20
+            >>> mat.add_nuclide("1001.80c", 1.0)
+            >>> cell.material = mat
+            >>> # mass and atom density are different
+            >>> cell.mass_density = 0.1
+
+        Cells can be inverted with ``~`` to make a geometry definition that is a compliment of
+        that cell.
+
+        .. testcode:: python
+
+            complement = ~cell
+
+
+        .. seealso::
+
+                * :manual63sec:`5.2`
+                * :manual62:`55`
+
+        :param input: the input for the cell definition
+        :type input: Input
 
         """
+        
+        # snip
 
-
+        def __init__(self, input: montepy.input_parser.mcnp_input.Input = None):
