@@ -15,7 +15,7 @@ import importlib.metadata
 
 from montepy.data_inputs.material import Material
 from montepy.data_inputs.transform import Transform
-from montepy.data_inputs.nuclide import Nuclide
+from montepy.data_inputs.nuclide import Library, Nuclide
 from montepy.data_inputs.element import Element
 
 # geometry
