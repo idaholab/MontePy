@@ -12,7 +12,6 @@ import re
 import warnings
 
 
-
 class Library(SingletonGroup):
     """
     A class to represent an MCNP nuclear data library, e.g., ``80c``.
@@ -182,9 +181,73 @@ class Nucleus(SingletonGroup):
 
         This class is immutable, and hashable, meaning it is suitable as a dictionary key.
 
+    .. Note::
+
+        As discussed in :manual63:`5.6.1`:
+
+            To represent a metastable isotope, adjust the AAA value using the
+            following convention: AAA’=(AAA+300)+(m × 100), where m is the
+            metastable level and m=1, 2, 3, or 4.
+
+        MontePy attempts to apply these rules to determine the isomeric state of the nuclide.
+        This requires MontePy to determine if a ZAID is a realistic base isomeric state.
+
+        This is done simply by manually specifying 6 rectangles of realistic ZAIDs.
+        MontePy checks if a ZAID is inside of these rectangles.
+        These rectangles are defined by their upper right corner as an isotope.
+        The lower left corner is defined by the Z-number of the previous isotope and A=0.
+
+        These isotopes are:
+
+        * Cl-52
+        * Br-101
+        * Xe-150
+        * Os-203
+        * Cm-251
+        * Og-296
+
+    .. Warning::
+
+        Due to legacy reasons the nuclear data for Am-242 and Am-242m1 have been swapped for the nuclear data
+        provided by LANL.
+        This is documented in :manual631:`1.2.2`:
+
+            As a historical quirk, 242m1Am and 242Am are swapped in the ZAID and SZAID formats, so that the
+            former is 95242 and the latter is 95642 for ZAID and 1095242 for SZAID. It is important to verify if a
+            data library follows this convention. To date, all LANL-published libraries do. The name format does
+            not swap these isomers. As such, Am-242m1 can load a table labeled 95242.
+
+        Due to this MontePy follows the MCNP convention, and swaps these ZAIDs.
+        If you have custom generated ACE data for Am-242,
+        that does not follow this convention you have a few options:
+
+        #. Do nothing. If you do not need to modify a material in an MCNP input file the ZAID will be written out the same as it was in the original file.
+
+        #. Specify the Nucleus by ZAID. This will have the same effect as before. Note that MontePy will display the wrong metastable state, but will preserve the ZAID.
+
+        #. Open an issue. If this approach doesn't work for you please open an issue so we can develop a better solution.
+
+    .. seealso::
+
+        * :manual62:`107`
+        * :manual63:`5.6.1`
+        * :manual631:`1.2.2`
+
     .. versionadded:: 1.0.0
 
-    :param ZAID: hi
+    :param ZAID: The ZAID in MCNP format, the library can be included.
+    :type ZAID: str
+    :param element: the element this Nucleus is based on.
+    :type element: Element
+    :param Z: The Z-number (atomic number) of the nuclide.
+    :type Z: int
+    :param A: The A-number (atomic mass) of the nuclide. If this is elemental this should be 0.
+    :type A: int
+    :param meta_state: The metastable state if this nuclide is isomer.
+    :type meta_state: int
+
+    :raises TypeError: if an parameter is the wrong type.
+    :raises ValueError: if non-sensical values are given.
     """
 
     __slots__ = "_element", "_A", "_meta_state"
@@ -202,11 +265,11 @@ class Nucleus(SingletonGroup):
 
     def __init__(
         self,
-        ZAID="",
-        element=None,
-        Z=None,
-        A=None,
-        meta_state=None,
+        ZAID: str = "",
+        element: Element = None,
+        Z: int = None,
+        A: int = None,
+        meta_state: int = None,
     ):
         if ZAID:
             # TODO simplify this. Should never get library
@@ -235,19 +298,33 @@ class Nucleus(SingletonGroup):
         if A is not None:
             if not isinstance(A, int):
                 raise TypeError(f"A number must be an int. {A} given.")
+            if A < 0:
+                raise ValueError(f"A cannot be negative. {A} given.")
             self._A = A
         else:
             self._A = 0
         if not isinstance(meta_state, (int, type(None))):
             raise TypeError(f"Meta state must be an int. {meta_state} given.")
         if meta_state:
+            if meta_state not in range(0, 5):
+                raise ValueError(
+                    f"Meta state can only be in the range: [0,4]. {meta_state} given."
+                )
             self._meta_state = meta_state
         else:
             self._meta_state = 0
 
     @classmethod
     def _handle_stupid_legacy_stupidity(cls, ZAID):
-        # TODO work on this for mat_redesign
+        """
+        This handles legacy issues where ZAID are swapped.
+
+        For now this is only for Am-242 and Am-242m1.
+
+        .. seealso::
+
+            * :manual631:`1.2.2`
+        """
         ZAID = str(ZAID)
         ret = {}
         if ZAID in cls._STUPID_MAP:
@@ -259,7 +336,9 @@ class Nucleus(SingletonGroup):
     @property
     def ZAID(self):
         """
-        The ZZZAAA identifier following MCNP convention
+        The ZZZAAA identifier following MCNP convention.
+
+        If this is metastable the MCNP convention for ZAIDs for metastable isomers will be used.
 
         :rtype: int
         """
@@ -314,12 +393,12 @@ class Nucleus(SingletonGroup):
         """
         If this is a metastable isomer, which state is it?
 
-        Can return values in the range [1,4] (or None). The exact state
+        Can return values in the range [0,4]. The exact state
         number is decided by who made the ACE file for this, and not quantum mechanics.
         Convention states that the isomers should be numbered from lowest to highest energy.
+        The ground state will be 0.
 
-        :returns: the metastable isomeric state of this "isotope" in the range [1,4], or None
-                if this is a ground state isomer.
+        :returns: the metastable isomeric state of this "isotope" in the range [0,4].
         :rtype: int
         """
         pass
@@ -330,7 +409,6 @@ class Nucleus(SingletonGroup):
         Parses the ZAID fully including metastable isomers.
 
         See Table 3-32 of LA-UR-17-29881
-
         """
 
         def is_probably_an_isotope(Z, A):
@@ -398,16 +476,69 @@ class Nucleus(SingletonGroup):
 
 class Nuclide:
     """
-    A class to represent an MCNP isotope
+    A class to represent an MCNP nuclide with nuclear data library information.
+
+    Nuclide accepts ``name`` as a way of specifying a nuclide.
+    This is meant to be more ergonomic than ZAIDs while not going insane with possible formats.
+    This accepts ZAID and Atomic_symbol-A format.
+    All cases support metastables as m# and a library specification.
+    Examples include:
+
+    * ``1001.80c``
+    * ``92235m1.80c``
+    * ``92635.80c``
+    * ``U.80c``
+    * ``U-235.80c``
+    * ``U-235m1.80c``
+
+    To be specific this must match the regular expression:
+
+    .. testcode:: python
+
+        import re
+        parser = re.compile(r\"\"\"
+            (\d{4,6}) # ZAID
+                |
+            ([a-z]{1,2} # or atomic symbol
+            -?\d*) # optional A-number
+            (m\d+)? # optional metastable
+            (\.\d{{2,}}[a-z]+)? # optional library
+            \"\"\",
+            re.IGNORE_CASE | re.VERBOSE
+        )
+
+    .. Note::
+
+        MontePy follows MCNP's convention for specifying Metastable isomers in ZAIDs.
+        See :class:`~montepy.data_inputs.nuclide.Nucleus` for more information.
+
+    .. Warning::
+
+        Due to legacy reasons the nuclear data for Am-242 and Am-242m1 have been swapped for the nuclear data
+        provided by LANL.
+        See :class:`~montepy.data_inputs.nuclide.Nucleus` for more information.
 
     .. versionadded:: 1.0.0
 
         This was added as replacement for ``montepy.data_inputs.Isotope``.
 
-    :param ZAID: the MCNP isotope identifier
+
+
+    :param name: A fancy name way of specifying a nuclide.
+    :type name: str
+    :param ZAID: The ZAID in MCNP format, the library can be included.
     :type ZAID: str
-    :param suppress_warning: Whether to suppress the ``FutureWarning``.
-    :type suppress_warning: bool
+    :param element: the element this Nucleus is based on.
+    :type element: Element
+    :param Z: The Z-number (atomic number) of the nuclide.
+    :type Z: int
+    :param A: The A-number (atomic mass) of the nuclide. If this is elemental this should be 0.
+    :type A: int
+    :param meta_state: The metastable state if this nuclide is isomer.
+    :type meta_state: int
+
+    :raises TypeError: if an parameter is the wrong type.
+    :raises ValueError: if non-sensical values are given.
     """
 
     _NAME_PARSER = re.compile(
@@ -419,7 +550,9 @@ class Nuclide:
             (\.(?P<library>\d{{2,}}[a-z]+))?""",
         re.I | re.VERBOSE,
     )
-    """"""
+    """
+    Parser for fancy names.
+    """
 
     def __init__(
         self,
@@ -495,7 +628,12 @@ class Nuclide:
 
     @make_prop_pointer("_nucleus")
     def nucleus(self):
-        """ """
+        """
+        The base nuclide of this nuclide without the nuclear data library.
+
+        :rtype:Nucleus
+        """
+        pass
 
     @property
     def is_metastable(self):
@@ -512,12 +650,11 @@ class Nuclide:
         """
         If this is a metastable isomer, which state is it?
 
-        Can return values in the range [1,4] (or None). The exact state
-        number is decided by who made the ACE file for this, and not quantum mechanics.
+        Can return values in the range [0,4]. 0 corresponds to the ground state.
+        The exact state number is decided by who made the ACE file for this, and not quantum mechanics.
         Convention states that the isomers should be numbered from lowest to highest energy.
 
-        :returns: the metastable isomeric state of this "isotope" in the range [1,4], or None
-                if this is a ground state isomer.
+        :returns: the metastable isomeric state of this "isotope" in the range [0,4]l
         :rtype: int
         """
         return self._nucleus.meta_state
@@ -528,7 +665,7 @@ class Nuclide:
         """
          The MCNP library identifier e.g. 80c
 
-        :rtype: str
+        :rtype: Library
         """
         pass
 
@@ -547,11 +684,18 @@ class Nuclide:
         return f"{self.ZAID}.{self.library}" if str(self.library) else str(self.ZAID)
 
     def nuclide_str(self):
+        """
+        Creates a human readable version of this nuclide excluding the data library.
+
+        This is of the form Atomic symbol - A [metastable state]. e.g., ``U-235m1``.
+
+        :rtypes: str
+        """
         meta_suffix = f"m{self.meta_state}" if self.is_metastable else ""
         suffix = f".{self._library}" if str(self._library) else ""
         return f"{self.element.symbol}-{self.A}{meta_suffix}{suffix}"
 
-    def get_base_zaid(self):
+    def get_base_zaid(self) -> int:
         """
         Get the ZAID identifier of the base isotope this is an isomer of.
 
