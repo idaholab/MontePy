@@ -1,4 +1,5 @@
 # Copyright 2024, Battelle Energy Alliance, LLC All Rights Reserved.
+from __future__ import annotations
 from abc import ABC, ABCMeta, abstractmethod
 import copy
 import functools
@@ -100,7 +101,11 @@ class MCNP_Object(ABC, metaclass=_ExceptionContextAdder):
     :type parser: MCNP_Lexer
     """
 
-    def __init__(self, input, parser):
+    def __init__(
+        self,
+        input: montepy.input_parser.mcnp_input.Input,
+        parser: montepy.input_parser.parser_base.MCNP_Parser,
+    ):
         self._problem_ref = None
         self._parameters = ParametersNode()
         self._input = None
@@ -146,7 +151,7 @@ class MCNP_Object(ABC, metaclass=_ExceptionContextAdder):
             )
 
     @staticmethod
-    def _generate_default_node(value_type, default, padding=" "):
+    def _generate_default_node(value_type: type, default, padding: str = " "):
         """
         Generates a "default" or blank ValueNode.
 
@@ -172,7 +177,7 @@ class MCNP_Object(ABC, metaclass=_ExceptionContextAdder):
         return ValueNode(str(default), value_type, padding_node)
 
     @property
-    def parameters(self):
+    def parameters(self) -> dict[str, str]:
         """
         A dictionary of the additional parameters for the object.
 
@@ -199,7 +204,7 @@ class MCNP_Object(ABC, metaclass=_ExceptionContextAdder):
         """
         pass
 
-    def format_for_mcnp_input(self, mcnp_version):
+    def format_for_mcnp_input(self, mcnp_version: tuple[int]) -> list[str]:
         """
         Creates a string representation of this MCNP_Object that can be
         written to file.
@@ -216,7 +221,7 @@ class MCNP_Object(ABC, metaclass=_ExceptionContextAdder):
         return lines
 
     @property
-    def comments(self):
+    def comments(self) -> list[PaddingNode]:
         """
         The comments associated with this input if any.
 
@@ -229,7 +234,7 @@ class MCNP_Object(ABC, metaclass=_ExceptionContextAdder):
         return list(self._tree.comments)
 
     @property
-    def leading_comments(self):
+    def leading_comments(self) -> list[PaddingNode]:
         """
         Any comments that come before the beginning of the input proper.
 
@@ -262,7 +267,7 @@ class MCNP_Object(ABC, metaclass=_ExceptionContextAdder):
                 )
         new_nodes = list(*zip(comments, it.cycle(["\n"])))
         if self._tree["start_pad"] is None:
-            self._tree["start_pad"] = syntax_node.PaddingNode(" ")
+            self._tree["start_pad"] = PaddingNode(" ")
         self._tree["start_pad"]._nodes = new_nodes
 
     @leading_comments.deleter
@@ -272,7 +277,7 @@ class MCNP_Object(ABC, metaclass=_ExceptionContextAdder):
     @staticmethod
     def wrap_string_for_mcnp(
         string, mcnp_version, is_first_line, suppress_blank_end=True
-    ):
+    ) -> list[str]:
         """
         Wraps the list of the words to be a well formed MCNP input.
 
@@ -335,7 +340,7 @@ class MCNP_Object(ABC, metaclass=_ExceptionContextAdder):
         """
         pass
 
-    def link_to_problem(self, problem):
+    def link_to_problem(self, problem: montepy.mcnp_problem.MCNP_Problem):
         """Links the input to the parent problem for this input.
 
         This is done so that inputs can find links to other objects.
@@ -351,7 +356,7 @@ class MCNP_Object(ABC, metaclass=_ExceptionContextAdder):
             self._problem_ref = weakref.ref(problem)
 
     @property
-    def _problem(self):
+    def _problem(self) -> montepy.MCNP_Problem:
         if self._problem_ref is not None:
             return self._problem_ref()
         return None
@@ -364,7 +369,7 @@ class MCNP_Object(ABC, metaclass=_ExceptionContextAdder):
         self.link_to_problem(problem)
 
     @property
-    def trailing_comment(self):
+    def trailing_comment(self) -> list[PaddingNode]:
         """
         The trailing comments and padding of an input.
 
@@ -378,7 +383,7 @@ class MCNP_Object(ABC, metaclass=_ExceptionContextAdder):
     def _delete_trailing_comment(self):
         self._tree._delete_trailing_comment()
 
-    def _grab_beginning_comment(self, padding, last_obj=None):
+    def _grab_beginning_comment(self, padding: list[PaddingNode], last_obj=None):
         if padding:
             self._tree["start_pad"]._grab_beginning_comment(padding)
 
@@ -394,7 +399,7 @@ class MCNP_Object(ABC, metaclass=_ExceptionContextAdder):
         crunchy_data["_problem_ref"] = None
         self.__dict__.update(crunchy_data)
 
-    def clone(self):
+    def clone(self) -> montepy.mcnp_object.MCNP_Object:
         """
         Create a new independent instance of this object.
 

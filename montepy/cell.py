@@ -1,4 +1,6 @@
 # Copyright 2024, Battelle Energy Alliance, LLC All Rights Reserved.
+from __future__ import annotations
+
 import copy
 import itertools
 import numbers
@@ -103,7 +105,7 @@ class Cell(Numbered_MCNP_Object):
 
     _parser = CellParser()
 
-    def __init__(self, input=None):
+    def __init__(self, input: montepy.input_parser.mcnp_input.Input = None):
         self._CHILD_OBJ_MAP = {
             "material": Material,
             "surfaces": Surface,

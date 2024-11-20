@@ -1,8 +1,12 @@
 # Copyright 2024, Battelle Energy Alliance, LLC All Rights Reserved.
+from __future__ import annotations
+
 import copy
 import collections as co
 import itertools
 import math
+from typing import Union
+import weakref
 
 from montepy.data_inputs import data_input, thermal_scattering
 from montepy.data_inputs.nuclide import Library, Nucleus, Nuclide
@@ -15,6 +19,7 @@ from montepy.numbered_mcnp_object import Numbered_MCNP_Object
 from montepy.errors import *
 from montepy.utilities import *
 from montepy.particle import LibraryType
+import montepy
 
 import re
 import warnings
@@ -24,12 +29,20 @@ MAX_PRINT_ELEMENTS = 5
 
 
 class _DefaultLibraries:
+    """
+    A dictionary wrapper for handling the default libraries for a material.
+
+    The default libraries are those specified by keyword, e.g., ``nlib=80c``.
+
+    :param parent_mat: the material that this default library is associated with.
+    :type parent_mat: Material
+    """
 
     __slots__ = "_libraries", "_parent"
 
-    def __init__(self, parent_mat):
+    def __init__(self, parent_mat: Material):
         self._libraries = {}
-        self._parent = parent_mat
+        self._parent = weakref.ref(parent_mat)
 
     def __getitem__(self, key):
         key = self._validate_key(key)
@@ -48,14 +61,14 @@ class _DefaultLibraries:
             node = self._libraries[key]
         except KeyError:
             node = self._generate_default_node(key)
-            self._parent._append_param_lib(node)
+            self._parent()._append_param_lib(node)
             self._libraries[key] = node
         node["data"].value = str(value)
 
     def __delitem__(self, key):
         key = self._validate_key(key)
         node = self._libraries.pop(key)
-        self._parent._delete_param_lib(node)
+        self._parent()._delete_param_lib(node)
 
     def __str__(self):
         return str(self._libraries)
@@ -79,27 +92,127 @@ class _DefaultLibraries:
         }
         return syntax_node.SyntaxNode("mat library", ret)
 
-    def _load_node(self, key, node):
+    def _load_node(self, key: Union[str, LibraryType], node: syntax_node.SyntaxNode):
         key = self._validate_key(key)
         self._libraries[key] = node
+
+    def __getstate__(self):
+        return {"_libraries": self._libraries}
+
+    def __setstate__(self, state):
+        self._libraries = state["_libraries"]
+
+    def _link_to_parent(self, parent_mat: Material):
+        self._parent = weakref.ref(parent_mat)
 
 
 class Material(data_input.DataInputAbstract, Numbered_MCNP_Object):
     """
     A class to represent an MCNP material.
 
+    Examples
+    --------
+
+    First it might be useful to load an example problem:
+
+    .. testcode::
+
+        import montepy
+        problem = montepy.read_input("foo.imcnp")
+        mat = problem.materials[1]
+        print(mat)
+
+    .. testoutput::
+
+        TODO
+
+    Materials are iterable
+    ^^^^^^^^^^^^^^^^^^^^^^
+
+    Materials look like a list of tuples, and is iterable.
+    Whether or not the material is defined in mass fraction or atom fraction
+    is stored for the whole material in :func:`~montepy.data_inputs.material.Material.is_atom_fraction`.
+    The fractions (atom or mass) of the componenets are always positive,
+    because MontePy believes in physics.
+
+    .. testcode::
+
+        assert mat.is_atom_fraction # ensures it is in atom_fraction
+
+        for nuclide, fraction in mat:
+            print(nuclide, fraction)
+
+    This would display:
+
+    .. testoutput::
+
+        TODO
+
+    As a list, Materials can be indexed:
+
+    .. testcode::
+
+        oxygen, ox_frac = mat[1]
+        mat[1] = (oxygen, ox_frac + 1e-6)
+        del mat[1]
+
+    Add New Component
+    ^^^^^^^^^^^^^^^^^
+
+    The easiest way to add new components to a material is with
+    :func:`~montepy.data_inputs.material.Material.add_nuclide`.
+
+    .. testcode::
+
+        # add boric acid to water
+        boric_acid_frac = 1e-6
+        # TODO need easy way to update fraction
+        mat[0]
+        # Add by nuclide object
+        mat.add_nuclide(oxygen, ox_frac + 3 * boric_acid_frac)
+        # add by nuclide Name or ZAID
+        mat.add_nuclide("B-10.80c", 1e-6)
+        print(mat)
+
+    .. testoutput::
+
+        TODO
+
+    Default Libraries
+    ^^^^^^^^^^^^^^^^^
+
+    Also materials have the concept of :func:`~montepy.data_inputs.material.Material.default_libraries`.
+    These are the libraries set by ``NLIB``, ``PLIB``, etc.,
+    which are used when a library of the correct :class:`~montepy.particle.LibraryType` is not provided with the
+    nuclide.
+    :func:`~montepy.data_inputs.material.Material.default_libraries` acts like a dictionary,
+    and can accept a string or a :class:`~montepy.particle.LibraryType` as keys.
+
+    .. testcode::
+
+        print(mat.default_libraries["plib"])
+        mat.default_libraries[montepy.LibraryType.NEUTRON] = "00c"
+        print(mat.default_libraries["nlib"])
+
+    .. testoutput::
+
+        80p
+        00c
+
+
     .. seealso::
 
+            * :manual631:`5.6.1`
             * :manual63:`5.6.1`
             * :manual62:`106`
 
-    :param input: the input card that contains the data
+    :param input: the input that contains the data for this material
     :type input: Input
     """
 
     _parser = MaterialParser()
 
-    def __init__(self, input=None):
+    def __init__(self, input: montepy.input_parser.mcnp_input.Input = None):
         self._components = []
         self._thermal_scattering = None
         self._is_atom_fraction = True
@@ -124,8 +237,12 @@ class Material(data_input.DataInputAbstract, Numbered_MCNP_Object):
         else:
             self._create_default_tree()
 
-    def _grab_isotope(self, nuclide, fraction, is_first=False):
-        """ """
+    def _grab_isotope(
+        self, nuclide: Nuclide, fraction: syntax_node.ValueNode, is_first: bool = False
+    ):
+        """
+        Grabs and parses the nuclide and fraction from the init function, and loads it.
+        """
         isotope = Nuclide(node=nuclide)
         fraction.is_negatable_float = True
         if is_first:
@@ -141,7 +258,10 @@ class Material(data_input.DataInputAbstract, Numbered_MCNP_Object):
         self._nuclei.add(isotope.nucleus)
         self._components.append((isotope, fraction))
 
-    def _grab_default(self, param):
+    def _grab_default(self, param: syntax_node.SyntaxNode):
+        """
+        Grabs and parses default libraris from init process.
+        """
         try:
             lib_type = LibraryType(param["classifier"].prefix.value.upper())
             self._default_libs._load_node(lib_type, param)
@@ -164,14 +284,24 @@ class Material(data_input.DataInputAbstract, Numbered_MCNP_Object):
             },
         )
 
-    def _append_param_lib(self, node):
+    def _append_param_lib(self, node: syntax_node.SyntaxNode):
+        """
+        Adds the given syntax node to this Material's data list.
+
+        This is called from _DefaultLibraries.
+        """
         self._tree["data"].append_param(node)
 
-    def _delete_param_lib(self, node):
+    def _delete_param_lib(self, node: syntax_node.SyntaxNode):
+        """
+        Deletes the given syntax node from this Material's data list.
+
+        This is called from _DefaultLibraries.
+        """
         self._tree["data"].nodes.remove((node,))
 
     @make_prop_val_node("_old_number")
-    def old_number(self):
+    def old_number(self) -> int:
         """
         The material number that was used in the read file
 
@@ -182,7 +312,7 @@ class Material(data_input.DataInputAbstract, Numbered_MCNP_Object):
     # TODO ensure update_values
     # TODO ensure is negative is updated in append
     @make_prop_pointer("_is_atom_fraction", bool)
-    def is_atom_fraction(self):
+    def is_atom_fraction(self) -> bool:
         """
         If true this constituent is in atom fraction, not weight fraction.
 
@@ -210,12 +340,61 @@ See <https://www.montepy.org/migrations/migrate0_1.html> for more information ""
     @make_prop_pointer("_default_libs")
     def default_libraries(self):
         """
-        TODO
+        The default libraries that are used when a nuclide doesn't have a relevant library specified.
+
+        Default Libraries
+        ^^^^^^^^^^^^^^^^^
+
+        Also materials have the concept of :func:`~montepy.data_inputs.material.Material.default_libraries`.
+        These are the libraries set by ``NLIB``, ``PLIB``, etc.,
+        which are used when a library of the correct :class:`~montepy.particle.LibraryType` is not provided with the
+        nuclide.
+        :func:`~montepy.data_inputs.material.Material.default_libraries` acts like a dictionary,
+        and can accept a string or a :class:`~montepy.particle.LibraryType` as keys.
+
+        .. testcode::
+
+            print(mat.default_libraries["plib"])
+            mat.default_libraries[montepy.LibraryType.NEUTRON] = "00c"
+            print(mat.default_libraries["nlib"])
+
+        .. testoutput::
+
+            80p
+            00c
         """
         pass
 
-    def get_nuclide_library(self, nuclide, library_type):
-        """ """
+    def get_nuclide_library(
+        self, nuclide: Nuclide, library_type: LibraryType
+    ) -> Union[Library, None]:
+        """
+        Figures out which nuclear data library will be used for the given nuclide in this
+        given material in this given problem.
+
+        This follows the MCNP lookup process and returns the first Library to meet these rules.
+
+        #. The library extension for the nuclide. For example if the nuclide is ``1001.80c`` for ``LibraryType("nlib")``, ``Library("80c")`` will be returned.
+
+        #. Next if a relevant nuclide library isn't provided the :func:`~montepy.data_inputs.material.Material.default_libraries` will be used.
+
+        #. Finally if the two other options failed ``M0`` will be checked. These are stored in :func:`montepy.materials.Materials.default_libraries`.
+
+        .. note::
+
+            The final backup is that MCNP will use the first matching library in ``XSDIR``.
+            Currently MontePy doesn't support reading an ``XSDIR`` file and so it will return none in this case.
+
+        :param nuclide: the nuclide to check.
+        :type nuclide: Nuclide
+        :param library_type: the LibraryType to check against.
+        :type library_type: LibraryType
+        :returns: the library that will be used in this scenario by MCNP.
+        :rtype: Union[Library, None]
+        :raises TypeError: If arguments of the wrong type are given.
+
+        # todo should this support str arguments
+        """
         if not isinstance(nuclide, Nuclide):
             raise TypeError(f"nuclide must be a Nuclide. {nuclide} given.")
         if not isinstance(library_type, (str, LibraryType)):
@@ -674,3 +853,7 @@ See <https://www.montepy.org/migrations/migrate0_1.html> for more information ""
             if not math.isclose(mine[1], yours[1]):
                 return False
         return True
+
+    def __setstate__(self, state):
+        super().__setstate__(state)
+        self._default_libs._link_to_parent(self)

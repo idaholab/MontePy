@@ -1,4 +1,5 @@
 # Copyright 2024, Battelle Energy Alliance, LLC All Rights Reserved.
+from __future__ import annotations
 from montepy.errors import *
 from montepy._singleton import SingletonGroup
 
@@ -9,6 +10,11 @@ class Element(SingletonGroup):
     """
     Class to represent an element e.g., Aluminum.
 
+    .. Note::
+
+        This class is immutable, and hashable, meaning it is suitable as a dictionary key.
+
+
     :param Z: the Z number of the element
     :type Z: int
     :raises UnknownElement: if there is no element with that Z number.
@@ -16,13 +22,13 @@ class Element(SingletonGroup):
 
     __slots__ = "_Z"
 
-    def __init__(self, Z):
+    def __init__(self, Z: int):
         self._Z = Z
         if Z not in self.__Z_TO_SYMBOL:
             raise UnknownElement(f"Z={Z}")
 
     @property
-    def symbol(self):
+    def symbol(self) -> str:
         """
         The atomic symbol for this Element.
 
@@ -32,7 +38,7 @@ class Element(SingletonGroup):
         return self.__Z_TO_SYMBOL[self.Z]
 
     @property
-    def Z(self):
+    def Z(self) -> int:
         """
         The atomic number for this Element.
 
@@ -42,7 +48,7 @@ class Element(SingletonGroup):
         return self._Z
 
     @property
-    def name(self):
+    def name(self) -> str:
         """
         The name of the element.
 
@@ -67,7 +73,7 @@ class Element(SingletonGroup):
         return (type(self), (self.Z,))
 
     @classmethod
-    def get_by_symbol(cls, symbol):
+    def get_by_symbol(cls, symbol: str) -> Element:
         """
         Get an element by it's symbol.
 
@@ -84,7 +90,7 @@ class Element(SingletonGroup):
             raise UnknownElement(f"The symbol: {symbol}")
 
     @classmethod
-    def get_by_name(cls, name):
+    def get_by_name(cls, name: str) -> Element:
         """
         Get an element by it's name.
 

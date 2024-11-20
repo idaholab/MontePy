@@ -48,11 +48,10 @@ class Library(SingletonGroup):
         "c": LibraryType.NEUTRON,
         "d": LibraryType.NEUTRON,
         "m": LibraryType.NEUTRON,  # coupled neutron photon, invokes `g`
-        # TODO do we need to handle this edge case?
         "g": LibraryType.PHOTO_ATOMIC,
         "p": LibraryType.PHOTO_ATOMIC,
         "u": LibraryType.PHOTO_NUCLEAR,
-        "y": LibraryType.NEUTRON,  # TODO is this right?
+        "y": LibraryType.NEUTRON,
         "e": LibraryType.ELECTRON,
         "h": LibraryType.PROTON,
         "o": LibraryType.DEUTERON,
@@ -404,12 +403,17 @@ class Nucleus(SingletonGroup):
         pass
 
     @classmethod
-    def _parse_zaid(cls, ZAID) -> dict:
+    def _parse_zaid(cls, ZAID) -> dict[str, object]:
         """
         Parses the ZAID fully including metastable isomers.
 
         See Table 3-32 of LA-UR-17-29881
-        TODO actually document this
+
+        :param ZAID: the ZAID without the library
+        :type ZAID: int
+        :returns: a dictionary with the parsed information,
+            in a way that can be loaded into nucleus. Keys are: _element, _A, _meta_state
+        :rtype: dict[str, Object]
         """
 
         def is_probably_an_isotope(Z, A):
@@ -444,7 +448,7 @@ class Nucleus(SingletonGroup):
             else:
                 raise ValueError(
                     f"ZAID: {ZAID} cannot be parsed as a valid metastable isomer. "
-                    "Only isomeric state 1 - 4 are allowed"
+                    "Only isomeric state 0 - 4 are allowed"
                 )
 
         else:
@@ -592,7 +596,7 @@ class Nuclide:
             self._tree = ValueNode(self.mcnp_str(), str)
 
     @property
-    def ZAID(self):
+    def ZAID(self) -> int:
         """
         The ZZZAAA identifier following MCNP convention
 
@@ -602,7 +606,7 @@ class Nuclide:
         return self._nucleus.ZAID
 
     @property
-    def Z(self):
+    def Z(self) -> int:
         """
         The Z number for this isotope.
 
@@ -612,7 +616,7 @@ class Nuclide:
         return self._nucleus.Z
 
     @property
-    def A(self):
+    def A(self) -> int:
         """
         The A number for this isotope.
 
@@ -622,7 +626,7 @@ class Nuclide:
         return self._nucleus.A
 
     @property
-    def element(self):
+    def element(self) -> Element:
         """
         The base element for this isotope.
 
@@ -632,7 +636,7 @@ class Nuclide:
         return self._nucleus.element
 
     @make_prop_pointer("_nucleus")
-    def nucleus(self):
+    def nucleus(self) -> Nucleus:
         """
         The base nuclide of this nuclide without the nuclear data library.
 
@@ -641,7 +645,7 @@ class Nuclide:
         pass
 
     @property
-    def is_metastable(self):
+    def is_metastable(self) -> bool:
         """
         Whether or not this is a metastable isomer.
 
@@ -651,7 +655,7 @@ class Nuclide:
         return self._nucleus.is_metastable
 
     @property
-    def meta_state(self):
+    def meta_state(self) -> int:
         """
         If this is a metastable isomer, which state is it?
 
@@ -666,7 +670,7 @@ class Nuclide:
 
     # TODO verify _update_values plays nice
     @make_prop_pointer("_library", (str, Library), Library)
-    def library(self):
+    def library(self) -> Library:
         """
          The MCNP library identifier e.g. 80c
 
@@ -677,7 +681,7 @@ class Nuclide:
     def __repr__(self):
         return f"{self.__class__.__name__}({repr(self.nuclide_str())})"
 
-    def mcnp_str(self):
+    def mcnp_str(self) -> str:
         """
         Returns an MCNP formatted representation.
 
@@ -688,7 +692,7 @@ class Nuclide:
         """
         return f"{self.ZAID}.{self.library}" if str(self.library) else str(self.ZAID)
 
-    def nuclide_str(self):
+    def nuclide_str(self) -> str:
         """
         Creates a human readable version of this nuclide excluding the data library.
 
@@ -714,6 +718,8 @@ class Nuclide:
     @classmethod
     def _parse_fancy_name(cls, identifier):
         """
+        TODO delete?
+
         :param identifier:
         :type idenitifer: str | int
         """
