@@ -68,16 +68,23 @@ UM63 = (
     "https://mcnp.lanl.gov/pdf_files/TechReport_2022_LANL_LA-UR-22-30006"
     "Rev.1_KuleszaAdamsEtAl.pdf"
 )
+UM631 = "https://www.osti.gov/servlets/purl/2372634"
 UM62 = (
     "https://mcnp.lanl.gov/pdf_files/TechReport_2017_LANL_LA-UR-17-29981"
     "_WernerArmstrongEtAl.pdf"
 )
 extlinks = {
     # MCNP 6.3 User's Manual
-    "manual63sec": (UM63 + "#section.%s", "MCNP 6.3 manual § %s"),
-    "manual63": (UM63 + "#subsection.%s", "MCNP 6.3 manual § %s"),
-    "manual63part": (UM63 + "#part.%s", "MCNP 6.3 manual § %s"),
-    "manual63chapter": (UM63 + "#chapter.%s", "MCNP 6.3 manual § %s"),
+    "manual63sec": (UM63 + "#section.%s", "MCNP 6.3.0 manual § %s"),
+    "manual63": (UM63 + "#subsection.%s", "MCNP 6.3.0 manual § %s"),
+    "manual63part": (UM63 + "#part.%s", "MCNP 6.3.0 manual part %s"),
+    "manual63chapter": (UM63 + "#chapter.%s", "MCNP 6.3.0 manual Ch. %s"),
+    # MCNP 6.3.1 User's Manual
+    "manual631sec": (UM631 + "#section.%s", "MCNP 6.3.1 manual § %s"),
+    "manual631": (UM631 + "#subsection.%s", "MCNP 6.3.1 manual § %s"),
+    "manual631part": (UM631 + "#part.%s", "MCNP 6.3.1 manual part %s"),
+    "manual631chapter": (UM631 + "#chapter.%s", "MCNP 6.3.1 manual Ch. %s"),
+    # MCNP 6.2 User's manual
     "manual62": (UM62 + "#page=%s", "MCNP 6.2 manual p. %s"),
     "issue": ("https://github.com/idaholab/MontePy/issues/%s", "#%s"),
     "pull": ("https://github.com/idaholab/MontePy/pull/%s", "#%s"),
