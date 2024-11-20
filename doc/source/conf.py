@@ -60,6 +60,10 @@ html_extra_path = ["robots.txt", "foo.imcnp"]
 # This pattern also affects html_static_path and html_extra_path.
 exclude_patterns = []
 
+# autodoc
+autodoc_typehints = "description"
+autodoc_typehints_description_target = "all"
+autodoc_member_order = "groupwise"
 # Display the version
 display_version = True
 
