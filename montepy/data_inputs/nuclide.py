@@ -12,25 +12,11 @@ import re
 import warnings
 
 
-class Singleton:
 
-    _instances = collections.defaultdict(dict)
-
-    def __new__(cls, *args, **kwargs):
-        kwargs_t = tuple([(k, v) for k, v in kwargs.items()])
-        try:
-            return cls._instances[cls][args + kwargs_t]
-        except KeyError:
-            cls._instances[cls][args + kwargs_t] = super().__new__(
-                cls,
-            )
-            cls._instances[cls][args + kwargs_t].__init__(*args, **kwargs)
-            return cls._instances[cls][args + kwargs_t]
-
-
-class Library(Singleton):
+class Library(SingletonGroup):
     """
     A class to represent an MCNP nuclear data library, e.g., ``80c``.
+
 
     Examples
     ^^^^^^^^
@@ -57,27 +43,6 @@ class Library(Singleton):
     :raises ValueError: if a valid library is not provided.
     """
 
-    def __init__(self, library):
-        if not isinstance(library, str):
-            raise TypeError(f"library must be a str. {library} given.")
-        if library:
-            match = self._LIBRARY_RE.fullmatch(library)
-            if not match:
-                raise ValueError(f"Not a valid library. {library} given.")
-            self._num = int(match.group(1))
-            extension = match.group(2).lower()
-            self._suffix = extension
-            try:
-                lib_type = self._SUFFIX_MAP[extension]
-            except KeyError:
-                raise ValueError(
-                    f"Not a valid library extension suffix. {library} with extension: {extension} given."
-                )
-            self._lib_type = lib_type
-        else:
-            self._lib_type = None
-        self._library = library
-
     __slots__ = "_library", "_lib_type", "_num", "_suffix"
 
     _SUFFIX_MAP = {
@@ -97,6 +62,27 @@ class Library(Singleton):
         "a": LibraryType.ALPHA_PARTICLE,
     }
     _LIBRARY_RE = re.compile(r"(\d{2,3})[a-z]?([a-z])", re.I)
+
+    def __init__(self, library: str):
+        if not isinstance(library, str):
+            raise TypeError(f"library must be a str. {library} given.")
+        if library:
+            match = self._LIBRARY_RE.fullmatch(library)
+            if not match:
+                raise ValueError(f"Not a valid library. {library} given.")
+            self._num = int(match.group(1))
+            extension = match.group(2).lower()
+            self._suffix = extension
+            try:
+                lib_type = self._SUFFIX_MAP[extension]
+            except KeyError:
+                raise ValueError(
+                    f"Not a valid library extension suffix. {library} with extension: {extension} given."
+                )
+            self._lib_type = lib_type
+        else:
+            self._lib_type = None
+        self._library = library
 
     @property
     def library(self):
@@ -172,6 +158,9 @@ class Library(Singleton):
             return self.number < other.number
         return self.suffix < other.suffix
 
+    def __reduce__(self):
+        return (self.__class__, (self._library,))
+
 
 _ZAID_A_ADDER = 1000
 """
@@ -179,7 +168,7 @@ How much to multiply Z by to form a ZAID.
 """
 
 
-class Nucleus(metaclass=SingletonGroup):
+class Nucleus(SingletonGroup):
     """
     A class to represent a nuclide irrespective of the nuclear data being used.
 
@@ -393,6 +382,9 @@ class Nucleus(metaclass=SingletonGroup):
             raise TypeError("")
         # due to SingletonGroup
         return self is other
+
+    def __reduce__(self):
+        return (type(self), ("", None, self.Z, self.A, self._meta_state))
 
     def __lt__(self, other):
         if not isinstance(other, type(self)):

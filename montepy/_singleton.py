@@ -1,25 +1,62 @@
-import collections
+# Copyright 2024, Battelle Energy Alliance, LLC All Rights Reserved.
+from abc import ABC, abstractmethod
+import inspect
+from functools import wraps
 
 
-class SingletonGroup(type):
+class SingletonGroup(ABC):
     """
-    A metaclass for implementing a Singleton-like data structure.
+    A base class for implementing a Singleton-like data structure.
 
     This treats immutable objects are Enums without having to list all.
     This is used for: Element, Nucleus, Library. When a brand new instance
     is requested it is created, cached and returned.
     If an existing instance is requested it is returned.
     This is done to reduce the memory usage for these objects.
+
     """
 
-    _instances = collections.defaultdict(dict)
+    _instances = {}
 
-    def __call__(cls, *args, **kwargs):
+    def __new__(cls, *args, **kwargs):
         kwargs_t = tuple([(k, v) for k, v in kwargs.items()])
+        if len(args + kwargs_t) == 0:
+            return super().__new__(cls)
         try:
-            return cls._instances[cls][args + kwargs_t]
+            return cls._instances[args + kwargs_t]
         except KeyError:
-            cls._instances[cls][args + kwargs_t] = super(SingletonGroup, cls).__call__(
-                *args, **kwargs
-            )
-            return cls._instances[cls][args + kwargs_t]
+            instance = super().__new__(cls)
+            instance.__init__(*args, **kwargs)
+            cls._instances[args + kwargs_t] = instance
+            return cls._instances[args + kwargs_t]
+
+    def __init_subclass__(cls, **kwargs):
+        """
+        Workaround to get sphinx autodoc happy.
+        """
+        super().__init_subclass__(**kwargs)
+
+        original_new = cls.__new__
+
+        @wraps(original_new)
+        def __new__(cls, *args, **kwargs):
+            return original_new(cls, *args, **kwargs)
+
+        __new__.__signature__ = inspect.signature(cls.__init__)
+        cls.__new__ = staticmethod(__new__)
+
+    def __deepcopy__(self, memo):
+        """
+        Make deepcopy happy.
+        """
+        if self in memo:
+            return memo[self]
+        memo[self] = self
+        return self
+
+    @abstractmethod
+    def __reduce__(self):
+        """
+        See: <https://docs.python.org/3/library/pickle.html#object.__reduce__>
+        """
+        pass

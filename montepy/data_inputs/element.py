@@ -5,7 +5,7 @@ from montepy._singleton import SingletonGroup
 MAX_Z_NUM = 118
 
 
-class Element(metaclass=SingletonGroup):
+class Element(SingletonGroup):
     """
     Class to represent an element e.g., Aluminum.
 
@@ -62,6 +62,9 @@ class Element(metaclass=SingletonGroup):
 
     def __eq__(self, other):
         return self is other
+
+    def __reduce__(self):
+        return (type(self), (self.Z,))
 
     @classmethod
     def get_by_symbol(cls, symbol):
