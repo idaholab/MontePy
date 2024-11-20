@@ -156,6 +156,21 @@ class Material(data_input.DataInputAbstract, Numbered_MCNP_Object):
         mat[1] = (oxygen, ox_frac + 1e-6)
         del mat[1]
 
+    You can check if a Nuclide is in a Material
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+    You can check if a :class:`~montepy.data_inputs.nuclide.Nuclide` or :class:`~montepy.data_input.element.Element` is
+    in a Material with ``in``.
+
+    .. doctest::
+
+        >>> montepy.Nuclide("H-1") in mat
+        True
+        >>> montepy.Element(1) in mat
+        True
+        >>> montepy.Element(92) in mat
+        False
+
     Add New Component
     ^^^^^^^^^^^^^^^^^
 
@@ -443,7 +458,10 @@ See <https://www.montepy.org/migrations/migrate0_1.html> for more information ""
     def __len__(self):
         return len(self._components)
 
-    def _check_valid_comp(self, newvalue):
+    def _check_valid_comp(self, newvalue: tuple[Nuclide, float]):
+        """
+        Checks valid compositions and raises an error if needed.
+        """
         if not isinstance(newvalue, tuple):
             raise TypeError(
                 f"Invalid component given. Must be tuple of Nuclide, fraction. {newvalue} given."
@@ -487,6 +505,7 @@ See <https://www.montepy.org/migrations/migrate0_1.html> for more information ""
 
     def __contains__(self, nuclide):
         # TODO support fancy stuff?
+        # TODO support str names at least?
         if not isinstance(nuclide, (Nuclide, Nucleus, Element)):
             raise TypeError("")
         if isinstance(nuclide, (Nucleus, Nuclide)):
@@ -506,8 +525,13 @@ See <https://www.montepy.org/migrations/migrate0_1.html> for more information ""
             return element in self._elements
         return False
 
-    def append(self, obj):
-        # TODO type enforcement
+    def append(self, nuclide_frac_pair: tuple[Nuclide, float]):
+        """
+        Appends the tuple to this material.
+
+        :param nuclide_frac_pair: a tuple of the nuclide and the fraction to add.
+        :type nuclide_frac_pair: tuple[Nuclide, float]
+        """
         self._check_valid_comp(obj)
         self._elements.add(obj[0].element)
         self._nuclei.add(obj[0].nucleus)
@@ -530,11 +554,14 @@ See <https://www.montepy.org/migrations/migrate0_1.html> for more information ""
         for nuclide, _ in self:
             nuclide.library = new_library
 
-    def add_nuclide(self, nuclide, fraction):
+    def add_nuclide(self, nuclide: Union[Nuclide, str, int], fraction: float):
         """
+        Add a new component to this material of the given nuclide, and fraction.
 
-        :param nuclide: The nuclide to add, which can be a string indentifier.
+        :param nuclide: The nuclide to add, which can be a string Identifier, or ZAID.
         :type nuclide: Nuclide, str, int
+        :param fraction: the fraction of this component being added.
+        :type fraction: float
         """
         if not isinstance(nuclide, (Nuclide, str, int)):
             raise TypeError("")
@@ -544,14 +571,72 @@ See <https://www.montepy.org/migrations/migrate0_1.html> for more information ""
             nuclide = Nuclide(nuclide)
         self.append((nuclide, fraction))
 
-    def contains(self, nuclide, *args, threshold):
+    def contains(
+        self,
+        nuclide: Nuclide,
+        *args: Union[Nuclide, Nucleus, Element, str, int],
+        threshold: float = 0.0,
+    ):
+        """
+        Checks if this material contains multiple nuclides.
+
+        A boolean and is used for this comparison.
+        That is this material must contain all nuclides at or above the given threshold
+        in order to return true.
+
+        Examples
+        ^^^^^^^^
+
+        .. testcode::
+
+            import montepy
+            problem = montepy.read_input("tests/inputs/test.imcnp")
+
+            # try to find LEU materials
+            for mat in problem.materials:
+                if mat.contains("U-235", threshold=0.02):
+                    # your code here
+                    pass
+
+            # try to find any fissile materials
+            for mat in problem.materials:
+                if mat.contains("U-235", "U-233", "Pu-239", threshold=1e-6):
+                    pass
+
+        .. note::
+
+            If a nuclide is in a material multiple times, and cumulatively exceeds the threshold,
+            but for each instance it appears it is below the threshold this method will return False.
+
+
+        :param nuclide: the first nuclide to check for.
+        :type nuclide: Union[Nuclide, Nucleus, Element, str, int]
+        :param args: a plurality of other nuclides to check for.
+        :type args: Union[Nuclide, Nucleus, Element, str, int]
+        :param threshold: the minimum concentration of a nuclide to be considered. The material components are not
+        first normalized.
+        :type threshold: float
+
+        :raises TypeError: if any argument is of the wrong type.
+        :raises ValueError: if the fraction is not positive or zero, or if nuclide cannot be interpreted as a Nuclide.
+        """
         nuclides = []
         for nuclide in [nuclide] + args:
             if not isinstance(nuclide, (str, int, Element, Nucleus, Nuclide)):
-                raise TypeError("")  # foo
+                raise TypeError(
+                    f"Nuclide must be a type that can be converted to a Nuclide. The allowed types are: "
+                    f"Nuclide, Nucleus, str, int. {nuclide} given."
+                )
             if isinstance(nuclide, (str, int)):
-                nuclide = montepy.Nuclide.get_from_fancy_name(nuclide)
+                nuclide = montepy.Nuclide(nuclide)
             nuclides.append(nuclide)
+
+        if not isinstance(threshold, float):
+            raise TypeError(
+                f"Threshold must be a float. {threshold} of type: {type(threshold)} given"
+            )
+        if threshold < 0.0:
+            raise ValueError(f"Threshold must be positive or zero. {threshold} given.")
 
         # fail fast
         for nuclide in nuclides:
@@ -568,7 +653,16 @@ See <https://www.montepy.org/migrations/migrate0_1.html> for more information ""
                     nuclides_search[str(nuclide)] = True
         return all(nuclide_search)
 
+    def normalize(self):
+        # TODO
+        pass
+
     def __prep_element_filter(self, filter_obj):
+        """
+        Makes a filter function for an element.
+
+        For use by find
+        """
         if isinstance(filter_obj, "str"):
             filter_obj = Element.get_by_symbol(filter_obj).Z
         if isinstance(filter_obj, Element):
@@ -577,6 +671,9 @@ See <https://www.montepy.org/migrations/migrate0_1.html> for more information ""
         return wrapped_filter
 
     def __prep_filter(self, filter_obj, attr=None):
+        """
+        Makes a filter function wrapper
+        """
         if callable(filter_obj):
             return filter_obj
 
@@ -605,16 +702,31 @@ See <https://www.montepy.org/migrations/migrate0_1.html> for more information ""
             return lambda val: val == filter_obj
 
     def find(
-        self, fancy_name=None, element=None, A=None, meta_isomer=None, library=None
+        self,
+        fancy_name: str = None,
+        element: Union[Element, str, int, slice] = None,
+        A: Union[int, slice] = None,
+        meta_isomer: Union[int, slice] = None,
+        library: Union[str, slice] = None,
     ):
         """
         Finds all components that meet the given criteria.
 
         The criteria are additive, and a component must match all criteria.
+        That is the boolean and operator is used.
+        Slices can be specified at most levels allowing to search by a range of values.
+        For numerical quantities slices are rather intuitive, and follow the same rules that list indices do.
+        For elements slices are by Z number only.
+        For the library the slicing is done using string comparisons.
+
+        Examples
+        ^^^^^^^^
+
+        TODO
 
         ... Examples
 
-        :param fancy_name: TODO
+        :param fancy_name: The name to pass to Nuclide to search by a specific Nuclide.
         :type fancy_name: str
         :param element: the element to filter by, slices must be slices of integers.
         :type element: Element, str, int, slice
@@ -628,7 +740,7 @@ See <https://www.montepy.org/migrations/migrate0_1.html> for more information ""
         # TODO type enforcement
         # TODO allow broad fancy name "U"
         filters = [
-            self.__prep_filter(Nuclide.get_from_fancy_name(fancy_name)),
+            self.__prep_filter(Nuclide(fancy_name)),
             self.__prep_element_filter(element),
             self.__prep_filter(A, "A"),
             self.__prep_filter(meta_isomer, "meta_state"),
@@ -647,6 +759,8 @@ See <https://www.montepy.org/migrations/migrate0_1.html> for more information ""
     ):
         """ """
         pass
+
+    # TODO create indexible/settable values
 
     def __bool__(self):
         return bool(self._components)
