@@ -5,7 +5,7 @@ import copy
 import collections as co
 import itertools
 import math
-from typing import Union
+from typing import Generator, Union
 import weakref
 
 from montepy.data_inputs import data_input, thermal_scattering
@@ -654,7 +654,15 @@ See <https://www.montepy.org/migrations/migrate0_1.html> for more information ""
         return all(nuclide_search)
 
     def normalize(self):
-        # TODO
+        """
+        Normalizes the components fractions so that they sum to 1.0.
+        """
+        total_frac = sum(self.values)
+        for _, val_node in self._components:
+            val_node.value /= total_frac
+
+    @propery
+    def values(self) -> Generator[float]:
         pass
 
     def __prep_element_filter(self, filter_obj):
@@ -703,7 +711,7 @@ See <https://www.montepy.org/migrations/migrate0_1.html> for more information ""
 
     def find(
         self,
-        fancy_name: str = None,
+        name: str = None,
         element: Union[Element, str, int, slice] = None,
         A: Union[int, slice] = None,
         meta_isomer: Union[int, slice] = None,
@@ -724,11 +732,12 @@ See <https://www.montepy.org/migrations/migrate0_1.html> for more information ""
 
         TODO
 
-        ... Examples
 
-        :param fancy_name: The name to pass to Nuclide to search by a specific Nuclide.
-        :type fancy_name: str
-        :param element: the element to filter by, slices must be slices of integers.
+        :param name: The name to pass to Nuclide to search by a specific Nuclide. If an element name is passed this
+        will only match elemental nuclides.
+        :type name: str
+        :param element: the element to filter by, slices must be slices of integers. This will match all nuclides that
+            are based on this element. e.g., "U" will match U-235 and U-238.
         :type element: Element, str, int, slice
         :param A: the filter for the nuclide A number.
         :type A: int, slice
@@ -737,10 +746,25 @@ See <https://www.montepy.org/migrations/migrate0_1.html> for more information ""
         :param library: the libraries to limit the search to.
         :type library: str, slice
         """
-        # TODO type enforcement
-        # TODO allow broad fancy name "U"
+        # nuclide type enforcement handled by `Nuclide`
+        if not isinstance(element, (Element, str, int, slice)):
+            raise TypeError(
+                f"Element must be only Element, str, int or slice types. {element} of type{type(element)} given."
+            )
+        if not isinstance(A, (int, slice)):
+            raise TypeError(
+                f"A must be an int or a slice. {A} of type {type(A)} given."
+            )
+        if not isinstance(meta_isomer, (int, slice)):
+            raise TypeError(
+                f"meta_state must an int or a slice. {meta_state} of type {type(meta_state)} given."
+            )
+        if not isinstance(library, (str, slice)):
+            raise TypeError(
+                f"library must a str or a slice. {library} of type {type(library)} given."
+            )
         filters = [
-            self.__prep_filter(Nuclide(fancy_name)),
+            self.__prep_filter(Nuclide(name)),
             self.__prep_element_filter(element),
             self.__prep_filter(A, "A"),
             self.__prep_filter(meta_isomer, "meta_state"),
