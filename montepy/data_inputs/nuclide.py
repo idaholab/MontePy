@@ -480,7 +480,7 @@ class Nucleus(SingletonGroup):
 
 
 class Nuclide:
-    """
+    r"""
     A class to represent an MCNP nuclide with nuclear data library information.
 
     Nuclide accepts ``name`` as a way of specifying a nuclide.
