@@ -260,6 +260,18 @@ Pu-239   (80c) 0.1
         big_material[index]
         # TODO actually test
 
+    @pytest.mark.filterwarnings("ignore::montepy.errors.LineExpansionWarning")
+    def test_add_nuclide_expert(_, big_material):
+        _.verify_export(big_material)
+
+    def verify_export(_, mat):
+        output = mat.format_for_mcnp_input((6, 3, 0))
+        new_mat = Material(Input(output, BlockType.DATA))
+        assert mat.number == new_mat, "Material number not preserved."
+        for (old_nuc, old_frac), (new_nuc, new_frac) in zip(mat, new_mat):
+            assert old_nuc == new_nuc, "Material didn't preserve nuclides."
+            assert old_frac == pytest.approx(new_frac)
+
 
 class TestThermalScattering:
     def test_thermal_scattering_init(_):
