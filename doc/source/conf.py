@@ -105,6 +105,8 @@ apidoc_module_dir = "../../montepy"
 apidoc_module_first = True
 apidoc_separate_modules = True
 
+suppress_warnings = ["epub.unknown_project_files"]
+
 
 # Add any paths that contain custom static files (such as style sheets) here,
 # relative to this directory. They are copied after the builtin static files,
