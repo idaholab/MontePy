@@ -439,7 +439,7 @@ class TestDefaultLib:
         return DL(mat)
 
     def test_dl_init(_, dl):
-        assert isinstance(dl._parent, Material)
+        assert isinstance(dl._parent(), Material)
         assert isinstance(dl._libraries, dict)
 
     @pytest.mark.parametrize(
@@ -450,13 +450,13 @@ class TestDefaultLib:
         dl[lib_type] = lib
         assert dl[lib_type] == Library(lib), "Library not properly stored."
         assert (
-            len(dl._parent._tree["data"]) == 1
+            len(dl._parent()._tree["data"]) == 1
         ), "library not added to parent material"
         dl[lib_type_load] = Library(lib)
         dl[lib_type_load] == Library(lib), "Library not properly stored."
         del dl[lib_type]
         assert (
-            len(dl._parent._tree["data"]) == 0
+            len(dl._parent()._tree["data"]) == 0
         ), "library not deleted from parent material"
         assert dl[lib_type] is None, "Default libraries did not delete"
         assert dl["hlib"] is None, "Default value not set."

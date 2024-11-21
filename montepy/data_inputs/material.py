@@ -563,18 +563,18 @@ See <https://www.montepy.org/migrations/migrate0_1.html> for more information ""
         :param nuclide_frac_pair: a tuple of the nuclide and the fraction to add.
         :type nuclide_frac_pair: tuple[Nuclide, float]
         """
-        self._check_valid_comp(obj)
-        self._elements.add(obj[0].element)
-        self._nuclei.add(obj[0].nucleus)
-        if not isinstance(obj[1], syntax_node.ValueNode):
-            node = syntax_node.ValueNode(str(obj[1]), float)
+        self._check_valid_comp(nuclide_frac_pair)
+        self._elements.add(nuclide_frac_pair[0].element)
+        self._nuclei.add(nuclide_frac_pair[0].nucleus)
+        if not isinstance(nuclide_frac_pair[1], syntax_node.ValueNode):
+            node = syntax_node.ValueNode(str(nuclide_frac_pair[1]), float)
             node.is_negatable_float = True
-            obj = (obj[0], node)
+            nuclide_frac_pair = (nuclide_frac_pair[0], node)
         else:
-            node = obj[1]
+            node = nuclide_frac_pair[1]
         node.is_negative = not self._is_atom_fraction
-        self._components.append(obj)
-        self._tree["data"].append_nuclide(("_", obj[0]._tree, node))
+        self._components.append(nuclide_frac_pair)
+        self._tree["data"].append_nuclide(("_", nuclide_frac_pair[0]._tree, node))
 
     def change_libraries(self, new_library):
         """ """
