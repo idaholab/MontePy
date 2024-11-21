@@ -106,6 +106,34 @@ class _DefaultLibraries:
         self._parent = weakref.ref(parent_mat)
 
 
+class _MatCompWrapper:
+    """
+    A wrapper that allows unwrapping Nuclide and fractions
+    """
+
+    __slots__ = "_parent", "_index", "_setter"
+
+    def __int__(self, parent, index, setter):
+        self._parent = parent
+        self._index = index
+        self._setter = setter
+
+    def __iter__(self):
+
+        def generator():
+            for component in self._parent:
+                yield component[self._index]
+
+        return generator()
+
+    def __getitem__(self, idx):
+        return self._parent[idx][self._index]
+
+    def __setitem__(self, idx, val):
+        new_val = self._setter(self._parent._components[idx], val)
+        self._parent[idx] = new_val
+
+
 class Material(data_input.DataInputAbstract, Numbered_MCNP_Object):
     """
     A class to represent an MCNP material.
@@ -661,9 +689,121 @@ See <https://www.montepy.org/migrations/migrate0_1.html> for more information ""
         for _, val_node in self._components:
             val_node.value /= total_frac
 
-    @propery
-    def values(self) -> Generator[float]:
-        pass
+    @property
+    def values(self):
+        """
+        Get just the fractions, or values from this material.
+
+        This acts like a list. It is iterable, and indexable.
+
+        Examples
+        ^^^^^^^^
+
+        .. testcode::
+
+            import montepy
+            mat = montepy.Material()
+            mat.number = 5
+            enrichment = 0.04
+
+            # define UO2 with enrichment of 4.0%
+            mat.add_nuclide("8016.00c", 2/3)
+            mat.add_nuclide("U-235.00c", 1/3 * enrichment)
+            mat.add_nuclide("U-238.00c", 2/3 * (1 - enrichment)
+
+            for val in mat.values:
+                print(value)
+            # iterables can be used with other functions
+            max_frac = max(mat.values)
+
+        .. testoutput::
+
+            TODO
+
+        .. testcode::
+
+            # get value by index
+            print(mat.values[0])
+
+            # set the value, and double enrichment
+            mat.values[1] *= 2.0
+
+        .. testoutput::
+
+            TODO
+
+        :rtype: Generator[float]
+
+        """
+
+        def setter(old_val, new_val):
+            if not isinstance(new_val, float):
+                raise TypeError(
+                    f"Value must be set to a float. {new_val} of type {type(new_val)} given."
+                )
+            if new_val < 0.0:
+                raise ValueError(
+                    f"Value must be greater than or equal to 0. {new_val} given."
+                )
+            old_val[1].value = new_val
+            return old_val
+
+        return _MatCompWrapper(self, 1, setter)
+
+    def nuclides(self):
+        """
+        Get just the fractions, or values from this material.
+
+        This acts like a list. It is iterable, and indexable.
+
+        Examples
+        ^^^^^^^^
+
+        .. testcode::
+
+            import montepy
+            mat = montepy.Material()
+            mat.number = 5
+            enrichment = 0.04
+
+            # define UO2 with enrichment of 4.0%
+            mat.add_nuclide("8016.00c", 2/3)
+            mat.add_nuclide("U-235.00c", 1/3 * enrichment)
+            mat.add_nuclide("U-238.00c", 2/3 * (1 - enrichment)
+
+            for nuc in mat.nuclides:
+                print(nuc)
+            # iterables can be used with other functions
+            max_zaid = max(mat.nuclides)
+
+        .. testoutput::
+
+            TODO
+
+        .. testcode::
+
+            # get value by index
+            print(mat.nuclides[0])
+
+            # set the value, and double enrichment
+            mat.nuclides[1] = Nuclide("U-235.80c")
+
+        .. testoutput::
+
+            TODO
+
+        :rtype: Generator[Nuclide]
+
+        """
+
+        def setter(old_val, new_val):
+            if not isinstance(new_val, Nuclide):
+                raise TypeError(
+                    f"Nuclide must be set to a Nuclide. {new_val} of type {type(new_val)} given."
+                )
+            return (new_val, old_val[1])
+
+        return _MatCompWrapper(self, 0, setter)
 
     def __prep_element_filter(self, filter_obj):
         """
