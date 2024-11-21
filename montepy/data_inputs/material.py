@@ -642,11 +642,12 @@ See <https://www.montepy.org/migrations/migrate0_1.html> for more information ""
         :param args: a plurality of other nuclides to check for.
         :type args: Union[Nuclide, Nucleus, Element, str, int]
         :param threshold: the minimum concentration of a nuclide to be considered. The material components are not
-        first normalized.
+            first normalized.
         :type threshold: float
 
         :raises TypeError: if any argument is of the wrong type.
         :raises ValueError: if the fraction is not positive or zero, or if nuclide cannot be interpreted as a Nuclide.
+
         """
         nuclides = []
         for nuclide in [nuclide] + args:
@@ -856,7 +857,7 @@ See <https://www.montepy.org/migrations/migrate0_1.html> for more information ""
         A: Union[int, slice] = None,
         meta_isomer: Union[int, slice] = None,
         library: Union[str, slice] = None,
-    ):
+    ) -> Generator[tuple[Nuclide, float]]:
         """
         Finds all components that meet the given criteria.
 
@@ -874,7 +875,7 @@ See <https://www.montepy.org/migrations/migrate0_1.html> for more information ""
 
 
         :param name: The name to pass to Nuclide to search by a specific Nuclide. If an element name is passed this
-        will only match elemental nuclides.
+            will only match elemental nuclides.
         :type name: str
         :param element: the element to filter by, slices must be slices of integers. This will match all nuclides that
             are based on this element. e.g., "U" will match U-235 and U-238.
@@ -885,6 +886,9 @@ See <https://www.montepy.org/migrations/migrate0_1.html> for more information ""
         :type meta_isomer: int, slice
         :param library: the libraries to limit the search to.
         :type library: str, slice
+
+        :returns: a generator of all matching nuclide, fraction pairs that match.
+        :rtype: Generator[tuple[Nuclide, float]]
         """
         # nuclide type enforcement handled by `Nuclide`
         if not isinstance(element, (Element, str, int, slice)):
