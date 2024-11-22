@@ -35,9 +35,15 @@ class Cell(Numbered_MCNP_Object):
     .. versionchanged:: 0.2.0
         Removed the ``comments`` argument due to overall simplification of init process.
 
+    .. versionchanged:: 1.0.0
+
+        Added number parameter
+
 
     :param input: The Input syntax object this will wrap and parse.
     :type input: Union[Input, str]
+    :param number: The number to set for this object.
+    :type number: int
 
     .. seealso::
 
@@ -74,7 +80,11 @@ class Cell(Numbered_MCNP_Object):
     }
     _parser = CellParser()
 
-    def __init__(self, input=None):
+    def __init__(
+        self,
+        input: Union[montepy.input_parser.mcnp_input.Input, str] = None,
+        number: int = None,
+    ):
         self._BLOCK_TYPE = montepy.input_parser.block_type.BlockType.CELL
         self._material = None
         self._old_number = self._generate_default_node(int, -1)
@@ -83,8 +93,7 @@ class Cell(Numbered_MCNP_Object):
         self._density_node = self._generate_default_node(float, None)
         self._surfaces = Surfaces()
         self._complements = Cells()
-        self._number = self._generate_default_node(int, -1)
-        super().__init__(input, self._parser)
+        super().__init__(input, self._parser, number)
         if not input:
             self._generate_default_tree()
         self._old_number = copy.deepcopy(self._tree["cell_num"])

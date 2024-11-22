@@ -1,5 +1,11 @@
 # Copyright 2024, Battelle Energy Alliance, LLC All Rights Reserved.
+from __future__ import annotations
 import copy
+import itertools
+import re
+from typing import Union
+import warnings
+
 from montepy.data_inputs import data_input, thermal_scattering
 from montepy.data_inputs.isotope import Isotope
 from montepy.data_inputs.material_component import MaterialComponent
@@ -9,10 +15,7 @@ from montepy import mcnp_object
 from montepy.numbered_mcnp_object import Numbered_MCNP_Object
 from montepy.errors import *
 from montepy.utilities import *
-import itertools
-import re
-
-import warnings
+import montepy
 
 
 class Material(data_input.DataInputAbstract, Numbered_MCNP_Object):
@@ -23,19 +26,30 @@ class Material(data_input.DataInputAbstract, Numbered_MCNP_Object):
 
         There is a known bug (:issue:`182`) that valid MCNP material definitions cannot be parsed.
 
+    .. versionchanged:: 1.0.0
 
-    :param input: the input card that contains the data
-    :type input: Input
+        Added number parameter
+
+    :param input: The Input syntax object this will wrap and parse.
+    :type input: Union[Input, str]
+    :param parser: The parser object to parse the input with.
+    :type parser: MCNP_Parser
+    :param number: The number to set for this object.
+    :type number: int
     """
 
     _parser = MaterialParser()
 
-    def __init__(self, input=None):
+    def __init__(
+        self,
+        input: Union[montepy.input_parser.mcnp_input.Input, str] = None,
+        number: int = None,
+    ):
         self._material_components = {}
         self._thermal_scattering = None
         self._is_atom_fraction = True
         self._number = self._generate_default_node(int, -1)
-        super().__init__(input)
+        super().__init__(input, number)
         if input:
             num = self._input_number
             self._old_number = copy.deepcopy(num)

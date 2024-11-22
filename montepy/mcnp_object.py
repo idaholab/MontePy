@@ -95,7 +95,7 @@ class MCNP_Object(ABC, metaclass=_ExceptionContextAdder):
     :param input: The Input syntax object this will wrap and parse.
     :type input: Union[Input, str]
     :param parser: The parser object to parse the input with.
-    :type parser: MCNP_Lexer
+    :type parser: MCNP_Parser
     """
 
     """

@@ -19,15 +19,25 @@ class Surface(Numbered_MCNP_Object):
     """
     Object to hold a single MCNP surface
 
+    .. versionchanged:: 1.0.0
+
+        Added number parameter
+
     :param input: The Input object representing the input
     :type input: Union[Input, str]
+    :param number: The number to set for this object.
+    :type number: int
     """
 
     _parser = SurfaceParser()
 
-    def __init__(self, input: Union[montepy.input_parser.mcnp_input.Input, str] = None):
+    def __init__(
+        self,
+        input: union[montepy.input_parser.mcnp_input.input, str] = None,
+        number: int = None,
+    ):
         self._BLOCK_TYPE = montepy.input_parser.block_type.BlockType.SURFACE
-        super().__init__(input, self._parser)
+        super().__init__(input, self._parser, number)
         self._periodic_surface = None
         self._old_periodic_surface = self._generate_default_node(int, None)
         self._transform = None
