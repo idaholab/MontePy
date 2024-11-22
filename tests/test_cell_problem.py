@@ -161,6 +161,10 @@ def test_init(line, is_void, mat_number, density, atom_dens, parameters):
 def test_blank_num_init():
     cell = Cell(number=5)
     assert cell.number == 5
+    with pytest.raises(TypeError):
+        Cell(number = "hi")
+    with pytest.raises(ValueError):
+        Cell(number = -1)
 
 
 @pytest.mark.parametrize("line", ["foo", "foo bar", "1 foo", "1 1 foo"])
