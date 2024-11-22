@@ -18,8 +18,7 @@ from montepy.input_parser.mcnp_input import Input
 class testMaterialClass(TestCase):
     def test_material_parameter_parsing(self):
         for line in ["M20 1001.80c 1.0 gas=0", "M20 1001.80c 1.0 gas = 0 nlib = 00c"]:
-            input = Input([line], BlockType.CELL)
-            material = Material(input)
+            material = Material(line)
 
     def test_material_validator(self):
         material = Material()

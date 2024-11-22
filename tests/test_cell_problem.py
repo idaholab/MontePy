@@ -12,7 +12,7 @@ from montepy.input_parser.mcnp_input import Input
 class TestCellClass(TestCase):
     def test_bad_init(self):
         with self.assertRaises(TypeError):
-            Cell("5")
+            Cell(5)
 
     # TODO test updating cell geometry once done
     def test_cell_validator(self):
@@ -29,9 +29,7 @@ class TestCellClass(TestCase):
     # TODO test geometry stuff
 
     def test_number_setter(self):
-        in_str = "1 0 2"
-        card = Input([in_str], BlockType.CELL)
-        cell = Cell(card)
+        cell = Cell("1 0 2")
         cell.number = 5
         self.assertEqual(cell.number, 5)
         with self.assertRaises(TypeError):

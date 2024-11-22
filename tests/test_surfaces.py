@@ -17,9 +17,7 @@ from montepy.surfaces.surface_type import SurfaceType
 
 class testSurfaces(TestCase):
     def test_surface_init(self):
-        in_str = "1 PZ 0.0"
-        card = Input([in_str], BlockType.SURFACE)
-        surf = Surface(card)
+        surf = Surface("1 PZ 0.0")
         self.assertEqual(surf.number, 1)
         self.assertEqual(surf.old_number, 1)
         self.assertEqual(len(surf.surface_constants), 1)
