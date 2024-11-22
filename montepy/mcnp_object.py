@@ -107,7 +107,10 @@ class MCNP_Object(ABC, metaclass=_ExceptionContextAdder):
         input: Union[montepy.input_parser.mcnp_input.Input, str],
         parser: montepy.input_parser.parser_base.MCNP_Parser,
     ):
-        self._BLOCK_TYPE = montepy.input_parser.block_type.BlockType.DATA
+        try:
+            self._BLOCK_TYPE
+        except AttributeError:
+            self._BLOCK_TYPE = montepy.input_parser.block_type.BlockType.DATA
         self._problem_ref = None
         self._parameters = ParametersNode()
         self._input = None
