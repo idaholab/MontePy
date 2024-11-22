@@ -627,3 +627,48 @@ class MCNP_Problem:
                 ret += f"{obj}\n"
             ret += "\n"
         return ret
+
+    def parse(self, input: str):
+        """
+        Parses the MCNP object given by the string, and links it adds it to this problem.
+
+        This attempts to identify the input type by trying to parse it in the following order:
+
+        #. Data Input
+        #. Surface
+        #. Cell
+
+        This is done mostly for optimization to go from easiest parsing to hardest.
+        This will:
+
+        #. Parse the input
+        #. Link it to other objects in the problem. Note: this will raise an error if those objects don't exist.
+        #. Append it to the appropriate collection
+
+        :param input: the string describing the input. New lines are allowed but this does not need to meet MCNP line
+            length rules.
+        :type input: str
+        :returns: the parsed object.
+        :rtype: MCNP_Object
+
+        :raises TypeError: If a str is not given
+        :raises ParsingError: If this is not a valid input.
+        :raises BrokenObjectLinkError: if the dependent objects are not already in the problem.
+        :raises NumberConflictError: if the object's number is already taken
+        """
+        try:
+            obj = montepy.data_inputs.data_parser.parse_data(input)
+        except ParsingError:
+            try:
+                obj = montepy.surfaces.surface_builder.Surface(input)
+            except ParsingError:
+                obj = montepy.Cell(input)
+                # let final parsing error bubble up
+        obj.link_to_problem(self)
+        if isinstance(obj, montepy.Cell):
+            obj.update_pointers(self.cells, self.materials, self.surfaces)
+        elif isinstance(obj, montepy.surfaces.Surface):
+            obj.update_pointers(self.surfaces, self.data_inputs)
+        else:
+            obj.update_pointers(self.data_inputs)
+        return obj
