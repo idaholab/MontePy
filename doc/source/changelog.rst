@@ -2,6 +2,17 @@
 MontePy Changelog
 *****************
 
+1.0 releases
+============
+
+#Next Version#
+--------------
+
+**Features Added**
+
+* Added ability to parse all MCNP objects from a string (:pull:`595`).
+* Added function: :func:`~montepy.mcnp_problem.MCNP_Problem.parse` to parse arbitrary MCNP object (:pull:`595`).
+
 0.5 releases
 ============
 
