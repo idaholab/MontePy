@@ -1,4 +1,5 @@
 # Copyright 2024, Battelle Energy Alliance, LLC All Rights Reserved.
+from __future__ import annotations
 from abc import ABC, ABCMeta, abstractmethod
 import copy
 import functools
@@ -19,6 +20,7 @@ from montepy.input_parser.syntax_node import (
 import montepy
 import numpy as np
 import textwrap
+from typing import Union
 import warnings
 import weakref
 
@@ -91,18 +93,31 @@ class MCNP_Object(ABC, metaclass=_ExceptionContextAdder):
         For init removed ``comments``, and added ``parser`` as arguments.
 
     :param input: The Input syntax object this will wrap and parse.
-    :type input: Input
+    :type input: Union[Input, str]
     :param parser: The parser object to parse the input with.
     :type parser: MCNP_Lexer
     """
 
-    def __init__(self, input, parser):
+    """
+    The block type this input comes from.
+    """
+
+    def __init__(
+        self,
+        input: Union[montepy.input_parser.mcnp_input.Input, str],
+        parser: montepy.input_parser.parser_base.MCNP_Parser,
+    ):
+        self._BLOCK_TYPE = montepy.input_parser.block_type.BlockType.DATA
         self._problem_ref = None
         self._parameters = ParametersNode()
         self._input = None
         if input:
-            if not isinstance(input, montepy.input_parser.mcnp_input.Input):
+            if not isinstance(input, (montepy.input_parser.mcnp_input.Input, str)):
                 raise TypeError("input must be an Input")
+            if isinstance(input, str):
+                input = montepy.input_parser.mcnp_input.Input(
+                    input.split("\n"), self._BLOCK_TYPE
+                )
             try:
                 try:
                     parser.restart()

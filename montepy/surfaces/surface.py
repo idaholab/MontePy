@@ -1,5 +1,10 @@
 # Copyright 2024, Battelle Energy Alliance, LLC All Rights Reserved.
+from __future__ import annotations
 import copy
+import re
+from typing import Union
+
+import montepy
 from montepy.errors import *
 from montepy.data_inputs import transform
 from montepy.input_parser import syntax_node
@@ -8,7 +13,6 @@ from montepy.numbered_mcnp_object import Numbered_MCNP_Object
 from montepy.surfaces import half_space
 from montepy.surfaces.surface_type import SurfaceType
 from montepy.utilities import *
-import re
 
 
 class Surface(Numbered_MCNP_Object):
@@ -16,12 +20,13 @@ class Surface(Numbered_MCNP_Object):
     Object to hold a single MCNP surface
 
     :param input: The Input object representing the input
-    :type input: Input
+    :type input: Union[Input, str]
     """
 
     _parser = SurfaceParser()
 
-    def __init__(self, input=None):
+    def __init__(self, input: Union[montepy.input_parser.mcnp_input.Input, str] = None):
+        self._BLOCK_TYPE = montepy.input_parser.block_type.BlockType.SURFACE
         super().__init__(input, self._parser)
         self._periodic_surface = None
         self._old_periodic_surface = self._generate_default_node(int, None)

@@ -1,8 +1,11 @@
 # Copyright 2024, Battelle Energy Alliance, LLC All Rights Reserved.
+from __future__ import annotations
 import copy
 import itertools
 import numbers
+from typing import Union
 
+import montepy
 from montepy.cells import Cells
 from montepy.constants import BLANK_SPACE_CONTINUE
 from montepy.data_inputs import importance, fill, lattice_input, universe_input, volume
@@ -33,8 +36,8 @@ class Cell(Numbered_MCNP_Object):
         Removed the ``comments`` argument due to overall simplification of init process.
 
 
-    :param input: the input for the cell definition
-    :type input: Input
+    :param input: The Input syntax object this will wrap and parse.
+    :type input: Union[Input, str]
 
     .. seealso::
 
@@ -72,6 +75,7 @@ class Cell(Numbered_MCNP_Object):
     _parser = CellParser()
 
     def __init__(self, input=None):
+        self._BLOCK_TYPE = montepy.input_parser.block_type.BlockType.CELL
         self._material = None
         self._old_number = self._generate_default_node(int, -1)
         self._load_blank_modifiers()

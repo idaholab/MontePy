@@ -1,4 +1,5 @@
 # Copyright 2024, Battelle Energy Alliance, LLC All Rights Reserved.
+from __future__ import annotations
 from abc import abstractmethod
 import copy
 
@@ -14,6 +15,7 @@ from montepy.particle import Particle
 from montepy.mcnp_object import MCNP_Object
 
 import re
+from typing import Union
 
 
 class _ClassifierInput(Input):
@@ -43,7 +45,7 @@ class DataInputAbstract(MCNP_Object):
     Parent class to describe all MCNP data inputs.
 
     :param input: the Input object representing this data input
-    :type input: Input
+    :type input: Union[Input, str]
     :param fast_parse: Whether or not to only parse the first word for the type of data.
     :type fast_parse: bool
     """
@@ -52,7 +54,11 @@ class DataInputAbstract(MCNP_Object):
 
     _classifier_parser = ClassifierParser()
 
-    def __init__(self, input=None, fast_parse=False):
+    def __init__(
+        self,
+        input: Union[montepy.input_parser.mcnp_input.Input, str] = None,
+        fast_parse=False,
+    ):
         self._particles = None
         if not fast_parse:
             super().__init__(input, self._parser)
