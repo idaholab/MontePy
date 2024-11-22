@@ -267,8 +267,7 @@ The ``NumberedObjectCollection`` has various mechanisms internally to avoid numb
 
         import montepy
         prob = montepy.read_input("tests/inputs/test.imcnp")
-        cell = montepy.Cell()
-        cell.number = 2
+        cell = montepy.Cell(number = 2)
         prob.cells.append(cell)
 
 .. testoutput::
@@ -334,21 +333,23 @@ Using the generators in this way does not cause any issues, but there are ways t
 by making "stale" information.
 This can be done by making a copy of it with ``list()``. 
 
->>> for num in problem.cells.numbers:
-...   print(num)
-1
-2
-3
-99
-5
->>> numbers = list(problem.cells.numbers)
->>> numbers
-[1, 2, 3, 99, 5]
->>> problem.cells[1].number = 1000
->>> 1000 in problem.cells.numbers
-True
->>> 1000 in numbers
-False
+.. doctest::
+
+        >>> for num in problem.cells.numbers:
+        ...   print(num)
+        1
+        2
+        3
+        99
+        5
+        >>> numbers = list(problem.cells.numbers)
+        >>> numbers
+        [1, 2, 3, 99, 5]
+        >>> problem.cells[1].number = 1000
+        >>> 1000 in problem.cells.numbers
+        True
+        >>> 1000 in numbers
+        False
 
 Oh no! When we made a list of the numbers we broke the link, and the new list won't update when the numbers of the cells change, 
 and you can cause issues this way.
@@ -587,23 +588,17 @@ Order of precedence and grouping is automatically handled by Python so you can e
 .. testcode::
 
    # build blank surfaces 
-   bottom_plane = montepy.surfaces.axis_plane.AxisPlane()
+   bottom_plane = montepy.surfaces.axis_plane.AxisPlane(number=1)
    bottom_plane.location = 0.0
-   top_plane = montepy.surfaces.axis_plane.AxisPlane()
+   top_plane = montepy.surfaces.axis_plane.AxisPlane(number=2)
    top_plane.location = 10.0
-   fuel_cylinder = montepy.surfaces.cylinder_on_axis.CylinderOnAxis()
+   fuel_cylinder = montepy.surfaces.cylinder_on_axis.CylinderOnAxis(number=3)
    fuel_cylinder.radius = 1.26 / 2
-   clad_cylinder = montepy.surfaces.cylinder_on_axis.CylinderOnAxis()
+   clad_cylinder = montepy.surfaces.cylinder_on_axis.CylinderOnAxis( number=4)
    clad_cylinder.radius = (1.26 / 2) + 1e-3 # fuel, gap, cladding
-   clad_od = montepy.surfaces.cylinder_on_axis.CylinderOnAxis()
+   clad_od = montepy.surfaces.cylinder_on_axis.CylinderOnAxis(number=5)
    clad_od.radius = clad_cylinder.radius + 0.1 # add thickness
-   other_fuel = montepy.surfaces.cylinder_on_axis.CylinderOnAxis()
-   other_fuel.radius = 3.0
-   bottom_plane.number = 1
-   top_plane.number = 2
-   fuel_cylinder.number = 3
-   clad_cylinder.number = 4
-   clad_od.number = 5
+   other_fuel = montepy.surfaces.cylinder_on_axis.CylinderOnAxis(number=6)
    
    #make weird truncated fuel sample
    slug_half_space = +bottom_plane & -top_plane & -fuel_cylinder
@@ -795,8 +790,7 @@ You can also easy apply a transform to the filling universe with:
 .. testcode::
 
    import numpy as np
-   transform = montepy.data_inputs.transform.Transform()
-   transform.number = 5
+   transform = montepy.data_inputs.transform.Transform(number=5)
    transform.displacement_vector = np.array([1, 2, 0])
    cell.fill.tranform = transform
 
