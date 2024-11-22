@@ -26,6 +26,14 @@ import warnings
 
 
 MAX_PRINT_ELEMENTS = 5
+"""
+TODO
+"""
+
+DEFAULT_INDENT = 6
+"""
+TODO
+"""
 
 
 class _DefaultLibraries:
@@ -567,7 +575,10 @@ See <https://www.montepy.org/migrations/migrate0_1.html> for more information ""
         self._elements.add(nuclide_frac_pair[0].element)
         self._nuclei.add(nuclide_frac_pair[0].nucleus)
         if not isinstance(nuclide_frac_pair[1], syntax_node.ValueNode):
-            node = syntax_node.ValueNode(str(nuclide_frac_pair[1]), float)
+            node = self._generate_default_node(
+                float, str(nuclide_frac_pair[1]), "\n" + " " * DEFAULT_INDENT
+            )
+            syntax_node.ValueNode(str(nuclide_frac_pair[1]), float)
             node.is_negatable_float = True
             nuclide_frac_pair = (nuclide_frac_pair[0], node)
         else:

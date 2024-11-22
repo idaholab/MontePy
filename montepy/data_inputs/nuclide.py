@@ -11,6 +11,11 @@ import collections
 import re
 import warnings
 
+DEFAULT_NUCLIDE_WIDTH = 11
+"""
+How many characters wide a nuclide with spacing should be.
+"""
+
 
 class Library(SingletonGroup):
     """
@@ -593,7 +598,10 @@ class Nuclide:
             raise TypeError(f"Library can only be str. {library} given.")
         self._library = Library(library)
         if not node:
-            self._tree = ValueNode(self.mcnp_str(), str)
+            padding_num = DEFAULT_NUCLIDE_WIDTH - len(self.mcnp_str())
+            if padding_num < 1:
+                padding_num = 1
+            self._tree = ValueNode(self.mcnp_str(), str, " " * padding_num)
 
     @property
     def ZAID(self) -> int:
