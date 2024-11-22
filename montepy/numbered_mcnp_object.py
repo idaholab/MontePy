@@ -57,6 +57,9 @@ class Numbered_MCNP_Object(MCNP_Object):
     ):
         self._number = self._generate_default_node(int, -1)
         super().__init__(input, parser)
+        self._load_init_num(number)
+
+    def _load_init_num(self, number):
         if number is not None:
             if not isinstance(number, int):
                 raise TypeError(

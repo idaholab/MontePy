@@ -48,8 +48,8 @@ class Material(data_input.DataInputAbstract, Numbered_MCNP_Object):
         self._material_components = {}
         self._thermal_scattering = None
         self._is_atom_fraction = True
-        self._number = self._generate_default_node(int, -1)
-        super().__init__(input, number)
+        super().__init__(input)
+        self._load_init_num(number)
         if input:
             num = self._input_number
             self._old_number = copy.deepcopy(num)

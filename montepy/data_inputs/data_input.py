@@ -65,10 +65,18 @@ class DataInputAbstract(MCNP_Object):
             if input:
                 self.__split_name(input)
         else:
-            input = copy.copy(input)
-            input.__class__ = _ClassifierInput
+            if input:
+                if isinstance(input, str):
+                    input = _ClassifierInput(
+                        input.split("\n"),
+                        montepy.input_parser.block_type.BlockType.DATA,
+                    )
+                else:
+                    input = copy.copy(input)
+                    input.__class__ = _ClassifierInput
             super().__init__(input, self._classifier_parser)
-            self.__split_name(input)
+            if input:
+                self.__split_name(input)
 
     @staticmethod
     @abstractmethod

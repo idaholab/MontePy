@@ -95,7 +95,7 @@ class Cell(Numbered_MCNP_Object):
         self._complements = Cells()
         super().__init__(input, self._parser, number)
         if not input:
-            self._generate_default_tree()
+            self._generate_default_tree(number)
         self._old_number = copy.deepcopy(self._tree["cell_num"])
         self._number = self._tree["cell_num"]
         mat_tree = self._tree["material"]
@@ -574,7 +574,7 @@ class Cell(Numbered_MCNP_Object):
         for input_class, (attr, _) in self._INPUTS_TO_PROPERTY.items():
             getattr(self, attr)._update_values()
 
-    def _generate_default_tree(self):
+    def _generate_default_tree(self, number: int = None):
         material = syntax_node.SyntaxNode(
             "material",
             {
@@ -586,7 +586,7 @@ class Cell(Numbered_MCNP_Object):
         self._tree = syntax_node.SyntaxNode(
             "cell",
             {
-                "cell_num": self._generate_default_node(int, None),
+                "cell_num": self._generate_default_node(int, number),
                 "material": material,
                 "geometry": None,
                 "parameters": syntax_node.ParametersNode(),

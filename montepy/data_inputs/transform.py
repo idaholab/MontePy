@@ -34,13 +34,13 @@ class Transform(data_input.DataInputAbstract, Numbered_MCNP_Object):
         number: int = None,
     ):
         self._pass_through = pass_through
-        self._number = self._generate_default_node(int, -1)
         self._old_number = self._generate_default_node(int, -1)
         self._displacement_vector = np.array([])
         self._rotation_matrix = np.array([])
         self._is_in_degrees = False
         self._is_main_to_aux = True
-        super().__init__(input, number)
+        super().__init__(input)
+        self._load_init_num(number)
         if input:
             words = self._tree["data"]
             i = 0
