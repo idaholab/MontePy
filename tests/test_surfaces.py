@@ -77,6 +77,8 @@ class testSurfaces(TestCase):
         card = Input([in_str], BlockType.SURFACE)
         with self.assertRaises(MalformedInputError):
             Surface(card)
+        surf = Surface(number=5)
+        assert surf.number == 5
 
     def test_validator(self):
         surf = Surface()
@@ -234,6 +236,8 @@ class testSurfaces(TestCase):
                 surf = montepy.surfaces.axis_plane.AxisPlane(
                     Input([bad_input], BlockType.SURFACE)
                 )
+        surf = montepy.surfaces.axis_plane.AxisPlane(number=5)
+        assert surf.number == 5
 
     def test_cylinder_on_axis_init(self):
         bad_inputs = ["1 P 0.0", "1 CZ 0.0 10.0"]
@@ -242,6 +246,8 @@ class testSurfaces(TestCase):
                 surf = montepy.surfaces.cylinder_on_axis.CylinderOnAxis(
                     Input([bad_input], BlockType.SURFACE)
                 )
+        surf = montepy.surfaces.cylinder_on_axis.CylinderOnAxis(number=5)
+        assert surf.number == 5
 
     def test_cylinder_par_axis_init(self):
         bad_inputs = ["1 P 0.0", "1 C/Z 0.0"]
@@ -250,6 +256,8 @@ class testSurfaces(TestCase):
                 surf = montepy.surfaces.cylinder_par_axis.CylinderParAxis(
                     Input([bad_input], BlockType.SURFACE)
                 )
+        surf = montepy.surfaces.cylinder_par_axis.CylinderParAxis(number=5)
+        assert surf.number == 5
 
     def test_gen_plane_init(self):
         bad_inputs = ["1 PZ 0.0", "1 P 0.0"]
@@ -258,6 +266,8 @@ class testSurfaces(TestCase):
                 surf = montepy.surfaces.general_plane.GeneralPlane(
                     Input([bad_input], BlockType.SURFACE)
                 )
+        surf = montepy.surfaces.general_plane.GeneralPlane(number=5)
+        assert surf.number == 5
 
     def test_axis_plane_location_setter(self):
         in_str = "1 PZ 0.0"

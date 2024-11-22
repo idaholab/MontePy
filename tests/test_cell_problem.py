@@ -158,6 +158,11 @@ def test_init(line, is_void, mat_number, density, atom_dens, parameters):
         assert cell.parameters[parameter]["data"][0].value == pytest.approx(value)
 
 
+def test_blank_num_init():
+    cell = Cell(number=5)
+    assert cell.number == 5
+
+
 @pytest.mark.parametrize("line", ["foo", "foo bar", "1 foo", "1 1 foo"])
 def test_malformed_init(line):
     with pytest.raises(montepy.errors.MalformedInputError):

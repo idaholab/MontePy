@@ -190,6 +190,11 @@ def test_bad_init(line):
         Material(input)
 
 
+def test_mat_num_init():
+    mat = Material(number=5)
+    assert mat.number == 5
+
+
 @pytest.mark.filterwarnings("ignore")
 @given(st.integers(), st.integers())
 def test_mat_clone(start_num, step):
