@@ -667,8 +667,15 @@ class MCNP_Problem:
         obj.link_to_problem(self)
         if isinstance(obj, montepy.Cell):
             obj.update_pointers(self.cells, self.materials, self.surfaces)
-        elif isinstance(obj, montepy.surfaces.Surface):
+            self.cells.append(obj)
+        elif isinstance(obj, montepy.surfaces.surface.Surface):
             obj.update_pointers(self.surfaces, self.data_inputs)
+            self.surfaces.append(obj)
         else:
             obj.update_pointers(self.data_inputs)
+            self.data_inputs.append(obj)
+            if isinstance(obj, Material):
+                self._materials.append(obj, False)
+            if isinstance(obj, transform.Transform):
+                self._transforms.append(obj, False)
         return obj
