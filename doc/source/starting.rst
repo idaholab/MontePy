@@ -378,7 +378,7 @@ First all :class:`~montepy.mcnp_object.MCNP_Object` constructors can take a stri
    >>> cell = montepy.Cell("1 0 -2 imp:n=1")
    >>> cell.number
    1
-   >>> cell.importance[montepy.particle.NEUTRON]
+   >>> cell.importance[montepy.Particle.NEUTRON]
    1.0
 
 This object is still unlinked from other objects, and won't be kept with a problem.
