@@ -365,6 +365,35 @@ If a ``Cell`` or a group of ``Cells`` are cloned their numbers will be to change
 However, if a whole :class:`~montepy.mcnp_problem.MCNP_Problem` is cloned these objects will not have their numbers changed.
 For an example for how to clone a numbered object see :ref:`Cloning a Cell`.
 
+Creating Objects from a String
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Sometimes its more convenient to create an MCNP object from its input string for MCNP, rather than setting a lot of properties,
+or the object you need isn't supported by MontePy yet.
+In this case there are a few ways to generate this object.
+First all :class:`~montepy.mcnp_object.MCNP_Object` constructors can take a string:
+
+.. doctest::
+
+   >>> cell = montepy.Cell("1 0 -2 imp:n=1")
+   >>> cell.number
+   1
+   >>> cell.importance[montepy.particle.NEUTRON]
+   1.0
+
+This object is still unlinked from other objects, and won't be kept with a problem.
+So there is also :func:`~montepy.mcnp_problem.MCNP_Problem.parse`. 
+This takes a string, and then creates the MCNP object,
+links it to the problem,
+links it to its other objects (e.g., surfaces, materials, etc.),
+and appends it to necessary collections:
+
+.. testcode::
+
+   cell = problem.parse("123 0 -1005")
+   assert cell in problem.cells
+   assert cell.surfaces[1005] is problem.surfaces[1005]
+
 Surfaces
 --------
 
