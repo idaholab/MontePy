@@ -373,7 +373,7 @@ class Material(data_input.DataInputAbstract, Numbered_MCNP_Object):
         pass
 
     @property
-    def material_components(self):
+    def material_components(self):  # pragma: no cover
         """
         The internal dictionary containing all the components of this material.
 
@@ -454,8 +454,8 @@ See <https://www.montepy.org/migrations/migrate0_1.html> for more information ""
             raise TypeError(
                 f"Library_type must be a LibraryType. {library_type} given."
             )
-        if isinstance(library_type, str):
-            library_type = LibraryType(library_type)
+        if not isinstance(library_type, LibraryType):
+            library_type = LibraryType(library_type.upper())
         if nuclide.library.library_type == library_type:
             return nuclide.library
         lib = self.default_libraries[library_type]
