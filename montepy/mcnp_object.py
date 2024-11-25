@@ -123,7 +123,7 @@ class MCNP_Object(ABC, metaclass=_ExceptionContextAdder):
             except ValueError as e:
                 raise MalformedInputError(
                     input, f"Error parsing object of type: {type(self)}: {e.args[0]}"
-                )
+                ).with_traceback(e.__traceback__)
             if self._tree is None:
                 raise ParsingError(
                     input,

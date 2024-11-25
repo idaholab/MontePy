@@ -266,8 +266,9 @@ Pu-239   (80c) 0.1
 
     def verify_export(_, mat):
         output = mat.format_for_mcnp_input((6, 3, 0))
+        print("Material output", output)
         new_mat = Material(Input(output, BlockType.DATA))
-        assert mat.number == new_mat, "Material number not preserved."
+        assert mat.number == new_mat.number, "Material number not preserved."
         for (old_nuc, old_frac), (new_nuc, new_frac) in zip(mat, new_mat):
             assert old_nuc == new_nuc, "Material didn't preserve nuclides."
             assert old_frac == pytest.approx(new_frac)
