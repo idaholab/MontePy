@@ -139,15 +139,15 @@ class Library(SingletonGroup):
         return self._suffix
 
     def __hash__(self):
-        return hash(self._library)
+        return hash(self._library.upper())
 
     def __eq__(self, other):
         if not isinstance(other, (type(self), str)):
             raise TypeError(f"Can only compare Library instances.")
         if not isinstance(other, type(self)):
-            return self.library == other
+            return self.library.upper() == other.upper()
         # due to SingletonGroup
-        return self is other
+        return self.library.upper() == other.library.upper()
 
     def __str__(self):
         return self.library
