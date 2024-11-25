@@ -1075,7 +1075,7 @@ class ValueNode(SyntaxNodeBase):
                     delta -= 1
                     if token.startswith("+"):
                         self._formatter["sign"] = "+"
-                    if token.startswith("-"):
+                    if token.startswith("-") and not self.never_pad:
                         self._formatter["sign"] = " "
                 if delta > 0:
                     self._formatter["zero_padding"] = length
