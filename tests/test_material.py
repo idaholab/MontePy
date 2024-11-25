@@ -162,6 +162,21 @@ class TestMaterial:
         del big_material[-1]
         assert pu_comp[0] not in big_material
 
+    @pytest.mark.parametrize(
+        "content, is_in",
+        [
+            ("1001.80c", True),
+            (Element(1), True),
+            (Nucleus(Element(1), 1), True),
+            (Element(43), False),
+            ("B-10.00c", False),
+        ],
+    )
+    def test_material_contains(_, big_material, content, is_in):
+        assert is_in == (content in big_material), "Contains didn't work properly"
+        with pytest.raises(TypeError):
+            5 in big_material
+
     def test_material_str(_):
         in_str = "M20 1001.80c 0.5 8016.80c 0.4 94239.80c 0.1"
         input_card = Input([in_str], BlockType.DATA)
