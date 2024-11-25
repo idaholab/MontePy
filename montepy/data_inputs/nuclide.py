@@ -9,6 +9,7 @@ from montepy.particle import LibraryType
 
 import collections
 import re
+from typing import Union
 import warnings
 
 DEFAULT_NUCLIDE_WIDTH = 11
@@ -185,66 +186,10 @@ class Nucleus(SingletonGroup):
 
         This class is immutable, and hashable, meaning it is suitable as a dictionary key.
 
-    .. Note::
-
-        As discussed in :manual63:`5.6.1`:
-
-            To represent a metastable isotope, adjust the AAA value using the
-            following convention: AAA’=(AAA+300)+(m × 100), where m is the
-            metastable level and m=1, 2, 3, or 4.
-
-        MontePy attempts to apply these rules to determine the isomeric state of the nuclide.
-        This requires MontePy to determine if a ZAID is a realistic base isomeric state.
-
-        This is done simply by manually specifying 6 rectangles of realistic ZAIDs.
-        MontePy checks if a ZAID is inside of these rectangles.
-        These rectangles are defined by their upper right corner as an isotope.
-        The lower left corner is defined by the Z-number of the previous isotope and A=0.
-
-        These isotopes are:
-
-        * Cl-52
-        * Br-101
-        * Xe-150
-        * Os-203
-        * Cm-251
-        * Og-296
-
-    .. Warning::
-
-        Due to legacy reasons the nuclear data for Am-242 and Am-242m1 have been swapped for the nuclear data
-        provided by LANL.
-        This is documented in :manual631:`1.2.2`:
-
-            As a historical quirk, 242m1Am and 242Am are swapped in the ZAID and SZAID formats, so that the
-            former is 95242 and the latter is 95642 for ZAID and 1095242 for SZAID. It is important to verify if a
-            data library follows this convention. To date, all LANL-published libraries do. The name format does
-            not swap these isomers. As such, Am-242m1 can load a table labeled 95242.
-
-        Due to this MontePy follows the MCNP convention, and swaps these ZAIDs.
-        If you have custom generated ACE data for Am-242,
-        that does not follow this convention you have a few options:
-
-        #. Do nothing. If you do not need to modify a material in an MCNP input file the ZAID will be written out the same as it was in the original file.
-
-        #. Specify the Nucleus by ZAID. This will have the same effect as before. Note that MontePy will display the wrong metastable state, but will preserve the ZAID.
-
-        #. Open an issue. If this approach doesn't work for you please open an issue so we can develop a better solution.
-
-    .. seealso::
-
-        * :manual62:`107`
-        * :manual63:`5.6.1`
-        * :manual631:`1.2.2`
-
     .. versionadded:: 1.0.0
 
-    :param ZAID: The ZAID in MCNP format, the library can be included.
-    :type ZAID: str
     :param element: the element this Nucleus is based on.
     :type element: Element
-    :param Z: The Z-number (atomic number) of the nuclide.
-    :type Z: int
     :param A: The A-number (atomic mass) of the nuclide. If this is elemental this should be 0.
     :type A: int
     :param meta_state: The metastable state if this nuclide is isomer.
@@ -256,86 +201,30 @@ class Nucleus(SingletonGroup):
 
     __slots__ = "_element", "_A", "_meta_state"
 
-    #                   Cl-52      Br-101     Xe-150      Os-203    Cm-251     Og-296
-    _BOUNDING_CURVE = [(17, 52), (35, 101), (54, 150), (76, 203), (96, 251), (118, 296)]
-    """
-    Points on bounding curve for determining if "valid" isotope
-    """
-    _STUPID_MAP = {
-        "95642": {"_meta_state": 0},
-        "95242": {"_meta_state": 1},
-    }
-    _STUPID_ZAID_SWAP = {95242: 95642, 95642: 95242}
-
     def __init__(
         self,
-        ZAID: str = "",
-        element: Element = None,
-        Z: int = None,
-        A: int = None,
-        meta_state: int = None,
+        element: Element,
+        A: int = 0,
+        meta_state: int = 0,
     ):
-        if ZAID:
-            # TODO simplify this. Should never get library
-            parts = ZAID.split(".")
-            try:
-                assert len(parts) <= 2
-                ZAID = int(parts[0])
-            except (AssertionError, ValueError) as e:
-                raise ValueError(f"ZAID: {ZAID} could not be parsed as a valid isotope")
-            new_vals = self._parse_zaid(int(ZAID))
-            for key, value in new_vals.items():
-                setattr(self, key, value)
-        elif element is not None:
-            if not isinstance(element, Element):
-                raise TypeError(
-                    f"Only type Element is allowed for element argument. {element} given."
-                )
-            self._element = element
+        if not isinstance(element, Element):
+            raise TypeError(
+                f"Only type Element is allowed for element argument. {element} given."
+            )
+        self._element = element
 
-        elif Z is not None:
-            if not isinstance(Z, int):
-                raise TypeError(f"Z number must be an int. {Z} given.")
-            self._element = Element(Z)
-        if ZAID:
-            return
-        if A is not None:
-            if not isinstance(A, int):
-                raise TypeError(f"A number must be an int. {A} given.")
-            if A < 0:
-                raise ValueError(f"A cannot be negative. {A} given.")
-            self._A = A
-        else:
-            self._A = 0
+        if not isinstance(A, int):
+            raise TypeError(f"A number must be an int. {A} given.")
+        if A < 0:
+            raise ValueError(f"A cannot be negative. {A} given.")
+        self._A = A
         if not isinstance(meta_state, (int, type(None))):
             raise TypeError(f"Meta state must be an int. {meta_state} given.")
-        if meta_state:
-            if meta_state not in range(0, 5):
-                raise ValueError(
-                    f"Meta state can only be in the range: [0,4]. {meta_state} given."
-                )
-            self._meta_state = meta_state
-        else:
-            self._meta_state = 0
-
-    @classmethod
-    def _handle_stupid_legacy_stupidity(cls, ZAID):
-        """
-        This handles legacy issues where ZAID are swapped.
-
-        For now this is only for Am-242 and Am-242m1.
-
-        .. seealso::
-
-            * :manual631:`1.2.2`
-        """
-        ZAID = str(ZAID)
-        ret = {}
-        if ZAID in cls._STUPID_MAP:
-            stupid_overwrite = cls._STUPID_MAP[ZAID]
-            for key, value in stupid_overwrite.items():
-                ret[key] = value
-        return ret
+        if meta_state not in range(0, 5):
+            raise ValueError(
+                f"Meta state can only be in the range: [0,4]. {meta_state} given."
+            )
+        self._meta_state = meta_state
 
     @property
     def ZAID(self) -> int:
@@ -348,8 +237,8 @@ class Nucleus(SingletonGroup):
         """
         meta_adder = 300 + 100 * self.meta_state if self.is_metastable else 0
         temp = self.Z * _ZAID_A_ADDER + self.A + meta_adder
-        if temp in self._STUPID_ZAID_SWAP:
-            return self._STUPID_ZAID_SWAP[temp]
+        if temp in Nuclide._STUPID_ZAID_SWAP:
+            return Nuclide._STUPID_ZAID_SWAP[temp]
         return temp
 
     @property
@@ -406,61 +295,6 @@ class Nucleus(SingletonGroup):
         :rtype: int
         """
         pass
-
-    @classmethod
-    def _parse_zaid(cls, ZAID) -> dict[str, object]:
-        """
-        Parses the ZAID fully including metastable isomers.
-
-        See Table 3-32 of LA-UR-17-29881
-
-        :param ZAID: the ZAID without the library
-        :type ZAID: int
-        :returns: a dictionary with the parsed information,
-            in a way that can be loaded into nucleus. Keys are: _element, _A, _meta_state
-        :rtype: dict[str, Object]
-        """
-
-        def is_probably_an_isotope(Z, A):
-            for lim_Z, lim_A in cls._BOUNDING_CURVE:
-                if Z <= lim_Z:
-                    if A <= lim_A:
-                        return True
-                    else:
-                        return False
-                else:
-                    continue
-            # if you are above Lv it's probably legit.
-            return True
-
-        ret = {}
-        Z = int(ZAID / _ZAID_A_ADDER)
-        ret["_element"] = Element(Z)
-        A = int(ZAID % _ZAID_A_ADDER)
-        if not is_probably_an_isotope(Z, A):
-            true_A = A - 300
-            # only m1,2,3,4 allowed
-            found = False
-            for i in range(1, 5):
-                true_A -= 100
-                # assumes that can only vary 40% from A = 2Z
-                if is_probably_an_isotope(Z, true_A):
-                    found = True
-                    break
-            if found:
-                ret["_meta_state"] = i
-                ret["_A"] = true_A
-            else:
-                raise ValueError(
-                    f"ZAID: {ZAID} cannot be parsed as a valid metastable isomer. "
-                    "Only isomeric state 0 - 4 are allowed"
-                )
-
-        else:
-            ret["_meta_state"] = 0
-            ret["_A"] = A
-        ret.update(cls._handle_stupid_legacy_stupidity(ZAID))
-        return ret
 
     def __hash__(self):
         return hash((self.element, self.A, self.meta_state))
@@ -519,14 +353,56 @@ class Nuclide:
 
     .. Note::
 
-        MontePy follows MCNP's convention for specifying Metastable isomers in ZAIDs.
-        See :class:`~montepy.data_inputs.nuclide.Nucleus` for more information.
+        As discussed in :manual63:`5.6.1`:
+
+            To represent a metastable isotope, adjust the AAA value using the
+            following convention: AAA’=(AAA+300)+(m × 100), where m is the
+            metastable level and m=1, 2, 3, or 4.
+
+        MontePy attempts to apply these rules to determine the isomeric state of the nuclide.
+        This requires MontePy to determine if a ZAID is a realistic base isomeric state.
+
+        This is done simply by manually specifying 6 rectangles of realistic ZAIDs.
+        MontePy checks if a ZAID is inside of these rectangles.
+        These rectangles are defined by their upper right corner as an isotope.
+        The lower left corner is defined by the Z-number of the previous isotope and A=0.
+
+        These isotopes are:
+
+        * Cl-52
+        * Br-101
+        * Xe-150
+        * Os-203
+        * Cm-251
+        * Og-296
 
     .. Warning::
 
         Due to legacy reasons the nuclear data for Am-242 and Am-242m1 have been swapped for the nuclear data
         provided by LANL.
-        See :class:`~montepy.data_inputs.nuclide.Nucleus` for more information.
+        This is documented in :manual631:`1.2.2`:
+
+            As a historical quirk, 242m1Am and 242Am are swapped in the ZAID and SZAID formats, so that the
+            former is 95242 and the latter is 95642 for ZAID and 1095242 for SZAID. It is important to verify if a
+            data library follows this convention. To date, all LANL-published libraries do. The name format does
+            not swap these isomers. As such, Am-242m1 can load a table labeled 95242.
+
+        Due to this MontePy follows the MCNP convention, and swaps these ZAIDs.
+        If you have custom generated ACE data for Am-242,
+        that does not follow this convention you have a few options:
+
+        #. Do nothing. If you do not need to modify a material in an MCNP input file the ZAID will be written out the same as it was in the original file.
+
+        #. Specify the Nucleus by ZAID. This will have the same effect as before. Note that MontePy will display the wrong metastable state, but will preserve the ZAID.
+
+        #. Open an issue. If this approach doesn't work for you please open an issue so we can develop a better solution.
+
+    .. seealso::
+
+        * :manual62:`107`
+        * :manual63:`5.6.1`
+        * :manual631:`1.2.2`
+
 
     .. versionadded:: 1.0.0
 
@@ -568,9 +444,20 @@ class Nuclide:
     Parser for fancy names.
     """
 
+    #                   Cl-52      Br-101     Xe-150      Os-203    Cm-251     Og-296
+    _BOUNDING_CURVE = [(17, 52), (35, 101), (54, 150), (76, 203), (96, 251), (118, 296)]
+    """
+    Points on bounding curve for determining if "valid" isotope
+    """
+    _STUPID_MAP = {
+        "95642": {"_meta_state": 0},
+        "95242": {"_meta_state": 1},
+    }
+    _STUPID_ZAID_SWAP = {95242: 95642, 95642: 95242}
+
     def __init__(
         self,
-        name: str = "",
+        name: Union[str, int, Element, Nucleus] = "",
         element: Element = None,
         Z: int = None,
         A: int = None,
@@ -581,8 +468,10 @@ class Nuclide:
         self._library = Library("")
         ZAID = ""
 
-        if not isinstance(name, (str, int, Element, Nucleus)):
-            raise TypeError(f"")
+        if not isinstance(name, (str, int, Element, Nucleus, Nuclide)):
+            raise TypeError(
+                f"Name must be str, int, Element, or Nucleus. {name} of type {type(name)} given."
+            )
         if name:
             element, A, meta_state, library = self._parse_fancy_name(name)
         if node is not None and isinstance(node, ValueNode):
@@ -590,8 +479,13 @@ class Nuclide:
                 node = ValueNode(node.token, str, node.padding)
             self._tree = node
             ZAID = node.value
-        self._nucleus = Nucleus(ZAID, element, Z, A, meta_state)
         parts = ZAID.split(".")
+        if ZAID:
+            za_info = self._parse_zaid(int(parts[0]))
+            element = za_info["_element"]
+            A = za_info["_A"]
+            meta_state = za_info["_meta_state"]
+        self._nucleus = Nucleus(element, A, meta_state)
         if len(parts) > 1 and library == "":
             library = parts[1]
         if not isinstance(library, str):
@@ -601,7 +495,81 @@ class Nuclide:
             padding_num = DEFAULT_NUCLIDE_WIDTH - len(self.mcnp_str())
             if padding_num < 1:
                 padding_num = 1
-            self._tree = ValueNode(self.mcnp_str(), str, " " * padding_num)
+            self._tree = ValueNode(self.mcnp_str(), str, PaddingNode(" " * padding_num))
+
+    @classmethod
+    def _handle_stupid_legacy_stupidity(cls, ZAID):
+        """
+        This handles legacy issues where ZAID are swapped.
+
+        For now this is only for Am-242 and Am-242m1.
+
+        .. seealso::
+
+            * :manual631:`1.2.2`
+        """
+        ZAID = str(ZAID)
+        ret = {}
+        if ZAID in cls._STUPID_MAP:
+            stupid_overwrite = cls._STUPID_MAP[ZAID]
+            for key, value in stupid_overwrite.items():
+                ret[key] = value
+        return ret
+
+    @classmethod
+    def _parse_zaid(cls, ZAID) -> dict[str, object]:
+        """
+        Parses the ZAID fully including metastable isomers.
+
+        See Table 3-32 of LA-UR-17-29881
+
+        :param ZAID: the ZAID without the library
+        :type ZAID: int
+        :returns: a dictionary with the parsed information,
+            in a way that can be loaded into nucleus. Keys are: _element, _A, _meta_state
+        :rtype: dict[str, Object]
+        """
+
+        def is_probably_an_isotope(Z, A):
+            for lim_Z, lim_A in cls._BOUNDING_CURVE:
+                if Z <= lim_Z:
+                    if A <= lim_A:
+                        return True
+                    else:
+                        return False
+                else:
+                    continue
+            # if you are above Lv it's probably legit.
+            return True
+
+        ret = {}
+        Z = int(ZAID / _ZAID_A_ADDER)
+        ret["_element"] = Element(Z)
+        ret["_A"] = 0
+        ret["_meta_state"] = 0
+        A = int(ZAID % _ZAID_A_ADDER)
+        ret["_A"] = A
+        if not is_probably_an_isotope(Z, A):
+            true_A = A - 300
+            # only m1,2,3,4 allowed
+            found = False
+            for i in range(1, 5):
+                true_A -= 100
+                # assumes that can only vary 40% from A = 2Z
+                if is_probably_an_isotope(Z, true_A):
+                    found = True
+                    break
+            if found:
+                ret["_meta_state"] = i
+                ret["_A"] = true_A
+            else:
+                raise ValueError(
+                    f"ZAID: {ZAID} cannot be parsed as a valid metastable isomer. "
+                    "Only isomeric state 0 - 4 are allowed"
+                )
+
+        ret.update(cls._handle_stupid_legacy_stupidity(ZAID))
+        return ret
 
     @property
     def ZAID(self) -> int:
@@ -726,10 +694,12 @@ class Nuclide:
     @classmethod
     def _parse_fancy_name(cls, identifier):
         """
-        TODO delete?
+        Parses a fancy name that is a ZAID, a Symbol-A, or nucleus, nuclide, or element.
 
         :param identifier:
-        :type idenitifer: str | int
+        :type idenitifer: Union[str, int, element, Nucleus, Nuclide]
+        :returns: a tuple of element, a, isomer, library
+        :rtype: tuple
         """
         if isinstance(identifier, (Nucleus, Nuclide)):
             if isinstance(identifier, Nuclide):
@@ -756,7 +726,7 @@ class Nuclide:
             if match := cls._NAME_PARSER.fullmatch(identifier):
                 match = match.groupdict()
                 if match["ZAID"]:
-                    parts = Nucleus._parse_zaid(int(match["ZAID"]))
+                    parts = cls._parse_zaid(int(match["ZAID"]))
                     element, A, isomer = (
                         parts["_element"],
                         parts["_A"],
