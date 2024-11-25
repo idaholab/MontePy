@@ -16,8 +16,6 @@ class SingletonGroup(ABC):
 
     """
 
-    _instances = {}
-
     def __new__(cls, *args, **kwargs):
         kwargs_t = tuple([(k, v) for k, v in kwargs.items()])
         if len(args + kwargs_t) == 0:
@@ -34,6 +32,7 @@ class SingletonGroup(ABC):
         """
         Workaround to get sphinx autodoc happy.
         """
+        cls._instances = {}
         super().__init_subclass__(**kwargs)
 
         original_new = cls.__new__
