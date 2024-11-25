@@ -61,7 +61,7 @@ class Element(SingletonGroup):
         return self.name
 
     def __repr__(self):
-        return f"Z={self.Z}, symbol={self.symbol}, name={self.name}"
+        return f"Element({self.Z})"
 
     def __hash__(self):
         return hash(self.Z)

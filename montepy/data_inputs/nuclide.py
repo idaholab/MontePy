@@ -317,6 +317,9 @@ class Nucleus(SingletonGroup):
         meta_suffix = f"m{self.meta_state}" if self.is_metastable else ""
         return f"{self.element.symbol:>2}-{self.A:<3}{meta_suffix:<2}"
 
+    def __repr__(self):
+        return f"Nucleus({self.element}, {self.A}, {self.meta_state})"
+
 
 class Nuclide:
     r"""
