@@ -105,7 +105,7 @@ class TestMaterial:
         with pytest.raises(montepy.errors.IllegalState):
             material.format_for_mcnp_input((6, 2, 0))
 
-    def test_material_setter(_):
+    def test_material_number_setter(_):
         in_str = "M20 1001.80c 0.5 8016.80c 0.5"
         input_card = Input([in_str], BlockType.DATA)
         material = Material(input_card)
@@ -115,6 +115,52 @@ class TestMaterial:
             material.number = "foo"
         with pytest.raises(ValueError):
             material.number = -5
+        _.verify_export(material)
+
+    def test_material_getter_iter(_, big_material):
+        for i, (nuclide, frac) in enumerate(big_material):
+            gotten = big_material[i]
+            assert gotten[0] == nuclide
+            assert gotten[1] == pytest.approx(frac)
+        comp_0, comp_1 = big_material[0:2]
+        assert comp_0 == big_material[0]
+        assert comp_1 == big_material[1]
+        _, comp_1 = big_material[0:4:3]
+        assert comp_1 == big_material[3]
+        with pytest.raises(TypeError):
+            big_material["hi"]
+
+    def test_material_setter(_, big_material):
+        big_material[2] = (Nuclide("1001.80c"), 1.0)
+        assert big_material[2][0] == Nuclide("1001.80c")
+        assert big_material[2][1] == pytest.approx(1.0)
+        with pytest.raises(TypeError):
+            big_material["hi"] = 5
+        with pytest.raises(TypeError):
+            big_material[2] = 5
+        with pytest.raises(ValueError):
+            big_material[2] = (5,)
+        with pytest.raises(TypeError):
+            big_material[2] = (5, 1.0)
+        with pytest.raises(TypeError):
+            big_material[2] = (Nuclide("1001.80c"), "hi")
+        with pytest.raises(ValueError):
+            big_material[2] = (Nuclide("1001.80c"), -1.0)
+        _.verify_export(big_material)
+
+    def test_material_deleter(_, big_material):
+        old_comp = big_material[6]
+        del big_material[6]
+        assert old_comp[0] not in big_material
+        old_comps = big_material[0:2]
+        del big_material[0:2]
+        for nuc, _ in old_comps:
+            assert nuc not in big_material
+        with pytest.raises(TypeError):
+            del big_material["hi"]
+        pu_comp = big_material[-1]
+        del big_material[-1]
+        assert pu_comp[0] not in big_material
 
     def test_material_str(_):
         in_str = "M20 1001.80c 0.5 8016.80c 0.4 94239.80c 0.1"
