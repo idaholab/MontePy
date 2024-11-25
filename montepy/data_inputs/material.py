@@ -568,29 +568,21 @@ See <https://www.montepy.org/migrations/migrate0_1.html> for more information ""
             raise TypeError(
                 f"Can only check if a Nuclide, Nucleus, Element, or str is in a material. {nuclide} given."
             )
-        if isinstance(nuclide, (str, Nucleus, Element)):
+        if isinstance(nuclide, str):
             nuclide = Nuclide(nuclide)
         if isinstance(nuclide, (Nucleus, Nuclide)):
-            # shortcut with hashes first
-            if nuclide.nucleus not in self._nuclei:
+            if isinstance(nuclide, Nuclide):
+                if nuclide.nucleus not in self._nuclei:
+                    return False
+                for self_nuc, _ in self:
+                    if self_nuc == nuclide:
+                        return True
                 return False
-            # do it slowly with search
-            if isinstance(nuclide, (Nuclide, Nucleus)):
-                if isinstance(nuclide, Nuclide):
-                    for self_nuc, _ in self:
-                        if self_nuc == nuclide:
-                            return True
-                if isinstance(nuclide, Nucleus):
-                    for self_nuc, _ in self:
-                        if self_nuc.nucleus == nuclide:
-                            return True
-                return False
-            # fall through for only Nucleus
-            return True
+            if isinstance(nuclide, Nucleus):
+                return nuclide in self._nuclei
         if isinstance(nuclide, Element):
             element = nuclide
             return element in self._elements
-        return False
 
     def append(self, nuclide_frac_pair: tuple[Nuclide, float]):
         """
