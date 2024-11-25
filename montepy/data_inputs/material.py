@@ -469,13 +469,20 @@ See <https://www.montepy.org/migrations/migrate0_1.html> for more information ""
         """ """
         if not isinstance(idx, (int, slice)):
             raise TypeError(f"Not a valid index. {idx} given.")
-        comp = self._components[idx]
+        if isinstance(idx, int):
+            comp = self._components[idx]
+            return self.__unwrap_comp(comp)
+        # else it's a slice
+        return [self.__unwrap_comp(comp) for comp in self._components[idx]]
+
+    @staticmethod
+    def __unwrap_comp(comp):
         return (comp[0], comp[1].value)
 
     def __iter__(self):
         def gen_wrapper():
             for comp in self._components:
-                yield (comp[0], comp[1].value)
+                yield self.__unwrap_comp(comp)
 
         return gen_wrapper()
 
@@ -487,9 +494,7 @@ See <https://www.montepy.org/migrations/migrate0_1.html> for more information ""
         self._check_valid_comp(newvalue)
         # grab fraction
         old_vals[1].value = newvalue[1]
-        node_idx = self._tree["data"].nodes.index(
-            (old_vals[0]._tree, old_vals[1]), start=idx
-        )
+        node_idx = self._tree["data"].nodes.index((old_vals[0]._tree, old_vals[1]), idx)
         self._tree["data"].nodes[node_idx] = (newvalue[0]._tree, old_vals[1])
         self._components[idx] = (newvalue[0], old_vals[1])
 
@@ -515,17 +520,34 @@ See <https://www.montepy.org/migrations/migrate0_1.html> for more information ""
                 f"Second element must be a fraction greater than 0. {newvalue[1]} given."
             )
         if newvalue[1] < 0.0:
-            raise TypeError(
+            raise ValueError(
                 f"Second element must be a fraction greater than 0. {newvalue[1]} given."
             )
 
     def __delitem__(self, idx):
         if not isinstance(idx, (int, slice)):
             raise TypeError(f"Not a valid index. {idx} given.")
+        if isinstance(idx, int):
+            self.__delitem(idx)
+            return
+        # else it's a slice
+        end = idx.start if idx.start is not None else 0
+        start = idx.stop if idx.stop is not None else len(self) - 1
+        step = -idx.step if idx.step is not None else -1
+        for i in range(start, end, step):
+            self.__delitem(i)
+        if end == 0:
+            self.__delitem(0)
+
+    def __delitem(self, idx):
         element = self[idx][0].element
         nucleus = self[idx][0].nucleus
         found_el = False
         found_nuc = False
+        # keep indices positive for testing.
+        if idx < 0:
+            idx += len(self)
+        # determine if other components use this element and nucleus
         for i, (nuclide, _) in enumerate(self):
             if i == idx:
                 continue
@@ -546,17 +568,22 @@ See <https://www.montepy.org/migrations/migrate0_1.html> for more information ""
             raise TypeError(
                 f"Can only check if a Nuclide, Nucleus, Element, or str is in a material. {nuclide} given."
             )
-        if isinstance(nuclide, str):
+        if isinstance(nuclide, (str, Nucleus, Element)):
             nuclide = Nuclide(nuclide)
         if isinstance(nuclide, (Nucleus, Nuclide)):
             # shortcut with hashes first
-            if nuclide not in self._nuclei:
+            if nuclide.nucleus not in self._nuclei:
                 return False
             # do it slowly with search
-            if isinstance(nuclide, Nucleus):
-                for self_nuc, _ in self:
-                    if self_nuc == nuclide:
-                        return True
+            if isinstance(nuclide, (Nuclide, Nucleus)):
+                if isinstance(nuclide, Nuclide):
+                    for self_nuc, _ in self:
+                        if self_nuc == nuclide:
+                            return True
+                if isinstance(nuclide, Nucleus):
+                    for self_nuc, _ in self:
+                        if self_nuc.nucleus == nuclide:
+                            return True
                 return False
             # fall through for only Nucleus
             return True
