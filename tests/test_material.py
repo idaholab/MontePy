@@ -18,6 +18,77 @@ from montepy.particle import LibraryType
 
 # test material
 class TestMaterial:
+    @pytest.fixture
+    def big_material(_):
+        components = [
+            "h1.00c",
+            "h1.04c",
+            "h1.80c",
+            "h1.04p",
+            "h2",
+            "h3",
+            "th232",
+            "th232.701nc",
+            "U235",
+            "U235.80c",
+            "U235m1.80c",
+            "u238",
+            "am242",
+            "am242m1",
+            "Pu239",
+        ]
+        mat = Material()
+        mat.number = 1
+        for component in components:
+            mat.add_nuclide(component, 0.05)
+        return mat
+
+    @pytest.fixture
+    def big_mat_lib(_, big_material):
+        mat = big_material
+        mat.default_libraries["nlib"] = "00c"
+        mat.default_libraries["plib"] = "80p"
+        return mat
+
+    @pytest.fixture
+    def prob_default(_):
+        prob = montepy.MCNP_Problem("hi")
+        prob.materials.default_libraries["alib"] = "24a"
+        return prob
+
+    @pytest.mark.parametrize(
+        "isotope_str, lib_type, lib_str",
+        [
+            ("H-1.80c", "nlib", "80c"),
+            ("H-1.80c", "plib", "80p"),
+            ("H-1.80c", "hlib", None),
+            ("H-1.80c", "alib", "24a"),
+        ],
+    )
+    def test_mat_get_nuclide_library(
+        _, big_mat_lib, prob_default, isotope_str, lib_type, lib_str
+    ):
+        nuclide = Nuclide(isotope_str)
+        if lib_str:
+            lib = Library(lib_str)
+            big_mat_lib.link_to_problem(prob_default)
+        else:
+            lib = None
+        assert big_mat_lib.get_nuclide_library(nuclide, lib_type) == lib
+        assert (
+            big_mat_lib.get_nuclide_library(nuclide, LibraryType(lib_type.upper()))
+            == lib
+        )
+        if lib is None:
+            big_mat_lib.link_to_problem(prob_default)
+            assert big_mat_lib.get_nuclide_library(nuclide, lib_type) == lib
+
+    def test_mat_get_nuclide_library_bad(_, big_mat_lib):
+        with pytest.raises(TypeError):
+            big_mat_lib.get_nuclide_library(5, "nlib")
+        with pytest.raises(TypeError):
+            big_mat_lib.get_nuclide_library("1001.80c", 5)
+
     def test_material_parameter_parsing(_):
         for line in [
             "M20 1001.80c 1.0 gas=0",
@@ -224,31 +295,6 @@ Pu-239   (80c) 0.1
         mat = Material(input)
         with pytest.raises(error):
             mat.clone(*args)
-
-    @pytest.fixture
-    def big_material(_):
-        components = [
-            "h1.00c",
-            "h1.04c",
-            "h1.80c",
-            "h1.04p",
-            "h2",
-            "h3",
-            "th232",
-            "th232.701nc",
-            "U235",
-            "U235.80c",
-            "U235m1.80c",
-            "u238",
-            "am242",
-            "am242m1",
-            "Pu239",
-        ]
-        mat = Material()
-        mat.number = 1
-        for component in components:
-            mat.add_nuclide(component, 0.05)
-        return mat
 
     @pytest.mark.parametrize(
         "index",
