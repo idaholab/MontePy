@@ -301,9 +301,15 @@ class Nucleus(SingletonGroup):
 
     def __eq__(self, other):
         if not isinstance(other, type(self)):
-            raise TypeError("")
+            raise TypeError(
+                f"Nucleus can only be compared to a Nucleus. {other} of type {type(other)} given."
+            )
         # due to SingletonGroup
-        return self is other
+        return (
+            self.element == other.element
+            and self.A == other.A
+            and self.meta_state == other.meta_state
+        )
 
     def __reduce__(self):
         return (type(self), (self.element, self.A, self._meta_state))
@@ -463,8 +469,8 @@ class Nuclide:
         name: Union[str, int, Element, Nucleus] = "",
         element: Element = None,
         Z: int = None,
-        A: int = None,
-        meta_state: int = None,
+        A: int = 0,
+        meta_state: int = 0,
         library: str = "",
         node: ValueNode = None,
     ):
