@@ -262,7 +262,7 @@ class TestElement:
     def test_element_str(_):
         element = Element(1)
         assert str(element) == "hydrogen"
-        assert repr(element) == "Z=1, symbol=H, name=hydrogen"
+        assert repr(element) == "Element(1)"
 
     def test_get_by_symbol(_):
         element = Element.get_by_symbol("Hg")

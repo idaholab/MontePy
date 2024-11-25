@@ -170,6 +170,7 @@ class TestMaterial:
             (Nucleus(Element(1), 1), True),
             (Element(43), False),
             ("B-10.00c", False),
+            (Nucleus(Element(5), 10), False),
         ],
     )
     def test_material_contains(_, big_material, content, is_in):
