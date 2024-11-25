@@ -128,7 +128,7 @@ class TestNuclide:
         assume(not (Z == 95 and A == 242))
         # ignore H-*m* as it's nonsense
         assume(not (Z == 1 and meta > 0))
-        for lim_Z, lim_A in Nucleus._BOUNDING_CURVE:
+        for lim_Z, lim_A in Nuclide._BOUNDING_CURVE:
             if Z <= lim_Z:
                 break
         assume(A <= lim_A)

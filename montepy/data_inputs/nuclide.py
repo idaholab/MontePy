@@ -306,7 +306,7 @@ class Nucleus(SingletonGroup):
         return self is other
 
     def __reduce__(self):
-        return (type(self), ("", None, self.Z, self.A, self._meta_state))
+        return (type(self), (self.element, self.A, self._meta_state))
 
     def __lt__(self, other):
         if not isinstance(other, type(self)):
@@ -714,7 +714,7 @@ class Nuclide:
         library = ""
         if isinstance(identifier, (int, float)):
             if identifier > _ZAID_A_ADDER:
-                parts = Nucleus._parse_zaid(int(identifier))
+                parts = Nuclide._parse_zaid(int(identifier))
                 element, A, isomer = (
                     parts["_element"],
                     parts["_A"],
