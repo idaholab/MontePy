@@ -162,6 +162,41 @@ class TestMaterial:
         del big_material[-1]
         assert pu_comp[0] not in big_material
 
+    def test_material_values(_, big_material):
+        # test iter
+        for value in big_material.values:
+            assert value == pytest.approx(0.05)
+        assert len(list(big_material.values)) == len(big_material)
+        # test getter setter
+        for i, comp in enumerate(big_material):
+            assert big_material.values[i] == pytest.approx(comp[1])
+            big_material.values[i] = 1.0
+            assert big_material[i][1] == pytest.approx(1.0)
+        with pytest.raises(TypeError):
+            big_material.values["hi"]
+        with pytest.raises(IndexError):
+            big_material.values[len(big_material) + 1]
+        with pytest.raises(TypeError):
+            big_material.values[0] = "hi"
+        with pytest.raises(ValueError):
+            big_material.values[0] = -1.0
+
+    def test_material_nuclides(_, big_material):
+        # test iter
+        for nuclide, comp in zip(big_material.nuclides, big_material):
+            assert nuclide == comp[0]
+            # test getter setter
+        for i, comp in enumerate(big_material):
+            assert big_material.nuclides[i] == comp[0]
+            big_material.nuclides[i] = Nuclide("1001.80c")
+            assert big_material[i][0] == Nuclide("1001.80c")
+        with pytest.raises(TypeError):
+            big_material.nuclides["hi"]
+        with pytest.raises(IndexError):
+            big_material.nuclides[len(big_material) + 1]
+        with pytest.raises(TypeError):
+            big_material.nuclides[0] = "hi"
+
     @pytest.mark.parametrize(
         "content, is_in",
         [
