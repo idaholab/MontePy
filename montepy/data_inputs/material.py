@@ -594,15 +594,12 @@ See <https://www.montepy.org/migrations/migrate0_1.html> for more information ""
         self._check_valid_comp(nuclide_frac_pair)
         self._elements.add(nuclide_frac_pair[0].element)
         self._nuclei.add(nuclide_frac_pair[0].nucleus)
-        if not isinstance(nuclide_frac_pair[1], syntax_node.ValueNode):
-            node = self._generate_default_node(
-                float, str(nuclide_frac_pair[1]), "\n" + " " * DEFAULT_INDENT
-            )
-            syntax_node.ValueNode(str(nuclide_frac_pair[1]), float)
-            node.is_negatable_float = True
-            nuclide_frac_pair = (nuclide_frac_pair[0], node)
-        else:
-            node = nuclide_frac_pair[1]
+        node = self._generate_default_node(
+            float, str(nuclide_frac_pair[1]), "\n" + " " * DEFAULT_INDENT
+        )
+        syntax_node.ValueNode(str(nuclide_frac_pair[1]), float)
+        node.is_negatable_float = True
+        nuclide_frac_pair = (nuclide_frac_pair[0], node)
         node.is_negative = not self._is_atom_fraction
         self._components.append(nuclide_frac_pair)
         self._tree["data"].append_nuclide(("_", nuclide_frac_pair[0]._tree, node))

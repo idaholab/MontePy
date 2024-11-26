@@ -154,7 +154,7 @@ class TestMaterial:
         assert old_comp[0] not in big_material
         old_comps = big_material[0:2]
         del big_material[0:2]
-        for nuc, _ in old_comps:
+        for nuc, _f in old_comps:
             assert nuc not in big_material
         with pytest.raises(TypeError):
             del big_material["hi"]
