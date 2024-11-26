@@ -161,6 +161,7 @@ class TestMaterial:
         pu_comp = big_material[-1]
         del big_material[-1]
         assert pu_comp[0] not in big_material
+        _.verify_export(big_material)
 
     def test_material_values(_, big_material):
         # test iter
@@ -180,6 +181,7 @@ class TestMaterial:
             big_material.values[0] = "hi"
         with pytest.raises(ValueError):
             big_material.values[0] = -1.0
+        _.verify_export(big_material)
 
     def test_material_nuclides(_, big_material):
         # test iter
@@ -196,6 +198,32 @@ class TestMaterial:
             big_material.nuclides[len(big_material) + 1]
         with pytest.raises(TypeError):
             big_material.nuclides[0] = "hi"
+        _.verify_export(big_material)
+
+    @given(st.integers(1, 99), st.floats(1.9, 2.3), st.floats(0, 20, allow_nan=False))
+    def test_material_append(_, Z, a_multiplier, fraction):
+        mat = Material()
+        mat.number = 5
+        A = int(Z * a_multiplier)
+        zaid = Z * 1000 + A
+        nuclide = Nuclide(zaid)
+        mat.append((nuclide, fraction))
+        assert mat[0][0] == nuclide
+        assert mat[0][1] == pytest.approx(fraction)
+        _.verify_export(mat)
+
+    def test_material_append_bad(_):
+        mat = Material()
+        with pytest.raises(TypeError):
+            mat.append(5)
+        with pytest.raises(ValueError):
+            mat.append((1, 2, 3))
+        with pytest.raises(TypeError):
+            mat.append(("hi", 1))
+        with pytest.raises(TypeError):
+            mat.append((Nuclide("1001.80c"), "hi"))
+        with pytest.raises(ValueError):
+            mat.append((Nuclide("1001.80c"), -1.0))
 
     @pytest.mark.parametrize(
         "content, is_in",
