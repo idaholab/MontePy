@@ -121,7 +121,7 @@ class _MatCompWrapper:
 
     __slots__ = "_parent", "_index", "_setter"
 
-    def __int__(self, parent, index, setter):
+    def __init__(self, parent, index, setter):
         self._parent = parent
         self._index = index
         self._setter = setter
@@ -138,7 +138,7 @@ class _MatCompWrapper:
         return self._parent[idx][self._index]
 
     def __setitem__(self, idx, val):
-        new_val = self._setter(self._parent._components[idx], val)
+        new_val = self._setter(self._parent[idx], val)
         self._parent[idx] = new_val
 
 
@@ -787,11 +787,11 @@ See <https://www.montepy.org/migrations/migrate0_1.html> for more information ""
                 raise ValueError(
                     f"Value must be greater than or equal to 0. {new_val} given."
                 )
-            old_val[1].value = new_val
-            return old_val
+            return (old_val[0], new_val)
 
         return _MatCompWrapper(self, 1, setter)
 
+    @property
     def nuclides(self):
         """
         Get just the fractions, or values from this material.
