@@ -1215,7 +1215,7 @@ See <https://www.montepy.org/migrations/migrate0_1.html> for more information ""
         return elements
 
     def validate(self):
-        if len(self._components) == 0:
+        if len(self._components) == 0 and self.number != 0:
             raise IllegalState(
                 f"Material: {self.number} does not have any components defined."
             )
