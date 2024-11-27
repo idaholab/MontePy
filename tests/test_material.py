@@ -282,6 +282,8 @@ class TestMaterial:
             ({"element": slice(92, 95)}, 5),
             ({"A": 1}, 4),
             ({"A": slice(235, 240)}, 5),
+            ({"A": slice(232, 243, 2)}, 5),
+            ({"A": slice(None)}, 15),
             ({"meta_state": 0}, 13),
             ({"meta_state": 1}, 2),
             ({"meta_state": slice(0, 2)}, 15),
@@ -300,6 +302,20 @@ class TestMaterial:
         assert len(returned) == length
         for fraction in returned:
             assert isinstance(fraction, float)
+
+    def test_material_find_bad(_, big_material):
+        with pytest.raises(TypeError):
+            list(big_material.find(_))
+        with pytest.raises(ValueError):
+            list(big_material.find("not_good"))
+        with pytest.raises(TypeError):
+            list(big_material.find(A="hi"))
+        with pytest.raises(TypeError):
+            list(big_material.find(meta_state="hi"))
+        with pytest.raises(TypeError):
+            list(big_material.find(element=1.23))
+        with pytest.raises(TypeError):
+            list(big_material.find(library=5))
 
     def test_material_str(_):
         in_str = "M20 1001.80c 0.5 8016.80c 0.4 94239.80c 0.1"

@@ -204,7 +204,7 @@ class TestLibrary:
         note(input)
         lib = Library(input)
         assert str(lib) == input, "Original string not preserved."
-        assert repr(lib) == input, "Original string not preserved."
+        assert repr(lib) == f"Library('{input}')", "Original string not preserved."
         assert lib.library == input, "Original string not preserved."
         assert lib.number == input_num, "Library number not preserved."
         assert lib.suffix == lib_extend, "Library suffix not preserved."
