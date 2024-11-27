@@ -233,6 +233,7 @@ class TestMaterial:
             (Nucleus(Element(1), 1), True),
             (Element(43), False),
             ("B-10.00c", False),
+            ("H", True),
             (Nucleus(Element(5), 10), False),
         ],
     )
@@ -259,6 +260,46 @@ class TestMaterial:
             mat.contains("1001", threshold="hi")
         with pytest.raises(ValueError):
             mat.contains("1001", threshold=-1.0)
+
+    def test_material_normalize(_, big_material):
+        # make sure it's not an invalid starting condition
+        assert sum(big_material.values) != pytest.approx(1.0)
+        answer = 1.0 / len(big_material)
+        big_material.normalize()
+        for value in big_material.values:
+            assert value == pytest.approx(answer)
+
+    @pytest.mark.parametrize(
+        "kwargs, length",
+        [
+            ({"name": "H"}, 6),
+            ({"name": "H-1"}, 4),
+            ({"name": "H-1.04c"}, 1),
+            ({"name": "H-1.00c"}, 1),
+            ({"name": "U235m1"}, 1),
+            ({"element": Element(1)}, 6),
+            ({"element": "H"}, 6),
+            ({"element": slice(92, 95)}, 5),
+            ({"A": 1}, 4),
+            ({"A": slice(235, 240)}, 4),
+            ({"meta_state": 0}, 14),
+            ({"meta_state": 1}, 2),
+            ({"meta_state": slice(0, 2)}, 16),
+            ({"library": "80c"}, 3),
+            ({"library": slice("00c", "10c")}, 2),
+        ],
+    )
+    def test_material_find(_, big_material, kwargs, length):
+        returned = list(big_material.find(**kwargs))
+        assert len(returned) == length
+        for idx, (nuclide, fraction) in returned:
+            assert isinstance(idx, int)
+            assert isinstance(nuclide, Nuclide)
+            assert isinstance(fraction, float)
+        returned = list(big_material.find_vals(**kwargs))
+        assert len(returned) == length
+        for fraction in returned:
+            assert isinstance(fraction, float)
 
     def test_material_str(_):
         in_str = "M20 1001.80c 0.5 8016.80c 0.4 94239.80c 0.1"
