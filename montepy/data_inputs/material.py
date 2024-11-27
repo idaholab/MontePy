@@ -912,9 +912,7 @@ See <https://www.montepy.org/migrations/migrate0_1.html> for more information ""
         if filter_obj is None:
             return lambda _: True
 
-        if callable(filter_obj):
-            return filter_obj
-        elif isinstance(filter_obj, slice):
+        if isinstance(filter_obj, slice):
 
             def slicer(val):
                 if attr is not None:
@@ -934,11 +932,9 @@ See <https://www.montepy.org/migrations/migrate0_1.html> for more information ""
                 return True
 
             return slicer
-
-        else:
-            if attr:
-                return lambda val: getattr(val, attr) == filter_obj
-            return lambda val: val == filter_obj
+        if attr:
+            return lambda val: getattr(val, attr) == filter_obj
+        return lambda val: val == filter_obj
 
     def find(
         self,
