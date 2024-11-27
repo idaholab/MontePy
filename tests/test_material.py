@@ -440,9 +440,15 @@ Pu-239   (80c) 0.1
         print("Material output", output)
         new_mat = Material(Input(output, BlockType.DATA))
         assert mat.number == new_mat.number, "Material number not preserved."
+        assert len(mat) == len(new_mat), "number of components not kept."
         for (old_nuc, old_frac), (new_nuc, new_frac) in zip(mat, new_mat):
             assert old_nuc == new_nuc, "Material didn't preserve nuclides."
             assert old_frac == pytest.approx(new_frac)
+        for (old_type, old_lib), (new_type, new_lib) in zip(
+            mat.default_libraries, new_mat.default_libraries
+        ):
+            assert old_type == new_type
+            assert old_lib == new_lib
 
 
 class TestThermalScattering:
