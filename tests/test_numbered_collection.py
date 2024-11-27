@@ -425,6 +425,16 @@ def test_num_collect_clone_default(cp_simple_problem):
             assert new_surf.number != old_surf.number
 
 
+def test_num_collect_link_problem(cp_simple_problem):
+    cells = montepy.Cells()
+    cells.link_to_problem(cp_simple_problem)
+    assert cells._problem == cp_simple_problem
+    cells.link_to_problem(None)
+    assert cells._problem is None
+    with pytest.raises(TypeError):
+        cells.link_to_problem("hi")
+
+
 @pytest.mark.parametrize(
     "args, error",
     [
@@ -440,3 +450,46 @@ def test_num_collect_clone_bad(cp_simple_problem, args, error):
     surfs = cp_simple_problem.surfaces
     with pytest.raises(error):
         surfs.clone(*args)
+
+
+class TestMaterials:
+
+    @pytest.fixture(scope="module")
+    def m0_prob(_):
+        return montepy.read_input(
+            os.path.join("tests", "inputs", "test_importance.imcnp")
+        )
+
+    @pytest.fixture
+    def cp_m0_prob(_, m0_prob):
+        return copy.deepcopy(m0_prob)
+
+    def test_m0_defaults(_, m0_prob):
+        prob = m0_prob
+        assert prob.materials.default_libraries["nlib"] == "00c"
+        assert prob.materials.default_libraries["plib"] == "80p"
+        assert prob.materials.default_libraries["alib"] is None
+
+    def test_m0_defaults_fresh(_):
+        prob = montepy.MCNP_Problem("")
+        prob.materials.default_libraries["nlib"] = "00c"
+        prob.materials.default_libraries["plib"] = "80p"
+        assert prob.materials.default_libraries["nlib"] == "00c"
+        assert prob.materials.default_libraries["plib"] == "80p"
+        assert prob.materials.default_libraries["alib"] is None
+
+    @pytest.mark.parametrize(
+        "nuclides, threshold, num",
+        [
+            (("26054", "26056"), 1.0, 1),
+            ((montepy.Nuclide("H-1"),), 0.0, 1),
+            (("B",), 1.0, 0),
+        ],
+    )
+    def test_get_containing(_, m0_prob, nuclides, threshold, num):
+        ret = list(m0_prob.materials.get_containing(*nuclides, threshold=threshold))
+        assert len(ret) == num
+        for mat in ret:
+            assert isinstance(mat, montepy.Material)
+        with pytest.raises(TypeError):
+            next(m0_prob.materials.get_containing(m0_prob))

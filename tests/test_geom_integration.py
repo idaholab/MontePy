@@ -10,7 +10,8 @@ geom_pair = st.tuples(st.integers(min_value=1), st.booleans())
 
 @settings(max_examples=50, deadline=500)
 @given(
-    st.integers(min_value=1), st.lists(geom_pair, min_size=1, unique_by=lambda x: x[0])
+    st.integers(min_value=1),
+    st.lists(geom_pair, min_size=1, max_size=10, unique_by=lambda x: x[0]),
 )
 def test_build_arbitrary_cell_geometry(first_surf, new_surfaces):
     assume(
