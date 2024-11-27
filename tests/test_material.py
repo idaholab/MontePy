@@ -1,5 +1,5 @@
 # Copyright 2024, Battelle Energy Alliance, LLC All Rights Reserved.
-from hypothesis import given, strategies as st
+from hypothesis import given, strategies as st, settings, HealthCheck
 import pytest
 from hypothesis import assume, given, note, strategies as st
 
@@ -421,18 +421,48 @@ Pu-239   (80c) 0.1
         with pytest.raises(error):
             mat.clone(*args)
 
-    @pytest.mark.parametrize(
-        "index",
-        [
-            (1),  # TODO property testing
-        ],
+    @settings(suppress_health_check=[HealthCheck.function_scoped_fixture])
+    @given(
+        lib_num=st.integers(0, 99),
+        extra_char=st.characters(min_codepoint=97, max_codepoint=122),
+        lib_suffix=st.sampled_from("cdmgpuyehorsa"),
     )
-    def test_material_access(_, big_material, index):
-        big_material[index]
-        # TODO actually test
+    def test_mat_change_lib(_, big_material, lib_num, extra_char, lib_suffix):
+        mat = big_material.clone()
+        library = f"{lib_num:02g}"
+        if lib_num >= 100:
+            library += extra_char
+        library += lib_suffix
+        for wrapper in {str, Library}:
+            mat.change_libraries(wrapper(library))
+            for nuclide in mat.nuclides:
+                assert nuclide.library == Library(library)
+
+    def test_mat_change_lib_bad(_):
+        mat = Material()
+        with pytest.raises(TypeError):
+            mat.change_libraries(5)
+        with pytest.raises(ValueError):
+            mat.change_libraries("hi")
+
+    @given(st.integers(1, 99), st.floats(1.9, 2.3), st.floats(0, 20, allow_nan=False))
+    def test_mat_add_nuclide(_, Z, a_multiplier, fraction):
+        mat = montepy.Material()
+        A = int(Z * a_multiplier)
+        ZAID = Z * 1000 + A
+        for wrapper in {str, Nuclide}:
+            mat.add_nuclide(wrapper(ZAID), fraction)
+            assert mat.nuclides[-1].ZAID == ZAID
+            assert mat.values[-1] == fraction
+        with pytest.raises(TypeError):
+            mat.add_nuclide(5.0, 5.0)
+        with pytest.raises(TypeError):
+            mat.add_nuclide(Nuclide("1001.80c"), "hi")
+        with pytest.raises(ValueError):
+            mat.add_nuclide(Nuclide("1001.80c"), -1.0)
 
     @pytest.mark.filterwarnings("ignore::montepy.errors.LineExpansionWarning")
-    def test_add_nuclide_expert(_, big_material):
+    def test_add_nuclide_export(_, big_material):
         _.verify_export(big_material)
 
     def verify_export(_, mat):
