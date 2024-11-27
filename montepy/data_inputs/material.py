@@ -1096,65 +1096,6 @@ See <https://www.montepy.org/migrations/migrate0_1.html> for more information ""
     def __bool__(self):
         return bool(self._components)
 
-    _LIB_PARSER = re.compile(r"\.?(?P<num>\d{2,})(?P<type>[a-z]+)", re.I)
-
-    @classmethod
-    def _match_library_slice(cls, keys, slicer):
-        # TODO this seems too complicated all together
-        if all((a is None for a in (slicer.start, slicer.stop, slicer.step))):
-            return [True for _ in keys]
-        # TODO handle non-matches
-        matches = [cls._LIB_PARSER.match(k).groupdict() for k in keys]
-        if slicer.start:
-            start_match = cls._LIB_PARSER.match(slicer.start).groupdict()
-        else:
-            start_match = None
-        if slicer.stop:
-            stop_match = cls._LIB_PARSER.match(slicer.stop).groupdict()
-        else:
-            stop_match = None
-        # TODO this feels janky and verbose
-        if start_match and stop_match:
-            # TODO
-            assert start_match["type"] == stop_match["type"]
-        if start_match:
-            lib_type = start_match["type"].lower()
-        elif stop_match:
-            lib_type = stop_match["type"].lower()
-        assert start_match or stop_match
-        ret = [m["type"].lower() == lib_type for m in matches]
-        start_num = int(start_match["num"]) if start_match else None
-        stop_num = int(stop_match["num"]) if stop_match else None
-        num_match = cls._match_slice(
-            [int(m["num"]) for m in matches], slice(start_num, stop_num, slicer.step)
-        )
-        return [old and num for old, num in zip(ret, num_match)]
-
-    @staticmethod
-    def _match_slice(keys, slicer):
-        if all((a is None for a in (slicer.start, slicer.stop, slicer.step))):
-            return [True for _ in keys]
-        if slicer.start:
-            ret = [key >= slicer.start for key in keys]
-        else:
-            ret = [True for _ in keys]
-        if slicer.step not in {None, 1}:
-            if slicer.start:
-                start = slicer.start
-            else:
-                start = 0
-            ret = [
-                old and ((key - start) % slicer.step == 0)
-                for old, key in zip(ret, keys)
-            ]
-        if slicer.stop in {None, -1}:
-            return ret
-        if slicer.stop > 0:
-            end = slicer.stop
-        else:
-            end = keys[slicer.end]
-        return [old and key < end for key, old in zip(keys, ret)]
-
     @make_prop_pointer("_thermal_scattering", thermal_scattering.ThermalScatteringLaw)
     def thermal_scattering(self) -> thermal_scattering.ThermalScatteringLaw:
         """
