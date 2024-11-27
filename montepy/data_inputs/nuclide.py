@@ -477,7 +477,7 @@ class Nuclide:
         self._library = Library("")
         ZAID = ""
 
-        if not isinstance(name, (str, int, Element, Nucleus, Nuclide)):
+        if not isinstance(name, (str, int, Element, Nucleus, Nuclide, type(None))):
             raise TypeError(
                 f"Name must be str, int, Element, or Nucleus. {name} of type {type(name)} given."
             )
@@ -770,7 +770,9 @@ class Nuclide:
 
     def __eq__(self, other):
         if not isinstance(other, type(self)):
-            raise TypeError("")
+            raise TypeError(
+                f"Cannot compare Nuclide to other values. {other} of type {type(other)}."
+            )
         return self.nucleus == other.nucleus and self.library == other.library
 
     def __lt__(self, other):

@@ -895,7 +895,7 @@ See <https://www.montepy.org/migrations/migrate0_1.html> for more information ""
 
         For use by find
         """
-        if isinstance(filter_obj, "str"):
+        if isinstance(filter_obj, str):
             filter_obj = Element.get_by_symbol(filter_obj).Z
         if isinstance(filter_obj, Element):
             filter_obj = filter_obj.Z
@@ -906,9 +906,11 @@ See <https://www.montepy.org/migrations/migrate0_1.html> for more information ""
         """
         Makes a filter function wrapper
         """
+        if filter_obj is None:
+            return lambda _: True
+
         if callable(filter_obj):
             return filter_obj
-
         elif isinstance(filter_obj, slice):
 
             def slicer(val):
@@ -931,6 +933,8 @@ See <https://www.montepy.org/migrations/migrate0_1.html> for more information ""
             return slicer
 
         else:
+            if attr:
+                return lambda val: getattr(val, attr) == filter_obj
             return lambda val: val == filter_obj
 
     def find(
@@ -997,30 +1001,37 @@ See <https://www.montepy.org/migrations/migrate0_1.html> for more information ""
         :rtype: Generator[tuple[int, tuple[Nuclide, float]]]
         """
         # nuclide type enforcement handled by `Nuclide`
-        if not isinstance(element, (Element, str, int, slice)):
+        if not isinstance(element, (Element, str, int, slice, type(None))):
             raise TypeError(
                 f"Element must be only Element, str, int or slice types. {element} of type{type(element)} given."
             )
-        if not isinstance(A, (int, slice)):
+        if not isinstance(A, (int, slice, type(None))):
             raise TypeError(
                 f"A must be an int or a slice. {A} of type {type(A)} given."
             )
-        if not isinstance(meta_isomer, (int, slice)):
+        if not isinstance(meta_state, (int, slice, type(None))):
             raise TypeError(
                 f"meta_state must an int or a slice. {meta_state} of type {type(meta_state)} given."
             )
-        if not isinstance(library, (str, slice)):
+        if not isinstance(library, (str, slice, type(None))):
             raise TypeError(
                 f"library must a str or a slice. {library} of type {type(library)} given."
             )
+        if name:
+            fancy_nuclide = Nuclide(name)
+            if fancy_nuclide.A == 0:
+                element = fancy_nuclide.element
+                fancy_nuclide = None
+        else:
+            fancy_nuclide = None
         filters = [
-            self.__prep_filter(Nuclide(name)),
+            self.__prep_filter(fancy_nuclide),
             self.__prep_element_filter(element),
             self.__prep_filter(A, "A"),
             self.__prep_filter(meta_state, "meta_state"),
             self.__prep_filter(library, "library"),
         ]
-        for idx, component in enumerate(self._components):
+        for idx, component in enumerate(self):
             for filt in filters:
                 found = filt(component[0])
                 if not found:
