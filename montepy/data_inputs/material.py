@@ -81,6 +81,13 @@ class _DefaultLibraries:
     def __str__(self):
         return str(self._libraries)
 
+    def __iter__(self):
+        return iter(self._libraries)
+
+    def items(self):
+        for lib_type, node in self._libraries.items():
+            yield (lib_type, node["data"].value)
+
     @staticmethod
     def _validate_key(key):
         if not isinstance(key, (str, LibraryType)):
