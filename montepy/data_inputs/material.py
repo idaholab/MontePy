@@ -25,14 +25,17 @@ import re
 import warnings
 
 
-MAX_PRINT_ELEMENTS = 5
+MAX_PRINT_ELEMENTS: int = 5
 """
-TODO
+The maximum number of elements to print in a material string descripton.
 """
 
-DEFAULT_INDENT = 6
+DEFAULT_INDENT: int = 6
 """
-TODO
+The default number of spaces to indent on a new line by.
+
+This is used for adding new material components.
+By default all components made from scratch are added to their own line with this many leading spaces.
 """
 
 
