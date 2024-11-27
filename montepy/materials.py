@@ -23,11 +23,23 @@ class Materials(NumberedDataObjectCollection):
     def get_containing(self, nuclide, *args, threshold=0.0):
         """ """
         nuclides = []
-        for nuclide in [nuclide] + args:
-            if not isinstance(nuclide, (str, int, Element, Nucleus, Nuclide)):
-                raise TypeError("")  # foo
+        for nuclide in [nuclide] + list(args):
+            if not isinstance(
+                nuclide,
+                (
+                    str,
+                    int,
+                    montepy.Element,
+                    montepy.data_inputs.nuclide.Nucleus,
+                    montepy.Nuclide,
+                ),
+            ):
+                raise TypeError(
+                    f"nuclide must be of type str, int, Element, Nucleus, or Nuclide. "
+                    f"{nuclide} of type {type(nuclide)} given."
+                )
             if isinstance(nuclide, (str, int)):
-                nuclide = montepy.Nuclide.get_from_fancy_name(nuclide)
+                nuclide = montepy.Nuclide(nuclide)
             nuclides.append(nuclide)
 
         def sort_by_type(nuclide):
@@ -41,7 +53,7 @@ class Materials(NumberedDataObjectCollection):
         # optimize by most hashable and fail fast
         nuclides = sorted(nuclides, key=sort_by_type)
         for material in self:
-            if material.contains(*nuclides, threshold):
+            if material.contains(*nuclides, threshold=threshold):
                 # maybe? Maybe not?
                 # should Materials act like a set?
                 yield material
