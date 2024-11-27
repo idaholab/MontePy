@@ -547,6 +547,7 @@ See <https://www.montepy.org/migrations/migrate0_1.html> for more information ""
             self.__delitem(0)
 
     def __delitem(self, idx):
+        comp = self._components[idx]
         element = self[idx][0].element
         nucleus = self[idx][0].nucleus
         found_el = False
@@ -568,6 +569,7 @@ See <https://www.montepy.org/migrations/migrate0_1.html> for more information ""
             self._elements.remove(element)
         if not found_nuc:
             self._nuclei.remove(nucleus)
+        self._tree["data"].nodes.remove((comp[0]._tree, comp[1]))
         del self._components[idx]
 
     def __contains__(self, nuclide):
