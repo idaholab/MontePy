@@ -682,11 +682,15 @@ See <https://www.montepy.org/migrations/migrate0_1.html> for more information ""
                 if mat.contains("U-235", "U-233", "Pu-239", threshold=1e-6):
                     pass
 
+            # try to find a uranium
+            for mat in problem.materials:
+                if mat.contains("U"):
+                    pass
+
         .. note::
 
             If a nuclide is in a material multiple times, and cumulatively exceeds the threshold,
             but for each instance it appears it is below the threshold this method will return False.
-
 
         :param nuclide: the first nuclide to check for.
         :type nuclide: Union[Nuclide, Nucleus, Element, str, int]
@@ -704,14 +708,19 @@ See <https://www.montepy.org/migrations/migrate0_1.html> for more information ""
 
         """
         nuclides = []
-        for nuclide in [nuclide] + args:
+        for nuclide in [nuclide] + list(args):
             if not isinstance(nuclide, (str, int, Element, Nucleus, Nuclide)):
                 raise TypeError(
                     f"Nuclide must be a type that can be converted to a Nuclide. The allowed types are: "
                     f"Nuclide, Nucleus, str, int. {nuclide} given."
                 )
             if isinstance(nuclide, (str, int)):
-                nuclide = montepy.Nuclide(nuclide)
+                nuclide = Nuclide(nuclide)
+            # treat elemental as element
+            if isinstance(nuclide, (Nucleus, Nuclide)) and nuclide.A == 0:
+                nuclide = nuclide.element
+            if isinstance(nuclide, Nuclide) and not str(nuclide.library):
+                nuclide = nuclide.nucleus
             nuclides.append(nuclide)
 
         if not isinstance(threshold, float):
@@ -723,18 +732,36 @@ See <https://www.montepy.org/migrations/migrate0_1.html> for more information ""
 
         # fail fast
         for nuclide in nuclides:
-            if isinstance(nuclide, (Nucleus, Element)):
-                if nuclide not in self:
-                    return False
+            if nuclide not in self:
+                return False
 
-        # do exhaustive search
-        nuclides_search = {str(nuclide): False for nuclide in nuclides}
+        nuclides_search = {}
+        nuclei_search = {}
+        element_search = {}
+        for nuclide in nuclides:
+            if isinstance(nuclide, Element):
+                element_search[nuclide] = False
+            if isinstance(nuclide, Nucleus):
+                nuclei_search[nuclide] = False
+            if isinstance(nuclide, Nuclide):
+                nuclides_search[str(nuclide).lower()] = False
 
         for nuclide, fraction in self:
-            if str(nuclide) in nuclides_search:
-                if fraction >= threshold:
-                    nuclides_search[str(nuclide)] = True
-        return all(nuclide_search)
+            if fraction < threshold:
+                continue
+            if str(nuclide).lower() in nuclides_search:
+                nuclides_search[str(nuclide).lower()] = True
+            if nuclide.nucleus in nuclei_search:
+                nuclei_search[nuclide.nucleus] = True
+            if nuclide.element in element_search:
+                element_search[nuclide.element] = True
+        return all(
+            (
+                all(nuclides_search.values()),
+                all(nuclei_search.values()),
+                all(element_search.values()),
+            )
+        )
 
     def normalize(self):
         """

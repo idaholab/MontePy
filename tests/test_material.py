@@ -238,8 +238,27 @@ class TestMaterial:
     )
     def test_material_contains(_, big_material, content, is_in):
         assert is_in == (content in big_material), "Contains didn't work properly"
+        assert is_in == big_material.contains(content)
         with pytest.raises(TypeError):
             5 in big_material
+
+    def test_material_multi_contains(_, big_material):
+        assert big_material.contains("1001", "U-235", "Pu-239", threshold=0.01)
+        assert not big_material.contains("1001", "U-235", "Pu-239", threshold=0.07)
+        assert not big_material.contains("U-235", "B-10")
+
+    def test_material_contains_bad(_):
+        mat = Material()
+        with pytest.raises(TypeError):
+            mat.contains(mat)
+        with pytest.raises(TypeError):
+            mat.contains("1001", mat)
+        with pytest.raises(ValueError):
+            mat.contains("hi")
+        with pytest.raises(TypeError):
+            mat.contains("1001", threshold="hi")
+        with pytest.raises(ValueError):
+            mat.contains("1001", threshold=-1.0)
 
     def test_material_str(_):
         in_str = "M20 1001.80c 0.5 8016.80c 0.4 94239.80c 0.1"
