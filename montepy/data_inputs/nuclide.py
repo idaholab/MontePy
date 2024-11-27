@@ -8,6 +8,7 @@ from montepy.input_parser.syntax_node import PaddingNode, ValueNode
 from montepy.particle import LibraryType
 
 import collections
+from functools import total_ordering
 import re
 from typing import Union
 import warnings
@@ -18,6 +19,7 @@ How many characters wide a nuclide with spacing should be.
 """
 
 
+@total_ordering
 class Library(SingletonGroup):
     """
     A class to represent an MCNP nuclear data library, e.g., ``80c``.
@@ -68,6 +70,9 @@ class Library(SingletonGroup):
     _LIBRARY_RE = re.compile(r"(\d{2,3})[a-z]?([a-z])", re.I)
 
     def __init__(self, library: str):
+        self._lib_type = None
+        self._suffix = ""
+        self._num = None
         if not isinstance(library, str):
             raise TypeError(f"library must be a str. {library} given.")
         if library:
@@ -84,8 +89,6 @@ class Library(SingletonGroup):
                     f"Not a valid library extension suffix. {library} with extension: {extension} given."
                 )
             self._lib_type = lib_type
-        else:
-            self._lib_type = None
         self._library = library
 
     @property
@@ -149,15 +152,20 @@ class Library(SingletonGroup):
         # due to SingletonGroup
         return self.library.upper() == other.library.upper()
 
+    def __bool__(self):
+        return bool(self.library)
+
     def __str__(self):
         return self.library
 
     def __repr__(self):
-        return str(self)
+        return f"Library('{self.library}')"
 
     def __lt__(self, other):
-        if not isinstance(other, type(self)):
+        if not isinstance(other, (str, type(self))):
             raise TypeError(f"Can only compare Library instances.")
+        if isinstance(other, str):
+            other = Library(other)
         if self.suffix == other.suffix:
             return self.number < other.number
         return self.suffix < other.suffix
