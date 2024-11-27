@@ -613,14 +613,19 @@ See <https://www.montepy.org/migrations/migrate0_1.html> for more information ""
         self._components.append(nuclide_frac_pair)
         self._tree["data"].append_nuclide(("_", nuclide_frac_pair[0]._tree, node))
 
-    def change_libraries(self, new_library):
-        """ """
+    def change_libraries(self, new_library: Union[str, Library]):
+        """
+        Change the library for all nuclides in the material.
+
+        :param new_library: the new library to set all Nuclides to use.
+        :type new_library: Union[str, Library]
+        """
         if not isinstance(new_library, (Library, str)):
             raise TypeError(
                 f"new_library must be a Library or str. {new_library} given."
             )
         if isinstance(new_library, str):
-            library = Library(library)
+            new_library = Library(new_library)
         for nuclide, _ in self:
             nuclide.library = new_library
 
@@ -638,7 +643,9 @@ See <https://www.montepy.org/migrations/migrate0_1.html> for more information ""
                 f"Nuclide must of type Nuclide, str, or int. {nuclide} of type {type(nuclide)} given."
             )
         if not isinstance(fraction, (float, int)):
-            raise TypeError("")
+            raise TypeError(
+                f"Fraction must be a numerical value. {fraction} of type {type(fraction)}"
+            )
         if isinstance(nuclide, (str, int)):
             nuclide = Nuclide(nuclide)
         self.append((nuclide, fraction))
