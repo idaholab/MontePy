@@ -938,7 +938,7 @@ See <https://www.montepy.org/migrations/migrate0_1.html> for more information ""
         name: str = None,
         element: Union[Element, str, int, slice] = None,
         A: Union[int, slice] = None,
-        meta_isomer: Union[int, slice] = None,
+        meta_state: Union[int, slice] = None,
         library: Union[str, slice] = None,
     ) -> Generator[tuple[int, tuple[Nuclide, float]]]:
         """
@@ -988,8 +988,8 @@ See <https://www.montepy.org/migrations/migrate0_1.html> for more information ""
         :type element: Element, str, int, slice
         :param A: the filter for the nuclide A number.
         :type A: int, slice
-        :param meta_isomer: the metastable isomer filter.
-        :type meta_isomer: int, slice
+        :param meta_state: the metastable isomer filter.
+        :type meta_state: int, slice
         :param library: the libraries to limit the search to.
         :type library: str, slice
 
@@ -1017,7 +1017,7 @@ See <https://www.montepy.org/migrations/migrate0_1.html> for more information ""
             self.__prep_filter(Nuclide(name)),
             self.__prep_element_filter(element),
             self.__prep_filter(A, "A"),
-            self.__prep_filter(meta_isomer, "meta_state"),
+            self.__prep_filter(meta_state, "meta_state"),
             self.__prep_filter(library, "library"),
         ]
         for idx, component in enumerate(self._components):
@@ -1033,7 +1033,7 @@ See <https://www.montepy.org/migrations/migrate0_1.html> for more information ""
         name: str = None,
         element: Union[Element, str, int, slice] = None,
         A: Union[int, slice] = None,
-        meta_isomer: Union[int, slice] = None,
+        meta_state: Union[int, slice] = None,
         library: Union[str, slice] = None,
     ) -> Generator[float]:
         """
@@ -1065,15 +1065,15 @@ See <https://www.montepy.org/migrations/migrate0_1.html> for more information ""
         :type element: Element, str, int, slice
         :param A: the filter for the nuclide A number.
         :type A: int, slice
-        :param meta_isomer: the metastable isomer filter.
-        :type meta_isomer: int, slice
+        :param meta_state: the metastable isomer filter.
+        :type meta_state: int, slice
         :param library: the libraries to limit the search to.
         :type library: str, slice
 
         :returns: a generator of fractions whose nuclide matches the criteria.
         :rtype: Generator[float]
         """
-        for _, (_, fraction) in self.find(name, element, A, meta_isomer, library):
+        for _, (_, fraction) in self.find(name, element, A, meta_state, library):
             yield fraction
 
     # TODO create indexible/settable values
