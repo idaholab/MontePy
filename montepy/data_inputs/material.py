@@ -1027,8 +1027,13 @@ See <https://www.montepy.org/migrations/migrate0_1.html> for more information ""
                 fancy_nuclide = None
         else:
             fancy_nuclide = None
+        if fancy_nuclide and not fancy_nuclide.library:
+            first_filter = self.__prep_filter(fancy_nuclide.nucleus, "nucleus")
+        else:
+            first_filter = self.__prep_filter(fancy_nuclide)
+
         filters = [
-            self.__prep_filter(fancy_nuclide),
+            first_filter,
             self.__prep_element_filter(element),
             self.__prep_filter(A, "A"),
             self.__prep_filter(meta_state, "meta_state"),
