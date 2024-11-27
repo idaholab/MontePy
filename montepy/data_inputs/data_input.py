@@ -229,7 +229,7 @@ class DataInputAbstract(MCNP_Object):
             if self._has_number():
                 try:
                     num = classifier.number.value
-                    assert num > 0
+                    assert num >= 0
                 except (AttributeError, AssertionError) as e:
                     raise MalformedInputError(
                         input,

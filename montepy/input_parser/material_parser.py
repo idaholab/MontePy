@@ -31,8 +31,6 @@ class MaterialParser(DataParser):
         datum = p.mat_datum
         if isinstance(datum, tuple):
             ret.append_nuclide(datum)
-        elif isinstance(datum, list):
-            [ret.append_nuclide(n) for n in datum]
         elif isinstance(datum, syntax_node.ListNode):
             [ret.append_nuclide(n) for n in self._convert_to_isotope(datum)]
         else:

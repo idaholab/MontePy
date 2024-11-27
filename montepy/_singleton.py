@@ -18,8 +18,6 @@ class SingletonGroup(ABC):
 
     def __new__(cls, *args, **kwargs):
         kwargs_t = tuple([(k, v) for k, v in kwargs.items()])
-        if len(args + kwargs_t) == 0:
-            return super().__new__(cls)
         try:
             return cls._instances[args + kwargs_t]
         except KeyError:
