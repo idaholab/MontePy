@@ -579,6 +579,8 @@ See <https://www.montepy.org/migrations/migrate0_1.html> for more information ""
             )
         if isinstance(nuclide, str):
             nuclide = Nuclide(nuclide)
+        if isinstance(nuclide, (Nucleus, Nuclide)) and nuclide.A == 0:
+            nuclide = nuclide.element
         if isinstance(nuclide, (Nucleus, Nuclide)):
             if isinstance(nuclide, Nuclide):
                 if nuclide.nucleus not in self._nuclei:
