@@ -34,6 +34,13 @@ from montepy.universe import Universe
 from montepy.cell import Cell
 from montepy.mcnp_problem import MCNP_Problem
 
+# collections
+from montepy.cells import Cells
+from montepy.materials import Materials
+from montepy.universes import Universes
+from montepy.surface_collection import Surfaces
+from montepy.transforms import Transforms
+
 import montepy.errors
 import sys
 
