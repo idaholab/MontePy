@@ -21,7 +21,9 @@ class TestNumberedObjectCollection:
 
     def test_bad_init(self):
         with pytest.raises(TypeError):
-            montepy.cells.Cells(5)
+            montepy.Cells(5)
+        with pytest.raises(TypeError):
+            montepy.Cells([5])
 
     def test_numbers(self, cp_simple_problem):
         cell_numbers = [1, 2, 3, 99, 5]
@@ -105,6 +107,38 @@ class TestNumberedObjectCollection:
         cell.number = 20
         cells.append(cell)
         assert len(cells) == size + 1
+
+    def test_add(_):
+        cells = montepy.Cells()
+        cell = montepy.Cell()
+        cell.number = 2
+        cells.add(cell)
+        assert cell in cells
+        # test silent no-op
+        cells.add(cell)
+        cell = copy.deepcopy(cell)
+        with pytest.raises(NumberConflictError):
+            cells.add(cell)
+        with pytest.raises(TypeError):
+            cells.add(5)
+
+    def test_update(_):
+        cells = montepy.Cells()
+        cell_list = []
+        for i in range(1, 6):
+            cell_list.append(montepy.Cell())
+            cell_list[-1].number = i
+        cells.update(cell_list)
+        for cell in cell_list:
+            assert cell in cells
+        with pytest.raises(TypeError):
+            cells.update(5)
+        with pytest.raises(TypeError):
+            cells.update({5})
+        cell = montepy.Cell()
+        cell.number = 1
+        with pytest.raises(NumberConflictError):
+            cells.update([cell])
 
     def test_append_renumber(self, cp_simple_problem):
         cells = copy.deepcopy(cp_simple_problem.cells)
@@ -246,6 +280,12 @@ class TestNumberedObjectCollection:
         assert (surf_not_found) is None
         default_mat = cp_simple_problem.materials[3]
         assert cp_simple_problem.materials.get(42, default_mat) == default_mat
+        # force a cache miss
+        cells = cp_simple_problem.cells
+        cells.link_to_problem(None)
+        cell = cells[1]
+        cell.number = 23
+        assert cells.get(23) is cell
 
     def test_keys(self, cp_simple_problem):
         cell_nums = []
@@ -255,16 +295,39 @@ class TestNumberedObjectCollection:
         for k in cp_simple_problem.cells.keys():
             cell_keys.append(k)
         assert cell_nums == cell_keys
+        cells = montepy.Cells()
+        # test blank keys
+        assert len(list(cells.keys())) == 0
 
     def test_values(self, cp_simple_problem):
         list_cells = list(cp_simple_problem.cells)
         list_values = list(cp_simple_problem.cells.values())
         assert list_cells == list_values
+        cells = montepy.Cells()
+        assert len(list(cells.keys())) == 0
 
     def test_items(self, cp_simple_problem):
         zipped = zip(cp_simple_problem.cells.keys(), cp_simple_problem.cells.values())
         cell_items = cp_simple_problem.cells.items()
         assert tuple(zipped) == tuple(cell_items)
+        cells = montepy.Cells()
+        assert len(list(cells.keys())) == 0
+
+    def test_eq(_, cp_simple_problem):
+        cells = cp_simple_problem.cells
+        new_cells = copy.copy(cells)
+        assert cells == new_cells
+        new_cells = montepy.Cells()
+        assert cells != new_cells
+        for i in range(len(cells)):
+            cell = montepy.Cell()
+            cell.number = i + 500
+            new_cells.add(cell)
+        assert new_cells != cells
+        new_cells[501].number = 2
+        assert new_cells != cells
+        with pytest.raises(TypeError):
+            cells == 5
 
     def test_surface_generators(self, cp_simple_problem):
         answer_num = [1000, 1010]
@@ -353,6 +416,147 @@ class TestNumberedObjectCollection:
         mat = montepy.Material()
         with pytest.raises(KeyError):
             prob.materials.remove(mat)
+        # do a same number fakeout
+        mat = copy.deepcopy(prob.materials[2])
+        with pytest.raises(KeyError):
+            prob.materials.remove(mat)
+
+    def test_numbered_discard(_, cp_simple_problem):
+        mats = cp_simple_problem.materials
+        mat = mats[2]
+        mats.discard(mat)
+        assert mat not in mats
+        # no error
+        mats.discard(mat)
+        mats.discard(5)
+
+    def test_numbered_contains(_, cp_simple_problem):
+        mats = cp_simple_problem.materials
+        mat = mats[2]
+        assert mat in mats
+        assert 5 not in mats
+        mat = montepy.Material()
+        mat.number = 100
+        assert mat not in mats
+        # num cache fake out
+        mat.number = 2
+        assert mat not in mats
+
+    @pytest.fixture
+    def mats_sets(_):
+        mats1 = montepy.Materials()
+        mats2 = montepy.Materials()
+        for i in range(1, 10):
+            mat = montepy.Material()
+            mat.number = i
+            mats1.append(mat)
+        for i in range(5, 15):
+            mat = montepy.Material()
+            mat.number = i
+            mats2.append(mat)
+        return (mats1, mats2)
+
+    @pytest.mark.parametrize(
+        "name, operator",
+        [
+            ("and", lambda a, b: a & b),
+            ("or", lambda a, b: a | b),
+            ("sub", lambda a, b: a - b),
+            ("xor", lambda a, b: a ^ b),
+            ("sym diff", lambda a, b: a.symmetric_difference(b)),
+        ],
+    )
+    def test_numbered_set_logic(_, mats_sets, name, operator):
+        mats1, mats2 = mats_sets
+        mats1_nums = set(mats1.keys())
+        mats2_nums = set(mats2.keys())
+        new_mats = operator(mats1, mats2)
+        new_nums = set(new_mats.keys())
+        assert new_nums == operator(mats1_nums, mats2_nums)
+
+    @pytest.mark.parametrize(
+        "name", ["iand", "ior", "isub", "ixor", "sym_diff", "diff"]
+    )
+    def test_numbered_set_logic_update(_, mats_sets, name):
+        def operator(a, b):
+            if name == "iand":
+                a &= b
+            elif name == "ior":
+                a |= b
+            elif name == "isub":
+                a -= b
+            elif name == "ixor":
+                a ^= b
+            elif name == "sym_diff":
+                a.symmetric_difference_update(b)
+            elif name == "diff":
+                a.difference_update(b)
+
+        mats1, mats2 = mats_sets
+        mats1_nums = set(mats1.keys())
+        mats2_nums = set(mats2.keys())
+        operator(mats1, mats2)
+        new_nums = set(mats1.keys())
+        operator(mats1_nums, mats2_nums)
+        assert new_nums == mats1_nums
+
+    @pytest.mark.parametrize(
+        "name, operator",
+        [
+            ("le", lambda a, b: a <= b),
+            ("lt", lambda a, b: a < b),
+            ("ge", lambda a, b: a >= b),
+            ("gt", lambda a, b: a > b),
+            ("subset", lambda a, b: a.issubset(b)),
+            ("superset", lambda a, b: a.issuperset(b)),
+            ("disjoint", lambda a, b: a.isdisjoint(b)),
+        ],
+    )
+    def test_numbered_set_logic_test(_, mats_sets, name, operator):
+        mats1, mats2 = mats_sets
+        mats1_nums = set(mats1.keys())
+        mats2_nums = set(mats2.keys())
+        answer = operator(mats1, mats2)
+        assert answer == operator(mats1_nums, mats2_nums)
+
+    @pytest.mark.parametrize(
+        "name, operator",
+        [
+            ("intersection", lambda a, *b: a.intersection(*b)),
+            ("union", lambda a, *b: a.union(*b)),
+            ("difference", lambda a, *b: a.difference(*b)),
+        ],
+    )
+    def test_numbered_set_logic_multi(_, mats_sets, name, operator):
+        mats3 = montepy.Materials()
+        for i in range(7, 19):
+            mat = montepy.Material()
+            mat.number = i
+            mats3.add(mat)
+        mats1, mats2 = mats_sets
+        mats1_nums = set(mats1.keys())
+        mats2_nums = set(mats2.keys())
+        mats3_nums = set(mats3.keys())
+        new_mats = operator(mats1, mats2, mats3)
+        new_nums = set(new_mats.keys())
+        assert new_nums == operator(mats1_nums, mats2_nums, mats3_nums)
+
+    def test_numbered_set_logic_bad(_):
+        mats = montepy.Materials()
+        with pytest.raises(TypeError):
+            mats & 5
+        with pytest.raises(TypeError):
+            mats &= {5}
+        with pytest.raises(TypeError):
+            mats |= {5}
+        with pytest.raises(TypeError):
+            mats -= {5}
+        with pytest.raises(TypeError):
+            mats ^= {5}
+        with pytest.raises(TypeError):
+            mats > 5
+        with pytest.raises(TypeError):
+            mats.union(5)
 
     def test_data_delete(_, cp_simple_problem):
         prob = cp_simple_problem
@@ -380,6 +584,16 @@ class TestNumberedObjectCollection:
         assert old_mat not in cp_simple_problem.data_inputs
         with pytest.raises(TypeError):
             cp_simple_problem.materials.pop("foo")
+
+    def test_numbered_starting_number(_):
+        cells = montepy.Cells()
+        assert cells.starting_number == 1
+        cells.starting_number = 5
+        assert cells.starting_number == 5
+        with pytest.raises(TypeError):
+            cells.starting_number = "hi"
+        with pytest.raises(ValueError):
+            cells.starting_number = -1
 
     # disable function scoped fixtures
     @settings(suppress_health_check=[hypothesis.HealthCheck.function_scoped_fixture])
