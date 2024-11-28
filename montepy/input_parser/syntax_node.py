@@ -1775,9 +1775,8 @@ class MaterialsNode(SyntaxNodeBase):
         isotope, concentration = isotope_fraction[1:3]
         self._nodes.append((isotope, concentration))
 
-    @property
-    def append(self):
-        raise DeprecationWarning()
+    def append(self):  # pragma: no cover
+        raise DeprecationWarning("Deprecated. Use append_param or append_nuclide")
 
     def append_param(self, param):
         """ """

@@ -470,18 +470,20 @@ class MCNP_Problem:
         for surface in to_delete:
             self._surfaces.remove(surface)
 
-    def add_cell_children_to_problem(self):
+    def add_cell_children_to_problem(self):  # pragma: no cover
         """
         Adds the surfaces, materials, and transforms of all cells in this problem to this problem to the
         internal lists to allow them to be written to file.
 
-        .. warning::
-            this does not move complement cells, and probably other objects.
-
         .. deprecated:: 1.0.0
             TODO
+
+        :raises DeprecationWarning:
         """
-        raise DeprecationWarning("It dead")
+        raise DeprecationWarning(
+            "add_cell_children_to_problem has been removed,"
+            " as the children are automatically added with the cell."
+        )
 
     def write_problem(self, destination, overwrite=False):
         """

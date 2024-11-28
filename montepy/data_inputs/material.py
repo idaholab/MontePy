@@ -1175,9 +1175,8 @@ See <https://www.montepy.org/migrations/migrate0_1.html> for more information ""
         else:
             ret += "mass\n"
 
-        # TODO fix
-        for component in self._components:
-            ret += f"{component[0]} {component[1].value}\n"
+        for component in self:
+            ret += f"{component[0]} {component[1]}\n"
         if self.thermal_scattering:
             ret += f"Thermal Scattering: {self.thermal_scattering}"
 
