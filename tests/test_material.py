@@ -82,6 +82,12 @@ class TestMaterial:
         if lib is None:
             big_mat_lib.link_to_problem(prob_default)
             assert big_mat_lib.get_nuclide_library(nuclide, lib_type) == lib
+        # test iter, items defaults
+        for iter_key, (item_key, item_val) in zip(
+            big_mat_lib.default_libraries, big_mat_lib.default_libraries.items()
+        ):
+            assert iter_key == item_key
+            assert big_mat_lib.default_libraries[iter_key] == item_val
 
     def test_mat_get_nuclide_library_bad(_, big_mat_lib):
         with pytest.raises(TypeError):
@@ -363,37 +369,25 @@ Pu-239   (80c) 0.1
         with pytest.raises(DeprecationWarning):
             MaterialComponent(Nuclide("1001.80c"), 0.1)
 
-    def test_material_update_format(_):
-        # TODO update this
-        pass
-        """
-        in_str = "M20 1001.80c 0.5 8016.80c 0.5"
-        input_card = Input([in_str], BlockType.DATA)
-        material = Material(input_card)
-        assert material.format_for_mcnp_input((6, 2, 0)) == [in_str]
-        material.number = 5
-        print(material.format_for_mcnp_input((6, 2, 0)))
-        assert "8016" in material.format_for_mcnp_input((6, 2, 0))[0]
-        # addition
-        isotope = Nuclide("2004.80c", suppress_warning=True)
-        with pytest.deprecated_call():
-            material.material_components[isotope] = MaterialComponent(isotope, 0.1, True)
-            print(material.format_for_mcnp_input((6, 2, 0)))
-            assert "2004" in material.format_for_mcnp_input((6, 2, 0))[0]
-            # update
-            isotope = list(material.material_components.keys())[-1]
-            print(material.material_components.keys())
-            material.material_components[isotope].fraction = 0.7
-            print(material.format_for_mcnp_input((6, 2, 0)))
-            assert "0.7" in material.format_for_mcnp_input((6, 2, 0))[0]
-            material.material_components[isotope] = MaterialComponent(isotope, 0.6, True)
-            print(material.format_for_mcnp_input((6, 2, 0)))
-            assert "0.6" in material.format_for_mcnp_input((6, 2, 0))[0]
-            # delete
-            del material.material_components[isotope]
-            print(material.format_for_mcnp_input((6, 2, 0)))
-            assert "8016" in material.format_for_mcnp_input((6, 2, 0))[0]
-        """
+    def test_mat_eq(_, big_material):
+        new_mat = big_material.clone()
+        new_mat.number = big_material.number
+        assert new_mat == big_material
+        assert new_mat != 5
+        new_mat.values[-1] += 1.5
+        assert new_mat != big_material
+        new_mat.nuclides[-1].library = "09c"
+        assert new_mat != big_material
+        del new_mat[0]
+        assert new_mat != big_material
+        new_mat.number = 23
+        assert new_mat != big_material
+
+    def test_mat_long_str(_, big_material):
+        for i in range(23, 30):
+            big_material.add_nuclide(Nuclide(element=Element(i)), 0.123)
+        str(big_material)
+        repr(big_material)
 
     @pytest.mark.parametrize(
         "line, mat_number, is_atom, fractions",

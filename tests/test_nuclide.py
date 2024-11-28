@@ -227,9 +227,14 @@ class TestLibrary:
         lib = Library("00c")
         with pytest.raises(TypeError):
             lib < 5
-        libs = {Library(s) for s in ["00c", "70c", "70g", "50d", "80m", "24y", "90a"]}
+        libs = {Library(s) for s in ["00c", "70c", "70g", "80m", "24y", "90a"]}
+        libs.add("50d")
         gold_order = ["90a", "00c", "70c", "50d", "70g", "80m", "24y"]
         assert [str(lib) for lib in sorted(libs)] == gold_order, "Sorting failed."
+
+    def test_library_bool(_):
+        assert Library("80c")
+        assert not Library("")
 
 
 # test element
@@ -280,3 +285,17 @@ class TestElement:
     def test_particle_str(_):
         part = montepy.Particle("N")
         assert str(part) == "neutron"
+
+
+class TestNucleus:
+
+    @given(Z=st.integers(1, 99), A=st.integers(0, 300), meta=st.integers(0, 4))
+    def test_nucleus_init(_, Z, A, meta):
+        nucleus = Nucleus(Element(Z), A, meta)
+        assert nucleus.Z == Z
+        assert nucleus.A == A
+        assert nucleus.meta_state == meta
+        nuclide = Nuclide(nucleus.ZAID)
+        assert nuclide.nucleus == nucleus
+        nucleus(Element(Z))
+        assert nucleus.Z == Z
