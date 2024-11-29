@@ -686,9 +686,6 @@ class Nuclide:
         """
         pass
 
-    def __repr__(self):
-        return f"{self.__class__.__name__}({repr(self.nuclide_str())})"
-
     def mcnp_str(self) -> str:
         """
         Returns an MCNP formatted representation.
@@ -797,8 +794,10 @@ class Nuclide:
 
     def __lt__(self, other):
         if not isinstance(other, type(self)):
-            raise TypeError("")
-        return (self.nucleus, str(self.library)) < (self.nucleus, str(self.library))
+            raise TypeError(
+                f"Cannot compare Nuclide to other values. {other} of type {type(other)}."
+            )
+        return (self.nucleus, self.library) < (other.nucleus, other.library)
 
     def __format__(self, format_str):
         return str(self).__format__(format_str)
