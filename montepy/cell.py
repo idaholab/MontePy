@@ -48,7 +48,7 @@ class Cell(Numbered_MCNP_Object):
     .. doctest:: python
 
         >>> cell.number = 5
-        >>> cell.material
+        >>> print(cell.material)
         None
         >>> mat = montepy.Material()
         >>> mat.number = 20

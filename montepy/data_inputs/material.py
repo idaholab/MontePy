@@ -170,9 +170,7 @@ class Material(data_input.DataInputAbstract, Numbered_MCNP_Object):
 
     .. testoutput::
 
-        TODO
-
-    TODO document values, nuclides
+        MATERIAL: 1, ['hydrogen', 'oxygen']
 
     Materials are iterable
     ^^^^^^^^^^^^^^^^^^^^^^
@@ -188,13 +186,14 @@ class Material(data_input.DataInputAbstract, Numbered_MCNP_Object):
         assert mat.is_atom_fraction # ensures it is in atom_fraction
 
         for nuclide, fraction in mat:
-            print(nuclide, fraction)
+            print("nuclide", nuclide, fraction)
 
     This would display:
 
     .. testoutput::
 
-        TODO
+        nuclide  H-1     (80c) 2.0
+        nuclide  O-16    (80c) 1.0
 
     As a list, Materials can be indexed:
 
@@ -203,6 +202,9 @@ class Material(data_input.DataInputAbstract, Numbered_MCNP_Object):
         oxygen, ox_frac = mat[1]
         mat[1] = (oxygen, ox_frac + 1e-6)
         del mat[1]
+
+    If you need just the nuclides or just the fractions of components in this material see: :func:`nuclides` and
+    :func:`values`.
 
     You can check if a Nuclide is in a Material
     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -213,6 +215,8 @@ class Material(data_input.DataInputAbstract, Numbered_MCNP_Object):
     .. doctest::
 
         >>> montepy.Nuclide("H-1") in mat
+        True
+        >>> "H-1" in mat
         True
         >>> montepy.Element(1) in mat
         True
@@ -239,7 +243,7 @@ class Material(data_input.DataInputAbstract, Numbered_MCNP_Object):
 
     .. testoutput::
 
-        TODO
+        MATERIAL: 1, ['hydrogen', 'oxygen', 'boron']
 
     Default Libraries
     ^^^^^^^^^^^^^^^^^
@@ -422,7 +426,7 @@ See <https://www.montepy.org/migrations/migrate0_1.html> for more information ""
 
         .. testoutput::
 
-            80p
+            None
             00c
         """
         pass
@@ -796,16 +800,22 @@ See <https://www.montepy.org/migrations/migrate0_1.html> for more information ""
             # define UO2 with enrichment of 4.0%
             mat.add_nuclide("8016.00c", 2/3)
             mat.add_nuclide("U-235.00c", 1/3 * enrichment)
-            mat.add_nuclide("U-238.00c", 2/3 * (1 - enrichment)
+            mat.add_nuclide("U-238.00c", 2/3 * (1 - enrichment))
 
             for val in mat.values:
-                print(value)
+                print(val)
             # iterables can be used with other functions
             max_frac = max(mat.values)
+            print("max", max_frac)
+
+        This would print:
 
         .. testoutput::
 
-            TODO
+            0.6666666666666666
+            0.013333333333333332
+            0.6399999999999999
+            max 0.6666666666666666
 
         .. testcode::
 
@@ -814,10 +824,14 @@ See <https://www.montepy.org/migrations/migrate0_1.html> for more information ""
 
             # set the value, and double enrichment
             mat.values[1] *= 2.0
+            print(mat.values[1])
+
+        This would print:
 
         .. testoutput::
 
-            TODO
+            0.6666666666666666
+            0.026666666666666665
 
         :rtype: Generator[float]
 
@@ -856,28 +870,32 @@ See <https://www.montepy.org/migrations/migrate0_1.html> for more information ""
             # define UO2 with enrichment of 4.0%
             mat.add_nuclide("8016.00c", 2/3)
             mat.add_nuclide("U-235.00c", 1/3 * enrichment)
-            mat.add_nuclide("U-238.00c", 2/3 * (1 - enrichment)
+            mat.add_nuclide("U-238.00c", 2/3 * (1 - enrichment))
 
             for nuc in mat.nuclides:
-                print(nuc)
+                print(repr(nuc))
             # iterables can be used with other functions
             max_zaid = max(mat.nuclides)
 
+        this would print:
+
         .. testoutput::
 
-            TODO
+            Nuclide('O-16.00c')
+            Nuclide('U-235.00c')
+            Nuclide('U-238.00c')
 
         .. testcode::
 
             # get value by index
-            print(mat.nuclides[0])
+            print(repr(mat.nuclides[0]))
 
             # set the value, and double enrichment
-            mat.nuclides[1] = Nuclide("U-235.80c")
+            mat.nuclides[1] = montepy.Nuclide("U-235.80c")
 
         .. testoutput::
 
-            TODO
+                 Nuclide('O-16.00c')
 
         :rtype: Generator[Nuclide]
 
@@ -980,7 +998,12 @@ See <https://www.montepy.org/migrations/migrate0_1.html> for more information ""
 
         .. testoutput::
 
-            TODO
+            Get all uranium nuclides.
+            [(0, (Nuclide('U-235.80c'), 0.1)), (1, (Nuclide('U-238.70c'), 0.1))]
+            Get all transuranics
+            [(0, (Nuclide('U-235.80c'), 0.1)), (1, (Nuclide('U-238.70c'), 0.1)), (2, (Nuclide('Pu-239.00c'), 0.1))]
+            Get all ENDF/B-VIII.0
+            [(2, (Nuclide('Pu-239.00c'), 0.1)), (3, (Nuclide('O-16.00c'), 0.1))]
 
 
         :param name: The name to pass to Nuclide to search by a specific Nuclide. If an element name is passed this
@@ -1070,7 +1093,13 @@ See <https://www.montepy.org/migrations/migrate0_1.html> for more information ""
                 mat.add_nuclide(nuclide, 0.1)
 
             # get fraction that is uranium
-            print(mat.find_vals(element= "U"))
+            print(sum(mat.find_vals(element= "U")))
+
+        which would intuitively print:
+
+        .. testoutput::
+
+            0.2
 
         :param name: The name to pass to Nuclide to search by a specific Nuclide. If an element name is passed this
             will only match elemental nuclides.
