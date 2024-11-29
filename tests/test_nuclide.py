@@ -89,7 +89,7 @@ class TestNuclide:
         assert isotope.mcnp_str() == "95242"
         assert repr(isotope) == "Nuclide('Am-242m1')"
         # test that can be formatted at all:
-        f"{isotope:010s}"
+        f"{isotope:0>10s}"
 
     @pytest.mark.parametrize(
         "input, Z, A, meta, library",
