@@ -1128,7 +1128,11 @@ See <https://www.montepy.org/migrations/migrate0_1.html> for more information ""
             node = nuclide._tree
             parts = node.value.split(".")
             fraction.is_negative = not self.is_atom_fraction
-            if len(parts) > 1 and parts[-1] != str(nuclide.library):
+            if (
+                len(parts) > 1
+                and parts[-1] != str(nuclide.library)
+                or (len(parts) == 1 and str(nuclide.library))
+            ):
                 node.value = nuclide.mcnp_str()
 
     def add_thermal_scattering(self, law):
