@@ -188,6 +188,14 @@ class TestLibrary:
         assert str(lib) == input, "Original string not preserved."
         assert lib.library == input, "Original string not preserved."
 
+    def test_library_bad_init(_):
+        with pytest.raises(TypeError):
+            Library(5)
+        with pytest.raises(ValueError):
+            Library("hi")
+        with pytest.raises(ValueError):
+            Library("00x")
+
     @given(
         input_num=st.integers(min_value=0, max_value=999),
         extra_char=st.characters(min_codepoint=97, max_codepoint=122),
@@ -290,12 +298,59 @@ class TestElement:
 class TestNucleus:
 
     @given(Z=st.integers(1, 99), A=st.integers(0, 300), meta=st.integers(0, 4))
-    def test_nucleus_init(_, Z, A, meta):
+    def test_nucleus_init_eq_hash(_, Z, A, meta):
         nucleus = Nucleus(Element(Z), A, meta)
         assert nucleus.Z == Z
         assert nucleus.A == A
         assert nucleus.meta_state == meta
-        nuclide = Nuclide(nucleus.ZAID)
-        assert nuclide.nucleus == nucleus
-        nucleus(Element(Z))
-        assert nucleus.Z == Z
+        # test eq
+        other = Nucleus(Element(Z), A, meta)
+        assert nucleus == other
+        assert hash(nucleus) == hash(other)
+        assert str(nucleus) == str(other)
+        assert repr(nucleus) == repr(other)
+        with pytest.raises(TypeError):
+            nucleus == 5
+        with pytest.raises(TypeError):
+            nucleus < 5
+        # test not eq
+        new_meta = meta + 1 if meta <= 3 else meta - 1
+        for other in {
+            Nucleus(Element(Z), A + 5, meta),
+            Nucleus(Element(Z), A, new_meta),
+        }:
+            assert nucleus != other
+            assert hash(nucleus) != hash(other)
+            assert str(nucleus) != str(other)
+            assert repr(nucleus) != repr(other)
+            if other.A > A:
+                assert nucleus < other
+            else:
+                if new_meta > meta:
+                    assert nucleus < other
+                elif new_meta < meta:
+                    assert other < nucleus
+        # avoid insane ZAIDs
+        a_ratio = A / Z
+        if a_ratio >= 1.9 and a_ratio < 2.4:
+            nuclide = Nuclide(nucleus.ZAID)
+            assert nuclide.nucleus == nucleus
+            nucleus = Nucleus(Element(Z))
+            assert nucleus.Z == Z
+
+    @pytest.mark.parametrize(
+        "kwargs, error",
+        [
+            ({"element": "hi"}, TypeError),
+            ({"A": "hi"}, TypeError),
+            ({"A": -1}, ValueError),
+            ({"meta_state": "hi"}, TypeError),
+            ({"meta_state": -1}, ValueError),
+            ({"meta_state": 5}, ValueError),
+        ],
+    )
+    def test_nucleus_bad_init(_, kwargs, error):
+        if "element" not in kwargs:
+            kwargs["element"] = Element(1)
+        with pytest.raises(error):
+            Nucleus(**kwargs)
