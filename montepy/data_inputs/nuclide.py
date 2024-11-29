@@ -325,7 +325,7 @@ class Nucleus(SingletonGroup):
     def __lt__(self, other):
         if not isinstance(other, type(self)):
             raise TypeError("")
-        return (self.Z, self.A, self.meta_state) < (self.Z, self.A, self.meta_state)
+        return (self.Z, self.A, self.meta_state) < (other.Z, other.A, other.meta_state)
 
     def __str__(self):
         meta_suffix = f"m{self.meta_state}" if self.is_metastable else ""
