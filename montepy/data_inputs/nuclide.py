@@ -358,10 +358,10 @@ class Nuclide:
 
     To be specific this must match the regular expression:
 
-    .. testcode:: python
+    .. code-block::
 
         import re
-        parser = re.compile(r\"\"\"
+        parser = re.compile(\"\"\"
             (\d{4,6}) # ZAID
                 |
             ([a-z]{1,2} # or atomic symbol
