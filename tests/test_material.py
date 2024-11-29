@@ -495,6 +495,7 @@ Pu-239   (80c) 0.1
             mat.change_libraries(wrapper(library))
             for nuclide in mat.nuclides:
                 assert nuclide.library == Library(library)
+        _.verify_export(mat)
 
     def test_mat_change_lib_bad(_):
         mat = Material()

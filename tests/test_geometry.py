@@ -262,6 +262,7 @@ def test_iand_recursion():
         half_space &= "hi"
     # test with unit halfspaces
     surf = montepy.surfaces.CylinderParAxis()
+    surf.number = 5
     # test going from leaf to tree
     half_space = -surf
     half_space &= +surf
@@ -294,6 +295,7 @@ def test_ior_recursion():
         half_space |= "hi"
     # test with unit halfspaces
     surf = montepy.surfaces.CylinderParAxis()
+    surf.number = 5
     half_space = -surf
     half_space |= +surf
     assert len(half_space) == 2

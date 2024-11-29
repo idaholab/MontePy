@@ -285,6 +285,18 @@ def test_problem_children_adder(simple_problem):
         assert "U=350" in "\n".join(output).upper()
 
 
+def test_children_adder_hidden_tr(simple_problem):
+    problem = copy.deepcopy(simple_problem)
+    in_str = "260 0 -1000 fill = 350 (1 0 0)"
+    input = montepy.input_parser.mcnp_input.Input(
+        [in_str], montepy.input_parser.block_type.BlockType.CELL
+    )
+    cell = montepy.Cell(input)
+    cell.update_pointers(problem.cells, problem.materials, problem.surfaces)
+    problem.cells.add(cell)
+    assert cell.fill.transform not in problem.transforms
+
+
 def test_problem_mcnp_version_setter(simple_problem):
     problem = copy.deepcopy(simple_problem)
     with pytest.raises(ValueError):
@@ -774,6 +786,8 @@ def test_cell_not_truncate_setter(simple_problem):
     with pytest.raises(ValueError):
         cell = problem.cells[2]
         cell.not_truncated = True
+    with pytest.raises(TypeError):
+        cell.not_truncated = 5
 
 
 def test_universe_setter(simple_problem):

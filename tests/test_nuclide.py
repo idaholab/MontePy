@@ -443,3 +443,22 @@ class TestNucleus:
             kwargs["element"] = Element(1)
         with pytest.raises(error):
             Nucleus(**kwargs)
+
+
+class TestLibraryType:
+
+    def test_sort_order(_):
+        gold = [
+            "alpha_particle",
+            "deuteron",
+            "electron",
+            "proton",
+            "neutron",
+            "photo_atomic",
+            "photo_nuclear",
+            "helion",
+            "triton",
+        ]
+        sort_list = sorted(LibraryType)
+        answer = [str(lib_type) for lib_type in sort_list]
+        assert gold == answer

@@ -43,3 +43,13 @@ def test_cell_geometry_set_warns():
         surf = montepy.surfaces.surface.Surface()
         surf.number = 5
         cell.geometry &= +surf
+
+
+def test_geom_invalid():
+    surf = montepy.AxisPlane()
+    with pytest.raises(montepy.errors.IllegalState):
+        -surf
+    with pytest.raises(montepy.errors.IllegalState):
+        +surf
+    with pytest.raises(montepy.errors.IllegalState):
+        ~montepy.Cell()
