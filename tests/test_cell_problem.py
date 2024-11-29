@@ -322,6 +322,7 @@ def test_cell_clone_bad(args, error):
     with pytest.raises(error):
         cell.clone(*args)
 
+
 def test_bad_setattr():
     cell = montepy.Cell()
     with pytest.raises(AttributeError):

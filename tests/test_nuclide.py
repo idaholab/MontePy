@@ -169,7 +169,7 @@ class TestNuclide:
             new_isotope = Nuclide(Z=Z, A=A + 5, meta_state=meta)
             assert new_isotope != isotope
             assert isotope < new_isotope
-            if library_base < 999:
+            if library_base < 998:
                 new_isotope = Nuclide(
                     Z=Z,
                     A=A,

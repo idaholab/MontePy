@@ -4,6 +4,12 @@ from abc import ABC, ABCMeta, abstractmethod
 import copy
 import functools
 import itertools as it
+import numpy as np
+import sys
+import textwrap
+import warnings
+import weakref
+
 from montepy.errors import *
 from montepy.constants import (
     BLANK_SPACE_CONTINUE,
@@ -18,10 +24,6 @@ from montepy.input_parser.syntax_node import (
     ValueNode,
 )
 import montepy
-import numpy as np
-import textwrap
-import warnings
-import weakref
 
 
 class _ExceptionContextAdder(ABCMeta):
@@ -146,10 +148,15 @@ class MCNP_Object(ABC, metaclass=_ExceptionContextAdder):
         if key.startswith("_"):
             super().__setattr__(key, value)
         else:
+            # kwargs added in 3.10
+            if sys.version_info >= (3, 10):
+                raise AttributeError(
+                    f"'{type(self).__name__}' object has no attribute '{key}'",
+                    obj=self,
+                    name=key,
+                )
             raise AttributeError(
                 f"'{type(self).__name__}' object has no attribute '{key}'",
-                obj=self,
-                name=key,
             )
 
     @staticmethod
