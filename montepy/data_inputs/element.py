@@ -23,6 +23,8 @@ class Element(SingletonGroup):
     __slots__ = "_Z"
 
     def __init__(self, Z: int):
+        if not isinstance(Z, int):
+            raise TypeError(f"Z must be an int. {Z} of type {type(Z)} given.")
         self._Z = Z
         if Z not in self.__Z_TO_SYMBOL:
             raise UnknownElement(f"Z={Z}")

@@ -228,6 +228,10 @@ class Nucleus(SingletonGroup):
         self._A = A
         if not isinstance(meta_state, (int, type(None))):
             raise TypeError(f"Meta state must be an int. {meta_state} given.")
+        if A == 0 and meta_state != 0:
+            raise ValueError(
+                f"A metastable elemental state is Non-sensical. A: {A}, meta_state: {meta_state} given."
+            )
         if meta_state not in range(0, 5):
             raise ValueError(
                 f"Meta state can only be in the range: [0,4]. {meta_state} given."
@@ -490,7 +494,10 @@ class Nuclide:
                 f"Name must be str, int, Element, or Nucleus. {name} of type {type(name)} given."
             )
         if name:
-            element, A, meta_state, library = self._parse_fancy_name(name)
+            element, A, meta_state, new_library = self._parse_fancy_name(name)
+            # give library precedence always
+            if library == "":
+                library = new_library
         if node is not None and isinstance(node, ValueNode):
             if node.type == float:
                 node = ValueNode(node.token, str, node.padding)
@@ -502,6 +509,13 @@ class Nuclide:
             element = za_info["_element"]
             A = za_info["_A"]
             meta_state = za_info["_meta_state"]
+        if Z:
+            element = Element(Z)
+        if element is None:
+            raise ValueError(
+                "no elemental information was provided via name, element, or z. "
+                f"Given: name: {name}, element: {element}, Z: {Z}"
+            )
         self._nucleus = Nucleus(element, A, meta_state)
         if len(parts) > 1 and library == "":
             library = parts[1]
@@ -556,8 +570,9 @@ class Nuclide:
                         return False
                 else:
                     continue
-            # if you are above Lv it's probably legit.
-            return True
+            # if you are above Og it's probably legit.
+            # to reach this state requires new elements to be discovered.
+            return True  # pragma: no cover
 
         ret = {}
         Z = int(ZAID / _ZAID_A_ADDER)
@@ -723,9 +738,10 @@ class Nuclide:
                 lib = identifier.library
             else:
                 lib = ""
-            return (identifier.element, identifier.A, identifier.meta_state, lib)
+            return (identifier.element, identifier.A, identifier.meta_state, str(lib))
         if isinstance(identifier, Element):
             element = identifier
+            return (element, 0, 0, "")
         A = 0
         isomer = 0
         library = ""
@@ -761,10 +777,6 @@ class Nuclide:
                     library = match["library"]
             else:
                 raise ValueError(f"Not a valid nuclide identifier. {identifier} given")
-        else:
-            raise TypeError(
-                f"Isotope fancy names only supports str, ints, and iterables. {identifier} given."
-            )
 
         return (element, A, isomer, library)
 
