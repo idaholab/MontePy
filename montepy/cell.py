@@ -235,7 +235,7 @@ class Cell(Numbered_MCNP_Object):
         """
         if self.fill:
             return self.fill.transform
-        return None
+        return None  # pragma: no cover
 
     @property
     def not_truncated(self):

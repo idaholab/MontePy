@@ -295,6 +295,14 @@ def test_children_adder_hidden_tr(simple_problem):
     cell.update_pointers(problem.cells, problem.materials, problem.surfaces)
     problem.cells.add(cell)
     assert cell.fill.transform not in problem.transforms
+    # test blank _fill_transform
+    in_str = "261 0 -1000 fill = 350"
+    input = montepy.input_parser.mcnp_input.Input(
+        [in_str], montepy.input_parser.block_type.BlockType.CELL
+    )
+    cell = montepy.Cell(input)
+    cell.update_pointers(problem.cells, problem.materials, problem.surfaces)
+    problem.cells.add(cell)
 
 
 def test_problem_mcnp_version_setter(simple_problem):

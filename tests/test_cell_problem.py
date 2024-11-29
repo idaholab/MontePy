@@ -321,3 +321,10 @@ def test_cell_clone_bad(args, error):
     cell.update_pointers([], [], surfs)
     with pytest.raises(error):
         cell.clone(*args)
+
+def test_bad_setattr():
+    cell = montepy.Cell()
+    with pytest.raises(AttributeError):
+        cell.nuber = 5
+    cell._nuber = 5
+    assert cell._nuber == 5
