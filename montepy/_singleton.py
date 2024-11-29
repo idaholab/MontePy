@@ -16,6 +16,8 @@ class SingletonGroup(ABC):
 
     """
 
+    __slots__ = "_instances"
+
     def __new__(cls, *args, **kwargs):
         kwargs_t = tuple([(k, v) for k, v in kwargs.items()])
         try:
