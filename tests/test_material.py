@@ -157,16 +157,16 @@ class TestMaterial:
     def test_material_deleter(_, big_material):
         old_comp = big_material[6]
         del big_material[6]
-        assert old_comp[0] not in big_material
+        assert old_comp[0] not in big_material.nuclides
         old_comps = big_material[0:2]
         del big_material[0:2]
         for nuc, _f in old_comps:
-            assert nuc not in big_material
+            assert nuc not in big_material.nuclides
         with pytest.raises(TypeError):
             del big_material["hi"]
         pu_comp = big_material[-1]
         del big_material[-1]
-        assert pu_comp[0] not in big_material
+        assert pu_comp[0] not in big_material.nuclides
         _.verify_export(big_material)
 
     def test_material_values(_, big_material):
@@ -235,6 +235,7 @@ class TestMaterial:
         "content, is_in",
         [
             ("1001.80c", True),
+            ("H-1", True),
             (Element(1), True),
             (Nucleus(Element(1), 1), True),
             (Element(43), False),
