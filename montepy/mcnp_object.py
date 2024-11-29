@@ -46,7 +46,7 @@ class _ExceptionContextAdder(ABCMeta):
                     if hasattr(self, "_handling_exception"):
                         raise e
                     self._handling_exception = True
-                    try: 
+                    try:
                         add_line_number_to_exception(e, self)
                     finally:
                         del self._handling_exception
@@ -144,7 +144,7 @@ class MCNP_Object(ABC, metaclass=_ExceptionContextAdder):
                 return
         # handle _private second
         if key.startswith("_"):
-            self.__dict__[key] = value
+            super().__setattr__(key, value)
         else:
             raise AttributeError(
                 f"'{type(self).__name__}' object has no attribute '{key}'",
