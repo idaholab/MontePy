@@ -586,8 +586,12 @@ See <https://www.montepy.org/migrations/migrate0_1.html> for more information ""
             )
         if isinstance(nuclide, str):
             nuclide = Nuclide(nuclide)
+        # switch to elemental
         if isinstance(nuclide, (Nucleus, Nuclide)) and nuclide.A == 0:
             nuclide = nuclide.element
+        # switch to nucleus if no library.
+        if isinstance(nuclide, Nuclide) and not nuclide.library:
+            nuclide = nuclide.nucleus
         if isinstance(nuclide, (Nucleus, Nuclide)):
             if isinstance(nuclide, Nuclide):
                 if nuclide.nucleus not in self._nuclei:
