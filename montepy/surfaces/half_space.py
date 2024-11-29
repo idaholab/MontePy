@@ -729,8 +729,6 @@ class UnitHalfSpace(HalfSpace):
         def num(obj):
             if isinstance(obj, int):
                 return obj
-            if isinstance(obj, ValueNode):
-                return obj.value
             return obj.number
 
         if num(self.divider) in deleting_dict:
