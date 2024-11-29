@@ -46,8 +46,10 @@ class _ExceptionContextAdder(ABCMeta):
                     if hasattr(self, "_handling_exception"):
                         raise e
                     self._handling_exception = True
-                    add_line_number_to_exception(e, self)
-                    del self._handling_exception
+                    try: 
+                        add_line_number_to_exception(e, self)
+                    finally:
+                        del self._handling_exception
                 else:
                     raise e
 
