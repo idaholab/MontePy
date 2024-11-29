@@ -6,6 +6,7 @@ import montepy
 
 from montepy.data_inputs.element import Element
 from montepy.data_inputs.nuclide import Nucleus, Nuclide, Library
+from montepy.input_parser import syntax_node
 from montepy.errors import *
 from montepy.particle import LibraryType
 
@@ -87,6 +88,8 @@ class TestNuclide:
         assert isotope.nuclide_str() == "Am-242m1"
         assert isotope.mcnp_str() == "95242"
         assert repr(isotope) == "Nuclide('Am-242m1')"
+        # test that can be formatted at all:
+        f"{isotope:010s}"
 
     @pytest.mark.parametrize(
         "input, Z, A, meta, library",
@@ -98,6 +101,10 @@ class TestNuclide:
             ("h-1.80c", 1, 1, 0, "80c"),
             ("h", 1, 0, 0, ""),
             ("92635m2.710nc", 92, 235, 3, "710nc"),
+            (Nuclide("1001.80c"), 1, 1, 0, "80c"),
+            (Nucleus(Element(1), 1), 1, 1, 0, ""),
+            (Element(1), 1, 0, 0, ""),
+            (92, 92, 0, 0, ""),
         ],
     )
     def test_fancy_names(_, input, Z, A, meta, library):
@@ -107,7 +114,7 @@ class TestNuclide:
         assert isotope.meta_state == meta
         assert isotope.library == Library(library)
 
-    @given(
+    nuclide_strat = (
         st.integers(1, 118),
         st.floats(2.1, 2.7),
         st.integers(0, 4),
@@ -119,6 +126,8 @@ class TestNuclide:
         ),  # lazy way to avoid so many quotation marks
         st.booleans(),
     )
+
+    @given(*nuclide_strat)
     def test_fancy_names_pbt(
         _, Z, A_multiplier, meta, library_base, library_extension, hyphen
     ):
@@ -149,16 +158,93 @@ class TestNuclide:
             assert isotope.A == A
             assert isotope.Z == Z
             assert isotope.meta_state == meta
-            # this fixes a bug with the test????
-            note((input, library))
             if "." in input:
                 assert isotope.library == Library(library)
+                new_isotope = Nuclide(Z=Z, A=A, meta_state=meta, library=library)
             else:
                 assert isotope.library == Library("")
+                new_isotope = Nuclide(Z=Z, A=A, meta_state=meta)
+            # test eq and lt
+            assert new_isotope == isotope
+            new_isotope = Nuclide(Z=Z, A=A + 5, meta_state=meta)
+            assert new_isotope != isotope
+            assert isotope < new_isotope
+            if library_base < 999:
+                new_isotope = Nuclide(
+                    Z=Z,
+                    A=A,
+                    meta_state=meta,
+                    library=f"{library_base+2:02}{library_extension}",
+                )
+                assert isotope < new_isotope
+            with pytest.raises(TypeError):
+                isotope == "str"
+            with pytest.raises(TypeError):
+                isotope < 5
 
-    def test_nuclide_bad_init(_):
-        with pytest.raises(TypeError):
-            Nuclide(1.23)
+    @given(*nuclide_strat)
+    def test_valuenode_init(
+        _, Z, A_multiplier, meta, library_base, library_extension, hyphen
+    ):
+        # avoid Am-242 metastable legacy
+        A = int(Z * A_multiplier)
+        element = Element(Z)
+        assume(not (Z == 95 and A == 242))
+        # ignore H-*m* as it's nonsense
+        assume(not (Z == 1 and meta > 0))
+        for lim_Z, lim_A in Nuclide._BOUNDING_CURVE:
+            if Z <= lim_Z:
+                break
+        assume(A <= lim_A)
+        library = f"{library_base:02}{library_extension}"
+        ZAID = Z * 1_000 + A
+        if meta > 0:
+            ZAID += 300 + meta * 100
+
+        inputs = [
+            f"{ZAID}.{library}",
+            f"{ZAID}",
+        ]
+        for input in inputs:
+            note(input)
+            for type in {float, str}:
+                if type == float and "." in input:
+                    continue
+                node = syntax_node.ValueNode(input, type, syntax_node.PaddingNode(" "))
+                nuclide = Nuclide(node=node)
+                assert nuclide.Z == Z
+                assert nuclide.A == A
+                assert nuclide.meta_state == meta
+                if "." in input:
+                    assert str(nuclide.library) == library
+                else:
+                    assert str(nuclide.library) == ""
+
+    @pytest.mark.parametrize(
+        "kwargs, error",
+        [
+            ({"name": 1.23}, TypeError),
+            ({"name": int(1e6)}, ValueError),
+            ({"name": "1001.hi"}, ValueError),
+            ({"name": "hello"}, ValueError),
+            ({"element": "hi"}, TypeError),
+            ({"Z": "hi"}, TypeError),
+            ({"Z": 1000}, montepy.errors.UnknownElement),
+            ({"Z": 1, "A": "hi"}, TypeError),
+            ({"Z": 1, "A": -1}, ValueError),
+            ({"A": 1}, ValueError),
+            ({"meta_state": 1}, ValueError),
+            ({"library": "80c"}, ValueError),
+            ({"Z": 1, "A": 2, "meta_state": "hi"}, TypeError),
+            ({"Z": 1, "A": 2, "meta_state": -1}, ValueError),
+            ({"Z": 1, "A": 2, "meta_state": 5}, ValueError),
+            ({"name": "1001", "library": 5}, TypeError),
+            ({"name": "1001", "library": "hi"}, ValueError),
+        ],
+    )
+    def test_nuclide_bad_init(_, kwargs, error):
+        with pytest.raises(error):
+            Nuclide(**kwargs)
 
 
 class TestLibrary:
@@ -299,6 +385,8 @@ class TestNucleus:
 
     @given(Z=st.integers(1, 99), A=st.integers(0, 300), meta=st.integers(0, 4))
     def test_nucleus_init_eq_hash(_, Z, A, meta):
+        # avoid metastable elemental
+        assume((A == 0) == (meta == 0))
         nucleus = Nucleus(Element(Z), A, meta)
         assert nucleus.Z == Z
         assert nucleus.A == A
@@ -314,25 +402,26 @@ class TestNucleus:
         with pytest.raises(TypeError):
             nucleus < 5
         # test not eq
-        new_meta = meta + 1 if meta <= 3 else meta - 1
-        for other in {
-            Nucleus(Element(Z), A + 5, meta),
-            Nucleus(Element(Z), A, new_meta),
-        }:
-            assert nucleus != other
-            assert hash(nucleus) != hash(other)
-            assert str(nucleus) != str(other)
-            assert repr(nucleus) != repr(other)
-            if other.A > A:
-                assert nucleus < other
-            else:
-                if new_meta > meta:
+        if A != 0:
+            new_meta = meta + 1 if meta <= 3 else meta - 1
+            for other in {
+                Nucleus(Element(Z), A + 5, meta),
+                Nucleus(Element(Z), A, new_meta),
+            }:
+                assert nucleus != other
+                assert hash(nucleus) != hash(other)
+                assert str(nucleus) != str(other)
+                assert repr(nucleus) != repr(other)
+                if other.A > A:
                     assert nucleus < other
-                elif new_meta < meta:
-                    assert other < nucleus
+                else:
+                    if new_meta > meta:
+                        assert nucleus < other
+                    elif new_meta < meta:
+                        assert other < nucleus
         # avoid insane ZAIDs
         a_ratio = A / Z
-        if a_ratio >= 1.9 and a_ratio < 2.4:
+        if a_ratio >= 1.9 and a_ratio < 2.3:
             nuclide = Nuclide(nucleus.ZAID)
             assert nuclide.nucleus == nucleus
             nucleus = Nucleus(Element(Z))
