@@ -19,6 +19,8 @@ def _enforce_positive(self, num):
 class NumberedObjectCollection(ABC):
     """A collections of MCNP objects.
 
+    .. _collect ex:
+
     Examples
     ________
 

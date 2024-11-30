@@ -17,6 +17,11 @@ class Materials(NumberedDataObjectCollection):
         When items are added to this (and this object is linked to a problem),
         they will also be added to :func:`montepy.mcnp_problem.MCNP_Problem.data_inputs`.
 
+    .. note::
+
+        For examples see the ``NumberedObjectCollection`` :ref:`collect ex`.
+
+
     :param objects: the list of materials to start with if needed
     :type objects: list
     """

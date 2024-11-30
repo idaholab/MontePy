@@ -8,6 +8,10 @@ import warnings
 class Cells(NumberedObjectCollection):
     """A collections of multiple :class:`montepy.cell.Cell` objects.
 
+    .. note::
+
+        For examples see the ``NumberedObjectCollection`` :ref:`collect ex`.
+
     :param cells: the list of cells to start with if needed
     :type cells: list
     :param problem: the problem to link this collection to.
