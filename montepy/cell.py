@@ -756,7 +756,12 @@ class Cell(Numbered_MCNP_Object):
         return self.wrap_string_for_mcnp(ret, mcnp_version, True)
 
     def clone(
-        self, clone_material=False, clone_region=False, starting_number=None, step=None
+        self,
+        clone_material=False,
+        clone_region=False,
+        starting_number=None,
+        step=None,
+        add_collect=True,
     ):
         """
         Create a new almost independent instance of this cell with a new number.
@@ -845,7 +850,8 @@ class Cell(Numbered_MCNP_Object):
             result.geometry.remove_duplicate_surfaces(region_change_map)
         if self._problem:
             result.number = self._problem.cells.request_number(starting_number, step)
-            self._problem.cells.append(result)
+            if add_collect:
+                self._problem.cells.append(result)
         else:
             for number in itertools.count(starting_number, step):
                 result.number = number
