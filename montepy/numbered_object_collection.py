@@ -18,14 +18,47 @@ def _enforce_positive(self, num):
 class NumberedObjectCollection(ABC):
     """A collections of MCNP objects.
 
+    Examples 
+    ^^^^^^^^
+
     It quacks like a dict, it acts like a dict, but it's a list.
 
     The items in the collection are accessible by their number.
     For instance to get the Cell with a number of 2 you can just say:
 
-    ``problem.cells[2]``
+    .. testcode:: python
 
-    You can also add delete items like you would in a dictionary normally.
+        import montepy
+        problem = montepy.read_input("tests/inputs/test.imcnp")
+        cell = problem.cells[2]
+        print(cell)
+
+    which shows: 
+
+    .. testoutput::
+
+        foo
+
+    You can also add, and delete items like you would in a dictionary normally.
+    Though :func:`append` and :func:`add` are the preferred way of adding items.
+    When adding items by key the key given is actually ignored.
+
+    .. testcode::
+
+        cell = montepy.Cell()
+        cell.number = 25
+        # this will actually append ignoring the key given
+        cells[3] = cell
+        print(cells[3] is cell)
+        del cells[25]
+        print(cell not in cells[25])
+
+    This shows:
+
+    .. testoutput::
+
+        False
+        True
 
     Unlike dictionaries this collection also supports slices e.g., ``[1:3]``.
     This will return a new :class:`NumberedObjectCollection` with objects
