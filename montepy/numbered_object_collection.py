@@ -1,4 +1,5 @@
 # Copyright 2024, Battelle Energy Alliance, LLC All Rights Reserved.
+from __future__ import annotations
 from abc import ABC, abstractmethod
 import itertools as it
 import typing
@@ -18,8 +19,11 @@ def _enforce_positive(self, num):
 class NumberedObjectCollection(ABC):
     """A collections of MCNP objects.
 
-    Examples 
-    ^^^^^^^^
+    Examples
+    ________
+
+    Accessing Objects
+    ^^^^^^^^^^^^^^^^^
 
     It quacks like a dict, it acts like a dict, but it's a list.
 
@@ -33,7 +37,7 @@ class NumberedObjectCollection(ABC):
         cell = problem.cells[2]
         print(cell)
 
-    which shows: 
+    which shows:
 
     .. testoutput::
 
@@ -60,15 +64,77 @@ class NumberedObjectCollection(ABC):
         False
         True
 
+    Slicing a Collection
+    ^^^^^^^^^^^^^^^^^^^^
+
     Unlike dictionaries this collection also supports slices e.g., ``[1:3]``.
     This will return a new :class:`NumberedObjectCollection` with objects
-    that have cell numbers that fit that slice. If a number is in a slice that
-    is not an actual object it will just be skipped.
+    that have numbers that fit that slice.
+
+    .. testcode::
+
+        for cell in problem.cells[1:3]:
+            print(cell.number)
+
+    Which shows
+
+    .. testoutput::
+
+        1
+        2
+        3
 
     Because MCNP numbered objects start at 1, so do the indices.
     The slices are effectively 1-based and endpoint-inclusive.
     This means rather than the normal behavior of [0:5] excluding the index
     5, 5 would be included.
+
+    Set-Like Operations
+    ^^^^^^^^^^^^^^^^^^^
+
+    .. versionchanged:: 1.0.0
+
+         Introduced set-like behavior.
+
+    These collections act like `sets <https://docs.python.org/3/library/stdtypes.html#set>`_.
+    The supported operators are: ``&``, ``|``, ``-``, ``^``, ``<``, ``<=``, ``>``, ``>=``, ``==``.
+    See the set documentation for how these operators function.
+    The set operations are applied to the object numbers.
+    The corresponding objects are then taken to form a new instance of this collection.
+    The if both collections have objects with the same number but different objects,
+    the left-hand-side's object is taken.
+
+    .. testcode::
+
+        cells1 = montepy.Cells()
+
+        for i in range(5, 10):
+            cell = montepy.Cell()
+            cell.number = i
+            cells1.add(cell)
+
+        cells2 = montepy.Cells()
+
+        for i in range(8, 15):
+            cell = montepy.Cell()
+            cell.number = i
+            cells2.add(cell)
+
+        overlap = cells1 & cells2
+
+        # The only overlapping numbers are 8, 9, 10
+
+        print({8, 9, 10} == set(overlap.keys()))
+
+    This would print:
+
+    .. testoutput::
+
+        True
+
+    Other set-like functions are: :func:`difference`, :func:`difference_update`,
+    :func:`intersection`, :func:`isdisjoint`, :func:`issubset`, :func:`issuperset`,
+    :func:`symmetric_difference`, :func:`symmetric_difference_update`, :func:`union`, :func:`discard`, and :func:`update`.
 
     :param obj_class: the class of numbered objects being collected
     :type obj_class: type
@@ -78,7 +144,12 @@ class NumberedObjectCollection(ABC):
     :type problem: MCNP_Problem
     """
 
-    def __init__(self, obj_class, objects=None, problem=None):
+    def __init__(
+        self,
+        obj_class: type,
+        objects: list = None,
+        problem: montepy.MCNP_Problem = None,
+    ):
         self.__num_cache = {}
         assert issubclass(obj_class, Numbered_MCNP_Object)
         self._obj_class = obj_class
@@ -356,7 +427,7 @@ class NumberedObjectCollection(ABC):
 
     def _append_hook(self, obj, initial_load=False):
         """
-        TODO
+        A hook that is called every time append is called.
         """
         if initial_load:
             return
@@ -364,7 +435,9 @@ class NumberedObjectCollection(ABC):
             obj._add_children_objs(self._problem)
 
     def _delete_hook(self, obj, **kwargs):
-        """ """
+        """
+        A hook that is called every time delete is called.
+        """
         pass
 
     def __internal_append(self, obj, **kwargs):
@@ -372,6 +445,9 @@ class NumberedObjectCollection(ABC):
         The internal append method.
 
         This should always be called rather than manually added.
+
+        :param obj: the obj to append
+        :param kwargs: keyword arguments passed through to the append_hook
         """
         if not isinstance(obj, self._obj_class):
             raise TypeError(
@@ -390,7 +466,11 @@ class NumberedObjectCollection(ABC):
             obj.link_to_problem(self._problem)
 
     def __internal_delete(self, obj, **kwargs):
-        """ """
+        """
+        The internal delete method.
+
+        This should always be called rather than manually added.
+        """
         self.__num_cache.pop(obj.number, None)
         self._objects.remove(obj)
         self._delete_hook(obj, **kwargs)
@@ -407,17 +487,22 @@ class NumberedObjectCollection(ABC):
         """
         self.__internal_append(obj)
 
-    def update(self, objs):
+    def update(self, *objs: typing.Self):
         """
-        Add the given object to this collection.
+        Add the given objects to this collection.
 
-        :param obj: The object to add.
-        :type obj: Numbered_MCNP_Object
 
         .. note::
 
             This is not a thread-safe method.
 
+        .. versionchanged:: 1.0.0
+
+            Changed to be more set like. Accepts multiple arguments. If there is a number conflict,
+            the current object will be kept.
+
+        :param objs: The objects to add.
+        :type objs: list[Numbered_MCNP_Object]
         :raises TypeError: if the object is of the wrong type.
         :raises NumberConflictError: if this object's number is already in use in the collection.
         """
@@ -425,8 +510,17 @@ class NumberedObjectCollection(ABC):
             iter(objs)
         except TypeError:
             raise TypeError(f"Objs must be an iterable. {objs} given.")
+        others = []
         for obj in objs:
-            self.__internal_append(obj)
+            if isinstance(obj, list):
+                others.append(type(self)(obj))
+            else:
+                others.append(obj)
+        if len(others) == 1:
+            self |= others[0]
+        else:
+            other = others[0].union(*others[1:])
+            self |= others
 
     def append(self, obj, **kwargs):
         """Appends the given object to the end of this collection.
@@ -628,7 +722,6 @@ class NumberedObjectCollection(ABC):
         return self.__set_logic(other, lambda a, b: a & b)
 
     def __iand__(self, other):
-        # TODO make examples in doc strings
         new_vals = self & other
         self.__num_cache.clear()
         self._objects.clear()
@@ -640,7 +733,7 @@ class NumberedObjectCollection(ABC):
 
     def __ior__(self, other):
         new_vals = other - self
-        self.update(new_vals)
+        self.extend(new_vals)
         return self
 
     def __sub__(self, other):
@@ -689,13 +782,47 @@ class NumberedObjectCollection(ABC):
     def __gt__(self, other):
         return self.__set_logic_test(other, lambda a, b: a > b)
 
-    def issubset(self, other):
+    def issubset(self, other: typing.Self):
+        """
+        Test whether every element in the collection is in other.
+
+        ``collection <= other``
+
+        .. versionadded:: 1.0.0
+
+        :param other: the set to compare to.
+        :type other: Self
+        :rtype: bool
+        """
         return self.__set_logic_test(other, lambda a, b: a.issubset(b))
 
-    def isdisjoint(self, other):
+    def isdisjoint(self, other: typing.Self):
+        """
+        Test if there are no elements in common between the collection, and other.
+
+        Collections are disjoint if and only if their intersection
+        is the empty set.
+
+        .. versionadded:: 1.0.0
+
+        :param other: the set to compare to.
+        :type other: Self
+        :rtype: bool
+        """
         return self.__set_logic_test(other, lambda a, b: a.isdisjoint(b))
 
-    def issuperset(self, other):
+    def issuperset(self, other: typing.Self):
+        """
+        Test whether every element in other is in the collection.
+
+        ``collection >= other``
+
+        .. versionadded:: 1.0.0
+
+        :param other: the set to compare to.
+        :type other: Self
+        :rtype: bool
+        """
         return self.__set_logic_test(other, lambda a, b: a.issuperset(b))
 
     def __set_logic_multi(self, others, operator):
@@ -715,29 +842,118 @@ class NumberedObjectCollection(ABC):
                 objs[obj.number] = obj
         return type(self)(list(objs.values()))
 
-    def intersection(self, *others):
+    def intersection(self, *others: typing.Self):
+        """
+        Return a new collection with all elements in common in collection, and all others.
+
+        ``collection & other & ...``
+
+        .. versionadded:: 1.0.0
+
+        :param others: the other collections to compare to.
+        :type others: Self
+        :rtype: typing.Self
+        """
         return self.__set_logic_multi(others, lambda a, *b: a.intersection(*b))
 
-    def union(self, *others):
+    def intersection_update(self, *others: typing.Self):
+        """
+        Update the collection keeping all elements in common in collection, and all others.
+
+        ``collection &= other & ...``
+
+        .. versionadded:: 1.0.0
+
+        :param others: the other collections to compare to.
+        :type others: Self
+        """
+        if len(others) == 1:
+            self &= others[0]
+        else:
+            other = others[0].intersection(*others[1:])
+            self &= other
+
+    def union(self, *others: typing.Self):
+        """
+        Return a new collection with all elements from collection, and all others.
+
+        ``collection | other | ...``
+
+        .. versionadded:: 1.0.0
+
+        :param others: the other collections to compare to.
+        :type others: Self
+        :rtype: typing.Self
+        """
         return self.__set_logic_multi(others, lambda a, *b: a.union(*b))
 
-    def difference(self, *others):
+    def difference(self, *others: typing.Self):
+        """
+        Return a new collection with elements from collection, that are not in the others.
+
+        ``collection - other - ...``
+
+        .. versionadded:: 1.0.0
+
+        :param others: the other collections to compare to.
+        :type others: Self
+        :rtype: typing.Self
+        """
         return self.__set_logic_multi(others, lambda a, *b: a.difference(*b))
 
-    def difference_update(self, *others):
+    def difference_update(self, *others: typing.Self):
+        """
+        Update the new collection removing all elements from others.
+
+        ``collection -= other | ...``
+
+        .. versionadded:: 1.0.0
+
+        :param others: the other collections to compare to.
+        :type others: Self
+        """
         new_vals = self.difference(*others)
         self.clear()
         self.update(new_vals)
         return self
 
-    def symmetric_difference(self, other):
+    def symmetric_difference(self, other: typing.Self):
+        """
+        Return a new collection with elements in either the collection or the other, but not both.
+
+        ``collection ^ other``
+
+        .. versionadded:: 1.0.0
+
+        :param others: the other collections to compare to.
+        :type others: Self
+        :rtype: typing.Self
+        """
         return self ^ other
 
-    def symmetric_difference_update(self, other):
+    def symmetric_difference_update(self, other: typing.Self):
+        """
+        Update the collection, keeping only elements found in either collection, but not in both.
+
+        ``collection ^= other``
+
+        .. versionadded:: 1.0.0
+
+        :param others: the other collections to compare to.
+        :type others: Self
+        """
         self ^= other
         return self
 
-    def discard(self, obj):
+    def discard(self, obj: montepy.numbered_mcnp_object.Numbered_MCNP_Object):
+        """
+        Remove the object from the collection if it is present.
+
+        .. versionadded:: 1.0.0
+
+        :param obj: the object to remove.
+        :type obj: Numbered_MCNP_Object
+        """
         try:
             self.remove(obj)
         except (TypeError, KeyError) as e:
