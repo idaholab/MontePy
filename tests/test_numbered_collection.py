@@ -137,8 +137,9 @@ class TestNumberedObjectCollection:
             cells.update({5})
         cell = montepy.Cell()
         cell.number = 1
-        with pytest.raises(NumberConflictError):
-            cells.update([cell])
+        cells.update([cell])
+        assert cells[1] is cell_list[0]
+        assert cells[1] is not cell
 
     def test_append_renumber(self, cp_simple_problem):
         cells = copy.deepcopy(cp_simple_problem.cells)
@@ -475,7 +476,8 @@ class TestNumberedObjectCollection:
         assert new_nums == operator(mats1_nums, mats2_nums)
 
     @pytest.mark.parametrize(
-        "name", ["iand", "ior", "isub", "ixor", "sym_diff", "diff"]
+        "name",
+        ["iand", "ior", "isub", "ixor", "sym_diff", "diff", "union", "intersection"],
     )
     def test_numbered_set_logic_update(_, mats_sets, name):
         def operator(a, b):
@@ -491,6 +493,10 @@ class TestNumberedObjectCollection:
                 a.symmetric_difference_update(b)
             elif name == "diff":
                 a.difference_update(b)
+            elif name == "union":
+                a.update(b)
+            elif name == "intersection":
+                a.intersection_update(b)
 
         mats1, mats2 = mats_sets
         mats1_nums = set(mats1.keys())
