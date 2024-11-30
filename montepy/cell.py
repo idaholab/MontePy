@@ -1,4 +1,4 @@
-# Copyright 2024, Battelle Energy Alliance, LLC All Rights Reserved.
+# 2024, Battelle Energy Alliance, LLC All Rights Reserved.
 from __future__ import annotations
 
 import copy
@@ -571,8 +571,14 @@ class Cell(Numbered_MCNP_Object):
     def remove_duplicate_surfaces(self, deleting_dict):
         """Updates old surface numbers to prepare for deleting surfaces.
 
-        :param deleting_dict: a dict of the surfaces to delete.
-        :type deleting_dict: dict
+        .. versionchanged:: 1.0.0
+
+            The form of the deleting_dict was changed as :class:`~montepy.surfaces.Surface` is no longer hashable.
+
+        :param deleting_dict: a dict of the surfaces to delete, mapping the old surface to the new surface to replace it.
+            The keys are the number of the old surface. The values are a tuple
+            of the old surface, and then the new surface.
+        :type deleting_dict: dict[int, tuple[Surface, Surface]]
         """
         new_deleting_dict = {}
 

@@ -273,6 +273,10 @@ class Material(data_input.DataInputAbstract, Numbered_MCNP_Object):
             * :manual63:`5.6.1`
             * :manual62:`106`
 
+    .. versionchanged:: 1.0.0
+
+        This was the primary change for this release. For more details on what changed see :ref:`migrate 0 1`.
+
     :param input: the input that contains the data for this material
     :type input: Input
     """
@@ -382,6 +386,10 @@ class Material(data_input.DataInputAbstract, Numbered_MCNP_Object):
         """
         If true this constituent is in atom fraction, not weight fraction.
 
+        .. versionchanged:: 1.0.0
+
+            This property is now settable.
+
         :rtype: bool
         """
         pass
@@ -428,6 +436,9 @@ See <https://www.montepy.org/migrations/migrate0_1.html> for more information ""
 
             None
             00c
+
+        .. versionadded:: 1.0.0
+
         """
         pass
 
@@ -450,6 +461,8 @@ See <https://www.montepy.org/migrations/migrate0_1.html> for more information ""
 
             The final backup is that MCNP will use the first matching library in ``XSDIR``.
             Currently MontePy doesn't support reading an ``XSDIR`` file and so it will return none in this case.
+
+        .. versionadded:: 1.0.0
 
         :param nuclide: the nuclide to check.
         :type nuclide: Union[Nuclide, str]
@@ -610,6 +623,8 @@ See <https://www.montepy.org/migrations/migrate0_1.html> for more information ""
         """
         Appends the tuple to this material.
 
+        .. versionadded:: 1.0.0
+
         :param nuclide_frac_pair: a tuple of the nuclide and the fraction to add.
         :type nuclide_frac_pair: tuple[Nuclide, float]
         """
@@ -630,6 +645,8 @@ See <https://www.montepy.org/migrations/migrate0_1.html> for more information ""
         """
         Change the library for all nuclides in the material.
 
+        .. versionadded:: 1.0.0
+
         :param new_library: the new library to set all Nuclides to use.
         :type new_library: Union[str, Library]
         """
@@ -645,6 +662,8 @@ See <https://www.montepy.org/migrations/migrate0_1.html> for more information ""
     def add_nuclide(self, nuclide: Union[Nuclide, str, int], fraction: float):
         """
         Add a new component to this material of the given nuclide, and fraction.
+
+        .. versionadded:: 1.0.0
 
         :param nuclide: The nuclide to add, which can be a string Identifier, or ZAID.
         :type nuclide: Nuclide, str, int
@@ -665,7 +684,7 @@ See <https://www.montepy.org/migrations/migrate0_1.html> for more information ""
 
     def contains(
         self,
-        nuclide: Nuclide,
+        nuclide: Union[Nuclide, Nucleus, Element, str, int],
         *args: Union[Nuclide, Nucleus, Element, str, int],
         threshold: float = 0.0,
     ) -> bool:
@@ -704,6 +723,7 @@ See <https://www.montepy.org/migrations/migrate0_1.html> for more information ""
 
             If a nuclide is in a material multiple times, and cumulatively exceeds the threshold,
             but for each instance it appears it is below the threshold this method will return False.
+        .. versionadded:: 1.0.0
 
         :param nuclide: the first nuclide to check for.
         :type nuclide: Union[Nuclide, Nucleus, Element, str, int]
@@ -779,6 +799,8 @@ See <https://www.montepy.org/migrations/migrate0_1.html> for more information ""
     def normalize(self):
         """
         Normalizes the components fractions so that they sum to 1.0.
+
+        .. versionadded:: 1.0.0
         """
         total_frac = sum(self.values)
         for _, val_node in self._components:
@@ -837,8 +859,9 @@ See <https://www.montepy.org/migrations/migrate0_1.html> for more information ""
             0.6666666666666666
             0.026666666666666665
 
-        :rtype: Generator[float]
+        .. versionadded:: 1.0.0
 
+        :rtype: Generator[float]
         """
 
         def setter(old_val, new_val):
@@ -901,8 +924,9 @@ See <https://www.montepy.org/migrations/migrate0_1.html> for more information ""
 
                  Nuclide('O-16.00c')
 
-        :rtype: Generator[Nuclide]
+        .. versionadded:: 1.0.0
 
+        :rtype: Generator[Nuclide]
         """
 
         def setter(old_val, new_val):
@@ -1009,6 +1033,7 @@ See <https://www.montepy.org/migrations/migrate0_1.html> for more information ""
             Get all ENDF/B-VIII.0
             [(2, (Nuclide('Pu-239.00c'), 0.1)), (3, (Nuclide('O-16.00c'), 0.1))]
 
+        .. versionadded:: 1.0.0
 
         :param name: The name to pass to Nuclide to search by a specific Nuclide. If an element name is passed this
             will only match elemental nuclides.
@@ -1105,6 +1130,8 @@ See <https://www.montepy.org/migrations/migrate0_1.html> for more information ""
 
             0.2
 
+        .. versionadded:: 1.0.0
+
         :param name: The name to pass to Nuclide to search by a specific Nuclide. If an element name is passed this
             will only match elemental nuclides.
         :type name: str
@@ -1123,8 +1150,6 @@ See <https://www.montepy.org/migrations/migrate0_1.html> for more information ""
         """
         for _, (_, fraction) in self.find(name, element, A, meta_state, library):
             yield fraction
-
-    # TODO create indexible/settable values
 
     def __bool__(self):
         return bool(self._components)

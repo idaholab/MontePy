@@ -1,4 +1,8 @@
 # Copyright 2024, Battelle Energy Alliance, LLC All Rights Reserved.
+
+from __future__ import annotations
+from typing import Generator, Union
+
 import montepy
 from montepy.numbered_object_collection import NumberedDataObjectCollection
 
@@ -20,8 +24,62 @@ class Materials(NumberedDataObjectCollection):
     def __init__(self, objects=None, problem=None):
         super().__init__(Material, objects, problem)
 
-    def get_containing(self, nuclide, *args, threshold=0.0):
-        """ """
+    def get_containing(
+        self,
+        nuclide: Union[
+            montepy.data_inputs.nuclide.Nuclide,
+            montepy.data_inputs.nuclide.Nucleus,
+            montepy.Element,
+            str,
+            int,
+        ],
+        *args: Union[
+            montepy.data_inputs.nuclide.Nuclide,
+            montepy.data_inputs.nuclide.Nucleus,
+            montepy.Element,
+            str,
+            int,
+        ],
+        threshold: float = 0.0,
+    ) -> Generator[Material]:
+        """
+        Get all materials that contain these nuclides.
+
+        This uses :func:`~montepy.data_inputs.material.Material.contains` under the hood.
+        See that documentation for more guidance.
+
+        Examples
+        ^^^^^^^^
+
+        One example would to be find all water bearing materials:
+
+        .. testcode::
+
+            import montepy
+            problem = montepy.read_input("foo.imcnp")
+            for mat in problem.materials.get_containing("H-1", "O-16", threshold = 0.3):
+                print(mat)
+
+        .. testoutput::
+
+            MATERIAL: 1, ['hydrogen', 'oxygen']
+
+        .. versionadded:: 1.0.0
+
+        :param nuclide: the first nuclide to check for.
+        :type nuclide: Union[Nuclide, Nucleus, Element, str, int]
+        :param args: a plurality of other nuclides to check for.
+        :type args: Union[Nuclide, Nucleus, Element, str, int]
+        :param threshold: the minimum concentration of a nuclide to be considered. The material components are not
+            first normalized.
+        :type threshold: float
+
+        :return: A generator of all matching materials
+        :rtype: Generator[Material]
+
+        :raises TypeError: if any argument is of the wrong type.
+        :raises ValueError: if the fraction is not positive or zero, or if nuclide cannot be interpreted as a Nuclide.
+        """
         nuclides = []
         for nuclide in [nuclide] + list(args):
             if not isinstance(
@@ -59,12 +117,31 @@ class Materials(NumberedDataObjectCollection):
                 yield material
 
     @property
-    def default_libraries(self):
+    def default_libraries(self) -> dict[montepy.LibraryType, montepy.Library]:
         """
         The default libraries for this problem defined by ``M0``.
 
+
+        Examples
+        ^^^^^^^^
+
+        To set the default libraries for a problem you need to set this dictionary
+        to a Library or string.
+
+        .. testcode:: python
+
+            import montepy
+            problem = montepy.read_input("foo.imcnp")
+
+            # set neutron default to ENDF/B-VIII.0
+            problem.materials.default_libraries["nlib"] = "00c"
+            # set photo-atomic
+            problem.materials.default_libraries[montepy.LibraryType.PHOTO_ATOMIC] = montepy.Library("80p")
+
+        .. versionadded:: 1.0.0
+
         :returns: the default libraries in use
-        :rtype: dict
+        :rtype: dict[LibraryType, Library]
         """
         try:
             return self[0].default_libraries

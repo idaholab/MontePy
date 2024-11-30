@@ -1749,12 +1749,15 @@ class ListNode(SyntaxNodeBase):
 
 class MaterialsNode(SyntaxNodeBase):
     """
-    A node for representing isotopes and their concentration.
+    A node for representing isotopes and their concentration,
+    and the material parameters.
 
-    This stores a list of tuples of ZAIDs and concentrations.
+    This stores a list of tuples of ZAIDs and concentrations,
+    or a tuple of a parameter.
 
-    .. versionadded:: 0.2.0
-        This was added with the major parser rework.
+    .. versionadded:: 1.0.0
+
+        This was added as a more general version of ``IsotopesNodes``.
 
     :param name: a name for labeling this node.
     :type name: str
@@ -1766,6 +1769,10 @@ class MaterialsNode(SyntaxNodeBase):
     def append_nuclide(self, isotope_fraction):
         """
         Append the isotope fraction to this node.
+
+        .. versionadded:: 1.0.0
+
+            Added to replace ``append``
 
         :param isotope_fraction: the isotope_fraction to add. This must be a tuple from
             A Yacc production. This will consist of: the string identifying the Yacc production,
@@ -1779,7 +1786,16 @@ class MaterialsNode(SyntaxNodeBase):
         raise DeprecationWarning("Deprecated. Use append_param or append_nuclide")
 
     def append_param(self, param):
-        """ """
+        """
+        Append the parameter to this node.
+
+        .. versionadded:: 1.0.0
+
+            Added to replace ``append``
+
+        :param param: the parameter to add to this node.
+        :type param: ParametersNode
+        """
         self._nodes.append((param,))
 
     def format(self):

@@ -64,6 +64,9 @@ class Particle(str, Enum):
 @unique
 class LibraryType(str, Enum):
     """
+    Enum to represent the possible types that a nuclear data library can be.
+
+    .. versionadded:: 1.0.0
 
     Taken from section of 5.6.1 of LA-UR-22-30006
     """
