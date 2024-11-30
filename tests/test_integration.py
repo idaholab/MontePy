@@ -223,8 +223,9 @@ def test_cell_material_setter(simple_problem):
 
 def test_problem_cells_setter(simple_problem):
     problem = copy.deepcopy(simple_problem)
-    cells = copy.deepcopy(simple_problem.cells)
-    cells.remove(cells[1])
+    #TODO test cells clone
+    cells = simple_problem.cells.clone()
+    cells.remove(cells[4])
     with pytest.raises(TypeError):
         problem.cells = 5
     with pytest.raises(TypeError):
@@ -234,7 +235,7 @@ def test_problem_cells_setter(simple_problem):
     problem.cells = cells
     assert problem.cells.objects == cells.objects
     problem.cells = list(cells)
-    assert problem.cells[2] == cells[2]
+    assert problem.cells[6] == cells[6]
     # test that cell modifiers are still there
     problem.cells._importance.format_for_mcnp_input((6, 2, 0))
 
