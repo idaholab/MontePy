@@ -7,11 +7,32 @@ MontePy Changelog
 
 #Next Version#
 --------------
+
+**Features Added**
+
 * Redesigned how Materials hold Material_Components. See :ref:`migrate 0 1` (:pull:`507`). 
 
+* Made it easier to create an Isotope, or now Nuclide: ``montepy.Nuclide("H-1.80c")`` (:issue:`505`).
+* When a typo in an object attribute is made an Error is raised rather than silently having no effect (:issue:`508`).
+* Improved material printing to avoid very long lists of components (:issue:`144`).
+* Allow querying for materials by components (:issue:`95`).
+* Added support for getting and setting default libraries, e.g., ``nlib``, from a material (:issue:`369`).
+* 
+* Added most objects to the top level so they can be accessed like: ``montepy.Cell``.
+* Made ``Material.is_atom_fraction`` settable (:issue:`511`). 
+* Made NumberedObjectCollections act like a set (:issue:`138`).
+* Automatically added children objects, e.g., the surfaces in a cell, to the problem when the cell is added to the problem (:issue:`63`).
+
+**Bugs Fixed**
+
+* Made it so that a material created from scratch can be written to file (:issue:`512`).
+* Added support for parsing materials with parameters mixed throughout the definition (:issue:`182`).
+ 
 **Breaking Changes**
 
-* Removed ``Material.material_components``. See :ref:`migrate 0 1` (:pull:`507`).
+* Removed :func:`~montepy.data_inputs.material.Material.material_components``. See :ref:`migrate 0 1` (:pull:`507`).
+* Removed :class:`~montepy.data_inputs.isotope.Isotope` and changed them to :class:`~montepy.data_inputs.nuclide.Nuclide`.
+* Removed :func:`~montepy.mcnp_problem.MCNP_Problem.add_cell_children_to_problem` as it is no longer needed. 
 
 **Deprecated code Removed**
 
