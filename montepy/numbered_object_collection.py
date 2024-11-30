@@ -327,11 +327,8 @@ class NumberedObjectCollection(ABC):
                     )
                 )
             nums.add(obj.number)
-        self._objects.extend(other_list)
-        self.__num_cache.update({obj.number: obj for obj in other_list})
-        if self._problem:
-            for obj in other_list:
-                obj.link_to_problem(self._problem)
+        for obj in other_list:
+            self.__internal_append(obj)
 
     def remove(self, delete):
         """
