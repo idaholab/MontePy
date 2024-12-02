@@ -232,7 +232,6 @@ class Cells(NumberedObjectCollection):
             step = self.step
         objs = []
         for obj in list(self):
-            print(obj)
             new_obj = obj.clone(
                 clone_material, clone_region, starting_number, step, add_collect=False
             )

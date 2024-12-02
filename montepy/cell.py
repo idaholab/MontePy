@@ -819,7 +819,6 @@ class Cell(Numbered_MCNP_Object):
                 result._material = None
         else:
             result._material = self._material
-
         special_keys = {"_surfaces", "_complements"}
         keys -= special_keys
         memo = {}

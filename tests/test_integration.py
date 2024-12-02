@@ -223,8 +223,8 @@ def test_cell_material_setter(simple_problem):
 
 def test_problem_cells_setter(simple_problem):
     problem = copy.deepcopy(simple_problem)
-    #TODO test cells clone
-    cells = simple_problem.cells.clone()
+    # TODO test cells clone
+    cells = problem.cells.clone()
     cells.remove(cells[4])
     with pytest.raises(TypeError):
         problem.cells = 5
@@ -232,8 +232,11 @@ def test_problem_cells_setter(simple_problem):
         problem.cells = [5]
     with pytest.raises(TypeError):
         problem.cells.append(5)
+    # handle cell complement copying
+    old_cell = problem.cells[99]
     problem.cells = cells
-    assert problem.cells.objects == cells.objects
+    cells.append(old_cell)
+    assert problem.cells == cells
     problem.cells = list(cells)
     assert problem.cells[6] == cells[6]
     # test that cell modifiers are still there
