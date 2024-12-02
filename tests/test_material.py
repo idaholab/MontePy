@@ -65,13 +65,17 @@ Pu-239   (80c) 0.1
         sort_list = sorted([material2, material1])
         answers = [material1, material2]
         for i, mat in enumerate(sort_list):
-            pass
+            self.assertEqual(mat, answers[i])
 
 
-@pytest.mark.parametrize("isotope_str, fraction", [("2004.80c", 0.1)])
+@pytest.mark.parametrize(
+    "isotope_str, atom_frac, fraction",
+    [("2004.80c", False, 0.1), ("1001.70c", True, 0.1)],
+)
 @pytest.mark.filterwarnings("ignore")
-def test_material_component_add(isotope_str, fraction):
-    in_str = "M20 1001.80c -0.5 8016.80c -0.5"
+def test_material_component_add(isotope_str, atom_frac, fraction):
+    frac_marker = "-" if not atom_frac else ""
+    in_str = f"M20 1001.80c {frac_marker}0.5 8016.80c {frac_marker}0.5"
     input_card = Input([in_str], BlockType.DATA)
     material = Material(input_card)
     iso = Isotope(isotope_str)
@@ -84,11 +88,15 @@ def verify_export(mat):
     output = mat.format_for_mcnp_input((6, 3, 0))
     print(output)
     new_mat = Material(Input(output, BlockType.DATA))
-    assert mat.number == new_mat, "Material number not preserved."
-    for (old_nuc, old_frac), (new_nuc, new_frac) in zip(mat, new_mat):
-        assert old_nuc == new_nuc, "Material didn't preserve nuclides."
-        assert old_frac == pytest.approx(new_frac)
-        self.assertEqual(mat, answers[i])
+    assert mat.number == new_mat.number, "Material number not preserved."
+    assert len(mat.material_components) == len(new_mat.material_components)
+    for old_comp, new_comp in zip(
+        mat.material_components.values(), new_mat.material_components.values()
+    ):
+        assert str(old_comp.isotope) == str(
+            new_comp.isotope
+        ), "Material didn't preserve nuclides."
+        assert old_comp.fraction == pytest.approx(new_comp.fraction)
 
 
 def test_material_format_mcnp():
