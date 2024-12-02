@@ -453,11 +453,16 @@ class NumberedObjectCollection(ABC):
                 f"Object must be of type: {self._obj_class.__name__}. {obj} given."
             )
         if obj.number in self.__num_cache:
-            if obj is self[obj.number]:
-                return
-            raise NumberConflictError(
-                f"Number {obj.number} is already in use for the collection: {type(self).__name__} by {self[obj.number]}"
-            )
+            try:
+                if obj is self[obj.number]:
+                    return
+            # if cache is bad and it's not actually in use ignore it
+            except KeyError as e:
+                pass
+            else:
+                raise NumberConflictError(
+                    f"Number {obj.number} is already in use for the collection: {type(self).__name__} by {self[obj.number]}"
+                )
         self.__num_cache[obj.number] = obj
         self._objects.append(obj)
         self._append_hook(obj, **kwargs)
