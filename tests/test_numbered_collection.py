@@ -249,6 +249,8 @@ class TestNumberedObjectCollection:
         assert len(cells) == size + 1
 
         this_problem = copy.deepcopy(cp_simple_problem)
+        # just ignore materials being added
+        this_problem.materials.clear()
         for cell in this_problem.cells:
             cell.number += 1000
         this_problem.cells += cp_simple_problem.cells
