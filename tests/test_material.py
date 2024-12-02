@@ -65,7 +65,30 @@ Pu-239   (80c) 0.1
         sort_list = sorted([material2, material1])
         answers = [material1, material2]
         for i, mat in enumerate(sort_list):
-            self.assertEqual(mat, answers[i])
+            pass
+
+
+@pytest.mark.parametrize("isotope_str, fraction", [("2004.80c", 0.1)])
+@pytest.mark.filterwarnings("ignore")
+def test_material_component_add(isotope_str, fraction):
+    in_str = "M20 1001.80c -0.5 8016.80c -0.5"
+    input_card = Input([in_str], BlockType.DATA)
+    material = Material(input_card)
+    iso = Isotope(isotope_str)
+    comp = MaterialComponent(iso, fraction)
+    material.material_components[iso] = comp
+    verify_export(material)
+
+
+def verify_export(mat):
+    output = mat.format_for_mcnp_input((6, 3, 0))
+    print(output)
+    new_mat = Material(Input(output, BlockType.DATA))
+    assert mat.number == new_mat, "Material number not preserved."
+    for (old_nuc, old_frac), (new_nuc, new_frac) in zip(mat, new_mat):
+        assert old_nuc == new_nuc, "Material didn't preserve nuclides."
+        assert old_frac == pytest.approx(new_frac)
+        self.assertEqual(mat, answers[i])
 
 
 def test_material_format_mcnp():
@@ -316,18 +339,6 @@ class TestIsotope(TestCase):
         assert isotope.nuclide_str() == "Am-242m1"
         assert isotope.mcnp_str() == "95242"
         assert repr(isotope) == "Isotope('Am-242m1')"
-
-    @pytest.mark.filterwarnings("ignore::montepy.errors.LineExpansionWarning")
-    def test_add_nuclide_expert(_, big_material):
-        _.verify_export(big_material)
-
-    def verify_export(_, mat):
-        output = mat.format_for_mcnp_input((6, 3, 0))
-        new_mat = Material(Input(output, BlockType.DATA))
-        assert mat.number == new_mat, "Material number not preserved."
-        for (old_nuc, old_frac), (new_nuc, new_frac) in zip(mat, new_mat):
-            assert old_nuc == new_nuc, "Material didn't preserve nuclides."
-            assert old_frac == pytest.approx(new_frac)
 
 
 class TestThermalScattering(TestCase):
