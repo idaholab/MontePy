@@ -89,9 +89,10 @@ extlinks = {
 # The theme to use for HTML and HTML Help pages.  See the documentation for
 # a list of builtin themes.
 #
+github_url = "https://github.com/idaholab/MontePy"
 html_theme = "pydata_sphinx_theme"
 html_theme_options = {
-    "navbar_start": ["navbar-logo", "version"],
+    "navbar_start": ["navbar-logo", "project", "version"],
     "icon_links": [
         {
             "name": "GitHub",
