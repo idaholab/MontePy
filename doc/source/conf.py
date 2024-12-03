@@ -53,7 +53,6 @@ favicons = [
 html_logo = "monty.svg"
 
 html_baseurl = "https://www.montepy.org/"
-sitemap_url_scheme = "{link}"
 html_extra_path = ["robots.txt", "foo.imcnp"]
 # List of patterns, relative to source directory, that match files and
 # directories to ignore when looking for source files.
