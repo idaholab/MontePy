@@ -91,7 +91,7 @@ extlinks = {
 github_url = "https://github.com/idaholab/MontePy"
 html_theme = "pydata_sphinx_theme"
 html_theme_options = {
-    "navbar_start": ["navbar-logo", "project", "version"],
+    "navbar_start": ["navbar-logo", "project", "version-switcher"],
     "icon_links": [
         {
             "name": "GitHub",
