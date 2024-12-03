@@ -70,7 +70,7 @@ demo-test = ["montepy[demos]", "papermill"]
 
 
 [project.urls]
-Homepage = "https://idaholab.github.io/MontePy/index.html"
+Homepage = "https://www.montepy.org/"
 Repository = "https://github.com/idaholab/MontePy.git"
 Documentation = "https://www.montepy.org/"
 "Bug Tracker" = "https://github.com/idaholab/MontePy/issues"
