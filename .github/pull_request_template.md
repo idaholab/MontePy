@@ -15,19 +15,23 @@ Please provide a summary of the change, referencing the issue it fixes, if appli
 - [ ] I have added tests that prove my fix is effective or that my feature works (if applicable).
 
 ---
+<details open> 
 
-### Documentation Checklist
+<summary>### Documentation Checklist</summary>
 
 - [ ] I have documented all added classes and methods.
 - [ ] For infrastructure updates, I have updated the developer's guide.
 - [ ] For significant new features, I have added a section to the getting started guide.
 
+</details>
 ---
 
-### First-Time Contributor Checklist
+<details>
+<summary>### First-Time Contributor Checklist</summary>
 
 - [ ] If this is your first contribution, add yourself to `pyproject.toml` if you wish to do so.
 
+</details>
 ---
 
 ### Additional Notes for Reviewers
