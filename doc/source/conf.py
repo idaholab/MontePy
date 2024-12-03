@@ -101,6 +101,9 @@ html_theme_options = {
         },
     ],
 }
+html_sidebars = {
+    "**": ["search-field.html", "sidebar-nav-bs.html", "sidebar-ethical-ads.html"]
+}
 apidoc_module_dir = "../../montepy"
 apidoc_module_first = True
 apidoc_separate_modules = True
