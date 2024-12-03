@@ -37,7 +37,6 @@ extensions = [
     "sphinx.ext.intersphinx",
     "sphinx.ext.extlinks",
     "sphinx.ext.doctest",
-    "sphinx_sitemap",
     "sphinx_favicon",
     "sphinx_copybutton"
 ]
