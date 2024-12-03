@@ -112,7 +112,7 @@ class TestMaterial:
             material.format_for_mcnp_input((6, 2, 0))
 
     def test_material_number_setter(_):
-        in_str = "M20 1001.80c 0.5 8016.80c 0.5"
+        in_str = "M20 1001.80c  0.5  8016.80c  0.5"
         input_card = Input([in_str], BlockType.DATA)
         material = Material(input_card)
         material.number = 30
@@ -122,6 +122,21 @@ class TestMaterial:
         with pytest.raises(ValueError):
             material.number = -5
         _.verify_export(material)
+
+    @pytest.mark.filterwarnings("ignore")
+    def test_material_is_atom_frac_setter(_, big_material):
+        in_str = "M20 1001.80c 0.5 8016.80c 0.5"
+        input = Input([in_str], BlockType.DATA)
+        material = Material(input)
+        assert material.is_atom_fraction
+        _.verify_export(material)
+        material.is_atom_fraction = False
+        assert not material.is_atom_fraction
+        _.verify_export(material)
+        for frac_type in [False, True]:
+            big_material.is_atom_fraction = frac_type
+            assert big_material.is_atom_fraction == frac_type
+            _.verify_export(big_material)
 
     def test_material_getter_iter(_, big_material):
         for i, (nuclide, frac) in enumerate(big_material):
@@ -531,6 +546,7 @@ Pu-239   (80c) 0.1
         new_mat = Material(Input(output, BlockType.DATA))
         assert mat.number == new_mat.number, "Material number not preserved."
         assert len(mat) == len(new_mat), "number of components not kept."
+        assert mat.is_atom_fraction == new_mat.is_atom_fraction
         for (old_nuc, old_frac), (new_nuc, new_frac) in zip(mat, new_mat):
             assert old_nuc == new_nuc, "Material didn't preserve nuclides."
             assert old_frac == pytest.approx(new_frac)
