@@ -621,6 +621,39 @@ class TestNumberedObjectCollection:
                 assert new_surf.surface_type == old_surf.surface_type
                 assert new_surf.number != old_surf.number
 
+    @settings(suppress_health_check=[hypothesis.HealthCheck.function_scoped_fixture])
+    @given(
+        start_num=st.integers(),
+        step=st.integers(),
+        clone_mat=st.booleans(),
+        clone_region=st.booleans(),
+    )
+    def test_cells_clone(
+        _, cp_simple_problem, start_num, step, clone_mat, clone_region
+    ):
+        cells = copy.deepcopy(cp_simple_problem.cells)
+        if start_num <= 0 or step <= 0:
+            with pytest.raises(ValueError):
+                cells.clone(starting_number=start_num, step=step)
+            return
+        for clear in [False, True]:
+            if clear:
+                cells.link_to_problem(None)
+            new_cells = cells.clone(clone_mat, clone_region, start_num, step)
+            for new_cell, old_cell in zip(new_cells, cells):
+                assert new_cell is not old_cell
+                assert new_cell.number != old_cell.number
+                assert new_cell.geometry is not old_cell.geometry
+                if clone_mat:
+                    assert new_cell.material is not old_cell.material
+                else:
+                    assert new_cell.material == old_cell.material
+                if clone_region:
+                    assert new_cell.surfaces != old_cell.surfaces
+                else:
+                    assert new_cell.surfaces == old_cell.surfaces
+                assert new_cell.importance.neutron == old_cell.importance.neutron
+
     def test_num_collect_clone_default(_, cp_simple_problem):
         surfs = copy.deepcopy(cp_simple_problem.surfaces)
         for clear in [False, True]:
