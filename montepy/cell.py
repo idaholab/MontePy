@@ -837,10 +837,20 @@ class Cell(Numbered_MCNP_Object):
             new_objs = []
             collection = getattr(self, special)
             region_change_map = {}
+            # get starting number
+            if not self._problem:
+                child_starting_number = starting_number
+            else:
+                child_starting_number = None
             # ensure the new geometry gets mapped to the new surfaces
             for obj in collection:
                 if clone_region:
-                    new_obj = obj.clone()
+                    new_obj = obj.clone(
+                        starting_number=child_starting_number, step=step
+                    )
+                    # avoid num collision of problem isn't handling this.
+                    if child_starting_number:
+                        child_starting_number = new_obj.number + step
                 else:
                     new_obj = obj
                 region_change_map[num(obj)] = (obj, new_obj)
