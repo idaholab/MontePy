@@ -606,7 +606,8 @@ class TestNumberedObjectCollection:
     # disable function scoped fixtures
     @settings(suppress_health_check=[hypothesis.HealthCheck.function_scoped_fixture])
     @given(start_num=st.integers(), step=st.integers())
-    def test_num_collect_clone(_, cp_simple_problem, start_num, step):
+    def test_num_collect_clone(_, read_simple_problem, start_num, step):
+        cp_simple_problem = copy.deepcopy(read_simple_problem)
         surfs = copy.deepcopy(cp_simple_problem.surfaces)
         if start_num <= 0 or step <= 0:
             with pytest.raises(ValueError):
@@ -629,8 +630,9 @@ class TestNumberedObjectCollection:
         clone_region=st.booleans(),
     )
     def test_cells_clone(
-        _, cp_simple_problem, start_num, step, clone_mat, clone_region
+        _, read_simple_problem, start_num, step, clone_mat, clone_region
     ):
+        cp_simple_problem = copy.deepcopy(read_simple_problem)
         cells = copy.deepcopy(cp_simple_problem.cells)
         if start_num <= 0 or step <= 0:
             with pytest.raises(ValueError):
