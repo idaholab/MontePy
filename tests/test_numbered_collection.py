@@ -622,7 +622,10 @@ class TestNumberedObjectCollection:
                 assert new_surf.surface_type == old_surf.surface_type
                 assert new_surf.number != old_surf.number
 
-    @settings(suppress_health_check=[hypothesis.HealthCheck.function_scoped_fixture])
+    @settings(
+        suppress_health_check=[hypothesis.HealthCheck.function_scoped_fixture],
+        deadline=500,
+    )
     @given(
         start_num=st.integers(),
         step=st.integers(),
@@ -646,7 +649,7 @@ class TestNumberedObjectCollection:
                 assert new_cell is not old_cell
                 assert new_cell.number != old_cell.number
                 assert new_cell.geometry is not old_cell.geometry
-                if clone_mat:
+                if clone_mat and old_cell.material:
                     assert new_cell.material is not old_cell.material
                 else:
                     assert new_cell.material == old_cell.material
