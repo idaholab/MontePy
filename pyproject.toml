@@ -43,7 +43,6 @@ test = [
 	"coverage[toml]>=6.3.2", 
 	"hypothesis",
 	"pytest", 
-	"hypothesis",
 	"pytest-profiling",
 	"montepy[build]",
 	"phmutest",
