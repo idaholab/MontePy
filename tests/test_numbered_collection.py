@@ -654,9 +654,13 @@ class TestNumberedObjectCollection:
                 else:
                     assert new_cell.material == old_cell.material
                 if clone_region:
-                    assert new_cell.surfaces != old_cell.surfaces
+                    if len(old_cell.surfaces) > 0:
+                        assert new_cell.surfaces != old_cell.surfaces
+                    if len(old_cell.complements) > 0:
+                        assert new_cell.complements != old_cell.complements
                 else:
                     assert new_cell.surfaces == old_cell.surfaces
+                    assert new_cell.complements == old_cell.complements
                 assert new_cell.importance.neutron == old_cell.importance.neutron
 
     def test_num_collect_clone_default(_, cp_simple_problem):
