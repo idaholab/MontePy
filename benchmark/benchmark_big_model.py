@@ -8,7 +8,7 @@ tracemalloc.start()
 import montepy
 
 FAIL_THRESHOLD = 40
-MEMORY_FRACTION = 0.70
+MEMORY_FRACTION = 0.50
 
 starting_mem = tracemalloc.get_traced_memory()[0]
 print(f"starting memory with montepy. {starting_mem/1024/1024} MB")
