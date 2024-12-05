@@ -20,7 +20,6 @@ from montepy.utilities import *
 from montepy.particle import LibraryType
 
 
-
 MAX_PRINT_ELEMENTS: int = 5
 """
 The maximum number of elements to print in a material string descripton.
@@ -269,7 +268,7 @@ class Material(data_input.DataInputAbstract, Numbered_MCNP_Object):
             * :manual62:`106`
 
     .. versionchanged:: 1.0.0
-        
+
         * Added number parameter
         * This was the primary change for this release. For more details on what changed see :ref:`migrate 0 1`.
 

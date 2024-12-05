@@ -498,7 +498,6 @@ Pu-239   (80c) 0.1
         mat = Material(number=5)
         assert mat.number == 5
 
-
     @settings(suppress_health_check=[HealthCheck.function_scoped_fixture])
     @given(
         lib_num=st.integers(0, 99),
