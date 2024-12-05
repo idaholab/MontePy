@@ -23,6 +23,7 @@ montepy.data\_inputs package
    montepy.data_inputs.lattice_input
    montepy.data_inputs.material
    montepy.data_inputs.material_component
+   montepy.data_inputs.nuclide
    montepy.data_inputs.mode
    montepy.data_inputs.thermal_scattering
    montepy.data_inputs.transform
