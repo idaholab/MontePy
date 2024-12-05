@@ -56,9 +56,10 @@ class Numbered_MCNP_Object(MCNP_Object):
 
     def _add_children_objs(self, problem):
         """
-        TODO
+        Adds all children objects from self to the given problem.
+
+        This is called from an append_hook in `NumberedObjectCollection`.
         """
-        # TODO type enforcement
         # skip lambda transforms
         filters = {montepy.Transform: lambda transform: not transform.hidden_transform}
         prob_attr_map = montepy.MCNP_Problem._NUMBERED_OBJ_MAP

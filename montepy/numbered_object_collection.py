@@ -305,8 +305,7 @@ class NumberedObjectCollection(ABC):
         """
         if not isinstance(other_list, (list, type(self))):
             raise TypeError("The extending list must be a list")
-        # TODO combine with update
-        # this is the optimized version
+        # this is the optimized version to get all numbers
         if self._problem:
             nums = set(self.__num_cache)
         else:
@@ -526,11 +525,9 @@ class NumberedObjectCollection(ABC):
     def append(self, obj, **kwargs):
         """Appends the given object to the end of this collection.
 
-        # TODO: do I need to document that re append does nothing?
-        TODO kwargs
-
         :param obj: the object to add.
         :type obj: Numbered_MCNP_Object
+        :param kwargs: extra arguments that are used internally.
         :raises NumberConflictError: if this object has a number that is already in use.
         """
         if not isinstance(obj, self._obj_class):

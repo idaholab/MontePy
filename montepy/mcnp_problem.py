@@ -476,7 +476,8 @@ class MCNP_Problem:
         internal lists to allow them to be written to file.
 
         .. deprecated:: 1.0.0
-            TODO
+
+            This function is no longer needed. When cells are added to problem.cells these children are added as well.
 
         :raises DeprecationWarning:
         """

@@ -233,7 +233,6 @@ class Material(data_input.DataInputAbstract, Numbered_MCNP_Object):
 
         # add boric acid to water
         boric_acid_frac = 1e-6
-        # TODO need easy way to update fraction
         mat[0]
         # Add by nuclide object
         mat.add_nuclide(oxygen, ox_frac + 3 * boric_acid_frac)

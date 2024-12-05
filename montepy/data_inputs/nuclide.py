@@ -674,7 +674,6 @@ class Nuclide:
         """
         return self._nucleus.meta_state
 
-    # TODO verify _update_values plays nice
     @make_prop_pointer("_library", (str, Library), Library)
     def library(self) -> Library:
         """
