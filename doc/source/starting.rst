@@ -547,7 +547,9 @@ This actually creates a new object so don't worry about modifying the surface.
 .. doctest::
 
     >>> bottom_plane = montepy.surfaces.surface.Surface()
+    >>> bottom_plane.number = 1
     >>> top_plane = montepy.surfaces.surface.Surface()
+    >>> top_plane.number = 2
     >>> type(+bottom_plane)
     <class 'montepy.surfaces.half_space.UnitHalfSpace'>
     >>> type(-bottom_plane)
@@ -559,6 +561,7 @@ Instead you use the binary not operator (``~``).
 .. doctest::
     
     >>> capsule_cell = montepy.Cell()
+    >>> capsule_cell.number = 1
     >>> type(~capsule_cell)
     <class 'montepy.surfaces.half_space.HalfSpace'>
 
@@ -587,18 +590,19 @@ Order of precedence and grouping is automatically handled by Python so you can e
 .. testcode::
 
    # build blank surfaces 
-   bottom_plane = montepy.surfaces.axis_plane.AxisPlane()
+   bottom_plane = montepy.AxisPlane()
    bottom_plane.location = 0.0
-   top_plane = montepy.surfaces.axis_plane.AxisPlane()
+   top_plane = montepy.AxisPlane()
    top_plane.location = 10.0
-   fuel_cylinder = montepy.surfaces.cylinder_on_axis.CylinderOnAxis()
+   fuel_cylinder = montepy.CylinderOnAxis()
    fuel_cylinder.radius = 1.26 / 2
-   clad_cylinder = montepy.surfaces.cylinder_on_axis.CylinderOnAxis()
+   clad_cylinder = montepy.CylinderOnAxis()
    clad_cylinder.radius = (1.26 / 2) + 1e-3 # fuel, gap, cladding
-   clad_od = montepy.surfaces.cylinder_on_axis.CylinderOnAxis()
+   clad_od = montepy.surfaces.CylinderOnAxis()
    clad_od.radius = clad_cylinder.radius + 0.1 # add thickness
-   other_fuel = montepy.surfaces.cylinder_on_axis.CylinderOnAxis()
+   other_fuel = montepy.surfaces.CylinderOnAxis()
    other_fuel.radius = 3.0
+   other_fuel.number = 10
    bottom_plane.number = 1
    top_plane.number = 2
    fuel_cylinder.number = 3
@@ -633,7 +637,10 @@ This will completely redefine the cell's geometry. You can also modify the geome
 
 .. testcode::
 
-    other_fuel_region = -montepy.surfaces.cylinder_on_axis.CylinderOnAxis()
+    fuel_cyl = montepy.CylinderOnAxis()
+    fuel_cyl.number = 20
+    fuel_cyl.radius = 1.20
+    other_fuel_region = -fuel_cyl
     fuel_cell.geometry |= other_fuel_region 
 
 .. warning:: 
@@ -798,7 +805,7 @@ You can also easy apply a transform to the filling universe with:
    transform = montepy.data_inputs.transform.Transform()
    transform.number = 5
    transform.displacement_vector = np.array([1, 2, 0])
-   cell.fill.tranform = transform
+   cell.fill.transform = transform
 
 .. note::
 

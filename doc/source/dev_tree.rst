@@ -5,5 +5,7 @@ Developer's Resources
    :maxdepth: 1
    :caption: Contents:
 
+   dev_checklist
+   dev_standards
    developing
    scope
