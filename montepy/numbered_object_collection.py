@@ -32,18 +32,13 @@ class NumberedObjectCollection(ABC):
     The items in the collection are accessible by their number.
     For instance to get the Cell with a number of 2 you can just say:
 
-    .. testcode:: python
+    .. doctest:: python
 
-        import montepy
-        problem = montepy.read_input("tests/inputs/test.imcnp")
-        cell = problem.cells[2]
-        print(cell)
-
-    which shows:
-
-    .. testoutput::
-
-        foo
+        >>> import montepy
+        >>> problem = montepy.read_input("tests/inputs/test.imcnp")
+        >>> cell = problem.cells[2]
+        >>> print(cell)
+        CELL: 2, mat: 2, DENS: 8.0 atom/b-cm
 
     You can also add, and delete items like you would in a dictionary normally.
     Though :func:`append` and :func:`add` are the preferred way of adding items.
@@ -56,10 +51,10 @@ class NumberedObjectCollection(ABC):
         cell = montepy.Cell()
         cell.number = 25
         # this will actually append ignoring the key given
-        cells[3] = cell
-        print(cells[3] is cell)
-        del cells[25]
-        print(cell not in cells[25])
+        problem.cells[3] = cell
+        print(problem.cells[3] is cell)
+        del problem.cells[25]
+        print(cell not in problem.cells)
 
     This shows:
 
@@ -128,7 +123,7 @@ class NumberedObjectCollection(ABC):
 
         # The only overlapping numbers are 8, 9, 10
 
-        print({8, 9, 10} == set(overlap.keys()))
+        print({8, 9} == set(overlap.keys()))
 
     This would print:
 
