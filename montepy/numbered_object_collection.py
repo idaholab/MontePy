@@ -51,6 +51,8 @@ class NumberedObjectCollection(ABC):
 
     .. testcode::
 
+        import montepy
+        problem = montepy.read_input("tests/inputs/test.imcnp")
         cell = montepy.Cell()
         cell.number = 25
         # this will actually append ignoring the key given

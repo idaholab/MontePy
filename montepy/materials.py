@@ -1,6 +1,7 @@
 # Copyright 2024, Battelle Energy Alliance, LLC All Rights Reserved.
 
 from __future__ import annotations
+import copy
 from typing import Generator, Union
 
 import montepy
@@ -155,3 +156,117 @@ class Materials(NumberedDataObjectCollection):
             default.number = 0
             self.append(default)
             return self.default_libraries
+
+    def mix(
+        self,
+        materials: list[Material],
+        fractions: list[float],
+        starting_number=None,
+        step=None,
+    ) -> Material:
+        """
+        Mix the given materials in the provided fractions to create a new material.
+
+        All materials must use the same fraction type, either atom fraction or mass fraction.
+        The fractions given to this method are interpreted in that way as well.
+
+        This new material will automatically be added to this collection.
+
+        Examples
+        --------
+
+        An example way to mix materials is to first create the materials to mix:
+
+        .. testcode::
+
+            import montepy
+            mats = montepy.Materials()
+            h2o = montepy.Material()
+            h2o.number = 1
+            h2o.add_nuclide("1001.80c", 2.0)
+            h2o.add_nuclide("8016.80c", 1.0)
+
+            boric_acid = montepy.Material()
+            boric_acid.number = 2
+            for nuclide, fraction in {
+                "1001.80c": 3.0,
+                "B-10.80c": 1.0 * 0.189,
+                "B-11.80c": 1.0 * 0.796,
+                "O-16.80c": 3.0
+            }.items():
+                boric_acid.add_nuclide(nuclide, fraction)
+
+        Then to make the material mixture you just need to specify the fractions:
+
+        .. testcode::
+
+            boron_ppm = 10
+            boric_conc = boron_ppm * 1e-6
+            borated_water = mats.mix([h2o, boric_acid], [1 - boric_conc, boric_conc])
+
+
+        :param materials: the materials to mix.
+        :type materials: list[Material]
+        :param fractions: the corresponding fractions for each material in either atom or mass fractions, depending on
+            the materials fraction type.
+        :param starting_number: the starting number to assign this new material.
+        :type starting_number: Union[int, None]
+        :param step: the step size to take when finding a new number.
+        :type step: Union[int, None]
+        :returns: a new material with the mixed components of the given materials
+        :rtype: Material
+        :raises TypeError: if invalid objects are given.
+        :raises ValueError: if the number of elements in the two lists mismatch, or if not all the materials are of the
+            same fraction type, or if a negative starting_number or step are given.
+        """
+        if not isinstance(materials, list):
+            raise TypeError(f"materials must be a list. {materials} given.")
+        if len(materials) == 0:
+            raise ValueError(f"materials must be non-empty. {materials} given.")
+        for mat in materials:
+            if not isinstance(mat, Material):
+                raise TypeError(
+                    f"material in materials is not of type Material. {mat} given."
+                )
+            if mat.is_atom_fraction != materials[0].is_atom_fraction:
+                raise ValueError(
+                    f"All materials must have the same is_atom_fraction value. {mat} is the odd one out."
+                )
+        if not isinstance(fractions, list):
+            raise TypeError(f"fractions must be a list. {fractions} given.")
+        for frac in fractions:
+            if not isinstance(frac, float):
+                raise TypeError(f"fraction in fractions must be a float. {frac} given.")
+            if frac < 0.0:
+                raise ValueError(f"Fraction cannot be negative. {frac} given.")
+        if len(fractions) != len(materials):
+            raise ValueError(
+                f"Length of materials and fractions don't match. The lengths are, materials: {len(materials)}, fractions: {len(fractions)}"
+            )
+        if not isinstance(starting_number, (int, type(None))):
+            raise TypeError(
+                f"starting_number must be an int. {starting_number} of type {type(starting_number)} given."
+            )
+        if starting_number is not None and starting_number <= 0:
+            raise ValueError(
+                f"starting_number must be positive. {starting_number} given."
+            )
+        if not isinstance(step, (int, type(None))):
+            raise TypeError(f"step must be an int. {step} of type {type(step)} given.")
+        if step is not None and step <= 0:
+            raise ValueError(f"step must be positive. {step} given.")
+        ret = Material()
+        if starting_number is None:
+            starting_number = self.starting_number
+        if step is None:
+            step = self.step
+        ret.number = self.request_number(starting_number, step)
+        ret.is_atom_fraction = materials[0].is_atom_fraction
+        new_mats = copy.deepcopy(materials)
+        for mat, fraction in zip(new_mats, fractions):
+            mat.normalize()
+            for nuclide, frac in mat._components:
+                frac = copy.deepcopy(frac)
+                frac.value *= fraction
+                ret._components.append((nuclide, frac))
+        return ret
