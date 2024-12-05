@@ -2,6 +2,8 @@
 import hypothesis
 from hypothesis import given, settings, strategies as st
 import copy
+import itertools as it
+
 import montepy
 import montepy.cells
 from montepy.errors import NumberConflictError
@@ -741,3 +743,118 @@ class TestMaterials:
             assert isinstance(mat, montepy.Material)
         with pytest.raises(TypeError):
             next(m0_prob.materials.get_containing(m0_prob))
+
+    @pytest.fixture
+    def h2o(_):
+        mat = montepy.Material()
+        mat.number = 1
+        mat.add_nuclide("H-1.80c", 2.0)
+        mat.add_nuclide("O-16.80c", 1.0)
+        return mat
+
+    @pytest.fixture
+    def mass_h2o(_):
+        mat = montepy.Material()
+        mat.number = 1
+        mat.is_atom_fraction = False
+        mat.add_nuclide("H-1.80c", 2.0)
+        mat.add_nuclide("O-16.80c", 1.0)
+        return mat
+
+    @pytest.fixture
+    def boric_acid(_):
+        mat = montepy.Material()
+        mat.number = 2
+        for nuclide, fraction in {
+            "1001.80c": 3.0,
+            "B-10.80c": 1.0 * 0.189,
+            "B-11.80c": 1.0 * 0.796,
+            "O-16.80c": 3.0,
+        }.items():
+            mat.add_nuclide(nuclide, fraction)
+        return mat
+
+    @pytest.fixture
+    def mats_dict(_, h2o, mass_h2o, boric_acid):
+        return {"h2o": h2o, "mass_h2o": mass_h2o, "boric_acid": boric_acid}
+
+    @pytest.mark.parametrize(
+        "args, error, use_fixture",
+        [
+            (("hi", [1]), TypeError, False),
+            ((["hi"], [1]), TypeError, False),
+            (([], [1]), ValueError, False),  # empty materials
+            ((["h2o", "mass_h2o"], [1, 2]), ValueError, True),  # mismatch is_atom
+            ((["h2o", "boric_acid"], [1.0]), ValueError, True),  # mismatch lengths
+            ((["h2o", "boric_acid"], "hi"), TypeError, True),
+            ((["h2o", "boric_acid"], ["hi"]), TypeError, True),
+            ((["h2o", "boric_acid"], [-1.0, 2.0]), ValueError, True),
+            ((["h2o", "boric_acid"], [1.0, 2.0], "hi"), TypeError, True),
+            ((["h2o", "boric_acid"], [1.0, 2.0], -1), ValueError, True),
+            ((["h2o", "boric_acid"], [1.0, 2.0], 1, "hi"), TypeError, True),
+            ((["h2o", "boric_acid"], [1.0, 2.0], 1, -1), ValueError, True),
+        ],
+    )
+    def test_mix_bad(_, mats_dict, args, error, use_fixture):
+        if use_fixture:
+            mats = []
+            for mat in args[0]:
+                mats.append(mats_dict[mat])
+            args = (mats,) + args[1:]
+        with pytest.raises(error):
+            mats = montepy.Materials()
+            mats.mix(*args)
+
+    @given(
+        starting_num=st.one_of(st.none(), st.integers(1)),
+        step=st.one_of(st.none(), st.integers(1)),
+    )
+    def test_mix(_, starting_num, step):
+        mat = montepy.Material()
+        mat.number = 1
+        mat.add_nuclide("H-1.80c", 2.0)
+        mat.add_nuclide("O-16.80c", 1.0)
+        parents = [mat]
+        mat = montepy.Material()
+        mat.number = 2
+        for nuclide, fraction in {
+            "1001.80c": 3.0,
+            "B-10.80c": 1.0 * 0.189,
+            "B-11.80c": 1.0 * 0.796,
+            "O-16.80c": 3.0,
+        }.items():
+            mat.add_nuclide(nuclide, fraction)
+        parents.append(mat)
+        boron_conc = 10 * 1e-6
+        fractions = [1 - boron_conc, boron_conc]
+        mats = montepy.Materials()
+        for par in parents:
+            mats.append(par)
+        new_mat = mats.mix(
+            parents,
+            fractions,
+            starting_num,
+            step,
+        )
+        assert sum(new_mat.values) == pytest.approx(
+            1.0
+        )  # should normalize to 1 with fractions
+        assert new_mat.is_atom_fraction == parents[0].is_atom_fraction
+        flat_fracs = []
+        for par, frac in zip(parents, fractions):
+            par.normalize()
+            flat_fracs += [frac] * len(par)
+        for (new_nuc, new_frac), (old_nuc, old_frac), fraction in zip(
+            new_mat, it.chain(*parents), flat_fracs
+        ):
+            assert new_nuc == old_nuc
+            assert new_nuc is not old_nuc
+            assert new_frac == pytest.approx(old_frac * fraction)
+        if starting_num is None:
+            starting_num = mats.starting_number
+        if step is None:
+            step = mats.step
+        if starting_num not in [p.number for p in parents]:
+            assert new_mat.number == starting_num
+        else:
+            assert (new_mat.number - starting_num) % step == 0
