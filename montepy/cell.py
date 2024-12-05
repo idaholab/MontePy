@@ -21,6 +21,7 @@ from montepy.surfaces.surface import Surface
 from montepy.surface_collection import Surfaces
 from montepy.universe import Universe
 from montepy.utilities import *
+import montepy
 
 
 def _link_geometry_to_cell(self, geom):
@@ -32,8 +33,42 @@ class Cell(Numbered_MCNP_Object):
     """
     Object to represent a single MCNP cell defined in CSG.
 
-    .. versionchanged:: 0.2.0
-        Removed the ``comments`` argument due to overall simplification of init process.
+    Examples
+    ^^^^^^^^
+
+    First the cell needs to be initialized.
+
+    .. testcode:: python
+
+        import montepy
+        cell = montepy.Cell()
+
+    Then a number can be set.
+    By default the cell is voided:
+
+    .. doctest:: python
+
+        >>> cell.number = 5
+        >>> print(cell.material)
+        None
+        >>> mat = montepy.Material()
+        >>> mat.number = 20
+        >>> mat.add_nuclide("1001.80c", 1.0)
+        >>> cell.material = mat
+        >>> # mass and atom density are different
+        >>> cell.mass_density = 0.1
+
+    Cells can be inverted with ``~`` to make a geometry definition that is a compliment of
+    that cell.
+
+    .. testcode:: python
+
+        complement = ~cell
+
+    .. seealso::
+
+            * :manual63sec:`5.2`
+            * :manual62:`55`
 
     .. versionchanged:: 1.0.0
 
@@ -44,11 +79,6 @@ class Cell(Numbered_MCNP_Object):
     :type input: Union[Input, str]
     :param number: The number to set for this object.
     :type number: int
-
-    .. seealso::
-
-            * :manual63sec:`5.2`
-            * :manual62:`55`
     """
 
     _ALLOWED_KEYWORDS = {
@@ -78,6 +108,7 @@ class Cell(Numbered_MCNP_Object):
         lattice_input.LatticeInput: ("_lattice", True),
         fill.Fill: ("_fill", True),
     }
+
     _parser = CellParser()
 
     def __init__(
@@ -86,6 +117,12 @@ class Cell(Numbered_MCNP_Object):
         number: int = None,
     ):
         self._BLOCK_TYPE = montepy.input_parser.block_type.BlockType.CELL
+        self._CHILD_OBJ_MAP = {
+            "material": Material,
+            "surfaces": Surface,
+            "complements": Cell,
+            "_fill_transform": montepy.data_inputs.transform.Transform,
+        }
         self._material = None
         self._old_number = self._generate_default_node(int, -1)
         self._load_blank_modifiers()
@@ -182,6 +219,12 @@ class Cell(Numbered_MCNP_Object):
         """
         return self._universe.universe
 
+    @universe.setter
+    def universe(self, value):
+        if not isinstance(value, Universe):
+            raise TypeError("universe must be set to a Universe")
+        self._universe.universe = value
+
     @property
     def fill(self):
         """
@@ -195,11 +238,14 @@ class Cell(Numbered_MCNP_Object):
         """
         return self._fill
 
-    @universe.setter
-    def universe(self, value):
-        if not isinstance(value, Universe):
-            raise TypeError("universe must be set to a Universe")
-        self._universe.universe = value
+    @property
+    def _fill_transform(self):
+        """
+        A simple wrapper to get the transform of the fill or None.
+        """
+        if self.fill:
+            return self.fill.transform
+        return None  # pragma: no cover
 
     @property
     def not_truncated(self):
@@ -375,21 +421,6 @@ class Cell(Numbered_MCNP_Object):
         """
         pass
 
-    @property
-    def geometry_logic_string(self):  # pragma: no cover
-        """
-        The original geoemtry input string for the cell.
-
-        .. warning::
-            .. deprecated:: 0.2.0
-                This was removed to allow for :func:`geometry` to truly implement CSG geometry.
-
-        :raise DeprecationWarning: Will always be raised as an error (which will cause program to halt).
-        """
-        raise DeprecationWarning(
-            "Geometry_logic_string has been removed from cell. Use Cell.geometry instead."
-        )
-
     @make_prop_val_node(
         "_density_node", (float, int, type(None)), base_type=float, deletable=True
     )
@@ -550,20 +581,32 @@ class Cell(Numbered_MCNP_Object):
     def remove_duplicate_surfaces(self, deleting_dict):
         """Updates old surface numbers to prepare for deleting surfaces.
 
-        :param deleting_dict: a dict of the surfaces to delete.
-        :type deleting_dict: dict
+        .. versionchanged:: 1.0.0
+
+            The form of the deleting_dict was changed as :class:`~montepy.surfaces.Surface` is no longer hashable.
+
+        :param deleting_dict: a dict of the surfaces to delete, mapping the old surface to the new surface to replace it.
+            The keys are the number of the old surface. The values are a tuple
+            of the old surface, and then the new surface.
+        :type deleting_dict: dict[int, tuple[Surface, Surface]]
         """
         new_deleting_dict = {}
-        for dead_surface, new_surface in deleting_dict.items():
+
+        def get_num(obj):
+            if isinstance(obj, int):
+                return obj
+            return obj.number
+
+        for num, (dead_surface, new_surface) in deleting_dict.items():
             if dead_surface in self.surfaces:
-                new_deleting_dict[dead_surface] = new_surface
+                new_deleting_dict[get_num(dead_surface)] = (dead_surface, new_surface)
         if len(new_deleting_dict) > 0:
             self.geometry.remove_duplicate_surfaces(new_deleting_dict)
-            for dead_surface in new_deleting_dict:
+            for dead_surface, _ in new_deleting_dict.values():
                 self.surfaces.remove(dead_surface)
 
     def _update_values(self):
-        if self.material:
+        if self.material is not None:
             mat_num = self.material.number
             self._tree["material"]["density"].is_negative = not self.is_atom_dens
         else:
@@ -657,6 +700,10 @@ class Cell(Numbered_MCNP_Object):
         return self.number < other.number
 
     def __invert__(self):
+        if not self.number:
+            raise IllegalState(
+                f"Cell number must be set for a cell to be used in a geometry definition."
+            )
         base_node = UnitHalfSpace(self, True, True)
         return HalfSpace(base_node, Operator.COMPLEMENT)
 
@@ -719,7 +766,12 @@ class Cell(Numbered_MCNP_Object):
         return self.wrap_string_for_mcnp(ret, mcnp_version, True)
 
     def clone(
-        self, clone_material=False, clone_region=False, starting_number=None, step=None
+        self,
+        clone_material=False,
+        clone_region=False,
+        starting_number=None,
+        step=None,
+        add_collect=True,
     ):
         """
         Create a new almost independent instance of this cell with a new number.
@@ -777,47 +829,48 @@ class Cell(Numbered_MCNP_Object):
                 result._material = None
         else:
             result._material = self._material
-
         special_keys = {"_surfaces", "_complements"}
         keys -= special_keys
         memo = {}
+
+        def num(obj):
+            if isinstance(obj, int):
+                return obj
+            return obj.number
+
+        # copy simple stuff
         for key in keys:
             attr = getattr(self, key)
             setattr(result, key, copy.deepcopy(attr, memo))
-        if clone_region:
+        # copy geometry
+        for special in special_keys:
+            new_objs = []
+            collection = getattr(self, special)
             region_change_map = {}
+            # get starting number
+            if not self._problem:
+                child_starting_number = starting_number
+            else:
+                child_starting_number = None
             # ensure the new geometry gets mapped to the new surfaces
-            for special in special_keys:
-                collection = getattr(self, special)
-                new_objs = []
-                for obj in collection:
-                    new_obj = obj.clone()
-                    region_change_map[obj] = new_obj
-                    new_objs.append(new_obj)
-                setattr(result, special, type(collection)(new_objs))
-
-        else:
-            region_change_map = {}
-            for special in special_keys:
-                setattr(result, special, copy.copy(getattr(self, special)))
-            leaves = result.geometry._get_leaf_objects()
-            # undo deepcopy of surfaces in cell.geometry
-            for geom_collect, collect in [
-                (leaves[0], self.complements),
-                (leaves[1], self.surfaces),
-            ]:
-                for surf in geom_collect:
-                    try:
-                        region_change_map[surf] = collect[
-                            surf.number if isinstance(surf, (Surface, Cell)) else surf
-                        ]
-                    except KeyError:
-                        # ignore empty surfaces on clone
-                        pass
-        result.geometry.remove_duplicate_surfaces(region_change_map)
+            for obj in collection:
+                if clone_region:
+                    new_obj = obj.clone(
+                        starting_number=child_starting_number, step=step
+                    )
+                    # avoid num collision of problem isn't handling this.
+                    if child_starting_number:
+                        child_starting_number = new_obj.number + step
+                else:
+                    new_obj = obj
+                region_change_map[num(obj)] = (obj, new_obj)
+                new_objs.append(new_obj)
+            setattr(result, special, type(collection)(new_objs))
+            result.geometry.remove_duplicate_surfaces(region_change_map)
         if self._problem:
             result.number = self._problem.cells.request_number(starting_number, step)
-            self._problem.cells.append(result)
+            if add_collect:
+                self._problem.cells.append(result)
         else:
             for number in itertools.count(starting_number, step):
                 result.number = number

@@ -36,6 +36,10 @@ class Surface(Numbered_MCNP_Object):
         input: union[montepy.input_parser.mcnp_input.input, str] = None,
         number: int = None,
     ):
+        self._CHILD_OBJ_MAP = {
+            "periodic_surface": Surface,
+            "transform": transform.Transform,
+        }
         self._BLOCK_TYPE = montepy.input_parser.block_type.BlockType.SURFACE
         self._number = self._generate_default_node(int, -1)
         super().__init__(input, self._parser, number)
@@ -300,9 +304,6 @@ class Surface(Numbered_MCNP_Object):
     def __ne__(self, other):
         return not self == other
 
-    def __hash__(self):
-        return hash((self.number, str(self.surface_type)))
-
     def find_duplicate_surfaces(self, surfaces, tolerance):
         """Finds all surfaces that are effectively the same as this one.
 
@@ -317,7 +318,15 @@ class Surface(Numbered_MCNP_Object):
         return []
 
     def __neg__(self):
+        if self.number <= 0:
+            raise IllegalState(
+                f"Surface number must be set for a surface to be used in a geometry definition."
+            )
         return half_space.UnitHalfSpace(self, False, False)
 
     def __pos__(self):
+        if self.number <= 0:
+            raise IllegalState(
+                f"Surface number must be set for a surface to be used in a geometry definition."
+            )
         return half_space.UnitHalfSpace(self, True, False)

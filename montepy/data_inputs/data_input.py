@@ -243,7 +243,7 @@ class DataInputAbstract(MCNP_Object):
             if self._has_number():
                 try:
                     num = classifier.number.value
-                    assert num > 0
+                    assert num >= 0
                 except (AttributeError, AssertionError) as e:
                     raise MalformedInputError(
                         input,
@@ -273,70 +273,6 @@ class DataInputAbstract(MCNP_Object):
             return type_comp
         else:  # otherwise first part is equal
             return self._input_number.value < other._input_number.value
-
-    @property
-    def class_prefix(self):  # pragma: no cover
-        """The text part of the card identifier.
-
-        For example: for a material the prefix is ``m``
-
-        this must be lower case
-
-        .. deprecated:: 0.2.0
-            This has been moved to :func:`_class_prefix`
-
-        :returns: the string of the prefix that identifies a card of this class.
-        :rtype: str
-        :raises DeprecationWarning: always raised.
-        """
-        warnings.warn(
-            "This has been moved to the property _class_prefix.",
-            DeprecationWarning,
-            stacklevl=2,
-        )
-
-    @property
-    def has_number(self):  # pragma: no cover
-        """Whether or not this class supports numbering.
-
-        For example: ``kcode`` doesn't allow numbers but tallies do allow it e.g., ``f7``
-
-        .. deprecated:: 0.2.0
-            This has been moved to :func:`_has_number`
-
-        :returns: True if this class allows numbers
-        :rtype: bool
-        :raises DeprecationWarning: always raised.
-        """
-        warnings.warn(
-            "This has been moved to the property _has_number.",
-            DeprecationWarning,
-            stacklevl=2,
-        )
-
-    @property
-    def has_classifier(self):  # pragma: no cover
-        """Whether or not this class supports particle classifiers.
-
-        For example: ``kcode`` doesn't allow particle types but tallies do allow it e.g., ``f7:n``
-
-        * 0 : not allowed
-        * 1 : is optional
-        * 2 : is mandatory
-
-        .. deprecated:: 0.2.0
-            This has been moved to :func:`_has_classifier`
-
-
-        :returns: True if this class particle classifiers
-        :rtype: int
-        :raises DeprecationWarning: always raised.
-        """
-        warnings.warn(
-            "This has been moved to the property _has_classifier.",
-            DeprecationWarning,
-            stacklevl=2,
-        )
 
 
 class DataInput(DataInputAbstract):

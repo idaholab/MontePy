@@ -69,6 +69,10 @@ class Numbered_MCNP_Object(MCNP_Object):
                 raise ValueError(f"Number must be 0 or greater. {number} given.")
             self.number = number
 
+    _CHILD_OBJ_MAP = {}
+    """
+    """
+
     @make_prop_val_node("_number", int, validator=_number_validator)
     def number(self):
         """
@@ -87,6 +91,36 @@ class Numbered_MCNP_Object(MCNP_Object):
         :rtype: int
         """
         pass
+
+    def _add_children_objs(self, problem):
+        """
+        Adds all children objects from self to the given problem.
+
+        This is called from an append_hook in `NumberedObjectCollection`.
+        """
+        # skip lambda transforms
+        filters = {montepy.Transform: lambda transform: not transform.hidden_transform}
+        prob_attr_map = montepy.MCNP_Problem._NUMBERED_OBJ_MAP
+        for attr_name, obj_class in self._CHILD_OBJ_MAP.items():
+            child_collect = getattr(self, attr_name)
+            # allow skipping certain items
+            if (
+                obj_class in filters
+                and child_collect
+                and not filters[obj_class](child_collect)
+            ):
+                continue
+            if child_collect:
+                prob_collect_name = prob_attr_map[obj_class].__name__.lower()
+                prob_collect = getattr(problem, prob_collect_name)
+                try:
+                    # check if iterable
+                    iter(child_collect)
+                    assert not isinstance(child_collect, MCNP_Object)
+                    # ensure isn't a material or something
+                    prob_collect.update(child_collect)
+                except (TypeError, AssertionError):
+                    prob_collect.append(child_collect)
 
     def clone(self, starting_number=None, step=None):
         """

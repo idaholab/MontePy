@@ -762,71 +762,71 @@ class TestListNode(TestCase):
         self.assertEqual(len(comments), 1)
 
 
-class TestIsotopesNode(TestCase):
+class TestMaterialssNode(TestCase):
     def test_isotopes_init(self):
-        isotope = syntax_node.IsotopesNode("test")
+        isotope = syntax_node.MaterialsNode("test")
         self.assertEqual(isotope.name, "test")
         self.assertIsInstance(isotope.nodes, list)
 
     def test_isotopes_append(self):
-        isotopes = syntax_node.IsotopesNode("test")
+        isotopes = syntax_node.MaterialsNode("test")
         zaid = syntax_node.ValueNode("1001.80c", str)
         concentration = syntax_node.ValueNode("1.5", float)
-        isotopes.append(("isotope_fraction", zaid, concentration))
+        isotopes.append_nuclide(("isotope_fraction", zaid, concentration))
         self.assertEqual(isotopes.nodes[-1][0], zaid)
         self.assertEqual(isotopes.nodes[-1][1], concentration)
 
     def test_isotopes_format(self):
         padding = syntax_node.PaddingNode(" ")
-        isotopes = syntax_node.IsotopesNode("test")
+        isotopes = syntax_node.MaterialsNode("test")
         zaid = syntax_node.ValueNode("1001.80c", str)
         zaid.padding = padding
         concentration = syntax_node.ValueNode("1.5", float)
         concentration.padding = padding
-        isotopes.append(("isotope_fraction", zaid, concentration))
+        isotopes.append_nuclide(("isotope_fraction", zaid, concentration))
         self.assertEqual(isotopes.format(), "1001.80c 1.5 ")
 
     def test_isotopes_str(self):
-        isotopes = syntax_node.IsotopesNode("test")
+        isotopes = syntax_node.MaterialsNode("test")
         zaid = syntax_node.ValueNode("1001.80c", str)
         concentration = syntax_node.ValueNode("1.5", float)
-        isotopes.append(("isotope_fraction", zaid, concentration))
+        isotopes.append_nuclide(("isotope_fraction", zaid, concentration))
         str(isotopes)
         repr(isotopes)
 
     def test_isotopes_iter(self):
-        isotopes = syntax_node.IsotopesNode("test")
+        isotopes = syntax_node.MaterialsNode("test")
         zaid = syntax_node.ValueNode("1001.80c", str)
         concentration = syntax_node.ValueNode("1.5", float)
-        isotopes.append(("isotope_fraction", zaid, concentration))
-        isotopes.append(("isotope_fraction", zaid, concentration))
+        isotopes.append_nuclide(("isotope_fraction", zaid, concentration))
+        isotopes.append_nuclide(("isotope_fraction", zaid, concentration))
         for combo in isotopes:
             self.assertEqual(len(combo), 2)
 
     def test_isotopes_comments(self):
         padding = syntax_node.PaddingNode(" ")
-        isotopes = syntax_node.IsotopesNode("test")
+        isotopes = syntax_node.MaterialsNode("test")
         zaid = syntax_node.ValueNode("1001.80c", str)
         zaid.padding = padding
         concentration = syntax_node.ValueNode("1.5", float)
         padding = copy.deepcopy(padding)
         padding.append("$ hi", True)
         concentration.padding = padding
-        isotopes.append(("isotope_fraction", zaid, concentration))
+        isotopes.append_nuclide(("isotope_fraction", zaid, concentration))
         comments = list(isotopes.comments)
         self.assertEqual(len(comments), 1)
         self.assertEqual(comments[0].contents, "hi")
 
     def test_isotopes_trailing_comment(self):
         padding = syntax_node.PaddingNode(" ")
-        isotopes = syntax_node.IsotopesNode("test")
+        isotopes = syntax_node.MaterialsNode("test")
         zaid = syntax_node.ValueNode("1001.80c", str)
         zaid.padding = padding
         concentration = syntax_node.ValueNode("1.5", float)
         padding = copy.deepcopy(padding)
         padding.append("c hi", True)
         concentration.padding = padding
-        isotopes.append(("isotope_fraction", zaid, concentration))
+        isotopes.append_nuclide(("isotope_fraction", zaid, concentration))
         comments = isotopes.get_trailing_comment()
         self.assertEqual(len(comments), 1)
         self.assertEqual(comments[0].contents, "hi")
@@ -1463,8 +1463,8 @@ bar
             (5, 1, 60): 80,
             (6, 1, 0): 80,
             (6, 2, 0): 128,
-            (6, 2, 3): 128,
             (6, 3, 0): 128,
+            (6, 3, 3): 128,  # Test for newer not released versions
             (7, 4, 0): 128,
         }
         for version, answer in answers.items():

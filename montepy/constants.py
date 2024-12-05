@@ -25,12 +25,25 @@ BLANK_SPACE_CONTINUE = 5
 Number of spaces in a new line before it's considered a continuation.
 """
 
-LINE_LENGTH = {(5, 1, 60): 80, (6, 1, 0): 80, (6, 2, 0): 128}
+LINE_LENGTH = {
+    (5, 1, 60): 80,
+    (6, 1, 0): 80,
+    (6, 2, 0): 128,
+    (6, 3, 0): 128,
+    (6, 3, 1): 128,
+}
 """
 The number of characters allowed in a line for each MCNP version.
+
+Citations:
+
+* 5.1.60 and 6.1.0: Section 2.6.2 of LA-UR-18-20808
+* 6.2.0: Section 1.1.1 of LA-UR-17-29981
+* 6.3.0: Section 3.2.2 of LA-UR-22-30006
+* 6.3.1: Section 3.2.2 of LA-UR-24-24602
 """
 
-DEFAULT_VERSION = (6, 2, 0)
+DEFAULT_VERSION = (6, 3, 0)
 """
 The default version of MCNP to use.
 """
@@ -45,6 +58,11 @@ ASCII_CEILING = 127
 The maximum allowed code point allowed by ASCII.
 
 Source: `Wikipedia <https://en.wikipedia.org/wiki/ASCII>`_
+"""
+
+MAX_ATOMIC_SYMBOL_LENGTH = 2
+"""
+The maximum length of an atomic symbol.
 """
 
 

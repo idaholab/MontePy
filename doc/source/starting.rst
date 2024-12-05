@@ -577,7 +577,9 @@ This actually creates a new object so don't worry about modifying the surface.
 .. doctest::
 
     >>> bottom_plane = montepy.surfaces.surface.Surface()
+    >>> bottom_plane.number = 1
     >>> top_plane = montepy.surfaces.surface.Surface()
+    >>> top_plane.number = 2
     >>> type(+bottom_plane)
     <class 'montepy.surfaces.half_space.UnitHalfSpace'>
     >>> type(-bottom_plane)
@@ -589,6 +591,7 @@ Instead you use the binary not operator (``~``).
 .. doctest::
     
     >>> capsule_cell = montepy.Cell()
+    >>> capsule_cell.number = 1
     >>> type(~capsule_cell)
     <class 'montepy.surfaces.half_space.HalfSpace'>
 
@@ -617,17 +620,18 @@ Order of precedence and grouping is automatically handled by Python so you can e
 .. testcode::
 
    # build blank surfaces 
-   bottom_plane = montepy.surfaces.axis_plane.AxisPlane(number=1)
+   bottom_plane = montepy.AxisPlane(number=1)
    bottom_plane.location = 0.0
-   top_plane = montepy.surfaces.axis_plane.AxisPlane(number=2)
+   top_plane = montepy.AxisPlane(number=2)
    top_plane.location = 10.0
-   fuel_cylinder = montepy.surfaces.cylinder_on_axis.CylinderOnAxis(number=3)
+   fuel_cylinder = montepy.CylinderOnAxis(number=3)
    fuel_cylinder.radius = 1.26 / 2
-   clad_cylinder = montepy.surfaces.cylinder_on_axis.CylinderOnAxis( number=4)
+   clad_cylinder = montepy.CylinderOnAxis( number=4)
    clad_cylinder.radius = (1.26 / 2) + 1e-3 # fuel, gap, cladding
-   clad_od = montepy.surfaces.cylinder_on_axis.CylinderOnAxis(number=5)
+   clad_od = montepy.CylinderOnAxis(number=5)
    clad_od.radius = clad_cylinder.radius + 0.1 # add thickness
-   other_fuel = montepy.surfaces.cylinder_on_axis.CylinderOnAxis(number=6)
+   other_fuel = montepy.CylinderOnAxis(number=6)
+   other_fuel.radius = 3.0
    
    #make weird truncated fuel sample
    slug_half_space = +bottom_plane & -top_plane & -fuel_cylinder
@@ -657,7 +661,10 @@ This will completely redefine the cell's geometry. You can also modify the geome
 
 .. testcode::
 
-    other_fuel_region = -montepy.surfaces.cylinder_on_axis.CylinderOnAxis()
+    fuel_cyl = montepy.CylinderOnAxis()
+    fuel_cyl.number = 20
+    fuel_cyl.radius = 1.20
+    other_fuel_region = -fuel_cyl
     fuel_cell.geometry |= other_fuel_region 
 
 .. warning:: 
@@ -821,7 +828,7 @@ You can also easy apply a transform to the filling universe with:
    import numpy as np
    transform = montepy.data_inputs.transform.Transform(number=5)
    transform.displacement_vector = np.array([1, 2, 0])
-   cell.fill.tranform = transform
+   cell.fill.transform = transform
 
 .. note::
 
