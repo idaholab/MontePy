@@ -29,7 +29,7 @@ class Transform(data_input.DataInputAbstract, Numbered_MCNP_Object):
 
     def __init__(
         self,
-        input: union[montepy.input_parser.mcnp_input.input, str] = None,
+        input: Union[montepy.input_parser.mcnp_input.input, str] = None,
         pass_through: bool = False,
         number: int = None,
     ):

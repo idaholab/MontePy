@@ -33,7 +33,7 @@ class Surface(Numbered_MCNP_Object):
 
     def __init__(
         self,
-        input: union[montepy.input_parser.mcnp_input.input, str] = None,
+        input: Union[montepy.input_parser.mcnp_input.input, str] = None,
         number: int = None,
     ):
         self._CHILD_OBJ_MAP = {

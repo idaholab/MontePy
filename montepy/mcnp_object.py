@@ -7,6 +7,7 @@ import itertools as it
 import numpy as np
 import sys
 import textwrap
+from typing import Union
 import warnings
 import weakref
 

@@ -1,10 +1,13 @@
 # Copyright 2024, Battelle Energy Alliance, LLC All Rights Reserved.
 from __future__ import annotations
+import collections as co
 import copy
 import itertools
+import math
 import re
-from typing import Union
+from typing import Generator, Union
 import warnings
+import weakref
 
 import montepy
 from montepy.data_inputs import data_input, thermal_scattering
