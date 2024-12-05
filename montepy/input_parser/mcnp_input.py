@@ -110,22 +110,6 @@ class ParsingNode(ABC):
         pass
 
 
-class Card(ParsingNode):  # pragma: no cover
-    """
-    .. warning::
-
-        .. deprecated:: 0.2.0
-            Punch cards are dead. Use :class:`~montepy.input_parser.mcnp_input.Input` instead.
-
-    :raises DeprecatedError: punch cards are dead.
-    """
-
-    def __init__(self, *args, **kwargs):
-        raise DeprecatedError(
-            "This has been deprecated. Use montepy.input_parser.mcnp_input.Input instead"
-        )
-
-
 class Input(ParsingNode):
     """
     Represents a single MCNP "Input" e.g. a single cell definition.
@@ -247,35 +231,6 @@ class Input(ParsingNode):
         """
         pass
 
-    @property
-    def words(self):  # pragma: no cover
-        """
-        .. warning::
-            .. deprecated:: 0.2.0
-
-            This has been deprecated, and removed.
-
-        :raises DeprecationWarning: use the parser and tokenize workflow instead.
-        """
-        raise DeprecationWarning(
-            "This has been deprecated. Use a parser and tokenize instead"
-        )
-
-
-class Comment(ParsingNode):  # pragma: no cover
-    """
-    .. warning::
-        .. deprecated:: 0.2.0
-            This has been replaced by :class:`~montepy.input_parser.syntax_node.CommentNode`.
-
-    :raises DeprecationWarning: Can not be created anymore.
-    """
-
-    def __init__(self, *args, **kwargs):
-        raise DeprecationWarning(
-            "This has been deprecated and replaced by montepy.input_parser.syntax_node.CommentNode."
-        )
-
 
 class ReadInput(Input):
     """
@@ -332,22 +287,6 @@ class ReadInput(Input):
     def __repr__(self):
         return (
             f"READ INPUT: {self._block_type}: {self.input_lines} File: {self.file_name}"
-        )
-
-
-class ReadCard(Card):  # pragma: no cover
-    """
-    .. warning::
-
-        .. deprecated:: 0.2.0
-            Punch cards are dead. Use :class:`~montepy.input_parser.mcnp_input.ReadInput` instead.
-
-    :raises DeprecatedError: punch cards are dead.
-    """
-
-    def __init__(self, *args, **kwargs):
-        raise DeprecatedError(
-            "This has been deprecated. Use montepy.input_parser.mcnp_input.ReadInput instead"
         )
 
 
@@ -444,16 +383,3 @@ class Title(ParsingNode):
         line_length = 0
         line_length = get_max_line_length(mcnp_version)
         return [self.title[0 : line_length - 1]]
-
-
-def parse_card_shortcuts(*args, **kwargs):  # pragma: no cover
-    """
-    .. warning::
-        .. deprecated:: 0.2.0
-            This is no longer necessary and should not be called.
-
-    :raises DeprecationWarning: This is not needed anymore.
-    """
-    raise DeprecationWarning(
-        "This is deprecated and unnecessary. This will be automatically handled by montepy.input_parser.parser_base.MCNP_Parser."
-    )

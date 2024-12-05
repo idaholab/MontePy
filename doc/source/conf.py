@@ -37,9 +37,10 @@ extensions = [
     "sphinx.ext.intersphinx",
     "sphinx.ext.extlinks",
     "sphinx.ext.doctest",
+    "sphinx_autodoc_typehints",
     "sphinx_sitemap",
     "sphinx_favicon",
-    "sphinx_copybutton"
+    "sphinx_copybutton",
 ]
 
 # Add any paths that contain templates here, relative to this directory.
@@ -60,6 +61,12 @@ html_extra_path = ["robots.txt", "foo.imcnp"]
 # This pattern also affects html_static_path and html_extra_path.
 exclude_patterns = []
 
+# autodoc
+autodoc_typehints = "both"
+typehints_use_signature = True
+typehints_use_signature_return = True
+autodoc_typehints_description_target = "all"
+autodoc_member_order = "groupwise"
 # Display the version
 display_version = True
 
@@ -68,16 +75,23 @@ UM63 = (
     "https://mcnp.lanl.gov/pdf_files/TechReport_2022_LANL_LA-UR-22-30006"
     "Rev.1_KuleszaAdamsEtAl.pdf"
 )
+UM631 = "https://www.osti.gov/servlets/purl/2372634"
 UM62 = (
     "https://mcnp.lanl.gov/pdf_files/TechReport_2017_LANL_LA-UR-17-29981"
     "_WernerArmstrongEtAl.pdf"
 )
 extlinks = {
     # MCNP 6.3 User's Manual
-    "manual63sec": (UM63 + "#section.%s", "MCNP 6.3 manual § %s"),
-    "manual63": (UM63 + "#subsection.%s", "MCNP 6.3 manual § %s"),
-    "manual63part": (UM63 + "#part.%s", "MCNP 6.3 manual § %s"),
-    "manual63chapter": (UM63 + "#chapter.%s", "MCNP 6.3 manual § %s"),
+    "manual63sec": (UM63 + "#section.%s", "MCNP 6.3.0 manual § %s"),
+    "manual63": (UM63 + "#subsection.%s", "MCNP 6.3.0 manual § %s"),
+    "manual63part": (UM63 + "#part.%s", "MCNP 6.3.0 manual part %s"),
+    "manual63chapter": (UM63 + "#chapter.%s", "MCNP 6.3.0 manual Ch. %s"),
+    # MCNP 6.3.1 User's Manual
+    "manual631sec": (UM631 + "#section.%s", "MCNP 6.3.1 manual § %s"),
+    "manual631": (UM631 + "#subsection.%s", "MCNP 6.3.1 manual § %s"),
+    "manual631part": (UM631 + "#part.%s", "MCNP 6.3.1 manual part %s"),
+    "manual631chapter": (UM631 + "#chapter.%s", "MCNP 6.3.1 manual Ch. %s"),
+    # MCNP 6.2 User's manual
     "manual62": (UM62 + "#page=%s", "MCNP 6.2 manual p. %s"),
     "issue": ("https://github.com/idaholab/MontePy/issues/%s", "#%s"),
     "pull": ("https://github.com/idaholab/MontePy/pull/%s", "#%s"),
