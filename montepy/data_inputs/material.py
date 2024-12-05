@@ -269,7 +269,6 @@ class Material(data_input.DataInputAbstract, Numbered_MCNP_Object):
 
     .. seealso::
 
-            * :manual631:`5.6.1`
             * :manual63:`5.6.1`
             * :manual62:`106`
 

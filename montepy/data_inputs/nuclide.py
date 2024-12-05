@@ -401,7 +401,7 @@ class Nuclide:
 
         Due to legacy reasons the nuclear data for Am-242 and Am-242m1 have been swapped for the nuclear data
         provided by LANL.
-        This is documented in :manual631:`1.2.2`:
+        This is documented in `section 1.2.2 of the MCNP 6.3.1 manual <https://www.osti.gov/servlets/purl/2372634>`_ :
 
             As a historical quirk, 242m1Am and 242Am are swapped in the ZAID and SZAID formats, so that the
             former is 95242 and the latter is 95642 for ZAID and 1095242 for SZAID. It is important to verify if a
@@ -422,8 +422,6 @@ class Nuclide:
 
         * :manual62:`107`
         * :manual63:`5.6.1`
-        * :manual631:`1.2.2`
-
 
     .. versionadded:: 1.0.0
 
