@@ -390,6 +390,27 @@ class GeometryTree(SyntaxNodeBase):
             f"{f'Short:{self._right_short_type.value}' if self._right_short_type else ''}>"
         )
 
+    def pretty_str(self):
+        INDENT = 2
+        ret = f"<Geometry: {self.name}: [\n"
+        for key, val in [
+            ("left", self._left_side.pretty_str()),
+            ("operator", self._operator),
+            ("right", self._right_side),
+        ]:
+            if val is None:
+                continue
+            if isinstance(val, SyntaxNodeBase):
+                child_strs = val.pretty_str().split("\n")
+            else:
+                child_strs = [str(val)]
+            ret += " " * INDENT + f"{key}: {child_strs[0]}\n"
+            ret += "\n".join([" " * 2 * INDENT + s for s in child_strs[1:-1]])
+            ret += " " * 2 * INDENT + child_strs[-1] + ",\n"
+        ret += " " * INDENT + "}\n"
+        ret += ">"
+        return ret
+
     def __repr__(self):
         return str(self)
 
@@ -868,6 +889,9 @@ class CommentNode(SyntaxNodeBase):
     def __str__(self):
         return self.format()
 
+    def pretty_str(self):
+        return str(self)
+
     def __repr__(self):
         ret = f"COMMENT: "
         for node in self.nodes:
@@ -1322,6 +1346,9 @@ class ValueNode(SyntaxNodeBase):
 
     def __str__(self):
         return f"<Value, {self._value}, padding: {self._padding}>"
+
+    def pretty_str(self):
+        return str(self)
 
     def __repr__(self):
         return str(self)
@@ -2560,6 +2587,21 @@ class ParametersNode(SyntaxNodeBase):
 
     def __repr__(self):
         return str(self)
+
+    def pretty_str(self):
+        INDENT = 2
+        ret = f"<Node: {self.name}: {{\n"
+        print(self.nodes)
+        for key, val in self.nodes.items():
+            print(val, val is self)
+            print(val.pretty_str())
+            child_strs = val.pretty_str().split("\n")
+            ret += " " * INDENT + f"{key}: {child_strs[0]}\n"
+            ret += "\n".join([" " * 2 * INDENT + s for s in child_strs[1:-1]])
+            ret += " " * 2 * INDENT + child_strs[-1] + ",\n"
+        ret += " " * INDENT + "}\n"
+        ret += ">"
+        return ret
 
     def __getitem__(self, key):
         return self.nodes[key.lower()]
