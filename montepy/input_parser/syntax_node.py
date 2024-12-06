@@ -196,6 +196,19 @@ class SyntaxNodeBase(ABC):
                 ret += node.flatten()
         return ret
 
+    def pretty_str(self):
+        INDENT = 2
+        if not self.nodes:
+            return f"<Node: {self.name}: []>"
+        ret = f"<Node: {self.name}: [\n"
+        for val in self.nodes:
+            child_strs = val.pretty_str().split("\n")
+            ret += "\n".join([" " * 2 * INDENT + s for s in child_strs[:-1]])
+            ret += " " * 2 * INDENT + child_strs[-1] + ",\n"
+        ret += " " * INDENT + "]\n"
+        ret += ">"
+        return ret
+
 
 class SyntaxNode(SyntaxNodeBase):
     """
@@ -249,7 +262,7 @@ class SyntaxNode(SyntaxNodeBase):
             raise KeyError(f"{key} is not a value leaf node")
 
     def __str__(self):
-        return f"(Node: {self.name}: {self.nodes})"
+        return f"<Node: {self.name}: {self.nodes}>"
 
     def __repr__(self):
         return str(self)
@@ -311,6 +324,18 @@ class SyntaxNode(SyntaxNodeBase):
                 ret += node.flatten()
         return ret
 
+    def pretty_str(self):
+        INDENT = 2
+        ret = f"<Node: {self.name}: {{\n"
+        for key, val in self.nodes.items():
+            child_strs = val.pretty_str().split("\n")
+            ret += " " * INDENT + f"{key}: {child_strs[0]}\n"
+            ret += "\n".join([" " * 2 * INDENT + s for s in child_strs[1:-1]])
+            ret += " " * 2 * INDENT + child_strs[-1] + ",\n"
+        ret += " " * INDENT + "}\n"
+        ret += ">"
+        return ret
+
 
 class GeometryTree(SyntaxNodeBase):
     """
@@ -359,11 +384,32 @@ class GeometryTree(SyntaxNodeBase):
 
     def __str__(self):
         return (
-            f"Geometry: ( {self._left_side}"
+            f"Geometry: < {self._left_side}"
             f" {f'Short:{self._left_short_type.value}' if self._left_short_type else ''}"
             f" {self._operator} {self._right_side} "
-            f"{f'Short:{self._right_short_type.value}' if self._right_short_type else ''})"
+            f"{f'Short:{self._right_short_type.value}' if self._right_short_type else ''}>"
         )
+
+    def pretty_str(self):
+        INDENT = 2
+        ret = f"<Geometry: {self.name}: [\n"
+        for key, val in [
+            ("left", self._left_side.pretty_str()),
+            ("operator", self._operator),
+            ("right", self._right_side),
+        ]:
+            if val is None:
+                continue
+            if isinstance(val, SyntaxNodeBase):
+                child_strs = val.pretty_str().split("\n")
+            else:
+                child_strs = [str(val)]
+            ret += " " * INDENT + f"{key}: {child_strs[0]}\n"
+            ret += "\n".join([" " * 2 * INDENT + s for s in child_strs[1:-1]])
+            ret += " " * 2 * INDENT + child_strs[-1] + ",\n"
+        ret += " " * INDENT + "}\n"
+        ret += ">"
+        return ret
 
     def __repr__(self):
         return str(self)
@@ -570,7 +616,7 @@ class PaddingNode(SyntaxNodeBase):
             self.append(token, is_comment)
 
     def __str__(self):
-        return f"(Padding, {self._nodes})"
+        return f"<Padding, {self._nodes}>"
 
     def __repr__(self):
         return str(self)
@@ -842,6 +888,9 @@ class CommentNode(SyntaxNodeBase):
 
     def __str__(self):
         return self.format()
+
+    def pretty_str(self):
+        return str(self)
 
     def __repr__(self):
         ret = f"COMMENT: "
@@ -1296,7 +1345,10 @@ class ValueNode(SyntaxNodeBase):
         return self._token
 
     def __str__(self):
-        return f"(Value, {self._value}, padding: {self._padding})"
+        return f"<Value, {self._value}, padding: {self._padding}>"
+
+    def pretty_str(self):
+        return str(self)
 
     def __repr__(self):
         return str(self)
@@ -1805,7 +1857,18 @@ class MaterialsNode(SyntaxNodeBase):
         return ret
 
     def __repr__(self):
-        return f"(Isotopes: {self.nodes})"
+        return f"(Materials: {self.nodes})"
+
+    def pretty_str(self):
+        INDENT = 2
+        ret = f"<Node: {self.name}: [\n"
+        for val in self.nodes:
+            child_strs = [f"({', '.join([str(v) for v in val])})"]
+            ret += "\n".join([" " * 2 * INDENT + s for s in child_strs[:-1]])
+            ret += " " * 2 * INDENT + child_strs[-1] + ",\n"
+        ret += " " * INDENT + "]\n"
+        ret += ">"
+        return ret
 
     def __iter__(self):
         return iter(self.nodes)
@@ -2422,6 +2485,17 @@ class ClassifierNode(SyntaxNodeBase):
             f" padding: {self.padding})"
         )
 
+    def pretty_str(self):
+        return f"""<Classifier: {{ 
+    mod: {self.modifier}, 
+    prefix: {self.prefix}, 
+    number: {self.number}, 
+    particles: {self.particles},
+    padding: {self.padding} 
+  }}
+>
+"""
+
     @property
     def comments(self):
         if self.padding is not None:
@@ -2509,10 +2583,25 @@ class ParametersNode(SyntaxNodeBase):
         self._nodes[key] = val
 
     def __str__(self):
-        return f"(Parameters, {self.nodes})"
+        return f"<Parameters, {self.nodes}>"
 
     def __repr__(self):
         return str(self)
+
+    def pretty_str(self):
+        INDENT = 2
+        ret = f"<Node: {self.name}: {{\n"
+        print(self.nodes)
+        for key, val in self.nodes.items():
+            print(val, val is self)
+            print(val.pretty_str())
+            child_strs = val.pretty_str().split("\n")
+            ret += " " * INDENT + f"{key}: {child_strs[0]}\n"
+            ret += "\n".join([" " * 2 * INDENT + s for s in child_strs[1:-1]])
+            ret += " " * 2 * INDENT + child_strs[-1] + ",\n"
+        ret += " " * INDENT + "}\n"
+        ret += ">"
+        return ret
 
     def __getitem__(self, key):
         return self.nodes[key.lower()]

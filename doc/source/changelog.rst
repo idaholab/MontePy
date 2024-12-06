@@ -2,8 +2,8 @@
 MontePy Changelog
 *****************
 
-1.0.0 releases
-==============
+1.0 releases
+============
 
 #Next Version#
 --------------
@@ -11,7 +11,6 @@ MontePy Changelog
 **Features Added**
 
 * Redesigned how Materials hold Material_Components. See :ref:`migrate 0 1` (:pull:`507`). 
-
 * Made it easier to create an Isotope, or now Nuclide: ``montepy.Nuclide("H-1.80c")`` (:issue:`505`).
 * When a typo in an object attribute is made an Error is raised rather than silently having no effect (:issue:`508`).
 * Improved material printing to avoid very long lists of components (:issue:`144`).
@@ -22,6 +21,8 @@ MontePy Changelog
 * Made ``Material.is_atom_fraction`` settable (:issue:`511`). 
 * Made NumberedObjectCollections act like a set (:issue:`138`).
 * Automatically added children objects, e.g., the surfaces in a cell, to the problem when the cell is added to the problem (:issue:`63`).
+* Added ability to parse all MCNP objects from a string (:pull:`595`).
+* Added function: :func:`~montepy.mcnp_problem.MCNP_Problem.parse` to parse arbitrary MCNP object (:pull:`595`).
 
 **Bugs Fixed**
 
