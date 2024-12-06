@@ -671,7 +671,7 @@ class MCNP_Problem:
             obj.update_pointers(self.data_inputs)
             self.data_inputs.append(obj)
             if isinstance(obj, Material):
-                self._materials.append(obj, False)
+                self._materials.append(obj, insert_in_data=False)
             if isinstance(obj, transform.Transform):
-                self._transforms.append(obj, False)
+                self._transforms.append(obj, insert_in_data=False)
         return obj
