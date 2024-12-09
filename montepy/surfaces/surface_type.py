@@ -2,7 +2,7 @@
 from enum import unique, Enum
 
 
-# @unique
+@unique
 class SurfaceType(str, Enum):
     """
     An enumeration of the surface types allowed.

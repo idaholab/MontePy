@@ -21,7 +21,7 @@ def test_problem_init(problem, problem_path):
     )
     assert problem.input_file.path == problem_path
     assert problem.input_file.name == problem_path
-    assert problem.mcnp_version == (6, 2, 0)
+    assert problem.mcnp_version == (6, 3, 0)
 
 
 def test_problem_str(problem, problem_path):

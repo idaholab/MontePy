@@ -55,7 +55,8 @@ doc = [
 	"pydata_sphinx_theme",
 	"sphinx-sitemap",
 	"sphinx-favicon",
-    "sphinx-copybutton"
+    "sphinx-copybutton",
+    "sphinx_autodoc_typehints"
 ]
 format = ["black>=23.3.0"]
 build = [
