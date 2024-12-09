@@ -60,7 +60,6 @@ jobs:
           - python-version: "3.11"
             numpy-version: "2.0"
             sly-version: "0.4"
-        name: "Python ${{ matrix.python-version }}, numpy ${{ matrix.numpy-version }}, SLY ${{ matrix.sly-version }}"
     
     steps:
       - uses: actions/checkout@v4
