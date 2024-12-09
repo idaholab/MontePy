@@ -641,7 +641,7 @@ This will completely redefine the cell's geometry. You can also modify the geome
     fuel_cyl.number = 20
     fuel_cyl.radius = 1.20
     other_fuel_region = -fuel_cyl
-    fuel_cell.geometry |= other_fuel_region 
+    fuel_cell.geometry |= other_fuel_region #|| 
 
 .. warning:: 
 
@@ -719,6 +719,59 @@ For example:
     >>> new_cell = problem.cells[1].clone(clone_material=True)
     >>> new_cell.material.number 
     100
+
+Materials
+---------
+
+Materials are how he nuclide concentrations in cells are specified.
+MontePy has always supported materials, but since version 1.0.0 the design of the interface has changed significantly,
+and greatly improved.
+
+Specifying Nuclides 
+^^^^^^^^^^^^^^^^^^^
+
+To specify a material one needs to be able to specify the nuclides that are contained in it.
+This is done through :class:`~montepy.data_inputs.nuclide.Nuclide` objects.
+This actually a wrapper of a :class:`~montepy.data_inputs.nuclide.Nucleus` and a :class:`~montepy.data_inputs.nuclide.Library` object.
+Users should rarely need to interact with the latter objects, but it is good to be aware of them.
+The generally idea is that ``Nuclide`` instance represents a specific set of ACE data that for a ``Nucleus``, which represents only a physical nuclide,
+with a given ``Library``.
+
+The easiest way to specify a Nuclide is by its string name. 
+MontePy supports all valid MCNP ZAIDs for MCNP 6.2, and MCNP 6.3.0.
+See :class:`~montepy.data_inputs.nuclide.Nuclide` for how metastable isomers are handled.
+However, ZAIDs like many things in MCNP are rather cumbersome.
+Therefore, MontePy also supports its own nuclide names as well, which are meant to be more intuitive.
+These are very similar to the names introduced with MCNP 6.3.1 (section 1.2.2): this follows:
+
+.. code-block::
+
+   Nn[-A][mS][.library]
+
+Where:
+
+* ``Nn`` is the atomic symbol of the nuclide, case insensitive. This is required.
+* ``A`` is the atomic mass. Zero-padding is not needed. Optional.
+* ``S`` is the metastable isomeric state. Only states 1 - 4 are allowed. Optional.
+* ``library`` is the library extension of the nuclide. This only supports MCNP 6.2, 6.3 formatting, i.e., 2 - 3 digits followed by a single letter. Optional. 
+
+The following are all valid ways to specify a nuclide:
+
+.. doctest::
+
+   >>> import montepy
+   >>> montepy.Nuclide("1001.80c")
+   >>> montepy.Nuclide("H-1.80c")
+   >>> montepy.Nuclide("H-1.710nc")
+   >>> montepy.Nuclide("H")
+   >>> montepy.Nuclide("Co-60m1")
+   >>> montepy.Nuclide("Co")
+
+
+.. note::
+
+   The new SZAID and Name syntax for nuclides introduced with MCNP 6.3.1 is not currently supported by MontePy.
+   This support likely will be added soon but probably not prior to MCNP 6.3.1 being available on RSICC. 
 
 Universes
 ---------
