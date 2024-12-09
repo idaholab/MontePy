@@ -57,9 +57,9 @@ jobs:
         numpy-version: ["1.0", "2.0"]
         sly-version: ["0.5"]
         include:
-          -python-version: "3.11"
-          -numpy-version: "2.0"
-          -sly-version: "0.4"
+          - python-version: "3.11"
+            numpy-version: "2.0"
+            sly-version: "0.4"
         name: "Python ${{ matrix.python-version }}, numpy ${{ matrix.numpy-version }}, SLY ${{ sly-version }}"
     
     steps:
