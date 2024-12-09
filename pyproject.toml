@@ -35,7 +35,7 @@ classifiers = [
 ]
 dependencies = [
 	"numpy>=1.18",
-	"sly==0.*, >= 0.4"
+	"sly>= 0.4, <=0.5"
 ]
 
 [project.optional-dependencies]
