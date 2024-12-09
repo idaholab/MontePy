@@ -1,8 +1,15 @@
 # Copyright 2024, Battelle Energy Alliance, LLC All Rights Reserved.
+from __future__ import annotations
 from abc import ABC, ABCMeta, abstractmethod
 import copy
 import functools
 import itertools as it
+import numpy as np
+import sys
+import textwrap
+import warnings
+import weakref
+
 from montepy.errors import *
 from montepy.constants import (
     BLANK_SPACE_CONTINUE,
@@ -17,10 +24,6 @@ from montepy.input_parser.syntax_node import (
     ValueNode,
 )
 import montepy
-import numpy as np
-import textwrap
-import warnings
-import weakref
 
 
 class _ExceptionContextAdder(ABCMeta):
@@ -42,7 +45,13 @@ class _ExceptionContextAdder(ABCMeta):
             except Exception as e:
                 if len(args) > 0 and isinstance(args[0], MCNP_Object):
                     self = args[0]
-                    add_line_number_to_exception(e, self)
+                    if hasattr(self, "_handling_exception"):
+                        raise e
+                    self._handling_exception = True
+                    try:
+                        add_line_number_to_exception(e, self)
+                    finally:
+                        del self._handling_exception
                 else:
                     raise e
 
@@ -96,7 +105,11 @@ class MCNP_Object(ABC, metaclass=_ExceptionContextAdder):
     :type parser: MCNP_Lexer
     """
 
-    def __init__(self, input, parser):
+    def __init__(
+        self,
+        input: montepy.input_parser.mcnp_input.Input,
+        parser: montepy.input_parser.parser_base.MCNP_Parser,
+    ):
         self._problem_ref = None
         self._parameters = ParametersNode()
         self._input = None
@@ -114,7 +127,7 @@ class MCNP_Object(ABC, metaclass=_ExceptionContextAdder):
             except ValueError as e:
                 raise MalformedInputError(
                     input, f"Error parsing object of type: {type(self)}: {e.args[0]}"
-                )
+                ).with_traceback(e.__traceback__)
             if self._tree is None:
                 raise ParsingError(
                     input,
@@ -124,8 +137,30 @@ class MCNP_Object(ABC, metaclass=_ExceptionContextAdder):
             if "parameters" in self._tree:
                 self._parameters = self._tree["parameters"]
 
+    def __setattr__(self, key, value):
+        # handle properties first
+        if hasattr(type(self), key):
+            descriptor = getattr(type(self), key)
+            if isinstance(descriptor, property):
+                descriptor.__set__(self, value)
+                return
+        # handle _private second
+        if key.startswith("_"):
+            super().__setattr__(key, value)
+        else:
+            # kwargs added in 3.10
+            if sys.version_info >= (3, 10):
+                raise AttributeError(
+                    f"'{type(self).__name__}' object has no attribute '{key}'",
+                    obj=self,
+                    name=key,
+                )
+            raise AttributeError(
+                f"'{type(self).__name__}' object has no attribute '{key}'",
+            )
+
     @staticmethod
-    def _generate_default_node(value_type, default, padding=" "):
+    def _generate_default_node(value_type: type, default, padding: str = " "):
         """
         Generates a "default" or blank ValueNode.
 
@@ -151,7 +186,7 @@ class MCNP_Object(ABC, metaclass=_ExceptionContextAdder):
         return ValueNode(str(default), value_type, padding_node)
 
     @property
-    def parameters(self):
+    def parameters(self) -> dict[str, str]:
         """
         A dictionary of the additional parameters for the object.
 
@@ -178,7 +213,7 @@ class MCNP_Object(ABC, metaclass=_ExceptionContextAdder):
         """
         pass
 
-    def format_for_mcnp_input(self, mcnp_version):
+    def format_for_mcnp_input(self, mcnp_version: tuple[int]) -> list[str]:
         """
         Creates a string representation of this MCNP_Object that can be
         written to file.
@@ -195,7 +230,7 @@ class MCNP_Object(ABC, metaclass=_ExceptionContextAdder):
         return lines
 
     @property
-    def comments(self):
+    def comments(self) -> list[PaddingNode]:
         """
         The comments associated with this input if any.
 
@@ -208,7 +243,7 @@ class MCNP_Object(ABC, metaclass=_ExceptionContextAdder):
         return list(self._tree.comments)
 
     @property
-    def leading_comments(self):
+    def leading_comments(self) -> list[PaddingNode]:
         """
         Any comments that come before the beginning of the input proper.
 
@@ -227,6 +262,13 @@ class MCNP_Object(ABC, metaclass=_ExceptionContextAdder):
             )
         if isinstance(comments, CommentNode):
             comments = [comments]
+        if isinstance(comments, (list, tuple)):
+            for comment in comments:
+                if not isinstance(comment, CommentNode):
+                    raise TypeError(
+                        f"Comments must be a CommentNode, or a list of Comments. {comment} given."
+                    )
+
         for i, comment in enumerate(comments):
             if not isinstance(comment, CommentNode):
                 raise TypeError(
@@ -234,7 +276,7 @@ class MCNP_Object(ABC, metaclass=_ExceptionContextAdder):
                 )
         new_nodes = list(*zip(comments, it.cycle(["\n"])))
         if self._tree["start_pad"] is None:
-            self._tree["start_pad"] = syntax_node.PaddingNode(" ")
+            self._tree["start_pad"] = PaddingNode(" ")
         self._tree["start_pad"]._nodes = new_nodes
 
     @leading_comments.deleter
@@ -244,7 +286,7 @@ class MCNP_Object(ABC, metaclass=_ExceptionContextAdder):
     @staticmethod
     def wrap_string_for_mcnp(
         string, mcnp_version, is_first_line, suppress_blank_end=True
-    ):
+    ) -> list[str]:
         """
         Wraps the list of the words to be a well formed MCNP input.
 
@@ -307,7 +349,7 @@ class MCNP_Object(ABC, metaclass=_ExceptionContextAdder):
         """
         pass
 
-    def link_to_problem(self, problem):
+    def link_to_problem(self, problem: montepy.mcnp_problem.MCNP_Problem):
         """Links the input to the parent problem for this input.
 
         This is done so that inputs can find links to other objects.
@@ -323,7 +365,7 @@ class MCNP_Object(ABC, metaclass=_ExceptionContextAdder):
             self._problem_ref = weakref.ref(problem)
 
     @property
-    def _problem(self):
+    def _problem(self) -> montepy.MCNP_Problem:
         if self._problem_ref is not None:
             return self._problem_ref()
         return None
@@ -336,7 +378,7 @@ class MCNP_Object(ABC, metaclass=_ExceptionContextAdder):
         self.link_to_problem(problem)
 
     @property
-    def trailing_comment(self):
+    def trailing_comment(self) -> list[PaddingNode]:
         """
         The trailing comments and padding of an input.
 
@@ -350,171 +392,9 @@ class MCNP_Object(ABC, metaclass=_ExceptionContextAdder):
     def _delete_trailing_comment(self):
         self._tree._delete_trailing_comment()
 
-    def _grab_beginning_comment(self, padding, last_obj=None):
+    def _grab_beginning_comment(self, padding: list[PaddingNode], last_obj=None):
         if padding:
             self._tree["start_pad"]._grab_beginning_comment(padding)
-
-    @staticmethod
-    def wrap_words_for_mcnp(words, mcnp_version, is_first_line):  # pragma: no cover
-        """
-        Wraps the list of the words to be a well formed MCNP input.
-
-        multi-line cards will be handled by using the indentation format,
-        and not the "&" method.
-
-        .. deprecated:: 0.2.0
-            The concept of words is deprecated, and should be handled by syntax trees now.
-
-        :param words: A list of the "words" or data-grams that needed to added to this card.
-                      Each word will be separated by at least one space.
-        :type words: list
-        :param mcnp_version: the tuple for the MCNP that must be formatted for.
-        :type mcnp_version: tuple
-        :param is_first_line: If true this will be the beginning of an MCNP card.
-                             The first line will not be indented.
-        :type is_first_line: bool
-        :returns: A list of strings that can be written to an input file, one item to a line.
-        :rtype: list
-        :raises DeprecationWarning: raised always.
-        """
-        warnings.warn(
-            "wrap_words_for_mcnp is deprecated. Use syntax trees instead.",
-            DeprecationWarning,
-            stacklevel=2,
-        )
-        string = " ".join(words)
-        return MCNP_Card.wrap_string_for_mcnp(string, mcnp_version, is_first_line)
-
-    @staticmethod
-    def compress_repeat_values(values, threshold=1e-6):  # pragma: no cover
-        """
-        Takes a list of floats, and tries to compress it using repeats.
-
-        E.g., 1 1 1 1 would compress to 1 3R
-
-        .. deprecated:: 0.2.0
-            This should be automatically handled by the syntax tree instead.
-
-        :param values: a list of float values to try to compress
-        :type values: list
-        :param threshold: the minimum threshold to consider two values different
-        :type threshold: float
-        :returns: a list of MCNP word strings that have repeat compression
-        :rtype: list
-        :raises DeprecationWarning: always raised.
-        """
-        warnings.warn(
-            "compress_repeat_values is deprecated, and shouldn't be necessary anymore",
-            DeprecationWarning,
-            stacklevel=2,
-        )
-        ret = []
-        last_value = None
-        float_formatter = "{:n}"
-        repeat_counter = 0
-
-        def flush_repeats():
-            nonlocal repeat_counter, ret
-            if repeat_counter >= 2:
-                ret.append(f"{repeat_counter}R")
-            elif repeat_counter == 1:
-                ret.append(float_formatter.format(last_value))
-            repeat_counter = 0
-
-        for value in values:
-            if isinstance(value, montepy.input_parser.mcnp_input.Jump):
-                ret.append(value)
-                last_value = None
-            elif last_value:
-                if np.isclose(value, last_value, atol=threshold):
-                    repeat_counter += 1
-                else:
-                    flush_repeats()
-                    ret.append(float_formatter.format(value))
-                    last_value = value
-            else:
-                ret.append(float_formatter.format(value))
-                last_value = value
-                repeat_counter = 0
-        flush_repeats()
-        return ret
-
-    @staticmethod
-    def compress_jump_values(values):  # pragma: no cover
-        """
-        Takes a list of strings and jump values and combines repeated jump values.
-
-        e.g., 1 1 J J 3 J becomes 1 1 2J 3 J
-
-        .. deprecated:: 0.2.0
-            This should be automatically handled by the syntax tree instead.
-
-        :param values: a list of string and Jump values to try to compress
-        :type values: list
-        :returns: a list of MCNP word strings that have jump compression
-        :rtype: list
-        :raises DeprecationWarning: raised always.
-        """
-        warnings.warn(
-            "compress_jump_values is deprecated, and will be removed in the future.",
-            DeprecationWarning,
-            stacklevel=2,
-        )
-        ret = []
-        jump_counter = 0
-
-        def flush_jumps():
-            nonlocal jump_counter, ret
-            if jump_counter == 1:
-                ret.append("J")
-            elif jump_counter >= 1:
-                ret.append(f"{jump_counter}J")
-            jump_counter = 0
-
-        for value in values:
-            if isinstance(value, montepy.input_parser.mcnp_input.Jump):
-                jump_counter += 1
-            else:
-                flush_jumps()
-                ret.append(value)
-        flush_jumps()
-        return ret
-
-    @property
-    def words(self):  # pragma: no cover
-        """
-        The words from the input file for this card.
-
-        .. warning::
-            .. deprecated:: 0.2.0
-                This has been replaced by the syntax tree data structure.
-
-        :raises DeprecationWarning: Access the syntax tree instead.
-        """
-        raise DeprecationWarning("This has been removed; instead use the syntax tree")
-
-    @property
-    def allowed_keywords(self):  # pragma: no cover
-        """
-        The allowed keywords for this class of MCNP_Card.
-
-        The allowed keywords that would appear in the parameters block.
-        For instance for cells the keywords ``IMP`` and ``VOL`` are allowed.
-        The allowed keywords need to be in upper case.
-
-        .. deprecated:: 0.2.0
-            This is no longer needed. Instead this is specified in
-            :func:`montepy.input_parser.tokens.MCNP_Lexer._KEYWORDS`.
-
-        :returns: A set of the allowed keywords. If there are none this should return the empty set.
-        :rtype: set
-        """
-        warnings.warn(
-            "allowed_keywords are deprecated, and will be removed soon.",
-            DeprecationWarning,
-            stacklevel=2,
-        )
-        return set()
 
     def __getstate__(self):
         state = self.__dict__.copy()
@@ -528,7 +408,7 @@ class MCNP_Object(ABC, metaclass=_ExceptionContextAdder):
         crunchy_data["_problem_ref"] = None
         self.__dict__.update(crunchy_data)
 
-    def clone(self):
+    def clone(self) -> montepy.mcnp_object.MCNP_Object:
         """
         Create a new independent instance of this object.
 

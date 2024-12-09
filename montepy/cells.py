@@ -8,6 +8,10 @@ import warnings
 class Cells(NumberedObjectCollection):
     """A collections of multiple :class:`montepy.cell.Cell` objects.
 
+    .. note::
+
+        For examples see the ``NumberedObjectCollection`` :ref:`collect ex`.
+
     :param cells: the list of cells to start with if needed
     :type cells: list
     :param problem: the problem to link this collection to.
@@ -180,3 +184,58 @@ class Cells(NumberedObjectCollection):
                 if buf := getattr(self, attr).format_for_mcnp_input(mcnp_version):
                     ret += buf
         return ret
+
+    def clone(
+        self, clone_material=False, clone_region=False, starting_number=None, step=None
+    ):
+        """
+        Create a new instance of this collection, with all new independent
+        objects with new numbers.
+
+        This relies mostly on ``copy.deepcopy``.
+
+        .. note ::
+            If starting_number, or step are not specified :func:`starting_number`,
+            and :func:`step` are used as default values.
+
+        .. versionadded:: 0.5.0
+
+        .. versionchanged:: 1.0.0
+
+            Added ``clone_material`` and ``clone_region``.
+
+        :param clone_material: Whether to create a new clone of the materials for the cells.
+        :type clone_material: bool
+        :param clone_region: Whether to clone the underlying objects (Surfaces, Cells) of these cells' region.
+        :type clone_region: bool
+        :param starting_number: The starting number to request for a new object numbers.
+        :type starting_number: int
+        :param step: the step size to use to find a new valid number.
+        :type step: int
+        :returns: a cloned copy of this object.
+        :rtype: type(self)
+
+        """
+        if not isinstance(starting_number, (int, type(None))):
+            raise TypeError(
+                f"Starting_number must be an int. {type(starting_number)} given."
+            )
+        if not isinstance(step, (int, type(None))):
+            raise TypeError(f"step must be an int. {type(step)} given.")
+        if starting_number is not None and starting_number <= 0:
+            raise ValueError(f"starting_number must be >= 1. {starting_number} given.")
+        if step is not None and step <= 0:
+            raise ValueError(f"step must be >= 1. {step} given.")
+        if starting_number is None:
+            starting_number = self.starting_number
+        if step is None:
+            step = self.step
+        objs = []
+        for obj in list(self):
+            new_obj = obj.clone(
+                clone_material, clone_region, starting_number, step, add_collect=False
+            )
+            starting_number = new_obj.number
+            objs.append(new_obj)
+            starting_number = new_obj.number + step
+        return type(self)(objs)

@@ -2,6 +2,7 @@
 from abc import ABC, abstractmethod
 import collections
 import copy
+import itertools as it
 import enum
 import math
 
@@ -1074,7 +1075,7 @@ class ValueNode(SyntaxNodeBase):
                     delta -= 1
                     if token.startswith("+"):
                         self._formatter["sign"] = "+"
-                    if token.startswith("-"):
+                    if token.startswith("-") and not self.never_pad:
                         self._formatter["sign"] = " "
                 if delta > 0:
                     self._formatter["zero_padding"] = length
@@ -1746,14 +1747,17 @@ class ListNode(SyntaxNodeBase):
         return True
 
 
-class IsotopesNode(SyntaxNodeBase):
+class MaterialsNode(SyntaxNodeBase):
     """
-    A node for representing isotopes and their concentration.
+    A node for representing isotopes and their concentration,
+    and the material parameters.
 
-    This stores a list of tuples of ZAIDs and concentrations.
+    This stores a list of tuples of ZAIDs and concentrations,
+    or a tuple of a parameter.
 
-    .. versionadded:: 0.2.0
-        This was added with the major parser rework.
+    .. versionadded:: 1.0.0
+
+        This was added as a more general version of ``IsotopesNodes``.
 
     :param name: a name for labeling this node.
     :type name: str
@@ -1762,9 +1766,13 @@ class IsotopesNode(SyntaxNodeBase):
     def __init__(self, name):
         super().__init__(name)
 
-    def append(self, isotope_fraction):
+    def append_nuclide(self, isotope_fraction):
         """
-        Append the node to this node.
+        Append the isotope fraction to this node.
+
+        .. versionadded:: 1.0.0
+
+            Added to replace ``append``
 
         :param isotope_fraction: the isotope_fraction to add. This must be a tuple from
             A Yacc production. This will consist of: the string identifying the Yacc production,
@@ -1774,10 +1782,26 @@ class IsotopesNode(SyntaxNodeBase):
         isotope, concentration = isotope_fraction[1:3]
         self._nodes.append((isotope, concentration))
 
+    def append(self):  # pragma: no cover
+        raise DeprecationWarning("Deprecated. Use append_param or append_nuclide")
+
+    def append_param(self, param):
+        """
+        Append the parameter to this node.
+
+        .. versionadded:: 1.0.0
+
+            Added to replace ``append``
+
+        :param param: the parameter to add to this node.
+        :type param: ParametersNode
+        """
+        self._nodes.append((param,))
+
     def format(self):
         ret = ""
-        for isotope, concentration in self.nodes:
-            ret += isotope.format() + concentration.format()
+        for node in it.chain(*self.nodes):
+            ret += node.format()
         return ret
 
     def __repr__(self):
@@ -1794,12 +1818,12 @@ class IsotopesNode(SyntaxNodeBase):
 
     def get_trailing_comment(self):
         tail = self.nodes[-1]
-        tail = tail[1]
+        tail = tail[-1]
         return tail.get_trailing_comment()
 
     def _delete_trailing_comment(self):
         tail = self.nodes[-1]
-        tail = tail[1]
+        tail = tail[-1]
         tail._delete_trailing_comment()
 
     def flatten(self):

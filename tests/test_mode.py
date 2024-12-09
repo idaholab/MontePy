@@ -100,7 +100,7 @@ class TestMode(TestCase):
             mode.set(5)
         with self.assertRaises(TypeError):
             mode.set([5])
-        with self.assertRaises(ValueError):
-            mode.set(["n", Particle.PHOTON])
-        with self.assertRaises(ValueError):
-            mode.set([Particle.PHOTON, "n"])
+        mode.set(["n", Particle.PHOTON])
+        assert len(mode) == 2
+        mode.set([Particle.PHOTON, "n"])
+        assert len(mode) == 2
