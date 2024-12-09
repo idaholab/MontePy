@@ -11,17 +11,16 @@ MontePy Changelog
 **Features Added**
 
 * Redesigned how Materials hold Material_Components. See :ref:`migrate 0 1` (:pull:`507`). 
-
 * Made it easier to create an Isotope, or now Nuclide: ``montepy.Nuclide("H-1.80c")`` (:issue:`505`).
 * When a typo in an object attribute is made an Error is raised rather than silently having no effect (:issue:`508`).
 * Improved material printing to avoid very long lists of components (:issue:`144`).
 * Allow querying for materials by components (:issue:`95`).
 * Added support for getting and setting default libraries, e.g., ``nlib``, from a material (:issue:`369`).
-* 
 * Added most objects to the top level so they can be accessed like: ``montepy.Cell``.
 * Made ``Material.is_atom_fraction`` settable (:issue:`511`). 
 * Made NumberedObjectCollections act like a set (:issue:`138`).
 * Automatically added children objects, e.g., the surfaces in a cell, to the problem when the cell is added to the problem (:issue:`63`).
+* An error is now raised when typos in object attributes are used, e.g., ``cell.nubmer`` (:issue:`508`).
 
 **Bugs Fixed**
 
