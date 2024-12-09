@@ -761,17 +761,78 @@ The following are all valid ways to specify a nuclide:
 
    >>> import montepy
    >>> montepy.Nuclide("1001.80c")
+   Nuclide('H-1.80c')
    >>> montepy.Nuclide("H-1.80c")
+   Nuclide('H-1.80c')
    >>> montepy.Nuclide("H-1.710nc")
+   Nuclide('H-1.710nc')
    >>> montepy.Nuclide("H")
+   Nuclide('H-0')
    >>> montepy.Nuclide("Co-60m1")
+   Nuclide('Co-60m1')
    >>> montepy.Nuclide("Co")
+   Nuclide('Co-0')
 
 
 .. note::
 
    The new SZAID and Name syntax for nuclides introduced with MCNP 6.3.1 is not currently supported by MontePy.
    This support likely will be added soon but probably not prior to MCNP 6.3.1 being available on RSICC. 
+
+
+Iterating over Material Components
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Materials are list-like iterables of tuples.
+
+.. testcode:: 
+
+    mat = problem.materials[1]
+
+    for comp in mat:
+        print(comp)
+
+This shows:
+
+.. testoutput::
+
+    (Nuclide('U-235.80c'), 5.0)
+    (Nuclide('U-238.80c'), 95.0)
+
+If you need just the nuclide, or just the fractions these are accessible by:
+:func:`~montepy.data_inputs.material.Material.nuclides`, and 
+:func:`~montepy.data_inputs.material.Material.values`.
+
+.. testcode::
+
+    for nuclide in mat.nuclides:
+        print(nuclide)
+    for fraction in mat.values:
+        print(value)
+
+shows:
+
+.. testoutput::
+
+    Nuclide('U-235.80c')
+    Nuclide('U-238.80c')
+    5.0
+    95.0
+
+Updating Components of Materials
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Adding Components to a Material
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Finding Materials
+^^^^^^^^^^^^^^^^^
+
+Finding Nuclides
+^^^^^^^^^^^^^^^^
+
+Mixing Materials
+^^^^^^^^^^^^^^^^
 
 Universes
 ---------
