@@ -410,12 +410,7 @@ class MCNP_Object(ABC, metaclass=_ExceptionContextAdder):
             self._tree["start_pad"]._grab_beginning_comment(padding)
 
     def __getstate__(self):
-        state = self.__dict__.copy()
-        bad_keys = {"_problem_ref", "_parser"}
-        for key in bad_keys:
-            if key in state:
-                del state[key]
-        return state
+        return {"_tree": self._tree}
 
     def __setstate__(self, crunchy_data):
         crunchy_data["_problem_ref"] = None

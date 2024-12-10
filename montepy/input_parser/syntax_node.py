@@ -200,10 +200,10 @@ class SyntaxNodeBase(ABC):
         ret = []
         for node in self.nodes:
             ret.append(node.__getstate__())
-        return (type(self), ret)
+        return ret
 
     def __setstate__(self, crunchy_data):
-        print(crunchy_data)
+        pass
 
     def pretty_str(self):
         INDENT = 2
@@ -211,7 +211,10 @@ class SyntaxNodeBase(ABC):
             return f"<Node: {self.name}: []>"
         ret = f"<Node: {self.name}: [\n"
         for val in self.nodes:
-            child_strs = val.pretty_str().split("\n")
+            if isinstance(val, SyntaxNodeBase):
+                child_strs = val.pretty_str().split("\n")
+            else:
+                child_strs = [str(val)]
             ret += "\n".join([" " * 2 * INDENT + s for s in child_strs[:-1]])
             ret += " " * 2 * INDENT + child_strs[-1] + ",\n"
         ret += " " * INDENT + "]\n"
@@ -337,13 +340,18 @@ class SyntaxNode(SyntaxNodeBase):
         ret = {}
         for key, node in self.nodes.items():
             ret[key] = node.__getstate__()
-        return (type(self), ret)
+        if all([v is None for v in ret.values()]):
+            return None
+        return ret
 
     def pretty_str(self):
         INDENT = 2
         ret = f"<Node: {self.name}: {{\n"
         for key, val in self.nodes.items():
-            child_strs = val.pretty_str().split("\n")
+            if isinstance(val, SyntaxNodeBase):
+                child_strs = val.pretty_str().split("\n")
+            else:
+                child_strs = [str(val)]
             ret += " " * INDENT + f"{key}: {child_strs[0]}\n"
             ret += "\n".join([" " * 2 * INDENT + s for s in child_strs[1:-1]])
             ret += " " * 2 * INDENT + child_strs[-1] + ",\n"
@@ -615,7 +623,7 @@ class GeometryTree(SyntaxNodeBase):
         ret = {}
         for key, node in self.nodes.items():
             ret[key] = node.__getstate__()
-        return (type(self), ret)
+        return ret
 
 
 class PaddingNode(SyntaxNodeBase):
@@ -637,7 +645,10 @@ class PaddingNode(SyntaxNodeBase):
             self.append(token, is_comment)
 
     def __str__(self):
-        return f"<Padding, {self._nodes}>"
+        try:
+            return f"<Padding, {self._nodes}>"
+        except AttributeError:
+            return f"<Padding>"
 
     def __repr__(self):
         return str(self)
@@ -923,7 +934,11 @@ class CommentNode(SyntaxNodeBase):
         return str(self) == str(other)
 
     def __getstate__(self):
-        return (type(self), {"is_dollar": self._is_dollar, "nodes": self._nodes})
+        return {
+            "type": "PaddingNode",
+            "is_dollar": self._is_dollar,
+            "nodes": self._nodes,
+        }
 
 
 class ValueNode(SyntaxNodeBase):
@@ -1316,20 +1331,19 @@ class ValueNode(SyntaxNodeBase):
         return buffer + extra_pad_str
 
     def __getstate__(self):
-        return (
-            type(self),
-            {
-                "_type": self._type.__name__,
-                "_token": self._token,
-                "_value": self.value,
-                "_padding": self._padding,
-            },
-        )
+        if self.value is None and self.token is None and self.padding is None:
+            return None
+        return {
+            "_type": self._type.__name__,
+            "_token": self._token,
+            "_value": self.value,
+            "_padding": self._padding,
+        }
 
     __NAME_TYPE_MAP = {type.__name__: type for type in {int, float, str}}
 
     def __setstate__(self, crunchy_data):
-        node_type, data = crunchy_data
+        data = crunchy_data
         data["_type"] = self.__NAME_TYPE_MAP[data["_type"]]
         self.__dict__.update(data)
 
@@ -1592,10 +1606,10 @@ class ParticleNode(SyntaxNodeBase):
         return iter(self.particles)
 
     def __getstate__(self):
-        ret = {}
+        ret = {"_type": "ParticleNode"}
         for attr_name in {"_token", "_order", "_particles"}:
             ret[attr_name] = getattr(self, attr_name)
-        return (type(self), ret)
+        return ret
 
 
 class ListNode(SyntaxNodeBase):
@@ -2639,10 +2653,7 @@ class ParametersNode(SyntaxNodeBase):
     def pretty_str(self):
         INDENT = 2
         ret = f"<Node: {self.name}: {{\n"
-        print(self.nodes)
         for key, val in self.nodes.items():
-            print(val, val is self)
-            print(val.pretty_str())
             child_strs = val.pretty_str().split("\n")
             ret += " " * INDENT + f"{key}: {child_strs[0]}\n"
             ret += "\n".join([" " * 2 * INDENT + s for s in child_strs[1:-1]])
@@ -2688,4 +2699,10 @@ class ParametersNode(SyntaxNodeBase):
                 ret.append(node)
             else:
                 ret += node.flatten()
+        return ret
+
+    def __getstate__(self):
+        ret = []
+        for node in self.nodes.values():
+            ret.append(node)
         return ret
