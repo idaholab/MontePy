@@ -684,3 +684,18 @@ Users are more like to use this dynamic code.
 In general this philosophy is: if it's not the source of truth,
 it should be a generator.
 
+Constants and Meta Data Structures
+----------------------------------
+
+MontePy uses constants and data structures to utilize meta-programming,
+and remove redundant code.
+Typical constants can be found in :mod:`montepy.constants`.
+
+Here are the other data structures to be aware of:
+
+* :class:`~montepy.mcnp_problem.MCNP_Problem` ``_NUMBERED_OBJ_MAP``: maps a based numbered object to its collection
+  class. This is used for loading all problem numbered object collections in an instance.
+* :func:`montepy.data_inputs.data_parser.PREFIX_MATCHES` is a set of the data object classes. The prefix is taken from
+  the classes. A data object must be a member of this class for it to automatically parse new data objects.
+* :class:`~montepy.cell.Cell` ``_INPUTS_TO_PROPERTY`` maps a cell modifier class to the attribute to load it into for a
+  cell.  The boolean is whether multiple input instances are allowed.
