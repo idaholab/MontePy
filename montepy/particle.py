@@ -7,7 +7,7 @@ class Particle(str, Enum):
     """
     Supported MCNP supported particles.
 
-    Taken from Table 2-2 of LA-UR-17-29981.
+    Taken from :manual62:`46`.
     """
 
     NEUTRON = "N"
@@ -68,7 +68,7 @@ class LibraryType(str, Enum):
 
     .. versionadded:: 1.0.0
 
-    Taken from section of 5.6.1 of LA-UR-22-30006
+    Taken from :manual63:`5.6.1`.
     """
 
     def __new__(cls, value, particle=None):
