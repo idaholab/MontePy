@@ -36,8 +36,10 @@ extensions = [
     "sphinx.ext.napoleon",
     "sphinx.ext.intersphinx",
     "sphinx.ext.extlinks",
+    "sphinx.ext.doctest",
     "sphinx_sitemap",
     "sphinx_favicon",
+    "sphinx_copybutton"
 ]
 
 # Add any paths that contain templates here, relative to this directory.
@@ -52,7 +54,7 @@ html_logo = "monty.svg"
 
 html_baseurl = "https://www.montepy.org/"
 sitemap_url_scheme = "{link}"
-html_extra_path = ["robots.txt"]
+html_extra_path = ["robots.txt", "foo.imcnp"]
 # List of patterns, relative to source directory, that match files and
 # directories to ignore when looking for source files.
 # This pattern also affects html_static_path and html_extra_path.

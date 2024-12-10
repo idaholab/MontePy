@@ -12,8 +12,8 @@ of Conduct](CODE_OF_CONDUCT.md). Please report any unacceptable behavior to mgal
 ## Resources
 
 - [GitHub Repository](https://github.com/idaholab/montepy)
-- [Documentation](https://idaholab.github.io/MontePy/)
-- [Developer's Guide](https://idaholab.github.io/MontePy/developing.html)
+- [Documentation](https://www.montepy.org/)
+- [Developer's Guide](https://www.montepy.org/developing.html)
 
 ## How to Report Bugs
 
@@ -29,12 +29,11 @@ Please review the package philosophy to see if the feature would be a good fit.
 
 ## How to Submit Changes
 
-All changes to OpenMC happen through pull requests. For a full overview of the
-process, see the developer's guide section on [Contributing to
-OpenMC](https://docs.openmc.org/en/latest/devguide/contributing.html).
+All changes to MontePy happen through pull requests. For a full overview of the
+process, see the developer's guide section on [MontePy's documentation](https://www.montepy.org/developing.html)
 
 ## Code Style
 
 Before you run off to make changes to the code, please review the [design 
-philosophy](https://idaholab.github.io/MontePy/developing.html#design-philosophy),
+philosophy](https://www.montepy.org/developing.html#design-philosophy),
 and make sure to also use [black](https://black.readthedocs.io/en/stable/index.html).
