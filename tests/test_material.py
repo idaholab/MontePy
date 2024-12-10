@@ -90,6 +90,7 @@ def verify_export(mat):
     new_mat = Material(Input(output, BlockType.DATA))
     assert mat.number == new_mat.number, "Material number not preserved."
     assert len(mat.material_components) == len(new_mat.material_components)
+    assert mat.is_atom_fraction == new_mat.is_atom_fraction
     for old_comp, new_comp in zip(
         mat.material_components.values(), new_mat.material_components.values()
     ):
