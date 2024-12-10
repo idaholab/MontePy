@@ -409,8 +409,16 @@ class MCNP_Object(ABC, metaclass=_ExceptionContextAdder):
         if padding:
             self._tree["start_pad"]._grab_beginning_comment(padding)
 
+    def serialize(self):
+        return {"type": type(self).__name__, "_tree": self._tree}
+
     def __getstate__(self):
-        return {"_tree": self._tree}
+        state = self.__dict__.copy()
+        bad_keys = {"_problem_ref", "_parser"}
+        for key in bad_keys:
+            if key in state:
+                del state[key]
+        return state
 
     def __setstate__(self, crunchy_data):
         crunchy_data["_problem_ref"] = None

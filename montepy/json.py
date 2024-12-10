@@ -1,11 +1,15 @@
 import inspect
 import json
+import montepy
 from enum import Enum
 
 
 class MontepyJSONEncode(json.JSONEncoder):
     def default(self, o):
-        data = o.__getstate__()
+        try:
+            data = o.serialize()
+        except AttributeError:
+            data = o.__getstate__()
         new_data = {}
         if not isinstance(data, dict):
             return data
@@ -19,3 +23,12 @@ class MontepyJSONEncode(json.JSONEncoder):
             else:
                 new_data[key] = self.default(value)
         return new_data
+
+
+class MontepyJSONDecode(json.JSONDecoder):
+    def decode(self, s):
+        data = super().decode(s)
+
+        return montepy.input_parser.syntax_node.SyntaxNode.deserialize(
+            list(data.values())[-1]
+        )
