@@ -200,7 +200,7 @@ class SyntaxNodeBase(ABC):
         ret = []
         for node in self.nodes:
             ret.append(node.__getstate__())
-        return ret
+        return {"type": type(self).__name__, "nodes": ret}
 
     def __setstate__(self, crunchy_data):
         pass
@@ -337,11 +337,9 @@ class SyntaxNode(SyntaxNodeBase):
         return ret
 
     def __getstate__(self):
-        ret = {}
+        ret = {"type": type(self).__name__}
         for key, node in self.nodes.items():
             ret[key] = node.__getstate__()
-        if all([v is None for v in ret.values()]):
-            return None
         return ret
 
     def pretty_str(self):
@@ -620,7 +618,7 @@ class GeometryTree(SyntaxNodeBase):
         return ret
 
     def __getstate__(self):
-        ret = {}
+        ret = {"type": type(self).__name__}
         for key, node in self.nodes.items():
             ret[key] = node.__getstate__()
         return ret
@@ -816,6 +814,18 @@ class PaddingNode(SyntaxNodeBase):
                 return False
         return True
 
+    def __getstate__(self):
+        ret = []
+        for node in self.nodes:
+            if isinstance(node, str):
+                ret.append(node)
+            else:
+                ret.append(node.__getstate__())
+        return {
+            "type": type(self).__name__,
+            "nodes": ret,
+        }
+
 
 class CommentNode(SyntaxNodeBase):
     """
@@ -934,10 +944,16 @@ class CommentNode(SyntaxNodeBase):
         return str(self) == str(other)
 
     def __getstate__(self):
+        ret = []
+        for node in self.nodes:
+            if isinstance(node, str):
+                ret.append(node)
+            else:
+                ret.append(node.__getstate__())
         return {
-            "type": "PaddingNode",
+            "type": type(self).__name__,
             "is_dollar": self._is_dollar,
-            "nodes": self._nodes,
+            "nodes": ret,
         }
 
 
@@ -1334,10 +1350,11 @@ class ValueNode(SyntaxNodeBase):
         if self.value is None and self.token is None and self.padding is None:
             return None
         return {
+            "type": type(self).__name__,
             "_type": self._type.__name__,
             "_token": self._token,
             "_value": self.value,
-            "_padding": self._padding,
+            "_padding": self._padding.__getstate__() if self.padding else None,
         }
 
     __NAME_TYPE_MAP = {type.__name__: type for type in {int, float, str}}
@@ -1606,7 +1623,7 @@ class ParticleNode(SyntaxNodeBase):
         return iter(self.particles)
 
     def __getstate__(self):
-        ret = {"_type": "ParticleNode"}
+        ret = {"type": type(self).__name__}
         for attr_name in {"_token", "_order", "_particles"}:
             ret[attr_name] = getattr(self, attr_name)
         return ret
@@ -2705,4 +2722,4 @@ class ParametersNode(SyntaxNodeBase):
         ret = []
         for node in self.nodes.values():
             ret.append(node)
-        return ret
+        return {"type": type(self).__name__, "data": ret}
