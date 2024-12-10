@@ -2,6 +2,7 @@
 from abc import ABC, abstractmethod
 import collections
 import copy
+import itertools as it
 import enum
 import math
 
@@ -204,6 +205,19 @@ class SyntaxNodeBase(ABC):
     def __setstate__(self, crunchy_data):
         print(crunchy_data)
 
+    def pretty_str(self):
+        INDENT = 2
+        if not self.nodes:
+            return f"<Node: {self.name}: []>"
+        ret = f"<Node: {self.name}: [\n"
+        for val in self.nodes:
+            child_strs = val.pretty_str().split("\n")
+            ret += "\n".join([" " * 2 * INDENT + s for s in child_strs[:-1]])
+            ret += " " * 2 * INDENT + child_strs[-1] + ",\n"
+        ret += " " * INDENT + "]\n"
+        ret += ">"
+        return ret
+
 
 class SyntaxNode(SyntaxNodeBase):
     """
@@ -257,7 +271,7 @@ class SyntaxNode(SyntaxNodeBase):
             raise KeyError(f"{key} is not a value leaf node")
 
     def __str__(self):
-        return f"(Node: {self.name}: {self.nodes})"
+        return f"<Node: {self.name}: {self.nodes}>"
 
     def __repr__(self):
         return str(self)
@@ -325,6 +339,18 @@ class SyntaxNode(SyntaxNodeBase):
             ret[key] = node.__getstate__()
         return (type(self), ret)
 
+    def pretty_str(self):
+        INDENT = 2
+        ret = f"<Node: {self.name}: {{\n"
+        for key, val in self.nodes.items():
+            child_strs = val.pretty_str().split("\n")
+            ret += " " * INDENT + f"{key}: {child_strs[0]}\n"
+            ret += "\n".join([" " * 2 * INDENT + s for s in child_strs[1:-1]])
+            ret += " " * 2 * INDENT + child_strs[-1] + ",\n"
+        ret += " " * INDENT + "}\n"
+        ret += ">"
+        return ret
+
 
 class GeometryTree(SyntaxNodeBase):
     """
@@ -373,11 +399,32 @@ class GeometryTree(SyntaxNodeBase):
 
     def __str__(self):
         return (
-            f"Geometry: ( {self._left_side}"
+            f"Geometry: < {self._left_side}"
             f" {f'Short:{self._left_short_type.value}' if self._left_short_type else ''}"
             f" {self._operator} {self._right_side} "
-            f"{f'Short:{self._right_short_type.value}' if self._right_short_type else ''})"
+            f"{f'Short:{self._right_short_type.value}' if self._right_short_type else ''}>"
         )
+
+    def pretty_str(self):
+        INDENT = 2
+        ret = f"<Geometry: {self.name}: [\n"
+        for key, val in [
+            ("left", self._left_side.pretty_str()),
+            ("operator", self._operator),
+            ("right", self._right_side),
+        ]:
+            if val is None:
+                continue
+            if isinstance(val, SyntaxNodeBase):
+                child_strs = val.pretty_str().split("\n")
+            else:
+                child_strs = [str(val)]
+            ret += " " * INDENT + f"{key}: {child_strs[0]}\n"
+            ret += "\n".join([" " * 2 * INDENT + s for s in child_strs[1:-1]])
+            ret += " " * 2 * INDENT + child_strs[-1] + ",\n"
+        ret += " " * INDENT + "}\n"
+        ret += ">"
+        return ret
 
     def __repr__(self):
         return str(self)
@@ -590,7 +637,7 @@ class PaddingNode(SyntaxNodeBase):
             self.append(token, is_comment)
 
     def __str__(self):
-        return f"(Padding, {self._nodes})"
+        return f"<Padding, {self._nodes}>"
 
     def __repr__(self):
         return str(self)
@@ -863,6 +910,9 @@ class CommentNode(SyntaxNodeBase):
     def __str__(self):
         return self.format()
 
+    def pretty_str(self):
+        return str(self)
+
     def __repr__(self):
         ret = f"COMMENT: "
         for node in self.nodes:
@@ -1098,7 +1148,7 @@ class ValueNode(SyntaxNodeBase):
                     delta -= 1
                     if token.startswith("+"):
                         self._formatter["sign"] = "+"
-                    if token.startswith("-"):
+                    if token.startswith("-") and not self.never_pad:
                         self._formatter["sign"] = " "
                 if delta > 0:
                     self._formatter["zero_padding"] = length
@@ -1337,7 +1387,10 @@ class ValueNode(SyntaxNodeBase):
         return self._token
 
     def __str__(self):
-        return f"(Value, {self._value}, padding: {self._padding})"
+        return f"<Value, {self._value}, padding: {self._padding}>"
+
+    def pretty_str(self):
+        return str(self)
 
     def __repr__(self):
         return str(self)
@@ -1794,14 +1847,17 @@ class ListNode(SyntaxNodeBase):
         return True
 
 
-class IsotopesNode(SyntaxNodeBase):
+class MaterialsNode(SyntaxNodeBase):
     """
-    A node for representing isotopes and their concentration.
+    A node for representing isotopes and their concentration,
+    and the material parameters.
 
-    This stores a list of tuples of ZAIDs and concentrations.
+    This stores a list of tuples of ZAIDs and concentrations,
+    or a tuple of a parameter.
 
-    .. versionadded:: 0.2.0
-        This was added with the major parser rework.
+    .. versionadded:: 1.0.0
+
+        This was added as a more general version of ``IsotopesNodes``.
 
     :param name: a name for labeling this node.
     :type name: str
@@ -1810,9 +1866,13 @@ class IsotopesNode(SyntaxNodeBase):
     def __init__(self, name):
         super().__init__(name)
 
-    def append(self, isotope_fraction):
+    def append_nuclide(self, isotope_fraction):
         """
-        Append the node to this node.
+        Append the isotope fraction to this node.
+
+        .. versionadded:: 1.0.0
+
+            Added to replace ``append``
 
         :param isotope_fraction: the isotope_fraction to add. This must be a tuple from
             A Yacc production. This will consist of: the string identifying the Yacc production,
@@ -1822,14 +1882,41 @@ class IsotopesNode(SyntaxNodeBase):
         isotope, concentration = isotope_fraction[1:3]
         self._nodes.append((isotope, concentration))
 
+    def append(self):  # pragma: no cover
+        raise DeprecationWarning("Deprecated. Use append_param or append_nuclide")
+
+    def append_param(self, param):
+        """
+        Append the parameter to this node.
+
+        .. versionadded:: 1.0.0
+
+            Added to replace ``append``
+
+        :param param: the parameter to add to this node.
+        :type param: ParametersNode
+        """
+        self._nodes.append((param,))
+
     def format(self):
         ret = ""
-        for isotope, concentration in self.nodes:
-            ret += isotope.format() + concentration.format()
+        for node in it.chain(*self.nodes):
+            ret += node.format()
         return ret
 
     def __repr__(self):
-        return f"(Isotopes: {self.nodes})"
+        return f"(Materials: {self.nodes})"
+
+    def pretty_str(self):
+        INDENT = 2
+        ret = f"<Node: {self.name}: [\n"
+        for val in self.nodes:
+            child_strs = [f"({', '.join([str(v) for v in val])})"]
+            ret += "\n".join([" " * 2 * INDENT + s for s in child_strs[:-1]])
+            ret += " " * 2 * INDENT + child_strs[-1] + ",\n"
+        ret += " " * INDENT + "]\n"
+        ret += ">"
+        return ret
 
     def __iter__(self):
         return iter(self.nodes)
@@ -1842,12 +1929,12 @@ class IsotopesNode(SyntaxNodeBase):
 
     def get_trailing_comment(self):
         tail = self.nodes[-1]
-        tail = tail[1]
+        tail = tail[-1]
         return tail.get_trailing_comment()
 
     def _delete_trailing_comment(self):
         tail = self.nodes[-1]
-        tail = tail[1]
+        tail = tail[-1]
         tail._delete_trailing_comment()
 
     def flatten(self):
@@ -2446,6 +2533,17 @@ class ClassifierNode(SyntaxNodeBase):
             f" padding: {self.padding})"
         )
 
+    def pretty_str(self):
+        return f"""<Classifier: {{ 
+    mod: {self.modifier}, 
+    prefix: {self.prefix}, 
+    number: {self.number}, 
+    particles: {self.particles},
+    padding: {self.padding} 
+  }}
+>
+"""
+
     @property
     def comments(self):
         if self.padding is not None:
@@ -2533,10 +2631,25 @@ class ParametersNode(SyntaxNodeBase):
         self._nodes[key] = val
 
     def __str__(self):
-        return f"(Parameters, {self.nodes})"
+        return f"<Parameters, {self.nodes}>"
 
     def __repr__(self):
         return str(self)
+
+    def pretty_str(self):
+        INDENT = 2
+        ret = f"<Node: {self.name}: {{\n"
+        print(self.nodes)
+        for key, val in self.nodes.items():
+            print(val, val is self)
+            print(val.pretty_str())
+            child_strs = val.pretty_str().split("\n")
+            ret += " " * INDENT + f"{key}: {child_strs[0]}\n"
+            ret += "\n".join([" " * 2 * INDENT + s for s in child_strs[1:-1]])
+            ret += " " * 2 * INDENT + child_strs[-1] + ",\n"
+        ret += " " * INDENT + "}\n"
+        ret += ">"
+        return ret
 
     def __getitem__(self, key):
         return self.nodes[key.lower()]

@@ -15,6 +15,11 @@ class ThermalScatteringLaw(DataInputAbstract):
     The first is with a read input file using input_card, comment
     The second is after a read with a material and a comment (using named inputs)
 
+    .. seealso::
+
+        * :manual63:`5.6.2`
+        * :manual62:`110`
+
     :param input: the Input object representing this data input
     :type input: Input
     :param material: the parent Material object that owns this

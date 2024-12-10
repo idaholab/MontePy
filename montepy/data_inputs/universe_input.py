@@ -42,10 +42,7 @@ class UniverseInput(CellModifierInput):
             for node in self.data:
                 try:
                     node.is_negatable_identifier = True
-                    if node.value is not None:
-                        self._old_numbers.append(node)
-                    else:
-                        self._old_numbers.append(node)
+                    self._old_numbers.append(node)
                 except ValueError:
                     raise MalformedInputError(
                         input,

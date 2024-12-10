@@ -1,5 +1,10 @@
 # Copyright 2024, Battelle Energy Alliance, LLC All Rights Reserved.
+from __future__ import annotations
 import copy
+import re
+from typing import Union
+
+import montepy
 from montepy.errors import *
 from montepy.data_inputs import transform
 from montepy.input_parser import syntax_node
@@ -8,21 +13,36 @@ from montepy.numbered_mcnp_object import Numbered_MCNP_Object
 from montepy.surfaces import half_space
 from montepy.surfaces.surface_type import SurfaceType
 from montepy.utilities import *
-import re
 
 
 class Surface(Numbered_MCNP_Object):
     """
     Object to hold a single MCNP surface
 
+    .. versionchanged:: 1.0.0
+
+        Added number parameter
+
     :param input: The Input object representing the input
-    :type input: Input
+    :type input: Union[Input, str]
+    :param number: The number to set for this object.
+    :type number: int
     """
 
     _parser = SurfaceParser()
 
-    def __init__(self, input=None):
-        super().__init__(input, self._parser)
+    def __init__(
+        self,
+        input: Union[montepy.input_parser.mcnp_input.input, str] = None,
+        number: int = None,
+    ):
+        self._CHILD_OBJ_MAP = {
+            "periodic_surface": Surface,
+            "transform": transform.Transform,
+        }
+        self._BLOCK_TYPE = montepy.input_parser.block_type.BlockType.SURFACE
+        self._number = self._generate_default_node(int, -1)
+        super().__init__(input, self._parser, number)
         self._periodic_surface = None
         self._old_periodic_surface = self._generate_default_node(int, None)
         self._transform = None
@@ -31,7 +51,6 @@ class Surface(Numbered_MCNP_Object):
         self._is_white_boundary = False
         self._surface_constants = []
         self._surface_type = self._generate_default_node(str, None)
-        self._number = self._generate_default_node(int, -1)
         self._modifier = self._generate_default_node(str, None)
         # surface number
         if input:
@@ -285,9 +304,6 @@ class Surface(Numbered_MCNP_Object):
     def __ne__(self, other):
         return not self == other
 
-    def __hash__(self):
-        return hash((self.number, str(self.surface_type)))
-
     def find_duplicate_surfaces(self, surfaces, tolerance):
         """Finds all surfaces that are effectively the same as this one.
 
@@ -302,7 +318,15 @@ class Surface(Numbered_MCNP_Object):
         return []
 
     def __neg__(self):
+        if self.number <= 0:
+            raise IllegalState(
+                f"Surface number must be set for a surface to be used in a geometry definition."
+            )
         return half_space.UnitHalfSpace(self, False, False)
 
     def __pos__(self):
+        if self.number <= 0:
+            raise IllegalState(
+                f"Surface number must be set for a surface to be used in a geometry definition."
+            )
         return half_space.UnitHalfSpace(self, True, False)

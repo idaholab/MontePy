@@ -1,4 +1,5 @@
 # Copyright 2024, Battelle Energy Alliance, LLC All Rights Reserved.
+from __future__ import annotations
 from abc import abstractmethod
 import copy
 
@@ -14,6 +15,7 @@ from montepy.particle import Particle
 from montepy.mcnp_object import MCNP_Object
 
 import re
+from typing import Union
 
 
 class _ClassifierInput(Input):
@@ -43,7 +45,7 @@ class DataInputAbstract(MCNP_Object):
     Parent class to describe all MCNP data inputs.
 
     :param input: the Input object representing this data input
-    :type input: Input
+    :type input: Union[Input, str]
     :param fast_parse: Whether or not to only parse the first word for the type of data.
     :type fast_parse: bool
     """
@@ -52,17 +54,29 @@ class DataInputAbstract(MCNP_Object):
 
     _classifier_parser = ClassifierParser()
 
-    def __init__(self, input=None, fast_parse=False):
+    def __init__(
+        self,
+        input: Union[montepy.input_parser.mcnp_input.Input, str] = None,
+        fast_parse=False,
+    ):
         self._particles = None
         if not fast_parse:
             super().__init__(input, self._parser)
             if input:
                 self.__split_name(input)
         else:
-            input = copy.copy(input)
-            input.__class__ = _ClassifierInput
+            if input:
+                if isinstance(input, str):
+                    input = _ClassifierInput(
+                        input.split("\n"),
+                        montepy.input_parser.block_type.BlockType.DATA,
+                    )
+                else:
+                    input = copy.copy(input)
+                    input.__class__ = _ClassifierInput
             super().__init__(input, self._classifier_parser)
-            self.__split_name(input)
+            if input:
+                self.__split_name(input)
 
     @staticmethod
     @abstractmethod
@@ -229,7 +243,7 @@ class DataInputAbstract(MCNP_Object):
             if self._has_number():
                 try:
                     num = classifier.number.value
-                    assert num > 0
+                    assert num >= 0
                 except (AttributeError, AssertionError) as e:
                     raise MalformedInputError(
                         input,
@@ -259,70 +273,6 @@ class DataInputAbstract(MCNP_Object):
             return type_comp
         else:  # otherwise first part is equal
             return self._input_number.value < other._input_number.value
-
-    @property
-    def class_prefix(self):  # pragma: no cover
-        """The text part of the card identifier.
-
-        For example: for a material the prefix is ``m``
-
-        this must be lower case
-
-        .. deprecated:: 0.2.0
-            This has been moved to :func:`_class_prefix`
-
-        :returns: the string of the prefix that identifies a card of this class.
-        :rtype: str
-        :raises DeprecationWarning: always raised.
-        """
-        warnings.warn(
-            "This has been moved to the property _class_prefix.",
-            DeprecationWarning,
-            stacklevl=2,
-        )
-
-    @property
-    def has_number(self):  # pragma: no cover
-        """Whether or not this class supports numbering.
-
-        For example: ``kcode`` doesn't allow numbers but tallies do allow it e.g., ``f7``
-
-        .. deprecated:: 0.2.0
-            This has been moved to :func:`_has_number`
-
-        :returns: True if this class allows numbers
-        :rtype: bool
-        :raises DeprecationWarning: always raised.
-        """
-        warnings.warn(
-            "This has been moved to the property _has_number.",
-            DeprecationWarning,
-            stacklevl=2,
-        )
-
-    @property
-    def has_classifier(self):  # pragma: no cover
-        """Whether or not this class supports particle classifiers.
-
-        For example: ``kcode`` doesn't allow particle types but tallies do allow it e.g., ``f7:n``
-
-        * 0 : not allowed
-        * 1 : is optional
-        * 2 : is mandatory
-
-        .. deprecated:: 0.2.0
-            This has been moved to :func:`_has_classifier`
-
-
-        :returns: True if this class particle classifiers
-        :rtype: int
-        :raises DeprecationWarning: always raised.
-        """
-        warnings.warn(
-            "This has been moved to the property _has_classifier.",
-            DeprecationWarning,
-            stacklevl=2,
-        )
 
 
 class DataInput(DataInputAbstract):
