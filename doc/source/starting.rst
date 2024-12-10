@@ -720,6 +720,9 @@ For example:
     >>> new_cell.material.number 
     100
 
+
+.. _mat_tutorial:
+
 Materials
 ---------
 
@@ -780,8 +783,11 @@ The following are all valid ways to specify a nuclide:
    This support likely will be added soon but probably not prior to MCNP 6.3.1 being available on RSICC. 
 
 
+Working with Material Components
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
 Iterating over Material Components
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+""""""""""""""""""""""""""""""""""
 
 Materials are list-like iterables of tuples.
 
@@ -806,9 +812,9 @@ If you need just the nuclide, or just the fractions these are accessible by:
 .. testcode::
 
     for nuclide in mat.nuclides:
-        print(nuclide)
+        print(repr(nuclide))
     for fraction in mat.values:
-        print(value)
+        print(fraction)
 
 shows:
 
@@ -820,19 +826,235 @@ shows:
     95.0
 
 Updating Components of Materials
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+""""""""""""""""""""""""""""""""
+
+Materials are also list-like in that they are settable by index.
+The material must always be set to a tuple of a nuclide and a fraction.
+
+For instance:
+
+.. testcode::
+
+    nuclide = mat[0][0]
+    mat[0] = (nuclide, 4.0)
+
+Generally this is pretty clunky, and so 
+:func:`~montepy.data_inputs.material.Material.nuclides` and 
+:func:`~montepy.data_inputs.material.Material.values` are also settable.
+To undo the previous changes:
+
+.. testcode::
+
+    mat.values[0] = 5.0
+    print(mat[0])
+
+This outputs: 
+
+.. testoutput::
+
+    (Nuclide('U-235.80c'), 5.0)
 
 Adding Components to a Material
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+"""""""""""""""""""""""""""""""
 
-Finding Materials
-^^^^^^^^^^^^^^^^^
+To add components to a material use either
+:func:`~montepy.data_inputs.material.Material.add_nuclide`, or
+:func:`~montepy.data_inputs.material.Material.append`.
+:func:`~montepy.data_inputs.material.Material.add_nuclide` is generally the easier method to use.
+It accepts a nuclide or the name of a nuclide, and its fraction.
+
+.. note::
+
+    When adding a new component it is not possible to change whether the fraction is in atom fraction 
+    or mass fraction.
+    This is settable through :func:`~montepy.data_inputs.material.Material.is_atom_fraction`.
+
+.. testcode::
+
+    mat.add_nuclide("B-10.80c", 1e-6)
+    for comp in mat:
+        print(comp)
+
+.. testoutput::
+
+    (Nuclide('U-235.80c'), 5.0)
+    (Nuclide('U-238.80c'), 95.0)
+    (Nuclide('B-10.80c'), 1e-06)
+
+
+Libraries
+^^^^^^^^^
+
+MCNP nuclear data comes pre-packaged in multiple different libraries that come from different nuclear data sources
+(e.g., ENDF/B-VIII.0),
+at different temperatures, 
+and for different data needs, e.g., neutron data vs. photo-atomic data.
+For more details see `LA-UR-17-20709 <https://www.osti.gov/biblio/1342828>`_, or 
+`LANL's nuclear data libraries <https://nucleardata.lanl.gov/>`_. 
+
+All :class:`~montepy.data_inputs.nuclide.Nuclide` have a :class:`~montepy.data_inputs.nuclide.Nuclide.library`,
+though it may be just ``""``. 
+These can be manually set for each nuclide.
+If you wish to change all of the components in a material to use the same library you can use
+:func:`~montepy.data_inputs.material.Material.change_libraries`.
+
+MCNP has a precedence system for determining which library use in a specific instance.
+This precedence order is:
+
+#. The library specified with the nuclide e.g., ``80c`` in ``1001.80c``.
+#. The library specified as default for the material e.g., ``nlib = 80c``.
+#. The library specified as default in the default material, ``M0``. 
+#. The first matching entry in the ``XSDIR`` file.
+
+.. note::
+
+    MontePy currently does not support reading an ``XSDIR`` file and so will not provide information for 
+    that final step.
+
+Which library will be used for a given nuclide, material, and problem can be checked with:
+:func:`~montepy.data_inputs.material.Material.get_nuclide_library`.
+
+.. seealso::
+
+    * :manual63:`5.6.1`
+    * :manual62:`108`
+
+
+Finding Materials and Nuclides
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Next, we will cover how to find if a nuclide is in a material,
+if a material contains multiple nuclides,
+specific nuclides in a material (e.g., transuranics),
+or specific materials in a problem.
+
+Check if Nuclide in Material
+""""""""""""""""""""""""""""
+
+First, you can test if a :class:`~montepy.data_inputs.nuclide.Nuclide` 
+( or :class:`~montepy.data_inputs.nuclide.Nucleus`, or :class:`~montepy.data_inputs.element.Element`, or ``str``),
+is in a material.
+This is generally interpreted broadly rather than explicitly.
+For instance, if the test nuclide has no library this will match
+for all libraries, not just the empty library.
+Similarly, an elemental nuclide, e.g., ``H-0``, will match all nuclides based
+on the element, not just the elemental nuclide.
+
+.. doctest::
+
+    >>> montepy.Nuclide('H-1.80c') in mat
+    False
+    >>> montepy.Element(92) in mat
+    True
+    >>> "U-235" in mat
+    True
+    >>> "U-235.70c" in mat
+    False
+    >>> montepy.Nuclide("B-0") in mat
+    True
+
+For more complicated checks there is the :func:`~montepy.data_inputs.material.Material.contains`.
+This takes a plurality of nuclides as well as a threshold.
+This returns ``True`` if and only if the material contains *all* nuclides
+with a fraction above the threshold.
+
+.. doctest::
+
+    >>> mat.contains("H-1.80c")
+    False
+    >>> mat.contains("U-235", "U-238", threshold=1.0)
+    True
+    >>> mat.contains("U-235.80c", "B-10")
+    True
+    >>> mat.contains("U-235.80c", "B-10", threshold=1e-3)
+    False
 
 Finding Nuclides
-^^^^^^^^^^^^^^^^
+""""""""""""""""
+
+Often you may need to only work a subset of the components in a material.
+:func:`~montepy.data_inputs.material.Material.find`.
+This returns a Generator of the index of the matching component, and then the component tuple.
+
+.. testcode::
+
+    # find all uraium nuclides
+    for idx, (nuclide, fraction) in mat.find("U"):
+        print(idx, nuclide, fraction)
+
+.. testoutput::
+
+    0  U-235   (80c) 5.0
+    1  U-238   (80c) 95.0
+
+There are also other fancy ways to pass slices, for instance to find all transuranics.
+See the examples in :func:`~montepy.data_inputs.material.Material.find` for more details.
+
+There is a related function as well :func:`~montepy.data_inputs.material.Material.find_vals`,
+which accepts the same arguments but only returns the matching fractions.
+This is great for instance to calculate the heavy metal fraction of a fuel:
+
+.. testcode::
+
+    # get all heavy metal fractions
+    hm_fraction = sum(mat.find_vals(element=slice(90,None))) # slice is requires an end value to accept a start
+    print(hm_fraction)
+
+Shows:
+
+.. testoutput::
+
+    100.0
+
+Finding Materials
+"""""""""""""""""
+
+There are a lot of cases where you may want to find specific materials in a problem,
+for instance getting all steels in a problem.
+This is done with the function :func:`~montepy.materials.Materials.get_containing`
+of :class:`~montepy.materials.Materials`.
+It takes the same arguments as :func:`~montepy.data_inputs.material.Material.contains` 
+previously discussed.
 
 Mixing Materials
 ^^^^^^^^^^^^^^^^
+
+Commonly materials are a mixture of other materials.
+For instance a good idea for defining structural materials might be to create a new material for each element,
+that adds the naturally occurring nuclides of the element,
+and then mixing those elements together to make steel, zircalloy, etc.
+This mixing is done with :class:`~imontepy.materials.Materials.mix`.
+Note this is a method of ``Materials`` and not ``Material``.
+
+.. note::
+
+    Materials can only be combined if they are all atom fraction or mass fraction.
+
+.. note::
+
+    The materials being mixed will be normalized prior to mixing (the original materials are unaffected).
+
+.. testcode::
+
+    mats = problem.materials
+    h2o = montepy.Material()
+    h2o.number = 1
+    h2o.add_nuclide("1001.80c", 2.0)
+    h2o.add_nuclide("8016.80c", 1.0)
+
+    boric_acid = montepy.Material()
+    boric_acid.number = 2
+    for nuclide, fraction in {
+        "1001.80c": 3.0,
+        "B-10.80c": 1.0 * 0.189,
+        "B-11.80c": 1.0 * 0.796,
+        "O-16.80c": 3.0
+    }.items():
+        boric_acid.add_nuclide(nuclide, fraction)
+
+    # boric acid concentration
+    boron_conc = 100e-6 # 100 ppm
+    borated_water = mats.mix([h2o, boric_acid], [1 - boron_conc, boron_conc])
 
 Universes
 ---------
