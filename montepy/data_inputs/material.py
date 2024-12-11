@@ -152,8 +152,13 @@ See <https://www.montepy.org/migrations/migrate0_1.html> for more information ""
 
     def _update_values(self):
         new_list = syntax_node.IsotopesNode("new isotope list")
-        for isotope, component in self._material_components.items():
+        for idx, (isotope, component) in enumerate(self._material_components.items()):
             isotope._tree.value = isotope.mcnp_str()
+            node = component._tree
+            node.is_negatable_float = True
+            node.is_negative = not self.is_atom_fraction
+            if idx < len(self._material_components) - 1 and not node.padding:
+                node.padding = syntax_node.PaddingNode(" ")
             new_list.append(("_", isotope._tree, component._tree))
         self._tree.nodes["data"] = new_list
 
