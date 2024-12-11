@@ -71,7 +71,7 @@ jobs:
         name: install specific numpy version
       - run: pip install sly~=${{ matrix.sly-version }}
         name: install specific sly version
-      - run: pip install --user . montepy[test, build]
+      - run: pip install --user . montepy[test,build]
       - run: pip uninstall -y pytest-profiling
         name: Uninstall incompatible library
         if: ${{ matrix.python-version == '3.13' }}
