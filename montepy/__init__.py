@@ -51,13 +51,16 @@ try:
     from . import _version
 
     __version__ = _version.version
+    __version_tuple__ = _version.version_tuple
 except ImportError:
     try:
         from setuptools_scm import get_version
 
         __version__ = get_version()
+        __version_tuple__ = tuple(__version__.split("."))
     except (ImportError, LookupError):
         __version__ = "Undefined"
+        __version_tuple__ = ("Undefined",)
 
 
 # enable deprecated warnings for users
