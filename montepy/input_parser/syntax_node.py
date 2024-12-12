@@ -197,15 +197,18 @@ class SyntaxNodeBase(ABC):
                 ret += node.flatten()
         return ret
 
+    @classmethod
+    def _serialize_reduce(cls, k, v):
+        return v
+
     def serialize(self):
         ret = {"node_type": type(self).__name__}
 
-        def reduce(datum):
-            if isinstance(datum, type):
-                return datum.__name__
-            return datum
-
-        ret |= {k[1:]: reduce(v) for k, v in self.__dict__.items() if k != "_nodes"}
+        ret |= {
+            k[1:]: self._serialize_reduce(k, v)
+            for k, v in self.__dict__.items()
+            if k != "_nodes"
+        }
         if isinstance(self.nodes, list):
             nodes = []
             for node in self.nodes:
@@ -638,6 +641,21 @@ class GeometryTree(SyntaxNodeBase):
         self._iter_complete = False
         self._sub_iter = None
         return self
+
+    @classmethod
+    def _serialize_reduce(cls, k, v):
+        if k == "_operator":
+            return v.value
+        return v
+
+    @classmethod
+    def _deserialize_expand(cls, k, v):
+        if k == "operator":
+            return Operator(v)
+        if k in {"left_side", "right_side"}:
+            if isinstance(v, dict):
+                return cls.deserialize(v)
+        return v
 
     def __next__(self):
         if self._iter_complete:
@@ -1442,6 +1460,12 @@ class ValueNode(SyntaxNodeBase):
         return str(self)
 
     @classmethod
+    def _serialize_reduce(cls, k, v):
+        if isinstance(v, type):
+            return v.__name__
+        return v
+
+    @classmethod
     def _deserialize_expand(cls, k, v):
         if k == "type":
             MAP = {
@@ -1654,8 +1678,7 @@ class ParticleNode(SyntaxNodeBase):
     def __iter__(self):
         return iter(self.particles)
 
-    @classmethod
-    def _deserialize_expand(cls, k, v):
+    def _deserialize_expand(self, k, v):
         if k == "particles":
             if v:
                 return {Particle(part.upper()) for part in v}
@@ -1664,6 +1687,8 @@ class ParticleNode(SyntaxNodeBase):
             if v:
                 return [Particle(part.upper()) for part in v]
             return []
+        if k == "nodes":
+            return [self]
 
 
 class ListNode(SyntaxNodeBase):
