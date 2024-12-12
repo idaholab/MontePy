@@ -6,6 +6,7 @@ import itertools as it
 import enum
 import math
 
+import montepy
 from montepy import input_parser
 from montepy import constants
 from montepy.constants import rel_tol, abs_tol
@@ -197,10 +198,32 @@ class SyntaxNodeBase(ABC):
         return ret
 
     def serialize(self):
-        ret = []
-        for node in self.nodes:
-            ret.append(node.serialize())
-        return {"type": type(self).__name__, "_name": self.name, "nodes": ret}
+        ret = {"node_type": type(self).__name__}
+
+        def reduce(datum):
+            if isinstance(datum, type):
+                return datum.__name__
+            return datum
+
+        ret |= {k[1:]: reduce(v) for k, v in self.__dict__.items() if k != "_nodes"}
+        if isinstance(self.nodes, list):
+            nodes = []
+            for node in self.nodes:
+                if node is self:
+                    continue
+                if isinstance(node, str):
+                    nodes.append(node)
+                else:
+                    nodes.append(node.serialize())
+        else:
+            nodes = {}
+            for k, v in self.nodes.items():
+                if isinstance(v, str):
+                    nodes[k] = v
+                else:
+                    nodes[k] = v.serialize()
+        ret["nodes"] = nodes
+        return ret
 
     @classmethod
     def deserialize(cls, data):
@@ -220,15 +243,14 @@ class SyntaxNodeBase(ABC):
                 ValueNode,
             }
         }
-        NodeClass = CLASSES[data["type"]]
+        NodeClass = CLASSES[data["node_type"]]
         new_node = NodeClass.__new__(NodeClass)
         if "nodes" in data:
             if isinstance(data["nodes"], dict):
                 nodes = {}
                 for key, tree in data["nodes"].items():
                     if isinstance(tree, dict):
-                        child_class = CLASSES[tree["type"]]
-                        print(child_class)
+                        child_class = CLASSES[tree["node_type"]]
                         nodes[key] = child_class.deserialize(tree)
                     else:
                         nodes[key] = tree
@@ -240,10 +262,16 @@ class SyntaxNodeBase(ABC):
                     else:
                         nodes.append(node)
             del data["nodes"]
-            data["_nodes"] = nodes
-        del data["type"]
-        new_node.__dict__.update(data)
+            data["nodes"] = nodes
+        del data["node_type"]
+        new_node.__dict__.update(
+            {f"_{k}": new_node._deserialize_expand(k, v) for k, v in data.items()}
+        )
         return new_node
+
+    @classmethod
+    def _deserialize_expand(cls, key, value):
+        return value
 
     def pretty_str(self):
         INDENT = 2
@@ -374,12 +402,6 @@ class SyntaxNode(SyntaxNodeBase):
                 ret.append(node)
             else:
                 ret += node.flatten()
-        return ret
-
-    def serialize(self):
-        ret = {"type": type(self).__name__, "_name": self.name, "nodes": {}}
-        for key, node in self.nodes.items():
-            ret["nodes"][key] = node.serialize()
         return ret
 
     def pretty_str(self):
@@ -657,36 +679,6 @@ class GeometryTree(SyntaxNodeBase):
                 ret += node.flatten()
         return ret
 
-    def serialize(self):
-        ret = {"type": type(self).__name__, "_name": self.name, "nodes": {}}
-        for key in {"_left_short_type", "_right_short_type"}:
-            ret[key] = getattr(self, key)
-        for key, node in self.nodes.items():
-            ret["nodes"][key] = node.serialize()
-        return ret
-
-    @classmethod
-    def deserialize(cls, data):
-        print(data)
-        node = super().deserialize(data)
-        for node_key, attr in [
-            ("left", "_left_side"),
-            ("operator", "_operator"),
-            ("right", "_right_side"),
-        ]:
-            if node_key in node._nodes:
-                setattr(node, attr, node._nodes[node_key])
-            if node_key == "operator":
-                if node_key in node._nodes:
-                    node._operator = Operator(node.operator)
-                else:
-                    node._operator = Operator(">")
-            try:
-                node.right_side
-            except AttributeError:
-                node._right_side = None
-        return node
-
 
 class PaddingNode(SyntaxNodeBase):
     """
@@ -878,19 +870,6 @@ class PaddingNode(SyntaxNodeBase):
                 return False
         return True
 
-    def serialize(self):
-        ret = []
-        for node in self.nodes:
-            if isinstance(node, str):
-                ret.append(node)
-            else:
-                ret.append(node.serialize())
-        return {
-            "type": type(self).__name__,
-            "_name": self.name,
-            "nodes": ret,
-        }
-
 
 class CommentNode(SyntaxNodeBase):
     """
@@ -1007,20 +986,6 @@ class CommentNode(SyntaxNodeBase):
 
     def __eq__(self, other):
         return str(self) == str(other)
-
-    def serialize(self):
-        ret = []
-        for node in self.nodes:
-            if isinstance(node, str):
-                ret.append(node)
-            else:
-                ret.append(node.serialize())
-        return {
-            "type": type(self).__name__,
-            "_name": self.name,
-            "_is_dollar": self._is_dollar,
-            "nodes": ret,
-        }
 
 
 class ValueNode(SyntaxNodeBase):
@@ -1412,27 +1377,6 @@ class ValueNode(SyntaxNodeBase):
             )
         return buffer + extra_pad_str
 
-    def serialize(self):
-        if self.value is None and self.token is None and self.padding is None:
-            return None
-        return {
-            "type": type(self).__name__,
-            "_name": self.name,
-            "_type": self._type.__name__,
-            "_token": self._token,
-            "_value": self.value,
-            "_padding": self._padding.serialize() if self.padding else None,
-        }
-
-    @classmethod
-    def deserialize(cls, data):
-        new_node = cls.__new__(cls)
-        if "_padding" in data and data["_padding"]:
-            data["_padding"] = PaddingNode.deserialize(data["_padding"])
-        del data["type"]
-        new_node.__dict__.update(data)
-        return new_node
-
     __NAME_TYPE_MAP = {type.__name__: type for type in {int, float, str}}
 
     @property
@@ -1496,6 +1440,21 @@ class ValueNode(SyntaxNodeBase):
 
     def __repr__(self):
         return str(self)
+
+    @classmethod
+    def _deserialize_expand(cls, k, v):
+        if k == "type":
+            MAP = {
+                "int": int,
+                "float": float,
+                "str": str,
+                "Lattice": montepy.data_inputs.lattice.Lattice,
+            }
+            return MAP[v]
+        if k == "padding":
+            if v:
+                return cls.deserialize(v)
+        return v
 
     @property
     def value(self):
@@ -1666,13 +1625,15 @@ class ParticleNode(SyntaxNodeBase):
 
     def format(self):
         self._reverse_engineer_format()
-        if self._formatter["upper"]:
+        if self._formatter and self._formatter["upper"]:
             parts = [p.value.upper() for p in self._particles_sorted]
         else:
             parts = [p.value.lower() for p in self._particles_sorted]
         return f":{','.join(parts)}"
 
     def _reverse_engineer_format(self):
+        if not self._token:
+            return
         total_match = 0
         upper_match = 0
         for match in self._letter_finder.finditer(self._token):
@@ -1693,11 +1654,16 @@ class ParticleNode(SyntaxNodeBase):
     def __iter__(self):
         return iter(self.particles)
 
-    def serialize(self):
-        ret = {"type": type(self).__name__, "_name": self.name}
-        for attr_name in {"_token", "_order", "_particles"}:
-            ret[attr_name] = getattr(self, attr_name)
-        return ret
+    @classmethod
+    def _deserialize_expand(cls, k, v):
+        if k == "particles":
+            if v:
+                return {Particle(part.upper()) for part in v}
+            return set()
+        if k == "order":
+            if v:
+                return [Particle(part.upper()) for part in v]
+            return []
 
 
 class ListNode(SyntaxNodeBase):
@@ -2646,6 +2612,12 @@ class ClassifierNode(SyntaxNodeBase):
 >
 """
 
+    @classmethod
+    def _deserialize_expand(cls, key, value):
+        if isinstance(value, dict):
+            return cls.deserialize(value)
+        return value
+
     @property
     def comments(self):
         if self.padding is not None:
@@ -2788,9 +2760,3 @@ class ParametersNode(SyntaxNodeBase):
             else:
                 ret += node.flatten()
         return ret
-
-    def serialize(self):
-        ret = []
-        for node in self.nodes.values():
-            ret.append(node)
-        return {"type": type(self).__name__, "_name": self.name, "nodes": ret}

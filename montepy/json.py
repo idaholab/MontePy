@@ -9,7 +9,10 @@ class MontepyJSONEncode(json.JSONEncoder):
         try:
             data = o.serialize()
         except AttributeError:
-            data = o.__getstate__()
+            try:
+                data = o.__getstate__()
+            except TypeError:
+                data = o.__dict__
         new_data = {}
         if not isinstance(data, dict):
             return data
