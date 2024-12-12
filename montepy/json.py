@@ -32,6 +32,4 @@ class MontepyJSONDecode(json.JSONDecoder):
     def decode(self, s):
         data = super().decode(s)
 
-        return montepy.input_parser.syntax_node.SyntaxNode.deserialize(
-            list(data.values())[-1]
-        )
+        return montepy.mcnp_object.MCNP_Object.deserialize(data)

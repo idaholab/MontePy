@@ -3,6 +3,7 @@ from __future__ import annotations
 from abc import ABC, ABCMeta, abstractmethod
 import copy
 import functools
+import inspect
 import itertools as it
 import numpy as np
 import sys
@@ -101,7 +102,7 @@ class MCNP_Object(ABC, metaclass=_ExceptionContextAdder):
         For init removed ``comments``, and added ``parser`` as arguments.
 
     :param input: The Input syntax object this will wrap and parse.
-    :type input: Union[Input, str]
+    :type input: Union[Input, SyntaxNode, str]
     :param parser: The parser object to parse the input with.
     :type parser: MCNP_Parser
     """
@@ -112,7 +113,11 @@ class MCNP_Object(ABC, metaclass=_ExceptionContextAdder):
 
     def __init__(
         self,
-        input: Union[montepy.input_parser.mcnp_input.Input, str],
+        input: Union[
+            montepy.input_parser.mcnp_input.Input,
+            montepy.input_parser.syntax_node.SyntaxNode,
+            str,
+        ],
         parser: montepy.input_parser.parser_base.MCNP_Parser,
     ):
         try:
@@ -123,24 +128,35 @@ class MCNP_Object(ABC, metaclass=_ExceptionContextAdder):
         self._parameters = ParametersNode()
         self._input = None
         if input:
-            if not isinstance(input, (montepy.input_parser.mcnp_input.Input, str)):
+            if not isinstance(
+                input,
+                (
+                    montepy.input_parser.mcnp_input.Input,
+                    str,
+                    montepy.input_parser.syntax_node.SyntaxNode,
+                ),
+            ):
                 raise TypeError("input must be an Input")
             if isinstance(input, str):
                 input = montepy.input_parser.mcnp_input.Input(
                     input.split("\n"), self._BLOCK_TYPE
                 )
-            try:
+            if isinstance(input, montepy.input_parser.syntax_node.SyntaxNode):
+                self._tree = input
+            else:
                 try:
-                    parser.restart()
-                # raised if restarted without ever parsing
-                except AttributeError as e:
-                    pass
-                self._tree = parser.parse(input.tokenize(), input)
-                self._input = input
-            except ValueError as e:
-                raise MalformedInputError(
-                    input, f"Error parsing object of type: {type(self)}: {e.args[0]}"
-                ).with_traceback(e.__traceback__)
+                    try:
+                        parser.restart()
+                    # raised if restarted without ever parsing
+                    except AttributeError as e:
+                        pass
+                    self._tree = parser.parse(input.tokenize(), input)
+                    self._input = input
+                except ValueError as e:
+                    raise MalformedInputError(
+                        input,
+                        f"Error parsing object of type: {type(self)}: {e.args[0]}",
+                    ).with_traceback(e.__traceback__)
             if self._tree is None:
                 raise ParsingError(
                     input,
@@ -410,7 +426,22 @@ class MCNP_Object(ABC, metaclass=_ExceptionContextAdder):
             self._tree["start_pad"]._grab_beginning_comment(padding)
 
     def serialize(self):
-        return {"type": type(self).__name__, "_tree": self._tree}
+        return {"type": type(self).__name__, "tree": self._tree}
+
+    @classmethod
+    def deserialize(cls, data):
+        tree = montepy.input_parser.syntax_node.SyntaxNode.deserialize(data["tree"])
+
+        def get_classes(module):
+            ret = {}
+            for _, member in inspect.getmembers(module):
+                if inspect.isclass(member):
+                    ret[member.__name__] = member
+            return ret
+
+        classes = get_classes(montepy)
+        new_obj = classes[data["type"]](tree)
+        return new_obj
 
     def __getstate__(self):
         state = self.__dict__.copy()
