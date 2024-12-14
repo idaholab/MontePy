@@ -106,10 +106,6 @@ class MCNP_Object(ABC, metaclass=_ExceptionContextAdder):
     :type parser: MCNP_Parser
     """
 
-    """
-    The block type this input comes from.
-    """
-
     def __init__(
         self,
         input: Union[montepy.input_parser.mcnp_input.Input, str],
