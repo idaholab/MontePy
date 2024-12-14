@@ -4,7 +4,7 @@ from typing import Union
 import montepy
 from montepy.errors import *
 from montepy.surfaces.surface_type import SurfaceType
-from montepy.surfaces.surface import Surface
+from montepy.surfaces.surface import Surface, InitInput
 
 
 class GeneralPlane(Surface):
@@ -25,7 +25,7 @@ class GeneralPlane(Surface):
 
     def __init__(
         self,
-        input: Union[montepy.input_parser.mcnp_input.Input, str] = None,
+        input: InitInput = None,
         number: int = None,
     ):
         super().__init__(input, number)

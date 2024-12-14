@@ -1,4 +1,6 @@
 # Copyright 2024, Battelle Energy Alliance, LLC All Rights Reserved.
+
+import montepy
 from montepy.data_inputs import (
     data_input,
     fill,
@@ -26,7 +28,7 @@ PREFIX_MATCHES = {
 }
 
 
-def parse_data(input):
+def parse_data(input: montepy.mcnp_object.InitInput):
     """
     Parses the data input as the appropriate object if it is supported.
 
@@ -34,7 +36,7 @@ def parse_data(input):
         Removed the ``comment`` parameter, as it's in the syntax tree directly now.
 
     :param input: the Input object for this Data input
-    :type input: Input
+    :type input: Union[Input, str]
     :return: the parsed DataInput object
     :rtype: DataInput
     """

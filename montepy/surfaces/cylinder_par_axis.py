@@ -1,6 +1,6 @@
 # Copyright 2024, Battelle Energy Alliance, LLC All Rights Reserved.
 from .surface_type import SurfaceType
-from .surface import Surface
+from .surface import Surface, InitInput
 from montepy.errors import *
 from montepy.utilities import *
 
@@ -32,7 +32,7 @@ class CylinderParAxis(Surface):
     """Which coordinate is what value for each cylinder type.
     """
 
-    def __init__(self, input=None, number: int = None):
+    def __init__(self, input: InitInput = None, number: int = None):
         self._coordinates = [
             self._generate_default_node(float, None),
             self._generate_default_node(float, None),

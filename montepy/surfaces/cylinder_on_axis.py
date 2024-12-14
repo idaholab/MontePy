@@ -1,6 +1,6 @@
 # Copyright 2024, Battelle Energy Alliance, LLC All Rights Reserved.
 from .surface_type import SurfaceType
-from .surface import Surface
+from .surface import Surface, InitInput
 from montepy.errors import *
 from montepy.utilities import *
 
@@ -25,7 +25,7 @@ class CylinderOnAxis(Surface):
     :type number: int
     """
 
-    def __init__(self, input=None, number: int = None):
+    def __init__(self, input: InitInput = None, number: int = None):
         self._radius = self._generate_default_node(float, None)
         super().__init__(input, number)
         ST = SurfaceType

@@ -17,7 +17,7 @@ from montepy.data_inputs.material_component import MaterialComponent
 from montepy.input_parser import syntax_node
 from montepy.input_parser.material_parser import MaterialParser
 from montepy import mcnp_object
-from montepy.numbered_mcnp_object import Numbered_MCNP_Object
+from montepy.numbered_mcnp_object import Numbered_MCNP_Object, InitInput
 from montepy.errors import *
 from montepy.utilities import *
 from montepy.particle import LibraryType
@@ -287,7 +287,7 @@ class Material(data_input.DataInputAbstract, Numbered_MCNP_Object):
 
     def __init__(
         self,
-        input: Union[montepy.input_parser.mcnp_input.Input, str] = None,
+        input: InitInput = None,
         number: int = None,
     ):
         self._components = []

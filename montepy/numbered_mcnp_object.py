@@ -7,7 +7,7 @@ from typing import Union
 
 
 from montepy.errors import NumberConflictError
-from montepy.mcnp_object import MCNP_Object
+from montepy.mcnp_object import MCNP_Object, InitInput
 import montepy
 from montepy.utilities import *
 
@@ -51,7 +51,7 @@ class Numbered_MCNP_Object(MCNP_Object):
 
     def __init__(
         self,
-        input: Union[montepy.input_parser.mcnp_input.Input, str],
+        input: InitInput,
         parser: montepy.input_parser.parser_base.MCNP_Parser,
         number: int = None,
     ):

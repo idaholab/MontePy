@@ -12,7 +12,7 @@ from montepy.input_parser.data_parser import (
 )
 from montepy.input_parser.mcnp_input import Input
 from montepy.particle import Particle
-from montepy.mcnp_object import MCNP_Object
+from montepy.mcnp_object import MCNP_Object, InitInput
 
 import re
 from typing import Union
@@ -56,7 +56,7 @@ class DataInputAbstract(MCNP_Object):
 
     def __init__(
         self,
-        input: Union[montepy.input_parser.mcnp_input.Input, str] = None,
+        input: InitInput = None,
         fast_parse=False,
     ):
         self._particles = None
@@ -280,14 +280,16 @@ class DataInput(DataInputAbstract):
     Catch-all for all other MCNP data inputs.
 
     :param input: the Input object representing this data input
-    :type input: Input
+    :type input: Union[Input, str]
     :param fast_parse: Whether or not to only parse the first word for the type of data.
     :type fast_parse: bool
     :param prefix: The input prefix found during parsing (internal use only)
     :type prefix: str
     """
 
-    def __init__(self, input=None, fast_parse=False, prefix=None):
+    def __init__(
+        self, input: InitInput = None, fast_parse: bool = False, prefix: str = None
+    ):
         if prefix:
             self._load_correct_parser(prefix)
         super().__init__(input, fast_parse)

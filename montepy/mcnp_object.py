@@ -26,6 +26,8 @@ from montepy.input_parser.syntax_node import (
 )
 import montepy
 
+InitInput = Union[montepy.input_parser.mcnp_input.Input, str]
+
 
 class _ExceptionContextAdder(ABCMeta):
     """
@@ -108,7 +110,7 @@ class MCNP_Object(ABC, metaclass=_ExceptionContextAdder):
 
     def __init__(
         self,
-        input: Union[montepy.input_parser.mcnp_input.Input, str],
+        input: InitInput,
         parser: montepy.input_parser.parser_base.MCNP_Parser,
     ):
         try:
