@@ -121,8 +121,8 @@ class MCNP_Object(ABC, metaclass=_ExceptionContextAdder):
         self._parameters = ParametersNode()
         self._input = None
         if input:
-            if not isinstance(input, (montepy.input_parser.mcnp_input.Input, str)):
-                raise TypeError("input must be an Input")
+            if not isinstance(input, InitInput):
+                raise TypeError(f"input must be an Input or str. {input} given.")
             if isinstance(input, str):
                 input = montepy.input_parser.mcnp_input.Input(
                     input.split("\n"), self._BLOCK_TYPE
