@@ -119,3 +119,51 @@ that is immutable.
 The :class:`~montepy.data_inputs.nuclide.Nuclide` wraps this and adds a :class:`~montepy.data_inputs.nuclide.Library` object to specify the nuclear data that is used.
 It makes sense to be able to change a library.
 It does not make sense to change the intrinsic properties of a nuclide (i.e., ``Z``, ``A``, etc.).
+
+
+Code Comparison between 0.x and 1.x
+-----------------------------------
+ 
+Here are some example code blocks of various material operations in both versions.
+
+Iterating over Material Components
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+In MontePy 0.x
+""""""""""""""
+
+.. testcode::
+   :skipif: True
+   
+   import montepy
+   problem = montepy.read_input("foo.imcnp")
+   mat = problem.materials[1]
+   for component in mat.material_components.values():
+        print(component.fraction, component.isotope)
+
+This would print:
+
+.. testoutput::
+
+   2.0  H-1     (80c)
+   1.0  O-16    (80c)
+
+In MontePy 1.x
+""""""""""""""
+
+.. testcode::
+
+   import montepy
+   problem = montepy.read_input("foo.imcnp")
+   mat = problem.materials[1]
+   for nuclide, fraction in mat:
+        print(fraction, nuclide)
+
+Would print:
+
+.. testoutput::
+
+   2.0  H-1     (80c)
+   1.0  O-16    (80c)
+
+
