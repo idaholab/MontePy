@@ -726,7 +726,7 @@ For example:
 Materials
 ---------
 
-Materials are how he nuclide concentrations in cells are specified.
+Materials are how the nuclide concentrations in cells are specified.
 MontePy has always supported materials, but since version 1.0.0 the design of the interface has changed significantly,
 and greatly improved.
 
@@ -1022,8 +1022,8 @@ Mixing Materials
 Commonly materials are a mixture of other materials.
 For instance a good idea for defining structural materials might be to create a new material for each element,
 that adds the naturally occurring nuclides of the element,
-and then mixing those elements together to make steel, zircalloy, etc.
-This mixing is done with :class:`~imontepy.materials.Materials.mix`.
+and then mixing those elements together to make steel, zircaloy, etc.
+This mixing is done with :class:`~montepy.materials.Materials.mix`.
 Note this is a method of ``Materials`` and not ``Material``.
 
 .. note::

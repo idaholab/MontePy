@@ -22,12 +22,12 @@ See :issue:`504` for more details.
 Due to this it was decided that the best way forward was to abandon the old design,
 and to create a brand new data structure.
 This means that backwards compatibility *was* broken, 
-and so this fix lead to a major version release.
+and so this fix led to a major version release.
 
 
 Deprecations
 ------------
-The following properties and objects are currently deprecated, 
+The following properties and objects are currently deprecated 
 and were removed in MontePy 1.0.0.
 
 * :func:`~montepy.data_inputs.material.Material.material_components`. 
@@ -35,7 +35,7 @@ and were removed in MontePy 1.0.0.
 
 * ``MaterialComponents``:
   This is the class that stores information in the above dictionary. 
-  It is largely excess object wrapping, that makes the material interface 
+  It is largely excess object wrapping that makes the material interface 
   overly complex.
 
 * :class:`~montepy.data_inputs.isotope.Isotope` was renamed to :class:`~montepy.data_inputs.nuclide.Nuclide`. 
@@ -55,7 +55,7 @@ as well as the example in the :class:`~montepy.data_inputs.material.Material` do
         This design is not finalized and is subject to change.
         This is the currently planned design for ``1.0.0a1``.
         If you have input you can `join the discussion <https://github.com/idaholab/MontePy/discussions/475>`_.
-        For feedback on the alpha test please `join this discussion <https://github.com/idaholab/MontePy/discussions/604>`_.
+        For feedback on the alpha test, please `join this discussion <https://github.com/idaholab/MontePy/discussions/604>`_.
 
 ``material_components`` removal
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
