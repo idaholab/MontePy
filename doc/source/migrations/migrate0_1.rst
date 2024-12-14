@@ -33,7 +33,7 @@ and were removed in MontePy 1.0.0.
 * :func:`~montepy.data_inputs.material.Material.material_components`. 
   This is the dictionary that caused this design problem. 
 
-* ``MaterialComponents``:
+* :class:`~montepy.data_inputs.material_component.MaterialComponent`:
   This is the class that stores information in the above dictionary. 
   It is largely excess object wrapping that makes the material interface 
   overly complex.
@@ -165,5 +165,88 @@ Would print:
 
    2.0  H-1     (80c)
    1.0  O-16    (80c)
+
+Adding Material Components
+^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Appending and editing the material components in a material in MontePy 0.x
+is rather clunky, and a large reason for this release.
+
+In MontePy 0.x
+""""""""""""""
+.. testcode::
+   :skipif: True
+
+   from montepy.data_inputs.isotope import Isotope
+   from montepy.data_inputs.material_component import MaterialComponent
+   #construct new isotope
+   new_isotope = Isotope("5010.80c")
+   # construct new component
+   comp = MaterialComponent(new_isotope, 1e-6)
+   # add actual component to material
+   mat.material_components[new_isotope] = comp
+
+In MontePy 1.x
+""""""""""""""
+
+.. testcode::
+   
+   mat.add_nuclide("B-10.80c", 1e-6)
+
+
+Finding, Editing, and Deleting a Component
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Accessing a specific component is another reason for this release.
+As you may have noticed ``material_components`` is a dictionary with the keys being an ``Isotope``.
+Due to a bug in MontePy 0.x the exact instance of an Isotope must be passed as the key to access that item.
+
+In MontePy 0.x
+""""""""""""""
+
+.. testcode::
+   :skipif: True
+
+   target_isotope = Isotope("5010.80c")
+   key = None
+   for isotope in mat.material_components:
+        if isotope.element == target_isotope.element and isotope.A == target_isotope.A:
+            key = isotope
+            break
+   # get material component object
+   comp = mat[key]
+   # edit it. This will update the material because everything is a pointer 
+   comp.fraction = 2e-6
+   # delete the component
+   del mat[key]
+
+
+In MontePy 1.x
+""""""""""""""
+
+.. testcode::
+
+   target_isotope = Isotope("B-10.80c")
+   for comp_idx, (nuc, fraction) in mat.find(target_isotope):
+        break
+   # update fraction
+   mat.values[comp_idx] = 2e-6
+   # delete component
+   del mat[comp_idx]
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
