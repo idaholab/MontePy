@@ -226,7 +226,7 @@ In MontePy 1.x
 
 .. testcode::
 
-   target_isotope = Isotope("B-10.80c")
+   target_isotope = montepy.Nuclide("B-10.80c")
    for comp_idx, (nuc, fraction) in mat.find(target_isotope):
         break
    # update fraction
