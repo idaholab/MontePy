@@ -426,7 +426,12 @@ class MCNP_Object(ABC, metaclass=_ExceptionContextAdder):
             self._tree["start_pad"]._grab_beginning_comment(padding)
 
     def serialize(self):
-        return {"type": type(self).__name__, "tree": self._tree}
+        print("hi", self, self._input)
+        return {
+            "type": type(self).__name__,
+            "input": self._input.serialize(),
+            "tree": self._tree.serialize(),
+        }
 
     @classmethod
     def deserialize(cls, data):
@@ -441,6 +446,8 @@ class MCNP_Object(ABC, metaclass=_ExceptionContextAdder):
 
         classes = get_classes(montepy)
         new_obj = classes[data["type"]](tree)
+        del data["tree"]
+        new_obj.__dict__.update(data)
         return new_obj
 
     def __getstate__(self):
