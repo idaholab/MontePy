@@ -1,5 +1,5 @@
 # Copyright 2024, Battelle Energy Alliance, LLC All Rights Reserved.
-from montepy import mcnp_problem
+import montepy
 from montepy.constants import DEFAULT_VERSION
 
 
@@ -26,7 +26,7 @@ def read_input(destination, mcnp_version=DEFAULT_VERSION, replace=True):
     :raises BrokenObjectLinkError: If a reference is made to an object that is not in the input file.
     :raises UnknownElement: If an isotope is specified for an unknown element.
     """
-    problem = mcnp_problem.MCNP_Problem(destination)
+    problem = montepy.mcnp_problem.MCNP_Problem(destination)
     problem.mcnp_version = mcnp_version
     problem.parse_input(replace=replace)
     return problem

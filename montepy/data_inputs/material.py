@@ -1,13 +1,15 @@
 # Copyright 2024, Battelle Energy Alliance, LLC All Rights Reserved.
 from __future__ import annotations
-
-import copy
 import collections as co
+import copy
 import itertools
 import math
+import re
 from typing import Generator, Union
+import warnings
 import weakref
 
+import montepy
 from montepy.data_inputs import data_input, thermal_scattering
 from montepy.data_inputs.nuclide import Library, Nucleus, Nuclide
 from montepy.data_inputs.element import Element
@@ -15,14 +17,10 @@ from montepy.data_inputs.material_component import MaterialComponent
 from montepy.input_parser import syntax_node
 from montepy.input_parser.material_parser import MaterialParser
 from montepy import mcnp_object
-from montepy.numbered_mcnp_object import Numbered_MCNP_Object
+from montepy.numbered_mcnp_object import Numbered_MCNP_Object, InitInput
 from montepy.errors import *
 from montepy.utilities import *
 from montepy.particle import LibraryType
-import montepy
-
-import re
-import warnings
 
 
 MAX_PRINT_ELEMENTS: int = 5
@@ -265,6 +263,7 @@ class Material(data_input.DataInputAbstract, Numbered_MCNP_Object):
         80p
         00c
 
+    .. versionchanged:: 1.0.0
 
     .. seealso::
 
@@ -273,15 +272,24 @@ class Material(data_input.DataInputAbstract, Numbered_MCNP_Object):
 
     .. versionchanged:: 1.0.0
 
-        This was the primary change for this release. For more details on what changed see :ref:`migrate 0 1`.
+        * Added number parameter
+        * This was the primary change for this release. For more details on what changed see :ref:`migrate 0 1`.
 
-    :param input: the input that contains the data for this material
-    :type input: Input
+    :param input: The Input syntax object this will wrap and parse.
+    :type input: Union[Input, str]
+    :param parser: The parser object to parse the input with.
+    :type parser: MCNP_Parser
+    :param number: The number to set for this object.
+    :type number: int
     """
 
     _parser = MaterialParser()
 
-    def __init__(self, input: montepy.input_parser.mcnp_input.Input = None):
+    def __init__(
+        self,
+        input: InitInput = None,
+        number: int = None,
+    ):
         self._components = []
         self._thermal_scattering = None
         self._is_atom_fraction = True
@@ -291,6 +299,7 @@ class Material(data_input.DataInputAbstract, Numbered_MCNP_Object):
         self._nuclei = set()
         self._default_libs = _DefaultLibraries(self)
         super().__init__(input)
+        self._load_init_num(number)
         if input:
             num = self._input_number
             self._old_number = copy.deepcopy(num)
@@ -342,6 +351,7 @@ class Material(data_input.DataInputAbstract, Numbered_MCNP_Object):
     def _create_default_tree(self):
         classifier = syntax_node.ClassifierNode()
         classifier.number = self._number
+        classifier.number.never_pad = True
         classifier.prefix = syntax_node.ValueNode("M", str, never_pad=True)
         classifier.padding = syntax_node.PaddingNode(" ")
         mats = syntax_node.MaterialsNode("mat stuff")

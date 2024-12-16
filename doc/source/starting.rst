@@ -273,8 +273,7 @@ The ``NumberedObjectCollection`` has various mechanisms internally to avoid numb
 
         import montepy
         prob = montepy.read_input("tests/inputs/test.imcnp")
-        cell = montepy.Cell()
-        cell.number = 2
+        cell = montepy.Cell(number = 2)
         prob.cells.append(cell)
 
 .. testoutput::
@@ -340,21 +339,23 @@ Using the generators in this way does not cause any issues, but there are ways t
 by making "stale" information.
 This can be done by making a copy of it with ``list()``. 
 
->>> for num in problem.cells.numbers:
-...   print(num)
-1
-2
-3
-99
-5
->>> numbers = list(problem.cells.numbers)
->>> numbers
-[1, 2, 3, 99, 5]
->>> problem.cells[1].number = 1000
->>> 1000 in problem.cells.numbers
-True
->>> 1000 in numbers
-False
+.. doctest::
+
+        >>> for num in problem.cells.numbers:
+        ...   print(num)
+        1
+        2
+        3
+        99
+        5
+        >>> numbers = list(problem.cells.numbers)
+        >>> numbers
+        [1, 2, 3, 99, 5]
+        >>> problem.cells[1].number = 1000
+        >>> 1000 in problem.cells.numbers
+        True
+        >>> 1000 in numbers
+        False
 
 Oh no! When we made a list of the numbers we broke the link, and the new list won't update when the numbers of the cells change, 
 and you can cause issues this way.
@@ -369,6 +370,35 @@ How numbered objects, for instance :class:`~montepy.cell.Cell`, is more complica
 If a ``Cell`` or a group of ``Cells`` are cloned their numbers will be to changed to avoid collisions.
 However, if a whole :class:`~montepy.mcnp_problem.MCNP_Problem` is cloned these objects will not have their numbers changed.
 For an example for how to clone a numbered object see :ref:`Cloning a Cell`.
+
+Creating Objects from a String
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Sometimes its more convenient to create an MCNP object from its input string for MCNP, rather than setting a lot of properties,
+or the object you need isn't supported by MontePy yet.
+In this case there are a few ways to generate this object.
+First all :class:`~montepy.mcnp_object.MCNP_Object` constructors can take a string:
+
+.. doctest::
+
+   >>> cell = montepy.Cell("1 0 -2 imp:n=1")
+   >>> cell.number
+   1
+   >>> cell.importance[montepy.Particle.NEUTRON]
+   1.0
+
+This object is still unlinked from other objects, and won't be kept with a problem.
+So there is also :func:`~montepy.mcnp_problem.MCNP_Problem.parse`. 
+This takes a string, and then creates the MCNP object,
+links it to the problem,
+links it to its other objects (e.g., surfaces, materials, etc.),
+and appends it to necessary collections:
+
+.. testcode::
+
+   cell = problem.parse("123 0 -1005")
+   assert cell in problem.cells
+   assert cell.surfaces[1005] is problem.surfaces[1005]
 
 Surfaces
 --------
@@ -596,24 +626,18 @@ Order of precedence and grouping is automatically handled by Python so you can e
 .. testcode::
 
    # build blank surfaces 
-   bottom_plane = montepy.AxisPlane()
+   bottom_plane = montepy.AxisPlane(number=1)
    bottom_plane.location = 0.0
-   top_plane = montepy.AxisPlane()
+   top_plane = montepy.AxisPlane(number=2)
    top_plane.location = 10.0
-   fuel_cylinder = montepy.CylinderOnAxis()
+   fuel_cylinder = montepy.CylinderOnAxis(number=3)
    fuel_cylinder.radius = 1.26 / 2
-   clad_cylinder = montepy.CylinderOnAxis()
+   clad_cylinder = montepy.CylinderOnAxis( number=4)
    clad_cylinder.radius = (1.26 / 2) + 1e-3 # fuel, gap, cladding
-   clad_od = montepy.surfaces.CylinderOnAxis()
+   clad_od = montepy.CylinderOnAxis(number=5)
    clad_od.radius = clad_cylinder.radius + 0.1 # add thickness
-   other_fuel = montepy.surfaces.CylinderOnAxis()
+   other_fuel = montepy.CylinderOnAxis(number=6)
    other_fuel.radius = 3.0
-   other_fuel.number = 10
-   bottom_plane.number = 1
-   top_plane.number = 2
-   fuel_cylinder.number = 3
-   clad_cylinder.number = 4
-   clad_od.number = 5
    
    #make weird truncated fuel sample
    slug_half_space = +bottom_plane & -top_plane & -fuel_cylinder
@@ -808,8 +832,7 @@ You can also easy apply a transform to the filling universe with:
 .. testcode::
 
    import numpy as np
-   transform = montepy.data_inputs.transform.Transform()
-   transform.number = 5
+   transform = montepy.data_inputs.transform.Transform(number=5)
    transform.displacement_vector = np.array([1, 2, 0])
    cell.fill.transform = transform
 

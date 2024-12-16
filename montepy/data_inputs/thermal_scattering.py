@@ -1,10 +1,12 @@
 # Copyright 2024, Battelle Energy Alliance, LLC All Rights Reserved.
-from montepy.data_inputs.data_input import DataInputAbstract
+from __future__ import annotations
+
+import montepy
+from montepy.data_inputs.data_input import DataInputAbstract, InitInput
 from montepy.input_parser.thermal_parser import ThermalParser
 from montepy import mcnp_object
 from montepy.errors import *
 from montepy.utilities import *
-import montepy
 
 
 class ThermalScatteringLaw(DataInputAbstract):
@@ -21,14 +23,14 @@ class ThermalScatteringLaw(DataInputAbstract):
         * :manual62:`110`
 
     :param input: the Input object representing this data input
-    :type input: Input
+    :type input: Union[Input, str]
     :param material: the parent Material object that owns this
     :type material: Material
     """
 
     _parser = ThermalParser()
 
-    def __init__(self, input="", material=None):
+    def __init__(self, input: InitInput = "", material: montepy.Material = None):
         self._old_number = self._generate_default_node(int, -1)
         self._parent_material = None
         self._scattering_laws = []

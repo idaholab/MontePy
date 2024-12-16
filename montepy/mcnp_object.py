@@ -7,6 +7,7 @@ import itertools as it
 import numpy as np
 import sys
 import textwrap
+from typing import Union
 import warnings
 import weakref
 
@@ -24,6 +25,8 @@ from montepy.input_parser.syntax_node import (
     ValueNode,
 )
 import montepy
+
+InitInput = Union[montepy.input_parser.mcnp_input.Input, str]
 
 
 class _ExceptionContextAdder(ABCMeta):
@@ -100,22 +103,30 @@ class MCNP_Object(ABC, metaclass=_ExceptionContextAdder):
         For init removed ``comments``, and added ``parser`` as arguments.
 
     :param input: The Input syntax object this will wrap and parse.
-    :type input: Input
+    :type input: Union[Input, str]
     :param parser: The parser object to parse the input with.
-    :type parser: MCNP_Lexer
+    :type parser: MCNP_Parser
     """
 
     def __init__(
         self,
-        input: montepy.input_parser.mcnp_input.Input,
+        input: InitInput,
         parser: montepy.input_parser.parser_base.MCNP_Parser,
     ):
+        try:
+            self._BLOCK_TYPE
+        except AttributeError:
+            self._BLOCK_TYPE = montepy.input_parser.block_type.BlockType.DATA
         self._problem_ref = None
         self._parameters = ParametersNode()
         self._input = None
         if input:
-            if not isinstance(input, montepy.input_parser.mcnp_input.Input):
-                raise TypeError("input must be an Input")
+            if not isinstance(input, (montepy.input_parser.mcnp_input.Input, str)):
+                raise TypeError(f"input must be an Input or str. {input} given.")
+            if isinstance(input, str):
+                input = montepy.input_parser.mcnp_input.Input(
+                    input.split("\n"), self._BLOCK_TYPE
+                )
             try:
                 try:
                     parser.restart()

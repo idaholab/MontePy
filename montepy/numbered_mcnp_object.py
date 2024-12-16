@@ -1,9 +1,13 @@
 # Copyright 2024, Battelle Energy Alliance, LLC All Rights Reserved.
+from __future__ import annotations
 from abc import abstractmethod
 import copy
 import itertools
+from typing import Union
+
+
 from montepy.errors import NumberConflictError
-from montepy.mcnp_object import MCNP_Object
+from montepy.mcnp_object import MCNP_Object, InitInput
 import montepy
 from montepy.utilities import *
 
@@ -30,6 +34,40 @@ def _number_validator(self, number):
 
 
 class Numbered_MCNP_Object(MCNP_Object):
+    """
+    An abstract class to represent an mcnp object that has a number.
+
+    .. versionchanged:: 1.0.0
+
+        Added number parameter
+
+    :param input: The Input syntax object this will wrap and parse.
+    :type input: Union[Input, str]
+    :param parser: The parser object to parse the input with.
+    :type parser: MCNP_Parser
+    :param number: The number to set for this object.
+    :type number: int
+    """
+
+    def __init__(
+        self,
+        input: InitInput,
+        parser: montepy.input_parser.parser_base.MCNP_Parser,
+        number: int = None,
+    ):
+        self._number = self._generate_default_node(int, -1)
+        super().__init__(input, parser)
+        self._load_init_num(number)
+
+    def _load_init_num(self, number):
+        if number is not None:
+            if not isinstance(number, int):
+                raise TypeError(
+                    f"Number must be an int. {number} of type {type(number)} given."
+                )
+            if number < 0:
+                raise ValueError(f"Number must be 0 or greater. {number} given.")
+            self.number = number
 
     _CHILD_OBJ_MAP = {}
     """

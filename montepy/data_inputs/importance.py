@@ -2,7 +2,7 @@
 import collections
 import copy
 import math
-from montepy.data_inputs.cell_modifier import CellModifierInput
+from montepy.data_inputs.cell_modifier import CellModifierInput, InitInput
 from montepy.errors import *
 from montepy.constants import DEFAULT_VERSION, rel_tol, abs_tol
 from montepy.input_parser import syntax_node
@@ -31,7 +31,7 @@ class Importance(CellModifierInput):
     A data input that sets the importance for a cell(s).
 
     :param input: the Input object representing this data input
-    :type input: Input
+    :type input: Union[Input, str]
     :param in_cell_block: if this card came from the cell block of an input file.
     :type in_cell_block: bool
     :param key: the key from the key-value pair in a cell
@@ -40,7 +40,13 @@ class Importance(CellModifierInput):
     :type value: SyntaxNode
     """
 
-    def __init__(self, input=None, in_cell_block=False, key=None, value=None):
+    def __init__(
+        self,
+        input: InitInput = None,
+        in_cell_block: bool = False,
+        key: str = None,
+        value: syntax_node.SyntaxNode = None,
+    ):
         self._particle_importances = {}
         self._real_tree = {}
         self._part_combos = []
