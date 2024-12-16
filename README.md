@@ -24,7 +24,7 @@ pip install montepy
 ```
 
 For more complicated setups
-see the [Installing section in the user guide](https://www.montepy.org/starting.html#installing).
+see the [Installing section in the user guide](https://www.montepy.org/en/stable/starting.html#installing).
 
 
 ## User Documentation
@@ -42,9 +42,9 @@ and the Python API documentation.
 * Can parse all surface types except macrobody facets ([Issue #354](https://github.com/idaholab/MontePy/issues/354)).
 * Can read and write out all other MCNP inputs, even if it doesn't not understand them	
 * Attempts to write out the MCNP problem verbatim, even matching the original user formatting. (See some of the [open issues](https://github.com/idaholab/MontePy/issues).)
-* Can quickly [access cells, surfaces, and materials by their numbers](https://www.montepy.org/starting.html#collections-are-accessible-by-number). For example: `cell = problem.cells[105]`.
-* Can quickly update cell parameters, [such as importances](https://www.montepy.org/starting.html#setting-cell-importances). For example `cell.importance.neutron = 2.0`.
-* Can easily [create universes, and fill other cells with universes](https://www.montepy.org/starting.html#universes).
+* Can quickly [access cells, surfaces, and materials by their numbers](https://www.montepy.org/en/stable/starting.html#collections-are-accessible-by-number). For example: `cell = problem.cells[105]`.
+* Can quickly update cell parameters, [such as importances](https://www.montepy.org/en/stable/starting.html#setting-cell-importances). For example `cell.importance.neutron = 2.0`.
+* Can easily [create universes, and fill other cells with universes](https://www.montepy.org/en/stable/starting.html#universes).
 * Currently has over 550 test cases.
 
  
@@ -134,7 +134,7 @@ Another honorable mention that doesn't replicate the features of MontePy,
 So MontePy doesn't do what you want? 
 Add an issue here with the "feature request" tag. 
 The system is very modular and you should be able to develop it pretty quickly.
-Read the [developer's guide](https://www.montepy.org/developing.html) for more details.
+Read the [developer's guide](https://www.montepy.org/en/stable/developing.html) for more details.
 If you have any questions feel free to ask [@micahgale](mailto:mgale@montepy.org).
 
 ## Citation
