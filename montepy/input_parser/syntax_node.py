@@ -696,7 +696,7 @@ class PaddingNode(SyntaxNodeBase):
 
     def __eq__(self, other):
         if not isinstance(other, (type(self), str)):
-            raise "PaddingNode can only be compared to PaddingNode or str"
+            return False
         if isinstance(other, type(self)):
             other = other.format()
         return self.format() == other
@@ -1345,9 +1345,7 @@ class ValueNode(SyntaxNodeBase):
 
     def __eq__(self, other):
         if not isinstance(other, (type(self), str, int, float)):
-            raise TypeError(
-                f"ValueNode can't be equal to {type(other)} type. {other} given."
-            )
+            return False
         if isinstance(other, ValueNode):
             other_val = other.value
             if self.type != other.type:
@@ -1736,9 +1734,7 @@ class ListNode(SyntaxNodeBase):
 
     def __eq__(self, other):
         if not isinstance(other, (type(self), list)):
-            raise TypeError(
-                f"ListNode can only be compared to a ListNode or List. {other} given."
-            )
+            return False
         if len(self) != len(other):
             return False
         for lhs, rhs in zip(self, other):

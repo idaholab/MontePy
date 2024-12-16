@@ -68,6 +68,8 @@ autodoc_member_order = "groupwise"
 # Display the version
 display_version = True
 
+linkcheck_ignore = ["https://nucleardata.lanl.gov/.*"]
+
 # -- External link configuration ---------------------------------------------
 UM63 = (
     "https://mcnp.lanl.gov/pdf_files/TechReport_2022_LANL_LA-UR-22-30006"

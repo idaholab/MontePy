@@ -45,6 +45,13 @@ Design Philosophy
 #. Defer to vanilla python, and only use the standard library. Currently the only dependencies are `numpy <https://numpy.org/>`_ and `sly <https://github.com/dabeaz/sly>`_. 
    There must be good justification for breaking from this convention and complicating things for the user.
 
+Style Guide
+-----------
+
+#. Thou shall be `PEP 8 <https://peps.python.org/pep-0008/>`_, and use `black <https://black.readthedocs.io/en/stable/index.html>`_.
+#. Spaces not tabs with 4 spaces for an indent.
+#. External imports before internal imports with a blank line in between. All imports are alphabetized. 
+
 Doc Strings
 -----------
 
