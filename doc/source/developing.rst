@@ -1,3 +1,9 @@
+.. meta::
+   :description lang=en:
+        This guide provides details on how MontePy works,
+        and guidance on how to make contributions.
+        MontePy is the most user-friendly Python library for reading, editing, and writing MCNP input files.
+
 Developer's Reference
 =====================
 

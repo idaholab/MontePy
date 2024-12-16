@@ -59,6 +59,13 @@ MontePy Changelog
 0.5 releases
 ============
 
+0.5.3
+--------------
+
+**Bug Fixes**
+
+* Fixed how material components work so new components can actually be added to a material and exported (:issue`597`).
+
 0.5.2
 --------------
 
