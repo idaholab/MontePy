@@ -35,7 +35,7 @@ classifiers = [
 ]
 dependencies = [
 	"numpy>=1.18",
-	"sly==0.5"
+	"sly>= 0.4, <=0.5"
 ]
 
 [project.optional-dependencies]
@@ -43,7 +43,6 @@ test = [
 	"coverage[toml]>=6.3.2", 
 	"hypothesis",
 	"pytest", 
-	"hypothesis",
 	"pytest-profiling",
 	"montepy[build]",
 	"phmutest",
@@ -53,10 +52,9 @@ doc = [
 	"sphinx>=7.4.0", 
 	"sphinxcontrib-apidoc", 
 	"pydata_sphinx_theme",
-	"sphinx-sitemap",
 	"sphinx-favicon",
-    "sphinx-copybutton",
-    "sphinx_autodoc_typehints"
+	"sphinx-copybutton",
+    	"sphinx_autodoc_typehints",
 ]
 format = ["black>=23.3.0"]
 build = [
@@ -72,7 +70,7 @@ demo-test = ["montepy[demos]", "papermill"]
 
 
 [project.urls]
-Homepage = "https://idaholab.github.io/MontePy/index.html"
+Homepage = "https://www.montepy.org/"
 Repository = "https://github.com/idaholab/MontePy.git"
 Documentation = "https://www.montepy.org/"
 "Bug Tracker" = "https://github.com/idaholab/MontePy/issues"
