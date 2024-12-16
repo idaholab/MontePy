@@ -93,3 +93,4 @@ For a deployment you need to:
 #. Manually merge onto main without creating a new commit. 
    This is necessary because there's no way to do a github PR that will not create a new commit, which will break setuptools_scm.
 #. Update the release notes on the draft release, and finalize it on GitHub.
+#. Update the `Conda feedstock and deploy <https://github.com/conda-forge/montepy-feedstock>`_. 
