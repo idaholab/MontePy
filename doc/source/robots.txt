@@ -1,5 +1,0 @@
-User-agent: *
-
-Disallow: /en/latest/ # Hidden version
-
-Sitemap: https://www.montepy.org/sitemap.xml
