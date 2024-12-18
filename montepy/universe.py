@@ -16,7 +16,7 @@ class Universe(Numbered_MCNP_Object):
     :type number: int
     """
 
-    def __init__(self, number):
+    def __init__(self, number: int):
         self._number = self._generate_default_node(int, -1)
         if not isinstance(number, int):
             raise TypeError("number must be int")
@@ -28,7 +28,7 @@ class Universe(Numbered_MCNP_Object):
             def parse(self, token_gen, input):
                 return syntax_node.SyntaxNode("fake universe", {})
 
-        super().__init__(Input(["U"], BlockType.DATA), Parser())
+        super().__init__(Input(["U"], BlockType.DATA), Parser(), number)
 
     @property
     def cells(self):

@@ -227,9 +227,21 @@ class Input(ParsingNode):
         The current lexer being used to parse this input.
 
         If not currently tokenizing this will be None.
-        :rtype:MCNP_Lexer
+
+        :rtype: MCNP_Lexer
         """
         pass
+
+    def serialize(self):
+        ret = {"type": type(self).__name__}
+
+        ret |= {
+            k[1:]: v
+            for k, v in self.__dict__.items()
+            if k not in {"_lexer", "_block_type"}
+        }
+        ret["block_type"] = self._block_type.name
+        return ret
 
 
 class ReadInput(Input):

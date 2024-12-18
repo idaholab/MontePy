@@ -3,10 +3,12 @@ from __future__ import annotations
 from abc import ABC, ABCMeta, abstractmethod
 import copy
 import functools
+import inspect
 import itertools as it
 import numpy as np
 import sys
 import textwrap
+from typing import Union
 import warnings
 import weakref
 
@@ -100,34 +102,61 @@ class MCNP_Object(ABC, metaclass=_ExceptionContextAdder):
         For init removed ``comments``, and added ``parser`` as arguments.
 
     :param input: The Input syntax object this will wrap and parse.
-    :type input: Input
+    :type input: Union[Input, SyntaxNode, str]
     :param parser: The parser object to parse the input with.
-    :type parser: MCNP_Lexer
+    :type parser: MCNP_Parser
+    """
+
+    """
+    The block type this input comes from.
     """
 
     def __init__(
         self,
-        input: montepy.input_parser.mcnp_input.Input,
+        input: Union[
+            montepy.input_parser.mcnp_input.Input,
+            montepy.input_parser.syntax_node.SyntaxNode,
+            str,
+        ],
         parser: montepy.input_parser.parser_base.MCNP_Parser,
     ):
+        try:
+            self._BLOCK_TYPE
+        except AttributeError:
+            self._BLOCK_TYPE = montepy.input_parser.block_type.BlockType.DATA
         self._problem_ref = None
         self._parameters = ParametersNode()
         self._input = None
         if input:
-            if not isinstance(input, montepy.input_parser.mcnp_input.Input):
+            if not isinstance(
+                input,
+                (
+                    montepy.input_parser.mcnp_input.Input,
+                    str,
+                    montepy.input_parser.syntax_node.SyntaxNode,
+                ),
+            ):
                 raise TypeError("input must be an Input")
-            try:
+            if isinstance(input, str):
+                input = montepy.input_parser.mcnp_input.Input(
+                    input.split("\n"), self._BLOCK_TYPE
+                )
+            if isinstance(input, montepy.input_parser.syntax_node.SyntaxNode):
+                self._tree = input
+            else:
                 try:
-                    parser.restart()
-                # raised if restarted without ever parsing
-                except AttributeError as e:
-                    pass
-                self._tree = parser.parse(input.tokenize(), input)
-                self._input = input
-            except ValueError as e:
-                raise MalformedInputError(
-                    input, f"Error parsing object of type: {type(self)}: {e.args[0]}"
-                ).with_traceback(e.__traceback__)
+                    try:
+                        parser.restart()
+                    # raised if restarted without ever parsing
+                    except AttributeError as e:
+                        pass
+                    self._tree = parser.parse(input.tokenize(), input)
+                    self._input = input
+                except ValueError as e:
+                    raise MalformedInputError(
+                        input,
+                        f"Error parsing object of type: {type(self)}: {e.args[0]}",
+                    ).with_traceback(e.__traceback__)
             if self._tree is None:
                 raise ParsingError(
                     input,
@@ -395,6 +424,31 @@ class MCNP_Object(ABC, metaclass=_ExceptionContextAdder):
     def _grab_beginning_comment(self, padding: list[PaddingNode], last_obj=None):
         if padding:
             self._tree["start_pad"]._grab_beginning_comment(padding)
+
+    def serialize(self):
+        print("hi", self, self._input)
+        return {
+            "type": type(self).__name__,
+            "input": self._input.serialize(),
+            "tree": self._tree.serialize(),
+        }
+
+    @classmethod
+    def deserialize(cls, data):
+        tree = montepy.input_parser.syntax_node.SyntaxNode.deserialize(data["tree"])
+
+        def get_classes(module):
+            ret = {}
+            for _, member in inspect.getmembers(module):
+                if inspect.isclass(member):
+                    ret[member.__name__] = member
+            return ret
+
+        classes = get_classes(montepy)
+        new_obj = classes[data["type"]](tree)
+        del data["tree"]
+        new_obj.__dict__.update(data)
+        return new_obj
 
     def __getstate__(self):
         state = self.__dict__.copy()

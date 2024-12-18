@@ -7,8 +7,10 @@ start by running montepy.read_input().
 You will receive an MCNP_Problem object that you will interact with.
 """
 
+from . import data_inputs
 from . import input_parser
 from . import constants
+from . import json
 import importlib.metadata
 
 # data input promotion
@@ -49,13 +51,16 @@ try:
     from . import _version
 
     __version__ = _version.version
+    __version_tuple__ = _version.version_tuple
 except ImportError:
     try:
         from setuptools_scm import get_version
 
         __version__ = get_version()
+        __version_tuple__ = tuple(__version__.split("."))
     except (ImportError, LookupError):
         __version__ = "Undefined"
+        __version_tuple__ = ("Undefined",)
 
 
 # enable deprecated warnings for users

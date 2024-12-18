@@ -101,8 +101,7 @@ class TestMaterial:
             "M20 1001.80c 1.0 gas = 0 nlib = 00c",
             "M120 nlib=80c 1001 1.0",
         ]:
-            input = Input([line], BlockType.DATA)
-            material = Material(input)
+            material = Material(line)
 
     def test_material_validator(_):
         material = Material()
@@ -494,6 +493,10 @@ Pu-239   (80c) 0.1
         mat = Material(input)
         with pytest.raises(error):
             mat.clone(*args)
+
+    def test_mat_num_init(_):
+        mat = Material(number=5)
+        assert mat.number == 5
 
     @settings(suppress_health_check=[HealthCheck.function_scoped_fixture])
     @given(
