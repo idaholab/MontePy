@@ -4,7 +4,7 @@
 
 Please provide a summary of the change, referencing the issue it fixes, if applicable. Include relevant context and motivation.
 
-**Fixes # (issue number)**
+Fixes # (issue number)
 
 ---
 
