@@ -1,0 +1,13 @@
+name: add RTD links
+on:
+  pull_request:
+    types: [opened, reopened, edited]
+jobs:
+  add_rtd_link:
+    permissions:
+      pull-requests: write
+    runs-on: ubuntu-latest
+    steps:
+      - uses: readthedocs/actions/preview@v1
+        with:
+          project-slug: "montepy"
