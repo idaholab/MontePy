@@ -2,6 +2,7 @@ name: CI testing
 
 on: 
   pull_request:
+    branches: [develop, alpha-test-dev]
   push: 
      branches: [develop, main, alpha-test]
 
@@ -156,6 +157,10 @@ jobs:
         name: Test all demo notebooks 
   
   RTD-links:
+    on:
+      pull_request_target:
+        types:
+          -opened
     permissions:
       pull-requests: write
     runs-on: ubuntu-latest
