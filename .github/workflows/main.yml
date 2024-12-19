@@ -155,19 +155,6 @@ jobs:
           cd demo
           for file in *.ipynb; do papermill $file foo.ipynb; done
         name: Test all demo notebooks 
-  
-  RTD-links:
-    on:
-      pull_request_target:
-        types:
-          -opened
-    permissions:
-      pull-requests: write
-    runs-on: ubuntu-latest
-    steps:
-      - uses: readthedocs/actions/preview@v1
-        with:
-          project-slug: "montepy"
 
   format-test:
     runs-on: ubuntu-latest
