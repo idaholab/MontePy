@@ -1,7 +1,8 @@
 name: add RTD links
 on:
-  pull_request_target:
-    types: [opened, edited]
+  pull_request:
+ # pull_request_target:
+ #   types: [opened, edited]
 jobs:
   add_rtd_link:
     permissions:
