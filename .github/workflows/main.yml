@@ -2,6 +2,7 @@ name: CI testing
 
 on: 
   pull_request:
+    branches: [develop, alpha-test-dev]
   push: 
      branches: [develop, main, alpha-test]
 
