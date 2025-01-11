@@ -7,7 +7,7 @@ from montepy.surfaces.cylinder_par_axis import CylinderParAxis
 from montepy.surfaces.general_plane import GeneralPlane
 
 
-def surface_builder(input: InitInput):
+def parse_surface(input: InitInput):
     """
     Builds a Surface object for the type of Surface
 
@@ -32,3 +32,17 @@ def surface_builder(input: InitInput):
         return GeneralPlane(input)
     else:
         return buffer_surface
+
+
+surface_builder = parse_surface
+"""
+Alias for :func:`parse_surface`.
+
+:deprecated: 1.0.0
+    Renamed to be :func:`parse_surface` to be more pythonic.
+    
+:param input: The Input object representing the input
+:type input: Union[Input, str]
+:returns: A Surface object properly parsed. If supported a sub-class of Surface will be given.
+:rtype: Surface
+"""
