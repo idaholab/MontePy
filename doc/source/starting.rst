@@ -386,6 +386,38 @@ First all :class:`~montepy.mcnp_object.MCNP_Object` constructors can take a stri
    1
    >>> cell.importance[montepy.Particle.NEUTRON]
    1.0
+   >>> # surfaces
+   >>> surf = montepy.AxisPlane("5 PZ 10")
+   >>> surf.number 
+   5
+   >>> surf.location
+   10.0
+   >>> # materials
+   >>> mat = montepy.Material("M1 1001.80c 2 8016.80c 1")
+   >>> mat.number
+   1
+   >>> thermal_scat = montepy.ThermalScatteringLaw("MT1 lwrt.40t")
+   >>> thermal_scat.old_number
+   1
+   >>> #object linking hasn't occuring
+   >>> print(thermal_scat.parent_material)
+   None
+
+For data inputs and surfaces there are some helper functions that help parse all objects of that type,
+and return the appropriate object.
+For surfaces this is: :func:`~montepy.surfaces.surface_builder.parse_surface`,
+and for data inputs this is :func:`~montepy.data_inputs.data_parser.parse_data`.
+
+.. doctest::
+   >>> surf = montepy.parse_surface("1 cz 5.0")
+   >>> type(surf)
+   foo
+   >>> surf.radius
+   5.0
+   >>> mat = montepy.parse_data("m1 1001.80c 1")
+   >>> type(mat)
+   foo
+
 
 This object is still unlinked from other objects, and won't be kept with a problem.
 So there is also :func:`~montepy.mcnp_problem.MCNP_Problem.parse`. 
