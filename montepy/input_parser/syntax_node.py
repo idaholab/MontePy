@@ -202,7 +202,7 @@ class SyntaxNodeBase(ABC):
             return f"<Node: {self.name}: []>"
         ret = f"<Node: {self.name}: [\n"
         for val in self.nodes:
-            child_strs = val.pretty_str().split("\n")
+            child_strs = val._pretty_str().split("\n")
             ret += "\n".join([" " * 2 * INDENT + s for s in child_strs[:-1]])
             ret += " " * 2 * INDENT + child_strs[-1] + ",\n"
         ret += " " * INDENT + "]\n"
@@ -328,7 +328,7 @@ class SyntaxNode(SyntaxNodeBase):
         INDENT = 2
         ret = f"<Node: {self.name}: {{\n"
         for key, val in self.nodes.items():
-            child_strs = val.pretty_str().split("\n")
+            child_strs = val._pretty_str().split("\n")
             ret += " " * INDENT + f"{key}: {child_strs[0]}\n"
             ret += "\n".join([" " * 2 * INDENT + s for s in child_strs[1:-1]])
             ret += " " * 2 * INDENT + child_strs[-1] + ",\n"
@@ -394,14 +394,14 @@ class GeometryTree(SyntaxNodeBase):
         INDENT = 2
         ret = f"<Geometry: {self.name}: [\n"
         for key, val in [
-            ("left", self._left_side.pretty_str()),
+            ("left", self._left_side._pretty_str()),
             ("operator", self._operator),
             ("right", self._right_side),
         ]:
             if val is None:
                 continue
             if isinstance(val, SyntaxNodeBase):
-                child_strs = val.pretty_str().split("\n")
+                child_strs = val._pretty_str().split("\n")
             else:
                 child_strs = [str(val)]
             ret += " " * INDENT + f"{key}: {child_strs[0]}\n"
@@ -2591,11 +2591,8 @@ class ParametersNode(SyntaxNodeBase):
     def _pretty_str(self):
         INDENT = 2
         ret = f"<Node: {self.name}: {{\n"
-        print(self.nodes)
         for key, val in self.nodes.items():
-            print(val, val is self)
-            print(val.pretty_str())
-            child_strs = val.pretty_str().split("\n")
+            child_strs = val._pretty_str().split("\n")
             ret += " " * INDENT + f"{key}: {child_strs[0]}\n"
             ret += "\n".join([" " * 2 * INDENT + s for s in child_strs[1:-1]])
             ret += " " * 2 * INDENT + child_strs[-1] + ",\n"
