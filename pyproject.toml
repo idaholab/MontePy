@@ -74,7 +74,7 @@ Homepage = "https://www.montepy.org/"
 Repository = "https://github.com/idaholab/MontePy.git"
 Documentation = "https://www.montepy.org/"
 "Bug Tracker" = "https://github.com/idaholab/MontePy/issues"
-Changelog = "https://www.montepy.org/changelog.html"
+Changelog = "https://www.montepy.org/en/stable/changelog.html"
 
 [project.scripts]
 "change_to_ascii" = "montepy._scripts.change_to_ascii:main"
