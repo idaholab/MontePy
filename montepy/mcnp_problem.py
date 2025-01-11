@@ -339,7 +339,7 @@ class MCNP_Problem:
         OBJ_MATCHER = {
             block_type.BlockType.CELL: (Cell, self._cells),
             block_type.BlockType.SURFACE: (
-                surface_builder.surface_builder,
+                surface_builder.parse_surface,
                 self._surfaces,
             ),
             block_type.BlockType.DATA: (parse_data, self._data_inputs),
@@ -655,10 +655,10 @@ class MCNP_Problem:
         :raises NumberConflictError: if the object's number is already taken
         """
         try:
-            obj = montepy.data_inputs.data_parser.parse_data(input)
+            obj = montepy.parse_data(input)
         except ParsingError:
             try:
-                obj = montepy.surfaces.surface_builder.Surface(input)
+                obj = montepy.parse_surface(input)
             except ParsingError:
                 obj = montepy.Cell(input)
                 # let final parsing error bubble up

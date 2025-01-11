@@ -15,4 +15,4 @@ from .surface import Surface
 from .surface_type import SurfaceType
 
 # promote functions
-from .surface_builder import surface_builder as parse_surface
+from .surface_builder import parse_surface
