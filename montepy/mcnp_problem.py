@@ -624,7 +624,7 @@ class MCNP_Problem:
             ret += "\n"
         return ret
 
-    def parse(self, input: str):
+    def parse(self, input: str, append: bool = True) -> montepy.mcnp_object.MCNP_Object:
         """
         Parses the MCNP object given by the string, and links it adds it to this problem.
 
@@ -644,6 +644,8 @@ class MCNP_Problem:
         :param input: the string describing the input. New lines are allowed but this does not need to meet MCNP line
             length rules.
         :type input: str
+        :param append: Whether to append this parsed object to this problem.
+        :type append: bool
         :returns: the parsed object.
         :rtype: MCNP_Object
 
@@ -663,15 +665,18 @@ class MCNP_Problem:
         obj.link_to_problem(self)
         if isinstance(obj, montepy.Cell):
             obj.update_pointers(self.cells, self.materials, self.surfaces)
-            self.cells.append(obj)
+            if append:
+                self.cells.append(obj)
         elif isinstance(obj, montepy.surfaces.surface.Surface):
             obj.update_pointers(self.surfaces, self.data_inputs)
-            self.surfaces.append(obj)
+            if append:
+                self.surfaces.append(obj)
         else:
             obj.update_pointers(self.data_inputs)
-            self.data_inputs.append(obj)
-            if isinstance(obj, Material):
-                self._materials.append(obj, insert_in_data=False)
-            if isinstance(obj, transform.Transform):
-                self._transforms.append(obj, insert_in_data=False)
+            if append:
+                self.data_inputs.append(obj)
+                if isinstance(obj, Material):
+                    self._materials.append(obj, insert_in_data=False)
+                if isinstance(obj, transform.Transform):
+                    self._transforms.append(obj, insert_in_data=False)
         return obj
