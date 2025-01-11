@@ -424,13 +424,15 @@ So there is also :func:`~montepy.mcnp_problem.MCNP_Problem.parse`.
 This takes a string, and then creates the MCNP object,
 links it to the problem,
 links it to its other objects (e.g., surfaces, materials, etc.),
-and appends it to necessary collections:
+and appends it to necessary collections (if requested):
 
 .. testcode::
 
    cell = problem.parse("123 0 -1005")
    assert cell in problem.cells
    assert cell.surfaces[1005] is problem.surfaces[1005]
+   cell = problem.parse("124 0 -1005", append=False)
+   assert cell not in problem.cells
 
 Surfaces
 --------
