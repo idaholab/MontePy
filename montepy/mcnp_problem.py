@@ -19,7 +19,7 @@ from montepy.surface_collection import Surfaces
 from montepy.data_inputs import parse_data
 from montepy.input_parser import input_syntax_reader, block_type, mcnp_input
 from montepy.input_parser.input_file import MCNP_InputFile
-from montepy.universes import Universes
+from montepy.universes import Universe, Universes
 from montepy.transforms import Transforms
 import montepy
 
@@ -40,7 +40,7 @@ class MCNP_Problem:
         surface.Surface: Surfaces,
         Material: Materials,
         transform.Transform: Transforms,
-        montepy.universe.Universe: Universes,
+        Universe: Universes,
     }
 
     def __init__(self, destination):
