@@ -12,9 +12,6 @@ class MetaBuilder(sly.yacc.ParserMeta):
     Custom MetaClass for allowing subclassing of MCNP_Parser.
 
 
-    .. versionadded:: 0.2.0
-        This was added with the major parser rework.
-
     Note: overloading functions is not allowed.
     """
 
@@ -57,9 +54,6 @@ class MetaBuilder(sly.yacc.ParserMeta):
 class SLY_Supressor:
     """
     This is a fake logger meant to mostly make warnings dissapear.
-
-    .. versionadded:: 0.2.0
-        This was added with the major parser rework.
     """
 
     def __init__(self):
@@ -111,9 +105,6 @@ class SLY_Supressor:
 class MCNP_Parser(Parser, metaclass=MetaBuilder):
     """
     Base class for all MCNP parsers that provides basics.
-
-    .. versionadded:: 0.2.0
-        This was added with the major parser rework.
     """
 
     # Remove this if trying to see issues with parser

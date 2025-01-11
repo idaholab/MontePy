@@ -16,9 +16,6 @@ class HalfSpace:
     """
     Class representing a geometry half_space.
 
-    .. versionadded:: 0.2.0
-        This was added as the core of the rework to how MCNP geometries are implemented.
-
     The term `half-spaces <https://en.wikipedia.org/wiki/Half-space_(geometry)>`_ in MontePy is used very loosely,
     and is not mathematically rigorous. In MontePy a divider is a something
     that splits a space (R\\ :sup:`3` ) into two half-spaces. At the simplest this would
@@ -480,9 +477,6 @@ class UnitHalfSpace(HalfSpace):
     """
     The leaf node for the HalfSpace tree.
     
-    .. versionadded:: 0.2.0
-        This was added as the core of the rework to how MCNP geometries are implemented.
-
     This can only be used as leaves and represents one half_space of a 
     a divider.
     The easiest way to generate one is with the divider with unary operators. 

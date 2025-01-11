@@ -184,8 +184,6 @@ class CellModifierInput(DataInputAbstract):
         """
         The ValueNode that holds the information for this instance, that should be included in the data block.
 
-        .. versionadded:: 0.2.0
-
         :returns: The ValueNode to update the data-block syntax tree with.
         :rtype: ValueNode
         """
@@ -196,8 +194,6 @@ class CellModifierInput(DataInputAbstract):
         Gets a list of the ValueNodes that hold the information for all cells.
 
         This will be a list in the same order as :func:`montepy.mcnp_problem.MCNP_Problem.cells`.
-
-        .. versionadded:: 0.2.0
 
         :returns: a list of the ValueNodes to update the data block syntax tree with
         :rtype: list
@@ -213,8 +209,6 @@ class CellModifierInput(DataInputAbstract):
     def _update_cell_values(self):
         """
         Updates values in the syntax tree when in the cell block.
-
-        .. versionadded:: 0.2.0
         """
         pass
 

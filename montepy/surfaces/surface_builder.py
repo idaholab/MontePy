@@ -11,9 +11,6 @@ def parse_surface(input: InitInput):
     """
     Builds a Surface object for the type of Surface
 
-    .. versionchanged:: 0.2.0
-        The ``comments`` argument has been removed with the simpler init function.
-
     :param input: The Input object representing the input
     :type input: Union[Input, str]
     :returns: A Surface object properly parsed. If supported a sub-class of Surface will be given.

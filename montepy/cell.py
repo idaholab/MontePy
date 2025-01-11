@@ -381,9 +381,6 @@ class Cell(Numbered_MCNP_Object):
         """
         The Geometry for this problem.
 
-        .. versionadded:: 0.2.0
-            Added with the new ability to represent true CSG geometry logic.
-
         The HalfSpace tree that is able to represent this cell's geometry.
         MontePy's geometry is based upon dividers, which includes both Surfaces, and cells.
         A half-space is created by choosing one side of the divider.
