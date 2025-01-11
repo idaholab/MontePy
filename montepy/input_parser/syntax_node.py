@@ -196,7 +196,7 @@ class SyntaxNodeBase(ABC):
                 ret += node.flatten()
         return ret
 
-    def pretty_str(self):
+    def _pretty_str(self):
         INDENT = 2
         if not self.nodes:
             return f"<Node: {self.name}: []>"
@@ -324,7 +324,7 @@ class SyntaxNode(SyntaxNodeBase):
                 ret += node.flatten()
         return ret
 
-    def pretty_str(self):
+    def _pretty_str(self):
         INDENT = 2
         ret = f"<Node: {self.name}: {{\n"
         for key, val in self.nodes.items():
@@ -390,7 +390,7 @@ class GeometryTree(SyntaxNodeBase):
             f"{f'Short:{self._right_short_type.value}' if self._right_short_type else ''}>"
         )
 
-    def pretty_str(self):
+    def _pretty_str(self):
         INDENT = 2
         ret = f"<Geometry: {self.name}: [\n"
         for key, val in [
@@ -889,7 +889,7 @@ class CommentNode(SyntaxNodeBase):
     def __str__(self):
         return self.format()
 
-    def pretty_str(self):
+    def _pretty_str(self):
         return str(self)
 
     def __repr__(self):
@@ -1347,7 +1347,7 @@ class ValueNode(SyntaxNodeBase):
     def __str__(self):
         return f"<Value, {self._value}, padding: {self._padding}>"
 
-    def pretty_str(self):
+    def _pretty_str(self):
         return str(self)
 
     def __repr__(self):
@@ -1859,7 +1859,7 @@ class MaterialsNode(SyntaxNodeBase):
     def __repr__(self):
         return f"(Materials: {self.nodes})"
 
-    def pretty_str(self):
+    def _pretty_str(self):
         INDENT = 2
         ret = f"<Node: {self.name}: [\n"
         for val in self.nodes:
@@ -2485,7 +2485,7 @@ class ClassifierNode(SyntaxNodeBase):
             f" padding: {self.padding})"
         )
 
-    def pretty_str(self):
+    def _pretty_str(self):
         return f"""<Classifier: {{ 
     mod: {self.modifier}, 
     prefix: {self.prefix}, 
@@ -2588,7 +2588,7 @@ class ParametersNode(SyntaxNodeBase):
     def __repr__(self):
         return str(self)
 
-    def pretty_str(self):
+    def _pretty_str(self):
         INDENT = 2
         ret = f"<Node: {self.name}: {{\n"
         print(self.nodes)
