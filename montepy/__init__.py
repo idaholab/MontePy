@@ -7,6 +7,7 @@ start by running montepy.read_input().
 You will receive an MCNP_Problem object that you will interact with.
 """
 
+from . import data_inputs
 from . import input_parser
 from . import constants
 import importlib.metadata
@@ -17,6 +18,8 @@ from montepy.data_inputs.material import Material
 from montepy.data_inputs.transform import Transform
 from montepy.data_inputs.nuclide import Library, Nuclide
 from montepy.data_inputs.element import Element
+from montepy.data_inputs.thermal_scattering import ThermalScatteringLaw
+from montepy.data_inputs.data_parser import parse_data
 
 # geometry
 from montepy.geometry_operators import Operator

@@ -1,4 +1,5 @@
 # Copyright 2024, Battelle Energy Alliance, LLC All Rights Reserved.
+from __future__ import annotations
 from abc import abstractmethod
 import copy
 
@@ -11,9 +12,10 @@ from montepy.input_parser.data_parser import (
 )
 from montepy.input_parser.mcnp_input import Input
 from montepy.particle import Particle
-from montepy.mcnp_object import MCNP_Object
+from montepy.mcnp_object import MCNP_Object, InitInput
 
 import re
+from typing import Union
 
 
 class _ClassifierInput(Input):
@@ -43,7 +45,7 @@ class DataInputAbstract(MCNP_Object):
     Parent class to describe all MCNP data inputs.
 
     :param input: the Input object representing this data input
-    :type input: Input
+    :type input: Union[Input, str]
     :param fast_parse: Whether or not to only parse the first word for the type of data.
     :type fast_parse: bool
     """
@@ -52,17 +54,29 @@ class DataInputAbstract(MCNP_Object):
 
     _classifier_parser = ClassifierParser()
 
-    def __init__(self, input=None, fast_parse=False):
+    def __init__(
+        self,
+        input: InitInput = None,
+        fast_parse=False,
+    ):
         self._particles = None
         if not fast_parse:
             super().__init__(input, self._parser)
             if input:
                 self.__split_name(input)
         else:
-            input = copy.copy(input)
-            input.__class__ = _ClassifierInput
+            if input:
+                if isinstance(input, str):
+                    input = _ClassifierInput(
+                        input.split("\n"),
+                        montepy.input_parser.block_type.BlockType.DATA,
+                    )
+                else:
+                    input = copy.copy(input)
+                    input.__class__ = _ClassifierInput
             super().__init__(input, self._classifier_parser)
-            self.__split_name(input)
+            if input:
+                self.__split_name(input)
 
     @staticmethod
     @abstractmethod
@@ -266,14 +280,16 @@ class DataInput(DataInputAbstract):
     Catch-all for all other MCNP data inputs.
 
     :param input: the Input object representing this data input
-    :type input: Input
+    :type input: Union[Input, str]
     :param fast_parse: Whether or not to only parse the first word for the type of data.
     :type fast_parse: bool
     :param prefix: The input prefix found during parsing (internal use only)
     :type prefix: str
     """
 
-    def __init__(self, input=None, fast_parse=False, prefix=None):
+    def __init__(
+        self, input: InitInput = None, fast_parse: bool = False, prefix: str = None
+    ):
         if prefix:
             self._load_correct_parser(prefix)
         super().__init__(input, fast_parse)

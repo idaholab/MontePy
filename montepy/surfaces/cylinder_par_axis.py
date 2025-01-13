@@ -1,6 +1,6 @@
 # Copyright 2024, Battelle Energy Alliance, LLC All Rights Reserved.
 from .surface_type import SurfaceType
-from .surface import Surface
+from .surface import Surface, InitInput
 from montepy.errors import *
 from montepy.utilities import *
 
@@ -14,8 +14,14 @@ class CylinderParAxis(Surface):
     """
     Represents surfaces: C/X, C/Y, C/Z
 
+    .. versionchanged:: 1.0.0
+
+        Added number parameter
+
     :param input: The Input object representing the input
-    :type input: Input
+    :type input: Union[Input, str]
+    :param number: The number to set for this object.
+    :type number: int
     """
 
     COORDINATE_PAIRS = {
@@ -26,13 +32,13 @@ class CylinderParAxis(Surface):
     """Which coordinate is what value for each cylinder type.
     """
 
-    def __init__(self, input=None):
+    def __init__(self, input: InitInput = None, number: int = None):
         self._coordinates = [
             self._generate_default_node(float, None),
             self._generate_default_node(float, None),
         ]
         self._radius = self._generate_default_node(float, None)
-        super().__init__(input)
+        super().__init__(input, number)
         ST = SurfaceType
         if input:
             if self.surface_type not in [ST.C_X, ST.C_Y, ST.C_Z]:

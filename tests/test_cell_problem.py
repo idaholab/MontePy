@@ -12,7 +12,7 @@ from montepy.input_parser.mcnp_input import Input
 class TestCellClass(TestCase):
     def test_bad_init(self):
         with self.assertRaises(TypeError):
-            Cell("5")
+            Cell(5)
 
     # TODO test updating cell geometry once done
     def test_cell_validator(self):
@@ -29,9 +29,7 @@ class TestCellClass(TestCase):
     # TODO test geometry stuff
 
     def test_number_setter(self):
-        in_str = "1 0 2"
-        card = Input([in_str], BlockType.CELL)
-        cell = Cell(card)
+        cell = Cell("1 0 2")
         cell.number = 5
         self.assertEqual(cell.number, 5)
         with self.assertRaises(TypeError):
@@ -158,6 +156,15 @@ def test_init(line, is_void, mat_number, density, atom_dens, parameters):
         return
     for parameter, value in parameters.items():
         assert cell.parameters[parameter]["data"][0].value == pytest.approx(value)
+
+
+def test_blank_num_init():
+    cell = Cell(number=5)
+    assert cell.number == 5
+    with pytest.raises(TypeError):
+        Cell(number="hi")
+    with pytest.raises(ValueError):
+        Cell(number=-1)
 
 
 @pytest.mark.parametrize("line", ["foo", "foo bar", "1 foo", "1 1 foo"])

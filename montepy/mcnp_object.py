@@ -7,6 +7,7 @@ import itertools as it
 import numpy as np
 import sys
 import textwrap
+from typing import Union
 import warnings
 import weakref
 
@@ -24,6 +25,8 @@ from montepy.input_parser.syntax_node import (
     ValueNode,
 )
 import montepy
+
+InitInput = Union[montepy.input_parser.mcnp_input.Input, str]
 
 
 class _ExceptionContextAdder(ABCMeta):
@@ -65,7 +68,6 @@ class _ExceptionContextAdder(ABCMeta):
         """
         This will replace all properties and callable attributes with
         wrapped versions.
-
         """
         new_attrs = {}
         for key, value in attributes.items():
@@ -95,27 +97,31 @@ class MCNP_Object(ABC, metaclass=_ExceptionContextAdder):
     """
     Abstract class for semantic representations of MCNP inputs.
 
-    .. versionchanged:: 0.2.0
-        Generally significant changes for parser rework.
-        For init removed ``comments``, and added ``parser`` as arguments.
-
     :param input: The Input syntax object this will wrap and parse.
-    :type input: Input
+    :type input: Union[Input, str]
     :param parser: The parser object to parse the input with.
-    :type parser: MCNP_Lexer
+    :type parser: MCNP_Parser
     """
 
     def __init__(
         self,
-        input: montepy.input_parser.mcnp_input.Input,
+        input: InitInput,
         parser: montepy.input_parser.parser_base.MCNP_Parser,
     ):
+        try:
+            self._BLOCK_TYPE
+        except AttributeError:
+            self._BLOCK_TYPE = montepy.input_parser.block_type.BlockType.DATA
         self._problem_ref = None
         self._parameters = ParametersNode()
         self._input = None
         if input:
-            if not isinstance(input, montepy.input_parser.mcnp_input.Input):
-                raise TypeError("input must be an Input")
+            if not isinstance(input, (montepy.input_parser.mcnp_input.Input, str)):
+                raise TypeError(f"input must be an Input or str. {input} given.")
+            if isinstance(input, str):
+                input = montepy.input_parser.mcnp_input.Input(
+                    input.split("\n"), self._BLOCK_TYPE
+                )
             try:
                 try:
                     parser.restart()
@@ -166,8 +172,6 @@ class MCNP_Object(ABC, metaclass=_ExceptionContextAdder):
 
         None is generally a safe default value to provide.
 
-        .. versionadded:: 0.2.0
-
         :param value_type: the data type for the ValueNode.
         :type value_type: Class
         :param default: the default value to provide (type needs to agree with value_type)
@@ -208,8 +212,6 @@ class MCNP_Object(ABC, metaclass=_ExceptionContextAdder):
         The most common need is to update a value based on the number for an object pointed at,
         e.g., the material number in a cell definition.
 
-        .. versionadded:: 0.2.0
-
         """
         pass
 
@@ -246,8 +248,6 @@ class MCNP_Object(ABC, metaclass=_ExceptionContextAdder):
     def leading_comments(self) -> list[PaddingNode]:
         """
         Any comments that come before the beginning of the input proper.
-
-        .. versionadded:: 0.2.0
 
         :returns: the leading comments.
         :rtype: list

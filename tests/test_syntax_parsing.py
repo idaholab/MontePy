@@ -439,6 +439,7 @@ class TestSyntaxNode(TestCase):
     def test_syntax_str(self):
         str(self.test_node)
         repr(self.test_node)
+        self.test_node._pretty_str()
 
 
 class TestGeometryTree(TestCase):
@@ -477,6 +478,7 @@ class TestGeometryTree(TestCase):
         test = self.test_tree
         str(test)
         repr(test)
+        test._pretty_str()
 
     def test_geometry_comments(self):
         test = copy.deepcopy(self.test_tree)
@@ -694,6 +696,7 @@ class TestListNode(TestCase):
         list_node.append(syntax_node.ValueNode("1.0", float))
         str(list_node)
         repr(list_node)
+        list_node._pretty_str()
 
     def test_list_slicing(self):
         list_node = syntax_node.ListNode("list")
@@ -790,6 +793,7 @@ class TestMaterialssNode(TestCase):
         isotopes.append_nuclide(("isotope_fraction", zaid, concentration))
         str(isotopes)
         repr(isotopes)
+        isotopes._pretty_str()
 
     def test_isotopes_iter(self):
         isotopes = syntax_node.MaterialsNode("test")
@@ -1570,6 +1574,7 @@ class TestParametersNode(TestCase):
     def test_parameter_str(self):
         str(self.param)
         repr(self.param)
+        self.param._pretty_str()
 
     def test_parameter_format(self):
         self.assertEqual(self.param.format(), "vol=1.0")

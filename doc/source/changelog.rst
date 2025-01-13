@@ -2,8 +2,8 @@
 MontePy Changelog
 *****************
 
-1.0.0 releases
-==============
+1.0 releases
+============
 
 #Next Version#
 --------------
@@ -20,7 +20,10 @@ MontePy Changelog
 * Made ``Material.is_atom_fraction`` settable (:issue:`511`). 
 * Made NumberedObjectCollections act like a set (:issue:`138`).
 * Automatically added children objects, e.g., the surfaces in a cell, to the problem when the cell is added to the problem (:issue:`63`).
+* Added ability to parse all MCNP objects from a string (:issue:`88`).
+* Added function: :func:`~montepy.mcnp_problem.MCNP_Problem.parse` to parse arbitrary MCNP object (:issue:`88`).
 * An error is now raised when typos in object attributes are used, e.g., ``cell.nubmer`` (:issue:`508`).
+
 
 **Bugs Fixed**
 

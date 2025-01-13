@@ -59,9 +59,6 @@ def read_front_matters(fh, mcnp_version):
     .. warning::
         This function will not close the file handle.
 
-    .. versionchanged:: 0.2.0
-        ``fh`` was changed to be an MCNP_InputFile to hold more information.
-
     :param fh: The file handle of the input file.
     :type fh: MCNP_InputFile
     :param mcnp_version: The version of MCNP that the input is intended for.
@@ -104,9 +101,6 @@ def read_data(fh, mcnp_version, block_type=None, recursion=False):
 
     .. warning::
         This function will not close the file handle.
-
-    .. versionchanged:: 0.2.0
-        ``file_wrapper`` was added to better track which file is being read.
 
     :param fh: The file handle of the input file.
     :type fh: MCNP_InputFile

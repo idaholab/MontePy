@@ -1191,3 +1191,23 @@ def test_read_write_cycle(file):
                     )
                 else:
                     raise e
+
+
+def test_arbitrary_parse(simple_problem):
+    simple_problem = simple_problem.clone()
+    for append in [False, True]:
+        cell = simple_problem.parse("20 0 -1005", append)
+        assert (cell in simple_problem.cells) == append
+        assert cell.number == 20
+        assert cell.surfaces[1005] in simple_problem.surfaces
+        surf = simple_problem.parse("5 SO 7.5", append)
+        assert (surf in simple_problem.surfaces) == append
+        assert surf.number == 5
+        mat = simple_problem.parse("m123 1001.80c 1.0 8016.80c 2.0", append)
+        assert (mat in simple_problem.materials) == append
+        assert (mat in simple_problem.data_inputs) == append
+        assert mat.number == 123
+        transform = simple_problem.parse("tr25 0 0 1", append)
+        assert (transform in simple_problem.transforms) == append
+        with pytest.raises(ParsingError):
+            simple_problem.parse("123 hello this is invalid")

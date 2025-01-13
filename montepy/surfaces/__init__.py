@@ -13,3 +13,6 @@ from .cylinder_on_axis import CylinderOnAxis
 from .half_space import HalfSpace, UnitHalfSpace
 from .surface import Surface
 from .surface_type import SurfaceType
+
+# promote functions
+from .surface_builder import parse_surface
