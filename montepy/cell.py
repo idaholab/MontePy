@@ -1,10 +1,11 @@
-# 2024, Battelle Energy Alliance, LLC All Rights Reserved.
+# Copyright 2024, Battelle Energy Alliance, LLC All Rights Reserved.
 from __future__ import annotations
-
 import copy
 import itertools
 import numbers
+from typing import Union
 
+import montepy
 from montepy.cells import Cells
 from montepy.constants import BLANK_SPACE_CONTINUE
 from montepy.data_inputs import importance, fill, lattice_input, universe_input, volume
@@ -12,7 +13,7 @@ from montepy.data_inputs.data_parser import PREFIX_MATCHES
 from montepy.input_parser.cell_parser import CellParser
 from montepy.input_parser import syntax_node
 from montepy.errors import *
-from montepy.numbered_mcnp_object import Numbered_MCNP_Object
+from montepy.numbered_mcnp_object import Numbered_MCNP_Object, InitInput
 from montepy.data_inputs.material import Material
 from montepy.geometry_operators import Operator
 from montepy.surfaces.half_space import HalfSpace, UnitHalfSpace
@@ -64,15 +65,20 @@ class Cell(Numbered_MCNP_Object):
 
         complement = ~cell
 
-
     .. seealso::
 
             * :manual63sec:`5.2`
             * :manual62:`55`
 
-    :param input: the input for the cell definition
-    :type input: Input
+    .. versionchanged:: 1.0.0
 
+        Added number parameter
+
+
+    :param input: The Input syntax object this will wrap and parse.
+    :type input: Union[Input, str]
+    :param number: The number to set for this object.
+    :type number: int
     """
 
     _ALLOWED_KEYWORDS = {
@@ -105,7 +111,12 @@ class Cell(Numbered_MCNP_Object):
 
     _parser = CellParser()
 
-    def __init__(self, input: montepy.input_parser.mcnp_input.Input = None):
+    def __init__(
+        self,
+        input: InitInput = None,
+        number: int = None,
+    ):
+        self._BLOCK_TYPE = montepy.input_parser.block_type.BlockType.CELL
         self._CHILD_OBJ_MAP = {
             "material": Material,
             "surfaces": Surface,
@@ -119,10 +130,9 @@ class Cell(Numbered_MCNP_Object):
         self._density_node = self._generate_default_node(float, None)
         self._surfaces = Surfaces()
         self._complements = Cells()
-        self._number = self._generate_default_node(int, -1)
-        super().__init__(input, self._parser)
+        super().__init__(input, self._parser, number)
         if not input:
-            self._generate_default_tree()
+            self._generate_default_tree(number)
         self._old_number = copy.deepcopy(self._tree["cell_num"])
         self._number = self._tree["cell_num"]
         mat_tree = self._tree["material"]
@@ -371,9 +381,6 @@ class Cell(Numbered_MCNP_Object):
         """
         The Geometry for this problem.
 
-        .. versionadded:: 0.2.0
-            Added with the new ability to represent true CSG geometry logic.
-
         The HalfSpace tree that is able to represent this cell's geometry.
         MontePy's geometry is based upon dividers, which includes both Surfaces, and cells.
         A half-space is created by choosing one side of the divider.
@@ -607,7 +614,7 @@ class Cell(Numbered_MCNP_Object):
         for input_class, (attr, _) in self._INPUTS_TO_PROPERTY.items():
             getattr(self, attr)._update_values()
 
-    def _generate_default_tree(self):
+    def _generate_default_tree(self, number: int = None):
         material = syntax_node.SyntaxNode(
             "material",
             {
@@ -619,7 +626,7 @@ class Cell(Numbered_MCNP_Object):
         self._tree = syntax_node.SyntaxNode(
             "cell",
             {
-                "cell_num": self._generate_default_node(int, None),
+                "cell_num": self._generate_default_node(int, number),
                 "material": material,
                 "geometry": None,
                 "parameters": syntax_node.ParametersNode(),

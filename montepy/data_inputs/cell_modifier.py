@@ -1,7 +1,7 @@
 # Copyright 2024, Battelle Energy Alliance, LLC All Rights Reserved.
 from abc import abstractmethod
 import montepy
-from montepy.data_inputs.data_input import DataInputAbstract
+from montepy.data_inputs.data_input import DataInputAbstract, InitInput
 from montepy.input_parser import syntax_node
 from montepy.input_parser.block_type import BlockType
 from montepy.input_parser.mcnp_input import Input, Jump
@@ -15,7 +15,7 @@ class CellModifierInput(DataInputAbstract):
     Examples: IMP, VOL, etc.
 
     :param input: the Input object representing this data input
-    :type input: Input
+    :type input: Union[Input, str]
     :param in_cell_block: if this card came from the cell block of an input file.
     :type in_cell_block: bool
     :param key: the key from the key-value pair in a cell
@@ -24,7 +24,13 @@ class CellModifierInput(DataInputAbstract):
     :type value: SyntaxNode
     """
 
-    def __init__(self, input=None, in_cell_block=False, key=None, value=None):
+    def __init__(
+        self,
+        input: InitInput = None,
+        in_cell_block: bool = False,
+        key: str = None,
+        value: syntax_node.SyntaxNode = None,
+    ):
         fast_parse = False
         if key and value:
             input = Input([key], BlockType.DATA)
@@ -178,8 +184,6 @@ class CellModifierInput(DataInputAbstract):
         """
         The ValueNode that holds the information for this instance, that should be included in the data block.
 
-        .. versionadded:: 0.2.0
-
         :returns: The ValueNode to update the data-block syntax tree with.
         :rtype: ValueNode
         """
@@ -190,8 +194,6 @@ class CellModifierInput(DataInputAbstract):
         Gets a list of the ValueNodes that hold the information for all cells.
 
         This will be a list in the same order as :func:`montepy.mcnp_problem.MCNP_Problem.cells`.
-
-        .. versionadded:: 0.2.0
 
         :returns: a list of the ValueNodes to update the data block syntax tree with
         :rtype: list
@@ -207,8 +209,6 @@ class CellModifierInput(DataInputAbstract):
     def _update_cell_values(self):
         """
         Updates values in the syntax tree when in the cell block.
-
-        .. versionadded:: 0.2.0
         """
         pass
 

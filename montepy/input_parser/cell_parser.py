@@ -8,9 +8,6 @@ class CellParser(MCNP_Parser):
     """
     The parser for parsing a Cell input.
 
-    .. versionadded:: 0.2.0
-        This was added with the major parser rework.
-
     :returns: a syntax tree of the cell.
     :rtype: SyntaxNode
     """
