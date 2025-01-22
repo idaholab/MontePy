@@ -361,8 +361,7 @@ class TestValueNode(TestCase):
     def test_value_equality(self):
         value_node1 = syntax_node.ValueNode("1", int)
         self.assertTrue(value_node1 == value_node1)
-        with self.assertRaises(TypeError):
-            value_node1 == syntax_node.PaddingNode("")
+        assert not value_node1 == syntax_node.PaddingNode("")
         value_node2 = syntax_node.ValueNode("2", int)
         self.assertTrue(value_node1 != value_node2)
         value_node3 = syntax_node.ValueNode("hi", str)
@@ -570,8 +569,7 @@ class TestPaddingNode(TestCase):
         self.assertTrue(pad != " hi ")
         pad1 = syntax_node.PaddingNode(" ")
         self.assertTrue(pad == pad1)
-        with self.assertRaises(TypeError):
-            pad == 1
+        assert not pad == 1
 
     def test_comment_init(self):
         comment = syntax_node.CommentNode("$ hi")
@@ -722,8 +720,7 @@ class TestListNode(TestCase):
         list_node1 = syntax_node.ListNode("list")
         for i in range(20):
             list_node1.append(syntax_node.ValueNode("1.0", float))
-        with self.assertRaises(TypeError):
-            list_node1 == "hi"
+        assert not list_node1 == "hi"
         list2 = [syntax_node.ValueNode("1.0", float)] * 19
         self.assertTrue(not list_node1 == list2)
         list2 = [syntax_node.ValueNode("1.0", float)] * 20

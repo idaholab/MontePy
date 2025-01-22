@@ -37,10 +37,10 @@ The number of characters allowed in a line for each MCNP version.
 
 Citations:
 
-* 5.1.60 and 6.1.0: Section 2.6.2 of LA-UR-18-20808
-* 6.2.0: Section 1.1.1 of LA-UR-17-29981
-* 6.3.0: Section 3.2.2 of LA-UR-22-30006
-* 6.3.1: Section 3.2.2 of LA-UR-24-24602
+* 5.1.60 and 6.1.0: Section 2.6.2 of `LA-UR-18-20808 <https://www.osti.gov/biblio/1419730>`_
+* 6.2.0: Section 1.1.1: :manual62:`13`
+* 6.3.0: :manual63:`3.2.2`
+* 6.3.1: Section 3.2.2 of `LA-UR-24-24602 <https://www.osti.gov/biblio/2372634>`_ 
 """
 
 DEFAULT_VERSION = (6, 3, 0)

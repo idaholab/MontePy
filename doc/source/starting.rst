@@ -439,7 +439,7 @@ Surfaces
 
 The most important unsung heroes of an MCNP problem are the surfaces.
 They may be tedious to work with but you can't get anything done without them.
-MCNP supports *alot* of types of surfaces, and all of them are special in their own way.
+MCNP supports *a lot* of types of surfaces, and all of them are special in their own way.
 You can see all the surface types here: :class:`~montepy.surfaces.surface_type.SurfaceType`.
 By default all surfaces are an instance of :class:`~montepy.surfaces.surface.Surface`.
 They will always have the properties: ``surface_type``, and ``surface_constants``.
@@ -705,7 +705,7 @@ This will completely redefine the cell's geometry. You can also modify the geome
     fuel_cyl.number = 20
     fuel_cyl.radius = 1.20
     other_fuel_region = -fuel_cyl
-    fuel_cell.geometry |= other_fuel_region 
+    fuel_cell.geometry |= other_fuel_region #|| 
 
 .. warning:: 
 
@@ -783,6 +783,344 @@ For example:
     >>> new_cell = problem.cells[1].clone(clone_material=True)
     >>> new_cell.material.number 
     100
+
+
+.. _mat_tutorial:
+
+Materials
+---------
+
+Materials are how the nuclide concentrations in cells are specified.
+MontePy has always supported materials, but since version 1.0.0,
+the design of the interface has significantly improved.
+
+Specifying Nuclides 
+^^^^^^^^^^^^^^^^^^^
+
+To specify a material, one needs to be able to specify the nuclides that are contained in it.
+This is done through :class:`~montepy.data_inputs.nuclide.Nuclide` objects.
+This actually a wrapper of a :class:`~montepy.data_inputs.nuclide.Nucleus` and a :class:`~montepy.data_inputs.nuclide.Library` object.
+Users should rarely need to interact with the latter two objects, but it is good to be aware of them.
+The general idea is that a ``Nuclide`` instance represents a specific set of ACE data that for a ``Nucleus``, 
+which represents only a physical nuclide with a given ``Library``.
+
+The easiest way to specify a Nuclide is by its string name. 
+MontePy supports all valid MCNP ZAIDs for MCNP 6.2, and MCNP 6.3.0.
+See :class:`~montepy.data_inputs.nuclide.Nuclide` for how metastable isomers are handled.
+However, ZAIDs (like many things in MCNP) are cumbersome.
+Therefore, MontePy also supports its own nuclide names as well, which are meant to be more intuitive.
+These are very similar to the names introduced with MCNP 6.3.1 (section 1.2.2): this follows:
+
+.. code-block::
+
+   Nn[-A][mS][.library]
+
+Where:
+
+* ``Nn`` is the atomic symbol of the nuclide, case insensitive. This is required.
+* ``A`` is the atomic mass. Zero-padding is not needed. Optional.
+* ``S`` is the metastable isomeric state. Only states 1 - 4 are allowed. Optional.
+* ``library`` is the library extension of the nuclide. This only supports MCNP 6.2, 6.3 formatting, i.e., 2 - 3 digits followed by a single letter. Optional. 
+
+The following are all valid ways to specify a nuclide:
+
+.. doctest::
+
+   >>> import montepy
+   >>> montepy.Nuclide("1001.80c")
+   Nuclide('H-1.80c')
+   >>> montepy.Nuclide("H-1.80c")
+   Nuclide('H-1.80c')
+   >>> montepy.Nuclide("H-1.710nc")
+   Nuclide('H-1.710nc')
+   >>> montepy.Nuclide("H")
+   Nuclide('H-0')
+   >>> montepy.Nuclide("Co-60m1")
+   Nuclide('Co-60m1')
+   >>> montepy.Nuclide("Co")
+   Nuclide('Co-0')
+
+
+.. note::
+
+   The new SZAID and Name syntax for nuclides introduced with MCNP 6.3.1 is not currently supported by MontePy.
+   This support likely will be added soon, but probably not prior to MCNP 6.3.1 being available on RSICC. 
+
+
+Working with Material Components
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Iterating over Material Components
+""""""""""""""""""""""""""""""""""
+
+Materials are list-like iterables of tuples.
+
+.. testcode:: 
+
+    mat = problem.materials[1]
+
+    for comp in mat:
+        print(comp)
+
+This shows:
+
+.. testoutput::
+
+    (Nuclide('U-235.80c'), 5.0)
+    (Nuclide('U-238.80c'), 95.0)
+
+If you need just the nuclide or just the fractions, these are accessible by:
+:func:`~montepy.data_inputs.material.Material.nuclides` and 
+:func:`~montepy.data_inputs.material.Material.values`, respectively.
+
+.. testcode::
+
+    for nuclide in mat.nuclides:
+        print(repr(nuclide))
+    for fraction in mat.values:
+        print(fraction)
+
+shows:
+
+.. testoutput::
+
+    Nuclide('U-235.80c')
+    Nuclide('U-238.80c')
+    5.0
+    95.0
+
+Updating Components of Materials
+""""""""""""""""""""""""""""""""
+
+Materials are also list-like in that they are settable by index.
+The material must always be set to a tuple of a nuclide and a fraction.
+
+For instance:
+
+.. testcode::
+
+    nuclide = mat[0][0]
+    mat[0] = (nuclide, 4.0)
+
+Generally this is pretty clunky, so 
+:func:`~montepy.data_inputs.material.Material.nuclides` and 
+:func:`~montepy.data_inputs.material.Material.values` are also settable.
+To undo the previous changes:
+
+.. testcode::
+
+    mat.values[0] = 5.0
+    print(mat[0])
+
+This outputs: 
+
+.. testoutput::
+
+    (Nuclide('U-235.80c'), 5.0)
+
+Adding Components to a Material
+"""""""""""""""""""""""""""""""
+
+To add components to a material use either
+:func:`~montepy.data_inputs.material.Material.add_nuclide`, or
+:func:`~montepy.data_inputs.material.Material.append`.
+:func:`~montepy.data_inputs.material.Material.add_nuclide` is generally the easier method to use.
+It accepts a nuclide or the name of a nuclide, and its fraction.
+
+.. note::
+
+    When adding a new component it is not possible to change whether the fraction is in atom fraction 
+    or mass fraction.
+    This is settable through :func:`~montepy.data_inputs.material.Material.is_atom_fraction`.
+
+.. testcode::
+
+    mat.add_nuclide("B-10.80c", 1e-6)
+    for comp in mat:
+        print(comp)
+
+.. testoutput::
+
+    (Nuclide('U-235.80c'), 5.0)
+    (Nuclide('U-238.80c'), 95.0)
+    (Nuclide('B-10.80c'), 1e-06)
+
+
+Libraries
+^^^^^^^^^
+
+MCNP nuclear data comes pre-packaged in multiple different libraries that come from different nuclear data sources
+(e.g., ENDF/B-VIII.0),
+at different temperatures, 
+and for different data needs, e.g., neutron data vs. photo-atomic data.
+For more details see `LA-UR-17-20709 <https://www.osti.gov/biblio/1342828>`_, or 
+`LANL's nuclear data libraries <https://nucleardata.lanl.gov/>`_. 
+
+All :class:`~montepy.data_inputs.nuclide.Nuclide` have a :class:`~montepy.data_inputs.nuclide.Nuclide.library`,
+though it may be just ``""``. 
+These can be manually set for each nuclide.
+If you wish to change all of the components in a material to use the same library you can use
+:func:`~montepy.data_inputs.material.Material.change_libraries`.
+
+MCNP has a precedence system for determining which library use in a specific instance.
+This precedence order is:
+
+#. The library specified with the nuclide e.g., ``80c`` in ``1001.80c``.
+#. The library specified as default for the material e.g., ``nlib = 80c``.
+#. The library specified as default in the default material, ``M0``. 
+#. The first matching entry in the ``XSDIR`` file.
+
+.. note::
+
+    MontePy currently does not support reading an ``XSDIR`` file. It will not provide information for 
+    that final step.
+
+Which library will be used for a given nuclide, material, and problem can be checked with:
+:func:`~montepy.data_inputs.material.Material.get_nuclide_library`.
+
+.. seealso::
+
+    * :manual63:`5.6.1`
+    * :manual62:`108`
+
+
+Finding Materials and Nuclides
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Next, we will cover how to find if
+
+* a nuclide is in a material
+* multiple nuclides are in a material
+* a range of nuclides (e.g., transuranics) is in a material
+* specific materials are in a problem.
+
+Check if Nuclide in Material
+""""""""""""""""""""""""""""
+
+First, you can test if a :class:`~montepy.data_inputs.nuclide.Nuclide` 
+(or :class:`~montepy.data_inputs.nuclide.Nucleus`, or :class:`~montepy.data_inputs.element.Element`, or ``str``),
+is in a material.
+This is generally interpreted broadly rather than explicitly.
+For instance, if the test nuclide has no library this will match
+for all libraries, not just the empty library.
+Similarly, an elemental nuclide, e.g., ``H-0``, will match all nuclides based
+on the element, not just the elemental nuclide.
+
+.. doctest::
+
+    >>> montepy.Nuclide('H-1.80c') in mat
+    False
+    >>> montepy.Element(92) in mat
+    True
+    >>> "U-235" in mat
+    True
+    >>> "U-235.70c" in mat
+    False
+    >>> montepy.Nuclide("B-0") in mat
+    True
+
+For more complicated checks there is the :func:`~montepy.data_inputs.material.Material.contains`.
+This takes a plurality of nuclides as well as a threshold.
+This returns ``True`` if and only if the material contains *all* nuclides
+with a fraction above the threshold.
+
+.. doctest::
+
+    >>> mat.contains("H-1.80c")
+    False
+    >>> mat.contains("U-235", "U-238", threshold=1.0)
+    True
+    >>> mat.contains("U-235.80c", "B-10")
+    True
+    >>> mat.contains("U-235.80c", "B-10", threshold=1e-3)
+    False
+
+Finding Nuclides
+""""""""""""""""
+
+Often you may need to only work a subset of the components in a material.
+:func:`~montepy.data_inputs.material.Material.find`.
+This returns a Generator of the index of the matching component, and then the component tuple.
+
+.. testcode::
+
+    # find all uraium nuclides
+    for idx, (nuclide, fraction) in mat.find("U"):
+        print(idx, nuclide, fraction)
+
+.. testoutput::
+
+    0  U-235   (80c) 5.0
+    1  U-238   (80c) 95.0
+
+There are also other fancy ways to pass slices, for instance to find all transuranics.
+See the examples in :func:`~montepy.data_inputs.material.Material.find` for more details.
+
+There is a related function as well :func:`~montepy.data_inputs.material.Material.find_vals`,
+which accepts the same arguments but only returns the matching fractions.
+This is great for instance to calculate the heavy metal fraction of a fuel:
+
+.. testcode::
+
+    # get all heavy metal fractions
+    hm_fraction = sum(mat.find_vals(element=slice(90,None))) # slice is requires an end value to accept a start
+    print(hm_fraction)
+
+Shows:
+
+.. testoutput::
+
+    100.0
+
+Finding Materials
+"""""""""""""""""
+
+There are a lot of cases where you may want to find specific materials in a problem,
+for instance getting all steels in a problem.
+This is done with the function :func:`~montepy.materials.Materials.get_containing`
+of :class:`~montepy.materials.Materials`.
+It takes the same arguments as :func:`~montepy.data_inputs.material.Material.contains` 
+previously discussed.
+
+Mixing Materials
+^^^^^^^^^^^^^^^^
+
+Commonly materials are a mixture of other materials.
+For instance a good idea for defining structural materials might be to create a new material for each element,
+that adds the naturally occurring nuclides of the element,
+and then mixing those elements together to make steel, zircaloy, etc.
+This mixing is done with :class:`~montepy.materials.Materials.mix`.
+Note this is a method of ``Materials`` and not ``Material``.
+
+.. note::
+
+    Materials can only be combined if they are all atom fraction or mass fraction.
+
+.. note::
+
+    The materials being mixed will be normalized prior to mixing (the original materials are unaffected).
+
+.. testcode::
+
+    mats = problem.materials
+    h2o = montepy.Material()
+    h2o.number = 1
+    h2o.add_nuclide("1001.80c", 2.0)
+    h2o.add_nuclide("8016.80c", 1.0)
+
+    boric_acid = montepy.Material()
+    boric_acid.number = 2
+    for nuclide, fraction in {
+        "1001.80c": 3.0,
+        "B-10.80c": 1.0 * 0.189,
+        "B-11.80c": 1.0 * 0.796,
+        "O-16.80c": 3.0
+    }.items():
+        boric_acid.add_nuclide(nuclide, fraction)
+
+    # boric acid concentration
+    boron_conc = 100e-6 # 100 ppm
+    borated_water = mats.mix([h2o, boric_acid], [1 - boron_conc, boron_conc])
 
 Universes
 ---------

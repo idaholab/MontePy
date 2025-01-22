@@ -76,6 +76,8 @@ autodoc_default_options = {
     "inherited-members": True,
 }
 
+linkcheck_ignore = ["https://nucleardata.lanl.gov/.*"]
+
 # -- External link configuration ---------------------------------------------
 UM63 = (
     "https://mcnp.lanl.gov/pdf_files/TechReport_2022_LANL_LA-UR-22-30006"

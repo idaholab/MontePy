@@ -11,7 +11,7 @@ MontePy Changelog
 **Features Added**
 
 * Redesigned how Materials hold Material_Components. See :ref:`migrate 0 1` (:pull:`507`). 
-* Made it easier to create an Isotope, or now Nuclide: ``montepy.Nuclide("H-1.80c")`` (:issue:`505`).
+* Made it easier to create an Isotope (now Nuclide): ``montepy.Nuclide("H-1.80c")`` (:issue:`505`).
 * When a typo in an object attribute is made an Error is raised rather than silently having no effect (:issue:`508`).
 * Improved material printing to avoid very long lists of components (:issue:`144`).
 * Allow querying for materials by components (:issue:`95`).
