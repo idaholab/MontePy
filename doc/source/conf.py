@@ -68,8 +68,6 @@ autodoc_typehints_description_target = "all"
 autodoc_member_order = "groupwise"
 # Display the version
 display_version = True
-autosummary_generate = True
-autosummary_imported_member = True
 autodoc_default_options = {
     "autosummary": True,
     "show-inheritance": True,
