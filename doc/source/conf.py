@@ -37,8 +37,10 @@ extensions = [
     "sphinx.ext.intersphinx",
     "sphinx.ext.extlinks",
     "sphinx.ext.doctest",
+    "sphinx_autodoc_typehints",
     "sphinx_favicon",
-    "sphinx_copybutton"
+    "sphinx_copybutton",
+    "autodocsumm",
 ]
 
 # Add any paths that contain templates here, relative to this directory.
@@ -60,6 +62,13 @@ exclude_patterns = []
 
 # Display the version
 display_version = True
+autosummary_generate = True
+autosummary_imported_member = True
+autodoc_default_options = {
+    "autosummary": True,
+    "show-inheritance": True,
+    "inherited-members": True,
+}
 
 # -- External link configuration ---------------------------------------------
 UM63 = (

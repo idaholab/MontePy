@@ -53,7 +53,8 @@ doc = [
 	"sphinxcontrib-apidoc", 
 	"pydata_sphinx_theme",
 	"sphinx-favicon",
-	"sphinx-copybutton"
+	"sphinx-copybutton",
+	"autodocsumm"
 ]
 format = ["black>=23.3.0"]
 build = [
