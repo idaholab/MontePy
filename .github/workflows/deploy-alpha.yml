@@ -89,7 +89,7 @@ jobs:
     environment:
       name: pypi
       url: https://pypi.org/p/montepy  # Replace <package-name> with your PyPI project name
-    needs: [deploy-pages, deploy-test-pypi, build-packages]
+    needs: [deploy-test-pypi, build-packages]
     permissions:
       contents: read
       id-token: write
