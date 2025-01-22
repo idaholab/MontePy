@@ -693,7 +693,7 @@ it should be a generator.
 Constants and Meta Data Structures
 ----------------------------------
 
-MontePy uses constants and data structures to utilize meta-programming,
+MontePy uses constants and data structures to utilize meta-programming
 and remove redundant code.
 Typical constants can be found in :mod:`montepy.constants`.
 

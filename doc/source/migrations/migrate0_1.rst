@@ -34,20 +34,20 @@ and were removed in MontePy 1.0.0.
   This is the dictionary that caused this design problem. 
 
 * :class:`~montepy.data_inputs.material_component.MaterialComponent`:
-  This is the class that stores information in the above dictionary. 
-  It is largely excess object wrapping that makes the material interface 
+  This was the class that stores information in the above dictionary. 
+  It was largely excess object wrapping that made the material interface 
   overly complex.
 
 * :class:`~montepy.data_inputs.isotope.Isotope` was renamed to :class:`~montepy.data_inputs.nuclide.Nuclide`. 
-  This is to better align with MCNP documentation,
-  and better reflect that the nuclear data for a nuclide can represent 
+  This is to better align with MCNP documentation
+  and to better reflect that the nuclear data for a nuclide can represent 
   isotopic, isomeric, or atomic data.
 
 
 New Interface & Migration
 -------------------------
 
-For more details see the new :ref:`mat_tutorial` tutorial in the getting started guide,
+For more details, see the new :ref:`mat_tutorial` tutorial in the getting started guide,
 as well as the example in the :class:`~montepy.data_inputs.material.Material` documentation.
 
 .. note::
@@ -80,14 +80,14 @@ Searching Components
 ^^^^^^^^^^^^^^^^^^^^
 
 Finding a specific ``Nuclide`` in a ``Material`` is now much easier.
-First there is a :func:`~montepy.data_inputs.material.Material.find` method that takes either a ``Nuclide`` string,
+First, there is a :func:`~montepy.data_inputs.material.Material.find` method that takes either a ``Nuclide`` string,
 or various over search criteria (e.g., ``element``),
 and creates a generator of all matching component tuples.
 
 If you want to check if a ``Material`` contains a specific ``Nuclide``
 you can simply test ``nuclide in material``.
 The :func:`~montepy.data_inputs.material.Material.contains` function will provide more options,
-such as setting a minimum threshold, and testing for multiple nuclides at once.
+such as setting a minimum threshold and testing for multiple nuclides at once.
 
 Adding Nuclides
 ^^^^^^^^^^^^^^^
@@ -101,7 +101,7 @@ Editing a material composition will be very similar to editing a ``list``.
 Existing components can be set to a nuclide component nuclide.
 Also existing components can be deleted with ``del``. 
 For just editing the fractions or nuclides the functions:
-:func:`~montepy.data_inputs.material.Material.nuclides`,
+:func:`~montepy.data_inputs.material.Material.nuclides`
 and :func:`~montepy.data_inputs.material.Material.values` provide the easiest interface.
 
 
@@ -114,7 +114,7 @@ they may be an isomer, or event an element.
 Rather the MCNP generalized terminology of :class:`montepy.data_inputs.nuclide.Nuclide` was adopted.
 The idea of a specific nuclide, e.g., ``H-1`` was separated from an
 MCNP material component e.g., ``1001.80c``. 
-The actual ``Nuclide`` information was moved to a new class: :class:`~montepy.data_inputs.nuclide.Nucleus`,
+The actual ``Nuclide`` information was moved to a new class: :class:`~montepy.data_inputs.nuclide.Nucleus`
 that is immutable. 
 The :class:`~montepy.data_inputs.nuclide.Nuclide` wraps this and adds a :class:`~montepy.data_inputs.nuclide.Library` object to specify the nuclear data that is used.
 It makes sense to be able to change a library.
@@ -170,7 +170,7 @@ Adding Material Components
 ^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 Appending and editing the material components in a material in MontePy 0.x
-is rather clunky, and a large reason for this release.
+was rather clunky. That was a large part of the motivation for this release.
 
 In MontePy 0.x
 """"""""""""""
@@ -198,8 +198,8 @@ Finding, Editing, and Deleting a Component
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 Accessing a specific component is another reason for this release.
-As you may have noticed ``material_components`` is a dictionary with the keys being an ``Isotope``.
-Due to a bug in MontePy 0.x the exact instance of an Isotope must be passed as the key to access that item.
+As you may have noticed, ``material_components`` is a dictionary with the keys being an ``Isotope``.
+Due to a bug in MontePy 0.x, the exact instance of an Isotope must be passed as the key to access that item.
 
 In MontePy 0.x
 """"""""""""""

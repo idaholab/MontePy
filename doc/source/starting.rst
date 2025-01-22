@@ -439,7 +439,7 @@ Surfaces
 
 The most important unsung heroes of an MCNP problem are the surfaces.
 They may be tedious to work with but you can't get anything done without them.
-MCNP supports *alot* of types of surfaces, and all of them are special in their own way.
+MCNP supports *a lot* of types of surfaces, and all of them are special in their own way.
 You can see all the surface types here: :class:`~montepy.surfaces.surface_type.SurfaceType`.
 By default all surfaces are an instance of :class:`~montepy.surfaces.surface.Surface`.
 They will always have the properties: ``surface_type``, and ``surface_constants``.
@@ -791,23 +791,23 @@ Materials
 ---------
 
 Materials are how the nuclide concentrations in cells are specified.
-MontePy has always supported materials, but since version 1.0.0 the design of the interface has changed significantly,
-and greatly improved.
+MontePy has always supported materials, but since version 1.0.0,
+the design of the interface has significantly improved.
 
 Specifying Nuclides 
 ^^^^^^^^^^^^^^^^^^^
 
-To specify a material one needs to be able to specify the nuclides that are contained in it.
+To specify a material, one needs to be able to specify the nuclides that are contained in it.
 This is done through :class:`~montepy.data_inputs.nuclide.Nuclide` objects.
 This actually a wrapper of a :class:`~montepy.data_inputs.nuclide.Nucleus` and a :class:`~montepy.data_inputs.nuclide.Library` object.
-Users should rarely need to interact with the latter objects, but it is good to be aware of them.
-The generally idea is that ``Nuclide`` instance represents a specific set of ACE data that for a ``Nucleus``, which represents only a physical nuclide,
-with a given ``Library``.
+Users should rarely need to interact with the latter two objects, but it is good to be aware of them.
+The general idea is that a ``Nuclide`` instance represents a specific set of ACE data that for a ``Nucleus``, 
+which represents only a physical nuclide with a given ``Library``.
 
 The easiest way to specify a Nuclide is by its string name. 
 MontePy supports all valid MCNP ZAIDs for MCNP 6.2, and MCNP 6.3.0.
 See :class:`~montepy.data_inputs.nuclide.Nuclide` for how metastable isomers are handled.
-However, ZAIDs like many things in MCNP are rather cumbersome.
+However, ZAIDs (like many things in MCNP) are cumbersome.
 Therefore, MontePy also supports its own nuclide names as well, which are meant to be more intuitive.
 These are very similar to the names introduced with MCNP 6.3.1 (section 1.2.2): this follows:
 
@@ -844,7 +844,7 @@ The following are all valid ways to specify a nuclide:
 .. note::
 
    The new SZAID and Name syntax for nuclides introduced with MCNP 6.3.1 is not currently supported by MontePy.
-   This support likely will be added soon but probably not prior to MCNP 6.3.1 being available on RSICC. 
+   This support likely will be added soon, but probably not prior to MCNP 6.3.1 being available on RSICC. 
 
 
 Working with Material Components
@@ -869,9 +869,9 @@ This shows:
     (Nuclide('U-235.80c'), 5.0)
     (Nuclide('U-238.80c'), 95.0)
 
-If you need just the nuclide, or just the fractions these are accessible by:
-:func:`~montepy.data_inputs.material.Material.nuclides`, and 
-:func:`~montepy.data_inputs.material.Material.values`.
+If you need just the nuclide or just the fractions, these are accessible by:
+:func:`~montepy.data_inputs.material.Material.nuclides` and 
+:func:`~montepy.data_inputs.material.Material.values`, respectively.
 
 .. testcode::
 
@@ -902,7 +902,7 @@ For instance:
     nuclide = mat[0][0]
     mat[0] = (nuclide, 4.0)
 
-Generally this is pretty clunky, and so 
+Generally this is pretty clunky, so 
 :func:`~montepy.data_inputs.material.Material.nuclides` and 
 :func:`~montepy.data_inputs.material.Material.values` are also settable.
 To undo the previous changes:
@@ -972,7 +972,7 @@ This precedence order is:
 
 .. note::
 
-    MontePy currently does not support reading an ``XSDIR`` file and so will not provide information for 
+    MontePy currently does not support reading an ``XSDIR`` file. It will not provide information for 
     that final step.
 
 Which library will be used for a given nuclide, material, and problem can be checked with:
@@ -987,16 +987,18 @@ Which library will be used for a given nuclide, material, and problem can be che
 Finding Materials and Nuclides
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Next, we will cover how to find if a nuclide is in a material,
-if a material contains multiple nuclides,
-specific nuclides in a material (e.g., transuranics),
-or specific materials in a problem.
+Next, we will cover how to find if
+
+* a nuclide is in a material
+* multiple nuclides are in a material
+* a range of nuclides (e.g., transuranics) is in a material
+* specific materials are in a problem.
 
 Check if Nuclide in Material
 """"""""""""""""""""""""""""
 
 First, you can test if a :class:`~montepy.data_inputs.nuclide.Nuclide` 
-( or :class:`~montepy.data_inputs.nuclide.Nucleus`, or :class:`~montepy.data_inputs.element.Element`, or ``str``),
+(or :class:`~montepy.data_inputs.nuclide.Nucleus`, or :class:`~montepy.data_inputs.element.Element`, or ``str``),
 is in a material.
 This is generally interpreted broadly rather than explicitly.
 For instance, if the test nuclide has no library this will match
