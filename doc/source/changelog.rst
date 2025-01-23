@@ -24,7 +24,6 @@ MontePy Changelog
 * Added function: :func:`~montepy.mcnp_problem.MCNP_Problem.parse` to parse arbitrary MCNP object (:issue:`88`).
 * An error is now raised when typos in object attributes are used, e.g., ``cell.nubmer`` (:issue:`508`).
 
-
 **Bugs Fixed**
 
 * Made it so that a material created from scratch can be written to file (:issue:`512`).
