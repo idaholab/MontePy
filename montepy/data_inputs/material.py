@@ -263,8 +263,6 @@ class Material(data_input.DataInputAbstract, Numbered_MCNP_Object):
         80p
         00c
 
-    .. versionchanged:: 1.0.0
-
     .. seealso::
 
             * :manual63:`5.6.1`
@@ -272,8 +270,11 @@ class Material(data_input.DataInputAbstract, Numbered_MCNP_Object):
 
     .. versionchanged:: 1.0.0
 
-        * Added number parameter
+        * Added number parameter to constructor.
         * This was the primary change for this release. For more details on what changed see :ref:`migrate 0 1`.
+            * Switched to list-like data-structure
+            * Added ability to search by Nuclide
+            * Added Support for default libraries (e.g., ``nlib=80c``).
 
     :param input: The Input syntax object this will wrap and parse.
     :type input: Union[Input, str]
