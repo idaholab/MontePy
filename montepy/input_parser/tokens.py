@@ -486,6 +486,35 @@ class DataLexer(ParticleLexer):
         ZAID,
     }
 
+    _KEYWORDS = set(MCNP_Lexer._KEYWORDS) | {
+        "SYM",  # SSW
+        "PTY",
+        "CEL",
+        "SUR",  # SDEF
+        "ERG",
+        "TME",
+        "DIR",
+        "VEC",
+        "NRM",
+        "POS",
+        "RAD",
+        "EXT",
+        "AXS",
+        "X",
+        "Y",
+        "Z",
+        "CCC",
+        "ARA",
+        "WGT",
+        "TR",
+        "EFF",
+        "PAR",
+        "DAT",
+        "LOC",
+        "BEM",
+        "BAP",
+    }
+
     @_(r"([|+\-!<>/%^_~@\*\?\#]|\#\d*)+")
     def PARTICLE_SPECIAL(self, t):
         """
