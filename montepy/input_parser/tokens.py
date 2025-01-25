@@ -26,6 +26,7 @@ class MCNP_Lexer(Lexer):
         LIBRARY_SUFFIX,
         LOG_INTERPOLATE,
         MESSAGE,
+        MODIFIER,
         MULTIPLY,
         NUM_INTERPOLATE,
         NUM_JUMP,
@@ -75,50 +76,6 @@ class MCNP_Lexer(Lexer):
         "cosy",
         "bflcl",
         "unc",
-        # materials
-        "gas",
-        "estep",
-        "hstep",
-        "nlib",
-        "plib",
-        "pnlib",
-        "elib",
-        "hlib",
-        "alib",
-        "slib",
-        "tlib",
-        "dlib",
-        "cond",
-        "refi",
-        "refc",
-        "refs",
-        # volume
-        "no",
-        # sdef
-        "cel",
-        "sur",
-        "erg",
-        "tme",
-        "dir",
-        "vec",
-        "nrm",
-        "pos",
-        "rad",
-        "ext",
-        "axs",
-        "x",
-        "y",
-        "z",
-        "ccc",
-        "ara",
-        "wgt",
-        "tr",
-        "eff",
-        "par",
-        "dat",
-        "loc",
-        "bem",
-        "bap",
     }
     """
     Defines allowed keywords in MCNP.
@@ -471,6 +428,7 @@ class DataLexer(ParticleLexer):
         JUMP,
         KEYWORD,
         LOG_INTERPOLATE,
+        MODIFIER,
         MESSAGE,
         MULTIPLY,
         NUMBER,
@@ -487,39 +445,78 @@ class DataLexer(ParticleLexer):
     }
 
     _KEYWORDS = set(MCNP_Lexer._KEYWORDS) | {
-        "SYM",  # SSW
-        "PTY",
-        "CEL",
-        "SUR",  # SDEF
-        "ERG",
-        "TME",
-        "DIR",
-        "VEC",
-        "NRM",
-        "POS",
-        "RAD",
-        "EXT",
-        "AXS",
-        "X",
-        "Y",
-        "Z",
-        "CCC",
-        "ARA",
-        "WGT",
-        "TR",
-        "EFF",
-        "PAR",
-        "DAT",
-        "LOC",
-        "BEM",
-        "BAP",
+        "sym",  # SSW
+        "pty",
+        "cel",
+        # materials
+        "gas",
+        "estep",
+        "hstep",
+        "nlib",
+        "plib",
+        "pnlib",
+        "elib",
+        "hlib",
+        "alib",
+        "slib",
+        "tlib",
+        "dlib",
+        "cond",
+        "refi",
+        "refc",
+        "refs",
+        # volume
+        "no",
+        # sdef
+        "cel",
+        "sur",
+        "erg",
+        "tme",
+        "dir",
+        "vec",
+        "nrm",
+        "pos",
+        "rad",
+        "ext",
+        "axs",
+        "x",
+        "y",
+        "z",
+        "ccc",
+        "ara",
+        "wgt",
+        "tr",
+        "eff",
+        "par",
+        "dat",
+        "loc",
+        "bem",
+        "bap",
     }
+
+    _MODIFIERS = {
+        "no",  # VOLUME
+    }
+    """
+    A keyword flag at the beginning of a input that modifies it's behavior.
+    """
 
     @_(r"([|+\-!<>/%^_~@\*\?\#]|\#\d*)+")
     def PARTICLE_SPECIAL(self, t):
         """
         Particle designators that are special characters.
         """
+        return t
+
+    @_(r"[+\-]?[0-9]*\.?[0-9]*E?[+\-]?[0-9]*[ijrml]+[a-z\./]*", r"[a-z]+[a-z\./]*")
+    def TEXT(self, t):
+        t = super().TEXT(t)
+        if t.value.lower() in self._KEYWORDS:
+            t.type = "KEYWORD"
+        if t.value.lower() in self._MODIFIERS:
+            t.type = "MODIFIER"
+        elif t.value.lower() in self._PARTICLES:
+            t.type = "PARTICLE"
         return t
 
 
