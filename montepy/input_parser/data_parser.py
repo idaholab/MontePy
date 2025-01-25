@@ -183,6 +183,7 @@ class ParamOnlyDataParser(DataParser):
     debugfile = None
 
     @_(
+        "param_introduction",
         "param_introduction spec_parameters",
     )
     def param_data_input(self, p):
