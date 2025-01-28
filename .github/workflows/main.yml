@@ -42,8 +42,8 @@ jobs:
       - run: pip install --user . montepy[develop]
       - run: pip freeze
       - name: Upload build artifacts
-        uses: actions/upload-artifact@v4.3.1
-        if: ${{ matrix.python-version == '3.12'  && matrix.numpy-version == '2.0' }}
+        uses: actions/upload-artifact@v4
+        if: ${{ matrix.python-version == '3.12'}}
         with: 
            name: build
            path: dist/*
