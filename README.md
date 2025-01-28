@@ -8,7 +8,7 @@
 
 
 [![Coverage Status](https://coveralls.io/repos/github/idaholab/MontePy/badge.svg?branch=develop)](https://coveralls.io/github/idaholab/MontePy?branch=develop)
-[![Testing status](https://github.com/idaholab/MontePy/actions/workflows/main.yml/badge.svg?branch=develop)](https://github.com/idaholab/MontePy/actions/workflows/main.yml)
+[![Testing status](https://github.com/idaholab/MontePy/actions/workflows/main.yml/badge.svg?branch=develop)](https://github.com/idaholab/MontePy/actions/workflows/main.yml?query=branch%3Adevelop)
 [![Docs Deployment](https://github.com/idaholab/MontePy/actions/workflows/deploy.yml/badge.svg?branch=main)](https://www.montepy.org/)
 
 [![PyPI version](https://badge.fury.io/py/montepy.svg)](https://badge.fury.io/py/montepy)
