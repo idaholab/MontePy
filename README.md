@@ -4,13 +4,15 @@
 
 [![license](https://img.shields.io/github/license/idaholab/MontePy.svg)](https://github.com/idaholab/MontePy/blob/develop/LICENSE)
 [![JOSS article status](https://joss.theoj.org/papers/e5b5dc8cea19605a1507dd4d420d5199/status.svg)](https://joss.theoj.org/papers/e5b5dc8cea19605a1507dd4d420d5199)
-[![Coverage Status](https://coveralls.io/repos/github/idaholab/MontePy/badge.svg?branch=develop)](https://coveralls.io/github/idaholab/MontePy?branch=develop)
 [![Project Status: Active – The project has reached a stable, usable state and is being actively developed.](https://www.repostatus.org/badges/latest/active.svg)](https://www.repostatus.org/#active)
 
 
+[![Coverage Status](https://coveralls.io/repos/github/idaholab/MontePy/badge.svg?branch=develop)](https://coveralls.io/github/idaholab/MontePy?branch=develop)
+[![Testing status](https://github.com/idaholab/MontePy/actions/workflows/main.yml/badge.svg?branch=develop)](https://github.com/idaholab/MontePy/actions/workflows/main.yml)
+[![Docs Deployment](https://github.com/idaholab/MontePy/actions/workflows/deploy.yml/badge.svg?branch=main)](https://www.montepy.org/)
+
 [![PyPI version](https://badge.fury.io/py/montepy.svg)](https://badge.fury.io/py/montepy)
 [![Conda Version](https://img.shields.io/conda/vn/conda-forge/montepy.svg)](https://anaconda.org/conda-forge/montepy)
-[![Docs Deployment](https://github.com/idaholab/MontePy/actions/workflows/deploy.yml/badge.svg?branch=main)](https://www.montepy.org/)
 [![PyPI pyversions](https://img.shields.io/pypi/pyversions/montepy.svg)](https://pypi.org/project/montepy/)
 
 
