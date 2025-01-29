@@ -46,6 +46,31 @@ System Wide (for the current user)
 #. Install it from `PyPI <https://pypi.org/project/montepy>`_ by running ``pip install montepy``. 
    You may need to run ``pip install --user montepy`` if you are not allowed to install the package.
 
+Installing Optional Dependencies
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+MontePy offers multiple optional dependencies which some users may desire,
+though this is mostly intended for developers.
+Pip can install these through the following command:
+
+``pip install montepy[<extras>]``
+
+Where ``<extras>`` is one of the following options:
+
+#. ``demos``: installs the dependencies for running the demo problems in `jupyter <https://jupyter.org/>`_.
+
+#. ``doc``: installs the dependencies for building the website using `sphinx <https://www.sphinx-doc.org/en/master/>`_.
+
+#. ``build``: installs the dependencies for building the source distribution packages.
+
+#. ``format``: install the dependencies for formatting the code with `black <https://black.readthedocs.io/en/stable/index.html>`_. 
+
+#. ``test``: installs the dependencies for testing the software.
+
+#. ``demo-test``: installs the dependencies for testing the demos.
+
+#. ``develop``: installs everything a developer may need, specifically: ``montepy[test,doc,format,demo-test]``.
+
 Install specific version for a project
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 The best way maybe to setup a project-specific `conda <https://docs.conda.io/projects/conda/en/latest/user-guide/tasks/manage-environments.html>`_, 
