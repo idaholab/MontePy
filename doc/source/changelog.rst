@@ -61,6 +61,14 @@ MontePy Changelog
 0.5 releases
 ============
 
+#Next Release#
+--------------
+
+**Bug Fixes**
+
+* Fixed parsing error with not being able to parse a blank ``sdef`` (:issue:`636`).
+* Fixed parsing error with parsing ``SSW`` (:issue:`639`).
+
 0.5.3
 --------------
 

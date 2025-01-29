@@ -35,9 +35,9 @@ class DataParser(MCNP_Parser):
 
     @_(
         "classifier_phrase",
-        "classifier_phrase KEYWORD padding",
+        "classifier_phrase MODIFIER padding",
         "padding classifier_phrase",
-        "padding classifier_phrase KEYWORD padding",
+        "padding classifier_phrase MODIFIER padding",
     )
     def introduction(self, p):
         ret = {}
@@ -46,8 +46,8 @@ class DataParser(MCNP_Parser):
         else:
             ret["start_pad"] = syntax_node.PaddingNode()
         ret["classifier"] = p.classifier_phrase
-        if hasattr(p, "KEYWORD"):
-            ret["keyword"] = syntax_node.ValueNode(p.KEYWORD, str, padding=p[-1])
+        if hasattr(p, "MODIFIER"):
+            ret["keyword"] = syntax_node.ValueNode(p.MODIFIER, str, padding=p[-1])
         else:
             ret["keyword"] = syntax_node.ValueNode(None, str, padding=None)
         return syntax_node.SyntaxNode("data intro", ret)
@@ -177,6 +177,7 @@ class ParamOnlyDataParser(DataParser):
     debugfile = None
 
     @_(
+        "param_introduction",
         "param_introduction spec_parameters",
     )
     def param_data_input(self, p):
