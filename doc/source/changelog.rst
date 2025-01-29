@@ -5,6 +5,13 @@ MontePy Changelog
 0.5 releases
 ============
 
+0.5.3
+--------------
+
+**Bug Fixes**
+
+* Fixed how material components work so new components can actually be added to a material and exported (:issue`597`).
+
 0.5.2
 --------------
 
@@ -30,7 +37,7 @@ MontePy Changelog
 **Performance Improvement**
 
 * Fixed cyclic memory reference that lead to memory leak in ``copy.deepcopy`` (:issue:`514`).
-* Fixed O(N<sup>2</sup>) operation in how append works for object collections like Cells (:issue:`556`).
+* Fixed O(N\ :sup:`2`) operation in how append works for object collections like Cells (:issue:`556`).
 
 **Bug Fixes**
 

@@ -68,6 +68,38 @@ Pu-239   (80c) 0.1
             self.assertEqual(mat, answers[i])
 
 
+@pytest.mark.parametrize(
+    "isotope_str, atom_frac, fraction",
+    [("2004.80c", False, 0.1), ("1001.70c", True, 0.1)],
+)
+@pytest.mark.filterwarnings("ignore")
+def test_material_component_add(isotope_str, atom_frac, fraction):
+    frac_marker = "-" if not atom_frac else ""
+    in_str = f"M20 1001.80c {frac_marker}0.5 8016.80c {frac_marker}0.5"
+    input_card = Input([in_str], BlockType.DATA)
+    material = Material(input_card)
+    iso = Isotope(isotope_str)
+    comp = MaterialComponent(iso, fraction)
+    material.material_components[iso] = comp
+    verify_export(material)
+
+
+def verify_export(mat):
+    output = mat.format_for_mcnp_input((6, 3, 0))
+    print(output)
+    new_mat = Material(Input(output, BlockType.DATA))
+    assert mat.number == new_mat.number, "Material number not preserved."
+    assert len(mat.material_components) == len(new_mat.material_components)
+    assert mat.is_atom_fraction == new_mat.is_atom_fraction
+    for old_comp, new_comp in zip(
+        mat.material_components.values(), new_mat.material_components.values()
+    ):
+        assert str(old_comp.isotope) == str(
+            new_comp.isotope
+        ), "Material didn't preserve nuclides."
+        assert old_comp.fraction == pytest.approx(new_comp.fraction)
+
+
 def test_material_format_mcnp():
     in_strs = ["M20 1001.80c 0.5", "     8016.80c         0.5"]
     input_card = Input(in_strs, BlockType.DATA)

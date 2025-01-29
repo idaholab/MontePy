@@ -2,6 +2,7 @@ name: CI testing
 
 on: 
   pull_request:
+    branches: [develop, alpha-test-dev]
   push: 
      branches: [develop, main, alpha-test]
 
@@ -55,6 +56,11 @@ jobs:
       matrix:
         python-version: ["3.9", "3.10", "3.11", "3.12", "3.13"]
         numpy-version: ["1.0", "2.0"]
+        sly-version: ["0.5"]
+        include:
+          - python-version: "3.11"
+            numpy-version: "2.0"
+            sly-version: "0.4"
     
     steps:
       - uses: actions/checkout@v4
@@ -64,8 +70,9 @@ jobs:
           python-version: ${{ matrix.python-version }}
       - run: pip install numpy~=${{ matrix.numpy-version }}
         name: install specific numpy version
-      - run: pip install --user . montepy[test]
-      - run: pip install --user . montepy[build]
+      - run: pip install sly~=${{ matrix.sly-version }}
+        name: install specific sly version
+      - run: pip install --user . montepy[test,build]
       - run: pip uninstall -y pytest-profiling
         name: Uninstall incompatible library
         if: ${{ matrix.python-version == '3.13' }}
@@ -124,8 +131,6 @@ jobs:
         run: |
              cd doc
              make linkcheck
-      - name: test sitemap
-        run: python .github/scripts/check_sitemap.py 
   
   doc-test:
     runs-on: ubuntu-latest

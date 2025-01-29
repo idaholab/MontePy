@@ -37,9 +37,10 @@ extensions = [
     "sphinx.ext.intersphinx",
     "sphinx.ext.extlinks",
     "sphinx.ext.doctest",
-    "sphinx_sitemap",
+    "sphinx_autodoc_typehints",
     "sphinx_favicon",
-    "sphinx_copybutton"
+    "sphinx_copybutton",
+    "autodocsumm",
 ]
 
 # Add any paths that contain templates here, relative to this directory.
@@ -53,7 +54,6 @@ favicons = [
 html_logo = "monty.svg"
 
 html_baseurl = "https://www.montepy.org/"
-sitemap_url_scheme = "{link}"
 html_extra_path = ["robots.txt", "foo.imcnp"]
 # List of patterns, relative to source directory, that match files and
 # directories to ignore when looking for source files.
@@ -62,6 +62,13 @@ exclude_patterns = []
 
 # Display the version
 display_version = True
+autosummary_generate = True
+autosummary_imported_member = True
+autodoc_default_options = {
+    "autosummary": True,
+    "show-inheritance": True,
+    "inherited-members": True,
+}
 
 # -- External link configuration ---------------------------------------------
 UM63 = (
@@ -89,9 +96,10 @@ extlinks = {
 # The theme to use for HTML and HTML Help pages.  See the documentation for
 # a list of builtin themes.
 #
+github_url = "https://github.com/idaholab/MontePy"
 html_theme = "pydata_sphinx_theme"
 html_theme_options = {
-    "navbar_start": ["navbar-logo", "version"],
+    "navbar_start": ["navbar-logo", "project", "version"],
     "icon_links": [
         {
             "name": "GitHub",
@@ -101,9 +109,14 @@ html_theme_options = {
         },
     ],
 }
+html_sidebars = {
+    "**": ["search-field.html", "sidebar-nav-bs.html", "sidebar-ethical-ads.html"]
+}
 apidoc_module_dir = "../../montepy"
 apidoc_module_first = True
 apidoc_separate_modules = True
+
+suppress_warnings = ["epub.unknown_project_files"]
 
 
 # Add any paths that contain custom static files (such as style sheets) here,

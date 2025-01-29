@@ -1,12 +1,14 @@
-.. MontePy documentation master file, created by
-   sphinx-quickstart on Thu Apr 21 15:29:53 2022.
-   You can adapt this file completely to your liking, but it should at least
-   contain the root `toctree` directive.
+.. meta::
+   :description lang=en:
+        MontePy is a Python library for reading, editing, and writing MCNP input files.
+        MontePy provides an object-oriented interface for MCNP input files. 
+        This allows for easy automation of many different tasks for working with MCNP input files.
+    
 
 MontePy: a Python library for MCNP input files.
 ===============================================
 
-MontePy is a Python library for reading, editing, and writing MCNP input files.
+MontePy is the most user-friendly Python library for reading, editing, and writing MCNP input files.
 MontePy provides an object-oriented interface for MCNP input files. 
 This allows for easy automation of many different tasks for working with MCNP input files.
 

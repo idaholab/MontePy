@@ -1,3 +1,9 @@
+.. meta::
+   :description lang=en:
+        This guide provides details on how MontePy works,
+        and guidance on how to make contributions.
+        MontePy is the most user-friendly Python library for reading, editing, and writing MCNP input files.
+
 Developer's Guide
 =================
 
@@ -137,6 +143,7 @@ For a deployment you need to:
 #. Manually merge onto main without creating a new commit. 
    This is necessary because there's no way to do a github PR that will not create a new commit, which will break setuptools_scm.
 #. Update the release notes on the draft release, and finalize it on GitHub.
+#. Update the `Conda feedstock and deploy <https://github.com/conda-forge/montepy-feedstock>`_. 
 
 Package Structure
 -----------------
