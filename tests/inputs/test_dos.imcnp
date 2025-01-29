@@ -46,5 +46,7 @@ ksrc 0 0 0
 kcode 100000 1.000 50 1050
 phys:p j 1 2j 1
 mode n p
+ssw cel=5 99
+sdef $ blank one from issue #636
 
 
