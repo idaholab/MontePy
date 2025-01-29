@@ -445,9 +445,19 @@ class DataLexer(ParticleLexer):
     }
 
     _KEYWORDS = set(MCNP_Lexer._KEYWORDS) | {
-        "sym",  # SSW
+        # ssw
+        "sym",
         "pty",
         "cel",
+        # ssr
+        "old",
+        "new",
+        "col",
+        "wgt",
+        "tr",
+        "psc",
+        "poa",
+        "bcw",
         # materials
         "gas",
         "estep",
