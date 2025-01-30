@@ -696,6 +696,7 @@ See <https://www.montepy.org/migrations/migrate0_1.html> for more information ""
         nuclide: Union[Nuclide, Nucleus, Element, str, int],
         *args: Union[Nuclide, Nucleus, Element, str, int],
         threshold: float = 0.0,
+        strict: bool = False,
     ) -> bool:
         """
         Checks if this material contains multiple nuclides.
@@ -732,6 +733,7 @@ See <https://www.montepy.org/migrations/migrate0_1.html> for more information ""
 
             If a nuclide is in a material multiple times, and cumulatively exceeds the threshold,
             but for each instance it appears it is below the threshold this method will return False.
+
         .. versionadded:: 1.0.0
 
         :param nuclide: the first nuclide to check for.
@@ -741,6 +743,9 @@ See <https://www.montepy.org/migrations/migrate0_1.html> for more information ""
         :param threshold: the minimum concentration of a nuclide to be considered. The material components are not
             first normalized.
         :type threshold: float
+        :param strict: Whether to not let an elemental nuclide match all child isotopes, isomers, not have an isotope
+            match all isomers, nor have a blank library match all libraries.
+        :type strict: bool
 
         :return: whether or not this material contains all components given above the threshold.
         :rtype: bool
@@ -759,9 +764,13 @@ See <https://www.montepy.org/migrations/migrate0_1.html> for more information ""
             if isinstance(nuclide, (str, int)):
                 nuclide = Nuclide(nuclide)
             # treat elemental as element
-            if isinstance(nuclide, (Nucleus, Nuclide)) and nuclide.A == 0:
+            if (
+                isinstance(nuclide, (Nucleus, Nuclide))
+                and nuclide.A == 0
+                and not strict
+            ):
                 nuclide = nuclide.element
-            if isinstance(nuclide, Nuclide) and not str(nuclide.library):
+            if isinstance(nuclide, Nuclide) and not str(nuclide.library) and not strict:
                 nuclide = nuclide.nucleus
             nuclides.append(nuclide)
 
