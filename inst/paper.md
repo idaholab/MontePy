@@ -123,6 +123,14 @@ like the Workflow Template and Toolkit System (WATTS) [@Romano:2022].
 This though requires the user to create a template from the set of problems they plan to model.
 This would be well suited for a sensitivity study where many very similar simulations are run,
 but not for making large edits to an input file or making a single problem from scratch.
+PyNE: the Nuclear Engineering Toolkit offers some similar capabilities for input generation.
+PyNE can create MCNP input files for specific features, and extract some data from MCNP output files, 
+however its true capabilities extend far beyond interfacing with MCNP.
+It can: simplify material creation, analyzing cross section data,
+complete transmutations for complex systems,
+interface with other common nuclear engineering software, 
+and common nuclear data formats [@Scopatz:2012].
+PyNE is an excellent companion tool to MontePy.
 
 All of these previous solutions were incomplete in one way or another.
 Neither were able to read in a previous MCNP input file and edit it in a general manner.
@@ -135,8 +143,8 @@ as opposed to manual editing of the XML input files.
 
 Ideally this object-oriented interface should be in Python as it is such a prolific language,
 especially among novice and intermediate programmers.
-One library does exist, MCNPy.
-It is a Python wrapper for a java engine that can read, edit, and write MCNP input files.
+A few such libraries do exist: MCNPy, mckit, and others discussed later.
+MCNPy is a Python wrapper for a java engine that can read, edit, and write MCNP input files.
 It can "understand" MCNP inputs, 
 or as the authors put it, 
 it has a "metamodel" for MCNP [@Kowal:2023].
@@ -148,6 +156,11 @@ It does not appear that MCNPy has any automated testing suite at this time,
 and so there is no guarantee that it will actually perform the functions it claims to.
 In addition it imposes additional formatting requirements on an input file that is read,
 beyond what MCNP requires [@Kulesza:2022].
+Mckit on the other hand is written primarily in python, and does use automated testing.
+Unfortunately the existing documentation is difficult to acces, incomplete, and primarily in russian.
+It was difficult to assess the state of this project due to this.
+It appeared that mckit is more of a functional programming style library,
+rather than an object-oriented programming style [@rodionov_mckit_2024].
 MontePy provides all of these listed capabilities,
 while also being written purely in Python, and avoiding this barrier to forming a thriving
 open source community.
