@@ -152,6 +152,53 @@ MontePy provides all of these listed capabilities,
 while also being written purely in Python, and avoiding this barrier to forming a thriving
 open source community.
 
+##### TODO PyNE, mckit
+
+The authors did try to find as many Open Source Python libraries that had at least some overlap with MontePy.
+This was not an exhaustive seach, but should cover many such libraries.
+Given the number of libraries found the following lists will simply be an attempt to categorize these libraries.
+
+The first group of libraries are those which attempt to have a read, edit, write capability for MCNP input files.
+These all do not fully parse the inputs as they do not use context-free parsers,
+and are generally feature limited, and may lack sufficient documentation.
+These libaries are:
+
+* numjuggler [@travleev_numjuggler_2022]
+* MCNP Input Reader [@mariano_mcnp_2022]
+* mctools [@laghi_mctools_2023]
+* mc-tools [@batkov_mc-tools_2024]
+* PyMCNP [@pease_pymcnp_2025, @persaud_python-based_2024]
+
+There are even more tools that specialize in input templating and generation.
+These are clearly not complete alternatives as they lack the ability to read MCNP input files.
+These libraries are:
+
+* CardSharpForMCNP [@pacific_northwest_national_laboratory_cardsharpformcnp_2025]
+* wig [@hagen_wig_2021]
+* Plugin-MCNP [for Funz] [@richet_funz_2023]
+* GDNP [@niess_gdnp_2018]
+* map-stp [@portnov_map-stp_2024]
+* MCNP Input Generator [@ikarino_mcnp_2021]
+* Neutronics Material Maker [@shimwell_neutronics_2024]
+
+There are also libraries that specialize in parsing an MCNP input file in order to convert the model
+to be an input for another program:
+
+* MCNP Conversion tools for OpenMC [@romano_mcnp_2024]
+* t4_geom_convert [@mancusi_t4_geom_convert_2024]
+
+There are also libraries that have to parse MCNP inputs to some extent as they provide MCNP syntax highlighting support for various text editors:
+
+* MCNP-syntax-highlighting [@turkoglu_mcnp-syntax-highlighting_2018]
+* NPP_MCNP_Plugin [@marcinkevicius_npp_mcnp_plugin_2025]
+* vscode_mcnp [@repositony_vscdoe_mcnp_2024]
+
+Finally there are the libraries that have been purpose built for working with and automating a specific type of MCNP models:
+
+* BEMP_Thesis [@galdon_bemp_thesis_2024]
+* MCNP6-HPGe_Detector_simulation [@hung_mcnp6-hpge_detector_simulation_2023]
+* rodcal-mcnp [@park_rodcal-mcnp_2021] 
+
 MontePy is currently targeting two primary communities.
 First, Nuclear Engineers with moderate Python experience as a user base.
 The goal is to get these users to use the interface to remove the tedium from
