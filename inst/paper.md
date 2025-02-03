@@ -167,7 +167,7 @@ These libaries are:
 * MCNP Input Reader [@mariano_mcnp_2022]
 * mctools [@laghi_mctools_2023]
 * mc-tools [@batkov_mc-tools_2024]
-* PyMCNP [@pease_pymcnp_2025, @persaud_python-based_2024]
+* PyMCNP [@persaud_python-based_2024]
 
 There are even more tools that specialize in input templating and generation.
 These are clearly not complete alternatives as they lack the ability to read MCNP input files.
@@ -185,17 +185,17 @@ There are also libraries that specialize in parsing an MCNP input file in order 
 to be an input for another program:
 
 * MCNP Conversion tools for OpenMC [@romano_mcnp_2024]
-* t4_geom_convert [@mancusi_t4_geom_convert_2024]
+* t4\_geom\_convert [@mancusi_t4_geom_convert_2024]
 
 There are also libraries that have to parse MCNP inputs to some extent as they provide MCNP syntax highlighting support for various text editors:
 
 * MCNP-syntax-highlighting [@turkoglu_mcnp-syntax-highlighting_2018]
-* NPP_MCNP_Plugin [@marcinkevicius_npp_mcnp_plugin_2025]
-* vscode_mcnp [@repositony_vscdoe_mcnp_2024]
+* NPP\_MCNP\_Plugin [@marcinkevicius_npp_mcnp_plugin_2025]
+* vscode\_mcnp [@repositony_vscode_mcnp_2024]
 
 Finally there are the libraries that have been purpose built for working with and automating a specific type of MCNP models:
 
-* BEMP_Thesis [@galdon_bemp_thesis_2024]
+* BEMP\_Thesis [@galdon_bemp_thesis_2024]
 * MCNP6-HPGe_Detector_simulation [@hung_mcnp6-hpge_detector_simulation_2023]
 * rodcal-mcnp [@park_rodcal-mcnp_2021] 
 
