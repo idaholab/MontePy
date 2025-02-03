@@ -104,7 +104,7 @@ There are some python packages that offer some of the same features as MontePy,
     but don't offer the same level of robustness, ease of installation, and user friendliness.
 
 
-Many of the competitors do not offer the robustness that MontePy does becuase,
+Many of the competitors do not offer the robustness that MontePy does because,
     they do not utilize context-free parsing (as of 2024). 
 These packages are:
 
@@ -114,11 +114,18 @@ These packages are:
 
 * [numjuggler](https://github.com/inr-kit/numjuggler)
 
-The only other library that does utilize context-free parsing that we are aware is
-[MCNP™y](https://github.rpi.edu/NuCoMP/mcnpy). MontePy differs by being:
+The only other libraries that do utilize context-free parsing that we are aware of are:
+* [MCNPy](https://github.rpi.edu/NuCoMP/mcnpy)
+* [mckit](https://github.com/MC-kit/mckit) 
+
+MontePy differs from MCNPy by being:
 * On PyPI, and can be installed via pip.
 * Only requires a python interpreter, and not a Java virtual machine. 
 * Allowing contributions from anyone with a public GitHub account
+
+MontePy differs from mckit by being:
+* thoroughly documented
+* Object-Oriented 
 
 
 For only writing, or templating an input file there are also some great tools out there. 
