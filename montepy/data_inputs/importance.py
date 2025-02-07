@@ -282,7 +282,7 @@ class Importance(CellModifierInput):
             if particle_type not in self._problem.mode:
                 warnings.warn(
                     f"Particle type: {particle_type} not included in problem mode.",
-                    ParticleTypeNotInProblem
+                    ParticleTypeNotInProblem,
                 )
 
     def _collect_new_values(self):
@@ -296,7 +296,7 @@ class Importance(CellModifierInput):
                     warnings.warn(
                         f"Importance data not available for cell {cell.number} for particle: "
                         f"{particle}, though it is in the problem",
-                        ParticleTypeNotInCell
+                        ParticleTypeNotInCell,
                     )
                     # TODO: define default behavior.
                 new_vals[particle].append(tree["data"][0])

@@ -427,9 +427,7 @@ class MCNP_Problem:
         for surface in self._surfaces:
             try:
                 surface.update_pointers(self.surfaces, self._data_inputs)
-            except (
-                BrokenObjectLinkError,
-            ) as e:
+            except (BrokenObjectLinkError,) as e:
                 handle_error(e)
         to_delete = []
         for data_index, data_input in enumerate(self._data_inputs):
