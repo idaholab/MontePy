@@ -6,6 +6,7 @@ from montepy.data_inputs.importance import Importance
 from montepy.errors import *
 from montepy.input_parser import mcnp_input, block_type
 import os
+import io
 import pytest
 
 
@@ -176,6 +177,13 @@ def test_importance_merge():
         imp1.merge(imp2)
 
 
-def tests_redundant_importance():
+def test_redundant_importance():
     with pytest.raises(MalformedInputError):
         montepy.read_input(os.path.join("tests", "inputs", "test_imp_redundant.imcnp"))
+
+
+def test_not_imp():
+    prob = montepy.read_input(os.path.join("tests", "inputs", "test_not_imp.imcnp"))
+    prob.print_in_data_block["imp"] = True
+    with pytest.raises(NotImplementedError):
+        prob.write_problem(io.StringIO())
