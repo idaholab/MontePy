@@ -115,7 +115,7 @@ def test_importance_setter():
     problem = montepy.mcnp_problem.MCNP_Problem("foo")
     cell.link_to_problem(problem)
     # test problem mode enforcement
-    with pytest.raises(ValueError):
+    with pytest.warns(ParticleTypeNotInProblem):
         cell.importance.photon = 1.0
     # test wrong type
     with pytest.raises(TypeError):
