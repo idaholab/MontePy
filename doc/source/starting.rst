@@ -875,13 +875,13 @@ If you want to try to troubleshoot errors in python you can do this with the fol
    This following guide may return an incomplete problem object that may break in very wierd ways.
    Never use this for actual file editing; only use it for troubleshooting.
 
-1. Setup a new Problem object:
+#. Setup a new Problem object:
 
    .. testcode::
         
        problem = montepy.MCNP_Problem("foo.imcnp") 
 
-1. Next load the input file with the ``check_input`` set to ``True``.
+#. Next load the input file with the ``check_input`` set to ``True``.
 
    .. testcode::
         
