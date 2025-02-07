@@ -429,8 +429,6 @@ class MCNP_Problem:
                 surface.update_pointers(self.surfaces, self._data_inputs)
             except (
                 BrokenObjectLinkError,
-                ParticleTypeNotInProblem,
-                ParticleTypeNotInCell,
             ) as e:
                 handle_error(e)
         to_delete = []
@@ -441,8 +439,6 @@ class MCNP_Problem:
             except (
                 BrokenObjectLinkError,
                 MalformedInputError,
-                ParticleTypeNotInProblem,
-                ParticleTypeNotInCell,
             ) as e:
                 handle_error(e)
                 continue
