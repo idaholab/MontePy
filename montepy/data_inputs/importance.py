@@ -293,12 +293,11 @@ class Importance(CellModifierInput):
                 try:
                     tree = cell.importance._particle_importances[particle]
                 except KeyError:
-                    warnings.warn(
+                    raise NotImplementedError(
                         f"Importance data not available for cell {cell.number} for particle: "
-                        f"{particle}, though it is in the problem",
-                        ParticleTypeNotInCell,
+                        f"{particle}, though it is in the problem, and default importance logic "
+                        "is not yet implemented in MontePy."
                     )
-                    # TODO: define default behavior.
                 new_vals[particle].append(tree["data"][0])
                 if len(particle_pairings[particle]) == 0:
                     particle_pairings[particle] = tree["classifier"].particles.particles
