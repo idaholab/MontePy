@@ -182,7 +182,7 @@ def test_redundant_importance():
         montepy.read_input(os.path.join("tests", "inputs", "test_imp_redundant.imcnp"))
 
 
-def test_not_imp():
+def test_default_importance_not_implemented():
     prob = montepy.read_input(os.path.join("tests", "inputs", "test_not_imp.imcnp"))
     prob.print_in_data_block["imp"] = True
     with pytest.raises(NotImplementedError):
