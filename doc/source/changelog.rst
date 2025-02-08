@@ -24,6 +24,8 @@ MontePy Changelog
 * Added function: :func:`~montepy.mcnp_problem.MCNP_Problem.parse` to parse arbitrary MCNP object (:issue:`88`).
 * An error is now raised when typos in object attributes are used, e.g., ``cell.nubmer`` (:issue:`508`).
 * Warnings are no longer raised for comments that exceed the maximum line lengths (:issue:`188`).
+* Particle type exceptions are now warnings, not errors (:issue:`381`).
+
 
 **Bugs Fixed**
 
