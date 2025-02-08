@@ -1,5 +1,5 @@
-# Copyright 2024, Battelle Energy Alliance, LLC All Rights Reserved.
-""" MontePy is a library for reading, editing, and writing MCNP input files.
+# Copyright 2024-2025, Battelle Energy Alliance, LLC All Rights Reserved.
+"""MontePy is a library for reading, editing, and writing MCNP input files.
 
 This creates a semantic understanding of the MCNP input file.
 start by running montepy.read_input().
