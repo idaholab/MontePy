@@ -6,11 +6,9 @@ import re
 import os
 import warnings
 
-
-from .block_type import BlockType
-from .. import errors
 from montepy.constants import *
 from montepy.errors import *
+from montepy.input_parser.block_type import BlockType
 from montepy.input_parser.input_file import MCNP_InputFile
 from montepy.input_parser.mcnp_input import Input, Message, ReadInput, Title
 from montepy.input_parser.read_parser import ReadParser
@@ -178,7 +176,7 @@ def read_data(fh, mcnp_version, block_type=None, recursion=False):
             yield from flush_input()
         # die if it is a vertical syntax format
         if "#" in line[0:BLANK_SPACE_CONTINUE] and not line_is_comment:
-            raise errors.UnsupportedFeature("Vertical Input format is not allowed")
+            raise UnsupportedFeature("Vertical Input format is not allowed")
         # cut line down to allowed length
         old_line = line
         line = line[:line_length]
@@ -188,7 +186,7 @@ def read_data(fh, mcnp_version, block_type=None, recursion=False):
             ):
                 warnings.warn(
                     f"The line: {old_line} exceeded the allowed line length of: {line_length} for MCNP {mcnp_version}",
-                    errors.LineOverRunWarning,
+                    LineOverRunWarning,
                 )
             # if extra length is a comment keep it long
             else:
