@@ -1,4 +1,6 @@
-# Copyright 2024, Battelle Energy Alliance, LLC All Rights Reserved.
+# Copyright 2024-2025, Battelle Energy Alliance, LLC All Rights Reserved.
+import re
+
 from montepy.errors import UnsupportedFeature
 
 """
@@ -23,6 +25,11 @@ Absolute tolerance passed to math.isclose.
 BLANK_SPACE_CONTINUE = 5
 """
 Number of spaces in a new line before it's considered a continuation.
+"""
+
+COMMENT_FINDER = re.compile(rf"\s{{0,{BLANK_SPACE_CONTINUE - 1}}}c", re.IGNORECASE)
+"""
+A regular expression for finding the start of a ``c`` style comment.
 """
 
 LINE_LENGTH = {
