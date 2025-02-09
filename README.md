@@ -85,6 +85,8 @@ for surface in problem.surfaces:
 problem.write_problem("foo_update.imcnp")
 ```
 
+For more examples see the [getting started guide](https://www.montepy.org/en/stable/starting.html).
+
 ## Limitations
 
 Here a few of the known bugs and limitations:
@@ -97,6 +99,16 @@ Here a few of the known bugs and limitations:
     keyword-value pairs show up after the nuclide definitions. For example:
    * `M1 1001.80c 1.0 plib=80p` can be parsed.
    * `M1 plib=80p 1001.80c 1.0` cannot be parsed; despite it being a valid input.
+
+## Current Development Priorities
+
+Here are the rough development priorities for adding new features to MontePy:
+
+#. Redesign the `Material` interface to be more user friendly.
+#. Implement support for tallies.
+#. Implement support for source definitions.
+
+If you have a specific feature priority that you would be willing to collaborate on you can open an issue or email us at [mgale@montepy.org](mailto:mgale@montepy.org). 
 
 ## Alternatives
 
