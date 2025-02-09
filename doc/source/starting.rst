@@ -457,6 +457,8 @@ For Example:
 
 .. testcode::
 
+   from montepy.surfaces.surface_type import SurfaceType
+
    bottom = montepy.surfaces.axis_plane.AxisPlane()
    bottom.surface_type = SurfaceType.PZ
    bottom.is_reflecting = True
@@ -651,7 +653,7 @@ Order of precedence and grouping is automatically handled by Python so you can e
 .. testcode::
 
    import montepy.surfaces as surfs
-   import montepy.surfaces.surface_type import SurfaceType
+   from montepy.surfaces.surface_type import SurfaceType
 
    # build blank surfaces 
    bottom_plane = montepy.surfaces.axis_plane.AxisPlane()
@@ -675,7 +677,7 @@ Order of precedence and grouping is automatically handled by Python so you can e
    clad_od.surface_type = SurfaceType.CZ
    other_fuel = montepy.surfaces.cylinder_on_axis.CylinderOnAxis()
    other_fuel.radius = 3.0
-   other_fuel_region.surface_type = SurfaceType.CZ
+   other_fuel.surface_type = SurfaceType.CZ
 
    bottom_plane.number = 1
    top_plane.number = 2
