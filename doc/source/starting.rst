@@ -426,18 +426,6 @@ So there is a convenient way to update a surface, but how do you easily get the 
 For instance what if you want to shift a cell up in Z by 10 cm? 
 It would be horrible to have to get each surface by their number, and hoping you don't change the numbers along the way.
 
-One way you might think of is: oh let's just filter the surfaces by their type?:
-
-.. testcode::
-
-    for surface in cell.surfaces:
-        if surface.surface_type == montepy.surfaces.surface_type.SurfaceType.PZ:
-            surface.location += 10
-
-Wow that's rather verbose. 
-This was the only way to do this with the API for awhile.
-But MontePy 0.0.5 fixed this with: you guessed it: generators.
-
 The :class:`~montepy.surface_collection.Surfaces` collection has a generator for every type of surface in MCNP.
 These are very easy to find: they are just the lower case version of the 
 MCNP surface mnemonic. 
@@ -447,6 +435,51 @@ This previous code is much simpler now:
 
     for surface in cell.surfaces.pz:
         surface.location += 10
+
+Setting Boundary Conditions
+^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+As discussed in :manual63:`5.3.1` surfaces can have three boundary conditions:
+
+* Reflective boundary
+* White boundary
+* periodic boundary
+
+.. note::
+
+   Vacuum boundary conditions are the fourth type.
+   They are defined by cells with 0 importance though.
+
+The reflective and white boundary conditions are easiest to set as they are Boolean conditions.
+These are controlled by :func:`~montepy.surfaces.surface.Surface.is_reflecting` and 
+:func:`~montepy.surfaces.surface.Surface.is_white_boundary` respectively.
+For Example:
+
+.. testcode::
+
+   bottom = montepy.surfaces.axis_plane.AxisPlane()
+   bottom.surface_type = SurfaceType.PZ
+   bottom.is_reflecting = True
+
+   cyl = montepy.surfaces.cylinder_on_axis.CylinderOnAxis()
+   cyl.surface_type = SurfaceType.CZ
+   cyl.is_white_boundary = True
+
+
+Setting a periodic boundary is slightly more difficult. 
+In this case the boundary condition must be set to the other periodic surface with :func:`~montepy.surfaces.surface.Surface.periodic_surface`.
+So to continue with the previous example:
+
+.. testcode::
+
+   bottom.location = 0.0
+   bottom.is_reflecting = False
+
+   top = montepy.surfaces.axis_plane.AxisPlane()
+   top.surface_type = SurfaceType.PZ
+   top.location = 1.26
+
+   bottom.periodic_surface = top
 
 Cells 
 -----
