@@ -234,7 +234,7 @@ This tool is a prime example of a real-life case where MontePy could be applied 
 
 # Status of MontePy
 
-As of MontePy 0.5.0 many of the most commonly used MCNP inputs (cards) are supported.
+As of MontePy 0.5.4 many of the most commonly used MCNP inputs (cards) are supported.
 These include:
 
 * Cells, which are the base of an MCNP geometry and contain a material and a CSG geometry definition.
@@ -270,6 +270,9 @@ will not be adding support for output files to allow development to focus on sup
 MCNP supports over 140 different inputs (cards). 
 For almost all of the remaining input types that MontePy doesn't support the information 
 from the input is still available to the user. 
+The next planned release at the time of publication is version 1.0.0.
+This new release is significant redesign of the material definition interface,
+making the material interface much more user-friendly.
 The exceptions are those inputs with syntax that conflicts with the rest of MCNP, 
 which need to be handled specifically on their own.
 Adding more object-oriented support for all of these inputs is an ongoing project.
