@@ -64,7 +64,7 @@ build = [
 	"setuptools-scm>=8",
 ]
 develop = [
-	"montepy[test,doc,format]",
+	"montepy[test,doc,format,demo-test]",
 ]
 demos = ["jupyter"]
 demo-test = ["montepy[demos]", "papermill"]

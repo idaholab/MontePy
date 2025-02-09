@@ -4,13 +4,15 @@
 
 [![license](https://img.shields.io/github/license/idaholab/MontePy.svg)](https://github.com/idaholab/MontePy/blob/develop/LICENSE)
 [![JOSS article status](https://joss.theoj.org/papers/e5b5dc8cea19605a1507dd4d420d5199/status.svg)](https://joss.theoj.org/papers/e5b5dc8cea19605a1507dd4d420d5199)
-[![Coverage Status](https://coveralls.io/repos/github/idaholab/MontePy/badge.svg?branch=develop)](https://coveralls.io/github/idaholab/MontePy?branch=develop)
 [![Project Status: Active – The project has reached a stable, usable state and is being actively developed.](https://www.repostatus.org/badges/latest/active.svg)](https://www.repostatus.org/#active)
 
 
+[![Coverage Status](https://coveralls.io/repos/github/idaholab/MontePy/badge.svg?branch=develop)](https://coveralls.io/github/idaholab/MontePy?branch=develop)
+[![Testing status](https://github.com/idaholab/MontePy/actions/workflows/main.yml/badge.svg?branch=develop)](https://github.com/idaholab/MontePy/actions/workflows/main.yml?query=branch%3Adevelop)
+[![Docs Deployment](https://github.com/idaholab/MontePy/actions/workflows/deploy.yml/badge.svg?branch=main)](https://www.montepy.org/)
+
 [![PyPI version](https://badge.fury.io/py/montepy.svg)](https://badge.fury.io/py/montepy)
 [![Conda Version](https://img.shields.io/conda/vn/conda-forge/montepy.svg)](https://anaconda.org/conda-forge/montepy)
-[![Docs Deployment](https://github.com/idaholab/MontePy/actions/workflows/deploy.yml/badge.svg?branch=main)](https://www.montepy.org/)
 [![PyPI pyversions](https://img.shields.io/pypi/pyversions/montepy.svg)](https://pypi.org/project/montepy/)
 
 
@@ -83,6 +85,8 @@ for surface in problem.surfaces:
 problem.write_problem("foo_update.imcnp")
 ```
 
+For more examples see the [getting started guide](https://www.montepy.org/en/stable/starting.html).
+
 ## Limitations
 
 Here a few of the known bugs and limitations:
@@ -96,13 +100,23 @@ Here a few of the known bugs and limitations:
    * `M1 1001.80c 1.0 plib=80p` can be parsed.
    * `M1 plib=80p 1001.80c 1.0` cannot be parsed; despite it being a valid input.
 
+## Current Development Priorities
+
+Here are the rough development priorities for adding new features to MontePy:
+
+#. Redesign the `Material` interface to be more user friendly.
+#. Implement support for tallies.
+#. Implement support for source definitions.
+
+If you have a specific feature priority that you would be willing to collaborate on you can open an issue or email us at [mgale@montepy.org](mailto:mgale@montepy.org). 
+
 ## Alternatives
 
 There are some python packages that offer some of the same features as MontePy,
     but don't offer the same level of robustness, ease of installation, and user friendliness.
 
 
-Many of the competitors do not offer the robustness that MontePy does becuase,
+Many of the competitors do not offer the robustness that MontePy does because,
     they do not utilize context-free parsing (as of 2024). 
 These packages are:
 
@@ -112,11 +126,18 @@ These packages are:
 
 * [numjuggler](https://github.com/inr-kit/numjuggler)
 
-The only other library that does utilize context-free parsing that we are aware is
-[MCNP™y](https://github.rpi.edu/NuCoMP/mcnpy). MontePy differs by being:
+The only other libraries that do utilize context-free parsing that we are aware of are:
+* [MCNPy](https://github.rpi.edu/NuCoMP/mcnpy)
+* [mckit](https://github.com/MC-kit/mckit) 
+
+MontePy differs from MCNPy by being:
 * On PyPI, and can be installed via pip.
 * Only requires a python interpreter, and not a Java virtual machine. 
 * Allowing contributions from anyone with a public GitHub account
+
+MontePy differs from mckit by being:
+* thoroughly documented
+* Object-Oriented 
 
 
 For only writing, or templating an input file there are also some great tools out there. 
