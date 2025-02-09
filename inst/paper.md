@@ -124,12 +124,11 @@ This though requires the user to create a template from the set of problems they
 This would be well suited for a sensitivity study where many very similar simulations are run,
 but not for making large edits to an input file or making a single problem from scratch.
 PyNE: the Nuclear Engineering Toolkit offers some similar capabilities for input generation.
-PyNE can create MCNP input files for specific features, and extract some data from MCNP output files, 
-however its true capabilities extend far beyond interfacing with MCNP.
-It can: simplify material creation, analyzing cross section data,
-complete transmutations for complex systems,
-interface with other common nuclear engineering software, 
-and common nuclear data formats [@Scopatz:2012].
+
+PyNE can create MCNP input files for specific features and extract some data from MCNP output files.
+However, its full capabilities extend far beyond interfacing with MCNP.
+PyNE can simplify material creations, analyses of cross section data, 
+transmutations of complex systems, and interfacing with other common nuclear engineering software and data formats [@scopatz:2012].
 PyNE is an excellent companion tool to MontePy.
 
 All of these previous solutions were incomplete in one way or another.
