@@ -170,8 +170,6 @@ class Cells(NumberedObjectCollection):
             except (
                 BrokenObjectLinkError,
                 MalformedInputError,
-                ParticleTypeNotInProblem,
-                ParticleTypeNotInCell,
             ) as e:
                 handle_error(e)
                 continue

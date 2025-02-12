@@ -1,4 +1,4 @@
-# Copyright 2024, Battelle Energy Alliance, LLC All Rights Reserved.
+# Copyright 2024-2025, Battelle Energy Alliance, LLC All Rights Reserved.
 from __future__ import annotations
 from abc import ABC, ABCMeta, abstractmethod
 import copy
@@ -14,6 +14,7 @@ import weakref
 from montepy.errors import *
 from montepy.constants import (
     BLANK_SPACE_CONTINUE,
+    COMMENT_FINDER,
     get_max_line_length,
     rel_tol,
     abs_tol,
@@ -324,17 +325,26 @@ class MCNP_Object(ABC, metaclass=_ExceptionContextAdder):
         for line in strings:
             buffer = wrapper.wrap(line)
             if len(buffer) > 1:
-                warning = LineExpansionWarning(
-                    f"The line exceeded the maximum length allowed by MCNP, and was split. The line was:\n{line}"
-                )
-                warning.cause = "line"
-                warning.og_value = line
-                warning.new_value = buffer
-                warnings.warn(
-                    warning,
-                    LineExpansionWarning,
-                    stacklevel=2,
-                )
+                # don't warn for comments, nor line wrap
+                # this order assumes that comment overruns are rare
+                if COMMENT_FINDER.match(line):
+                    buffer = [line]
+                elif "$" in line:
+                    parts = line.split("$")
+                    buffer = wrapper.wrap(parts[0])
+                    buffer[-1] = "$".join([buffer[-1]] + parts[1:])
+                else:
+                    warning = LineExpansionWarning(
+                        f"The line exceeded the maximum length allowed by MCNP, and was split. The line was:\n{line}"
+                    )
+                    warning.cause = "line"
+                    warning.og_value = line
+                    warning.new_value = buffer
+                    warnings.warn(
+                        warning,
+                        LineExpansionWarning,
+                        stacklevel=2,
+                    )
             # lazy final guard against extra lines
             if suppress_blank_end:
                 buffer = [s for s in buffer if s.strip()]
