@@ -81,7 +81,10 @@ UM63 = (
     "https://mcnp.lanl.gov/pdf_files/TechReport_2022_LANL_LA-UR-22-30006"
     "Rev.1_KuleszaAdamsEtAl.pdf"
 )
-UM631 = "https://www.osti.gov/servlets/purl/2372634"
+UM631 = (
+    "https://mcnp.lanl.gov/pdf_files/TechReport_2024_LANL_LA-UR-24-24602"
+    "Rev.1_KuleszaAdamsEtAl.pdf"
+)
 UM62 = (
     "https://mcnp.lanl.gov/pdf_files/TechReport_2017_LANL_LA-UR-17-29981"
     "_WernerArmstrongEtAl.pdf"
