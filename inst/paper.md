@@ -123,12 +123,12 @@ like the Workflow Template and Toolkit System (WATTS) [@Romano:2022].
 This though requires the user to create a template from the set of problems they plan to model.
 This would be well suited for a sensitivity study where many very similar simulations are run,
 but not for making large edits to an input file or making a single problem from scratch.
-PyNE: the Nuclear Engineering Toolkit offers some similar capabilities for input generation.
 
+PyNE: the Nuclear Engineering Toolkit offers some similar capabilities to WATTS for input generation.
 PyNE can create MCNP input files for specific features and extract some data from MCNP output files.
 However, its full capabilities extend far beyond interfacing with MCNP.
 PyNE can simplify material creations, analyses of cross section data, 
-transmutations of complex systems, and interfacing with other common nuclear engineering software and data formats [@scopatz:2012].
+transmutations of complex systems, and interfacing with other common nuclear engineering software and data formats [@Scopatz:2012].
 PyNE is an excellent companion tool to MontePy.
 
 All of these previous solutions were incomplete in one way or another.
@@ -164,9 +164,7 @@ MontePy provides all of these listed capabilities,
 while also being written purely in Python, and avoiding this barrier to forming a thriving
 open source community.
 
-##### TODO PyNE, mckit
-
-The authors did try to find as many Open Source Python libraries that had at least some overlap with MontePy.
+The authors attempted to find as many open-source Python libraries which overlapped MontePy's capabilities as possible.
 This was not an exhaustive seach, but should cover many such libraries.
 Given the number of libraries found the following lists will simply be an attempt to categorize these libraries.
 
@@ -233,7 +231,7 @@ This tool is a prime example of a real-life case where MontePy could be applied 
 
 # Status of MontePy
 
-As of MontePy 0.5.4 many of the most commonly used MCNP inputs (cards) are supported.
+As of MontePy 0.5.4, many of the most commonly used MCNP inputs (cards) are supported.
 These include:
 
 * Cells, which are the base of an MCNP geometry and contain a material and a CSG geometry definition.
