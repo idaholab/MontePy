@@ -36,6 +36,7 @@ class TestMaterial:
             "am242",
             "am242m1",
             "Pu239",
+            "Ni-0.60c",
         ]
         mat = Material()
         mat.number = 1
@@ -246,21 +247,25 @@ class TestMaterial:
             mat.append((Nuclide("1001.80c"), -1.0))
 
     @pytest.mark.parametrize(
-        "content, is_in",
+        "content, strict, is_in",
         [
-            ("1001.80c", True),
-            ("H-1", True),
-            (Element(1), True),
-            (Nucleus(Element(1), 1), True),
-            (Element(43), False),
-            ("B-10.00c", False),
-            ("H", True),
-            (Nucleus(Element(5), 10), False),
+            ("1001.80c", False, True),
+            ("H-1", False, True),
+            (Element(1), False, True),
+            (Nucleus(Element(1), 1), False, True),
+            (Element(43), False, False),
+            ("B-10.00c", False, False),
+            ("H", False, True),
+            ("H", True, False),
+            (Nucleus(Element(5), 10), False, False),
+            ("Ni", False, True),
+            ("Ni-0.60c", True, True),
         ],
     )
-    def test_material_contains(_, big_material, content, is_in):
-        assert is_in == (content in big_material), "Contains didn't work properly"
-        assert is_in == big_material.contains(content)
+    def test_material_contains(_, big_material, content, strict, is_in):
+        if not strict:
+            assert is_in == (content in big_material), "Contains didn't work properly"
+        assert is_in == big_material.contains(content, strict=strict)
         with pytest.raises(TypeError):
             5 in big_material
 
@@ -304,10 +309,10 @@ class TestMaterial:
             ({"A": 1}, 4),
             ({"A": slice(235, 240)}, 5),
             ({"A": slice(232, 243, 2)}, 5),
-            ({"A": slice(None)}, 15),
-            ({"meta_state": 0}, 13),
+            ({"A": slice(None)}, 16),
+            ({"meta_state": 0}, 14),
             ({"meta_state": 1}, 2),
-            ({"meta_state": slice(0, 2)}, 15),
+            ({"meta_state": slice(0, 2)}, 16),
             ({"library": "80c"}, 3),
             ({"library": slice("00c", "10c")}, 2),
         ],
