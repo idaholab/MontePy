@@ -35,6 +35,7 @@ class TestMaterial:
             "u238",
             "am242",
             "am242m1",
+            "Co60m2.50c",
             "Pu239",
             "Ni-0.60c",
         ]
@@ -259,7 +260,11 @@ class TestMaterial:
             ("H", True, False),
             (Nucleus(Element(5), 10), False, False),
             ("Ni", False, True),
+            ("Ni", True, False),  # test wrong library
             ("Ni-0.60c", True, True),
+            ("Co-60", False, False),
+            ("Co-60", True, False),
+            ("Co-60m2.50c", True, True),
         ],
     )
     def test_material_contains(_, big_material, content, strict, is_in):
@@ -325,7 +330,7 @@ class TestMaterial:
             ({"A": 1}, 4),
             ({"A": slice(235, 240)}, 5),
             ({"A": slice(232, 243, 2)}, 5),
-            ({"A": slice(None)}, 16),
+            ({"A": slice(None)}, 17),
             ({"meta_state": 0}, 14),
             ({"meta_state": 1}, 2),
             ({"meta_state": slice(0, 2)}, 16),
