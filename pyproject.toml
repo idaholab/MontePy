@@ -57,7 +57,7 @@ doc = [
     	"sphinx_autodoc_typehints",
 	"autodocsumm",
 ]
-format = ["black>=23.3.0"]
+format = ["black~=25.1"]
 build = [
 	"build",
 	"setuptools>=64.0.0",
