@@ -781,6 +781,10 @@ See <https://www.montepy.org/migrations/migrate0_1.html> for more information ""
             )
         if threshold < 0.0:
             raise ValueError(f"Threshold must be positive or zero. {threshold} given.")
+        if not isinstance(strict, bool):
+            raise TypeError(
+                f"Strict must be bool. {strict} of type: {type(strict)} given."
+            )
 
         # fail fast
         for nuclide in nuclides:
