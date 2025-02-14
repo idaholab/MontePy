@@ -732,6 +732,10 @@ See <https://www.montepy.org/migrations/migrate0_1.html> for more information ""
 
         .. note::
 
+            For details on how to use the ``strict`` argument see the examples in: :func:`find`.
+
+        .. note::
+
             If a nuclide is in a material multiple times, and cumulatively exceeds the threshold,
             but for each instance it appears it is below the threshold this method will return False.
 
@@ -1025,7 +1029,7 @@ See <https://www.montepy.org/migrations/migrate0_1.html> for more information ""
         For the library the slicing is done using string comparisons.
 
         Examples
-        ^^^^^^^^
+        --------
 
         .. testcode::
 
@@ -1034,7 +1038,7 @@ See <https://www.montepy.org/migrations/migrate0_1.html> for more information ""
             mat.number = 1
 
             # make non-sense material
-            for nuclide in ["U-235.80c", "U-238.70c", "Pu-239.00c", "O-16.00c"]:
+            for nuclide in ["U-235.80c", "U-238.70c", "Pu-239.00c", "O-16.00c", "C-0", "C-12.00c", "Fe-56"]:
                 mat.add_nuclide(nuclide, 0.1)
 
             print("Get all uranium nuclides.")
@@ -1055,7 +1059,50 @@ See <https://www.montepy.org/migrations/migrate0_1.html> for more information ""
             Get all transuranics
             [(0, (Nuclide('U-235.80c'), 0.1)), (1, (Nuclide('U-238.70c'), 0.1)), (2, (Nuclide('Pu-239.00c'), 0.1))]
             Get all ENDF/B-VIII.0
-            [(2, (Nuclide('Pu-239.00c'), 0.1)), (3, (Nuclide('O-16.00c'), 0.1))]
+            [(2, (Nuclide('Pu-239.00c'), 0.1)), (3, (Nuclide('O-16.00c'), 0.1)), (5, (Nuclide('C-12.00c'), 0.1))]
+
+
+
+        Strict (Explicit) Matching
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+        Generally this functions treats ambiguity implicitly, and will match as many nuclides as possible.
+        This is generally useful, but not always.
+        By default when only an element is given all daughter nuclides match, as seen above.
+        However, MCNP does provide some "natural" or "elemental" nuclear data,
+        and it would be helpful to find these sometimes.
+        For instance, you may want to find all instances of elemental nuclides,
+        and replace them with explicit isotopes (for instance migrating from ENDF/B-VII.1 to ENDF/B-VIII).
+        In these cases the ``strict`` argument is needed.
+        When ``strict`` is True an ambiguous ``A`` will only match elemental data:
+
+        .. testcode::
+
+            print("Strict: False", list(mat.find(element="C")))
+            print("Strict: True", list(mat.find(element="C", strict=True)))
+
+        will print:
+
+        .. testoutput::
+
+            Strict: False [(4, (Nuclide('C-0'), 0.1)), (5, (Nuclide('C-12.00c'), 0.1))]
+            Strict: True [(4, (Nuclide('C-0'), 0.1))]
+
+
+        Similarly to find nuclides with no library defined you can use strict:
+
+        .. testcode::
+
+            print("Strict: False", list(mat.find(library=None)))
+            print("Strict: True", list(mat.find(library=None, strict=True)))
+
+        This would print:
+
+        .. testoutput::
+
+            Strict: False [(0, (Nuclide('U-235.80c'), 0.1)), (1, (Nuclide('U-238.70c'), 0.1)), (2, (Nuclide('Pu-239.00c'), 0.1)), (3, (Nuclide('O-16.00c'), 0.1)), (4, (Nuclide('C-0'), 0.1)), (5, (Nuclide('C-12.00c'), 0.1)), (6, (Nuclide('Fe-56'), 0.1))]
+            Strict: True [(4, (Nuclide('C-0'), 0.1)), (6, (Nuclide('Fe-56'), 0.1))]
+
 
         .. versionadded:: 1.0.0
 
@@ -1071,6 +1118,9 @@ See <https://www.montepy.org/migrations/migrate0_1.html> for more information ""
         :type meta_state: int, slice
         :param library: the libraries to limit the search to.
         :type library: str, slice
+        :param strict: whether to strictly match elements as only elements (when no A is given), and only match blank
+            libraries when no library is given.
+        :type strict: bool
 
         :returns: a generator of all matching nuclides, as their index and then a tuple of their nuclide, and fraction pairs that match.
         :rtype: Generator[tuple[int, tuple[Nuclide, float]]]
@@ -1180,6 +1230,9 @@ See <https://www.montepy.org/migrations/migrate0_1.html> for more information ""
         :type meta_state: int, slice
         :param library: the libraries to limit the search to.
         :type library: str, slice
+        :param strict: whether to strictly match elements as only elements (when no A is given), and only match blank
+            libraries when no library is given.
+        :type strict: bool
 
         :returns: a generator of fractions whose nuclide matches the criteria.
         :rtype: Generator[float]
