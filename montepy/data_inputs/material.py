@@ -1008,6 +1008,7 @@ See <https://www.montepy.org/migrations/migrate0_1.html> for more information ""
         A: Union[int, slice] = None,
         meta_state: Union[int, slice] = None,
         library: Union[str, slice] = None,
+        strict: bool = False,
     ) -> Generator[tuple[int, tuple[Nuclide, float]]]:
         """
         Finds all components that meet the given criteria.
@@ -1087,9 +1088,13 @@ See <https://www.montepy.org/migrations/migrate0_1.html> for more information ""
             raise TypeError(
                 f"library must a str or a slice. {library} of type {type(library)} given."
             )
+        if not isinstance(strict, bool):
+            raise TypeError(
+                f"strict must be a bool. {strict} of type {type(strict)} given."
+            )
         if name:
             fancy_nuclide = Nuclide(name)
-            if fancy_nuclide.A == 0:
+            if fancy_nuclide.A == 0 and not strict:
                 element = fancy_nuclide.element
                 fancy_nuclide = None
         else:
@@ -1099,6 +1104,13 @@ See <https://www.montepy.org/migrations/migrate0_1.html> for more information ""
         else:
             first_filter = self.__prep_filter(fancy_nuclide)
 
+        # create filter for defaults if strict
+        if strict:
+            # if strict and element switch to A=0
+            if element and A is None:
+                A = 0
+            if library is None:
+                library = ""
         filters = [
             first_filter,
             self.__prep_element_filter(element),
@@ -1121,6 +1133,7 @@ See <https://www.montepy.org/migrations/migrate0_1.html> for more information ""
         A: Union[int, slice] = None,
         meta_state: Union[int, slice] = None,
         library: Union[str, slice] = None,
+        strict: bool = False,
     ) -> Generator[float]:
         """
         A wrapper for :func:`find` that only returns the fractions of the components.
@@ -1167,7 +1180,9 @@ See <https://www.montepy.org/migrations/migrate0_1.html> for more information ""
         :returns: a generator of fractions whose nuclide matches the criteria.
         :rtype: Generator[float]
         """
-        for _, (_, fraction) in self.find(name, element, A, meta_state, library):
+        for _, (_, fraction) in self.find(
+            name, element, A, meta_state, library, strict
+        ):
             yield fraction
 
     def __bool__(self):
