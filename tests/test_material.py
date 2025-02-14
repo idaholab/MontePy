@@ -268,9 +268,14 @@ class TestMaterial:
         assert is_in == big_material.contains(content, strict=strict)
         with pytest.raises(TypeError):
             5 in big_material
+        with pytest.raises(TypeError):
+            big_material.contains("H", strict=5)
 
     def test_material_multi_contains(_, big_material):
         assert big_material.contains("1001", "U-235", "Pu-239", threshold=0.01)
+        assert not big_material.contains(
+            "1001", "U-235", "Pu-239", threshold=0.01, strict=True
+        )
         assert not big_material.contains("1001", "U-235", "Pu-239", threshold=0.07)
         assert not big_material.contains("U-235", "B-10")
 
@@ -305,6 +310,17 @@ class TestMaterial:
             ({"name": "U235m1"}, 1),
             ({"element": Element(1)}, 6),
             ({"element": "H"}, 6),
+            ({"element": "H", "strict": True}, 0),
+            ({"element": "H", "A": 1, "strict": True}, 0),
+            (
+                {
+                    "element": "H",
+                    "A": 1,
+                    "library": slice("00c", "05c"),
+                    "strict": True,
+                },
+                2,
+            ),
             ({"element": slice(92, 95)}, 5),
             ({"A": 1}, 4),
             ({"A": slice(235, 240)}, 5),
@@ -342,6 +358,8 @@ class TestMaterial:
             list(big_material.find(element=1.23))
         with pytest.raises(TypeError):
             list(big_material.find(library=5))
+        with pytest.raises(TypeError):
+            list(big_material.find(strict=5))
 
     def test_material_str(_):
         in_str = "M20 1001.80c 0.5 8016.80c 0.4 94239.80c 0.1"
