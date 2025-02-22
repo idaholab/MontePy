@@ -806,6 +806,13 @@ See <https://www.montepy.org/migrations/migrate0_1.html> for more information ""
             )
         )
 
+    def clear(self):
+        """
+        Clears all nuclide components from this material.
+        """
+        for _ in range(len(self)):
+            del self[0]
+
     def normalize(self):
         """
         Normalizes the components fractions so that they sum to 1.0.
