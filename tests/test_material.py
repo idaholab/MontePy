@@ -99,6 +99,8 @@ class TestMaterial:
             assert (
                 old_mat.default_libraries[part] == big_mat_lib.default_libraries[part]
             )
+        big_mat_lib.add_nuclide("O-16.80c", 1.0)
+        _.verify_export(big_mat_lib)
 
     def test_mat_get_nuclide_library_bad(_, big_mat_lib):
         with pytest.raises(TypeError):
