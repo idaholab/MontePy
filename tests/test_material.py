@@ -404,13 +404,17 @@ Pu-239   (80c) 0.1
         str(big_material)
         repr(big_material)
 
-    def test_read_add_write(_):
-        problem = montepy.read_input(pathlib.Path("tests") / "inputs" / "test.imcnp")
+    @pytest.mark.parametrize("file", ["test.imcnp", "pin_cell.imcnp"])
+    def test_read_add_write(_, file):
+        problem = montepy.read_input(pathlib.Path("tests") / "inputs" / file)
         mat = problem.materials[2]
         mat.add_nuclide("O-16.80c", 0.3)
         try:
-            out_file = "mat_read_write_21ij43werr"
+            out_file = f"mat_read_write_21ij43werr{file}"
             problem.write_problem(out_file)
+            with open(out_file, "r") as fh:
+                for line in fh:
+                    print(line.rstrip())
             new_problem = montepy.read_input(out_file)
         finally:
             pathlib.Path(out_file).unlink(True)
