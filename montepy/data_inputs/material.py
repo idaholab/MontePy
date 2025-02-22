@@ -69,7 +69,7 @@ class _DefaultLibraries:
         try:
             node = self._libraries[key]
         except KeyError:
-            node = self._generate_default_node(key)
+            node = self._generate_default_node(key, str(value))
             self._parent()._append_param_lib(node)
             self._libraries[key] = node
         node["data"].value = str(value)
@@ -98,13 +98,13 @@ class _DefaultLibraries:
         return key
 
     @staticmethod
-    def _generate_default_node(key: LibraryType):
+    def _generate_default_node(key: LibraryType, val: str):
         classifier = syntax_node.ClassifierNode()
         classifier.prefix = key.value
         ret = {
             "classifier": classifier,
             "seperator": syntax_node.PaddingNode(" = "),
-            "data": syntax_node.ValueNode("", str),
+            "data": syntax_node.ValueNode(val, str),
         }
         return syntax_node.SyntaxNode("mat library", ret)
 
@@ -641,6 +641,7 @@ See <https://www.montepy.org/migrations/migrate0_1.html> for more information ""
         self._check_valid_comp(nuclide_frac_pair)
         self._elements.add(nuclide_frac_pair[0].element)
         self._nuclei.add(nuclide_frac_pair[0].nucleus)
+        # node for fraction
         node = self._generate_default_node(
             float, str(nuclide_frac_pair[1]), "\n" + " " * DEFAULT_INDENT
         )
