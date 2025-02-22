@@ -89,6 +89,17 @@ class TestMaterial:
             assert iter_key == item_key
             assert big_mat_lib.default_libraries[iter_key] == item_val
 
+    def test_mat_clear(_, big_mat_lib):
+        old_mat = big_mat_lib.clone()
+        old_len = len(big_mat_lib)
+        assert old_len > 0
+        big_mat_lib.clear()
+        assert 0 == len(big_mat_lib)
+        for part in old_mat.default_libraries:
+            assert (
+                old_mat.default_libraries[part] == big_mat_lib.default_libraries[part]
+            )
+
     def test_mat_get_nuclide_library_bad(_, big_mat_lib):
         with pytest.raises(TypeError):
             big_mat_lib.get_nuclide_library(5, "nlib")
