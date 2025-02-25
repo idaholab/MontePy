@@ -1,23 +1,36 @@
 # Copyright 2024, Battelle Energy Alliance, LLC All Rights Reserved.
+from __future__ import annotations
 from montepy.errors import *
+from montepy._singleton import SingletonGroup
+
+MAX_Z_NUM = 118
 
 
-class Element:
+class Element(SingletonGroup):
     """
     Class to represent an element e.g., Aluminum.
+
+    .. Note::
+
+        This class is immutable, and hashable, meaning it is suitable as a dictionary key.
+
 
     :param Z: the Z number of the element
     :type Z: int
     :raises UnknownElement: if there is no element with that Z number.
     """
 
-    def __init__(self, Z):
+    __slots__ = "_Z"
+
+    def __init__(self, Z: int):
+        if not isinstance(Z, int):
+            raise TypeError(f"Z must be an int. {Z} of type {type(Z)} given.")
         self._Z = Z
         if Z not in self.__Z_TO_SYMBOL:
             raise UnknownElement(f"Z={Z}")
 
     @property
-    def symbol(self):
+    def symbol(self) -> str:
         """
         The atomic symbol for this Element.
 
@@ -27,7 +40,7 @@ class Element:
         return self.__Z_TO_SYMBOL[self.Z]
 
     @property
-    def Z(self):
+    def Z(self) -> int:
         """
         The atomic number for this Element.
 
@@ -37,7 +50,7 @@ class Element:
         return self._Z
 
     @property
-    def name(self):
+    def name(self) -> str:
         """
         The name of the element.
 
@@ -50,16 +63,19 @@ class Element:
         return self.name
 
     def __repr__(self):
-        return f"Z={self.Z}, symbol={self.symbol}, name={self.name}"
+        return f"Element({self.Z})"
 
     def __hash__(self):
         return hash(self.Z)
 
     def __eq__(self, other):
-        return self.Z == other.Z
+        return self is other
+
+    def __reduce__(self):
+        return (type(self), (self.Z,))
 
     @classmethod
-    def get_by_symbol(cls, symbol):
+    def get_by_symbol(cls, symbol: str) -> Element:
         """
         Get an element by it's symbol.
 
@@ -76,7 +92,7 @@ class Element:
             raise UnknownElement(f"The symbol: {symbol}")
 
     @classmethod
-    def get_by_name(cls, name):
+    def get_by_name(cls, name: str) -> Element:
         """
         Get an element by it's name.
 

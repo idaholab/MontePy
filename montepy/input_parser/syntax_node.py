@@ -2,6 +2,7 @@
 from abc import ABC, abstractmethod
 import collections
 import copy
+import itertools as it
 import enum
 import math
 
@@ -23,9 +24,6 @@ class SyntaxNodeBase(ABC):
 
     A syntax node is any component of the syntax tree
     for a parsed input.
-
-    .. versionadded:: 0.2.0
-        This was added with the major parser rework.
 
     :param name: a name for labeling this node.
     :type name: str
@@ -195,6 +193,19 @@ class SyntaxNodeBase(ABC):
                 ret += node.flatten()
         return ret
 
+    def _pretty_str(self):
+        INDENT = 2
+        if not self.nodes:
+            return f"<Node: {self.name}: []>"
+        ret = f"<Node: {self.name}: [\n"
+        for val in self.nodes:
+            child_strs = val._pretty_str().split("\n")
+            ret += "\n".join([" " * 2 * INDENT + s for s in child_strs[:-1]])
+            ret += " " * 2 * INDENT + child_strs[-1] + ",\n"
+        ret += " " * INDENT + "]\n"
+        ret += ">"
+        return ret
+
 
 class SyntaxNode(SyntaxNodeBase):
     """
@@ -210,9 +221,6 @@ class SyntaxNode(SyntaxNodeBase):
         value = syntax_node["start_pad"]
         if key in syntax_node:
             pass
-
-    .. versionadded:: 0.2.0
-        This was added with the major parser rework.
 
     :param name: a name for labeling this node.
     :type name: str
@@ -248,7 +256,7 @@ class SyntaxNode(SyntaxNodeBase):
             raise KeyError(f"{key} is not a value leaf node")
 
     def __str__(self):
-        return f"(Node: {self.name}: {self.nodes})"
+        return f"<Node: {self.name}: {self.nodes}>"
 
     def __repr__(self):
         return str(self)
@@ -310,13 +318,22 @@ class SyntaxNode(SyntaxNodeBase):
                 ret += node.flatten()
         return ret
 
+    def _pretty_str(self):
+        INDENT = 2
+        ret = f"<Node: {self.name}: {{\n"
+        for key, val in self.nodes.items():
+            child_strs = val._pretty_str().split("\n")
+            ret += " " * INDENT + f"{key}: {child_strs[0]}\n"
+            ret += "\n".join([" " * 2 * INDENT + s for s in child_strs[1:-1]])
+            ret += " " * 2 * INDENT + child_strs[-1] + ",\n"
+        ret += " " * INDENT + "}\n"
+        ret += ">"
+        return ret
+
 
 class GeometryTree(SyntaxNodeBase):
     """
     A syntax tree that is a binary tree for representing CSG geometry logic.
-
-    .. versionadded:: 0.2.0
-        This was added with the major parser rework.
 
     .. versionchanged:: 0.4.1
         Added left/right_short_type
@@ -358,11 +375,32 @@ class GeometryTree(SyntaxNodeBase):
 
     def __str__(self):
         return (
-            f"Geometry: ( {self._left_side}"
+            f"Geometry: < {self._left_side}"
             f" {f'Short:{self._left_short_type.value}' if self._left_short_type else ''}"
             f" {self._operator} {self._right_side} "
-            f"{f'Short:{self._right_short_type.value}' if self._right_short_type else ''})"
+            f"{f'Short:{self._right_short_type.value}' if self._right_short_type else ''}>"
         )
+
+    def _pretty_str(self):
+        INDENT = 2
+        ret = f"<Geometry: {self.name}: [\n"
+        for key, val in [
+            ("left", self._left_side._pretty_str()),
+            ("operator", self._operator),
+            ("right", self._right_side),
+        ]:
+            if val is None:
+                continue
+            if isinstance(val, SyntaxNodeBase):
+                child_strs = val._pretty_str().split("\n")
+            else:
+                child_strs = [str(val)]
+            ret += " " * INDENT + f"{key}: {child_strs[0]}\n"
+            ret += "\n".join([" " * 2 * INDENT + s for s in child_strs[1:-1]])
+            ret += " " * 2 * INDENT + child_strs[-1] + ",\n"
+        ret += " " * INDENT + "}\n"
+        ret += ">"
+        return ret
 
     def __repr__(self):
         return str(self)
@@ -554,9 +592,6 @@ class PaddingNode(SyntaxNodeBase):
     """
     A syntax tree node to represent a collection of sequential padding elements.
 
-    .. versionadded:: 0.2.0
-        This was added with the major parser rework.
-
     :param token: The first padding token for this node.
     :type token: str
     :param is_comment: If the token provided is a comment.
@@ -569,7 +604,7 @@ class PaddingNode(SyntaxNodeBase):
             self.append(token, is_comment)
 
     def __str__(self):
-        return f"(Padding, {self._nodes})"
+        return f"<Padding, {self._nodes}>"
 
     def __repr__(self):
         return str(self)
@@ -695,7 +730,7 @@ class PaddingNode(SyntaxNodeBase):
 
     def __eq__(self, other):
         if not isinstance(other, (type(self), str)):
-            raise "PaddingNode can only be compared to PaddingNode or str"
+            return False
         if isinstance(other, type(self)):
             other = other.format()
         return self.format() == other
@@ -741,9 +776,6 @@ class PaddingNode(SyntaxNodeBase):
 class CommentNode(SyntaxNodeBase):
     """
     Object to represent a comment in an MCNP problem.
-
-    .. versionadded:: 0.2.0
-        This was added with the major parser rework.
 
     :param input: the token from the lexer
     :type input: Token
@@ -842,6 +874,9 @@ class CommentNode(SyntaxNodeBase):
     def __str__(self):
         return self.format()
 
+    def _pretty_str(self):
+        return str(self)
+
     def __repr__(self):
         ret = f"COMMENT: "
         for node in self.nodes:
@@ -858,9 +893,6 @@ class ValueNode(SyntaxNodeBase):
 
     This stores the original input token, the current value,
     and the possible associated padding.
-
-    .. versionadded:: 0.2.0
-        This was added with the major parser rework.
 
     :param token: the original token for the ValueNode.
     :type token: str
@@ -1074,7 +1106,7 @@ class ValueNode(SyntaxNodeBase):
                     delta -= 1
                     if token.startswith("+"):
                         self._formatter["sign"] = "+"
-                    if token.startswith("-"):
+                    if token.startswith("-") and not self.never_pad:
                         self._formatter["sign"] = " "
                 if delta > 0:
                     self._formatter["zero_padding"] = length
@@ -1295,7 +1327,10 @@ class ValueNode(SyntaxNodeBase):
         return self._token
 
     def __str__(self):
-        return f"(Value, {self._value}, padding: {self._padding})"
+        return f"<Value, {self._value}, padding: {self._padding}>"
+
+    def _pretty_str(self):
+        return str(self)
 
     def __repr__(self):
         return str(self)
@@ -1344,9 +1379,7 @@ class ValueNode(SyntaxNodeBase):
 
     def __eq__(self, other):
         if not isinstance(other, (type(self), str, int, float)):
-            raise TypeError(
-                f"ValueNode can't be equal to {type(other)} type. {other} given."
-            )
+            return False
         if isinstance(other, ValueNode):
             other_val = other.value
             if self.type != other.type:
@@ -1364,9 +1397,6 @@ class ValueNode(SyntaxNodeBase):
 class ParticleNode(SyntaxNodeBase):
     """
     A node to hold particles information in a :class:`ClassifierNode`.
-
-    .. versionadded:: 0.2.0
-        This was added with the major parser rework.
 
     :param name: the name for the node.
     :type name: str
@@ -1500,9 +1530,6 @@ class ParticleNode(SyntaxNodeBase):
 class ListNode(SyntaxNodeBase):
     """
     A node to represent a list of values.
-
-    .. versionadded:: 0.2.0
-        This was added with the major parser rework.
 
     :param name: the name of this node.
     :type name: str
@@ -1735,9 +1762,7 @@ class ListNode(SyntaxNodeBase):
 
     def __eq__(self, other):
         if not isinstance(other, (type(self), list)):
-            raise TypeError(
-                f"ListNode can only be compared to a ListNode or List. {other} given."
-            )
+            return False
         if len(self) != len(other):
             return False
         for lhs, rhs in zip(self, other):
@@ -1746,14 +1771,17 @@ class ListNode(SyntaxNodeBase):
         return True
 
 
-class IsotopesNode(SyntaxNodeBase):
+class MaterialsNode(SyntaxNodeBase):
     """
-    A node for representing isotopes and their concentration.
+    A node for representing isotopes and their concentration,
+    and the material parameters.
 
-    This stores a list of tuples of ZAIDs and concentrations.
+    This stores a list of tuples of ZAIDs and concentrations,
+    or a tuple of a parameter.
 
-    .. versionadded:: 0.2.0
-        This was added with the major parser rework.
+    .. versionadded:: 1.0.0
+
+        This was added as a more general version of ``IsotopesNodes``.
 
     :param name: a name for labeling this node.
     :type name: str
@@ -1762,9 +1790,13 @@ class IsotopesNode(SyntaxNodeBase):
     def __init__(self, name):
         super().__init__(name)
 
-    def append(self, isotope_fraction):
+    def append_nuclide(self, isotope_fraction):
         """
-        Append the node to this node.
+        Append the isotope fraction to this node.
+
+        .. versionadded:: 1.0.0
+
+            Added to replace ``append``
 
         :param isotope_fraction: the isotope_fraction to add. This must be a tuple from
             A Yacc production. This will consist of: the string identifying the Yacc production,
@@ -1774,14 +1806,41 @@ class IsotopesNode(SyntaxNodeBase):
         isotope, concentration = isotope_fraction[1:3]
         self._nodes.append((isotope, concentration))
 
+    def append(self):  # pragma: no cover
+        raise DeprecationWarning("Deprecated. Use append_param or append_nuclide")
+
+    def append_param(self, param):
+        """
+        Append the parameter to this node.
+
+        .. versionadded:: 1.0.0
+
+            Added to replace ``append``
+
+        :param param: the parameter to add to this node.
+        :type param: ParametersNode
+        """
+        self._nodes.append((param,))
+
     def format(self):
         ret = ""
-        for isotope, concentration in self.nodes:
-            ret += isotope.format() + concentration.format()
+        for node in it.chain(*self.nodes):
+            ret += node.format()
         return ret
 
     def __repr__(self):
-        return f"(Isotopes: {self.nodes})"
+        return f"(Materials: {self.nodes})"
+
+    def _pretty_str(self):
+        INDENT = 2
+        ret = f"<Node: {self.name}: [\n"
+        for val in self.nodes:
+            child_strs = [f"({', '.join([str(v) for v in val])})"]
+            ret += "\n".join([" " * 2 * INDENT + s for s in child_strs[:-1]])
+            ret += " " * 2 * INDENT + child_strs[-1] + ",\n"
+        ret += " " * INDENT + "]\n"
+        ret += ">"
+        return ret
 
     def __iter__(self):
         return iter(self.nodes)
@@ -1794,12 +1853,12 @@ class IsotopesNode(SyntaxNodeBase):
 
     def get_trailing_comment(self):
         tail = self.nodes[-1]
-        tail = tail[1]
+        tail = tail[-1]
         return tail.get_trailing_comment()
 
     def _delete_trailing_comment(self):
         tail = self.nodes[-1]
-        tail = tail[1]
+        tail = tail[-1]
         tail._delete_trailing_comment()
 
     def flatten(self):
@@ -1814,9 +1873,6 @@ class ShortcutNode(ListNode):
     A node that pretends to be a :class:`ListNode` but is actually representing a shortcut.
 
     This takes the shortcut tokens, and expands it into their "virtual" values.
-
-    .. versionadded:: 0.2.0
-        This was added with the major parser rework.
 
     :param p: the parsing object to parse.
     :type p: sly.yacc.YaccProduction
@@ -2274,9 +2330,6 @@ class ClassifierNode(SyntaxNodeBase):
     """
     A node to represent the classifier for a :class:`montepy.data_input.DataInput`
 
-    .. versionadded:: 0.2.0
-        This was added with the major parser rework.
-
     e.g., represents ``M4``, ``F104:n,p``, ``IMP:n,e``.
     """
 
@@ -2398,6 +2451,17 @@ class ClassifierNode(SyntaxNodeBase):
             f" padding: {self.padding})"
         )
 
+    def _pretty_str(self):
+        return f"""<Classifier: {{ 
+    mod: {self.modifier}, 
+    prefix: {self.prefix}, 
+    number: {self.number}, 
+    particles: {self.particles},
+    padding: {self.padding} 
+  }}
+>
+"""
+
     @property
     def comments(self):
         if self.padding is not None:
@@ -2432,9 +2496,6 @@ class ParametersNode(SyntaxNodeBase):
     A node to hold the parameters, key-value pairs, for this input.
 
     This behaves like a dictionary and is accessible by their key*
-
-    .. versionadded:: 0.2.0
-        This was added with the major parser rework.
 
     .. Note::
         How to access values.
@@ -2485,10 +2546,22 @@ class ParametersNode(SyntaxNodeBase):
         self._nodes[key] = val
 
     def __str__(self):
-        return f"(Parameters, {self.nodes})"
+        return f"<Parameters, {self.nodes}>"
 
     def __repr__(self):
         return str(self)
+
+    def _pretty_str(self):
+        INDENT = 2
+        ret = f"<Node: {self.name}: {{\n"
+        for key, val in self.nodes.items():
+            child_strs = val._pretty_str().split("\n")
+            ret += " " * INDENT + f"{key}: {child_strs[0]}\n"
+            ret += "\n".join([" " * 2 * INDENT + s for s in child_strs[1:-1]])
+            ret += " " * 2 * INDENT + child_strs[-1] + ",\n"
+        ret += " " * INDENT + "}\n"
+        ret += ">"
+        return ret
 
     def __getitem__(self, key):
         return self.nodes[key.lower()]

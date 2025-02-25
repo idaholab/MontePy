@@ -1,6 +1,6 @@
 # Copyright 2024, Battelle Energy Alliance, LLC All Rights Reserved.
 import itertools as it
-from montepy.data_inputs.cell_modifier import CellModifierInput
+from montepy.data_inputs.cell_modifier import CellModifierInput, InitInput
 from montepy.data_inputs.transform import Transform
 from montepy.errors import *
 from montepy.input_parser.block_type import BlockType
@@ -17,7 +17,7 @@ class Fill(CellModifierInput):
     Object to handle the ``FILL`` input in cell and data blocks.
 
     :param input: the Input object representing this data input
-    :type input: Input
+    :type input: Union[Input, str]
     :param in_cell_block: if this card came from the cell block of an input file.
     :type in_cell_block: bool
     :param key: the key from the key-value pair in a cell
@@ -31,7 +31,13 @@ class Fill(CellModifierInput):
     Maps the dimension to its axis number
     """
 
-    def __init__(self, input=None, in_cell_block=False, key=None, value=None):
+    def __init__(
+        self,
+        input: InitInput = None,
+        in_cell_block: bool = False,
+        key: str = None,
+        value: syntax_node.SyntaxNode = None,
+    ):
         self._old_number = self._generate_default_node(int, None)
         self._old_numbers = None
         self._universe = None

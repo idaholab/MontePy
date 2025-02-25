@@ -1,31 +1,46 @@
 # Copyright 2024, Battelle Energy Alliance, LLC All Rights Reserved.
+from __future__ import annotations
 import copy
+import numpy as np
+import re
+from typing import Union
+
+import montepy
 from montepy import mcnp_object
 from montepy.data_inputs import data_input
 from montepy.errors import *
-from montepy.numbered_mcnp_object import Numbered_MCNP_Object
+from montepy.numbered_mcnp_object import Numbered_MCNP_Object, InitInput
 from montepy.utilities import *
-import numpy as np
-import re
 
 
 class Transform(data_input.DataInputAbstract, Numbered_MCNP_Object):
     """
     Input to represent a transform input (TR).
 
-    :param input: The Input syntax object this will wrap and parse.
-    :type input: Input
+    .. versionchanged:: 1.0.0
+
+        Added number parameter
+
+    :param input: The Input object representing the input
+    :type input: Union[Input, str]
+    :param number: The number to set for this object.
+    :type number: int
     """
 
-    def __init__(self, input=None, pass_through=False):
+    def __init__(
+        self,
+        input: InitInput = None,
+        pass_through: bool = False,
+        number: int = None,
+    ):
         self._pass_through = pass_through
-        self._number = self._generate_default_node(int, -1)
         self._old_number = self._generate_default_node(int, -1)
         self._displacement_vector = np.array([])
         self._rotation_matrix = np.array([])
         self._is_in_degrees = False
         self._is_main_to_aux = True
         super().__init__(input)
+        self._load_init_num(number)
         if input:
             words = self._tree["data"]
             i = 0

@@ -361,8 +361,7 @@ class TestValueNode(TestCase):
     def test_value_equality(self):
         value_node1 = syntax_node.ValueNode("1", int)
         self.assertTrue(value_node1 == value_node1)
-        with self.assertRaises(TypeError):
-            value_node1 == syntax_node.PaddingNode("")
+        assert not value_node1 == syntax_node.PaddingNode("")
         value_node2 = syntax_node.ValueNode("2", int)
         self.assertTrue(value_node1 != value_node2)
         value_node3 = syntax_node.ValueNode("hi", str)
@@ -440,6 +439,7 @@ class TestSyntaxNode(TestCase):
     def test_syntax_str(self):
         str(self.test_node)
         repr(self.test_node)
+        self.test_node._pretty_str()
 
 
 class TestGeometryTree(TestCase):
@@ -478,6 +478,7 @@ class TestGeometryTree(TestCase):
         test = self.test_tree
         str(test)
         repr(test)
+        test._pretty_str()
 
     def test_geometry_comments(self):
         test = copy.deepcopy(self.test_tree)
@@ -568,8 +569,7 @@ class TestPaddingNode(TestCase):
         self.assertTrue(pad != " hi ")
         pad1 = syntax_node.PaddingNode(" ")
         self.assertTrue(pad == pad1)
-        with self.assertRaises(TypeError):
-            pad == 1
+        assert not pad == 1
 
     def test_comment_init(self):
         comment = syntax_node.CommentNode("$ hi")
@@ -696,6 +696,7 @@ class TestListNode(TestCase):
         list_node.append(syntax_node.ValueNode("1.0", float))
         str(list_node)
         repr(list_node)
+        list_node._pretty_str()
 
     def test_list_slicing(self):
         list_node = syntax_node.ListNode("list")
@@ -719,8 +720,7 @@ class TestListNode(TestCase):
         list_node1 = syntax_node.ListNode("list")
         for i in range(20):
             list_node1.append(syntax_node.ValueNode("1.0", float))
-        with self.assertRaises(TypeError):
-            list_node1 == "hi"
+        assert not list_node1 == "hi"
         list2 = [syntax_node.ValueNode("1.0", float)] * 19
         self.assertTrue(not list_node1 == list2)
         list2 = [syntax_node.ValueNode("1.0", float)] * 20
@@ -762,71 +762,72 @@ class TestListNode(TestCase):
         self.assertEqual(len(comments), 1)
 
 
-class TestIsotopesNode(TestCase):
+class TestMaterialssNode(TestCase):
     def test_isotopes_init(self):
-        isotope = syntax_node.IsotopesNode("test")
+        isotope = syntax_node.MaterialsNode("test")
         self.assertEqual(isotope.name, "test")
         self.assertIsInstance(isotope.nodes, list)
 
     def test_isotopes_append(self):
-        isotopes = syntax_node.IsotopesNode("test")
+        isotopes = syntax_node.MaterialsNode("test")
         zaid = syntax_node.ValueNode("1001.80c", str)
         concentration = syntax_node.ValueNode("1.5", float)
-        isotopes.append(("isotope_fraction", zaid, concentration))
+        isotopes.append_nuclide(("isotope_fraction", zaid, concentration))
         self.assertEqual(isotopes.nodes[-1][0], zaid)
         self.assertEqual(isotopes.nodes[-1][1], concentration)
 
     def test_isotopes_format(self):
         padding = syntax_node.PaddingNode(" ")
-        isotopes = syntax_node.IsotopesNode("test")
+        isotopes = syntax_node.MaterialsNode("test")
         zaid = syntax_node.ValueNode("1001.80c", str)
         zaid.padding = padding
         concentration = syntax_node.ValueNode("1.5", float)
         concentration.padding = padding
-        isotopes.append(("isotope_fraction", zaid, concentration))
+        isotopes.append_nuclide(("isotope_fraction", zaid, concentration))
         self.assertEqual(isotopes.format(), "1001.80c 1.5 ")
 
     def test_isotopes_str(self):
-        isotopes = syntax_node.IsotopesNode("test")
+        isotopes = syntax_node.MaterialsNode("test")
         zaid = syntax_node.ValueNode("1001.80c", str)
         concentration = syntax_node.ValueNode("1.5", float)
-        isotopes.append(("isotope_fraction", zaid, concentration))
+        isotopes.append_nuclide(("isotope_fraction", zaid, concentration))
         str(isotopes)
         repr(isotopes)
+        isotopes._pretty_str()
 
     def test_isotopes_iter(self):
-        isotopes = syntax_node.IsotopesNode("test")
+        isotopes = syntax_node.MaterialsNode("test")
         zaid = syntax_node.ValueNode("1001.80c", str)
         concentration = syntax_node.ValueNode("1.5", float)
-        isotopes.append(("isotope_fraction", zaid, concentration))
-        isotopes.append(("isotope_fraction", zaid, concentration))
+        isotopes.append_nuclide(("isotope_fraction", zaid, concentration))
+        isotopes.append_nuclide(("isotope_fraction", zaid, concentration))
         for combo in isotopes:
             self.assertEqual(len(combo), 2)
 
     def test_isotopes_comments(self):
         padding = syntax_node.PaddingNode(" ")
-        isotopes = syntax_node.IsotopesNode("test")
+        isotopes = syntax_node.MaterialsNode("test")
         zaid = syntax_node.ValueNode("1001.80c", str)
         zaid.padding = padding
         concentration = syntax_node.ValueNode("1.5", float)
         padding = copy.deepcopy(padding)
         padding.append("$ hi", True)
         concentration.padding = padding
-        isotopes.append(("isotope_fraction", zaid, concentration))
+        isotopes.append_nuclide(("isotope_fraction", zaid, concentration))
         comments = list(isotopes.comments)
         self.assertEqual(len(comments), 1)
         self.assertEqual(comments[0].contents, "hi")
 
     def test_isotopes_trailing_comment(self):
         padding = syntax_node.PaddingNode(" ")
-        isotopes = syntax_node.IsotopesNode("test")
+        isotopes = syntax_node.MaterialsNode("test")
         zaid = syntax_node.ValueNode("1001.80c", str)
         zaid.padding = padding
         concentration = syntax_node.ValueNode("1.5", float)
         padding = copy.deepcopy(padding)
         padding.append("c hi", True)
         concentration.padding = padding
-        isotopes.append(("isotope_fraction", zaid, concentration))
+        isotopes.append_nuclide(("isotope_fraction", zaid, concentration))
         comments = isotopes.get_trailing_comment()
         self.assertEqual(len(comments), 1)
         self.assertEqual(comments[0].contents, "hi")
@@ -1463,8 +1464,8 @@ bar
             (5, 1, 60): 80,
             (6, 1, 0): 80,
             (6, 2, 0): 128,
-            (6, 2, 3): 128,
             (6, 3, 0): 128,
+            (6, 3, 3): 128,  # Test for newer not released versions
             (7, 4, 0): 128,
         }
         for version, answer in answers.items():
@@ -1573,6 +1574,7 @@ class TestParametersNode(TestCase):
     def test_parameter_str(self):
         str(self.param)
         repr(self.param)
+        self.param._pretty_str()
 
     def test_parameter_format(self):
         self.assertEqual(self.param.format(), "vol=1.0")

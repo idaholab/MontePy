@@ -153,10 +153,10 @@ class RedundantParameterSpecification(ValueError):
         super().__init__(self.message)
 
 
-class ParticleTypeNotInProblem(ValueError):
+class ParticleTypeWarning(Warning):
     """
-    Raised when data are set for a particle type not in
-    the problem's mode.
+    Base class for incongruencies between particle types
+    in problem mode, cell importances, and tallies
     """
 
     def __init__(self, message):
@@ -164,15 +164,22 @@ class ParticleTypeNotInProblem(ValueError):
         super().__init__(message)
 
 
-class ParticleTypeNotInCell(ValueError):
+class ParticleTypeNotInProblem(ParticleTypeWarning):
+    """
+    Raised when data, such as cell importance or tally type,
+    are set for a particle type not in the problem's mode.
+    """
+
+    pass
+
+
+class ParticleTypeNotInCell(ParticleTypeWarning):
     """
     Raised when data for importance data for a particle in
     the problem is not provided for a cell.
     """
 
-    def __init__(self, message):
-        self.message = message
-        super().__init__(message)
+    pass
 
 
 class UnsupportedFeature(NotImplementedError):
