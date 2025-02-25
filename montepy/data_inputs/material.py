@@ -807,7 +807,34 @@ See <https://www.montepy.org/migrations/migrate0_1.html> for more information ""
         :raises ValueError: if the fraction is not positive or zero, or if nuclide cannot be interpreted as a Nuclide.
 
         """
-        nuclides = []
+        return self._contains_arb(
+            *nuclides, bool_func=any, threshold=threshold, strict=strict
+        )
+
+    @staticmethod
+    def _promote_nuclide(nuclide, strict):
+        if not isinstance(nuclide, (str, int, Element, Nucleus, Nuclide)):
+            raise TypeError(
+                f"Nuclide must be a type that can be converted to a Nuclide. The allowed types are: "
+                f"Nuclide, Nucleus, str, int. {nuclide} given."
+            )
+        if isinstance(nuclide, (str, int)):
+            nuclide = Nuclide(nuclide)
+        # treat elemental as element
+        if isinstance(nuclide, (Nucleus, Nuclide)) and nuclide.A == 0 and not strict:
+            nuclide = nuclide.element
+        if isinstance(nuclide, Nuclide) and not str(nuclide.library) and not strict:
+            nuclide = nuclide.nucleus
+        return nuclide
+
+    def _contains_arb(
+        self,
+        *nuclides: Union[Nuclide, Nucleus, Element, str, int],
+        bool_func: co.abc.Callable[co.abc.Iterable[bool]] = all,
+        threshold: float = 0.0,
+        strict: bool = False,
+    ) -> bool:
+        nuclide_finders = []
         if not isinstance(threshold, float):
             raise TypeError(
                 f"Threshold must be a float. {threshold} of type: {type(threshold)} given"
@@ -819,33 +846,18 @@ See <https://www.montepy.org/migrations/migrate0_1.html> for more information ""
                 f"Strict must be bool. {strict} of type: {type(strict)} given."
             )
         for nuclide in nuclides:
-            if not isinstance(nuclide, (str, int, Element, Nucleus, Nuclide)):
-                raise TypeError(
-                    f"Nuclide must be a type that can be converted to a Nuclide. The allowed types are: "
-                    f"Nuclide, Nucleus, str, int. {nuclide} given."
-                )
-            if isinstance(nuclide, (str, int)):
-                nuclide = Nuclide(nuclide)
-            # treat elemental as element
-            if (
-                isinstance(nuclide, (Nucleus, Nuclide))
-                and nuclide.A == 0
-                and not strict
-            ):
-                nuclide = nuclide.element
-            if isinstance(nuclide, Nuclide) and not str(nuclide.library) and not strict:
-                nuclide = nuclide.nucleus
-            nuclides.append(nuclide)
+            nuclide_finders.append(self._promote_nuclide(nuclide, strict))
 
         # fail fast
-        for nuclide in nuclides:
-            if nuclide not in self:
-                return False
+        if bool_func == all:
+            for nuclide in nuclide_finders:
+                if nuclide not in self and bool_func == all:
+                    return False
 
         nuclides_search = {}
         nuclei_search = {}
         element_search = {}
-        for nuclide in nuclides:
+        for nuclide in nuclide_finders:
             if isinstance(nuclide, Element):
                 element_search[nuclide] = False
             if isinstance(nuclide, Nucleus):
@@ -862,6 +874,7 @@ See <https://www.montepy.org/migrations/migrate0_1.html> for more information ""
                 nuclei_search[nuclide.nucleus] = True
             if nuclide.element in element_search:
                 element_search[nuclide.element] = True
+
         return bool_func(
             (
                 bool_func(nuclides_search.values()),
