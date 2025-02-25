@@ -692,9 +692,30 @@ See <https://www.montepy.org/migrations/migrate0_1.html> for more information ""
             nuclide = Nuclide(nuclide)
         self.append((nuclide, fraction))
 
-    def contains(
+    def contains_all(
         self,
         *nuclides: Union[Nuclide, Nucleus, Element, str, int],
+        threshold: float = 0.0,
+        strict: bool = False,
+    ) -> bool:
+        return self._contains_arb(
+            *nuclides, bool_func=all, threshold=threshold, strict=strict
+        )
+
+    def contains_any(
+        self,
+        *nuclides: Union[Nuclide, Nucleus, Element, str, int],
+        threshold: float = 0.0,
+        strict: bool = False,
+    ) -> bool:
+        return self._contains_arb(
+            *nuclides, bool_func=any, threshold=threshold, strict=strict
+        )
+
+    def _contains_arb(
+        self,
+        *nuclides: Union[Nuclide, Nucleus, Element, str, int],
+        bool_func: co.abc.Callable[co.abc.Iterable[bool]] = all,
         threshold: float = 0.0,
         strict: bool = False,
     ) -> bool:
@@ -811,11 +832,11 @@ See <https://www.montepy.org/migrations/migrate0_1.html> for more information ""
                 nuclei_search[nuclide.nucleus] = True
             if nuclide.element in element_search:
                 element_search[nuclide.element] = True
-        return all(
+        return bool_func(
             (
-                all(nuclides_search.values()),
-                all(nuclei_search.values()),
-                all(element_search.values()),
+                bool_func(nuclides_search.values()),
+                bool_func(nuclei_search.values()),
+                bool_func(element_search.values()),
             )
         )
 
