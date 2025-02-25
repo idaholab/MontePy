@@ -698,31 +698,10 @@ See <https://www.montepy.org/migrations/migrate0_1.html> for more information ""
         threshold: float = 0.0,
         strict: bool = False,
     ) -> bool:
-        return self._contains_arb(
-            *nuclides, bool_func=all, threshold=threshold, strict=strict
-        )
-
-    def contains_any(
-        self,
-        *nuclides: Union[Nuclide, Nucleus, Element, str, int],
-        threshold: float = 0.0,
-        strict: bool = False,
-    ) -> bool:
-        return self._contains_arb(
-            *nuclides, bool_func=any, threshold=threshold, strict=strict
-        )
-
-    def _contains_arb(
-        self,
-        *nuclides: Union[Nuclide, Nucleus, Element, str, int],
-        bool_func: co.abc.Callable[co.abc.Iterable[bool]] = all,
-        threshold: float = 0.0,
-        strict: bool = False,
-    ) -> bool:
         """
-        Checks if this material contains multiple nuclides.
+        Checks if this material contains of all of the given nuclides.
 
-        A boolean and is used for this comparison.
+        A boolean "and" is used for this comparison.
         That is this material must contain all nuclides at or above the given threshold
         in order to return true.
 
@@ -736,18 +715,13 @@ See <https://www.montepy.org/migrations/migrate0_1.html> for more information ""
 
             # try to find LEU materials
             for mat in problem.materials:
-                if mat.contains("U-235", threshold=0.02):
+                if mat.contains_all("U-235", threshold=0.02):
                     # your code here
-                    pass
-
-            # try to find any fissile materials
-            for mat in problem.materials:
-                if mat.contains("U-235", "U-233", "Pu-239", threshold=1e-6):
                     pass
 
             # try to find a uranium
             for mat in problem.materials:
-                if mat.contains("U"):
+                if mat.contains_all("U"):
                     pass
 
         .. note::
@@ -761,7 +735,63 @@ See <https://www.montepy.org/migrations/migrate0_1.html> for more information ""
 
         .. versionadded:: 1.0.0
 
-        :param nuclides: a plurality of other nuclides to check for.
+        :param nuclides: a plurality of nuclides to check for.
+        :type nuclides: Union[Nuclide, Nucleus, Element, str, int]
+        :param threshold: the minimum concentration of a nuclide to be considered. The material components are not
+            first normalized.
+        :type threshold: float
+        :param strict: If True this does not let an elemental nuclide match all child isotopes, isomers, nor will an isotope
+            match all isomers, nor will a blank library match all libraries.
+        :type strict: bool
+
+        :return: whether or not this material contains all components given above the threshold.
+        :rtype: bool
+
+        :raises TypeError: if any argument is of the wrong type.
+        :raises ValueError: if the fraction is not positive or zero, or if nuclide cannot be interpreted as a Nuclide.
+
+        """
+        return self._contains_arb(
+            *nuclides, bool_func=all, threshold=threshold, strict=strict
+        )
+
+    def contains_any(
+        self,
+        *nuclides: Union[Nuclide, Nucleus, Element, str, int],
+        threshold: float = 0.0,
+        strict: bool = False,
+    ) -> bool:
+        """
+        Checks if this material contains any of the given nuclide.
+
+        A boolean "or" is used for this comparison.
+        That is this material must contain all nuclides at or above the given threshold
+        in order to return true.
+
+        Examples
+        ^^^^^^^^
+
+        .. testcode::
+
+            import montepy
+            problem = montepy.read_input("tests/inputs/test.imcnp")
+
+            # try to find any fissile materials
+            for mat in problem.materials:
+                if mat.contains_any("U-235", "U-233", "Pu-239", threshold=1e-6):
+                    pass
+        .. note::
+
+            For details on how to use the ``strict`` argument see the examples in: :func:`find`.
+
+        .. note::
+
+            If a nuclide is in a material multiple times, and cumulatively exceeds the threshold,
+            but for each instance it appears it is below the threshold this method will return False.
+
+        .. versionadded:: 1.0.0
+
+        :param nuclides: a plurality of nuclides to check for.
         :type nuclides: Union[Nuclide, Nucleus, Element, str, int]
         :param threshold: the minimum concentration of a nuclide to be considered. The material components are not
             first normalized.
