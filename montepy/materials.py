@@ -32,14 +32,7 @@ class Materials(NumberedDataObjectCollection):
 
     def get_containing(
         self,
-        nuclide: Union[
-            montepy.data_inputs.nuclide.Nuclide,
-            montepy.data_inputs.nuclide.Nucleus,
-            montepy.Element,
-            str,
-            int,
-        ],
-        *args: Union[
+        *nuclides: Union[
             montepy.data_inputs.nuclide.Nuclide,
             montepy.data_inputs.nuclide.Nucleus,
             montepy.Element,
@@ -72,10 +65,8 @@ class Materials(NumberedDataObjectCollection):
 
         .. versionadded:: 1.0.0
 
-        :param nuclide: the first nuclide to check for.
-        :type nuclide: Union[Nuclide, Nucleus, Element, str, int]
-        :param args: a plurality of other nuclides to check for.
-        :type args: Union[Nuclide, Nucleus, Element, str, int]
+        :param nuclides: a plurality of other nuclides to check for.
+        :type nuclides: Union[Nuclide, Nucleus, Element, str, int]
         :param threshold: the minimum concentration of a nuclide to be considered. The material components are not
             first normalized.
         :type threshold: float
@@ -86,8 +77,10 @@ class Materials(NumberedDataObjectCollection):
         :raises TypeError: if any argument is of the wrong type.
         :raises ValueError: if the fraction is not positive or zero, or if nuclide cannot be interpreted as a Nuclide.
         """
+        # TODO collision here
+        # TODO other type enforcement
         nuclides = []
-        for nuclide in [nuclide] + list(args):
+        for nuclide in nuclides:
             if not isinstance(
                 nuclide,
                 (

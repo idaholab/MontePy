@@ -694,8 +694,7 @@ See <https://www.montepy.org/migrations/migrate0_1.html> for more information ""
 
     def contains(
         self,
-        nuclide: Union[Nuclide, Nucleus, Element, str, int],
-        *args: Union[Nuclide, Nucleus, Element, str, int],
+        *nuclides: Union[Nuclide, Nucleus, Element, str, int],
         threshold: float = 0.0,
         strict: bool = False,
     ) -> bool:
@@ -741,10 +740,8 @@ See <https://www.montepy.org/migrations/migrate0_1.html> for more information ""
 
         .. versionadded:: 1.0.0
 
-        :param nuclide: the first nuclide to check for.
-        :type nuclide: Union[Nuclide, Nucleus, Element, str, int]
-        :param args: a plurality of other nuclides to check for.
-        :type args: Union[Nuclide, Nucleus, Element, str, int]
+        :param nuclides: a plurality of other nuclides to check for.
+        :type nuclides: Union[Nuclide, Nucleus, Element, str, int]
         :param threshold: the minimum concentration of a nuclide to be considered. The material components are not
             first normalized.
         :type threshold: float
@@ -760,7 +757,17 @@ See <https://www.montepy.org/migrations/migrate0_1.html> for more information ""
 
         """
         nuclides = []
-        for nuclide in [nuclide] + list(args):
+        if not isinstance(threshold, float):
+            raise TypeError(
+                f"Threshold must be a float. {threshold} of type: {type(threshold)} given"
+            )
+        if threshold < 0.0:
+            raise ValueError(f"Threshold must be positive or zero. {threshold} given.")
+        if not isinstance(strict, bool):
+            raise TypeError(
+                f"Strict must be bool. {strict} of type: {type(strict)} given."
+            )
+        for nuclide in nuclides:
             if not isinstance(nuclide, (str, int, Element, Nucleus, Nuclide)):
                 raise TypeError(
                     f"Nuclide must be a type that can be converted to a Nuclide. The allowed types are: "
@@ -778,17 +785,6 @@ See <https://www.montepy.org/migrations/migrate0_1.html> for more information ""
             if isinstance(nuclide, Nuclide) and not str(nuclide.library) and not strict:
                 nuclide = nuclide.nucleus
             nuclides.append(nuclide)
-
-        if not isinstance(threshold, float):
-            raise TypeError(
-                f"Threshold must be a float. {threshold} of type: {type(threshold)} given"
-            )
-        if threshold < 0.0:
-            raise ValueError(f"Threshold must be positive or zero. {threshold} given.")
-        if not isinstance(strict, bool):
-            raise TypeError(
-                f"Strict must be bool. {strict} of type: {type(strict)} given."
-            )
 
         # fail fast
         for nuclide in nuclides:
