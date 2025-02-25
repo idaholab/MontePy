@@ -40,6 +40,7 @@ class Materials(NumberedDataObjectCollection):
             int,
         ],
         threshold: float = 0.0,
+        strict: bool = False,
     ) -> Generator[Material]:
         """
         Get all materials that contain these nuclides.
@@ -70,6 +71,9 @@ class Materials(NumberedDataObjectCollection):
         :param threshold: the minimum concentration of a nuclide to be considered. The material components are not
             first normalized.
         :type threshold: float
+        :param strict: If True this does not let an elemental nuclide match all child isotopes, isomers, nor will an isotope
+            match all isomers, nor will a blank library match all libraries.
+        :type strict: bool
 
         :return: A generator of all matching materials
         :rtype: Generator[Material]
@@ -110,7 +114,7 @@ class Materials(NumberedDataObjectCollection):
         # optimize by most hashable and fail fast
         nuclides = sorted(nuclides, key=sort_by_type)
         for material in self:
-            if material.contains(*nuclides, threshold=threshold):
+            if material.contains(*nuclides, threshold=threshold, strict=strict):
                 # maybe? Maybe not?
                 # should Materials act like a set?
                 yield material

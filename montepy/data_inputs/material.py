@@ -745,8 +745,8 @@ See <https://www.montepy.org/migrations/migrate0_1.html> for more information ""
         :param threshold: the minimum concentration of a nuclide to be considered. The material components are not
             first normalized.
         :type threshold: float
-        :param strict: Whether to not let an elemental nuclide match all child isotopes, isomers, not have an isotope
-            match all isomers, nor have a blank library match all libraries.
+        :param strict: If True this does not let an elemental nuclide match all child isotopes, isomers, nor will an isotope
+            match all isomers, nor will a blank library match all libraries.
         :type strict: bool
 
         :return: whether or not this material contains all components given above the threshold.
