@@ -270,32 +270,41 @@ class TestMaterial:
     def test_material_contains(_, big_material, content, strict, is_in):
         if not strict:
             assert is_in == (content in big_material), "Contains didn't work properly"
-        assert is_in == big_material.contains(content, strict=strict)
+        assert is_in == big_material.contains_all(content, strict=strict)
+        assert is_in == big_material.contains_any(content, strict=strict)
         with pytest.raises(TypeError):
             5 in big_material
         with pytest.raises(TypeError):
-            big_material.contains("H", strict=5)
+            big_material.contains_all("H", strict=5)
+        with pytest.raises(TypeError):
+            big_material.contains_any("H", strict=5)
 
     def test_material_multi_contains(_, big_material):
-        assert big_material.contains("1001", "U-235", "Pu-239", threshold=0.01)
-        assert not big_material.contains(
+        # contains all
+        assert big_material.contains_all("1001", "U-235", "Pu-239", threshold=0.01)
+        assert not big_material.contains_all(
             "1001", "U-235", "Pu-239", threshold=0.01, strict=True
         )
-        assert not big_material.contains("1001", "U-235", "Pu-239", threshold=0.07)
-        assert not big_material.contains("U-235", "B-10")
+        assert not big_material.contains_all("1001", "U-235", "Pu-239", threshold=0.07)
+        assert not big_material.contains_all("U-235", "B-10")
+        # contains any
+        assert not big_material.contains_any("C", "B", "F")
+        print("sadness")
+        assert big_material.contains_any("h-1", "C", "B")
 
     def test_material_contains_bad(_):
         mat = Material()
-        with pytest.raises(TypeError):
-            mat.contains(mat)
-        with pytest.raises(TypeError):
-            mat.contains("1001", mat)
-        with pytest.raises(ValueError):
-            mat.contains("hi")
-        with pytest.raises(TypeError):
-            mat.contains("1001", threshold="hi")
-        with pytest.raises(ValueError):
-            mat.contains("1001", threshold=-1.0)
+        for method in [mat.contains_all, mat.contains_any]:
+            with pytest.raises(TypeError):
+                method(mat)
+            with pytest.raises(TypeError):
+                method("1001", mat)
+            with pytest.raises(ValueError):
+                method("hi")
+            with pytest.raises(TypeError):
+                method("1001", threshold="hi")
+            with pytest.raises(ValueError):
+                method("1001", threshold=-1.0)
 
     def test_material_normalize(_, big_material):
         # make sure it's not an invalid starting condition
