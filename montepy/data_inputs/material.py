@@ -1178,7 +1178,7 @@ See <https://www.montepy.org/migrations/migrate0_1.html> for more information ""
         :type meta_state: int, slice
         :param library: the libraries to limit the search to.
         :type library: str, slice
-        :param strict: whether to strictly match elements as only elements (when no A is given), and only match blank
+        :param strict: When true this will strictly match elements as only elements (when no A is given), and only match blank
             libraries when no library is given.
         :type strict: bool
 
