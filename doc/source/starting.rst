@@ -409,14 +409,15 @@ For surfaces this is: :func:`~montepy.surfaces.surface_builder.parse_surface`,
 and for data inputs this is :func:`~montepy.data_inputs.data_parser.parse_data`.
 
 .. doctest::
+
    >>> surf = montepy.parse_surface("1 cz 5.0")
    >>> type(surf)
-   foo
+   <class 'montepy.surfaces.cylinder_on_axis.CylinderOnAxis'>
    >>> surf.radius
    5.0
    >>> mat = montepy.parse_data("m1 1001.80c 1")
    >>> type(mat)
-   foo
+   <class 'montepy.data_inputs.material.Material'>
 
 
 This object is still unlinked from other objects, and won't be kept with a problem.
@@ -1019,21 +1020,28 @@ on the element, not just the elemental nuclide.
     >>> montepy.Nuclide("B-0") in mat
     True
 
-For more complicated checks there is the :func:`~montepy.data_inputs.material.Material.contains`.
-This takes a plurality of nuclides as well as a threshold.
-This returns ``True`` if and only if the material contains *all* nuclides
+For more complicated checks there is the :func:`~montepy.data_inputs.material.Material.contains_all`, and 
+:func:`~montepy.data_inputs.material.Material.contains_any`.
+These functions take a plurality of nuclides as well as a threshold.
+The function ``contains_all`` returns ``True`` if and only if the material contains *all* nuclides
+with a fraction above the threshold.
+The function ``contains_any`` returns ``True`` if any of the material contains *any* nuclides
 with a fraction above the threshold.
 
 .. doctest::
 
-    >>> mat.contains("H-1.80c")
+    >>> mat.contains_all("H-1.80c")
     False
-    >>> mat.contains("U-235", "U-238", threshold=1.0)
+    >>> mat.contains_all("U-235", "U-238", threshold=1.0)
     True
-    >>> mat.contains("U-235.80c", "B-10")
+    >>> mat.contains_all("U-235.80c", "B-10")
     True
-    >>> mat.contains("U-235.80c", "B-10", threshold=1e-3)
+    >>> mat.contains_all("U-235.80c", "B-10", threshold=1e-3)
     False
+    >>> mat.contains_all("H-1.80c", "U-235.80c")
+    False
+    >>> mat.contains_any("H-1.80c", "U-235.80c")
+    True
 
 Finding Nuclides
 """"""""""""""""

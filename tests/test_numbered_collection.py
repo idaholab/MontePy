@@ -736,13 +736,30 @@ class TestMaterials:
             (("B",), 1.0, 0),
         ],
     )
-    def test_get_containing(_, m0_prob, nuclides, threshold, num):
-        ret = list(m0_prob.materials.get_containing(*nuclides, threshold=threshold))
+    def test_get_containing_all(_, m0_prob, nuclides, threshold, num):
+        ret = list(m0_prob.materials.get_containing_all(*nuclides, threshold=threshold))
         assert len(ret) == num
         for mat in ret:
             assert isinstance(mat, montepy.Material)
         with pytest.raises(TypeError):
-            next(m0_prob.materials.get_containing(m0_prob))
+            next(m0_prob.materials.get_containing_all(m0_prob))
+
+    @pytest.mark.parametrize(
+        "nuclides, threshold, num",
+        [
+            (("26054", "26056"), 1.0, 1),
+            ((montepy.Nuclide("H-1"),), 0.0, 1),
+            (("B",), 1.0, 0),
+            (("U-235", "H-1"), 0.0, 2),
+        ],
+    )
+    def test_get_containing_any(_, m0_prob, nuclides, threshold, num):
+        ret = list(m0_prob.materials.get_containing_any(*nuclides, threshold=threshold))
+        assert len(ret) == num
+        for mat in ret:
+            assert isinstance(mat, montepy.Material)
+        with pytest.raises(TypeError):
+            next(m0_prob.materials.get_containing_any(m0_prob))
 
     @pytest.fixture
     def h2o(_):
