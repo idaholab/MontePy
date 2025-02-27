@@ -199,6 +199,33 @@ class MCNP_Parser(Parser, metaclass=MetaBuilder):
                 sequence.append(p[1])
         return sequence
 
+    @_(
+        "numerical_phrase numerical_phrase",
+        "shortcut_phrase",
+        "even_number_sequence numerical_phrase numerical_phrase",
+        "even_number_sequence shortcut_phrase",
+    )
+    def even_number_sequence(self, p):
+        """
+        A list of numbers with an even number of elements*.
+
+        * shortcuts will break this.
+        """
+        if not hasattr(p, "even_number_sequence"):
+            sequence = syntax_node.ListNode("number sequence")
+            if type(p[0]) == syntax_node.ListNode:
+                return p[0]
+            sequence.append(p[0])
+        else:
+            sequence = p[0]
+        if type(p[1]) == syntax_node.ListNode:
+            for node in p[1].nodes:
+                sequence.append(node)
+        else:
+            for idx in range(1, len(p)):
+                sequence.append(p[idx])
+        return sequence
+
     @_("number_phrase", "null_phrase")
     def numerical_phrase(self, p):
         """
