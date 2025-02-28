@@ -61,6 +61,21 @@ class Particle(str, Enum):
         return hash(self.value)
 
 
+_p = Particle
+_NEG_PARTICLES = {
+    _p.NEUTRON: _p.ANTI_NEUTRON,
+    _p.POSITIVE_SIGMA_BARYON: _p.ANTI_POSITIVE_SIGMA_BARYON,
+    _p.NEGATIVE_SIGMA_BARYON: _p.ANTI_NEGATIVE_SIGMA_BARYON,
+    _p.CASCADE: _p.ANTI_CASCADE,
+    _p.ELECTRON_NEUTRINO: _p.ANTI_ELECTRON_NEUTRINO,
+    _p.MUON_NEUTRINO: _p.ANTI_MUON_NEUTRINO,
+    _p.PROTON: _p.ANTI_PROTON,
+    _p.LAMBDA_BARYON: _p.ANTI_LAMBDA_BARYON,
+    _p.OMEGA_BARYON: _p.ANTI_OMEGA,
+}
+_NEG_PARTICLES |= {child: parent for parent, child in _NEG_PARTICLES.items()}
+
+
 @unique
 class LibraryType(str, Enum):
     """
