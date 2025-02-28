@@ -1,7 +1,7 @@
 # Copyright 2024, Battelle Energy Alliance, LLC All Rights Reserved.
-from hypothesis import given, strategies as st, settings, HealthCheck
+from hypothesis import assume, given, note, strategies as st, settings, HealthCheck
+import pathlib
 import pytest
-from hypothesis import assume, given, note, strategies as st
 
 import montepy
 
@@ -88,6 +88,19 @@ class TestMaterial:
         ):
             assert iter_key == item_key
             assert big_mat_lib.default_libraries[iter_key] == item_val
+
+    def test_mat_clear(_, big_mat_lib):
+        old_mat = big_mat_lib.clone()
+        old_len = len(big_mat_lib)
+        assert old_len > 0
+        big_mat_lib.clear()
+        assert 0 == len(big_mat_lib)
+        for part in old_mat.default_libraries:
+            assert (
+                old_mat.default_libraries[part] == big_mat_lib.default_libraries[part]
+            )
+        big_mat_lib.add_nuclide("O-16.80c", 1.0)
+        _.verify_export(big_mat_lib)
 
     def test_mat_get_nuclide_library_bad(_, big_mat_lib):
         with pytest.raises(TypeError):
@@ -403,6 +416,21 @@ Pu-239   (80c) 0.1
             big_material.add_nuclide(Nuclide(element=Element(i)), 0.123)
         str(big_material)
         repr(big_material)
+
+    @pytest.mark.parametrize("file", ["test.imcnp", "pin_cell.imcnp"])
+    def test_read_add_write(_, file):
+        problem = montepy.read_input(pathlib.Path("tests") / "inputs" / file)
+        mat = problem.materials[2]
+        mat.add_nuclide("O-16.80c", 0.3)
+        try:
+            out_file = f"mat_read_write_21ij43werr{file}"
+            problem.write_problem(out_file)
+            with open(out_file, "r") as fh:
+                for line in fh:
+                    print(line.rstrip())
+            new_problem = montepy.read_input(out_file)
+        finally:
+            pathlib.Path(out_file).unlink(True)
 
     @pytest.mark.parametrize(
         "line, mat_number, is_atom, fractions",
