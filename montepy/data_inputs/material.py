@@ -286,6 +286,7 @@ class Material(data_input.DataInputAbstract, Numbered_MCNP_Object):
     """
 
     _parser = MaterialParser()
+    _NEW_LINE_STR = "\n" + " " * DEFAULT_INDENT
 
     def __init__(
         self,
@@ -372,6 +373,7 @@ class Material(data_input.DataInputAbstract, Numbered_MCNP_Object):
 
         This is called from _DefaultLibraries.
         """
+        self._ensure_has_ending_padding()
         self._tree["data"].append_param(node)
 
     def _delete_param_lib(self, node: syntax_node.SyntaxNode):
@@ -643,14 +645,40 @@ See <https://www.montepy.org/migrations/migrate0_1.html> for more information ""
         self._nuclei.add(nuclide_frac_pair[0].nucleus)
         # node for fraction
         node = self._generate_default_node(
-            float, str(nuclide_frac_pair[1]), "\n" + " " * DEFAULT_INDENT
+            float, str(nuclide_frac_pair[1]), self._NEW_LINE_STR
         )
         syntax_node.ValueNode(str(nuclide_frac_pair[1]), float)
         node.is_negatable_float = True
         nuclide_frac_pair = (nuclide_frac_pair[0], node)
         node.is_negative = not self._is_atom_fraction
         self._components.append(nuclide_frac_pair)
+        self._ensure_has_ending_padding()
         self._tree["data"].append_nuclide(("_", nuclide_frac_pair[0]._tree, node))
+
+    def _ensure_has_ending_padding(self):
+        def get_last_val_node():
+            last_vals = self._tree["data"].nodes[-1][-1]
+            if isinstance(last_vals, syntax_node.ValueNode):
+                return last_vals
+            return last_vals["data"]
+
+        if len(self._tree["data"]) == 0:
+            return
+        padding = get_last_val_node().padding
+
+        def add_new_line_padding():
+            if padding is None:
+                get_last_val_node().padding = syntax_node.PaddingNode(
+                    self._NEW_LINE_STR
+                )
+            else:
+                padding.append(self._NEW_LINE_STR)
+
+        if padding:
+            padding.check_for_graveyard_comments(True)
+            add_new_line_padding()
+        else:
+            add_new_line_padding()
 
     def change_libraries(self, new_library: Union[str, Library]):
         """
