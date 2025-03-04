@@ -80,7 +80,7 @@ class _DefaultLibraries:
         self._parent()._delete_param_lib(node)
 
     def __str__(self):
-        return str(self._libraries)
+        return "\n".join([f"{key} = {value}" for key, value in self.items()])
 
     def __iter__(self):
         return iter(self._libraries)
