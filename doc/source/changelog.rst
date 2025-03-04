@@ -25,6 +25,7 @@ MontePy Changelog
 * An error is now raised when typos in object attributes are used, e.g., ``cell.nubmer`` (:issue:`508`).
 * Warnings are no longer raised for comments that exceed the maximum line lengths (:issue:`188`).
 * Particle type exceptions are now warnings, not errors (:issue:`381`).
+* Added :func:`~montepy.data_inputs.material.Material.clear` to ``Material`` to clear out all nuclides (:issue:`665`).
 
 
 **Bugs Fixed**
