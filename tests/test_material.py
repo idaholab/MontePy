@@ -582,7 +582,7 @@ Pu-239   (80c) 0.1
             assert old_nuc == new_nuc, "Material didn't preserve nuclides."
             assert old_frac == pytest.approx(new_frac)
         for (old_type, old_lib), (new_type, new_lib) in zip(
-            mat.default_libraries, new_mat.default_libraries
+            mat.default_libraries.items(), new_mat.default_libraries.items()
         ):
             assert old_type == new_type
             assert old_lib == new_lib
