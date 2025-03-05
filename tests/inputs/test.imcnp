@@ -40,8 +40,8 @@ m1        92235.80c           5 &
 C Iron
 m2        26054.80c        5.85
 	  plib= 80p
-          26056.80c       91.75
-          26057.80c        2.12 $ very very very very very very very very very very very very very very long line that exceeds line limit
+          26056           91.75
+          26057        2.12 $ very very very very very very very very very very very very very very long line that exceeds line limit
           26058.80c        0.28 $ trailing comment shouldn't move #458.
 C water
 C foo
