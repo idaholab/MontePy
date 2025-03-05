@@ -138,12 +138,9 @@ class TestValueNode(TestCase):
         node.is_negative = True
         self.assertIsNone(node.is_negative)
 
-    def test_valuenode_int_format(self):
-        node = syntax_node.ValueNode("-1", int)
-        answer = "-1"
-        output = node.format()
-        self.assertEqual(output, answer)
-        for input, val, answer, expand in [
+    @pytest.mark.parametrize(
+        "token, val, answer, expand",
+        [
             ("1", 5, "5", False),
             (1, 5, "5", False),
             ("-1", 2, " 2", False),
@@ -151,43 +148,52 @@ class TestValueNode(TestCase):
             ("+1", 5, "+5", False),
             ("0001", 5, "0005", False),
             (Jump(), 5, "5 ", False),
-        ]:
-            print("in:", input, "new value:", val, "answer:", answer)
-            node = syntax_node.ValueNode(input, int)
-            node.value = val
-            self.assertEqual(node.format(), answer)
-            node = syntax_node.ValueNode(input, int)
-            node.is_negatable_identifier = True
-            node.value = val
-            node.is_negative = val < 0
-            if expand:
-                with self.assertWarns(LineExpansionWarning):
-                    self.assertEqual(node.format(), answer)
-            else:
-                self.assertEqual(node.format(), answer)
-        # test messing around with padding
-        for padding, val, answer, expand in [
+        ],
+    )
+    def test_valuenode_int_format(_, token, val, answer, expand):
+        node = syntax_node.ValueNode("-1", int)
+        answer = "-1"
+        output = node.format()
+        assert output == answer
+        node = syntax_node.ValueNode(token, int)
+        node.value = val
+        assert node.format() == answer
+        node = syntax_node.ValueNode(token, int)
+        node.is_negatable_identifier = True
+        node.value = val
+        node.is_negative = val < 0
+        if expand:
+            with pytest.warns(LineExpansionWarning):
+                assert node.format() == answer
+        else:
+            assert node.format() == answer
+
+    @pytest.mark.parametrize(
+        "padding, val, answer, expand",
+        [
             ([" "], 10, "10 ", True),
             (["  "], 10, "10 ", False),
             (["\n"], 10, "10\n", False),
             ([" ", "\n", "c hi"], 10, "10\nc hi", False),
+            ([" ", "\n", "c hi"], 100, "100\nc hi", False),
             (["  ", "\n"], 10, "10 \n", False),
-        ]:
-            print("padding", padding, "new_val", val, "answer", repr(answer))
-            pad_node = syntax_node.PaddingNode(padding[0])
-            for pad in padding[1:]:
-                pad_node.append(pad)
-            node = syntax_node.ValueNode("1", int, pad_node)
-            node.value = val
-            if expand:
-                warnings.simplefilter("default")
-                with self.assertWarns(LineExpansionWarning):
-                    self.assertEqual(node.format(), answer)
-            else:
-                # change warnings to errors to ensure not raised
-                warnings.resetwarnings()
-                warnings.simplefilter("error")
-                self.assertEqual(node.format(), answer)
+        ],
+    )
+    def test_value_node_format_padding(self, padding, val, answer, expand):
+        pad_node = syntax_node.PaddingNode(padding[0])
+        for pad in padding[1:]:
+            pad_node.append(pad)
+        node = syntax_node.ValueNode("1", int, pad_node)
+        node.value = val
+        if expand:
+            warnings.simplefilter("default")
+            with pytest.warns(LineExpansionWarning):
+                assert node.format() == answer
+        else:
+            # change warnings to errors to ensure not raised
+            warnings.resetwarnings()
+            warnings.simplefilter("error")
+            assert node.format() == answer
 
     def test_value_has_changed(self):
         # test None no change
