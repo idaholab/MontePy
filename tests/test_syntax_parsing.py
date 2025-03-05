@@ -169,7 +169,7 @@ class TestValueNode(TestCase):
         for padding, val, answer, expand in [
             ([" "], 10, "10 ", True),
             (["  "], 10, "10 ", False),
-            (["\n"], 10, "10\n", True),
+            (["\n"], 10, "10\n", False),
             ([" ", "\n", "c hi"], 10, "10\nc hi", False),
             (["  ", "\n"], 10, "10 \n", False),
         ]:
