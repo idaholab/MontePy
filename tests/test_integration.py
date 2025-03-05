@@ -1154,6 +1154,8 @@ _SKIP_LINES = {
 )
 def test_read_write_cycle(file):
     print(f"Testing against {file} *********************")
+    if ".swp" in file.suffixes:
+        return
     problem = montepy.read_input(file)
     SKIPPERS = _SKIP_LINES.get(str(file), {})
     fh = io.StringIO()
