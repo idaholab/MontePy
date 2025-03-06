@@ -827,7 +827,7 @@ See <https://www.montepy.org/migrations/migrate0_1.html> for more information ""
     def _contains_arb(
         self,
         *nuclides: Union[Nuclide, Nucleus, Element, str, int],
-        bool_func: co.abc.Callable[co.abc.Iterable[bool]] = all,
+        bool_func: co.abc.Callable[co.abc.Iterable[bool]] = None,
         threshold: float = 0.0,
         strict: bool = False,
     ) -> bool:
