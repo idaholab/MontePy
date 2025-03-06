@@ -151,9 +151,8 @@ class TestValueNode:
     )
     def test_valuenode_int_format(_, token, val, answer, expand):
         node = syntax_node.ValueNode("-1", int)
-        answer = "-1"
         output = node.format()
-        assert output == answer
+        assert output == "-1"
         node = syntax_node.ValueNode(token, int)
         node.value = val
         assert node.format() == answer
@@ -234,7 +233,8 @@ class TestValueNode:
                 # change warnings to errors to ensure not raised
                 warnings.resetwarnings()
                 warnings.simplefilter("error")
-                assert node.format == answer
+                assert node.format() == answer
+
         for padding, val, answer, expand in [
             ([" "], 10, "10.0 ", True),
             (["  "], 10, "10.0 ", False),
@@ -330,7 +330,7 @@ class TestValueNode:
                 # change warnings to errors to ensure not raised
                 warnings.resetwarnings()
                 warnings.simplefilter("error")
-                assert node.format == answer
+                assert node.format() == answer
 
     def test_value_comments(self):
         value_node = syntax_node.ValueNode("1", int)
@@ -643,7 +643,7 @@ class TestParticlesNode:
         assert parts.particles == answers
         assert len(list(parts.comments)) == 0
         for part in parts:
-            assert part == answers
+            assert part in answers
         answers = [particle.NEUTRON, particle.PHOTON, particle.ELECTRON]
         assert parts._particles_sorted == answers
 
@@ -679,7 +679,7 @@ class TestParticlesNode:
         parts._particles.remove(particle.NEUTRON)
         assert particle.NEUTRON not in parts._particles_sorted
         parts._particles.add(particle.TRITON)
-        assert particle.TRITON == parts._particles_sorted
+        assert particle.TRITON in parts._particles_sorted
 
     def test_particles_format(self):
         parts = syntax_node.ParticleNode("test", "n,p,e")
