@@ -36,6 +36,8 @@ This is used for adding new material components.
 By default all components made from scratch are added to their own line with this many leading spaces.
 """
 
+NuclideLike = Union[Nuclide, Nucleus, Element, str, int]
+
 
 class _DefaultLibraries:
     """
@@ -603,7 +605,7 @@ See <https://www.montepy.org/migrations/migrate0_1.html> for more information ""
         del self._components[idx]
 
     def __contains__(self, nuclide):
-        if not isinstance(nuclide, (Nuclide, Nucleus, Element, str)):
+        if not isinstance(nuclide, NuclideLike):
             raise TypeError(
                 f"Can only check if a Nuclide, Nucleus, Element, or str is in a material. {nuclide} given."
             )
@@ -669,7 +671,7 @@ See <https://www.montepy.org/migrations/migrate0_1.html> for more information ""
         for nuclide, _ in self:
             nuclide.library = new_library
 
-    def add_nuclide(self, nuclide: Union[Nuclide, str, int], fraction: float):
+    def add_nuclide(self, nuclide: NuclideLike, fraction: float):
         """
         Add a new component to this material of the given nuclide, and fraction.
 
@@ -684,17 +686,12 @@ See <https://www.montepy.org/migrations/migrate0_1.html> for more information ""
             raise TypeError(
                 f"Nuclide must of type Nuclide, str, or int. {nuclide} of type {type(nuclide)} given."
             )
-        if not isinstance(fraction, (float, int)):
-            raise TypeError(
-                f"Fraction must be a numerical value. {fraction} of type {type(fraction)}"
-            )
-        if isinstance(nuclide, (str, int)):
-            nuclide = Nuclide(nuclide)
+        nuclide = self._promote_nuclide(nuclide, False)
         self.append((nuclide, fraction))
 
     def contains_all(
         self,
-        *nuclides: Union[Nuclide, Nucleus, Element, str, int],
+        *nuclides: NuclideLike,
         threshold: float = 0.0,
         strict: bool = False,
     ) -> bool:
@@ -757,7 +754,7 @@ See <https://www.montepy.org/migrations/migrate0_1.html> for more information ""
 
     def contains_any(
         self,
-        *nuclides: Union[Nuclide, Nucleus, Element, str, int],
+        *nuclides: NuclideLike,
         threshold: float = 0.0,
         strict: bool = False,
     ) -> bool:
@@ -813,7 +810,7 @@ See <https://www.montepy.org/migrations/migrate0_1.html> for more information ""
 
     @staticmethod
     def _promote_nuclide(nuclide, strict):
-        if not isinstance(nuclide, (str, int, Element, Nucleus, Nuclide)):
+        if not isinstance(nuclide, NuclideLike):
             raise TypeError(
                 f"Nuclide must be a type that can be converted to a Nuclide. The allowed types are: "
                 f"Nuclide, Nucleus, str, int. {nuclide} given."
