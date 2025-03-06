@@ -49,7 +49,7 @@ class MaterialParser(DataParser):
             new_list.append(("foo", *group))
         return new_list
 
-    @_("isotope_fraction", "number_sequence", "parameter", "mat_parameter")
+    @_("isotope_fraction", "even_number_sequence", "parameter", "mat_parameter")
     def mat_datum(self, p):
         return p[0]
 

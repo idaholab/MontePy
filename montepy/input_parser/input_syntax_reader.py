@@ -15,7 +15,7 @@ from montepy.input_parser.read_parser import ReadParser
 from montepy.utilities import is_comment
 
 
-reading_queue = []
+reading_queue = deque()
 
 
 def read_input_syntax(input_file, mcnp_version=DEFAULT_VERSION, replace=True):
