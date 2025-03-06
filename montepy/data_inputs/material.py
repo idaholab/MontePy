@@ -765,7 +765,7 @@ See <https://www.montepy.org/migrations/migrate0_1.html> for more information ""
         Checks if this material contains any of the given nuclide.
 
         A boolean "or" is used for this comparison.
-        That is this material must contain all nuclides at or above the given threshold
+        That is, this material must contain any nuclides at or above the given threshold
         in order to return true.
 
         Examples
@@ -786,7 +786,7 @@ See <https://www.montepy.org/migrations/migrate0_1.html> for more information ""
 
         .. note::
 
-            If a nuclide is in a material multiple times, and cumulatively exceeds the threshold,
+            If a nuclide (or element) is in a material multiple times, and cumulatively exceeds the threshold,
             but for each instance it appears it is below the threshold this method will return False.
 
         .. versionadded:: 1.0.0
