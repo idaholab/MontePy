@@ -251,6 +251,7 @@ class TestMaterial:
         "content, strict, is_in",
         [
             ("1001.80c", False, True),
+            (1001, False, True),
             ("H-1", False, True),
             (Element(1), False, True),
             (Nucleus(Element(1), 1), False, True),
@@ -273,7 +274,7 @@ class TestMaterial:
         assert is_in == big_material.contains_all(content, strict=strict)
         assert is_in == big_material.contains_any(content, strict=strict)
         with pytest.raises(TypeError):
-            5 in big_material
+            {} in big_material
         with pytest.raises(TypeError):
             big_material.contains_all("H", strict=5)
         with pytest.raises(TypeError):
