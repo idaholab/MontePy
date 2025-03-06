@@ -1407,44 +1407,21 @@ bar
                     answer["classifier"]
                 )
 
-    def testDataInputNameEnforcement(self):
-        tests = {
-            "kcOde5": {"prefix": "kcode", "number": False, "classifier": 0},
-            "M-300": {"prefix": "m", "number": True, "classifier": 0},
-            "M": {"prefix": "m", "number": True, "classifier": 0},
-            "f4m": {"prefix": "fm", "number": True, "classifier": 1},
-            "IMP:N,P,E": {"prefix": "imp", "number": False, "classifier": 0},
-            "IMP": {"prefix": "imp", "number": False, "classifier": 2},
-        }
-        valid = {
-            "IMP:N,P,E": {"prefix": "imp", "number": False, "classifier": 2},
-            "F1004:n,P": {"prefix": "f", "number": True, "classifier": 1},
-        }
-        # tests invalid names
-        for in_str, answer in tests.items():
-            with pytest.raises(montepy.errors.MalformedInputError):
-                card = montepy.input_parser.mcnp_input.Input(
-                    [in_str], montepy.input_parser.block_type.BlockType.DATA
-                )
-                Fixture = DataInputTestFixture
-                Fixture._class_prefix1 = answer["prefix"]
-                Fixture._has_number1 = answer["number"]
-                Fixture._has_classifier1 = answer["classifier"]
-                card = Fixture(card)
-
-        # tests valid names
-        for in_str, answer in valid.items():
+    @pytest.mark.parametrize(
+        "in_str, answer",
+        [
+            ("kcOde5", {"prefix": "kcode", "number": False, "classifier": 0}),
+            ("M-300", {"prefix": "m", "number": True, "classifier": 0}),
+            ("M", {"prefix": "m", "number": True, "classifier": 0}),
+            ("f4m", {"prefix": "fm", "number": True, "classifier": 1}),
+            ("IMP:N,P,E", {"prefix": "imp", "number": False, "classifier": 0}),
+            ("IMP", {"prefix": "imp", "number": False, "classifier": 2}),
+        ],
+    )
+    def test_data_name_enforce_bad(_, in_str, answer):
+        with pytest.raises(montepy.errors.MalformedInputError):
             card = montepy.input_parser.mcnp_input.Input(
                 [in_str], montepy.input_parser.block_type.BlockType.DATA
-            )
-            print(card.input_lines)
-            print(
-                "Prefix",
-                answer["prefix"],
-                "number",
-                answer["number"],
-                "classifier",
-                answer["classifier"],
             )
             Fixture = DataInputTestFixture
             Fixture._class_prefix1 = answer["prefix"]
@@ -1452,17 +1429,37 @@ bar
             Fixture._has_classifier1 = answer["classifier"]
             card = Fixture(card)
 
-    def test_get_line_numbers(self):
-        answers = {
-            (5, 1, 60): 80,
-            (6, 1, 0): 80,
-            (6, 2, 0): 128,
-            (6, 3, 0): 128,
-            (6, 3, 3): 128,  # Test for newer not released versions
-            (7, 4, 0): 128,
-        }
-        for version, answer in answers.items():
-            assert answer == montepy.constants.get_max_line_length(version)
+    @pytest.mark.parametrize(
+        "in_str, answer",
+        [
+            ("IMP:N,P,E", {"prefix": "imp", "number": False, "classifier": 2}),
+            ("F1004:n,P", {"prefix": "f", "number": True, "classifier": 1}),
+        ],
+    )
+    def test_dat_name_enforce_good(_, in_str, answer):
+        card = montepy.input_parser.mcnp_input.Input(
+            [in_str], montepy.input_parser.block_type.BlockType.DATA
+        )
+        Fixture = DataInputTestFixture
+        Fixture._class_prefix1 = answer["prefix"]
+        Fixture._has_number1 = answer["number"]
+        Fixture._has_classifier1 = answer["classifier"]
+        card = Fixture(card)
+
+    @pytest.mark.parametrize(
+        "version, line_number",
+        [
+            ((5, 1, 60), 80),
+            ((6, 1, 0), 80),
+            ((6, 2, 0), 128),
+            ((6, 3, 0), 128),
+            ((6, 3, 1), 128),
+            ((6, 3, 3), 128),  # Test for newer not released versions
+            ((7, 4, 0), 128),
+        ],
+    )
+    def test_get_line_numbers(_, version, line_number):
+        assert answer == montepy.constants.get_max_line_length(version)
         with pytest.raises(montepy.errors.UnsupportedFeature):
             montepy.constants.get_max_line_length((5, 1, 38))
 
