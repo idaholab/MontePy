@@ -1,9 +1,10 @@
-# Copyright 2024, Battelle Energy Alliance, LLC All Rights Reserved.
+# Copyright 2025, Battelle Energy Alliance, LLC All Rights Reserved.
 from __future__ import annotations
-from abc import ABC, abstractmethod
+from abc import ABC
 import itertools as it
 import typing
 import weakref
+from numbers import Integral
 
 import montepy
 from montepy.numbered_mcnp_object import Numbered_MCNP_Object
@@ -229,7 +230,7 @@ class NumberedObjectCollection(ABC):
         :type number: int
         :raises NumberConflictError: if this number is in use.
         """
-        if not isinstance(number, int):
+        if not isinstance(number, Integral):
             raise TypeError("The number must be an int")
         conflict = False
         # only can trust cache if being
@@ -282,7 +283,7 @@ class NumberedObjectCollection(ABC):
         :return: the final elements
         :rtype: Numbered_MCNP_Object
         """
-        if not isinstance(pos, int):
+        if not isinstance(pos, Integral):
             raise TypeError("The index for popping must be an int")
         obj = self._objects[pos]
         self.__internal_delete(obj)
@@ -362,11 +363,11 @@ class NumberedObjectCollection(ABC):
         :rtype: type(self)
 
         """
-        if not isinstance(starting_number, (int, type(None))):
+        if not isinstance(starting_number, (Integral, type(None))):
             raise TypeError(
                 f"Starting_number must be an int. {type(starting_number)} given."
             )
-        if not isinstance(step, (int, type(None))):
+        if not isinstance(step, (Integral, type(None))):
             raise TypeError(f"step must be an int. {type(step)} given.")
         if starting_number is not None and starting_number <= 0:
             raise ValueError(f"starting_number must be >= 1. {starting_number} given.")
@@ -550,7 +551,7 @@ class NumberedObjectCollection(ABC):
         """
         if not isinstance(obj, self._obj_class):
             raise TypeError(f"object being appended must be of type: {self._obj_class}")
-        if not isinstance(step, int):
+        if not isinstance(step, Integral):
             raise TypeError("The step number must be an int")
         number = obj.number
         if self._problem:
@@ -585,9 +586,9 @@ class NumberedObjectCollection(ABC):
         :returns: an available number
         :rtype: int
         """
-        if not isinstance(start_num, (int, type(None))):
+        if not isinstance(start_num, (Integral, type(None))):
             raise TypeError("start_num must be an int")
-        if not isinstance(step, (int, type(None))):
+        if not isinstance(step, (Integral, type(None))):
             raise TypeError("step must be an int")
         if start_num is None:
             start_num = self.starting_number
@@ -611,7 +612,7 @@ class NumberedObjectCollection(ABC):
         :param step: how much to increase the last number by
         :type step: int
         """
-        if not isinstance(step, int):
+        if not isinstance(step, Integral):
             raise TypeError("step must be an int")
         if step <= 0:
             raise ValueError("step must be > 0")
@@ -657,7 +658,7 @@ class NumberedObjectCollection(ABC):
     def __getitem__(self, i):
         if isinstance(i, slice):
             return self.__get_slice(i)
-        elif not isinstance(i, int):
+        elif not isinstance(i, Integral):
             raise TypeError("index must be an int or slice")
         ret = self.get(i)
         if ret is None:
@@ -665,13 +666,13 @@ class NumberedObjectCollection(ABC):
         return ret
 
     def __delitem__(self, idx):
-        if not isinstance(idx, int):
+        if not isinstance(idx, Integral):
             raise TypeError("index must be an int")
         obj = self[idx]
         self.__internal_delete(obj)
 
     def __setitem__(self, key, newvalue):
-        if not isinstance(key, int):
+        if not isinstance(key, Integral):
             raise TypeError("index must be an int")
         self.append(newvalue)
 
