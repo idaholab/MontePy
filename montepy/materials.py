@@ -1,9 +1,10 @@
-# Copyright 2024, Battelle Energy Alliance, LLC All Rights Reserved.
+# Copyright 2025, Battelle Energy Alliance, LLC All Rights Reserved.
 
 from __future__ import annotations
 import collections as co
 import copy
 from typing import Generator, Union
+from numbers import Integral, Real
 
 import montepy
 from montepy.numbered_object_collection import NumberedDataObjectCollection
@@ -292,7 +293,7 @@ class Materials(NumberedDataObjectCollection):
         if not isinstance(fractions, list):
             raise TypeError(f"fractions must be a list. {fractions} given.")
         for frac in fractions:
-            if not isinstance(frac, float):
+            if not isinstance(frac, Real):
                 raise TypeError(f"fraction in fractions must be a float. {frac} given.")
             if frac < 0.0:
                 raise ValueError(f"Fraction cannot be negative. {frac} given.")
@@ -300,7 +301,7 @@ class Materials(NumberedDataObjectCollection):
             raise ValueError(
                 f"Length of materials and fractions don't match. The lengths are, materials: {len(materials)}, fractions: {len(fractions)}"
             )
-        if not isinstance(starting_number, (int, type(None))):
+        if not isinstance(starting_number, (Integral, type(None))):
             raise TypeError(
                 f"starting_number must be an int. {starting_number} of type {type(starting_number)} given."
             )
@@ -308,7 +309,7 @@ class Materials(NumberedDataObjectCollection):
             raise ValueError(
                 f"starting_number must be positive. {starting_number} given."
             )
-        if not isinstance(step, (int, type(None))):
+        if not isinstance(step, (Integral, type(None))):
             raise TypeError(f"step must be an int. {step} of type {type(step)} given.")
         if step is not None and step <= 0:
             raise ValueError(f"step must be positive. {step} given.")
