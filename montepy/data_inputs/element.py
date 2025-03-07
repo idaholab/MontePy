@@ -1,7 +1,8 @@
-# Copyright 2024, Battelle Energy Alliance, LLC All Rights Reserved.
+# Copyright 2025, Battelle Energy Alliance, LLC All Rights Reserved.
 from __future__ import annotations
 from montepy.errors import *
 from montepy._singleton import SingletonGroup
+from numbers import Integral
 
 MAX_Z_NUM = 118
 
@@ -23,7 +24,7 @@ class Element(SingletonGroup):
     __slots__ = "_Z"
 
     def __init__(self, Z: int):
-        if not isinstance(Z, int):
+        if not isinstance(Z, Integral):
             raise TypeError(f"Z must be an int. {Z} of type {type(Z)} given.")
         self._Z = Z
         if Z not in self.__Z_TO_SYMBOL:
