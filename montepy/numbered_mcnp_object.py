@@ -72,7 +72,7 @@ class Numbered_MCNP_Object(MCNP_Object):
     """
     """
 
-    @make_prop_val_node("_number", int, validator=_number_validator)
+    @make_prop_val_node("_number", Integral, validator=_number_validator)
     def number(self):
         """
         The current number of the object that will be written out to a new input.

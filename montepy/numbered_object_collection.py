@@ -385,7 +385,7 @@ class NumberedObjectCollection(ABC):
             starting_number = new_obj.number + step
         return type(self)(objs)
 
-    @make_prop_pointer("_start_num", int, validator=_enforce_positive)
+    @make_prop_pointer("_start_num", Integral, validator=_enforce_positive)
     def starting_number(self):
         """
         The starting number to use when an object is cloned.
@@ -395,7 +395,7 @@ class NumberedObjectCollection(ABC):
         """
         pass
 
-    @make_prop_pointer("_step", int, validator=_enforce_positive)
+    @make_prop_pointer("_step", Integral, validator=_enforce_positive)
     def step(self):
         """
         The step size to use to find a valid number during cloning.
