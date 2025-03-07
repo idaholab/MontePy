@@ -1,6 +1,7 @@
 # Copyright 2024, Battelle Energy Alliance, LLC All Rights Reserved.
 
 from __future__ import annotations
+import collections as co
 import copy
 from typing import Generator, Union
 
@@ -30,16 +31,9 @@ class Materials(NumberedDataObjectCollection):
     def __init__(self, objects=None, problem=None):
         super().__init__(Material, objects, problem)
 
-    def get_containing(
+    def get_containing_any(
         self,
-        nuclide: Union[
-            montepy.data_inputs.nuclide.Nuclide,
-            montepy.data_inputs.nuclide.Nucleus,
-            montepy.Element,
-            str,
-            int,
-        ],
-        *args: Union[
+        *nuclides: Union[
             montepy.data_inputs.nuclide.Nuclide,
             montepy.data_inputs.nuclide.Nucleus,
             montepy.Element,
@@ -47,9 +41,10 @@ class Materials(NumberedDataObjectCollection):
             int,
         ],
         threshold: float = 0.0,
+        strict: bool = False,
     ) -> Generator[Material]:
         """
-        Get all materials that contain these nuclides.
+        Get all materials that contain any of these these nuclides.
 
         This uses :func:`~montepy.data_inputs.material.Material.contains` under the hood.
         See that documentation for more guidance.
@@ -63,7 +58,7 @@ class Materials(NumberedDataObjectCollection):
 
             import montepy
             problem = montepy.read_input("foo.imcnp")
-            for mat in problem.materials.get_containing("H-1", "O-16", threshold = 0.3):
+            for mat in problem.materials.get_containing_any("H-1", "U-235", threshold = 0.3):
                 print(mat)
 
         .. testoutput::
@@ -72,13 +67,14 @@ class Materials(NumberedDataObjectCollection):
 
         .. versionadded:: 1.0.0
 
-        :param nuclide: the first nuclide to check for.
-        :type nuclide: Union[Nuclide, Nucleus, Element, str, int]
-        :param args: a plurality of other nuclides to check for.
-        :type args: Union[Nuclide, Nucleus, Element, str, int]
+        :param nuclides: a plurality of nuclides to check for.
+        :type nuclides: Union[Nuclide, Nucleus, Element, str, int]
         :param threshold: the minimum concentration of a nuclide to be considered. The material components are not
             first normalized.
         :type threshold: float
+        :param strict: If True this does not let an elemental nuclide match all child isotopes, isomers, nor will an isotope
+            match all isomers, nor will a blank library match all libraries.
+        :type strict: bool
 
         :return: A generator of all matching materials
         :rtype: Generator[Material]
@@ -86,25 +82,81 @@ class Materials(NumberedDataObjectCollection):
         :raises TypeError: if any argument is of the wrong type.
         :raises ValueError: if the fraction is not positive or zero, or if nuclide cannot be interpreted as a Nuclide.
         """
-        nuclides = []
-        for nuclide in [nuclide] + list(args):
-            if not isinstance(
-                nuclide,
-                (
-                    str,
-                    int,
-                    montepy.Element,
-                    montepy.data_inputs.nuclide.Nucleus,
-                    montepy.Nuclide,
-                ),
-            ):
-                raise TypeError(
-                    f"nuclide must be of type str, int, Element, Nucleus, or Nuclide. "
-                    f"{nuclide} of type {type(nuclide)} given."
-                )
-            if isinstance(nuclide, (str, int)):
-                nuclide = montepy.Nuclide(nuclide)
-            nuclides.append(nuclide)
+        return self._contains_arb(
+            *nuclides, bool_func=any, threshold=threshold, strict=strict
+        )
+
+    def get_containing_all(
+        self,
+        *nuclides: Union[
+            montepy.data_inputs.nuclide.Nuclide,
+            montepy.data_inputs.nuclide.Nucleus,
+            montepy.Element,
+            str,
+            int,
+        ],
+        threshold: float = 0.0,
+        strict: bool = False,
+    ) -> Generator[Material]:
+        """
+        Get all materials that contain all of these nuclides.
+
+        This uses :func:`~montepy.data_inputs.material.Material.contains` under the hood.
+        See that documentation for more guidance.
+
+        Examples
+        ^^^^^^^^
+
+        One example would to be find all water bearing materials:
+
+        .. testcode::
+
+            import montepy
+            problem = montepy.read_input("foo.imcnp")
+            for mat in problem.materials.get_containing_all("H-1", "O-16", threshold = 0.3):
+                print(mat)
+
+        .. testoutput::
+
+            MATERIAL: 1, ['hydrogen', 'oxygen']
+
+        .. versionadded:: 1.0.0
+
+        :param nuclides: a plurality of nuclides to check for.
+        :type nuclides: Union[Nuclide, Nucleus, Element, str, int]
+        :param threshold: the minimum concentration of a nuclide to be considered. The material components are not
+            first normalized.
+        :type threshold: float
+        :param strict: If True this does not let an elemental nuclide match all child isotopes, isomers, nor will an isotope
+            match all isomers, nor will a blank library match all libraries.
+        :type strict: bool
+
+        :return: A generator of all matching materials
+        :rtype: Generator[Material]
+
+        :raises TypeError: if any argument is of the wrong type.
+        :raises ValueError: if the fraction is not positive or zero, or if nuclide cannot be interpreted as a Nuclide.
+        """
+        return self._contains_arb(
+            *nuclides, bool_func=all, threshold=threshold, strict=strict
+        )
+
+    def _contains_arb(
+        self,
+        *nuclides: Union[
+            montepy.data_inputs.nuclide.Nuclide,
+            montepy.data_inputs.nuclide.Nucleus,
+            montepy.Element,
+            str,
+            int,
+        ],
+        bool_func: co.abc.Callable[co.abc.Iterable[bool]],
+        threshold: float = 0.0,
+        strict: bool = False,
+    ) -> Generator[Material]:
+        nuclide_finders = []
+        for nuclide in nuclides:
+            nuclide_finders.append(Material._promote_nuclide(nuclide, strict))
 
         def sort_by_type(nuclide):
             type_map = {
@@ -115,9 +167,14 @@ class Materials(NumberedDataObjectCollection):
             return type_map[type(nuclide)]
 
         # optimize by most hashable and fail fast
-        nuclides = sorted(nuclides, key=sort_by_type)
+        nuclide_finders = sorted(nuclide_finders, key=sort_by_type)
         for material in self:
-            if material.contains(*nuclides, threshold=threshold):
+            if material._contains_arb(
+                *nuclide_finders,
+                bool_func=bool_func,
+                threshold=threshold,
+                strict=strict,
+            ):
                 # maybe? Maybe not?
                 # should Materials act like a set?
                 yield material

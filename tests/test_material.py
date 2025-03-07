@@ -35,7 +35,9 @@ class TestMaterial:
             "u238",
             "am242",
             "am242m1",
+            "Co60m2.50c",
             "Pu239",
+            "Ni-0.60c",
         ]
         mat = Material()
         mat.number = 1
@@ -246,41 +248,64 @@ class TestMaterial:
             mat.append((Nuclide("1001.80c"), -1.0))
 
     @pytest.mark.parametrize(
-        "content, is_in",
+        "content, strict, is_in",
         [
-            ("1001.80c", True),
-            ("H-1", True),
-            (Element(1), True),
-            (Nucleus(Element(1), 1), True),
-            (Element(43), False),
-            ("B-10.00c", False),
-            ("H", True),
-            (Nucleus(Element(5), 10), False),
+            ("1001.80c", False, True),
+            (1001, False, True),
+            ("H-1", False, True),
+            (Element(1), False, True),
+            (Nucleus(Element(1), 1), False, True),
+            (Element(43), False, False),
+            ("B-10.00c", False, False),
+            ("H", False, True),
+            ("H", True, False),
+            (Nucleus(Element(5), 10), False, False),
+            ("Ni", False, True),
+            ("Ni", True, False),  # test wrong library
+            ("Ni-0.60c", True, True),
+            ("Co-60", False, False),
+            ("Co-60", True, False),
+            ("Co-60m2.50c", True, True),
         ],
     )
-    def test_material_contains(_, big_material, content, is_in):
-        assert is_in == (content in big_material), "Contains didn't work properly"
-        assert is_in == big_material.contains(content)
+    def test_material_contains(_, big_material, content, strict, is_in):
+        if not strict:
+            assert is_in == (content in big_material), "Contains didn't work properly"
+        assert is_in == big_material.contains_all(content, strict=strict)
+        assert is_in == big_material.contains_any(content, strict=strict)
         with pytest.raises(TypeError):
-            5 in big_material
+            {} in big_material
+        with pytest.raises(TypeError):
+            big_material.contains_all("H", strict=5)
+        with pytest.raises(TypeError):
+            big_material.contains_any("H", strict=5)
 
     def test_material_multi_contains(_, big_material):
-        assert big_material.contains("1001", "U-235", "Pu-239", threshold=0.01)
-        assert not big_material.contains("1001", "U-235", "Pu-239", threshold=0.07)
-        assert not big_material.contains("U-235", "B-10")
+        # contains all
+        assert big_material.contains_all("1001", "U-235", "Pu-239", threshold=0.01)
+        assert not big_material.contains_all(
+            "1001", "U-235", "Pu-239", threshold=0.01, strict=True
+        )
+        assert not big_material.contains_all("1001", "U-235", "Pu-239", threshold=0.07)
+        assert not big_material.contains_all("U-235", "B-10")
+        # contains any
+        assert not big_material.contains_any("C", "B", "F")
+        print("sadness")
+        assert big_material.contains_any("h-1", "C", "B")
 
     def test_material_contains_bad(_):
         mat = Material()
-        with pytest.raises(TypeError):
-            mat.contains(mat)
-        with pytest.raises(TypeError):
-            mat.contains("1001", mat)
-        with pytest.raises(ValueError):
-            mat.contains("hi")
-        with pytest.raises(TypeError):
-            mat.contains("1001", threshold="hi")
-        with pytest.raises(ValueError):
-            mat.contains("1001", threshold=-1.0)
+        for method in [mat.contains_all, mat.contains_any]:
+            with pytest.raises(TypeError):
+                method(mat)
+            with pytest.raises(TypeError):
+                method("1001", mat)
+            with pytest.raises(ValueError):
+                method("hi")
+            with pytest.raises(TypeError):
+                method("1001", threshold="hi")
+            with pytest.raises(ValueError):
+                method("1001", threshold=-1.0)
 
     def test_material_normalize(_, big_material):
         # make sure it's not an invalid starting condition
@@ -300,14 +325,25 @@ class TestMaterial:
             ({"name": "U235m1"}, 1),
             ({"element": Element(1)}, 6),
             ({"element": "H"}, 6),
+            ({"element": "H", "strict": True}, 0),
+            ({"element": "H", "A": 1, "strict": True}, 0),
+            (
+                {
+                    "element": "H",
+                    "A": 1,
+                    "library": slice("00c", "05c"),
+                    "strict": True,
+                },
+                2,
+            ),
             ({"element": slice(92, 95)}, 5),
             ({"A": 1}, 4),
             ({"A": slice(235, 240)}, 5),
             ({"A": slice(232, 243, 2)}, 5),
-            ({"A": slice(None)}, 15),
-            ({"meta_state": 0}, 13),
+            ({"A": slice(None)}, 17),
+            ({"meta_state": 0}, 14),
             ({"meta_state": 1}, 2),
-            ({"meta_state": slice(0, 2)}, 15),
+            ({"meta_state": slice(0, 2)}, 16),
             ({"library": "80c"}, 3),
             ({"library": slice("00c", "10c")}, 2),
         ],
@@ -337,6 +373,8 @@ class TestMaterial:
             list(big_material.find(element=1.23))
         with pytest.raises(TypeError):
             list(big_material.find(library=5))
+        with pytest.raises(TypeError):
+            list(big_material.find(strict=5))
 
     def test_material_str(_):
         in_str = "M20 1001.80c 0.5 8016.80c 0.4 94239.80c 0.1"
