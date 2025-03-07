@@ -1,8 +1,10 @@
-# Copyright 2024, Battelle Energy Alliance, LLC All Rights Reserved.
+# Copyright 2025, Battelle Energy Alliance, LLC All Rights Reserved.
 from .surface_type import SurfaceType
 from .surface import Surface, InitInput
 from montepy.errors import *
 from montepy.utilities import *
+
+from numbers import Real
 
 
 def _enforce_positive_radius(self, value):
@@ -70,14 +72,12 @@ class CylinderParAxis(Surface):
         if len(coordinates) != 2:
             raise ValueError("coordinates must have exactly two elements")
         for val in coordinates:
-            if not isinstance(val, (float, int)):
+            if not isinstance(val, Real):
                 raise TypeError(f"Coordinate must be a number. {val} given.")
         for i, val in enumerate(coordinates):
             self._coordinates[i].value = val
 
-    @make_prop_val_node(
-        "_radius", (float, int), float, validator=_enforce_positive_radius
-    )
+    @make_prop_val_node("_radius", (Real,), float, validator=_enforce_positive_radius)
     def radius(self):
         """
         The radius of the cylinder.
