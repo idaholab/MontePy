@@ -724,6 +724,12 @@ See <https://www.montepy.org/migrations/migrate0_1.html> for more information ""
 
         .. note::
 
+            The difference between :func:`contains_all` and :func:`contains_any` is only for how they
+            handle being given multiple nuclides. This does not impact how given Elements will match 
+            daughter Nuclides. This is handled instead by ``strict``.
+        
+        .. note::
+
             For details on how to use the ``strict`` argument see the examples in: :func:`find`.
 
         .. versionadded:: 1.0.0
