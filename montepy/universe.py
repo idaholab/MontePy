@@ -1,10 +1,12 @@
-# Copyright 2024, Battelle Energy Alliance, LLC All Rights Reserved.
+# Copyright 2025, Battelle Energy Alliance, LLC All Rights Reserved.
 import montepy
 from montepy.cells import Cells
 from montepy.input_parser.mcnp_input import Input
 from montepy.input_parser.block_type import BlockType
 from montepy.input_parser import syntax_node
 from montepy.numbered_mcnp_object import Numbered_MCNP_Object
+
+from numbers import Integral
 
 
 class Universe(Numbered_MCNP_Object):
@@ -18,7 +20,7 @@ class Universe(Numbered_MCNP_Object):
 
     def __init__(self, number: int):
         self._number = self._generate_default_node(int, -1)
-        if not isinstance(number, int):
+        if not isinstance(number, Integral):
             raise TypeError("number must be int")
         if number < 0:
             raise ValueError(f"Universe number must be ≥ 0. {number} given.")
