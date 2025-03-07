@@ -1,23 +1,18 @@
-# Copyright 2024, Battelle Energy Alliance, LLC All Rights Reserved.
+# Copyright 2025, Battelle Energy Alliance, LLC All Rights Reserved.
 from __future__ import annotations
 import collections as co
 import copy
-import itertools
 import math
-import numbers
-import re
+from numbers import Integral, Real
 from typing import Generator, Union
-import warnings
 import weakref
 
 import montepy
 from montepy.data_inputs import data_input, thermal_scattering
 from montepy.data_inputs.nuclide import Library, Nucleus, Nuclide
 from montepy.data_inputs.element import Element
-from montepy.data_inputs.material_component import MaterialComponent
 from montepy.input_parser import syntax_node
 from montepy.input_parser.material_parser import MaterialParser
-from montepy import mcnp_object
 from montepy.numbered_mcnp_object import Numbered_MCNP_Object, InitInput
 from montepy.errors import *
 from montepy.utilities import *
@@ -37,7 +32,7 @@ This is used for adding new material components.
 By default all components made from scratch are added to their own line with this many leading spaces.
 """
 
-NuclideLike = Union[Nuclide, Nucleus, Element, str, numbers.Integral]
+NuclideLike = Union[Nuclide, Nucleus, Element, str, Integral]
 
 
 class _DefaultLibraries:
@@ -507,9 +502,9 @@ See <https://www.montepy.org/migrations/migrate0_1.html> for more information ""
 
     def __getitem__(self, idx):
         """ """
-        if not isinstance(idx, (int, slice)):
+        if not isinstance(idx, (Integral, slice)):
             raise TypeError(f"Not a valid index. {idx} given.")
-        if isinstance(idx, int):
+        if isinstance(idx, Integral):
             comp = self._components[idx]
             return self.__unwrap_comp(comp)
         # else it's a slice
@@ -528,7 +523,7 @@ See <https://www.montepy.org/migrations/migrate0_1.html> for more information ""
 
     def __setitem__(self, idx, newvalue):
         """ """
-        if not isinstance(idx, (int, slice)):
+        if not isinstance(idx, (Integral, slice)):
             raise TypeError(f"Not a valid index. {idx} given.")
         old_vals = self._components[idx]
         self._check_valid_comp(newvalue)
@@ -541,7 +536,7 @@ See <https://www.montepy.org/migrations/migrate0_1.html> for more information ""
     def __len__(self):
         return len(self._components)
 
-    def _check_valid_comp(self, newvalue: tuple[Nuclide, float]):
+    def _check_valid_comp(self, newvalue: tuple[Nuclide, Real]):
         """
         Checks valid compositions and raises an error if needed.
         """
@@ -555,7 +550,7 @@ See <https://www.montepy.org/migrations/migrate0_1.html> for more information ""
             )
         if not isinstance(newvalue[0], Nuclide):
             raise TypeError(f"First element must be an Nuclide. {newvalue[0]} given.")
-        if not isinstance(newvalue[1], (float, int)):
+        if not isinstance(newvalue[1], Real):
             raise TypeError(
                 f"Second element must be a fraction greater than 0. {newvalue[1]} given."
             )
@@ -565,9 +560,9 @@ See <https://www.montepy.org/migrations/migrate0_1.html> for more information ""
             )
 
     def __delitem__(self, idx):
-        if not isinstance(idx, (int, slice)):
+        if not isinstance(idx, (Integral, slice)):
             raise TypeError(f"Not a valid index. {idx} given.")
-        if isinstance(idx, int):
+        if isinstance(idx, Integral):
             self.__delitem(idx)
             return
         # else it's a slice
@@ -606,11 +601,11 @@ See <https://www.montepy.org/migrations/migrate0_1.html> for more information ""
         del self._components[idx]
 
     def __contains__(self, nuclide):
-        if not isinstance(nuclide, (Nuclide, Nucleus, Element, str, numbers.Integral)):
+        if not isinstance(nuclide, (Nuclide, Nucleus, Element, str, Integral)):
             raise TypeError(
                 f"Can only check if a Nuclide, Nucleus, Element, or str is in a material. {nuclide} given."
             )
-        if isinstance(nuclide, (str, numbers.Integral)):
+        if isinstance(nuclide, (str, Integral)):
             nuclide = Nuclide(nuclide)
         # switch to elemental
         if isinstance(nuclide, (Nucleus, Nuclide)) and nuclide.A == 0:
@@ -683,7 +678,7 @@ See <https://www.montepy.org/migrations/migrate0_1.html> for more information ""
         :param fraction: the fraction of this component being added.
         :type fraction: float
         """
-        if not isinstance(nuclide, (Nuclide, str, int)):
+        if not isinstance(nuclide, (Nuclide, str, Integral)):
             raise TypeError(
                 f"Nuclide must of type Nuclide, str, or int. {nuclide} of type {type(nuclide)} given."
             )
@@ -808,12 +803,12 @@ See <https://www.montepy.org/migrations/migrate0_1.html> for more information ""
     @staticmethod
     def _promote_nuclide(nuclide, strict):
         # This is necessary for python 3.9
-        if not isinstance(nuclide, (Nuclide, Nucleus, Element, str, numbers.Integral)):
+        if not isinstance(nuclide, (Nuclide, Nucleus, Element, str, Integral)):
             raise TypeError(
                 f"Nuclide must be a type that can be converted to a Nuclide. The allowed types are: "
                 f"Nuclide, Nucleus, str, int. {nuclide} given."
             )
-        if isinstance(nuclide, (str, int)):
+        if isinstance(nuclide, (str, Integral)):
             nuclide = Nuclide(nuclide)
         # treat elemental as element
         if isinstance(nuclide, (Nucleus, Nuclide)) and nuclide.A == 0 and not strict:
@@ -824,13 +819,13 @@ See <https://www.montepy.org/migrations/migrate0_1.html> for more information ""
 
     def _contains_arb(
         self,
-        *nuclides: Union[Nuclide, Nucleus, Element, str, int],
+        *nuclides: Union[Nuclide, Nucleus, Element, str, Integral],
         bool_func: co.abc.Callable[co.abc.Iterable[bool]] = None,
         threshold: float = 0.0,
         strict: bool = False,
     ) -> bool:
         nuclide_finders = []
-        if not isinstance(threshold, numbers.Real):
+        if not isinstance(threshold, Real):
             raise TypeError(
                 f"Threshold must be a float. {threshold} of type: {type(threshold)} given"
             )
@@ -946,7 +941,7 @@ See <https://www.montepy.org/migrations/migrate0_1.html> for more information ""
         """
 
         def setter(old_val, new_val):
-            if not isinstance(new_val, numbers.Real):
+            if not isinstance(new_val, Real):
                 raise TypeError(
                     f"Value must be set to a float. {new_val} of type {type(new_val)} given."
                 )
@@ -1066,7 +1061,7 @@ See <https://www.montepy.org/migrations/migrate0_1.html> for more information ""
     def find(
         self,
         name: str = None,
-        element: Union[Element, str, int, slice] = None,
+        element: Union[Element, str, Integral, slice] = None,
         A: Union[int, slice] = None,
         meta_state: Union[int, slice] = None,
         library: Union[str, slice] = None,
@@ -1180,15 +1175,15 @@ See <https://www.montepy.org/migrations/migrate0_1.html> for more information ""
         :rtype: Generator[tuple[int, tuple[Nuclide, float]]]
         """
         # nuclide type enforcement handled by `Nuclide`
-        if not isinstance(element, (Element, str, int, slice, type(None))):
+        if not isinstance(element, (Element, str, Integral, slice, type(None))):
             raise TypeError(
                 f"Element must be only Element, str, int or slice types. {element} of type{type(element)} given."
             )
-        if not isinstance(A, (int, slice, type(None))):
+        if not isinstance(A, (Integral, slice, type(None))):
             raise TypeError(
                 f"A must be an int or a slice. {A} of type {type(A)} given."
             )
-        if not isinstance(meta_state, (int, slice, type(None))):
+        if not isinstance(meta_state, (Integral, slice, type(None))):
             raise TypeError(
                 f"meta_state must an int or a slice. {meta_state} of type {type(meta_state)} given."
             )
