@@ -606,7 +606,7 @@ See <https://www.montepy.org/migrations/migrate0_1.html> for more information ""
         del self._components[idx]
 
     def __contains__(self, nuclide):
-        if not isinstance(nuclide, NuclideLike):
+        if not isinstance(nuclide, (Nuclide, Nucleus, Element, str, numbers.Integral)):
             raise TypeError(
                 f"Can only check if a Nuclide, Nucleus, Element, or str is in a material. {nuclide} given."
             )
@@ -807,7 +807,8 @@ See <https://www.montepy.org/migrations/migrate0_1.html> for more information ""
 
     @staticmethod
     def _promote_nuclide(nuclide, strict):
-        if not isinstance(nuclide, NuclideLike):
+        # This is necessary for python 3.9
+        if not isinstance(nuclide, (Nuclide, Nucleus, Element, str, numbers.Integral)):
             raise TypeError(
                 f"Nuclide must be a type that can be converted to a Nuclide. The allowed types are: "
                 f"Nuclide, Nucleus, str, int. {nuclide} given."
