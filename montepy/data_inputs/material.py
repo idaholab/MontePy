@@ -4,6 +4,7 @@ import collections as co
 import copy
 import itertools
 import math
+import numbers
 import re
 from typing import Generator, Union
 import warnings
@@ -832,7 +833,7 @@ See <https://www.montepy.org/migrations/migrate0_1.html> for more information ""
         strict: bool = False,
     ) -> bool:
         nuclide_finders = []
-        if not isinstance(threshold, float):
+        if not isinstance(threshold, numbers.Real):
             raise TypeError(
                 f"Threshold must be a float. {threshold} of type: {type(threshold)} given"
             )
@@ -949,7 +950,7 @@ See <https://www.montepy.org/migrations/migrate0_1.html> for more information ""
         """
 
         def setter(old_val, new_val):
-            if not isinstance(new_val, float):
+            if not isinstance(new_val, numbers.Real):
                 raise TypeError(
                     f"Value must be set to a float. {new_val} of type {type(new_val)} given."
                 )
