@@ -54,8 +54,8 @@ doc = [
 	"pydata_sphinx_theme",
 	"sphinx-favicon",
 	"sphinx-copybutton",
-	"sphinx_autodoc_typehints",
-	"autodocsumm"
+    	"sphinx_autodoc_typehints",
+	"autodocsumm",
 ]
 format = ["black~=25.1"]
 build = [

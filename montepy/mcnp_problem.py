@@ -19,7 +19,7 @@ from montepy.surface_collection import Surfaces
 from montepy.data_inputs import parse_data
 from montepy.input_parser import input_syntax_reader, block_type, mcnp_input
 from montepy.input_parser.input_file import MCNP_InputFile
-from montepy.universes import Universes
+from montepy.universes import Universe, Universes
 from montepy.transforms import Transforms
 import montepy
 
@@ -40,7 +40,7 @@ class MCNP_Problem:
         surface.Surface: Surfaces,
         Material: Materials,
         transform.Transform: Transforms,
-        montepy.universe.Universe: Universes,
+        Universe: Universes,
     }
 
     def __init__(self, destination):
@@ -339,7 +339,7 @@ class MCNP_Problem:
         OBJ_MATCHER = {
             block_type.BlockType.CELL: (Cell, self._cells),
             block_type.BlockType.SURFACE: (
-                surface_builder.surface_builder,
+                surface_builder.parse_surface,
                 self._surfaces,
             ),
             block_type.BlockType.DATA: (parse_data, self._data_inputs),
@@ -366,7 +366,13 @@ class MCNP_Problem:
                         try:
                             obj = obj_parser(input)
                             obj.link_to_problem(self)
-                            obj_container.append(obj)
+                            if isinstance(
+                                obj_container,
+                                montepy.numbered_object_collection.NumberedObjectCollection,
+                            ):
+                                obj_container.append(obj, initial_load=True)
+                            else:
+                                obj_container.append(obj)
                         except (
                             MalformedInputError,
                             NumberConflictError,
@@ -381,9 +387,9 @@ class MCNP_Problem:
                             else:
                                 raise e
                         if isinstance(obj, Material):
-                            self._materials.append(obj, False)
+                            self._materials.append(obj, insert_in_data=False)
                         if isinstance(obj, transform.Transform):
-                            self._transforms.append(obj, False)
+                            self._transforms.append(obj, insert_in_data=False)
                     if trailing_comment is not None and last_obj is not None:
                         obj._grab_beginning_comment(trailing_comment, last_obj)
                         last_obj._delete_trailing_comment()
@@ -421,11 +427,7 @@ class MCNP_Problem:
         for surface in self._surfaces:
             try:
                 surface.update_pointers(self.surfaces, self._data_inputs)
-            except (
-                BrokenObjectLinkError,
-                ParticleTypeNotInProblem,
-                ParticleTypeNotInCell,
-            ) as e:
+            except (BrokenObjectLinkError,) as e:
                 handle_error(e)
         to_delete = []
         for data_index, data_input in enumerate(self._data_inputs):
@@ -435,8 +437,6 @@ class MCNP_Problem:
             except (
                 BrokenObjectLinkError,
                 MalformedInputError,
-                ParticleTypeNotInProblem,
-                ParticleTypeNotInCell,
             ) as e:
                 handle_error(e)
                 continue
@@ -449,7 +449,7 @@ class MCNP_Problem:
         :param tolerance: The amount of relative error to consider two surfaces identical
         :type tolerance: float
         """
-        to_delete = set()
+        to_delete = montepy.surface_collection.Surfaces()
         matching_map = {}
         for surface in self.surfaces:
             if surface not in to_delete:
@@ -457,38 +457,28 @@ class MCNP_Problem:
                 if matches:
                     for match in matches:
                         to_delete.add(match)
-                        matching_map[match] = surface
+                        matching_map[match.number] = (match, surface)
         for cell in self.cells:
             cell.remove_duplicate_surfaces(matching_map)
         self.__update_internal_pointers()
         for surface in to_delete:
             self._surfaces.remove(surface)
 
-    def add_cell_children_to_problem(self):
+    def add_cell_children_to_problem(self):  # pragma: no cover
         """
         Adds the surfaces, materials, and transforms of all cells in this problem to this problem to the
         internal lists to allow them to be written to file.
 
-        .. warning::
-            this does not move complement cells, and probably other objects.
+        .. deprecated:: 1.0.0
+
+            This function is no longer needed. When cells are added to problem.cells these children are added as well.
+
+        :raises DeprecationWarning:
         """
-        surfaces = set(self.surfaces)
-        materials = set(self.materials)
-        transforms = set(self.transforms)
-        for cell in self.cells:
-            surfaces.update(set(cell.surfaces))
-            for surf in cell.surfaces:
-                if surf.transform:
-                    transforms.add(surf.transform)
-            if cell.material:
-                materials.add(cell.material)
-        surfaces = sorted(surfaces)
-        materials = sorted(materials)
-        transforms = sorted(transforms)
-        self._surfaces = Surfaces(surfaces, problem=self)
-        self._materials = Materials(materials, problem=self)
-        self._transforms = Transforms(transforms, problem=self)
-        self._data_inputs = sorted(set(self._data_inputs + materials + transforms))
+        raise DeprecationWarning(
+            "add_cell_children_to_problem has been removed,"
+            " as the children are automatically added with the cell."
+        )
 
     def write_problem(self, destination, overwrite=False):
         """
@@ -627,3 +617,60 @@ class MCNP_Problem:
                 ret += f"{obj}\n"
             ret += "\n"
         return ret
+
+    def parse(self, input: str, append: bool = True) -> montepy.mcnp_object.MCNP_Object:
+        """
+        Parses the MCNP object given by the string, and links it adds it to this problem.
+
+        This attempts to identify the input type by trying to parse it in the following order:
+
+        #. Data Input
+        #. Surface
+        #. Cell
+
+        This is done mostly for optimization to go from easiest parsing to hardest.
+        This will:
+
+        #. Parse the input
+        #. Link it to other objects in the problem. Note: this will raise an error if those objects don't exist.
+        #. Append it to the appropriate collection
+
+        :param input: the string describing the input. New lines are allowed but this does not need to meet MCNP line
+            length rules.
+        :type input: str
+        :param append: Whether to append this parsed object to this problem.
+        :type append: bool
+        :returns: the parsed object.
+        :rtype: MCNP_Object
+
+        :raises TypeError: If a str is not given
+        :raises ParsingError: If this is not a valid input.
+        :raises BrokenObjectLinkError: if the dependent objects are not already in the problem.
+        :raises NumberConflictError: if the object's number is already taken
+        """
+        try:
+            obj = montepy.parse_data(input)
+        except ParsingError:
+            try:
+                obj = montepy.parse_surface(input)
+            except ParsingError:
+                obj = montepy.Cell(input)
+                # let final parsing error bubble up
+        obj.link_to_problem(self)
+        if isinstance(obj, montepy.Cell):
+            obj.update_pointers(self.cells, self.materials, self.surfaces)
+            if append:
+                self.cells.append(obj)
+        elif isinstance(obj, montepy.surfaces.surface.Surface):
+            obj.update_pointers(self.surfaces, self.data_inputs)
+            if append:
+                self.surfaces.append(obj)
+        else:
+            obj.update_pointers(self.data_inputs)
+            if append:
+                self.data_inputs.append(obj)
+                if isinstance(obj, Material):
+                    self._materials.append(obj, insert_in_data=False)
+                if isinstance(obj, transform.Transform):
+                    self._transforms.append(obj, insert_in_data=False)
+        return obj

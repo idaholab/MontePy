@@ -1,4 +1,5 @@
 # Copyright 2024, Battelle Energy Alliance, LLC All Rights Reserved.
+from __future__ import annotations
 import montepy
 from montepy.errors import *
 from montepy.geometry_operators import Operator
@@ -14,9 +15,6 @@ from montepy.utilities import *
 class HalfSpace:
     """
     Class representing a geometry half_space.
-
-    .. versionadded:: 0.2.0
-        This was added as the core of the rework to how MCNP geometries are implemented.
 
     The term `half-spaces <https://en.wikipedia.org/wiki/Half-space_(geometry)>`_ in MontePy is used very loosely,
     and is not mathematically rigorous. In MontePy a divider is a something
@@ -202,20 +200,31 @@ class HalfSpace:
                 if item not in parent:
                     parent.append(item)
 
-    def remove_duplicate_surfaces(self, deleting_dict):
+    def remove_duplicate_surfaces(
+        self,
+        deleting_dict: dict[
+            int, tuple[montepy.surfaces.Surface, montepy.surfaces.Surface]
+        ],
+    ):
         """Updates old surface numbers to prepare for deleting surfaces.
 
         This will ensure any new surfaces or complements properly get added to the parent
         cell's :func:`~montepy.cell.Cell.surfaces` and :func:`~montepy.cell.Cell.complements`.
 
+        .. versionchanged:: 1.0.0
+
+            The form of the deleting_dict was changed as :class:`~montepy.surfaces.Surface` is no longer hashable.
+
         :param deleting_dict: a dict of the surfaces to delete, mapping the old surface to the new surface to replace it.
-        :type deleting_dict: dict
+            The keys are the number of the old surface. The values are a tuple
+            of the old surface, and then the new surface.
+        :type deleting_dict: dict[int, tuple[Surface, Surface]]
         """
-        _, surfaces = self._get_leaf_objects()
+        cells, surfaces = self._get_leaf_objects()
         new_deleting_dict = {}
-        for dead_surface, new_surface in deleting_dict.items():
-            if dead_surface in surfaces:
-                new_deleting_dict[dead_surface] = new_surface
+        for num, (dead_obj, new_obj) in deleting_dict.items():
+            if dead_obj in surfaces or dead_obj in cells:
+                new_deleting_dict[num] = (dead_obj, new_obj)
         if len(new_deleting_dict) > 0:
             self.left.remove_duplicate_surfaces(new_deleting_dict)
             if self.right is not None:
@@ -468,9 +477,6 @@ class UnitHalfSpace(HalfSpace):
     """
     The leaf node for the HalfSpace tree.
     
-    .. versionadded:: 0.2.0
-        This was added as the core of the rework to how MCNP geometries are implemented.
-
     This can only be used as leaves and represents one half_space of a 
     a divider.
     The easiest way to generate one is with the divider with unary operators. 
@@ -671,20 +677,60 @@ class UnitHalfSpace(HalfSpace):
         self._node.is_negative = not self.side
 
     def _get_leaf_objects(self):
-        if self._is_cell:
-            return ({self._divider}, set())
-        return (set(), {self._divider})
+        if isinstance(
+            self._divider, (montepy.cell.Cell, montepy.surfaces.surface.Surface)
+        ):
 
-    def remove_duplicate_surfaces(self, deleting_dict):
+            def cell_cont(div=None):
+                if div:
+                    return montepy.cells.Cells([div])
+                return montepy.cells.Cells()
+
+            def surf_cont(div=None):
+                if div:
+                    return montepy.surface_collection.Surfaces([div])
+                return montepy.surface_collection.Surfaces()
+
+        else:
+            raise IllegalState(
+                f"Geometry cannot be modified while not linked to surfaces. Run Cell.update_pointers"
+            )
+        if self._is_cell:
+            return (cell_cont(self._divider), surf_cont())
+        return (cell_cont(), surf_cont(self._divider))
+
+    def remove_duplicate_surfaces(
+        self,
+        deleting_dict: dict[
+            int, tuple[montepy.surfaces.Surface, montepy.surfaces.Surface]
+        ],
+    ):
         """Updates old surface numbers to prepare for deleting surfaces.
 
-        :param deleting_dict: a dict of the surfaces to delete.
-        :type deleting_dict: dict
+        This will ensure any new surfaces or complements properly get added to the parent
+        cell's :func:`~montepy.cell.Cell.surfaces` and :func:`~montepy.cell.Cell.complements`.
+
+        .. versionchanged:: 1.0.0
+
+            The form of the deleting_dict was changed as :class:`~montepy.surfaces.Surface` is no longer hashable.
+
+        :param deleting_dict: a dict of the surfaces to delete, mapping the old surface to the new surface to replace it.
+            The keys are the number of the old surface. The values are a tuple
+            of the old surface, and then the new surface.
+        :type deleting_dict: dict[int, tuple[Surface, Surface]]
         """
-        if not self.is_cell:
-            if self.divider in deleting_dict:
-                new_surface = deleting_dict[self.divider]
-                self.divider = new_surface
+
+        def num(obj):
+            if isinstance(obj, int):
+                return obj
+            return obj.number
+
+        if num(self.divider) in deleting_dict:
+            old_obj, new_obj = deleting_dict[num(self.divider)]
+            if isinstance(self.divider, ValueNode) or type(new_obj) == type(
+                self.divider
+            ):
+                self.divider = new_obj
 
     def __len__(self):
         return 1

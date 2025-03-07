@@ -2,7 +2,8 @@
 import collections
 import copy
 import math
-from montepy.data_inputs.cell_modifier import CellModifierInput
+import warnings
+from montepy.data_inputs.cell_modifier import CellModifierInput, InitInput
 from montepy.errors import *
 from montepy.constants import DEFAULT_VERSION, rel_tol, abs_tol
 from montepy.input_parser import syntax_node
@@ -31,7 +32,7 @@ class Importance(CellModifierInput):
     A data input that sets the importance for a cell(s).
 
     :param input: the Input object representing this data input
-    :type input: Input
+    :type input: Union[Input, str]
     :param in_cell_block: if this card came from the cell block of an input file.
     :type in_cell_block: bool
     :param key: the key from the key-value pair in a cell
@@ -40,7 +41,13 @@ class Importance(CellModifierInput):
     :type value: SyntaxNode
     """
 
-    def __init__(self, input=None, in_cell_block=False, key=None, value=None):
+    def __init__(
+        self,
+        input: InitInput = None,
+        in_cell_block: bool = False,
+        key: str = None,
+        value: syntax_node.SyntaxNode = None,
+    ):
         self._particle_importances = {}
         self._real_tree = {}
         self._part_combos = []
@@ -273,8 +280,9 @@ class Importance(CellModifierInput):
     def _check_particle_in_problem(self, particle_type):
         if self._problem:
             if particle_type not in self._problem.mode:
-                raise ParticleTypeNotInProblem(
-                    f"Particle type: {particle_type} not included in problem mode."
+                warnings.warn(
+                    f"Particle type: {particle_type} not included in problem mode.",
+                    ParticleTypeNotInProblem,
                 )
 
     def _collect_new_values(self):
@@ -285,9 +293,10 @@ class Importance(CellModifierInput):
                 try:
                     tree = cell.importance._particle_importances[particle]
                 except KeyError:
-                    raise ParticleTypeNotInCell(
+                    raise NotImplementedError(
                         f"Importance data not available for cell {cell.number} for particle: "
-                        f"{particle}, though it is in the problem"
+                        f"{particle}, though it is in the problem, and default importance logic "
+                        "is not yet implemented in MontePy."
                     )
                 new_vals[particle].append(tree["data"][0])
                 if len(particle_pairings[particle]) == 0:
@@ -477,7 +486,6 @@ Can only be set if this particle is used in the problem mode.
 :type importnace: float
 :returns: the importance for the particle type. If not set, defaults to 0.
 :rtype: float
-:raises ParticleTypeNotInProblem: raised if this particle is accessed while not in the problem mode.
 """
 
 

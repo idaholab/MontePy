@@ -11,8 +11,6 @@ class MCNP_Lexer(Lexer):
 
     Provides ~90% of the tokens definition.
 
-    .. versionadded:: 0.2.0
-        This was added with the major parser rework.
     """
 
     tokens = {
@@ -288,10 +286,6 @@ class MCNP_Lexer(Lexer):
 
         Uses 0-indexing.
 
-        .. versionadded:: 0.2.0
-            This was added with the major parser rework.
-
-
         :param text: the text being lexed.
         :type text: str
         :param token: the token currently being processed
@@ -307,10 +301,6 @@ class MCNP_Lexer(Lexer):
 class ParticleLexer(MCNP_Lexer):
     """
     A lexer for lexing an input that has particles in it.
-
-    .. versionadded:: 0.2.0
-        This was added with the major parser rework.
-
     """
 
     tokens = {
@@ -390,10 +380,6 @@ class ParticleLexer(MCNP_Lexer):
 class CellLexer(ParticleLexer):
     """
     A lexer for cell inputs that allows particles.
-
-    .. versionadded:: 0.2.0
-        This was added with the major parser rework.
-
     """
 
     tokens = {
@@ -421,10 +407,6 @@ class CellLexer(ParticleLexer):
 class DataLexer(ParticleLexer):
     """
     A lexer for data inputs.
-
-    .. versionadded:: 0.2.0
-        This was added with the major parser rework.
-
     """
 
     tokens = {
@@ -536,10 +518,6 @@ class SurfaceLexer(MCNP_Lexer):
 
     The main difference is that ``p`` will be interpreted as a plane,
     and not a photon.
-
-    .. versionadded:: 0.2.0
-        This was added with the major parser rework.
-
     """
 
     tokens = {

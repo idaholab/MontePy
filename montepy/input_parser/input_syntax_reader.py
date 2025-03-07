@@ -1,17 +1,19 @@
-# Copyright 2024, Battelle Energy Alliance, LLC All Rights Reserved.
-from .block_type import BlockType
+# Copyright 2024-2025, Battelle Energy Alliance, LLC All Rights Reserved.
 from collections import deque
-from .. import errors
 import itertools
 import io
+import re
+import os
+import warnings
+
 from montepy.constants import *
 from montepy.errors import *
+from montepy.input_parser.block_type import BlockType
 from montepy.input_parser.input_file import MCNP_InputFile
 from montepy.input_parser.mcnp_input import Input, Message, ReadInput, Title
 from montepy.input_parser.read_parser import ReadParser
 from montepy.utilities import is_comment
-import os
-import warnings
+
 
 reading_queue = []
 
@@ -59,9 +61,6 @@ def read_front_matters(fh, mcnp_version):
     .. warning::
         This function will not close the file handle.
 
-    .. versionchanged:: 0.2.0
-        ``fh`` was changed to be an MCNP_InputFile to hold more information.
-
     :param fh: The file handle of the input file.
     :type fh: MCNP_InputFile
     :param mcnp_version: The version of MCNP that the input is intended for.
@@ -104,9 +103,6 @@ def read_data(fh, mcnp_version, block_type=None, recursion=False):
 
     .. warning::
         This function will not close the file handle.
-
-    .. versionchanged:: 0.2.0
-        ``file_wrapper`` was added to better track which file is being read.
 
     :param fh: The file handle of the input file.
     :type fh: MCNP_InputFile
@@ -180,15 +176,21 @@ def read_data(fh, mcnp_version, block_type=None, recursion=False):
             yield from flush_input()
         # die if it is a vertical syntax format
         if "#" in line[0:BLANK_SPACE_CONTINUE] and not line_is_comment:
-            raise errors.UnsupportedFeature("Vertical Input format is not allowed")
+            raise UnsupportedFeature("Vertical Input format is not allowed")
         # cut line down to allowed length
         old_line = line
         line = line[:line_length]
         if len(old_line) != len(line):
-            warnings.warn(
-                f"The line: {old_line} exceeded the allowed line length of: {line_length} for MCNP {mcnp_version}",
-                errors.LineOverRunWarning,
-            )
+            if len(line.split("$")[0]) >= line_length and not COMMENT_FINDER.match(
+                line
+            ):
+                warnings.warn(
+                    f"The line: {old_line} exceeded the allowed line length of: {line_length} for MCNP {mcnp_version}",
+                    LineOverRunWarning,
+                )
+            # if extra length is a comment keep it long
+            else:
+                line = old_line
         if line.endswith(" &\n"):
             continue_input = True
         else:

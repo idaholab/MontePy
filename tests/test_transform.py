@@ -48,6 +48,8 @@ class testTransformClass(TestCase):
         with self.assertRaises(MalformedInputError):
             card = Input(["TR5:n,p 0.0 0.0 0.0"], BlockType.DATA)
             Transform(card)
+        transform = Transform(number=5)
+        assert transform.number == 5
 
         # test vanilla case
         in_str = "tr5 " + "1.0 " * 3 + "0.0 " * 9

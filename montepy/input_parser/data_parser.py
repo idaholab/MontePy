@@ -9,9 +9,6 @@ class DataParser(MCNP_Parser):
     """
     A parser for almost all data inputs.
 
-    .. versionadded:: 0.2.0
-        This was added with the major parser rework.
-
     :returns: a syntax tree for the data input.
     :rtype: SyntaxNode
     """
@@ -74,8 +71,8 @@ class DataParser(MCNP_Parser):
         if hasattr(p, "isotope_fractions"):
             fractions = p.isotope_fractions
         else:
-            fractions = syntax_node.IsotopesNode("isotope list")
-        fractions.append(p.isotope_fraction)
+            fractions = syntax_node.MaterialsNode("isotope list")
+        fractions.append_nuclide(p.isotope_fraction)
         return fractions
 
     @_("ZAID", "ZAID padding")
@@ -147,9 +144,6 @@ class DataParser(MCNP_Parser):
 class ClassifierParser(DataParser):
     """
     A parser for parsing the first word or classifier of a data input.
-
-    .. versionadded:: 0.2.0
-        This was added with the major parser rework.
 
     :returns: the classifier of the data input.
     :rtype: ClassifierNode

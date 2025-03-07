@@ -1,4 +1,6 @@
-# Copyright 2024, Battelle Energy Alliance, LLC All Rights Reserved.
+# Copyright 2024-2025, Battelle Energy Alliance, LLC All Rights Reserved.
+import re
+
 from montepy.errors import UnsupportedFeature
 
 """
@@ -25,12 +27,30 @@ BLANK_SPACE_CONTINUE = 5
 Number of spaces in a new line before it's considered a continuation.
 """
 
-LINE_LENGTH = {(5, 1, 60): 80, (6, 1, 0): 80, (6, 2, 0): 128}
+COMMENT_FINDER = re.compile(rf"\s{{0,{BLANK_SPACE_CONTINUE - 1}}}c", re.IGNORECASE)
 """
-The number of characters allowed in a line for each MCNP version.
+A regular expression for finding the start of a ``c`` style comment.
 """
 
-DEFAULT_VERSION = (6, 2, 0)
+LINE_LENGTH = {
+    (5, 1, 60): 80,
+    (6, 1, 0): 80,
+    (6, 2, 0): 128,
+    (6, 3, 0): 128,
+    (6, 3, 1): 128,
+}
+"""
+The number of characters allowed in a line for each MCNP version.
+
+Citations:
+
+* 5.1.60 and 6.1.0: Section 2.6.2 of `LA-UR-18-20808 <https://www.osti.gov/biblio/1419730>`_
+* 6.2.0: Section 1.1.1: :manual62:`13`
+* 6.3.0: :manual63:`3.2.2`
+* 6.3.1: Section 3.2.2 of `LA-UR-24-24602 <https://www.osti.gov/biblio/2372634>`_ 
+"""
+
+DEFAULT_VERSION = (6, 3, 0)
 """
 The default version of MCNP to use.
 """
@@ -45,6 +65,11 @@ ASCII_CEILING = 127
 The maximum allowed code point allowed by ASCII.
 
 Source: `Wikipedia <https://en.wikipedia.org/wiki/ASCII>`_
+"""
+
+MAX_ATOMIC_SYMBOL_LENGTH = 2
+"""
+The maximum length of an atomic symbol.
 """
 
 
