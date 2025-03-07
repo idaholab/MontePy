@@ -686,7 +686,7 @@ See <https://www.montepy.org/migrations/migrate0_1.html> for more information ""
             raise TypeError(
                 f"Nuclide must of type Nuclide, str, or int. {nuclide} of type {type(nuclide)} given."
             )
-        nuclide = self._promote_nuclide(nuclide, False)
+        nuclide = self._promote_nuclide(nuclide, True)
         self.append((nuclide, fraction))
 
     def contains_all(
