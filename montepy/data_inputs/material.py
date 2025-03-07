@@ -726,11 +726,6 @@ See <https://www.montepy.org/migrations/migrate0_1.html> for more information ""
 
             For details on how to use the ``strict`` argument see the examples in: :func:`find`.
 
-        .. note::
-
-            If a nuclide is in a material multiple times, and cumulatively exceeds the threshold,
-            but for each instance it appears it is below the threshold this method will return False.
-
         .. versionadded:: 1.0.0
 
         :param nuclides: a plurality of nuclides to check for.
@@ -781,11 +776,6 @@ See <https://www.montepy.org/migrations/migrate0_1.html> for more information ""
         .. note::
 
             For details on how to use the ``strict`` argument see the examples in: :func:`find`.
-
-        .. note::
-
-            If a nuclide (or element) is in a material multiple times, and cumulatively exceeds the threshold,
-            but for each instance it appears it is below the threshold this method will return False.
 
         .. versionadded:: 1.0.0
 
@@ -857,27 +847,26 @@ See <https://www.montepy.org/migrations/migrate0_1.html> for more information ""
         element_search = {}
         for nuclide in nuclide_finders:
             if isinstance(nuclide, Element):
-                element_search[nuclide] = False
+                element_search[nuclide] = 0.0
             if isinstance(nuclide, Nucleus):
-                nuclei_search[nuclide] = False
+                nuclei_search[nuclide] = 0.0
             if isinstance(nuclide, Nuclide):
-                nuclides_search[str(nuclide).lower()] = False
+                nuclides_search[str(nuclide).lower()] = 0.0
 
         for nuclide, fraction in self:
-            if fraction < threshold:
-                continue
             if str(nuclide).lower() in nuclides_search:
-                nuclides_search[str(nuclide).lower()] = True
+                nuclides_search[str(nuclide).lower()] += fraction
             if nuclide.nucleus in nuclei_search:
-                nuclei_search[nuclide.nucleus] = True
+                nuclei_search[nuclide.nucleus] += fraction
             if nuclide.element in element_search:
-                element_search[nuclide.element] = True
+                element_search[nuclide.element] += fraction
 
+        threshold_check = lambda x: x > threshold
         return bool_func(
             (
-                bool_func(nuclides_search.values()),
-                bool_func(nuclei_search.values()),
-                bool_func(element_search.values()),
+                bool_func(map(threshold_check, nuclides_search.values())),
+                bool_func(map(threshold_check, nuclei_search.values())),
+                bool_func(map(threshold_check, element_search.values())),
             )
         )
 
