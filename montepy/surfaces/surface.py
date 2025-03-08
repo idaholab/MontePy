@@ -1,13 +1,12 @@
-# Copyright 2024, Battelle Energy Alliance, LLC All Rights Reserved.
+# Copyright 2024-2025, Battelle Energy Alliance, LLC All Rights Reserved.
 from __future__ import annotations
 import copy
-import re
 from typing import Union
+from numbers import Real
 
 import montepy
 from montepy.errors import *
 from montepy.data_inputs import transform
-from montepy.input_parser import syntax_node
 from montepy.input_parser.surface_parser import SurfaceParser
 from montepy.numbered_mcnp_object import Numbered_MCNP_Object, InitInput
 from montepy.surfaces import half_space
@@ -156,7 +155,7 @@ class Surface(Numbered_MCNP_Object):
         if len(constants) != len(self._surface_constants):
             raise ValueError(f"Cannot change the length of the surface constants.")
         for constant in constants:
-            if not isinstance(constant, float):
+            if not isinstance(constant, Real):
                 raise TypeError(
                     f"The surface constant provided: {constant} must be a float"
                 )

@@ -1,10 +1,13 @@
-# Copyright 2024, Battelle Energy Alliance, LLC All Rights Reserved.
+# Copyright 2024-2025, Battelle Energy Alliance, LLC All Rights Reserved.
 from abc import ABC, abstractmethod
+import re
+import warnings
 import collections
 import copy
 import itertools as it
 import enum
 import math
+from numbers import Integral, Real
 
 from montepy import input_parser
 from montepy import constants
@@ -14,8 +17,6 @@ from montepy.input_parser.shortcuts import Shortcuts
 from montepy.geometry_operators import Operator
 from montepy.particle import Particle
 from montepy.utilities import fortran_float
-import re
-import warnings
 
 
 class SyntaxNodeBase(ABC):
@@ -1091,7 +1092,7 @@ class ValueNode(SyntaxNodeBase):
             token = self._token
             if isinstance(token, input_parser.mcnp_input.Jump):
                 token = "J"
-            if isinstance(token, (int, float)):
+            if isinstance(token, (Integral, Real)):
                 token = str(token)
             self._formatter["value_length"] = len(token)
             if self.padding:
@@ -1115,7 +1116,7 @@ class ValueNode(SyntaxNodeBase):
 
     def _reverse_engineer_float(self):
         token = self._token
-        if isinstance(token, float):
+        if isinstance(token, Real):
             token = str(token)
         if isinstance(token, input_parser.mcnp_input.Jump):
             token = "J"
@@ -1378,7 +1379,7 @@ class ValueNode(SyntaxNodeBase):
             self.padding = PaddingNode(" ")
 
     def __eq__(self, other):
-        if not isinstance(other, (type(self), str, int, float)):
+        if not isinstance(other, (type(self), str, Real)):
             return False
         if isinstance(other, ValueNode):
             other_val = other.value

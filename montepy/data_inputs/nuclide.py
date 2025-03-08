@@ -1,17 +1,15 @@
-# Copyright 2024, Battelle Energy Alliance, LLC All Rights Reserved.
+# Copyright 2024-2025, Battelle Energy Alliance, LLC All Rights Reserved.
 from montepy.constants import MAX_ATOMIC_SYMBOL_LENGTH
 from montepy._singleton import SingletonGroup
 from montepy.data_inputs.element import Element
-from montepy.errors import *
 from montepy.utilities import *
 from montepy.input_parser.syntax_node import PaddingNode, ValueNode
 from montepy.particle import LibraryType
 
-import collections
 from functools import total_ordering
 import re
 from typing import Union
-import warnings
+from numbers import Real, Integral
 
 DEFAULT_NUCLIDE_WIDTH = 11
 """
@@ -221,12 +219,12 @@ class Nucleus(SingletonGroup):
             )
         self._element = element
 
-        if not isinstance(A, int):
+        if not isinstance(A, Integral):
             raise TypeError(f"A number must be an int. {A} given.")
         if A < 0:
             raise ValueError(f"A cannot be negative. {A} given.")
         self._A = A
-        if not isinstance(meta_state, (int, type(None))):
+        if not isinstance(meta_state, (Integral, type(None))):
             raise TypeError(f"Meta state must be an int. {meta_state} given.")
         if A == 0 and meta_state != 0:
             raise ValueError(
@@ -328,7 +326,7 @@ class Nucleus(SingletonGroup):
 
     def __lt__(self, other):
         if not isinstance(other, type(self)):
-            raise TypeError("")
+            raise TypeError
         return (self.Z, self.A, self.meta_state) < (other.Z, other.A, other.meta_state)
 
     def __str__(self):
@@ -446,7 +444,7 @@ class Nuclide:
     :param node: The ValueNode to build this off of. Should only be used by MontePy.
     :type node: ValueNode
 
-    :raises TypeError: if an parameter is the wrong type.
+    :raises TypeError: if a parameter is the wrong type.
     :raises ValueError: if non-sensical values are given.
     """
 
@@ -487,7 +485,7 @@ class Nuclide:
         self._library = Library("")
         ZAID = ""
 
-        if not isinstance(name, (str, int, Element, Nucleus, Nuclide, type(None))):
+        if not isinstance(name, (str, Integral, Element, Nucleus, Nuclide, type(None))):
             raise TypeError(
                 f"Name must be str, int, Element, or Nucleus. {name} of type {type(name)} given."
             )
@@ -739,7 +737,7 @@ class Nuclide:
         A = 0
         isomer = 0
         library = ""
-        if isinstance(identifier, (int, float)):
+        if isinstance(identifier, Real):
             if identifier > _ZAID_A_ADDER:
                 parts = Nuclide._parse_zaid(int(identifier))
                 element, A, isomer = (

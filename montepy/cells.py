@@ -1,8 +1,9 @@
-# Copyright 2024, Battelle Energy Alliance, LLC All Rights Reserved.
+# Copyright 2024-2025, Battelle Energy Alliance, LLC All Rights Reserved.
 import montepy
 from montepy.numbered_object_collection import NumberedObjectCollection
 from montepy.errors import *
 import warnings
+from numbers import Integral
 
 
 class Cells(NumberedObjectCollection):
@@ -64,9 +65,9 @@ class Cells(NumberedObjectCollection):
             raise TypeError("vacuum_cells must be a list or set")
         cells_buff = set()
         for cell in vacuum_cells:
-            if not isinstance(cell, (montepy.Cell, int)):
+            if not isinstance(cell, (montepy.Cell, Integral)):
                 raise TypeError("vacuum cell must be a Cell or a cell number")
-            if isinstance(cell, int):
+            if isinstance(cell, Integral):
                 cells_buff.add(self[cell])
             else:
                 cells_buff.add(cell)
@@ -214,11 +215,11 @@ class Cells(NumberedObjectCollection):
         :rtype: type(self)
 
         """
-        if not isinstance(starting_number, (int, type(None))):
+        if not isinstance(starting_number, (Integral, type(None))):
             raise TypeError(
                 f"Starting_number must be an int. {type(starting_number)} given."
             )
-        if not isinstance(step, (int, type(None))):
+        if not isinstance(step, (Integral, type(None))):
             raise TypeError(f"step must be an int. {type(step)} given.")
         if starting_number is not None and starting_number <= 0:
             raise ValueError(f"starting_number must be >= 1. {starting_number} given.")

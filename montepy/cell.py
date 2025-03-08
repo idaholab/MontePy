@@ -1,13 +1,11 @@
-# Copyright 2024, Battelle Energy Alliance, LLC All Rights Reserved.
+# Copyright 2024-2025, Battelle Energy Alliance, LLC All Rights Reserved.
 from __future__ import annotations
 import copy
 import itertools
-import numbers
 from typing import Union
+from numbers import Integral, Real
 
-import montepy
 from montepy.cells import Cells
-from montepy.constants import BLANK_SPACE_CONTINUE
 from montepy.data_inputs import importance, fill, lattice_input, universe_input, volume
 from montepy.data_inputs.data_parser import PREFIX_MATCHES
 from montepy.input_parser.cell_parser import CellParser
@@ -442,7 +440,7 @@ class Cell(Numbered_MCNP_Object):
 
     @atom_density.setter
     def atom_density(self, density: float):
-        if not isinstance(density, numbers.Number):
+        if not isinstance(density, Real):
             raise TypeError("Atom density must be a number.")
         elif density < 0:
             raise ValueError("Atom density must be a positive number.")
@@ -467,7 +465,7 @@ class Cell(Numbered_MCNP_Object):
 
     @mass_density.setter
     def mass_density(self, density: float):
-        if not isinstance(density, numbers.Number):
+        if not isinstance(density, Real):
             raise TypeError("Mass density must be a number.")
         elif density < 0:
             raise ValueError("Mass density must be a positive number.")
@@ -591,7 +589,7 @@ class Cell(Numbered_MCNP_Object):
         new_deleting_dict = {}
 
         def get_num(obj):
-            if isinstance(obj, int):
+            if isinstance(obj, Integral):
                 return obj
             return obj.number
 
@@ -800,11 +798,11 @@ class Cell(Numbered_MCNP_Object):
             )
         if not isinstance(clone_region, bool):
             raise TypeError(f"clone_region must be a boolean. {clone_region} given.")
-        if not isinstance(starting_number, (int, type(None))):
+        if not isinstance(starting_number, (Integral, type(None))):
             raise TypeError(
                 f"Starting_number must be an int. {type(starting_number)} given."
             )
-        if not isinstance(step, (int, type(None))):
+        if not isinstance(step, (Integral, type(None))):
             raise TypeError(f"step must be an int. {type(step)} given.")
         if starting_number is not None and starting_number <= 0:
             raise ValueError(f"starting_number must be >= 1. {starting_number} given.")
@@ -832,7 +830,7 @@ class Cell(Numbered_MCNP_Object):
         memo = {}
 
         def num(obj):
-            if isinstance(obj, int):
+            if isinstance(obj, Integral):
                 return obj
             return obj.number
 
