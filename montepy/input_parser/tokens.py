@@ -220,6 +220,13 @@ class MCNP_Lexer(Lexer):
                 t.type = token_type
                 return t
 
+    @_(r"([|+\-!<>/%^_~@\*\?\#]|\#\d*)+")
+    def PARTICLE_SPECIAL(self, t):
+        """
+        Particle designators that are special characters.
+        """
+        return t
+
     INTERPOLATE = r"\d*I"
     """
     An interpolate shortcut.
@@ -511,13 +518,6 @@ class DataLexer(ParticleLexer):
     A keyword flag at the beginning of a input that modifies it's behavior.
     """
 
-    @_(r"([|+\-!<>/%^_~@\*\?\#]|\#\d*)+")
-    def PARTICLE_SPECIAL(self, t):
-        """
-        Particle designators that are special characters.
-        """
-        return t
-
     @_(r"[+\-]?[0-9]*\.?[0-9]*E?[+\-]?[0-9]*[ijrml]+[a-z\./]*", r"[a-z]+[a-z\./]*")
     def TEXT(self, t):
         t = super().TEXT(t)
@@ -608,6 +608,8 @@ class SurfaceLexer(MCNP_Lexer):
     """
     All allowed surface types.
     """
+
+    PARTICLE_SPECIAL = None
 
     @_(r"[+\-]?[0-9]*\.?[0-9]*E?[+\-]?[0-9]*[ijrml]+[a-z\./]*", r"[a-z]+[a-z\./]*")
     def TEXT(self, t):
