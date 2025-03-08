@@ -1,12 +1,11 @@
-# Copyright 2024, Battelle Energy Alliance, LLC All Rights Reserved.
+# Copyright 2024-2025, Battelle Energy Alliance, LLC All Rights Reserved.
 from __future__ import annotations
 from abc import abstractmethod
 import copy
 import itertools
 from typing import Union
+from numbers import Integral
 
-
-from montepy.errors import NumberConflictError
 from montepy.mcnp_object import MCNP_Object, InitInput
 import montepy
 from montepy.utilities import *
@@ -61,7 +60,7 @@ class Numbered_MCNP_Object(MCNP_Object):
 
     def _load_init_num(self, number):
         if number is not None:
-            if not isinstance(number, int):
+            if not isinstance(number, Integral):
                 raise TypeError(
                     f"Number must be an int. {number} of type {type(number)} given."
                 )
@@ -73,7 +72,7 @@ class Numbered_MCNP_Object(MCNP_Object):
     """
     """
 
-    @make_prop_val_node("_number", int, validator=_number_validator)
+    @make_prop_val_node("_number", Integral, validator=_number_validator)
     def number(self):
         """
         The current number of the object that will be written out to a new input.
@@ -146,11 +145,11 @@ class Numbered_MCNP_Object(MCNP_Object):
         :rtype: type(self)
 
         """
-        if not isinstance(starting_number, (int, type(None))):
+        if not isinstance(starting_number, (Integral, type(None))):
             raise TypeError(
                 f"Starting_number must be an int. {type(starting_number)} given."
             )
-        if not isinstance(step, (int, type(None))):
+        if not isinstance(step, (Integral, type(None))):
             raise TypeError(f"step must be an int. {type(step)} given.")
         if starting_number is not None and starting_number <= 0:
             raise ValueError(f"starting_number must be >= 1. {starting_number} given.")
