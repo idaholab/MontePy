@@ -8,7 +8,6 @@ from montepy.errors import *
 from montepy.input_parser import mcnp_input, block_type
 import os
 from montepy.data_inputs.importance import Importance
-import pytest
 
 
 class TestImportance(TestCase):
