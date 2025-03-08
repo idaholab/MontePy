@@ -7,6 +7,8 @@ from montepy.data_inputs.importance import Importance
 from montepy.errors import *
 from montepy.input_parser import mcnp_input, block_type
 import os
+from montepy.data_inputs.importance import Importance
+import pytest
 
 
 class TestImportance(TestCase):
@@ -30,6 +32,10 @@ class TestImportance(TestCase):
         card = mcnp_input.Input([in_str], block_type.BlockType.CELL)
         with self.assertRaises(ValueError):
             cell = Cell(card)
+
+    def test_importance_init_empty(self):
+        importance = Importance()
+        assert str(importance) == "Importance object is empty"
 
     def test_importance_init_data(self):
         in_str = "IMP:N,P 1 0"
