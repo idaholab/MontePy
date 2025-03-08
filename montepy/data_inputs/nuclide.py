@@ -1,4 +1,4 @@
-# Copyright 2025, Battelle Energy Alliance, LLC All Rights Reserved.
+# Copyright 2024-2025, Battelle Energy Alliance, LLC All Rights Reserved.
 from montepy.constants import MAX_ATOMIC_SYMBOL_LENGTH
 from montepy._singleton import SingletonGroup
 from montepy.data_inputs.element import Element
