@@ -1,4 +1,4 @@
-# Copyright 2025, Battelle Energy Alliance, LLC All Rights Reserved.
+# Copyright 2024-2025, Battelle Energy Alliance, LLC All Rights Reserved.
 import montepy
 from montepy.cells import Cells
 from montepy.input_parser.mcnp_input import Input
