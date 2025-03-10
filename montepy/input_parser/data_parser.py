@@ -6,11 +6,12 @@ from montepy.input_parser import syntax_node
 
 
 class DataParser(MCNP_Parser):
-    """
-    A parser for almost all data inputs.
+    """A parser for almost all data inputs.
 
-    :returns: a syntax tree for the data input.
-    :rtype: SyntaxNode
+    Returns
+    -------
+    SyntaxNode
+        a syntax tree for the data input.
     """
 
     debugfile = None
@@ -142,11 +143,12 @@ class DataParser(MCNP_Parser):
 
 
 class ClassifierParser(DataParser):
-    """
-    A parser for parsing the first word or classifier of a data input.
+    """A parser for parsing the first word or classifier of a data input.
 
-    :returns: the classifier of the data input.
-    :rtype: ClassifierNode
+    Returns
+    -------
+    ClassifierNode
+        the classifier of the data input.
     """
 
     debugfile = None
@@ -163,15 +165,16 @@ class ClassifierParser(DataParser):
 
 
 class ParamOnlyDataParser(DataParser):
-    """
-    A parser for parsing parameter (key-value pair) only data inputs.
+    """A parser for parsing parameter (key-value pair) only data inputs.
 
     .e.g., SDEF
 
     .. versionadded:: 0.3.0
 
-    :returns: a syntax tree for the data input.
-    :rtype: SyntaxNode
+    Returns
+    -------
+    SyntaxNode
+        a syntax tree for the data input.
     """
 
     debugfile = None
@@ -204,11 +207,12 @@ class ParamOnlyDataParser(DataParser):
 
     @_("spec_parameter", "spec_parameters spec_parameter")
     def spec_parameters(self, p):
-        """
-        A list of the parameters (key, value pairs) for this input.
+        """A list of the parameters (key, value pairs) for this input.
 
-        :returns: all parameters
-        :rtype: ParametersNode
+        Returns
+        -------
+        ParametersNode
+            all parameters
         """
         if len(p) == 1:
             params = syntax_node.ParametersNode()
@@ -243,13 +247,14 @@ class ParamOnlyDataParser(DataParser):
         "spec_classifier particle_type",
     )
     def spec_classifier(self, p):
-        """
-        The classifier of a data input.
+        """The classifier of a data input.
 
         This represents the first word of the data input.
         E.g.: ``M4``, `IMP:N`, ``F104:p``
 
-        :rtype: ClassifierNode
+        Returns
+        -------
+        ClassifierNode
         """
         if hasattr(p, "spec_classifier"):
             classifier = p.spec_classifier

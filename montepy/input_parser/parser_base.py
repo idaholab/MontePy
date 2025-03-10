@@ -8,9 +8,7 @@ _dec = sly.yacc._decorator
 
 
 class MetaBuilder(sly.yacc.ParserMeta):
-    """
-    Custom MetaClass for allowing subclassing of MCNP_Parser.
-
+    """Custom MetaClass for allowing subclassing of MCNP_Parser.
 
     Note: overloading functions is not allowed.
     """
@@ -52,9 +50,7 @@ class MetaBuilder(sly.yacc.ParserMeta):
 
 
 class SLY_Supressor:
-    """
-    This is a fake logger meant to mostly make warnings dissapear.
-    """
+    """This is a fake logger meant to mostly make warnings dissapear."""
 
     def __init__(self):
         self._parse_fail_queue = []
@@ -71,28 +67,31 @@ class SLY_Supressor:
     critical = debug
 
     def parse_error(self, msg, token=None, lineno=0, index=0):
-        """
-        Adds a SLY parsing error to the error queue for being dumped later.
+        """Adds a SLY parsing error to the error queue for being dumped later.
 
-        :param msg: The message to display.
-        :type msg: str
-        :param token: the token that caused the error if any.
-        :type token: Token
-        :param lineno: the current lineno of the error (from SLY not the file), if any.
-        :type lineno: int
+        Parameters
+        ----------
+        msg : str
+            The message to display.
+        token : Token
+            the token that caused the error if any.
+        lineno : int
+            the current lineno of the error (from SLY not the file), if
+            any.
         """
         self._parse_fail_queue.append(
             {"message": msg, "token": token, "line": lineno, "index": index}
         )
 
     def clear_queue(self):
-        """
-        Clears the error queue and returns all errors.
+        """Clears the error queue and returns all errors.
 
         Returns a list of dictionaries. The dictionary has the keys: "message", "token", "line.
 
-        :returns: A list of the errors since the queue was last cleared.
-        :rtype: list
+        Returns
+        -------
+        list
+            A list of the errors since the queue was last cleared.
         """
         ret = self._parse_fail_queue
         self._parse_fail_queue = []
@@ -103,9 +102,7 @@ class SLY_Supressor:
 
 
 class MCNP_Parser(Parser, metaclass=MetaBuilder):
-    """
-    Base class for all MCNP parsers that provides basics.
-    """
+    """Base class for all MCNP parsers that provides basics."""
 
     # Remove this if trying to see issues with parser
     log = SLY_Supressor()
@@ -113,8 +110,7 @@ class MCNP_Parser(Parser, metaclass=MetaBuilder):
     debugfile = None
 
     def restart(self):
-        """
-        Clears internal state information about the current parse.
+        """Clears internal state information about the current parse.
 
         Should be ran before a new object is parsed.
         """
@@ -122,17 +118,21 @@ class MCNP_Parser(Parser, metaclass=MetaBuilder):
         super().restart()
 
     def parse(self, token_generator, input=None):
-        """
-        Parses the token stream and returns a syntax tree.
+        """Parses the token stream and returns a syntax tree.
 
         If the parsing fails None will be returned.
         The error queue can be retrieved from ``parser.log.clear_queue()``.
 
-        :param token_generator: the token generator from ``lexer.tokenize``.
-        :type token_generator: generator
-        :param input: the input that is being lexed and parsed.
-        :type input: Input
-        :rtype: SyntaxNode
+        Parameters
+        ----------
+        token_generator : generator
+            the token generator from ``lexer.tokenize``.
+        input : Input
+            the input that is being lexed and parsed.
+
+        Returns
+        -------
+        SyntaxNode
         """
         self._input = input
 
@@ -155,21 +155,23 @@ class MCNP_Parser(Parser, metaclass=MetaBuilder):
 
     @_("NUMBER", "NUMBER padding")
     def number_phrase(self, p):
-        """
-        A non-zero number with or without padding.
+        """A non-zero number with or without padding.
 
-        :returns: a float ValueNode
-        :rtype: ValueNode
+        Returns
+        -------
+        ValueNode
+            a float ValueNode
         """
         return self._flush_phrase(p, float)
 
     @_("NUMBER", "NUMBER padding")
     def identifier_phrase(self, p):
-        """
-        A non-zero number with or without padding converted to int.
+        """A non-zero number with or without padding converted to int.
 
-        :returns: an int ValueNode
-        :rtype: ValueNode
+        Returns
+        -------
+        ValueNode
+            an int ValueNode
         """
         return self._flush_phrase(p, int)
 
@@ -180,10 +182,11 @@ class MCNP_Parser(Parser, metaclass=MetaBuilder):
         "number_sequence shortcut_phrase",
     )
     def number_sequence(self, p):
-        """
-        A list of numbers.
+        """A list of numbers.
 
-        :rtype: ListNode
+        Returns
+        -------
+        ListNode
         """
         if len(p) == 1:
             sequence = syntax_node.ListNode("number sequence")
@@ -201,11 +204,12 @@ class MCNP_Parser(Parser, metaclass=MetaBuilder):
 
     @_("number_phrase", "null_phrase")
     def numerical_phrase(self, p):
-        """
-        Any number, including 0, with its padding.
+        """Any number, including 0, with its padding.
 
-        :returns: a float ValueNode
-        :rtype: ValueNode
+        Returns
+        -------
+        ValueNode
+            a float ValueNode
         """
         return p[0]
 
@@ -226,11 +230,12 @@ class MCNP_Parser(Parser, metaclass=MetaBuilder):
         "JUMP",
     )
     def shortcut_sequence(self, p):
-        """
-        A shortcut (repeat, multiply, interpolate, or jump).
+        """A shortcut (repeat, multiply, interpolate, or jump).
 
-        :returns: the parsed shortcut.
-        :rtype: ShortcutNode
+        Returns
+        -------
+        ShortcutNode
+            the parsed shortcut.
         """
         short_cut = syntax_node.ShortcutNode(p)
         if isinstance(p[0], syntax_node.ShortcutNode):
@@ -242,11 +247,12 @@ class MCNP_Parser(Parser, metaclass=MetaBuilder):
 
     @_("shortcut_sequence", "shortcut_sequence padding")
     def shortcut_phrase(self, p):
-        """
-        A complete shortcut, which should be used, and not shortcut_sequence.
+        """A complete shortcut, which should be used, and not shortcut_sequence.
 
-        :returns: the parsed shortcut.
-        :rtype: ShortcutNode
+        Returns
+        -------
+        ShortcutNode
+            the parsed shortcut.
         """
         sequence = p.shortcut_sequence
         if len(p) == 2:
@@ -255,38 +261,39 @@ class MCNP_Parser(Parser, metaclass=MetaBuilder):
 
     @_("NULL", "NULL padding")
     def null_phrase(self, p):
-        """
-        A zero number with or without its padding.
+        """A zero number with or without its padding.
 
-        :returns: a float ValueNode
-        :rtype: ValueNode
+        Returns
+        -------
+        ValueNode
+            a float ValueNode
         """
         return self._flush_phrase(p, float)
 
     @_("NULL", "NULL padding")
     def null_ident_phrase(self, p):
-        """
-        A zero number with or without its padding, for identification.
+        """A zero number with or without its padding, for identification.
 
-        :returns: an int ValueNode
-        :rtype: ValueNode
+        Returns
+        -------
+        ValueNode
+            an int ValueNode
         """
         return self._flush_phrase(p, int)
 
     @_("TEXT", "TEXT padding")
     def text_phrase(self, p):
-        """
-        A string with or without its padding.
+        """A string with or without its padding.
 
-        :returns: a str ValueNode.
-        :rtype: ValueNode
+        Returns
+        -------
+        ValueNode
+            a str ValueNode.
         """
         return self._flush_phrase(p, str)
 
     def _flush_phrase(self, p, token_type):
-        """
-        Creates a ValueNode.
-        """
+        """Creates a ValueNode."""
         if len(p) > 1:
             padding = p[1]
         else:
@@ -295,11 +302,12 @@ class MCNP_Parser(Parser, metaclass=MetaBuilder):
 
     @_("SPACE", "DOLLAR_COMMENT", "COMMENT")
     def padding(self, p):
-        """
-        Anything that is not semantically significant: white space, and comments.
+        """Anything that is not semantically significant: white space, and comments.
 
-        :returns: All sequential padding.
-        :rtype: PaddingNode
+        Returns
+        -------
+        PaddingNode
+            All sequential padding.
         """
         if hasattr(p, "DOLLAR_COMMENT") or hasattr(p, "COMMENT"):
             is_comment = True
@@ -309,11 +317,12 @@ class MCNP_Parser(Parser, metaclass=MetaBuilder):
 
     @_("padding SPACE", "padding DOLLAR_COMMENT", "padding COMMENT", 'padding "&"')
     def padding(self, p):
-        """
-        Anything that is not semantically significant: white space, and comments.
+        """Anything that is not semantically significant: white space, and comments.
 
-        :returns: All sequential padding.
-        :rtype: PaddingNode
+        Returns
+        -------
+        PaddingNode
+            All sequential padding.
         """
         if hasattr(p, "DOLLAR_COMMENT") or hasattr(p, "COMMENT"):
             is_comment = True
@@ -324,11 +333,12 @@ class MCNP_Parser(Parser, metaclass=MetaBuilder):
 
     @_("parameter", "parameters parameter")
     def parameters(self, p):
-        """
-        A list of the parameters (key, value pairs) for this input.
+        """A list of the parameters (key, value pairs) for this input.
 
-        :returns: all parameters
-        :rtype: ParametersNode
+        Returns
+        -------
+        ParametersNode
+            all parameters
         """
         if len(p) == 1:
             params = syntax_node.ParametersNode()
@@ -344,11 +354,12 @@ class MCNP_Parser(Parser, metaclass=MetaBuilder):
         "classifier param_seperator text_phrase",
     )
     def parameter(self, p):
-        """
-        A singular Key-value pair.
+        """A singular Key-value pair.
 
-        :returns: the parameter.
-        :rtype: SyntaxNode
+        Returns
+        -------
+        SyntaxNode
+            the parameter.
         """
         return syntax_node.SyntaxNode(
             p.classifier.prefix.value,
@@ -357,10 +368,11 @@ class MCNP_Parser(Parser, metaclass=MetaBuilder):
 
     @_("file_atom", "file_name file_atom")
     def file_name(self, p):
-        """
-        A file name.
+        """A file name.
 
-        :rtype: str
+        Returns
+        -------
+        str
         """
         ret = p[0]
         if len(p) > 1:
@@ -388,21 +400,23 @@ class MCNP_Parser(Parser, metaclass=MetaBuilder):
 
     @_("file_name", "file_name padding")
     def file_phrase(self, p):
-        """
-        A file name with or without its padding.
+        """A file name with or without its padding.
 
-        :returns: a str ValueNode.
-        :rtype: ValueNode
+        Returns
+        -------
+        ValueNode
+            a str ValueNode.
         """
         return self._flush_phrase(p, str)
 
     @_("padding", "equals_sign", "padding equals_sign")
     def param_seperator(self, p):
-        """
-        The seperation between a key and value for a parameter.
+        """The seperation between a key and value for a parameter.
 
-        :returns: a str ValueNode
-        :rtype: ValueNode
+        Returns
+        -------
+        ValueNode
+            a str ValueNode
         """
         padding = p[0]
         if len(p) > 1:
@@ -411,11 +425,12 @@ class MCNP_Parser(Parser, metaclass=MetaBuilder):
 
     @_('"="', '"=" padding')
     def equals_sign(self, p):
-        """
-        The seperation between a key and value for a parameter.
+        """The seperation between a key and value for a parameter.
 
-        :returns: a str ValueNode
-        :rtype: ValueNode
+        Returns
+        -------
+        ValueNode
+            a str ValueNode
         """
         padding = syntax_node.PaddingNode(p[0])
         if hasattr(p, "padding"):
@@ -454,13 +469,14 @@ class MCNP_Parser(Parser, metaclass=MetaBuilder):
         "classifier particle_type",
     )
     def classifier(self, p):
-        """
-        The classifier of a data input.
+        """The classifier of a data input.
 
         This represents the first word of the data input.
         E.g.: ``M4``, `IMP:N`, ``F104:p``
 
-        :rtype: ClassifierNode
+        Returns
+        -------
+        ClassifierNode
         """
         if hasattr(p, "classifier"):
             classifier = p.classifier
@@ -483,10 +499,11 @@ class MCNP_Parser(Parser, metaclass=MetaBuilder):
 
     @_("classifier padding", "classifier")
     def classifier_phrase(self, p):
-        """
-        A classifier with its padding.
+        """A classifier with its padding.
 
-        :rtype: ClassifierNode
+        Returns
+        -------
+        ClassifierNode
         """
         classifier = p.classifier
         if len(p) > 1:
@@ -495,11 +512,12 @@ class MCNP_Parser(Parser, metaclass=MetaBuilder):
 
     @_('"*"', "PARTICLE_SPECIAL")
     def modifier(self, p):
-        """
-        A character that modifies a classifier, e.g., ``*TR``.
+        """A character that modifies a classifier, e.g., ``*TR``.
 
-        :returns: the modifier
-        :rtype: str
+        Returns
+        -------
+        str
+            the modifier
         """
         if hasattr(p, "PARTICLE_SPECIAL"):
             if p.PARTICLE_SPECIAL == "*":
@@ -507,13 +525,14 @@ class MCNP_Parser(Parser, metaclass=MetaBuilder):
         return p[0]
 
     def error(self, token):
-        """
-        Default error handling.
+        """Default error handling.
 
         Puts the data into a queue that can be pulled out later for one final clear debug.
 
-        :param token: the token that broke the parsing rules.
-        :type token: Token
+        Parameters
+        ----------
+        token : Token
+            the token that broke the parsing rules.
         """
         if token:
             lineno = getattr(token, "lineno", 0)
@@ -537,8 +556,7 @@ class MCNP_Parser(Parser, metaclass=MetaBuilder):
             self.log.parse_error("sly: Parse error in input. EOF\n")
 
     def _debug_parsing_error(self, token):  # pragma: no cover
-        """
-        A function that should be called from error when debugging a parsing error.
+        """A function that should be called from error when debugging a parsing error.
 
         Call this from the method error. Also you will need the relevant debugfile to be set and saving the parser
         tables to file. e.g.,

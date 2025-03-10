@@ -31,16 +31,13 @@ InitInput = Union[montepy.input_parser.mcnp_input.Input, str]
 
 
 class _ExceptionContextAdder(ABCMeta):
-    """
-    A metaclass for wrapping all class properties and methods in :func:`~montepy.errors.add_line_number_to_exception`.
+    """A metaclass for wrapping all class properties and methods in :func:`~montepy.errors.add_line_number_to_exception`.
 
     """
 
     @staticmethod
     def _wrap_attr_call(func):
-        """
-        Wraps the function, and returns the modified function.
-        """
+        """Wraps the function, and returns the modified function."""
 
         @functools.wraps(func)
         def wrapped(*args, **kwargs):
@@ -66,8 +63,7 @@ class _ExceptionContextAdder(ABCMeta):
         return wrapped
 
     def __new__(meta, classname, bases, attributes):
-        """
-        This will replace all properties and callable attributes with
+        """This will replace all properties and callable attributes with
         wrapped versions.
         """
         new_attrs = {}
@@ -95,13 +91,14 @@ class _ExceptionContextAdder(ABCMeta):
 
 
 class MCNP_Object(ABC, metaclass=_ExceptionContextAdder):
-    """
-    Abstract class for semantic representations of MCNP inputs.
+    """Abstract class for semantic representations of MCNP inputs.
 
-    :param input: The Input syntax object this will wrap and parse.
-    :type input: Union[Input, str]
-    :param parser: The parser object to parse the input with.
-    :type parser: MCNP_Parser
+    Parameters
+    ----------
+    input : Union[Input, str]
+        The Input syntax object this will wrap and parse.
+    parser : MCNP_Parser
+        The parser object to parse the input with.
     """
 
     def __init__(
@@ -168,19 +165,25 @@ class MCNP_Object(ABC, metaclass=_ExceptionContextAdder):
 
     @staticmethod
     def _generate_default_node(value_type: type, default, padding: str = " "):
-        """
-        Generates a "default" or blank ValueNode.
+        """Generates a "default" or blank ValueNode.
 
         None is generally a safe default value to provide.
 
-        :param value_type: the data type for the ValueNode.
-        :type value_type: Class
-        :param default: the default value to provide (type needs to agree with value_type)
-        :type default: value_type
-        :param padding: the string to provide to the PaddingNode. If None no PaddingNode will be added.
-        :type padding: str, None
-        :returns: a new ValueNode with the requested information.
-        :rtype: ValueNode
+        Parameters
+        ----------
+        value_type : Class
+            the data type for the ValueNode.
+        default : value_type
+            the default value to provide (type needs to agree with
+            value_type)
+        padding : str, None
+            the string to provide to the PaddingNode. If None no
+            PaddingNode will be added.
+
+        Returns
+        -------
+        ValueNode
+            a new ValueNode with the requested information.
         """
         if padding:
             padding_node = PaddingNode(padding)
@@ -192,21 +195,24 @@ class MCNP_Object(ABC, metaclass=_ExceptionContextAdder):
 
     @property
     def parameters(self) -> dict[str, str]:
-        """
-        A dictionary of the additional parameters for the object.
+        """A dictionary of the additional parameters for the object.
 
         e.g.: ``1 0 -1 u=1 imp:n=0.5`` has the parameters
         ``{"U": "1", "IMP:N": "0.5"}``
 
-        :returns: a dictionary of the key-value pairs of the parameters.
+        Returns
+        -------
+        unknown
+            a dictionary of the key-value pairs of the parameters.
+
+
         :rytpe: dict
         """
         return self._parameters
 
     @abstractmethod
     def _update_values(self):
-        """
-        Method to update values in syntax tree with new values.
+        """Method to update values in syntax tree with new values.
 
         Generally when :func:`~montepy.utilities.make_prop_val_node` this is not necessary to do,
         but when :func:`~montepy.utilities.make_prop_pointer` is used it is necessary.
@@ -217,14 +223,18 @@ class MCNP_Object(ABC, metaclass=_ExceptionContextAdder):
         pass
 
     def format_for_mcnp_input(self, mcnp_version: tuple[int]) -> list[str]:
-        """
-        Creates a string representation of this MCNP_Object that can be
+        """Creates a string representation of this MCNP_Object that can be
         written to file.
 
-        :param mcnp_version: The tuple for the MCNP version that must be exported to.
-        :type mcnp_version: tuple
-        :return: a list of strings for the lines that this input will occupy.
-        :rtype: list
+        Parameters
+        ----------
+        mcnp_version : tuple
+            The tuple for the MCNP version that must be exported to.
+
+        Returns
+        -------
+        list
+            a list of strings for the lines that this input will occupy.
         """
         self.validate()
         self._update_values()
@@ -234,24 +244,26 @@ class MCNP_Object(ABC, metaclass=_ExceptionContextAdder):
 
     @property
     def comments(self) -> list[PaddingNode]:
-        """
-        The comments associated with this input if any.
+        """The comments associated with this input if any.
 
         This includes all ``C`` comments before this card that aren't part of another card,
         and any comments that are inside this card.
 
-        :returns: a list of the comments associated with this comment.
-        :rtype: list
+        Returns
+        -------
+        list
+            a list of the comments associated with this comment.
         """
         return list(self._tree.comments)
 
     @property
     def leading_comments(self) -> list[PaddingNode]:
-        """
-        Any comments that come before the beginning of the input proper.
+        """Any comments that come before the beginning of the input proper.
 
-        :returns: the leading comments.
-        :rtype: list
+        Returns
+        -------
+        list
+            the leading comments.
         """
         return list(self._tree["start_pad"].comments)
 
@@ -288,25 +300,31 @@ class MCNP_Object(ABC, metaclass=_ExceptionContextAdder):
     def wrap_string_for_mcnp(
         string, mcnp_version, is_first_line, suppress_blank_end=True
     ) -> list[str]:
-        """
-        Wraps the list of the words to be a well formed MCNP input.
+        """Wraps the list of the words to be a well formed MCNP input.
 
         multi-line inputs will be handled by using the indentation format,
         and not the "&" method.
 
-        :param string: A long string with new lines in it,
-                    that needs to be chunked appropriately for MCNP inputs
-        :type string: str
-        :param mcnp_version: the tuple for the MCNP that must be formatted for.
-        :type mcnp_version: tuple
-        :param is_first_line: If true this will be the beginning of an MCNP input.
-                             The first line will not be indented.
-        :type is_first_line: bool
-        :param suppress_blank_end: Whether or not to suppress any blank lines that would be added to the end.
-                                    Good for anywhere but cell modifiers in the cell block.
-        :type suppress_blank_end: bool
-        :returns: A list of strings that can be written to an input file, one item to a line.
-        :rtype: list
+        Parameters
+        ----------
+        string : str
+            A long string with new lines in it, that needs to be chunked
+            appropriately for MCNP inputs
+        mcnp_version : tuple
+            the tuple for the MCNP that must be formatted for.
+        is_first_line : bool
+            If true this will be the beginning of an MCNP input. The
+            first line will not be indented.
+        suppress_blank_end : bool
+            Whether or not to suppress any blank lines that would be
+            added to the end. Good for anywhere but cell modifiers in
+            the cell block.
+
+        Returns
+        -------
+        list
+            A list of strings that can be written to an input file, one
+            item to a line.
         """
         line_length = get_max_line_length(mcnp_version)
         indent_length = BLANK_SPACE_CONTINUE
@@ -352,10 +370,8 @@ class MCNP_Object(ABC, metaclass=_ExceptionContextAdder):
         return ret
 
     def validate(self):
-        """
-        Validates that the object is in a usable state.
+        """Validates that the object is in a usable state.
 
-        :raises: IllegalState if any condition exists that make the object incomplete.
         """
         pass
 
@@ -364,8 +380,10 @@ class MCNP_Object(ABC, metaclass=_ExceptionContextAdder):
 
         This is done so that inputs can find links to other objects.
 
-        :param problem: The problem to link this input to.
-        :type problem: MCNP_Problem
+        Parameters
+        ----------
+        problem : MCNP_Problem
+            The problem to link this input to.
         """
         if not isinstance(problem, (montepy.mcnp_problem.MCNP_Problem, type(None))):
             raise TypeError("problem must be an MCNP_Problem")
@@ -389,13 +407,15 @@ class MCNP_Object(ABC, metaclass=_ExceptionContextAdder):
 
     @property
     def trailing_comment(self) -> list[PaddingNode]:
-        """
-        The trailing comments and padding of an input.
+        """The trailing comments and padding of an input.
 
         Generally this will be blank as these will be moved to be a leading comment for the next input.
 
-        :returns: the trailing ``c`` style comments and intermixed padding (e.g., new lines)
-        :rtype: list
+        Returns
+        -------
+        list
+            the trailing ``c`` style comments and intermixed padding
+            (e.g., new lines)
         """
         return self._tree.get_trailing_comment()
 
@@ -419,10 +439,11 @@ class MCNP_Object(ABC, metaclass=_ExceptionContextAdder):
         self.__dict__.update(crunchy_data)
 
     def clone(self) -> montepy.mcnp_object.MCNP_Object:
-        """
-        Create a new independent instance of this object.
+        """Create a new independent instance of this object.
 
-        :returns: a new instance identical to this object.
-        :rtype: type(self)
+        Returns
+        -------
+        type(self)
+            a new instance identical to this object.
         """
         return copy.deepcopy(self)

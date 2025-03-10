@@ -1,13 +1,15 @@
 class Isotope:
-    """
-    A class to represent an MCNP isotope
+    """A class to represent an MCNP isotope
 
     .. deprecated:: 0.4.1
 
         This will class is deprecated, and has been renamed: :class:`~montepy.data_inputs.nuclide.Nuclide`.
         For more details see the :ref:`migrate 0 1`.
 
-    :raises DeprecationWarning: Whenever called.
+    Raises
+    ------
+    DeprecationWarning
+        Whenever called.
     """
 
     def __init__(self, *args, **kwargs):

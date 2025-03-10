@@ -6,8 +6,7 @@ from sly import Lexer
 
 
 class MCNP_Lexer(Lexer):
-    """
-    Base lexer for all MCNP lexers.
+    """Base lexer for all MCNP lexers.
 
     Provides ~90% of the tokens definition.
 
@@ -75,32 +74,24 @@ class MCNP_Lexer(Lexer):
         "bflcl",
         "unc",
     }
-    """
-    Defines allowed keywords in MCNP.
-    """
+    """Defines allowed keywords in MCNP."""
 
     literals = {"(", ":", ")", "&", "#", "=", "*", "+", ","}
 
     COMPLEMENT = r"\#"
-    """
-    A complement character.
-    """
+    """A complement character."""
 
     reflags = re.IGNORECASE | re.VERBOSE
 
     @_(r"\$.*")
     def DOLLAR_COMMENT(self, t):
-        """
-        A comment starting with a dollar sign.
-        """
+        """A comment starting with a dollar sign."""
         self.lineno += t.value.count("\n")
         return t
 
     @_(r"C\n", r"C\s.*")
     def COMMENT(self, t):
-        """
-        A ``c`` style comment.
-        """
+        """A ``c`` style comment."""
         self.lineno += t.value.count("\n")
         start = self.find_column(self.text, t)
         if start > 5:
@@ -109,9 +100,7 @@ class MCNP_Lexer(Lexer):
 
     @_(r"SC\d+.*")
     def SOURCE_COMMENT(self, t):
-        """
-        A source comment.
-        """
+        """A source comment."""
         self.lineno += t.value.count("\n")
         start = self.find_column(self.text, t)
         if start <= 5:
@@ -121,9 +110,7 @@ class MCNP_Lexer(Lexer):
 
     @_(r"FC\d+.*")
     def TALLY_COMMENT(self, t):
-        """
-        A tally Comment.
-        """
+        """A tally Comment."""
         self.lineno += t.value.count("\n")
         start = self.find_column(self.text, t)
         if start <= 5:
@@ -133,17 +120,14 @@ class MCNP_Lexer(Lexer):
 
     @_(r"\s+")
     def SPACE(self, t):
-        """
-        Any white space.
-        """
+        """Any white space."""
         t.value = t.value.expandtabs(constants.TABSIZE)
         self.lineno += t.value.count("\n")
         return t
 
     @_(r"\d{4,6}\.(\d{2}[a-z]|\d{3}[a-z]{2})")
     def ZAID(self, t):
-        """
-        A ZAID isotope definition in the MCNP format.
+        """A ZAID isotope definition in the MCNP format.
 
         E.g.: ``1001.80c``.
         """
@@ -151,16 +135,14 @@ class MCNP_Lexer(Lexer):
 
     # note: / is not escaping - since this doesn't not need escape in this position
     THERMAL_LAW = r"[a-z][a-z\d/-]+\.\d+[a-z]"
-    """
-    An MCNP formatted thermal scattering law.
+    """An MCNP formatted thermal scattering law.
 
-    e.g.: ``lwtr.20t``. 
+    e.g.: ``lwtr.20t``.
     """
 
     @_(r"[+\-]?\d+(?!e)[a-z]+")
     def NUMBER_WORD(self, t):
-        """
-        An integer followed by letters.
+        """An integer followed by letters.
 
         Can be used for library numbers, as well as shortcuts.
 
@@ -173,18 +155,14 @@ class MCNP_Lexer(Lexer):
 
     @_(r"[+\-]?[0-9]+\.?[0-9]*E?[+\-]?[0-9]*", r"[+\-]?[0-9]*\.?[0-9]+E?[+\-]?[0-9]*")
     def NUMBER(self, t):
-        """
-        A float, or int number, including "fortran floats".
-        """
+        """A float, or int number, including "fortran floats"."""
         if fortran_float(t.value) == 0:
             t.type = "NULL"
         return t
 
     @_(r"[+\-]?[0-9]*\.?[0-9]*E?[+\-]?[0-9]*[ijrml]+[a-z\./]*", r"[a-z]+[a-z\./]*")
     def TEXT(self, t):
-        """
-        General text that covers shortcuts and Keywords.
-        """
+        """General text that covers shortcuts and Keywords."""
         if update := self._parse_shortcut(t):
             return update
         if t.value.lower() in self._KEYWORDS:
@@ -192,15 +170,11 @@ class MCNP_Lexer(Lexer):
         return t
 
     NULL = r"0+"
-    """
-    Zero number.
-    """
+    """Zero number."""
 
     @_(r"MESSAGE:.*\s")
     def MESSAGE(self, t):
-        """
-        A message block.
-        """
+        """A message block."""
         self.lineno += t.value.count("\n")
         return t
 
@@ -219,70 +193,49 @@ class MCNP_Lexer(Lexer):
                 return t
 
     INTERPOLATE = r"\d*I"
-    """
-    An interpolate shortcut.
-    """
+    """An interpolate shortcut."""
     NUM_INTERPOLATE = r"\d+I"
-    """
-    An interpolate shortcut with a number.
-    """
+    """An interpolate shortcut with a number."""
 
     JUMP = r"\d*J"
-    """
-    A jump shortcut.
-    """
+    """A jump shortcut."""
 
     NUM_JUMP = r"\d+J"
-    """
-    A jump shortcut with a number.
-    """
+    """A jump shortcut with a number."""
 
     LOG_INTERPOLATE = r"\d*I?LOG"
-    """
-    A logarithmic interpolate shortcut.
-    """
+    """A logarithmic interpolate shortcut."""
 
     NUM_LOG_INTERPOLATE = r"\d+I?LOG"
-    """
-    A logarithmic interpolate shortcut.
-    """
+    """A logarithmic interpolate shortcut."""
 
     MULTIPLY = r"[+\-]?[0-9]+\.?[0-9]*E?[+\-]?[0-9]*M"
-    """
-    A multiply shortcut.
-    """
+    """A multiply shortcut."""
 
     NUM_MULTIPLY = r"[+\-]?[0-9]+\.?[0-9]*E?[+\-]?[0-9]*M"
-    """
-    A multiply shortcut with a number.
-    """
+    """A multiply shortcut with a number."""
 
     REPEAT = r"\d*R"
-    """
-    A repeat shortcut.
-    """
+    """A repeat shortcut."""
 
     NUM_REPEAT = r"\d+R"
-    """
-    A repeat shortcut with a number.
-    """
+    """A repeat shortcut with a number."""
 
     FILE_PATH = r'[^><:"%,;=&\(\)|?*\s]+'
-    """
-    A file path that covers basically anything that windows or linux allows.
-    """
+    """A file path that covers basically anything that windows or linux allows."""
 
     @staticmethod
     def find_column(text, token):
-        """
-        Calculates the column number for the start of this token.
+        """Calculates the column number for the start of this token.
 
         Uses 0-indexing.
 
-        :param text: the text being lexed.
-        :type text: str
-        :param token: the token currently being processed
-        :type token: sly.lex.Token
+        Parameters
+        ----------
+        text : str
+            the text being lexed.
+        token : sly.lex.Token
+            the token currently being processed
         """
         last_cr = text.rfind("\n", 0, token.index)
         if last_cr < 0:
@@ -292,9 +245,7 @@ class MCNP_Lexer(Lexer):
 
 
 class ParticleLexer(MCNP_Lexer):
-    """
-    A lexer for lexing an input that has particles in it.
-    """
+    """A lexer for lexing an input that has particles in it."""
 
     tokens = {
         COMMENT,
@@ -371,9 +322,7 @@ class ParticleLexer(MCNP_Lexer):
 
 
 class CellLexer(ParticleLexer):
-    """
-    A lexer for cell inputs that allows particles.
-    """
+    """A lexer for cell inputs that allows particles."""
 
     tokens = {
         COMMENT,
@@ -398,9 +347,7 @@ class CellLexer(ParticleLexer):
 
 
 class DataLexer(ParticleLexer):
-    """
-    A lexer for data inputs.
-    """
+    """A lexer for data inputs."""
 
     tokens = {
         COMMENT,
@@ -489,15 +436,11 @@ class DataLexer(ParticleLexer):
     _MODIFIERS = {
         "no",  # VOLUME
     }
-    """
-    A keyword flag at the beginning of a input that modifies it's behavior.
-    """
+    """A keyword flag at the beginning of a input that modifies it's behavior."""
 
     @_(r"([|+\-!<>/%^_~@\*\?\#]|\#\d*)+")
     def PARTICLE_SPECIAL(self, t):
-        """
-        Particle designators that are special characters.
-        """
+        """Particle designators that are special characters."""
         return t
 
     @_(r"[+\-]?[0-9]*\.?[0-9]*E?[+\-]?[0-9]*[ijrml]+[a-z\./]*", r"[a-z]+[a-z\./]*")
@@ -513,8 +456,7 @@ class DataLexer(ParticleLexer):
 
 
 class SurfaceLexer(MCNP_Lexer):
-    """
-    A lexer for Surface inputs.
+    """A lexer for Surface inputs.
 
     The main difference is that ``p`` will be interpreted as a plane,
     and not a photon.
@@ -583,9 +525,7 @@ class SurfaceLexer(MCNP_Lexer):
         "wed",
         "arb",
     }
-    """
-    All allowed surface types.
-    """
+    """All allowed surface types."""
 
     @_(r"[+\-]?[0-9]*\.?[0-9]*E?[+\-]?[0-9]*[ijrml]+[a-z\./]*", r"[a-z]+[a-z\./]*")
     def TEXT(self, t):

@@ -5,10 +5,11 @@ from montepy.input_parser import syntax_node
 
 
 class SurfaceParser(MCNP_Parser):
-    """
-    A parser for MCNP surfaces.
+    """A parser for MCNP surfaces.
 
-    :rtype: SyntaxNode
+    Returns
+    -------
+    SyntaxNode
     """
 
     debugfile = None

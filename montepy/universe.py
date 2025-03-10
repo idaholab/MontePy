@@ -10,12 +10,13 @@ from numbers import Integral
 
 
 class Universe(Numbered_MCNP_Object):
-    """
-    Class to represent an MCNP universe, but not handle the input
+    """Class to represent an MCNP universe, but not handle the input
     directly.
 
-    :param number: The number for the universe, must be ≥ 0
-    :type number: int
+    Parameters
+    ----------
+    number : int
+        The number for the universe, must be ≥ 0
     """
 
     def __init__(self, number: int):
@@ -34,11 +35,12 @@ class Universe(Numbered_MCNP_Object):
 
     @property
     def cells(self):
-        """
-        A generator of the cell objects in this universe.
+        """A generator of the cell objects in this universe.
 
-        :return: a generator returning every cell in this universe.
-        :rtype: Generator
+        Returns
+        -------
+        Generator
+            a generator returning every cell in this universe.
         """
         if self._problem:
             for cell in self._problem.cells:
@@ -46,14 +48,19 @@ class Universe(Numbered_MCNP_Object):
                     yield cell
 
     def claim(self, cells):
-        """
-        Take the given cells and move them into this universe, and out of their original universe.
+        """Take the given cells and move them into this universe, and out of their original universe.
 
         Can be given a single Cell, a list of cells, or a Cells object.
 
-        :param cells: the cell(s) to be claimed
-        :type cells: Cell, list, or Cells
-        :raises TypeError: if bad parameter is given.
+        Parameters
+        ----------
+        cells : Cell, list, or Cells
+            the cell(s) to be claimed
+
+        Raises
+        ------
+        TypeError
+            if bad parameter is given.
         """
         if not isinstance(cells, (montepy.Cell, list, Cells)):
             raise TypeError(f"Cells being claimed must be a Cell, list, or Cells")
@@ -67,9 +74,7 @@ class Universe(Numbered_MCNP_Object):
 
     @property
     def old_number(self):
-        """
-        Original universe number from the input file.
-        """
+        """Original universe number from the input file."""
         return self._number
 
     def _update_values(self):

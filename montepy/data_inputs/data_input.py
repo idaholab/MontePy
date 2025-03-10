@@ -19,14 +19,10 @@ from typing import Union
 
 
 class _ClassifierInput(Input):
-    """
-    A specialized subclass that returns only 1 useful token.
-    """
+    """A specialized subclass that returns only 1 useful token."""
 
     def tokenize(self):
-        """
-        Returns one token after all starting comments and spaces.
-        """
+        """Returns one token after all starting comments and spaces."""
         last_in_comment = True
         for token in super().tokenize():
             if token is None:
@@ -41,13 +37,15 @@ class _ClassifierInput(Input):
 
 
 class DataInputAbstract(MCNP_Object):
-    """
-    Parent class to describe all MCNP data inputs.
+    """Parent class to describe all MCNP data inputs.
 
-    :param input: the Input object representing this data input
-    :type input: Union[Input, str]
-    :param fast_parse: Whether or not to only parse the first word for the type of data.
-    :type fast_parse: bool
+    Parameters
+    ----------
+    input : Union[Input, str]
+        the Input object representing this data input
+    fast_parse : bool
+        Whether or not to only parse the first word for the type of
+        data.
     """
 
     _parser = DataParser()
@@ -87,8 +85,11 @@ class DataInputAbstract(MCNP_Object):
 
         this must be lower case
 
-        :returns: the string of the prefix that identifies a input of this class.
-        :rtype: str
+        Returns
+        -------
+        str
+            the string of the prefix that identifies a input of this
+            class.
         """
         pass
 
@@ -99,8 +100,10 @@ class DataInputAbstract(MCNP_Object):
 
         For example: ``kcode`` doesn't allow numbers but tallies do allow it e.g., ``f7``
 
-        :returns: True if this class allows numbers
-        :rtype: bool
+        Returns
+        -------
+        bool
+            True if this class allows numbers
         """
         pass
 
@@ -115,8 +118,10 @@ class DataInputAbstract(MCNP_Object):
         * 1 : is optional
         * 2 : is mandatory
 
-        :returns: True if this class particle classifiers
-        :rtype: int
+        Returns
+        -------
+        int
+            True if this class particle classifiers
         """
         pass
 
@@ -129,8 +134,10 @@ class DataInputAbstract(MCNP_Object):
         For example: the classifier for ``F7:n`` is ``:n``, and ``imp:n,p`` is ``:n,p``
         This will be parsed as a list: ``[<Particle.NEUTRON: 'N'>, <Particle.PHOTON: 'P'>]``.
 
-        :returns: the particles listed in the input if any. Otherwise None
-        :rtype: list
+        Returns
+        -------
+        list
+            the particles listed in the input if any. Otherwise None
         """
         if self._particles:
             return self._particles
@@ -143,8 +150,10 @@ class DataInputAbstract(MCNP_Object):
         For example: for a material like: m20 the prefix is 'm'
         this will always be lower case.
 
-        :returns: The prefix read from the input
-        :rtype: str
+        Returns
+        -------
+        str
+            The prefix read from the input
         """
         return self._prefix.lower()
 
@@ -154,30 +163,35 @@ class DataInputAbstract(MCNP_Object):
 
         For example: for a transform: ``*tr5`` the modifier is ``*``
 
-        :returns: the prefix modifier that was parsed if any. None if otherwise.
-        :rtype: str
+        Returns
+        -------
+        str
+            the prefix modifier that was parsed if any. None if
+            otherwise.
         """
         return self._modifier
 
     @property
     def data(self):
-        """
-        The syntax tree actually holding the data.
+        """The syntax tree actually holding the data.
 
-        :returns: The syntax tree with the information.
-        :rtype: ListNode
+        Returns
+        -------
+        ListNode
+            The syntax tree with the information.
         """
         return self._tree["data"]
 
     @property
     def classifier(self):
-        """
-        The syntax tree object holding the data classifier.
+        """The syntax tree object holding the data classifier.
 
         For example this would container information like ``M4``, or ``F104:n``.
 
-        :returns: the classifier for this data_input.
-        :rtype: ClassifierNode
+        Returns
+        -------
+        ClassifierNode
+            the classifier for this data_input.
         """
         return self._tree["classifier"]
 
@@ -188,13 +202,18 @@ class DataInputAbstract(MCNP_Object):
         pass
 
     def update_pointers(self, data_inputs):
-        """
-        Connects data inputs to each other
+        """Connects data inputs to each other
 
-        :param data_inputs: a list of the data inputs in the problem
-        :type data_inputs: list
-        :returns: True iff this input should be removed from ``problem.data_inputs``
-        :rtype: bool, None
+        Parameters
+        ----------
+        data_inputs : list
+            a list of the data inputs in the problem
+
+        Returns
+        -------
+        bool, None
+            True iff this input should be removed from
+            ``problem.data_inputs``
         """
         pass
 
@@ -205,17 +224,22 @@ class DataInputAbstract(MCNP_Object):
         return str(self)
 
     def __split_name(self, input):
-        """
-        Parses the name of the data input as a prefix, number, and a particle classifier.
+        """Parses the name of the data input as a prefix, number, and a particle classifier.
 
         This populates the properties:
             prefix
             _input_number
             classifier
 
-        :param input: the input object representing this data input
-        :type input: input
-        :raises MalformedInputError: if the name is invalid for this DataInput
+        Parameters
+        ----------
+        input : input
+            the input object representing this data input
+
+        Raises
+        ------
+        MalformedInputError
+            if the name is invalid for this DataInput
         """
         self._classifier = self._tree["classifier"]
         self.__enforce_name(input)
@@ -226,12 +250,17 @@ class DataInputAbstract(MCNP_Object):
         self._modifier = self._classifier.modifier
 
     def __enforce_name(self, input):
-        """
-        Checks that the name is valid.
+        """Checks that the name is valid.
 
-        :param input: the input object representing this data input
-        :type input: input
-        :raises MalformedInputError: if the name is invalid for this DataInput
+        Parameters
+        ----------
+        input : input
+            the input object representing this data input
+
+        Raises
+        ------
+        MalformedInputError
+            if the name is invalid for this DataInput
         """
         classifier = self._classifier
         if self._class_prefix:
@@ -276,15 +305,17 @@ class DataInputAbstract(MCNP_Object):
 
 
 class DataInput(DataInputAbstract):
-    """
-    Catch-all for all other MCNP data inputs.
+    """Catch-all for all other MCNP data inputs.
 
-    :param input: the Input object representing this data input
-    :type input: Union[Input, str]
-    :param fast_parse: Whether or not to only parse the first word for the type of data.
-    :type fast_parse: bool
-    :param prefix: The input prefix found during parsing (internal use only)
-    :type prefix: str
+    Parameters
+    ----------
+    input : Union[Input, str]
+        the Input object representing this data input
+    fast_parse : bool
+        Whether or not to only parse the first word for the type of
+        data.
+    prefix : str
+        The input prefix found during parsing (internal use only)
     """
 
     def __init__(
@@ -307,8 +338,7 @@ class DataInput(DataInputAbstract):
         return None
 
     def _load_correct_parser(self, prefix):
-        """
-        Decides if a specialized parser needs to be loaded for barebone
+        """Decides if a specialized parser needs to be loaded for barebone
         special cases.
 
         .. versionadded:: 0.3.0

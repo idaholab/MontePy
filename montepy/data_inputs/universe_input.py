@@ -11,18 +11,19 @@ from montepy.utilities import *
 
 
 class UniverseInput(CellModifierInput):
-    """
-    Object to actually handle the ``U`` input in cells
+    """Object to actually handle the ``U`` input in cells
     and data blocks.
 
-    :param input: the Input object representing this data input
-    :type input: Union[Input, str]
-    :param in_cell_block: if this card came from the cell block of an input file.
-    :type in_cell_block: bool
-    :param key: the key from the key-value pair in a cell
-    :type key: str
-    :param value: the value syntax tree from the key-value pair in a cell
-    :type value: SyntaxNode
+    Parameters
+    ----------
+    input : Union[Input, str]
+        the Input object representing this data input
+    in_cell_block : bool
+        if this card came from the cell block of an input file.
+    key : str
+        the key from the key-value pair in a cell
+    value : SyntaxNode
+        the value syntax tree from the key-value pair in a cell
     """
 
     def __init__(
@@ -109,8 +110,7 @@ class UniverseInput(CellModifierInput):
 
     @property
     def not_truncated(self):
-        """
-        Indicates if this cell has been marked as not being truncated for optimization.
+        """Indicates if this cell has been marked as not being truncated for optimization.
 
         See Note 1 from section 3.3.1.5.1 of the user manual (LA-UR-17-29981).
 
@@ -124,8 +124,11 @@ class UniverseInput(CellModifierInput):
 
             -- LA-UR-17-29981.
 
-        :rtype: bool
-        :returns: True if this cell has been marked as not being truncated by the parent filled cell.
+        Returns
+        -------
+        bool
+            True if this cell has been marked as not being truncated by
+            the parent filled cell.
         """
         return self._not_truncated
 

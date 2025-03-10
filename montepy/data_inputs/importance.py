@@ -28,17 +28,18 @@ import numbers
 
 
 class Importance(CellModifierInput):
-    """
-    A data input that sets the importance for a cell(s).
+    """A data input that sets the importance for a cell(s).
 
-    :param input: the Input object representing this data input
-    :type input: Union[Input, str]
-    :param in_cell_block: if this card came from the cell block of an input file.
-    :type in_cell_block: bool
-    :param key: the key from the key-value pair in a cell
-    :type key: str
-    :param value: the value syntax tree from the key-value pair in a cell
-    :type value: SyntaxNode
+    Parameters
+    ----------
+    input : Union[Input, str]
+        the Input object representing this data input
+    in_cell_block : bool
+        if this card came from the cell block of an input file.
+    key : str
+        the key from the key-value pair in a cell
+    value : SyntaxNode
+        the value syntax tree from the key-value pair in a cell
     """
 
     def __init__(
@@ -252,13 +253,17 @@ class Importance(CellModifierInput):
 
     @property
     def all(self):
-        """
-        Setter for setting importance for all particle types in the problem at once.
+        """Setter for setting importance for all particle types in the problem at once.
 
-        :param importance: the importance to set all particles to.
-        :type importance: float
-        :returns: None
-        :rtype: None
+        Parameters
+        ----------
+        importance : float
+            the importance to set all particles to.
+
+        Returns
+        -------
+        None
+            None
         """
         return None
 
@@ -368,13 +373,15 @@ class Importance(CellModifierInput):
 
     @property
     def trailing_comment(self):
-        """
-        The trailing comments and padding of an input.
+        """The trailing comments and padding of an input.
 
         Generally this will be blank as these will be moved to be a leading comment for the next input.
 
-        :returns: the trailing ``c`` style comments and intermixed padding (e.g., new lines)
-        :rtype: list
+        Returns
+        -------
+        list
+            the trailing ``c`` style comments and intermixed padding
+            (e.g., new lines)
         """
         last_tree = list(self._real_tree.values())[-1]
         if last_tree:

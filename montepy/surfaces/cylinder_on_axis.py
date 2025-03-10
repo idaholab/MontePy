@@ -11,18 +11,18 @@ def _enforce_positive_radius(self, value):
 
 
 class CylinderOnAxis(Surface):
-    """
-    Represents surfaces: CX, CY, CZ
+    """Represents surfaces: CX, CY, CZ
 
     .. versionchanged:: 1.0.0
 
         Added number parameter
 
-
-    :param input: The Input object representing the input
-    :type input: Union[Input, str]
-    :param number: The number to set for this object.
-    :type number: int
+    Parameters
+    ----------
+    input : Union[Input, str]
+        The Input object representing the input
+    number : int
+        The number to set for this object.
     """
 
     def __init__(self, input: InitInput = None, number: int = None):
@@ -42,10 +42,11 @@ class CylinderOnAxis(Surface):
         "_radius", (float, int), float, validator=_enforce_positive_radius
     )
     def radius(self):
-        """
-        The radius of the cylinder
+        """The radius of the cylinder
 
-        :rtype: float
+        Returns
+        -------
+        float
         """
         pass
 

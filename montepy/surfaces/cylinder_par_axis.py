@@ -13,17 +13,18 @@ def _enforce_positive_radius(self, value):
 
 
 class CylinderParAxis(Surface):
-    """
-    Represents surfaces: C/X, C/Y, C/Z
+    """Represents surfaces: C/X, C/Y, C/Z
 
     .. versionchanged:: 1.0.0
 
         Added number parameter
 
-    :param input: The Input object representing the input
-    :type input: Union[Input, str]
-    :param number: The number to set for this object.
-    :type number: int
+    Parameters
+    ----------
+    input : Union[Input, str]
+        The Input object representing the input
+    number : int
+        The number to set for this object.
     """
 
     COORDINATE_PAIRS = {
@@ -31,8 +32,7 @@ class CylinderParAxis(Surface):
         SurfaceType.C_Y: {0: "x", 1: "z"},
         SurfaceType.C_Z: {0: "x", 1: "y"},
     }
-    """Which coordinate is what value for each cylinder type.
-    """
+    """Which coordinate is what value for each cylinder type."""
 
     def __init__(self, input: InitInput = None, number: int = None):
         self._coordinates = [
@@ -58,8 +58,7 @@ class CylinderParAxis(Surface):
 
     @property
     def coordinates(self):
-        """
-        The two coordinates for this cylinder to center on.
+        """The two coordinates for this cylinder to center on.
 
         :rytpe: tuple
         """
@@ -79,10 +78,11 @@ class CylinderParAxis(Surface):
 
     @make_prop_val_node("_radius", (Real,), float, validator=_enforce_positive_radius)
     def radius(self):
-        """
-        The radius of the cylinder.
+        """The radius of the cylinder.
 
-        :rtype: float
+        Returns
+        -------
+        float
         """
         pass
 

@@ -12,16 +12,12 @@ from typing import Union
 from numbers import Real, Integral
 
 DEFAULT_NUCLIDE_WIDTH = 11
-"""
-How many characters wide a nuclide with spacing should be.
-"""
+"""How many characters wide a nuclide with spacing should be."""
 
 
 @total_ordering
 class Library(SingletonGroup):
-    """
-    A class to represent an MCNP nuclear data library, e.g., ``80c``.
-
+    """A class to represent an MCNP nuclear data library, e.g., ``80c``.
 
     Examples
     ^^^^^^^^
@@ -42,10 +38,17 @@ class Library(SingletonGroup):
 
     .. versionadded:: 1.0.0
 
-    :param library: The name of the library.
-    :type library: str
-    :raises TypeErrror: if a string is not provided.
-    :raises ValueError: if a valid library is not provided.
+    Parameters
+    ----------
+    library : str
+        The name of the library.
+
+    Raises
+    ------
+    TypeErrror
+        if a string is not provided.
+    ValueError
+        if a valid library is not provided.
     """
 
     __slots__ = "_library", "_lib_type", "_num", "_suffix"
@@ -91,51 +94,56 @@ class Library(SingletonGroup):
 
     @property
     def library(self) -> str:
-        """
-        The full name of the library.
+        """The full name of the library.
 
-        :rtype: str
+        Returns
+        -------
+        str
         """
         return self._library
 
     @property
     def library_type(self) -> LibraryType:
-        """
-        The :class:`~montepy.particle.LibraryType` of this library.
+        """The :class:`~montepy.particle.LibraryType` of this library.
 
         This corresponds to the type of library this would specified
         in a material definition e.g., ``NLIB``, ``PLIB``, etc.
 
-        .. seealso::
+        See Also
+        --------
 
-            * :manual63:`5.6.1`
+        * :manual63:`5.6.1`
 
-        :returns: the type of library this library is.
-        :rtype: LibraryType
+        Returns
+        -------
+        LibraryType
+            the type of library this library is.
         """
         return self._lib_type
 
     @property
     def number(self) -> int:
-        """
-        The base number in the library.
+        """The base number in the library.
 
         For example: this would be ``80`` for the library: ``Library('80c')``.
 
-        :returns: the base number of the library.
-        :rtype: int
+        Returns
+        -------
+        int
+            the base number of the library.
         """
         return self._num
 
     @property
     def suffix(self) -> str:
-        """
-        The suffix of the library, or the final character of its definition.
+        """The suffix of the library, or the final character of its definition.
 
         For example this would be ``"c"`` for the library: ``Library('80c')``.
 
-        :returns: the suffix of the library.
-        :rtype: str
+        Returns
+        -------
+        str
+            the suffix of the library.
         """
         return self._suffix
 
@@ -173,20 +181,16 @@ class Library(SingletonGroup):
 
 
 _ZAID_A_ADDER = 1000
-"""
-How much to multiply Z by to form a ZAID.
-"""
+"""How much to multiply Z by to form a ZAID."""
 
 
 class Nucleus(SingletonGroup):
-    """
-    A class to represent a nuclide irrespective of the nuclear data being used.
+    """A class to represent a nuclide irrespective of the nuclear data being used.
 
     This is meant to be an immutable representation of the nuclide, no matter what nuclear data
     library is used. ``U-235`` is always ``U-235``.
     Generally users don't need to interact with this much as it is almost always wrapped
     by: :class:`montepy.data_inputs.nuclide.Nuclide`.
-
 
     .. Note::
 
@@ -194,15 +198,22 @@ class Nucleus(SingletonGroup):
 
     .. versionadded:: 1.0.0
 
-    :param element: the element this Nucleus is based on.
-    :type element: Element
-    :param A: The A-number (atomic mass) of the nuclide. If this is elemental this should be 0.
-    :type A: int
-    :param meta_state: The metastable state if this nuclide is isomer.
-    :type meta_state: int
+    Parameters
+    ----------
+    element : Element
+        the element this Nucleus is based on.
+    A : int
+        The A-number (atomic mass) of the nuclide. If this is elemental
+        this should be 0.
+    meta_state : int
+        The metastable state if this nuclide is isomer.
 
-    :raises TypeError: if an parameter is the wrong type.
-    :raises ValueError: if non-sensical values are given.
+    Raises
+    ------
+    TypeError
+        if an parameter is the wrong type.
+    ValueError
+        if non-sensical values are given.
     """
 
     __slots__ = "_element", "_A", "_meta_state"
@@ -238,12 +249,13 @@ class Nucleus(SingletonGroup):
 
     @property
     def ZAID(self) -> int:
-        """
-        The ZZZAAA identifier following MCNP convention.
+        """The ZZZAAA identifier following MCNP convention.
 
         If this is metastable the MCNP convention for ZAIDs for metastable isomers will be used.
 
-        :rtype: int
+        Returns
+        -------
+        int
         """
         meta_adder = 300 + 100 * self.meta_state if self.is_metastable else 0
         temp = self.Z * _ZAID_A_ADDER + self.A + meta_adder
@@ -253,56 +265,62 @@ class Nucleus(SingletonGroup):
 
     @property
     def Z(self) -> int:
-        """
-        The Z number for this isotope.
+        """The Z number for this isotope.
 
-        :returns: the atomic number.
-        :rtype: int
+        Returns
+        -------
+        int
+            the atomic number.
         """
         return self._element.Z
 
     @make_prop_pointer("_A")
     def A(self) -> int:
-        """
-        The A number for this isotope.
+        """The A number for this isotope.
 
-        :returns: the isotope's mass.
-        :rtype: int
+        Returns
+        -------
+        int
+            the isotope's mass.
         """
         pass
 
     @make_prop_pointer("_element")
     def element(self) -> Element:
-        """
-        The base element for this isotope.
+        """The base element for this isotope.
 
-        :returns: The element for this isotope.
-        :rtype: Element
+        Returns
+        -------
+        Element
+            The element for this isotope.
         """
         pass
 
     @property
     def is_metastable(self) -> bool:
-        """
-        Whether or not this is a metastable isomer.
+        """Whether or not this is a metastable isomer.
 
-        :returns: boolean of if this is metastable.
-        :rtype: bool
+        Returns
+        -------
+        bool
+            boolean of if this is metastable.
         """
         return bool(self._meta_state)
 
     @make_prop_pointer("_meta_state")
     def meta_state(self) -> int:
-        """
-        If this is a metastable isomer, which state is it?
+        """If this is a metastable isomer, which state is it?
 
         Can return values in the range [0,4]. The exact state
         number is decided by who made the ACE file for this, and not quantum mechanics.
         Convention states that the isomers should be numbered from lowest to highest energy.
         The ground state will be 0.
 
-        :returns: the metastable isomeric state of this "isotope" in the range [0,4].
-        :rtype: int
+        Returns
+        -------
+        int
+            the metastable isomeric state of this "isotope" in the range
+            [0,4].
         """
         pass
 
@@ -338,8 +356,7 @@ class Nucleus(SingletonGroup):
 
 
 class Nuclide:
-    r"""
-    A class to represent an MCNP nuclide with nuclear data library information.
+    r"""A class to represent an MCNP nuclide with nuclear data library information.
 
     Nuclide accepts ``name`` as a way of specifying a nuclide.
     This is meant to be more ergonomic than ZAIDs while not going insane with possible formats.
@@ -416,36 +433,44 @@ class Nuclide:
 
         #. Open an issue. If this approach doesn't work for you please open an issue so we can develop a better solution.
 
-    .. seealso::
+    See Also
+    --------
 
-        * :manual62:`107`
-        * :manual63:`5.6.1`
+    * :manual62:`107`
+    * :manual63:`5.6.1`
+
 
     .. versionadded:: 1.0.0
 
         This was added as replacement for ``montepy.data_inputs.Isotope``.
 
+    Parameters
+    ----------
+    name : str
+        A fancy name way of specifying a nuclide.
+    ZAID : str
+        The ZAID in MCNP format, the library can be included.
+    element : Element
+        the element this Nucleus is based on.
+    Z : int
+        The Z-number (atomic number) of the nuclide.
+    A : int
+        The A-number (atomic mass) of the nuclide. If this is elemental
+        this should be 0.
+    meta_state : int
+        The metastable state if this nuclide is isomer.
+    library : str
+        the library to use for this nuclide.
+    node : ValueNode
+        The ValueNode to build this off of. Should only be used by
+        MontePy.
 
-
-    :param name: A fancy name way of specifying a nuclide.
-    :type name: str
-    :param ZAID: The ZAID in MCNP format, the library can be included.
-    :type ZAID: str
-    :param element: the element this Nucleus is based on.
-    :type element: Element
-    :param Z: The Z-number (atomic number) of the nuclide.
-    :type Z: int
-    :param A: The A-number (atomic mass) of the nuclide. If this is elemental this should be 0.
-    :type A: int
-    :param meta_state: The metastable state if this nuclide is isomer.
-    :type meta_state: int
-    :param library: the library to use for this nuclide.
-    :type library: str
-    :param node: The ValueNode to build this off of. Should only be used by MontePy.
-    :type node: ValueNode
-
-    :raises TypeError: if a parameter is the wrong type.
-    :raises ValueError: if non-sensical values are given.
+    Raises
+    ------
+    TypeError
+        if a parameter is the wrong type.
+    ValueError
+        if non-sensical values are given.
     """
 
     _NAME_PARSER = re.compile(
@@ -457,15 +482,11 @@ class Nuclide:
             (\.(?P<library>\d{{2,}}[a-z]+))?""",
         re.I | re.VERBOSE,
     )
-    """
-    Parser for fancy names.
-    """
+    """Parser for fancy names."""
 
     #                   Cl-52      Br-101     Xe-150      Os-203    Cm-251     Og-296
     _BOUNDING_CURVE = [(17, 52), (35, 101), (54, 150), (76, 203), (96, 251), (118, 296)]
-    """
-    Points on bounding curve for determining if "valid" isotope
-    """
+    """Points on bounding curve for determining if "valid" isotope"""
     _STUPID_MAP = {
         "95642": {"_meta_state": 0},
         "95242": {"_meta_state": 1},
@@ -526,14 +547,14 @@ class Nuclide:
 
     @classmethod
     def _handle_stupid_legacy_stupidity(cls, ZAID):
-        """
-        This handles legacy issues where ZAID are swapped.
+        """This handles legacy issues where ZAID are swapped.
 
         For now this is only for Am-242 and Am-242m1.
 
-        .. seealso::
+        See Also
+        --------
 
-            * :manual631:`1.2.2`
+        * :manual631:`1.2.2`
         """
         ZAID = str(ZAID)
         ret = {}
@@ -545,16 +566,20 @@ class Nuclide:
 
     @classmethod
     def _parse_zaid(cls, ZAID) -> dict[str, object]:
-        """
-        Parses the ZAID fully including metastable isomers.
+        """Parses the ZAID fully including metastable isomers.
 
         See Table 3-32 of LA-UR-17-29881
 
-        :param ZAID: the ZAID without the library
-        :type ZAID: int
-        :returns: a dictionary with the parsed information,
-            in a way that can be loaded into nucleus. Keys are: _element, _A, _meta_state
-        :rtype: dict[str, Object]
+        Parameters
+        ----------
+        ZAID : int
+            the ZAID without the library
+
+        Returns
+        -------
+        dict[str, Object]
+            a dictionary with the parsed information, in a way that can
+            be loaded into nucleus. Keys are: _element, _A, _meta_state
         """
 
         def is_probably_an_isotope(Z, A):
@@ -601,100 +626,107 @@ class Nuclide:
 
     @property
     def ZAID(self) -> int:
-        """
-        The ZZZAAA identifier following MCNP convention
+        """The ZZZAAA identifier following MCNP convention
 
-        :rtype: int
+        Returns
+        -------
+        int
         """
         # if this is made mutable this cannot be user provided, but must be calculated.
         return self._nucleus.ZAID
 
     @property
     def Z(self) -> int:
-        """
-        The Z number for this isotope.
+        """The Z number for this isotope.
 
-        :returns: the atomic number.
-        :rtype: int
+        Returns
+        -------
+        int
+            the atomic number.
         """
         return self._nucleus.Z
 
     @property
     def A(self) -> int:
-        """
-        The A number for this isotope.
+        """The A number for this isotope.
 
-        :returns: the isotope's mass.
-        :rtype: int
+        Returns
+        -------
+        int
+            the isotope's mass.
         """
         return self._nucleus.A
 
     @property
     def element(self) -> Element:
-        """
-        The base element for this isotope.
+        """The base element for this isotope.
 
-        :returns: The element for this isotope.
-        :rtype: Element
+        Returns
+        -------
+        Element
+            The element for this isotope.
         """
         return self._nucleus.element
 
     @make_prop_pointer("_nucleus")
     def nucleus(self) -> Nucleus:
-        """
-        The base nuclide of this nuclide without the nuclear data library.
+        """The base nuclide of this nuclide without the nuclear data library.
 
-        :rtype:Nucleus
+        Returns
+        -------
+        Nucleus
         """
         pass
 
     @property
     def is_metastable(self) -> bool:
-        """
-        Whether or not this is a metastable isomer.
+        """Whether or not this is a metastable isomer.
 
-        :returns: boolean of if this is metastable.
-        :rtype: bool
+        Returns
+        -------
+        bool
+            boolean of if this is metastable.
         """
         return self._nucleus.is_metastable
 
     @property
     def meta_state(self) -> int:
-        """
-        If this is a metastable isomer, which state is it?
+        """If this is a metastable isomer, which state is it?
 
         Can return values in the range [0,4]. 0 corresponds to the ground state.
         The exact state number is decided by who made the ACE file for this, and not quantum mechanics.
         Convention states that the isomers should be numbered from lowest to highest energy.
 
-        :returns: the metastable isomeric state of this "isotope" in the range [0,4]l
-        :rtype: int
+        Returns
+        -------
+        int
+            the metastable isomeric state of this "isotope" in the range
+            [0,4]l
         """
         return self._nucleus.meta_state
 
     @make_prop_pointer("_library", (str, Library), Library)
     def library(self) -> Library:
-        """
-         The MCNP library identifier e.g. 80c
+        """The MCNP library identifier e.g. 80c
 
-        :rtype: Library
+                :rtype: Library
         """
         pass
 
     def mcnp_str(self) -> str:
-        """
-        Returns an MCNP formatted representation.
+        """Returns an MCNP formatted representation.
 
         E.g., 1001.80c
 
-        :returns: a string that can be used in MCNP
-        :rtype: str
+        Returns
+        -------
+        str
+            a string that can be used in MCNP
         """
         return f"{self.ZAID}.{self.library}" if str(self.library) else str(self.ZAID)
 
     def nuclide_str(self) -> str:
-        """
-        Creates a human readable version of this nuclide excluding the data library.
+        """Creates a human readable version of this nuclide excluding the data library.
 
         This is of the form Atomic symbol - A [metastable state]. e.g., ``U-235m1``.
 
@@ -705,25 +737,30 @@ class Nuclide:
         return f"{self.element.symbol}-{self.A}{meta_suffix}{suffix}"
 
     def get_base_zaid(self) -> int:
-        """
-        Get the ZAID identifier of the base isotope this is an isomer of.
+        """Get the ZAID identifier of the base isotope this is an isomer of.
 
         This is mostly helpful for working with metastable isomers.
 
-        :returns: the mcnp ZAID of the ground state of this isotope.
-        :rtype: int
+        Returns
+        -------
+        int
+            the mcnp ZAID of the ground state of this isotope.
         """
         return self.Z * _ZAID_A_ADDER + self.A
 
     @classmethod
     def _parse_fancy_name(cls, identifier):
-        """
-        Parses a fancy name that is a ZAID, a Symbol-A, or nucleus, nuclide, or element.
+        """Parses a fancy name that is a ZAID, a Symbol-A, or nucleus, nuclide, or element.
 
-        :param identifier:
-        :type idenitifer: Union[str, int, element, Nucleus, Nuclide]
-        :returns: a tuple of element, a, isomer, library
-        :rtype: tuple
+        Parameters
+        ----------
+        identifier
+        idenitifer : Union[str, int, element, Nucleus, Nuclide]
+
+        Returns
+        -------
+        tuple
+            a tuple of element, a, isomer, library
         """
         if isinstance(identifier, (Nucleus, Nuclide)):
             if isinstance(identifier, Nuclide):

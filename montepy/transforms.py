@@ -6,13 +6,12 @@ from montepy.data_inputs.transform import Transform
 
 
 class Transforms(NumberedDataObjectCollection):
-    """
-    A container of multiple :class:`~montepy.data_inputs.transform.Transform` instances.
+    """A container of multiple :class:`~montepy.data_inputs.transform.Transform` instances.
 
-    .. note::
+    Notes
+    -----
 
-        For examples see the ``NumberedObjectCollection`` :ref:`collect ex`.
-
+    For examples see the ``NumberedObjectCollection`` :ref:`collect ex`.
     """
 
     def __init__(self, objects: list = None, problem: montepy.MCNP_Problem = None):

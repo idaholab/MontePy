@@ -7,17 +7,18 @@ from montepy.utilities import *
 
 
 class AxisPlane(Surface):
-    """
-    Represents PX, PY, PZ
+    """Represents PX, PY, PZ
 
     .. versionchanged:: 1.0.0
 
         Added number parameter
 
-    :param input: The Input object representing the input
-    :type input: Union[Input, str]
-    :param number: The number to set for this object.
-    :type number: int
+    Parameters
+    ----------
+    input : Union[Input, str]
+        The Input object representing the input
+    number : int
+        The number to set for this object.
     """
 
     COORDINATE = {SurfaceType.PX: "x", SurfaceType.PY: "y", SurfaceType.PZ: "z"}
@@ -37,10 +38,11 @@ class AxisPlane(Surface):
 
     @make_prop_val_node("_location", (float, int), float)
     def location(self):
-        """
-        The location of the plane in space.
+        """The location of the plane in space.
 
-        :rtype: float
+        Returns
+        -------
+        float
         """
         pass
 
