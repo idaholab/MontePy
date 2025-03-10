@@ -29,13 +29,17 @@ PREFIX_MATCHES = {
 
 
 def parse_data(input: montepy.mcnp_object.InitInput):
-    """
-    Parses the data input as the appropriate object if it is supported.
+    """Parses the data input as the appropriate object if it is supported.
 
-    :param input: the Input object for this Data input
-    :type input: Union[Input, str]
-    :return: the parsed DataInput object
-    :rtype: DataInput
+    Parameters
+    ----------
+    input : Union[Input, str]
+        the Input object for this Data input
+
+    Returns
+    -------
+    DataInput
+        the parsed DataInput object
     """
 
     base_input = data_input.DataInput(input, fast_parse=True)

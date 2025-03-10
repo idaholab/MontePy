@@ -1,10 +1,13 @@
-# Copyright 2024, Battelle Energy Alliance, LLC All Rights Reserved.
+# Copyright 2024-2025, Battelle Energy Alliance, LLC All Rights Reserved.
 from abc import ABC, abstractmethod
+import re
+import warnings
 import collections
 import copy
 import itertools as it
 import enum
 import math
+from numbers import Integral, Real
 
 from montepy import input_parser
 from montepy import constants
@@ -14,19 +17,18 @@ from montepy.input_parser.shortcuts import Shortcuts
 from montepy.geometry_operators import Operator
 from montepy.particle import Particle
 from montepy.utilities import fortran_float
-import re
-import warnings
 
 
 class SyntaxNodeBase(ABC):
-    """
-    A base class for all syntax nodes.
+    """A base class for all syntax nodes.
 
     A syntax node is any component of the syntax tree
     for a parsed input.
 
-    :param name: a name for labeling this node.
-    :type name: str
+    Parameters
+    ----------
+    name : str
+        a name for labeling this node.
     """
 
     def __init__(self, name):
@@ -34,21 +36,23 @@ class SyntaxNodeBase(ABC):
         self._nodes = []
 
     def append(self, node):
-        """
-        Append the node to this node.
+        """Append the node to this node.
 
-        :param node: node
-        :type node: SyntaxNodeBase, str, None
+        Parameters
+        ----------
+        node : SyntaxNodeBase, str, None
+            node
         """
         self._nodes.append(node)
 
     @property
     def nodes(self):
-        """
-        The children nodes of this node.
+        """The children nodes of this node.
 
-        :returns: a list of the nodes.
-        :rtype: list
+        Returns
+        -------
+        list
+            a list of the nodes.
         """
         return self._nodes
 
@@ -57,11 +61,12 @@ class SyntaxNodeBase(ABC):
 
     @property
     def name(self):
-        """
-        The name for the node.
+        """The name for the node.
 
-        :returns: the node's name.
-        :rtype: str
+        Returns
+        -------
+        str
+            the node's name.
         """
         return self._name
 
@@ -73,31 +78,34 @@ class SyntaxNodeBase(ABC):
 
     @abstractmethod
     def format(self):
-        """
-        Generate a string representing the tree's current state.
+        """Generate a string representing the tree's current state.
 
-        :returns: the MCNP representation of the tree's current state.
-        :rtype: str
+        Returns
+        -------
+        str
+            the MCNP representation of the tree's current state.
         """
         pass
 
     @property
     @abstractmethod
     def comments(self):
-        """
-        A generator of all comments contained in this tree.
+        """A generator of all comments contained in this tree.
 
-        :returns: the comments in the tree.
-        :rtype: Generator
+        Returns
+        -------
+        Generator
+            the comments in the tree.
         """
         pass
 
     def get_trailing_comment(self):
-        """
-        Get the trailing ``c`` style  comments if any.
+        """Get the trailing ``c`` style  comments if any.
 
-        :returns: The trailing comments of this tree.
-        :rtype: list
+        Returns
+        -------
+        list
+            The trailing comments of this tree.
         """
         if len(self.nodes) == 0:
             return
@@ -106,9 +114,7 @@ class SyntaxNodeBase(ABC):
             return tail.get_trailing_comment()
 
     def _delete_trailing_comment(self):
-        """
-        Deletes the trailing comment if any.
-        """
+        """Deletes the trailing comment if any."""
         if len(self.nodes) == 0:
             return
         tail = self.nodes[-1]
@@ -116,11 +122,12 @@ class SyntaxNodeBase(ABC):
             tail._delete_trailing_comment()
 
     def _grab_beginning_comment(self, extra_padding):
-        """
-        Consumes the provided comment, and moves it to the beginning of this node.
+        """Consumes the provided comment, and moves it to the beginning of this node.
 
-        :param extra_padding: the padding comment to add to the beginning of this padding.
-        :type extra_padding: list
+        Parameters
+        ----------
+        extra_padding : list
+            the padding comment to add to the beginning of this padding.
         """
         if len(self.nodes) == 0 or extra_padding is None:
             return
@@ -129,8 +136,7 @@ class SyntaxNodeBase(ABC):
             head._grab_beginning_comment(extra_padding)
 
     def check_for_graveyard_comments(self, has_following_input=False):
-        """
-        Checks if there is a graveyard comment that is preventing information from being part of the tree, and handles
+        """Checks if there is a graveyard comment that is preventing information from being part of the tree, and handles
         them.
 
         A graveyard comment is one that accidentally suppresses important information in the syntax tree.
@@ -149,9 +155,15 @@ class SyntaxNodeBase(ABC):
 
         .. versionadded:: 0.4.0
 
-        :param has_following_input: Whether there is another input (cell modifier) after this tree that should be continued.
-        :type has_following_input: bool
-        :rtype: None
+        Parameters
+        ----------
+        has_following_input : bool
+            Whether there is another input (cell modifier) after this
+            tree that should be continued.
+
+        Returns
+        -------
+        None
         """
         flatpack = self.flatten()
         if len(flatpack) == 0:
@@ -175,13 +187,14 @@ class SyntaxNodeBase(ABC):
             first = second
 
     def flatten(self):
-        """
-        Flattens this tree structure into a list of leaves.
+        """Flattens this tree structure into a list of leaves.
 
         .. versionadded:: 0.4.0
 
-        :returns: a list of ValueNode and PaddingNode objects from this tree.
-        :rtype: list
+        Returns
+        -------
+        list
+            a list of ValueNode and PaddingNode objects from this tree.
         """
         ret = []
         for node in self.nodes:
@@ -208,8 +221,7 @@ class SyntaxNodeBase(ABC):
 
 
 class SyntaxNode(SyntaxNodeBase):
-    """
-    A general syntax node for handling inner tree nodes.
+    """A general syntax node for handling inner tree nodes.
 
     This is a generalized wrapper for a dictionary.
     The order of the dictionary is significant.
@@ -222,10 +234,12 @@ class SyntaxNode(SyntaxNodeBase):
         if key in syntax_node:
             pass
 
-    :param name: a name for labeling this node.
-    :type name: str
-    :param parse_dict: the dictionary of the syntax tree nodes.
-    :type parse_dict: dict
+    Parameters
+    ----------
+    name : str
+        a name for labeling this node.
+    parse_dict : dict
+        the dictionary of the syntax tree nodes.
     """
 
     def __init__(self, name, parse_dict):
@@ -240,14 +254,22 @@ class SyntaxNode(SyntaxNodeBase):
         return key in self.nodes
 
     def get_value(self, key):
-        """
-        Get a value from the syntax tree.
+        """Get a value from the syntax tree.
 
-        :param key: the key for the item to get.
-        :type key: str
-        :returns: the node in the syntax tree.
-        :rtype: SyntaxNodeBase
-        :raises KeyError: if key is not in SyntaxNode
+        Parameters
+        ----------
+        key : str
+            the key for the item to get.
+
+        Returns
+        -------
+        SyntaxNodeBase
+            the node in the syntax tree.
+
+        Raises
+        ------
+        KeyError
+            if key is not in SyntaxNode
         """
         temp = self.nodes[key]
         if isinstance(temp, ValueNode):
@@ -282,11 +304,12 @@ class SyntaxNode(SyntaxNodeBase):
             return node.get_trailing_comment()
 
     def _grab_beginning_comment(self, extra_padding):
-        """
-        Consumes the provided comment, and moves it to the beginning of this node.
+        """Consumes the provided comment, and moves it to the beginning of this node.
 
-        :param extra_padding: the padding comment to add to the beginning of this padding.
-        :type extra_padding: list
+        Parameters
+        ----------
+        extra_padding : list
+            the padding comment to add to the beginning of this padding.
         """
         if len(self.nodes) == 0 or extra_padding is None:
             return
@@ -332,26 +355,27 @@ class SyntaxNode(SyntaxNodeBase):
 
 
 class GeometryTree(SyntaxNodeBase):
-    """
-    A syntax tree that is a binary tree for representing CSG geometry logic.
+    """A syntax tree that is a binary tree for representing CSG geometry logic.
 
     .. versionchanged:: 0.4.1
         Added left/right_short_type
 
-    :param name: a name for labeling this node.
-    :type name: str
-    :param tokens: The nodes that are in the tree.
-    :type tokens: dict
-    :param op: The string representation of the Operator to use.
-    :type op: str
-    :param left: the node of the left side of the binary tree.
-    :type left: GeometryTree, ValueNode
-    :param right: the node of the right side of the binary tree.
-    :type right: GeometryTree, ValueNode
-    :param left_short_type: The type of Shortcut that right left leaf is involved in.
-    :type left_short_type: Shortcuts
-    :param right_short_type: The type of Shortcut that the right leaf is involved in.
-    :type right_short_type: Shortcuts
+    Parameters
+    ----------
+    name : str
+        a name for labeling this node.
+    tokens : dict
+        The nodes that are in the tree.
+    op : str
+        The string representation of the Operator to use.
+    left : GeometryTree, ValueNode
+        the node of the left side of the binary tree.
+    right : GeometryTree, ValueNode
+        the node of the right side of the binary tree.
+    left_short_type : Shortcuts
+        The type of Shortcut that right left leaf is involved in.
+    right_short_type : Shortcuts
+        The type of Shortcut that the right leaf is involved in.
     """
 
     def __init__(
@@ -414,11 +438,12 @@ class GeometryTree(SyntaxNodeBase):
         return ret
 
     def mark_last_leaf_shortcut(self, short_type):
-        """
-        Mark the final (rightmost) leaf node in this tree as being a shortcut.
+        """Mark the final (rightmost) leaf node in this tree as being a shortcut.
 
-        :param short_type: the type of shortcut that this leaf is.
-        :type short_type: Shortcuts
+        Parameters
+        ----------
+        short_type : Shortcuts
+            the type of shortcut that this leaf is.
         """
         if self.right is not None:
             node = self.right
@@ -436,12 +461,13 @@ class GeometryTree(SyntaxNodeBase):
             self._left_short_type = short_type
 
     def _flatten_shortcut(self):
-        """
-        Flattens this tree into a ListNode.
+        """Flattens this tree into a ListNode.
 
         This will add ShortcutNodes as well.
 
-        :rtype: ListNode
+        Returns
+        -------
+        ListNode
         """
 
         def add_leaf(list_node, leaf, short_type):
@@ -495,9 +521,7 @@ class GeometryTree(SyntaxNodeBase):
         return ret
 
     def _format_shortcut(self):
-        """
-        Handles formatting a subset of tree that has shortcuts in it.
-        """
+        """Handles formatting a subset of tree that has shortcuts in it."""
         list_wrap = self._flatten_shortcut()
         if isinstance(list_wrap.nodes[-1], ShortcutNode):
             list_wrap.nodes[-1].load_nodes(list_wrap.nodes[-1].nodes)
@@ -510,38 +534,39 @@ class GeometryTree(SyntaxNodeBase):
 
     @property
     def left(self):
-        """
-        The left side of the binary tree.
+        """The left side of the binary tree.
 
-        :returns: the left node of the syntax tree.
-        :rtype: GeometryTree, ValueNode
+        Returns
+        -------
+        GeometryTree, ValueNode
+            the left node of the syntax tree.
         """
         return self._left_side
 
     @property
     def right(self):
-        """
-        The right side of the binary tree.
+        """The right side of the binary tree.
 
-        :returns: the right node of the syntax tree.
-        :rtype: GeometryTree, ValueNode
+        Returns
+        -------
+        GeometryTree, ValueNode
+            the right node of the syntax tree.
         """
         return self._right_side
 
     @property
     def operator(self):
-        """
-        The operator used for the binary tree.
+        """The operator used for the binary tree.
 
-        :returns: the operator used.
-        :rtype: Operator
+        Returns
+        -------
+        Operator
+            the operator used.
         """
         return self._operator
 
     def __iter__(self):
-        """
-        Iterates over the leafs
-        """
+        """Iterates over the leafs"""
         self._iter_l_r = False
         self._iter_complete = False
         self._sub_iter = None
@@ -589,13 +614,14 @@ class GeometryTree(SyntaxNodeBase):
 
 
 class PaddingNode(SyntaxNodeBase):
-    """
-    A syntax tree node to represent a collection of sequential padding elements.
+    """A syntax tree node to represent a collection of sequential padding elements.
 
-    :param token: The first padding token for this node.
-    :type token: str
-    :param is_comment: If the token provided is a comment.
-    :type is_comment: bool
+    Parameters
+    ----------
+    token : str
+        The first padding token for this node.
+    is_comment : bool
+        If the token provided is a comment.
     """
 
     def __init__(self, token=None, is_comment=False):
@@ -617,27 +643,39 @@ class PaddingNode(SyntaxNodeBase):
 
     @property
     def value(self):
-        """
-        A string representation of the contents of this node.
+        """A string representation of the contents of this node.
 
         All of the padding will be combined into a single string.
 
-        :returns: a string sequence of the padding.
-        :rtype: str
+        Returns
+        -------
+        str
+            a string sequence of the padding.
         """
         return "".join([val.format() for val in self.nodes])
 
     def is_space(self, i):
-        """
-        Determine if the value at i is a space or not.
+        """Determine if the value at i is a space or not.
 
-        .. note::
-            the newline, ``\\n``, by itself is not considered a space.
+        Notes
+        -----
+        the newline, ``\\n``, by itself is not considered a space.
 
-        :param i: the index of the element to check.
-        :type i: int
-        :returns: true iff the padding at that node is only spaces that are not ``\\n``.
-        :raises IndexError: if the index i is not in ``self.nodes``.
+        Parameters
+        ----------
+        i : int
+            the index of the element to check.
+
+        Returns
+        -------
+        unknown
+            true iff the padding at that node is only spaces that are
+            not ``\\n``.
+
+        Raises
+        ------
+        IndexError
+            if the index i is not in ``self.nodes``.
         """
         val = self.nodes[i]
         if not isinstance(val, str):
@@ -645,22 +683,25 @@ class PaddingNode(SyntaxNodeBase):
         return len(val.strip()) == 0 and val != "\n"
 
     def has_space(self):
-        """
-        Determines if there is syntactically significant space anywhere in this node.
+        """Determines if there is syntactically significant space anywhere in this node.
 
-        :returns: True if there is syntactically significant (not in a comment) space.
-        :rtype: bool
+        Returns
+        -------
+        bool
+            True if there is syntactically significant (not in a
+            comment) space.
         """
         return any([self.is_space(i) for i in range(len(self))])
 
     def append(self, val, is_comment=False):
-        """
-        Append the node to this node.
+        """Append the node to this node.
 
-        :param node: node
-        :type node: str, CommentNode
-        :param is_comment: whether or not the node is a comment.
-        :type is_comment: bool
+        Parameters
+        ----------
+        node : str, CommentNode
+            node
+        is_comment : bool
+            whether or not the node is a comment.
         """
         if is_comment and not isinstance(val, CommentNode):
             val = CommentNode(val)
@@ -695,11 +736,13 @@ class PaddingNode(SyntaxNodeBase):
                 yield node
 
     def _get_first_comment(self):
-        """
-        Get the first index that is a ``c`` style comment.
+        """Get the first index that is a ``c`` style comment.
 
-        :returns: the index of the first comment, if there is no comment then None.
-        :rtype: int, None
+        Returns
+        -------
+        int, None
+            the index of the first comment, if there is no comment then
+            None.
         """
         for i, item in enumerate(self.nodes):
             if isinstance(item, CommentNode) and not item.is_dollar:
@@ -718,11 +761,12 @@ class PaddingNode(SyntaxNodeBase):
             del self._nodes[i:]
 
     def _grab_beginning_comment(self, extra_padding):
-        """
-        Consumes the provided comment, and moves it to the beginning of this node.
+        """Consumes the provided comment, and moves it to the beginning of this node.
 
-        :param extra_padding: the padding comment to add to the beginning of this padding.
-        :type extra_padding: list
+        Parameters
+        ----------
+        extra_padding : list
+            the padding comment to add to the beginning of this padding.
         """
         if extra_padding[-1] != "\n":
             extra_padding.append("\n")
@@ -736,8 +780,7 @@ class PaddingNode(SyntaxNodeBase):
         return self.format() == other
 
     def has_graveyard_comment(self):
-        """
-        Checks if there is a graveyard comment that is preventing information from being part of the tree.
+        """Checks if there is a graveyard comment that is preventing information from being part of the tree.
 
         A graveyard comment is one that accidentally suppresses important information in the syntax tree.
 
@@ -752,8 +795,10 @@ class PaddingNode(SyntaxNodeBase):
 
         .. versionadded:: 0.4.0
 
-        :returns: True if this PaddingNode contains a graveyard comment.
-        :rtype: bool
+        Returns
+        -------
+        bool
+            True if this PaddingNode contains a graveyard comment.
         """
         found = False
         for i, item in reversed(list(enumerate(self.nodes))):
@@ -774,11 +819,12 @@ class PaddingNode(SyntaxNodeBase):
 
 
 class CommentNode(SyntaxNodeBase):
-    """
-    Object to represent a comment in an MCNP problem.
+    """Object to represent a comment in an MCNP problem.
 
-    :param input: the token from the lexer
-    :type input: Token
+    Parameters
+    ----------
+    input : Token
+        the token from the lexer
     """
 
     _MATCHER = re.compile(
@@ -789,9 +835,7 @@ class CommentNode(SyntaxNodeBase):
             (?P<contents>.*)""",
         re.I | re.VERBOSE,
     )
-    """
-    A re matcher to confirm this is a C style comment.
-    """
+    """A re matcher to confirm this is a C style comment."""
 
     def __init__(self, input):
         super().__init__("comment")
@@ -800,13 +844,17 @@ class CommentNode(SyntaxNodeBase):
         self._nodes = [node]
 
     def _convert_to_node(self, token):
-        """
-        Converts the token to a Syntax Node to store.
+        """Converts the token to a Syntax Node to store.
 
-        :param token: the token to convert.
-        :type token: str
-        :returns: the SyntaxNode of the Comment.
-        :rtype: SyntaxNode
+        Parameters
+        ----------
+        token : str
+            the token to convert.
+
+        Returns
+        -------
+        SyntaxNode
+            the SyntaxNode of the Comment.
         """
         if match := self._MATCHER.match(token):
             start = match["delim"]
@@ -828,11 +876,12 @@ class CommentNode(SyntaxNodeBase):
         )
 
     def append(self, token):
-        """
-        Append the comment token to this node.
+        """Append the comment token to this node.
 
-        :param token: the comment token
-        :type token: str
+        Parameters
+        ----------
+        token : str
+            the comment token
         """
         is_dollar, node = self._convert_to_node(token)
         if is_dollar or self._is_dollar:
@@ -843,21 +892,23 @@ class CommentNode(SyntaxNodeBase):
 
     @property
     def is_dollar(self):
-        """
-        Whether or not this CommentNode is a dollar sign ($) comment.
+        """Whether or not this CommentNode is a dollar sign ($) comment.
 
-        :returns: True iff this is a dollar sign comment.
-        :rtype: bool
+        Returns
+        -------
+        bool
+            True iff this is a dollar sign comment.
         """
         return self._is_dollar
 
     @property
     def contents(self):
-        """
-        The contents of the comments without delimiters (i.e., $/C).
+        """The contents of the comments without delimiters (i.e., $/C).
 
-        :returns: String of the contents
-        :rtype: str
+        Returns
+        -------
+        str
+            String of the contents
         """
         return "\n".join([node["data"].value for node in self.nodes])
 
@@ -888,20 +939,21 @@ class CommentNode(SyntaxNodeBase):
 
 
 class ValueNode(SyntaxNodeBase):
-    """
-    A syntax node to represent the leaf node.
+    """A syntax node to represent the leaf node.
 
     This stores the original input token, the current value,
     and the possible associated padding.
 
-    :param token: the original token for the ValueNode.
-    :type token: str
-    :param token_type: the type for the ValueNode.
-    :type token_type: class
-    :param padding: the padding for this node.
-    :type padding: PaddingNode
-    :param never_pad: If true an ending space will never be added to this.
-    :type never_pad: bool
+    Parameters
+    ----------
+    token : str
+        the original token for the ValueNode.
+    token_type : class
+        the type for the ValueNode.
+    padding : PaddingNode
+        the padding for this node.
+    never_pad : bool
+        If true an ending space will never be added to this.
     """
 
     _FORMATTERS = {
@@ -920,9 +972,7 @@ class ValueNode(SyntaxNodeBase):
         int: {"value_length": 0, "zero_padding": 0, "sign": "-"},
         str: {"value_length": 0},
     }
-    """
-    The default formatters for each type.
-    """
+    """The default formatters for each type."""
 
     _SCIENTIFIC_FINDER = re.compile(
         r"""
@@ -935,9 +985,7 @@ class ValueNode(SyntaxNodeBase):
         """,
         re.VERBOSE,
     )
-    """
-    A regex for finding scientific notation.
-    """
+    """A regex for finding scientific notation."""
 
     def __init__(self, token, token_type, padding=None, never_pad=False):
         super().__init__("")
@@ -964,9 +1012,7 @@ class ValueNode(SyntaxNodeBase):
         self._is_reversed = False
 
     def _convert_to_int(self):
-        """
-        Converts a float ValueNode to an int ValueNode.
-        """
+        """Converts a float ValueNode to an int ValueNode."""
         if self._type not in {float, int}:
             raise ValueError(f"ValueNode must be a float to convert to int")
         self._type = int
@@ -986,17 +1032,19 @@ class ValueNode(SyntaxNodeBase):
     def _convert_to_enum(
         self, enum_class, allow_none=False, format_type=str, switch_to_upper=False
     ):
-        """
-        Converts the ValueNode to an Enum for allowed values.
+        """Converts the ValueNode to an Enum for allowed values.
 
-        :param enum_class: the class for the enum to use.
-        :type enum_class: Class
-        :param allow_none: Whether or not to allow None as a value.
-        :type allow_none: bool
-        :param format_type: the base data type to format this ValueNode as.
-        :type format_type: Class
-        :param switch_to_upper: Whether or not to convert a string to upper case before convert to enum.
-        :type switch_to_upper: bool
+        Parameters
+        ----------
+        enum_class : Class
+            the class for the enum to use.
+        allow_none : bool
+            Whether or not to allow None as a value.
+        format_type : Class
+            the base data type to format this ValueNode as.
+        switch_to_upper : bool
+            Whether or not to convert a string to upper case before
+            convert to enum.
         """
         self._type = enum_class
         if switch_to_upper:
@@ -1009,8 +1057,7 @@ class ValueNode(SyntaxNodeBase):
 
     @property
     def is_negatable_identifier(self):
-        """
-        Whether or not this value is a negatable identifier.
+        """Whether or not this value is a negatable identifier.
 
         Example use: the surface transform or periodic surface is switched based on positive
         or negative.
@@ -1020,8 +1067,10 @@ class ValueNode(SyntaxNodeBase):
             2. The ``value`` will always be positive.
             3. The ``is_negative`` property will be available.
 
-        :returns: the state of this marker.
-        :rtype: bool
+        Returns
+        -------
+        bool
+            the state of this marker.
         """
         return self._is_neg_id
 
@@ -1038,8 +1087,7 @@ class ValueNode(SyntaxNodeBase):
 
     @property
     def is_negatable_float(self):
-        """
-        Whether or not this value is a negatable float.
+        """Whether or not this value is a negatable float.
 
         Example use: cell density.
 
@@ -1048,8 +1096,10 @@ class ValueNode(SyntaxNodeBase):
             2. The ``value`` will always be positive.
             3. The ``is_negative`` property will be available.
 
-        :returns: the state of this marker.
-        :rtype: bool
+        Returns
+        -------
+        bool
+            the state of this marker.
         """
         return self._is_neg_val
 
@@ -1065,14 +1115,16 @@ class ValueNode(SyntaxNodeBase):
 
     @property
     def is_negative(self):
-        """
-        Whether or not this value is negative.
+        """Whether or not this value is negative.
 
         If neither :func:`is_negatable_float` or :func:`is_negatable_identifier` is true
         then this will return ``None``.
 
-        :returns: true if this value is negative (either in input or through state).
-        :rtype: bool, None
+        Returns
+        -------
+        bool, None
+            true if this value is negative (either in input or through
+            state).
         """
         if self.is_negatable_identifier or self.is_negatable_float:
             return self._is_neg
@@ -1083,15 +1135,13 @@ class ValueNode(SyntaxNodeBase):
             self._is_neg = val
 
     def _reverse_engineer_formatting(self):
-        """
-        Tries its best to figure out and update the formatter based on the token's format.
-        """
+        """Tries its best to figure out and update the formatter based on the token's format."""
         if not self._is_reversed and self._token is not None:
             self._is_reversed = True
             token = self._token
             if isinstance(token, input_parser.mcnp_input.Jump):
                 token = "J"
-            if isinstance(token, (int, float)):
+            if isinstance(token, (Integral, Real)):
                 token = str(token)
             self._formatter["value_length"] = len(token)
             if self.padding:
@@ -1115,7 +1165,7 @@ class ValueNode(SyntaxNodeBase):
 
     def _reverse_engineer_float(self):
         token = self._token
-        if isinstance(token, float):
+        if isinstance(token, Real):
             token = str(token)
         if isinstance(token, input_parser.mcnp_input.Jump):
             token = "J"
@@ -1144,14 +1194,15 @@ class ValueNode(SyntaxNodeBase):
         self._formatter["precision"] = precision
 
     def _can_float_to_int_happen(self):
-        """
-        Checks if you can format a floating point as an int.
+        """Checks if you can format a floating point as an int.
 
         E.g., 1.0 -> 1
 
         Considers if this was done in the input, and if the value is close to the int value.
 
-        :rtype: bool.
+        Returns
+        -------
+        bool.
         """
         if self._type != float or not self._formatter["as_int"]:
             return False
@@ -1162,13 +1213,14 @@ class ValueNode(SyntaxNodeBase):
 
     @property
     def _print_value(self):
-        """
-        The print version of the value.
+        """The print version of the value.
 
         This takes a float/int that is negatable, and negates it
         based on the ``is_negative`` value.
 
-        :rtype: int, float
+        Returns
+        -------
+        int, float
         """
         if self._type in {int, float} and self.is_negative:
             return -self.value
@@ -1176,12 +1228,13 @@ class ValueNode(SyntaxNodeBase):
 
     @property
     def _value_changed(self):
-        """
-        Checks if the value has changed at all from first parsing.
+        """Checks if the value has changed at all from first parsing.
 
         Used to shortcut formatting and reverse engineering.
 
-        :rtype: bool
+        Returns
+        -------
+        bool
         """
         if self.value is None and self._og_value is None:
             return False
@@ -1292,11 +1345,12 @@ class ValueNode(SyntaxNodeBase):
 
     @property
     def padding(self):
-        """
-        The padding if any for this ValueNode.
+        """The padding if any for this ValueNode.
 
-        :returns: the padding if any.
-        :rtype: PaddingNode
+        Returns
+        -------
+        PaddingNode
+            the padding if any.
         """
         return self._padding
 
@@ -1306,23 +1360,25 @@ class ValueNode(SyntaxNodeBase):
 
     @property
     def type(self):
-        """
-        The data type for this ValueNode.
+        """The data type for this ValueNode.
 
         Examples: float, int, str, Lattice
 
-        :returns: the class for the value of this node.
-        :rtype: Class
+        Returns
+        -------
+        Class
+            the class for the value of this node.
         """
         return self._type
 
     @property
     def token(self):
-        """
-        The original text (token) for this ValueNode.
+        """The original text (token) for this ValueNode.
 
-        :returns: the original input.
-        :rtype: str
+        Returns
+        -------
+        str
+            the original input.
         """
         return self._token
 
@@ -1337,25 +1393,27 @@ class ValueNode(SyntaxNodeBase):
 
     @property
     def value(self):
-        """
-        The current semantic value of this ValueNode.
+        """The current semantic value of this ValueNode.
 
         This is the parsed meaning in the type of ``self.type``,
         that can be updated. When this value is updated, next time format()
         is ran this value will be used.
 
-        :returns: the node's value in type ``type``.
-        :rtype: float, int, str, enum
+        Returns
+        -------
+        float, int, str, enum
+            the node's value in type ``type``.
         """
         return self._value
 
     @property
     def never_pad(self):
-        """
-        Whether or not this value node will not have extra spaces added.
+        """Whether or not this value node will not have extra spaces added.
 
-        :returns: true if extra padding is not adding at the end if missing.
-        :rtype: bool
+        Returns
+        -------
+        bool
+            true if extra padding is not adding at the end if missing.
         """
         return self._never_pad
 
@@ -1378,7 +1436,7 @@ class ValueNode(SyntaxNodeBase):
             self.padding = PaddingNode(" ")
 
     def __eq__(self, other):
-        if not isinstance(other, (type(self), str, int, float)):
+        if not isinstance(other, (type(self), str, Real)):
             return False
         if isinstance(other, ValueNode):
             other_val = other.value
@@ -1395,13 +1453,14 @@ class ValueNode(SyntaxNodeBase):
 
 
 class ParticleNode(SyntaxNodeBase):
-    """
-    A node to hold particles information in a :class:`ClassifierNode`.
+    """A node to hold particles information in a :class:`ClassifierNode`.
 
-    :param name: the name for the node.
-    :type name: str
-    :param token: the original token from parsing
-    :type token: str
+    Parameters
+    ----------
+    name : str
+        the name for the node.
+    token : str
+        the original token from parsing
     """
 
     _letter_finder = re.compile(r"([a-zA-Z])")
@@ -1421,21 +1480,23 @@ class ParticleNode(SyntaxNodeBase):
 
     @property
     def token(self):
-        """
-        The original text (token) for this ParticleNode.
+        """The original text (token) for this ParticleNode.
 
-        :returns: the original input.
-        :rtype: str
+        Returns
+        -------
+        str
+            the original input.
         """
         return self._token
 
     @property
     def particles(self):
-        """
-        The particles included in this node.
+        """The particles included in this node.
 
-        :returns: a set of the particles being used.
-        :rtype: set
+        Returns
+        -------
+        set
+            a set of the particles being used.
         """
         return self._particles
 
@@ -1452,11 +1513,12 @@ class ParticleNode(SyntaxNodeBase):
         self._particles = values
 
     def add(self, value):
-        """
-        Add a particle to this node.
+        """Add a particle to this node.
 
-        :param value: the particle to add.
-        :type value: Particle
+        Parameters
+        ----------
+        value : Particle
+            the particle to add.
         """
         if not isinstance(value, Particle):
             raise TypeError(f"All particles must be a Particle. {value} given")
@@ -1464,11 +1526,12 @@ class ParticleNode(SyntaxNodeBase):
         self._particles.add(value)
 
     def remove(self, value):
-        """
-        Remove a particle from this node.
+        """Remove a particle from this node.
 
-        :param value: the particle to remove.
-        :type value: Particle
+        Parameters
+        ----------
+        value : Particle
+            the particle to remove.
         """
         if not isinstance(value, Particle):
             raise TypeError(f"All particles must be a Particle. {value} given")
@@ -1477,15 +1540,16 @@ class ParticleNode(SyntaxNodeBase):
 
     @property
     def _particles_sorted(self):
-        """
-        The particles in this node ordered in a nice-ish way.
+        """The particles in this node ordered in a nice-ish way.
 
         Ordering:
             1. User input.
             2. Order of particles appended
             3. randomly at the end if all else fails.
 
-        :rtype: list
+        Returns
+        -------
+        list
         """
         ret = self._order
         ret_set = set(ret)
@@ -1528,11 +1592,12 @@ class ParticleNode(SyntaxNodeBase):
 
 
 class ListNode(SyntaxNodeBase):
-    """
-    A node to represent a list of values.
+    """A node to represent a list of values.
 
-    :param name: the name of this node.
-    :type name: str
+    Parameters
+    ----------
+    name : str
+        the name of this node.
     """
 
     def __init__(self, name):
@@ -1543,16 +1608,17 @@ class ListNode(SyntaxNodeBase):
         return f"(list: {self.name}, {self.nodes})"
 
     def update_with_new_values(self, new_vals):
-        """
-        Update this list node with new values.
+        """Update this list node with new values.
 
         This will first try to find if any shortcuts in the original input match up with
         the new values. If so it will then "zip" out those shortcuts to consume
         as many neighbor nodes as possible.
         Finally, the internal shortcuts, and list will be updated to reflect the new state.
 
-        :param new_vals: the new values (a list of ValueNodes)
-        :type new_vals: list
+        Parameters
+        ----------
+        new_vals : list
+            the new values (a list of ValueNodes)
         """
         if not new_vals:
             self._nodes = []
@@ -1588,14 +1654,16 @@ class ListNode(SyntaxNodeBase):
             self._shortcuts.pop()
 
     def _expand_shortcuts(self, new_vals, new_vals_cache):
-        """
-        Expands the existing shortcuts, and tries to "zip out" and consume their neighbors.
+        """Expands the existing shortcuts, and tries to "zip out" and consume their neighbors.
 
-        :param new_vals: the new values.
-        :type new_vals: list
-        :param new_vals_cache: a dictionary mapping the id of the ValueNode to the ValueNode
-            or ShortcutNode. This is ordered the same as ``new_vals``.
-        :type new_vals_cache: dict
+        Parameters
+        ----------
+        new_vals : list
+            the new values.
+        new_vals_cache : dict
+            a dictionary mapping the id of the ValueNode to the
+            ValueNode or ShortcutNode. This is ordered the same as
+            ``new_vals``.
         """
 
         def try_expansion(shortcut, value):
@@ -1618,9 +1686,7 @@ class ListNode(SyntaxNodeBase):
                         return
 
         def check_for_orphan_jump(value):
-            """
-            Checks if the current Jump is not tied to an existing Shortcut
-            """
+            """Checks if the current Jump is not tied to an existing Shortcut"""
             nonlocal shortcut
             if value.value is None and shortcut is None:
                 shortcut = ShortcutNode(p=None, short_type=Shortcuts.JUMP)
@@ -1651,13 +1717,14 @@ class ListNode(SyntaxNodeBase):
                     check_for_orphan_jump(new_vals[i])
 
     def append(self, val, from_parsing=False):
-        """
-        Append the node to this node.
+        """Append the node to this node.
 
-        :param node: node
-        :type node: ValueNode, ShortcutNode
-        :param from_parsing: If this is being append from the parsers, and not elsewhere.
-        :type from_parsing: bool
+        Parameters
+        ----------
+        node : ValueNode, ShortcutNode
+            node
+        from_parsing : bool
+            If this is being append from the parsers, and not elsewhere.
         """
         if isinstance(val, ShortcutNode):
             self._shortcuts.append(val)
@@ -1721,9 +1788,7 @@ class ListNode(SyntaxNodeBase):
         raise IndexError(f"{indx} not in ListNode")
 
     def __get_slice(self, i: slice):
-        """
-        Helper function for __getitem__ with slices.
-        """
+        """Helper function for __getitem__ with slices."""
         rstep = i.step if i.step is not None else 1
         rstart = i.start
         rstop = i.stop
@@ -1752,11 +1817,12 @@ class ListNode(SyntaxNodeBase):
         return ret
 
     def remove(self, obj):
-        """
-        Removes the given object from this list.
+        """Removes the given object from this list.
 
-        :param obj: the object to remove.
-        :type obj: ValueNode
+        Parameters
+        ----------
+        obj : ValueNode
+            the object to remove.
         """
         self.nodes.remove(obj)
 
@@ -1772,8 +1838,7 @@ class ListNode(SyntaxNodeBase):
 
 
 class MaterialsNode(SyntaxNodeBase):
-    """
-    A node for representing isotopes and their concentration,
+    """A node for representing isotopes and their concentration,
     and the material parameters.
 
     This stores a list of tuples of ZAIDs and concentrations,
@@ -1783,25 +1848,29 @@ class MaterialsNode(SyntaxNodeBase):
 
         This was added as a more general version of ``IsotopesNodes``.
 
-    :param name: a name for labeling this node.
-    :type name: str
+    Parameters
+    ----------
+    name : str
+        a name for labeling this node.
     """
 
     def __init__(self, name):
         super().__init__(name)
 
     def append_nuclide(self, isotope_fraction):
-        """
-        Append the isotope fraction to this node.
+        """Append the isotope fraction to this node.
 
         .. versionadded:: 1.0.0
 
             Added to replace ``append``
 
-        :param isotope_fraction: the isotope_fraction to add. This must be a tuple from
-            A Yacc production. This will consist of: the string identifying the Yacc production,
-            a ValueNode that is the ZAID, and a ValueNode of the concentration.
-        :type isotope_fraction: tuple
+        Parameters
+        ----------
+        isotope_fraction : tuple
+            the isotope_fraction to add. This must be a tuple from A
+            Yacc production. This will consist of: the string
+            identifying the Yacc production, a ValueNode that is the
+            ZAID, and a ValueNode of the concentration.
         """
         isotope, concentration = isotope_fraction[1:3]
         self._nodes.append((isotope, concentration))
@@ -1810,15 +1879,16 @@ class MaterialsNode(SyntaxNodeBase):
         raise DeprecationWarning("Deprecated. Use append_param or append_nuclide")
 
     def append_param(self, param):
-        """
-        Append the parameter to this node.
+        """Append the parameter to this node.
 
         .. versionadded:: 1.0.0
 
             Added to replace ``append``
 
-        :param param: the parameter to add to this node.
-        :type param: ParametersNode
+        Parameters
+        ----------
+        param : ParametersNode
+            the parameter to add to this node.
         """
         self._nodes.append((param,))
 
@@ -1869,15 +1939,16 @@ class MaterialsNode(SyntaxNodeBase):
 
 
 class ShortcutNode(ListNode):
-    """
-    A node that pretends to be a :class:`ListNode` but is actually representing a shortcut.
+    """A node that pretends to be a :class:`ListNode` but is actually representing a shortcut.
 
     This takes the shortcut tokens, and expands it into their "virtual" values.
 
-    :param p: the parsing object to parse.
-    :type p: sly.yacc.YaccProduction
-    :param short_type: the type of the shortcut.
-    :type short_type: Shortcuts
+    Parameters
+    ----------
+    p : sly.yacc.YaccProduction
+        the parsing object to parse.
+    short_type : Shortcuts
+        the type of the shortcut.
     """
 
     _shortcut_names = {
@@ -1928,14 +1999,15 @@ class ShortcutNode(ListNode):
             self._end_pad = PaddingNode(" ")
 
     def load_nodes(self, nodes):
-        """
-        Loads the given nodes into this shortcut, and update needed information.
+        """Loads the given nodes into this shortcut, and update needed information.
 
         For interpolate nodes should start and end with the beginning/end of
         the interpolation.
 
-        :param nodes: the nodes to be loaded.
-        :type nodes: list
+        Parameters
+        ----------
+        nodes : list
+            the nodes to be loaded.
         """
         self._nodes = collections.deque(nodes)
         if self.type in {Shortcuts.INTERPOLATE, Shortcuts.LOG_INTERPOLATE}:
@@ -1948,10 +2020,11 @@ class ShortcutNode(ListNode):
 
     @property
     def end_padding(self):
-        """
-        The padding at the end of this shortcut.
+        """The padding at the end of this shortcut.
 
-        :rtype: PaddingNode
+        Returns
+        -------
+        PaddingNode
         """
         return self._end_pad
 
@@ -1965,10 +2038,11 @@ class ShortcutNode(ListNode):
 
     @property
     def type(self):
-        """
-        The Type of shortcut this ShortcutNode represents.
+        """The Type of shortcut this ShortcutNode represents.
 
-        :rtype: Shortcuts
+        Returns
+        -------
+        Shortcuts
         """
         return self._type
 
@@ -2080,17 +2154,22 @@ class ShortcutNode(ListNode):
         self.append(p.number_phrase)
 
     def _can_consume_node(self, node, direction, last_edge_shortcut=False):
-        """
-        If it's possible to consume this node.
+        """If it's possible to consume this node.
 
-        :param node: the node to consume
-        :type node: ValueNode
-        :param direction: the direct to go in. Must be in {-1, 1}
-        :type direction: int
-        :param last_edge_shortcut: Whether the previous node in the list was part of a different shortcut
-        :type last_edge_shortcut: bool
-        :returns: true it can be consumed.
-        :rtype: bool
+        Parameters
+        ----------
+        node : ValueNode
+            the node to consume
+        direction : int
+            the direct to go in. Must be in {-1, 1}
+        last_edge_shortcut : bool
+            Whether the previous node in the list was part of a
+            different shortcut
+
+        Returns
+        -------
+        bool
+            true it can be consumed.
         """
         if self._type == Shortcuts.JUMP:
             if node.value is None:
@@ -2132,15 +2211,19 @@ class ShortcutNode(ListNode):
         return False
 
     def _is_valid_interpolate_edge(self, node, direction):
-        """
-        Is a valid interpolation edge.
+        """Is a valid interpolation edge.
 
-        :param node: the node to consume
-        :type node: ValueNode
-        :param direction: the direct to go in. Must be in {-1, 1}
-        :type direction: int
-        :returns: true it can be consumed.
-        :rtype: bool
+        Parameters
+        ----------
+        node : ValueNode
+            the node to consume
+        direction : int
+            the direct to go in. Must be in {-1, 1}
+
+        Returns
+        -------
+        bool
+            true it can be consumed.
         """
         # kill jumps immediately
         if node.value is None:
@@ -2160,20 +2243,24 @@ class ShortcutNode(ListNode):
         return math.isclose(new_val, node.value, rel_tol=rel_tol, abs_tol=abs_tol)
 
     def consume_edge_node(self, node, direction, last_edge_shortcut=False):
-        """
-        Tries to consume the given edge.
+        """Tries to consume the given edge.
 
         If it can be consumed the node is appended to the internal nodes.
 
-        :param node: the node to consume
-        :type node: ValueNode
-        :param direction: the direct to go in. Must be in {-1, 1}
-        :type direction: int
-        :param last_edge_shortcut: Whether or the previous node in the list was
-            part of a different shortcut
-        :type last_edge_shortcut: bool
-        :returns: True if the node was consumed.
-        :rtype: bool
+        Parameters
+        ----------
+        node : ValueNode
+            the node to consume
+        direction : int
+            the direct to go in. Must be in {-1, 1}
+        last_edge_shortcut : bool
+            Whether or the previous node in the list was part of a
+            different shortcut
+
+        Returns
+        -------
+        bool
+            True if the node was consumed.
         """
         if self._can_consume_node(node, direction, last_edge_shortcut):
             if direction == 1:
@@ -2221,20 +2308,25 @@ class ShortcutNode(ListNode):
         return f"{num_jumps.format()}{j}"
 
     def _can_use_last_node(self, node, start=None):
-        """
-        Determine if the previous node can be used as the start to this node
+        """Determine if the previous node can be used as the start to this node
         (and therefore skip the start of this one).
 
         Last node can be used if
         - it's a basic ValueNode that matches this repeat
         - it's also a shortcut, with the same edge values.
 
-        :param node: the previous node to test.
-        :type node: ValueNode, ShortcutNode
-        :param start: the starting value for this node (specifically for interpolation)
-        :type start: float
-        :returns: True if the node given can be used.
-        :rtype: bool
+        Parameters
+        ----------
+        node : ValueNode, ShortcutNode
+            the previous node to test.
+        start : float
+            the starting value for this node (specifically for
+            interpolation)
+
+        Returns
+        -------
+        bool
+            True if the node given can be used.
         """
         if isinstance(node, ValueNode):
             value = node.value
@@ -2327,8 +2419,7 @@ class ShortcutNode(ListNode):
 
 
 class ClassifierNode(SyntaxNodeBase):
-    """
-    A node to represent the classifier for a :class:`montepy.data_input.DataInput`
+    """A node to represent the classifier for a :class:`montepy.data_input.DataInput`
 
     e.g., represents ``M4``, ``F104:n,p``, ``IMP:n,e``.
     """
@@ -2344,15 +2435,16 @@ class ClassifierNode(SyntaxNodeBase):
 
     @property
     def prefix(self):
-        """
-        The prefix for the classifier.
+        """The prefix for the classifier.
 
         That is the string that tells what type of input this is.
 
         E.g.: ``M`` in ``M4`` or ``IMP`` in ``IMP:n``.
 
-        :returns: the prefix
-        :rtype: ValueNode
+        Returns
+        -------
+        ValueNode
+            the prefix
         """
         return self._prefix
 
@@ -2363,11 +2455,12 @@ class ClassifierNode(SyntaxNodeBase):
 
     @property
     def number(self):
-        """
-        The number if any for the classifier.
+        """The number if any for the classifier.
 
-        :returns: the number holder for this classifier.
-        :rtype: ValueNode
+        Returns
+        -------
+        ValueNode
+            the number holder for this classifier.
         """
         return self._number
 
@@ -2378,11 +2471,12 @@ class ClassifierNode(SyntaxNodeBase):
 
     @property
     def particles(self):
-        """
-        The particles if any tied to this classifier.
+        """The particles if any tied to this classifier.
 
-        :returns: the particles used.
-        :rtype: ParticleNode
+        Returns
+        -------
+        ParticleNode
+            the particles used.
         """
         return self._particles
 
@@ -2393,14 +2487,15 @@ class ClassifierNode(SyntaxNodeBase):
 
     @property
     def modifier(self):
-        """
-        The modifier for this classifier if any.
+        """The modifier for this classifier if any.
 
         A modifier is a prefix character that changes the inputs behavior,
         e.g.: ``*`` or ``+``.
 
-        :returns: the modifier
-        :rtype: ValueNode
+        Returns
+        -------
+        ValueNode
+            the modifier
         """
         return self._modifier
 
@@ -2411,14 +2506,15 @@ class ClassifierNode(SyntaxNodeBase):
 
     @property
     def padding(self):
-        """
-        The padding for this classifier.
+        """The padding for this classifier.
 
         .. Note::
             None of the ValueNodes in this object should have padding.
 
-        :returns: the padding after the classifier.
-        :rtype: PaddingNode
+        Returns
+        -------
+        PaddingNode
+            the padding after the classifier.
         """
         return self._padding
 
@@ -2492,8 +2588,7 @@ class ClassifierNode(SyntaxNodeBase):
 
 
 class ParametersNode(SyntaxNodeBase):
-    """
-    A node to hold the parameters, key-value pairs, for this input.
+    """A node to hold the parameters, key-value pairs, for this input.
 
     This behaves like a dictionary and is accessible by their key*
 
@@ -2523,16 +2618,18 @@ class ParametersNode(SyntaxNodeBase):
         self._nodes = {}
 
     def append(self, val, is_default=False):
-        """
-        Append the node to this node.
+        """Append the node to this node.
 
         This takes a syntax node, which requires the keys:
             ``["classifier", "seperator", "data"]``
 
-        :param val: the parameter to append.
-        :type val: SyntaxNode
-        :param is_default: whether this parameter was added as a default tree not from the user.
-        :type is_default: bool
+        Parameters
+        ----------
+        val : SyntaxNode
+            the parameter to append.
+        is_default : bool
+            whether this parameter was added as a default tree not from
+            the user.
         """
         classifier = val["classifier"]
         key = (

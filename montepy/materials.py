@@ -1,8 +1,10 @@
-# Copyright 2024, Battelle Energy Alliance, LLC All Rights Reserved.
+# Copyright 2024-2025, Battelle Energy Alliance, LLC All Rights Reserved.
 
 from __future__ import annotations
+import collections as co
 import copy
 from typing import Generator, Union
+from numbers import Integral, Real
 
 import montepy
 from montepy.numbered_object_collection import NumberedDataObjectCollection
@@ -11,35 +13,30 @@ Material = montepy.data_inputs.material.Material
 
 
 class Materials(NumberedDataObjectCollection):
-    """
-    A container of multiple :class:`~montepy.data_inputs.material.Material` instances.
+    """A container of multiple :class:`~montepy.data_inputs.material.Material` instances.
 
-    .. note::
-        When items are added to this (and this object is linked to a problem),
-        they will also be added to :func:`montepy.mcnp_problem.MCNP_Problem.data_inputs`.
+    Notes
+    -----
+    When items are added to this (and this object is linked to a problem),
+    they will also be added to :func:`montepy.mcnp_problem.MCNP_Problem.data_inputs`.
 
-    .. note::
+    Notes
+    -----
 
-        For examples see the ``NumberedObjectCollection`` :ref:`collect ex`.
+    For examples see the ``NumberedObjectCollection`` :ref:`collect ex`.
 
-
-    :param objects: the list of materials to start with if needed
-    :type objects: list
+    Parameters
+    ----------
+    objects : list
+        the list of materials to start with if needed
     """
 
     def __init__(self, objects=None, problem=None):
         super().__init__(Material, objects, problem)
 
-    def get_containing(
+    def get_containing_any(
         self,
-        nuclide: Union[
-            montepy.data_inputs.nuclide.Nuclide,
-            montepy.data_inputs.nuclide.Nucleus,
-            montepy.Element,
-            str,
-            int,
-        ],
-        *args: Union[
+        *nuclides: Union[
             montepy.data_inputs.nuclide.Nuclide,
             montepy.data_inputs.nuclide.Nucleus,
             montepy.Element,
@@ -47,9 +44,9 @@ class Materials(NumberedDataObjectCollection):
             int,
         ],
         threshold: float = 0.0,
+        strict: bool = False,
     ) -> Generator[Material]:
-        """
-        Get all materials that contain these nuclides.
+        """Get all materials that contain any of these these nuclides.
 
         This uses :func:`~montepy.data_inputs.material.Material.contains` under the hood.
         See that documentation for more guidance.
@@ -63,7 +60,7 @@ class Materials(NumberedDataObjectCollection):
 
             import montepy
             problem = montepy.read_input("foo.imcnp")
-            for mat in problem.materials.get_containing("H-1", "O-16", threshold = 0.3):
+            for mat in problem.materials.get_containing_any("H-1", "U-235", threshold = 0.3):
                 print(mat)
 
         .. testoutput::
@@ -72,39 +69,115 @@ class Materials(NumberedDataObjectCollection):
 
         .. versionadded:: 1.0.0
 
-        :param nuclide: the first nuclide to check for.
-        :type nuclide: Union[Nuclide, Nucleus, Element, str, int]
-        :param args: a plurality of other nuclides to check for.
-        :type args: Union[Nuclide, Nucleus, Element, str, int]
-        :param threshold: the minimum concentration of a nuclide to be considered. The material components are not
-            first normalized.
-        :type threshold: float
+        Parameters
+        ----------
+        *nuclides : Union[Nuclide, Nucleus, Element, str, int]
+            a plurality of nuclides to check for.
+        threshold : float
+            the minimum concentration of a nuclide to be considered. The
+            material components are not first normalized.
+        strict : bool
+            If True this does not let an elemental nuclide match all
+            child isotopes, isomers, nor will an isotope match all
+            isomers, nor will a blank library match all libraries.
 
-        :return: A generator of all matching materials
-        :rtype: Generator[Material]
+        Returns
+        -------
+        Generator[Material]
+            A generator of all matching materials
 
-        :raises TypeError: if any argument is of the wrong type.
-        :raises ValueError: if the fraction is not positive or zero, or if nuclide cannot be interpreted as a Nuclide.
+        Raises
+        ------
+        TypeError
+            if any argument is of the wrong type.
+        ValueError
+            if the fraction is not positive or zero, or if nuclide
+            cannot be interpreted as a Nuclide.
         """
-        nuclides = []
-        for nuclide in [nuclide] + list(args):
-            if not isinstance(
-                nuclide,
-                (
-                    str,
-                    int,
-                    montepy.Element,
-                    montepy.data_inputs.nuclide.Nucleus,
-                    montepy.Nuclide,
-                ),
-            ):
-                raise TypeError(
-                    f"nuclide must be of type str, int, Element, Nucleus, or Nuclide. "
-                    f"{nuclide} of type {type(nuclide)} given."
-                )
-            if isinstance(nuclide, (str, int)):
-                nuclide = montepy.Nuclide(nuclide)
-            nuclides.append(nuclide)
+        return self._contains_arb(
+            *nuclides, bool_func=any, threshold=threshold, strict=strict
+        )
+
+    def get_containing_all(
+        self,
+        *nuclides: Union[
+            montepy.data_inputs.nuclide.Nuclide,
+            montepy.data_inputs.nuclide.Nucleus,
+            montepy.Element,
+            str,
+            int,
+        ],
+        threshold: float = 0.0,
+        strict: bool = False,
+    ) -> Generator[Material]:
+        """Get all materials that contain all of these nuclides.
+
+        This uses :func:`~montepy.data_inputs.material.Material.contains` under the hood.
+        See that documentation for more guidance.
+
+        Examples
+        ^^^^^^^^
+
+        One example would to be find all water bearing materials:
+
+        .. testcode::
+
+            import montepy
+            problem = montepy.read_input("foo.imcnp")
+            for mat in problem.materials.get_containing_all("H-1", "O-16", threshold = 0.3):
+                print(mat)
+
+        .. testoutput::
+
+            MATERIAL: 1, ['hydrogen', 'oxygen']
+
+        .. versionadded:: 1.0.0
+
+        Parameters
+        ----------
+        *nuclides : Union[Nuclide, Nucleus, Element, str, int]
+            a plurality of nuclides to check for.
+        threshold : float
+            the minimum concentration of a nuclide to be considered. The
+            material components are not first normalized.
+        strict : bool
+            If True this does not let an elemental nuclide match all
+            child isotopes, isomers, nor will an isotope match all
+            isomers, nor will a blank library match all libraries.
+
+        Returns
+        -------
+        Generator[Material]
+            A generator of all matching materials
+
+        Raises
+        ------
+        TypeError
+            if any argument is of the wrong type.
+        ValueError
+            if the fraction is not positive or zero, or if nuclide
+            cannot be interpreted as a Nuclide.
+        """
+        return self._contains_arb(
+            *nuclides, bool_func=all, threshold=threshold, strict=strict
+        )
+
+    def _contains_arb(
+        self,
+        *nuclides: Union[
+            montepy.data_inputs.nuclide.Nuclide,
+            montepy.data_inputs.nuclide.Nucleus,
+            montepy.Element,
+            str,
+            int,
+        ],
+        bool_func: co.abc.Callable[co.abc.Iterable[bool]],
+        threshold: float = 0.0,
+        strict: bool = False,
+    ) -> Generator[Material]:
+        nuclide_finders = []
+        for nuclide in nuclides:
+            nuclide_finders.append(Material._promote_nuclide(nuclide, strict))
 
         def sort_by_type(nuclide):
             type_map = {
@@ -115,18 +188,21 @@ class Materials(NumberedDataObjectCollection):
             return type_map[type(nuclide)]
 
         # optimize by most hashable and fail fast
-        nuclides = sorted(nuclides, key=sort_by_type)
+        nuclide_finders = sorted(nuclide_finders, key=sort_by_type)
         for material in self:
-            if material.contains(*nuclides, threshold=threshold):
+            if material._contains_arb(
+                *nuclide_finders,
+                bool_func=bool_func,
+                threshold=threshold,
+                strict=strict,
+            ):
                 # maybe? Maybe not?
                 # should Materials act like a set?
                 yield material
 
     @property
     def default_libraries(self) -> dict[montepy.LibraryType, montepy.Library]:
-        """
-        The default libraries for this problem defined by ``M0``.
-
+        """The default libraries for this problem defined by ``M0``.
 
         Examples
         ^^^^^^^^
@@ -146,8 +222,10 @@ class Materials(NumberedDataObjectCollection):
 
         .. versionadded:: 1.0.0
 
-        :returns: the default libraries in use
-        :rtype: dict[LibraryType, Library]
+        Returns
+        -------
+        dict[LibraryType, Library]
+            the default libraries in use
         """
         try:
             return self[0].default_libraries
@@ -164,8 +242,7 @@ class Materials(NumberedDataObjectCollection):
         starting_number=None,
         step=None,
     ) -> Material:
-        """
-        Mix the given materials in the provided fractions to create a new material.
+        """Mix the given materials in the provided fractions to create a new material.
 
         All materials must use the same fraction type, either atom fraction or mass fraction.
         The fractions given to this method are interpreted in that way as well.
@@ -204,20 +281,32 @@ class Materials(NumberedDataObjectCollection):
             boric_conc = boron_ppm * 1e-6
             borated_water = mats.mix([h2o, boric_acid], [1 - boric_conc, boric_conc])
 
+        Parameters
+        ----------
+        materials : list[Material]
+            the materials to mix.
+        fractions
+            the corresponding fractions for each material in either atom
+            or mass fractions, depending on the materials fraction type.
+        starting_number : Union[int, None]
+            the starting number to assign this new material.
+        step : Union[int, None]
+            the step size to take when finding a new number.
 
-        :param materials: the materials to mix.
-        :type materials: list[Material]
-        :param fractions: the corresponding fractions for each material in either atom or mass fractions, depending on
-            the materials fraction type.
-        :param starting_number: the starting number to assign this new material.
-        :type starting_number: Union[int, None]
-        :param step: the step size to take when finding a new number.
-        :type step: Union[int, None]
-        :returns: a new material with the mixed components of the given materials
-        :rtype: Material
-        :raises TypeError: if invalid objects are given.
-        :raises ValueError: if the number of elements in the two lists mismatch, or if not all the materials are of the
-            same fraction type, or if a negative starting_number or step are given.
+        Returns
+        -------
+        Material
+            a new material with the mixed components of the given
+            materials
+
+        Raises
+        ------
+        TypeError
+            if invalid objects are given.
+        ValueError
+            if the number of elements in the two lists mismatch, or if
+            not all the materials are of the same fraction type, or if a
+            negative starting_number or step are given.
         """
         if not isinstance(materials, list):
             raise TypeError(f"materials must be a list. {materials} given.")
@@ -235,7 +324,7 @@ class Materials(NumberedDataObjectCollection):
         if not isinstance(fractions, list):
             raise TypeError(f"fractions must be a list. {fractions} given.")
         for frac in fractions:
-            if not isinstance(frac, float):
+            if not isinstance(frac, Real):
                 raise TypeError(f"fraction in fractions must be a float. {frac} given.")
             if frac < 0.0:
                 raise ValueError(f"Fraction cannot be negative. {frac} given.")
@@ -243,7 +332,7 @@ class Materials(NumberedDataObjectCollection):
             raise ValueError(
                 f"Length of materials and fractions don't match. The lengths are, materials: {len(materials)}, fractions: {len(fractions)}"
             )
-        if not isinstance(starting_number, (int, type(None))):
+        if not isinstance(starting_number, (Integral, type(None))):
             raise TypeError(
                 f"starting_number must be an int. {starting_number} of type {type(starting_number)} given."
             )
@@ -251,7 +340,7 @@ class Materials(NumberedDataObjectCollection):
             raise ValueError(
                 f"starting_number must be positive. {starting_number} given."
             )
-        if not isinstance(step, (int, type(None))):
+        if not isinstance(step, (Integral, type(None))):
             raise TypeError(f"step must be an int. {step} of type {type(step)} given.")
         if step is not None and step <= 0:
             raise ValueError(f"step must be positive. {step} given.")

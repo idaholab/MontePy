@@ -14,17 +14,18 @@ from montepy.utilities import *
 
 
 class Transform(data_input.DataInputAbstract, Numbered_MCNP_Object):
-    """
-    Input to represent a transform input (TR).
+    """Input to represent a transform input (TR).
 
     .. versionchanged:: 1.0.0
 
         Added number parameter
 
-    :param input: The Input object representing the input
-    :type input: Union[Input, str]
-    :param number: The number to set for this object.
-    :type number: int
+    Parameters
+    ----------
+    input : Union[Input, str]
+        The Input object representing the input
+    number : int
+        The number to set for this object.
     """
 
     def __init__(
@@ -101,39 +102,43 @@ class Transform(data_input.DataInputAbstract, Numbered_MCNP_Object):
 
     @property
     def hidden_transform(self):
-        """
-        Whether or not this transform is "hidden" i.e., has no number.
+        """Whether or not this transform is "hidden" i.e., has no number.
 
         If True this transform was created from a fill card, and has no number.
 
-        :rtype: bool
+        Returns
+        -------
+        bool
         """
         return self._pass_through
 
     @make_prop_pointer("_is_in_degrees", bool)
     def is_in_degrees(self):
-        """
-        The rotation matrix is in degrees and not in cosines
+        """The rotation matrix is in degrees and not in cosines
 
-        :rtype: bool
+        Returns
+        -------
+        bool
         """
         pass
 
     @make_prop_val_node("_old_number")
     def old_number(self):
-        """
-        The transform number used in the original file
+        """The transform number used in the original file
 
-        :rtype: int
+        Returns
+        -------
+        int
         """
         pass
 
     @property
     def displacement_vector(self):
-        """
-        The transform displacement vector
+        """The transform displacement vector
 
-        :rtype: numpy.array
+        Returns
+        -------
+        numpy.array
         """
         return self._displacement_vector
 
@@ -147,10 +152,11 @@ class Transform(data_input.DataInputAbstract, Numbered_MCNP_Object):
 
     @property
     def rotation_matrix(self):
-        """
-        The rotation matrix
+        """The rotation matrix
 
-        :rtype: np.array
+        Returns
+        -------
+        np.array
         """
         return self._rotation_matrix
 
@@ -164,11 +170,12 @@ class Transform(data_input.DataInputAbstract, Numbered_MCNP_Object):
 
     @make_prop_pointer("_is_main_to_aux", bool)
     def is_main_to_aux(self):
-        """
-        Whether or not the displacement vector points from the main origin to auxilary
+        """Whether or not the displacement vector points from the main origin to auxilary
         origin, or vice versa.
 
-        :rtype: bool
+        Returns
+        -------
+        bool
         """
         return self._is_main_to_aux
 
@@ -239,13 +246,19 @@ class Transform(data_input.DataInputAbstract, Numbered_MCNP_Object):
     def equivalent(self, other, tolerance):
         """Determines if this is effectively equivalent to another transformation
 
-        :param other: The transform to compare self again.
-        :type other: Transform
-        :param tolerance: the allowable difference in any attribute to still be considered equivalent.
-        :type tolerance: float
+        Parameters
+        ----------
+        other : Transform
+            The transform to compare self again.
+        tolerance : float
+            the allowable difference in any attribute to still be
+            considered equivalent.
 
-        :returns: True iff all transform elements in both are within the tolerance of each other.
-        :rtype: bool
+        Returns
+        -------
+        bool
+            True iff all transform elements in both are within the
+            tolerance of each other.
         """
 
         if self.is_in_degrees != other.is_in_degrees:

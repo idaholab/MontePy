@@ -1,22 +1,18 @@
-# Copyright 2024, Battelle Energy Alliance, LLC All Rights Reserved.
+# Copyright 2024-2025, Battelle Energy Alliance, LLC All Rights Reserved.
 from __future__ import annotations
 import collections as co
 import copy
-import itertools
 import math
-import re
+from numbers import Integral, Real
 from typing import Generator, Union
-import warnings
 import weakref
 
 import montepy
 from montepy.data_inputs import data_input, thermal_scattering
 from montepy.data_inputs.nuclide import Library, Nucleus, Nuclide
 from montepy.data_inputs.element import Element
-from montepy.data_inputs.material_component import MaterialComponent
 from montepy.input_parser import syntax_node
 from montepy.input_parser.material_parser import MaterialParser
-from montepy import mcnp_object
 from montepy.numbered_mcnp_object import Numbered_MCNP_Object, InitInput
 from montepy.errors import *
 from montepy.utilities import *
@@ -36,15 +32,18 @@ This is used for adding new material components.
 By default all components made from scratch are added to their own line with this many leading spaces.
 """
 
+NuclideLike = Union[Nuclide, Nucleus, Element, str, Integral]
+
 
 class _DefaultLibraries:
-    """
-    A dictionary wrapper for handling the default libraries for a material.
+    """A dictionary wrapper for handling the default libraries for a material.
 
     The default libraries are those specified by keyword, e.g., ``nlib=80c``.
 
-    :param parent_mat: the material that this default library is associated with.
-    :type parent_mat: Material
+    Parameters
+    ----------
+    parent_mat : Material
+        the material that this default library is associated with.
     """
 
     __slots__ = "_libraries", "_parent"
@@ -123,9 +122,7 @@ class _DefaultLibraries:
 
 
 class _MatCompWrapper:
-    """
-    A wrapper that allows unwrapping Nuclide and fractions
-    """
+    """A wrapper that allows unwrapping Nuclide and fractions"""
 
     __slots__ = "_parent", "_index", "_setter"
 
@@ -151,8 +148,7 @@ class _MatCompWrapper:
 
 
 class Material(data_input.DataInputAbstract, Numbered_MCNP_Object):
-    """
-    A class to represent an MCNP material.
+    """A class to represent an MCNP material.
 
     Examples
     --------
@@ -263,11 +259,13 @@ class Material(data_input.DataInputAbstract, Numbered_MCNP_Object):
         80p
         00c
 
-    .. seealso::
+    See Also
+    --------
 
-            * :manual631:`5.6.1`
-            * :manual63:`5.6.1`
-            * :manual62:`106`
+    * :manual631:`5.6.1`
+    * :manual63:`5.6.1`
+    * :manual62:`106`
+
 
     .. versionchanged:: 1.0.0
 
@@ -277,12 +275,14 @@ class Material(data_input.DataInputAbstract, Numbered_MCNP_Object):
             * Added ability to search by Nuclide
             * Added Support for default libraries (e.g., ``nlib=80c``).
 
-    :param input: The Input syntax object this will wrap and parse.
-    :type input: Union[Input, str]
-    :param parser: The parser object to parse the input with.
-    :type parser: MCNP_Parser
-    :param number: The number to set for this object.
-    :type number: int
+    Parameters
+    ----------
+    input : Union[Input, str]
+        The Input syntax object this will wrap and parse.
+    parser : MCNP_Parser
+        The parser object to parse the input with.
+    number : int
+        The number to set for this object.
     """
 
     _parser = MaterialParser()
@@ -322,9 +322,7 @@ class Material(data_input.DataInputAbstract, Numbered_MCNP_Object):
     def _grab_isotope(
         self, nuclide: Nuclide, fraction: syntax_node.ValueNode, is_first: bool = False
     ):
-        """
-        Grabs and parses the nuclide and fraction from the init function, and loads it.
-        """
+        """Grabs and parses the nuclide and fraction from the init function, and loads it."""
         isotope = Nuclide(node=nuclide)
         fraction.is_negatable_float = True
         if is_first:
@@ -341,9 +339,7 @@ class Material(data_input.DataInputAbstract, Numbered_MCNP_Object):
         self._components.append((isotope, fraction))
 
     def _grab_default(self, param: syntax_node.SyntaxNode):
-        """
-        Grabs and parses default libraris from init process.
-        """
+        """Grabs and parses default libraris from init process."""
         try:
             lib_type = LibraryType(param["classifier"].prefix.value.upper())
             self._default_libs._load_node(lib_type, param)
@@ -368,8 +364,7 @@ class Material(data_input.DataInputAbstract, Numbered_MCNP_Object):
         )
 
     def _append_param_lib(self, node: syntax_node.SyntaxNode):
-        """
-        Adds the given syntax node to this Material's data list.
+        """Adds the given syntax node to this Material's data list.
 
         This is called from _DefaultLibraries.
         """
@@ -377,8 +372,7 @@ class Material(data_input.DataInputAbstract, Numbered_MCNP_Object):
         self._tree["data"].append_param(node)
 
     def _delete_param_lib(self, node: syntax_node.SyntaxNode):
-        """
-        Deletes the given syntax node from this Material's data list.
+        """Deletes the given syntax node from this Material's data list.
 
         This is called from _DefaultLibraries.
         """
@@ -386,37 +380,41 @@ class Material(data_input.DataInputAbstract, Numbered_MCNP_Object):
 
     @make_prop_val_node("_old_number")
     def old_number(self) -> int:
-        """
-        The material number that was used in the read file
+        """The material number that was used in the read file
 
-        :rtype: int
+        Returns
+        -------
+        int
         """
         pass
 
     @make_prop_pointer("_is_atom_fraction", bool)
     def is_atom_fraction(self) -> bool:
-        """
-        If true this constituent is in atom fraction, not weight fraction.
+        """If true this constituent is in atom fraction, not weight fraction.
 
         .. versionchanged:: 1.0.0
 
             This property is now settable.
 
-        :rtype: bool
+        Returns
+        -------
+        bool
         """
         pass
 
     @property
     def material_components(self):  # pragma: no cover
-        """
-        The internal dictionary containing all the components of this material.
+        """The internal dictionary containing all the components of this material.
 
         .. deprecated:: 0.4.1
             MaterialComponent has been deprecated as part of a redesign for the material
             interface due to a critical bug in how MontePy handles duplicate nuclides.
             See :ref:`migrate 0 1`.
 
-        :raises DeprecationWarning: This has been fully deprecated and cannot be used.
+        Raises
+        ------
+        DeprecationWarning
+            This has been fully deprecated and cannot be used.
         """
         raise DeprecationWarning(
             f"""material_components is deprecated, and has been removed in MontePy 1.0.0.
@@ -425,8 +423,7 @@ See <https://www.montepy.org/migrations/migrate0_1.html> for more information ""
 
     @make_prop_pointer("_default_libs")
     def default_libraries(self):
-        """
-        The default libraries that are used when a nuclide doesn't have a relevant library specified.
+        """The default libraries that are used when a nuclide doesn't have a relevant library specified.
 
         Default Libraries
         ^^^^^^^^^^^^^^^^^
@@ -457,8 +454,7 @@ See <https://www.montepy.org/migrations/migrate0_1.html> for more information ""
     def get_nuclide_library(
         self, nuclide: Nuclide, library_type: LibraryType
     ) -> Union[Library, None]:
-        """
-        Figures out which nuclear data library will be used for the given nuclide in this
+        """Figures out which nuclear data library will be used for the given nuclide in this
         given material in this given problem.
 
         This follows the MCNP lookup process and returns the first Library to meet these rules.
@@ -469,21 +465,31 @@ See <https://www.montepy.org/migrations/migrate0_1.html> for more information ""
 
         #. Finally if the two other options failed ``M0`` will be checked. These are stored in :func:`montepy.materials.Materials.default_libraries`.
 
-        .. note::
+        Notes
+        -----
 
-            The final backup is that MCNP will use the first matching library in ``XSDIR``.
-            Currently MontePy doesn't support reading an ``XSDIR`` file and so it will return none in this case.
+        The final backup is that MCNP will use the first matching library in ``XSDIR``.
+        Currently MontePy doesn't support reading an ``XSDIR`` file and so it will return none in this case.
+
 
         .. versionadded:: 1.0.0
 
-        :param nuclide: the nuclide to check.
-        :type nuclide: Union[Nuclide, str]
-        :param library_type: the LibraryType to check against.
-        :type library_type: LibraryType
-        :returns: the library that will be used in this scenario by MCNP.
-        :rtype: Union[Library, None]
-        :raises TypeError: If arguments of the wrong type are given.
+        Parameters
+        ----------
+        nuclide : Union[Nuclide, str]
+            the nuclide to check.
+        library_type : LibraryType
+            the LibraryType to check against.
 
+        Returns
+        -------
+        Union[Library, None]
+            the library that will be used in this scenario by MCNP.
+
+        Raises
+        ------
+        TypeError
+            If arguments of the wrong type are given.
         """
         if not isinstance(nuclide, (Nuclide, str)):
             raise TypeError(f"nuclide must be a Nuclide. {nuclide} given.")
@@ -505,10 +511,10 @@ See <https://www.montepy.org/migrations/migrate0_1.html> for more information ""
         return None
 
     def __getitem__(self, idx):
-        """ """
-        if not isinstance(idx, (int, slice)):
+        """"""
+        if not isinstance(idx, (Integral, slice)):
             raise TypeError(f"Not a valid index. {idx} given.")
-        if isinstance(idx, int):
+        if isinstance(idx, Integral):
             comp = self._components[idx]
             return self.__unwrap_comp(comp)
         # else it's a slice
@@ -526,8 +532,8 @@ See <https://www.montepy.org/migrations/migrate0_1.html> for more information ""
         return gen_wrapper()
 
     def __setitem__(self, idx, newvalue):
-        """ """
-        if not isinstance(idx, (int, slice)):
+        """"""
+        if not isinstance(idx, (Integral, slice)):
             raise TypeError(f"Not a valid index. {idx} given.")
         old_vals = self._components[idx]
         self._check_valid_comp(newvalue)
@@ -540,10 +546,8 @@ See <https://www.montepy.org/migrations/migrate0_1.html> for more information ""
     def __len__(self):
         return len(self._components)
 
-    def _check_valid_comp(self, newvalue: tuple[Nuclide, float]):
-        """
-        Checks valid compositions and raises an error if needed.
-        """
+    def _check_valid_comp(self, newvalue: tuple[Nuclide, Real]):
+        """Checks valid compositions and raises an error if needed."""
         if not isinstance(newvalue, tuple):
             raise TypeError(
                 f"Invalid component given. Must be tuple of Nuclide, fraction. {newvalue} given."
@@ -554,7 +558,7 @@ See <https://www.montepy.org/migrations/migrate0_1.html> for more information ""
             )
         if not isinstance(newvalue[0], Nuclide):
             raise TypeError(f"First element must be an Nuclide. {newvalue[0]} given.")
-        if not isinstance(newvalue[1], (float, int)):
+        if not isinstance(newvalue[1], Real):
             raise TypeError(
                 f"Second element must be a fraction greater than 0. {newvalue[1]} given."
             )
@@ -564,9 +568,9 @@ See <https://www.montepy.org/migrations/migrate0_1.html> for more information ""
             )
 
     def __delitem__(self, idx):
-        if not isinstance(idx, (int, slice)):
+        if not isinstance(idx, (Integral, slice)):
             raise TypeError(f"Not a valid index. {idx} given.")
-        if isinstance(idx, int):
+        if isinstance(idx, Integral):
             self.__delitem(idx)
             return
         # else it's a slice
@@ -605,11 +609,11 @@ See <https://www.montepy.org/migrations/migrate0_1.html> for more information ""
         del self._components[idx]
 
     def __contains__(self, nuclide):
-        if not isinstance(nuclide, (Nuclide, Nucleus, Element, str)):
+        if not isinstance(nuclide, (Nuclide, Nucleus, Element, str, Integral)):
             raise TypeError(
                 f"Can only check if a Nuclide, Nucleus, Element, or str is in a material. {nuclide} given."
             )
-        if isinstance(nuclide, str):
+        if isinstance(nuclide, (str, Integral)):
             nuclide = Nuclide(nuclide)
         # switch to elemental
         if isinstance(nuclide, (Nucleus, Nuclide)) and nuclide.A == 0:
@@ -632,13 +636,14 @@ See <https://www.montepy.org/migrations/migrate0_1.html> for more information ""
             return element in self._elements
 
     def append(self, nuclide_frac_pair: tuple[Nuclide, float]):
-        """
-        Appends the tuple to this material.
+        """Appends the tuple to this material.
 
         .. versionadded:: 1.0.0
 
-        :param nuclide_frac_pair: a tuple of the nuclide and the fraction to add.
-        :type nuclide_frac_pair: tuple[Nuclide, float]
+        Parameters
+        ----------
+        nuclide_frac_pair : tuple[Nuclide, float]
+            a tuple of the nuclide and the fraction to add.
         """
         self._check_valid_comp(nuclide_frac_pair)
         self._elements.add(nuclide_frac_pair[0].element)
@@ -681,13 +686,14 @@ See <https://www.montepy.org/migrations/migrate0_1.html> for more information ""
             add_new_line_padding()
 
     def change_libraries(self, new_library: Union[str, Library]):
-        """
-        Change the library for all nuclides in the material.
+        """Change the library for all nuclides in the material.
 
         .. versionadded:: 1.0.0
 
-        :param new_library: the new library to set all Nuclides to use.
-        :type new_library: Union[str, Library]
+        Parameters
+        ----------
+        new_library : Union[str, Library]
+            the new library to set all Nuclides to use.
         """
         if not isinstance(new_library, (Library, str)):
             raise TypeError(
@@ -698,39 +704,35 @@ See <https://www.montepy.org/migrations/migrate0_1.html> for more information ""
         for nuclide, _ in self:
             nuclide.library = new_library
 
-    def add_nuclide(self, nuclide: Union[Nuclide, str, int], fraction: float):
-        """
-        Add a new component to this material of the given nuclide, and fraction.
+    def add_nuclide(self, nuclide: NuclideLike, fraction: float):
+        """Add a new component to this material of the given nuclide, and fraction.
 
         .. versionadded:: 1.0.0
 
-        :param nuclide: The nuclide to add, which can be a string Identifier, or ZAID.
-        :type nuclide: Nuclide, str, int
-        :param fraction: the fraction of this component being added.
-        :type fraction: float
+        Parameters
+        ----------
+        nuclide : Nuclide, str, int
+            The nuclide to add, which can be a string Identifier, or
+            ZAID.
+        fraction : float
+            the fraction of this component being added.
         """
-        if not isinstance(nuclide, (Nuclide, str, int)):
+        if not isinstance(nuclide, (Nuclide, str, Integral)):
             raise TypeError(
                 f"Nuclide must of type Nuclide, str, or int. {nuclide} of type {type(nuclide)} given."
             )
-        if not isinstance(fraction, (float, int)):
-            raise TypeError(
-                f"Fraction must be a numerical value. {fraction} of type {type(fraction)}"
-            )
-        if isinstance(nuclide, (str, int)):
-            nuclide = Nuclide(nuclide)
+        nuclide = self._promote_nuclide(nuclide, True)
         self.append((nuclide, fraction))
 
-    def contains(
+    def contains_all(
         self,
-        nuclide: Union[Nuclide, Nucleus, Element, str, int],
-        *args: Union[Nuclide, Nucleus, Element, str, int],
+        *nuclides: NuclideLike,
         threshold: float = 0.0,
+        strict: bool = False,
     ) -> bool:
-        """
-        Checks if this material contains multiple nuclides.
+        """Checks if this material contains of all of the given nuclides.
 
-        A boolean and is used for this comparison.
+        A boolean "and" is used for this comparison.
         That is this material must contain all nuclides at or above the given threshold
         in order to return true.
 
@@ -744,94 +746,192 @@ See <https://www.montepy.org/migrations/migrate0_1.html> for more information ""
 
             # try to find LEU materials
             for mat in problem.materials:
-                if mat.contains("U-235", threshold=0.02):
+                if mat.contains_all("U-235", threshold=0.02):
                     # your code here
-                    pass
-
-            # try to find any fissile materials
-            for mat in problem.materials:
-                if mat.contains("U-235", "U-233", "Pu-239", threshold=1e-6):
                     pass
 
             # try to find a uranium
             for mat in problem.materials:
-                if mat.contains("U"):
+                if mat.contains_all("U"):
                     pass
 
-        .. note::
+        Notes
+        -----
 
-            If a nuclide is in a material multiple times, and cumulatively exceeds the threshold,
-            but for each instance it appears it is below the threshold this method will return False.
+        The difference between :func:`contains_all` and :func:`contains_any` is only for how they
+        handle being given multiple nuclides. This does not impact how given Elements will match
+        daughter Nuclides. This is handled instead by ``strict``.
+
+        Notes
+        -----
+
+        For details on how to use the ``strict`` argument see the examples in: :func:`find`.
+
+
         .. versionadded:: 1.0.0
 
-        :param nuclide: the first nuclide to check for.
-        :type nuclide: Union[Nuclide, Nucleus, Element, str, int]
-        :param args: a plurality of other nuclides to check for.
-        :type args: Union[Nuclide, Nucleus, Element, str, int]
-        :param threshold: the minimum concentration of a nuclide to be considered. The material components are not
-            first normalized.
-        :type threshold: float
+        Parameters
+        ----------
+        *nuclides : Union[Nuclide, Nucleus, Element, str, int]
+            a plurality of nuclides to check for.
+        threshold : float
+            the minimum concentration of a nuclide to be considered. The
+            material components are not first normalized.
+        strict : bool
+            If True this does not let an elemental nuclide match all
+            child isotopes, isomers, nor will an isotope match all
+            isomers, nor will a blank library match all libraries.
 
-        :return: whether or not this material contains all components given above the threshold.
-        :rtype: bool
+        Returns
+        -------
+        bool
+            whether or not this material contains all components given
+            above the threshold.
 
-        :raises TypeError: if any argument is of the wrong type.
-        :raises ValueError: if the fraction is not positive or zero, or if nuclide cannot be interpreted as a Nuclide.
-
+        Raises
+        ------
+        TypeError
+            if any argument is of the wrong type.
+        ValueError
+            if the fraction is not positive or zero, or if nuclide
+            cannot be interpreted as a Nuclide.
         """
-        nuclides = []
-        for nuclide in [nuclide] + list(args):
-            if not isinstance(nuclide, (str, int, Element, Nucleus, Nuclide)):
-                raise TypeError(
-                    f"Nuclide must be a type that can be converted to a Nuclide. The allowed types are: "
-                    f"Nuclide, Nucleus, str, int. {nuclide} given."
-                )
-            if isinstance(nuclide, (str, int)):
-                nuclide = Nuclide(nuclide)
-            # treat elemental as element
-            if isinstance(nuclide, (Nucleus, Nuclide)) and nuclide.A == 0:
-                nuclide = nuclide.element
-            if isinstance(nuclide, Nuclide) and not str(nuclide.library):
-                nuclide = nuclide.nucleus
-            nuclides.append(nuclide)
+        return self._contains_arb(
+            *nuclides, bool_func=all, threshold=threshold, strict=strict
+        )
 
-        if not isinstance(threshold, float):
+    def contains_any(
+        self,
+        *nuclides: NuclideLike,
+        threshold: float = 0.0,
+        strict: bool = False,
+    ) -> bool:
+        """Checks if this material contains any of the given nuclide.
+
+        A boolean "or" is used for this comparison.
+        That is, this material must contain any nuclides at or above the given threshold
+        in order to return true.
+
+        Examples
+        ^^^^^^^^
+
+        .. testcode::
+
+            import montepy
+            problem = montepy.read_input("tests/inputs/test.imcnp")
+
+            # try to find any fissile materials
+            for mat in problem.materials:
+                if mat.contains_any("U-235", "U-233", "Pu-239", threshold=1e-6):
+                    pass
+
+        Notes
+        -----
+
+        For details on how to use the ``strict`` argument see the examples in: :func:`find`.
+
+
+        .. versionadded:: 1.0.0
+
+        Parameters
+        ----------
+        *nuclides : Union[Nuclide, Nucleus, Element, str, int]
+            a plurality of nuclides to check for.
+        threshold : float
+            the minimum concentration of a nuclide to be considered. The
+            material components are not first normalized.
+        strict : bool
+            If True this does not let an elemental nuclide match all
+            child isotopes, isomers, nor will an isotope match all
+            isomers, nor will a blank library match all libraries.
+
+        Returns
+        -------
+        bool
+            whether or not this material contains all components given
+            above the threshold.
+
+        Raises
+        ------
+        TypeError
+            if any argument is of the wrong type.
+        ValueError
+            if the fraction is not positive or zero, or if nuclide
+            cannot be interpreted as a Nuclide.
+        """
+        return self._contains_arb(
+            *nuclides, bool_func=any, threshold=threshold, strict=strict
+        )
+
+    @staticmethod
+    def _promote_nuclide(nuclide, strict):
+        # This is necessary for python 3.9
+        if not isinstance(nuclide, (Nuclide, Nucleus, Element, str, Integral)):
+            raise TypeError(
+                f"Nuclide must be a type that can be converted to a Nuclide. The allowed types are: "
+                f"Nuclide, Nucleus, str, int. {nuclide} given."
+            )
+        if isinstance(nuclide, (str, Integral)):
+            nuclide = Nuclide(nuclide)
+        # treat elemental as element
+        if isinstance(nuclide, (Nucleus, Nuclide)) and nuclide.A == 0 and not strict:
+            nuclide = nuclide.element
+        if isinstance(nuclide, Nuclide) and not str(nuclide.library) and not strict:
+            nuclide = nuclide.nucleus
+        return nuclide
+
+    def _contains_arb(
+        self,
+        *nuclides: Union[Nuclide, Nucleus, Element, str, Integral],
+        bool_func: co.abc.Callable[co.abc.Iterable[bool]] = None,
+        threshold: float = 0.0,
+        strict: bool = False,
+    ) -> bool:
+        nuclide_finders = []
+        if not isinstance(threshold, Real):
             raise TypeError(
                 f"Threshold must be a float. {threshold} of type: {type(threshold)} given"
             )
         if threshold < 0.0:
             raise ValueError(f"Threshold must be positive or zero. {threshold} given.")
+        if not isinstance(strict, bool):
+            raise TypeError(
+                f"Strict must be bool. {strict} of type: {type(strict)} given."
+            )
+        for nuclide in nuclides:
+            nuclide_finders.append(self._promote_nuclide(nuclide, strict))
 
         # fail fast
-        for nuclide in nuclides:
-            if nuclide not in self:
-                return False
+        if bool_func == all:
+            for nuclide in nuclide_finders:
+                if nuclide not in self and bool_func == all:
+                    return False
 
         nuclides_search = {}
         nuclei_search = {}
         element_search = {}
-        for nuclide in nuclides:
+        for nuclide in nuclide_finders:
             if isinstance(nuclide, Element):
-                element_search[nuclide] = False
+                element_search[nuclide] = 0.0
             if isinstance(nuclide, Nucleus):
-                nuclei_search[nuclide] = False
+                nuclei_search[nuclide] = 0.0
             if isinstance(nuclide, Nuclide):
-                nuclides_search[str(nuclide).lower()] = False
+                nuclides_search[str(nuclide).lower()] = 0.0
 
         for nuclide, fraction in self:
-            if fraction < threshold:
-                continue
             if str(nuclide).lower() in nuclides_search:
-                nuclides_search[str(nuclide).lower()] = True
+                nuclides_search[str(nuclide).lower()] += fraction
             if nuclide.nucleus in nuclei_search:
-                nuclei_search[nuclide.nucleus] = True
+                nuclei_search[nuclide.nucleus] += fraction
             if nuclide.element in element_search:
-                element_search[nuclide.element] = True
-        return all(
+                element_search[nuclide.element] += fraction
+
+        threshold_check = lambda x: x > threshold
+        return bool_func(
             (
-                all(nuclides_search.values()),
-                all(nuclei_search.values()),
-                all(element_search.values()),
+                bool_func(map(threshold_check, nuclides_search.values())),
+                bool_func(map(threshold_check, nuclei_search.values())),
+                bool_func(map(threshold_check, element_search.values())),
             )
         )
 
@@ -843,8 +943,7 @@ See <https://www.montepy.org/migrations/migrate0_1.html> for more information ""
             del self[0]
 
     def normalize(self):
-        """
-        Normalizes the components fractions so that they sum to 1.0.
+        """Normalizes the components fractions so that they sum to 1.0.
 
         .. versionadded:: 1.0.0
         """
@@ -854,8 +953,7 @@ See <https://www.montepy.org/migrations/migrate0_1.html> for more information ""
 
     @property
     def values(self):
-        """
-        Get just the fractions, or values from this material.
+        """Get just the fractions, or values from this material.
 
         This acts like a list. It is iterable, and indexable.
 
@@ -907,11 +1005,13 @@ See <https://www.montepy.org/migrations/migrate0_1.html> for more information ""
 
         .. versionadded:: 1.0.0
 
-        :rtype: Generator[float]
+        Returns
+        -------
+        Generator[float]
         """
 
         def setter(old_val, new_val):
-            if not isinstance(new_val, float):
+            if not isinstance(new_val, Real):
                 raise TypeError(
                     f"Value must be set to a float. {new_val} of type {type(new_val)} given."
                 )
@@ -925,8 +1025,7 @@ See <https://www.montepy.org/migrations/migrate0_1.html> for more information ""
 
     @property
     def nuclides(self):
-        """
-        Get just the fractions, or values from this material.
+        """Get just the fractions, or values from this material.
 
         This acts like a list. It is iterable, and indexable.
 
@@ -972,7 +1071,9 @@ See <https://www.montepy.org/migrations/migrate0_1.html> for more information ""
 
         .. versionadded:: 1.0.0
 
-        :rtype: Generator[Nuclide]
+        Returns
+        -------
+        Generator[Nuclide]
         """
 
         def setter(old_val, new_val):
@@ -985,8 +1086,7 @@ See <https://www.montepy.org/migrations/migrate0_1.html> for more information ""
         return _MatCompWrapper(self, 0, setter)
 
     def __prep_element_filter(self, filter_obj):
-        """
-        Makes a filter function for an element.
+        """Makes a filter function for an element.
 
         For use by find
         """
@@ -998,9 +1098,7 @@ See <https://www.montepy.org/migrations/migrate0_1.html> for more information ""
         return wrapped_filter
 
     def __prep_filter(self, filter_obj, attr=None):
-        """
-        Makes a filter function wrapper
-        """
+        """Makes a filter function wrapper"""
         if filter_obj is None:
             return lambda _: True
 
@@ -1031,13 +1129,13 @@ See <https://www.montepy.org/migrations/migrate0_1.html> for more information ""
     def find(
         self,
         name: str = None,
-        element: Union[Element, str, int, slice] = None,
+        element: Union[Element, str, Integral, slice] = None,
         A: Union[int, slice] = None,
         meta_state: Union[int, slice] = None,
         library: Union[str, slice] = None,
+        strict: bool = False,
     ) -> Generator[tuple[int, tuple[Nuclide, float]]]:
-        """
-        Finds all components that meet the given criteria.
+        """Finds all components that meet the given criteria.
 
         The criteria are additive, and a component must match all criteria.
         That is the boolean and operator is used.
@@ -1047,7 +1145,7 @@ See <https://www.montepy.org/migrations/migrate0_1.html> for more information ""
         For the library the slicing is done using string comparisons.
 
         Examples
-        ^^^^^^^^
+        --------
 
         .. testcode::
 
@@ -1056,7 +1154,7 @@ See <https://www.montepy.org/migrations/migrate0_1.html> for more information ""
             mat.number = 1
 
             # make non-sense material
-            for nuclide in ["U-235.80c", "U-238.70c", "Pu-239.00c", "O-16.00c"]:
+            for nuclide in ["U-235.80c", "U-238.70c", "Pu-239.00c", "O-16.00c", "C-0", "C-12.00c", "Fe-56"]:
                 mat.add_nuclide(nuclide, 0.1)
 
             print("Get all uranium nuclides.")
@@ -1077,36 +1175,87 @@ See <https://www.montepy.org/migrations/migrate0_1.html> for more information ""
             Get all transuranics
             [(0, (Nuclide('U-235.80c'), 0.1)), (1, (Nuclide('U-238.70c'), 0.1)), (2, (Nuclide('Pu-239.00c'), 0.1))]
             Get all ENDF/B-VIII.0
-            [(2, (Nuclide('Pu-239.00c'), 0.1)), (3, (Nuclide('O-16.00c'), 0.1))]
+            [(2, (Nuclide('Pu-239.00c'), 0.1)), (3, (Nuclide('O-16.00c'), 0.1)), (5, (Nuclide('C-12.00c'), 0.1))]
+
+        Strict (Explicit) Matching
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+        Generally this functions treats ambiguity implicitly, and will match as many nuclides as possible.
+        This is generally useful, but not always.
+        By default when only an element is given all daughter nuclides match, as seen above.
+        However, MCNP does provide some "natural" or "elemental" nuclear data,
+        and it would be helpful to find these sometimes.
+        For instance, you may want to find all instances of elemental nuclides,
+        and replace them with explicit isotopes (for instance migrating from ENDF/B-VII.1 to ENDF/B-VIII).
+        In these cases the ``strict`` argument is needed.
+        When ``strict`` is True an ambiguous ``A`` will only match elemental data:
+
+        .. testcode::
+
+            print("Strict: False", list(mat.find(element="C")))
+            print("Strict: True", list(mat.find(element="C", strict=True)))
+
+        will print:
+
+        .. testoutput::
+
+            Strict: False [(4, (Nuclide('C-0'), 0.1)), (5, (Nuclide('C-12.00c'), 0.1))]
+            Strict: True [(4, (Nuclide('C-0'), 0.1))]
+
+        Similarly to find nuclides with no library defined you can use strict:
+
+        .. testcode::
+
+            print("Strict: False", list(mat.find(library=None)))
+            print("Strict: True", list(mat.find(library=None, strict=True)))
+
+        This would print:
+
+        .. testoutput::
+
+            Strict: False [(0, (Nuclide('U-235.80c'), 0.1)), (1, (Nuclide('U-238.70c'), 0.1)), (2, (Nuclide('Pu-239.00c'), 0.1)), (3, (Nuclide('O-16.00c'), 0.1)), (4, (Nuclide('C-0'), 0.1)), (5, (Nuclide('C-12.00c'), 0.1)), (6, (Nuclide('Fe-56'), 0.1))]
+            Strict: True [(4, (Nuclide('C-0'), 0.1)), (6, (Nuclide('Fe-56'), 0.1))]
 
         .. versionadded:: 1.0.0
 
-        :param name: The name to pass to Nuclide to search by a specific Nuclide. If an element name is passed this
-            will only match elemental nuclides.
-        :type name: str
-        :param element: the element to filter by, slices must be slices of integers. This will match all nuclides that
-            are based on this element. e.g., "U" will match U-235 and U-238.
-        :type element: Element, str, int, slice
-        :param A: the filter for the nuclide A number.
-        :type A: int, slice
-        :param meta_state: the metastable isomer filter.
-        :type meta_state: int, slice
-        :param library: the libraries to limit the search to.
-        :type library: str, slice
+        Parameters
+        ----------
+        name : str
+            The name to pass to Nuclide to search by a specific Nuclide.
+            If an element name is passed this will only match elemental
+            nuclides.
+        element : Element, str, int, slice
+            the element to filter by, slices must be slices of integers.
+            This will match all nuclides that are based on this element.
+            e.g., "U" will match U-235 and U-238.
+        A : int, slice
+            the filter for the nuclide A number.
+        meta_state : int, slice
+            the metastable isomer filter.
+        library : str, slice
+            the libraries to limit the search to.
+        strict : bool
+            When true this will strictly match elements as only elements
+            (when no A is given), and only match blank libraries when no
+            library is given.
 
-        :returns: a generator of all matching nuclides, as their index and then a tuple of their nuclide, and fraction pairs that match.
-        :rtype: Generator[tuple[int, tuple[Nuclide, float]]]
+        Returns
+        -------
+        Generator[tuple[int, tuple[Nuclide, float]]]
+            a generator of all matching nuclides, as their index and
+            then a tuple of their nuclide, and fraction pairs that
+            match.
         """
         # nuclide type enforcement handled by `Nuclide`
-        if not isinstance(element, (Element, str, int, slice, type(None))):
+        if not isinstance(element, (Element, str, Integral, slice, type(None))):
             raise TypeError(
                 f"Element must be only Element, str, int or slice types. {element} of type{type(element)} given."
             )
-        if not isinstance(A, (int, slice, type(None))):
+        if not isinstance(A, (Integral, slice, type(None))):
             raise TypeError(
                 f"A must be an int or a slice. {A} of type {type(A)} given."
             )
-        if not isinstance(meta_state, (int, slice, type(None))):
+        if not isinstance(meta_state, (Integral, slice, type(None))):
             raise TypeError(
                 f"meta_state must an int or a slice. {meta_state} of type {type(meta_state)} given."
             )
@@ -1114,9 +1263,13 @@ See <https://www.montepy.org/migrations/migrate0_1.html> for more information ""
             raise TypeError(
                 f"library must a str or a slice. {library} of type {type(library)} given."
             )
+        if not isinstance(strict, bool):
+            raise TypeError(
+                f"strict must be a bool. {strict} of type {type(strict)} given."
+            )
         if name:
             fancy_nuclide = Nuclide(name)
-            if fancy_nuclide.A == 0:
+            if fancy_nuclide.A == 0 and not strict:
                 element = fancy_nuclide.element
                 fancy_nuclide = None
         else:
@@ -1126,6 +1279,13 @@ See <https://www.montepy.org/migrations/migrate0_1.html> for more information ""
         else:
             first_filter = self.__prep_filter(fancy_nuclide)
 
+        # create filter for defaults if strict
+        if strict:
+            # if strict and element switch to A=0
+            if element and A is None:
+                A = 0
+            if library is None:
+                library = ""
         filters = [
             first_filter,
             self.__prep_element_filter(element),
@@ -1148,9 +1308,9 @@ See <https://www.montepy.org/migrations/migrate0_1.html> for more information ""
         A: Union[int, slice] = None,
         meta_state: Union[int, slice] = None,
         library: Union[str, slice] = None,
+        strict: bool = False,
     ) -> Generator[float]:
-        """
-        A wrapper for :func:`find` that only returns the fractions of the components.
+        """A wrapper for :func:`find` that only returns the fractions of the components.
 
         For more examples see that function.
 
@@ -1178,23 +1338,35 @@ See <https://www.montepy.org/migrations/migrate0_1.html> for more information ""
 
         .. versionadded:: 1.0.0
 
-        :param name: The name to pass to Nuclide to search by a specific Nuclide. If an element name is passed this
-            will only match elemental nuclides.
-        :type name: str
-        :param element: the element to filter by, slices must be slices of integers. This will match all nuclides that
-            are based on this element. e.g., "U" will match U-235 and U-238.
-        :type element: Element, str, int, slice
-        :param A: the filter for the nuclide A number.
-        :type A: int, slice
-        :param meta_state: the metastable isomer filter.
-        :type meta_state: int, slice
-        :param library: the libraries to limit the search to.
-        :type library: str, slice
+        Parameters
+        ----------
+        name : str
+            The name to pass to Nuclide to search by a specific Nuclide.
+            If an element name is passed this will only match elemental
+            nuclides.
+        element : Element, str, int, slice
+            the element to filter by, slices must be slices of integers.
+            This will match all nuclides that are based on this element.
+            e.g., "U" will match U-235 and U-238.
+        A : int, slice
+            the filter for the nuclide A number.
+        meta_state : int, slice
+            the metastable isomer filter.
+        library : str, slice
+            the libraries to limit the search to.
+        strict : bool
+            whether to strictly match elements as only elements (when no
+            A is given), and only match blank libraries when no library
+            is given.
 
-        :returns: a generator of fractions whose nuclide matches the criteria.
-        :rtype: Generator[float]
+        Returns
+        -------
+        Generator[float]
+            a generator of fractions whose nuclide matches the criteria.
         """
-        for _, (_, fraction) in self.find(name, element, A, meta_state, library):
+        for _, (_, fraction) in self.find(
+            name, element, A, meta_state, library, strict
+        ):
             yield fraction
 
     def __bool__(self):
@@ -1202,10 +1374,11 @@ See <https://www.montepy.org/migrations/migrate0_1.html> for more information ""
 
     @make_prop_pointer("_thermal_scattering", thermal_scattering.ThermalScatteringLaw)
     def thermal_scattering(self) -> thermal_scattering.ThermalScatteringLaw:
-        """
-        The thermal scattering law for this material
+        """The thermal scattering law for this material
 
-        :rtype: ThermalScatteringLaw
+        Returns
+        -------
+        ThermalScatteringLaw
         """
         return self._thermal_scattering
 
@@ -1213,8 +1386,10 @@ See <https://www.montepy.org/migrations/migrate0_1.html> for more information ""
     def cells(self) -> Generator[montepy.cell.Cell]:
         """A generator of the cells that use this material.
 
-        :returns: an iterator of the Cell objects which use this.
-        :rtype: Generator[Cell]
+        Returns
+        -------
+        Generator[Cell]
+            an iterator of the Cell objects which use this.
         """
         if self._problem:
             for cell in self._problem.cells:
@@ -1240,11 +1415,12 @@ See <https://www.montepy.org/migrations/migrate0_1.html> for more information ""
                 node.value = nuclide.mcnp_str()
 
     def add_thermal_scattering(self, law):
-        """
-        Adds thermal scattering law to the material
+        """Adds thermal scattering law to the material
 
-        :param law: the law that is mcnp formatted
-        :type law: str
+        Parameters
+        ----------
+        law : str
+            the law that is mcnp formatted
         """
         if not isinstance(law, str):
             raise TypeError(
@@ -1256,11 +1432,12 @@ See <https://www.montepy.org/migrations/migrate0_1.html> for more information ""
         self._thermal_scattering.add_scattering_law(law)
 
     def update_pointers(self, data_inputs: list[montepy.data_inputs.DataInput]):
-        """
-        Updates pointer to the thermal scattering data
+        """Updates pointer to the thermal scattering data
 
-        :param data_inputs: a list of the data inputs in the problem
-        :type data_inputs: list[DataInput]
+        Parameters
+        ----------
+        data_inputs : list[DataInput]
+            a list of the data inputs in the problem
         """
         pass
 
@@ -1306,13 +1483,14 @@ See <https://www.montepy.org/migrations/migrate0_1.html> for more information ""
         return f"MATERIAL: {self.number}, {print_elements}"
 
     def get_material_elements(self):
-        """
-        Get the elements that are contained in this material.
+        """Get the elements that are contained in this material.
 
         This is sorted by the most common element to the least common.
 
-        :returns: a sorted list of elements by total fraction
-        :rtype: list[Element]
+        Returns
+        -------
+        list[Element]
+            a sorted list of elements by total fraction
         """
         element_frac = co.Counter()
         for nuclide, fraction in self:

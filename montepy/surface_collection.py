@@ -40,13 +40,15 @@ class Surfaces(NumberedObjectCollection):
         for surface in problem.surfaces.pz:
             surface.location += 10
 
-    .. note::
+    Notes
+    -----
 
-        For examples see the ``NumberedObjectCollection`` :ref:`collect ex`.
+    For examples see the ``NumberedObjectCollection`` :ref:`collect ex`.
 
-
-    :param surfaces: the list of surfaces to start with if needed
-    :type surfaces: list
+    Parameters
+    ----------
+    surfaces : list
+        the list of surfaces to start with if needed
     """
 
     def __init__(self, surfaces: list = None, problem: montepy.MCNP_Problem = None):

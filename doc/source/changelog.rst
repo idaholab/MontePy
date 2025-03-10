@@ -14,7 +14,7 @@ MontePy Changelog
 * Made it easier to create an Isotope (now Nuclide): ``montepy.Nuclide("H-1.80c")`` (:issue:`505`).
 * When a typo in an object attribute is made an Error is raised rather than silently having no effect (:issue:`508`).
 * Improved material printing to avoid very long lists of components (:issue:`144`).
-* Allow querying for materials by components (:issue:`95`).
+* Allow querying for materials by components (:issue:`95`), either broadly or specifically (:issue:`642`).
 * Added support for getting and setting default libraries, e.g., ``nlib``, from a material (:issue:`369`).
 * Added most objects to the top level so they can be accessed like: ``montepy.Cell``.
 * Made ``Material.is_atom_fraction`` settable (:issue:`511`). 
@@ -26,7 +26,7 @@ MontePy Changelog
 * Warnings are no longer raised for comments that exceed the maximum line lengths (:issue:`188`).
 * Particle type exceptions are now warnings, not errors (:issue:`381`).
 * Added :func:`~montepy.data_inputs.material.Material.clear` to ``Material`` to clear out all nuclides (:issue:`665`).
-
+* Allow any ``Real`` type for floating point numbers and any ``Integral`` type for integer numbers during type enforcement (:issue:`679`).
 
 **Bugs Fixed**
 

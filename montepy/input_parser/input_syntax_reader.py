@@ -19,8 +19,7 @@ reading_queue = deque()
 
 
 def read_input_syntax(input_file, mcnp_version=DEFAULT_VERSION, replace=True):
-    """
-    Creates a generator function to return a new MCNP input for
+    """Creates a generator function to return a new MCNP input for
     every new one that is encountered.
 
     This is meant to just handle the MCNP input syntax, it does not
@@ -28,15 +27,19 @@ def read_input_syntax(input_file, mcnp_version=DEFAULT_VERSION, replace=True):
 
     The version must be a three component tuple e.g., (6, 2, 0) and (5, 1, 60).
 
+    Parameters
+    ----------
+    input_file : MCNP_InputFile
+        the path to the input file to be read
+    mcnp_version : tuple
+        The version of MCNP that the input is intended for.
+    replace : bool
+        replace all non-ASCII characters with a space (0x20)
 
-    :param input_file: the path to the input file to be read
-    :type input_file: MCNP_InputFile
-    :param mcnp_version: The version of MCNP that the input is intended for.
-    :type mcnp_version: tuple
-    :param replace: replace all non-ASCII characters with a space (0x20)
-    :type replace: bool
-    :returns: a generator of MCNP_Object objects
-    :rtype: generator
+    Returns
+    -------
+    generator
+        a generator of MCNP_Object objects
     """
     global reading_queue
     reading_queue = deque()
@@ -50,24 +53,30 @@ def read_input_syntax(input_file, mcnp_version=DEFAULT_VERSION, replace=True):
 
 
 def read_front_matters(fh, mcnp_version):
-    """
-    Reads the beginning of an MCNP file for all of the unusual data there.
+    """Reads the beginning of an MCNP file for all of the unusual data there.
 
     This is a generator function that will yield multiple :class:`MCNP_Input` instances.
 
-    .. warning::
-        This function will move the file handle forward in state.
+    Warnings
+    --------
+    This function will move the file handle forward in state.
 
-    .. warning::
-        This function will not close the file handle.
+    Warnings
+    --------
+    This function will not close the file handle.
 
-    :param fh: The file handle of the input file.
-    :type fh: MCNP_InputFile
-    :param mcnp_version: The version of MCNP that the input is intended for.
-    :type mcnp_version: tuple
+    Parameters
+    ----------
+    fh : MCNP_InputFile
+        The file handle of the input file.
+    mcnp_version : tuple
+        The version of MCNP that the input is intended for.
 
-    :return: an instance of the Title class, and possible an instance of a Message class
-    :rtype: MCNP_Object
+    Returns
+    -------
+    MCNP_Object
+        an instance of the Title class, and possible an instance of a
+        Message class
     """
     is_in_message_block = False
     found_title = False
@@ -93,30 +102,37 @@ def read_front_matters(fh, mcnp_version):
 
 
 def read_data(fh, mcnp_version, block_type=None, recursion=False):
-    """
-    Reads the bulk of an MCNP file for all of the MCNP data.
+    """Reads the bulk of an MCNP file for all of the MCNP data.
 
     This is a generator function that will yield multiple :class:`MCNP_Input` instances.
 
-    .. warning::
-        This function will move the file handle forward in state.
+    Warnings
+    --------
+    This function will move the file handle forward in state.
 
-    .. warning::
-        This function will not close the file handle.
+    Warnings
+    --------
+    This function will not close the file handle.
 
-    :param fh: The file handle of the input file.
-    :type fh: MCNP_InputFile
-    :param mcnp_version: The version of MCNP that the input is intended for.
-    :type mcnp_version: tuple
-    :param block_type: The type of block this file is in. This is only used with partial files read using the ReadInput.
-    :type block_type: BlockType
-    :param recursion: Whether or not this is being called recursively. If True this has been called
-                         from read_data. This prevents the reading queue causing infinite recursion.
-    :type recursion: bool
+    Parameters
+    ----------
+    fh : MCNP_InputFile
+        The file handle of the input file.
+    mcnp_version : tuple
+        The version of MCNP that the input is intended for.
+    block_type : BlockType
+        The type of block this file is in. This is only used with
+        partial files read using the ReadInput.
+    recursion : bool
+        Whether or not this is being called recursively. If True this
+        has been called from read_data. This prevents the reading queue
+        causing infinite recursion.
 
-    :return: MCNP_Input instances: Inputs that represent the data in the MCNP input.
-    :rtype: MCNP_Input
-
+    Returns
+    -------
+    MCNP_Input
+        MCNP_Input instances: Inputs that represent the data in the MCNP
+        input.
     """
     current_file = fh
     line_length = get_max_line_length(mcnp_version)

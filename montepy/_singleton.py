@@ -5,8 +5,7 @@ from functools import wraps
 
 
 class SingletonGroup(ABC):
-    """
-    A base class for implementing a Singleton-like data structure.
+    """A base class for implementing a Singleton-like data structure.
 
     This treats immutable objects are Enums without having to list all.
     This is used for: Element, Nucleus, Library. When a brand new instance
@@ -29,9 +28,7 @@ class SingletonGroup(ABC):
             return cls._instances[args + kwargs_t]
 
     def __init_subclass__(cls, **kwargs):
-        """
-        Workaround to get sphinx autodoc happy.
-        """
+        """Workaround to get sphinx autodoc happy."""
         cls._instances = {}
         super().__init_subclass__(**kwargs)
 
@@ -45,9 +42,7 @@ class SingletonGroup(ABC):
         cls.__new__ = staticmethod(__new__)
 
     def __deepcopy__(self, memo):
-        """
-        Make deepcopy happy.
-        """
+        """Make deepcopy happy."""
         if self in memo:
             return memo[self]
         memo[self] = self
@@ -55,7 +50,5 @@ class SingletonGroup(ABC):
 
     @abstractmethod
     def __reduce__(self):
-        """
-        See: <https://docs.python.org/3/library/pickle.html#object.__reduce__>
-        """
+        """See: <https://docs.python.org/3/library/pickle.html#object.__reduce__>"""
         pass

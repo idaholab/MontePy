@@ -4,18 +4,14 @@ import traceback
 
 
 class LineOverRunWarning(UserWarning):
-    """
-    Raised when non-comment inputs exceed the allowed line length in an input.
-    """
+    """Raised when non-comment inputs exceed the allowed line length in an input."""
 
     def __init__(self, message):
         self.message = message
 
 
 class MalformedInputError(ValueError):
-    """
-    Raised when there is an error with the MCNP input not related to the parser.
-    """
+    """Raised when there is an error with the MCNP input not related to the parser."""
 
     def __init__(self, input, message):
         if input and getattr(input, "input_file", None) and input.input_file:
@@ -34,9 +30,7 @@ class MalformedInputError(ValueError):
 
 
 class ParsingError(MalformedInputError):
-    """
-    Raised when there is an error parsing the MCNP input at the SLY parsing layer.
-    """
+    """Raised when there is an error parsing the MCNP input at the SLY parsing layer."""
 
     def __init__(self, input, message, error_queue):
         messages = []
@@ -110,9 +104,7 @@ def _print_input(
 
 
 class NumberConflictError(Exception):
-    """
-    Raised when there is a conflict in number spaces
-    """
+    """Raised when there is a conflict in number spaces"""
 
     def __init__(self, message):
         self.message = message
@@ -124,14 +116,17 @@ class BrokenObjectLinkError(MalformedInputError):
 
     def __init__(self, parent_type, parent_number, child_type, child_number):
         """
-        :param parent_type: Name of the parent object linking (e.g., Cell)
-        :type parent_type: str
-        :param parent_number: the number of the parent object
-        :type parent_number: int
-        :param child_type: Name of the type of object missing in the link (e.g., surface)
-        :type child_type: str
-        :param child_number: the number for the missing object
-        :type child_number: int
+        Parameters
+        ----------
+        parent_type : str
+            Name of the parent object linking (e.g., Cell)
+        parent_number : int
+            the number of the parent object
+        child_type : str
+            Name of the type of object missing in the link (e.g.,
+            surface)
+        child_number : int
+            the number for the missing object
         """
         super().__init__(
             None,
@@ -140,8 +135,7 @@ class BrokenObjectLinkError(MalformedInputError):
 
 
 class RedundantParameterSpecification(ValueError):
-    """
-    Raised when multiple conflicting parameters are given.
+    """Raised when multiple conflicting parameters are given.
 
     e.g., ``1 0 -1 imp:n=5 imp:n=0``
     """
@@ -154,8 +148,7 @@ class RedundantParameterSpecification(ValueError):
 
 
 class ParticleTypeWarning(Warning):
-    """
-    Base class for incongruencies between particle types
+    """Base class for incongruencies between particle types
     in problem mode, cell importances, and tallies
     """
 
@@ -165,8 +158,7 @@ class ParticleTypeWarning(Warning):
 
 
 class ParticleTypeNotInProblem(ParticleTypeWarning):
-    """
-    Raised when data, such as cell importance or tally type,
+    """Raised when data, such as cell importance or tally type,
     are set for a particle type not in the problem's mode.
     """
 
@@ -174,8 +166,7 @@ class ParticleTypeNotInProblem(ParticleTypeWarning):
 
 
 class ParticleTypeNotInCell(ParticleTypeWarning):
-    """
-    Raised when data for importance data for a particle in
+    """Raised when data for importance data for a particle in
     the problem is not provided for a cell.
     """
 
@@ -183,9 +174,7 @@ class ParticleTypeNotInCell(ParticleTypeWarning):
 
 
 class UnsupportedFeature(NotImplementedError):
-    """
-    Raised when MCNP syntax that is not supported is found
-    """
+    """Raised when MCNP syntax that is not supported is found"""
 
     def __init__(self, message):
         self.message = message
@@ -193,9 +182,7 @@ class UnsupportedFeature(NotImplementedError):
 
 
 class UnknownElement(ValueError):
-    """
-    Raised when an undefined element is used.
-    """
+    """Raised when an undefined element is used."""
 
     def __init__(self, missing_val):
         self.message = f"An element identified by: {missing_val} is unknown to MontePy."
@@ -203,9 +190,7 @@ class UnknownElement(ValueError):
 
 
 class IllegalState(ValueError):
-    """
-    Raised when an object can't be printed out due to an illegal state.
-    """
+    """Raised when an object can't be printed out due to an illegal state."""
 
     def __init__(self, message):
         self.message = message
@@ -213,9 +198,7 @@ class IllegalState(ValueError):
 
 
 class LineExpansionWarning(Warning):
-    """
-    Warning for when a field or line expands that may damage user formatting.
-    """
+    """Warning for when a field or line expands that may damage user formatting."""
 
     def __init__(self, message):
         self.message = message
@@ -223,16 +206,21 @@ class LineExpansionWarning(Warning):
 
 
 def add_line_number_to_exception(error, broken_robot):
-    """
-    Adds additional context to an Exception raised by an :class:`~montepy.mcnp_object.MCNP_Object`.
+    """Adds additional context to an Exception raised by an :class:`~montepy.mcnp_object.MCNP_Object`.
 
     This will add the line, file name, and the input lines to the error.
 
-    :param error: The error that was raised.
-    :type error: Exception
-    :param broken_robot: The parent object that had the error raised.
-    :type broken_robot: MCNP_Object
-    :raises Exception: ... that's the whole point.
+    Parameters
+    ----------
+    error : Exception
+        The error that was raised.
+    broken_robot : MCNP_Object
+        The parent object that had the error raised.
+
+    Raises
+    ------
+    Exception
+        ... that's the whole point.
     """
     # avoid calling this n times recursively
     if hasattr(error, "montepy_handled"):

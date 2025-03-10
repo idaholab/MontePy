@@ -57,6 +57,7 @@ Doc Strings
 
 All public (not ``_private``) classes and functions *must* have doc strings.
 Most ``_private`` classes and functions should still be documented for other developers.
+`NumPy's style guide is the standard <https://numpydoc.readthedocs.io/en/latest/format.html>`_ used for MontePy doc strings. 
 
 Mandatory Elements
 ^^^^^^^^^^^^^^^^^^
@@ -111,8 +112,7 @@ Here is the docstrings for :class:`~montepy.cell.Cell`.
 .. code-block:: python
 
     class Cell(Numbered_MCNP_Object):
-        """
-        Object to represent a single MCNP cell defined in CSG.
+        """Object to represent a single MCNP cell defined in CSG.
 
         Examples
         ^^^^^^^^
@@ -130,7 +130,7 @@ Here is the docstrings for :class:`~montepy.cell.Cell`.
         .. doctest:: python
 
             >>> cell.number = 5
-            >>> cell.material
+            >>> print(cell.material)
             None
             >>> mat = montepy.Material()
             >>> mat.number = 20
@@ -146,20 +146,33 @@ Here is the docstrings for :class:`~montepy.cell.Cell`.
 
             complement = ~cell
 
+        See Also
+        --------
 
-        .. seealso::
+        * :manual631sec:`5.2`
+        * :manual63sec:`5.2`
+        * :manual62:`55`
 
-                * :manual63sec:`5.2`
-                * :manual62:`55`
 
-        :param input: the input for the cell definition
-        :type input: Input
+        .. versionchanged:: 1.0.0
 
+            Added number parameter
+
+        Parameters
+        ----------
+        input : Union[Input, str]
+            The Input syntax object this will wrap and parse.
+        number : int
+            The number to set for this object.
         """
         
         # snip
 
-        def __init__(self, input: montepy.input_parser.mcnp_input.Input = None):
+        def __init__(
+            self,
+            input: InitInput = None,
+            number: int = None,
+        ):
 
 Testing
 -------

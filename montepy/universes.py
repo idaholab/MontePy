@@ -6,13 +6,12 @@ from montepy.universe import Universe
 
 
 class Universes(NumberedObjectCollection):
-    """
-    A container of multiple :class:`~montepy.universe.Universe` instances.
+    """A container of multiple :class:`~montepy.universe.Universe` instances.
 
-    .. note::
+    Notes
+    -----
 
-        For examples see the ``NumberedObjectCollection`` :ref:`collect ex`.
-
+    For examples see the ``NumberedObjectCollection`` :ref:`collect ex`.
     """
 
     def __init__(self, objects: list = None, problem: montepy.MCNP_Problem = None):
