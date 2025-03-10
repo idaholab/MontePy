@@ -37,6 +37,7 @@ extensions = [
     "sphinx.ext.intersphinx",
     "sphinx.ext.extlinks",
     "sphinx.ext.doctest",
+    "numpydoc",
     "sphinx_autodoc_typehints",
     "sphinx_favicon",
     "sphinx_copybutton",
