@@ -49,13 +49,12 @@ test = [
 ]
 # This is needed for a sphinx bug. See #414.
 doc = [
-    "numpydoc",
 	"sphinx>=7.4.0", 
 	"sphinxcontrib-apidoc", 
 	"pydata_sphinx_theme",
 	"sphinx-favicon",
 	"sphinx-copybutton",
-    "sphinx_autodoc_typehints",
+    	"sphinx_autodoc_typehints",
 	"autodocsumm",
 ]
 format = ["black~=25.1"]
