@@ -13,17 +13,17 @@ import re
 class Jump:
     """Class to represent a default entry represented by a "jump".
 
-        |     I get up and nothing gets me down
-        |     You got it tough, I've seen the toughest around
-        |     And I know, baby, just how you feel
-        |     You gotta roll with the punches to get to what's real
+    |     I get up and nothing gets me down
+    |     You got it tough, I've seen the toughest around
+    |     And I know, baby, just how you feel
+    |     You gotta roll with the punches to get to what's real
 
-        |     Oh, can't you see me standing here?
-        |     I got my back against the record machine
-        |     I ain't the worst that you've seen
-        |     Oh, can't you see what I mean?
+    |     Oh, can't you see me standing here?
+    |     I got my back against the record machine
+    |     I ain't the worst that you've seen
+    |     Oh, can't you see what I mean?
 
-        |    Ah, might as well ...
+    |    Ah, might as well ...
     """
 
     def __str__(self):

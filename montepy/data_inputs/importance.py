@@ -489,10 +489,15 @@ def __create_particle_imp_doc(particle_type):
 
 Can only be set if this particle is used in the problem mode.
 
-:param importance: The importance to set this to.
-:type importnace: float
-:returns: the importance for the particle type. If not set, defaults to 0.
-:rtype: float
+Parameters
+----------
+importance: float 
+    The importance to set this to.
+
+Returns
+-------
+float
+    the importance for the particle type. If not set, defaults to 0.
 """
 
 

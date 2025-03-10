@@ -31,9 +31,7 @@ InitInput = Union[montepy.input_parser.mcnp_input.Input, str]
 
 
 class _ExceptionContextAdder(ABCMeta):
-    """A metaclass for wrapping all class properties and methods in :func:`~montepy.errors.add_line_number_to_exception`.
-
-    """
+    """A metaclass for wrapping all class properties and methods in :func:`~montepy.errors.add_line_number_to_exception`."""
 
     @staticmethod
     def _wrap_attr_call(func):
@@ -370,9 +368,7 @@ class MCNP_Object(ABC, metaclass=_ExceptionContextAdder):
         return ret
 
     def validate(self):
-        """Validates that the object is in a usable state.
-
-        """
+        """Validates that the object is in a usable state."""
         pass
 
     def link_to_problem(self, problem: montepy.mcnp_problem.MCNP_Problem):

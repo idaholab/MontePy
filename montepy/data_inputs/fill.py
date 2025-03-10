@@ -318,11 +318,8 @@ class Fill(CellModifierInput):
 
         Returns
         -------
-        unknown
+        int
             the old universe number
-
-
-        :type: int
         """
         pass
 
@@ -332,11 +329,8 @@ class Fill(CellModifierInput):
 
         Returns
         -------
-        unknown
+        :class:`numpy.ndarray`
             the old universe numbers
-
-
-        :type: :class:`numpy.ndarray`
         """
         if isinstance(self._old_numbers, list):
             return [

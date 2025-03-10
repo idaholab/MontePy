@@ -655,9 +655,7 @@ class Cell(Numbered_MCNP_Object):
         )
 
     def validate(self):
-        """Validates that the cell is in a usable state.
-
-        """
+        """Validates that the cell is in a usable state."""
         if self._density and self.material is None:
             raise IllegalState(f"Cell {self.number} has a density set but no material")
         if self.material is not None and not self._density:

@@ -709,7 +709,9 @@ class Nuclide:
     def library(self) -> Library:
         """The MCNP library identifier e.g. 80c
 
-                :rtype: Library
+        Returns
+        -------
+        Library
         """
         pass
 
@@ -730,7 +732,9 @@ class Nuclide:
 
         This is of the form Atomic symbol - A [metastable state]. e.g., ``U-235m1``.
 
-        :rtypes: str
+        Returns
+        -------
+        str
         """
         meta_suffix = f"m{self.meta_state}" if self.is_metastable else ""
         suffix = f".{self._library}" if str(self._library) else ""
