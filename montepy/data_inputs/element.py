@@ -8,17 +8,21 @@ MAX_Z_NUM = 118
 
 
 class Element(SingletonGroup):
-    """
-    Class to represent an element e.g., Aluminum.
+    """Class to represent an element e.g., Aluminum.
 
     .. Note::
 
         This class is immutable, and hashable, meaning it is suitable as a dictionary key.
 
+    Parameters
+    ----------
+    Z : int
+        the Z number of the element
 
-    :param Z: the Z number of the element
-    :type Z: int
-    :raises UnknownElement: if there is no element with that Z number.
+    Raises
+    ------
+    UnknownElement
+        if there is no element with that Z number.
     """
 
     __slots__ = "_Z"
@@ -32,31 +36,34 @@ class Element(SingletonGroup):
 
     @property
     def symbol(self) -> str:
-        """
-        The atomic symbol for this Element.
+        """The atomic symbol for this Element.
 
-        :returns: the atomic symbol
-        :rtype: str
+        Returns
+        -------
+        str
+            the atomic symbol
         """
         return self.__Z_TO_SYMBOL[self.Z]
 
     @property
     def Z(self) -> int:
-        """
-        The atomic number for this Element.
+        """The atomic number for this Element.
 
-        :returns: the atomic number
-        :rtype: int
+        Returns
+        -------
+        int
+            the atomic number
         """
         return self._Z
 
     @property
     def name(self) -> str:
-        """
-        The name of the element.
+        """The name of the element.
 
-        :returns: the element's name.
-        :rtype: str
+        Returns
+        -------
+        str
+            the element's name.
         """
         return self.__ELEMENT_NAMES[self.symbol]
 
@@ -77,14 +84,19 @@ class Element(SingletonGroup):
 
     @classmethod
     def get_by_symbol(cls, symbol: str) -> Element:
-        """
-        Get an element by it's symbol.
+        """Get an element by it's symbol.
 
         E.g., get the element with Z=1 from "H".
 
-        :returns: the element with this symbol
-        :rtype: Element
-        :raises UnknownElement: if there is no element with that symbol.
+        Returns
+        -------
+        Element
+            the element with this symbol
+
+        Raises
+        ------
+        UnknownElement
+            if there is no element with that symbol.
         """
         try:
             Z = cls.__SYMBOL_TO_Z[symbol]
@@ -94,14 +106,19 @@ class Element(SingletonGroup):
 
     @classmethod
     def get_by_name(cls, name: str) -> Element:
-        """
-        Get an element by it's name.
+        """Get an element by it's name.
 
         E.g., get the element with Z=1 from "hydrogen".
 
-        :returns: the element with this name
-        :rtype: Element
-        :raises UnknownElement: if there is no element with that name.
+        Returns
+        -------
+        Element
+            the element with this name
+
+        Raises
+        ------
+        UnknownElement
+            if there is no element with that name.
         """
         try:
             symbol = cls.__NAMES_TO_SYMBOLS[name]

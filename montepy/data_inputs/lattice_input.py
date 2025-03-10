@@ -11,17 +11,18 @@ from montepy.utilities import *
 
 
 class LatticeInput(CellModifierInput):
-    """
-    Object to handle the inputs from ``LAT``.
+    """Object to handle the inputs from ``LAT``.
 
-    :param input: the Input object representing this data input
-    :type input: Union[Input, str]
-    :param in_cell_block: if this card came from the cell block of an input file.
-    :type in_cell_block: bool
-    :param key: the key from the key-value pair in a cell
-    :type key: str
-    :param value: the value syntax tree from the key-value pair in a cell
-    :type value: SyntaxNode
+    Parameters
+    ----------
+    input : Union[Input, str]
+        the Input object representing this data input
+    in_cell_block : bool
+        if this card came from the cell block of an input file.
+    key : str
+        the key from the key-value pair in a cell
+    value : SyntaxNode
+        the value syntax tree from the key-value pair in a cell
     """
 
     def __init__(
@@ -93,10 +94,11 @@ class LatticeInput(CellModifierInput):
 
     @make_prop_val_node("_lattice", (Lattice, int, type(None)), Lattice, deletable=True)
     def lattice(self):
-        """
-        The type of lattice being used.
+        """The type of lattice being used.
 
-        :rtype: Lattice
+        Returns
+        -------
+        Lattice
         """
         pass
 

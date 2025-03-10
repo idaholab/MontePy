@@ -136,12 +136,14 @@ class NumberedObjectCollection(ABC):
     :func:`intersection`, :func:`isdisjoint`, :func:`issubset`, :func:`issuperset`,
     :func:`symmetric_difference`, :func:`symmetric_difference_update`, :func:`union`, :func:`discard`, and :func:`update`.
 
-    :param obj_class: the class of numbered objects being collected
-    :type obj_class: type
-    :param objects: the list of cells to start with if needed
-    :type objects: list
-    :param problem: the problem to link this collection to.
-    :type problem: MCNP_Problem
+    Parameters
+    ----------
+    obj_class : type
+        the class of numbered objects being collected
+    objects : list
+        the list of cells to start with if needed
+    problem : MCNP_Problem
+        the problem to link this collection to.
     """
 
     def __init__(
@@ -182,8 +184,10 @@ class NumberedObjectCollection(ABC):
 
         This is done so that cards can find links to other objects.
 
-        :param problem: The problem to link this card to.
-        :type problem: MCNP_Problem
+        Parameters
+        ----------
+        problem : MCNP_Problem
+            The problem to link this card to.
         """
         if not isinstance(problem, (montepy.mcnp_problem.MCNP_Problem, type(None))):
             raise TypeError("problem must be an MCNP_Problem")
@@ -213,10 +217,11 @@ class NumberedObjectCollection(ABC):
 
     @property
     def numbers(self):
-        """
-        A generator of the numbers being used.
+        """A generator of the numbers being used.
 
-        :rtype: generator
+        Returns
+        -------
+        generator
         """
         for obj in self._objects:
             # update cache every time we go through all objects
@@ -226,9 +231,15 @@ class NumberedObjectCollection(ABC):
     def check_number(self, number):
         """Checks if the number is already in use, and if so raises an error.
 
-        :param number: The number to check.
-        :type number: int
-        :raises NumberConflictError: if this number is in use.
+        Parameters
+        ----------
+        number : int
+            The number to check.
+
+        Raises
+        ------
+        NumberConflictError
+            if this number is in use.
         """
         if not isinstance(number, Integral):
             raise TypeError("The number must be an int")
@@ -246,15 +257,16 @@ class NumberedObjectCollection(ABC):
             )
 
     def _update_number(self, old_num, new_num, obj):
-        """
-        Updates the number associated with a specific object in the internal cache.
+        """Updates the number associated with a specific object in the internal cache.
 
-        :param old_num: the previous number the object had.
-        :type old_num: int
-        :param new_num: the number that is being set to.
-        :type new_num: int
-        :param obj: the object being updated.
-        :type obj: self._obj_class
+        Parameters
+        ----------
+        old_num : int
+            the previous number the object had.
+        new_num : int
+            the number that is being set to.
+        obj : self._obj_class
+            the object being updated.
         """
         # don't update numbers you don't own
         if self.__num_cache.get(old_num, None) is not obj:
@@ -264,24 +276,29 @@ class NumberedObjectCollection(ABC):
 
     @property
     def objects(self):
-        """
-        Returns a shallow copy of the internal objects list.
+        """Returns a shallow copy of the internal objects list.
 
         The list object is a new instance, but the underlying objects
         are the same.
 
-        :rtype: list
+        Returns
+        -------
+        list
         """
         return self._objects[:]
 
     def pop(self, pos=-1):
-        """
-        Pop the final items off of the collection
+        """Pop the final items off of the collection
 
-        :param pos: The index of the element to pop from the internal list.
-        :type pos: int
-        :return: the final elements
-        :rtype: Numbered_MCNP_Object
+        Parameters
+        ----------
+        pos : int
+            The index of the element to pop from the internal list.
+
+        Returns
+        -------
+        Numbered_MCNP_Object
+            the final elements
         """
         if not isinstance(pos, Integral):
             raise TypeError("The index for popping must be an int")
@@ -290,19 +307,22 @@ class NumberedObjectCollection(ABC):
         return obj
 
     def clear(self):
-        """
-        Removes all objects from this collection.
-        """
+        """Removes all objects from this collection."""
         self._objects.clear()
         self.__num_cache.clear()
 
     def extend(self, other_list):
-        """
-        Extends this collection with another list.
+        """Extends this collection with another list.
 
-        :param other_list: the list of objects to add.
-        :type other_list: list
-        :raises NumberConflictError: if these items conflict with existing elements.
+        Parameters
+        ----------
+        other_list : list
+            the list of objects to add.
+
+        Raises
+        ------
+        NumberConflictError
+            if these items conflict with existing elements.
         """
         if not isinstance(other_list, (list, type(self))):
             raise TypeError("The extending list must be a list")
@@ -328,11 +348,12 @@ class NumberedObjectCollection(ABC):
             self.__internal_append(obj)
 
     def remove(self, delete):
-        """
-        Removes the given object from the collection.
+        """Removes the given object from the collection.
 
-        :param delete: the object to delete
-        :type delete: Numbered_MCNP_Object
+        Parameters
+        ----------
+        delete : Numbered_MCNP_Object
+            the object to delete
         """
         if not isinstance(delete, self._obj_class):
             raise TypeError("")
@@ -343,25 +364,30 @@ class NumberedObjectCollection(ABC):
             raise KeyError(f"This object is not in this collection")
 
     def clone(self, starting_number=None, step=None):
-        """
-        Create a new instance of this collection, with all new independent
+        """Create a new instance of this collection, with all new independent
         objects with new numbers.
 
         This relies mostly on ``copy.deepcopy``.
 
-        .. note ::
-            If starting_number, or step are not specified :func:`starting_number`,
-            and :func:`step` are used as default values.
+        Notes
+        -----
+        If starting_number, or step are not specified :func:`starting_number`,
+        and :func:`step` are used as default values.
+
 
         .. versionadded:: 0.5.0
 
-        :param starting_number: The starting number to request for a new object numbers.
-        :type starting_number: int
-        :param step: the step size to use to find a new valid number.
-        :type step: int
-        :returns: a cloned copy of this object.
-        :rtype: type(self)
+        Parameters
+        ----------
+        starting_number : int
+            The starting number to request for a new object numbers.
+        step : int
+            the step size to use to find a new valid number.
 
+        Returns
+        -------
+        type(self)
+            a cloned copy of this object.
         """
         if not isinstance(starting_number, (Integral, type(None))):
             raise TypeError(
@@ -387,21 +413,23 @@ class NumberedObjectCollection(ABC):
 
     @make_prop_pointer("_start_num", Integral, validator=_enforce_positive)
     def starting_number(self):
-        """
-        The starting number to use when an object is cloned.
+        """The starting number to use when an object is cloned.
 
-        :returns: the starting number
-        :rtype: int
+        Returns
+        -------
+        int
+            the starting number
         """
         pass
 
     @make_prop_pointer("_step", Integral, validator=_enforce_positive)
     def step(self):
-        """
-        The step size to use to find a valid number during cloning.
+        """The step size to use to find a valid number during cloning.
 
-        :returns: the step size
-        :rtype: int
+        Returns
+        -------
+        int
+            the step size
         """
         pass
 
@@ -422,28 +450,27 @@ class NumberedObjectCollection(ABC):
         )
 
     def _append_hook(self, obj, initial_load=False):
-        """
-        A hook that is called every time append is called.
-        """
+        """A hook that is called every time append is called."""
         if initial_load:
             return
         if self._problem:
             obj._add_children_objs(self._problem)
 
     def _delete_hook(self, obj, **kwargs):
-        """
-        A hook that is called every time delete is called.
-        """
+        """A hook that is called every time delete is called."""
         pass
 
     def __internal_append(self, obj, **kwargs):
-        """
-        The internal append method.
+        """The internal append method.
 
         This should always be called rather than manually added.
 
-        :param obj: the obj to append
-        :param kwargs: keyword arguments passed through to the append_hook
+        Parameters
+        ----------
+        obj
+            the obj to append
+        **kwargs
+            keyword arguments passed through to the append_hook
         """
         if not isinstance(obj, self._obj_class):
             raise TypeError(
@@ -467,8 +494,7 @@ class NumberedObjectCollection(ABC):
             obj.link_to_problem(self._problem)
 
     def __internal_delete(self, obj, **kwargs):
-        """
-        The internal delete method.
+        """The internal delete method.
 
         This should always be called rather than manually added.
         """
@@ -477,35 +503,47 @@ class NumberedObjectCollection(ABC):
         self._delete_hook(obj, **kwargs)
 
     def add(self, obj: Numbered_MCNP_Object):
-        """
-        Add the given object to this collection.
+        """Add the given object to this collection.
 
-        :param obj: The object to add.
-        :type obj: Numbered_MCNP_Object
+        Parameters
+        ----------
+        obj : Numbered_MCNP_Object
+            The object to add.
 
-        :raises TypeError: if the object is of the wrong type.
-        :raises NumberConflictError: if this object's number is already in use in the collection.
+        Raises
+        ------
+        TypeError
+            if the object is of the wrong type.
+        NumberConflictError
+            if this object's number is already in use in the collection.
         """
         self.__internal_append(obj)
 
     def update(self, *objs: typing.Self):
-        """
-        Add the given objects to this collection.
+        """Add the given objects to this collection.
 
+        Notes
+        -----
 
-        .. note::
+        This is not a thread-safe method.
 
-            This is not a thread-safe method.
 
         .. versionchanged:: 1.0.0
 
             Changed to be more set like. Accepts multiple arguments. If there is a number conflict,
             the current object will be kept.
 
-        :param objs: The objects to add.
-        :type objs: list[Numbered_MCNP_Object]
-        :raises TypeError: if the object is of the wrong type.
-        :raises NumberConflictError: if this object's number is already in use in the collection.
+        Parameters
+        ----------
+        *objs : list[Numbered_MCNP_Object]
+            The objects to add.
+
+        Raises
+        ------
+        TypeError
+            if the object is of the wrong type.
+        NumberConflictError
+            if this object's number is already in use in the collection.
         """
         try:
             iter(objs)
@@ -526,10 +564,17 @@ class NumberedObjectCollection(ABC):
     def append(self, obj, **kwargs):
         """Appends the given object to the end of this collection.
 
-        :param obj: the object to add.
-        :type obj: Numbered_MCNP_Object
-        :param kwargs: extra arguments that are used internally.
-        :raises NumberConflictError: if this object has a number that is already in use.
+        Parameters
+        ----------
+        obj : Numbered_MCNP_Object
+            the object to add.
+        **kwargs
+            extra arguments that are used internally.
+
+        Raises
+        ------
+        NumberConflictError
+            if this object has a number that is already in use.
         """
         if not isinstance(obj, self._obj_class):
             raise TypeError(f"object being appended must be of type: {self._obj_class}")
@@ -542,12 +587,17 @@ class NumberedObjectCollection(ABC):
         be renumbered to an available number. The number will be incremented by step
         until an available number is found.
 
-        :param obj: The MCNP object being added to the collection.
-        :type obj: Numbered_MCNP_Object
-        :param step: the incrementing step to use to find a new number.
-        :type step: int
-        :return: the number for the object.
-        :rtype: int
+        Parameters
+        ----------
+        obj : Numbered_MCNP_Object
+            The MCNP object being added to the collection.
+        step : int
+            the incrementing step to use to find a new number.
+
+        Returns
+        -------
+        int
+            the number for the object.
         """
         if not isinstance(obj, self._obj_class):
             raise TypeError(f"object being appended must be of type: {self._obj_class}")
@@ -572,19 +622,26 @@ class NumberedObjectCollection(ABC):
         should be immediately added to avoid possible collisions
         caused by shifting numbers of other objects in the collection.
 
-        .. note ::
-            If starting_number, or step are not specified :func:`starting_number`,
-            and :func:`step` are used as default values.
+        Notes
+        -----
+        If starting_number, or step are not specified :func:`starting_number`,
+        and :func:`step` are used as default values.
+
 
         .. versionchanged:: 0.5.0
             In 0.5.0 the default values were changed to reference :func:`starting_number` and :func:`step`.
 
-        :param start_num: the starting number to check.
-        :type start_num: int
-        :param step: the increment to jump by to find new numbers.
-        :type step: int
-        :returns: an available number
-        :rtype: int
+        Parameters
+        ----------
+        start_num : int
+            the starting number to check.
+        step : int
+            the increment to jump by to find new numbers.
+
+        Returns
+        -------
+        int
+            an available number
         """
         if not isinstance(start_num, (Integral, type(None))):
             raise TypeError("start_num must be an int")
@@ -609,8 +666,10 @@ class NumberedObjectCollection(ABC):
         This works by finding the current maximum number, and then adding the
         stepsize to it.
 
-        :param step: how much to increase the last number by
-        :type step: int
+        Parameters
+        ----------
+        step : int
+            how much to increase the last number by
         """
         if not isinstance(step, Integral):
             raise TypeError("step must be an int")
@@ -630,7 +689,9 @@ class NumberedObjectCollection(ABC):
         Because MCNP numbered objects start at 1, so do the indices.
         They are effectively 1-based and endpoint-inclusive.
 
-        :rtype: NumberedObjectCollection
+        Returns
+        -------
+        NumberedObjectCollection
         """
         rstep = i.step if i.step is not None else 1
         rstart = i.start
@@ -697,8 +758,7 @@ class NumberedObjectCollection(ABC):
         return other in self._objects
 
     def __set_logic(self, other, operator):
-        """
-        Takes another collection, and apply the operator to it, and returns a new instance.
+        """Takes another collection, and apply the operator to it, and returns a new instance.
 
         Operator must be a callable that accepts a set of the numbers of self,
         and another set for other's numbers.
@@ -755,8 +815,7 @@ class NumberedObjectCollection(ABC):
         return self
 
     def __set_logic_test(self, other, operator):
-        """
-        Takes another collection, and apply the operator to it, testing the logic of it.
+        """Takes another collection, and apply the operator to it, testing the logic of it.
 
         Operator must be a callable that accepts a set of the numbers of self,
         and another set for other's numbers.
@@ -782,45 +841,57 @@ class NumberedObjectCollection(ABC):
         return self.__set_logic_test(other, lambda a, b: a > b)
 
     def issubset(self, other: typing.Self):
-        """
-        Test whether every element in the collection is in other.
+        """Test whether every element in the collection is in other.
 
         ``collection <= other``
 
         .. versionadded:: 1.0.0
 
-        :param other: the set to compare to.
-        :type other: Self
-        :rtype: bool
+        Parameters
+        ----------
+        other : Self
+            the set to compare to.
+
+        Returns
+        -------
+        bool
         """
         return self.__set_logic_test(other, lambda a, b: a.issubset(b))
 
     def isdisjoint(self, other: typing.Self):
-        """
-        Test if there are no elements in common between the collection, and other.
+        """Test if there are no elements in common between the collection, and other.
 
         Collections are disjoint if and only if their intersection
         is the empty set.
 
         .. versionadded:: 1.0.0
 
-        :param other: the set to compare to.
-        :type other: Self
-        :rtype: bool
+        Parameters
+        ----------
+        other : Self
+            the set to compare to.
+
+        Returns
+        -------
+        bool
         """
         return self.__set_logic_test(other, lambda a, b: a.isdisjoint(b))
 
     def issuperset(self, other: typing.Self):
-        """
-        Test whether every element in other is in the collection.
+        """Test whether every element in other is in the collection.
 
         ``collection >= other``
 
         .. versionadded:: 1.0.0
 
-        :param other: the set to compare to.
-        :type other: Self
-        :rtype: bool
+        Parameters
+        ----------
+        other : Self
+            the set to compare to.
+
+        Returns
+        -------
+        bool
         """
         return self.__set_logic_test(other, lambda a, b: a.issuperset(b))
 
@@ -842,29 +913,34 @@ class NumberedObjectCollection(ABC):
         return type(self)(list(objs.values()))
 
     def intersection(self, *others: typing.Self):
-        """
-        Return a new collection with all elements in common in collection, and all others.
+        """Return a new collection with all elements in common in collection, and all others.
 
         ``collection & other & ...``
 
         .. versionadded:: 1.0.0
 
-        :param others: the other collections to compare to.
-        :type others: Self
-        :rtype: typing.Self
+        Parameters
+        ----------
+        *others : Self
+            the other collections to compare to.
+
+        Returns
+        -------
+        typing.Self
         """
         return self.__set_logic_multi(others, lambda a, *b: a.intersection(*b))
 
     def intersection_update(self, *others: typing.Self):
-        """
-        Update the collection keeping all elements in common in collection, and all others.
+        """Update the collection keeping all elements in common in collection, and all others.
 
         ``collection &= other & ...``
 
         .. versionadded:: 1.0.0
 
-        :param others: the other collections to compare to.
-        :type others: Self
+        Parameters
+        ----------
+        *others : Self
+            the other collections to compare to.
         """
         if len(others) == 1:
             self &= others[0]
@@ -873,43 +949,52 @@ class NumberedObjectCollection(ABC):
             self &= other
 
     def union(self, *others: typing.Self):
-        """
-        Return a new collection with all elements from collection, and all others.
+        """Return a new collection with all elements from collection, and all others.
 
         ``collection | other | ...``
 
         .. versionadded:: 1.0.0
 
-        :param others: the other collections to compare to.
-        :type others: Self
-        :rtype: typing.Self
+        Parameters
+        ----------
+        *others : Self
+            the other collections to compare to.
+
+        Returns
+        -------
+        typing.Self
         """
         return self.__set_logic_multi(others, lambda a, *b: a.union(*b))
 
     def difference(self, *others: typing.Self):
-        """
-        Return a new collection with elements from collection, that are not in the others.
+        """Return a new collection with elements from collection, that are not in the others.
 
         ``collection - other - ...``
 
         .. versionadded:: 1.0.0
 
-        :param others: the other collections to compare to.
-        :type others: Self
-        :rtype: typing.Self
+        Parameters
+        ----------
+        *others : Self
+            the other collections to compare to.
+
+        Returns
+        -------
+        typing.Self
         """
         return self.__set_logic_multi(others, lambda a, *b: a.difference(*b))
 
     def difference_update(self, *others: typing.Self):
-        """
-        Update the new collection removing all elements from others.
+        """Update the new collection removing all elements from others.
 
         ``collection -= other | ...``
 
         .. versionadded:: 1.0.0
 
-        :param others: the other collections to compare to.
-        :type others: Self
+        Parameters
+        ----------
+        *others : Self
+            the other collections to compare to.
         """
         new_vals = self.difference(*others)
         self.clear()
@@ -917,41 +1002,47 @@ class NumberedObjectCollection(ABC):
         return self
 
     def symmetric_difference(self, other: typing.Self):
-        """
-        Return a new collection with elements in either the collection or the other, but not both.
+        """Return a new collection with elements in either the collection or the other, but not both.
 
         ``collection ^ other``
 
         .. versionadded:: 1.0.0
 
-        :param others: the other collections to compare to.
-        :type others: Self
-        :rtype: typing.Self
+        Parameters
+        ----------
+        others : Self
+            the other collections to compare to.
+
+        Returns
+        -------
+        typing.Self
         """
         return self ^ other
 
     def symmetric_difference_update(self, other: typing.Self):
-        """
-        Update the collection, keeping only elements found in either collection, but not in both.
+        """Update the collection, keeping only elements found in either collection, but not in both.
 
         ``collection ^= other``
 
         .. versionadded:: 1.0.0
 
-        :param others: the other collections to compare to.
-        :type others: Self
+        Parameters
+        ----------
+        others : Self
+            the other collections to compare to.
         """
         self ^= other
         return self
 
     def discard(self, obj: montepy.numbered_mcnp_object.Numbered_MCNP_Object):
-        """
-        Remove the object from the collection if it is present.
+        """Remove the object from the collection if it is present.
 
         .. versionadded:: 1.0.0
 
-        :param obj: the object to remove.
-        :type obj: Numbered_MCNP_Object
+        Parameters
+        ----------
+        obj : Numbered_MCNP_Object
+            the object to remove.
         """
         try:
             self.remove(obj)
@@ -959,15 +1050,19 @@ class NumberedObjectCollection(ABC):
             pass
 
     def get(self, i: int, default=None) -> (Numbered_MCNP_Object, None):
-        """
-        Get ``i`` if possible, or else return ``default``.
+        """Get ``i`` if possible, or else return ``default``.
 
-        :param i: number of the object to get, not it's location in the internal list
-        :type i: int
-        :param default: value to return if not found
-        :type default: object
+        Parameters
+        ----------
+        i : int
+            number of the object to get, not it's location in the
+            internal list
+        default : object
+            value to return if not found
 
-        :rtype: Numbered_MCNP_Object
+        Returns
+        -------
+        Numbered_MCNP_Object
         """
         try:
             ret = self.__num_cache[i]
@@ -983,10 +1078,11 @@ class NumberedObjectCollection(ABC):
         return default
 
     def keys(self) -> typing.Generator[int, None, None]:
-        """
-        Get iterator of the collection's numbers.
+        """Get iterator of the collection's numbers.
 
-        :rtype: int
+        Returns
+        -------
+        int
         """
         if len(self) == 0:
             yield from []
@@ -995,10 +1091,11 @@ class NumberedObjectCollection(ABC):
             yield o.number
 
     def values(self) -> typing.Generator[Numbered_MCNP_Object, None, None]:
-        """
-        Get iterator of the collection's objects.
+        """Get iterator of the collection's objects.
 
-        :rtype: Numbered_MCNP_Object
+        Returns
+        -------
+        Numbered_MCNP_Object
         """
         for o in self._objects:
             self.__num_cache[o.number] = o
@@ -1007,10 +1104,11 @@ class NumberedObjectCollection(ABC):
     def items(
         self,
     ) -> typing.Generator[typing.Tuple[int, Numbered_MCNP_Object], None, None]:
-        """
-        Get iterator of the collections (number, object) pairs.
+        """Get iterator of the collections (number, object) pairs.
 
-        :rtype: tuple(int, MCNP_Object)
+        Returns
+        -------
+        tuple(int, MCNP_Object)
         """
         for o in self._objects:
             yield o.number, o
@@ -1045,11 +1143,18 @@ class NumberedDataObjectCollection(NumberedObjectCollection):
     def _append_hook(self, obj, insert_in_data=True):
         """Appends the given object to the end of this collection.
 
-        :param obj: the object to add.
-        :type obj: Numbered_MCNP_Object
-        :param insert_in_data: Whether to add the object to the linked problem's data_inputs.
-        :type insert_in_data: bool
-        :raises NumberConflictError: if this object has a number that is already in use.
+        Parameters
+        ----------
+        obj : Numbered_MCNP_Object
+            the object to add.
+        insert_in_data : bool
+            Whether to add the object to the linked problem's
+            data_inputs.
+
+        Raises
+        ------
+        NumberConflictError
+            if this object has a number that is already in use.
         """
         if self._problem:
             if self._last_index:
@@ -1070,9 +1175,7 @@ class NumberedDataObjectCollection(NumberedObjectCollection):
             self._problem.data_inputs.remove(obj)
 
     def clear(self):
-        """
-        Removes all objects from this collection.
-        """
+        """Removes all objects from this collection."""
         if self._problem:
             for obj in self._objects:
                 self._problem.data_inputs.remove(obj)

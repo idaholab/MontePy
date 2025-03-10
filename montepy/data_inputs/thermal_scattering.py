@@ -10,22 +10,24 @@ from montepy.utilities import *
 
 
 class ThermalScatteringLaw(DataInputAbstract):
-    """
-    Class to hold MT Inputs
+    """Class to hold MT Inputs
 
     This is designed to be called two ways.
     The first is with a read input file using input_card, comment
     The second is after a read with a material and a comment (using named inputs)
 
-    .. seealso::
+    See Also
+    --------
 
-        * :manual63:`5.6.2`
-        * :manual62:`110`
+    * :manual63:`5.6.2`
+    * :manual62:`110`
 
-    :param input: the Input object representing this data input
-    :type input: Union[Input, str]
-    :param material: the parent Material object that owns this
-    :type material: Material
+    Parameters
+    ----------
+    input : Union[Input, str]
+        the Input object representing this data input
+    material : Material
+        the parent Material object that owns this
     """
 
     _parser = ThermalParser()
@@ -56,28 +58,31 @@ class ThermalScatteringLaw(DataInputAbstract):
 
     @make_prop_val_node("_old_number")
     def old_number(self):
-        """
-        The material number from the file
+        """The material number from the file
 
-        :rtype: int
+        Returns
+        -------
+        int
         """
         pass
 
     @property
     def parent_material(self):
-        """
-        The Material object this is tied to.
+        """The Material object this is tied to.
 
-        :rtype: Material
+        Returns
+        -------
+        Material
         """
         return self._parent_material
 
     @property
     def thermal_scattering_laws(self):
-        """
-        The thermal scattering laws to use for this material as strings.
+        """The thermal scattering laws to use for this material as strings.
 
-        :rtype: list
+        Returns
+        -------
+        list
         """
         ret = []
         for law in self._scattering_laws:
@@ -98,11 +103,12 @@ class ThermalScatteringLaw(DataInputAbstract):
             self._scattering_laws.append(self._generate_default_node(str, law))
 
     def add_scattering_law(self, law):
-        """
-        Adds the requested scattering law to this material
+        """Adds the requested scattering law to this material
 
-        :param law: the thermal scattering law to add.
-        :type law: str
+        Parameters
+        ----------
+        law : str
+            the thermal scattering law to add.
         """
         self._scattering_laws.append(self._generate_default_node(str, law))
 
@@ -124,13 +130,18 @@ class ThermalScatteringLaw(DataInputAbstract):
             )
 
     def update_pointers(self, data_inputs):
-        """
-        Updates pointer to the thermal scattering data
+        """Updates pointer to the thermal scattering data
 
-        :param data_inputs: a list of the data inputs in the problem
-        :type data_inputs: list
-        :returns: True iff this input should be removed from ``problem.data_inputs``
-        :rtype: bool
+        Parameters
+        ----------
+        data_inputs : list
+            a list of the data inputs in the problem
+
+        Returns
+        -------
+        bool
+            True iff this input should be removed from
+            ``problem.data_inputs``
         """
         # use caching first
         if self._problem:

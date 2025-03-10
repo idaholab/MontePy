@@ -4,13 +4,14 @@ from enum import unique, Enum
 
 @unique
 class SurfaceType(str, Enum):
-    """
-    An enumeration of the surface types allowed.
+    """An enumeration of the surface types allowed.
 
-    :param value: The shorthand used by MCNP
-    :type value: str
-    :param description: The human readable description of the surface.
-    :type description: str
+    Parameters
+    ----------
+    value : str
+        The shorthand used by MCNP
+    description : str
+        The human readable description of the surface.
     """
 
     def __new__(cls, value, description):

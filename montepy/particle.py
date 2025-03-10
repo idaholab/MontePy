@@ -4,8 +4,7 @@ from enum import unique, Enum
 
 @unique
 class Particle(str, Enum):
-    """
-    Supported MCNP supported particles.
+    """Supported MCNP supported particles.
 
     Taken from :manual62:`46`.
     """
@@ -63,8 +62,7 @@ class Particle(str, Enum):
 
 @unique
 class LibraryType(str, Enum):
-    """
-    Enum to represent the possible types that a nuclear data library can be.
+    """Enum to represent the possible types that a nuclear data library can be.
 
     .. versionadded:: 1.0.0
 

@@ -8,19 +8,18 @@ from montepy.surfaces.surface import Surface, InitInput
 
 
 class GeneralPlane(Surface):
-    """
-    Represents P
+    """Represents P
 
     .. versionchanged:: 1.0.0
 
         Added number parameter
 
-    :param input: The Input object representing the input
-    :type input: Input
-    :param input: The Input object representing the input
-    :type input: Union[Input, str]
-    :param number: The number to set for this object.
-    :type number: int
+    Parameters
+    ----------
+    input : Union[Input, str]
+        The Input object representing the input
+    number : int
+        The number to set for this object.
     """
 
     def __init__(

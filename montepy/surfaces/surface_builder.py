@@ -8,13 +8,18 @@ from montepy.surfaces.general_plane import GeneralPlane
 
 
 def parse_surface(input: InitInput):
-    """
-    Builds a Surface object for the type of Surface
+    """Builds a Surface object for the type of Surface
 
-    :param input: The Input object representing the input
-    :type input: Union[Input, str]
-    :returns: A Surface object properly parsed. If supported a sub-class of Surface will be given.
-    :rtype: Surface
+    Parameters
+    ----------
+    input : Union[Input, str]
+        The Input object representing the input
+
+    Returns
+    -------
+    Surface
+        A Surface object properly parsed. If supported a sub-class of
+        Surface will be given.
     """
     ST = SurfaceType
     buffer_surface = Surface(input)
@@ -32,14 +37,19 @@ def parse_surface(input: InitInput):
 
 
 surface_builder = parse_surface
-"""
-Alias for :func:`parse_surface`.
+"""Alias for :func:`parse_surface`.
 
 :deprecated: 1.0.0
     Renamed to be :func:`parse_surface` to be more pythonic.
-    
-:param input: The Input object representing the input
-:type input: Union[Input, str]
-:returns: A Surface object properly parsed. If supported a sub-class of Surface will be given.
-:rtype: Surface
+
+Parameters
+----------
+input : Union[Input, str]
+    The Input object representing the input
+
+Returns
+-------
+Surface
+    A Surface object properly parsed. If supported a sub-class of
+    Surface will be given.
 """

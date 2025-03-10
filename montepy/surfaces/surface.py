@@ -15,17 +15,18 @@ from montepy.utilities import *
 
 
 class Surface(Numbered_MCNP_Object):
-    """
-    Object to hold a single MCNP surface
+    """Object to hold a single MCNP surface
 
     .. versionchanged:: 1.0.0
 
         Added number parameter
 
-    :param input: The Input object representing the input
-    :type input: Union[Input, str]
-    :param number: The number to set for this object.
-    :type number: int
+    Parameters
+    ----------
+    input : Union[Input, str]
+        The Input object representing the input
+    number : int
+        The number to set for this object.
     """
 
     _parser = SurfaceParser()
@@ -97,21 +98,23 @@ class Surface(Numbered_MCNP_Object):
 
     @make_prop_val_node("_surface_type", (SurfaceType, str), SurfaceType)
     def surface_type(self):
-        """
-        The mnemonic for the type of surface.
+        """The mnemonic for the type of surface.
 
         E.g. CY, PX, etc.
 
-        :rtype: SurfaceType
+        Returns
+        -------
+        SurfaceType
         """
         pass
 
     @property
     def is_reflecting(self):
-        """
-        If true this surface is a reflecting boundary.
+        """If true this surface is a reflecting boundary.
 
-        :rtype: bool
+        Returns
+        -------
+        bool
         """
         return self._is_reflecting
 
@@ -123,10 +126,11 @@ class Surface(Numbered_MCNP_Object):
 
     @property
     def is_white_boundary(self):
-        """
-        If true this surface is a white boundary.
+        """If true this surface is a white boundary.
 
-        :rtype: bool
+        Returns
+        -------
+        bool
         """
         return self._is_white_boundary
 
@@ -138,10 +142,11 @@ class Surface(Numbered_MCNP_Object):
 
     @property
     def surface_constants(self):
-        """
-        The constants defining the surface
+        """The constants defining the surface
 
-        :rtype: list
+        Returns
+        -------
+        list
         """
         ret = []
         for val in self._surface_constants:
@@ -164,55 +169,61 @@ class Surface(Numbered_MCNP_Object):
 
     @make_prop_val_node("_old_transform_number")
     def old_transform_number(self):
-        """
-        The transformation number for this surface in the original file.
+        """The transformation number for this surface in the original file.
 
-        :rtype: int
+        Returns
+        -------
+        int
         """
         pass
 
     @make_prop_val_node("_old_periodic_surface")
     def old_periodic_surface(self):
-        """
-        The surface number this is periodic with reference to in the original file.
+        """The surface number this is periodic with reference to in the original file.
 
-        :rtype: int
+        Returns
+        -------
+        int
         """
         pass
 
     @make_prop_pointer("_periodic_surface", types=(), deletable=True)
     def periodic_surface(self):
-        """
-        The surface that this surface is periodic with respect to
+        """The surface that this surface is periodic with respect to
 
-        :rtype: Surface
+        Returns
+        -------
+        Surface
         """
         pass
 
     @make_prop_pointer("_transform", transform.Transform, deletable=True)
     def transform(self):
-        """
-        The Transform object that translates this surface
+        """The Transform object that translates this surface
 
-        :rtype: Transform
+        Returns
+        -------
+        Transform
         """
         pass
 
     @make_prop_val_node("_old_number")
     def old_number(self):
-        """
-        The surface number that was used in the read file
+        """The surface number that was used in the read file
 
-        :rtype: int
+        Returns
+        -------
+        int
         """
         pass
 
     @property
     def cells(self):
-        """
-        A generator of Cells that use this surface.
+        """A generator of Cells that use this surface.
 
-        :rtype: generator
+        Returns
+        -------
+        generator
         """
         if self._problem:
             for cell in self._problem.cells:
@@ -231,16 +242,17 @@ class Surface(Numbered_MCNP_Object):
         )
 
     def update_pointers(self, surfaces, data_inputs):
-        """
-        Updates the internal pointers to the appropriate objects.
+        """Updates the internal pointers to the appropriate objects.
 
         Right now only periodic surface links will be made.
         Eventually transform pointers should be made.
 
-        :param surfaces: A Surfaces collection of the surfaces in the problem.
-        :type surfaces: Surfaces
-        :param data_cards: the data_cards in the problem.
-        :type data_cards: list
+        Parameters
+        ----------
+        surfaces : Surfaces
+            A Surfaces collection of the surfaces in the problem.
+        data_cards : list
+            the data_cards in the problem.
         """
         if self.old_periodic_surface:
             try:
@@ -306,13 +318,17 @@ class Surface(Numbered_MCNP_Object):
     def find_duplicate_surfaces(self, surfaces, tolerance):
         """Finds all surfaces that are effectively the same as this one.
 
-        :param surfaces: a list of the surfaces to compare against this one.
-        :type surfaces: list
-        :param tolerance: the amount of relative error to allow
-        :type tolerance: float
+        Parameters
+        ----------
+        surfaces : list
+            a list of the surfaces to compare against this one.
+        tolerance : float
+            the amount of relative error to allow
 
-        :returns: A list of the surfaces that are identical
-        :rtype: list
+        Returns
+        -------
+        list
+            A list of the surfaces that are identical
         """
         return []
 

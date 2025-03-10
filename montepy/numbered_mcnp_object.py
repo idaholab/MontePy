@@ -33,19 +33,20 @@ def _number_validator(self, number):
 
 
 class Numbered_MCNP_Object(MCNP_Object):
-    """
-    An abstract class to represent an mcnp object that has a number.
+    """An abstract class to represent an mcnp object that has a number.
 
     .. versionchanged:: 1.0.0
 
         Added number parameter
 
-    :param input: The Input syntax object this will wrap and parse.
-    :type input: Union[Input, str]
-    :param parser: The parser object to parse the input with.
-    :type parser: MCNP_Parser
-    :param number: The number to set for this object.
-    :type number: int
+    Parameters
+    ----------
+    input : Union[Input, str]
+        The Input syntax object this will wrap and parse.
+    parser : MCNP_Parser
+        The parser object to parse the input with.
+    number : int
+        The number to set for this object.
     """
 
     def __init__(
@@ -69,31 +70,31 @@ class Numbered_MCNP_Object(MCNP_Object):
             self.number = number
 
     _CHILD_OBJ_MAP = {}
-    """
-    """
+    """"""
 
     @make_prop_val_node("_number", Integral, validator=_number_validator)
     def number(self):
-        """
-        The current number of the object that will be written out to a new input.
+        """The current number of the object that will be written out to a new input.
 
-        :rtype: int
+        Returns
+        -------
+        int
         """
         pass
 
     @property
     @abstractmethod
     def old_number(self):
-        """
-        The original number of the object provided in the input file
+        """The original number of the object provided in the input file
 
-        :rtype: int
+        Returns
+        -------
+        int
         """
         pass
 
     def _add_children_objs(self, problem):
-        """
-        Adds all children objects from self to the given problem.
+        """Adds all children objects from self to the given problem.
 
         This is called from an append_hook in `NumberedObjectCollection`.
         """
@@ -122,28 +123,33 @@ class Numbered_MCNP_Object(MCNP_Object):
                     prob_collect.append(child_collect)
 
     def clone(self, starting_number=None, step=None):
-        """
-        Create a new independent instance of this object with a new number.
+        """Create a new independent instance of this object with a new number.
 
         This relies mostly on ``copy.deepcopy``.
 
-        .. note ::
-            If starting_number, or step are not specified
-            :func:`~montepy.numbered_object_collection.NumberedObjectCollection.starting_number`,
-            and :func:`~montepy.numbered_object_collection.NumberedObjectCollection.step` are used as default values,
-            if this object is tied to a problem.
-            For instance a ``Material`` will use ``problem.materials`` default information.
-            Otherwise ``1`` will be used as default values
+        Notes
+        -----
+        If starting_number, or step are not specified
+        :func:`~montepy.numbered_object_collection.NumberedObjectCollection.starting_number`,
+        and :func:`~montepy.numbered_object_collection.NumberedObjectCollection.step` are used as default values,
+        if this object is tied to a problem.
+        For instance a ``Material`` will use ``problem.materials`` default information.
+        Otherwise ``1`` will be used as default values
+
 
         .. versionadded:: 0.5.0
 
-        :param starting_number: The starting number to request for a new object number.
-        :type starting_number: int
-        :param step: the step size to use to find a new valid number.
-        :type step: int
-        :returns: a cloned copy of this object.
-        :rtype: type(self)
+        Parameters
+        ----------
+        starting_number : int
+            The starting number to request for a new object number.
+        step : int
+            the step size to use to find a new valid number.
 
+        Returns
+        -------
+        type(self)
+            a cloned copy of this object.
         """
         if not isinstance(starting_number, (Integral, type(None))):
             raise TypeError(

@@ -25,14 +25,16 @@ import montepy
 
 
 class MCNP_Problem:
-    """
-    A class to represent an entire MCNP problem in a semantic way.
+    """A class to represent an entire MCNP problem in a semantic way.
 
-    .. note::
-        If a stream is provided. It will not be closed by this function.
+    Notes
+    -----
+    If a stream is provided. It will not be closed by this function.
 
-    :param destination: the path to the input file to read, or a readable stream.
-    :type destination: io.TextIOBase, str, os.PathLike
+    Parameters
+    ----------
+    destination : io.TextIOBase, str, os.PathLike
+        the path to the input file to read, or a readable stream.
     """
 
     _NUMBERED_OBJ_MAP = {
@@ -70,8 +72,7 @@ class MCNP_Problem:
 
     @property
     def original_inputs(self):
-        """
-        A list of the MCNP_Inputs read from the original file.
+        """A list of the MCNP_Inputs read from the original file.
 
         This should not be mutated, and should be used as a reference to maintain
         the structure
@@ -79,8 +80,11 @@ class MCNP_Problem:
         .. deprecated:: 0.2.0
             This will likely be removed soon, and it's functionality will not be necessary to reproduce.
 
-        :return: A list of the MCNP_Object objects representing the file as it was read
-        :rtype: list
+        Returns
+        -------
+        list
+            A list of the MCNP_Object objects representing the file as
+            it was read
         """
         return self._original_inputs
 
@@ -126,22 +130,25 @@ class MCNP_Problem:
         return result
 
     def clone(self):
-        """
-        Creates a complete independent copy of this problem.
+        """Creates a complete independent copy of this problem.
 
         .. versionadded:: 0.5.0
 
-        :rtype: MCNP_Problem
+        Returns
+        -------
+        MCNP_Problem
         """
         return copy.deepcopy(self)
 
     @property
     def cells(self):
-        """
-        A collection of the Cell objects in this problem.
+        """A collection of the Cell objects in this problem.
 
-        :return: a collection of the Cell objects, ordered by the order they were in the input file.
-        :rtype: Cells
+        Returns
+        -------
+        Cells
+            a collection of the Cell objects, ordered by the order they
+            were in the input file.
         """
         self.__relink_objs()
         return self._cells
@@ -159,10 +166,11 @@ class MCNP_Problem:
 
     @property
     def mode(self):
-        """
-        The mode of particles being used for the problem.
+        """The mode of particles being used for the problem.
 
-        :rtype: Mode
+        Returns
+        -------
+        Mode
         """
         return self._mode
 
@@ -171,35 +179,46 @@ class MCNP_Problem:
 
         For details see: :func:`montepy.data_cards.mode.Mode.set`.
 
-        :param particles: the particles that the mode will be switched to.
-        :type particles: list, str
-        :raises ValueError: if string is not a valid particle shorthand.
+        Parameters
+        ----------
+        particles : list, str
+            the particles that the mode will be switched to.
+
+        Raises
+        ------
+        ValueError
+            if string is not a valid particle shorthand.
         """
         self._mode.set(particles)
 
     @property
     def mcnp_version(self):
-        """
-        The version of MCNP that this is intended for.
+        """The version of MCNP that this is intended for.
 
-        .. note::
-            MCNP versions prior to 6.2 aren't fully supported to avoid
-            Export Control Restrictions. Documentation for MCNP 6.2 is public in report:
-            LA-UR-17-29981.
-            All features are based on MCNP 6.2, and may cause other versions of MCNP to break.
+        Notes
+        -----
+        MCNP versions prior to 6.2 aren't fully supported to avoid
+        Export Control Restrictions. Documentation for MCNP 6.2 is public in report:
+        LA-UR-17-29981.
+        All features are based on MCNP 6.2, and may cause other versions of MCNP to break.
+
 
         The version is a tuple of major, minor, revision.
         6.2.0 would be represented as (6, 2, 0)
 
-        :rtype: tuple
+        Returns
+        -------
+        tuple
         """
         return self._mcnp_version
 
     @mcnp_version.setter
     def mcnp_version(self, version):
         """
-        :param version: the version tuple. Must be greater than 6.2.0
-        :type version: tuple
+        Parameters
+        ----------
+        version : tuple
+            the version tuple. Must be greater than 6.2.0
         """
         if version < (5, 1, 60):
             raise ValueError(f"The mcnp_version {version} is not supported by MontePy")
@@ -207,11 +226,13 @@ class MCNP_Problem:
 
     @property
     def surfaces(self):
-        """
-        A collection of the Surface objects in this problem.
+        """A collection of the Surface objects in this problem.
 
-        :return: a collection of the Surface objects, ordered by the order they were in the input file.
-        :rtype: Surfaces
+        Returns
+        -------
+        Surfaces
+            a collection of the Surface objects, ordered by the order
+            they were in the input file.
         """
         self.__relink_objs()
         return self._surfaces
@@ -227,11 +248,13 @@ class MCNP_Problem:
 
     @property
     def materials(self):
-        """
-        A collection of the Material objects in this problem.
+        """A collection of the Material objects in this problem.
 
-        :return: a colection of the Material objects, ordered by the order they were in the input file.
-        :rtype: Materials
+        Returns
+        -------
+        Materials
+            a colection of the Material objects, ordered by the order
+            they were in the input file.
         """
         self.__relink_objs()
         return self._materials
@@ -247,91 +270,104 @@ class MCNP_Problem:
 
     @property
     def print_in_data_block(self):
-        """
-        Controls whether or not the specific input gets printed in the cell block or the data block.
+        """Controls whether or not the specific input gets printed in the cell block or the data block.
 
         This acts like a dictionary. The key is the case insensitive name of the card.
         For example to enable printing importance data in the data block run:
 
         ``problem.print_in_data_block["Imp"] = True``
 
-        :rtype: bool
+        Returns
+        -------
+        bool
         """
         return self._print_in_data_block
 
     @property
     def data_inputs(self):
-        """
-        A list of the DataInput objects in this problem.
+        """A list of the DataInput objects in this problem.
 
-        :return: a list of the :class:`~montepy.data_cards.data_card.DataCardAbstract` objects, ordered by the order they were in the input file.
-        :rtype: list
+        Returns
+        -------
+        list
+            a list of the
+            :class:`~montepy.data_cards.data_card.DataCardAbstract`
+            objects, ordered by the order they were in the input file.
         """
         self.__relink_objs()
         return self._data_inputs
 
     @property
     def input_file(self):
-        """
-        The file name of the original file name this problem was read from.
+        """The file name of the original file name this problem was read from.
 
-        :rtype: MCNP_InputFile
+        Returns
+        -------
+        MCNP_InputFile
         """
         return self._input_file
 
     @property
     def message(self):
-        """
-        The Message object at the beginning of the problem if any.
+        """The Message object at the beginning of the problem if any.
 
-        :rtype: Message
+        Returns
+        -------
+        Message
         """
         return self._message
 
     @property
     def title(self):
-        """
-        The Title object for the title.
+        """The Title object for the title.
 
-        :rtype: Title
+        Returns
+        -------
+        Title
         """
         return self._title
 
     @title.setter
     def title(self, title):
         """
-        :type title: The str for the title to be set to.
+        Parameters
+        ----------
+        title : The str for the title to be set to.
         """
         self._title = mcnp_input.Title([title], title)
 
     @property
     def universes(self):
-        """
-        The Universes object holding all problem universes.
+        """The Universes object holding all problem universes.
 
-        :returns: a collection of universes in the problem.
-        :rtype: Universes
+        Returns
+        -------
+        Universes
+            a collection of universes in the problem.
         """
         return self._universes
 
     @property
     def transforms(self):
-        """
-        The collection of transform objects in this problem.
+        """The collection of transform objects in this problem.
 
-        :returns: a collection of transforms in the problem.
-        :rtype: Transforms
+        Returns
+        -------
+        Transforms
+            a collection of transforms in the problem.
         """
         return self._transforms
 
     def parse_input(self, check_input=False, replace=True):
-        """
-        Semantically parses the MCNP file provided to the constructor.
+        """Semantically parses the MCNP file provided to the constructor.
 
-        :param check_input: If true, will try to find all errors with input and collect them as warnings to log.
-        :type check_input: bool
-        :param replace: replace all non-ASCII characters with a space (0x20)
-        :type replace: bool
+        Parameters
+        ----------
+        check_input : bool
+            If true, will try to find all errors with input and collect
+            them as warnings to log.
+        replace : bool
+            replace all non-ASCII characters with a space (0x20)
         """
         trailing_comment = None
         last_obj = None
@@ -405,8 +441,11 @@ class MCNP_Problem:
     def __update_internal_pointers(self, check_input=False):
         """Updates the internal pointers between objects
 
-        :param check_input: If true, will try to find all errors with input and collect them as warnings to log.
-        :type check_input: bool
+        Parameters
+        ----------
+        check_input : bool
+            If true, will try to find all errors with input and collect
+            them as warnings to log.
         """
 
         def handle_error(e):
@@ -446,8 +485,11 @@ class MCNP_Problem:
     def remove_duplicate_surfaces(self, tolerance):
         """Finds duplicate surfaces in the problem, and remove them.
 
-        :param tolerance: The amount of relative error to consider two surfaces identical
-        :type tolerance: float
+        Parameters
+        ----------
+        tolerance : float
+            The amount of relative error to consider two surfaces
+            identical
         """
         to_delete = montepy.surface_collection.Surfaces()
         matching_map = {}
@@ -465,15 +507,16 @@ class MCNP_Problem:
             self._surfaces.remove(surface)
 
     def add_cell_children_to_problem(self):  # pragma: no cover
-        """
-        Adds the surfaces, materials, and transforms of all cells in this problem to this problem to the
+        """Adds the surfaces, materials, and transforms of all cells in this problem to this problem to the
         internal lists to allow them to be written to file.
 
         .. deprecated:: 1.0.0
 
             This function is no longer needed. When cells are added to problem.cells these children are added as well.
 
-        :raises DeprecationWarning:
+        Raises
+        ------
+        DeprecationWarning
         """
         raise DeprecationWarning(
             "add_cell_children_to_problem has been removed,"
@@ -481,13 +524,14 @@ class MCNP_Problem:
         )
 
     def write_problem(self, destination, overwrite=False):
-        """
-        Write the problem to a file or writeable object.
+        """Write the problem to a file or writeable object.
 
-        :param destination: File path or writable object
-        :type destination: io.TextIOBase, str, os.PathLike
-        :param overwrite: Whether to overwrite 'destination' if it is an existing file
-        :type overwrite: bool
+        Parameters
+        ----------
+        destination : io.TextIOBase, str, os.PathLike
+            File path or writable object
+        overwrite : bool
+            Whether to overwrite 'destination' if it is an existing file
         """
         if hasattr(destination, "write") and callable(getattr(destination, "write")):
             new_file = MCNP_InputFile.from_open_stream(destination)
@@ -502,28 +546,36 @@ class MCNP_Problem:
             )
 
     def write_to_file(self, file_path, overwrite=False):
-        """
-        Writes the problem to a file.
+        """Writes the problem to a file.
 
         .. versionchanged:: 0.3.0
             The overwrite parameter was added.
 
-        :param file_path: the file path to write this problem to
-        :type file_path: str, os.PathLike
-        :param overwrite: Whether to overwrite the file at 'new_problem' if it exists
-        :type overwrite: bool
-        :raises IllegalState: if an object in the problem has not been fully initialized.
-        :raises FileExistsError: if a file already exists with the same path.
-        :raises IsADirectoryError: if the path given is actually a directory.
+        Parameters
+        ----------
+        file_path : str, os.PathLike
+            the file path to write this problem to
+        overwrite : bool
+            Whether to overwrite the file at 'new_problem' if it exists
+
+        Raises
+        ------
+        IllegalState
+            if an object in the problem has not been fully initialized.
+        FileExistsError
+            if a file already exists with the same path.
+        IsADirectoryError
+            if the path given is actually a directory.
         """
         return self.write_problem(file_path, overwrite)
 
     def _write_to_stream(self, inp):
-        """
-        Writes the problem to a writeable stream.
+        """Writes the problem to a writeable stream.
 
-        :param inp: Writable input file
-        :type inp: MCNP_InputFile
+        Parameters
+        ----------
+        inp : MCNP_InputFile
+            Writable input file
         """
         with warnings.catch_warnings(record=True) as warning_catch:
             objects_list = []
@@ -587,8 +639,7 @@ class MCNP_Problem:
             warnings.warn(warning, stacklevel=3)
 
     def __load_data_inputs_to_object(self, data_inputs):
-        """
-        Loads data input into their appropriate problem attribute.
+        """Loads data input into their appropriate problem attribute.
 
         Problem-level input should be loaded this way like: mode and kcode.
         """
@@ -619,8 +670,7 @@ class MCNP_Problem:
         return ret
 
     def parse(self, input: str, append: bool = True) -> montepy.mcnp_object.MCNP_Object:
-        """
-        Parses the MCNP object given by the string, and links it adds it to this problem.
+        """Parses the MCNP object given by the string, and links it adds it to this problem.
 
         This attempts to identify the input type by trying to parse it in the following order:
 
@@ -635,18 +685,29 @@ class MCNP_Problem:
         #. Link it to other objects in the problem. Note: this will raise an error if those objects don't exist.
         #. Append it to the appropriate collection
 
-        :param input: the string describing the input. New lines are allowed but this does not need to meet MCNP line
-            length rules.
-        :type input: str
-        :param append: Whether to append this parsed object to this problem.
-        :type append: bool
-        :returns: the parsed object.
-        :rtype: MCNP_Object
+        Parameters
+        ----------
+        input : str
+            the string describing the input. New lines are allowed but
+            this does not need to meet MCNP line length rules.
+        append : bool
+            Whether to append this parsed object to this problem.
 
-        :raises TypeError: If a str is not given
-        :raises ParsingError: If this is not a valid input.
-        :raises BrokenObjectLinkError: if the dependent objects are not already in the problem.
-        :raises NumberConflictError: if the object's number is already taken
+        Returns
+        -------
+        MCNP_Object
+            the parsed object.
+
+        Raises
+        ------
+        TypeError
+            If a str is not given
+        ParsingError
+            If this is not a valid input.
+        BrokenObjectLinkError
+            if the dependent objects are not already in the problem.
+        NumberConflictError
+            if the object's number is already taken
         """
         try:
             obj = montepy.parse_data(input)

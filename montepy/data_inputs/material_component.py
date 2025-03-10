@@ -2,8 +2,7 @@
 
 
 class MaterialComponent:
-    """
-    A class to represent a single component in a material.
+    """A class to represent a single component in a material.
 
     For example: this may be H-1 in water: like 1001.80c — 0.6667
 
@@ -13,7 +12,10 @@ class MaterialComponent:
         It has been removed in 1.0.0.
         See :ref:`migrate 0 1`.
 
-    :raises DeprecationWarning: whenever called.
+    Raises
+    ------
+    DeprecationWarning
+        whenever called.
     """
 
     def __init__(self, *args):

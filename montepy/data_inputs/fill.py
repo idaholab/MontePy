@@ -13,23 +13,22 @@ import numpy as np
 
 
 class Fill(CellModifierInput):
-    """
-    Object to handle the ``FILL`` input in cell and data blocks.
+    """Object to handle the ``FILL`` input in cell and data blocks.
 
-    :param input: the Input object representing this data input
-    :type input: Union[Input, str]
-    :param in_cell_block: if this card came from the cell block of an input file.
-    :type in_cell_block: bool
-    :param key: the key from the key-value pair in a cell
-    :type key: str
-    :param value: the value syntax tree from the key-value pair in a cell
-    :type value: SyntaxNode
+    Parameters
+    ----------
+    input : Union[Input, str]
+        the Input object representing this data input
+    in_cell_block : bool
+        if this card came from the cell block of an input file.
+    key : str
+        the key from the key-value pair in a cell
+    value : SyntaxNode
+        the value syntax tree from the key-value pair in a cell
     """
 
     DIMENSIONS = {"i": 0, "j": 1, "k": 2}
-    """
-    Maps the dimension to its axis number
-    """
+    """Maps the dimension to its axis number"""
 
     def __init__(
         self,
@@ -84,13 +83,14 @@ class Fill(CellModifierInput):
         )
 
     def _parse_cell_input(self, key, value):
-        """
-        Parses the information provided in the cell input.
+        """Parses the information provided in the cell input.
 
-        :param key: The key given in the cell
-        :type key: str
-        :param value: the value given in the cell
-        :type value: str
+        Parameters
+        ----------
+        key : str
+            The key given in the cell
+        value : str
+            the value given in the cell
         """
 
         def get_universe(value):
@@ -150,11 +150,12 @@ class Fill(CellModifierInput):
             get_universe(value)
 
     def _parse_matrix(self, value):
-        """
-        Parses a matrix fill of universes.
+        """Parses a matrix fill of universes.
 
-        :param value: the value in the cell
-        :type value: str
+        Parameters
+        ----------
+        value : str
+            the value in the cell
         """
         self._multi_universe = True
         words = value["data"]
@@ -213,13 +214,14 @@ class Fill(CellModifierInput):
 
     @property
     def universe(self):
-        """
-        The universe that this cell will be filled with.
+        """The universe that this cell will be filled with.
 
         Only returns a value when :func:`multiple_universes` is False, otherwise none.
 
-        :returns: the universe that the cell will be filled with, or None
-        :rtype: Universe
+        Returns
+        -------
+        Universe
+            the universe that the cell will be filled with, or None
         """
         if not self.multiple_universes:
             return self._universe
@@ -240,13 +242,15 @@ class Fill(CellModifierInput):
 
     @property
     def universes(self):
-        """
-        The universes that this cell will be filled with in a lattice.
+        """The universes that this cell will be filled with in a lattice.
 
         Only returns a value when :func:`multiple_universes` is true, otherwise none.
 
-        :returns: the universes that the cell will be filled with as a 3-D array.
-        :rtype: np.ndarray
+        Returns
+        -------
+        np.ndarray
+            the universes that the cell will be filled with as a 3-D
+            array.
         """
         if self.multiple_universes:
             return self._universes
@@ -267,35 +271,38 @@ class Fill(CellModifierInput):
 
     @property
     def min_index(self):
-        """
-        The minimum indices of the matrix in each dimension.
+        """The minimum indices of the matrix in each dimension.
 
         For the order of the indices see: ``DIMENSIONS``.
 
-        :returns: the minimum indices of the matrix for complex fills
-        :rtype: :class:`numpy.ndarry`
+        Returns
+        -------
+        :class:`numpy.ndarry`
+            the minimum indices of the matrix for complex fills
         """
         return self._min_index
 
     @property
     def max_index(self):
-        """
-        The maximum indices of the matrix in each dimension.
+        """The maximum indices of the matrix in each dimension.
 
         For the order of the indices see: ``DIMENSIONS``.
 
-        :returns: the maximum indices of the matrix for complex fills
-        :rtype: :class:`numpy.ndarry`
+        Returns
+        -------
+        :class:`numpy.ndarry`
+            the maximum indices of the matrix for complex fills
         """
         return self._max_index
 
     @property
     def multiple_universes(self):
-        """
-        Whether or not this cell is filled with multiple universes in a matrix.
+        """Whether or not this cell is filled with multiple universes in a matrix.
 
-        :return: True if this cell contains multiple universes
-        :rtype: bool
+        Returns
+        -------
+        bool
+            True if this cell contains multiple universes
         """
         return self._multi_universe
 
@@ -307,21 +314,23 @@ class Fill(CellModifierInput):
 
     @make_prop_val_node("_old_number")
     def old_universe_number(self):
-        """
-        The number of the universe that this is filled by taken from the input.
+        """The number of the universe that this is filled by taken from the input.
 
-        :returns: the old universe number
-        :type: int
+        Returns
+        -------
+        int
+            the old universe number
         """
         pass
 
     @property
     def old_universe_numbers(self):
-        """
-        The numbers of the universes that this is filled by taken from the input.
+        """The numbers of the universes that this is filled by taken from the input.
 
-        :returns: the old universe numbers
-        :type: :class:`numpy.ndarray`
+        Returns
+        -------
+        :class:`numpy.ndarray`
+            the old universe numbers
         """
         if isinstance(self._old_numbers, list):
             return [
@@ -332,14 +341,15 @@ class Fill(CellModifierInput):
 
     @property
     def hidden_transform(self):
-        """
-        Whether or not the transform used is hidden.
+        """Whether or not the transform used is hidden.
 
         This is true when an unnumbered transform is used
         e.g., ``FILL=1 (1.0 2.0 3.0)``.
 
-        :returns: True iff the transform used is hidden
-        :rtype: bool
+        Returns
+        -------
+        bool
+            True iff the transform used is hidden
         """
         return self._hidden_transform
 
@@ -361,11 +371,12 @@ class Fill(CellModifierInput):
 
     @property
     def transform(self):
-        """
-        The transform for this fill (if any).
+        """The transform for this fill (if any).
 
-        :returns: the transform for the filling universe for this cell.
-        :rtype: Transform
+        Returns
+        -------
+        Transform
+            the transform for the filling universe for this cell.
         """
         return self._transform
 
@@ -385,11 +396,12 @@ class Fill(CellModifierInput):
 
     @make_prop_val_node("_old_transform_number")
     def old_transform_number(self):
-        """
-        The number of the transform specified in the input.
+        """The number of the transform specified in the input.
 
-        :returns: the original number for the transform from the input.
-        :rtype: int
+        Returns
+        -------
+        int
+            the original number for the transform from the input.
         """
         pass
 
@@ -434,33 +446,43 @@ class Fill(CellModifierInput):
         self._universe = None
 
     def _axis_range(self, axis):
-        """
-        Returns an iterator for iterating over the given axis.
+        """Returns an iterator for iterating over the given axis.
 
-        :param axis: the number of the axis to iterate over
-        :type axis: int
-        :returns: range
+        Parameters
+        ----------
+        axis : int
+            the number of the axis to iterate over
+
+        Returns
+        -------
+        unknown
+            range
         """
         return range(self._axis_size(axis))
 
     def _axis_size(self, axis):
-        """
-        Get the length of the given axis.
+        """Get the length of the given axis.
 
-        :param axis: the axis to probe into.
-        :type axis: int
-        :returns: the length of the given axis of the universe matrix.
-        :rtype: int
+        Parameters
+        ----------
+        axis : int
+            the axis to probe into.
+
+        Returns
+        -------
+        int
+            the length of the given axis of the universe matrix.
         """
         return int(self.max_index[axis] - self.min_index[axis]) + 1
 
     @property
     def _sizes(self):
-        """
-        The axis sizes of the matrix.
+        """The axis sizes of the matrix.
 
-        :returns: a tuple of the matrix shape.
-        :rtype: tuple
+        Returns
+        -------
+        tuple
+            a tuple of the matrix shape.
         """
         return (self._axis_size(0), self._axis_size(1), self._axis_size(2))
 
