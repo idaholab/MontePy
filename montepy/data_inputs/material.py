@@ -279,8 +279,6 @@ class Material(data_input.DataInputAbstract, Numbered_MCNP_Object):
     ----------
     input : Union[Input, str]
         The Input syntax object this will wrap and parse.
-    parser : MCNP_Parser
-        The parser object to parse the input with.
     number : int
         The number to set for this object.
     """
