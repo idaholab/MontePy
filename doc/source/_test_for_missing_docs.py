@@ -21,9 +21,7 @@ def crawl_path(rel_path):
         f_name = os.path.join(rel_path, f)
         if f in ignored:
             continue
-        if f_name == "montepy/__init__.py":
-            continue
-        if f_name == "montepy/checkvalue.py":
+        if f_name in ("montepy/__init__.py", "montepy/_check_value.py"):
             continue
         if os.path.isdir(os.path.join(base, f_name)):
             crawl_path(f_name)
