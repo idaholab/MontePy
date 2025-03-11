@@ -26,6 +26,7 @@ MontePy Changelog
 * Warnings are no longer raised for comments that exceed the maximum line lengths (:issue:`188`).
 * Particle type exceptions are now warnings, not errors (:issue:`381`). 
 * Allow any ``Real`` type for floating point numbers and any ``Integral`` type for integer numbers during type enforcement (:issue:`679`).
+* Add _checkvalue.py_ to codebase (:issue:`687`). 
 
 
 **Bugs Fixed**
