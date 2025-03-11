@@ -1459,7 +1459,7 @@ bar
         ],
     )
     def test_get_line_numbers(_, version, line_number):
-        assert answer == montepy.constants.get_max_line_length(version)
+        assert line_number == montepy.constants.get_max_line_length(version)
         with pytest.raises(montepy.errors.UnsupportedFeature):
             montepy.constants.get_max_line_length((5, 1, 38))
 
@@ -1610,4 +1610,4 @@ class DataInputTestFixture(montepy.data_inputs.data_input.DataInputAbstract):
         return self._has_number1
 
     def _has_classifier(self):
-        return self._has_classifier
+        return self._has_classifier1
