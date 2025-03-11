@@ -1295,7 +1295,9 @@ test title
                 fh.lineno = 0
                 fh.path = "foo"
                 fh.name = "name"
-                for card in input_syntax_reader.read_data(fh, (6, 2, 0)):
+                for card in input_syntax_reader.read_data(
+                    fh, (6, 2, 0), recursion=True
+                ):
                     pass
                 assert montepy.input_parser.block_type.BlockType(i) == card.block_type
 
