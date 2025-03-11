@@ -507,8 +507,8 @@ class MCNP_Problem:
             self._surfaces.remove(surface)
 
     def add_cell_children_to_problem(self):  # pragma: no cover
-        """Adds the surfaces, materials, and transforms of all cells in this problem to this problem to the
-        internal lists to allow them to be written to file.
+        """Deprecated: Adds the surfaces, materials, and transforms of all cells in this problem to this problem to the
+           internal lists to allow them to be written to file.
 
         .. deprecated:: 1.0.0
 
