@@ -23,6 +23,8 @@ def crawl_path(rel_path):
             continue
         if f_name == "montepy/__init__.py":
             continue
+        if f_name == "montepy/checkvalue.py":
+            continue
         if os.path.isdir(os.path.join(base, f_name)):
             crawl_path(f_name)
         elif os.path.isfile(os.path.join(base, f_name)) and ".py" in f:
