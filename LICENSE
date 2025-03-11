@@ -22,7 +22,7 @@ SOFTWARE.
 
 Code from checkvalue.py from OpenMC was incorporated into montepy._check_value.
 
-Copyright (c) 2011-2025 Massachusetts Institute of Technology, UChicago Argonne
+Copyright (c) 2014-2025 Massachusetts Institute of Technology, UChicago Argonne
 LLC, and OpenMC contributors
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of
