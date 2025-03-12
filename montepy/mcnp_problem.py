@@ -625,16 +625,20 @@ class MCNP_Problem:
             message = f"The input starting on Line {warning_message.lineno} of: {warning_message.path} expanded. "
             if warning_level == WarningLevels.SUPRESS:
                 continue
-            elif warning_level == WarningLevels.MINIMAL:
-                if warning.cause == "value":
-                    message += f"The new value is: {warning.new_value}"
-                else:
-                    message += f"The new lines are: {warning.new_value}"
             elif warning_level == WarningLevels.MAXIMAL:
                 message += "\nThe new input is:\n"
+                width = 15
                 for i, line in enumerate(warning_message.lines):
                     message += f"     {warning_message.lineno + i:5g}| {line}\n"
-                message += warning.message
+                if hasattr(message, "olds"):
+                    message += (
+                        f"\n    {'old values': ^{width}s} {'new values': ^{width}s}"
+                    )
+                    message += f"\n    {'':-^{width}s} {'':-^{width}s}\n"
+                    for old, new in zip(warning.olds, warning.news):
+                        formatter = f"    {{old: >{width}}} {{new: >{width}}}\n"
+                        message += formatter.format(old=old, new=new)
+
             warning = LineExpansionWarning(message)
             warnings.warn(warning, stacklevel=3)
 
