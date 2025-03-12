@@ -1293,6 +1293,13 @@ class ValueNode(SyntaxNodeBase):
         else:
             temp = str(value)
         if self.padding:
+            end_line_padding = False
+            for node in self.padding.nodes:
+                if node == "\n":
+                    end_line_padding = True
+                    break
+                if isinstance(node, CommentNode):
+                    break
             if self.padding.is_space(0):
                 # if there was and end space, and we ran out of space, and there isn't
                 # a saving space later on
@@ -1313,7 +1320,17 @@ class ValueNode(SyntaxNodeBase):
         buffer = "{temp:<{value_length}}{padding}".format(
             temp=temp, padding=pad_str, **self._formatter
         )
-        if len(buffer) > self._formatter["value_length"] and self._token is not None:
+        """
+        If:
+            1. expanded
+            2. had an original value
+            3. and value doesn't end in a new line (without a comment)
+        """
+        if (
+            len(buffer) > self._formatter["value_length"]
+            and self._token is not None
+            and not end_line_padding
+        ):
             warning = LineExpansionWarning(
                 f"The value has expanded, and may change formatting. The original value was {self._token}, new value is {temp}."
             )
