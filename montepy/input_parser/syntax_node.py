@@ -4,6 +4,7 @@ import re
 import warnings
 import collections
 import copy
+import json
 import itertools as it
 import enum
 import math
@@ -1331,15 +1332,9 @@ class ValueNode(SyntaxNodeBase):
             and self._token is not None
             and not end_line_padding
         ):
-            warning = LineExpansionWarning(
-                f"The value has expanded, and may change formatting. The original value was {self._token}, new value is {temp}."
-            )
-            warning.cause = "value"
-            warning.og_value = self._token
-            warning.new_value = temp
             warnings.warn(
-                warning,
-                stacklevel=2,
+                json.dumps({"old": self._og_value, "new": temp}),
+                category=LineExpansionWarning,
             )
         return buffer + extra_pad_str
 

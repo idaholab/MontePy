@@ -4,6 +4,7 @@ from abc import ABC, ABCMeta, abstractmethod
 import copy
 import functools
 import itertools as it
+import json
 import numpy as np
 import sys
 import textwrap
@@ -237,9 +238,24 @@ class MCNP_Object(ABC, metaclass=_ExceptionContextAdder):
         self.validate()
         self._update_values()
         self._tree.check_for_graveyard_comments()
+        message = None
         with warnings.catch_warnings(record=True, category=LineExpansionWarning) as ws:
             lines = self.wrap_string_for_mcnp(self._tree.format(), mcnp_version, True)
-            print(ws)
+            if len(ws) > 0:
+                message = f"""The input had a value expand that may change formatting.
+The original input was:\n\n"""
+                for line in self._input.input_lines:
+                    message += f"    {line}"
+                width = 15
+                message += f"\n\n    {'old value': ^{width}s} {'new value': ^{width}s}"
+                message += f"\n    {'':-^{width}s} {'':-^{width}s}\n"
+                for w in ws:
+                    warn_data = json.loads(w.message.args[0])
+                    formatter = f"    {{old: >{width}}} {{new: >{width}}}\n"
+                    print(formatter)
+                    message += formatter.format(**warn_data)
+        if message is not None:
+            warnings.warn(message, LineExpansionWarning, stacklevel=3)
         return lines
 
     @property
