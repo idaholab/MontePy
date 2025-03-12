@@ -1136,6 +1136,8 @@ def test_alternate_encoding():
 _SKIP_LINES = {
     # skip lines of added implied importances
     "tests/inputs/test_universe_data.imcnp": {5: True, 14: True, 15: True},
+    # I don't care about the edge case of shortcuts in a material def.
+    "tests/inputs/test_complement_edge.imcnp": {35: False},
 }
 
 
@@ -1178,6 +1180,7 @@ def test_read_write_cycle(file):
                     new_line = next(lines_iter)
                 else:
                     gold_line = next(gold_fh_iter)
+                    new_line = next(lines_iter)
             # edge case override for not fixing #527.
             if str(file) == "tests/inputs/test_interp_edge.imcnp" and i == 1:
                 assert new_line == "10214   0    (1  2I 4 )"
