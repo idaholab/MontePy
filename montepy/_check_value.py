@@ -30,6 +30,10 @@ import numpy as np
 PathLike = str | os.PathLike
 
 
+def check_arguments(func):
+    return func
+
+
 def check_type(name, value, expected_type, expected_iter_type=None, *, none_ok=False):
     """Ensure that an object is of an expected type. Optionally, if the object is
     iterable, check that each element is of a particular type.
