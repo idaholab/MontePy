@@ -46,6 +46,8 @@ class MaterialParser(DataParser):
                 yield batch
 
         for group in batch_gen():
+            if group[0].type != str:
+                group[0]._convert_to_str()
             new_list.append(("foo", *group))
         return new_list
 

@@ -1056,6 +1056,17 @@ class ValueNode(SyntaxNodeBase):
             self._value = enum_class(value)
         self._formatter = self._FORMATTERS[format_type].copy()
 
+    def _convert_to_str(self):
+        """Converts this ValueNode to being a string type.
+
+        .. versionadded:: 1.0.0
+
+        """
+        self._type = str
+        self._value = str(self._token)
+        self._og_value = self._token
+        self._formatter = self._FORMATTERS[str].copy()
+
     @property
     def is_negatable_identifier(self):
         """Whether or not this value is a negatable identifier.

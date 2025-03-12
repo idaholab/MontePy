@@ -535,9 +535,9 @@ See <https://www.montepy.org/migrations/migrate0_1.html> for more information ""
             raise TypeError(f"Not a valid index. {idx} given.")
         old_vals = self._components[idx]
         self._check_valid_comp(newvalue)
+        node_idx = self._tree["data"].nodes.index((old_vals[0]._tree, old_vals[1]), idx)
         # grab fraction
         old_vals[1].value = newvalue[1]
-        node_idx = self._tree["data"].nodes.index((old_vals[0]._tree, old_vals[1]), idx)
         self._tree["data"].nodes[node_idx] = (newvalue[0]._tree, old_vals[1])
         self._components[idx] = (newvalue[0], old_vals[1])
 
