@@ -1577,7 +1577,7 @@ class ParticleNode(SyntaxNodeBase):
                 if match.group(0).isupper():
                     upper_match += 1
                 total_match += 1
-        if upper_match / total_match >= 0.5:
+        if total_match and upper_match / total_match >= 0.5:
             self._formatter["upper"] = True
 
     @property
