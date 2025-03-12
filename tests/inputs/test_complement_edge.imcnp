@@ -33,6 +33,8 @@ m814    26000.55c 5.657-2
         28000.50c 9.881-3
         24000.50c 1.581-2
         25055.51c 1.760-3
-m813    1001 3r  $ valid syntax to test shortcuts in material
+m14     1001 1.0
+m813    1001 3r 2004 0.1 $ valid syntax to test shortcuts in material
+m815    8016 1.0 1001 3r 2004 0.1 $ valid syntax to test shortcuts in material
 sdef cel=2 pos=0 0 0 rad=d3 ext=d3 axs=0 0 1
 
