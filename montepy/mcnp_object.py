@@ -241,22 +241,32 @@ class MCNP_Object(ABC, metaclass=_ExceptionContextAdder):
         message = None
         with warnings.catch_warnings(record=True, category=LineExpansionWarning) as ws:
             lines = self.wrap_string_for_mcnp(self._tree.format(), mcnp_version, True)
-            if len(ws) > 0:
-                message = f"""The input had a value expand that may change formatting.
-The original input was:\n\n"""
-                for line in self._input.input_lines:
-                    message += f"    {line}"
-                width = 15
-                message += f"\n\n    {'old value': ^{width}s} {'new value': ^{width}s}"
-                message += f"\n    {'':-^{width}s} {'':-^{width}s}\n"
-                for w in ws:
-                    warn_data = json.loads(w.message.args[0])
-                    formatter = f"    {{old: >{width}}} {{new: >{width}}}\n"
-                    print(formatter)
-                    message += formatter.format(**warn_data)
-        if message is not None:
-            warnings.warn(message, LineExpansionWarning, stacklevel=3)
+        self._flush_line_expansion_warning(lines, ws)
         return lines
+
+    def _flush_line_expansion_warning(self, lines, ws):
+        message = None
+        if len(ws) > 0:
+            message = f"""The input had a value expand that may change formatting.
+    The new input was:\n\n"""
+            for line in lines:
+                message += f"    {line}"
+            width = 15
+            message += f"\n\n    {'old value': ^{width}s} {'new value': ^{width}s}"
+            message += f"\n    {'':-^{width}s} {'':-^{width}s}\n"
+            olds = []
+            news = []
+            for w in ws:
+                warning = w.message
+                formatter = f"    {{w.og_value: >{width}}} {{w.new_value: >{width}}}\n"
+                message += formatter.format(w=warning)
+                olds.append(warning.og_value)
+                news.append(warning.new_value)
+            if message is not None:
+                warning = LineExpansionWarning(message)
+                warning.olds = olds
+                warning.news = news
+                warnings.warn(warning, stacklevel=4)
 
     @property
     def comments(self) -> list[PaddingNode]:
