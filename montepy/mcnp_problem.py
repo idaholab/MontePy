@@ -630,7 +630,7 @@ class MCNP_Problem:
                 width = 15
                 for i, line in enumerate(warning_message.lines):
                     message += f"     {warning_message.lineno + i:5g}| {line}\n"
-                if hasattr(message, "olds"):
+                if hasattr(warning, "olds"):
                     message += (
                         f"\n    {'old values': ^{width}s} {'new values': ^{width}s}"
                     )
