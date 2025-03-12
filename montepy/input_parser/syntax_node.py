@@ -1343,8 +1343,12 @@ class ValueNode(SyntaxNodeBase):
             and self._token is not None
             and not end_line_padding
         ):
+            warning = LineExpansionWarning("")
+            warning.cause = "value"
+            warning.og_value = self._token
+            warning.new_value = temp
             warnings.warn(
-                json.dumps({"old": self._og_value, "new": temp}),
+                warning,
                 category=LineExpansionWarning,
             )
         return buffer + extra_pad_str
