@@ -237,7 +237,7 @@ class MCNP_Object(ABC, metaclass=_ExceptionContextAdder):
         self.validate()
         self._update_values()
         self._tree.check_for_graveyard_comments()
-        with warnings.catch_warnings(record=True, action="ignore", category=LineExpansionWarning) as ws: 
+        with warnings.catch_warnings(record=True, category=LineExpansionWarning) as ws:
             lines = self.wrap_string_for_mcnp(self._tree.format(), mcnp_version, True)
             print(ws)
         return lines
