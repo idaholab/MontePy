@@ -258,8 +258,6 @@ class MCNP_Object(ABC, metaclass=_ExceptionContextAdder):
             news = []
             for w in ws:
                 warning = w.message
-                if not isinstance(warning, LineExpansionWarning):
-                    warnings.warn(warning)
                 formatter = f"    {{w.og_value: >{width}}} {{w.new_value: >{width}}}\n"
                 message += formatter.format(w=warning)
                 olds.append(warning.og_value)
