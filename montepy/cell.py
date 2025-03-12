@@ -4,6 +4,7 @@ import copy
 import itertools
 from typing import Union
 from numbers import Integral, Real
+import warnings
 
 from montepy.cells import Cells
 from montepy.data_inputs import importance, fill, lattice_input, universe_input, volume
@@ -752,34 +753,40 @@ class Cell(Numbered_MCNP_Object):
             return ret
 
         ret = ""
-        for key, node in self._tree.nodes.items():
-            if key != "parameters":
-                ret += node.format()
-            else:
-                printed_importance = False
-                final_param = next(reversed(node.nodes.values()))
-                for param in node.nodes.values():
-                    if param["classifier"].prefix.value.lower() in modifier_keywords:
-                        cls = modifier_keywords[
+        with warnings.catch_warnings(record=True, category=LineExpansionWarning) as ws:
+
+            for key, node in self._tree.nodes.items():
+                if key != "parameters":
+                    ret += node.format()
+                else:
+                    printed_importance = False
+                    final_param = next(reversed(node.nodes.values()))
+                    for param in node.nodes.values():
+                        if (
                             param["classifier"].prefix.value.lower()
-                        ]
-                        attr, _ = self._INPUTS_TO_PROPERTY[cls]
-                        if attr == "_importance":
-                            if printed_importance:
-                                continue
-                            printed_importance = True
-                        # add trailing space to comment if necessary
-                        ret = cleanup_last_line(ret)
-                        ret += "\n".join(
-                            getattr(self, attr).format_for_mcnp_input(
-                                mcnp_version, param is not final_param
+                            in modifier_keywords
+                        ):
+                            cls = modifier_keywords[
+                                param["classifier"].prefix.value.lower()
+                            ]
+                            attr, _ = self._INPUTS_TO_PROPERTY[cls]
+                            if attr == "_importance":
+                                if printed_importance:
+                                    continue
+                                printed_importance = True
+                            # add trailing space to comment if necessary
+                            ret = cleanup_last_line(ret)
+                            ret += "\n".join(
+                                getattr(self, attr).format_for_mcnp_input(
+                                    mcnp_version, param is not final_param
+                                )
                             )
-                        )
-                    else:
-                        # add trailing space to comment if necessary
-                        ret = cleanup_last_line(ret)
-                        ret += param.format()
-        # check for accidental empty lines from subsequent cell modifiers that didn't print
+                        else:
+                            # add trailing space to comment if necessary
+                            ret = cleanup_last_line(ret)
+                            ret += param.format()
+            # check for accidental empty lines from subsequent cell modifiers that didn't print
+        self._flush_line_expansion_warning(ret, ws)
         ret = "\n".join([l for l in ret.splitlines() if l.strip()])
         return self.wrap_string_for_mcnp(ret, mcnp_version, True)
 
