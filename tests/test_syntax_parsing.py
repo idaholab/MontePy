@@ -268,7 +268,7 @@ class TestValueNode:
             if expand:
                 warnings.simplefilter("default")
                 with pytest.warns(LineExpansionWarning):
-                    assert node.format == answer
+                    assert node.format() == answer
             else:
                 # change warnings to errors to ensure not raised
                 warnings.resetwarnings()
