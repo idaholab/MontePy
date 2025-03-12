@@ -1292,8 +1292,8 @@ class ValueNode(SyntaxNodeBase):
                 )
         else:
             temp = str(value)
+        end_line_padding = False
         if self.padding:
-            end_line_padding = False
             for node in self.padding.nodes:
                 if node == "\n":
                     end_line_padding = True

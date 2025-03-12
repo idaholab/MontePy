@@ -251,12 +251,12 @@ class TestValueNode:
             if expand:
                 warnings.simplefilter("default")
                 with pytest.warns(LineExpansionWarning):
-                    assert node.format == answer
+                    assert node.format() == answer
             else:
                 # change warnings to errors to ensure not raised
                 warnings.resetwarnings()
                 warnings.simplefilter("error")
-                assert node.format == answer
+                assert node.format() == answer
 
     def test_value_str_format(self):
         for input, val, answer, expand in [
@@ -273,7 +273,7 @@ class TestValueNode:
                 # change warnings to errors to ensure not raised
                 warnings.resetwarnings()
                 warnings.simplefilter("error")
-                assert node.format == answer
+                assert node.format() == answer
         for padding, val, answer, expand in [
             ([" "], "foo", "foo ", True),
             (["  "], "foo", "foo ", False),
@@ -290,12 +290,12 @@ class TestValueNode:
             if expand:
                 warnings.simplefilter("default")
                 with pytest.warns(LineExpansionWarning):
-                    assert node.format == answer
+                    assert node.format() == answer
             else:
                 # change warnings to errors to ensure not raised
                 warnings.resetwarnings()
                 warnings.simplefilter("error")
-                assert node.format == answer
+                assert node.format() == answer
 
     def test_value_enum_format(self):
         lat = montepy.data_inputs.lattice.Lattice
