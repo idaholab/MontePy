@@ -753,7 +753,7 @@ class Cell(Numbered_MCNP_Object):
             return ret
 
         ret = ""
-        with warnings.catch_warnings(record=True, category=LineExpansionWarning) as ws:
+        with warnings.catch_warnings(record=True) as ws:
 
             for key, node in self._tree.nodes.items():
                 if key != "parameters":

@@ -239,7 +239,7 @@ class MCNP_Object(ABC, metaclass=_ExceptionContextAdder):
         self._update_values()
         self._tree.check_for_graveyard_comments()
         message = None
-        with warnings.catch_warnings(record=True, category=LineExpansionWarning) as ws:
+        with warnings.catch_warnings(record=True) as ws:
             lines = self.wrap_string_for_mcnp(self._tree.format(), mcnp_version, True)
         self._flush_line_expansion_warning(lines, ws)
         return lines
@@ -258,6 +258,8 @@ class MCNP_Object(ABC, metaclass=_ExceptionContextAdder):
             news = []
             for w in ws:
                 warning = w.message
+                if not isinstance(warning, LineExpansionWarning):
+                    warnings.warn(warning)
                 formatter = f"    {{w.og_value: >{width}}} {{w.new_value: >{width}}}\n"
                 message += formatter.format(w=warning)
                 olds.append(warning.og_value)
