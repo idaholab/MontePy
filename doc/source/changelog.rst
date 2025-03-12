@@ -65,7 +65,14 @@ MontePy Changelog
 0.5 releases
 ============
 
-#Next Release#
+#Next Version#
+--------------
+
+**Bug Fixes**
+
+* Fixed parsing bug with sigma baryon particles (e.g., ``+/-``) (:issue:`671`).
+
+0.5.4
 --------------
 
 **Bug Fixes**

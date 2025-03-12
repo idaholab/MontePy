@@ -406,6 +406,7 @@ class MCNP_Parser(Parser, metaclass=MetaBuilder):
         "FILE_PATH",
         "NUMBER",
         "PARTICLE",
+        "PARTICLE_SPECIAL",
         "INTERPOLATE",
         "JUMP",
         "KEYWORD",
