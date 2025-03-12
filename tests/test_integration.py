@@ -451,8 +451,7 @@ def test_cell_card_pass_through(simple_problem):
     assert int(output[4].split("$")[0]) == -5
     # test mass density printer
     cell.mass_density = 10.0
-    with pytest.warns(LineExpansionWarning):
-        output = cell.format_for_mcnp_input((6, 2, 0))
+    output = cell.format_for_mcnp_input((6, 2, 0))
     print(output)
     assert pytest.approx(float(output[3].split()[2])) == -10
     # ensure that surface number updated

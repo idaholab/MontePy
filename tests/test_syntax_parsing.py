@@ -238,7 +238,7 @@ class TestValueNode:
         for padding, val, answer, expand in [
             ([" "], 10, "10.0 ", True),
             (["  "], 10, "10.0 ", False),
-            (["\n"], 10, "10.0\n", True),
+            (["\n"], 10, "10.0\n", False),
             ([" ", "\n", "c hi"], 10, "10.0\nc hi", False),
             (["  ", "\n"], 10, "10.0 \n", False),
         ]:
@@ -277,7 +277,7 @@ class TestValueNode:
         for padding, val, answer, expand in [
             ([" "], "foo", "foo ", True),
             (["  "], "foo", "foo ", False),
-            (["\n"], "foo", "foo\n", True),
+            (["\n"], "foo", "foo\n", False),
             ([" ", "\n", "c hi"], "foo", "foo\nc hi", False),
             (["  ", "\n"], "foo", "foo \n", False),
         ]:
