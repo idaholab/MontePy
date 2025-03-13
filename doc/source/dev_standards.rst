@@ -50,7 +50,29 @@ Style Guide
 
 #. Thou shall be `PEP 8 <https://peps.python.org/pep-0008/>`_, and use `black <https://black.readthedocs.io/en/stable/index.html>`_.
 #. Spaces not tabs with 4 spaces for an indent.
-#. External imports before internal imports with a blank line in between. All imports are alphabetized. 
+#. External imports before internal imports with a blank line in between. All imports are alphabetized.
+
+Naming Conventions
+^^^^^^^^^^^^^^^^^^
+
+#. Follow `PEP 8 naming conventions <https://peps.python.org/pep-0008/#naming-conventions>`_ e.g.,
+
+   #. ``lower_case_with_underscoress`` for variables, methods, functions, and module names, etc.
+   #. ``CapitalizedWords`` for class names
+   #. ``UPER_CASE_WITH_UNDERSCORES`` for pseudo-constant variables
+
+#. Variables should be nouns/noun-phrases
+#. Functions/methods should be verb/verb-phrases.
+#. Properties/attributes of classes should be nouns or a verb phrase that uses a "to be" verb, e.g., ``is_truncated``. 
+#. Collections should be a plural noun, and single instances should be singular. In loops there should be consistent
+   names, e.g., ``for cell in cells:``.
+#. When appropriate names should mirror Python core libraries (e.g.,
+   :class:`~montepy.numbered_object_collection.NumberedObjectCollection` tries to mirror methods of ``dict``, ``list``,
+   and ``set``).
+#. Avoid abbreviating words.
+#. For user facing functions and attributes, short names are best.
+   (:func:`~montepy.surfaces.surface.Surface.surface_constants`, really should have been ``constants`` in hind-sight).
+
 
 Doc Strings
 -----------
