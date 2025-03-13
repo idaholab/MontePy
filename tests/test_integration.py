@@ -1137,7 +1137,7 @@ _SKIP_LINES = {
     # skip lines of added implied importances
     "tests/inputs/test_universe_data.imcnp": {5: 1, 14: 1, 15: 1},
     # I don't care about the edge case of shortcuts in a material def.
-    "tests/inputs/test_complement_edge.imcnp": {35: 0, 36: 0, 37: 0},
+    "tests/inputs/test_complement_edge.imcnp": {37: 0, 38: 0, 39: 0},
 }
 
 
