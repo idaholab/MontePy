@@ -33,7 +33,6 @@ Design Philosophy
 #. **Do Not Repeat Yourself (DRY)**
 #. If it's worth doing, it's worth doing well.
 #. Use abstraction and inheritance smartly.
-#. Use ``_private`` fields mostly. Use ``__private`` for very private things that should never be touched.
 #. Use ``@property`` getters, and if needed setters. Setters must verify and clean user inputs. For the most part use :func:`~montepy.utilities.make_prop_val_node`, and :func:`~montepy.utilities.make_prop_pointer`.
 #. Fail early and politely. If there's something that might be bad: the user should get a helpful error as
    soon as the error is apparent. 
@@ -72,6 +71,7 @@ Naming Conventions
 #. Avoid abbreviating words.
 #. For user facing functions and attributes, short names are best.
    (:func:`~montepy.surfaces.surface.Surface.surface_constants`, really should have been ``constants`` in hind-sight).
+#. Use ``_private`` fields mostly. Use ``__private`` for very private things that should never be touched.
 
 
 Doc Strings
