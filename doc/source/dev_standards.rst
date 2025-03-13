@@ -56,9 +56,15 @@ Naming Conventions
 
 #. Follow `PEP 8 naming conventions <https://peps.python.org/pep-0008/#naming-conventions>`_ e.g.,
 
-   #. ``lower_case_with_underscoress`` for variables, methods, functions, and module names, etc.
+   #. ``lower_case_with_underscores`` for variables, methods, functions, and module names, etc.
    #. ``CapitalizedWords`` for class names
+       
+       #. ``MCNP_Word`` is an exception. For all Other acronyms use: ``AcronymWords``. 
+
    #. ``UPER_CASE_WITH_UNDERSCORES`` for pseudo-constant variables
+   #. ``_single_leading_underscore`` should be used for almost all internal attributes.
+   #. ``__double_leading_underscore`` should be used for private internal attributes that should not be accessed by
+         users or sub-classes.
 
 #. Variables should be nouns/noun-phrases
 #. Functions/methods should be verb/verb-phrases.
@@ -68,10 +74,9 @@ Naming Conventions
 #. When appropriate names should mirror Python core libraries (e.g.,
    :class:`~montepy.numbered_object_collection.NumberedObjectCollection` tries to mirror methods of ``dict``, ``list``,
    and ``set``).
-#. Avoid abbreviating words.
+#. Within reason: avoid abbreviating words. Above all, prioritize legibility.
 #. For user facing functions and attributes, short names are best.
    (:func:`~montepy.surfaces.surface.Surface.surface_constants`, really should have been ``constants`` in hind-sight).
-#. Use ``_private`` fields mostly. Use ``__private`` for very private things that should never be touched.
 
 
 Doc Strings
