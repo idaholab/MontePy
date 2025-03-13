@@ -934,8 +934,9 @@ See <https://www.montepy.org/migrations/migrate0_1.html> for more information ""
         )
 
     def clear(self):
-        """
-        Clears all nuclide components from this material.
+        """Clears all nuclide components from this material.
+
+        .. versionadded:: 1.0.0
         """
         for _ in range(len(self)):
             del self[0]
