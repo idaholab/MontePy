@@ -713,11 +713,11 @@ class TestThermalScattering:
         thermal._old_number = montepy.input_parser.syntax_node.ValueNode("2", int)
         with pytest.raises(montepy.errors.MalformedInputError):
             thermal.update_pointers([material])
-            with self.assertRaises(montepy.errors.IllegalState):
-                thermal.validate()
-            thermal._old_number = montepy.input_parser.syntax_node.ValueNode("2", int)
-            with self.assertRaises(montepy.errors.MalformedInputError):
-                thermal.update_pointers([material])
+        with pytest.raises(montepy.errors.IllegalState):
+            thermal.validate()
+        thermal._old_number = montepy.input_parser.syntax_node.ValueNode("2", int)
+        with pytest.raises(montepy.errors.MalformedInputError):
+            thermal.update_pointers([material])
 
     def test_thermal_scattering_add(self):
         in_str = "Mt20 grph.20t"
