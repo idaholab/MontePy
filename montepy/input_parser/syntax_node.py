@@ -1055,6 +1055,17 @@ class ValueNode(SyntaxNodeBase):
             self._value = enum_class(value)
         self._formatter = self._FORMATTERS[format_type].copy()
 
+    def _convert_to_str(self):
+        """Converts this ValueNode to being a string type.
+
+        .. versionadded:: 1.0.0
+
+        """
+        self._type = str
+        self._value = str(self._token)
+        self._og_value = self._token
+        self._formatter = self._FORMATTERS[str].copy()
+
     @property
     def is_negatable_identifier(self):
         """Whether or not this value is a negatable identifier.
@@ -1292,7 +1303,14 @@ class ValueNode(SyntaxNodeBase):
                 )
         else:
             temp = str(value)
+        end_line_padding = False
         if self.padding:
+            for node in self.padding.nodes:
+                if node == "\n":
+                    end_line_padding = True
+                    break
+                if isinstance(node, CommentNode):
+                    break
             if self.padding.is_space(0):
                 # if there was and end space, and we ran out of space, and there isn't
                 # a saving space later on
@@ -1313,16 +1331,24 @@ class ValueNode(SyntaxNodeBase):
         buffer = "{temp:<{value_length}}{padding}".format(
             temp=temp, padding=pad_str, **self._formatter
         )
-        if len(buffer) > self._formatter["value_length"] and self._token is not None:
-            warning = LineExpansionWarning(
-                f"The value has expanded, and may change formatting. The original value was {self._token}, new value is {temp}."
-            )
+        """
+        If:
+            1. expanded
+            2. had an original value
+            3. and value doesn't end in a new line (without a comment)
+        """
+        if (
+            len(buffer) > self._formatter["value_length"]
+            and self._token is not None
+            and not end_line_padding
+        ):
+            warning = LineExpansionWarning("")
             warning.cause = "value"
             warning.og_value = self._token
             warning.new_value = temp
             warnings.warn(
                 warning,
-                stacklevel=2,
+                category=LineExpansionWarning,
             )
         return buffer + extra_pad_str
 

@@ -200,9 +200,7 @@ class IllegalState(ValueError):
 class LineExpansionWarning(Warning):
     """Warning for when a field or line expands that may damage user formatting."""
 
-    def __init__(self, message):
-        self.message = message
-        super().__init__(self.message)
+    pass
 
 
 def add_line_number_to_exception(error, broken_robot):

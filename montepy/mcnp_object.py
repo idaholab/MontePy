@@ -4,7 +4,6 @@ from abc import ABC, ABCMeta, abstractmethod
 import copy
 import functools
 import itertools as it
-import numpy as np
 import sys
 import textwrap
 from typing import Union
@@ -237,8 +236,35 @@ class MCNP_Object(ABC, metaclass=_ExceptionContextAdder):
         self.validate()
         self._update_values()
         self._tree.check_for_graveyard_comments()
-        lines = self.wrap_string_for_mcnp(self._tree.format(), mcnp_version, True)
+        message = None
+        with warnings.catch_warnings(record=True) as ws:
+            lines = self.wrap_string_for_mcnp(self._tree.format(), mcnp_version, True)
+        self._flush_line_expansion_warning(lines, ws)
         return lines
+
+    def _flush_line_expansion_warning(self, lines, ws):
+        if not ws:
+            return
+        message = f"""The input had a value expand that may change formatting.
+The new input was:\n\n"""
+        for line in lines:
+            message += f"    {line}"
+        width = 15
+        message += f"\n\n    {'old value': ^{width}s} {'new value': ^{width}s}"
+        message += f"\n    {'':-^{width}s} {'':-^{width}s}\n"
+        olds = []
+        news = []
+        for w in ws:
+            warning = w.message
+            formatter = f"    {{w.og_value: >{width}}} {{w.new_value: >{width}}}\n"
+            message += formatter.format(w=warning)
+            olds.append(warning.og_value)
+            news.append(warning.new_value)
+        if message is not None:
+            warning = LineExpansionWarning(message)
+            warning.olds = olds
+            warning.news = news
+            warnings.warn(warning, stacklevel=4)
 
     @property
     def comments(self) -> list[PaddingNode]:
