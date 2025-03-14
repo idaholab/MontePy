@@ -679,9 +679,7 @@ See <https://www.montepy.org/migrations/migrate0_1.html> for more information ""
 
         if padding:
             padding.check_for_graveyard_comments(True)
-            add_new_line_padding()
-        else:
-            add_new_line_padding()
+        add_new_line_padding()
 
     def change_libraries(self, new_library: Union[str, Library]):
         """Change the library for all nuclides in the material.
