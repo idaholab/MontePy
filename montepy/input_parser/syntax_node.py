@@ -4,7 +4,6 @@ import re
 import warnings
 import collections
 import copy
-import json
 import itertools as it
 import enum
 import math
