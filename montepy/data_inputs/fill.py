@@ -183,14 +183,20 @@ class Fill(CellModifierInput):
         for i in self._axis_range(0):
             for j in self._axis_range(1):
                 for k in self._axis_range(2):
-                    val = next(words)
                     try:
+                        val = next(words)
                         val._convert_to_int()
                         assert val.value >= 0
                         self._old_numbers[i][j][k] = val.value
                     except (ValueError, AssertionError) as e:
                         raise ValueError(
                             f"Values provided must be valid universes. {val.value} given."
+                        )
+                    except StopIteration as e:
+                        raise MalformedInputError(
+                            self._input,
+                            f"Not enough universe values were provided. {([self._axis_size(i) for i in range(3)])} "
+                            "universe values were expected.",
                         )
 
     @staticmethod
