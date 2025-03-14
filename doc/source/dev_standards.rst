@@ -59,12 +59,11 @@ Naming Conventions
    #. ``lower_case_with_underscores`` for variables, methods, functions, and module names, etc.
    #. ``CapitalizedWords`` for class names
        
-       #. ``MCNP_Word`` is an exception. For all Other acronyms use: ``AcronymWords``. 
+      * ``MCNP_ClassName`` is an exception. For all Other acronyms use: ``AcronymMoreWords``. Above all, prioritize legibility. 
 
    #. ``UPER_CASE_WITH_UNDERSCORES`` for pseudo-constant variables
    #. ``_single_leading_underscore`` should be used for almost all internal attributes.
-   #. ``__double_leading_underscore`` should be used for private internal attributes that should not be accessed by
-         users or sub-classes.
+   #. ``__double_leading_underscore`` should be used for private internal attributes that should not be accessed by users or sub-classes.
 
 #. Variables should be nouns/noun-phrases
 #. Functions/methods should be verb/verb-phrases.
