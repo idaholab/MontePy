@@ -1,4 +1,5 @@
 # Copyright 2024, Battelle Energy Alliance, LLC All Rights Reserved.
+import pytest
 from unittest import TestCase
 
 import copy
@@ -255,24 +256,23 @@ class TestFill(TestCase):
         with self.assertRaises(ValueError):
             input = Input(["1 0 -1 fill=hi"], BlockType.CELL)
             cell = Cell(input)
-            fill = cell.fill
         with self.assertRaises(ValueError):
             input = Input(["1 0 -1 fill=1 (hi)"], BlockType.CELL)
             cell = Cell(input)
-            fill = cell.fill
         # test negative universe
         with self.assertRaises(ValueError):
             input = Input(["1 0 -1 fill=-5"], BlockType.CELL)
             cell = Cell(input)
-            fill = cell.fill
         with self.assertRaises(ValueError):
             input = Input(["1 0 -1 fill=5 (-5)"], BlockType.CELL)
             cell = Cell(input)
-            fill = cell.fill
         with self.assertRaises(ValueError):
             input = Input(["1 0 -1 fill=5 1 0 0"], BlockType.CELL)
             cell = Cell(input)
-            fill = cell.fill
+        with pytest.raises(MalformedInputError):
+            # too few universe arguments
+            input = Input(["1 0 -1 fill=0:1 0:1 0:2 1"], BlockType.CELL)
+            cell = Cell(input)
 
     def test_complicated_lattice_fill_init(self):
         input = Input(["1 0 -1 fill=0:1 0:1 0:1 1 2 3 4 5 6 7 8"], BlockType.CELL)
