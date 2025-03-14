@@ -68,7 +68,7 @@ Naming Conventions
 
 #. Variables should be nouns/noun-phrases
 #. Functions/methods should be verb/verb-phrases.
-#. Properties/attributes of classes should be nouns or a verb phrase that uses a "to be" verb, e.g., ``is_truncated``. 
+#. Properties/attributes of classes should be nouns or ``is_adjective`` phrases. 
 #. Collections should be a plural noun, and single instances should be singular. In loops there should be consistent
    names, e.g., ``for cell in cells:``.
 #. When appropriate names should mirror Python core libraries (e.g.,
