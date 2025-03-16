@@ -317,17 +317,19 @@ class testSurfaces(TestCase):
 
     def verify_export(_, surf):
         output = surf.format_for_mcnp_input((6, 3, 0))
-        print("Material output", output)
+        print("Surface output", output)
         new_surf = Surface("\n".join(output))
         assert surf.number == new_surf.number, "Material number not preserved."
         assert len(surf.surface_constants) == len(
             new_surf.surface_constants
         ), "number of surface constants not kept."
         for old_const, new_const in zip(
-            surf.surface_constants, new_sur.surface_constants
+            surf.surface_constants, new_surf.surface_constants
         ):
             assert old_const == pytest.approx(new_const)
         assert surf.is_reflecting == new_surf.is_reflecting
         assert surf.is_white_boundary == new_surf.is_white_boundary
-        assert surf.old_periodic_surface == new_surf.old_periodic_surface
-        assert surf.old_transform_number == new_surf._old_transform_number
+        if surf.old_periodic_surface:
+            assert surf.old_periodic_surface == new_surf.old_periodic_surface
+        if surf.old_transform_number:
+            assert surf.old_transform_number == new_surf._old_transform_number
