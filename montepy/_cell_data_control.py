@@ -15,7 +15,7 @@ class CellDataPrintController:
             try:
                 return self._print_data[key.lower()]
             except KeyError:
-                return True
+                return False
         else:
             raise KeyError(f"{key} is not a supported cell modifier in MCNP")
 
