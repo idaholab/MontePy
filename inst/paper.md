@@ -125,14 +125,15 @@ This would be well suited for a sensitivity study where many very similar simula
 but not for making large edits to an input file or making a single problem from scratch.
 
 PyNE: the Nuclear Engineering Toolkit offers some similar capabilities to WATTS for input generation.
-PyNE can create MCNP input files for specific features and extract some data from MCNP output files.
+PyNE can create MCNP input files for specific features and extract some data from MCNP output files,
+but it cannot read MCNP input files.
 However, its full capabilities extend far beyond interfacing with MCNP.
 PyNE can simplify material creations, analyses of cross section data, 
 transmutations of complex systems, and interfacing with other common nuclear engineering software and data formats [@Scopatz:2012].
 PyNE is an excellent companion tool to MontePy.
 
 All of these previous solutions were incomplete in one way or another.
-Neither were able to read in a previous MCNP input file and edit it in a general manner.
+None of these previous solutions are able to read in a previous MCNP input file and edit it in a general manner.
 In addition, WATTS does not have any fundamental understanding of what fields are for a user provided MCNP template.
 The same is true for a myriad of application-specific industry tools that are tailor-made for specific problems.
 There is a clear need for an object-oriented interface to these files that can both "understand" the input, and read and edit the files.
@@ -156,7 +157,8 @@ and so there is no guarantee that it will actually perform the functions it clai
 In addition it imposes additional formatting requirements on an input file that is read,
 beyond what MCNP requires [@Kulesza:2022].
 Mckit on the other hand is written primarily in python, and does use automated testing.
-Unfortunately the existing documentation is difficult to acces, incomplete, and primarily in russian.
+Unfortunately the existing documentation is difficult to acces, incomplete, and primarily in russian,
+so it is currently difficult to use for those who cannot read russian.
 It was difficult to assess the state of this project due to this.
 It appeared that mckit is more of a functional programming style library,
 rather than an object-oriented programming style [@rodionov_mckit_2024].
