@@ -343,7 +343,7 @@ def verify_export(cell):
     print("cell output", output)
     new_cell = montepy.Cell("\n".join(output))
     for attr in {
-        "old_number",
+        "number",
         "old_mat_number",
         "old_universe_number",
         "lattice",

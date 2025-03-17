@@ -889,6 +889,7 @@ def test_lattice_format_data(simple_problem):
     cells = problem.cells
     cells[1].lattice = 1
     cells[99].lattice = 2
+    problem.print_in_data_block["lat"] = True
     answer = "LAT 1 2J 2"
     output = cells._lattice.format_for_mcnp_input((6, 2, 0))
     assert answer in output[0]
