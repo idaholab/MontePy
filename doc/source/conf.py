@@ -21,7 +21,7 @@ import montepy
 # -- Project information -----------------------------------------------------
 
 project = "MontePy"
-copyright = "2021 – 2024, Battelle Energy Alliance LLC."
+copyright = "2021 – 2025, Battelle Energy Alliance LLC."
 author = "Micah D. Gale (@micahgale), Travis J. Labossiere-Hickman (@tjlaboss)"
 
 version = importlib.metadata.version("montepy")
@@ -53,7 +53,7 @@ favicons = [
 ]
 html_logo = "monty.svg"
 
-html_baseurl = "https://www.montepy.org/"
+html_baseurl = "https://www.montepy.org/en/stable/"
 html_extra_path = ["robots.txt", "foo.imcnp"]
 # List of patterns, relative to source directory, that match files and
 # directories to ignore when looking for source files.

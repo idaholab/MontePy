@@ -57,14 +57,14 @@ doc = [
 	"sphinx_autodoc_typehints",
 	"autodocsumm"
 ]
-format = ["black>=23.3.0"]
+format = ["black~=25.1"]
 build = [
 	"build",
 	"setuptools>=64.0.0",
 	"setuptools-scm>=8",
 ]
 develop = [
-	"montepy[test,doc,format]",
+	"montepy[test,doc,format,demo-test]",
 ]
 demos = ["jupyter"]
 demo-test = ["montepy[demos]", "papermill"]
