@@ -277,9 +277,19 @@ class MCNP_Problem:
 
         ``problem.print_in_data_block["Imp"] = True``
 
+
+        .. note::
+           
+           The default for this is ``False``,
+           that is to print the data in the cell block if this was not set in the input file or by the user.
+    
+        .. versionchanged:: 1.0.0
+
+            Default value changed to ``False``
+
         Returns
         -------
-        bool
+        dict[str, bool]
         """
         return self._print_in_data_block
 
