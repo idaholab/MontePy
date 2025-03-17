@@ -143,6 +143,8 @@ class Cell(Numbered_MCNP_Object):
         self._density_node.is_negatable_float = True
         if self.old_mat_number != 0:
             self._is_atom_dens = not self._density_node.is_negative
+        else:
+            self._is_atom_dens = None
         self._parse_geometry()
         self._parse_keyword_modifiers()
 
