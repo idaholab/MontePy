@@ -279,10 +279,10 @@ class MCNP_Problem:
 
 
         .. note::
-           
+
            The default for this is ``False``,
            that is to print the data in the cell block if this was not set in the input file or by the user.
-    
+
         .. versionchanged:: 1.0.0
 
             Default value changed to ``False``
