@@ -314,7 +314,7 @@ class testSurfaces(TestCase):
         # test length issues
         with self.assertRaises(ValueError):
             surf.coordinates = [3, 4, 5]
-
+    
     def verify_export(_, surf):
         output = surf.format_for_mcnp_input((6, 3, 0))
         print("Surface output", output)
@@ -333,3 +333,14 @@ class testSurfaces(TestCase):
             assert surf.old_periodic_surface == new_surf.old_periodic_surface
         if surf.old_transform_number:
             assert surf.old_transform_number == new_surf._old_transform_number
+
+@pytest.mark.parametrize(
+    "surf_str", ["1 PZ 0.0", "1 SO 1.0", "1 CZ 9.0", "4 C/z 5.0 0 3"]
+)
+def test_surface_clone(surf_str):
+    prob = montepy.MCNP_Problem("")
+    surf = surface_builder(surf_str)
+    prob.surfaces.append(surf)
+    new_surf = surf.clone()
+    assert surf.surface_type == new_surf.surface_type
+    assert surf.surface_constants == new_surf.surface_constants
