@@ -172,7 +172,7 @@ class Numbered_MCNP_Object(MCNP_Object):
                     test_class = test_class.__base__
                 else:
                     break
-            if test_class == object:  # pragma: no cover
+            else:  # pragma: no cover
                 raise TypeError(
                     f"Could not find collection type for this object, {self}."
                 )
