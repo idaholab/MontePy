@@ -33,6 +33,7 @@ MontePy Changelog
 
 * Made it so that a material created from scratch can be written to file (:issue:`512`).
 * Added support for parsing materials with parameters mixed throughout the definition (:issue:`182`).
+* Fixed bug where ``surf.is_reflecting`` would put an extra space in the output e.g., ``* 1 PZ...`` (:issue:`697`).
 * Fixed bug where setting a lattice would print as ``LAT=None``. Also switched ``CellModifier`` to print in the cell block by default (:issue:`699`). 
  
 **Breaking Changes**
