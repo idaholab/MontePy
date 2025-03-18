@@ -33,8 +33,7 @@ class LatticeInput(CellModifierInput):
         value: syntax_node.SyntaxNode = None,
     ):
         super().__init__(input, in_cell_block, key, value)
-        self._lattice = self._generate_default_node(int, None)
-        self._lattice._convert_to_enum(Lattice, True, int)
+        self._lattice = self._tree["data"][0]
         if self.in_cell_block:
             if key:
                 try:
