@@ -5,7 +5,7 @@ MontePy Changelog
 1.0 releases
 ============
 
-1.0.0-alpha2
+1.0.0
 --------------
 
 **Features Added**
@@ -34,6 +34,7 @@ MontePy Changelog
 * Made it so that a material created from scratch can be written to file (:issue:`512`).
 * Added support for parsing materials with parameters mixed throughout the definition (:issue:`182`).
 * Fixed bug where setting a lattice would print as ``LAT=None``. Also switched ``CellModifier`` to print in the cell block by default (:issue:`699`). 
+* Fixed bug that wouldn't allow cloning most surfaces (:issue:`704`).
  
 **Breaking Changes**
 
