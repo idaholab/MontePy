@@ -42,10 +42,10 @@ class SurfaceParser(MCNP_Parser):
     @_('"*" number_phrase', '"+" number_phrase', "number_phrase")
     def surface_id(self, p):
         ret = {}
+        token = None
         if isinstance(p[0], str) and p[0] in {"*", "+"}:
-            ret["modifier"] = syntax_node.ValueNode(p[0], str, never_pad=True)
-        else:
-            ret["modifier"] = syntax_node.ValueNode(None, str, never_pad=True)
+            token = p[0]
+        ret["modifier"] = syntax_node.ValueNode(token, str, never_pad=True)
 
         ret["number"] = p.number_phrase
         return syntax_node.SyntaxNode("surface_number", ret)
