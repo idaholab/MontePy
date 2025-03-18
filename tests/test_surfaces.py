@@ -1,8 +1,8 @@
-# Copyright 2024, Battelle Energy Alliance, LLC All Rights Reserved.
+# Copyright 2024-2025, Battelle Energy Alliance, LLC All Rights Reserved.
 from unittest import TestCase
+import pytest
 
 import montepy
-
 from montepy.errors import MalformedInputError
 from montepy.input_parser.block_type import BlockType
 from montepy.input_parser.mcnp_input import Input
@@ -135,6 +135,7 @@ class testSurfaces(TestCase):
         surf = Surface(card)
         surf.is_reflecting = True
         self.assertTrue(surf.is_reflecting)
+        self.verify_export(surf)
         with self.assertRaises(TypeError):
             surf.is_reflecting = 1
 
@@ -144,6 +145,7 @@ class testSurfaces(TestCase):
         surf = Surface(card)
         surf.is_white_boundary = True
         self.assertTrue(surf.is_white_boundary)
+        self.verify_export(surf)
         with self.assertRaises(TypeError):
             surf.is_white_boundary = 1
 
@@ -312,3 +314,34 @@ class testSurfaces(TestCase):
         # test length issues
         with self.assertRaises(ValueError):
             surf.coordinates = [3, 4, 5]
+
+    def verify_export(_, surf):
+        output = surf.format_for_mcnp_input((6, 3, 0))
+        print("Surface output", output)
+        new_surf = Surface("\n".join(output))
+        assert surf.number == new_surf.number, "Material number not preserved."
+        assert len(surf.surface_constants) == len(
+            new_surf.surface_constants
+        ), "number of surface constants not kept."
+        for old_const, new_const in zip(
+            surf.surface_constants, new_surf.surface_constants
+        ):
+            assert old_const == pytest.approx(new_const)
+        assert surf.is_reflecting == new_surf.is_reflecting
+        assert surf.is_white_boundary == new_surf.is_white_boundary
+        if surf.old_periodic_surface:
+            assert surf.old_periodic_surface == new_surf.old_periodic_surface
+        if surf.old_transform_number:
+            assert surf.old_transform_number == new_surf._old_transform_number
+
+
+@pytest.mark.parametrize(
+    "surf_str", ["1 PZ 0.0", "1 SO 1.0", "1 CZ 9.0", "4 C/z 5.0 0 3"]
+)
+def test_surface_clone(surf_str):
+    prob = montepy.MCNP_Problem("")
+    surf = surface_builder(surf_str)
+    prob.surfaces.append(surf)
+    new_surf = surf.clone()
+    assert surf.surface_type == new_surf.surface_type
+    assert surf.surface_constants == new_surf.surface_constants
