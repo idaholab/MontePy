@@ -124,8 +124,16 @@ This though requires the user to create a template from the set of problems they
 This would be well suited for a sensitivity study where many very similar simulations are run,
 but not for making large edits to an input file or making a single problem from scratch.
 
+PyNE: the Nuclear Engineering Toolkit offers some similar capabilities to WATTS for input generation.
+PyNE can create MCNP input files for specific features and extract some data from MCNP output files,
+but it cannot read MCNP input files.
+However, its full capabilities extend far beyond interfacing with MCNP.
+PyNE can simplify material creations, analyses of cross section data, 
+transmutations of complex systems, and interfacing with other common nuclear engineering software and data formats [@Scopatz:2012].
+PyNE is an excellent companion tool to MontePy.
+
 All of these previous solutions were incomplete in one way or another.
-Neither were able to read in a previous MCNP input file and edit it in a general manner.
+None of these previous solutions are able to read in a previous MCNP input file and edit it in a general manner.
 In addition, WATTS does not have any fundamental understanding of what fields are for a user provided MCNP template.
 The same is true for a myriad of application-specific industry tools that are tailor-made for specific problems.
 There is a clear need for an object-oriented interface to these files that can both "understand" the input, and read and edit the files.
@@ -135,8 +143,8 @@ as opposed to manual editing of the XML input files.
 
 Ideally this object-oriented interface should be in Python as it is such a prolific language,
 especially among novice and intermediate programmers.
-One library does exist, MCNPy.
-It is a Python wrapper for a java engine that can read, edit, and write MCNP input files.
+A few such libraries do exist: MCNPy, mckit, and others discussed later.
+MCNPy is a Python wrapper for a java engine that can read, edit, and write MCNP input files.
 It can "understand" MCNP inputs, 
 or as the authors put it, 
 it has a "metamodel" for MCNP [@Kowal:2023].
@@ -148,9 +156,60 @@ It does not appear that MCNPy has any automated testing suite at this time,
 and so there is no guarantee that it will actually perform the functions it claims to.
 In addition it imposes additional formatting requirements on an input file that is read,
 beyond what MCNP requires [@Kulesza:2022].
+Mckit on the other hand is written primarily in python, and does use automated testing.
+Unfortunately the existing documentation is difficult to acces, incomplete, and primarily in russian,
+so it is currently difficult to use for those who cannot read russian.
+It was difficult to assess the state of this project due to this.
+It appeared that mckit is more of a functional programming style library,
+rather than an object-oriented programming style [@rodionov_mckit_2024].
 MontePy provides all of these listed capabilities,
 while also being written purely in Python, and avoiding this barrier to forming a thriving
 open source community.
+
+The authors attempted to find as many open-source Python libraries which overlapped MontePy's capabilities as possible.
+This was not an exhaustive seach, but should cover many such libraries.
+Given the number of libraries found the following lists will simply be an attempt to categorize these libraries.
+
+The first group of libraries are those which attempt to have a read, edit, write capability for MCNP input files.
+These all do not fully parse the inputs as they do not use context-free parsers,
+and are generally feature limited, and may lack sufficient documentation.
+These libaries are:
+
+* numjuggler [@travleev_numjuggler_2022]
+* MCNP Input Reader [@mariano_mcnp_2022]
+* mctools [@laghi_mctools_2023]
+* mc-tools [@batkov_mc-tools_2024]
+* PyMCNP [@persaud_python-based_2024]
+
+There are even more tools that specialize in input templating and generation.
+These are clearly not complete alternatives as they lack the ability to read MCNP input files.
+These libraries are:
+
+* CardSharpForMCNP [@pacific_northwest_national_laboratory_cardsharpformcnp_2025]
+* wig [@hagen_wig_2021]
+* Plugin-MCNP [for Funz] [@richet_funz_2023]
+* GDNP [@niess_gdnp_2018]
+* map-stp [@portnov_map-stp_2024]
+* MCNP Input Generator [@ikarino_mcnp_2021]
+* Neutronics Material Maker [@shimwell_neutronics_2024]
+
+There are also libraries that specialize in parsing an MCNP input file in order to convert the model
+to be an input for another program:
+
+* MCNP Conversion tools for OpenMC [@romano_mcnp_2024]
+* t4\_geom\_convert [@mancusi_t4_geom_convert_2024]
+
+There are also libraries that have to parse MCNP inputs to some extent as they provide MCNP syntax highlighting support for various text editors:
+
+* MCNP-syntax-highlighting [@turkoglu_mcnp-syntax-highlighting_2018]
+* NPP\_MCNP\_Plugin [@marcinkevicius_npp_mcnp_plugin_2025]
+* vscode\_mcnp [@repositony_vscode_mcnp_2024]
+
+Finally there are the libraries that have been purpose built for working with and automating a specific type of MCNP models:
+
+* BEMP\_Thesis [@galdon_bemp_thesis_2024]
+* MCNP6-HPGe_Detector_simulation [@hung_mcnp6-hpge_detector_simulation_2023]
+* rodcal-mcnp [@park_rodcal-mcnp_2021] 
 
 MontePy is currently targeting two primary communities.
 First, Nuclear Engineers with moderate Python experience as a user base.
@@ -174,7 +233,7 @@ This tool is a prime example of a real-life case where MontePy could be applied 
 
 # Status of MontePy
 
-As of MontePy 0.5.0 many of the most commonly used MCNP inputs (cards) are supported.
+As of MontePy 0.5.4, many of the most commonly used MCNP inputs (cards) are supported.
 These include:
 
 * Cells, which are the base of an MCNP geometry and contain a material and a CSG geometry definition.
@@ -210,6 +269,9 @@ will not be adding support for output files to allow development to focus on sup
 MCNP supports over 140 different inputs (cards). 
 For almost all of the remaining input types that MontePy doesn't support the information 
 from the input is still available to the user. 
+The next planned release at the time of publication is version 1.0.0.
+This new release is significant redesign of the material definition interface,
+making the material interface much more user-friendly.
 The exceptions are those inputs with syntax that conflicts with the rest of MCNP, 
 which need to be handled specifically on their own.
 Adding more object-oriented support for all of these inputs is an ongoing project.
