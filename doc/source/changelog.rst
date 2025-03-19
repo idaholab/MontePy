@@ -36,6 +36,7 @@ MontePy Changelog
 * Fixed bug where ``surf.is_reflecting`` would put an extra space in the output e.g., ``* 1 PZ...`` (:issue:`697`).
 * Fixed bug where setting a lattice would print as ``LAT=None``. Also switched ``CellModifier`` to print in the cell block by default (:issue:`699`). 
 * Fixed bug that wouldn't allow cloning most surfaces (:issue:`704`).
+* Fixed bug that crashed when some cells were not assigned to any universes (:issue:`705`).
  
 **Breaking Changes**
 

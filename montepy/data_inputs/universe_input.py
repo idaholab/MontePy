@@ -141,7 +141,9 @@ class UniverseInput(CellModifierInput):
     @property
     def _tree_value(self):
         val = self._old_number
-        val.value = self.universe.number
+        val.value = 0
+        if self.universe is not None:
+            val.value = self.universe.number
         val.is_negative = self.not_truncated
         return val
 

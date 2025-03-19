@@ -1,3 +1,4 @@
+import io
 from pathlib import Path
 import pytest
 from tests.test_cell_problem import verify_export as cell_verify
@@ -24,6 +25,16 @@ def basic_cell():
 @pytest.fixture
 def cells(basic_parsed_cell, basic_cell):
     return (basic_parsed_cell, basic_cell)
+
+
+@pytest.fixture(scope="module")
+def simple_problem():
+    return montepy.read_input(Path("tests") / "inputs" / "test.imcnp")
+
+
+@pytest.fixture
+def cp_simple_problem(simple_problem):
+    return simple_problem.clone()
 
 
 def test_universe_setter(cells):
@@ -85,3 +96,14 @@ def test_mc_workshop_edge_case():
     problem.universes.append(lat_universe)
     unit_cell.universe = lat_universe
     cell_verify(unit_cell)
+
+
+def test_no_universe(cp_simple_problem):
+    prob = cp_simple_problem
+    prob.cells[2].universe = montepy.Universe(5)
+    new_cell = montepy.Cell(number=55)
+    new_cell.geometry = -prob.surfaces[1000]
+    prob.cells.append(new_cell)
+    prob.print_in_data_block["u"] = True
+    with io.StringIO() as fh:
+        prob.write_problem(fh)
