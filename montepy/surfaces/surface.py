@@ -289,6 +289,8 @@ class Surface(Numbered_MCNP_Object):
             modifier.value = "*"
         elif self.is_white_boundary:
             modifier.value = "+"
+        else:
+            modifier.value = ""
         if self.transform is not None:
             self._old_transform_number.value = self.transform.number
             self._old_transform_number.is_negative = False
