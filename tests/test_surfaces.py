@@ -130,24 +130,23 @@ class testSurfaces(TestCase):
             surf.validate()
 
     def test_surface_is_reflecting_setter(self):
-        in_str = "1 PZ 0.0"
-        card = Input([in_str], BlockType.SURFACE)
-        surf = Surface(card)
-        surf.is_reflecting = True
-        self.assertTrue(surf.is_reflecting)
-        self.verify_export(surf)
-        with self.assertRaises(TypeError):
-            surf.is_reflecting = 1
+        for in_str, expected in [("1 PZ 0.0", True), ("*1 PZ 0.0", False)]:
+            surf = Surface(in_str)
+            surf.is_reflecting = expected
+            assert surf.is_reflecting == expected
+            self.verify_export(surf)
+            with self.assertRaises(TypeError):
+                surf.is_reflecting = 1
 
+    # @pytest.mark.parametrize("in_str, expected", [("1 PZ 0.0", True), ("+1 PZ 0.0", False)])
     def test_surface_is_white_bound_setter(self):
-        in_str = "1 PZ 0.0"
-        card = Input([in_str], BlockType.SURFACE)
-        surf = Surface(card)
-        surf.is_white_boundary = True
-        self.assertTrue(surf.is_white_boundary)
-        self.verify_export(surf)
-        with self.assertRaises(TypeError):
-            surf.is_white_boundary = 1
+        for in_str, expected in [("1 PZ 0.0", True), ("+1 PZ 0.0", False)]:
+            surf = Surface(in_str)
+            surf.is_white_boundary = expected
+            assert surf.is_white_boundary == expected
+            self.verify_export(surf)
+            with self.assertRaises(TypeError):
+                surf.is_white_boundary = 1
 
     def test_surface_constants_setter(self):
         in_str = "1 PZ 0.0"
