@@ -4,7 +4,7 @@
 
 Please provide a summary of the change, referencing the issue it fixes, if applicable. Include relevant context and motivation.
 
-**Fixes # (issue number)**
+Fixes # (issue number)
 
 ---
 
@@ -12,6 +12,7 @@ Please provide a summary of the change, referencing the issue it fixes, if appli
 
 - [ ] I have performed a self-review of my own code.
 - [ ] The code follows the standards outlined in the [development documentation](https://idaholab.github.io/MontePy/developing.html).
+- [ ] I have formatted my code with `black` version 25.
 - [ ] I have added tests that prove my fix is effective or that my feature works (if applicable).
 
 ---
@@ -44,4 +45,3 @@ Ensure that:
 - [ ] The submitted code is consistent with the merge checklist outlined [here](https://www.montepy.org/developing.html#merge-checklist).
 - [ ] The PR covers all relevant aspects according to the development guidelines.
 - [ ] 100% coverage of the patch is achieved, or justification for a variance is given.
-"""

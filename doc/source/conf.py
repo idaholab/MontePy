@@ -21,7 +21,7 @@ import montepy
 # -- Project information -----------------------------------------------------
 
 project = "MontePy"
-copyright = "2021 – 2024, Battelle Energy Alliance LLC."
+copyright = "2021 – 2025, Battelle Energy Alliance LLC."
 author = "Micah D. Gale (@micahgale), Travis J. Labossiere-Hickman (@tjlaboss)"
 
 version = importlib.metadata.version("montepy")
@@ -40,6 +40,7 @@ extensions = [
     "sphinx_autodoc_typehints",
     "sphinx_favicon",
     "sphinx_copybutton",
+    "autodocsumm",
 ]
 
 # Add any paths that contain templates here, relative to this directory.
@@ -52,7 +53,7 @@ favicons = [
 ]
 html_logo = "monty.svg"
 
-html_baseurl = "https://www.montepy.org/"
+html_baseurl = "https://www.montepy.org/en/stable/"
 html_extra_path = ["robots.txt", "foo.imcnp"]
 # List of patterns, relative to source directory, that match files and
 # directories to ignore when looking for source files.
@@ -67,6 +68,13 @@ autodoc_typehints_description_target = "all"
 autodoc_member_order = "groupwise"
 # Display the version
 display_version = True
+autosummary_generate = True
+autosummary_imported_member = True
+autodoc_default_options = {
+    "autosummary": True,
+    "show-inheritance": True,
+    "inherited-members": True,
+}
 
 # -- External link configuration ---------------------------------------------
 UM63 = (

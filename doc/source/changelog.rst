@@ -69,6 +69,21 @@ MontePy Changelog
 0.5 releases
 ============
 
+0.5.5
+--------------
+
+**Bug Fixes**
+
+* Fixed parsing bug with sigma baryon particles (e.g., ``+/-``) (:issue:`671`).
+
+0.5.4
+--------------
+
+**Bug Fixes**
+
+* Fixed parsing error with not being able to parse a blank ``sdef`` (:issue:`636`).
+* Fixed parsing error with parsing ``SSW`` (:issue:`639`).
+
 0.5.3
 --------------
 
@@ -101,7 +116,7 @@ MontePy Changelog
 **Performance Improvement**
 
 * Fixed cyclic memory reference that lead to memory leak in ``copy.deepcopy`` (:issue:`514`).
-* Fixed O(N<sup>2</sup>) operation in how append works for object collections like Cells (:issue:`556`).
+* Fixed O(N\ :sup:`2`) operation in how append works for object collections like Cells (:issue:`556`).
 
 **Bug Fixes**
 

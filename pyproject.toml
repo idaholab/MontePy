@@ -54,16 +54,17 @@ doc = [
 	"pydata_sphinx_theme",
 	"sphinx-favicon",
 	"sphinx-copybutton",
-    	"sphinx_autodoc_typehints",
+	"sphinx_autodoc_typehints",
+	"autodocsumm"
 ]
-format = ["black>=23.3.0"]
+format = ["black~=25.1"]
 build = [
 	"build",
 	"setuptools>=64.0.0",
 	"setuptools-scm>=8",
 ]
 develop = [
-	"montepy[test,doc,format]",
+	"montepy[test,doc,format,demo-test]",
 ]
 demos = ["jupyter"]
 demo-test = ["montepy[demos]", "papermill"]
@@ -74,7 +75,7 @@ Homepage = "https://www.montepy.org/"
 Repository = "https://github.com/idaholab/MontePy.git"
 Documentation = "https://www.montepy.org/"
 "Bug Tracker" = "https://github.com/idaholab/MontePy/issues"
-Changelog = "https://www.montepy.org/changelog.html"
+Changelog = "https://www.montepy.org/en/stable/changelog.html"
 
 [project.scripts]
 "change_to_ascii" = "montepy._scripts.change_to_ascii:main"

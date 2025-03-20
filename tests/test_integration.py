@@ -51,7 +51,7 @@ def test_original_input(simple_problem):
 
 def test_original_input_dos():
     dos_problem = montepy.read_input(os.path.join("tests", "inputs", "test_dos.imcnp"))
-    cell_order = [Message, Title] + [Input] * 16
+    cell_order = [Message, Title] + [Input] * 18
     for i, input_ob in enumerate(dos_problem.original_inputs):
         assert isinstance(input_ob, cell_order[i])
 
