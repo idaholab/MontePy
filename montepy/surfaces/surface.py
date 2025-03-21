@@ -64,7 +64,7 @@ class Surface(Numbered_MCNP_Object):
                 elif "+" in self._number.token:
                     self._is_white_boundary = True
                     self._number._token = self._number.token.replace("+", "")
-                    self._modifier = self._generate_default_node(str, "+", None)
+                    self._modifier = self._generate_default_node(str, "+", None, True)
                     self._tree["surface_num"].nodes["modifier"] = self._modifier
             try:
                 assert self._number.value > 0
