@@ -161,10 +161,15 @@ class MCNP_Object(ABC, metaclass=_ExceptionContextAdder):
             )
 
     @staticmethod
-    def _generate_default_node(value_type: type, default, padding: str = " "):
+    def _generate_default_node(
+        value_type: type, default: str, padding: str = " ", never_pad: bool = False
+    ):
         """Generates a "default" or blank ValueNode.
 
         None is generally a safe default value to provide.
+
+        .. versionchanged:: 1.0.0
+            Added ``never_pad`` argument.
 
         Parameters
         ----------
@@ -176,6 +181,8 @@ class MCNP_Object(ABC, metaclass=_ExceptionContextAdder):
         padding : str, None
             the string to provide to the PaddingNode. If None no
             PaddingNode will be added.
+        never_pad: bool
+            Whether to never add trailing padding. True means extra padding is suppressed.
 
         Returns
         -------
@@ -187,8 +194,8 @@ class MCNP_Object(ABC, metaclass=_ExceptionContextAdder):
         else:
             padding_node = None
         if default is None or isinstance(default, montepy.input_parser.mcnp_input.Jump):
-            return ValueNode(default, value_type, padding_node)
-        return ValueNode(str(default), value_type, padding_node)
+            return ValueNode(default, value_type, padding_node, never_pad)
+        return ValueNode(str(default), value_type, padding_node, never_pad)
 
     @property
     def parameters(self) -> dict[str, str]:
