@@ -607,6 +607,11 @@ This acts like a dictionary where the key is the MCNP card name.
 So to make cell importance data show up in the cell block just run:
 ``problem.print_in_data_block["imp"] = False``.
 
+.. note::
+
+   The default for :func:`~montepy.mcnp_problem.MCNP_Problem.print_in_data_block` is ``False``,
+   that is to print the data in the cell block if this was not set in the input file or by the user.
+
 Density
 ^^^^^^^
 This gets a bit more complicated.

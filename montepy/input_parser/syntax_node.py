@@ -1328,9 +1328,14 @@ class ValueNode(SyntaxNodeBase):
         else:
             pad_str = ""
             extra_pad_str = ""
-        buffer = "{temp:<{value_length}}{padding}".format(
-            temp=temp, padding=pad_str, **self._formatter
-        )
+        if not self.never_pad:
+            buffer = "{temp:<{value_length}}{padding}".format(
+                temp=temp, padding=pad_str, **self._formatter
+            )
+        else:
+            buffer = "{temp}{padding}".format(
+                temp=temp, padding=pad_str, **self._formatter
+            )
         """
         If:
             1. expanded
