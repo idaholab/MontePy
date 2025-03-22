@@ -23,11 +23,20 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 import copy
 import os
 from collections.abc import Iterable
+import inspect
 
 import numpy as np
 
 # Type for arguments that accept file paths
 PathLike = str | os.PathLike
+
+
+def check_arguments(func):
+    args_spec = inspect.getfullargspec(func)
+    for arg_name in args_spec.args:
+        arg_type = args_spec.annotations[arg_name]
+        print(arg_name, arg_type)
+    return func
 
 
 def check_type(name, value, expected_type, expected_iter_type=None, *, none_ok=False):

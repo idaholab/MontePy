@@ -8,6 +8,7 @@ start by running montepy.read_input().
 You will receive an MCNP_Problem object that you will interact with.
 """
 
+from . import _check_value
 from . import data_inputs
 from . import input_parser
 from . import constants
