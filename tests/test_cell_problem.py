@@ -12,7 +12,7 @@ from montepy.input_parser.mcnp_input import Input
 class TestCellClass(TestCase):
     def test_bad_init(self):
         with self.assertRaises(TypeError):
-            Cell("5")
+            Cell(5)
 
     # TODO test updating cell geometry once done
     def test_cell_validator(self):
@@ -29,9 +29,7 @@ class TestCellClass(TestCase):
     # TODO test geometry stuff
 
     def test_number_setter(self):
-        in_str = "1 0 2"
-        card = Input([in_str], BlockType.CELL)
-        cell = Cell(card)
+        cell = Cell("1 0 2")
         cell.number = 5
         self.assertEqual(cell.number, 5)
         with self.assertRaises(TypeError):
@@ -160,6 +158,15 @@ def test_init(line, is_void, mat_number, density, atom_dens, parameters):
         assert cell.parameters[parameter]["data"][0].value == pytest.approx(value)
 
 
+def test_blank_num_init():
+    cell = Cell(number=5)
+    assert cell.number == 5
+    with pytest.raises(TypeError):
+        Cell(number="hi")
+    with pytest.raises(ValueError):
+        Cell(number=-1)
+
+
 @pytest.mark.parametrize("line", ["foo", "foo bar", "1 foo", "1 1 foo"])
 def test_malformed_init(line):
     with pytest.raises(montepy.errors.MalformedInputError):
@@ -271,11 +278,12 @@ def verify_clone_format(cell):
     num = 1000
     surf.number = num
     output = cell.format_for_mcnp_input((6, 3, 0))
+    note(output)
     input = montepy.input_parser.mcnp_input.Input(
         output, montepy.input_parser.block_type.BlockType.CELL
     )
     new_cell = montepy.Cell(input)
-    if cell.material:
+    if cell.material is not None:
         mats = montepy.materials.Materials([cell.material])
     else:
         mats = []
@@ -320,3 +328,65 @@ def test_cell_clone_bad(args, error):
     cell.update_pointers([], [], surfs)
     with pytest.raises(error):
         cell.clone(*args)
+
+
+def test_bad_setattr():
+    cell = montepy.Cell()
+    with pytest.raises(AttributeError):
+        cell.nuber = 5
+    cell._nuber = 5
+    assert cell._nuber == 5
+
+
+def verify_export(cell):
+    output = cell.format_for_mcnp_input((6, 3, 0))
+    print("cell output", output)
+    new_cell = montepy.Cell("\n".join(output))
+    for attr in {
+        "number",
+        "old_mat_number",
+        "old_universe_number",
+        "lattice",
+        "mass_density",
+        "atom_density",
+        "is_atom_dens",
+    }:
+        try:
+            old_attr = getattr(cell, attr)
+            new_attr = getattr(new_cell, attr)
+            # jank override
+            if attr == "old_universe_number" and cell.universe:
+                old_attr = cell.universe.number
+        except AttributeError as e:
+            if "density" not in attr:
+                raise e
+            else:
+                continue
+        print(f"attr: {attr}, old: {old_attr}, new: {new_attr}")
+        if old_attr is not None:
+            if isinstance(old_attr, float):
+                assert old_attr == pytest.approx(new_attr)
+            else:
+                assert old_attr == new_attr
+        else:
+            assert new_attr is None
+    for attr in {
+        "hidden_transform",
+        "multiple_universes",
+        "old_universe_number",
+        "old_universe_numbers",
+        "transform",
+    }:
+        old_attr = getattr(cell.fill, attr)
+        new_attr = getattr(new_cell.fill, attr)
+        # jank override
+        if attr == "old_universe_number" and cell.fill.universe:
+            old_attr = cell.fill.universe.number
+        print(f"fill attr: {attr}, old: {old_attr}, new: {new_attr}")
+        if old_attr is not None:
+            if isinstance(old_attr, float):
+                assert old_attr == pytest.approx(new_attr)
+            else:
+                assert old_attr == new_attr
+        else:
+            assert new_attr is None

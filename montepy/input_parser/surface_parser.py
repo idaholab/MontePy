@@ -1,17 +1,15 @@
-# Copyright 2024, Battelle Energy Alliance, LLC All Rights Reserved.
+# Copyright 2024-2025, Battelle Energy Alliance, LLC All Rights Reserved.
 from montepy.input_parser.parser_base import MCNP_Parser
 from montepy.input_parser.tokens import SurfaceLexer
 from montepy.input_parser import syntax_node
 
 
 class SurfaceParser(MCNP_Parser):
-    """
-    A parser for MCNP surfaces.
+    """A parser for MCNP surfaces.
 
-    .. versionadded:: 0.2.0
-        This was added with the major parser rework.
-
-    :rtype: SyntaxNode
+    Returns
+    -------
+    SyntaxNode
     """
 
     debugfile = None
@@ -44,10 +42,10 @@ class SurfaceParser(MCNP_Parser):
     @_('"*" number_phrase', '"+" number_phrase', "number_phrase")
     def surface_id(self, p):
         ret = {}
+        token = None
         if isinstance(p[0], str) and p[0] in {"*", "+"}:
-            ret["modifier"] = syntax_node.ValueNode(p[0], str)
-        else:
-            ret["modifier"] = syntax_node.ValueNode(None, str)
+            token = p[0]
+        ret["modifier"] = syntax_node.ValueNode(token, str, never_pad=True)
 
         ret["number"] = p.number_phrase
         return syntax_node.SyntaxNode("surface_number", ret)

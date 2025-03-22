@@ -1,23 +1,31 @@
 # Copyright 2024, Battelle Energy Alliance, LLC All Rights Reserved.
+
 from .surface_type import SurfaceType
-from .surface import Surface
+from .surface import Surface, InitInput
 from montepy.errors import *
 from montepy.utilities import *
 
 
 class AxisPlane(Surface):
-    """
-    Represents PX, PY, PZ
+    """Represents PX, PY, PZ
 
-    :param input: The Input object representing the input
-    :type input: Input
+    .. versionchanged:: 1.0.0
+
+        Added number parameter
+
+    Parameters
+    ----------
+    input : Union[Input, str]
+        The Input object representing the input
+    number : int
+        The number to set for this object.
     """
 
     COORDINATE = {SurfaceType.PX: "x", SurfaceType.PY: "y", SurfaceType.PZ: "z"}
 
-    def __init__(self, input=None):
+    def __init__(self, input: InitInput = None, number: int = None):
         self._location = self._generate_default_node(float, None)
-        super().__init__(input)
+        super().__init__(input, number)
         ST = SurfaceType
         if input:
             if self.surface_type not in [ST.PX, ST.PY, ST.PZ]:
@@ -30,10 +38,11 @@ class AxisPlane(Surface):
 
     @make_prop_val_node("_location", (float, int), float)
     def location(self):
-        """
-        The location of the plane in space.
+        """The location of the plane in space.
 
-        :rtype: float
+        Returns
+        -------
+        float
         """
         pass
 

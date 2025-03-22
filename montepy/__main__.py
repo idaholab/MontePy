@@ -15,11 +15,12 @@ Module to make module executable from CLI.
 
 
 def define_args(args=None):
-    """
-    Sets and parses the command line arguments.
+    """Sets and parses the command line arguments.
 
-    :returns: the arguments that were parsed
-    :rtype: argparse.NameSpace
+    Returns
+    -------
+    argparse.NameSpace
+        the arguments that were parsed
     """
     parser = argparse.ArgumentParser(
         prog="montepy",
@@ -45,11 +46,12 @@ def define_args(args=None):
 
 
 def check_inputs(files):
-    """
-    Checks input files for syntax errors.
+    """Checks input files for syntax errors.
 
-    :param files: a list of paths to check and show warnings for errors.
-    :type files: list
+    Parameters
+    ----------
+    files : list
+        a list of paths to check and show warnings for errors.
     """
     for file in files:
         if not Path(file).is_file():
@@ -61,9 +63,7 @@ def check_inputs(files):
 
 
 def main():  # pragma: no cover
-    """
-    The main function
-    """
+    """The main function"""
     args = define_args()
     if args.check:
         check_inputs(args.check)

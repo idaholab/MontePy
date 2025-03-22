@@ -5,14 +5,12 @@ from montepy.input_parser import syntax_node
 
 
 class CellParser(MCNP_Parser):
-    """
-    The parser for parsing a Cell input.
+    """The parser for parsing a Cell input.
 
-    .. versionadded:: 0.2.0
-        This was added with the major parser rework.
-
-    :returns: a syntax tree of the cell.
-    :rtype: SyntaxNode
+    Returns
+    -------
+    SyntaxNode
+        a syntax tree of the cell.
     """
 
     debugfile = None

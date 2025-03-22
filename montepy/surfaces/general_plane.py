@@ -1,19 +1,33 @@
 # Copyright 2024, Battelle Energy Alliance, LLC All Rights Reserved.
+from typing import Union
+
+import montepy
 from montepy.errors import *
 from montepy.surfaces.surface_type import SurfaceType
-from montepy.surfaces.surface import Surface
+from montepy.surfaces.surface import Surface, InitInput
 
 
 class GeneralPlane(Surface):
-    """
-    Represents P
+    """Represents P
 
-    :param input: The Input object representing the input
-    :type input: Input
+    .. versionchanged:: 1.0.0
+
+        Added number parameter
+
+    Parameters
+    ----------
+    input : Union[Input, str]
+        The Input object representing the input
+    number : int
+        The number to set for this object.
     """
 
-    def __init__(self, input=None):
-        super().__init__(input)
+    def __init__(
+        self,
+        input: InitInput = None,
+        number: int = None,
+    ):
+        super().__init__(input, number)
         if input:
             if self.surface_type != SurfaceType.P:
                 raise ValueError("A GeneralPlane must be a surface of type P")

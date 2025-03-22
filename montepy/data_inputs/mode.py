@@ -5,11 +5,12 @@ from montepy.particle import Particle
 
 
 class Mode(DataInputAbstract):
-    """
-    Class for the particle mode for a problem.
+    """Class for the particle mode for a problem.
 
-    :param input: the Input object representing this data input
-    :type input: Input
+    Parameters
+    ----------
+    input : Input
+        the Input object representing this data input
     """
 
     def __init__(self, input=None):
@@ -41,25 +42,31 @@ class Mode(DataInputAbstract):
 
     @property
     def particles(self):
-        """
-        The type of particles involved in this problem.
+        """The type of particles involved in this problem.
 
         The set will contain instances of :class:`montepy.particle.Particle`.
 
-        :rtype: set
+        Returns
+        -------
+        set
         """
         return self._particles.copy()
 
     def add(self, particle):
-        """
-        Adds the given particle to the problem.
+        """Adds the given particle to the problem.
 
         If specifying particle type by string this must be the MCNP shorthand,
         such as ``n`` for ``Particle.NEUTRON``.
 
-        :param particle: the particle type to add to the mode.
-        :type particle: Particle, str
-        :raises ValueError: if string is not a valid particle shorthand.
+        Parameters
+        ----------
+        particle : Particle, str
+            the particle type to add to the mode.
+
+        Raises
+        ------
+        ValueError
+            if string is not a valid particle shorthand.
         """
         if not isinstance(particle, (Particle, str, syntax_node.ValueNode)):
             raise TypeError("particle must be a Particle instance")
@@ -72,12 +79,17 @@ class Mode(DataInputAbstract):
         self._particles.add(particle)
 
     def remove(self, particle):
-        """
-        Remove the given particle from the problem
+        """Remove the given particle from the problem
 
-        :param particle: the particle type to remove from the mode.
-        :type particle: Particle, str
-        :raises ValueError: if string is not a valid particle shorthand.
+        Parameters
+        ----------
+        particle : Particle, str
+            the particle type to remove from the mode.
+
+        Raises
+        ------
+        ValueError
+            if string is not a valid particle shorthand.
         """
         if not isinstance(particle, (Particle, str)):
             raise TypeError("particle must be a Particle instance")
@@ -86,17 +98,22 @@ class Mode(DataInputAbstract):
         self._particles.remove(particle)
 
     def set(self, particles):
-        """
-        Completely override the current mode.
+        """Completely override the current mode.
 
         Can specify it as:
          * ``"n p"``
          * ``["n", "p"]``
          * ``[Particle.NEUTRON, Particle.PHOTON]``
 
-        :param particles: the particles that the mode will be switched to.
-        :type particles: list, str
-        :raises ValueError: if string is not a valid particle shorthand.
+        Parameters
+        ----------
+        particles : list, str
+            the particles that the mode will be switched to.
+
+        Raises
+        ------
+        ValueError
+            if string is not a valid particle shorthand.
         """
         if not isinstance(particles, (list, set, str)):
             raise TypeError("particles must be a list, string, or set")

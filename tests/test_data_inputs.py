@@ -44,14 +44,13 @@ class testDataInputClass(TestCase):
         for answer, out in zip(in_strs, output):
             self.assertEqual(answer, out)
 
-    # TODO implement comment setting
     def test_comment_setter(self):
         in_str = "m1 1001.80c 1.0"
         input_card = Input([in_str], BlockType.DATA)
-        comment = "foo"
+        comment = syntax_node.CommentNode("foo")
         data_card = DataInput(input_card)
-        data_card.comment = comment
-        self.assertEqual(comment, data_card.comment)
+        data_card.leading_comments = [comment]
+        self.assertEqual(comment, data_card.comments[0])
 
     def test_data_parser(self):
         identifiers = {
@@ -288,6 +287,12 @@ class testDataInputClass(TestCase):
         )
         card = volume.Volume(key="VoL", value=node, in_cell_block=True)
         self.assertIn("VOLUME", repr(card))
+
+    def test_data_clone(_):
+        problem = montepy.MCNP_Problem("")
+        data_input = DataInput("ksrc 0 0 0")
+        data_input.link_to_problem(problem)
+        new_data = data_input.clone()
 
 
 class TestClassifier(TestCase):

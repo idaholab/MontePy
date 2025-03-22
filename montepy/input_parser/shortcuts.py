@@ -3,30 +3,15 @@ from enum import Enum
 
 
 class Shortcuts(Enum):
-    """
-    Enumeration of the possible MCNP shortcuts.
-
-    .. versionadded:: 0.2.0
-        This was added with the major parser rework.
-    """
+    """Enumeration of the possible MCNP shortcuts."""
 
     REPEAT = "r"
-    """
-    A repeated entry shortcut.
-    """
+    """A repeated entry shortcut."""
     JUMP = "j"
-    """
-    A jump entry, which counts as a default entry.
-    """
+    """A jump entry, which counts as a default entry."""
     INTERPOLATE = "i"
-    """
-    A linear interpolation.
-    """
+    """A linear interpolation."""
     LOG_INTERPOLATE = "ilog"
-    """
-    A logarithmic interpolation.
-    """
+    """A logarithmic interpolation."""
     MULTIPLY = "m"
-    """
-    a multiplication of the previous entry.
-    """
+    """a multiplication of the previous entry."""
