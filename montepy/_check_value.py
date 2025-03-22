@@ -23,6 +23,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 import copy
 import os
 from collections.abc import Iterable
+import inspect
 
 import numpy as np
 
@@ -31,6 +32,10 @@ PathLike = str | os.PathLike
 
 
 def check_arguments(func):
+    args_spec = inspect.getfullargspec(func)
+    for arg_name in args_spec.args:
+        arg_type = args_spec.annotations[arg_name]
+        print(arg_name, arg_type)
     return func
 
 
