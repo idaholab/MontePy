@@ -33,10 +33,16 @@ PathLike = str | os.PathLike
 
 def check_arguments(func):
     args_spec = inspect.getfullargspec(func)
+    checkers = []
     for arg_name in args_spec.args:
         arg_type = args_spec.annotations[arg_name]
-        print(arg_name, arg_type)
-    return func
+        checkers.append(lambda x: check_type(arg_name, x, arg_type))
+
+    def wrapper(*args, **kwargs):
+        for checker, arg in zip(checkers, args):
+            checker(arg)
+
+    return wrapper
 
 
 def check_type(name, value, expected_type, expected_iter_type=None, *, none_ok=False):
