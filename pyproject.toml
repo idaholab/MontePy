@@ -40,12 +40,14 @@ dependencies = [
 
 [project.optional-dependencies]
 test = [
-	"coverage[toml]>=6.3.2", 
-	"hypothesis",
-	"pytest", 
-	"pytest-profiling",
-	"montepy[build]",
-	"phmutest",
+    "coverage[toml]>=6.3.2", 
+    "hypothesis",
+    "pytest", 
+    "pytest-profiling",
+    "pytest-xdist",
+    "pytest-cov",
+    "montepy[build]",
+    "phmutest",
 ]
 # This is needed for a sphinx bug. See #414.
 doc = [
