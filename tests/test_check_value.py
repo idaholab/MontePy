@@ -54,24 +54,24 @@ dt = st.datetimes()
 fl = st.floats()
 it = st.integers()
 no = st.none()
-
-
-@given(
-    st.one_of(binary, boolean, dt, fl, it, no),
-    st.sampled_from(
-        [simple_args, var_args, kwargs, kw_only, kw_defaults, defaults_used]
-    ),
+funcs = st.sampled_from(
+    [
+        simple_args,
+        var_args,
+        kwargs,
+        kw_only,
+        kw_defaults,
+        defaults_used,
+    ]
 )
+
+
+@given(st.one_of(binary, boolean, dt, fl, it, no), funcs)
 def test_dummy_bad_type(val, func):
     with pytest.raises(TypeError):
         func(val)
 
 
-@given(
-    st.one_of(binary, boolean, dt, fl, it, no),
-    st.sampled_from(
-        [simple_args, var_args, kwargs, kw_only, kw_defaults, defaults_used]
-    ),
-)
+@given(st.one_of(binary, boolean, dt, fl, it, no), funcs)
 def test_dummy_good_type(val, func):
     func(val)
