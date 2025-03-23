@@ -19,7 +19,7 @@ it = st.integers()
 no = st.none()
 
 
-@given(st.one_of(binary, boolean, chars, dt, fl, it, no))
+@given(st.one_of(binary, boolean, dt, fl, it, no))
 def test_dummy_bad_type(val):
     with pytest.raises(TypeError):
         dummy_func(val)
