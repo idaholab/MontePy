@@ -190,21 +190,16 @@ class Importance(CellModifierInput):
         for particle, tree in self._particle_importances.items():
             # Instead of tree["classifier"].particles.value (which doesn't exist),
             # use str(tree["classifier"].particles) or an appropriate attribute.
-            ret.append(tree.format())
+            ret.append( f"{particle}={tree['data'].nodes[0].value}")
             
         return ret
     
     def __str__(self):
-        if self._problem:
-            # Use the full formatting (which relies on _problem.cells, etc.)
-            return "".join(self.format_for_mcnp_input(DEFAULT_VERSION))
+        default = self._format_default()
+        if default:
+            return f"IMPORTANCE: {", ".join(default)}"
         else:
-            # Fall back to a default simple representation 
-            default = self._format_default()
-            if default:
-                return " ".join(default)
-            return "Importance object is empty"
-
+            return "IMPORTANCE: Object is empty"
 
     def __repr__(self):
         return (
