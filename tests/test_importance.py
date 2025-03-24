@@ -224,8 +224,8 @@ class TestImportance:
         imp = cell.importance
         cell.link_to_problem(problem)
         imp.all = 2.0
-        assert imp.neutron == 2.0
-        assert imp.photon == 2.0
+        assert imp.neutron == pytest.approx(2.0)
+        assert imp.photon == pytest.approx(2.0)
         # try wrong type
         with pytest.raises(TypeError):
             imp.all = "h"
