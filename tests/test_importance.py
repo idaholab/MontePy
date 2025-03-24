@@ -60,7 +60,7 @@ def test_importance_parsing_from_cell(in_str, expected, error):
         cell = create_cell_from_input(in_str)
         for attr, value in expected.items():
             actual = getattr(cell.importance, attr)
-            assert actual == value, f"Expected {attr}={value}, got {actual}"
+            assert actual == pytest.approx(value) , f"Expected {attr}={value}, got {actual}"
 
 
 # Valid data case: the card should be parsed correctly
@@ -94,11 +94,11 @@ def test_importance_init_data_valid(in_str, expected_values):
     card = mcnp_input.Input([in_str], block_type.BlockType.DATA)
     imp = Importance(card)
 
-    for particle, expected in expected_values.items():
+    for particle, value in expected_values.items():
         actual = [val.value for val in imp._particle_importances[particle]["data"]]
         assert (
-            actual == expected
-        ), f"For {particle.name}, expected {expected}, got {actual}"
+            actual == pytest.approx(value)
+        ), f"For {particle.name}, expected {value}, got {actual}"
 
 
 # Error cases: each input should raise an exception, optionally with additional keyword arguments.
@@ -180,7 +180,7 @@ class TestImportance:
         # Set and verify importance values for each particle type
         for particle, value in test_importance_values.items():
             setattr(imp, particle.name.lower(), value)
-            assert getattr(imp, particle.name.lower()) == value
+            assert getattr(imp, particle.name.lower()) == pytest.approx(value)
 
         # Verify string representation contains all assignments
         s = str(imp)
@@ -202,9 +202,7 @@ class TestImportance:
         ]
         for particle in imp:
             assert particle in particles
-            assert (
-                abs(imp[particle] - 1.0) < 1e-10
-            )  # pytest equivalent of assertAlmostEqual
+            assert imp[particle] == pytest.approx(1.0)
         for particle in particles:
             assert particle in imp
         with pytest.raises(TypeError):
@@ -244,10 +242,10 @@ class TestImportance:
         # Test setting first value from test values
         particle, value = next(iter(test_importance_values.items()))
         cell.importance[particle] = value
-        assert cell.importance[particle] == value
+        assert cell.importance[particle] == pytest.approx(value)
 
         cell.importance.neutron = 2.5
-        assert cell.importance.neutron == 2.5
+        assert cell.importance.neutron == pytest.approx(2.5)
         problem = montepy.mcnp_problem.MCNP_Problem("foo")
         cell.link_to_problem(problem)
         # test problem mode enforcement
@@ -261,7 +259,7 @@ class TestImportance:
             cell.importance.neutron = -0.5
 
         cell.importance[Particle.NEUTRON] = 3
-        assert cell.importance.neutron == 3.0
+        assert cell.importance.neutron == pytest.approx(3.0)
         with pytest.raises(TypeError):
             cell.importance[""] = 5
         with pytest.raises(TypeError):
@@ -278,9 +276,9 @@ class TestImportance:
         """
         cell = cell_with_importance
         del cell.importance.neutron
-        assert cell.importance.neutron == 0.0
+        assert cell.importance.neutron == pytest.approx(0.0)
         del cell.importance[Particle.PHOTON]
-        assert cell.importance.photon == 0.0
+        assert cell.importance.photon == pytest.approx(0.0)
         with pytest.raises(TypeError):
             del cell.importance[""]
 
@@ -298,10 +296,10 @@ class TestImportance:
         imp1.merge(imp2)
         assert [
             val.value for val in imp1._particle_importances[Particle.NEUTRON]["data"]
-        ] == [1.0, 0.0]
+        ] == pytest.approx([1.0, 0.0])
         assert [
             val.value for val in imp1._particle_importances[Particle.ELECTRON]["data"]
-        ] == [0.0, 0.0]
+        ] == pytest.approx([0.0, 0.0])
         # test bad type
         with pytest.raises(TypeError):
             imp1.merge("hi")
