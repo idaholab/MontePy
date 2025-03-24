@@ -14,16 +14,11 @@ def create_cell_from_input(in_str, block=block_type.BlockType.CELL):
     return Cell(card)
 
 
-# Parameterized test for valid importance parsing
-# Test cases:
-# 1. Combined importance for neutrons and photons (IMP:N,P=1)
-#    - Tests multiple particle types in single declaration
-#    - Verifies default values for unspecified particles
-# 2. Separate importance for electrons and protons (IMP:E=1 IMP:H=1)
-#    - Tests individual particle importance declarations
+# Parameterized test for valid and invalid importance parsing
 @pytest.mark.parametrize(
-    "in_str,expected",
+    "in_str, expected, error",
     [
+        # Valid cases
         (
             "1 0 -1 IMP:N,P=1",
             {
@@ -33,65 +28,70 @@ def create_cell_from_input(in_str, block=block_type.BlockType.CELL):
                 "alpha_particle": 0.0,
                 "in_cell_block": True,
             },
+            None,
         ),
         (
             "1 0 -1 IMP:E=1 IMP:H=1",
             {"electron": 1.0, "proton": 1.0},
+            None,
         ),
+        # Error cases
+        ("1 0 -1 IMP:N,P=h", None, ValueError),  # non-numeric value
+        ("1 0 -1 IMP:N,P=-2", None, ValueError),  # negative value
+        ("1 0 -1 IMP:N,xx=2", None, ParsingError),  # invalid particle type
     ],
 )
-def test_importance_parsing_from_cell(in_str, expected):
+def test_importance_parsing_from_cell(in_str, expected, error):
+    """Test importance parsing from cell input string.
+    
+    Tests both valid and invalid cases:
+    - Valid: Verifies parsed values match expected values
+    - Invalid: Verifies appropriate errors are raised
     """
-    Testing all examples of importance input
-    """
-    cell = create_cell_from_input(in_str)
-    for attr, value in expected.items():
-        actual = getattr(cell.importance, attr)
-        assert actual == value, f"Expected {attr}={value}, got {actual}"
-
-
-# Parameterized test for invalid importance values
-# Test cases:
-# 1. Non-numeric value 'h' for importance
-#    - Verifies rejection of non-numeric importance values
-#    - Should raise ValueError
-# 2. Negative value -2 for importance
-#    - Verifies rejection of negative importance values
-#    - Should raise ValueError since importance must be non-negative
-@pytest.mark.parametrize(
-    "in_str,expected_exception",
-    [
-        ("1 0 -1 IMP:N,P=h", ValueError),  # non-numeric value should raise ValueError
-        ("1 0 -1 IMP:N,P=-2", ValueError),  # negative value should raise ValueError
-    ],
-)
-def test_invalid_importance_parsing_from_cell(in_str, expected_exception):
-    """
-    Testing invalid importance values
-    Every test shuould Raises ValueError
-    """
-    with pytest.raises(expected_exception):
-        create_cell_from_input(in_str)
+    if error is not None:
+        with pytest.raises(error):
+            create_cell_from_input(in_str)
+    else:
+        cell = create_cell_from_input(in_str)
+        for attr, value in expected.items():
+            actual = getattr(cell.importance, attr)
+            assert actual == value, f"Expected {attr}={value}, got {actual}"
 
 
 # Valid data case: the card should be parsed correctly
 @pytest.mark.parametrize(
-    "in_str,expected_neutron,expected_photon",
+    "in_str, expected_values",
     [
-        ("IMP:N,P 1 0", [1.0, 0.0], [1.0, 0.0]),
+        (
+            "IMP:N,P 1 0",
+            {
+                Particle.NEUTRON: [1.0, 0.0],
+                Particle.PHOTON: [1.0, 0.0],
+            },
+        ),
+        (
+            "IMP:N,P,E 1 0 2",
+            {
+                Particle.NEUTRON: [1.0, 0.0, 2.0],
+                Particle.PHOTON: [1.0, 0.0, 2.0],
+                Particle.ELECTRON: [1.0, 0.0, 2.0],
+            },
+        ),
     ],
 )
-def test_importance_init_data_valid(in_str, expected_neutron, expected_photon):
-    card = mcnp_input.Input([in_str], block_type.BlockType.CELL)
+def test_importance_init_data_valid(in_str, expected_values):
+    """Test importance data initialization for multiple particles.
+    
+    Args:
+        in_str: Input string containing importance definitions
+        expected_values: Dictionary mapping particles to their expected importance values
+    """
+    card = mcnp_input.Input([in_str], block_type.BlockType.DATA)
     imp = Importance(card)
-    neutron_vals = [
-        val.value for val in imp._particle_importances[Particle.NEUTRON]["data"]
-    ]
-    photon_vals = [
-        val.value for val in imp._particle_importances[Particle.PHOTON]["data"]
-    ]
-    assert neutron_vals == expected_neutron
-    assert photon_vals == expected_photon
+    
+    for particle, expected in expected_values.items():
+        actual = [val.value for val in imp._particle_importances[particle]["data"]]
+        assert actual == expected, f"For {particle.name}, expected {expected}, got {actual}"
 
 
 # Error cases: each input should raise an exception, optionally with additional keyword arguments.
@@ -103,10 +103,11 @@ def test_importance_init_data_valid(in_str, expected_neutron, expected_photon):
         ("IMP:N,P 1 2", {"in_cell_block": 1}, TypeError),  # bad in_cell_block type
         ("IMP:N,P 1 2", {"key": 1}, TypeError),  # bad key type
         ("IMP:N,P 1 2", {"value": 1}, TypeError),  # bad value type
+        ("IMP:N,zz 1 2", {}, ParsingError),        # invalid particle type
     ],
 )
 def test_importance_init_data_invalid(in_str, kwargs, expected_exception):
-    card = mcnp_input.Input([in_str], block_type.BlockType.CELL)
+    card = mcnp_input.Input([in_str], block_type.BlockType.DATA)
     with pytest.raises(expected_exception):
         Importance(card, **kwargs)
 
@@ -115,23 +116,14 @@ class TestImportance:
 
     @pytest.fixture
     def cell_with_importance(_):
-        """
-        Returns a cell with combined importance "IMP:N,P=1"
-        """
         return create_cell_from_input("1 0 -1 IMP:N,P=1")
 
     @pytest.fixture
     def empty_cell(_):
-        """
-        Creates a cell with no importance assignment
-        """
         return create_cell_from_input("1 0 -1")
 
     @pytest.fixture
     def test_importance_values(_):
-        """
-        Returns a dictionary of test importance values for different particles.
-        """
         return {
             Particle.NEUTRON: 2.5,
             Particle.PHOTON: 3.5,
@@ -167,32 +159,34 @@ class TestImportance:
         # what __repr__ should return if it is not strictly defined. ??
         assert "False" in r
 
-    def test_str_repr_manual_importance(self, test_importance_values):
+    def test_importance_manual_assignment_and_str_repr(self, test_importance_values):
         """
-        Test string and repr representations of a manually constructed importance object.
-        Verifies that each particle type and its importance value are correctly represented.
+        Test manual assignment of importance values and their string representations.
+        Verifies:
+        1. Setting importance values for different particles
+        2. Getting assigned values back
+        3. String representation includes all assignments
+        4. Repr string contains all values
         """
         imp = Importance()
-        # Set importance values for each particle type
+        
+        # Set and verify importance values for each particle type
         for particle, value in test_importance_values.items():
             setattr(imp, particle.name.lower(), value)
+            assert getattr(imp, particle.name.lower()) == value
 
+        # Verify string representation contains all assignments
         s = str(imp)
-        r = repr(imp)
-
-        # Check that particle names and their values appear in string representation
         for particle, value in test_importance_values.items():
-            assert f"{particle.name.lower()}={value}" in s
+            particle_str = particle.name.lower()
+            assert f"{particle_str}={value}" in s
+
+        # Verify repr contains all values in some form
+        r = repr(imp)
+        for value in test_importance_values.values():
             assert str(value) in r
 
     def test_importance_iter_getter_in(self, cell_with_importance):
-        """
-        Test iteration, getter methods and 'in' operator for importance objects.
-        Verifies correct access to particle importances and type checking.
-
-        Args:
-            parsed_cells: Fixture providing cells with importance assignments
-        """
         cell = cell_with_importance
         imp = cell.importance
         particles = [
