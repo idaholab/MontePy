@@ -1,6 +1,7 @@
 # Copyright 2024, Battelle Energy Alliance, LLC All Rights Reserved.
 import montepy
-import os, pytest
+import os
+import pytest
 from montepy.cell import Cell
 from montepy.particle import Particle
 from montepy.data_inputs.importance import Importance
