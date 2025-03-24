@@ -35,7 +35,7 @@ def create_cell_from_input(in_str, block=block_type.BlockType.CELL):
             {"electron": 1.0, "proton": 1.0},
             None,
         ),
-        ("1 0 -1",  {"neutron": 0.0}), None, # default neutron importance when nothing is set
+        ("1 0 -1",  {"neutron": 0.0}, None), # default neutron importance when nothing is set
         # Error cases
         ("1 0 -1 IMP:N,P=h", None, ValueError),  # non-numeric value
         ("1 0 -1 IMP:N,P=-2", None, ValueError),  # negative value
