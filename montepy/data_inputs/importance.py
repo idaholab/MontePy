@@ -185,15 +185,15 @@ class Importance(CellModifierInput):
     def _format_default(self) -> list[str]:
         """
         Create a simple, self-contained list representation of the importance settings.
-        """ 
+        """
         ret = []
         for particle, tree in self._particle_importances.items():
             # Instead of tree["classifier"].particles.value (which doesn't exist),
             # use str(tree["classifier"].particles) or an appropriate attribute.
-            ret.append( f"{particle}={tree['data'].nodes[0].value}")
-            
+            ret.append(f"{particle}={tree['data'].nodes[0].value}")
+
         return ret
-    
+
     def __str__(self):
         default = self._format_default()
         if default:

@@ -35,7 +35,11 @@ def create_cell_from_input(in_str, block=block_type.BlockType.CELL):
             {"electron": 1.0, "proton": 1.0},
             None,
         ),
-        ("1 0 -1",  {"neutron": 0.0}, None), # default neutron importance when nothing is set
+        (
+            "1 0 -1",
+            {"neutron": 0.0},
+            None,
+        ),  # default neutron importance when nothing is set
         # Error cases
         ("1 0 -1 IMP:N,P=h", None, ValueError),  # non-numeric value
         ("1 0 -1 IMP:N,P=-2", None, ValueError),  # negative value
@@ -44,7 +48,7 @@ def create_cell_from_input(in_str, block=block_type.BlockType.CELL):
 )
 def test_importance_parsing_from_cell(in_str, expected, error):
     """Test importance parsing from cell input string.
-    
+
     Tests both valid and invalid cases:
     - Valid: Verifies parsed values match expected values
     - Invalid: Verifies appropriate errors are raised
@@ -82,17 +86,19 @@ def test_importance_parsing_from_cell(in_str, expected, error):
 )
 def test_importance_init_data_valid(in_str, expected_values):
     """Test importance data initialization for multiple particles.
-    
+
     Args:
         in_str: Input string containing importance definitions
         expected_values: Dictionary mapping particles to their expected importance values
     """
     card = mcnp_input.Input([in_str], block_type.BlockType.DATA)
     imp = Importance(card)
-    
+
     for particle, expected in expected_values.items():
         actual = [val.value for val in imp._particle_importances[particle]["data"]]
-        assert actual == expected, f"For {particle.name}, expected {expected}, got {actual}"
+        assert (
+            actual == expected
+        ), f"For {particle.name}, expected {expected}, got {actual}"
 
 
 # Error cases: each input should raise an exception, optionally with additional keyword arguments.
@@ -104,7 +110,7 @@ def test_importance_init_data_valid(in_str, expected_values):
         ("IMP:N,P 1 2", {"in_cell_block": 1}, TypeError),  # bad in_cell_block type
         ("IMP:N,P 1 2", {"key": 1}, TypeError),  # bad key type
         ("IMP:N,P 1 2", {"value": 1}, TypeError),  # bad value type
-        ("IMP:N,zz 1 2", {}, ParsingError),        # invalid particle type
+        ("IMP:N,zz 1 2", {}, ParsingError),  # invalid particle type
     ],
 )
 def test_importance_init_data_invalid(in_str, kwargs, expected_exception):
@@ -170,7 +176,7 @@ class TestImportance:
         4. Repr string contains all values
         """
         imp = Importance()
-        
+
         # Set and verify importance values for each particle type
         for particle, value in test_importance_values.items():
             setattr(imp, particle.name.lower(), value)
