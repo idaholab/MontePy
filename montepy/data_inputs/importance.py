@@ -197,7 +197,7 @@ class Importance(CellModifierInput):
     def __str__(self):
         default = self._format_default()
         if default:
-            return f"IMPORTANCE: {", ".join(default)}"
+            return f"IMPORTANCE: {', '.join(default)}"
         else:
             return "IMPORTANCE: Object is empty"
 
