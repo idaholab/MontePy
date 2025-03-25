@@ -38,6 +38,7 @@ MontePy Changelog
 * Fixed bug that wouldn't allow cloning most surfaces (:issue:`704`).
 * Fixed bug that crashed when some cells were not assigned to any universes (:issue:`705`).
 * Fixed bug where setting ``surf.is_reflecting`` to ``False`` did not always get exported properly (:issue:`709`).
+* Fixed bug where setting multiple universes for a cell fill not being properly exported (:issue:`714`).
  
 **Breaking Changes**
 
