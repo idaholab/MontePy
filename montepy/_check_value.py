@@ -23,6 +23,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 import copy
 import os
 from collections.abc import Iterable
+import functiools
 import inspect
 
 import numpy as np
@@ -32,9 +33,11 @@ PathLike = str | os.PathLike
 
 
 def _prepare_type_checker(arg_name, args_spec):
+    # TODO allow default None
     arg_type = args_spec.annotations.get(arg_name, None)
     if arg_type:
         # if annotations are used
+
         if isinstance(arg_type, str):
             return lambda x: check_type(arg_name, x, eval(arg_type))
         else:
@@ -42,6 +45,7 @@ def _prepare_type_checker(arg_name, args_spec):
 
 
 def check_arguments(func, **args_check):
+    """ """
     args_spec = inspect.getfullargspec(func)
     arg_checkers = {}
     for attr in ["args", "kwonlyargs"]:
@@ -72,6 +76,7 @@ def check_arguments(func, **args_check):
             checkers.extend(args_check[arg_name])
         special_checks[attr] = checkers
 
+    @functools.wraps(func)
     def wrapper(*args, **kwargs):
         args_iter = iter(args)
         for checkers, arg in zip(arg_checkers["args"], args_iter):
