@@ -31,16 +31,64 @@ import numpy as np
 PathLike = str | os.PathLike
 
 
-def check_arguments(func):
+def _prepare_type_checker(arg_name, args_spec):
+    arg_type = args_spec.annotations.get(arg_name, None)
+    if arg_type:
+        # if annotations are used
+        if isinstance(arg_type, str):
+            return lambda x: check_type(arg_name, x, eval(arg_type))
+        else:
+            return lambda x: check_type(arg_name, x, arg_type)
+
+
+def check_arguments(func, **args_check):
     args_spec = inspect.getfullargspec(func)
-    checkers = []
-    for arg_name in args_spec.args:
-        arg_type = args_spec.annotations[arg_name]
-        checkers.append(lambda x: check_type(arg_name, x, arg_type))
+    arg_checkers = {}
+    for attr in ["args", "kwonlyargs"]:
+        if attr == "args":
+            arg_checkers[attr] = []
+        else:
+            arg_checkers[attr] = {}
+        for arg_name in getattr(args_spec, attr):
+            checkers = []
+            # build
+            type_checker = _prepare_type_checker(arg_name, args_spec)
+            if type_checker:
+                checkers.append(type_checker)
+            if arg_name in args_check:
+                checkers.extend(args_check[arg_name])
+            if attr == "args":
+                arg_checkers[attr].append(checkers)
+            else:
+                arg_checkers[attr][arg_name] = checkers
+
+    special_checks = {}
+    for attr in ("varargs", "varkw"):
+        checkers = []
+        arg_name = getattr(args_spec, attr, None)
+        if arg_name:
+            type_checker = _prepare_type_checker(arg_name, args_spec)
+        if arg_name in args_check:
+            checkers.extend(args_check[arg_name])
+        special_checks[attr] = checkers
 
     def wrapper(*args, **kwargs):
-        for checker, arg in zip(checkers, args):
-            checker(arg)
+        args_iter = iter(args)
+        for checkers, arg in zip(arg_checkers["args"], args_iter):
+            for checker in checkers:
+                checker(arg)
+        # iterate over var args
+        for arg in args_iter:
+            for checker in special_checks["varargs"]:
+                checker(arg)
+
+        for arg_name, arg in kwargs.items():
+            if arg_name in arg_checkers["kwonlyargs"]:
+                checkers = arg_checkers["kwonlyargs"][arg_name]
+            else:
+                checkers = special_checks["varkw"]
+            for checker in checkers:
+                checker(arg)
 
     return wrapper
 
