@@ -1,4 +1,4 @@
-# Copyright 2024, Battelle Energy Alliance, LLC All Rights Reserved.
+# Copyright 2024 - 2025, Battelle Energy Alliance, LLC All Rights Reserved.
 from hypothesis import given, strategies as st
 import pytest
 from unittest import TestCase
@@ -402,7 +402,7 @@ class TestFill(TestCase):
         end = np.array(indices) + np.array(width)
         fill.max_index = end
         assert fill.min_index == indices
-        assert fill.max_index == end
+        assert (fill.max_index == end).all()
 
     def test_fill_index_bad_setter(self):
         fill = self.simple_fill
@@ -435,10 +435,14 @@ class TestFill(TestCase):
         self.verify_export(fill)
 
     def verify_export(self, fill):
-        output = fill.format_for_mcnp_input((6,3,0))
+        output = fill.format_for_mcnp_input((6, 3, 0))
         print(output)
-        cell = montepy.Cell("1 0 -2 "+ "\n".join(output))
-        for attr in ["multiple_universes", "old_universe_numbers", "old_universe_number"]:
+        cell = montepy.Cell("1 0 -2 " + "\n".join(output))
+        for attr in [
+            "multiple_universes",
+            "old_universe_numbers",
+            "old_universe_number",
+        ]:
             old_val = getattr(fill, attr)
             if "old" in attr:
                 if "s":

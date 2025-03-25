@@ -1,5 +1,8 @@
-# Copyright 2024, Battelle Energy Alliance, LLC All Rights Reserved.
+# Copyright 2024 - 2025, Battelle Energy Alliance, LLC All Rights Reserved.
 import itertools as it
+from numbers import Integral, Real
+import numpy as np
+
 from montepy.data_inputs.cell_modifier import CellModifierInput, InitInput
 from montepy.data_inputs.transform import Transform
 from montepy.errors import *
@@ -9,7 +12,14 @@ from montepy.input_parser import syntax_node
 from montepy.mcnp_object import MCNP_Object
 from montepy.universe import Universe
 from montepy.utilities import *
-import numpy as np
+
+
+def _verify_3d_index(self, indices):
+    for index in indices:
+        if not isinstance(index, Integral):
+            raise TypeError(f"Index values for fill must be an int. {index} given.")
+    if len(indices) != 3:
+        raise ValueError(f"3 values must be given for fill. {indices} given")
 
 
 class Fill(CellModifierInput):
@@ -269,7 +279,12 @@ class Fill(CellModifierInput):
     def universes(self):
         self._universes = None
 
-    @property
+    @make_prop_pointer(
+        "_min_index",
+        (list, np.ndarray),
+        validator=_verify_3d_index,
+        deletable=True,
+    )
     def min_index(self):
         """The minimum indices of the matrix in each dimension.
 
@@ -280,9 +295,14 @@ class Fill(CellModifierInput):
         :class:`numpy.ndarry`
             the minimum indices of the matrix for complex fills
         """
-        return self._min_index
+        pass
 
-    @property
+    @make_prop_pointer(
+        "_max_index",
+        (list, np.ndarray),
+        validator=_verify_3d_index,
+        deletable=True,
+    )
     def max_index(self):
         """The maximum indices of the matrix in each dimension.
 
@@ -293,7 +313,7 @@ class Fill(CellModifierInput):
         :class:`numpy.ndarry`
             the maximum indices of the matrix for complex fills
         """
-        return self._max_index
+        pass
 
     @property
     def multiple_universes(self):
