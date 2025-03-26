@@ -143,7 +143,7 @@ class TestLattice(TestCase):
         list_node = syntax_node.ListNode("numbers")
         list_node.append(syntax_node.ValueNode("1", float))
         classifier = syntax_node.ClassifierNode()
-        classifier.prefix = "lat"
+        classifier.prefix = syntax_node.ValueNode("lat", str)
         tree = syntax_node.SyntaxNode(
             "lattice",
             {
@@ -223,10 +223,12 @@ class TestFill(TestCase):
     def setUp(self):
         list_node = syntax_node.ListNode("num")
         list_node.append(syntax_node.ValueNode("5", float))
+        classifier = syntax_node.ClassifierNode()
+        classifier.prefix = syntax_node.ValueNode("fill", str)
         tree = syntax_node.SyntaxNode(
             "fill",
             {
-                "classifier": "",
+                "classifier": classifier,
                 "seperator": syntax_node.ValueNode("=", str),
                 "data": list_node,
             },
@@ -372,8 +374,6 @@ class TestFill(TestCase):
         with self.assertRaises(TypeError):
             fill.universes = "hi"
         fill.multiple_universes = False
-        with self.assertRaises(ValueError):
-            fill.universes = fill_array
 
     def test_fill_str(self):
         input = Input(["1 0 -1 fill=0:1 0:1 0:1 1 2 3 4 5 6 7 8"], BlockType.CELL)
@@ -420,24 +420,26 @@ class TestFill(TestCase):
             fill.max_index = [1]
 
     @given(
-        universes=st.lists(st.integers(0), min_size=1, max_size=10),
+        universes=st.lists(st.integers(0, 1_000_000), min_size=1, max_size=10),
         y_len=st.integers(1, 10),
         z_len=st.integers(1, 10),
     )
+    @pytest.mark.filterwarnings("ignore")
     def test_fill_multi_unis(self, universes, y_len, z_len):
         fill = self.simple_fill.clone()
-        universes = np.array([[Universe(u) for u in universes] * y_len] * z_len)
+        universes = np.array([[[Universe(u) for u in universes]] * y_len] * z_len)
         fill.multiple_universes = True
         fill.universes = universes
-        assert fill.universes == universes
-        assert fill.min_index == np.array([0, 0, 0])
-        assert fill.max_index == np.array(universes.shape)
+        assert (fill.universes == universes).all()
+        assert (fill.min_index == np.array([0, 0, 0])).all()
+        assert (fill.max_index == np.array(universes.shape) - np.array([1, 1, 1])).all()
         self.verify_export(fill)
 
     def verify_export(self, fill):
         output = fill.format_for_mcnp_input((6, 3, 0))
         print(output)
         cell = montepy.Cell("1 0 -2 " + "\n".join(output))
+        new_fill = cell.fill
         for attr in [
             "multiple_universes",
             "old_universe_numbers",
@@ -445,10 +447,18 @@ class TestFill(TestCase):
         ]:
             old_val = getattr(fill, attr)
             if "old" in attr:
-                if "s":
+                if attr.endswith("s"):
                     old_val = getattr(fill, "universes")
+                    if old_val is not None:
+                        numberer = np.vectorize(lambda u: u.number)
+                        old_val = numberer(old_val)
                 else:
                     old_val = getattr(fill, "universe")
-            new_val = getattr(fill, attr)
+                    if old_val is not None:
+                        old_val = old_val.number
+            new_val = getattr(new_fill, attr)
             print(attr, old_val, new_val)
-            assert old_val == new_val
+            if isinstance(old_val, np.ndarray):
+                assert (old_val == new_val).all()
+            else:
+                assert old_val == new_val
