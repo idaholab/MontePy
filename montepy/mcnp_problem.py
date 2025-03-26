@@ -5,6 +5,7 @@ from enum import Enum
 import itertools
 import multiprocessing as mp
 import os
+import sys
 import queue
 from typing import Any
 import warnings
@@ -380,22 +381,17 @@ class MCNP_Problem:
     @classmethod
     def _parse_as_thread(cls, to_parse, parsed, exceptions, failfast=False):
         while True:
-            try:
-                idx, input = to_parse.get()
-                if input is None:
-                    print("dieing", input)
-                    to_parse.task_done()
-                    return
-                print(f"thread parsing {idx}, {repr(input)}")
-                obj_parser = cls._OBJ_MATCHER[input.block_type]
-                obj = obj_parser(input)
-                parsed.put_nowait(cls._PriotizedItem(idx, obj))
+            idx, input = to_parse.get(timeout=1)
+            if input is None:
+                print("dieing", input)
                 to_parse.task_done()
-            except Exception as e:
-                print(repr(input))
-                exceptions.put_nowait(e)
-                to_parse.task_done()
-                raise e
+                print(to_parse.qsize())
+                return
+            print(f"thread parsing {idx}, {repr(input)}")
+            obj_parser = cls._OBJ_MATCHER[input.block_type]
+            obj = obj_parser(input)
+            parsed.put_nowait(cls._PriotizedItem(idx, obj))
+            to_parse.task_done()
 
     def parse_input(self, check_input=False, replace=True, num_threads=None):
         """Semantically parses the MCNP file provided to the constructor.
@@ -454,9 +450,14 @@ class MCNP_Problem:
                 raise e
         for _ in processes:
             to_parse.put((-1, None))
-        to_parse.join()
+        # to_parse.join()
+        while True:
+            try:
+                print(parsed.get_nowait())
+            except queue.Empty:
+                break
         for process in processes:
-            process.terminate()
+            process.join()
         while not errors.empty():
             e = errors.get_nowait()
             raise e
