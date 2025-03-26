@@ -3,10 +3,9 @@ import copy
 from dataclasses import dataclass, field
 from enum import Enum
 import itertools
-import multiprocessing
+import multiprocessing as mp
 import os
 import queue
-from threading import Thread
 from typing import Any
 import warnings
 
@@ -390,11 +389,11 @@ class MCNP_Problem:
                 print(f"thread parsing {idx}, {repr(input)}")
                 obj_parser = cls._OBJ_MATCHER[input.block_type]
                 obj = obj_parser(input)
-                parsed.put(cls._PriotizedItem(idx, obj))
+                parsed.put_nowait(cls._PriotizedItem(idx, obj))
                 to_parse.task_done()
             except Exception as e:
                 print(repr(input))
-                exceptions.put(e)
+                exceptions.put_nowait(e)
                 to_parse.task_done()
                 raise e
 
@@ -420,42 +419,44 @@ class MCNP_Problem:
             ),
             block_type.BlockType.DATA: (parse_data, self._data_inputs),
         }
-        to_parse = queue.Queue()
-        parsed = queue.PriorityQueue()
-        errors = queue.Queue()
-        for i in range(num_threads):
-            thread = Thread(
-                target=self._parse_as_thread, args=[i, to_parse, parsed, errors]
+        to_parse = mp.JoinableQueue()
+        parsed = mp.Queue()
+        errors = mp.Queue()
+        if num_threads is None:
+            num_threads = os.cpu_count()
+        processes = []
+        for _ in range(num_threads):
+            proc = mp.Process(
+                target=self._parse_as_thread, args=[to_parse, parsed, errors]
             )
-            thread.start()
-            thread_pool.append(thread)
-        with multiprocessing.Pool(num_threads) as p:
-            p.apply_async(self._parse_as_thread, args=[i, to_parse, parsed, errors])
+            proc.start()
+            processes.append(proc)
 
-            try:
-                for i, input in enumerate(
-                    input_syntax_reader.read_input_syntax(
-                        self._input_file, self.mcnp_version, replace=replace
-                    )
-                ):
-                    self._original_inputs.append(input)
-                    if i == 0 and isinstance(input, mcnp_input.Message):
-                        self._message = input
+        try:
+            for i, input in enumerate(
+                input_syntax_reader.read_input_syntax(
+                    self._input_file, self.mcnp_version, replace=replace
+                )
+            ):
+                self._original_inputs.append(input)
+                if i == 0 and isinstance(input, mcnp_input.Message):
+                    self._message = input
 
-                    elif isinstance(input, mcnp_input.Title) and self._title is None:
-                        self._title = input
+                elif isinstance(input, mcnp_input.Title) and self._title is None:
+                    self._title = input
 
-                    elif isinstance(input, mcnp_input.Input):
-                        to_parse.put((i, input))
-            except UnsupportedFeature as e:
-                if check_input:
-                    warnings.warn(f"{type(e).__name__}: {e.message}", stacklevel=2)
-                else:
-                    raise e
-            print(num_threads)
-            for _ in range(multiprocessing.active_children()):
-                to_parse.put((-1, None))
-            p.join()
+                elif isinstance(input, mcnp_input.Input):
+                    to_parse.put((i, input))
+        except UnsupportedFeature as e:
+            if check_input:
+                warnings.warn(f"{type(e).__name__}: {e.message}", stacklevel=2)
+            else:
+                raise e
+        for _ in processes:
+            to_parse.put((-1, None))
+        to_parse.join()
+        for process in processes:
+            process.terminate()
         while not errors.empty():
             e = errors.get_nowait()
             raise e

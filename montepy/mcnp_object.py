@@ -41,6 +41,7 @@ class _ExceptionContextAdder(ABCMeta):
             try:
                 return func(*args, **kwargs)
             except Exception as e:
+                raise e
                 if len(args) > 0 and isinstance(args[0], MCNP_Object):
                     self = args[0]
                     if hasattr(self, "_handling_exception"):
@@ -65,6 +66,8 @@ class _ExceptionContextAdder(ABCMeta):
         """
         new_attrs = {}
         for key, value in attributes.items():
+            new_attrs[key] = value
+            continue
             if key.startswith("_"):
                 new_attrs[key] = value
             if callable(value):
