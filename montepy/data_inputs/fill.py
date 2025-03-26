@@ -55,6 +55,8 @@ class Fill(CellModifierInput):
         self._hidden_transform = None
         self._old_transform_number = None
         self._multi_universe = False
+        self._min_index = None
+        self._max_index = None
         super().__init__(input, in_cell_block, key, value)
         if self.in_cell_block:
             if key:
@@ -81,7 +83,7 @@ class Fill(CellModifierInput):
         list_node.append(self._generate_default_node(float, None))
         classifier = syntax_node.ClassifierNode()
         classifier.prefix = self._generate_default_node(
-            str, self._class_prefix().upper(), None
+            str, self._class_prefix().upper(), None, never_pad=True
         )
         self._tree = syntax_node.SyntaxNode(
             "fill",
@@ -269,10 +271,20 @@ class Fill(CellModifierInput):
     def universes(self, value):
         if not isinstance(value, (np.ndarray, type(None))):
             raise TypeError(f"Universes must be set to an array. {value} given.")
-        if not self.multiple_universes:
+        if len(value.shape) != 3:
             raise ValueError(
-                "Multiple universes can only be set when multiple_universes is True."
+                f"3D array must be given for fill.universes. Array of shape: {value.shape} given."
             )
+        if value.dtype != np.object_ or any(
+            map(lambda x: not isinstance(x, (Universe, type(None))), value.flatten())
+        ):
+            raise TypeError(
+                f"All values in array must be a Universe (or None). {value} given."
+            )
+        self.multiple_universes = True
+        if self.min_index is None:
+            self.min_index = np.array([0] * 3)
+        self.max_index = self.min_index + np.array(value.shape) - np.array([1, 1, 1])
         self._universes = value
 
     @universes.deleter
@@ -520,13 +532,15 @@ class Fill(CellModifierInput):
         )
 
     def _update_cell_values(self):
-        # Todo update matrix fills
         new_vals = list(self._tree["data"])
         if self.transform and self.transform.is_in_degrees:
             self._tree["classifier"].modifier = "*"
         else:
             self._tree["classifier"].modifier = None
         new_vals = self._update_cell_universes(new_vals)
+        self._update_cell_transform_values(new_vals)
+
+    def _update_cell_transform_values(self, new_vals):
         if self.transform is None:
             try:
                 values = [val.value for val in self._tree["data"]]
@@ -599,7 +613,29 @@ class Fill(CellModifierInput):
         for universe, value in zip(payload, value_nodes):
             value.value = universe
             buffer.append(value)
-        buffer = new_vals[:start_matrix] + buffer
+        buffer = self._update_multi_index_limits(new_vals[:start_matrix]) + buffer
         if start_transform:
             buffer += new_vals[start_transform:]
         return buffer
+
+    def _update_multi_index_limits(self, new_vals):
+        if not self.multiple_universes and ":" not in new_vals:
+            return new_vals
+        if ":" not in new_vals:
+            for min_idx, max_idx in zip(self.min_index, self.max_index):
+                new_vals.extend(
+                    [
+                        self._generate_default_node(int, str(min_idx), padding=None),
+                        syntax_node.PaddingNode(":"),
+                        self._generate_default_node(int, str(max_idx), padding=" "),
+                    ]
+                )
+            return new_vals
+        vals_iter = iter(new_vals)
+        for min_idx, max_idx in zip(self.min_index, self.max_index):
+            min_val = next(vals_iter)
+            min_val.value = min_idx
+            next(vals_iter)
+            max_val = next(vals_iter)
+            max_val.value = max_idx
+        return new_vals
