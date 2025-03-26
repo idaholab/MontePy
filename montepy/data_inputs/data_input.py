@@ -48,9 +48,9 @@ class DataInputAbstract(MCNP_Object):
         data.
     """
 
-    _parser = DataParser()
+    _parser = DataParser
 
-    _classifier_parser = ClassifierParser()
+    _classifier_parser = ClassifierParser
 
     def __init__(
         self,
@@ -59,7 +59,7 @@ class DataInputAbstract(MCNP_Object):
     ):
         self._particles = None
         if not fast_parse:
-            super().__init__(input, self._parser)
+            super().__init__(input, self._parser())
             if input:
                 self.__split_name(input)
         else:
@@ -72,7 +72,7 @@ class DataInputAbstract(MCNP_Object):
                 else:
                     input = copy.copy(input)
                     input.__class__ = _ClassifierInput
-            super().__init__(input, self._classifier_parser)
+            super().__init__(input, self._classifier_parser())
             if input:
                 self.__split_name(input)
 
@@ -353,4 +353,4 @@ class DataInput(DataInputAbstract):
             "sdef": PARAM_PARSER,
         }
         if prefix.lower() in PARSER_PREFIX_MAP:
-            self._parser = PARSER_PREFIX_MAP[prefix.lower()]()
+            self._parser = PARSER_PREFIX_MAP[prefix.lower()]

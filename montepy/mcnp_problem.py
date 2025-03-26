@@ -406,7 +406,7 @@ class MCNP_Problem:
         else:
             yield from map(self._parse_object, input_iter)
 
-    def parse_input(self, check_input=False, replace=True):
+    def parse_input(self, check_input=False, replace=True, num_threads=None):
         """Semantically parses the MCNP file provided to the constructor.
 
         Parameters
