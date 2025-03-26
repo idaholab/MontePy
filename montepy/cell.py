@@ -111,7 +111,7 @@ class Cell(Numbered_MCNP_Object):
         fill.Fill: ("_fill", True),
     }
 
-    _parser = CellParser()
+    _parser = CellParser
 
     def __init__(
         self,
@@ -132,7 +132,7 @@ class Cell(Numbered_MCNP_Object):
         self._density_node = self._generate_default_node(float, None)
         self._surfaces = Surfaces()
         self._complements = Cells()
-        super().__init__(input, self._parser, number)
+        super().__init__(input, self._parser(), number)
         if not input:
             self._generate_default_tree(number)
         self._old_number = copy.deepcopy(self._tree["cell_num"])

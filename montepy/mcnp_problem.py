@@ -3,6 +3,7 @@ import copy
 from dataclasses import dataclass, field
 from enum import Enum
 import itertools
+import multiprocessing
 import os
 import queue
 from threading import Thread
@@ -378,23 +379,26 @@ class MCNP_Problem:
         item: Any = field(compare=False)
 
     @classmethod
-    def _parse_as_thread(cls, thread_num, to_parse, parsed, exceptions, failfast=False):
+    def _parse_as_thread(cls, to_parse, parsed, exceptions, failfast=False):
         while True:
             try:
                 idx, input = to_parse.get()
                 if input is None:
+                    print("dieing", input)
                     to_parse.task_done()
                     return
-                print(f"thread {thread_num} parsing {idx}, {input}")
+                print(f"thread parsing {idx}, {repr(input)}")
                 obj_parser = cls._OBJ_MATCHER[input.block_type]
-                parsed.put(cls._PriotizedItem(idx, obj_parser(input)))
+                obj = obj_parser(input)
+                parsed.put(cls._PriotizedItem(idx, obj))
                 to_parse.task_done()
             except Exception as e:
+                print(repr(input))
                 exceptions.put(e)
                 to_parse.task_done()
-                return
+                raise e
 
-    def parse_input(self, check_input=False, replace=True, num_threads=0):
+    def parse_input(self, check_input=False, replace=True, num_threads=None):
         """Semantically parses the MCNP file provided to the constructor.
 
         Parameters
@@ -419,41 +423,39 @@ class MCNP_Problem:
         to_parse = queue.Queue()
         parsed = queue.PriorityQueue()
         errors = queue.Queue()
-        if not num_threads:
-            num_threads = os.cpu_count()
-        thread_pool = []
-
-        try:
-            for i, input in enumerate(
-                input_syntax_reader.read_input_syntax(
-                    self._input_file, self.mcnp_version, replace=replace
-                )
-            ):
-                self._original_inputs.append(input)
-                if i == 0 and isinstance(input, mcnp_input.Message):
-                    self._message = input
-
-                elif isinstance(input, mcnp_input.Title) and self._title is None:
-                    self._title = input
-
-                elif isinstance(input, mcnp_input.Input):
-                    to_parse.put((i, input))
-        except UnsupportedFeature as e:
-            if check_input:
-                warnings.warn(f"{type(e).__name__}: {e.message}", stacklevel=2)
-            else:
-                raise e
-        print(num_threads)
         for i in range(num_threads):
             thread = Thread(
                 target=self._parse_as_thread, args=[i, to_parse, parsed, errors]
             )
             thread.start()
             thread_pool.append(thread)
-        for _ in thread_pool:
-            to_parse.put((-1, None))
-        for t in thread_pool:
-            t.join()
+        with multiprocessing.Pool(num_threads) as p:
+            p.apply_async(self._parse_as_thread, args=[i, to_parse, parsed, errors])
+
+            try:
+                for i, input in enumerate(
+                    input_syntax_reader.read_input_syntax(
+                        self._input_file, self.mcnp_version, replace=replace
+                    )
+                ):
+                    self._original_inputs.append(input)
+                    if i == 0 and isinstance(input, mcnp_input.Message):
+                        self._message = input
+
+                    elif isinstance(input, mcnp_input.Title) and self._title is None:
+                        self._title = input
+
+                    elif isinstance(input, mcnp_input.Input):
+                        to_parse.put((i, input))
+            except UnsupportedFeature as e:
+                if check_input:
+                    warnings.warn(f"{type(e).__name__}: {e.message}", stacklevel=2)
+                else:
+                    raise e
+            print(num_threads)
+            for _ in range(multiprocessing.active_children()):
+                to_parse.put((-1, None))
+            p.join()
         while not errors.empty():
             e = errors.get_nowait()
             raise e
