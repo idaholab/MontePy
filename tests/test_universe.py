@@ -374,6 +374,10 @@ class TestFill(TestCase):
         with self.assertRaises(TypeError):
             fill.universes = "hi"
         fill.multiple_universes = False
+        with pytest.raises(ValueError):
+            fill.universes = np.array([1, 2])
+        with pytest.raises(TypeError):
+            fill.universes = np.array([[[1]]])
 
     def test_fill_str(self):
         input = Input(["1 0 -1 fill=0:1 0:1 0:1 1 2 3 4 5 6 7 8"], BlockType.CELL)
