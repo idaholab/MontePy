@@ -1,8 +1,12 @@
-# Copyright 2024, Battelle Energy Alliance, LLC All Rights Reserved.
+# Copyright 2024 - 2025, Battelle Energy Alliance, LLC All Rights Reserved.
 import copy
+from dataclasses import dataclass, field
 from enum import Enum
 import itertools
 import os
+import queue
+from threading import Thread
+from typing import Any
 import warnings
 
 from montepy.data_inputs import mode, transform
@@ -368,7 +372,29 @@ class MCNP_Problem:
         """
         return self._transforms
 
-    def parse_input(self, check_input=False, replace=True):
+    @dataclass(order=True)
+    class _PriotizedItem:
+        priority: int
+        item: Any = field(compare=False)
+
+    @classmethod
+    def _parse_as_thread(cls, thread_num, to_parse, parsed, exceptions, failfast=False):
+        while True:
+            try:
+                idx, input = to_parse.get()
+                if input is None:
+                    to_parse.task_done()
+                    return
+                print(f"thread {thread_num} parsing {idx}, {input}")
+                obj_parser = cls._OBJ_MATCHER[input.block_type]
+                parsed.put(cls._PriotizedItem(idx, obj_parser(input)))
+                to_parse.task_done()
+            except Exception as e:
+                exceptions.put(e)
+                to_parse.task_done()
+                return
+
+    def parse_input(self, check_input=False, replace=True, num_threads=0):
         """Semantically parses the MCNP file provided to the constructor.
 
         Parameters
@@ -390,6 +416,13 @@ class MCNP_Problem:
             ),
             block_type.BlockType.DATA: (parse_data, self._data_inputs),
         }
+        to_parse = queue.Queue()
+        parsed = queue.PriorityQueue()
+        errors = queue.Queue()
+        if not num_threads:
+            num_threads = os.cpu_count()
+        thread_pool = []
+
         try:
             for i, input in enumerate(
                 input_syntax_reader.read_input_syntax(
@@ -404,43 +437,85 @@ class MCNP_Problem:
                     self._title = input
 
                 elif isinstance(input, mcnp_input.Input):
-                    if last_block != input.block_type:
-                        trailing_comment = None
-                        last_block = input.block_type
-                    obj_parser, obj_container = OBJ_MATCHER[input.block_type]
-                    if len(input.input_lines) > 0:
-                        try:
-                            obj = obj_parser(input)
-                            obj.link_to_problem(self)
-                            if isinstance(
-                                obj_container,
-                                montepy.numbered_object_collection.NumberedObjectCollection,
-                            ):
-                                obj_container.append(obj, initial_load=True)
-                            else:
-                                obj_container.append(obj)
-                        except (
-                            MalformedInputError,
-                            NumberConflictError,
-                            ParsingError,
-                            UnknownElement,
-                        ) as e:
-                            if check_input:
-                                warnings.warn(
-                                    f"{type(e).__name__}: {e.message}", stacklevel=2
-                                )
-                                continue
-                            else:
-                                raise e
-                        if isinstance(obj, Material):
-                            self._materials.append(obj, insert_in_data=False)
-                        if isinstance(obj, transform.Transform):
-                            self._transforms.append(obj, insert_in_data=False)
-                    if trailing_comment is not None and last_obj is not None:
-                        obj._grab_beginning_comment(trailing_comment, last_obj)
-                        last_obj._delete_trailing_comment()
-                    trailing_comment = obj.trailing_comment
-                    last_obj = obj
+                    to_parse.put((i, input))
+        except UnsupportedFeature as e:
+            if check_input:
+                warnings.warn(f"{type(e).__name__}: {e.message}", stacklevel=2)
+            else:
+                raise e
+        print(num_threads)
+        for i in range(num_threads):
+            thread = Thread(
+                target=self._parse_as_thread, args=[i, to_parse, parsed, errors]
+            )
+            thread.start()
+            thread_pool.append(thread)
+        for _ in thread_pool:
+            to_parse.put((-1, None))
+        for t in thread_pool:
+            t.join()
+        while not errors.empty():
+            e = errors.get_nowait()
+            raise e
+        self._load_parsed_inputs(parsed, check_input)
+
+    _OBJ_MATCHER = {
+        block_type.BlockType.CELL: Cell,
+        block_type.BlockType.SURFACE: surface_builder.parse_surface,
+        block_type.BlockType.DATA: parse_data,
+    }
+
+    def _load_parsed_inputs(self, parsed, check_input):
+        OBJ_MATCHER = {
+            block_type.BlockType.CELL: self._cells,
+            block_type.BlockType.SURFACE: self._surfaces,
+            block_type.BlockType.DATA: self._data_inputs,
+        }
+        trailing_comment = None
+        last_obj = None
+        last_block = None
+
+        try:
+            while not parsed.empty():
+                obj = parsed.get_nowait()
+                obj = obj.item
+                input = obj._input
+                if last_block != input.block_type:
+                    trailing_comment = None
+                    last_block = input.block_type
+                obj_container = OBJ_MATCHER[input.block_type]
+                if len(input.input_lines) > 0:
+                    try:
+                        obj.link_to_problem(self)
+                        if isinstance(
+                            obj_container,
+                            montepy.numbered_object_collection.NumberedObjectCollection,
+                        ):
+                            obj_container.append(obj, initial_load=True)
+                        else:
+                            obj_container.append(obj)
+                    except (
+                        MalformedInputError,
+                        NumberConflictError,
+                        ParsingError,
+                        UnknownElement,
+                    ) as e:
+                        if check_input:
+                            warnings.warn(
+                                f"{type(e).__name__}: {e.message}", stacklevel=2
+                            )
+                            continue
+                        else:
+                            raise e
+                    if isinstance(obj, Material):
+                        self._materials.append(obj, insert_in_data=False)
+                    if isinstance(obj, transform.Transform):
+                        self._transforms.append(obj, insert_in_data=False)
+                if trailing_comment is not None and last_obj is not None:
+                    obj._grab_beginning_comment(trailing_comment, last_obj)
+                    last_obj._delete_trailing_comment()
+                trailing_comment = obj.trailing_comment
+                last_obj = obj
         except UnsupportedFeature as e:
             if check_input:
                 warnings.warn(f"{type(e).__name__}: {e.message}", stacklevel=2)
