@@ -388,28 +388,12 @@ class MCNP_Problem:
                 to_parse.task_done()
                 to_parse.cancel_join_thread()
                 parsed.put(cls._PriotizedItem(idx, None))
-                parsed.close()
-                parsed.cancel_join_thread()
+                # parsed.cancel_join_thread()
                 return
             obj_parser = cls._OBJ_MATCHER[input.block_type]
             obj = obj_parser(input)
-            parsed.put_nowait(cls._PriotizedItem(idx, obj))
+            parsed.put(cls._PriotizedItem(idx, obj))
             to_parse.task_done()
-
-    @staticmethod
-    def _consume_parsed_queue(num_threads, parsed, output):
-        threads_died = 0
-        while True:
-            obj = parsed.get()
-            parsed.task_done()
-            print(f"obj: {obj}, {parsed.qsize()}, {parsed.empty()}, {parsed.full()}")
-            if obj.item is None:
-                threads_died += 1
-                if threads_died == num_threads:
-                    parsed.cancel_join_thread()
-                    return
-            else:
-                output[obj.priority] = obj.item
 
     def parse_input(self, check_input=False, replace=True, num_threads=None):
         """Semantically parses the MCNP file provided to the constructor.
@@ -440,7 +424,7 @@ class MCNP_Problem:
             errors = mp.Queue()
             parsed = {}
             if num_threads is None:
-                num_threads = os.cpu_count() - 1
+                num_threads = os.cpu_count()
             processes = []
             for _ in range(num_threads):
                 proc = mp.Process(
@@ -448,46 +432,39 @@ class MCNP_Problem:
                 )
                 proc.start()
                 processes.append(proc)
-            consumer = threading.Thread(
-                target=self._consume_parsed_queue, args=[num_threads, parsed_q, parsed]
-            )
-            consumer.start()
             print(f"Reading started: {time.time() - start}")
-            for i, input in enumerate(
+            input_iter = iter(
                 input_syntax_reader.read_input_syntax(
                     self._input_file, self.mcnp_version, replace=replace
                 )
-            ):
-                self._original_inputs.append(input)
-                if i == 0 and isinstance(input, mcnp_input.Message):
-                    self._message = input
-
-                elif isinstance(input, mcnp_input.Title) and self._title is None:
-                    self._title = input
-
-                elif isinstance(input, mcnp_input.Input):
-                    to_parse.put((i, input))
+            )
+            input = next(input_iter)
+            self._original_inputs.append(input)
+            if isinstance(input, mcnp_input.Message):
+                self._message = input
+                input = next(input_iter)
+            self._title = input
+            for i, input in enumerate(input_iter):
+                to_parse.put((i, input))
             print(f"Finished file reading: {time.time() - start}")
             for _ in processes:
                 to_parse.put((-1, None))
             to_parse.close()
-            to_parse.join_thread()
             print(f"to_parse queue closed: {time.time() - start}")
             print(
                 "\n\n\n\n\n************************** CLOSED QUEUE ****************************\n\n\n\n\n\n"
             )
+            print(f"parsers done: {time.time() - start}")
+            self._load_parsed_inputs(num_threads, parsed_q, check_input)
+            to_parse.join_thread()
+            parsed_q.join()
             for process in processes:
                 process.join()
-            consumer.join()
-            print(f"parsers done: {time.time() - start}")
-            print(f"Consumer done: {time.time() - start}")
-            #   self._load_parsed_inputs(parsed, check_input)
             print(f" Post processed: {time.time() - start}.")
             while not errors.empty():
                 e = errors.get_nowait()
                 raise e
         finally:
-            consumer.join(1)
             try:
                 for proc in processes:
                     proc.terminate()
@@ -500,66 +477,95 @@ class MCNP_Problem:
         block_type.BlockType.DATA: parse_data,
     }
 
-    def _load_parsed_inputs(self, parsed, check_input):
-        OBJ_MATCHER = {
-            block_type.BlockType.CELL: self._cells,
-            block_type.BlockType.SURFACE: self._surfaces,
-            block_type.BlockType.DATA: self._data_inputs,
-        }
-        trailing_comment = None
-        last_obj = None
-        last_block = None
-        # parsed = sorted(parsed)
-        try:
-            # for obj in parsed:
+    def _load_parsed_inputs(self, num_threads, parsed, check_input):
+        self._trailing_comment = None
+        self._last_obj = None
+        self._last_block = None
+        buffer = {}
+        expected_index = 0
+        num_died = 0
+
+        def crawl_buffer():
+            nonlocal buffer, expected_index
             while True:
-                obj = parsed.get()
-                obj = obj.item
+                if expected_index in buffer:
+                    obj = buffer.pop(expected_index)
+                    self._load_object(obj, check_input)
+                    expected_index += 1
+                else:
+                    return
+
+        try:
+            while True:
+                priority_item = parsed.get()
+                obj = priority_item.item
                 if obj is None:
-                    break
-                input = obj._input
-                if last_block != input.block_type:
-                    trailing_comment = None
-                    last_block = input.block_type
-                obj_container = OBJ_MATCHER[input.block_type]
-                if len(input.input_lines) > 0:
-                    try:
-                        obj.link_to_problem(self)
-                        if isinstance(
-                            obj_container,
-                            montepy.numbered_object_collection.NumberedObjectCollection,
-                        ):
-                            obj_container.append(obj, initial_load=True)
-                        else:
-                            obj_container.append(obj)
-                    except (
-                        MalformedInputError,
-                        NumberConflictError,
-                        ParsingError,
-                        UnknownElement,
-                    ) as e:
-                        if check_input:
-                            warnings.warn(
-                                f"{type(e).__name__}: {e.message}", stacklevel=2
-                            )
-                            continue
-                        else:
-                            raise e
-                    if isinstance(obj, Material):
-                        self._materials.append(obj, insert_in_data=False)
-                    if isinstance(obj, transform.Transform):
-                        self._transforms.append(obj, insert_in_data=False)
-                if trailing_comment is not None and last_obj is not None:
-                    obj._grab_beginning_comment(trailing_comment, last_obj)
-                    last_obj._delete_trailing_comment()
-                trailing_comment = obj.trailing_comment
-                last_obj = obj
+                    num_died += 1
+                    parsed.task_done()
+                    if num_died == num_threads:
+                        parsed.close()
+                        break
+                    continue
+                if priority_item.priority == expected_index:
+                    self._load_object(obj, check_input)
+                    expected_index += 1
+                    crawl_buffer()
+                else:
+                    buffer[priority_item.priority] = obj
+                    crawl_buffer()
+                parsed.task_done()
         except UnsupportedFeature as e:
             if check_input:
                 warnings.warn(f"{type(e).__name__}: {e.message}", stacklevel=2)
             else:
                 raise e
-        self.__update_internal_pointers(check_input)
+        # TODO multi-thread
+        # self.__update_internal_pointers(check_input)
+        del self._trailing_comment
+        del self._last_obj
+        del self._last_block
+
+    def _load_object(self, obj, check_input):
+        OBJ_MATCHER = {
+            block_type.BlockType.CELL: self._cells,
+            block_type.BlockType.SURFACE: self._surfaces,
+            block_type.BlockType.DATA: self._data_inputs,
+        }
+        input = obj._input
+        if self._last_block != input.block_type:
+            self._trailing_comment = None
+            self._last_block = input.block_type
+        obj_container = OBJ_MATCHER[input.block_type]
+        if len(input.input_lines) > 0:
+            try:
+                obj.link_to_problem(self)
+                if isinstance(
+                    obj_container,
+                    montepy.numbered_object_collection.NumberedObjectCollection,
+                ):
+                    obj_container.append(obj, initial_load=True)
+                else:
+                    obj_container.append(obj)
+            except (
+                MalformedInputError,
+                NumberConflictError,
+                ParsingError,
+                UnknownElement,
+            ) as e:
+                if check_input:
+                    warnings.warn(f"{type(e).__name__}: {e.message}", stacklevel=2)
+                    pass
+                else:
+                    raise e
+            if isinstance(obj, Material):
+                self._materials.append(obj, insert_in_data=False)
+            if isinstance(obj, transform.Transform):
+                self._transforms.append(obj, insert_in_data=False)
+        if self._trailing_comment is not None and self._last_obj is not None:
+            obj._grab_beginning_comment(self._trailing_comment, self._last_obj)
+            self._last_obj._delete_trailing_comment()
+        self._trailing_comment = obj.trailing_comment
+        self._last_obj = obj
 
     def __update_internal_pointers(self, check_input=False):
         """Updates the internal pointers between objects
