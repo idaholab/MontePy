@@ -71,7 +71,7 @@ MontePy Changelog
 0.5 releases
 ============
 
-0.5.6
+#Next Version#
 --------------
 **Bug Fixes**
 
