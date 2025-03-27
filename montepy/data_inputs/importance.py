@@ -182,22 +182,17 @@ class Importance(CellModifierInput):
             raise TypeError("Key must be a particle")
         del self._particle_importances[particle]
 
-    def _format_default(self) -> list[str]:
+    def __str__(self):
         """
-        Create a simple, self-contained list representation of the importance settings.
+        Create a simple, self-contained list representation of the importance settings and join them together.
         """
         ret = []
         for particle, tree in self._particle_importances.items():
             # Instead of tree["classifier"].particles.value (which doesn't exist),
             # use str(tree["classifier"].particles) or an appropriate attribute.
             ret.append(f"{particle}={tree['data'].nodes[0].value}")
-
-        return ret
-
-    def __str__(self):
-        default = self._format_default()
-        if default:
-            return f"IMPORTANCE: {', '.join(default)}"
+        if ret:
+            return f"IMPORTANCE: {', '.join(ret)}"
         else:
             return "IMPORTANCE: Object is empty"
 
