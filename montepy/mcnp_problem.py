@@ -4,6 +4,7 @@ from dataclasses import dataclass, field
 from enum import Enum
 import itertools
 import multiprocessing as mp
+import threading
 import os
 import sys
 import queue
@@ -383,11 +384,10 @@ class MCNP_Problem:
         while True:
             idx, input = to_parse.get(timeout=1)
             if input is None:
-                print("dieing", input)
                 to_parse.task_done()
-                print(to_parse.qsize())
+                to_parse.cancel_join_thread()
+                parsed.cancel_join_thread()
                 return
-            print(f"thread parsing {idx}, {repr(input)}")
             obj_parser = cls._OBJ_MATCHER[input.block_type]
             obj = obj_parser(input)
             parsed.put_nowait(cls._PriotizedItem(idx, obj))
@@ -427,41 +427,34 @@ class MCNP_Problem:
             )
             proc.start()
             processes.append(proc)
+        consumer = threading.Thread(
+            target=self._load_parsed_inputs, args=[parsed, check_input]
+        )
 
-        try:
-            for i, input in enumerate(
-                input_syntax_reader.read_input_syntax(
-                    self._input_file, self.mcnp_version, replace=replace
-                )
-            ):
-                self._original_inputs.append(input)
-                if i == 0 and isinstance(input, mcnp_input.Message):
-                    self._message = input
+        for i, input in enumerate(
+            input_syntax_reader.read_input_syntax(
+                self._input_file, self.mcnp_version, replace=replace
+            )
+        ):
+            self._original_inputs.append(input)
+            if i == 0 and isinstance(input, mcnp_input.Message):
+                self._message = input
 
-                elif isinstance(input, mcnp_input.Title) and self._title is None:
-                    self._title = input
+            elif isinstance(input, mcnp_input.Title) and self._title is None:
+                self._title = input
 
-                elif isinstance(input, mcnp_input.Input):
-                    to_parse.put((i, input))
-        except UnsupportedFeature as e:
-            if check_input:
-                warnings.warn(f"{type(e).__name__}: {e.message}", stacklevel=2)
-            else:
-                raise e
+            elif isinstance(input, mcnp_input.Input):
+                to_parse.put((i, input))
+        consumer.start()
         for _ in processes:
             to_parse.put((-1, None))
-        # to_parse.join()
-        while True:
-            try:
-                print(parsed.get_nowait())
-            except queue.Empty:
-                break
+        to_parse.join()
         for process in processes:
             process.join()
+        consumer.join()
         while not errors.empty():
             e = errors.get_nowait()
             raise e
-        self._load_parsed_inputs(parsed, check_input)
 
     _OBJ_MATCHER = {
         block_type.BlockType.CELL: Cell,

@@ -59,7 +59,6 @@ class DataInputAbstract(MCNP_Object):
     ):
         self._particles = None
         if not fast_parse:
-            print(self._parser)
             super().__init__(input, self._parser())
             if input:
                 self.__split_name(input)
