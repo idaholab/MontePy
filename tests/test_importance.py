@@ -10,134 +10,116 @@ from montepy.errors import *
 from montepy.input_parser import mcnp_input, block_type
 
 
-def create_cell_from_input(in_str, block=block_type.BlockType.CELL):
-    """Helper to create a Cell object from a given input string."""
-    card = mcnp_input.Input([in_str], block)
-    return Cell(card)
-
-
-# Parameterized test for valid and invalid importance parsing
-@pytest.mark.parametrize(
-    "in_str, expected, error",
-    [
-        # Valid cases
-        (
-            "1 0 -1 IMP:N,P=1",
-            {
-                "neutron": 1.0,
-                "photon": 1.0,
-                "all": None,
-                "alpha_particle": 0.0,
-                "in_cell_block": True,
-            },
-            None,
-        ),
-        (
-            "1 0 -1 IMP:E=1 IMP:H=1",
-            {"electron": 1.0, "proton": 1.0},
-            None,
-        ),
-        (
-            "1 0 -1",
-            {"neutron": 0.0},
-            None,
-        ),  # default neutron importance when nothing is set
-        # Error cases
-        ("1 0 -1 IMP:N,P=h", None, ValueError),  # non-numeric value
-        ("1 0 -1 IMP:N,P=-2", None, ValueError),  # negative value
-        ("1 0 -1 IMP:N,xx=2", None, ParsingError),  # invalid particle type
-    ],
-)
-def test_importance_parsing_from_cell(in_str, expected, error):
-    """Test importance parsing from cell input string.
-
-    Tests both valid and invalid cases:
-    - Valid: Verifies parsed values match expected values
-    - Invalid: Verifies appropriate errors are raised
-    """
-    if error is not None:
-        with pytest.raises(error):
-            create_cell_from_input(in_str)
-    else:
-        cell = create_cell_from_input(in_str)
-        for attr, value in expected.items():
-            actual = getattr(cell.importance, attr)
-            assert actual == pytest.approx(
-                value
-            ), f"Expected {attr}={value}, got {actual}"
-
-
-# Valid data case: the card should be parsed correctly
-@pytest.mark.parametrize(
-    "in_str, expected_values",
-    [
-        (
-            "IMP:N,P 1 0",
-            {
-                Particle.NEUTRON: [1.0, 0.0],
-                Particle.PHOTON: [1.0, 0.0],
-            },
-        ),
-        (
-            "IMP:N,P,E 1 0 2",
-            {
-                Particle.NEUTRON: [1.0, 0.0, 2.0],
-                Particle.PHOTON: [1.0, 0.0, 2.0],
-                Particle.ELECTRON: [1.0, 0.0, 2.0],
-            },
-        ),
-    ],
-)
-def test_importance_init_data_valid(in_str, expected_values):
-    """Test importance data initialization for multiple particles.
-
-    Args:
-        in_str: Input string containing importance definitions
-        expected_values: Dictionary mapping particles to their expected importance values
-    """
-    imp = Importance(in_str)  # Updated: directly pass the string instead of creating card
-
-    for particle, value in expected_values.items():
-        actual = [val.value for val in imp._particle_importances[particle]["data"]]
-        assert actual == pytest.approx(
-            value
-        ), f"For {particle.name}, expected {value}, got {actual}"
-
-
-# Error cases: each input should raise an exception, optionally with additional keyword arguments.
-@pytest.mark.parametrize(
-    "in_str, kwargs, expected_exception",
-    [
-        ("IMP:N,P 1 h", {}, ValueError),  # non-numeric importance
-        ("IMP:N,P 1 -2", {}, ValueError),  # negative importance
-        ("IMP:N,P 1 2", {"in_cell_block": 1}, TypeError),  # bad in_cell_block type
-        ("IMP:N,P 1 2", {"key": 1}, TypeError),  # bad key type
-        ("IMP:N,P 1 2", {"value": 1}, TypeError),  # bad value type
-        ("IMP:N,zz 1 2", {}, ParsingError),  # invalid particle type
-    ],
-)
-def test_importance_init_data_invalid(in_str, kwargs, expected_exception):
-    card = mcnp_input.Input([in_str], block_type.BlockType.DATA)
-    with pytest.raises(expected_exception):
-        Importance(card, **kwargs)
-
-
 class TestImportance:
     default_test_input_path = os.path.join("tests", "inputs")
 
+    def create_cell_from_input(self, in_str, block=block_type.BlockType.CELL):
+        """Helper to create a Cell object from a given input string."""
+        card = mcnp_input.Input([in_str], block)
+        return Cell(card)
+
+    @pytest.mark.parametrize(
+        "in_str, expected, error",
+        [
+            # Valid cases
+            (
+                "1 0 -1 IMP:N,P=1",
+                {
+                    "neutron": 1.0,
+                    "photon": 1.0,
+                    "all": None,
+                    "alpha_particle": 0.0,
+                    "in_cell_block": True,
+                },
+                None,
+            ),
+            (
+                "1 0 -1 IMP:E=1 IMP:H=1",
+                {"electron": 1.0, "proton": 1.0},
+                None,
+            ),
+            (
+                "1 0 -1",
+                {"neutron": 0.0},
+                None,
+            ),  # default neutron importance when nothing is set
+            # Error cases
+            ("1 0 -1 IMP:N,P=h", None, ValueError),  # non-numeric value
+            ("1 0 -1 IMP:N,P=-2", None, ValueError),  # negative value
+            ("1 0 -1 IMP:N,xx=2", None, ParsingError),  # invalid particle type
+        ],
+    )
+    def test_importance_parsing_from_cell(self, in_str, expected, error):
+        """Test importance parsing from cell input string."""
+        if error is not None:
+            with pytest.raises(error):
+                self.create_cell_from_input(in_str)
+        else:
+            cell = self.create_cell_from_input(in_str)
+            for attr, value in expected.items():
+                actual = getattr(cell.importance, attr)
+                assert actual == pytest.approx(
+                    value
+                ), f"Expected {attr}={value}, got {actual}"
+
+    @pytest.mark.parametrize(
+        "in_str, expected_values",
+        [
+            (
+                "IMP:N,P 1 0",
+                {
+                    Particle.NEUTRON: [1.0, 0.0],
+                    Particle.PHOTON: [1.0, 0.0],
+                },
+            ),
+            (
+                "IMP:N,P,E 1 0 2",
+                {
+                    Particle.NEUTRON: [1.0, 0.0, 2.0],
+                    Particle.PHOTON: [1.0, 0.0, 2.0],
+                    Particle.ELECTRON: [1.0, 0.0, 2.0],
+                },
+            ),
+        ],
+    )
+    def test_importance_init_data_valid(self, in_str, expected_values):
+        """Test importance data initialization for multiple particles."""
+        imp = Importance(in_str)
+        for particle, value in expected_values.items():
+            actual = [val.value for val in imp._particle_importances[particle]["data"]]
+            assert actual == pytest.approx(
+                value
+            ), f"For {particle.name}, expected {value}, got {actual}"
+
+    @pytest.mark.parametrize(
+        "in_str, kwargs, expected_exception",
+        [
+            ("IMP:N,P 1 h", {}, ValueError),  # non-numeric importance
+            ("IMP:N,P 1 -2", {}, ValueError),  # negative importance
+            ("IMP:N,P 1 2", {"in_cell_block": 1}, TypeError),  # bad in_cell_block type
+            ("IMP:N,P 1 2", {"key": 1}, TypeError),  # bad key type
+            ("IMP:N,P 1 2", {"value": 1}, TypeError),  # bad value type
+            ("IMP:N,zz 1 2", {}, ParsingError),  # invalid particle type
+        ],
+    )
+    def test_importance_init_data_invalid(self, in_str, kwargs, expected_exception):
+        """Test invalid importance data initialization."""
+        with pytest.raises(expected_exception):
+            Importance(in_str, **kwargs)
+
     @pytest.fixture
-    def cell_with_importance(_):
+    def cell_with_importance(self):
         """
         Fixture providing a cell with importance assignments and block_type.BlockType.CELL
         """
-        return create_cell_from_input("1 0 -1 IMP:N,P=1")
+        return self.create_cell_from_input("1 0 -1 IMP:N,P=1")
 
     @pytest.fixture
-    def empty_cell(_):
-        return create_cell_from_input("1 0 -1")
+    def empty_cell(self):
+        return self.create_cell_from_input("1 0 -1")
 
     @pytest.fixture
-    def test_importance_values(_):
+    def test_importance_values(self):
         return {
             Particle.NEUTRON: 2.5,
             Particle.PHOTON: 3.5,
@@ -295,8 +277,9 @@ class TestImportance:
         Verifies proper combination of importance data and proper error handling.
         """
         imp1 = Importance("IMP:N,P 1 0")  # Updated initialization
-        imp2 = Importance("IMP:E 0 0")    # Updated initialization
+        imp2 = Importance("IMP:E 0 0")  # Updated initialization
         imp1.merge(imp2)
+
         assert [
             val.value for val in imp1._particle_importances[Particle.NEUTRON]["data"]
         ] == pytest.approx([1.0, 0.0])
