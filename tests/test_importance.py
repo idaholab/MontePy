@@ -1,6 +1,7 @@
 # Copyright 2024, Battelle Energy Alliance, LLC All Rights Reserved.
 import montepy
 import os
+import io
 import pytest
 from montepy.cell import Cell
 from montepy.particle import Particle
@@ -61,7 +62,9 @@ def test_importance_parsing_from_cell(in_str, expected, error):
         cell = create_cell_from_input(in_str)
         for attr, value in expected.items():
             actual = getattr(cell.importance, attr)
-            assert actual == pytest.approx(value) , f"Expected {attr}={value}, got {actual}"
+            assert actual == pytest.approx(
+                value
+            ), f"Expected {attr}={value}, got {actual}"
 
 
 # Valid data case: the card should be parsed correctly
@@ -97,8 +100,8 @@ def test_importance_init_data_valid(in_str, expected_values):
 
     for particle, value in expected_values.items():
         actual = [val.value for val in imp._particle_importances[particle]["data"]]
-        assert (
-            actual == pytest.approx(value)
+        assert actual == pytest.approx(
+            value
         ), f"For {particle.name}, expected {value}, got {actual}"
 
 
@@ -121,6 +124,7 @@ def test_importance_init_data_invalid(in_str, kwargs, expected_exception):
 
 
 class TestImportance:
+    default_test_input_path = os.path.join("tests", "inputs")
 
     @pytest.fixture
     def cell_with_importance(_):
@@ -316,14 +320,16 @@ class TestImportance:
         with pytest.raises(MalformedInputError):
             imp1.merge(imp2)
 
+    def test_redundant_importance(self):
+        with pytest.raises(MalformedInputError):
+            montepy.read_input(
+                os.path.join(self.default_test_input_path, "test_imp_redundant.imcnp")
+            )
 
-def test_redundant_importance():
-    with pytest.raises(MalformedInputError):
-        montepy.read_input(os.path.join("tests", "inputs", "test_imp_redundant.imcnp"))
-
-
-def test_default_importance_not_implemented():
-    prob = montepy.read_input(os.path.join("tests", "inputs", "test_not_imp.imcnp"))
-    prob.print_in_data_block["imp"] = True
-    with pytest.raises(NotImplementedError):
-        prob.write_problem(io.StringIO())
+    def test_default_importance_not_implemented(self):
+        prob = montepy.read_input(
+            os.path.join(self.default_test_input_path, "test_not_imp.imcnp")
+        )
+        prob.print_in_data_block["imp"] = True
+        with pytest.raises(NotImplementedError):
+            prob.write_problem(io.StringIO())
