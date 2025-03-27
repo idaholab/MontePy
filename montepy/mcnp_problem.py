@@ -8,6 +8,7 @@ import threading
 import os
 import sys
 import queue
+import time
 from typing import Any
 import warnings
 
@@ -386,12 +387,29 @@ class MCNP_Problem:
             if input is None:
                 to_parse.task_done()
                 to_parse.cancel_join_thread()
+                parsed.put(cls._PriotizedItem(idx, None))
+                parsed.close()
                 parsed.cancel_join_thread()
                 return
             obj_parser = cls._OBJ_MATCHER[input.block_type]
             obj = obj_parser(input)
             parsed.put_nowait(cls._PriotizedItem(idx, obj))
             to_parse.task_done()
+
+    @staticmethod
+    def _consume_parsed_queue(num_threads, parsed, output):
+        threads_died = 0
+        while True:
+            obj = parsed.get()
+            parsed.task_done()
+            print(f"obj: {obj}, {parsed.qsize()}, {parsed.empty()}, {parsed.full()}")
+            if obj.item is None:
+                threads_died += 1
+                if threads_died == num_threads:
+                    parsed.cancel_join_thread()
+                    return
+            else:
+                output[obj.priority] = obj.item
 
     def parse_input(self, check_input=False, replace=True, num_threads=None):
         """Semantically parses the MCNP file provided to the constructor.
@@ -404,57 +422,77 @@ class MCNP_Problem:
         replace : bool
             replace all non-ASCII characters with a space (0x20)
         """
-        trailing_comment = None
-        last_obj = None
-        last_block = None
-        OBJ_MATCHER = {
-            block_type.BlockType.CELL: (Cell, self._cells),
-            block_type.BlockType.SURFACE: (
-                surface_builder.parse_surface,
-                self._surfaces,
-            ),
-            block_type.BlockType.DATA: (parse_data, self._data_inputs),
-        }
-        to_parse = mp.JoinableQueue()
-        parsed = mp.Queue()
-        errors = mp.Queue()
-        if num_threads is None:
-            num_threads = os.cpu_count()
-        processes = []
-        for _ in range(num_threads):
-            proc = mp.Process(
-                target=self._parse_as_thread, args=[to_parse, parsed, errors]
+        try:
+            start = time.time()
+            trailing_comment = None
+            last_obj = None
+            last_block = None
+            OBJ_MATCHER = {
+                block_type.BlockType.CELL: (Cell, self._cells),
+                block_type.BlockType.SURFACE: (
+                    surface_builder.parse_surface,
+                    self._surfaces,
+                ),
+                block_type.BlockType.DATA: (parse_data, self._data_inputs),
+            }
+            to_parse = mp.JoinableQueue()
+            parsed_q = mp.JoinableQueue()
+            errors = mp.Queue()
+            parsed = {}
+            if num_threads is None:
+                num_threads = os.cpu_count() - 1
+            processes = []
+            for _ in range(num_threads):
+                proc = mp.Process(
+                    target=self._parse_as_thread, args=[to_parse, parsed_q, errors]
+                )
+                proc.start()
+                processes.append(proc)
+            consumer = threading.Thread(
+                target=self._consume_parsed_queue, args=[num_threads, parsed_q, parsed]
             )
-            proc.start()
-            processes.append(proc)
-        consumer = threading.Thread(
-            target=self._load_parsed_inputs, args=[parsed, check_input]
-        )
+            consumer.start()
+            print(f"Reading started: {time.time() - start}")
+            for i, input in enumerate(
+                input_syntax_reader.read_input_syntax(
+                    self._input_file, self.mcnp_version, replace=replace
+                )
+            ):
+                self._original_inputs.append(input)
+                if i == 0 and isinstance(input, mcnp_input.Message):
+                    self._message = input
 
-        for i, input in enumerate(
-            input_syntax_reader.read_input_syntax(
-                self._input_file, self.mcnp_version, replace=replace
+                elif isinstance(input, mcnp_input.Title) and self._title is None:
+                    self._title = input
+
+                elif isinstance(input, mcnp_input.Input):
+                    to_parse.put((i, input))
+            print(f"Finished file reading: {time.time() - start}")
+            for _ in processes:
+                to_parse.put((-1, None))
+            to_parse.close()
+            to_parse.join_thread()
+            print(f"to_parse queue closed: {time.time() - start}")
+            print(
+                "\n\n\n\n\n************************** CLOSED QUEUE ****************************\n\n\n\n\n\n"
             )
-        ):
-            self._original_inputs.append(input)
-            if i == 0 and isinstance(input, mcnp_input.Message):
-                self._message = input
-
-            elif isinstance(input, mcnp_input.Title) and self._title is None:
-                self._title = input
-
-            elif isinstance(input, mcnp_input.Input):
-                to_parse.put((i, input))
-        consumer.start()
-        for _ in processes:
-            to_parse.put((-1, None))
-        to_parse.join()
-        for process in processes:
-            process.join()
-        consumer.join()
-        while not errors.empty():
-            e = errors.get_nowait()
-            raise e
+            for process in processes:
+                process.join()
+            consumer.join()
+            print(f"parsers done: {time.time() - start}")
+            print(f"Consumer done: {time.time() - start}")
+            #   self._load_parsed_inputs(parsed, check_input)
+            print(f" Post processed: {time.time() - start}.")
+            while not errors.empty():
+                e = errors.get_nowait()
+                raise e
+        finally:
+            consumer.join(1)
+            try:
+                for proc in processes:
+                    proc.terminate()
+            except NameError:
+                pass
 
     _OBJ_MATCHER = {
         block_type.BlockType.CELL: Cell,
@@ -471,11 +509,14 @@ class MCNP_Problem:
         trailing_comment = None
         last_obj = None
         last_block = None
-
+        # parsed = sorted(parsed)
         try:
-            while not parsed.empty():
-                obj = parsed.get_nowait()
+            # for obj in parsed:
+            while True:
+                obj = parsed.get()
                 obj = obj.item
+                if obj is None:
+                    break
                 input = obj._input
                 if last_block != input.block_type:
                     trailing_comment = None
