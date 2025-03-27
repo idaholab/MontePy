@@ -71,6 +71,12 @@ MontePy Changelog
 0.5 releases
 ============
 
+#Next Version#
+--------------
+**Bug Fixes**
+
+* Fixed bug 549 – corrected blank importance printing issue (:issue:`549`).
+
 0.5.5
 --------------
 

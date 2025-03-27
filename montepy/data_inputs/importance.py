@@ -183,9 +183,18 @@ class Importance(CellModifierInput):
         del self._particle_importances[particle]
 
     def __str__(self):
-        if not self.in_cell_block and self._problem is None:
-            return " ".join(self.input_lines)
-        return "".join(self.format_for_mcnp_input(DEFAULT_VERSION))
+        """
+        Create a simple, self-contained list representation of the importance settings and join them together.
+        """
+        ret = []
+        for particle, tree in self._particle_importances.items():
+            # Instead of tree["classifier"].particles.value (which doesn't exist),
+            # use str(tree["classifier"].particles) or an appropriate attribute.
+            ret.append(f"{particle}={tree['data'].nodes[0].value}")
+        if ret:
+            return f"IMPORTANCE: {', '.join(ret)}"
+        else:
+            return "IMPORTANCE: Object is empty"
 
     def __repr__(self):
         return (
