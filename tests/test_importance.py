@@ -95,8 +95,7 @@ def test_importance_init_data_valid(in_str, expected_values):
         in_str: Input string containing importance definitions
         expected_values: Dictionary mapping particles to their expected importance values
     """
-    card = mcnp_input.Input([in_str], block_type.BlockType.DATA)
-    imp = Importance(card)
+    imp = Importance(in_str)  # Updated: directly pass the string instead of creating card
 
     for particle, value in expected_values.items():
         actual = [val.value for val in imp._particle_importances[particle]["data"]]
@@ -128,6 +127,9 @@ class TestImportance:
 
     @pytest.fixture
     def cell_with_importance(_):
+        """
+        Fixture providing a cell with importance assignments and block_type.BlockType.CELL
+        """
         return create_cell_from_input("1 0 -1 IMP:N,P=1")
 
     @pytest.fixture
@@ -287,17 +289,13 @@ class TestImportance:
         with pytest.raises(TypeError):
             del cell.importance[""]
 
-    def test_importance_merge(self):
+    def test_importance_merge(self, cell_with_importance):
         """
         Test merging of importance objects.
         Verifies proper combination of importance data and proper error handling.
         """
-        in_str = "IMP:N,P 1 0"
-        card = mcnp_input.Input([in_str], block_type.BlockType.DATA)
-        imp1 = Importance(card)
-        in_str = "IMP:E 0 0"
-        card = mcnp_input.Input([in_str], block_type.BlockType.DATA)
-        imp2 = Importance(card)
+        imp1 = Importance("IMP:N,P 1 0")  # Updated initialization
+        imp2 = Importance("IMP:E 0 0")    # Updated initialization
         imp1.merge(imp2)
         assert [
             val.value for val in imp1._particle_importances[Particle.NEUTRON]["data"]
@@ -309,14 +307,10 @@ class TestImportance:
         with pytest.raises(TypeError):
             imp1.merge("hi")
         # test bad block type
-        in_str = "1 0 -1 IMP:N,P=1"
-        card = mcnp_input.Input([in_str], block_type.BlockType.CELL)
-        cell = Cell(card)
         with pytest.raises(ValueError):
-            imp1.merge(cell.importance)
+            imp1.merge(cell_with_importance.importance)
         in_str = "IMP:P 0 0"
-        card = mcnp_input.Input([in_str], block_type.BlockType.CELL)
-        imp2 = Importance(card)
+        imp2 = Importance(in_str)
         with pytest.raises(MalformedInputError):
             imp1.merge(imp2)
 
