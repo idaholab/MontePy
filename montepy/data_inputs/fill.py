@@ -271,20 +271,23 @@ class Fill(CellModifierInput):
     def universes(self, value):
         if not isinstance(value, (np.ndarray, type(None))):
             raise TypeError(f"Universes must be set to an array. {value} given.")
-        if len(value.shape) != 3:
+        if value.ndim != 3:
             raise ValueError(
                 f"3D array must be given for fill.universes. Array of shape: {value.shape} given."
             )
-        if value.dtype != np.object_ or any(
-            map(lambda x: not isinstance(x, (Universe, type(None))), value.flatten())
-        ):
+
+        def is_universes(array):
+            type_checker = lambda x: isinstance(x, (Universe, type(None)))
+            return map(type_checker, array.flat)
+
+        if value.dtype != np.object_ or not all(is_universes(value)):
             raise TypeError(
                 f"All values in array must be a Universe (or None). {value} given."
             )
         self.multiple_universes = True
         if self.min_index is None:
             self.min_index = np.array([0] * 3)
-        self.max_index = self.min_index + np.array(value.shape) - np.array([1, 1, 1])
+        self.max_index = self.min_index + np.array(value.shape) - 1
         self._universes = value
 
     @universes.deleter
