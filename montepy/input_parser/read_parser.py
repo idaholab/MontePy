@@ -4,12 +4,7 @@ from montepy.input_parser import syntax_node
 
 
 class ReadParser(MCNP_Parser):
-    """
-    A parser for handling "read" inputs.
-
-    .. versionadded:: 0.2.0
-        This was added with the major parser rework.
-    """
+    """A parser for handling "read" inputs."""
 
     debugfile = None
     dont_copy = {"parameter"}

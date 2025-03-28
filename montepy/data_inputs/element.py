@@ -1,48 +1,69 @@
-# Copyright 2024, Battelle Energy Alliance, LLC All Rights Reserved.
+# Copyright 2024-2025, Battelle Energy Alliance, LLC All Rights Reserved.
+from __future__ import annotations
 from montepy.errors import *
+from montepy._singleton import SingletonGroup
+from numbers import Integral
+
+MAX_Z_NUM = 118
 
 
-class Element:
+class Element(SingletonGroup):
+    """Class to represent an element e.g., Aluminum.
+
+    .. Note::
+
+        This class is immutable, and hashable, meaning it is suitable as a dictionary key.
+
+    Parameters
+    ----------
+    Z : int
+        the Z number of the element
+
+    Raises
+    ------
+    UnknownElement
+        if there is no element with that Z number.
     """
-    Class to represent an element e.g., Aluminum.
 
-    :param Z: the Z number of the element
-    :type Z: int
-    :raises UnknownElement: if there is no element with that Z number.
-    """
+    __slots__ = "_Z"
 
-    def __init__(self, Z):
+    def __init__(self, Z: int):
+        if not isinstance(Z, Integral):
+            raise TypeError(f"Z must be an int. {Z} of type {type(Z)} given.")
         self._Z = Z
         if Z not in self.__Z_TO_SYMBOL:
             raise UnknownElement(f"Z={Z}")
 
     @property
-    def symbol(self):
-        """
-        The atomic symbol for this Element.
+    def symbol(self) -> str:
+        """The atomic symbol for this Element.
 
-        :returns: the atomic symbol
-        :rtype: str
+        Returns
+        -------
+        str
+            the atomic symbol
         """
         return self.__Z_TO_SYMBOL[self.Z]
 
     @property
-    def Z(self):
-        """
-        The atomic number for this Element.
+    def Z(self) -> int:
+        """The atomic number for this Element.
 
-        :returns: the atomic number
-        :rtype: int
+        Returns
+        -------
+        int
+            the atomic number
         """
         return self._Z
 
     @property
-    def name(self):
-        """
-        The name of the element.
+    def name(self) -> str:
+        """The name of the element.
 
-        :returns: the element's name.
-        :rtype: str
+        Returns
+        -------
+        str
+            the element's name.
         """
         return self.__ELEMENT_NAMES[self.symbol]
 
@@ -50,24 +71,32 @@ class Element:
         return self.name
 
     def __repr__(self):
-        return f"Z={self.Z}, symbol={self.symbol}, name={self.name}"
+        return f"Element({self.Z})"
 
     def __hash__(self):
         return hash(self.Z)
 
     def __eq__(self, other):
-        return self.Z == other.Z
+        return self is other
+
+    def __reduce__(self):
+        return (type(self), (self.Z,))
 
     @classmethod
-    def get_by_symbol(cls, symbol):
-        """
-        Get an element by it's symbol.
+    def get_by_symbol(cls, symbol: str) -> Element:
+        """Get an element by it's symbol.
 
         E.g., get the element with Z=1 from "H".
 
-        :returns: the element with this symbol
-        :rtype: Element
-        :raises UnknownElement: if there is no element with that symbol.
+        Returns
+        -------
+        Element
+            the element with this symbol
+
+        Raises
+        ------
+        UnknownElement
+            if there is no element with that symbol.
         """
         try:
             Z = cls.__SYMBOL_TO_Z[symbol]
@@ -76,15 +105,20 @@ class Element:
             raise UnknownElement(f"The symbol: {symbol}")
 
     @classmethod
-    def get_by_name(cls, name):
-        """
-        Get an element by it's name.
+    def get_by_name(cls, name: str) -> Element:
+        """Get an element by it's name.
 
         E.g., get the element with Z=1 from "hydrogen".
 
-        :returns: the element with this name
-        :rtype: Element
-        :raises UnknownElement: if there is no element with that name.
+        Returns
+        -------
+        Element
+            the element with this name
+
+        Raises
+        ------
+        UnknownElement
+            if there is no element with that name.
         """
         try:
             symbol = cls.__NAMES_TO_SYMBOLS[name]
