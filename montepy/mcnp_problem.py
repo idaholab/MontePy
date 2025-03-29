@@ -9,6 +9,7 @@ import os
 import sys
 import queue
 import time
+import traceback
 from typing import Any
 import warnings
 
@@ -381,19 +382,24 @@ class MCNP_Problem:
         item: Any = field(compare=False)
 
     @classmethod
-    def _parse_as_thread(cls, to_parse, parsed, exceptions, failfast=False):
+    def _parse_as_thread(cls, to_parse, parsed, exceptions):
         while True:
-            idx, input = to_parse.get(timeout=1)
-            if input is None:
+            try:
+                idx, input = to_parse.get(timeout=1)
+                if input is None:
+                    break
+                obj_parser = cls._OBJ_MATCHER[input.block_type]
+                obj = obj_parser(input)
+                parsed.put(cls._PriotizedItem(idx, obj))
                 to_parse.task_done()
-                to_parse.cancel_join_thread()
-                parsed.put(cls._PriotizedItem(idx, None))
-                # parsed.cancel_join_thread()
-                return
-            obj_parser = cls._OBJ_MATCHER[input.block_type]
-            obj = obj_parser(input)
-            parsed.put(cls._PriotizedItem(idx, obj))
-            to_parse.task_done()
+            except Exception as e:
+                exceptions.put((e, traceback.format_exc()))
+        to_parse.task_done()
+        to_parse.cancel_join_thread()
+        parsed.put(cls._PriotizedItem(idx, None))
+        parsed.cancel_join_thread()
+        exceptions.put((None, ""))
+        exceptions.cancel_join_thread()
 
     def parse_input(self, check_input=False, replace=True, num_threads=None):
         """Semantically parses the MCNP file provided to the constructor.
@@ -420,19 +426,56 @@ class MCNP_Problem:
                 block_type.BlockType.DATA: (parse_data, self._data_inputs),
             }
             to_parse = mp.JoinableQueue()
-            parsed_q = mp.JoinableQueue()
+            parsed = mp.JoinableQueue()
             errors = mp.Queue()
-            parsed = {}
             if num_threads is None:
                 num_threads = os.cpu_count()
             processes = []
             for _ in range(num_threads):
                 proc = mp.Process(
-                    target=self._parse_as_thread, args=[to_parse, parsed_q, errors]
+                    target=self._parse_as_thread, args=[to_parse, parsed, errors]
                 )
                 proc.start()
                 processes.append(proc)
-            print(f"Reading started: {time.time() - start}")
+            consumer = mp.Process(
+                target=self._read_and_parse,
+                args=[num_threads, replace, to_parse, parsed, errors, check_input],
+            )
+            consumer.start()
+            processes.append(consumer)
+            finished_threads = 0
+            while True:
+                error, tb = errors.get()
+                if error is None:
+                    finished_threads += 1
+                    print(error, finished_threads)
+                    if finished_threads >= num_threads + 1:
+                        break
+                else:
+                    if check_input:
+                        warnings.warn(
+                            f"{type(error).__name__}: {error.message}", stacklevel=2
+                        )
+                    else:
+                        for process in processes:
+                            process.terminate()
+                        print(tb)
+                        raise error
+            to_parse.join()
+            parsed_q.join()
+            for process in processes:
+                process.join()
+        finally:
+            try:
+                for proc in processes:
+                    proc.terminate()
+            except NameError:
+                pass
+
+    def _read_and_parse(
+        self, num_threads, replace, to_parse, parsed, errors, check_input
+    ):
+        try:
             input_iter = iter(
                 input_syntax_reader.read_input_syntax(
                     self._input_file, self.mcnp_version, replace=replace
@@ -443,33 +486,22 @@ class MCNP_Problem:
             if isinstance(input, mcnp_input.Message):
                 self._message = input
                 input = next(input_iter)
+                self._original_inputs.append(input)
             self._title = input
+            # add inputs in queue
             for i, input in enumerate(input_iter):
                 to_parse.put((i, input))
-            print(f"Finished file reading: {time.time() - start}")
-            for _ in processes:
+                self._original_inputs.append(input)
+            # Flush queue
+            for _ in range(num_threads):
                 to_parse.put((-1, None))
             to_parse.close()
-            print(f"to_parse queue closed: {time.time() - start}")
-            print(
-                "\n\n\n\n\n************************** CLOSED QUEUE ****************************\n\n\n\n\n\n"
-            )
-            print(f"parsers done: {time.time() - start}")
-            self._load_parsed_inputs(num_threads, parsed_q, check_input)
-            to_parse.join_thread()
-            parsed_q.join()
-            for process in processes:
-                process.join()
-            print(f" Post processed: {time.time() - start}.")
-            while not errors.empty():
-                e = errors.get_nowait()
-                raise e
-        finally:
-            try:
-                for proc in processes:
-                    proc.terminate()
-            except NameError:
-                pass
+            to_parse.cancel_join_thread()
+            self._load_parsed_inputs(num_threads, parsed, errors, check_input)
+            errors.put((None, ""))
+            errors.cancel_join_thread()
+        except Exception as e:
+            errors.put((e, traceback.format_exc()))
 
     _OBJ_MATCHER = {
         block_type.BlockType.CELL: Cell,
@@ -477,7 +509,7 @@ class MCNP_Problem:
         block_type.BlockType.DATA: parse_data,
     }
 
-    def _load_parsed_inputs(self, num_threads, parsed, check_input):
+    def _load_parsed_inputs(self, num_threads, parsed, errors, check_input):
         self._trailing_comment = None
         self._last_obj = None
         self._last_block = None
@@ -489,9 +521,12 @@ class MCNP_Problem:
             nonlocal buffer, expected_index
             while True:
                 if expected_index in buffer:
-                    obj = buffer.pop(expected_index)
-                    self._load_object(obj, check_input)
-                    expected_index += 1
+                    try:
+                        obj = buffer.pop(expected_index)
+                        self._load_object(obj, check_input)
+                        expected_index += 1
+                    except Exception as e:
+                        errors.put(e)
                 else:
                     return
 
@@ -506,13 +541,8 @@ class MCNP_Problem:
                         parsed.close()
                         break
                     continue
-                if priority_item.priority == expected_index:
-                    self._load_object(obj, check_input)
-                    expected_index += 1
-                    crawl_buffer()
-                else:
-                    buffer[priority_item.priority] = obj
-                    crawl_buffer()
+                buffer[priority_item.priority] = obj
+                crawl_buffer()
                 parsed.task_done()
         except UnsupportedFeature as e:
             if check_input:
