@@ -387,8 +387,8 @@ The new input was:\n\n"""
                         f"The line exceeded the maximum length allowed by MCNP, and was split. The line was:\n{line}"
                     )
                     warning.cause = "line"
-                    warning.og_value = line
-                    warning.new_value = buffer
+                    warning.og_value = "1 line"
+                    warning.new_value = f"{len(buffer)} lines"
                     warnings.warn(
                         warning,
                         LineExpansionWarning,
