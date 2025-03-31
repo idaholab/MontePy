@@ -392,14 +392,15 @@ class MCNP_Problem:
                 obj = obj_parser(input)
                 parsed.put(cls._PriotizedItem(idx, obj))
                 to_parse.task_done()
+            except queue.Empty:
+                break
             except Exception as e:
                 exceptions.put((e, traceback.format_exc()))
         to_parse.task_done()
         to_parse.cancel_join_thread()
         parsed.put(cls._PriotizedItem(idx, None))
-        parsed.cancel_join_thread()
-        exceptions.put((None, ""))
-        exceptions.cancel_join_thread()
+        parsed.close()
+        exceptions.close()
 
     def parse_input(self, check_input=False, replace=True, num_threads=None):
         """Semantically parses the MCNP file provided to the constructor.
@@ -443,14 +444,11 @@ class MCNP_Problem:
             )
             consumer.start()
             processes.append(consumer)
-            finished_threads = 0
+            # listen for errors
             while True:
                 error, tb = errors.get()
                 if error is None:
-                    finished_threads += 1
-                    print(error, finished_threads)
-                    if finished_threads >= num_threads + 1:
-                        break
+                    break
                 else:
                     if check_input:
                         warnings.warn(
@@ -461,10 +459,10 @@ class MCNP_Problem:
                             process.terminate()
                         print(tb)
                         raise error
-            to_parse.join()
-            parsed_q.join()
             for process in processes:
                 process.join()
+            to_parse.join()
+            parsed.join()
         finally:
             try:
                 for proc in processes:
@@ -530,27 +528,21 @@ class MCNP_Problem:
                 else:
                     return
 
-        try:
-            while True:
-                priority_item = parsed.get()
-                obj = priority_item.item
-                if obj is None:
-                    num_died += 1
-                    parsed.task_done()
-                    if num_died == num_threads:
-                        parsed.close()
-                        break
-                    continue
-                buffer[priority_item.priority] = obj
-                crawl_buffer()
+        while True:
+            priority_item = parsed.get(timeout=1)
+            obj = priority_item.item
+            if obj is None:
+                num_died += 1
                 parsed.task_done()
-        except UnsupportedFeature as e:
-            if check_input:
-                warnings.warn(f"{type(e).__name__}: {e.message}", stacklevel=2)
-            else:
-                raise e
+                if num_died == num_threads:
+                    parsed.cancel_join_thread()
+                    break
+                continue
+            buffer[priority_item.priority] = obj
+            crawl_buffer()
+            parsed.task_done()
         # TODO multi-thread
-        # self.__update_internal_pointers(check_input)
+        self.__update_internal_pointers(check_input)
         del self._trailing_comment
         del self._last_obj
         del self._last_block
