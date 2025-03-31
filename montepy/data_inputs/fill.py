@@ -586,10 +586,9 @@ class Fill(CellModifierInput):
 
         if self.multiple_universes:
             payload = []
-            for i in self._axis_range(0):
-                for j in self._axis_range(1):
-                    for k in self._axis_range(2):
-                        payload.append(self.universes[i][j][k].number)
+            get_number = np.vectorize(lambda u: u.number)
+            # fortran flatten ensures that it is: i1,j1,k1  i2,j1,k1 ....
+            payload = get_number(self.universes).flatten("f").tolist()
         else:
             payload = [
                 (
