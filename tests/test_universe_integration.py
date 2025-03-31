@@ -1,4 +1,5 @@
 import io
+import numpy as np
 from pathlib import Path
 import pytest
 from tests.test_cell_problem import verify_export as cell_verify
@@ -107,3 +108,15 @@ def test_no_universe(cp_simple_problem):
     prob.print_in_data_block["u"] = True
     with io.StringIO() as fh:
         prob.write_problem(fh)
+
+
+def test_fill_multi_universe_order(cells):
+    for cell in cells:
+        numbers = np.array([[[1, 2], [3, 4]], [[5, 6], [7, 8]]]).repeat(2, axis=2)
+        make_uni = lambda n: montepy.Universe(n)
+        unis = np.vectorize(make_uni)(numbers)
+        cell.fill.universes = unis
+        output = cell.format_for_mcnp_input((6, 2, 0))
+        words = " ".join(output).split()
+        new_universes = list(map(int, words[7:]))
+        assert (numbers.flatten("f") == new_universes).all()
