@@ -199,9 +199,9 @@ class Fill(CellModifierInput):
                 )
         self._old_numbers = np.zeros(self._sizes, dtype=np.dtype(int))
         words = iter(words[9:])
-        for i in self._axis_range(0):
+        for k in self._axis_range(2):
             for j in self._axis_range(1):
-                for k in self._axis_range(2):
+                for i in self._axis_range(0):
                     val = next(words)
                     try:
                         val._convert_to_int()
