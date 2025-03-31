@@ -413,62 +413,56 @@ class MCNP_Problem:
         replace : bool
             replace all non-ASCII characters with a space (0x20)
         """
-        try:
-            start = time.time()
-            trailing_comment = None
-            last_obj = None
-            last_block = None
-            OBJ_MATCHER = {
-                block_type.BlockType.CELL: (Cell, self._cells),
-                block_type.BlockType.SURFACE: (
-                    surface_builder.parse_surface,
-                    self._surfaces,
-                ),
-                block_type.BlockType.DATA: (parse_data, self._data_inputs),
-            }
-            to_parse = mp.JoinableQueue()
-            parsed = mp.JoinableQueue()
-            errors = mp.Queue()
-            if num_threads is None:
-                num_threads = os.cpu_count()
-            processes = []
-            for _ in range(num_threads):
-                proc = mp.Process(
-                    target=self._parse_as_thread, args=[to_parse, parsed, errors]
-                )
-                proc.start()
-                processes.append(proc)
-            consumer = mp.Process(
-                target=self._read_and_parse,
-                args=[num_threads, replace, to_parse, parsed, errors, check_input],
+        start = time.time()
+        trailing_comment = None
+        last_obj = None
+        last_block = None
+        OBJ_MATCHER = {
+            block_type.BlockType.CELL: (Cell, self._cells),
+            block_type.BlockType.SURFACE: (
+                surface_builder.parse_surface,
+                self._surfaces,
+            ),
+            block_type.BlockType.DATA: (parse_data, self._data_inputs),
+        }
+        to_parse = mp.JoinableQueue()
+        parsed = mp.JoinableQueue()
+        errors = mp.Queue()
+        if num_threads is None:
+            num_threads = os.cpu_count()
+        processes = []
+        for _ in range(num_threads):
+            proc = mp.Process(
+                target=self._parse_as_thread, args=[to_parse, parsed, errors]
             )
-            consumer.start()
-            processes.append(consumer)
-            # listen for errors
-            while True:
-                error, tb = errors.get()
-                if error is None:
-                    break
+            proc.start()
+            processes.append(proc)
+        consumer = threading.Thread(
+            target=self._read_and_parse,
+            args=[num_threads, replace, to_parse, parsed, errors, check_input],
+        )
+        consumer.start()
+        processes.append(consumer)
+        # listen for errors
+        while True:
+            error, tb = errors.get()
+            if error is None:
+                self = tb
+                break
+            else:
+                if check_input:
+                    warnings.warn(
+                        f"{type(error).__name__}: {error.message}", stacklevel=2
+                    )
                 else:
-                    if check_input:
-                        warnings.warn(
-                            f"{type(error).__name__}: {error.message}", stacklevel=2
-                        )
-                    else:
-                        for process in processes:
-                            process.terminate()
-                        print(tb)
-                        raise error
-            for process in processes:
-                process.join()
-            to_parse.join()
-            parsed.join()
-        finally:
-            try:
-                for proc in processes:
-                    proc.terminate()
-            except NameError:
-                pass
+                    for process in processes[:-1]:
+                        process.terminate()
+                    print(tb)
+                    raise error
+        for process in processes:
+            process.join()
+        to_parse.join()
+        parsed.join()
 
     def _read_and_parse(
         self, num_threads, replace, to_parse, parsed, errors, check_input
