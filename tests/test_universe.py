@@ -205,7 +205,7 @@ class TestLattice(TestCase):
     def test_lattice_cell_format(self):
         lattice = self.lattice
         output = lattice.format_for_mcnp_input(DEFAULT_VERSION)
-        assert"lat=1" in output[0]
+        assert "lat=1" in output[0]
         lattice.lattice = None
         output = lattice.format_for_mcnp_input(DEFAULT_VERSION)
         assert output == []
@@ -213,8 +213,8 @@ class TestLattice(TestCase):
     def test_lattice_repr(self):
         lattice = self.lattice
         out = repr(lattice)
-        assert"in_cell: True" in out
-        assert"set_in_block: True" in out
+        assert "in_cell: True" in out
+        assert "set_in_block: True" in out
         assert "Lattice_values : LatticeType.HEXAHEDRAL" in out
 
     def test_deprecated_lattice(self):
