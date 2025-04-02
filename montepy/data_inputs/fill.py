@@ -587,8 +587,7 @@ class Fill(CellModifierInput):
         if self.multiple_universes:
             payload = []
             get_number = np.vectorize(lambda u: u.number)
-            # fortran flatten ensures that it is: i1,j1,k1  i2,j1,k1 ....
-            payload = get_number(self.universes).flatten("f").tolist()
+            payload = get_number(self.universes).T.ravel()
         else:
             payload = [
                 (
