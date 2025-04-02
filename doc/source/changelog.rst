@@ -28,6 +28,7 @@ MontePy Changelog
 * Added :func:`~montepy.data_inputs.material.Material.clear` to ``Material`` to clear out all nuclides (:issue:`665`).
 * Allow any ``Real`` type for floating point numbers and any ``Integral`` type for integer numbers during type enforcement (:issue:`679`).
 * Avoided multiple ``LineExpansionWarnings`` coming from the same object on export (:issue:`198`).
+* Renamed `Cell.lattice` to `Cell.lattice_type` as well as `Lattice` to `LatticeType`, with deprecation warnings (:issue:`728`).
 
 **Bugs Fixed**
 
