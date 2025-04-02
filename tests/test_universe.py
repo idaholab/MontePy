@@ -4,7 +4,6 @@ import pytest
 from unittest import TestCase
 
 import copy
-from montepy.constants import DEFAULT_VERSION
 from montepy.input_parser import syntax_node
 import montepy
 from montepy.cell import Cell
@@ -14,7 +13,7 @@ from montepy.input_parser.block_type import BlockType
 from montepy.input_parser.mcnp_input import Input, Jump
 from montepy.universe import Universe
 from montepy.data_inputs.fill import Fill
-from montepy.data_inputs.lattice import Lattice
+from montepy.data_inputs.lattice import LatticeType
 from montepy.data_inputs.lattice_input import LatticeInput
 from montepy.data_inputs.universe_input import UniverseInput
 import numpy as np
@@ -157,66 +156,79 @@ class TestLattice(TestCase):
 
     def test_lattice_init(self):
         lattice = self.lattice
-        self.assertEqual(lattice.lattice, Lattice(1))
+        assert lattice.lattice == LatticeType(1)
         tree = copy.deepcopy(self.tree)
-        with self.assertRaises(ValueError):
+        with pytest.raises(ValueError):
             tree["data"].nodes.pop()
             tree["data"].append(syntax_node.ValueNode("hi", str))
-            lattice = LatticeInput(in_cell_block=True, key="lat", value=tree)
-        with self.assertRaises(ValueError):
+            LatticeInput(in_cell_block=True, key="lat", value=tree)
+        with pytest.raises(ValueError):
             tree["data"].nodes.pop()
             tree["data"].append(syntax_node.ValueNode("5", float))
-            lattice = LatticeInput(in_cell_block=True, key="lat", value=tree)
+            LatticeInput(in_cell_block=True, key="lat", value=tree)
         lattices = [1, 2, None, None]
         input = Input(["Lat " + " ".join(list(map(str, lattices)))], BlockType.DATA)
         lattice = LatticeInput(input)
         for answer, lattice in zip(lattices, lattice._lattice):
-            self.assertEqual(Lattice(answer), lattice.value)
-        with self.assertRaises(MalformedInputError):
+            assert LatticeType(answer) == lattice.value
+        with pytest.raises(MalformedInputError):
             card = Input(["Lat 3"], BlockType.DATA)
             LatticeInput(card)
-        with self.assertRaises(MalformedInputError):
+        with pytest.raises(MalformedInputError):
             card = Input(["Lat str"], BlockType.DATA)
             LatticeInput(card)
 
     def test_lattice_setter(self):
         lattice = copy.deepcopy(self.lattice)
-        lattice.lattice = Lattice(2)
-        self.assertEqual(Lattice(2), lattice.lattice)
+        lattice.lattice = LatticeType(2)
+        assert LatticeType(2) == lattice.lattice
         lattice.lattice = 1
-        self.assertEqual(Lattice(1), lattice.lattice)
+        assert LatticeType(1) == lattice.lattice
         lattice.lattice = None
-        self.assertIsNone(lattice.lattice)
-        with self.assertRaises(TypeError):
+        assert lattice.lattice is None
+        with pytest.raises(TypeError):
             lattice.lattice = "hi"
 
-        with self.assertRaises(ValueError):
+        with pytest.raises(ValueError):
             lattice.lattice = -1
 
     def test_lattice_deleter(self):
         lattice = self.lattice
         del lattice.lattice
-        self.assertIsNone(lattice.lattice)
+        assert lattice.lattice is None
 
     def test_lattice_merge(self):
         lattice = self.lattice
-        with self.assertRaises(MalformedInputError):
+        with pytest.raises(MalformedInputError):
             lattice.merge(lattice)
 
     def test_lattice_cell_format(self):
         lattice = self.lattice
         output = lattice.format_for_mcnp_input(DEFAULT_VERSION)
-        self.assertIn("lat=1", output[0])
+        assert "lat=1" in output[0]
         lattice.lattice = None
         output = lattice.format_for_mcnp_input(DEFAULT_VERSION)
-        self.assertEqual(output, [])
+        assert output == []
 
     def test_lattice_repr(self):
         lattice = self.lattice
         out = repr(lattice)
-        self.assertIn("in_cell: True", out)
-        self.assertIn("set_in_block: True", out)
-        self.assertIn("Lattice_values : Lattice.HEXAHEDRA", out)
+        assert "in_cell: True" in out
+        assert "set_in_block: True" in out
+        assert "Lattice_values : LatticeType.HEXAHEDRAL" in out
+
+    def test_deprecated_lattice(self):
+        with pytest.warns(DeprecationWarning, match="HEXAGONAL"):
+            montepy.data_inputs.lattice.Lattice.HEXAGONAL
+        with pytest.warns(DeprecationWarning, match="HEXAHEDRAL"):
+            lattype = montepy.data_inputs.lattice.Lattice.HEXAHEDRA
+        cell = montepy.Cell()
+        with pytest.warns(DeprecationWarning):
+            cell.lattice = lattype
+        with pytest.warns(DeprecationWarning):
+            str(cell.lattice)
+        with pytest.warns(DeprecationWarning):
+            del cell.lattice
 
 
 class TestFill(TestCase):
