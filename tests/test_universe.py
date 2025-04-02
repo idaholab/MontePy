@@ -14,7 +14,7 @@ from montepy.input_parser.block_type import BlockType
 from montepy.input_parser.mcnp_input import Input, Jump
 from montepy.universe import Universe
 from montepy.data_inputs.fill import Fill
-from montepy.data_inputs.lattice import Lattice
+from montepy.data_inputs.lattice import LatticeType
 from montepy.data_inputs.lattice_input import LatticeInput
 from montepy.data_inputs.universe_input import UniverseInput
 import numpy as np
@@ -157,7 +157,7 @@ class TestLattice(TestCase):
 
     def test_lattice_init(self):
         lattice = self.lattice
-        self.assertEqual(lattice.lattice, Lattice(1))
+        self.assertEqual(lattice.lattice, LatticeType(1))
         tree = copy.deepcopy(self.tree)
         with self.assertRaises(ValueError):
             tree["data"].nodes.pop()
@@ -171,7 +171,7 @@ class TestLattice(TestCase):
         input = Input(["Lat " + " ".join(list(map(str, lattices)))], BlockType.DATA)
         lattice = LatticeInput(input)
         for answer, lattice in zip(lattices, lattice._lattice):
-            self.assertEqual(Lattice(answer), lattice.value)
+            self.assertEqual(LatticeType(answer), lattice.value)
         with self.assertRaises(MalformedInputError):
             card = Input(["Lat 3"], BlockType.DATA)
             LatticeInput(card)
@@ -181,10 +181,10 @@ class TestLattice(TestCase):
 
     def test_lattice_setter(self):
         lattice = copy.deepcopy(self.lattice)
-        lattice.lattice = Lattice(2)
-        self.assertEqual(Lattice(2), lattice.lattice)
+        lattice.lattice = LatticeType(2)
+        self.assertEqual(LatticeType(2), lattice.lattice)
         lattice.lattice = 1
-        self.assertEqual(Lattice(1), lattice.lattice)
+        self.assertEqual(LatticeType(1), lattice.lattice)
         lattice.lattice = None
         self.assertIsNone(lattice.lattice)
         with self.assertRaises(TypeError):
@@ -216,7 +216,7 @@ class TestLattice(TestCase):
         out = repr(lattice)
         self.assertIn("in_cell: True", out)
         self.assertIn("set_in_block: True", out)
-        self.assertIn("Lattice_values : Lattice.HEXAHEDRA", out)
+        self.assertIn("Lattice_values : LatticeType.HEXAHEDRA", out)
 
 
 class TestFill(TestCase):
