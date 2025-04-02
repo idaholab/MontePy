@@ -218,6 +218,19 @@ class TestLattice(TestCase):
         self.assertIn("set_in_block: True", out)
         self.assertIn("Lattice_values : LatticeType.HEXAHEDRAL", out)
 
+    def test_deprecated_lattice(self):
+        with pytest.warns(DeprecationWarning, match="HEXAGONAL"):
+            montepy.data_inputs.lattice.Lattice.HEXAGONAL
+        with pytest.warns(DeprecationWarning, match="HEXAHEDRAL"):
+            lattype = montepy.data_inputs.lattice.Lattice.HEXAHEDRA
+        cell = montepy.Cell()
+        with pytest.warns(DeprecationWarning):
+            cell.lattice = lattype
+        with pytest.warns(DeprecationWarning):
+            str(cell.lattice)
+        with pytest.warns(DeprecationWarning):
+            del cell.lattice
+
 
 class TestFill(TestCase):
     def setUp(self):
