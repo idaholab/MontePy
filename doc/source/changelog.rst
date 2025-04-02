@@ -40,6 +40,7 @@ MontePy Changelog
 * Fixed bug where setting ``surf.is_reflecting`` to ``False`` did not always get exported properly (:issue:`709`). 
 * Fixed bug where setting multiple universes for a cell fill not being properly exported (:issue:`714`).
 * Fixed bug where the ``i`` ("x") and ``k`` ("z") dimensions of multiple universe matrix ``fills`` were switched (:issue:`726`).
+* Fixed bug 549 — corrected blank importance printing issue (:issue:`549`).
  
 **Breaking Changes**
 
@@ -72,12 +73,6 @@ MontePy Changelog
 
 0.5 releases
 ============
-
-#Next Version#
---------------
-**Bug Fixes**
-
-* Fixed bug 549 – corrected blank importance printing issue (:issue:`549`).
 
 0.5.5
 --------------
