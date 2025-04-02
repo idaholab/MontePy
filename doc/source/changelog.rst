@@ -28,6 +28,10 @@ MontePy Changelog
 * Added :func:`~montepy.data_inputs.material.Material.clear` to ``Material`` to clear out all nuclides (:issue:`665`).
 * Allow any ``Real`` type for floating point numbers and any ``Integral`` type for integer numbers during type enforcement (:issue:`679`).
 * Avoided multiple ``LineExpansionWarnings`` coming from the same object on export (:issue:`198`).
+* Added ``mcnp_str`` function to all ``MCNP_Object`` to quickly get the string that would be printed in the MCNP input
+  file (:issue:`700`).
+* Added ``montepy.MCNP_VERSION`` as an easy way to set the default MCNP version to target for reading and writing input
+  files (:issue:`700`).
 
 **Bugs Fixed**
 
