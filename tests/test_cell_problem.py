@@ -102,6 +102,7 @@ class TestCellClass(TestCase):
         self.assertEqual(
             repr(cell), "CELL: 1 \nVoid material \ndensity: 0.5 atom/b-cm\n"
         )
+        assert cell.mcnp_str() == in_str
 
     def test_cell_paremeters_no_eq(self):
         in_str = f"1 0 -1 PWT 1.0"
@@ -341,6 +342,7 @@ def test_bad_setattr():
 def verify_export(cell):
     output = cell.format_for_mcnp_input((6, 3, 0))
     print("cell output", output)
+    assert "\n".join(output) == cell.mcnp_str((6, 3, 0))
     new_cell = montepy.Cell("\n".join(output))
     for attr in {
         "number",
