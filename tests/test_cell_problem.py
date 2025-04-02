@@ -346,7 +346,7 @@ def verify_export(cell):
         "number",
         "old_mat_number",
         "old_universe_number",
-        "lattice",
+        "lattice_type",
         "mass_density",
         "atom_density",
         "is_atom_dens",
