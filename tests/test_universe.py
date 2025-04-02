@@ -216,7 +216,7 @@ class TestLattice(TestCase):
         out = repr(lattice)
         self.assertIn("in_cell: True", out)
         self.assertIn("set_in_block: True", out)
-        self.assertIn("Lattice_values : LatticeType.HEXAHEDRA", out)
+        self.assertIn("Lattice_values : LatticeType.HEXAHEDRAL", out)
 
 
 class TestFill(TestCase):
