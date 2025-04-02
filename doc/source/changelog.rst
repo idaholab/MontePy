@@ -37,7 +37,7 @@ MontePy Changelog
 * Fixed bug where setting a lattice would print as ``LAT=None``. Also switched ``CellModifier`` to print in the cell block by default (:issue:`699`). 
 * Fixed bug that wouldn't allow cloning most surfaces (:issue:`704`).
 * Fixed bug that crashed when some cells were not assigned to any universes (:issue:`705`).
-* Fixed bug where setting ``surf.is_reflecting`` to ``False`` did not always get exported properly (:issue:`709`).
+* Fixed bug where setting ``surf.is_reflecting`` to ``False`` did not always get exported properly (:issue:`709`). 
 * Fixed bug where setting multiple universes for a cell fill not being properly exported (:issue:`714`).
  
 **Breaking Changes**
