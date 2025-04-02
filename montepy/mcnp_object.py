@@ -249,27 +249,27 @@ class MCNP_Object(ABC, metaclass=_ExceptionContextAdder):
         self._flush_line_expansion_warning(lines, ws)
         return lines
 
-        def mcnp_str(self, mcnp_version: tuple[int] = None):
-            """Returns a string of this input as it would appear in an MCNP input file.
+    def mcnp_str(self, mcnp_version: tuple[int] = None):
+        """Returns a string of this input as it would appear in an MCNP input file.
 
-            ..versionadded:: 1.0.0
+        ..versionadded:: 1.0.0
 
-            Parameters
-            ----------
-            mcnp_version: tuple[int]
-                The tuple for the MCNP version that must be exported to.
+        Parameters
+        ----------
+        mcnp_version: tuple[int]
+            The tuple for the MCNP version that must be exported to.
 
-            Returns
-            -------
-            str
-                The string that would have been printed in a file
-            """
-            if mcnp_version is None:
-                if self._problem is not None:
-                    mcnp_version = self._problem.mcnp_version
-                else:
-                    mcnp_version = montepy.MCNP_VERSION
-            return "\n".join(self.format_for_mcnp_input(mcnp_version))
+        Returns
+        -------
+        str
+            The string that would have been printed in a file
+        """
+        if mcnp_version is None:
+            if self._problem is not None:
+                mcnp_version = self._problem.mcnp_version
+            else:
+                mcnp_version = montepy.MCNP_VERSION
+        return "\n".join(self.format_for_mcnp_input(mcnp_version))
 
     def _flush_line_expansion_warning(self, lines, ws):
         if not ws:
