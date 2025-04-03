@@ -102,6 +102,8 @@ class TestCellClass(TestCase):
         self.assertEqual(
             repr(cell), "CELL: 1 \nVoid material \ndensity: 0.5 atom/b-cm\n"
         )
+        in_str = "1 0 -2 imp:n=1 "
+        cell = montepy.Cell(in_str)
         assert cell.mcnp_str() == in_str
 
     def test_cell_paremeters_no_eq(self):
