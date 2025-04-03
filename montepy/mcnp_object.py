@@ -269,7 +269,8 @@ class MCNP_Object(ABC, metaclass=_ExceptionContextAdder):
                 mcnp_version = self._problem.mcnp_version
             else:
                 mcnp_version = montepy.MCNP_VERSION
-        return "\n".join(self.format_for_mcnp_input(mcnp_version))
+        with warnings.catch_warnings(action="ignore"):
+            return "\n".join(self.format_for_mcnp_input(mcnp_version))
 
     def _flush_line_expansion_warning(self, lines, ws):
         if not ws:

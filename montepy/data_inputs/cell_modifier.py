@@ -1,4 +1,4 @@
-# Copyright 2024, Battelle Energy Alliance, LLC All Rights Reserved.
+# Copyright 2024 - 2025, Battelle Energy Alliance, LLC All Rights Reserved.
 from abc import abstractmethod
 import montepy
 from montepy.data_inputs.data_input import DataInputAbstract, InitInput
@@ -318,4 +318,7 @@ class CellModifierInput(DataInputAbstract):
                 mcnp_version = self._problem.mcnp_version
             else:
                 mcnp_version = montepy.MCNP_VERSION
-        return "\n".join(self.format_for_mcnp_input(mcnp_version, always_print=True))
+        with warnings.catch_warnings(action="ignore"):
+            return "\n".join(
+                self.format_for_mcnp_input(mcnp_version, always_print=True)
+            )
