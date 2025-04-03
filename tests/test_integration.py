@@ -887,8 +887,8 @@ def test_universe_repr(simple_problem):
 def test_lattice_format_data(simple_problem):
     problem = copy.deepcopy(simple_problem)
     cells = problem.cells
-    cells[1].lattice = 1
-    cells[99].lattice = 2
+    cells[1].lattice_type = 1
+    cells[99].lattice_type = 2
     problem.print_in_data_block["lat"] = True
     answer = "LAT 1 2J 2"
     output = cells._lattice.format_for_mcnp_input((6, 2, 0))
@@ -908,9 +908,9 @@ def test_lattice_push_to_cells(simple_problem):
     for cell, answer in zip(problem.cells, lattices):
         print(cell.number, answer)
         if isinstance(answer, int):
-            assert cell.lattice.value == answer
+            assert cell.lattice_type.value == answer
         else:
-            assert cell.lattice is None
+            assert cell.lattice_type is None
 
 
 def test_universe_problem_parsing(universe_problem):
