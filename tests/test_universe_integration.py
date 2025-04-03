@@ -121,3 +121,25 @@ def test_fill_multi_universe_order(cells):
         words = " ".join(output).split()
         new_universes = list(map(int, words[7:]))
         assert (numbers.flatten("f") == new_universes).all()
+
+
+def test_fill_long_mcnp_str_wrap(cells):
+    for cell in cells:
+        universe = montepy.Universe(1)
+        cell.fill.universes = np.full(
+            (7, 6, 1), universe
+        )  # length set to not wrap at 128, but do so at 80
+        new_cell = cell.clone()
+        prob = montepy.MCNP_Problem("")
+        new_cell.link_to_problem(prob)
+        for obj in [cell, cell.fill, new_cell, new_cell.fill]:
+            old_vers = montepy.MCNP_VERSION
+            montepy.MCNP_VERSION = (6, 3, 0)
+            prob.mcnp_version = montepy.MCNP_VERSION
+            print(obj.mcnp_str(), len(obj.mcnp_str()))
+            assert len(obj.mcnp_str().split("\n")) == 1
+            montepy.MCNP_VERSION = (6, 1, 0)
+            prob.mcnp_version = montepy.MCNP_VERSION
+            assert len(obj.mcnp_str().split("\n")) > 1
+            montepy.MCNP_VERSION = old_vers
+            prob.mcnp_version = montepy.MCNP_VERSION

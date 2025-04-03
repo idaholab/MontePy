@@ -1,4 +1,4 @@
-# Copyright 2024, Battelle Energy Alliance, LLC All Rights Reserved.
+# Copyright 2024 - 2025, Battelle Energy Alliance, LLC All Rights Reserved.
 from abc import abstractmethod
 import montepy
 from montepy.data_inputs.data_input import DataInputAbstract, InitInput
@@ -239,7 +239,12 @@ class CellModifierInput(DataInputAbstract):
         """
         return self._tree.format()
 
-    def format_for_mcnp_input(self, mcnp_version, has_following=False):
+    def format_for_mcnp_input(
+        self,
+        mcnp_version: tuple[int],
+        has_following: bool = False,
+        always_print: bool = False,
+    ):
         """Creates a string representation of this MCNP_Object that can be
         written to file.
 
@@ -247,6 +252,10 @@ class CellModifierInput(DataInputAbstract):
         ----------
         mcnp_version : tuple
             The tuple for the MCNP version that must be exported to.
+        has_following: bool
+            If true this is followed by another input, and a new line will be inserted if this ends in a comment.
+        always_print: bool
+            If true this will always produce a result irrespective of ``print_in_data_block``.
 
         Returns
         -------
@@ -264,9 +273,9 @@ class CellModifierInput(DataInputAbstract):
 
         """
         Boolean logic
-        A= self.in_Cell_block
+        A = self.in_Cell_block
         B = print_in_data_block
-        C = is_worth_pring
+        C = is_worth_printing
 
         Logic:
             1. A!BC + !ABC
@@ -275,7 +284,9 @@ class CellModifierInput(DataInputAbstract):
             4. C * (A != B)
         """
         # print in either block
-        if (self.in_cell_block != print_in_data_block) and self._is_worth_printing:
+        if always_print or (
+            self.in_cell_block != print_in_data_block and self._is_worth_printing
+        ):
             self._update_values()
             return self.wrap_string_for_mcnp(
                 self._format_tree(),
@@ -284,3 +295,31 @@ class CellModifierInput(DataInputAbstract):
                 suppress_blank_end=not self.in_cell_block,
             )
         return []
+
+    def mcnp_str(self, mcnp_version: tuple[int] = None):
+        """Returns a string of this input as it would appear in an MCNP input file.
+
+        ..versionadded:: 1.0.0
+
+        Parameters
+        ----------
+        mcnp_version: tuple[int]
+            The tuple for the MCNP version that must be exported to.
+
+        Returns
+        -------
+        str
+            The string that would have been printed in a file
+
+        TODO: cellmodifier
+        """
+        if mcnp_version is None:
+            if self._problem is not None:
+                mcnp_version = self._problem.mcnp_version
+            else:
+                mcnp_version = montepy.MCNP_VERSION
+        with warnings.catch_warnings():
+            warnings.simplefilter("ignore")
+            return "\n".join(
+                self.format_for_mcnp_input(mcnp_version, always_print=True)
+            )

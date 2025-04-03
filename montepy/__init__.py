@@ -12,6 +12,8 @@ from . import input_parser
 from . import constants
 import importlib.metadata
 
+from .constants import DEFAULT_VERSION as MCNP_VERSION
+
 # data input promotion
 
 from montepy.data_inputs.material import Material
