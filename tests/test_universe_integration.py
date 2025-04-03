@@ -133,9 +133,11 @@ def test_fill_long_mcnp_str_wrap(cells):
         prob = montepy.MCNP_Problem("")
         new_cell.link_to_problem(prob)
         for obj in [cell, cell.fill, new_cell, new_cell.fill]:
+            old_vers = montepy.MCNP_VERSION
+            montepy.MCNP_VERSION = (6, 3, 0)
+            prob.mcnp_version = montepy.MCNP_VERSION
             print(obj.mcnp_str(), len(obj.mcnp_str()))
             assert len(obj.mcnp_str().split("\n")) == 1
-            old_vers = montepy.MCNP_VERSION
             montepy.MCNP_VERSION = (6, 1, 0)
             prob.mcnp_version = montepy.MCNP_VERSION
             assert len(obj.mcnp_str().split("\n")) > 1
