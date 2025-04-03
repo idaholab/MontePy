@@ -273,7 +273,7 @@ class CellModifierInput(DataInputAbstract):
 
         """
         Boolean logic
-        A= self.in_Cell_block
+        A = self.in_Cell_block
         B = print_in_data_block
         C = is_worth_printing
 

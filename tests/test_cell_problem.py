@@ -104,6 +104,8 @@ class TestCellClass(TestCase):
         )
         in_str = "1 0 -2 imp:n=1 "
         cell = montepy.Cell(in_str)
+        # change line length
+        montepy.MCNP_VERSION = (5, 1, 60)
         assert cell.mcnp_str() == in_str
 
     def test_cell_paremeters_no_eq(self):
