@@ -243,7 +243,7 @@ class CellModifierInput(DataInputAbstract):
         self,
         mcnp_version: tuple[int],
         has_following: bool = False,
-        always_print: bool = True,
+        always_print: bool = False,
     ):
         """Creates a string representation of this MCNP_Object that can be
         written to file.
@@ -284,10 +284,8 @@ class CellModifierInput(DataInputAbstract):
             4. C * (A != B)
         """
         # print in either block
-        if (
-            always_print
-            or (self.in_cell_block != print_in_data_block)
-            and self._is_worth_printing
+        if always_print or (
+            self.in_cell_block != print_in_data_block and self._is_worth_printing
         ):
             self._update_values()
             return self.wrap_string_for_mcnp(
