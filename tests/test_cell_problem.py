@@ -1,4 +1,4 @@
-# Copyright 2024, Battelle Energy Alliance, LLC All Rights Reserved.
+# Copyright 2024-2025, Battelle Energy Alliance, LLC All Rights Reserved.
 from hypothesis import given, note, strategies as st
 from unittest import TestCase
 import pytest
@@ -105,8 +105,10 @@ class TestCellClass(TestCase):
         in_str = "1 0 -2 imp:n=1 "
         cell = montepy.Cell(in_str)
         # change line length
+        old_version = montepy.MCNP_VERSION
         montepy.MCNP_VERSION = (5, 1, 60)
         assert cell.mcnp_str() == in_str
+        montepy.MCNP_VERSION = old_version
 
     def test_cell_paremeters_no_eq(self):
         in_str = f"1 0 -1 PWT 1.0"
