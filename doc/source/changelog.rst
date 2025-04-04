@@ -28,6 +28,9 @@ MontePy Changelog
 * Added :func:`~montepy.data_inputs.material.Material.clear` to ``Material`` to clear out all nuclides (:issue:`665`).
 * Allow any ``Real`` type for floating point numbers and any ``Integral`` type for integer numbers during type enforcement (:issue:`679`).
 * Avoided multiple ``LineExpansionWarnings`` coming from the same object on export (:issue:`198`).
+* Added ``mcnp_str`` function to all ``MCNP_Object`` to quickly get the string that would be printed in the MCNP input file (:issue:`700`).
+* Added ``montepy.MCNP_VERSION`` as an easy way to set the default MCNP version to target for reading and writing input files (:issue:`700`).
+* Renamed `Cell.lattice` to `Cell.lattice_type`, `Lattice` to `LatticeType`, and `LatticeType.HEXAHEDRA` to `LatticeType.HEXAHEDRAL` with deprecation warnings (:issue:`728`).
 
 **Bugs Fixed**
 
@@ -37,8 +40,10 @@ MontePy Changelog
 * Fixed bug where setting a lattice would print as ``LAT=None``. Also switched ``CellModifier`` to print in the cell block by default (:issue:`699`). 
 * Fixed bug that wouldn't allow cloning most surfaces (:issue:`704`).
 * Fixed bug that crashed when some cells were not assigned to any universes (:issue:`705`).
-* Fixed bug where setting ``surf.is_reflecting`` to ``False`` did not always get exported properly (:issue:`709`).
+* Fixed bug where setting ``surf.is_reflecting`` to ``False`` did not always get exported properly (:issue:`709`). 
 * Fixed bug where setting multiple universes for a cell fill not being properly exported (:issue:`714`).
+* Fixed bug where the ``i`` ("x") and ``k`` ("z") dimensions of multiple universe matrix ``fills`` were switched (:issue:`726`).
+* Fixed bug 549 — corrected blank importance printing issue (:issue:`549`).
  
 **Breaking Changes**
 
@@ -71,12 +76,6 @@ MontePy Changelog
 
 0.5 releases
 ============
-
-#Next Version#
---------------
-**Bug Fixes**
-
-* Fixed bug 549 – corrected blank importance printing issue (:issue:`549`).
 
 0.5.5
 --------------

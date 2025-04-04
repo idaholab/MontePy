@@ -225,12 +225,12 @@ class MCNP_Object(ABC, metaclass=_ExceptionContextAdder):
         pass
 
     def format_for_mcnp_input(self, mcnp_version: tuple[int]) -> list[str]:
-        """Creates a string representation of this MCNP_Object that can be
+        """Creates a list of strings representing this MCNP_Object that can be
         written to file.
 
         Parameters
         ----------
-        mcnp_version : tuple
+        mcnp_version : tuple[int]
             The tuple for the MCNP version that must be exported to.
 
         Returns
@@ -246,6 +246,30 @@ class MCNP_Object(ABC, metaclass=_ExceptionContextAdder):
             lines = self.wrap_string_for_mcnp(self._tree.format(), mcnp_version, True)
         self._flush_line_expansion_warning(lines, ws)
         return lines
+
+    def mcnp_str(self, mcnp_version: tuple[int] = None):
+        """Returns a string of this input as it would appear in an MCNP input file.
+
+        ..versionadded:: 1.0.0
+
+        Parameters
+        ----------
+        mcnp_version: tuple[int]
+            The tuple for the MCNP version that must be exported to.
+
+        Returns
+        -------
+        str
+            The string that would have been printed in a file
+        """
+        if mcnp_version is None:
+            if self._problem is not None:
+                mcnp_version = self._problem.mcnp_version
+            else:
+                mcnp_version = montepy.MCNP_VERSION
+        with warnings.catch_warnings():
+            warnings.simplefilter("ignore")
+            return "\n".join(self.format_for_mcnp_input(mcnp_version))
 
     def _flush_line_expansion_warning(self, lines, ws):
         if not ws:
@@ -385,8 +409,8 @@ The new input was:\n\n"""
                         f"The line exceeded the maximum length allowed by MCNP, and was split. The line was:\n{line}"
                     )
                     warning.cause = "line"
-                    warning.og_value = line
-                    warning.new_value = buffer
+                    warning.og_value = "1 line"
+                    warning.new_value = f"{len(buffer)} lines"
                     warnings.warn(
                         warning,
                         LineExpansionWarning,

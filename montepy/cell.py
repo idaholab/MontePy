@@ -28,6 +28,13 @@ def _link_geometry_to_cell(self, geom):
     geom._add_new_children_to_cell(geom)
 
 
+def _lattice_deprecation_warning():
+    warnings.warn(
+        message="Cell.lattice is deprecated in favor of Cell.lattice_type",
+        category=DeprecationWarning,
+    )
+
+
 class Cell(Numbered_MCNP_Object):
     """Object to represent a single MCNP cell defined in CSG.
 
@@ -294,7 +301,7 @@ class Cell(Numbered_MCNP_Object):
         return self._universe.old_number
 
     @property
-    def lattice(self):
+    def lattice_type(self):
         """The type of lattice being used by the cell.
 
         Returns
@@ -304,13 +311,28 @@ class Cell(Numbered_MCNP_Object):
         """
         return self._lattice.lattice
 
+    @lattice_type.setter
+    def lattice_type(self, value):
+        self._lattice.lattice = value
+
+    @lattice_type.deleter
+    def lattice_type(self):
+        self._lattice.lattice = None
+
+    @property
+    def lattice(self):
+        _lattice_deprecation_warning()
+        return self.lattice_type
+
     @lattice.setter
     def lattice(self, value):
-        self._lattice.lattice = value
+        _lattice_deprecation_warning()
+        self.lattice_type = value
 
     @lattice.deleter
     def lattice(self):
-        self._lattice.lattice = None
+        _lattice_deprecation_warning()
+        self.lattice_type = None
 
     @property
     def volume(self):
