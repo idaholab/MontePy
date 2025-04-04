@@ -19,7 +19,7 @@
 [![DOI](https://zenodo.org/badge/DOI/10.11578/dc.20240115.1.svg)](https://zenodo.org/records/15058701)
 
 
-MontePy is the most user friendly Python library for reading, editing, and writing MCNP input files. 
+MontePy is the most user-friendly Python library for reading, editing, and writing MCNP input files. 
 
 ## Installing
 
@@ -46,18 +46,18 @@ and the Python API documentation.
 * Handles almost all MCNP input syntax.
 * Parses Cells, Surfaces, Materials, and Transforms very well.	
 * Can parse all surface types except macrobody facets ([Issue #354](https://github.com/idaholab/MontePy/issues/354)).
-* Can read and write out all other MCNP inputs, even if it doesn't not understand them	
+* Can read and write out all other MCNP inputs, even if it does not understand them	.
 * Attempts to write out the MCNP problem verbatim, even matching the original user formatting. (See some of the [open issues](https://github.com/idaholab/MontePy/issues).)
 * Can quickly [access cells, surfaces, and materials by their numbers](https://www.montepy.org/en/stable/starting.html#collections-are-accessible-by-number). For example: `cell = problem.cells[105]`.
 * Can quickly update cell parameters, [such as importances](https://www.montepy.org/en/stable/starting.html#setting-cell-importances). For example `cell.importance.neutron = 2.0`.
 * Can easily [create universes, and fill other cells with universes](https://www.montepy.org/en/stable/starting.html#universes).
-* Currently has over 550 test cases.
+* Currently has over 800 test cases.
 
  
 Here is a quick example showing multiple tasks in MontePy:
 
 
-``` python
+```python
 import montepy
 # read in file
 problem = montepy.read_input("tests/inputs/test.imcnp")
@@ -107,9 +107,9 @@ Here a few of the known bugs and limitations:
 
 Here are the rough development priorities for adding new features to MontePy:
 
-#. Redesign the `Material` interface to be more user friendly.
-#. Implement support for tallies.
-#. Implement support for source definitions.
+1. Improve performance for the intial loading of models.
+2. Implement support for tallies.
+1. Implement support for source definitions.
 
 If you have a specific feature priority that you would be willing to collaborate on you can open an issue or email us at [mgale@montepy.org](mailto:mgale@montepy.org). 
 
@@ -134,13 +134,14 @@ The only other libraries that do utilize context-free parsing that we are aware 
 * [mckit](https://github.com/MC-kit/mckit) 
 
 MontePy differs from MCNPy by being:
-* On PyPI, and can be installed via pip.
-* Only requires a python interpreter, and not a Java virtual machine. 
+
+* On PyPI and conda-forge, and able to be installed via `pip` or `conda`
+* Only requiring a Python interpreter and not a Java virtual machine
 * Allowing contributions from anyone with a public GitHub account
 
 MontePy differs from mckit by being:
-* thoroughly documented
-* Object-Oriented 
+* Thoroughly documented
+* Object-oriented 
 
 
 For only writing, or templating an input file there are also some great tools out there. 
