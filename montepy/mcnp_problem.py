@@ -4,6 +4,7 @@ import copy
 from enum import Enum
 import itertools
 import os
+import pickle
 import warnings
 
 from montepy.data_inputs import mode, transform
@@ -23,6 +24,8 @@ from montepy.input_parser.input_file import MCNP_InputFile
 from montepy.universes import Universe, Universes
 from montepy.transforms import Transforms
 import montepy
+
+pickle.DEFAULT_PROTOCOL = pickle.HIGHEST_PROTOCOL
 
 
 class MCNP_Problem:
