@@ -107,9 +107,9 @@ Here a few of the known bugs and limitations:
 
 Here are the rough development priorities for adding new features to MontePy:
 
-#. Redesign the `Material` interface to be more user friendly.
-#. Implement support for tallies.
-#. Implement support for source definitions.
+1. Improve performance for the intial loading of models.
+2. Implement support for tallies.
+1. Implement support for source definitions.
 
 If you have a specific feature priority that you would be willing to collaborate on you can open an issue or email us at [mgale@montepy.org](mailto:mgale@montepy.org). 
 
@@ -134,7 +134,8 @@ The only other libraries that do utilize context-free parsing that we are aware 
 * [mckit](https://github.com/MC-kit/mckit) 
 
 MontePy differs from MCNPy by being:
-* On PyPI, and can be installed via pip.
+
+* On PyPI and conda-forge, and can be installed via `pip`, or `conda`.
 * Only requires a python interpreter, and not a Java virtual machine. 
 * Allowing contributions from anyone with a public GitHub account
 
