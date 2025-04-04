@@ -197,3 +197,8 @@ class MCNP_InputFile:
 
     def __str__(self):
         return str(self.name)
+
+    def __getstate__(self):
+        ret = self.__dict__.copy()
+        ret["_fh"] = None
+        return ret

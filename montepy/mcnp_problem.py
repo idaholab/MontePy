@@ -1,4 +1,5 @@
-# Copyright 2024, Battelle Energy Alliance, LLC All Rights Reserved.
+# Copyright 2024-2025, Battelle Energy Alliance, LLC All Rights Reserved.
+import concurrent.futures
 import copy
 from enum import Enum
 import itertools
@@ -368,6 +369,16 @@ class MCNP_Problem:
         """
         return self._transforms
 
+    @staticmethod
+    def parse_object(input):
+        OBJ_MATCHER = {
+            block_type.BlockType.CELL: Cell,
+            block_type.BlockType.SURFACE: surface_builder.parse_surface,
+            block_type.BlockType.DATA: parse_data,
+        }
+        obj_parser = OBJ_MATCHER[input.block_type]
+        return input, obj_parser(input)
+
     def parse_input(self, check_input=False, replace=True):
         """Semantically parses the MCNP file provided to the constructor.
 
@@ -391,51 +402,48 @@ class MCNP_Problem:
             block_type.BlockType.DATA: (parse_data, self._data_inputs),
         }
         try:
-            for i, input in enumerate(
-                input_syntax_reader.read_input_syntax(
-                    self._input_file, self.mcnp_version, replace=replace
-                )
-            ):
-                self._original_inputs.append(input)
-                if i == 0 and isinstance(input, mcnp_input.Message):
-                    self._message = input
+            input_iter = input_syntax_reader.read_input_syntax(
+                self._input_file, self.mcnp_version, replace=replace
+            )
+            input = next(input_iter)
+            self._original_inputs.append(input)
+            if isinstance(input, mcnp_input.Message):
+                self._message = input
+                input = next(input_iter)
 
-                elif isinstance(input, mcnp_input.Title) and self._title is None:
-                    self._title = input
-
-                elif isinstance(input, mcnp_input.Input):
+            self._title = input
+            with concurrent.futures.ProcessPoolExecutor() as executor:
+                for input, obj in executor.map(self.parse_object, input_iter):
                     if last_block != input.block_type:
                         trailing_comment = None
                         last_block = input.block_type
-                    obj_parser, obj_container = OBJ_MATCHER[input.block_type]
-                    if len(input.input_lines) > 0:
-                        try:
-                            obj = obj_parser(input)
-                            obj.link_to_problem(self)
-                            if isinstance(
-                                obj_container,
-                                montepy.numbered_object_collection.NumberedObjectCollection,
-                            ):
-                                obj_container.append(obj, initial_load=True)
-                            else:
-                                obj_container.append(obj)
-                        except (
-                            MalformedInputError,
-                            NumberConflictError,
-                            ParsingError,
-                            UnknownElement,
-                        ) as e:
-                            if check_input:
-                                warnings.warn(
-                                    f"{type(e).__name__}: {e.message}", stacklevel=2
-                                )
-                                continue
-                            else:
-                                raise e
-                        if isinstance(obj, Material):
-                            self._materials.append(obj, insert_in_data=False)
-                        if isinstance(obj, transform.Transform):
-                            self._transforms.append(obj, insert_in_data=False)
+                    try:
+                        _, obj_container = OBJ_MATCHER[input.block_type]
+                        obj.link_to_problem(self)
+                        if isinstance(
+                            obj_container,
+                            montepy.numbered_object_collection.NumberedObjectCollection,
+                        ):
+                            obj_container.append(obj, initial_load=True)
+                        else:
+                            obj_container.append(obj)
+                    except (
+                        MalformedInputError,
+                        NumberConflictError,
+                        ParsingError,
+                        UnknownElement,
+                    ) as e:
+                        if check_input:
+                            warnings.warn(
+                                f"{type(e).__name__}: {e.message}", stacklevel=2
+                            )
+                            continue
+                        else:
+                            raise e
+                    if isinstance(obj, Material):
+                        self._materials.append(obj, insert_in_data=False)
+                    if isinstance(obj, transform.Transform):
+                        self._transforms.append(obj, insert_in_data=False)
                     if trailing_comment is not None and last_obj is not None:
                         obj._grab_beginning_comment(trailing_comment, last_obj)
                         last_obj._delete_trailing_comment()
