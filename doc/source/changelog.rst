@@ -2,6 +2,78 @@
 MontePy Changelog
 *****************
 
+1.0 releases
+============
+
+1.0.0
+--------------
+
+**Features Added**
+
+* Redesigned how Materials hold Material_Components. See :ref:`migrate 0 1` (:pull:`507`). 
+* Made it easier to create an Isotope (now Nuclide): ``montepy.Nuclide("H-1.80c")`` (:issue:`505`).
+* When a typo in an object attribute is made an Error is raised rather than silently having no effect (:issue:`508`).
+* Improved material printing to avoid very long lists of components (:issue:`144`).
+* Allow querying for materials by components (:issue:`95`), either broadly or specifically (:issue:`642`).
+* Added support for getting and setting default libraries, e.g., ``nlib``, from a material (:issue:`369`).
+* Added most objects to the top level so they can be accessed like: ``montepy.Cell``.
+* Made ``Material.is_atom_fraction`` settable (:issue:`511`). 
+* Made NumberedObjectCollections act like a set (:issue:`138`).
+* Automatically added children objects, e.g., the surfaces in a cell, to the problem when the cell is added to the problem (:issue:`63`).
+* Added ability to parse all MCNP objects from a string (:issue:`88`).
+* Added function: :func:`~montepy.mcnp_problem.MCNP_Problem.parse` to parse arbitrary MCNP object (:issue:`88`).
+* An error is now raised when typos in object attributes are used, e.g., ``cell.nubmer`` (:issue:`508`).
+* Warnings are no longer raised for comments that exceed the maximum line lengths (:issue:`188`).
+* Particle type exceptions are now warnings, not errors (:issue:`381`).
+* Added :func:`~montepy.data_inputs.material.Material.clear` to ``Material`` to clear out all nuclides (:issue:`665`).
+* Allow any ``Real`` type for floating point numbers and any ``Integral`` type for integer numbers during type enforcement (:issue:`679`).
+* Avoided multiple ``LineExpansionWarnings`` coming from the same object on export (:issue:`198`).
+* Added ``mcnp_str`` function to all ``MCNP_Object`` to quickly get the string that would be printed in the MCNP input file (:issue:`700`).
+* Added ``montepy.MCNP_VERSION`` as an easy way to set the default MCNP version to target for reading and writing input files (:issue:`700`).
+* Renamed `Cell.lattice` to `Cell.lattice_type`, `Lattice` to `LatticeType`, and `LatticeType.HEXAHEDRA` to `LatticeType.HEXAHEDRAL` with deprecation warnings (:issue:`728`).
+
+**Bugs Fixed**
+
+* Made it so that a material created from scratch can be written to file (:issue:`512`).
+* Added support for parsing materials with parameters mixed throughout the definition (:issue:`182`).
+* Fixed bug where ``surf.is_reflecting`` would put an extra space in the output e.g., ``* 1 PZ...`` (:issue:`697`).
+* Fixed bug where setting a lattice would print as ``LAT=None``. Also switched ``CellModifier`` to print in the cell block by default (:issue:`699`). 
+* Fixed bug that wouldn't allow cloning most surfaces (:issue:`704`).
+* Fixed bug that crashed when some cells were not assigned to any universes (:issue:`705`).
+* Fixed bug where setting ``surf.is_reflecting`` to ``False`` did not always get exported properly (:issue:`709`). 
+* Fixed bug where setting multiple universes for a cell fill not being properly exported (:issue:`714`).
+* Fixed bug where the ``i`` ("x") and ``k`` ("z") dimensions of multiple universe matrix ``fills`` were switched (:issue:`726`).
+* Fixed bug 549 — corrected blank importance printing issue (:issue:`549`).
+ 
+**Breaking Changes**
+
+* Removed :func:`~montepy.data_inputs.material.Material.material_components``. See :ref:`migrate 0 1` (:pull:`507`).
+* Removed :class:`~montepy.data_inputs.isotope.Isotope` and changed them to :class:`~montepy.data_inputs.nuclide.Nuclide`.
+* Removed :func:`~montepy.mcnp_problem.MCNP_Problem.add_cell_children_to_problem` as it is no longer needed. 
+
+**Deprecated code Removed**
+
+* ``montepy.Cell.geometry_logic_string``
+* ``montepy.data_inputs.cell_modifier.CellModifier.has_changed_print_style``
+* ``montepy.data_inputs.data_input.DataInputAbstract``
+ 
+  * ``class_prefix``
+  * ``has_number``
+  * ``has_classifier``
+
+* ``montepy.input_parser.mcnp_input.Card``
+* ``montepy.input_parser.mcnp_input.ReadCard``
+* ``montepy.input_parser.mcnp_input.Input.words``
+* ``montepy.input_parser.mcnp_input.Comment``
+* ``montepy.input_parser.mcnp_input.parse_card_shortcuts``
+* ``montepy.mcnp_object.MCNP_Object``
+
+  * ``wrap_words_for_mcnp``
+  * ``compress_repeat_values``
+  * ``compress_jump_values``
+  * ``words``
+  * ``allowed_keywords``
+
 0.5 releases
 ============
 
@@ -69,7 +141,7 @@ MontePy Changelog
 ============
 
 0.4.1
---------------
+----------------
 
 **Features Added**
 

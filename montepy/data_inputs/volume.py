@@ -14,17 +14,18 @@ def _ensure_positive(self, value):
 
 
 class Volume(CellModifierInput):
-    """
-    Class for the data input that modifies cell volumes; ``VOL``.
+    """Class for the data input that modifies cell volumes; ``VOL``.
 
-    :param input: the Input object representing this data input
-    :type input: Input
-    :param in_cell_block: if this card came from the cell block of an input file.
-    :type in_cell_block: bool
-    :param key: the key from the key-value pair in a cell
-    :type key: str
-    :param value: the value syntax tree from the key-value pair in a cell
-    :type value: SyntaxNode
+    Parameters
+    ----------
+    input : Input
+        the Input object representing this data input
+    in_cell_block : bool
+        if this card came from the cell block of an input file.
+    key : str
+        the key from the key-value pair in a cell
+    value : SyntaxNode
+        the value syntax tree from the key-value pair in a cell
     """
 
     def __init__(self, input=None, in_cell_block=False, key=None, value=None):
@@ -102,13 +103,14 @@ class Volume(CellModifierInput):
         deletable=True,
     )
     def volume(self):
-        """
-        The actual cell volume.
+        """The actual cell volume.
 
         Only available at the cell level.
 
-        :returns: the cell volume iff this is for a single cell
-        :rtype: float
+        Returns
+        -------
+        float
+            the cell volume iff this is for a single cell
         """
         pass
 
@@ -119,16 +121,18 @@ class Volume(CellModifierInput):
 
     @property
     def is_mcnp_calculated(self):
-        """
-        Indicates whether or not the cell volume will attempt to be calculated by MCNP.
+        """Indicates whether or not the cell volume will attempt to be calculated by MCNP.
 
         This can be disabled by either manually setting the volume or disabling
         this calculation globally.
         This does not guarantee that MCNP will able to do so.
         Complex geometries may make this impossible.
 
-        :returns: True iff MCNP will try to calculate the volume for this cell.
-        :rtype: bool
+        Returns
+        -------
+        bool
+            True iff MCNP will try to calculate the volume for this
+            cell.
         """
         if self._problem and self.in_cell_block:
             if not self._problem.cells._volume.is_mcnp_calculated:
@@ -147,11 +151,12 @@ class Volume(CellModifierInput):
 
     @property
     def set(self) -> bool:
-        """
-        If this volume is set.
+        """If this volume is set.
 
-        :returns: true if the volume is manually set.
-        :rtype: bool
+        Returns
+        -------
+        bool
+            true if the volume is manually set.
         """
         return self.volume is not None
 

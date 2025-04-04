@@ -1,8 +1,10 @@
-# Copyright 2024, Battelle Energy Alliance, LLC All Rights Reserved.
+# Copyright 2024-2025, Battelle Energy Alliance, LLC All Rights Reserved.
+import io
 from unittest import TestCase
+from pathlib import Path
+import pytest
 
 import montepy
-
 from montepy.errors import MalformedInputError
 from montepy.input_parser.block_type import BlockType
 from montepy.input_parser.mcnp_input import Input
@@ -17,9 +19,7 @@ from montepy.surfaces.surface_type import SurfaceType
 
 class testSurfaces(TestCase):
     def test_surface_init(self):
-        in_str = "1 PZ 0.0"
-        card = Input([in_str], BlockType.SURFACE)
-        surf = Surface(card)
+        surf = Surface("1 PZ 0.0")
         self.assertEqual(surf.number, 1)
         self.assertEqual(surf.old_number, 1)
         self.assertEqual(len(surf.surface_constants), 1)
@@ -79,6 +79,8 @@ class testSurfaces(TestCase):
         card = Input([in_str], BlockType.SURFACE)
         with self.assertRaises(MalformedInputError):
             Surface(card)
+        surf = Surface(number=5)
+        assert surf.number == 5
 
     def test_validator(self):
         surf = Surface()
@@ -128,24 +130,6 @@ class testSurfaces(TestCase):
         surf._surface_type = SurfaceType.P
         with self.assertRaises(montepy.errors.IllegalState):
             surf.validate()
-
-    def test_surface_is_reflecting_setter(self):
-        in_str = "1 PZ 0.0"
-        card = Input([in_str], BlockType.SURFACE)
-        surf = Surface(card)
-        surf.is_reflecting = True
-        self.assertTrue(surf.is_reflecting)
-        with self.assertRaises(TypeError):
-            surf.is_reflecting = 1
-
-    def test_surface_is_white_bound_setter(self):
-        in_str = "1 PZ 0.0"
-        card = Input([in_str], BlockType.SURFACE)
-        surf = Surface(card)
-        surf.is_white_boundary = True
-        self.assertTrue(surf.is_white_boundary)
-        with self.assertRaises(TypeError):
-            surf.is_white_boundary = 1
 
     def test_surface_constants_setter(self):
         in_str = "1 PZ 0.0"
@@ -236,6 +220,8 @@ class testSurfaces(TestCase):
                 surf = montepy.surfaces.axis_plane.AxisPlane(
                     Input([bad_input], BlockType.SURFACE)
                 )
+        surf = montepy.surfaces.axis_plane.AxisPlane(number=5)
+        assert surf.number == 5
 
     def test_cylinder_on_axis_init(self):
         bad_inputs = ["1 P 0.0", "1 CZ 0.0 10.0"]
@@ -244,6 +230,8 @@ class testSurfaces(TestCase):
                 surf = montepy.surfaces.cylinder_on_axis.CylinderOnAxis(
                     Input([bad_input], BlockType.SURFACE)
                 )
+        surf = montepy.surfaces.cylinder_on_axis.CylinderOnAxis(number=5)
+        assert surf.number == 5
 
     def test_cylinder_par_axis_init(self):
         bad_inputs = ["1 P 0.0", "1 C/Z 0.0"]
@@ -252,6 +240,8 @@ class testSurfaces(TestCase):
                 surf = montepy.surfaces.cylinder_par_axis.CylinderParAxis(
                     Input([bad_input], BlockType.SURFACE)
                 )
+        surf = montepy.surfaces.cylinder_par_axis.CylinderParAxis(number=5)
+        assert surf.number == 5
 
     def test_gen_plane_init(self):
         bad_inputs = ["1 PZ 0.0", "1 P 0.0"]
@@ -260,6 +250,8 @@ class testSurfaces(TestCase):
                 surf = montepy.surfaces.general_plane.GeneralPlane(
                     Input([bad_input], BlockType.SURFACE)
                 )
+        surf = montepy.surfaces.general_plane.GeneralPlane(number=5)
+        assert surf.number == 5
 
     def test_axis_plane_location_setter(self):
         in_str = "1 PZ 0.0"
@@ -304,3 +296,84 @@ class testSurfaces(TestCase):
         # test length issues
         with self.assertRaises(ValueError):
             surf.coordinates = [3, 4, 5]
+
+
+def verify_export(surf):
+    output = surf.format_for_mcnp_input((6, 3, 0))
+    print("Surface output", output)
+    new_surf = Surface("\n".join(output))
+    verify_equiv_surf(surf, new_surf)
+
+
+def verify_equiv_surf(surf, new_surf):
+    assert surf.number == new_surf.number, "Material number not preserved."
+    assert len(surf.surface_constants) == len(
+        new_surf.surface_constants
+    ), "number of surface constants not kept."
+    for old_const, new_const in zip(surf.surface_constants, new_surf.surface_constants):
+        assert old_const == pytest.approx(new_const)
+    assert surf.is_reflecting == new_surf.is_reflecting
+    assert surf.is_white_boundary == new_surf.is_white_boundary
+    if surf.old_periodic_surface:
+        assert surf.old_periodic_surface == new_surf.old_periodic_surface
+    if surf.old_transform_number:
+        assert surf.old_transform_number == new_surf._old_transform_number
+
+
+def verify_prob_export(problem, surf):
+    with io.StringIO() as fh:
+        problem.write_problem(fh)
+        fh.seek(0)
+        new_problem = montepy.read_input(fh)
+    new_surf = new_problem.surfaces[surf.number]
+    verify_equiv_surf(surf, new_surf)
+
+
+@pytest.mark.parametrize(
+    "surf_str", ["1 PZ 0.0", "1 SO 1.0", "1 CZ 9.0", "4 C/z 5.0 0 3"]
+)
+def test_surface_clone(surf_str):
+    prob = montepy.MCNP_Problem("")
+    surf = surface_builder(surf_str)
+    prob.surfaces.append(surf)
+    new_surf = surf.clone()
+    assert surf.surface_type == new_surf.surface_type
+    assert surf.surface_constants == new_surf.surface_constants
+
+
+@pytest.fixture
+def simple_problem(scope="module"):
+    return montepy.read_input(Path("tests") / "inputs" / "test.imcnp")
+
+
+@pytest.fixture
+def cp_simple_problem(simple_problem):
+    return simple_problem.clone()
+
+
+@pytest.mark.parametrize(
+    "in_str, expected",
+    [("1 PZ 0.0", True), ("*1 PZ 0.0", False), ("    *1 PZ 0.0", False)],
+)
+def test_surface_is_reflecting_setter(cp_simple_problem, in_str, expected):
+    surf = Surface(in_str)
+    surf.is_reflecting = expected
+    assert surf.is_reflecting == expected
+    cp_simple_problem.surfaces.append(surf)
+    verify_prob_export(cp_simple_problem, surf)
+    with pytest.raises(TypeError):
+        surf.is_reflecting = 1
+
+
+@pytest.mark.parametrize(
+    "in_str, expected",
+    [("1 PZ 0.0", True), ("+1 PZ 0.0", False), ("    +1 PZ 0.0", False)],
+)
+def test_surface_is_white_bound_setter(cp_simple_problem, in_str, expected):
+    surf = Surface(in_str)
+    surf.is_white_boundary = expected
+    assert surf.is_white_boundary == expected
+    cp_simple_problem.surfaces.append(surf)
+    verify_prob_export(cp_simple_problem, surf)
+    with pytest.raises(TypeError):
+        surf.is_white_boundary = 1

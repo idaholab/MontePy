@@ -1,13 +1,14 @@
-# Copyright 2024, Battelle Energy Alliance, LLC All Rights Reserved.
+# Copyright 2024 - 2025, Battelle Energy Alliance, LLC All Rights Reserved.
 import copy
 import io
+import numpy as np
+from pathlib import Path
+import pytest
+import os
+from unittest import TestCase
+
 import montepy
 from montepy.errors import *
-from pathlib import Path
-import os
-
-import pytest
-from unittest import TestCase
 
 
 class EdgeCaseTests(TestCase):
@@ -19,7 +20,7 @@ class EdgeCaseTests(TestCase):
     def test_surface_edge_case(self):
         capsule = montepy.read_input("tests/inputs/test_complement_edge.imcnp")
         problem_cell = capsule.cells[61441]
-        self.assertEqual(len(set(problem_cell.surfaces)), 6)
+        self.assertEqual(len(problem_cell.surfaces), 6)
 
     def test_interp_surface_edge_case(self):
         capsule = montepy.read_input("tests/inputs/test_interp_edge.imcnp")
@@ -239,3 +240,13 @@ def test_trailing_comment_edge():
         Path("tests") / "inputs" / "test_trail_comment_edge.imcnp"
     )
     assert len(problem.cells[2].leading_comments) == 3
+
+
+@pytest.mark.filterwarnings("ignore")
+def test_expanding_new_line():
+    problem = montepy.read_input(Path("tests") / "inputs" / "test_universe.imcnp")
+    fill = problem.cells[1].fill
+    universes = [montepy.Universe(n) for n in range(300)]
+    fill.universes = np.array([[universes]])
+    with io.StringIO() as fh, pytest.warns(montepy.errors.LineExpansionWarning):
+        problem.write_problem(fh)

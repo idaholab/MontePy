@@ -3,29 +3,18 @@ from enum import Enum
 
 
 class Operator(Enum):
-    """
-    Enumeration of the allowed geometry set logic.
-    """
+    """Enumeration of the allowed geometry set logic."""
 
     INTERSECTION = "*"
-    """
-    Represents the intersection of sets.
-    """
+    """Represents the intersection of sets."""
     UNION = ":"
-    """
-    Represents the union of sets.
-    """
+    """Represents the union of sets."""
     COMPLEMENT = "#"
-    """
-    Represents the complement of a set.
-    """
+    """Represents the complement of a set."""
     _SHIFT = ">"
-    """
-    Internal operator essentially equivalent to No-op.
+    """Internal operator essentially equivalent to No-op.
 
     This is used to properly handle some leaf nodes.
     """
     GROUP = "()"
-    """
-    Grouping operator that represents parentheses.
-    """
+    """Grouping operator that represents parentheses."""

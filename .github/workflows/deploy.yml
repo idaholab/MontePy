@@ -41,7 +41,7 @@ jobs:
         id: get_version
         run: echo "version=`python -m setuptools_scm`" >> $GITHUB_OUTPUT
       - name: Verify that this is a non-dev release
-        run: .github/scripts/check_version.sh ${{ steps.get_version.outputs.version }}
+        run: .github/scripts/check_version.py
       - run: python -m build .
       - name: Sign the dists with Sigstore
         uses: sigstore/gh-action-sigstore-python@v3.0.0

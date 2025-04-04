@@ -1,4 +1,6 @@
 # Copyright 2024, Battelle Energy Alliance, LLC All Rights Reserved.
+from __future__ import annotations
+import montepy
 from montepy.surfaces.surface import Surface
 from montepy.surfaces.surface_type import SurfaceType
 from montepy.numbered_object_collection import NumberedObjectCollection
@@ -31,16 +33,25 @@ class Surfaces(NumberedObjectCollection):
 
     This example will shift all PZ surfaces up by 10 cm.
 
-    .. code-block:: python
+    .. testcode:: python
 
+        import montepy
+        problem = montepy.read_input("tests/inputs/test.imcnp")
         for surface in problem.surfaces.pz:
             surface.location += 10
 
-    :param surfaces: the list of surfaces to start with if needed
-    :type surfaces: list
+    Notes
+    -----
+
+    For examples see the ``NumberedObjectCollection`` :ref:`collect ex`.
+
+    Parameters
+    ----------
+    surfaces : list
+        the list of surfaces to start with if needed
     """
 
-    def __init__(self, surfaces=None, problem=None):
+    def __init__(self, surfaces: list = None, problem: montepy.MCNP_Problem = None):
         super().__init__(Surface, surfaces, problem)
 
 

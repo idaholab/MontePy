@@ -1,8 +1,9 @@
-# Copyright 2024, Battelle Energy Alliance, LLC All Rights Reserved.
+# Copyright 2024 - 2025, Battelle Energy Alliance, LLC All Rights Reserved.
+from hypothesis import given, strategies as st
+import pytest
 from unittest import TestCase
 
 import copy
-from montepy.constants import DEFAULT_VERSION
 from montepy.input_parser import syntax_node
 import montepy
 from montepy.cell import Cell
@@ -12,7 +13,7 @@ from montepy.input_parser.block_type import BlockType
 from montepy.input_parser.mcnp_input import Input, Jump
 from montepy.universe import Universe
 from montepy.data_inputs.fill import Fill
-from montepy.data_inputs.lattice import Lattice
+from montepy.data_inputs.lattice import LatticeType
 from montepy.data_inputs.lattice_input import LatticeInput
 from montepy.data_inputs.universe_input import UniverseInput
 import numpy as np
@@ -141,7 +142,7 @@ class TestLattice(TestCase):
         list_node = syntax_node.ListNode("numbers")
         list_node.append(syntax_node.ValueNode("1", float))
         classifier = syntax_node.ClassifierNode()
-        classifier.prefix = "lat"
+        classifier.prefix = syntax_node.ValueNode("lat", str)
         tree = syntax_node.SyntaxNode(
             "lattice",
             {
@@ -155,76 +156,91 @@ class TestLattice(TestCase):
 
     def test_lattice_init(self):
         lattice = self.lattice
-        self.assertEqual(lattice.lattice, Lattice(1))
+        assert lattice.lattice == LatticeType(1)
         tree = copy.deepcopy(self.tree)
-        with self.assertRaises(ValueError):
+        with pytest.raises(ValueError):
             tree["data"].nodes.pop()
             tree["data"].append(syntax_node.ValueNode("hi", str))
-            lattice = LatticeInput(in_cell_block=True, key="lat", value=tree)
-        with self.assertRaises(ValueError):
+            LatticeInput(in_cell_block=True, key="lat", value=tree)
+        with pytest.raises(ValueError):
             tree["data"].nodes.pop()
             tree["data"].append(syntax_node.ValueNode("5", float))
-            lattice = LatticeInput(in_cell_block=True, key="lat", value=tree)
+            LatticeInput(in_cell_block=True, key="lat", value=tree)
         lattices = [1, 2, None, None]
         input = Input(["Lat " + " ".join(list(map(str, lattices)))], BlockType.DATA)
         lattice = LatticeInput(input)
         for answer, lattice in zip(lattices, lattice._lattice):
-            self.assertEqual(Lattice(answer), lattice.value)
-        with self.assertRaises(MalformedInputError):
+            assert LatticeType(answer) == lattice.value
+        with pytest.raises(MalformedInputError):
             card = Input(["Lat 3"], BlockType.DATA)
             LatticeInput(card)
-        with self.assertRaises(MalformedInputError):
+        with pytest.raises(MalformedInputError):
             card = Input(["Lat str"], BlockType.DATA)
             LatticeInput(card)
 
     def test_lattice_setter(self):
         lattice = copy.deepcopy(self.lattice)
-        lattice.lattice = Lattice(2)
-        self.assertEqual(Lattice(2), lattice.lattice)
+        lattice.lattice = LatticeType(2)
+        assert LatticeType(2) == lattice.lattice
         lattice.lattice = 1
-        self.assertEqual(Lattice(1), lattice.lattice)
+        assert LatticeType(1) == lattice.lattice
         lattice.lattice = None
-        self.assertIsNone(lattice.lattice)
-        with self.assertRaises(TypeError):
+        assert lattice.lattice is None
+        with pytest.raises(TypeError):
             lattice.lattice = "hi"
 
-        with self.assertRaises(ValueError):
+        with pytest.raises(ValueError):
             lattice.lattice = -1
 
     def test_lattice_deleter(self):
         lattice = self.lattice
         del lattice.lattice
-        self.assertIsNone(lattice.lattice)
+        assert lattice.lattice is None
 
     def test_lattice_merge(self):
         lattice = self.lattice
-        with self.assertRaises(MalformedInputError):
+        with pytest.raises(MalformedInputError):
             lattice.merge(lattice)
 
     def test_lattice_cell_format(self):
         lattice = self.lattice
         output = lattice.format_for_mcnp_input(DEFAULT_VERSION)
-        self.assertIn("lat=1", output[0])
+        assert "lat=1" in output[0]
         lattice.lattice = None
         output = lattice.format_for_mcnp_input(DEFAULT_VERSION)
-        self.assertEqual(output, [])
+        assert output == []
 
     def test_lattice_repr(self):
         lattice = self.lattice
         out = repr(lattice)
-        self.assertIn("in_cell: True", out)
-        self.assertIn("set_in_block: True", out)
-        self.assertIn("Lattice_values : Lattice.HEXAHEDRA", out)
+        assert "in_cell: True" in out
+        assert "set_in_block: True" in out
+        assert "Lattice_values : LatticeType.HEXAHEDRAL" in out
+
+    def test_deprecated_lattice(self):
+        with pytest.warns(DeprecationWarning, match="HEXAGONAL"):
+            montepy.data_inputs.lattice.Lattice.HEXAGONAL
+        with pytest.warns(DeprecationWarning, match="HEXAHEDRAL"):
+            lattype = montepy.data_inputs.lattice.Lattice.HEXAHEDRA
+        cell = montepy.Cell()
+        with pytest.warns(DeprecationWarning):
+            cell.lattice = lattype
+        with pytest.warns(DeprecationWarning):
+            str(cell.lattice)
+        with pytest.warns(DeprecationWarning):
+            del cell.lattice
 
 
 class TestFill(TestCase):
     def setUp(self):
         list_node = syntax_node.ListNode("num")
         list_node.append(syntax_node.ValueNode("5", float))
+        classifier = syntax_node.ClassifierNode()
+        classifier.prefix = syntax_node.ValueNode("fill", str)
         tree = syntax_node.SyntaxNode(
             "fill",
             {
-                "classifier": "",
+                "classifier": classifier,
                 "seperator": syntax_node.ValueNode("=", str),
                 "data": list_node,
             },
@@ -281,7 +297,7 @@ class TestFill(TestCase):
         self.assertIsNone(fill.universe)
         self.assertEqual(fill.min_index[0], 0)
         self.assertEqual(fill.max_index[2], 1)
-        answer = np.array([[[1, 2], [3, 4]], [[5, 6], [7, 8]]])
+        answer = np.array([[[1, 2], [3, 4]], [[5, 6], [7, 8]]]).T
         self.assertTrue((fill.old_universe_numbers == answer).all())
         # test string universe
         with self.assertRaises(ValueError):
@@ -370,8 +386,10 @@ class TestFill(TestCase):
         with self.assertRaises(TypeError):
             fill.universes = "hi"
         fill.multiple_universes = False
-        with self.assertRaises(ValueError):
-            fill.universes = fill_array
+        with pytest.raises(ValueError):
+            fill.universes = np.array([1, 2])
+        with pytest.raises(TypeError):
+            fill.universes = np.array([[[1]]])
 
     def test_fill_str(self):
         input = Input(["1 0 -1 fill=0:1 0:1 0:1 1 2 3 4 5 6 7 8"], BlockType.CELL)
@@ -388,3 +406,75 @@ class TestFill(TestCase):
         fill2 = Fill(card)
         with self.assertRaises(MalformedInputError):
             fill1.merge(fill2)
+
+    @given(
+        indices=st.lists(st.integers(), min_size=3, max_size=3),
+        width=st.lists(st.integers(1), min_size=3, max_size=3),
+    )
+    def test_fill_index_setter(self, indices, width):
+        fill = self.simple_fill.clone()
+        fill.multiple_universes = True
+        fill.min_index = indices
+        end = np.array(indices) + np.array(width)
+        fill.max_index = end
+        assert fill.min_index == indices
+        assert (fill.max_index == end).all()
+
+    def test_fill_index_bad_setter(self):
+        fill = self.simple_fill
+        with pytest.raises(TypeError):
+            fill.min_index = "hi"
+        with pytest.raises(TypeError):
+            fill.max_index = "hi"
+        with pytest.raises(TypeError):
+            fill.min_index = ["hi"]
+        with pytest.raises(TypeError):
+            fill.max_index = ["hi"]
+        with pytest.raises(ValueError):
+            fill.min_index = [1]
+        with pytest.raises(ValueError):
+            fill.max_index = [1]
+
+    @given(
+        universes=st.lists(st.integers(0, 1_000_000), min_size=1, max_size=10),
+        y_len=st.integers(1, 10),
+        z_len=st.integers(1, 10),
+    )
+    @pytest.mark.filterwarnings("ignore")
+    def test_fill_multi_unis(self, universes, y_len, z_len):
+        fill = self.simple_fill.clone()
+        universes = np.array([[[Universe(u) for u in universes]] * y_len] * z_len)
+        fill.multiple_universes = True
+        fill.universes = universes
+        assert (fill.universes == universes).all()
+        assert (fill.min_index == np.array([0, 0, 0])).all()
+        assert (fill.max_index == np.array(universes.shape) - np.array([1, 1, 1])).all()
+        self.verify_export(fill)
+
+    def verify_export(self, fill):
+        output = fill.format_for_mcnp_input((6, 3, 0))
+        print(output)
+        cell = montepy.Cell("1 0 -2 " + "\n".join(output))
+        new_fill = cell.fill
+        for attr in [
+            "multiple_universes",
+            "old_universe_numbers",
+            "old_universe_number",
+        ]:
+            old_val = getattr(fill, attr)
+            if "old" in attr:
+                if attr.endswith("s"):
+                    old_val = getattr(fill, "universes")
+                    if old_val is not None:
+                        numberer = np.vectorize(lambda u: u.number)
+                        old_val = numberer(old_val)
+                else:
+                    old_val = getattr(fill, "universe")
+                    if old_val is not None:
+                        old_val = old_val.number
+            new_val = getattr(new_fill, attr)
+            print(attr, old_val, new_val)
+            if isinstance(old_val, np.ndarray):
+                assert (old_val == new_val).all()
+            else:
+                assert old_val == new_val

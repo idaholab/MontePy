@@ -1,17 +1,25 @@
-# Copyright 2024, Battelle Energy Alliance, LLC All Rights Reserved.
+# Copyright 2024-2025, Battelle Energy Alliance, LLC All Rights Reserved.
 import montepy
 from montepy.numbered_object_collection import NumberedObjectCollection
 from montepy.errors import *
 import warnings
+from numbers import Integral
 
 
 class Cells(NumberedObjectCollection):
     """A collections of multiple :class:`montepy.cell.Cell` objects.
 
-    :param cells: the list of cells to start with if needed
-    :type cells: list
-    :param problem: the problem to link this collection to.
-    :type problem: MCNP_Problem
+    Notes
+    -----
+
+    For examples see the ``NumberedObjectCollection`` :ref:`collect ex`.
+
+    Parameters
+    ----------
+    cells : list
+        the list of cells to start with if needed
+    problem : MCNP_Problem
+        the problem to link this collection to.
     """
 
     def __init__(self, cells=None, problem=None):
@@ -46,23 +54,24 @@ class Cells(NumberedObjectCollection):
                     raise e
 
     def set_equal_importance(self, importance, vacuum_cells=tuple()):
-        """
-        Sets all cells except the vacuum cells to the same importance using :func:`montepy.data_cards.importance.Importance.all`.
+        """Sets all cells except the vacuum cells to the same importance using :func:`montepy.data_cards.importance.Importance.all`.
 
         The vacuum cells will be set to 0.0. You can specify cell numbers or cell objects.
 
-        :param importance: the importance to apply to all cells
-        :type importance: float
-        :param vacuum_cells: the cells that are the vacuum boundary with 0 importance
-        :type vacuum_cells: list
+        Parameters
+        ----------
+        importance : float
+            the importance to apply to all cells
+        vacuum_cells : list
+            the cells that are the vacuum boundary with 0 importance
         """
         if not isinstance(vacuum_cells, (list, tuple, set)):
             raise TypeError("vacuum_cells must be a list or set")
         cells_buff = set()
         for cell in vacuum_cells:
-            if not isinstance(cell, (montepy.Cell, int)):
+            if not isinstance(cell, (montepy.Cell, Integral)):
                 raise TypeError("vacuum cell must be a Cell or a cell number")
-            if isinstance(cell, int):
+            if isinstance(cell, Integral):
                 cells_buff.add(self[cell])
             else:
                 cells_buff.add(cell)
@@ -75,11 +84,12 @@ class Cells(NumberedObjectCollection):
 
     @property
     def allow_mcnp_volume_calc(self):
-        """
-        Whether or not MCNP is allowed to automatically calculate cell volumes.
+        """Whether or not MCNP is allowed to automatically calculate cell volumes.
 
-        :returns: true if MCNP will attempt to calculate cell volumes
-        :rtype: bool
+        Returns
+        -------
+        bool
+            true if MCNP will attempt to calculate cell volumes
         """
         return self._volume.is_mcnp_calculated
 
@@ -94,8 +104,10 @@ class Cells(NumberedObjectCollection):
 
         This is done so that inputs can find links to other objects.
 
-        :param problem: The problem to link this input to.
-        :type problem: MCNP_Problem
+        Parameters
+        ----------
+        problem : MCNP_Problem
+            The problem to link this input to.
         """
         super().link_to_problem(problem)
         inputs_to_property = montepy.Cell._INPUTS_TO_PROPERTY
@@ -105,22 +117,24 @@ class Cells(NumberedObjectCollection):
     def update_pointers(
         self, cells, materials, surfaces, data_inputs, problem, check_input=False
     ):
-        """
-        Attaches this object to the appropriate objects for surfaces and materials.
+        """Attaches this object to the appropriate objects for surfaces and materials.
 
         This will also update each cell with data from the data block,
         for instance with cell volume from the data block.
 
-        :param cells: a Cells collection of the cells in the problem.
-        :type cells: Cells
-        :param materials: a materials collection of the materials in the problem
-        :type materials: Materials
-        :param surfaces: a surfaces collection of the surfaces in the problem
-        :type surfaces: Surfaces
-        :param problem: The MCNP_Problem these cells are associated with
-        :type problem: MCNP_Problem
-        :param check_input: If true, will try to find all errors with input and collect them as warnings to log.
-        :type check_input: bool
+        Parameters
+        ----------
+        cells : Cells
+            a Cells collection of the cells in the problem.
+        materials : Materials
+            a materials collection of the materials in the problem
+        surfaces : Surfaces
+            a surfaces collection of the surfaces in the problem
+        problem : MCNP_Problem
+            The MCNP_Problem these cells are associated with
+        check_input : bool
+            If true, will try to find all errors with input and collect
+            them as warnings to log.
         """
 
         def handle_error(e):
@@ -166,8 +180,6 @@ class Cells(NumberedObjectCollection):
             except (
                 BrokenObjectLinkError,
                 MalformedInputError,
-                ParticleTypeNotInProblem,
-                ParticleTypeNotInCell,
             ) as e:
                 handle_error(e)
                 continue
@@ -180,3 +192,65 @@ class Cells(NumberedObjectCollection):
                 if buf := getattr(self, attr).format_for_mcnp_input(mcnp_version):
                     ret += buf
         return ret
+
+    def clone(
+        self, clone_material=False, clone_region=False, starting_number=None, step=None
+    ):
+        """Create a new instance of this collection, with all new independent
+        objects with new numbers.
+
+        This relies mostly on ``copy.deepcopy``.
+
+        Notes
+        -----
+        If starting_number, or step are not specified :func:`starting_number`,
+        and :func:`step` are used as default values.
+
+
+        .. versionadded:: 0.5.0
+
+        .. versionchanged:: 1.0.0
+
+            Added ``clone_material`` and ``clone_region``.
+
+        Parameters
+        ----------
+        clone_material : bool
+            Whether to create a new clone of the materials for the
+            cells.
+        clone_region : bool
+            Whether to clone the underlying objects (Surfaces, Cells) of
+            these cells' region.
+        starting_number : int
+            The starting number to request for a new object numbers.
+        step : int
+            the step size to use to find a new valid number.
+
+        Returns
+        -------
+        type(self)
+            a cloned copy of this object.
+        """
+        if not isinstance(starting_number, (Integral, type(None))):
+            raise TypeError(
+                f"Starting_number must be an int. {type(starting_number)} given."
+            )
+        if not isinstance(step, (Integral, type(None))):
+            raise TypeError(f"step must be an int. {type(step)} given.")
+        if starting_number is not None and starting_number <= 0:
+            raise ValueError(f"starting_number must be >= 1. {starting_number} given.")
+        if step is not None and step <= 0:
+            raise ValueError(f"step must be >= 1. {step} given.")
+        if starting_number is None:
+            starting_number = self.starting_number
+        if step is None:
+            step = self.step
+        objs = []
+        for obj in list(self):
+            new_obj = obj.clone(
+                clone_material, clone_region, starting_number, step, add_collect=False
+            )
+            starting_number = new_obj.number
+            objs.append(new_obj)
+            starting_number = new_obj.number + step
+        return type(self)(objs)
