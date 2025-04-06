@@ -1,5 +1,8 @@
-# Copyright 2024, Battelle Energy Alliance, LLC All Rights Reserved.
+# Copyright 2024 - 2025, Battelle Energy Alliance, LLC All Rights Reserved.
 import itertools as it
+from numbers import Integral, Real
+import numpy as np
+
 from montepy.data_inputs.cell_modifier import CellModifierInput, InitInput
 from montepy.data_inputs.transform import Transform
 from montepy.errors import *
@@ -9,7 +12,14 @@ from montepy.input_parser import syntax_node
 from montepy.mcnp_object import MCNP_Object
 from montepy.universe import Universe
 from montepy.utilities import *
-import numpy as np
+
+
+def _verify_3d_index(self, indices):
+    for index in indices:
+        if not isinstance(index, Integral):
+            raise TypeError(f"Index values for fill must be an int. {index} given.")
+    if len(indices) != 3:
+        raise ValueError(f"3 values must be given for fill. {indices} given")
 
 
 class Fill(CellModifierInput):
@@ -45,6 +55,8 @@ class Fill(CellModifierInput):
         self._hidden_transform = None
         self._old_transform_number = None
         self._multi_universe = False
+        self._min_index = None
+        self._max_index = None
         super().__init__(input, in_cell_block, key, value)
         if self.in_cell_block:
             if key:
@@ -71,7 +83,7 @@ class Fill(CellModifierInput):
         list_node.append(self._generate_default_node(float, None))
         classifier = syntax_node.ClassifierNode()
         classifier.prefix = self._generate_default_node(
-            str, self._class_prefix().upper(), None
+            str, self._class_prefix().upper(), None, never_pad=True
         )
         self._tree = syntax_node.SyntaxNode(
             "fill",
@@ -187,9 +199,9 @@ class Fill(CellModifierInput):
                 )
         self._old_numbers = np.zeros(self._sizes, dtype=np.dtype(int))
         words = iter(words[9:])
-        for i in self._axis_range(0):
+        for k in self._axis_range(2):
             for j in self._axis_range(1):
-                for k in self._axis_range(2):
+                for i in self._axis_range(0):
                     val = next(words)
                     try:
                         val._convert_to_int()
@@ -259,17 +271,35 @@ class Fill(CellModifierInput):
     def universes(self, value):
         if not isinstance(value, (np.ndarray, type(None))):
             raise TypeError(f"Universes must be set to an array. {value} given.")
-        if not self.multiple_universes:
+        if value.ndim != 3:
             raise ValueError(
-                "Multiple universes can only be set when multiple_universes is True."
+                f"3D array must be given for fill.universes. Array of shape: {value.shape} given."
             )
+
+        def is_universes(array):
+            type_checker = lambda x: isinstance(x, (Universe, type(None)))
+            return map(type_checker, array.flat)
+
+        if value.dtype != np.object_ or not all(is_universes(value)):
+            raise TypeError(
+                f"All values in array must be a Universe (or None). {value} given."
+            )
+        self.multiple_universes = True
+        if self.min_index is None:
+            self.min_index = np.array([0] * 3)
+        self.max_index = self.min_index + np.array(value.shape) - 1
         self._universes = value
 
     @universes.deleter
     def universes(self):
         self._universes = None
 
-    @property
+    @make_prop_pointer(
+        "_min_index",
+        (list, np.ndarray),
+        validator=_verify_3d_index,
+        deletable=True,
+    )
     def min_index(self):
         """The minimum indices of the matrix in each dimension.
 
@@ -280,9 +310,14 @@ class Fill(CellModifierInput):
         :class:`numpy.ndarry`
             the minimum indices of the matrix for complex fills
         """
-        return self._min_index
+        pass
 
-    @property
+    @make_prop_pointer(
+        "_max_index",
+        (list, np.ndarray),
+        validator=_verify_3d_index,
+        deletable=True,
+    )
     def max_index(self):
         """The maximum indices of the matrix in each dimension.
 
@@ -293,7 +328,7 @@ class Fill(CellModifierInput):
         :class:`numpy.ndarry`
             the maximum indices of the matrix for complex fills
         """
-        return self._max_index
+        pass
 
     @property
     def multiple_universes(self):
@@ -500,13 +535,15 @@ class Fill(CellModifierInput):
         )
 
     def _update_cell_values(self):
-        # Todo update matrix fills
         new_vals = list(self._tree["data"])
         if self.transform and self.transform.is_in_degrees:
             self._tree["classifier"].modifier = "*"
         else:
             self._tree["classifier"].modifier = None
         new_vals = self._update_cell_universes(new_vals)
+        self._update_cell_transform_values(new_vals)
+
+    def _update_cell_transform_values(self, new_vals):
         if self.transform is None:
             try:
                 values = [val.value for val in self._tree["data"]]
@@ -549,10 +586,8 @@ class Fill(CellModifierInput):
 
         if self.multiple_universes:
             payload = []
-            for i in self._axis_range(0):
-                for j in self._axis_range(1):
-                    for k in self._axis_range(2):
-                        payload.append(self.universes[i][j][k].number)
+            get_number = np.vectorize(lambda u: u.number)
+            payload = get_number(self.universes).T.ravel()
         else:
             payload = [
                 (
@@ -579,7 +614,29 @@ class Fill(CellModifierInput):
         for universe, value in zip(payload, value_nodes):
             value.value = universe
             buffer.append(value)
-        buffer = new_vals[:start_matrix] + buffer
+        buffer = self._update_multi_index_limits(new_vals[:start_matrix]) + buffer
         if start_transform:
             buffer += new_vals[start_transform:]
         return buffer
+
+    def _update_multi_index_limits(self, new_vals):
+        if not self.multiple_universes and ":" not in new_vals:
+            return new_vals
+        if ":" not in new_vals:
+            for min_idx, max_idx in zip(self.min_index, self.max_index):
+                new_vals.extend(
+                    [
+                        self._generate_default_node(int, str(min_idx), padding=None),
+                        syntax_node.PaddingNode(":"),
+                        self._generate_default_node(int, str(max_idx), padding=" "),
+                    ]
+                )
+            return new_vals
+        vals_iter = iter(new_vals)
+        for min_idx, max_idx in zip(self.min_index, self.max_index):
+            min_val = next(vals_iter)
+            min_val.value = min_idx
+            next(vals_iter)
+            max_val = next(vals_iter)
+            max_val.value = max_idx
+        return new_vals

@@ -1,4 +1,4 @@
-# Copyright 2024, Battelle Energy Alliance, LLC All Rights Reserved.
+# Copyright 2024-2025, Battelle Energy Alliance, LLC All Rights Reserved.
 from hypothesis import given, note, strategies as st
 from unittest import TestCase
 import pytest
@@ -102,6 +102,13 @@ class TestCellClass(TestCase):
         self.assertEqual(
             repr(cell), "CELL: 1 \nVoid material \ndensity: 0.5 atom/b-cm\n"
         )
+        in_str = "1 0 -2 imp:n=1 "
+        cell = montepy.Cell(in_str)
+        # change line length
+        old_version = montepy.MCNP_VERSION
+        montepy.MCNP_VERSION = (5, 1, 60)
+        assert cell.mcnp_str() == in_str
+        montepy.MCNP_VERSION = old_version
 
     def test_cell_paremeters_no_eq(self):
         in_str = f"1 0 -1 PWT 1.0"
@@ -336,3 +343,58 @@ def test_bad_setattr():
         cell.nuber = 5
     cell._nuber = 5
     assert cell._nuber == 5
+
+
+def verify_export(cell):
+    output = cell.format_for_mcnp_input((6, 3, 0))
+    print("cell output", output)
+    assert "\n".join(output) == cell.mcnp_str((6, 3, 0))
+    new_cell = montepy.Cell("\n".join(output))
+    for attr in {
+        "number",
+        "old_mat_number",
+        "old_universe_number",
+        "lattice_type",
+        "mass_density",
+        "atom_density",
+        "is_atom_dens",
+    }:
+        try:
+            old_attr = getattr(cell, attr)
+            new_attr = getattr(new_cell, attr)
+            # jank override
+            if attr == "old_universe_number" and cell.universe:
+                old_attr = cell.universe.number
+        except AttributeError as e:
+            if "density" not in attr:
+                raise e
+            else:
+                continue
+        print(f"attr: {attr}, old: {old_attr}, new: {new_attr}")
+        if old_attr is not None:
+            if isinstance(old_attr, float):
+                assert old_attr == pytest.approx(new_attr)
+            else:
+                assert old_attr == new_attr
+        else:
+            assert new_attr is None
+    for attr in {
+        "hidden_transform",
+        "multiple_universes",
+        "old_universe_number",
+        "old_universe_numbers",
+        "transform",
+    }:
+        old_attr = getattr(cell.fill, attr)
+        new_attr = getattr(new_cell.fill, attr)
+        # jank override
+        if attr == "old_universe_number" and cell.fill.universe:
+            old_attr = cell.fill.universe.number
+        print(f"fill attr: {attr}, old: {old_attr}, new: {new_attr}")
+        if old_attr is not None:
+            if isinstance(old_attr, float):
+                assert old_attr == pytest.approx(new_attr)
+            else:
+                assert old_attr == new_attr
+        else:
+            assert new_attr is None

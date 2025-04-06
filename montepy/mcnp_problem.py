@@ -277,9 +277,19 @@ class MCNP_Problem:
 
         ``problem.print_in_data_block["Imp"] = True``
 
+
+        .. note::
+
+           The default for this is ``False``,
+           that is to print the data in the cell block if this was not set in the input file or by the user.
+
+        .. versionchanged:: 1.0.0
+
+            Default value changed to ``False``
+
         Returns
         -------
-        bool
+        dict[str, bool]
         """
         return self._print_in_data_block
 
@@ -507,8 +517,8 @@ class MCNP_Problem:
             self._surfaces.remove(surface)
 
     def add_cell_children_to_problem(self):  # pragma: no cover
-        """Adds the surfaces, materials, and transforms of all cells in this problem to this problem to the
-        internal lists to allow them to be written to file.
+        """Deprecated: Adds the surfaces, materials, and transforms of all cells in this problem to this problem to the
+           internal lists to allow them to be written to file.
 
         .. deprecated:: 1.0.0
 
@@ -625,16 +635,20 @@ class MCNP_Problem:
             message = f"The input starting on Line {warning_message.lineno} of: {warning_message.path} expanded. "
             if warning_level == WarningLevels.SUPRESS:
                 continue
-            elif warning_level == WarningLevels.MINIMAL:
-                if warning.cause == "value":
-                    message += f"The new value is: {warning.new_value}"
-                else:
-                    message += f"The new lines are: {warning.new_value}"
             elif warning_level == WarningLevels.MAXIMAL:
                 message += "\nThe new input is:\n"
+                width = 15
                 for i, line in enumerate(warning_message.lines):
                     message += f"     {warning_message.lineno + i:5g}| {line}\n"
-                message += warning.message
+                if hasattr(warning, "olds"):
+                    message += (
+                        f"\n    {'old values': ^{width}s} {'new values': ^{width}s}"
+                    )
+                    message += f"\n    {'':-^{width}s} {'':-^{width}s}\n"
+                    for old, new in zip(warning.olds, warning.news):
+                        formatter = f"    {{old: >{width}}} {{new: >{width}}}\n"
+                        message += formatter.format(old=old, new=new)
+
             warning = LineExpansionWarning(message)
             warnings.warn(warning, stacklevel=3)
 
