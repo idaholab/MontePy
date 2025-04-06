@@ -66,15 +66,54 @@ funcs = st.sampled_from(
 )
 
 
-@given(st.one_of(binary, boolean, dt, fl, it, no), funcs)
-def test_dummy_bad_type(val, func):
+@given(
+    st.one_of(binary, boolean, dt, fl, it, no),
+    st.sampled_from(
+        [
+            simple_args,
+            var_args,
+            kwargs,
+            kw_defaults,
+        ]
+    ),
+)
+def test_dummy_bad_type_with_none(val, func):
     with pytest.raises(TypeError):
         func(val)
 
 
-@given(st.one_of(chars), funcs)
+@given(
+    st.one_of(binary, boolean, dt, fl, it),
+    st.sampled_from(
+        [
+            simple_args,
+            var_args,
+            kwargs,
+            kw_only,
+            kw_defaults,
+        ]
+    ),
+)
+def test_dummy_bad_type_no_none(val, func):
+    with pytest.raises(TypeError):
+        func(val)
+
+
+@given(
+    st.one_of(chars),
+    st.sampled_from(
+        [
+            simple_args,
+            var_args,
+            kwargs,
+            kw_only,
+            kw_defaults,
+        ]
+    ),
+)
 def test_dummy_good_type(val, func):
     func(val)
+
 
 @given(st.one_of(chars, no), st.sampled_from([kw_only]))
 def test_none_default(val, func):
