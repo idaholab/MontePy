@@ -72,6 +72,10 @@ def test_dummy_bad_type(val, func):
         func(val)
 
 
-@given(st.one_of(binary, boolean, dt, fl, it, no), funcs)
+@given(st.one_of(chars), funcs)
 def test_dummy_good_type(val, func):
+    func(val)
+
+@given(st.one_of(chars, no), st.sampled_from([kw_only]))
+def test_none_default(val, func):
     func(val)
