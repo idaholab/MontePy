@@ -87,7 +87,7 @@ def check_arguments(func, **args_check):
         checkers = []
         arg_name = getattr(args_spec, attr, None)
         if arg_name:
-            type_checker = _prepare_type_checker(arg_name, args_spec, False)
+            checkers = [_prepare_type_checker(arg_name, args_spec, False)]
         if arg_name in args_check:
             checkers.extend(args_check[arg_name])
         special_checks[attr] = checkers
