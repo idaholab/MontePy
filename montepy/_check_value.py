@@ -23,7 +23,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 import copy
 import os
 from collections.abc import Iterable
-import functiools
+import functools
 import inspect
 
 import numpy as np
@@ -32,16 +32,31 @@ import numpy as np
 PathLike = str | os.PathLike
 
 
-def _prepare_type_checker(arg_name, args_spec):
-    # TODO allow default None
+def _argtype_default_gen(argspec, attr):
+    if attr == "args":
+        args = argspec.args
+        if argspec.defaults:
+            delta_len = len(args) - len(argspec.defaults)
+            def_iter = (True,) * delta_len + argspec.defaults
+        else:
+            def_iter = (True,) * len(args)
+        for arg, default in zip(args, def_iter):
+            yield arg, default
+    else:
+        for arg_name in argspec.kwonlyargs:
+            default = argspec.kwonlydefaults.get(arg_name, True)
+            yield arg_name, default
+
+
+def _prepare_type_checker(arg_name, args_spec, none_ok):
     arg_type = args_spec.annotations.get(arg_name, None)
     if arg_type:
         # if annotations are used
 
         if isinstance(arg_type, str):
-            return lambda x: check_type(arg_name, x, eval(arg_type))
+            return lambda x: check_type(arg_name, x, eval(arg_type), none_ok=none_ok)
         else:
-            return lambda x: check_type(arg_name, x, arg_type)
+            return lambda x: check_type(arg_name, x, arg_type, none_ok=none_ok)
 
 
 def check_arguments(func, **args_check):
@@ -53,10 +68,11 @@ def check_arguments(func, **args_check):
             arg_checkers[attr] = []
         else:
             arg_checkers[attr] = {}
-        for arg_name in getattr(args_spec, attr):
+        for arg_name, default in _argtype_default_gen(args_spec, attr):
+            none_ok = default is None
             checkers = []
             # build
-            type_checker = _prepare_type_checker(arg_name, args_spec)
+            type_checker = _prepare_type_checker(arg_name, args_spec, none_ok)
             if type_checker:
                 checkers.append(type_checker)
             if arg_name in args_check:
@@ -71,7 +87,7 @@ def check_arguments(func, **args_check):
         checkers = []
         arg_name = getattr(args_spec, attr, None)
         if arg_name:
-            type_checker = _prepare_type_checker(arg_name, args_spec)
+            type_checker = _prepare_type_checker(arg_name, args_spec, False)
         if arg_name in args_check:
             checkers.extend(args_check[arg_name])
         special_checks[attr] = checkers
