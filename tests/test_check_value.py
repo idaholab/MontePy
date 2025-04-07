@@ -44,7 +44,7 @@ def kw_defaults(a: str):
     def ret(a: str, *args: str, b: str = None, **kwargs: str):
         pass
 
-    return ret(foo=a)
+    return ret("1", foo=a)
 
 
 @cv.check_arguments(a=cv.enforce_less_than(0))
