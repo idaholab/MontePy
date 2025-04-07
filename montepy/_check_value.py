@@ -63,63 +63,84 @@ def _prepare_type_checker(func_name, arg_name, args_spec, none_ok):
             )
 
 
-def check_arguments(func, **args_check):
+def _prepare_args_check(args_check, func_name, arg_name):
+    if args_check is None:
+        return []
+    if not isinstance(args_check, (tuple, list)):
+        args_check = (args_check,)
+    return (checker(func_name, arg_name) for checker in args_check)
+
+
+def check_arguments(func=None, **args_check):
     """ """
-    args_spec = inspect.getfullargspec(func)
-    arg_checkers = {}
-    for attr in ["args", "kwonlyargs"]:
-        if attr == "args":
-            arg_checkers[attr] = []
-        else:
-            arg_checkers[attr] = {}
-        for arg_name, default in _argtype_default_gen(args_spec, attr):
-            none_ok = default is None
-            checkers = []
-            # build
-            type_checker = _prepare_type_checker(
-                func.__qualname__, arg_name, args_spec, none_ok
-            )
-            if type_checker:
-                checkers.append(type_checker)
-            if arg_name in args_check:
-                checkers.extend(args_check[arg_name])
+
+    def decorator(func):
+        args_spec = inspect.getfullargspec(func)
+        arg_checkers = {}
+        for attr in ["args", "kwonlyargs"]:
             if attr == "args":
-                arg_checkers[attr].append(checkers)
+                arg_checkers[attr] = []
             else:
-                arg_checkers[attr][arg_name] = checkers
+                arg_checkers[attr] = {}
+            for arg_name, default in _argtype_default_gen(args_spec, attr):
+                none_ok = default is None
+                checkers = []
+                # build
+                type_checker = _prepare_type_checker(
+                    func.__qualname__, arg_name, args_spec, none_ok
+                )
+                if type_checker:
+                    checkers.append(type_checker)
+                checkers.extend(
+                    _prepare_args_check(
+                        args_check.get(arg_name, None), func.__qualname__, arg_name
+                    )
+                )
+                if attr == "args":
+                    arg_checkers[attr].append(checkers)
+                else:
+                    arg_checkers[attr][arg_name] = checkers
 
-    special_checks = {}
-    for attr in ("varargs", "varkw"):
-        checkers = []
-        arg_name = getattr(args_spec, attr, None)
-        if arg_name:
-            checkers = [
-                _prepare_type_checker(func.__qualname__, arg_name, args_spec, False)
-            ]
-        if arg_name in args_check:
-            checkers.extend(args_check[arg_name])
-        special_checks[attr] = checkers
+        special_checks = {}
+        for attr in ("varargs", "varkw"):
+            checkers = []
+            arg_name = getattr(args_spec, attr, None)
+            if arg_name:
+                checkers = [
+                    _prepare_type_checker(func.__qualname__, arg_name, args_spec, False)
+                ]
+            checkers.extend(
+                _prepare_args_check(
+                    args_check.get(arg_name, None), func.__qualname__, arg_name
+                )
+            )
+            special_checks[attr] = checkers
 
-    @functools.wraps(func)
-    def wrapper(*args, **kwargs):
-        args_iter = iter(args)
-        for checkers, arg in zip(arg_checkers["args"], args_iter):
-            for checker in checkers:
-                checker(arg)
-        # iterate over var args
-        for arg in args_iter:
-            for checker in special_checks["varargs"]:
-                checker(arg)
+        @functools.wraps(func)
+        def wrapper(*args, **kwargs):
+            args_iter = iter(args)
+            for checkers, arg in zip(arg_checkers["args"], args_iter):
+                for checker in checkers:
+                    checker(arg)
+            # iterate over var args
+            for arg in args_iter:
+                for checker in special_checks["varargs"]:
+                    checker(arg)
 
-        for arg_name, arg in kwargs.items():
-            if arg_name in arg_checkers["kwonlyargs"]:
-                checkers = arg_checkers["kwonlyargs"][arg_name]
-            else:
-                checkers = special_checks["varkw"]
-            for checker in checkers:
-                checker(arg)
+            for arg_name, arg in kwargs.items():
+                if arg_name in arg_checkers["kwonlyargs"]:
+                    checkers = arg_checkers["kwonlyargs"][arg_name]
+                else:
+                    checkers = special_checks["varkw"]
+                for checker in checkers:
+                    checker(arg)
+            return func(*args, **kwargs)
 
-    return wrapper
+        return wrapper
+
+    if func is not None:
+        return decorator(func)
+    return decorator
 
 
 def check_type(
@@ -365,7 +386,14 @@ def check_value(name, value, accepted_values):
         raise ValueError(msg)
 
 
-def check_less_than(name, value, maximum, equality=False):
+def enforce_less_than(maximum, equality=False):
+    def wrapper(func_name, name):
+        return lambda x: check_less_than(name, x, maximum, equality, func_name)
+
+    return wrapper
+
+
+def check_less_than(name, value, maximum, equality=False, func_name=None):
     """Ensure that an object's value is less than a given value.
 
     Parameters
