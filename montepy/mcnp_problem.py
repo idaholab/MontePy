@@ -374,7 +374,7 @@ class MCNP_Problem:
         return self._transforms
 
     @staticmethod
-    def parse_object(input):
+    def _parse_object(input):
         OBJ_MATCHER = {
             block_type.BlockType.CELL: Cell,
             block_type.BlockType.SURFACE: surface_builder.parse_surface,
@@ -382,6 +382,29 @@ class MCNP_Problem:
         }
         obj_parser = OBJ_MATCHER[input.block_type]
         return input, obj_parser(input)
+
+    def _create_input_generator(
+        self, multithread: bool = True, num_threads: int = None, replace: bool = False
+    ):
+        input_iter = input_syntax_reader.read_input_syntax(
+            self._input_file, self.mcnp_version, replace=replace
+        )
+        input = next(input_iter)
+        self._original_inputs.append(input)
+        if isinstance(input, mcnp_input.Message):
+            self._message = input
+            input = next(input_iter)
+
+        self._title = input
+        if multithread:
+            with concurrent.futures.ProcessPoolExecutor(
+                mp_context=multiprocessing.get_context("spawn")
+            ) as executor:
+                for ret in executor.map(self._parse_object, input_iter, chunksize=50):
+                    yield ret
+
+        else:
+            yield from map(self._parse_object, input_iter)
 
     def parse_input(self, check_input=False, replace=True):
         """Semantically parses the MCNP file provided to the constructor.
@@ -406,55 +429,40 @@ class MCNP_Problem:
             block_type.BlockType.DATA: (parse_data, self._data_inputs),
         }
         try:
-            input_iter = input_syntax_reader.read_input_syntax(
-                self._input_file, self.mcnp_version, replace=replace
-            )
-            input = next(input_iter)
-            self._original_inputs.append(input)
-            if isinstance(input, mcnp_input.Message):
-                self._message = input
-                input = next(input_iter)
-
-            self._title = input
-            with concurrent.futures.ProcessPoolExecutor(
-                mp_context=multiprocessing.get_context("spawn")
-            ) as executor:
-                for input, obj in executor.map(self.parse_object, input_iter):
-                    if last_block != input.block_type:
-                        trailing_comment = None
-                        last_block = input.block_type
-                    try:
-                        _, obj_container = OBJ_MATCHER[input.block_type]
-                        obj.link_to_problem(self)
-                        if isinstance(
-                            obj_container,
-                            montepy.numbered_object_collection.NumberedObjectCollection,
-                        ):
-                            obj_container.append(obj, initial_load=True)
-                        else:
-                            obj_container.append(obj)
-                    except (
-                        MalformedInputError,
-                        NumberConflictError,
-                        ParsingError,
-                        UnknownElement,
-                    ) as e:
-                        if check_input:
-                            warnings.warn(
-                                f"{type(e).__name__}: {e.message}", stacklevel=2
-                            )
-                            continue
-                        else:
-                            raise e
-                    if isinstance(obj, Material):
-                        self._materials.append(obj, insert_in_data=False)
-                    if isinstance(obj, transform.Transform):
-                        self._transforms.append(obj, insert_in_data=False)
-                    if trailing_comment is not None and last_obj is not None:
-                        obj._grab_beginning_comment(trailing_comment, last_obj)
-                        last_obj._delete_trailing_comment()
-                    trailing_comment = obj.trailing_comment
-                    last_obj = obj
+            for input, obj in self._create_input_generator():
+                if last_block != input.block_type:
+                    trailing_comment = None
+                    last_block = input.block_type
+                try:
+                    _, obj_container = OBJ_MATCHER[input.block_type]
+                    obj.link_to_problem(self)
+                    if isinstance(
+                        obj_container,
+                        montepy.numbered_object_collection.NumberedObjectCollection,
+                    ):
+                        obj_container.append(obj, initial_load=True)
+                    else:
+                        obj_container.append(obj)
+                except (
+                    MalformedInputError,
+                    NumberConflictError,
+                    ParsingError,
+                    UnknownElement,
+                ) as e:
+                    if check_input:
+                        warnings.warn(f"{type(e).__name__}: {e.message}", stacklevel=2)
+                        continue
+                    else:
+                        raise e
+                if isinstance(obj, Material):
+                    self._materials.append(obj, insert_in_data=False)
+                if isinstance(obj, transform.Transform):
+                    self._transforms.append(obj, insert_in_data=False)
+                if trailing_comment is not None and last_obj is not None:
+                    obj._grab_beginning_comment(trailing_comment, last_obj)
+                    last_obj._delete_trailing_comment()
+                trailing_comment = obj.trailing_comment
+                last_obj = obj
         except UnsupportedFeature as e:
             if check_input:
                 warnings.warn(f"{type(e).__name__}: {e.message}", stacklevel=2)
