@@ -48,15 +48,19 @@ def _argtype_default_gen(argspec, attr):
             yield arg_name, default
 
 
-def _prepare_type_checker(arg_name, args_spec, none_ok):
+def _prepare_type_checker(func_name, arg_name, args_spec, none_ok):
     arg_type = args_spec.annotations.get(arg_name, None)
     if arg_type:
         # if annotations are used
 
         if isinstance(arg_type, str):
-            return lambda x: check_type(arg_name, x, eval(arg_type), none_ok=none_ok)
+            return lambda x: check_type(
+                func_name, arg_name, x, eval(arg_type), none_ok=none_ok
+            )
         else:
-            return lambda x: check_type(arg_name, x, arg_type, none_ok=none_ok)
+            return lambda x: check_type(
+                func_name, arg_name, x, arg_type, none_ok=none_ok
+            )
 
 
 def check_arguments(func, **args_check):
@@ -72,7 +76,9 @@ def check_arguments(func, **args_check):
             none_ok = default is None
             checkers = []
             # build
-            type_checker = _prepare_type_checker(arg_name, args_spec, none_ok)
+            type_checker = _prepare_type_checker(
+                func.__qualname__, arg_name, args_spec, none_ok
+            )
             if type_checker:
                 checkers.append(type_checker)
             if arg_name in args_check:
@@ -87,7 +93,9 @@ def check_arguments(func, **args_check):
         checkers = []
         arg_name = getattr(args_spec, attr, None)
         if arg_name:
-            checkers = [_prepare_type_checker(arg_name, args_spec, False)]
+            checkers = [
+                _prepare_type_checker(func.__qualname__, arg_name, args_spec, False)
+            ]
         if arg_name in args_check:
             checkers.extend(args_check[arg_name])
         special_checks[attr] = checkers
@@ -114,12 +122,16 @@ def check_arguments(func, **args_check):
     return wrapper
 
 
-def check_type(name, value, expected_type, expected_iter_type=None, *, none_ok=False):
+def check_type(
+    func_name, name, value, expected_type, expected_iter_type=None, *, none_ok=False
+):
     """Ensure that an object is of an expected type. Optionally, if the object is
     iterable, check that each element is of a particular type.
 
     Parameters
     ----------
+    func_name : str
+        The name of the function this was called from
     name : str
         Description of value being checked
     value : object
@@ -139,14 +151,17 @@ def check_type(name, value, expected_type, expected_iter_type=None, *, none_ok=F
     if not isinstance(value, expected_type):
         if isinstance(expected_type, Iterable):
             msg = (
-                'Unable to set "{}" to "{}" which is not one of the '
+                'Unable to set "{}" for "{}" to "{}" which is not one of the '
                 'following types: "{}"'.format(
-                    name, value, ", ".join([t.__name__ for t in expected_type])
+                    func_name,
+                    name,
+                    value,
+                    ", ".join([t.__name__ for t in expected_type]),
                 )
             )
         else:
             msg = (
-                f'Unable to set "{name}" to "{value}" which is not of type "'
+                f'Unable to set "{name}" for "{func_name}" to "{value}" which is not of type "'
                 f'{expected_type.__name__}"'
             )
         raise TypeError(msg)
