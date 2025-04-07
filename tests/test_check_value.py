@@ -47,6 +47,11 @@ def kw_defaults(a: str):
     return ret(foo=a)
 
 
+@cv.check_arguments(a=cv.enforce_less_than(0))
+def negative(a: int):
+    pass
+
+
 binary = st.binary()
 boolean = st.booleans()
 chars = st.characters()
@@ -118,3 +123,12 @@ def test_dummy_good_type(val, func):
 @given(st.one_of(chars, no), st.sampled_from([kw_only]))
 def test_none_default(val, func):
     func(val)
+
+
+@pytest.mark.parametrize("val, raise_error", [(1, True), (-1, False)])
+def test_negative(val, raise_error):
+    if raise_error:
+        with pytest.raises(ValueError):
+            negative(val)
+    else:
+        negative(val)
