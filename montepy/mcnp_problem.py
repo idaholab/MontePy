@@ -3,6 +3,7 @@ import concurrent.futures
 import copy
 from enum import Enum
 import itertools
+import multiprocessing
 import os
 import pickle
 import warnings
@@ -415,7 +416,9 @@ class MCNP_Problem:
                 input = next(input_iter)
 
             self._title = input
-            with concurrent.futures.ProcessPoolExecutor() as executor:
+            with concurrent.futures.ProcessPoolExecutor(
+                mp_context=multiprocessing.get_context("spawn")
+            ) as executor:
                 for input, obj in executor.map(self.parse_object, input_iter):
                     if last_block != input.block_type:
                         trailing_comment = None
