@@ -164,7 +164,19 @@ class Numbered_MCNP_Object(MCNP_Object):
         ret = copy.deepcopy(self)
         if self._problem:
             ret.link_to_problem(self._problem)
-            collection_type = montepy.MCNP_Problem._NUMBERED_OBJ_MAP[type(self)]
+            test_class = type(self)
+            while test_class != object:
+                try:
+                    collection_type = montepy.MCNP_Problem._NUMBERED_OBJ_MAP[test_class]
+                except KeyError:
+                    test_class = test_class.__base__
+                else:
+                    break
+            else:  # pragma: no cover
+                raise TypeError(
+                    f"Could not find collection type for this object, {self}."
+                )
+
             collection = getattr(self._problem, collection_type.__name__.lower())
             if starting_number is None:
                 starting_number = collection.starting_number

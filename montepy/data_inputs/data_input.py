@@ -127,7 +127,7 @@ class DataInputAbstract(MCNP_Object):
 
     @property
     def particle_classifiers(self):
-        """The particle class part of the card identifier as a parsed list.
+        """The particle class part of the input identifier as a parsed list.
 
         This is parsed from the input that was read.
 
@@ -145,10 +145,11 @@ class DataInputAbstract(MCNP_Object):
 
     @property
     def prefix(self):
-        """The text part of the card identifier parsed from the input.
+        """The text part of the input identifier parsed from the input.
 
-        For example: for a material like: m20 the prefix is 'm'
+        For example: for a material like: ``m20`` the prefix is ``m``.
         this will always be lower case.
+        Can also be called the mnemonic.
 
         Returns
         -------
