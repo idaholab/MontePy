@@ -61,7 +61,7 @@ class TestValueNode:
 
     def test_valuenode_convert_to_enum(self):
         node = syntax_node.ValueNode("1", float)
-        lat = montepy.data_inputs.lattice.Lattice
+        lat = montepy.data_inputs.lattice.LatticeType
         node._convert_to_enum(lat)
         assert node.type == lat
         assert node.value == lat(1)
@@ -298,7 +298,7 @@ class TestValueNode:
                 assert node.format() == answer
 
     def test_value_enum_format(self):
-        lat = montepy.data_inputs.lattice.Lattice
+        lat = montepy.data_inputs.lattice.LatticeType
         st = montepy.surfaces.surface_type.SurfaceType
         for input, val, enum_class, args, answer, expand in [
             (

@@ -137,9 +137,11 @@ class TestImportance:
         imp = cell_with_importance.importance
         s = str(imp)
         r = repr(imp)
+        ms = imp.mcnp_str()
         # Verify the string outputs are of type str
         assert isinstance(s, str)
         assert isinstance(r, str)
+        assert isinstance(ms, str)
 
     def test_str_repr_empty_importance(self):
         """

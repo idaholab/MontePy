@@ -1,4 +1,4 @@
-# Copyright 2024, Battelle Energy Alliance, LLC All Rights Reserved.
+# Copyright 2024-2025, Battelle Energy Alliance, LLC All Rights Reserved.
 from hypothesis import given, note, strategies as st
 from unittest import TestCase
 import pytest
@@ -102,6 +102,13 @@ class TestCellClass(TestCase):
         self.assertEqual(
             repr(cell), "CELL: 1 \nVoid material \ndensity: 0.5 atom/b-cm\n"
         )
+        in_str = "1 0 -2 imp:n=1 "
+        cell = montepy.Cell(in_str)
+        # change line length
+        old_version = montepy.MCNP_VERSION
+        montepy.MCNP_VERSION = (5, 1, 60)
+        assert cell.mcnp_str() == in_str
+        montepy.MCNP_VERSION = old_version
 
     def test_cell_paremeters_no_eq(self):
         in_str = f"1 0 -1 PWT 1.0"
@@ -341,12 +348,13 @@ def test_bad_setattr():
 def verify_export(cell):
     output = cell.format_for_mcnp_input((6, 3, 0))
     print("cell output", output)
+    assert "\n".join(output) == cell.mcnp_str((6, 3, 0))
     new_cell = montepy.Cell("\n".join(output))
     for attr in {
         "number",
         "old_mat_number",
         "old_universe_number",
-        "lattice",
+        "lattice_type",
         "mass_density",
         "atom_density",
         "is_atom_dens",
