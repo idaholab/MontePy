@@ -7,7 +7,7 @@ import weakref
 from numbers import Integral
 
 import montepy
-from montepy.numbered_mcnp_object import Numbered_MCNP_Object
+from montepy._abc.numbered_mcnp_object import Numbered_MCNP_Object
 from montepy.errors import *
 from montepy.utilities import *
 

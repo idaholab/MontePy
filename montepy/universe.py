@@ -4,7 +4,7 @@ from montepy.cells import Cells
 from montepy.input_parser.mcnp_input import Input
 from montepy.input_parser.block_type import BlockType
 from montepy.input_parser import syntax_node
-from montepy.numbered_mcnp_object import Numbered_MCNP_Object
+from montepy._abc.numbered_mcnp_object import Numbered_MCNP_Object
 
 from numbers import Integral
 

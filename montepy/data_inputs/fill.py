@@ -9,7 +9,7 @@ from montepy.errors import *
 from montepy.input_parser.block_type import BlockType
 from montepy.input_parser.mcnp_input import Input, Jump
 from montepy.input_parser import syntax_node
-from montepy.mcnp_object import MCNP_Object
+from montepy._abc.mcnp_object import MCNP_Object
 from montepy.universe import Universe
 from montepy.utilities import *
 

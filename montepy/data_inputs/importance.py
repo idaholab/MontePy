@@ -1,4 +1,4 @@
-# Copyright 2024, Battelle Energy Alliance, LLC All Rights Reserved.
+# Copyright 2024-2025, Battelle Energy Alliance, LLC All Rights Reserved.
 import collections
 import copy
 import math
@@ -7,7 +7,7 @@ from montepy.data_inputs.cell_modifier import CellModifierInput, InitInput
 from montepy.errors import *
 from montepy.constants import DEFAULT_VERSION, rel_tol, abs_tol
 from montepy.input_parser import syntax_node
-from montepy.mcnp_object import MCNP_Object
+from montepy._abc.mcnp_object import MCNP_Object
 from montepy.particle import Particle
 from montepy.utilities import *
 import numbers

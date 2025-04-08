@@ -6,7 +6,7 @@ import itertools
 from typing import Union
 from numbers import Integral
 
-from montepy.mcnp_object import MCNP_Object, InitInput
+from montepy._abc.mcnp_object import MCNP_Object, InitInput
 import montepy
 from montepy.utilities import *
 

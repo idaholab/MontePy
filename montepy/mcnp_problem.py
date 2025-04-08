@@ -1,4 +1,4 @@
-# Copyright 2024, Battelle Energy Alliance, LLC All Rights Reserved.
+# Copyright 2024-2025, Battelle Energy Alliance, LLC All Rights Reserved.
 import copy
 from enum import Enum
 import itertools
@@ -96,7 +96,7 @@ class MCNP_Problem:
                 collection = getattr(self, collection)
                 if isinstance(
                     collection,
-                    montepy.numbered_object_collection.NumberedObjectCollection,
+                    montepy._abc.numbered_object_collection.NumberedObjectCollection,
                 ):
                     collection.link_to_problem(self)
                 else:
@@ -111,7 +111,7 @@ class MCNP_Problem:
             collection = getattr(self, collection)
             if isinstance(
                 collection,
-                montepy.numbered_object_collection.NumberedObjectCollection,
+                montepy._abc.numbered_object_collection.NumberedObjectCollection,
             ):
                 collection.link_to_problem(None)
             else:
@@ -414,7 +414,7 @@ class MCNP_Problem:
                             obj.link_to_problem(self)
                             if isinstance(
                                 obj_container,
-                                montepy.numbered_object_collection.NumberedObjectCollection,
+                                montepy._abc.numbered_object_collection.NumberedObjectCollection,
                             ):
                                 obj_container.append(obj, initial_load=True)
                             else:
@@ -683,7 +683,9 @@ class MCNP_Problem:
             ret += "\n"
         return ret
 
-    def parse(self, input: str, append: bool = True) -> montepy.mcnp_object.MCNP_Object:
+    def parse(
+        self, input: str, append: bool = True
+    ) -> montepy._abc.mcnp_object.MCNP_Object:
         """Parses the MCNP object given by the string, and links it adds it to this problem.
 
         This attempts to identify the input type by trying to parse it in the following order:

@@ -1,4 +1,4 @@
-# Copyright 2024, Battelle Energy Alliance, LLC All Rights Reserved.
+# Copyright 2024-2025, Battelle Energy Alliance, LLC All Rights Reserved.
 from __future__ import annotations
 from abc import abstractmethod
 import copy
@@ -12,7 +12,7 @@ from montepy.input_parser.data_parser import (
 )
 from montepy.input_parser.mcnp_input import Input
 from montepy.particle import Particle
-from montepy.mcnp_object import MCNP_Object, InitInput
+from montepy._abc.mcnp_object import MCNP_Object, InitInput
 
 import re
 from typing import Union

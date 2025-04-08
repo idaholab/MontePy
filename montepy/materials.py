@@ -7,7 +7,7 @@ from typing import Generator, Union
 from numbers import Integral, Real
 
 import montepy
-from montepy.numbered_object_collection import NumberedDataObjectCollection
+from montepy._abc.numbered_object_collection import NumberedDataObjectCollection
 
 Material = montepy.data_inputs.material.Material
 

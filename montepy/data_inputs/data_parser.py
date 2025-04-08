@@ -1,4 +1,4 @@
-# Copyright 2024, Battelle Energy Alliance, LLC All Rights Reserved.
+# Copyright 2024-2025, Battelle Energy Alliance, LLC All Rights Reserved.
 
 import montepy
 from montepy.data_inputs import (
@@ -28,7 +28,7 @@ PREFIX_MATCHES = {
 }
 
 
-def parse_data(input: montepy.mcnp_object.InitInput):
+def parse_data(input: montepy._abc.mcnp_object.InitInput):
     """Parses the data input as the appropriate object if it is supported.
 
     Parameters

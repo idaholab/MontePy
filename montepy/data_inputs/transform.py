@@ -1,4 +1,4 @@
-# Copyright 2024, Battelle Energy Alliance, LLC All Rights Reserved.
+# Copyright 2024-2025, Battelle Energy Alliance, LLC All Rights Reserved.
 from __future__ import annotations
 import copy
 import numpy as np
@@ -6,10 +6,10 @@ import re
 from typing import Union
 
 import montepy
-from montepy import mcnp_object
+from montepy._abc import mcnp_object
 from montepy.data_inputs import data_input
 from montepy.errors import *
-from montepy.numbered_mcnp_object import Numbered_MCNP_Object, InitInput
+from montepy._abc.numbered_mcnp_object import Numbered_MCNP_Object, InitInput
 from montepy.utilities import *
 
 

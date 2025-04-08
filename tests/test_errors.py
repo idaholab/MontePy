@@ -1,7 +1,7 @@
 import pytest
 
 import montepy
-from montepy.mcnp_object import MCNP_Object
+from montepy._abc.mcnp_object import MCNP_Object
 
 
 class TestErrorWrapper:

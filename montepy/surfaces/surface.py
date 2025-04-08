@@ -8,7 +8,7 @@ import montepy
 from montepy.errors import *
 from montepy.data_inputs import transform
 from montepy.input_parser.surface_parser import SurfaceParser
-from montepy.numbered_mcnp_object import Numbered_MCNP_Object, InitInput
+from montepy._abc.numbered_mcnp_object import Numbered_MCNP_Object, InitInput
 from montepy.surfaces import half_space
 from montepy.surfaces.surface_type import SurfaceType
 from montepy.utilities import *

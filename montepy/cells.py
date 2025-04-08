@@ -1,6 +1,6 @@
 # Copyright 2024-2025, Battelle Energy Alliance, LLC All Rights Reserved.
 import montepy
-from montepy.numbered_object_collection import NumberedObjectCollection
+from montepy._abc.numbered_object_collection import NumberedObjectCollection
 from montepy.errors import *
 import warnings
 from numbers import Integral

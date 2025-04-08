@@ -1,11 +1,11 @@
-# Copyright 2024, Battelle Energy Alliance, LLC All Rights Reserved.
+# Copyright 2024-2025, Battelle Energy Alliance, LLC All Rights Reserved.
 import itertools
 from montepy.data_inputs.cell_modifier import CellModifierInput, InitInput
 from montepy.errors import *
 from montepy.constants import DEFAULT_VERSION
 from montepy.input_parser.mcnp_input import Jump
 from montepy.input_parser import syntax_node
-from montepy.mcnp_object import MCNP_Object
+from montepy._abc.mcnp_object import MCNP_Object
 from montepy.universe import Universe
 from montepy.utilities import *
 

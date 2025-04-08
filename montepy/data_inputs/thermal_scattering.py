@@ -1,10 +1,10 @@
-# Copyright 2024, Battelle Energy Alliance, LLC All Rights Reserved.
+# Copyright 2024-2025, Battelle Energy Alliance, LLC All Rights Reserved.
 from __future__ import annotations
 
 import montepy
 from montepy.data_inputs.data_input import DataInputAbstract, InitInput
 from montepy.input_parser.thermal_parser import ThermalParser
-from montepy import mcnp_object
+from montepy._abc import mcnp_object
 from montepy.errors import *
 from montepy.utilities import *
 

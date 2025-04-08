@@ -1,7 +1,7 @@
-# Copyright 2024, Battelle Energy Alliance, LLC All Rights Reserved.
+# Copyright 2024-2025, Battelle Energy Alliance, LLC All Rights Reserved.
 from __future__ import annotations
 import montepy
-from montepy.numbered_object_collection import NumberedDataObjectCollection
+from montepy._abc.numbered_object_collection import NumberedDataObjectCollection
 from montepy.data_inputs.transform import Transform
 
 
