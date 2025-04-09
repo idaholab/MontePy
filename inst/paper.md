@@ -137,7 +137,7 @@ None of these previous solutions are able to read in a previous MCNP input file 
 In addition, WATTS does not have any fundamental understanding of what fields are for a user provided MCNP template.
 The same is true for a myriad of application-specific industry tools that are tailor-made for specific problems.
 There is a clear need for an object-oriented interface to these files that can both "understand" the input, and read and edit the files.
-This sort of model interface has been present for years in the Python API for the Monte Carlo code, OpenMC [@Romano:2015]`.
+This sort of model interface has been present for years in the Python API for the Monte Carlo code, OpenMC [@Romano:2015].
 Since its incorporation in the code, this interface has become by far the most dominant user interface for that code, 
 as opposed to manual editing of the XML input files.
 
