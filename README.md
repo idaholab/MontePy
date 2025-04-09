@@ -16,8 +16,7 @@
 [![Conda Version](https://img.shields.io/conda/vn/conda-forge/montepy.svg)](https://anaconda.org/conda-forge/montepy)
 [![PyPI pyversions](https://img.shields.io/pypi/pyversions/montepy.svg)](https://pypi.org/project/montepy/)
 
-[![DOI](https://zenodo.org/badge/DOI/10.11578/dc.20240115.1.svg)](https://zenodo.org/records/15058701)
-
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.15185600.svg)](https://doi.org/10.5281/zenodo.15185600)
 
 MontePy is the most user-friendly Python library for reading, editing, and writing MCNP input files. 
 
