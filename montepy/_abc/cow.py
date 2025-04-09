@@ -7,11 +7,12 @@ Moooooooo
 """
 
 
-class UdderType:
+class UdderType(type):
 
     def __new__(meta, classname, bases, attributes):
+        print(meta, classname, bases, attributes)
         UdderType.prepare_getter(attributes, "__getattr__")
-        UdderType.prepare_getter(attributes, "__setattr__")
+        UdderType.prepare_setter(attributes, "__setattr__")
         if "__getitem__" in attributes:
             UdderType.prepare_getter(attributes, "__getitem__")
             UdderType.prepare_setter(attributes, "__setitem__")
@@ -20,10 +21,10 @@ class UdderType:
 
     @staticmethod
     def prepare_getter(attributes, attr_name):
-        attributes[f"_old{attr_name}"] = attributes[attr_name]
+        attributes[f"_old{attr_name}"] = attributes.get(attr_name, None)
 
         def wrapped(self, key):
-            if "__" in key:
+            if "__" in key or key == "_heffer":
                 return super().__getattr__(key)
             return getattr(self._heffer, old_func.__name__)(key)
 
@@ -37,10 +38,16 @@ class UdderType:
             # TODO cowDict
             # if isinstance(self, dict):
             #    MalformedInputError
-            self.__dict__.extend(copy.deepcopy(self._heffer.__dict__))
+            self.__dict__.update(copy.deepcopy(self._heffer.__dict__))
             del self._heffer
-            self.__dict__[attr_name] = getattr(self, f"_old{attr_name}")
+            old_attr = getattr(self, f"_old{attr_name}")
+            if old_attr:
+                self.__dict__[attr_name] = getattr(self, f"_old{attr_name}")
+            else:
+                self.__dict__[attr_name] = getattr(super(), attr_name)
             getattr(self, attr_name)(key, value)
+
+        attributes[attr_name] = wrapper
 
 
 class Moo(metaclass=UdderType):
