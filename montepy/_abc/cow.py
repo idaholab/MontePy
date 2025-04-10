@@ -7,6 +7,20 @@ Moooooooo
 """
 
 
+class UdderType(type):
+
+    def __new__(meta, clsname, bases, attributes):
+        print(attributes)
+        return super().__new__(meta, clsname, bases, attributes)
+
+    @staticmethod
+    def __getitem__(self, key):
+        if hasattr(self, "_heffer"):
+            return self._heffer.__getitem__(key)
+        else:
+            return super().__getitem__(key)
+
+
 class Moo:
 
     def copy(self) -> Self:
