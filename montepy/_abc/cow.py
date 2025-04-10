@@ -20,25 +20,23 @@ class Moo:
         return blank
 
     def _make_cow(self):
-        self.prepare_getter(self.__dict__, "__getattr__")
-        self.prepare_setter(self.__dict__, "__setattr__")
+        self.prepare_getter("__getattr__")
+        # self.prepare_setter("__setattr__")
         if hasattr(self, "__getitem__"):
-            self.prepare_getter(self.__dict__, "__getitem__")
-            self.prepare_setter(self.__dict__, "__setitem__")
+            self.prepare_getter("__getitem__")
+            # self.prepare_setter("__setitem__")
 
-    @staticmethod
-    def prepare_getter(attributes, attr_name):
-        attributes[f"_old{attr_name}"] = attributes.get(attr_name, None)
+    def prepare_getter(self, attr_name):
+        setattr(self, f"_old{attr_name}", getattr(self, attr_name, None))
 
         def wrapped(self, key):
             if "__" in key or key == "_heffer":
-                return super().__getattr__(key)
-            return getattr(self._heffer, old_func.__name__)(key)
+                return getattr(super(), key)
+            return getattr(self._heffer, key)
 
-        attributes[attr_name] = wrapped
+        setattr(self, attr_name, wrapped)
 
-    @staticmethod
-    def prepare_setter(attributes, attr_name):
+    def prepare_setter(self, attr_name):
         def wrapper(self, key, value):
             if key.startswith("_"):
                 getattr(self, attr_name)(key, value)
@@ -55,3 +53,6 @@ class Moo:
             getattr(self, attr_name)(key, value)
 
         attributes[attr_name] = wrapper
+
+    def __getattr__(self, key):
+        return getattr(super(), key)
