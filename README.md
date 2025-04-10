@@ -16,8 +16,7 @@
 [![Conda Version](https://img.shields.io/conda/vn/conda-forge/montepy.svg)](https://anaconda.org/conda-forge/montepy)
 [![PyPI pyversions](https://img.shields.io/pypi/pyversions/montepy.svg)](https://pypi.org/project/montepy/)
 
-[![DOI](https://zenodo.org/badge/DOI/10.11578/dc.20240115.1.svg)](https://zenodo.org/records/15058701)
-
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.15185600.svg)](https://doi.org/10.5281/zenodo.15185600)
 
 MontePy is the most user-friendly Python library for reading, editing, and writing MCNP input files. 
 
@@ -165,13 +164,9 @@ If you have any questions feel free to ask [@micahgale](mailto:mgale@montepy.org
 
 ## Citation
 
-For citing MontePy in a publication a [Journal of Open Source Software](https://joss.readthedocs.io/en/latest/) article is under review. 
-In the meantime there is a DOI for the software from [OSTI](https://osti.gov): [DOI:10.11578/dc.20240115.1](https://doi.org/10.11578/dc.20240115.1).
-
 You can cite MontePy as:
 
-> M. Gale, T. Labossiere-Hickman, B. Carbno, A. Bascom, and MontePy contributors, "MontePy", 2024, [doi: 10.11578/dc.20240115.1](https://doi.org/10.11578/dc.20240115.1).
-
+> Gale et al., (2025). MontePy: a Python library for reading, editing, and writing MCNP input files. Journal of Open Source Software, 10(108), 7951, [https://doi.org/10.21105/joss.07951](https://doi.org/10.21105/joss.07951)
 
  
 # Finally: make objects, not regexes!
