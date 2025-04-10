@@ -7,17 +7,24 @@ Moooooooo
 """
 
 
-class UdderType(type):
+class Moo:
 
-    def __new__(meta, classname, bases, attributes):
-        print(meta, classname, bases, attributes)
-        UdderType.prepare_getter(attributes, "__getattr__")
-        UdderType.prepare_setter(attributes, "__setattr__")
-        if "__getitem__" in attributes:
-            UdderType.prepare_getter(attributes, "__getitem__")
-            UdderType.prepare_setter(attributes, "__setitem__")
-        cls = super().__new__(meta, classname, bases, attributes)
-        return cls
+    def copy(self) -> Self:
+        Self = type(self)
+        blank = Self.__new__(Self)
+        if not hasattr(self, "_heffer"):
+            blank._heffer = self
+        else:
+            blank._heffer = self._heffer
+        blank._make_cow()
+        return blank
+
+    def _make_cow(self):
+        self.prepare_getter(self.__dict__, "__getattr__")
+        self.prepare_setter(self.__dict__, "__setattr__")
+        if hasattr(self, "__getitem__"):
+            self.prepare_getter(self.__dict__, "__getitem__")
+            self.prepare_setter(self.__dict__, "__setitem__")
 
     @staticmethod
     def prepare_getter(attributes, attr_name):
@@ -48,13 +55,3 @@ class UdderType(type):
             getattr(self, attr_name)(key, value)
 
         attributes[attr_name] = wrapper
-
-
-class Moo(metaclass=UdderType):
-
-    def copy(self) -> Self:
-        blank = super().__new__()
-        if not hasattr(self, "_heffer"):
-            blank._heffer = self
-        else:
-            blank._heffer = self._heffer
