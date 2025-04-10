@@ -6,5 +6,5 @@ test.a = 1
 test2 = test.copy()
 print(test2.__getattr__)
 print(test2._heffer.a)
-print(test2.__getattr__(test2,"a"))
+print(test2.__getattr__("a"))
 test2.a

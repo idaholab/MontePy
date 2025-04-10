@@ -16,7 +16,7 @@ class Moo:
             blank._heffer = self
         else:
             blank._heffer = self._heffer
-        blank._make_cow()
+        # blank._make_cow()
         return blank
 
     def _make_cow(self):
@@ -26,15 +26,13 @@ class Moo:
             self.prepare_getter("__getitem__")
             # self.prepare_setter("__setitem__")
 
-    def prepare_getter(self, attr_name):
-        setattr(self, f"_old{attr_name}", getattr(self, attr_name, None))
-
-        def wrapped(self, key):
-            if "__" in key or key == "_heffer":
-                return getattr(super(), key)
+    def __getattr__(self, key):
+        if "__" in key or key == "_heffer":
+            return super().__getattribute__(key)
+        if hasattr(self, "_heffer") and self._heffer is not None:
             return getattr(self._heffer, key)
-
-        setattr(self, attr_name, wrapped)
+        else:
+            return super().__getattribute__(key)
 
     def prepare_setter(self, attr_name):
         def wrapper(self, key, value):
@@ -53,6 +51,3 @@ class Moo:
             getattr(self, attr_name)(key, value)
 
         attributes[attr_name] = wrapper
-
-    def __getattr__(self, key):
-        return getattr(super(), key)
