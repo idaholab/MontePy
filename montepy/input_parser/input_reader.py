@@ -3,7 +3,13 @@ import montepy
 from montepy.constants import DEFAULT_VERSION
 
 
-def read_input(destination, mcnp_version=DEFAULT_VERSION, replace=True):
+def read_input(
+    destination,
+    mcnp_version: tuple[int] = DEFAULT_VERSION,
+    replace: bool = True,
+    multi_proc: bool = False,
+    num_processes: int = None,
+):
     """Reads the specified MCNP Input file.
 
     The MCNP version must be a three component tuple e.g., (6, 2, 0) and (5, 1, 60).
@@ -20,6 +26,10 @@ def read_input(destination, mcnp_version=DEFAULT_VERSION, replace=True):
         The version of MCNP that the input is intended for.
     replace : bool
         replace all non-ASCII characters with a space (0x20)
+    multi_proc: bool
+        If true multiprocessing will be used to speed up the parsing process, otherwise serial parsing is used.
+    num_processes: int
+        The number of python processes to start for parsing. If ``None`` the number of CPU cores will be used.
 
     Returns
     -------
@@ -42,5 +52,7 @@ def read_input(destination, mcnp_version=DEFAULT_VERSION, replace=True):
     """
     problem = montepy.mcnp_problem.MCNP_Problem(destination)
     problem.mcnp_version = mcnp_version
-    problem.parse_input(replace=replace)
+    problem.parse_input(
+        replace=replace, multi_proc=multi_proc, num_processes=num_processes
+    )
     return problem

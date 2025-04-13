@@ -385,13 +385,18 @@ class MCNP_Problem:
         obj_parser = OBJ_MATCHER[input.block_type]
         return input, obj_parser(input)
 
-    def _create_input_generator(
+    def _create_parsed_obj_generator(
         self,
         check_input: bool = False,
         replace: bool = False,
         multi_proc: bool = False,
         num_processes: int = None,
     ):
+        """
+        Creates a generator of parsed objects.
+
+        See ``parse_input`` for arguments.
+        """
         input_iter = input_syntax_reader.read_input_syntax(
             self._input_file, self.mcnp_version, replace=replace
         )
@@ -443,6 +448,22 @@ class MCNP_Problem:
     ):
         """Semantically parses the MCNP file provided to the constructor.
 
+        .. versionchanged:: 1.1.0
+            Added ``multi_proc``, ``num_processes``
+
+        .. Note::
+
+            ``check_input`` and ``multi_proc`` are incompatible. ``check_input``
+            takes precedence, and will force serial parsing.
+
+        .. Warning::
+
+           Care must be taken with ``multi_proc`` when on Windows and MacOS.
+           Your entire script must by wrapped by a ``__name__ == "__main__"`` guard.
+           See `the warnings for the spawn method
+           <https://docs.python.org/3/library/multiprocessing.html#the-spawn-and-forkserver-start-methods>`_.
+
+
         Parameters
         ----------
         check_input : bool
@@ -450,6 +471,10 @@ class MCNP_Problem:
             them as warnings to log.
         replace : bool
             replace all non-ASCII characters with a space (0x20)
+        multi_proc: bool
+            If true multiprocessing will be used to speed up the parsing process, otherwise serial parsing is used.
+        num_processes: int
+            The number of python processes to start for parsing. If ``None`` the number of CPU cores will be used.
         """
         trailing_comment = None
         last_obj = None
@@ -459,7 +484,7 @@ class MCNP_Problem:
             block_type.BlockType.SURFACE: self._surfaces,
             block_type.BlockType.DATA: self._data_inputs,
         }
-        for input, obj in self._create_input_generator(
+        for input, obj in self._create_parsed_obj_generator(
             check_input, replace, multi_proc, num_processes
         ):
             if obj is None:
