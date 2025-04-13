@@ -431,7 +431,9 @@ class MCNP_Problem:
             block_type.BlockType.DATA: (parse_data, self._data_inputs),
         }
         try:
-            for input, obj in self._create_input_generator():
+            for input, obj in self._create_input_generator(
+                num_threads=num_threads, replace=replace
+            ):
                 if obj is None:
                     continue
                 if last_block != input.block_type:
