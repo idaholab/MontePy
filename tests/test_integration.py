@@ -20,26 +20,38 @@ import numpy as np
 
 from tests import constants
 
+if "MONTEPY_MULTIPROC" in os.environ:
+    MULTI_PROC = True
+else:
+    MULTI_PROC = False
+
 
 @pytest.fixture(scope="module")
 def simple_problem():
-    return montepy.read_input(os.path.join("tests", "inputs", "test.imcnp"))
+    return montepy.read_input(
+        os.path.join("tests", "inputs", "test.imcnp"), multi_proc=MULTI_PROC
+    )
 
 
 @pytest.fixture(scope="module")
 def importance_problem():
-    return montepy.read_input(os.path.join("tests", "inputs", "test_importance.imcnp"))
+    return montepy.read_input(
+        os.path.join("tests", "inputs", "test_importance.imcnp"), multi_proc=MULTI_PROC
+    )
 
 
 @pytest.fixture(scope="module")
 def universe_problem():
-    return montepy.read_input(os.path.join("tests", "inputs", "test_universe.imcnp"))
+    return montepy.read_input(
+        os.path.join("tests", "inputs", "test_universe.imcnp"), multi_proc=MULTI_PROC
+    )
 
 
 @pytest.fixture(scope="module")
 def data_universe_problem():
     return montepy.read_input(
-        os.path.join("tests", "inputs", "test_universe_data.imcnp")
+        os.path.join("tests", "inputs", "test_universe_data.imcnp"),
+        multi_proc=MULTI_PROC,
     )
 
 
@@ -50,14 +62,18 @@ def test_original_input(simple_problem):
 
 
 def test_original_input_dos():
-    dos_problem = montepy.read_input(os.path.join("tests", "inputs", "test_dos.imcnp"))
+    dos_problem = montepy.read_input(
+        os.path.join("tests", "inputs", "test_dos.imcnp"), multi_proc=MULTI_PROC
+    )
     cell_order = [Message, Title] + [Input] * 18
     for i, input_ob in enumerate(dos_problem.original_inputs):
         assert isinstance(input_ob, cell_order[i])
 
 
 def test_original_input_tabs():
-    problem = montepy.read_input(os.path.join("tests", "inputs", "test_tab.imcnp"))
+    problem = montepy.read_input(
+        os.path.join("tests", "inputs", "test_tab.imcnp"), multi_proc=MULTI_PROC
+    )
     cell_order = [Message, Title] + [Input] * 17
     for i, input_ob in enumerate(problem.original_inputs):
         assert isinstance(input_ob, cell_order[i])
@@ -161,7 +177,9 @@ def test_title(simple_problem):
 
 
 def test_read_card_recursion():
-    problem = montepy.read_input("tests/inputs/testReadRec1.imcnp")
+    problem = montepy.read_input(
+        "tests/inputs/testReadRec1.imcnp", multi_proc=MULTI_PROC
+    )
     assert len(problem.cells) == 1
     assert len(problem.surfaces) == 1
     assert montepy.particle.Particle.PHOTON in problem.mode
@@ -318,7 +336,9 @@ def test_problem_mcnp_version_setter(simple_problem):
 
 
 def test_problem_duplicate_surface_remover():
-    problem = montepy.read_input("tests/inputs/test_redundant_surf.imcnp")
+    problem = montepy.read_input(
+        "tests/inputs/test_redundant_surf.imcnp", multi_proc=MULTI_PROC
+    )
     nums = list(problem.surfaces.numbers)
     survivors = (
         nums[0:3] + nums[5:8] + [nums[9]] + nums[11:13] + [nums[13]] + [nums[-2]]
@@ -330,7 +350,9 @@ def test_problem_duplicate_surface_remover():
 
 
 def test_surface_periodic():
-    problem = montepy.read_input("tests/inputs/test_surfaces.imcnp")
+    problem = montepy.read_input(
+        "tests/inputs/test_surfaces.imcnp", multi_proc=MULTI_PROC
+    )
     surf = problem.surfaces[1]
     periodic = problem.surfaces[2]
     assert surf.periodic_surface == periodic
@@ -344,7 +366,9 @@ def test_surface_periodic():
 
 
 def test_surface_transform():
-    problem = montepy.read_input("tests/inputs/test_surfaces.imcnp")
+    problem = montepy.read_input(
+        "tests/inputs/test_surfaces.imcnp", multi_proc=MULTI_PROC
+    )
     surf = problem.surfaces[1]
     transform = problem.data_inputs[0]
     del surf.periodic_surface
@@ -385,7 +409,9 @@ def test_reverse_pointers(simple_problem):
 
 
 def test_surface_card_pass_through():
-    problem = montepy.read_input("tests/inputs/test_surfaces.imcnp")
+    problem = montepy.read_input(
+        "tests/inputs/test_surfaces.imcnp", multi_proc=MULTI_PROC
+    )
     surf = problem.surfaces[1]
     # Test input pass through
     answer = ["1 -2 SO -5"]
@@ -409,24 +435,34 @@ def test_surface_card_pass_through():
 
 def test_surface_broken_link():
     with pytest.raises(montepy.errors.MalformedInputError):
-        montepy.read_input("tests/inputs/test_broken_surf_link.imcnp")
+        montepy.read_input(
+            "tests/inputs/test_broken_surf_link.imcnp", multi_proc=MULTI_PROC
+        )
     with pytest.raises(montepy.errors.MalformedInputError):
-        montepy.read_input("tests/inputs/test_broken_transform_link.imcnp")
+        montepy.read_input(
+            "tests/inputs/test_broken_transform_link.imcnp", multi_proc=MULTI_PROC
+        )
 
 
 def test_material_broken_link():
     with pytest.raises(montepy.errors.BrokenObjectLinkError):
-        problem = montepy.read_input("tests/inputs/test_broken_mat_link.imcnp")
+        problem = montepy.read_input(
+            "tests/inputs/test_broken_mat_link.imcnp", multi_proc=MULTI_PROC
+        )
 
 
 def test_cell_surf_broken_link():
     with pytest.raises(montepy.errors.BrokenObjectLinkError):
-        problem = montepy.read_input("tests/inputs/test_broken_cell_surf_link.imcnp")
+        problem = montepy.read_input(
+            "tests/inputs/test_broken_cell_surf_link.imcnp", multi_proc=MULTI_PROC
+        )
 
 
 def test_cell_complement_broken_link():
     with pytest.raises(montepy.errors.BrokenObjectLinkError):
-        problem = montepy.read_input("tests/inputs/test_broken_complement.imcnp")
+        problem = montepy.read_input(
+            "tests/inputs/test_broken_complement.imcnp", multi_proc=MULTI_PROC
+        )
 
 
 def test_cell_card_pass_through(simple_problem):
@@ -472,7 +508,9 @@ def test_thermal_scattering_pass_through(simple_problem):
 
 
 def test_cutting_comments_parse():
-    problem = montepy.read_input("tests/inputs/breaking_comments.imcnp")
+    problem = montepy.read_input(
+        "tests/inputs/breaking_comments.imcnp", multi_proc=MULTI_PROC
+    )
     comments = problem.cells[1].comments
     assert len(comments) == 3
     assert "this is a cutting comment" in list(comments)[2].contents
@@ -481,7 +519,9 @@ def test_cutting_comments_parse():
 
 
 def test_cutting_comments_print_no_mutate():
-    problem = montepy.read_input("tests/inputs/breaking_comments.imcnp")
+    problem = montepy.read_input(
+        "tests/inputs/breaking_comments.imcnp", multi_proc=MULTI_PROC
+    )
     cell = problem.cells[1]
     output = cell.format_for_mcnp_input((6, 2, 0))
     assert len(output) == 5
@@ -493,7 +533,9 @@ def test_cutting_comments_print_no_mutate():
 
 
 def test_cutting_comments_print_mutate():
-    problem = montepy.read_input("tests/inputs/breaking_comments.imcnp")
+    problem = montepy.read_input(
+        "tests/inputs/breaking_comments.imcnp", multi_proc=MULTI_PROC
+    )
     cell = problem.cells[1]
     cell.number = 8
     output = cell.format_for_mcnp_input((6, 2, 0))
@@ -726,7 +768,10 @@ def test_check_volume_calculated(simple_problem):
 
 def test_redundant_volume():
     with pytest.raises(montepy.errors.MalformedInputError):
-        montepy.read_input(os.path.join("tests", "inputs", "test_vol_redundant.imcnp"))
+        montepy.read_input(
+            os.path.join("tests", "inputs", "test_vol_redundant.imcnp"),
+            multi_proc=MULTI_PROC,
+        )
 
 
 def test_delete_vol(simple_problem):
@@ -867,7 +912,8 @@ def test_universe_data_formatter(data_universe_problem):
 
 def test_universe_number_collision():
     problem = montepy.read_input(
-        os.path.join("tests", "inputs", "test_universe_data.imcnp")
+        os.path.join("tests", "inputs", "test_universe_data.imcnp"),
+        multi_proc=MULTI_PROC,
     )
     with pytest.raises(montepy.errors.NumberConflictError):
         problem.universes[0].number = 350
@@ -1089,7 +1135,7 @@ def test_importance_rewrite(simple_problem):
 def test_parsing_error():
     in_file = os.path.join("tests", "inputs", "test_bad_syntax.imcnp")
     with pytest.raises(montepy.errors.ParsingError):
-        problem = montepy.read_input(in_file)
+        problem = montepy.read_input(in_file, multi_proc=MULTI_PROC)
 
 
 def test_leading_comments(simple_problem):
@@ -1127,10 +1173,14 @@ def test_expansion_warning_crash(simple_problem):
 def test_alternate_encoding():
     with pytest.raises(UnicodeDecodeError):
         montepy.read_input(
-            os.path.join("tests", "inputs", "bad_encoding.imcnp"), replace=False
+            os.path.join("tests", "inputs", "bad_encoding.imcnp"),
+            replace=False,
+            multi_proc=MULTI_PROC,
         )
     montepy.read_input(
-        os.path.join("tests", "inputs", "bad_encoding.imcnp"), replace=True
+        os.path.join("tests", "inputs", "bad_encoding.imcnp"),
+        replace=True,
+        multi_proc=MULTI_PROC,
     )
 
 
@@ -1158,7 +1208,7 @@ def test_read_write_cycle(file):
     print(f"Testing against {file} *********************")
     if ".swp" in file.suffixes:
         return
-    problem = montepy.read_input(file)
+    problem = montepy.read_input(file, multi_proc=MULTI_PROC)
     SKIPPERS = _SKIP_LINES.get(str(file), {})
     fh = io.StringIO()
     # make string unclosable to keep open after reading.
@@ -1166,7 +1216,7 @@ def test_read_write_cycle(file):
     problem.write_problem(fh)
     fh.seek(0)
     # test valid syntax
-    new_problem = montepy.read_input(fh)
+    new_problem = montepy.read_input(fh, multi_proc=MULTI_PROC)
     # verify lines are similar
     fh.seek(0)
     lines = [line.rstrip() for line in fh]
