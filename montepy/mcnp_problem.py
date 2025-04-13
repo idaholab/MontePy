@@ -386,7 +386,11 @@ class MCNP_Problem:
         return input, obj_parser(input)
 
     def _create_input_generator(
-        self, multithread: bool = False, num_threads: int = None, replace: bool = False
+        self,
+        check_input: bool = False,
+        replace: bool = False,
+        multi_proc: bool = False,
+        num_processes: int = None,
     ):
         input_iter = input_syntax_reader.read_input_syntax(
             self._input_file, self.mcnp_version, replace=replace
@@ -398,7 +402,7 @@ class MCNP_Problem:
             input = next(input_iter)
 
         self._title = input
-        if multithread:
+        if multi_proc and not check_input:
             with concurrent.futures.ProcessPoolExecutor(
                 mp_context=multiprocessing.get_context("spawn")
             ) as executor:
@@ -406,9 +410,37 @@ class MCNP_Problem:
                     yield ret
 
         else:
-            yield from map(self._parse_object, input_iter)
+            try:
+                for input in input_iter:
+                    try:
+                        ret = self._parse_object(input)
+                        yield ret
+                    except (
+                        MalformedInputError,
+                        ParsingError,
+                        UnknownElement,
+                    ) as e:
+                        if check_input:
+                            warnings.warn(
+                                f"{type(e).__name__}: {e.message}", stacklevel=2
+                            )
+                            yield (None, None)
+                        else:
+                            raise e
+            # handles errors raised by input generator not by Parsers!
+            except UnsupportedFeature as e:
+                if check_input:
+                    warnings.warn(f"{type(e).__name__}: {e.message}", stacklevel=2)
+                else:
+                    raise e
 
-    def parse_input(self, check_input=False, replace=True, num_threads=None):
+    def parse_input(
+        self,
+        check_input: bool = False,
+        replace: bool = True,
+        multi_proc: bool = False,
+        num_processes: int = None,
+    ):
         """Semantically parses the MCNP file provided to the constructor.
 
         Parameters
@@ -423,57 +455,46 @@ class MCNP_Problem:
         last_obj = None
         last_block = None
         OBJ_MATCHER = {
-            block_type.BlockType.CELL: (Cell, self._cells),
-            block_type.BlockType.SURFACE: (
-                surface_builder.parse_surface,
-                self._surfaces,
-            ),
-            block_type.BlockType.DATA: (parse_data, self._data_inputs),
+            block_type.BlockType.CELL: self._cells,
+            block_type.BlockType.SURFACE: self._surfaces,
+            block_type.BlockType.DATA: self._data_inputs,
         }
-        try:
-            for input, obj in self._create_input_generator(
-                num_threads=num_threads, replace=replace
+        for input, obj in self._create_input_generator(
+            check_input, replace, multi_proc, num_processes
+        ):
+            if obj is None:
+                continue
+            if last_block != input.block_type:
+                trailing_comment = None
+                last_block = input.block_type
+            # load into container
+            obj_container = OBJ_MATCHER[input.block_type]
+            obj.link_to_problem(self)
+            if isinstance(
+                obj_container,
+                montepy.numbered_object_collection.NumberedObjectCollection,
             ):
-                if obj is None:
-                    continue
-                if last_block != input.block_type:
-                    trailing_comment = None
-                    last_block = input.block_type
                 try:
-                    _, obj_container = OBJ_MATCHER[input.block_type]
-                    obj.link_to_problem(self)
-                    if isinstance(
-                        obj_container,
-                        montepy.numbered_object_collection.NumberedObjectCollection,
-                    ):
-                        obj_container.append(obj, initial_load=True)
-                    else:
-                        obj_container.append(obj)
-                except (
-                    MalformedInputError,
-                    NumberConflictError,
-                    ParsingError,
-                    UnknownElement,
-                ) as e:
+                    obj_container.append(obj, initial_load=True)
+                except NumberConflictError as e:
                     if check_input:
                         warnings.warn(f"{type(e).__name__}: {e.message}", stacklevel=2)
                         continue
                     else:
                         raise e
-                if isinstance(obj, Material):
-                    self._materials.append(obj, insert_in_data=False)
-                if isinstance(obj, transform.Transform):
-                    self._transforms.append(obj, insert_in_data=False)
-                if trailing_comment is not None and last_obj is not None:
-                    obj._grab_beginning_comment(trailing_comment, last_obj)
-                    last_obj._delete_trailing_comment()
-                trailing_comment = obj.trailing_comment
-                last_obj = obj
-        except UnsupportedFeature as e:
-            if check_input:
-                warnings.warn(f"{type(e).__name__}: {e.message}", stacklevel=2)
             else:
-                raise e
+                obj_container.append(obj)
+            if isinstance(obj, Material):
+                self._materials.append(obj, insert_in_data=False)
+            if isinstance(obj, transform.Transform):
+                self._transforms.append(obj, insert_in_data=False)
+            # handle trailing comments
+            if trailing_comment is not None and last_obj is not None:
+                obj._grab_beginning_comment(trailing_comment, last_obj)
+                last_obj._delete_trailing_comment()
+            trailing_comment = obj.trailing_comment
+            last_obj = obj
+        # internal pointers
         self.__update_internal_pointers(check_input)
 
     def __update_internal_pointers(self, check_input=False):
