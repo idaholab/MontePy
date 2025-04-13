@@ -3,7 +3,6 @@ import concurrent.futures
 import copy
 from enum import Enum
 import itertools
-import multiprocessing
 import os
 import pickle
 import warnings
@@ -409,7 +408,7 @@ class MCNP_Problem:
         self._title = input
         if multi_proc and not check_input:
             with concurrent.futures.ProcessPoolExecutor(
-                mp_context=multiprocessing.get_context("spawn")
+                max_workers=num_processes,
             ) as executor:
                 for ret in executor.map(self._parse_object, input_iter, chunksize=50):
                     yield ret
