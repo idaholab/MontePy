@@ -113,7 +113,7 @@ jobs:
         with: 
           python-version: 3.13
       - run: pip install --user . montepy[test,build]
-      - run: MONTEPY_MULTIPROC=1 pytest tests/test_integration.py
+      - run: MONTEPY_MULTIPROC=1 python -m pytest tests/test_integration.py
       - run: python benchmark/benchmark_big_model_parallel.py  
         name: Benchmark against big model
 
