@@ -375,6 +375,8 @@ class MCNP_Problem:
 
     @staticmethod
     def _parse_object(input):
+        if input is None:
+            return (None, None)
         OBJ_MATCHER = {
             block_type.BlockType.CELL: Cell,
             block_type.BlockType.SURFACE: surface_builder.parse_surface,
@@ -430,6 +432,8 @@ class MCNP_Problem:
         }
         try:
             for input, obj in self._create_input_generator():
+                if obj is None:
+                    continue
                 if last_block != input.block_type:
                     trailing_comment = None
                     last_block = input.block_type
