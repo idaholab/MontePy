@@ -386,7 +386,7 @@ class MCNP_Problem:
         return input, obj_parser(input)
 
     def _create_input_generator(
-        self, multithread: bool = True, num_threads: int = None, replace: bool = False
+        self, multithread: bool = False, num_threads: int = None, replace: bool = False
     ):
         input_iter = input_syntax_reader.read_input_syntax(
             self._input_file, self.mcnp_version, replace=replace
