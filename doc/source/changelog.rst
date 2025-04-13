@@ -5,6 +5,14 @@ MontePy Changelog
 1.0 releases
 ============
 
+#Next Version#
+--------------
+
+**Features Added**
+
+* Added support for parallel parsing of large input files with the ``multi_process`` argument (:issue:`742`).
+
+
 1.0.0
 --------------
 
