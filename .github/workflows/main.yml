@@ -100,7 +100,23 @@ jobs:
         with:
           file: coverage.xml
           github-token: ${{ secrets.github_token }}
-  
+
+  parallel-test:
+    strategy:
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: set up python 3.13
+        uses: actions/setup-python@v5
+        with: 
+          python-version: 3.13
+      - run: pip install --user . montepy[test,build]
+      - run: MONTEPY_MULTIPROC=1 pytest tests/test_integration.py
+      - run: python benchmark/benchmark_big_model_parallel.py  
+        name: Benchmark against big model
+
 
 
 
@@ -195,7 +211,7 @@ jobs:
         with: 
           python-version: 3.12
       - run: pip install . montepy[test]
-      - run: python benchmark/benchmark_big_model.py  
+      - run: python benchmark/benchmark_big_model_serial.py  
         name: Benchmark against big model
 
         
