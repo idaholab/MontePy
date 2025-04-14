@@ -1,4 +1,4 @@
-# Copyright 2024, Battelle Energy Alliance, LLC All Rights Reserved.
+# Copyright 2024-2025, Battelle Energy Alliance, LLC All Rights Reserved.
 
 import traceback
 
@@ -10,7 +10,7 @@ class LineOverRunWarning(UserWarning):
         self.message = message
 
 
-class MalformedInputError(ValueError):
+class MalformedInputError(Exception):
     """Raised when there is an error with the MCNP input not related to the parser."""
 
     def __init__(self, input, message):
@@ -71,7 +71,7 @@ class ParsingError(MalformedInputError):
         else:
             self.message = message
 
-        ValueError.__init__(self, self.message)
+        # ValueError.__init__(self, self.message)
 
 
 def _print_input(
@@ -134,7 +134,7 @@ class BrokenObjectLinkError(MalformedInputError):
         )
 
 
-class RedundantParameterSpecification(ValueError):
+class RedundantParameterSpecification(Exception):
     """Raised when multiple conflicting parameters are given.
 
     e.g., ``1 0 -1 imp:n=5 imp:n=0``
@@ -173,7 +173,7 @@ class ParticleTypeNotInCell(ParticleTypeWarning):
     pass
 
 
-class UnsupportedFeature(NotImplementedError):
+class UnsupportedFeature(Exception):
     """Raised when MCNP syntax that is not supported is found"""
 
     def __init__(self, message):
@@ -181,7 +181,7 @@ class UnsupportedFeature(NotImplementedError):
         super().__init__(self.message)
 
 
-class UnknownElement(ValueError):
+class UnknownElement(Exception):
     """Raised when an undefined element is used."""
 
     def __init__(self, missing_val):
@@ -189,7 +189,7 @@ class UnknownElement(ValueError):
         super().__init__(self.message)
 
 
-class IllegalState(ValueError):
+class IllegalState(Exception):
     """Raised when an object can't be printed out due to an illegal state."""
 
     def __init__(self, message):
