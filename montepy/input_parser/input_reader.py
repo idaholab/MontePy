@@ -49,6 +49,8 @@ def read_input(
         file.
     UnknownElement
         If an isotope is specified for an unknown element.
+    RedundantParameterSpecification
+        If an input specifies multiple conflicting parameters.
     """
     problem = montepy.mcnp_problem.MCNP_Problem(destination)
     problem.mcnp_version = mcnp_version

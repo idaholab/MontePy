@@ -423,6 +423,7 @@ class MCNP_Problem:
                         MalformedInputError,
                         ParsingError,
                         UnknownElement,
+                        RedundantParameterSpecification,
                     ) as e:
                         if check_input:
                             warnings.warn(
