@@ -114,6 +114,11 @@ jobs:
           python-version: 3.13
       - run: pip install --user . montepy[test,build]
       - run: MONTEPY_MULTIPROC=1 python -m pytest tests/test_integration.py
+        if: ${{ matrix.os  == 'ubuntu-latest' || matrix.os == 'macos-latest' }}
+      - run: | 
+         set MONTEPY_MULTIPROC=1
+         python -m pytest tests/test_integration.py
+        if: ${{ matrix.os == 'windows-latest' }}
       - run: python benchmark/benchmark_big_model_parallel.py  
         name: Benchmark against big model
 
