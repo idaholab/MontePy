@@ -1,4 +1,4 @@
-# Copyright 2024, Battelle Energy Alliance, LLC All Rights Reserved.
+# Copyright 2024-2025, Battelle Energy Alliance, LLC All Rights Reserved.
 import copy
 import io
 from pathlib import Path
@@ -793,7 +793,7 @@ def test_enable_mcnp_vol_calc(simple_problem):
 
 def test_cell_multi_volume():
     in_str = "1 0 -1 VOL=1 VOL 5"
-    with pytest.raises(ValueError):
+    with pytest.raises(montepy.errors.RedundantParameterSpecification):
         montepy.Cell(Input([in_str], montepy.input_parser.block_type.BlockType.CELL))
 
 

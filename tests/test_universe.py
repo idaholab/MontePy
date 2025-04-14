@@ -272,7 +272,7 @@ class TestFill(TestCase):
             input = Input(["1 0 -1 fill=hi"], BlockType.CELL)
             cell = Cell(input)
             fill = cell.fill
-        with self.assertRaises(ValueError):
+        with self.assertRaises(ParsingError):
             input = Input(["1 0 -1 fill=1 (hi)"], BlockType.CELL)
             cell = Cell(input)
             fill = cell.fill
@@ -300,12 +300,12 @@ class TestFill(TestCase):
         answer = np.array([[[1, 2], [3, 4]], [[5, 6], [7, 8]]]).T
         self.assertTrue((fill.old_universe_numbers == answer).all())
         # test string universe
-        with self.assertRaises(ValueError):
+        with self.assertRaises(ParsingError):
             input = Input(["1 0 -1 fill=0:1 0:1 0:1 hi"], BlockType.CELL)
             cell = Cell(input)
             fill = cell.fill
         # test string index
-        with self.assertRaises(ValueError):
+        with self.assertRaises(ParsingError):
             input = Input(["1 0 -1 fill=0:1 hi:1 0:1 hi"], BlockType.CELL)
             cell = Cell(input)
             fill = cell.fill

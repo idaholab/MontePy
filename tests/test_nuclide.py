@@ -1,4 +1,4 @@
-# Copyright 2024, Battelle Energy Alliance, LLC All Rights Reserved.
+# Copyright 2024-2025, Battelle Energy Alliance, LLC All Rights Reserved.
 import pytest
 from hypothesis import assume, given, note, strategies as st, settings
 
@@ -21,7 +21,7 @@ class TestNuclide:
         assert isotope.library == "80c"
         with pytest.raises(ValueError):
             Nuclide("1001.80c.5")
-        with pytest.raises(ValueError):
+        with pytest.raises(UnknownElement):
             Nuclide("hi.80c")
 
     def test_nuclide_metastable_init(_):
@@ -224,7 +224,7 @@ class TestNuclide:
         "kwargs, error",
         [
             ({"name": 1.23}, TypeError),
-            ({"name": int(1e6)}, ValueError),
+            ({"name": int(1e6)}, UnknownElement),
             ({"name": "1001.hi"}, ValueError),
             ({"name": "hello"}, ValueError),
             ({"element": "hi"}, TypeError),

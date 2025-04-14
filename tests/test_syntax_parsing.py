@@ -1,4 +1,4 @@
-# Copyright 2024, Battelle Energy Alliance, LLC All Rights Reserved.
+# Copyright 2024-2025, Battelle Energy Alliance, LLC All Rights Reserved.
 import copy
 from io import StringIO
 import pytest
@@ -916,23 +916,23 @@ def test_shortcut_expansion_valid(test, answer):
 
 
 @pytest.mark.parametrize(
-    "test",
+    "test, exception",
     [
-        ("3J 4R"),
-        ("1 4I 3M"),
+        ("3J 4R", ValueError),
+        ("1 4I 3M", MalformedInputError),
         # last official test
-        ("1 4I J"),
-        ("1 2Ilog J"),
-        ("J 2Ilog 5"),
-        ("3J 2M"),
-        ("10 M"),
-        ("2R"),
+        ("1 4I J", MalformedInputError),
+        ("1 2Ilog J", MalformedInputError),
+        ("J 2Ilog 5", ValueError),
+        ("3J 2M", ValueError),
+        ("10 M", MalformedInputError),
+        ("2R", MalformedInputError),
     ],
 )
-def test_shortcut_expansion_invalid(test):
+def test_shortcut_expansion_invalid(test, exception):
     print(test)
     parser = ShortcutTestFixture()
-    with pytest.raises(ValueError):
+    with pytest.raises(exception):
         input = Input([test], BlockType.DATA)
         parsed = parser.parse(input.tokenize())
         if parsed is None:
@@ -1553,7 +1553,7 @@ class TestParametersNode:
 
     def test_parameter_append(_, param):
         assert len(param.nodes) == 1
-        with pytest.raises(ValueError):
+        with pytest.raises(RedundantParameterSpecification):
             classifier = syntax_node.ClassifierNode()
             classifier.prefix = syntax_node.ValueNode("vol", str)
             param.append(syntax_node.SyntaxNode("foo", {"classifier": classifier}))
