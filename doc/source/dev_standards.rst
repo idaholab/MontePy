@@ -8,6 +8,7 @@ Here is a getting started guide to contributing.
 If you have any questions Micah and Travis are available to give input and answer your questions.
 Before contributing you should review the :ref:`scope` and design philosophy.
 
+.. _Versioning:
 
 Versioning
 ----------
@@ -234,3 +235,44 @@ Test Migration
 Currently the test suite does not conform to these standards fully.
 Help with making the migration to the new standards is appreciated.
 So don't think something is sacred about a test file that does not follow these conventions.
+
+Deprecation Guidelines
+----------------------
+
+Deprecation is an important part of the development life-cycle and a signal for users to help with migrations.
+Deprecations can occur either during a major release, or between major releases.
+The deprecation process is really part of a larger migration documentation process, 
+and provides a good last line of defense for users on how to migrate their code.
+
+.. note::
+    
+   See :ref:`Versioning` section for more details on release types.
+    
+
+Major Release Deprecations
+^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+These are deprecations that occur during a major release. 
+Generally these are deprecations necessary for the release to work, and must be at versions: ``r"\d+\.0\.0``. 
+For these deprecations the guidelines are:
+
+#. Try not to break too much.
+#. Warn with a ``DeprecationWarning`` if the deprecated function is still usable. Otherwise ``raise`` it as an
+   ``Exception``.
+#. Add clear documentation on the fact it is deprecated and what the alternative is.
+#. Write a migration plan, preferably it should be part of the releases prior the major release.
+#. Only clear these ``DeprecationWarnings`` at the next major release.
+
+Mid-Major Release Deprecations
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+These are deprecations that are not during a major release. That is when the version matches:
+``r"(\d+\.[1-9]+\.\d+|\d+\.\d+\.[1-9]+)"``.
+The guidelines are:
+
+#. Do not break anything
+#. Warn with a ``DeprecationWarning`` (or ``PendingDeprecationWarning``, or ``FutureWarning`` as appropriate)
+#. Add clear documentation on the fact it is deprecated and what the alternative is.
+#. Clear these warnings and documentation notations at the next major release.
+
+
