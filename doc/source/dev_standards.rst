@@ -263,7 +263,7 @@ Major Release Deprecations
 ^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 These are deprecations that occur during a major release. 
-Generally these are deprecations necessary for the release to work, and must be at versions: ``r"\d+\.0\.0``. 
+Generally these are deprecations necessary for the release to work, and must be at versions: ``Major.0.0``. 
 For these deprecations the guidelines are:
 
 #. Try not to break too much.
@@ -277,7 +277,7 @@ Mid-Major Release Deprecations
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 These are deprecations that are not during a major release. That is when the version matches:
-``r"(\d+\.[1-9]+\.\d+|\d+\.\d+\.[1-9]+)"``.
+``Major.Minor.0`` or ``Major.Minor.Patch``.
 The guidelines are:
 
 #. Do not break anything
