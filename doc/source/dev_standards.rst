@@ -22,7 +22,8 @@ The version tag shall match the regular expression:
 These tags will be applied by a maintainer during the release process,
 and cannot be applied by normal users.
 
-MontePy follows the semantic versioning standard, and the PyPA specification for version specifiers to the best of our abilities. 
+MontePy follows the `semantic versioning standard <https://semver.org/>`_ 
+and the `PyPA specification for version specifiers <https://packaging.python.org/en/latest/specifications/version-specifiers/>`_ to the best of our abilities. 
 
 The version numbers can be read as ``<Major>.<minor>.<patch>``.
 Here is a quick summary of release types used, that is not meant to be authoritative:
@@ -30,16 +31,12 @@ Here is a quick summary of release types used, that is not meant to be authorita
 * **Major release**: This is a release that break backwards compatibility.
 * **Minor release**: This is a release the adds a new feature. 
 * **Patch release**: This is a bug-fix release only.
-* **post release**: This is a release that doesn't change any code. This will add an extra ``\.post\d+`` to the end of
+* **Post release**: This is a release that doesn't change any code. This will add an extra ``\.post\d+`` to the end of
   the *previous* version.
-* **alpha release**: This is a testing release. Generally this is preparing for a major release. 
+* **Alpha release**: This is a testing release. Generally this is preparing for a major release. 
   Features are not locked at this point, and may change.
   This is signified by adding ``a\d+`` to the end of the *next* release.
 
-Additional References:
-
-#. `Semantic versioning standard <https://semver.org/>`_
-#. `PyPA specification for Version specifiers <https://packaging.python.org/en/latest/specifications/version-specifiers/>`_
 
 Design Philosophy
 -----------------
@@ -255,7 +252,7 @@ Deprecation Guidelines
 Deprecation is an important part of the development life-cycle and a signal for users to help with migrations.
 Deprecations can occur either during a major release, or between major releases.
 The deprecation process is really part of a larger migration documentation process, 
-and provides a good last line of defense for users on how to migrate their code.
+and it provides a good last line of defense for users on how to migrate their code.
 
 .. note::
     
@@ -284,7 +281,8 @@ These are deprecations that are not during a major release. That is when the ver
 The guidelines are:
 
 #. Do not break anything
-#. Warn with a ``DeprecationWarning`` (or ``PendingDeprecationWarning``, or ``FutureWarning`` as appropriate)
+#. Warn with a ``DeprecationWarning`` (or ``PendingDeprecationWarning``, or ``FutureWarning`` as appropriate. `See the
+   guide on warnings <https://docs.python.org/3/library/warnings.html#warning-categories>`_.)
 #. Add clear documentation on the fact it is deprecated and what the alternative is.
 #. Clear these warnings and documentation notations at the next major release.
 
