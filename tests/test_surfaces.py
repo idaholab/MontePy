@@ -331,6 +331,23 @@ def test_scratch_surface_generation(cls, surf_type, params: dict):
     verify_export(surf)
 
 
+def test_unset_transform():
+    surf = surface_builder("1 10 PZ 0.0")
+    transform = montepy.data_inputs.data_parser.parse_data("TR10 0 0 5")
+    surf.update_pointers([], [transform])
+    del surf.transform
+    verify_export(surf)
+
+
+def test_unset_periodic():
+    surf = surface_builder("1 -10 PZ 0.0")
+    surf2 = surface_builder("10 PZ 10.0")
+    surf.update_pointers([surf2], [])
+    # TODO make surf.transform = None
+    del surf.periodic_surface
+    verify_export(surf)
+
+
 def verify_export(surf):
     output = surf.format_for_mcnp_input((6, 3, 0))
     print("Surface output", output)
@@ -347,10 +364,14 @@ def verify_equiv_surf(surf, new_surf):
         assert old_const == pytest.approx(new_const)
     assert surf.is_reflecting == new_surf.is_reflecting
     assert surf.is_white_boundary == new_surf.is_white_boundary
-    if surf.old_periodic_surface:
+    if surf.periodic_surface:
         assert surf.old_periodic_surface == new_surf.old_periodic_surface
-    if surf.old_transform_number:
-        assert surf.old_transform_number == new_surf._old_transform_number
+    else:
+        assert new_surf.old_periodic_surface == None
+    if surf.transform:
+        assert surf.old_transform_number == new_surf.old_transform_number
+    else:
+        assert new_surf.old_transform_number == None
 
 
 def verify_prob_export(problem, surf):
