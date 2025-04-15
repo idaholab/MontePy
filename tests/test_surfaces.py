@@ -298,6 +298,39 @@ class testSurfaces(TestCase):
             surf.coordinates = [3, 4, 5]
 
 
+@pytest.mark.parametrize(
+    "cls, surf_type, params",
+    [
+        (CylinderOnAxis, SurfaceType.CZ, {"radius": 0.5}),
+        (
+            CylinderParAxis,
+            SurfaceType.C_X,
+            {"location": (0.2, 0.3), "radius": 1.0, "is_white_boundary": True},
+        ),
+        (AxisPlane, SurfaceType.PZ, {"location": 10.0, "is_reflecting": True}),
+        (
+            AxisPlane,
+            SurfaceType.PZ,
+            {"location": 0.5, "periodic_surface": surface_builder("1 PZ 1.0")},
+        ),
+        (
+            CylinderOnAxis,
+            SurfaceType.CX,
+            {
+                "radius": 0.5,
+                "transform": montepy.data_inputs.data_parser.parse_data("TR1 0 0 10.0"),
+            },
+        ),
+    ],
+)
+def test_scratch_surface_generation(cls, surf_type, params: dict):
+    surf = cls(number=5)
+    surf.surface_type = surf_type
+    for attr_name, value in params.items():
+        setattr(surf, attr_name, value)
+    verify_export(surf)
+
+
 def verify_export(surf):
     output = surf.format_for_mcnp_input((6, 3, 0))
     print("Surface output", output)
