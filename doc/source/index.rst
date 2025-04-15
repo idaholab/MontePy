@@ -31,7 +31,7 @@ MontePy can be installed with pip:
    api/modules
 
 See Also
-========
+--------
 
 * `MontePy github Repository <https://github.com/idaholab/montepy>`_
 * `MontePy PyPI Project <https://pypi.org/project/montepy/>`_
@@ -41,7 +41,7 @@ See Also
 * `MCNP Forum <https://mcnp.discourse.group/>`_
 
 Indices and tables
-==================
+------------------
 
 * :ref:`genindex`
 * :ref:`modindex`
