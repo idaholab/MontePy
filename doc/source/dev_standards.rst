@@ -17,16 +17,29 @@ Version information is stored in git tags,
 and retrieved using `setuptools scm <https://setuptools-scm.readthedocs.io/en/latest/>`_.
 The version tag shall match the regular expression:
 
-``v\d\.\d+\.\d+``.
+``v\d\.\d+\.\d+(a\d+|\.post\d+)?``.
 
 These tags will be applied by a maintainer during the release process,
 and cannot be applied by normal users.
 
-MontePy follows the semantic versioning standard to the best of our abilities. 
+MontePy follows the semantic versioning standard, and the PyPA specification for version specifiers to the best of our abilities. 
+
+The version numbers can be read as ``<Major>.<minor>.<patch>``.
+Here is a quick summary of release types used, that is not meant to be authoritative:
+
+* **Major release**: This is a release that break backwards compatibility.
+* **Minor release**: This is a release the adds a new feature. 
+* **Patch release**: This is a bug-fix release only.
+* **post release**: This is a release that doesn't change any code. This will add an extra ``\.post\d+`` to the end of
+  the *previous* version.
+* **alpha release**: This is a testing release. Generally this is preparing for a major release. 
+  Features are not locked at this point, and may change.
+  This is signified by adding ``a\d+`` to the end of the *next* release.
 
 Additional References:
 
 #. `Semantic versioning standard <https://semver.org/>`_
+#. `PyPA specification for Version specifiers <https://packaging.python.org/en/latest/specifications/version-specifiers/>`_
 
 Design Philosophy
 -----------------
