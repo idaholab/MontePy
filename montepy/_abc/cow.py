@@ -7,24 +7,11 @@ Moooooooo
 """
 
 
-class UdderType(type):
-
-    def __new__(meta, clsname, bases, attributes):
-        print(attributes)
-        return super().__new__(meta, clsname, bases, attributes)
-
-    @staticmethod
-    def __getitem__(self, key):
-        if hasattr(self, "_heffer"):
-            return self._heffer.__getitem__(key)
-        else:
-            return super().__getitem__(key)
-
-
 class Moo:
 
-    def copy(self) -> Self:
+    def cow_copy(self) -> Self:
         Self = type(self)
+        print(Self)
         blank = Self.__new__(Self)
         if not hasattr(self, "_heffer"):
             blank._heffer = self
@@ -43,12 +30,40 @@ class Moo:
     def __setattr__(self, key, value):
         if key.startswith("_"):
             super().__setattr__(key, value)
-        # TODO cowDict
-        # if isinstance(self, dict):
-        #    MalformedInputError
+            return
         if hasattr(self, "_heffer") and self._heffer is not None:
             self.__dict__.update(copy.deepcopy(self._heffer.__dict__))
             del self._heffer
         super().__setattr__(key, value)
 
-    # TODO delattr
+    def __delattr__(self, key):
+        if key.startswith("_"):
+            super().__delattr__(key)
+            return
+        if hasattr(self, "_heffer") and self._heffer is not None:
+            self.__dict__.update(copy.deepcopy(self._heffer.__dict__))
+            del self._heffer
+        super().__delattr__(key)
+
+
+class LibraryOfCowgress(dict, Moo):
+
+    def __getitem__(self, key):
+        if hasattr(self, "_heffer") and self._heffer is not None:
+            return self._heffer[key]
+        else:
+            return super().__getitem__(key)
+
+    def __setitem__(self, key, value):
+        if hasattr(self, "_heffer") and self._heffer is not None:
+            for key, value in self._heffer.items():
+                super().__setitem__(key, value)
+            del self._heffer
+        super().__setitem__(key, value)
+
+    def __delitem__(self, key):
+        if hasattr(self, "_heffer") and self._heffer is not None:
+            for key, value in self._heffer.items():
+                super().__setitem__(key, value)
+            del self._heffer
+        super().__delitem__(key)
