@@ -67,6 +67,7 @@ class _ExceptionContextAdder(ABCMeta):
         for key, value in attributes.items():
             if key.startswith("_"):
                 new_attrs[key] = value
+                continue
             if callable(value):
                 new_attrs[key] = _ExceptionContextAdder._wrap_attr_call(value)
             elif isinstance(value, property):
@@ -118,11 +119,6 @@ class MCNP_Object(ABC, metaclass=_ExceptionContextAdder):
                     input.split("\n"), self._BLOCK_TYPE
                 )
             try:
-                try:
-                    parser.restart()
-                # raised if restarted without ever parsing
-                except AttributeError as e:
-                    pass
                 self._tree = parser.parse(input.tokenize(), input)
                 self._input = input
             except ValueError as e:
