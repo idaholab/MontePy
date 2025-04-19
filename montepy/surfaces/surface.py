@@ -5,6 +5,7 @@ from typing import Union
 from numbers import Real
 
 import montepy
+from montepy.input_parser import syntax_node
 from montepy.errors import *
 from montepy.data_inputs import transform
 from montepy.input_parser.surface_parser import SurfaceParser
@@ -53,48 +54,68 @@ class Surface(Numbered_MCNP_Object):
         self._surface_type = self._generate_default_node(str, None)
         self._modifier = self._generate_default_node(str, None)
         # surface number
-        if input:
-            self._number = self._tree["surface_num"]["number"]
-            self._number._convert_to_int()
-            self._old_number = copy.deepcopy(self._number)
-            if "modifier" in self._tree["surface_num"]:
-                self._modifier = self._tree["surface_num"]["modifier"]
-                if self._modifier.value == "*":
-                    self._is_reflecting = True
-                elif "+" in self._number.token:
-                    self._is_white_boundary = True
-                    self._number._token = self._number.token.replace("+", "")
-                    self._modifier = self._generate_default_node(str, "+", None, True)
-                    self._tree["surface_num"].nodes["modifier"] = self._modifier
-            try:
-                assert self._number.value > 0
-            except AssertionError:
-                raise MalformedInputError(
-                    input,
-                    f"{self._number.value} could not be parsed as a valid surface number.",
-                )
-            if self._tree["pointer"].value is not None:
-                val = self._tree["pointer"]
-                val.is_negatable_identifier = True
-                if val.is_negative:
-                    self._old_periodic_surface = val
-                else:
-                    self._old_transform_number = val
-            self._surface_type = self._tree["surface_type"]
-            # parse surface mnemonic
-            try:
-                # enforce enums
-                self._surface_type._convert_to_enum(SurfaceType, switch_to_upper=True)
-            # this should never be reached due to SLY rules.
-            # still if it is somehow reached this error is more helpful to the user.
-            except ValueError:  # pragma: no cover
-                raise MalformedInputError(
-                    input,
-                    f"{self._surface_type.value} could not be parsed as a surface type mnemonic.",
-                )
-            # parse the parameters
-            for entry in self._tree["data"]:
-                self._surface_constants.append(entry)
+        if not input:
+            self._generate_default_tree()
+        self._number = self._tree["surface_num"]["number"]
+        self._number._convert_to_int()
+        self._old_number = copy.deepcopy(self._number)
+        if "modifier" in self._tree["surface_num"]:
+            self._modifier = self._tree["surface_num"]["modifier"]
+            if self._modifier.value == "*":
+                self._is_reflecting = True
+            elif "+" in self._number.token:
+                self._is_white_boundary = True
+                self._number._token = self._number.token.replace("+", "")
+                self._modifier = self._generate_default_node(str, "+", None, True)
+                self._tree["surface_num"].nodes["modifier"] = self._modifier
+        try:
+            assert self._number.value > 0
+        except AssertionError:
+            raise MalformedInputError(
+                input,
+                f"{self._number.value} could not be parsed as a valid surface number.",
+            )
+        if self._tree["pointer"].value is not None:
+            val = self._tree["pointer"]
+            val.is_negatable_identifier = True
+            if val.is_negative:
+                self._old_periodic_surface = val
+            else:
+                self._old_transform_number = val
+        self._surface_type = self._tree["surface_type"]
+        # parse surface mnemonic
+        try:
+            # enforce enums
+            self._surface_type._convert_to_enum(SurfaceType, switch_to_upper=True)
+        # this should never be reached due to SLY rules.
+        # still if it is somehow reached this error is more helpful to the user.
+        except ValueError:  # pragma: no cover
+            raise MalformedInputError(
+                input,
+                f"{self._surface_type.value} could not be parsed as a surface type mnemonic.",
+            )
+        # parse the parameters
+        for entry in self._tree["data"]:
+            self._surface_constants.append(entry)
+
+    def _generate_default_tree(self, number: int = -1):
+        data = syntax_node.ListNode()
+        data.append(self._generate_default_node(float, 0.0))
+        num = self._generate_default_node(int, number)
+        num.is_negatable_identifier = True
+        pointer = self._generate_default_node(int, None)
+        pointer.is_negatable_identifier = True
+        surf_type = self._generate_default_node(str, "PZ")
+        surf_type._convert_to_enum(SurfaceType)
+        self._tree = syntax_node.SyntaxNode(
+            {
+                "start_pad": syntax_node.PaddingNode(),
+                "surface_num": num,
+                "pointer": pointer,
+                "surface_type": surf_type,
+                "data": data,
+            }
+        )
 
     @make_prop_val_node("_surface_type", (SurfaceType, str), SurfaceType)
     def surface_type(self):
