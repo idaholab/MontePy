@@ -11,6 +11,7 @@ from numbers import Integral, Real
 
 from montepy import input_parser
 from montepy import constants
+from montepy._abc.cow import LibraryOfCowgress
 from montepy.constants import rel_tol, abs_tol
 from montepy.errors import *
 from montepy.input_parser.shortcuts import Shortcuts
@@ -957,20 +958,22 @@ class ValueNode(SyntaxNodeBase):
     """
 
     _FORMATTERS = {
-        float: {
-            "value_length": 0,
-            "precision": 5,
-            "zero_padding": 0,
-            "sign": "-",
-            "divider": "e",
-            "exponent_length": 0,
-            "exponent_zero_pad": 0,
-            "as_int": False,
-            "int_tolerance": 1e-6,
-            "is_scientific": True,
-        },
-        int: {"value_length": 0, "zero_padding": 0, "sign": "-"},
-        str: {"value_length": 0},
+        float: LibraryOfCowgress(
+            {
+                "value_length": 0,
+                "precision": 5,
+                "zero_padding": 0,
+                "sign": "-",
+                "divider": "e",
+                "exponent_length": 0,
+                "exponent_zero_pad": 0,
+                "as_int": False,
+                "int_tolerance": 1e-6,
+                "is_scientific": True,
+            }
+        ),
+        int: LibraryOfCowgress({"value_length": 0, "zero_padding": 0, "sign": "-"}),
+        str: LibraryOfCowgress({"value_length": 0}),
     }
     """The default formatters for each type."""
 
@@ -991,7 +994,7 @@ class ValueNode(SyntaxNodeBase):
         super().__init__("")
         self._token = token
         self._type = token_type
-        self._formatter = self._FORMATTERS[token_type].copy()
+        self._formatter = self._FORMATTERS[token_type].copy_cow()
         self._is_neg_id = False
         self._is_neg_val = False
         self._og_value = None

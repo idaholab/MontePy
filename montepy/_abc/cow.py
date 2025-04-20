@@ -8,10 +8,8 @@ Moooooooo
 
 
 class Moo:
-
-    def cow_copy(self) -> Self:
+    def copy_cow(self) -> Self:
         Self = type(self)
-        print(Self)
         blank = Self.__new__(Self)
         if not hasattr(self, "_heffer"):
             blank._heffer = self
