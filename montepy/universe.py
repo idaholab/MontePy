@@ -7,7 +7,8 @@ from montepy.input_parser import syntax_node
 from montepy.numbered_mcnp_object import Numbered_MCNP_Object
 
 from numbers import Integral
-
+from typing import Generator
+import numpy as np
 
 class Universe(Numbered_MCNP_Object):
     """Class to represent an MCNP universe, but not handle the input
@@ -46,6 +47,24 @@ class Universe(Numbered_MCNP_Object):
             for cell in self._problem.cells:
                 if cell.universe == self:
                     yield cell
+
+    @property
+    def filled_cells(self):
+        """A generator of the cells that use this universe.
+
+        Returns
+        -------
+        Generator[Cell]
+            an iterator of the Cell objects which use this.
+        """
+        if self._problem:
+            for cell in self._problem.cells:
+                if cell.fill:
+                    if cell.fill.universes is not None:
+                        if np.any(cell.fill.universes.flatten() == self):
+                            yield cell
+                    elif cell.fill.universe == self:
+                        yield cell
 
     def claim(self, cells):
         """Take the given cells and move them into this universe, and out of their original universe.
