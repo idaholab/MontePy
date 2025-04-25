@@ -89,3 +89,8 @@ class Universe(Numbered_MCNP_Object):
             f"Problem: {'set' if self._problem else 'not set'}, "
             f"Cells: {[cell.number for cell in self.cells] if self._problem else ''}"
         )
+    def __eq__(self, other):
+        if not isinstance(other, type(self)):
+            return False
+        return self.number == other.number
+            
