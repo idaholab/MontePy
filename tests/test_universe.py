@@ -20,7 +20,6 @@ from montepy.data_inputs.lattice_input import LatticeInput
 from montepy.data_inputs.universe_input import UniverseInput
 
 
-
 class TestUniverseInput(TestCase):
     def setUp(self):
         list_node = syntax_node.ListNode("numbers")
@@ -482,7 +481,7 @@ class TestFill(TestCase):
                 assert old_val == new_val
 
 
-class TestUniverseGenerators():
+class TestUniverseGenerators:
     default_test_input_path = os.path.join("tests", "inputs")
 
     @pytest.mark.parametrize(
@@ -492,7 +491,7 @@ class TestUniverseGenerators():
             (2, [20]),
             (5, [5, 15]),
             (100, [21]),
-        ]
+        ],
     )
     def test_filled_cells_generator(self, universe, expected_cells):
         problem = montepy.read_input(
@@ -502,4 +501,3 @@ class TestUniverseGenerators():
         filled_cells = [cell.number for cell in cell_generator]
 
         assert filled_cells == expected_cells
-        

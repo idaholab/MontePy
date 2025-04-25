@@ -10,6 +10,7 @@ from numbers import Integral
 from typing import Generator
 import numpy as np
 
+
 class Universe(Numbered_MCNP_Object):
     """Class to represent an MCNP universe, but not handle the input
     directly.
@@ -108,8 +109,8 @@ class Universe(Numbered_MCNP_Object):
             f"Problem: {'set' if self._problem else 'not set'}, "
             f"Cells: {[cell.number for cell in self.cells] if self._problem else ''}"
         )
+
     def __eq__(self, other):
         if not isinstance(other, type(self)):
             return False
         return self.number == other.number
-            
