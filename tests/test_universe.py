@@ -2,8 +2,10 @@
 from hypothesis import given, strategies as st
 import pytest
 from unittest import TestCase
-
+import numpy as np
+import os
 import copy
+
 from montepy.input_parser import syntax_node
 import montepy
 from montepy.cell import Cell
@@ -16,7 +18,7 @@ from montepy.data_inputs.fill import Fill
 from montepy.data_inputs.lattice import LatticeType
 from montepy.data_inputs.lattice_input import LatticeInput
 from montepy.data_inputs.universe_input import UniverseInput
-import numpy as np
+
 
 
 class TestUniverseInput(TestCase):
@@ -478,3 +480,26 @@ class TestFill(TestCase):
                 assert (old_val == new_val).all()
             else:
                 assert old_val == new_val
+
+
+class TestUniverseGenerators():
+    default_test_input_path = os.path.join("tests", "inputs")
+
+    @pytest.mark.parametrize(
+        "universe,expected_cells",
+        [
+            (1, [20]),
+            (2, [20]),
+            (5, [5, 15]),
+            (100, [21]),
+        ]
+    )
+    def test_filled_cells_generator(self, universe, expected_cells):
+        problem = montepy.read_input(
+            os.path.join(self.default_test_input_path, "test_lattice_fill_1.imcnp")
+        )
+        cell_generator = problem.universes[universe].filled_cells
+        filled_cells = [cell.number for cell in cell_generator]
+
+        assert filled_cells == expected_cells
+        
