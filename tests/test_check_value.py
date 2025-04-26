@@ -1,6 +1,7 @@
 from hypothesis import given
 import hypothesis.strategies as st
 import pytest
+import typing
 
 import montepy._check_value as cv
 
@@ -47,8 +48,24 @@ def kw_defaults(a: str):
     return ret("1", foo=a)
 
 
+@cv.check_arguments
+def union_type(a: typing.Union[int, str]):
+    pass
+
+
 @cv.check_arguments(a=cv.enforce_less_than(0))
 def negative(a: int):
+    pass
+
+
+# TODO actually test
+@cv.check_arguments
+def list_type(a: list[int]):
+    pass
+
+
+@cv.check_arguments
+def dict_type(a: dict[str, int]):
     pass
 
 
@@ -60,14 +77,7 @@ fl = st.floats()
 it = st.integers()
 no = st.none()
 funcs = st.sampled_from(
-    [
-        simple_args,
-        var_args,
-        kwargs,
-        kw_only,
-        kw_defaults,
-        defaults_used,
-    ]
+    [simple_args, var_args, kwargs, kw_only, kw_defaults, defaults_used, union_type]
 )
 
 
