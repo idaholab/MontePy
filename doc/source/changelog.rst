@@ -5,6 +5,15 @@ MontePy Changelog
 1.0 releases
 ============
 
+1.0.1
+--------------
+
+**Features Added**
+
+* Added ``Universe.filled_cells``, a generator that yields the cells filled with that universe instance (:issue:`361`).
+* Added ``__eq__`` dunder method to ``Universe`` to support equality comparisons (:issue:`361`).
+* Added a new input example to test the ``Universe.filled_cells`` generator and equality feature (:issue:`361`).
+
 1.0.0
 --------------
 
