@@ -25,13 +25,15 @@ import os
 from collections.abc import Iterable
 import functools
 import inspect
-
 import numpy as np
+import sys
+import typing
 
 # Type for arguments that accept file paths
 PathLike = str | os.PathLike
 
 
+# TODO when was typing.Annotated added?
 def _argtype_default_gen(argspec, attr):
     if attr == "args":
         args = argspec.args
@@ -169,6 +171,7 @@ def check_type(
     if none_ok and value is None:
         return
 
+    expected_type = _convert_typing(expected_type)
     if not isinstance(value, expected_type):
         if isinstance(expected_type, Iterable):
             msg = (
@@ -186,7 +189,8 @@ def check_type(
                 f'{expected_type.__name__}"'
             )
         raise TypeError(msg)
-
+    if isinstance(expected_type, typing.GenericAlias):
+        check_type_iterable(func_name, name, vale, expected_type, none_ok)
     if expected_iter_type:
         if isinstance(value, np.ndarray):
             if not issubclass(value.dtype.type, expected_iter_type):
