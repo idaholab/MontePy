@@ -221,6 +221,32 @@ def check_type(
                 raise TypeError(msg)
 
 
+def chec_type_iterable(
+    func_name: str,
+    name: str,
+    value: typing.Any,
+    expected_type: typing.GenericAlias,
+    *,
+    none_ok: bool = False,
+):
+    """ """
+    base_cls = expected_type.__origin__
+    args = expected_type.__args__
+    if base_cls == dict:
+        assert len(args) == 2, "Dict type requires two typing annotations"
+        check_type(func_name, name, list(value.keys()), list, args[0], none_ok)
+        check_type(func_name, name, list(value.values()), list, args[1], none_ok)
+    elif issubclass(base_cls, Iterable):
+        check_type(func_name, name, value, base_cls, args[0], none_ok)
+
+
+def _convert_typing(u_type):
+    vers = sys.version_info
+    if not (vers.major == 3 and vers.minor == 9):
+        return u_type
+    return u_type.__args__
+
+
 def check_iterable_type(name, value, expected_type, min_depth=1, max_depth=1):
     """Ensure that an object is an iterable containing an expected type.
 
