@@ -172,6 +172,10 @@ def check_type(
         return
 
     expected_type = _convert_typing(expected_type)
+    if isinstance(expected_type, typing.GenericAlias):
+        return check_type_iterable(
+            func_name, name, value, expected_type, none_ok=none_ok
+        )
     if not isinstance(value, expected_type):
         if isinstance(expected_type, Iterable):
             msg = (
@@ -189,8 +193,6 @@ def check_type(
                 f'{expected_type.__name__}"'
             )
         raise TypeError(msg)
-    if isinstance(expected_type, typing.GenericAlias):
-        check_type_iterable(func_name, name, vale, expected_type, none_ok)
     if expected_iter_type:
         if isinstance(value, np.ndarray):
             if not issubclass(value.dtype.type, expected_iter_type):
@@ -221,7 +223,7 @@ def check_type(
                 raise TypeError(msg)
 
 
-def chec_type_iterable(
+def check_type_iterable(
     func_name: str,
     name: str,
     value: typing.Any,
@@ -232,12 +234,15 @@ def chec_type_iterable(
     """ """
     base_cls = expected_type.__origin__
     args = expected_type.__args__
+    check_type(func_name, name, value, base_cls, none_ok=none_ok)
     if base_cls == dict:
         assert len(args) == 2, "Dict type requires two typing annotations"
-        check_type(func_name, name, list(value.keys()), list, args[0], none_ok)
-        check_type(func_name, name, list(value.values()), list, args[1], none_ok)
+        check_type(func_name, name, list(value.keys()), list, args[0], none_ok=none_ok)
+        check_type(
+            func_name, name, list(value.values()), list, args[1], none_ok=none_ok
+        )
     elif issubclass(base_cls, Iterable):
-        check_type(func_name, name, value, base_cls, args[0], none_ok)
+        check_type(func_name, name, value, base_cls, args[0], none_ok=none_ok)
 
 
 def _convert_typing(u_type):
