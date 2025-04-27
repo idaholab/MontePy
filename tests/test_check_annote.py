@@ -1,12 +1,11 @@
 from __future__ import annotations
 from hypothesis import given
 import hypothesis.strategies as st
+import numpy as np
 import pytest
 
+import montepy
 import montepy._check_value as cv
-
-
-# TODO check annotations with namespaces
 
 
 @cv.check_arguments
@@ -16,6 +15,26 @@ def str_annotations(a: str):
 
 @cv.check_arguments
 def str_annote_default(a: str = None):
+    pass
+
+
+@cv.check_arguments
+def list_type(a: list[int]):
+    pass
+
+
+@cv.check_arguments
+def dict_type(a: dict[str, int]):
+    pass
+
+
+@cv.check_arguments
+def np_array(a: np.ndarray[np.int64]):
+    pass
+
+
+@cv.check_arguments
+def cell_stuff(a: montepy.Cell):
     pass
 
 
@@ -47,3 +66,24 @@ def test_dummy_good_type(val, func):
 @given(st.one_of(chars, no), st.sampled_from([str_annote_default]))
 def test_none_default(val, func):
     func(val)
+
+
+@pytest.mark.parametrize(
+    "func, good, bads",
+    [
+        (list_type, [1, 2, 3], ["a", 1, [1, "a"]]),
+        (dict_type, {"a": 1, "b": 2}, ["a", 1, [1, "a"], {1: "a"}, {"a": "a"}]),
+        (np_array, np.array([1, 2]), ["a", 1, [1, 2], np.array(["a", "b"])]),
+    ],
+)
+def test_iterable_types(func, good, bads):
+    func(good)
+    for bad in bads:
+        with pytest.raises(TypeError):
+            func(bad)
+
+
+def test_mp_namespace():
+    cell_stuff(montepy.Cell())
+    with pytest.raises(TypeError):
+        cell_stuff("a")

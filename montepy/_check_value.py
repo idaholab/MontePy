@@ -33,7 +33,6 @@ import typing
 PathLike = str | os.PathLike
 
 
-# TODO when was typing.Annotated added?
 def _argtype_default_gen(argspec, attr):
     if attr == "args":
         args = argspec.args
