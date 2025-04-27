@@ -6,6 +6,9 @@ import pytest
 import montepy._check_value as cv
 
 
+# TODO check annotations with namespaces
+
+
 @cv.check_arguments
 def str_annotations(a: str):
     pass

@@ -1,5 +1,6 @@
 from hypothesis import given
 import hypothesis.strategies as st
+import numpy as np
 import pytest
 import typing
 
@@ -58,7 +59,6 @@ def negative(a: int):
     pass
 
 
-# TODO actually test
 @cv.check_arguments
 def list_type(a: list[int]):
     pass
@@ -66,6 +66,11 @@ def list_type(a: list[int]):
 
 @cv.check_arguments
 def dict_type(a: dict[str, int]):
+    pass
+
+
+@cv.check_arguments
+def np_array(a: np.ndarray[np.int64]):
     pass
 
 
@@ -142,3 +147,18 @@ def test_negative(val, raise_error):
             negative(val)
     else:
         negative(val)
+
+
+@pytest.mark.parametrize(
+    "func, good, bads",
+    [
+        (list_type, [1, 2, 3], ["a", 1, [1, "a"]]),
+        (dict_type, {"a": 1, "b": 2}, ["a", 1, [1, "a"], {1: "a"}, {"a": "a"}]),
+        (np_array, np.array([1, 2]), ["a", 1, [1, 2], np.array(["a", "b"])]),
+    ],
+)
+def test_iterable_types(func, good, bads):
+    func(good)
+    for bad in bads:
+        with pytest.raises(TypeError):
+            func(bad)
