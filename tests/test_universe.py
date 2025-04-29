@@ -292,10 +292,14 @@ class TestFill():
             cell = Cell(input)
             fill = cell.fill
 
-    def test_complicated_lattice_fill_init(self):
+    @pytest.fixture
+    def complicated_fill():
         input = Input(["1 0 -1 fill=0:1 0:1 0:1 1 2 3 4 5 6 7 8"], BlockType.CELL)
         cell = Cell(input)
-        fill = cell.fill
+        return cell.fill
+    
+    def test_complicated_lattice_fill_init(self, complicated_fill):
+        fill = complicated_fill.deepcopy()
         assert fill.universe is None
         assert fill.min_index[0] == 0
         assert fill.max_index[2] == 1
@@ -366,10 +370,8 @@ class TestFill():
         with pytest.raises(ValueError):
             fill.universe = uni
 
-    def test_fill_universes_setter(self):
-        input = Input(["1 0 -1 fill=0:1 0:1 0:1 1 2 3 4 5 6 7 8"], BlockType.CELL)
-        cell = Cell(input)
-        fill = cell.fill
+    def test_fill_universes_setter(self, complicated_fill):
+        fill = complicated_fill.deepcopy()
         uni = montepy.Universe(10)
         fill_array = np.array([[[uni, uni], [uni, uni]], [[uni, uni], [uni, uni]]])
         fill.universes = fill_array
@@ -384,10 +386,8 @@ class TestFill():
         with pytest.raises(TypeError):
             fill.universes = np.array([[[1]]])
 
-    def test_fill_str(self):
-        input = Input(["1 0 -1 fill=0:1 0:1 0:1 1 2 3 4 5 6 7 8"], BlockType.CELL)
-        cell = Cell(input)
-        fill = cell.fill
+    def test_fill_str(self, complicated_fill):
+        fill = complicated_fill.deepcopy()
         output = str(fill)
         assert "Fill" in output
         output = repr(fill)
