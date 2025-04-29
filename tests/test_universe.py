@@ -413,20 +413,18 @@ class TestFill():
         assert fill.min_index == indices
         assert (fill.max_index == end).all()
 
-    def test_fill_index_bad_setter(self):
+    @pytest.mark.parametrize("attr, value, expected_exc", [
+        ("min_index", "hi", TypeError),
+        ("max_index", "hi", TypeError),
+        ("min_index", ["hi"], TypeError),
+        ("max_index", ["hi"], TypeError),
+        ("min_index", [1], ValueError),
+        ("max_index", [1], ValueError),
+    ])
+    def test_fill_index_bad_setter(self, attr, value, expected_exc):
         fill = self.simple_fill.clone()
-        with pytest.raises(TypeError):
-            fill.min_index = "hi"
-        with pytest.raises(TypeError):
-            fill.max_index = "hi"
-        with pytest.raises(TypeError):
-            fill.min_index = ["hi"]
-        with pytest.raises(TypeError):
-            fill.max_index = ["hi"]
-        with pytest.raises(ValueError):
-            fill.min_index = [1]
-        with pytest.raises(ValueError):
-            fill.max_index = [1]
+        with pytest.raises(expected_exc):
+            setattr(fill, attr, value)
 
     @given(
         universes=st.lists(st.integers(0, 1_000_000), min_size=1, max_size=10),
