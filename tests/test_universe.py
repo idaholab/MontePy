@@ -347,16 +347,7 @@ class TestFill():
             fill = Fill(card)
 
     def test_fill_universe_setter(self):
-        list_node = syntax_node.ListNode("num")
-        list_node.append(syntax_node.ValueNode("5", float))
-        value = syntax_node.SyntaxNode(
-            "fill",
-            {
-                "classifier": "",
-                "seperator": syntax_node.ValueNode("=", str),
-                "data": list_node,
-            },
-        )
+
         fill = copy.deepcopy(self.simple_fill)
         uni = montepy.Universe(6)
         fill.universe = uni
