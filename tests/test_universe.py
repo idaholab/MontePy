@@ -20,8 +20,8 @@ from montepy.data_inputs.lattice_input import LatticeInput
 from montepy.data_inputs.universe_input import UniverseInput
 
 
-class TestUniverseInput(TestCase):
-    def setUp(self):
+class TestUniverseInput:
+    def setup_method(self):
         list_node = syntax_node.ListNode("numbers")
         list_node.append(syntax_node.ValueNode("5", float))
         classifier = syntax_node.ClassifierNode()
@@ -39,17 +39,17 @@ class TestUniverseInput(TestCase):
 
     def test_universe_card_init(self):
         card = self.universe
-        self.assertEqual(card.old_number, 5)
-        self.assertTrue(not card.not_truncated)
+        assert card.old_number ==  5
+        assert not card.not_truncated
         # test bad float
-        with self.assertRaises(ValueError):
+        with pytest.raises(ValueError):
             tree = copy.deepcopy(self.tree)
             tree["data"].nodes.pop()
             tree["data"].append(syntax_node.ValueNode("5.5", float))
             card = UniverseInput(in_cell_block=True, key="U", value=tree)
 
         # test string
-        with self.assertRaises(ValueError):
+        with pytest.raises(ValueError):
             tree["data"].nodes.pop()
             tree["data"].append(syntax_node.ValueNode("hi", str))
             card = UniverseInput(in_cell_block=True, key="U", value=tree)
@@ -58,26 +58,26 @@ class TestUniverseInput(TestCase):
         tree["data"].nodes.pop()
         tree["data"].append(syntax_node.ValueNode("-3", float))
         card = UniverseInput(in_cell_block=True, key="U", value=tree)
-        self.assertEqual(card.old_number, 3)
-        self.assertTrue(card.not_truncated)
+        assert card.old_number == 3
+        assert card.not_truncated is True
 
         universes = [1, 2, 3]
         card = Input(["U " + " ".join(list(map(str, universes)))], BlockType.DATA)
         uni_card = UniverseInput(card)
-        self.assertEqual(uni_card.old_numbers, universes)
+        assert uni_card.old_numbers ==  universes
 
         # test jump
         card = Input(["U J"], BlockType.DATA)
         uni_card = UniverseInput(card)
-        self.assertEqual(uni_card.old_numbers[0], None)
+        assert uni_card.old_numbers[0] == None
 
         # test bad float
-        with self.assertRaises(MalformedInputError):
+        with pytest.raises(MalformedInputError):
             card = Input(["U 5.5"], BlockType.DATA)
             uni_card = UniverseInput(card)
 
         # test bad str
-        with self.assertRaises(MalformedInputError):
+        with pytest.raises(MalformedInputError):
             card = Input(["U hi"], BlockType.DATA)
             uni_card = UniverseInput(card)
 
@@ -90,31 +90,31 @@ class TestUniverseInput(TestCase):
         uni = Universe(5)
         card.universe = uni
         output = str(card)
-        self.assertIn("u=5", output)
+        assert "u=5" in output
         output = repr(card)
-        self.assertIn("UNIVERSE", output)
-        self.assertIn("set_in_block: True", output)
-        self.assertIn("Universe : Universe(5)", output)
+        assert "UNIVERSE" in output
+        assert "set_in_block: True" in output
+        assert "Universe : Universe(5)" in output
 
     def test_merge(self):
         card = copy.deepcopy(self.universe)
-        with self.assertRaises(MalformedInputError):
+        with pytest.raises(MalformedInputError):
             card.merge(card)
 
     def test_universe_setter(self):
         card = copy.deepcopy(self.universe)
         uni = Universe(5)
         card.universe = uni
-        self.assertEqual(card.universe, uni)
-        with self.assertRaises(TypeError):
+        assert card.universe == uni
+        with pytest.raises(TypeError):
             card.universe = 5
 
     def test_universe_truncate_setter(self):
         card = copy.deepcopy(self.universe)
-        self.assertTrue(not card.not_truncated)
+        assert card.not_truncated is False
         card.not_truncated = True
-        self.assertTrue(card.not_truncated)
-        with self.assertRaises(TypeError):
+        assert card.not_truncated is True
+        with pytest.raises(TypeError):
             card.not_truncated = 5
 
 
