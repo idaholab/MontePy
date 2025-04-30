@@ -1,7 +1,6 @@
 # Copyright 2024 - 2025, Battelle Energy Alliance, LLC All Rights Reserved.
 from hypothesis import given, strategies as st
 import pytest
-from unittest import TestCase
 import numpy as np
 import os
 import copy
@@ -39,7 +38,7 @@ class TestUniverseInput:
 
     def test_universe_card_init(self):
         card = self.universe
-        assert card.old_number ==  5
+        assert card.old_number == 5
         assert not card.not_truncated
         # test bad float
         with pytest.raises(ValueError):
@@ -64,7 +63,7 @@ class TestUniverseInput:
         universes = [1, 2, 3]
         card = Input(["U " + " ".join(list(map(str, universes)))], BlockType.DATA)
         uni_card = UniverseInput(card)
-        assert uni_card.old_numbers ==  universes
+        assert uni_card.old_numbers == universes
 
         # test jump
         card = Input(["U J"], BlockType.DATA)
@@ -297,7 +296,7 @@ class TestFill:
         input = Input(["1 0 -1 fill=0:1 0:1 0:1 1 2 3 4 5 6 7 8"], BlockType.CELL)
         cell = Cell(input)
         return cell.fill
-    
+
     def test_complicated_lattice_fill_init(self, complicated_fill):
         fill = copy.deepcopy(complicated_fill)
         assert fill.universe is None
@@ -306,14 +305,20 @@ class TestFill:
         answer = np.array([[[1, 2], [3, 4]], [[5, 6], [7, 8]]]).T
         assert (fill.old_universe_numbers == answer).all()
 
-    @pytest.mark.parametrize("input_str,expected_error", [
-        ("1 0 -1 fill=0:1 0:1 0:1 hi", ValueError), # "String universe"
-        ("1 0 -1 fill=0:1 hi:1 0:1 hi", ValueError), # "String index"
-        ("1 0 -1 fill=0:1 0:1 0:1 -1", ValueError), # "Negative universe"
-        ("1 0 -1 fill=0:1 1:0 0:1 1 2 3 4 5 6 7 8", ValueError), # "Inverted bounds"
-        ("1 0 -1 fill=0:1 0:1.5 0:1 1 2 3 4 5 6 7 8", ValueError) # "Float bounds"
-    ])
-    def test_complicated_fill_init_error(self, input_str, expected_error ):
+    @pytest.mark.parametrize(
+        "input_str,expected_error",
+        [
+            ("1 0 -1 fill=0:1 0:1 0:1 hi", ValueError),  # "String universe"
+            ("1 0 -1 fill=0:1 hi:1 0:1 hi", ValueError),  # "String index"
+            ("1 0 -1 fill=0:1 0:1 0:1 -1", ValueError),  # "Negative universe"
+            (
+                "1 0 -1 fill=0:1 1:0 0:1 1 2 3 4 5 6 7 8",
+                ValueError,
+            ),  # "Inverted bounds"
+            ("1 0 -1 fill=0:1 0:1.5 0:1 1 2 3 4 5 6 7 8", ValueError),  # "Float bounds"
+        ],
+    )
+    def test_complicated_fill_init_error(self, input_str, expected_error):
         """Test the complicated fill init with various input errors."""
         with pytest.raises(expected_error):
             input = Input([input_str], BlockType.CELL)
@@ -324,12 +329,12 @@ class TestFill:
         card = Input(["FiLl 1 2 3 4"], BlockType.DATA)
         fill = Fill(card)
         answer = [1, 2, 3, 4]
-        assert fill.old_universe_numbers==answer
+        assert fill.old_universe_numbers == answer
         # jump
         card = Input(["FiLl 1 2J 4"], BlockType.DATA)
         fill = Fill(card)
         answer = [1, None, None, 4]
-        assert fill.old_universe_numbers==answer
+        assert fill.old_universe_numbers == answer
         # test negative universe
         with pytest.raises(MalformedInputError):
             card = Input(["FiLl 1 -2 3 4"], BlockType.DATA)
@@ -393,7 +398,7 @@ class TestFill:
         indices=st.lists(st.integers(), min_size=3, max_size=3),
         width=st.lists(st.integers(1), min_size=3, max_size=3),
     )
-    def test_fill_index_setter(self,  indices, width):
+    def test_fill_index_setter(self, indices, width):
         fill = self.simple_fill.clone()
         fill.multiple_universes = True
         fill.min_index = indices
@@ -402,14 +407,17 @@ class TestFill:
         assert fill.min_index == indices
         assert (fill.max_index == end).all()
 
-    @pytest.mark.parametrize("attr, value, expected_exc", [
-        ("min_index", "hi", TypeError),
-        ("max_index", "hi", TypeError),
-        ("min_index", ["hi"], TypeError),
-        ("max_index", ["hi"], TypeError),
-        ("min_index", [1], ValueError),
-        ("max_index", [1], ValueError),
-    ])
+    @pytest.mark.parametrize(
+        "attr, value, expected_exc",
+        [
+            ("min_index", "hi", TypeError),
+            ("max_index", "hi", TypeError),
+            ("min_index", ["hi"], TypeError),
+            ("max_index", ["hi"], TypeError),
+            ("min_index", [1], ValueError),
+            ("max_index", [1], ValueError),
+        ],
+    )
     def test_fill_index_bad_setter(self, attr, value, expected_exc):
         fill = self.simple_fill.clone()
         with pytest.raises(expected_exc):
