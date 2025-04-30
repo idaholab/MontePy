@@ -232,7 +232,7 @@ class TestLattice(TestCase):
             del cell.lattice
 
 
-class TestFill():
+class TestFill:
     def setup_method(self):
         list_node = syntax_node.ListNode("num")
         list_node.append(syntax_node.ValueNode("5", float))
@@ -293,13 +293,13 @@ class TestFill():
             fill = cell.fill
 
     @pytest.fixture
-    def complicated_fill():
+    def complicated_fill(self):
         input = Input(["1 0 -1 fill=0:1 0:1 0:1 1 2 3 4 5 6 7 8"], BlockType.CELL)
         cell = Cell(input)
         return cell.fill
     
     def test_complicated_lattice_fill_init(self, complicated_fill):
-        fill = complicated_fill.deepcopy()
+        fill = copy.deepcopy(complicated_fill)
         assert fill.universe is None
         assert fill.min_index[0] == 0
         assert fill.max_index[2] == 1
@@ -360,7 +360,7 @@ class TestFill():
             fill.universe = uni
 
     def test_fill_universes_setter(self, complicated_fill):
-        fill = complicated_fill.deepcopy()
+        fill = copy.deepcopy(complicated_fill)
         uni = montepy.Universe(10)
         fill_array = np.array([[[uni, uni], [uni, uni]], [[uni, uni], [uni, uni]]])
         fill.universes = fill_array
@@ -376,7 +376,7 @@ class TestFill():
             fill.universes = np.array([[[1]]])
 
     def test_fill_str(self, complicated_fill):
-        fill = complicated_fill.deepcopy()
+        fill = copy.deepcopy(complicated_fill)
         output = str(fill)
         assert "Fill" in output
         output = repr(fill)
