@@ -138,8 +138,8 @@ class TestUniverse:
             universe.number = -1
 
 
-class TestLattice(TestCase):
-    def setUp(self):
+class TestLattice:
+    def setup_method(self):
         list_node = syntax_node.ListNode("numbers")
         list_node.append(syntax_node.ValueNode("1", float))
         classifier = syntax_node.ClassifierNode()
