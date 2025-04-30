@@ -305,29 +305,18 @@ class TestFill():
         assert fill.max_index[2] == 1
         answer = np.array([[[1, 2], [3, 4]], [[5, 6], [7, 8]]]).T
         assert (fill.old_universe_numbers == answer).all()
-        # test string universe
-        with pytest.raises(ValueError):
-            input = Input(["1 0 -1 fill=0:1 0:1 0:1 hi"], BlockType.CELL)
-            cell = Cell(input)
-            fill = cell.fill
-        # test string index
-        with pytest.raises(ValueError):
-            input = Input(["1 0 -1 fill=0:1 hi:1 0:1 hi"], BlockType.CELL)
-            cell = Cell(input)
-            fill = cell.fill
-        # test negative universe
-        with pytest.raises(ValueError):
-            input = Input(["1 0 -1 fill=0:1 0:1 0:1 -1"], BlockType.CELL)
-            cell = Cell(input)
-            fill = cell.fill
-        # test inverted bounds
-        with pytest.raises(ValueError):
-            input = Input(["1 0 -1 fill=0:1 1:0 0:1 1 2 3 4 5 6 7 8"], BlockType.CELL)
-            cell = Cell(input)
-            fill = cell.fill
-        # test float bounds
-        with pytest.raises(ValueError):
-            input = Input(["1 0 -1 fill=0:1 0:1.5 0:1 1 2 3 4 5 6 7 8"], BlockType.CELL)
+
+    @pytest.mark.parametrize("input_str,expected_error", [
+        ("1 0 -1 fill=0:1 0:1 0:1 hi", ValueError), # "String universe"
+        ("1 0 -1 fill=0:1 hi:1 0:1 hi", ValueError), # "String index"
+        ("1 0 -1 fill=0:1 0:1 0:1 -1", ValueError), # "Negative universe"
+        ("1 0 -1 fill=0:1 1:0 0:1 1 2 3 4 5 6 7 8", ValueError), # "Inverted bounds"
+        ("1 0 -1 fill=0:1 0:1.5 0:1 1 2 3 4 5 6 7 8", ValueError) # "Float bounds"
+    ])
+    def test_complicated_fill_init_error(self, input_str, expected_error ):
+        """Test the complicated fill init with various input errors."""
+        with pytest.raises(expected_error):
+            input = Input([input_str], BlockType.CELL)
             cell = Cell(input)
             fill = cell.fill
 
