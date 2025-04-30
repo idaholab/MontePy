@@ -118,23 +118,23 @@ class TestUniverseInput(TestCase):
             card.not_truncated = 5
 
 
-class TestUniverse(TestCase):
+class TestUniverse:
     def test_init(self):
         universe = Universe(5)
-        self.assertEqual(universe.number, 5)
-        self.assertEqual(universe.old_number, 5)
-        with self.assertRaises(TypeError):
+        assert universe.number == 5
+        assert universe.old_number == 5
+        with pytest.raises(TypeError):
             Universe("hi")
-        with self.assertRaises(ValueError):
+        with pytest.raises(ValueError):
             Universe(-1)
 
     def test_number_setter(self):
         universe = Universe(5)
         universe.number = 10
-        self.assertEqual(universe.number, 10)
-        with self.assertRaises(TypeError):
+        assert universe.number == 10
+        with pytest.raises(TypeError):
             universe.number = "hi"
-        with self.assertRaises(ValueError):
+        with pytest.raises(ValueError):
             universe.number = -1
 
 
