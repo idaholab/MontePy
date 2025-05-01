@@ -1,5 +1,4 @@
 # Copyright 2024-2025, Battelle Energy Alliance, LLC All Rights Reserved.
-# Copyright 2024, Battelle Energy Alliance, LLC All Rights Reserved.
 """MontePy is a library for reading, editing, and writing MCNP input files.
 
 This creates a semantic understanding of the MCNP input file.
@@ -8,10 +7,13 @@ start by running montepy.read_input().
 You will receive an MCNP_Problem object that you will interact with.
 """
 
+from . import _check_value
 from . import data_inputs
 from . import input_parser
 from . import constants
 import importlib.metadata
+
+from .constants import DEFAULT_VERSION as MCNP_VERSION
 
 # data input promotion
 
@@ -19,6 +21,7 @@ from montepy.data_inputs.material import Material
 from montepy.data_inputs.transform import Transform
 from montepy.data_inputs.nuclide import Library, Nuclide
 from montepy.data_inputs.element import Element
+from montepy.data_inputs.lattice import LatticeType
 from montepy.data_inputs.thermal_scattering import ThermalScatteringLaw
 from montepy.data_inputs.data_parser import parse_data
 

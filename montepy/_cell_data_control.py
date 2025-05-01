@@ -12,10 +12,7 @@ class CellDataPrintController:
         if not isinstance(key, str):
             raise TypeError("Key must be a str")
         if key.upper() in montepy.Cell._ALLOWED_KEYWORDS:
-            try:
-                return self._print_data[key.lower()]
-            except KeyError:
-                return True
+            return self._print_data.get(key.lower(), False)
         else:
             raise KeyError(f"{key} is not a supported cell modifier in MCNP")
 

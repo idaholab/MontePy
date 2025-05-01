@@ -192,6 +192,13 @@ class MCNP_Lexer(Lexer):
                 t.type = token_type
                 return t
 
+    @_(r"([|+\-!<>/%^_~@\*\?\#]|\#\d*)+")
+    def PARTICLE_SPECIAL(self, t):
+        """
+        Particle designators that are special characters.
+        """
+        return t
+
     INTERPOLATE = r"\d*I"
     """An interpolate shortcut."""
     NUM_INTERPOLATE = r"\d+I"
@@ -526,6 +533,8 @@ class SurfaceLexer(MCNP_Lexer):
         "arb",
     }
     """All allowed surface types."""
+
+    PARTICLE_SPECIAL = None
 
     @_(r"[+\-]?[0-9]*\.?[0-9]*E?[+\-]?[0-9]*[ijrml]+[a-z\./]*", r"[a-z]+[a-z\./]*")
     def TEXT(self, t):

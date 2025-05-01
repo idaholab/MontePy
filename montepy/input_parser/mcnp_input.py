@@ -32,6 +32,9 @@ class Jump:
     def __repr__(self):
         return f"Jump: {hex(id(self))}"
 
+    def __format__(self, spec):
+        return format(str(self), spec)
+
     def __bool__(self):
         raise TypeError("Jump doesn't have a truthiness or falsiness")
 

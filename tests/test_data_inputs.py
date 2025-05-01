@@ -288,6 +288,12 @@ class testDataInputClass(TestCase):
         card = volume.Volume(key="VoL", value=node, in_cell_block=True)
         self.assertIn("VOLUME", repr(card))
 
+    def test_data_clone(_):
+        problem = montepy.MCNP_Problem("")
+        data_input = DataInput("ksrc 0 0 0")
+        data_input.link_to_problem(problem)
+        new_data = data_input.clone()
+
 
 class TestClassifier(TestCase):
     def test_classifier_start_comment(self):

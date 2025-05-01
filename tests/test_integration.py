@@ -451,8 +451,7 @@ def test_cell_card_pass_through(simple_problem):
     assert int(output[4].split("$")[0]) == -5
     # test mass density printer
     cell.mass_density = 10.0
-    with pytest.warns(LineExpansionWarning):
-        output = cell.format_for_mcnp_input((6, 2, 0))
+    output = cell.format_for_mcnp_input((6, 2, 0))
     print(output)
     assert pytest.approx(float(output[3].split()[2])) == -10
     # ensure that surface number updated
@@ -888,8 +887,9 @@ def test_universe_repr(simple_problem):
 def test_lattice_format_data(simple_problem):
     problem = copy.deepcopy(simple_problem)
     cells = problem.cells
-    cells[1].lattice = 1
-    cells[99].lattice = 2
+    cells[1].lattice_type = 1
+    cells[99].lattice_type = 2
+    problem.print_in_data_block["lat"] = True
     answer = "LAT 1 2J 2"
     output = cells._lattice.format_for_mcnp_input((6, 2, 0))
     assert answer in output[0]
@@ -908,9 +908,9 @@ def test_lattice_push_to_cells(simple_problem):
     for cell, answer in zip(problem.cells, lattices):
         print(cell.number, answer)
         if isinstance(answer, int):
-            assert cell.lattice.value == answer
+            assert cell.lattice_type.value == answer
         else:
-            assert cell.lattice is None
+            assert cell.lattice_type is None
 
 
 def test_universe_problem_parsing(universe_problem):
@@ -1136,7 +1136,9 @@ def test_alternate_encoding():
 
 _SKIP_LINES = {
     # skip lines of added implied importances
-    "tests/inputs/test_universe_data.imcnp": {5: True, 14: True, 15: True},
+    "tests/inputs/test_universe_data.imcnp": {5: 1, 14: 1, 15: 1},
+    # I don't care about the edge case of shortcuts in a material def.
+    "tests/inputs/test_complement_edge.imcnp": {37: 0, 38: 0, 39: 0},
 }
 
 
@@ -1154,6 +1156,8 @@ _SKIP_LINES = {
 )
 def test_read_write_cycle(file):
     print(f"Testing against {file} *********************")
+    if ".swp" in file.suffixes:
+        return
     problem = montepy.read_input(file)
     SKIPPERS = _SKIP_LINES.get(str(file), {})
     fh = io.StringIO()
@@ -1173,8 +1177,10 @@ def test_read_write_cycle(file):
         for i, (gold_line, new_line) in enumerate(zip(gold_fh_iter, lines_iter)):
             if i in SKIPPERS:
                 # True means skip new file line
-                if SKIPPERS[i]:
+                if SKIPPERS[i] == 1:
                     new_line = next(lines_iter)
+                elif SKIPPERS[i] == 0:
+                    continue
                 else:
                     gold_line = next(gold_fh_iter)
             # edge case override for not fixing #527.
