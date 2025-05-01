@@ -29,6 +29,8 @@ import numpy as np
 import sys
 import typing
 
+import montepy
+
 # Type for arguments that accept file paths
 PathLike = str | os.PathLike
 
