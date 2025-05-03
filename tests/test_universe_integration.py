@@ -70,7 +70,7 @@ def test_uni_fill_latt_setter(cells):
 
 
 def test_mc_workshop_edge_case():
-    problem = montepy.read_input(Path("demo") / "pin_cell.imcnp")
+    problem = montepy.read_input(Path("demo") / "models" / "pin_cell.imcnp")
     # grab surfaces
     universe = montepy.Universe(1)
     universe.claim(problem.cells)
