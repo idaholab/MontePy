@@ -50,7 +50,7 @@ class Universe(Numbered_MCNP_Object):
                     yield cell
 
     @property
-    def filled_cells(self):
+    def filled_cells(self) -> Generator[cell]:
         """A generator of the cells that use this universe.
 
         Returns
