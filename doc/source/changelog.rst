@@ -5,7 +5,7 @@ MontePy Changelog
 1.0 releases
 ============
 
-1.0.1
+#Next version#
 --------------
 
 **Features Added**
