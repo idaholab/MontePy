@@ -1,12 +1,14 @@
 # Copyright 2024 - 2025, Battelle Energy Alliance, LLC All Rights Reserved.
-from hypothesis import given, strategies as st
-import pytest
-import numpy as np
-import os
 import copy
+import os
+
+from hypothesis import given, strategies as st
+import numpy as np
+import pytest
+
+import montepy
 
 from montepy.input_parser import syntax_node
-import montepy
 from montepy.cell import Cell
 from montepy.constants import DEFAULT_VERSION
 from montepy.errors import *
