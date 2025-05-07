@@ -81,6 +81,26 @@ You can specify a specific version from `PyPI`_ be installed using:
 
 ``pip install montepy==<version>``
 
+Tutorials and Demonstrations
+----------------------------
+
+We have presented a workshop for using MontePy in the past. 
+The demonstration Jupyter notebooks are now available in our git repository. 
+To access these demonstrations you can run:
+
+.. code-block:: bash
+
+   git clone https://github.com/idaholab/MontePy.git
+   pip install montepy[demos]
+   cd MontePy/demos
+   jupyter lab
+
+These notebooks are not complete, and have missing code you need to fill in.
+If you get stuck there are complete notebooks in the ``answers`` folder, that you can refer to. 
+
+Finally if you want to present these notebooks in a workshop, 
+we use `RISE <https://rise.readthedocs.io/en/latest/>`_.
+You can install this with ``pip install montepy[demo-present]``.
 
 Best Practices
 --------------

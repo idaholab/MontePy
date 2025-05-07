@@ -1,0 +1,22 @@
+.rise-enabled .cm-editor {
+    font-size: 18pt;
+}
+
+.rise-enabled .jp-OutputArea pre {
+    font-size: 18pt;
+}
+.reveal p {
+    font-size: 18pt;
+}
+.reveal body {
+    font-size: 18pt;
+}
+.reveal ul {
+    font-size: 18pt;
+}
+.reveal ol {
+    font-size: 18pt;
+}
+div.highlight {
+    font-size: 18pt;
+}

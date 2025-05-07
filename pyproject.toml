@@ -70,6 +70,8 @@ develop = [
 demos = ["jupyter"]
 demo-test = ["montepy[demos]", "papermill"]
 
+demo-present = ["montepy[demos]", "jupyterlab-rise"]
+
 
 [project.urls]
 Homepage = "https://www.montepy.org/"
