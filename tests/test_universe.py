@@ -4,6 +4,7 @@ import os
 
 from hypothesis import given, strategies as st
 import numpy as np
+from types import GeneratorType
 import pytest
 
 import montepy
@@ -120,6 +121,39 @@ class TestUniverseInput:
 
 
 class TestUniverse:
+    default_test_input_path = os.path.join("tests", "inputs")
+
+    @pytest.mark.parametrize(
+        "universe,expected_cells",
+        [
+            (1, [20]),
+            (2, [20]),
+            (5, [5, 15]),
+            (100, [21]),
+        ],
+    )
+    def test_filled_cells_generator(self, universe, expected_cells):
+        problem = montepy.read_input(
+            os.path.join(self.default_test_input_path, "test_lattice_fill_1.imcnp")
+        )
+        cell_generator = problem.universes[universe].filled_cells
+        filled_cells = [cell.number for cell in cell_generator]
+
+        assert filled_cells == expected_cells
+
+    def test_detached_universe_returns_generator(self):
+        """
+        Case 1: Universe with no associated problem
+        """
+        u1 = montepy.Universe(999)
+
+        result = u1.filled_cells
+        assert isinstance(result, GeneratorType)
+        assert list(result) == []  # Should yield nothing
+
+
+
+
     def test_init(self):
         universe = Universe(5)
         assert universe.number == 5
@@ -468,25 +502,3 @@ class TestFill:
                 assert (old_val == new_val).all()
             else:
                 assert old_val == new_val
-
-
-class TestUniverseGenerators:
-    default_test_input_path = os.path.join("tests", "inputs")
-
-    @pytest.mark.parametrize(
-        "universe,expected_cells",
-        [
-            (1, [20]),
-            (2, [20]),
-            (5, [5, 15]),
-            (100, [21]),
-        ],
-    )
-    def test_filled_cells_generator(self, universe, expected_cells):
-        problem = montepy.read_input(
-            os.path.join(self.default_test_input_path, "test_lattice_fill_1.imcnp")
-        )
-        cell_generator = problem.universes[universe].filled_cells
-        filled_cells = [cell.number for cell in cell_generator]
-
-        assert filled_cells == expected_cells
