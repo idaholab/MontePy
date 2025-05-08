@@ -50,7 +50,7 @@ class Universe(Numbered_MCNP_Object):
                     yield cell
 
     @property
-    def filled_cells(self) -> Generator[cell]:
+    def filled_cells(self) -> Generator['montepy.Cell', None, None]:
         """A generator of the cells that use this universe.
 
         Returns
