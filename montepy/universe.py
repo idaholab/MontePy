@@ -56,7 +56,7 @@ class Universe(Numbered_MCNP_Object):
         Returns
         -------
         Generator[Cell]
-            an iterator of the Cell objects which use this.
+            an iterator of the Cell objects which use this universe as their fill.
         """
         if not self._problem:
             yield from []
