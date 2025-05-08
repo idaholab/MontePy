@@ -50,7 +50,7 @@ class Universe(Numbered_MCNP_Object):
                     yield cell
 
     @property
-    def filled_cells(self) -> Generator['montepy.Cell', None, None]:
+    def filled_cells(self) -> Generator["montepy.Cell", None, None]:
         """A generator of the cells that use this universe.
 
         Returns
@@ -61,7 +61,7 @@ class Universe(Numbered_MCNP_Object):
         if not self._problem:
             yield from []
             return
-        
+
         for cell in self._problem.cells:
             if cell.fill:
                 if cell.fill.universes is not None:
@@ -69,7 +69,6 @@ class Universe(Numbered_MCNP_Object):
                         yield cell
                 elif cell.fill.universe == self:
                     yield cell
-
 
     def claim(self, cells):
         """Take the given cells and move them into this universe, and out of their original universe.

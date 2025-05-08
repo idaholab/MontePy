@@ -151,9 +151,6 @@ class TestUniverse:
         assert isinstance(result, GeneratorType)
         assert list(result) == []  # Should yield nothing
 
-
-
-
     def test_init(self):
         universe = Universe(5)
         assert universe.number == 5
