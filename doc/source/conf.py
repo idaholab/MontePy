@@ -76,7 +76,7 @@ autodoc_default_options = {
 
 linkcheck_ignore = [
     "https://nucleardata.lanl.gov/.*",
-    "https://osti.gov/.*",  # Ignore osti.gov URLs
+    "https://www.osti.gov/.*",  # Ignore osti.gov URLs
 ]
 
 # -- External link configuration ---------------------------------------------
