@@ -58,14 +58,18 @@ class Universe(Numbered_MCNP_Object):
         Generator[Cell]
             an iterator of the Cell objects which use this.
         """
-        if self._problem:
-            for cell in self._problem.cells:
-                if cell.fill:
-                    if cell.fill.universes is not None:
-                        if np.any(cell.fill.universes.flatten() == self):
-                            yield cell
-                    elif cell.fill.universe == self:
+        if not self._problem:
+            yield from []
+            return
+        
+        for cell in self._problem.cells:
+            if cell.fill:
+                if cell.fill.universes is not None:
+                    if np.any(cell.fill.universes.flatten() == self):
                         yield cell
+                elif cell.fill.universe == self:
+                    yield cell
+
 
     def claim(self, cells):
         """Take the given cells and move them into this universe, and out of their original universe.
