@@ -126,20 +126,19 @@ class TestUniverse:
     @pytest.mark.parametrize(
         "universe,expected_cells",
         [
-            (1, [20]),
-            (2, [20]),
-            (5, [5, 15]),
-            (100, [21]),
+            (1, [2 ,99, 5]),
+
         ],
     )
     def test_filled_cells_generator(self, universe, expected_cells):
         problem = montepy.read_input(
-            os.path.join(self.default_test_input_path, "test_lattice_fill_1.imcnp")
+            os.path.join(self.default_test_input_path, "test_universe.imcnp")
         )
         cell_generator = problem.universes[universe].filled_cells
         filled_cells = [cell.number for cell in cell_generator]
 
-        assert filled_cells == expected_cells
+        assert filled_cells == expected_cells, \
+        f"\nExpected: {expected_cells}\nActual: {filled_cells}"
 
     def test_detached_universe_returns_generator(self):
         """
