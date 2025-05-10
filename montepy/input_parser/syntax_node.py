@@ -1260,10 +1260,17 @@ class ValueNode(SyntaxNodeBase):
         return self.value != self._og_value
 
     def _avoid_rounding_truncation(self):
+        """
+        Detects when not enough digits are in original input to preserve precision.
+
+        This will update the precision in the formatter to the necessary
+        value to preserve the precision.
+        """
+        precision = self._formatter["precision"]
         if self._formatter["is_scientific"]:
-            pass
+            exp = math.floor(math.log10(abs(self.value)))
+            val = self.value / 10**exp
         else:
-            precision = self._formatter["precision"]
             val = self.value
         while True:
             if not math.isclose(
