@@ -222,6 +222,7 @@ class TestValueNode:
             # test bad rounding
             ("1", float, 1.5, "1.5", True),
             ("1.0", float, 1.05, "1.05", True),
+            ("1.0", float, 1.056, "1.056", True),
             ("-1.23", float, 4.56, " 4.56", False),
             ("1.0e-2", float, 2, "2.0e+0", False),
             # bad rounding
