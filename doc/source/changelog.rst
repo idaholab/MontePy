@@ -5,6 +5,13 @@ MontePy Changelog
 1.0 releases
 ============
 
+#Next Version#
+--------------
+
+**Bugs Fixed**
+
+* Fixed bug where MontePy would overly agressively round outputs and remove the user's intent(:issue:`756`).
+
 1.0.0
 --------------
 
