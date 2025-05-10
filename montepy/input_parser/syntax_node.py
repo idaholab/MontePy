@@ -1280,7 +1280,8 @@ class ValueNode(SyntaxNodeBase):
                 abs_tol=self._formatter["abs_eps"],
             ):
                 precision += 1
-            break
+            else:
+                break
         self._formatter["precision"] = precision
 
     def format(self):
