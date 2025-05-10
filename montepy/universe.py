@@ -1,14 +1,17 @@
 # Copyright 2024-2025, Battelle Energy Alliance, LLC All Rights Reserved.
+from __future__ import annotations
+
+from numbers import Integral
+from typing import Generator
+import numpy as np
+
+
 import montepy
 from montepy.cells import Cells
 from montepy.input_parser.mcnp_input import Input
 from montepy.input_parser.block_type import BlockType
 from montepy.input_parser import syntax_node
 from montepy.numbered_mcnp_object import Numbered_MCNP_Object
-
-from numbers import Integral
-from typing import Generator
-import numpy as np
 
 
 class Universe(Numbered_MCNP_Object):
@@ -36,7 +39,7 @@ class Universe(Numbered_MCNP_Object):
         super().__init__(Input(["U"], BlockType.DATA), Parser(), number)
 
     @property
-    def cells(self):
+    def cells(self) -> Generator[montepy.Cell, None, None]:
         """A generator of the cell objects in this universe.
 
         Returns
@@ -50,7 +53,7 @@ class Universe(Numbered_MCNP_Object):
                     yield cell
 
     @property
-    def filled_cells(self) -> Generator["montepy.Cell", None, None]:
+    def filled_cells(self) -> Generator[montepy.Cell, None, None]:
         """A generator of the cells that use this universe.
 
         Returns
