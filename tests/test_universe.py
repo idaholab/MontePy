@@ -126,8 +126,7 @@ class TestUniverse:
     @pytest.mark.parametrize(
         "universe,expected_cells",
         [
-            (1, [2 ,99, 5]),
-
+            (1, [2, 99, 5]),
         ],
     )
     def test_filled_cells_generator(self, universe, expected_cells):
@@ -137,8 +136,9 @@ class TestUniverse:
         cell_generator = problem.universes[universe].filled_cells
         filled_cells = [cell.number for cell in cell_generator]
 
-        assert filled_cells == expected_cells, \
-        f"\nExpected: {expected_cells}\nActual: {filled_cells}"
+        assert (
+            filled_cells == expected_cells
+        ), f"\nExpected: {expected_cells}\nActual: {filled_cells}"
 
     def test_detached_universe_returns_generator(self):
         """
