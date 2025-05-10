@@ -1268,7 +1268,11 @@ class ValueNode(SyntaxNodeBase):
         """
         precision = self._formatter["precision"]
         if self._formatter["is_scientific"]:
-            exp = math.floor(math.log10(abs(self.value)))
+            # Remember that you can test for equality to 0 with floats safely
+            if self.value != 0:
+                exp = math.floor(math.log10(abs(self.value)))
+            else:
+                exp = 0
             val = self.value / 10**exp
         else:
             val = self.value
