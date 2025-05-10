@@ -219,8 +219,13 @@ class TestValueNode:
             ("1.23", float, 1.23, "1.23", False),
             ("1.23", float, 4.56, "4.56", False),
             (1.23, float, 4.56, "4.56", False),
+            # test bad rounding
+            ("1", float, 1.5, "1.5", True),
+            ("1.0", float, 1.05, "1.05", True),
             ("-1.23", float, 4.56, " 4.56", False),
             ("1.0e-2", float, 2, "2.0e+0", False),
+            # bad rounding
+            ("1.0e-2", float, 1.01e-3, "1.01e-3", True),
             ("1.602-19", float, 6.02e23, "6.020+23", False),
             ("1.602-0019", float, 6.02e23, "6.020+0023", False),
             (Jump(), float, 5.4, "5.4 ", True),
