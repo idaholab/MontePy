@@ -1276,16 +1276,13 @@ class ValueNode(SyntaxNodeBase):
             val = self.value / 10**exp
         else:
             val = self.value
-        while True:
-            if not math.isclose(
-                val,
-                round(val, precision),
-                rel_tol=self._formatter["rel_eps"],
-                abs_tol=self._formatter["abs_eps"],
-            ):
-                precision += 1
-            else:
-                break
+        while not math.isclose(
+            val,
+            round(val, precision),
+            rel_tol=self._formatter["rel_eps"],
+            abs_tol=self._formatter["abs_eps"],
+        ):
+            precision += 1
         self._formatter["precision"] = precision
 
     def format(self):
