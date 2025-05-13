@@ -192,7 +192,13 @@ def read_data(fh, mcnp_version, block_type=None, recursion=False):
         ):
             yield from flush_input()
         # die if it is a vertical syntax format
-        if "#" in line[0:BLANK_SPACE_CONTINUE] and not line_is_comment:
+        start_o_line = line[0:BLANK_SPACE_CONTINUE]
+        # eliminate comments, and inputs that use # for other syntax
+        if (
+            "#" in start_o_line
+            and not line_is_comment
+            and start_o_line.strip().startswith("#")
+        ):
             input_raw_lines.append(line.rstrip())
             input = next(flush_input())
             lineno = 1
