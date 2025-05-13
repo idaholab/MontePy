@@ -1,5 +1,6 @@
 # Copyright 2024, Battelle Energy Alliance, LLC All Rights Reserved.
 from typing import Union
+import warnings
 
 import montepy
 from montepy.errors import *
@@ -31,7 +32,10 @@ class GeneralPlane(Surface):
         if input:
             if self.surface_type != SurfaceType.P:
                 raise ValueError("A GeneralPlane must be a surface of type P")
-            if len(self.surface_constants) not in {4, 9}:
+            if len(self.surface_constants)>9:
+                warnings.warn(f"There were {len(self.surface_constants)} constants. A GeneralPlane must have either 4 or 9 surface constants. MontePy will ignore extra constants provided.")
+                super().__init__(input, number, max_constants=9)
+            elif len(self.surface_constants) not in {4, 9}:
                 raise ValueError(
                     "A GeneralPlane must have either 4 or 9 surface constants"
                 )
