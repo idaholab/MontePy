@@ -5,7 +5,7 @@ from pathlib import Path
 import pytest
 
 import montepy
-from montepy.errors import MalformedInputError
+from montepy.errors import MalformedInputError, SurfaceConstantsWarning
 from montepy.input_parser.block_type import BlockType
 from montepy.input_parser.mcnp_input import Input
 from montepy.surfaces.axis_plane import AxisPlane
@@ -208,7 +208,6 @@ class testSurfaces(TestCase):
             ("13 cz 0", CylinderOnAxis),
             ("14 px 1.e-3", AxisPlane),
             ("15 PY .1", AxisPlane),
-            ("16 p 0. 0. 0. 0. 0. 1. 0. 1. 1. 0. 1. 0.", GeneralPlane),
         ]
         for in_str, surf_plane in testers:
             card = Input([in_str], BlockType.SURFACE)
@@ -262,6 +261,20 @@ class testSurfaces(TestCase):
         self.assertEqual(surf.location, 10.0)
         with self.assertRaises(TypeError):
             surf.location = "hi"
+
+    def test_general_plane_constants(self):
+        error_inputs = ['16 P 0. 0. 0. 0. 0. 1. 0.']
+        warn_inputs = ['17 p 0. 0. 0. 0. 0. 1. 0. 1. 1. 0. 1. 0.']
+        for error_input in error_inputs:
+            with self.assertRaises(ValueError):
+                surf = montepy.surfaces.general_plane.GeneralPlane(
+                    Input([error_input], BlockType.SURFACE)
+                )
+        for warn_input in warn_inputs:
+            with self.assertRaises(SurfaceConstantsWarning):
+                surf = montepy.surfaces.general_plane.GeneralPlane(
+                    Input([warn_input], BlockType.SURFACE)
+                )
 
     def test_cylinder_axis_radius_setter(self):
         in_str = "1 CZ 5.0"
