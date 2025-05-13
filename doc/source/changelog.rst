@@ -11,7 +11,8 @@ MontePy Changelog
 **Features Added**
 
 * Added support for parallel parsing of large input files with the ``multi_process`` argument (:issue:`742`).
-
+* Added ``Universe.filled_cells``, a generator that yields the cells filled with that universe instance (:issue:`361`).
+* Added ``__eq__`` dunder method to ``Universe`` to support equality comparisons (:issue:`361`).
 
 1.0.0
 --------------
