@@ -208,6 +208,7 @@ class testSurfaces(TestCase):
             ("13 cz 0", CylinderOnAxis),
             ("14 px 1.e-3", AxisPlane),
             ("15 PY .1", AxisPlane),
+            ("16 p 0. 0. 0. 0. 0. 1. 0. 1. 1. 0. 1. 0.", GeneralPlane),
         ]
         for in_str, surf_plane in testers:
             card = Input([in_str], BlockType.SURFACE)
