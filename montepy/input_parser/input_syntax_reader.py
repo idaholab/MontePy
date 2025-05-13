@@ -4,6 +4,7 @@ import itertools
 import io
 import re
 import os
+import sly
 import warnings
 
 from montepy.constants import *
@@ -192,7 +193,18 @@ def read_data(fh, mcnp_version, block_type=None, recursion=False):
             yield from flush_input()
         # die if it is a vertical syntax format
         if "#" in line[0:BLANK_SPACE_CONTINUE] and not line_is_comment:
-            raise UnsupportedFeature("Vertical Input format is not allowed")
+            input_raw_lines.append(line.rstrip())
+            input = next(flush_input())
+            lineno = 1
+            token = sly.lex.Token()
+            token.value = "#"
+            index = line[0:BLANK_SPACE_CONTINUE].index("#")
+            err = {"message": " Hi", "token": token, "line": lineno, "index": index}
+            raise UnsupportedFeature(
+                "Vertical Input encountered, which is not supported by Montepy",
+                input,
+                [err],
+            )
         # cut line down to allowed length
         old_line = line
         line = line[:line_length]
