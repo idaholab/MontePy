@@ -347,7 +347,7 @@ class TestMaterial:
                 method(mat)
             with pytest.raises(TypeError):
                 method("1001", mat)
-            with pytest.raises(ValueError):
+            with pytest.raises(UnknownElement):
                 method("hi")
             with pytest.raises(TypeError):
                 method("1001", threshold="hi")
