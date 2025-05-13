@@ -36,14 +36,19 @@ class GeneralPlane(Surface):
 
     def validate(self):
         super().validate()
-        self._enforce_constants()
+        self._enforce_constants(_validation_call=True)
 
-    def _enforce_constants(self):
+    def _enforce_constants(self, _validation_call=False):
         if len(self.surface_constants) not in {4, 9}:
             if len(self.surface_constants) < 9:
-                raise ValueError(
-                    "A GeneralPlane must have either 4 or 9 surface constants"
-                )
+                if _validation_call:
+                    raise ValueError(
+                        "A GeneralPlane must have either 4 or 9 surface constants"
+                    )
+                else:
+                    raise IllegalState(
+                        "A GeneralPlane must have either 4 or 9 surface constants"
+                    )
             else:
                 warnings.warn(
                     f"A GeneralPlane must have either 4 or 9 surface constants. {len(self.surface_constants)} constants are provided."
