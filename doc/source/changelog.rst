@@ -12,6 +12,7 @@ MontePy Changelog
 
 * Added ``Universe.filled_cells``, a generator that yields the cells filled with that universe instance (:issue:`361`).
 * Added ``__eq__`` dunder method to ``Universe`` to support equality comparisons (:issue:`361`).
+* Changed general plane constants checker to support more than 9 constants (:issue:`761`).
 
 **Bugs Fixed**
 
