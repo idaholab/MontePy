@@ -40,16 +40,11 @@ class GeneralPlane(Surface):
 
     def _enforce_constants(self, _validation_call=False):
         if len(self.surface_constants) not in {4, 9}:
+            message = f"A GeneralPlane must have either 4 or 9 surface constants. {len(self.surface_constants)} constants are provided."
             if len(self.surface_constants) < 9:
                 if not _validation_call:
-                    raise ValueError(
-                        "A GeneralPlane must have either 4 or 9 surface constants"
-                    )
+                    raise ValueError(message)
                 else:
-                    raise IllegalState(
-                        "A GeneralPlane must have either 4 or 9 surface constants"
-                    )
+                    raise IllegalState(message)
             else:
-                warnings.warn(
-                    f"A GeneralPlane must have either 4 or 9 surface constants. {len(self.surface_constants)} constants are provided."
-                )
+                warnings.warn(message, SurfaceConstantsWarning)
