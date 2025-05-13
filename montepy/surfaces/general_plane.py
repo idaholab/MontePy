@@ -40,9 +40,11 @@ class GeneralPlane(Surface):
 
     def _enforce_constants(self):
         if len(self.surface_constants) not in {4, 9}:
-            if len(self.surface_constants)<9:
+            if len(self.surface_constants) < 9:
                 raise ValueError(
                     "A GeneralPlane must have either 4 or 9 surface constants"
                 )
             else:
-                warnings.warn(f"A GeneralPlane must have either 4 or 9 surface constants. {len(self.surface_constants)} constants are provided.")
+                warnings.warn(
+                    f"A GeneralPlane must have either 4 or 9 surface constants. {len(self.surface_constants)} constants are provided."
+                )
