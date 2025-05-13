@@ -1,12 +1,17 @@
 # Copyright 2024-2025, Battelle Energy Alliance, LLC All Rights Reserved.
+from __future__ import annotations
+
+from numbers import Integral
+from typing import Generator
+import numpy as np
+
+
 import montepy
 from montepy.cells import Cells
 from montepy.input_parser.mcnp_input import Input
 from montepy.input_parser.block_type import BlockType
 from montepy.input_parser import syntax_node
 from montepy.numbered_mcnp_object import Numbered_MCNP_Object
-
-from numbers import Integral
 
 
 class Universe(Numbered_MCNP_Object):
@@ -34,7 +39,7 @@ class Universe(Numbered_MCNP_Object):
         super().__init__(Input(["U"], BlockType.DATA), Parser(), number)
 
     @property
-    def cells(self):
+    def cells(self) -> Generator[montepy.Cell, None, None]:
         """A generator of the cell objects in this universe.
 
         Returns
@@ -45,6 +50,27 @@ class Universe(Numbered_MCNP_Object):
         if self._problem:
             for cell in self._problem.cells:
                 if cell.universe == self:
+                    yield cell
+
+    @property
+    def filled_cells(self) -> Generator[montepy.Cell, None, None]:
+        """A generator of the cells that use this universe.
+
+        Returns
+        -------
+        Generator[Cell]
+            an iterator of the Cell objects which use this universe as their fill.
+        """
+        if not self._problem:
+            yield from []
+            return
+
+        for cell in self._problem.cells:
+            if cell.fill:
+                if cell.fill.universes is not None:
+                    if np.any(cell.fill.universes.flatten() == self):
+                        yield cell
+                elif cell.fill.universe == self:
                     yield cell
 
     def claim(self, cells):
@@ -89,3 +115,8 @@ class Universe(Numbered_MCNP_Object):
             f"Problem: {'set' if self._problem else 'not set'}, "
             f"Cells: {[cell.number for cell in self.cells] if self._problem else ''}"
         )
+
+    def __eq__(self, other):
+        if not isinstance(other, type(self)):
+            return False
+        return self.number == other.number

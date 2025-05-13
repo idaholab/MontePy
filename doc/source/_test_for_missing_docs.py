@@ -9,7 +9,7 @@ ignored = {
     "_version.py",
     "__main__.py",
     "_cell_data_control.py",
-    "_singleton.py"
+    "_singleton.py",
 }
 
 base = os.path.join("..", "..")
