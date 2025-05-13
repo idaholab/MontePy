@@ -16,6 +16,10 @@ from montepy.particle import Particle
 import warnings
 
 
+lat = montepy.data_inputs.lattice.LatticeType
+st = montepy.surfaces.surface_type.SurfaceType
+
+
 class TestValueNode:
     def test_valuenoode_init(self):
         for type, token, answer in [
@@ -209,98 +213,80 @@ class TestValueNode:
         node.value = "foo"
         assert node._value_changed
 
-    def test_value_float_format(self):
-        for input, val, answer, expand in [
-            ("1.23", 1.23, "1.23", False),
-            ("1.23", 4.56, "4.56", False),
-            (1.23, 4.56, "4.56", False),
-            ("-1.23", 4.56, " 4.56", False),
-            ("1.0e-2", 2, "2.0e+0", False),
-            ("1.602-19", 6.02e23, "6.020+23", False),
-            ("1.602-0019", 6.02e23, "6.020+0023", False),
-            (Jump(), 5.4, "5.4 ", True),
-            ("1", 2, "2", False),
-            ("0.5", 0, "0.0", False),
-        ]:
-            print("in:", input, "new value:", val, "answer:", answer)
-            node = syntax_node.ValueNode(input, float)
-            node.value = val
-            if expand:
-                warnings.simplefilter("default")
-                with pytest.warns(LineExpansionWarning):
-                    assert node.format() == answer
-            else:
-                # change warnings to errors to ensure not raised
-                warnings.resetwarnings()
-                warnings.simplefilter("error")
+    @pytest.mark.parametrize(
+        "input, val_type, val, answer, expand",
+        [
+            ("1.23", float, 1.23, "1.23", False),
+            ("1.23", float, 4.56, "4.56", False),
+            (1.23, float, 4.56, "4.56", False),
+            # test bad rounding
+            ("1", float, 1.5, "1.5", True),
+            ("1.0", float, 1.05, "1.05", True),
+            ("1.0", float, 1.056, "1.056", True),
+            ("-1.23", float, 4.56, " 4.56", False),
+            ("1.0e-2", float, 2, "2.0e+0", False),
+            # bad rounding
+            ("1.0e-2", float, 1.01e-3, "1.01e-3", True),
+            ("1.602-19", float, 6.02e23, "6.020+23", False),
+            ("1.602-0019", float, 6.02e23, "6.020+0023", False),
+            (Jump(), float, 5.4, "5.4 ", True),
+            ("1", float, 2, "2", False),
+            ("0.5", float, 0, "0.0", False),
+            ("hi", str, "foo", "foo", True),
+            ("hi", str, None, "", False),
+        ],
+    )
+    def test_value_float_format(_, input, val_type, val, answer, expand):
+        node = syntax_node.ValueNode(input, val_type)
+        node.value = val
+        if expand:
+            warnings.simplefilter("default")
+            with pytest.warns(LineExpansionWarning):
                 assert node.format() == answer
+        else:
+            # change warnings to errors to ensure not raised
+            warnings.resetwarnings()
+            warnings.simplefilter("error")
+            assert node.format() == answer
 
-        for padding, val, answer, expand in [
-            ([" "], 10, "10.0 ", True),
-            (["  "], 10, "10.0 ", False),
-            (["\n"], 10, "10.0\n", False),
-            ([" ", "\n", "c hi"], 10, "10.0\nc hi", False),
-            (["  ", "\n"], 10, "10.0 \n", False),
-        ]:
-            print("padding", padding, "new_val", val, "answer", answer)
-            pad_node = syntax_node.PaddingNode(padding[0])
-            for pad in padding[1:]:
-                pad_node.append(pad)
-            node = syntax_node.ValueNode("1.0", float, pad_node)
-            node.value = val
-            if expand:
-                warnings.simplefilter("default")
-                with pytest.warns(LineExpansionWarning):
-                    assert node.format() == answer
-            else:
-                # change warnings to errors to ensure not raised
-                warnings.resetwarnings()
-                warnings.simplefilter("error")
+    @pytest.mark.parametrize(
+        "padding, val_type, val, answer, expand",
+        [
+            ([" "], float, 10, "10.0 ", True),
+            (["  "], float, 10, "10.0 ", False),
+            (["\n"], float, 10, "10.0\n", False),
+            ([" ", "\n", "c hi"], float, 10, "10.0\nc hi", False),
+            (["  ", "\n"], float, 10, "10.0 \n", False),
+            ([" "], str, "foo", "foo ", True),
+            (["  "], str, "foo", "foo ", False),
+            (["\n"], str, "foo", "foo\n", False),
+            ([" ", "\n", "c hi"], str, "foo", "foo\nc hi", False),
+            (["  ", "\n"], str, "foo", "foo \n", False),
+        ],
+    )
+    def test_value_gen_padding_format(_, padding, val_type, val, answer, expand):
+        pad_node = syntax_node.PaddingNode(padding[0])
+        for pad in padding[1:]:
+            pad_node.append(pad)
+        if val_type == float:
+            default = "1.0"
+        elif val_type == str:
+            default = "hi"
+        node = syntax_node.ValueNode(default, val_type, pad_node)
+        node.value = val
+        if expand:
+            warnings.simplefilter("default")
+            with pytest.warns(LineExpansionWarning):
                 assert node.format() == answer
+        else:
+            # change warnings to errors to ensure not raised
+            warnings.resetwarnings()
+            warnings.simplefilter("error")
+            assert node.format() == answer
 
-    def test_value_str_format(self):
-        for input, val, answer, expand in [
-            ("hi", "foo", "foo", True),
-            ("hi", None, "", False),
-        ]:
-            node = syntax_node.ValueNode(input, str)
-            node.value = val
-            if expand:
-                warnings.simplefilter("default")
-                with pytest.warns(LineExpansionWarning):
-                    assert node.format() == answer
-            else:
-                # change warnings to errors to ensure not raised
-                warnings.resetwarnings()
-                warnings.simplefilter("error")
-                assert node.format() == answer
-        for padding, val, answer, expand in [
-            ([" "], "foo", "foo ", True),
-            (["  "], "foo", "foo ", False),
-            (["\n"], "foo", "foo\n", False),
-            ([" ", "\n", "c hi"], "foo", "foo\nc hi", False),
-            (["  ", "\n"], "foo", "foo \n", False),
-        ]:
-            print("padding", padding, "new_val", val, "answer", answer)
-            pad_node = syntax_node.PaddingNode(padding[0])
-            for pad in padding[1:]:
-                pad_node.append(pad)
-            node = syntax_node.ValueNode("hi", str, pad_node)
-            node.value = val
-            if expand:
-                warnings.simplefilter("default")
-                with pytest.warns(LineExpansionWarning):
-                    assert node.format() == answer
-            else:
-                # change warnings to errors to ensure not raised
-                warnings.resetwarnings()
-                warnings.simplefilter("error")
-                assert node.format() == answer
-
-    def test_value_enum_format(self):
-        lat = montepy.data_inputs.lattice.LatticeType
-        st = montepy.surfaces.surface_type.SurfaceType
-        for input, val, enum_class, args, answer, expand in [
+    @pytest.mark.parametrize(
+        "input, val, enum_class, args, answer, expand",
+        [
             (
                 "1",
                 lat.HEXAGONAL,
@@ -318,19 +304,21 @@ class TestValueNode:
                 False,
             ),
             ("p", st.PZ, st, {"format_type": str, "switch_to_upper": True}, "PZ", True),
-        ]:
-            node = syntax_node.ValueNode(input, args["format_type"])
-            node._convert_to_enum(enum_class, **args)
-            node.value = val
-            if expand:
-                warnings.simplefilter("default")
-                with pytest.warns(LineExpansionWarning):
-                    assert node.format() == answer
-            else:
-                # change warnings to errors to ensure not raised
-                warnings.resetwarnings()
-                warnings.simplefilter("error")
+        ],
+    )
+    def test_value_enum_format(_, input, val, enum_class, args, answer, expand):
+        node = syntax_node.ValueNode(input, args["format_type"])
+        node._convert_to_enum(enum_class, **args)
+        node.value = val
+        if expand:
+            warnings.simplefilter("default")
+            with pytest.warns(LineExpansionWarning):
                 assert node.format() == answer
+        else:
+            # change warnings to errors to ensure not raised
+            warnings.resetwarnings()
+            warnings.simplefilter("error")
+            assert node.format() == answer
 
     def test_value_comments(self):
         value_node = syntax_node.ValueNode("1", int)
