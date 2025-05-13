@@ -32,17 +32,17 @@ class GeneralPlane(Surface):
         if input:
             if self.surface_type != SurfaceType.P:
                 raise ValueError("A GeneralPlane must be a surface of type P")
-            if len(self.surface_constants)>9:
-                warnings.warn(f"There were {len(self.surface_constants)} constants. A GeneralPlane must have either 4 or 9 surface constants. MontePy will ignore extra constants provided.")
-                super().__init__(input, number, max_constants=9)
-            elif len(self.surface_constants) not in {4, 9}:
-                raise ValueError(
-                    "A GeneralPlane must have either 4 or 9 surface constants"
-                )
+            self._enforce_constants()
 
     def validate(self):
         super().validate()
+        self._enforce_constants()
+
+    def _enforce_constants(self):
         if len(self.surface_constants) not in {4, 9}:
-            raise IllegalState(
-                f"Surface: {self.number} does not have constants set properly."
-            )
+            if len(self.surface_constants)<9:
+                raise ValueError(
+                    "A GeneralPlane must have either 4 or 9 surface constants"
+                )
+            else:
+                warnings.warn(f"A GeneralPlane must have either 4 or 9 surface constants. {len(self.surface_constants)} constants are provided.")

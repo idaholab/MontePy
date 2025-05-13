@@ -1,7 +1,7 @@
 # Copyright 2024-2025, Battelle Energy Alliance, LLC All Rights Reserved.
 from __future__ import annotations
 import copy
-from typing import Union, Optional
+from typing import Union
 from numbers import Real
 
 import montepy
@@ -35,7 +35,6 @@ class Surface(Numbered_MCNP_Object):
         self,
         input: InitInput = None,
         number: int = None,
-        max_constants: Optional[int] = None,
     ):
         self._CHILD_OBJ_MAP = {
             "periodic_surface": Surface,
@@ -94,11 +93,8 @@ class Surface(Numbered_MCNP_Object):
                     f"{self._surface_type.value} could not be parsed as a surface type mnemonic.",
                 )
             # parse the parameters
-            for i, entry in enumerate(self._tree["data"]):
-                if max_constants is None:
-                    self._surface_constants.append(entry)
-                elif i < max_constants:
-                    self._surface_constants.append(entry)
+            for entry in self._tree["data"]:
+                self._surface_constants.append(entry)
 
     @make_prop_val_node("_surface_type", (SurfaceType, str), SurfaceType)
     def surface_type(self):
