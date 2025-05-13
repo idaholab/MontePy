@@ -267,14 +267,10 @@ class testSurfaces(TestCase):
         warn_inputs = ["17 p 0. 0. 0. 0. 0. 1. 0. 1. 1. 0. 1. 0."]
         for error_input in error_inputs:
             with self.assertRaises(ValueError):
-                surf = montepy.surfaces.general_plane.GeneralPlane(
-                    Input([error_input], BlockType.SURFACE)
-                )
+                surf = montepy.surfaces.general_plane.GeneralPlane(error_input)
         for warn_input in warn_inputs:
             with self.assertRaises(SurfaceConstantsWarning):
-                surf = montepy.surfaces.general_plane.GeneralPlane(
-                    Input([warn_input], BlockType.SURFACE)
-                )
+                surf = montepy.surfaces.general_plane.GeneralPlane(warn_input)
 
     def test_cylinder_axis_radius_setter(self):
         in_str = "1 CZ 5.0"
