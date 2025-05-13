@@ -199,7 +199,7 @@ def read_data(fh, mcnp_version, block_type=None, recursion=False):
             token = sly.lex.Token()
             token.value = "#"
             index = line[0:BLANK_SPACE_CONTINUE].index("#")
-            err = {"message": " Hi", "token": token, "line": lineno, "index": index}
+            err = {"message": "", "token": token, "line": lineno, "index": index}
             raise UnsupportedFeature(
                 "Vertical Input encountered, which is not supported by Montepy",
                 input,
