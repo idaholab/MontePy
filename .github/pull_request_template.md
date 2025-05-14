@@ -42,6 +42,6 @@ Fixes # (issue number)
 
 Ensure that:
 
-- [ ] The submitted code is consistent with the merge checklist outlined [here](https://www.montepy.org/developing.html#merge-checklist).
+- [ ] The submitted code is consistent with the merge checklist outlined [here](https://www.montepy.org/en/stable/dev_checklist.html#merge-checklist).
 - [ ] The PR covers all relevant aspects according to the development guidelines.
 - [ ] 100% coverage of the patch is achieved, or justification for a variance is given.

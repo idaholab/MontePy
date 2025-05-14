@@ -1,5 +1,7 @@
 Test case with missing materials
 1 1 0 -1
+C replicate bug with vertical mode detection: #753
+5 0 #1
 
 1 SO 5
 
