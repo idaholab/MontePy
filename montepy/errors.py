@@ -250,3 +250,10 @@ def add_line_number_to_exception(error, broken_robot):
     args = (message,) + args[1:]
     error.args = args
     raise error.with_traceback(trace)
+
+
+class SurfaceConstantsWarning(UserWarning):
+    """Raised when the constants of a Surface are non-conform, but do not raise an error with MCNP."""
+
+    def __init__(self, message):
+        self.message = message
