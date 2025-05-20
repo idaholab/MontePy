@@ -17,12 +17,12 @@ authors = [
 	{name = "Paul Ferney", email="Paul.Ferney@inl.gov"},
 ]
 keywords = ["MCNP", "neutronics", "imcnp", "input file", "monte carlo", "radiation transport"]
-license = {file="LICENSE"}
+license = "MIT"
+license-files = ["LICENSE", "AUTHORS"]
 classifiers = [
        "Development Status :: 4 - Beta",
        "Intended Audience :: Science/Research",
        "Intended Audience :: Developers",
-       "License :: OSI Approved :: MIT License",
        "Natural Language :: English",
        "Operating System :: OS Independent",
        "Topic :: Scientific/Engineering :: Physics",
