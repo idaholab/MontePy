@@ -85,7 +85,7 @@ Changelog = "https://www.montepy.org/en/stable/changelog.html"
 "change_to_ascii" = "montepy._scripts.change_to_ascii:main"
 
 [build-system]
-requires = ["setuptools>=64.0.0", "setuptools_scm>=8"]
+requires = ["setuptools>=77.0.0", "setuptools_scm>=8"]
 build-backend = "setuptools.build_meta"
 
 [tool.setuptools_scm]
