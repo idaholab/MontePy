@@ -1,0 +1,62 @@
+Made up PWR pin Cell Problem
+C dimensions, densities, and material compositions are based on the BEAVRS benchmark
+C They have been rounded, and further simplified
+C
+C N. Horelik, B. Herman, B. Forget, and K. Smith. Benchmark for Evaluation and Validation of
+C    Reactor Simulations (BEAVRS), v1.0.1. Proc. Int. Conf. Mathematics and Computational Methods
+C    Applied to Nuc. Sci. & Eng., 2013. Sun Valley, Idaho
+c
+c uranium rod
+1    1  -10.36   -1     101 -102 imp:n=1 
+c gas gap
+2    3            0.00031 1  -2 101 -102 imp:n=1 
+c cladding
+3    4  -6.55     2  -3 101 -102 imp:n=1 
+c water cell
+5    2  -0.740    3     101 -102
+                        103 -104
+                        105 -106 imp:n=1 
+
+1 CZ 0.39
+2 CZ 0.40
+3 CZ 0.46
+*101 PZ -0.63
+*102 PZ  0.63
+*103 PX -0.63
+*104 PX  0.63
+*105 PY -0.63
+*106 PY  0.63
+
+c UO2 fuel 3.4% enriched
+M1    92235.82c 0.011332
+      92238.82c 0.321678
+       8016.82c 0.66667
+mt1   o2/u.20t  u/o2.30t
+C water
+M2     1001.81c 0.66
+       8016.81c 0.33
+mt2    lwtr.20t
+mode n
+M3 2004.81c   1.0
+C Zircaloy-4
+M4    40090.82c  -0.5042099999999999
+      40091.82c  -0.109956
+      40092.82c  -0.16807
+      40094.82c  -0.170324
+      40096.82c  -0.02744
+      50112.82c  -0.00014549999999999999
+      50114.82c  -9.9e-05
+      50116.82c  -5.099999999999999e-05
+      50117.82c  -0.0011519999999999998
+      26054.82c  -0.00011690000000000001
+      26056.82c  -0.00183508
+      26057.82c  -4.2380000000000004e-05
+      26058.82c  -5.64e-06
+      24050.82c  -4.3450000000000006e-05
+      24052.82c  -0.00083789
+      24053.82c  -9.501e-05
+      24054.82c  -2.3650000000000002e-05
+kcode 100000 1.1 20 100
+ksrc 0 0 0 $ source in center of fuel pin
+
+

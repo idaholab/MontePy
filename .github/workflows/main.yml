@@ -2,7 +2,7 @@ name: CI testing
 
 on: 
   pull_request:
-    branches: [develop, alpha-test-dev]
+    branches: [develop, alpha-test-dev, alpha-test]
   push: 
      branches: [develop, main, alpha-test]
 
@@ -152,7 +152,7 @@ jobs:
           make doctest
         name: Test all example code in documentation.
       - run: |
-          cd demo
+          cd demo/answers
           for file in *.ipynb; do papermill $file foo.ipynb; done
         name: Test all demo notebooks 
 
