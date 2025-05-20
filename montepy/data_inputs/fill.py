@@ -3,6 +3,7 @@ import itertools as it
 from numbers import Integral, Real
 import numpy as np
 
+import montepy
 from montepy.data_inputs.cell_modifier import CellModifierInput, InitInput
 from montepy.data_inputs.transform import Transform
 from montepy.errors import *
@@ -204,6 +205,12 @@ class Fill(CellModifierInput):
                 for i in self._axis_range(0):
                     try:
                         val = next(words)
+                        # if followed by transform don't iterate over them
+                        if isinstance(
+                            val, montepy.input_parser.syntax_node.PaddingNode
+                        ):
+                            words = it.cycle([None])
+                            val = None
                         if val is None:
                             val = self._generate_default_node(int, None)
                             value["data"].append(val)
