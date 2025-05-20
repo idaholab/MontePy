@@ -126,6 +126,8 @@ class MCNP_Object(ABC, metaclass=_ExceptionContextAdder):
                 self._tree = parser.parse(input.tokenize(), input)
                 self._input = input
             except ValueError as e:
+                if isinstance(e, UnsupportedFeature):
+                    raise e
                 raise MalformedInputError(
                     input, f"Error parsing object of type: {type(self)}: {e.args[0]}"
                 ).with_traceback(e.__traceback__)

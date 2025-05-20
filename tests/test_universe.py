@@ -1,11 +1,15 @@
 # Copyright 2024 - 2025, Battelle Energy Alliance, LLC All Rights Reserved.
-from hypothesis import given, strategies as st
-import pytest
-from unittest import TestCase
-
 import copy
-from montepy.input_parser import syntax_node
+import os
+
+from hypothesis import given, strategies as st
+import numpy as np
+from types import GeneratorType
+import pytest
+
 import montepy
+
+from montepy.input_parser import syntax_node
 from montepy.cell import Cell
 from montepy.constants import DEFAULT_VERSION
 from montepy.errors import *
@@ -16,11 +20,10 @@ from montepy.data_inputs.fill import Fill
 from montepy.data_inputs.lattice import LatticeType
 from montepy.data_inputs.lattice_input import LatticeInput
 from montepy.data_inputs.universe_input import UniverseInput
-import numpy as np
 
 
-class TestUniverseInput(TestCase):
-    def setUp(self):
+class TestUniverseInput:
+    def setup_method(self):
         list_node = syntax_node.ListNode("numbers")
         list_node.append(syntax_node.ValueNode("5", float))
         classifier = syntax_node.ClassifierNode()
@@ -38,17 +41,17 @@ class TestUniverseInput(TestCase):
 
     def test_universe_card_init(self):
         card = self.universe
-        self.assertEqual(card.old_number, 5)
-        self.assertTrue(not card.not_truncated)
+        assert card.old_number == 5
+        assert not card.not_truncated
         # test bad float
-        with self.assertRaises(ValueError):
+        with pytest.raises(ValueError):
             tree = copy.deepcopy(self.tree)
             tree["data"].nodes.pop()
             tree["data"].append(syntax_node.ValueNode("5.5", float))
             card = UniverseInput(in_cell_block=True, key="U", value=tree)
 
         # test string
-        with self.assertRaises(ValueError):
+        with pytest.raises(ValueError):
             tree["data"].nodes.pop()
             tree["data"].append(syntax_node.ValueNode("hi", str))
             card = UniverseInput(in_cell_block=True, key="U", value=tree)
@@ -57,26 +60,26 @@ class TestUniverseInput(TestCase):
         tree["data"].nodes.pop()
         tree["data"].append(syntax_node.ValueNode("-3", float))
         card = UniverseInput(in_cell_block=True, key="U", value=tree)
-        self.assertEqual(card.old_number, 3)
-        self.assertTrue(card.not_truncated)
+        assert card.old_number == 3
+        assert card.not_truncated is True
 
         universes = [1, 2, 3]
         card = Input(["U " + " ".join(list(map(str, universes)))], BlockType.DATA)
         uni_card = UniverseInput(card)
-        self.assertEqual(uni_card.old_numbers, universes)
+        assert uni_card.old_numbers == universes
 
         # test jump
         card = Input(["U J"], BlockType.DATA)
         uni_card = UniverseInput(card)
-        self.assertEqual(uni_card.old_numbers[0], None)
+        assert uni_card.old_numbers[0] == None
 
         # test bad float
-        with self.assertRaises(MalformedInputError):
+        with pytest.raises(MalformedInputError):
             card = Input(["U 5.5"], BlockType.DATA)
             uni_card = UniverseInput(card)
 
         # test bad str
-        with self.assertRaises(MalformedInputError):
+        with pytest.raises(MalformedInputError):
             card = Input(["U hi"], BlockType.DATA)
             uni_card = UniverseInput(card)
 
@@ -89,56 +92,85 @@ class TestUniverseInput(TestCase):
         uni = Universe(5)
         card.universe = uni
         output = str(card)
-        self.assertIn("u=5", output)
+        assert "u=5" in output
         output = repr(card)
-        self.assertIn("UNIVERSE", output)
-        self.assertIn("set_in_block: True", output)
-        self.assertIn("Universe : Universe(5)", output)
+        assert "UNIVERSE" in output
+        assert "set_in_block: True" in output
+        assert "Universe : Universe(5)" in output
 
     def test_merge(self):
         card = copy.deepcopy(self.universe)
-        with self.assertRaises(MalformedInputError):
+        with pytest.raises(MalformedInputError):
             card.merge(card)
 
     def test_universe_setter(self):
         card = copy.deepcopy(self.universe)
         uni = Universe(5)
         card.universe = uni
-        self.assertEqual(card.universe, uni)
-        with self.assertRaises(TypeError):
+        assert card.universe == uni
+        with pytest.raises(TypeError):
             card.universe = 5
 
     def test_universe_truncate_setter(self):
         card = copy.deepcopy(self.universe)
-        self.assertTrue(not card.not_truncated)
+        assert card.not_truncated is False
         card.not_truncated = True
-        self.assertTrue(card.not_truncated)
-        with self.assertRaises(TypeError):
+        assert card.not_truncated is True
+        with pytest.raises(TypeError):
             card.not_truncated = 5
 
 
-class TestUniverse(TestCase):
+class TestUniverse:
+    default_test_input_path = os.path.join("tests", "inputs")
+
+    @pytest.mark.parametrize(
+        "universe,expected_cells",
+        [
+            (1, [2, 99, 5]),
+        ],
+    )
+    def test_filled_cells_generator(self, universe, expected_cells):
+        problem = montepy.read_input(
+            os.path.join(self.default_test_input_path, "test_universe.imcnp")
+        )
+        cell_generator = problem.universes[universe].filled_cells
+        filled_cells = [cell.number for cell in cell_generator]
+
+        assert (
+            filled_cells == expected_cells
+        ), f"\nExpected: {expected_cells}\nActual: {filled_cells}"
+
+    def test_detached_universe_returns_generator(self):
+        """
+        Case 1: Universe with no associated problem
+        """
+        u1 = montepy.Universe(999)
+
+        result = u1.filled_cells
+        assert isinstance(result, GeneratorType)
+        assert list(result) == []  # Should yield nothing
+
     def test_init(self):
         universe = Universe(5)
-        self.assertEqual(universe.number, 5)
-        self.assertEqual(universe.old_number, 5)
-        with self.assertRaises(TypeError):
+        assert universe.number == 5
+        assert universe.old_number == 5
+        with pytest.raises(TypeError):
             Universe("hi")
-        with self.assertRaises(ValueError):
+        with pytest.raises(ValueError):
             Universe(-1)
 
     def test_number_setter(self):
         universe = Universe(5)
         universe.number = 10
-        self.assertEqual(universe.number, 10)
-        with self.assertRaises(TypeError):
+        assert universe.number == 10
+        with pytest.raises(TypeError):
             universe.number = "hi"
-        with self.assertRaises(ValueError):
+        with pytest.raises(ValueError):
             universe.number = -1
 
 
-class TestLattice(TestCase):
-    def setUp(self):
+class TestLattice:
+    def setup_method(self):
         list_node = syntax_node.ListNode("numbers")
         list_node.append(syntax_node.ValueNode("1", float))
         classifier = syntax_node.ClassifierNode()
@@ -231,8 +263,8 @@ class TestLattice(TestCase):
             del cell.lattice
 
 
-class TestFill(TestCase):
-    def setUp(self):
+class TestFill:
+    def setup_method(self):
         list_node = syntax_node.ListNode("num")
         list_node.append(syntax_node.ValueNode("5", float))
         classifier = syntax_node.ClassifierNode()
@@ -245,83 +277,83 @@ class TestFill(TestCase):
                 "data": list_node,
             },
         )
-        self.tree = tree
         self.simple_fill = Fill(in_cell_block=True, key="fill", value=tree)
 
     def test_complex_transform_fill_init(self):
         input = Input(["1 0 -1 *fill=1 (1.5 0.0 0.0)"], BlockType.CELL)
         cell = Cell(input)
         fill = cell.fill
-        self.assertTrue(fill.hidden_transform)
-        self.assertIsNone(fill.universes)
-        self.assertEqual(fill.old_universe_number, 1)
-        self.assertEqual(len(fill.transform.displacement_vector), 3)
-        self.assertTrue(fill.transform.is_in_degrees)
+        assert fill.hidden_transform
+        assert fill.universes is None
+        assert fill.old_universe_number == 1
+        assert len(fill.transform.displacement_vector) == 3
+        assert fill.transform.is_in_degrees
+
         input = Input(["1 0 -1 fill=1 (1.5 0.0 0.0)"], BlockType.CELL)
         cell = Cell(input)
         fill = cell.fill
-        self.assertTrue(not fill.transform.is_in_degrees)
+        assert not fill.transform.is_in_degrees
+
         input = Input(["1 0 -1 fill=5 (3)"], BlockType.CELL)
         cell = Cell(input)
         fill = cell.fill
-        self.assertTrue(not fill.hidden_transform)
-        self.assertEqual(fill.old_universe_number, 5)
-        self.assertEqual(fill.old_transform_number, 3)
+        assert not fill.hidden_transform
+        assert fill.old_universe_number == 5
+        assert fill.old_transform_number == 3
         # test bad string
-        with self.assertRaises(ValueError):
+        with pytest.raises(ValueError):
             input = Input(["1 0 -1 fill=hi"], BlockType.CELL)
             cell = Cell(input)
             fill = cell.fill
-        with self.assertRaises(ValueError):
+        with pytest.raises(ValueError):
             input = Input(["1 0 -1 fill=1 (hi)"], BlockType.CELL)
             cell = Cell(input)
             fill = cell.fill
         # test negative universe
-        with self.assertRaises(ValueError):
+        with pytest.raises(ValueError):
             input = Input(["1 0 -1 fill=-5"], BlockType.CELL)
             cell = Cell(input)
             fill = cell.fill
-        with self.assertRaises(ValueError):
+        with pytest.raises(ValueError):
             input = Input(["1 0 -1 fill=5 (-5)"], BlockType.CELL)
             cell = Cell(input)
             fill = cell.fill
-        with self.assertRaises(ValueError):
+        with pytest.raises(ValueError):
             input = Input(["1 0 -1 fill=5 1 0 0"], BlockType.CELL)
             cell = Cell(input)
             fill = cell.fill
 
-    def test_complicated_lattice_fill_init(self):
+    @pytest.fixture
+    def complicated_fill(self):
         input = Input(["1 0 -1 fill=0:1 0:1 0:1 1 2 3 4 5 6 7 8"], BlockType.CELL)
         cell = Cell(input)
-        fill = cell.fill
-        self.assertIsNone(fill.universe)
-        self.assertEqual(fill.min_index[0], 0)
-        self.assertEqual(fill.max_index[2], 1)
+        return cell.fill
+
+    def test_complicated_lattice_fill_init(self, complicated_fill):
+        fill = copy.deepcopy(complicated_fill)
+        assert fill.universe is None
+        assert fill.min_index[0] == 0
+        assert fill.max_index[2] == 1
         answer = np.array([[[1, 2], [3, 4]], [[5, 6], [7, 8]]]).T
-        self.assertTrue((fill.old_universe_numbers == answer).all())
-        # test string universe
-        with self.assertRaises(ValueError):
-            input = Input(["1 0 -1 fill=0:1 0:1 0:1 hi"], BlockType.CELL)
-            cell = Cell(input)
-            fill = cell.fill
-        # test string index
-        with self.assertRaises(ValueError):
-            input = Input(["1 0 -1 fill=0:1 hi:1 0:1 hi"], BlockType.CELL)
-            cell = Cell(input)
-            fill = cell.fill
-        # test negative universe
-        with self.assertRaises(ValueError):
-            input = Input(["1 0 -1 fill=0:1 0:1 0:1 -1"], BlockType.CELL)
-            cell = Cell(input)
-            fill = cell.fill
-        # test inverted bounds
-        with self.assertRaises(ValueError):
-            input = Input(["1 0 -1 fill=0:1 1:0 0:1 1 2 3 4 5 6 7 8"], BlockType.CELL)
-            cell = Cell(input)
-            fill = cell.fill
-        # test float bounds
-        with self.assertRaises(ValueError):
-            input = Input(["1 0 -1 fill=0:1 0:1.5 0:1 1 2 3 4 5 6 7 8"], BlockType.CELL)
+        assert (fill.old_universe_numbers == answer).all()
+
+    @pytest.mark.parametrize(
+        "input_str,expected_error",
+        [
+            ("1 0 -1 fill=0:1 0:1 0:1 hi", ValueError),  # "String universe"
+            ("1 0 -1 fill=0:1 hi:1 0:1 hi", ValueError),  # "String index"
+            ("1 0 -1 fill=0:1 0:1 0:1 -1", ValueError),  # "Negative universe"
+            (
+                "1 0 -1 fill=0:1 1:0 0:1 1 2 3 4 5 6 7 8",
+                ValueError,
+            ),  # "Inverted bounds"
+            ("1 0 -1 fill=0:1 0:1.5 0:1 1 2 3 4 5 6 7 8", ValueError),  # "Float bounds"
+        ],
+    )
+    def test_complicated_fill_init_error(self, input_str, expected_error):
+        """Test the complicated fill init with various input errors."""
+        with pytest.raises(expected_error):
+            input = Input([input_str], BlockType.CELL)
             cell = Cell(input)
             fill = cell.fill
 
@@ -329,61 +361,50 @@ class TestFill(TestCase):
         card = Input(["FiLl 1 2 3 4"], BlockType.DATA)
         fill = Fill(card)
         answer = [1, 2, 3, 4]
-        self.assertEqual(fill.old_universe_numbers, answer)
+        assert fill.old_universe_numbers == answer
         # jump
         card = Input(["FiLl 1 2J 4"], BlockType.DATA)
         fill = Fill(card)
         answer = [1, None, None, 4]
-        self.assertEqual(fill.old_universe_numbers, answer)
+        assert fill.old_universe_numbers == answer
         # test negative universe
-        with self.assertRaises(MalformedInputError):
+        with pytest.raises(MalformedInputError):
             card = Input(["FiLl 1 -2 3 4"], BlockType.DATA)
             fill = Fill(card)
         # test string universe
-        with self.assertRaises(MalformedInputError):
+        with pytest.raises(MalformedInputError):
             card = Input(["FiLl 1 foo"], BlockType.DATA)
             fill = Fill(card)
 
     def test_fill_universe_setter(self):
-        list_node = syntax_node.ListNode("num")
-        list_node.append(syntax_node.ValueNode("5", float))
-        value = syntax_node.SyntaxNode(
-            "fill",
-            {
-                "classifier": "",
-                "seperator": syntax_node.ValueNode("=", str),
-                "data": list_node,
-            },
-        )
+
         fill = copy.deepcopy(self.simple_fill)
         uni = montepy.Universe(6)
         fill.universe = uni
-        self.assertEqual(fill.universe.number, uni.number)
-        self.assertIsNone(fill.universes)
+        assert fill.universe.number == uni.number
+        assert fill.universes is None
         fill.universe = None
-        self.assertIsNone(fill.universe)
+        assert fill.universe is None
         fill.universe = uni
         del fill.universe
-        self.assertIsNone(fill.universe)
-        with self.assertRaises(TypeError):
+        assert fill.universe is None
+        with pytest.raises(TypeError):
             fill.universe = "hi"
-        with self.assertRaises(TypeError):
+        with pytest.raises(TypeError):
             fill.multiple_universes = "hi"
         fill.multiple_universes = True
-        with self.assertRaises(ValueError):
+        with pytest.raises(ValueError):
             fill.universe = uni
 
-    def test_fill_universes_setter(self):
-        input = Input(["1 0 -1 fill=0:1 0:1 0:1 1 2 3 4 5 6 7 8"], BlockType.CELL)
-        cell = Cell(input)
-        fill = cell.fill
+    def test_fill_universes_setter(self, complicated_fill):
+        fill = copy.deepcopy(complicated_fill)
         uni = montepy.Universe(10)
         fill_array = np.array([[[uni, uni], [uni, uni]], [[uni, uni], [uni, uni]]])
         fill.universes = fill_array
-        self.assertTrue((fill.universes == fill_array).all())
+        assert (fill.universes == fill_array).all()
         del fill.universes
-        self.assertIsNone(fill.universes)
-        with self.assertRaises(TypeError):
+        assert fill.universes is None
+        with pytest.raises(TypeError):
             fill.universes = "hi"
         fill.multiple_universes = False
         with pytest.raises(ValueError):
@@ -391,20 +412,18 @@ class TestFill(TestCase):
         with pytest.raises(TypeError):
             fill.universes = np.array([[[1]]])
 
-    def test_fill_str(self):
-        input = Input(["1 0 -1 fill=0:1 0:1 0:1 1 2 3 4 5 6 7 8"], BlockType.CELL)
-        cell = Cell(input)
-        fill = cell.fill
+    def test_fill_str(self, complicated_fill):
+        fill = copy.deepcopy(complicated_fill)
         output = str(fill)
-        self.assertIn("Fill", output)
+        assert "Fill" in output
         output = repr(fill)
-        self.assertIn("Fill", output)
+        assert "Fill" in output
 
     def test_fill_merge(self):
         card = Input(["FiLl 1 2 3 4"], BlockType.DATA)
         fill1 = Fill(card)
         fill2 = Fill(card)
-        with self.assertRaises(MalformedInputError):
+        with pytest.raises(MalformedInputError):
             fill1.merge(fill2)
 
     @given(
@@ -420,20 +439,21 @@ class TestFill(TestCase):
         assert fill.min_index == indices
         assert (fill.max_index == end).all()
 
-    def test_fill_index_bad_setter(self):
-        fill = self.simple_fill
-        with pytest.raises(TypeError):
-            fill.min_index = "hi"
-        with pytest.raises(TypeError):
-            fill.max_index = "hi"
-        with pytest.raises(TypeError):
-            fill.min_index = ["hi"]
-        with pytest.raises(TypeError):
-            fill.max_index = ["hi"]
-        with pytest.raises(ValueError):
-            fill.min_index = [1]
-        with pytest.raises(ValueError):
-            fill.max_index = [1]
+    @pytest.mark.parametrize(
+        "attr, value, expected_exc",
+        [
+            ("min_index", "hi", TypeError),
+            ("max_index", "hi", TypeError),
+            ("min_index", ["hi"], TypeError),
+            ("max_index", ["hi"], TypeError),
+            ("min_index", [1], ValueError),
+            ("max_index", [1], ValueError),
+        ],
+    )
+    def test_fill_index_bad_setter(self, attr, value, expected_exc):
+        fill = self.simple_fill.clone()
+        with pytest.raises(expected_exc):
+            setattr(fill, attr, value)
 
     @given(
         universes=st.lists(st.integers(0, 1_000_000), min_size=1, max_size=10),

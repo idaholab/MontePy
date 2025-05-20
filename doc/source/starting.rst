@@ -1240,6 +1240,7 @@ This is done to prevent a cell from being assigned to multiple universes
 
 .. testcode::
 
+    problem = montepy.read_input("tests/inputs/test.imcnp")
     universe = problem.universes[350]
     for cell in problem.cells[1:5]:
         cell.universe = universe
@@ -1249,7 +1250,7 @@ We can confirm this worked with the generator ``universe.cells``:
 .. doctest:: 
 
     >>> [cell.number for cell in universe.cells]
-    [1, 2, 3, 5, 4]
+    [1, 2, 3, 5]
 
 Claiming Cells
 ^^^^^^^^^^^^^^
