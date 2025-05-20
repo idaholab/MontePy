@@ -303,6 +303,10 @@ class TestFill:
         assert not fill.hidden_transform
         assert fill.old_universe_number == 5
         assert fill.old_transform_number == 3
+        # test sparse fill
+        cell = Cell("1 0 -1 fill=0:0 0:1 0:1 1 1 1")
+        assert fill.old_universe_numbers[0, 0, 0] == 1
+        assert fill.old_universe_numbers[0, 1, 1] is None
         # test bad string
         with pytest.raises(ValueError):
             input = Input(["1 0 -1 fill=hi"], BlockType.CELL)
