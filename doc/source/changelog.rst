@@ -5,6 +5,14 @@ MontePy Changelog
 1.0 releases
 ============
 
+
+#Next Version#
+--------------
+
+**Features Added**
+
+* Added demonstration jupyter notebooks for working with Pin Cell and PWR assemblies in MontePy.
+
 1.1.0
 --------------
 
