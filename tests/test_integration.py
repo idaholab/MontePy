@@ -935,7 +935,7 @@ def test_importance_end_repeat(universe_problem):
 
 
 def test_fill_parsing(universe_problem):
-    answers = [None, np.array([[[1], [0]], [[0], [1]]]), None, 1, 1]
+    answers = [None, np.array([[[1], [0]], [[1], [0]]]), None, 1, 1]
     for cell, answer in zip(universe_problem.cells, answers):
         if answer is None:
             assert cell.fill.universe is None
