@@ -13,6 +13,10 @@ MontePy Changelog
 
 * Added demonstration jupyter notebooks for working with Pin Cell and PWR assemblies in MontePy.
 
+**Bugs Fixed**
+
+* Fixed parsing error where MontePy could not handle a fill matrix that was sparse (:issue:`601`).
+  
 1.1.0
 --------------
 
