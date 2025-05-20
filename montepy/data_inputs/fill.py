@@ -198,24 +198,22 @@ class Fill(CellModifierInput):
                     f"Min: {min_val}, Max: {max_val}, Input: {value.format()}"
                 )
         self._old_numbers = np.zeros(self._sizes, dtype=np.dtype(int))
-        words = iter(words[9:])
+        words = iter(it.chain(words[9:], it.cycle([None])))
         for k in self._axis_range(2):
             for j in self._axis_range(1):
                 for i in self._axis_range(0):
                     try:
                         val = next(words)
-                        val._convert_to_int()
-                        assert val.value >= 0
-                        self._old_numbers[i][j][k] = val.value
+                        if val is None:
+                            val = self._generate_default_node(int, None)
+                            value["data"].append(val)
+                        else:
+                            val._convert_to_int()
+                            assert val.value >= 0
+                        self._old_numbers[i][j][k] = val.value if val.value else 0
                     except (ValueError, AssertionError) as e:
                         raise ValueError(
                             f"Values provided must be valid universes. {val.value} given."
-                        )
-                    except StopIteration as e:
-                        raise MalformedInputError(
-                            self._input,
-                            f"Not enough universe values were provided. {([self._axis_size(i) for i in range(3)])} "
-                            "universe values were expected.",
                         )
 
     @staticmethod
