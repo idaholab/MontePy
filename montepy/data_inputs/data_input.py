@@ -357,7 +357,12 @@ class DataInput(DataInputAbstract):
 
 
 class ForbiddenDataInput(DataInputAbstract):
-    """Catch-all for all other MCNP data inputs.
+    """MCNP data input that is not actually parsed and only parroted out.
+
+    Current inputs that are in "parser jail":
+
+    * ``DE``
+    * ``SDEF``
 
     Parameters
     ----------
@@ -406,6 +411,18 @@ class ForbiddenDataInput(DataInputAbstract):
         self._error_out()
 
     data = _prop_error
+    """
+    Not supported.
+
+    .. warning::
+
+        Because this input was not parsed these data are not available.
+
+    raises
+    ------
+    UnsupportedFeature 
+        when called.
+    """
 
     def format_for_mcnp_input(self, mcnp_version: tuple[int]) -> list[str]:
         """Creates a list of strings representing this MCNP_Object that can be
