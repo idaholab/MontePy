@@ -123,7 +123,10 @@ class MCNP_Object(ABC, metaclass=_ExceptionContextAdder):
                 # raised if restarted without ever parsing
                 except AttributeError as e:
                     pass
-                self._tree = parser.parse(input.tokenize(), input)
+                tokenizer = input.tokenize()
+                self._tree = parser.parse(tokenizer, input)
+                # consume token stream
+                tokenizer.close()
                 self._input = input
             except ValueError as e:
                 if isinstance(e, UnsupportedFeature):
