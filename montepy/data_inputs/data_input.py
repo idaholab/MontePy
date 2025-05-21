@@ -374,6 +374,10 @@ class ForbiddenDataInput(DataInputAbstract):
         self, input: InitInput = None, fast_parse: bool = False, prefix: str = None
     ):
         super().__init__(input, True)
+        if isinstance(input, str):
+            input = montepy.input_parser.mcnp_input.Input(
+                input.split("\n"), self._BLOCK_TYPE
+            )
         self._input = input
 
     @property
@@ -391,7 +395,7 @@ class ForbiddenDataInput(DataInputAbstract):
     def _error_out(self):
         """ """
         raise UnsupportedFeature(
-            f"Inputs of type: {self.classifier} are not supported yet "
+            f"Inputs of type: {self.classifier.prefix} are not supported yet "
             "due to their complex syntax."
             "These will be written out correctly, but cannot be edited",
             input,
