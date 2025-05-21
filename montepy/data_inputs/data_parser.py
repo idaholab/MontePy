@@ -27,6 +27,8 @@ PREFIX_MATCHES = {
     universe_input.UniverseInput,
 }
 
+VERBOTEN = {"de", "sdef"}
+
 
 def parse_data(input: montepy.mcnp_object.InitInput):
     """Parses the data input as the appropriate object if it is supported.
@@ -44,6 +46,8 @@ def parse_data(input: montepy.mcnp_object.InitInput):
 
     base_input = data_input.DataInput(input, fast_parse=True)
     prefix = base_input.prefix
+    if base_input.prefix in VERBOTEN:
+        return data_input.ForbiddenDataInput(input)
     for data_class in PREFIX_MATCHES:
         if prefix == data_class._class_prefix():
             return data_class(input)
