@@ -2,9 +2,8 @@
 MontePy Changelog
 *****************
 
-1.0 releases
+1.1 releases
 ============
-
 
 #Next Version#
 --------------
@@ -32,6 +31,9 @@ MontePy Changelog
 * Fixed bug where MontePy would overly aggressively round outputs and remove the user's intent (:issue:`756`).
 * Fixed bug where a cell complement in the first five characters causes a spurious vertical mode detection (:issue:`753`).
 
+
+1.0 releases
+============
 
 1.0.0
 --------------
