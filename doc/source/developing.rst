@@ -393,6 +393,7 @@ Using the :func:`~montepy.data_inputs.data_parser.parse_data` function:
 The function :func:`~montepy.data_inputs.data_parser.parse_data` handles converting a ``data_input`` to the correct class automatically.
 It uses the set ``PREFIX_MATCH`` to do this. 
 This lists all classes that the function will look into for a matching class prefix.
+Inputs that should not be parsed can have their prefix added to ``VERBOTEN`` in that file.
 
 The ``parse_data`` function will use the ``fast_parse`` option for parsing the data_input.
 This method will only match the first word/classifier using the :class:`~montepy.input_parser.data_parser.ClassifierParser`.
