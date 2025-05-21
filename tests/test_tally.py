@@ -62,4 +62,7 @@ class TestTallyParser:
 
     @pytest.mark.parametrize("line", ["de4 log 1 2 3 4"])
     def test_de_parsing_jail(_, line):
-        parse_data(line)
+        data = parse_data(line)
+        assert data.mcnp_str() == line
+        with pytest.raises(montepy.errors.UnsupportedFeature):
+            data.data
