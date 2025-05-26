@@ -62,7 +62,7 @@ class Surface(Numbered_MCNP_Object):
             self._modifier = self._tree["surface_num"]["modifier"]
             if self._modifier.value == "*":
                 self._is_reflecting = True
-            elif "+" in self._number.token:
+            elif self._number.token and "+" in self._number.token:
                 self._is_white_boundary = True
                 self._number._token = self._number.token.replace("+", "")
                 self._modifier = self._generate_default_node(str, "+", None, True)
@@ -118,7 +118,10 @@ class Surface(Numbered_MCNP_Object):
         surf_type._convert_to_enum(SurfaceType)
         surf_num = syntax_node.SyntaxNode(
             "surf_num",
-            {"modifier": self._generate_default_node(str, None), "number": num},
+            {
+                "modifier": syntax_node.ValueNode(None, str, never_pad=True),
+                "number": num,
+            },
         )
         self._tree = syntax_node.SyntaxNode(
             "Surf tree",
