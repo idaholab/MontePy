@@ -968,6 +968,8 @@ class ValueNode(SyntaxNodeBase):
             "as_int": False,
             "int_tolerance": 1e-6,
             "is_scientific": True,
+            "rel_eps": 1e-6,
+            "abs_eps": 1e-9,
         },
         int: {"value_length": 0, "zero_padding": 0, "sign": "-"},
         str: {"value_length": 0},
@@ -1257,6 +1259,32 @@ class ValueNode(SyntaxNodeBase):
             )
         return self.value != self._og_value
 
+    def _avoid_rounding_truncation(self):
+        """
+        Detects when not enough digits are in original input to preserve precision.
+
+        This will update the precision in the formatter to the necessary
+        value to preserve the precision.
+        """
+        precision = self._formatter["precision"]
+        if self._formatter["is_scientific"]:
+            # Remember that you can test for equality to 0 with floats safely
+            if self.value != 0:
+                exp = math.floor(math.log10(abs(self.value)))
+            else:
+                exp = 0
+            val = self.value / 10**exp
+        else:
+            val = self.value
+        while not math.isclose(
+            val,
+            round(val, precision),
+            rel_tol=self._formatter["rel_eps"],
+            abs_tol=self._formatter["abs_eps"],
+        ):
+            precision += 1
+        self._formatter["precision"] = precision
+
     def format(self):
         if not self._value_changed:
             return f"{self._token}{self.padding.format() if self.padding else ''}"
@@ -1273,6 +1301,7 @@ class ValueNode(SyntaxNodeBase):
             )
         elif self._type == float:
             # default to python general if new value
+            self._avoid_rounding_truncation()
             if not self._is_reversed:
                 temp = "{value:0={sign}{zero_padding}.{precision}g}".format(
                     value=value, **self._formatter
