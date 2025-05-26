@@ -42,7 +42,6 @@ class Surface(Numbered_MCNP_Object):
             "transform": transform.Transform,
         }
         self._BLOCK_TYPE = montepy.input_parser.block_type.BlockType.SURFACE
-        self._number = self._generate_default_node(int, -1)
         super().__init__(input, self._parser, number)
         self._periodic_surface = None
         self._old_periodic_surface = self._generate_default_node(int, None)
@@ -53,9 +52,9 @@ class Surface(Numbered_MCNP_Object):
         self._surface_constants = []
         self._surface_type = self._generate_default_node(str, None)
         self._modifier = self._generate_default_node(str, None)
-        # surface number
         if not input:
-            self._generate_default_tree()
+            self._generate_default_tree(number)
+        # surface number
         self._number = self._tree["surface_num"]["number"]
         self._number._convert_to_int()
         self._old_number = copy.deepcopy(self._number)
