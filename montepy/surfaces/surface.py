@@ -325,6 +325,8 @@ class Surface(Numbered_MCNP_Object):
             self._old_periodic_surface.value = self.periodic_surface.number
             self._old_periodic_surface.is_negative = True
             self._tree.nodes["pointer"] = self._old_periodic_surface
+        else:
+            self._tree.nodes["pointer"].value = None
 
     def __lt__(self, other):
         return self.number < other.number
