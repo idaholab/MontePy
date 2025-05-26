@@ -69,7 +69,8 @@ class Surface(Numbered_MCNP_Object):
                 self._modifier = self._generate_default_node(str, "+", None, True)
                 self._tree["surface_num"].nodes["modifier"] = self._modifier
         try:
-            assert self._number.value > 0
+            if input:
+                assert self._number.value > 0
         except AssertionError:
             raise MalformedInputError(
                 input,
@@ -99,7 +100,7 @@ class Surface(Numbered_MCNP_Object):
             self._surface_constants.append(entry)
 
     def _generate_default_tree(self, number: int = -1):
-        data = syntax_node.ListNode()
+        data = syntax_node.ListNode("surf list")
         data.append(self._generate_default_node(float, 0.0))
         num = self._generate_default_node(int, number)
         num.is_negatable_identifier = True
@@ -107,14 +108,19 @@ class Surface(Numbered_MCNP_Object):
         pointer.is_negatable_identifier = True
         surf_type = self._generate_default_node(str, "PZ")
         surf_type._convert_to_enum(SurfaceType)
+        surf_num = syntax_node.SyntaxNode(
+            "surf_num",
+            {"modifier": self._generate_default_node(str, None), "number": num},
+        )
         self._tree = syntax_node.SyntaxNode(
+            "Surf tree",
             {
                 "start_pad": syntax_node.PaddingNode(),
-                "surface_num": num,
+                "surface_num": surf_num,
                 "pointer": pointer,
                 "surface_type": surf_type,
                 "data": data,
-            }
+            },
         )
 
     @make_prop_val_node("_surface_type", (SurfaceType, str), SurfaceType)
