@@ -84,6 +84,7 @@ class testSurfaces(TestCase):
 
     def test_validator(self):
         surf = Surface()
+        # TODO is IllegalState or defaults values more desirable?
         with self.assertRaises(montepy.errors.IllegalState):
             surf.validate()
         with self.assertRaises(montepy.errors.IllegalState):
