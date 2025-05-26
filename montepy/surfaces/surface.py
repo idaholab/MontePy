@@ -45,8 +45,10 @@ class Surface(Numbered_MCNP_Object):
         super().__init__(input, self._parser, number)
         self._periodic_surface = None
         self._old_periodic_surface = self._generate_default_node(int, None)
+        self._old_periodic_surface.is_negatable_identifier = True
         self._transform = None
         self._old_transform_number = self._generate_default_node(int, None)
+        self._old_transform_number.is_negatable_identifier = True
         self._is_reflecting = False
         self._is_white_boundary = False
         self._surface_constants = []
