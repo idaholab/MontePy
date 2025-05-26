@@ -298,6 +298,7 @@ class testSurfaces(TestCase):
             surf.coordinates = [3, 4, 5]
 
 
+@pytest.mark.filterwarnings("ignore")
 @pytest.mark.parametrize(
     "cls, surf_type, params",
     [
@@ -305,7 +306,7 @@ class testSurfaces(TestCase):
         (
             CylinderParAxis,
             SurfaceType.C_X,
-            {"location": (0.2, 0.3), "radius": 1.0, "is_white_boundary": True},
+            {"coordinates": (0.2, 0.3), "radius": 1.0, "is_white_boundary": True},
         ),
         (AxisPlane, SurfaceType.PZ, {"location": 10.0, "is_reflecting": True}),
         (
@@ -364,11 +365,11 @@ def verify_equiv_surf(surf, new_surf):
     assert surf.is_reflecting == new_surf.is_reflecting
     assert surf.is_white_boundary == new_surf.is_white_boundary
     if surf.periodic_surface:
-        assert surf.old_periodic_surface == new_surf.old_periodic_surface
+        assert surf.periodic_surface.number == new_surf.old_periodic_surface
     else:
         assert new_surf.old_periodic_surface == None
     if surf.transform:
-        assert surf.old_transform_number == new_surf.old_transform_number
+        assert surf.transform.number == new_surf.old_transform_number
     else:
         assert new_surf.old_transform_number == None
 
