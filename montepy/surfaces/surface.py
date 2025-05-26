@@ -377,14 +377,14 @@ class Surface(Numbered_MCNP_Object):
         return []
 
     def __neg__(self):
-        if self.number <= 0:
+        if not self.number or self.number <= 0:
             raise IllegalState(
                 f"Surface number must be set for a surface to be used in a geometry definition."
             )
         return half_space.UnitHalfSpace(self, False, False)
 
     def __pos__(self):
-        if self.number <= 0:
+        if not self.number or self.number <= 0:
             raise IllegalState(
                 f"Surface number must be set for a surface to be used in a geometry definition."
             )
