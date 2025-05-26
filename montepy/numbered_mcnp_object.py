@@ -55,7 +55,8 @@ class Numbered_MCNP_Object(MCNP_Object):
         parser: montepy.input_parser.parser_base.MCNP_Parser,
         number: int = None,
     ):
-        self._number = self._generate_default_node(int, -1)
+        if not input:
+            self._number = self._generate_default_node(int, -1)
         super().__init__(input, parser)
         self._load_init_num(number)
 
