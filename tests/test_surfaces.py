@@ -342,8 +342,7 @@ def test_unset_transform():
 def test_unset_periodic():
     surf = surface_builder("1 -10 PZ 0.0")
     surf2 = surface_builder("10 PZ 10.0")
-    surf.update_pointers([surf2], [])
-    # TODO make surf.transform = None
+    surf.update_pointers(montepy.Surfaces([surf2]), [])
     del surf.periodic_surface
     verify_export(surf)
 
@@ -356,7 +355,7 @@ def verify_export(surf):
 
 
 def verify_equiv_surf(surf, new_surf):
-    assert surf.number == new_surf.number, "Material number not preserved."
+    assert surf.number == new_surf.number, "Surface number not preserved."
     assert len(surf.surface_constants) == len(
         new_surf.surface_constants
     ), "number of surface constants not kept."
