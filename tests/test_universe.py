@@ -1,4 +1,7 @@
 # Copyright 2024 - 2025, Battelle Energy Alliance, LLC All Rights Reserved.
+import pytest
+from unittest import TestCase
+
 import copy
 import os
 
@@ -300,6 +303,11 @@ class TestFill:
         assert not fill.hidden_transform
         assert fill.old_universe_number == 5
         assert fill.old_transform_number == 3
+        # test sparse fill
+        cell = Cell("1 0 -1 fill=0:0 0:1 0:1 1 1 1")
+        fill = cell.fill
+        assert fill.old_universe_numbers[0, 0, 0] == 1
+        assert fill.old_universe_numbers[0, 1, 1] == 0
         # test bad string
         with pytest.raises(ValueError):
             input = Input(["1 0 -1 fill=hi"], BlockType.CELL)
@@ -308,20 +316,16 @@ class TestFill:
         with pytest.raises(ValueError):
             input = Input(["1 0 -1 fill=1 (hi)"], BlockType.CELL)
             cell = Cell(input)
-            fill = cell.fill
         # test negative universe
         with pytest.raises(ValueError):
             input = Input(["1 0 -1 fill=-5"], BlockType.CELL)
             cell = Cell(input)
-            fill = cell.fill
         with pytest.raises(ValueError):
             input = Input(["1 0 -1 fill=5 (-5)"], BlockType.CELL)
             cell = Cell(input)
-            fill = cell.fill
         with pytest.raises(ValueError):
             input = Input(["1 0 -1 fill=5 1 0 0"], BlockType.CELL)
             cell = Cell(input)
-            fill = cell.fill
 
     @pytest.fixture
     def complicated_fill(self):
