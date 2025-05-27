@@ -199,21 +199,25 @@ class Fill(CellModifierInput):
                     f"Min: {min_val}, Max: {max_val}, Input: {value.format()}"
                 )
         self._old_numbers = np.zeros(self._sizes, dtype=np.dtype(int))
-        words = iter(it.chain(words[9:], it.cycle([None])))
+        words = enumerate(it.chain(words[9:], it.cycle([None])))
+        new_nodes = []
+        has_transform = False
         for k in self._axis_range(2):
             for j in self._axis_range(1):
                 for i in self._axis_range(0):
                     try:
-                        val = next(words)
+                        idx, val = next(words)
                         # if followed by transform don't iterate over them
                         if isinstance(
                             val, montepy.input_parser.syntax_node.PaddingNode
                         ):
-                            words = it.cycle([None])
+                            words = enumerate(it.cycle([None]))
                             val = None
+                            has_transform = True
+                            old_idx = idx
                         if val is None:
                             val = self._generate_default_node(int, None)
-                            value["data"].append(val)
+                            new_nodes.append(val)
                         else:
                             val._convert_to_int()
                             assert val.value >= 0
@@ -222,6 +226,13 @@ class Fill(CellModifierInput):
                         raise ValueError(
                             f"Values provided must be valid universes. {val.value} given."
                         )
+
+    # inset new nodes
+    if not has_transform:
+        for node in new_nodes:
+            value["data"].append(node)
+    else:
+        pass
 
     @staticmethod
     def _class_prefix():
