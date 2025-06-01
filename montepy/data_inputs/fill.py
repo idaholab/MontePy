@@ -201,7 +201,7 @@ class Fill(CellModifierInput):
         self._old_numbers = np.zeros(self._sizes, dtype=np.dtype(int))
         words = enumerate(it.chain(words[9:], it.cycle([None])))
         new_nodes = []
-        has_transform = False
+        first_transform_n = None
         for k in self._axis_range(2):
             for j in self._axis_range(1):
                 for i in self._axis_range(0):
@@ -213,7 +213,7 @@ class Fill(CellModifierInput):
                         ):
                             words = enumerate(it.cycle([None]))
                             val = None
-                            has_transform = True
+                            first_transform_n = val
                             old_idx = idx
                         if val is None:
                             val = self._generate_default_node(int, None)
@@ -227,12 +227,17 @@ class Fill(CellModifierInput):
                             f"Values provided must be valid universes. {val.value} given."
                         )
 
-    # inset new nodes
-    if not has_transform:
-        for node in new_nodes:
-            value["data"].append(node)
-    else:
-        pass
+        # inset new nodes
+        old_nodes = value["data"].nodes
+        if first_transform_n is not None:
+            for node_idx, node in old_nodes:
+                if node is first_transform_n:
+                    break
+            value["data"]._nodes = (
+                old_nodes[:node_idx] + new_nodes + old_nodes[node_idx:]
+            )
+        else:
+            value["data"]._nodes = old_nodes + new_nodes
 
     @staticmethod
     def _class_prefix():
