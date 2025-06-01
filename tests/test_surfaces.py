@@ -119,6 +119,7 @@ class testSurfaces(TestCase):
         surf._surface_type = SurfaceType.PX
         with self.assertRaises(montepy.errors.IllegalState):
             surf.validate()
+        surf.number = 1
         surf.location = 0.0
         # ensure that this doesn't raise an error
         surf.validate()
