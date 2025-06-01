@@ -109,6 +109,21 @@ class Surface(Numbered_MCNP_Object):
         return 1
 
     def _generate_default_tree(self, number: int = -1):
+        """
+        Creates a default syntax tree.
+
+        Parameters
+        ----------
+        number: int
+            the default number for the syntax tree, should be passed from __init__
+
+        Other Parameters
+        ----------------
+        self._default_surf_type: str
+            The default surface_type
+        self._number_of_params: int
+            the number of surface constants in the default syntax tree.
+        """
         data = syntax_node.ListNode("surf list")
         for _ in range(self._number_of_params()):
             data.append(self._generate_default_node(float, 0.0))
