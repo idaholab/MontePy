@@ -3,6 +3,7 @@ import itertools as it
 from numbers import Integral, Real
 import numpy as np
 
+import montepy
 from montepy.data_inputs.cell_modifier import CellModifierInput, InitInput
 from montepy.data_inputs.transform import Transform
 from montepy.errors import *
@@ -198,19 +199,45 @@ class Fill(CellModifierInput):
                     f"Min: {min_val}, Max: {max_val}, Input: {value.format()}"
                 )
         self._old_numbers = np.zeros(self._sizes, dtype=np.dtype(int))
-        words = iter(words[9:])
+        words = enumerate(it.chain(words[9:], it.cycle([None])))
+        new_nodes = []
+        first_transform_n = None
         for k in self._axis_range(2):
             for j in self._axis_range(1):
                 for i in self._axis_range(0):
-                    val = next(words)
                     try:
-                        val._convert_to_int()
-                        assert val.value >= 0
-                        self._old_numbers[i][j][k] = val.value
+                        idx, val = next(words)
+                        # if followed by transform don't iterate over them
+                        if isinstance(
+                            val, montepy.input_parser.syntax_node.PaddingNode
+                        ):
+                            words = enumerate(it.cycle([None]))
+                            val = None
+                            first_transform_n = val
+                            old_idx = idx
+                        if val is None:
+                            val = self._generate_default_node(int, None)
+                            new_nodes.append(val)
+                        else:
+                            val._convert_to_int()
+                            assert val.value >= 0
+                        self._old_numbers[i][j][k] = val.value if val.value else 0
                     except (ValueError, AssertionError) as e:
                         raise ValueError(
                             f"Values provided must be valid universes. {val.value} given."
                         )
+
+        # inset new nodes
+        old_nodes = value["data"].nodes
+        if first_transform_n is not None:
+            for node_idx, node in old_nodes:
+                if node is first_transform_n:
+                    break
+            value["data"]._nodes = (
+                old_nodes[:node_idx] + new_nodes + old_nodes[node_idx:]
+            )
+        else:
+            value["data"]._nodes = old_nodes + new_nodes
 
     @staticmethod
     def _class_prefix():
