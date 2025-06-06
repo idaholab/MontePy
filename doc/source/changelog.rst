@@ -14,8 +14,12 @@ MontePy Changelog
 
 **Bugs Fixed**
 
+* Fixed bug where surfaces created from scratch couldn't be accurately written out to the file (:issue:`652`).
+* Fixed bug where surface transformations couldn't be unset and exported properly (:issue:`711`).
+* Fixed bug where negative numbers were treated as valid by ``append_renumber`` (:issue:`690`).
 * Fixed bug that couldn't parse ``SDEF`` by simply not parsing the input for the time being (:pull:`767`).
 * Fixed parsing bug with ``DE LOG`` style inputs by simply not parsing them for now (:pull:`767`).
+
 
 1.1.0
 --------------
@@ -31,6 +35,8 @@ MontePy Changelog
 * Fixed bug where MontePy would overly aggressively round outputs and remove the user's intent (:issue:`756`).
 * Fixed bug where a cell complement in the first five characters causes a spurious vertical mode detection (:issue:`753`).
 
+1.0 releases
+============
 
 1.0 releases
 ============
