@@ -108,7 +108,7 @@ class Surface(Numbered_MCNP_Object):
     def _number_of_params():
         return 1
 
-    def _generate_default_tree(self, number: int = -1):
+    def _generate_default_tree(self, number: int = None):
         """
         Creates a default syntax tree.
 
@@ -333,7 +333,7 @@ class Surface(Numbered_MCNP_Object):
                 )
 
     def validate(self):
-        if self.number is None or self.number < 0:
+        if self.number is None or self.number < 1:
             raise IllegalState(
                 f"Surface: {self.number} does not have a surface type set."
             )
