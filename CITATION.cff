@@ -1,0 +1,49 @@
+cff-version: "1.2.0"
+authors:
+- family-names: Gale
+  given-names: Micah D.
+  orcid: "https://orcid.org/0000-0001-6451-4818"
+- family-names: Labossiere-Hickman
+  given-names: Travis J.
+  orcid: "https://orcid.org/0000-0003-0742-3404"
+- family-names: Carbno
+  given-names: Brenna A.
+- family-names: Bascom
+  given-names: Andrew J.
+  orcid: "https://orcid.org/0009-0005-6691-5128"
+contact:
+- family-names: Gale
+  given-names: Micah D.
+  orcid: "https://orcid.org/0000-0001-6451-4818"
+doi: 10.5281/zenodo.15185507
+message: If you use this software, please cite our article in the
+  Journal of Open Source Software.
+preferred-citation:
+  authors:
+  - family-names: Gale
+    given-names: Micah D.
+    orcid: "https://orcid.org/0000-0001-6451-4818"
+  - family-names: Labossiere-Hickman
+    given-names: Travis J.
+    orcid: "https://orcid.org/0000-0003-0742-3404"
+  - family-names: Carbno
+    given-names: Brenna A.
+  - family-names: Bascom
+    given-names: Andrew J.
+    orcid: "https://orcid.org/0009-0005-6691-5128"
+  date-published: 2025-04-09
+  doi: 10.21105/joss.07951
+  issn: 2475-9066
+  issue: 108
+  journal: Journal of Open Source Software
+  publisher:
+    name: Open Journals
+  start: 7951
+  title: "MontePy: a Python library for reading, editing, and writing
+    MCNP input files."
+  type: article
+  url: "https://joss.theoj.org/papers/10.21105/joss.07951"
+  volume: 10
+title: "MontePy: a Python library for reading, editing, and writing MCNP
+  input files."
+
