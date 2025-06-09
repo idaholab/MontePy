@@ -8,6 +8,7 @@ Here is a getting started guide to contributing.
 If you have any questions Micah and Travis are available to give input and answer your questions.
 Before contributing you should review the :ref:`scope` and design philosophy.
 
+.. _Versioning:
 
 Versioning
 ----------
@@ -16,16 +17,26 @@ Version information is stored in git tags,
 and retrieved using `setuptools scm <https://setuptools-scm.readthedocs.io/en/latest/>`_.
 The version tag shall match the regular expression:
 
-``v\d\.\d+\.\d+``.
+``v\d\.\d+\.\d+(a\d+|\.post\d+)?``.
 
 These tags will be applied by a maintainer during the release process,
 and cannot be applied by normal users.
 
-MontePy follows the semantic versioning standard to the best of our abilities. 
+MontePy follows the `semantic versioning standard <https://semver.org/>`_ 
+and the `PyPA specification for version specifiers <https://packaging.python.org/en/latest/specifications/version-specifiers/>`_ to the best of our abilities. 
 
-Additional References:
+The version numbers can be read as ``<Major>.<minor>.<patch>``.
+Here is a quick summary of release types used, that is not meant to be authoritative:
 
-#. `Semantic versioning standard <https://semver.org/>`_
+* **Major release**: This is a release that break backwards compatibility.
+* **Minor release**: This is a release the adds a new feature. 
+* **Patch release**: This is a bug-fix release only.
+* **Post release**: This is a release that doesn't change any code. This will add an extra ``\.post\d+`` to the end of
+  the *previous* version.
+* **Alpha release**: This is a testing release. Generally this is preparing for a major release. 
+  Features are not locked at this point, and may change.
+  This is signified by adding ``a\d+`` to the end of the *next* release.
+
 
 Design Philosophy
 -----------------
@@ -33,7 +44,6 @@ Design Philosophy
 #. **Do Not Repeat Yourself (DRY)**
 #. If it's worth doing, it's worth doing well.
 #. Use abstraction and inheritance smartly.
-#. Use ``_private`` fields mostly. Use ``__private`` for very private things that should never be touched.
 #. Use ``@property`` getters, and if needed setters. Setters must verify and clean user inputs. For the most part use :func:`~montepy.utilities.make_prop_val_node`, and :func:`~montepy.utilities.make_prop_pointer`.
 #. Fail early and politely. If there's something that might be bad: the user should get a helpful error as
    soon as the error is apparent. 
@@ -50,7 +60,34 @@ Style Guide
 
 #. Thou shall be `PEP 8 <https://peps.python.org/pep-0008/>`_, and use `black <https://black.readthedocs.io/en/stable/index.html>`_.
 #. Spaces not tabs with 4 spaces for an indent.
-#. External imports before internal imports with a blank line in between. All imports are alphabetized. 
+#. External imports before internal imports with a blank line in between. All imports are alphabetized.
+
+Naming Conventions
+^^^^^^^^^^^^^^^^^^
+
+#. Follow `PEP 8 naming conventions <https://peps.python.org/pep-0008/#naming-conventions>`_ e.g.,
+
+   #. ``lower_case_with_underscores`` for variables, methods, functions, and module names, etc.
+   #. ``CapitalizedWords`` for class names
+       
+      * ``MCNP_ClassName`` is an exception. For all Other acronyms use: ``AcronymMoreWords``. Above all, prioritize legibility. 
+
+   #. ``UPER_CASE_WITH_UNDERSCORES`` for pseudo-constant variables
+   #. ``_single_leading_underscore`` should be used for almost all internal attributes.
+   #. ``__double_leading_underscore`` should be used for private internal attributes that should not be accessed by users or sub-classes.
+
+#. Variables should be nouns/noun-phrases
+#. Functions/methods should be verb/verb-phrases.
+#. Properties/attributes of classes should be nouns or ``is_adjective`` phrases. 
+#. Collections should be a plural noun, and single instances should be singular. In loops there should be consistent
+   names, e.g., ``for cell in cells:``.
+#. When appropriate names should mirror Python core libraries (e.g.,
+   :class:`~montepy.numbered_object_collection.NumberedObjectCollection` tries to mirror methods of ``dict``, ``list``,
+   and ``set``).
+#. Within reason: avoid abbreviating words. Above all, prioritize legibility.
+#. For user facing functions and attributes, short names are best.
+   (:func:`~montepy.surfaces.surface.Surface.surface_constants`, really should have been ``constants`` in hind-sight).
+
 
 Doc Strings
 -----------
@@ -208,3 +245,45 @@ Test Migration
 Currently the test suite does not conform to these standards fully.
 Help with making the migration to the new standards is appreciated.
 So don't think something is sacred about a test file that does not follow these conventions.
+
+Deprecation Guidelines
+----------------------
+
+Deprecation is an important part of the development life-cycle and a signal for users to help with migrations.
+Deprecations can occur either during a major release, or between major releases.
+The deprecation process is really part of a larger migration documentation process, 
+and it provides a good last line of defense for users on how to migrate their code.
+
+.. note::
+    
+   See :ref:`Versioning` section for more details on release types.
+    
+
+Major Release Deprecations
+^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+These are deprecations that occur during a major release. 
+Generally these are deprecations necessary for the release to work, and must be at versions: ``Major.0.0``. 
+For these deprecations the guidelines are:
+
+#. Try not to break too much.
+#. Warn with a ``DeprecationWarning`` if the deprecated function is still usable. Otherwise ``raise`` it as an
+   ``Exception``.
+#. Add clear documentation on the fact it is deprecated and what the alternative is.
+#. Write a migration plan, preferably it should be part of the releases prior the major release.
+#. Only clear these ``DeprecationWarnings`` at the next major release.
+
+Mid-Major Release Deprecations
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+These are deprecations that are not during a major release. That is when the version matches:
+``Major.Minor.0`` or ``Major.Minor.Patch``.
+The guidelines are:
+
+#. Do not break anything
+#. Warn with a ``DeprecationWarning`` (or ``PendingDeprecationWarning``, or ``FutureWarning`` as appropriate. `See the
+   guide on warnings <https://docs.python.org/3/library/warnings.html#warning-categories>`_.)
+#. Add clear documentation on the fact it is deprecated and what the alternative is.
+#. Clear these warnings and documentation notations at the next major release.
+
+

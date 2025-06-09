@@ -46,6 +46,31 @@ System Wide (for the current user)
 #. Install it from `PyPI <https://pypi.org/project/montepy>`_ by running ``pip install montepy``. 
    You may need to run ``pip install --user montepy`` if you are not allowed to install the package.
 
+Installing Optional Dependencies
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+MontePy offers multiple optional dependencies which some users may desire,
+though this is mostly intended for developers.
+Pip can install these through the following command:
+
+``pip install montepy[<extras>]``
+
+Where ``<extras>`` is one of the following options:
+
+#. ``demos``: installs the dependencies for running the demo problems in `jupyter <https://jupyter.org/>`_.
+
+#. ``doc``: installs the dependencies for building the website using `sphinx <https://www.sphinx-doc.org/en/master/>`_.
+
+#. ``build``: installs the dependencies for building the source distribution packages.
+
+#. ``format``: install the dependencies for formatting the code with `black <https://black.readthedocs.io/en/stable/index.html>`_. 
+
+#. ``test``: installs the dependencies for testing the software.
+
+#. ``demo-test``: installs the dependencies for testing the demos.
+
+#. ``develop``: installs everything a developer may need, specifically: ``montepy[test,doc,format,demo-test]``.
+
 Install specific version for a project
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 The best way maybe to setup a project-specific `conda <https://docs.conda.io/projects/conda/en/latest/user-guide/tasks/manage-environments.html>`_, 
@@ -56,6 +81,26 @@ You can specify a specific version from `PyPI`_ be installed using:
 
 ``pip install montepy==<version>``
 
+Tutorials and Demonstrations
+----------------------------
+
+We have presented a workshop for using MontePy in the past. 
+The demonstration Jupyter notebooks are now available in our git repository. 
+To access these demonstrations you can run:
+
+.. code-block:: bash
+
+   git clone https://github.com/idaholab/MontePy.git
+   pip install montepy[demos]
+   cd MontePy/demos
+   jupyter lab
+
+These notebooks are not complete, and have missing code you need to fill in.
+If you get stuck there are complete notebooks in the ``answers`` folder, that you can refer to. 
+
+Finally if you want to present these notebooks in a workshop, 
+we use `RISE <https://rise.readthedocs.io/en/latest/>`_.
+You can install this with ``pip install montepy[demo-present]``.
 
 Best Practices
 --------------
@@ -466,18 +511,6 @@ So there is a convenient way to update a surface, but how do you easily get the 
 For instance what if you want to shift a cell up in Z by 10 cm? 
 It would be horrible to have to get each surface by their number, and hoping you don't change the numbers along the way.
 
-One way you might think of is: oh let's just filter the surfaces by their type?:
-
-.. testcode::
-
-    for surface in cell.surfaces:
-        if surface.surface_type == montepy.surfaces.surface_type.SurfaceType.PZ:
-            surface.location += 10
-
-Wow that's rather verbose. 
-This was the only way to do this with the API for awhile.
-But MontePy 0.0.5 fixed this with: you guessed it: generators.
-
 The :class:`~montepy.surface_collection.Surfaces` collection has a generator for every type of surface in MCNP.
 These are very easy to find: they are just the lower case version of the 
 MCNP surface mnemonic. 
@@ -487,6 +520,53 @@ This previous code is much simpler now:
 
     for surface in cell.surfaces.pz:
         surface.location += 10
+
+Setting Boundary Conditions
+^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+As discussed in :manual63:`5.3.1` surfaces can have three boundary conditions:
+
+* Reflective boundary
+* White boundary
+* periodic boundary
+
+.. note::
+
+   Vacuum boundary conditions are the fourth type.
+   They are defined by cells with 0 importance though.
+
+The reflective and white boundary conditions are easiest to set as they are Boolean conditions.
+These are controlled by :func:`~montepy.surfaces.surface.Surface.is_reflecting` and 
+:func:`~montepy.surfaces.surface.Surface.is_white_boundary` respectively.
+For Example:
+
+.. testcode::
+
+   from montepy.surfaces.surface_type import SurfaceType
+
+   bottom = montepy.surfaces.axis_plane.AxisPlane()
+   bottom.surface_type = SurfaceType.PZ
+   bottom.is_reflecting = True
+
+   cyl = montepy.surfaces.cylinder_on_axis.CylinderOnAxis()
+   cyl.surface_type = SurfaceType.CZ
+   cyl.is_white_boundary = True
+
+
+Setting a periodic boundary is slightly more difficult. 
+In this case the boundary condition must be set to the other periodic surface with :func:`~montepy.surfaces.surface.Surface.periodic_surface`.
+So to continue with the previous example:
+
+.. testcode::
+
+   bottom.location = 0.0
+   bottom.is_reflecting = False
+
+   top = montepy.surfaces.axis_plane.AxisPlane()
+   top.surface_type = SurfaceType.PZ
+   top.location = 1.26
+
+   bottom.periodic_surface = top
 
 Cells 
 -----
@@ -546,6 +626,11 @@ You can change how these cell modifiers are printed with :func:`~montepy.mcnp_pr
 This acts like a dictionary where the key is the MCNP card name.
 So to make cell importance data show up in the cell block just run:
 ``problem.print_in_data_block["imp"] = False``.
+
+.. note::
+
+   The default for :func:`~montepy.mcnp_problem.MCNP_Problem.print_in_data_block` is ``False``,
+   that is to print the data in the cell block if this was not set in the input file or by the user.
 
 Density
 ^^^^^^^
@@ -660,20 +745,33 @@ Order of precedence and grouping is automatically handled by Python so you can e
 
 .. testcode::
 
+   import montepy.surfaces as surfs
+   from montepy.surfaces.surface_type import SurfaceType
+
    # build blank surfaces 
-   bottom_plane = montepy.AxisPlane(number=1)
+   bottom_plane = montepy.surfaces.axis_plane.AxisPlane(number=1)
+   bottom_plane.surface_type = SurfaceType.PZ
    bottom_plane.location = 0.0
-   top_plane = montepy.AxisPlane(number=2)
+
+   top_plane = montepy.surfaces.axis_plane.AxisPlane(number=2)
+   top_plane.surface_type = SurfaceType.PZ
    top_plane.location = 10.0
-   fuel_cylinder = montepy.CylinderOnAxis(number=3)
+
+   fuel_cylinder = montepy.surfaces.cylinder_on_axis.CylinderOnAxis(number=3)
+   fuel_cylinder.surface_type = SurfaceType.CZ
    fuel_cylinder.radius = 1.26 / 2
-   clad_cylinder = montepy.CylinderOnAxis( number=4)
+
+   clad_cylinder = montepy.surfaces.cylinder_on_axis.CylinderOnAxis(number=4)
    clad_cylinder.radius = (1.26 / 2) + 1e-3 # fuel, gap, cladding
-   clad_od = montepy.CylinderOnAxis(number=5)
+   clad_cylinder.surface_type = SurfaceType.CZ
+
+   clad_od = montepy.surfaces.cylinder_on_axis.CylinderOnAxis(number=5)
    clad_od.radius = clad_cylinder.radius + 0.1 # add thickness
-   other_fuel = montepy.CylinderOnAxis(number=6)
+   clad_od.surface_type = SurfaceType.CZ
+   other_fuel = montepy.surfaces.cylinder_on_axis.CylinderOnAxis(number=6)
    other_fuel.radius = 3.0
-   
+   other_fuel.surface_type = SurfaceType.CZ
+
    #make weird truncated fuel sample
    slug_half_space = +bottom_plane & -top_plane & -fuel_cylinder
    gas_gap = ~slug_half_space & +bottom_plane & -top_plane & -clad_cylinder
@@ -1142,6 +1240,7 @@ This is done to prevent a cell from being assigned to multiple universes
 
 .. testcode::
 
+    problem = montepy.read_input("tests/inputs/test.imcnp")
     universe = problem.universes[350]
     for cell in problem.cells[1:5]:
         cell.universe = universe
@@ -1151,7 +1250,7 @@ We can confirm this worked with the generator ``universe.cells``:
 .. doctest:: 
 
     >>> [cell.number for cell in universe.cells]
-    [1, 2, 3, 5, 4]
+    [1, 2, 3, 5]
 
 Claiming Cells
 ^^^^^^^^^^^^^^
@@ -1260,13 +1359,13 @@ If you want to try to troubleshoot errors in python you can do this with the fol
    This following guide may return an incomplete problem object that may break in very wierd ways.
    Never use this for actual file editing; only use it for troubleshooting.
 
-1. Setup a new Problem object:
+#. Setup a new Problem object:
 
    .. testcode::
         
        problem = montepy.MCNP_Problem("foo.imcnp") 
 
-1. Next load the input file with the ``check_input`` set to ``True``.
+#. Next load the input file with the ``check_input`` set to ``True``.
 
    .. testcode::
         

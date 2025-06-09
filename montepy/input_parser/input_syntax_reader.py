@@ -4,6 +4,7 @@ import itertools
 import io
 import re
 import os
+import sly
 import warnings
 
 from montepy.constants import *
@@ -15,7 +16,7 @@ from montepy.input_parser.read_parser import ReadParser
 from montepy.utilities import is_comment
 
 
-reading_queue = []
+reading_queue = deque()
 
 
 def read_input_syntax(input_file, mcnp_version=DEFAULT_VERSION, replace=True):
@@ -191,8 +192,25 @@ def read_data(fh, mcnp_version, block_type=None, recursion=False):
         ):
             yield from flush_input()
         # die if it is a vertical syntax format
-        if "#" in line[0:BLANK_SPACE_CONTINUE] and not line_is_comment:
-            raise UnsupportedFeature("Vertical Input format is not allowed")
+        start_o_line = line[0:BLANK_SPACE_CONTINUE]
+        # eliminate comments, and inputs that use # for other syntax
+        if (
+            "#" in start_o_line
+            and not line_is_comment
+            and start_o_line.strip().startswith("#")
+        ):
+            input_raw_lines.append(line.rstrip())
+            input = next(flush_input())
+            lineno = 1
+            token = sly.lex.Token()
+            token.value = "#"
+            index = line[0:BLANK_SPACE_CONTINUE].index("#")
+            err = {"message": "", "token": token, "line": lineno, "index": index}
+            raise UnsupportedFeature(
+                "Vertical Input encountered, which is not supported by Montepy",
+                input,
+                [err],
+            )
         # cut line down to allowed length
         old_line = line
         line = line[:line_length]

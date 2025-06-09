@@ -2,8 +2,10 @@
 from __future__ import annotations
 import copy
 import itertools
-from typing import Union
 from numbers import Integral, Real
+import sly
+from typing import Union
+import warnings
 
 from montepy.cells import Cells
 from montepy.data_inputs import importance, fill, lattice_input, universe_input, volume
@@ -25,6 +27,13 @@ import montepy
 def _link_geometry_to_cell(self, geom):
     geom._cell = self
     geom._add_new_children_to_cell(geom)
+
+
+def _lattice_deprecation_warning():
+    warnings.warn(
+        message="Cell.lattice is deprecated in favor of Cell.lattice_type",
+        category=DeprecationWarning,
+    )
 
 
 class Cell(Numbered_MCNP_Object):
@@ -131,7 +140,25 @@ class Cell(Numbered_MCNP_Object):
         self._density_node = self._generate_default_node(float, None)
         self._surfaces = Surfaces()
         self._complements = Cells()
-        super().__init__(input, self._parser, number)
+        try:
+            super().__init__(input, self._parser, number)
+        # Add more information to issue that parser can't access
+        except UnsupportedFeature as e:
+            base_mesage = e.message
+            token = sly.lex.Token()
+            token.value = ""
+            lineno = 0
+            index = 0
+            for lineno, line in enumerate(input.input_lines):
+                if "like" in line.lower():
+                    index = line.lower().index("like")
+                    # get real capitalization
+                    token.value = line[index : index + 5]
+                    break
+            err = {"message": "", "token": token, "line": lineno + 1, "index": index}
+
+            raise UnsupportedFeature(base_mesage, input, [err]) from e
+
         if not input:
             self._generate_default_tree(number)
         self._old_number = copy.deepcopy(self._tree["cell_num"])
@@ -142,6 +169,8 @@ class Cell(Numbered_MCNP_Object):
         self._density_node.is_negatable_float = True
         if self.old_mat_number != 0:
             self._is_atom_dens = not self._density_node.is_negative
+        else:
+            self._is_atom_dens = None
         self._parse_geometry()
         self._parse_keyword_modifiers()
 
@@ -291,7 +320,7 @@ class Cell(Numbered_MCNP_Object):
         return self._universe.old_number
 
     @property
-    def lattice(self):
+    def lattice_type(self):
         """The type of lattice being used by the cell.
 
         Returns
@@ -301,13 +330,28 @@ class Cell(Numbered_MCNP_Object):
         """
         return self._lattice.lattice
 
+    @lattice_type.setter
+    def lattice_type(self, value):
+        self._lattice.lattice = value
+
+    @lattice_type.deleter
+    def lattice_type(self):
+        self._lattice.lattice = None
+
+    @property
+    def lattice(self):
+        _lattice_deprecation_warning()
+        return self.lattice_type
+
     @lattice.setter
     def lattice(self, value):
-        self._lattice.lattice = value
+        _lattice_deprecation_warning()
+        self.lattice_type = value
 
     @lattice.deleter
     def lattice(self):
-        self._lattice.lattice = None
+        _lattice_deprecation_warning()
+        self.lattice_type = None
 
     @property
     def volume(self):
@@ -752,34 +796,40 @@ class Cell(Numbered_MCNP_Object):
             return ret
 
         ret = ""
-        for key, node in self._tree.nodes.items():
-            if key != "parameters":
-                ret += node.format()
-            else:
-                printed_importance = False
-                final_param = next(reversed(node.nodes.values()))
-                for param in node.nodes.values():
-                    if param["classifier"].prefix.value.lower() in modifier_keywords:
-                        cls = modifier_keywords[
+        with warnings.catch_warnings(record=True) as ws:
+
+            for key, node in self._tree.nodes.items():
+                if key != "parameters":
+                    ret += node.format()
+                else:
+                    printed_importance = False
+                    final_param = next(reversed(node.nodes.values()))
+                    for param in node.nodes.values():
+                        if (
                             param["classifier"].prefix.value.lower()
-                        ]
-                        attr, _ = self._INPUTS_TO_PROPERTY[cls]
-                        if attr == "_importance":
-                            if printed_importance:
-                                continue
-                            printed_importance = True
-                        # add trailing space to comment if necessary
-                        ret = cleanup_last_line(ret)
-                        ret += "\n".join(
-                            getattr(self, attr).format_for_mcnp_input(
-                                mcnp_version, param is not final_param
+                            in modifier_keywords
+                        ):
+                            cls = modifier_keywords[
+                                param["classifier"].prefix.value.lower()
+                            ]
+                            attr, _ = self._INPUTS_TO_PROPERTY[cls]
+                            if attr == "_importance":
+                                if printed_importance:
+                                    continue
+                                printed_importance = True
+                            # add trailing space to comment if necessary
+                            ret = cleanup_last_line(ret)
+                            ret += "\n".join(
+                                getattr(self, attr).format_for_mcnp_input(
+                                    mcnp_version, param is not final_param
+                                )
                             )
-                        )
-                    else:
-                        # add trailing space to comment if necessary
-                        ret = cleanup_last_line(ret)
-                        ret += param.format()
-        # check for accidental empty lines from subsequent cell modifiers that didn't print
+                        else:
+                            # add trailing space to comment if necessary
+                            ret = cleanup_last_line(ret)
+                            ret += param.format()
+            # check for accidental empty lines from subsequent cell modifiers that didn't print
+        self._flush_line_expansion_warning(ret, ws)
         ret = "\n".join([l for l in ret.splitlines() if l.strip()])
         return self.wrap_string_for_mcnp(ret, mcnp_version, True)
 

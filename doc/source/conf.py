@@ -53,7 +53,7 @@ favicons = [
 ]
 html_logo = "monty.svg"
 
-html_baseurl = "https://www.montepy.org/"
+html_baseurl = "https://www.montepy.org/en/stable/"
 html_extra_path = ["robots.txt", "foo.imcnp"]
 # List of patterns, relative to source directory, that match files and
 # directories to ignore when looking for source files.
@@ -74,7 +74,10 @@ autodoc_default_options = {
     "inherited-members": True,
 }
 
-linkcheck_ignore = ["https://nucleardata.lanl.gov/.*"]
+linkcheck_ignore = [
+    "https://nucleardata.lanl.gov/.*",
+    "https://www.osti.gov/.*",  # Ignore osti.gov URLs
+]
 
 # -- External link configuration ---------------------------------------------
 UM63 = (

@@ -2,7 +2,6 @@
 import copy
 from io import StringIO
 import pytest
-from unittest import TestCase
 
 import montepy
 from montepy.errors import *
@@ -17,7 +16,11 @@ from montepy.particle import Particle
 import warnings
 
 
-class TestValueNode(TestCase):
+lat = montepy.data_inputs.lattice.LatticeType
+st = montepy.surfaces.surface_type.SurfaceType
+
+
+class TestValueNode:
     def test_valuenoode_init(self):
         for type, token, answer in [
             (str, "hi", "hi"),
@@ -28,122 +31,119 @@ class TestValueNode(TestCase):
         ]:
             for padding in [None, syntax_node.PaddingNode(" ")]:
                 node = syntax_node.ValueNode(token, type, padding)
-                self.assertEqual(node.value, answer)
-                self.assertEqual(node.token, token)
+                assert node.value == answer
+                assert node.token == token
                 if padding:
-                    self.assertEqual(node.padding, padding)
+                    assert node.padding == padding
                 else:
-                    self.assertIsNone(node.padding)
+                    assert node.padding is None
         # test with None values
         for type in {str, float, int}:
             node = syntax_node.ValueNode(None, type)
-            self.assertIsNone(node.value)
+            assert None is (node.value)
             node = syntax_node.ValueNode(Jump(), type)
-            self.assertIsNone(node.value)
+            assert None is (node.value)
 
     def test_valuenode_convert_to_int(self):
         node = syntax_node.ValueNode("1", float)
         node._convert_to_int()
-        self.assertEqual(node.type, int)
-        self.assertEqual(node.value, 1)
+        assert node.type == int
+        assert node.value == 1
         # test 1.0
         node = syntax_node.ValueNode("1.0", float)
         node._convert_to_int()
-        self.assertEqual(node.type, int)
-        self.assertEqual(node.value, 1)
+        assert node.type == int
+        assert node.value == 1
         # test wrong type
-        with self.assertRaises(ValueError):
+        with pytest.raises(ValueError):
             node = syntax_node.ValueNode("hi", str)
             node._convert_to_int()
         # test real float
-        with self.assertRaises(ValueError):
+        with pytest.raises(ValueError):
             node = syntax_node.ValueNode("1.23", float)
             node._convert_to_int()
 
     def test_valuenode_convert_to_enum(self):
         node = syntax_node.ValueNode("1", float)
-        lat = montepy.data_inputs.lattice.Lattice
+        lat = montepy.data_inputs.lattice.LatticeType
         node._convert_to_enum(lat)
-        self.assertEqual(node.type, lat)
-        self.assertEqual(node.value, lat(1))
+        assert node.type == lat
+        assert node.value == lat(1)
         # test with None
-        with self.assertRaises(ValueError):
+        with pytest.raises(ValueError):
             node = syntax_node.ValueNode(None, float)
             node._convert_to_enum(lat)
         node._convert_to_enum(lat, allow_none=True)
-        self.assertIsNone(node.value)
+        assert None is (node.value)
         st = montepy.surfaces.surface_type.SurfaceType
         node = syntax_node.ValueNode("p", str)
         node._convert_to_enum(st, switch_to_upper=True)
-        self.assertEqual(node.type, st)
-        self.assertEqual(node.value, st("P"))
+        assert node.type == st
+        assert node.value == st("P")
 
     def test_is_negat_identifier(self):
         node = syntax_node.ValueNode("-1", float)
-        self.assertTrue(not node.is_negatable_identifier)
-        self.assertIsNone(node.is_negative)
+        assert not node.is_negatable_identifier
+        assert None is (node.is_negative)
         node.is_negatable_identifier = True
-        self.assertTrue(node.is_negatable_identifier)
-        self.assertEqual(node.type, int)
-        self.assertTrue(node.value > 0)
-        self.assertTrue(node.is_negative)
+        assert node.is_negatable_identifier
+        assert node.type == int
+        assert node.value > 0
+        assert node.is_negative
         # test with positive number
         node = syntax_node.ValueNode("1", float)
         node.is_negatable_identifier = True
-        self.assertEqual(node.type, int)
-        self.assertTrue(node.value > 0)
-        self.assertTrue(not node.is_negative)
+        assert node.type == int
+        assert node.value > 0
+        assert not node.is_negative
         # test with none
         node = syntax_node.ValueNode(None, float)
         node.is_negatable_identifier = True
-        self.assertEqual(node.type, int)
-        self.assertIsNone(node.value)
-        self.assertIsNone(node.is_negative)
+        assert node.type == int
+        assert None is (node.value)
+        assert None is (node.is_negative)
         node.value = 1
-        self.assertEqual(node.value, 1)
-        self.assertTrue(not node.is_negative)
+        assert node.value == 1
+        assert not node.is_negative
 
     def test_is_negat_float(self):
         node = syntax_node.ValueNode("-1.23", float)
-        self.assertTrue(not node.is_negatable_float)
-        self.assertIsNone(node.is_negative)
+        assert not node.is_negatable_float
+        assert None is (node.is_negative)
         node.is_negatable_float = True
-        self.assertEqual(node.type, float)
-        self.assertTrue(node.value > 0)
-        self.assertTrue(node.is_negative)
-        self.assertTrue(node.is_negatable_float)
+        assert node.type == float
+        assert node.value > 0
+        assert node.is_negative
+        assert node.is_negatable_float
         # test with positive number
         node = syntax_node.ValueNode("1.23", float)
         node.is_negatable_float = True
-        self.assertEqual(node.type, float)
-        self.assertTrue(not node.is_negative)
+        assert node.type == float
+        assert not node.is_negative
         # test with None
         node = syntax_node.ValueNode(None, float)
         node.is_negatable_float = True
-        self.assertEqual(node.type, float)
-        self.assertIsNone(node.value)
-        self.assertIsNone(node.is_negative)
+        assert node.type == float
+        assert None is (node.value)
+        assert None is (node.is_negative)
         node.value = 1
-        self.assertEqual(node.value, 1)
-        self.assertTrue(not node.is_negative)
+        assert node.value == 1
+        assert not node.is_negative
 
     def test_is_negative(self):
         node = syntax_node.ValueNode("-1.23", float)
         node.is_negatable_float = True
-        self.assertTrue(node.is_negative)
+        assert node.is_negative
         node.is_negative = False
-        self.assertTrue(node.value > 0)
-        self.assertTrue(not node.is_negative)
+        assert node.value > 0
+        assert not node.is_negative
         node = syntax_node.ValueNode("hi", str)
         node.is_negative = True
-        self.assertIsNone(node.is_negative)
+        assert None is (node.is_negative)
 
-    def test_valuenode_int_format(self):
-        node = syntax_node.ValueNode("-1", int)
-        answer = "-1"
-        output = node.format()
-        self.assertEqual(output, answer)
-        for input, val, answer, expand in [
+    @pytest.mark.parametrize(
+        "token, val, answer, expand",
+        [
             ("1", 5, "5", False),
             (1, 5, "5", False),
             ("-1", 2, " 2", False),
@@ -151,151 +151,142 @@ class TestValueNode(TestCase):
             ("+1", 5, "+5", False),
             ("0001", 5, "0005", False),
             (Jump(), 5, "5 ", False),
-        ]:
-            print("in:", input, "new value:", val, "answer:", answer)
-            node = syntax_node.ValueNode(input, int)
-            node.value = val
-            self.assertEqual(node.format(), answer)
-            node = syntax_node.ValueNode(input, int)
-            node.is_negatable_identifier = True
-            node.value = val
-            node.is_negative = val < 0
-            if expand:
-                with self.assertWarns(LineExpansionWarning):
-                    self.assertEqual(node.format(), answer)
-            else:
-                self.assertEqual(node.format(), answer)
-        # test messing around with padding
-        for padding, val, answer, expand in [
+        ],
+    )
+    def test_valuenode_int_format(_, token, val, answer, expand):
+        node = syntax_node.ValueNode("-1", int)
+        output = node.format()
+        assert output == "-1"
+        node = syntax_node.ValueNode(token, int)
+        node.value = val
+        assert node.format() == answer
+        node = syntax_node.ValueNode(token, int)
+        node.is_negatable_identifier = True
+        node.value = val
+        node.is_negative = val < 0
+        if expand:
+            with pytest.warns(LineExpansionWarning):
+                assert node.format() == answer
+        else:
+            assert node.format() == answer
+
+    @pytest.mark.parametrize(
+        "padding, val, answer, expand",
+        [
             ([" "], 10, "10 ", True),
             (["  "], 10, "10 ", False),
-            (["\n"], 10, "10\n", True),
+            (["\n"], 10, "10\n", False),
             ([" ", "\n", "c hi"], 10, "10\nc hi", False),
+            ([" ", "\n", "c hi"], 100, "100\nc hi", False),
             (["  ", "\n"], 10, "10 \n", False),
-        ]:
-            print("padding", padding, "new_val", val, "answer", repr(answer))
-            pad_node = syntax_node.PaddingNode(padding[0])
-            for pad in padding[1:]:
-                pad_node.append(pad)
-            node = syntax_node.ValueNode("1", int, pad_node)
-            node.value = val
-            if expand:
-                warnings.simplefilter("default")
-                with self.assertWarns(LineExpansionWarning):
-                    self.assertEqual(node.format(), answer)
-            else:
-                # change warnings to errors to ensure not raised
-                warnings.resetwarnings()
-                warnings.simplefilter("error")
-                self.assertEqual(node.format(), answer)
+        ],
+    )
+    def test_value_node_format_padding(self, padding, val, answer, expand):
+        pad_node = syntax_node.PaddingNode(padding[0])
+        for pad in padding[1:]:
+            pad_node.append(pad)
+        node = syntax_node.ValueNode("1", int, pad_node)
+        node.value = val
+        if expand:
+            warnings.simplefilter("default")
+            with pytest.warns(LineExpansionWarning):
+                assert node.format() == answer
+        else:
+            # change warnings to errors to ensure not raised
+            warnings.resetwarnings()
+            warnings.simplefilter("error")
+            assert node.format() == answer
 
     def test_value_has_changed(self):
         # test None no change
         node = syntax_node.ValueNode(None, int)
-        self.assertTrue(not node._value_changed)
+        assert not node._value_changed
         # test None changed
         node.value = 5
-        self.assertTrue(node._value_changed)
+        assert node._value_changed
         node = syntax_node.ValueNode("1.23", float)
-        self.assertTrue(not node._value_changed)
+        assert not node._value_changed
         node.value = 1.25
-        self.assertTrue(node._value_changed)
+        assert node._value_changed
         node = syntax_node.ValueNode("hi", str)
-        self.assertTrue(not node._value_changed)
+        assert not node._value_changed
         node.value = "foo"
-        self.assertTrue(node._value_changed)
+        assert node._value_changed
 
-    def test_value_float_format(self):
-        for input, val, answer, expand in [
-            ("1.23", 1.23, "1.23", False),
-            ("1.23", 4.56, "4.56", False),
-            (1.23, 4.56, "4.56", False),
-            ("-1.23", 4.56, " 4.56", False),
-            ("1.0e-2", 2, "2.0e+0", False),
-            ("1.602-19", 6.02e23, "6.020+23", False),
-            ("1.602-0019", 6.02e23, "6.020+0023", False),
-            (Jump(), 5.4, "5.4 ", True),
-            ("1", 2, "2", False),
-            ("0.5", 0, "0.0", False),
-        ]:
-            print("in:", input, "new value:", val, "answer:", answer)
-            node = syntax_node.ValueNode(input, float)
-            node.value = val
-            if expand:
-                warnings.simplefilter("default")
-                with self.assertWarns(LineExpansionWarning):
-                    self.assertEqual(node.format(), answer)
-            else:
-                # change warnings to errors to ensure not raised
-                warnings.resetwarnings()
-                warnings.simplefilter("error")
-                self.assertEqual(node.format(), answer)
-        for padding, val, answer, expand in [
-            ([" "], 10, "10.0 ", True),
-            (["  "], 10, "10.0 ", False),
-            (["\n"], 10, "10.0\n", True),
-            ([" ", "\n", "c hi"], 10, "10.0\nc hi", False),
-            (["  ", "\n"], 10, "10.0 \n", False),
-        ]:
-            print("padding", padding, "new_val", val, "answer", answer)
-            pad_node = syntax_node.PaddingNode(padding[0])
-            for pad in padding[1:]:
-                pad_node.append(pad)
-            node = syntax_node.ValueNode("1.0", float, pad_node)
-            node.value = val
-            if expand:
-                warnings.simplefilter("default")
-                with self.assertWarns(LineExpansionWarning):
-                    self.assertEqual(node.format(), answer)
-            else:
-                # change warnings to errors to ensure not raised
-                warnings.resetwarnings()
-                warnings.simplefilter("error")
-                self.assertEqual(node.format(), answer)
+    @pytest.mark.parametrize(
+        "input, val_type, val, answer, expand",
+        [
+            ("1.23", float, 1.23, "1.23", False),
+            ("1.23", float, 4.56, "4.56", False),
+            (1.23, float, 4.56, "4.56", False),
+            # test bad rounding
+            ("1", float, 1.5, "1.5", True),
+            ("1.0", float, 1.05, "1.05", True),
+            ("1.0", float, 1.056, "1.056", True),
+            ("-1.23", float, 4.56, " 4.56", False),
+            ("1.0e-2", float, 2, "2.0e+0", False),
+            # bad rounding
+            ("1.0e-2", float, 1.01e-3, "1.01e-3", True),
+            ("1.602-19", float, 6.02e23, "6.020+23", False),
+            ("1.602-0019", float, 6.02e23, "6.020+0023", False),
+            (Jump(), float, 5.4, "5.4 ", True),
+            ("1", float, 2, "2", False),
+            ("0.5", float, 0, "0.0", False),
+            ("hi", str, "foo", "foo", True),
+            ("hi", str, None, "", False),
+        ],
+    )
+    def test_value_float_format(_, input, val_type, val, answer, expand):
+        node = syntax_node.ValueNode(input, val_type)
+        node.value = val
+        if expand:
+            warnings.simplefilter("default")
+            with pytest.warns(LineExpansionWarning):
+                assert node.format() == answer
+        else:
+            # change warnings to errors to ensure not raised
+            warnings.resetwarnings()
+            warnings.simplefilter("error")
+            assert node.format() == answer
 
-    def test_value_str_format(self):
-        for input, val, answer, expand in [
-            ("hi", "foo", "foo", True),
-            ("hi", None, "", False),
-        ]:
-            node = syntax_node.ValueNode(input, str)
-            node.value = val
-            if expand:
-                warnings.simplefilter("default")
-                with self.assertWarns(LineExpansionWarning):
-                    self.assertEqual(node.format(), answer)
-            else:
-                # change warnings to errors to ensure not raised
-                warnings.resetwarnings()
-                warnings.simplefilter("error")
-                self.assertEqual(node.format(), answer)
-        for padding, val, answer, expand in [
-            ([" "], "foo", "foo ", True),
-            (["  "], "foo", "foo ", False),
-            (["\n"], "foo", "foo\n", True),
-            ([" ", "\n", "c hi"], "foo", "foo\nc hi", False),
-            (["  ", "\n"], "foo", "foo \n", False),
-        ]:
-            print("padding", padding, "new_val", val, "answer", answer)
-            pad_node = syntax_node.PaddingNode(padding[0])
-            for pad in padding[1:]:
-                pad_node.append(pad)
-            node = syntax_node.ValueNode("hi", str, pad_node)
-            node.value = val
-            if expand:
-                warnings.simplefilter("default")
-                with self.assertWarns(LineExpansionWarning):
-                    self.assertEqual(node.format(), answer)
-            else:
-                # change warnings to errors to ensure not raised
-                warnings.resetwarnings()
-                warnings.simplefilter("error")
-                self.assertEqual(node.format(), answer)
+    @pytest.mark.parametrize(
+        "padding, val_type, val, answer, expand",
+        [
+            ([" "], float, 10, "10.0 ", True),
+            (["  "], float, 10, "10.0 ", False),
+            (["\n"], float, 10, "10.0\n", False),
+            ([" ", "\n", "c hi"], float, 10, "10.0\nc hi", False),
+            (["  ", "\n"], float, 10, "10.0 \n", False),
+            ([" "], str, "foo", "foo ", True),
+            (["  "], str, "foo", "foo ", False),
+            (["\n"], str, "foo", "foo\n", False),
+            ([" ", "\n", "c hi"], str, "foo", "foo\nc hi", False),
+            (["  ", "\n"], str, "foo", "foo \n", False),
+        ],
+    )
+    def test_value_gen_padding_format(_, padding, val_type, val, answer, expand):
+        pad_node = syntax_node.PaddingNode(padding[0])
+        for pad in padding[1:]:
+            pad_node.append(pad)
+        if val_type == float:
+            default = "1.0"
+        elif val_type == str:
+            default = "hi"
+        node = syntax_node.ValueNode(default, val_type, pad_node)
+        node.value = val
+        if expand:
+            warnings.simplefilter("default")
+            with pytest.warns(LineExpansionWarning):
+                assert node.format() == answer
+        else:
+            # change warnings to errors to ensure not raised
+            warnings.resetwarnings()
+            warnings.simplefilter("error")
+            assert node.format() == answer
 
-    def test_value_enum_format(self):
-        lat = montepy.data_inputs.lattice.Lattice
-        st = montepy.surfaces.surface_type.SurfaceType
-        for input, val, enum_class, args, answer, expand in [
+    @pytest.mark.parametrize(
+        "input, val, enum_class, args, answer, expand",
+        [
             (
                 "1",
                 lat.HEXAGONAL,
@@ -313,41 +304,43 @@ class TestValueNode(TestCase):
                 False,
             ),
             ("p", st.PZ, st, {"format_type": str, "switch_to_upper": True}, "PZ", True),
-        ]:
-            node = syntax_node.ValueNode(input, args["format_type"])
-            node._convert_to_enum(enum_class, **args)
-            node.value = val
-            if expand:
-                warnings.simplefilter("default")
-                with self.assertWarns(LineExpansionWarning):
-                    self.assertEqual(node.format(), answer)
-            else:
-                # change warnings to errors to ensure not raised
-                warnings.resetwarnings()
-                warnings.simplefilter("error")
-                self.assertEqual(node.format(), answer)
+        ],
+    )
+    def test_value_enum_format(_, input, val, enum_class, args, answer, expand):
+        node = syntax_node.ValueNode(input, args["format_type"])
+        node._convert_to_enum(enum_class, **args)
+        node.value = val
+        if expand:
+            warnings.simplefilter("default")
+            with pytest.warns(LineExpansionWarning):
+                assert node.format() == answer
+        else:
+            # change warnings to errors to ensure not raised
+            warnings.resetwarnings()
+            warnings.simplefilter("error")
+            assert node.format() == answer
 
     def test_value_comments(self):
         value_node = syntax_node.ValueNode("1", int)
-        self.assertEqual(len(list(value_node.comments)), 0)
+        assert len(list(value_node.comments)) == 0
         padding = syntax_node.PaddingNode("$ hi", True)
         value_node.padding = padding
         comments = list(value_node.comments)
-        self.assertEqual(len(comments), 1)
-        self.assertIn("hi", comments[0].contents)
+        assert len(comments) == 1
+        assert "hi" in comments[0].contents
 
     def test_value_trailing_comments(self):
         value_node = syntax_node.ValueNode("1", int)
-        self.assertIsNone(value_node.get_trailing_comment())
+        assert None is (value_node.get_trailing_comment())
         value_node._delete_trailing_comment()
-        self.assertIsNone(value_node.get_trailing_comment())
+        assert None is (value_node.get_trailing_comment())
         padding = syntax_node.PaddingNode("c hi", True)
         value_node.padding = padding
         comment = value_node.get_trailing_comment()
-        self.assertEqual(len(comment), 1)
-        self.assertEqual(comment[0].contents, "hi")
+        assert len(comment) == 1
+        assert comment[0].contents == "hi"
         value_node._delete_trailing_comment()
-        self.assertIsNone(value_node.get_trailing_comment())
+        assert None is (value_node.get_trailing_comment())
 
     def test_value_str(self):
         value_node = syntax_node.ValueNode("1", int)
@@ -360,94 +353,98 @@ class TestValueNode(TestCase):
 
     def test_value_equality(self):
         value_node1 = syntax_node.ValueNode("1", int)
-        self.assertTrue(value_node1 == value_node1)
+        assert value_node1 == value_node1
         assert not value_node1 == syntax_node.PaddingNode("")
         value_node2 = syntax_node.ValueNode("2", int)
-        self.assertTrue(value_node1 != value_node2)
+        assert value_node1 != value_node2
         value_node3 = syntax_node.ValueNode("hi", str)
-        self.assertTrue(value_node1 != value_node3)
-        self.assertTrue(value_node1 == 1)
-        self.assertTrue(value_node1 != 2)
-        self.assertTrue(value_node1 != "hi")
+        assert value_node1 != value_node3
+        assert value_node1 == 1
+        assert value_node1 != 2
+        assert value_node1 != "hi"
         value_node4 = syntax_node.ValueNode("1.5", float)
         value_node5 = syntax_node.ValueNode("1.50000000000001", float)
-        self.assertTrue(value_node4 == value_node5)
+        assert value_node4 == value_node5
         value_node5.value = 2.0
-        self.assertTrue(value_node4 != value_node5)
+        assert value_node4 != value_node5
 
 
-class TestSyntaxNode(TestCase):
-    def setUp(self):
+class TestSyntaxNode:
+    @pytest.fixture
+    def test_node(_):
         value1 = syntax_node.ValueNode("1.5", float)
         value2 = syntax_node.ValueNode("1", int)
-        self.test_node = syntax_node.SyntaxNode(
+        test_node = syntax_node.SyntaxNode(
             "test",
             {"foo": value1, "bar": value2, "bar2": syntax_node.SyntaxNode("test2", {})},
         )
+        return test_node
 
-    def test_syntax_init(self):
-        test = self.test_node
-        self.assertEqual(test.name, "test")
-        self.assertIn("foo", test.nodes)
-        self.assertIn("bar", test.nodes)
-        self.assertIsInstance(test.nodes["foo"], syntax_node.ValueNode)
+    def test_syntax_init(_, test_node):
+        test = test_node
+        assert test.name == "test"
+        assert "foo" in test.nodes
+        assert "bar" in test.nodes
+        assert isinstance(test.nodes["foo"], syntax_node.ValueNode)
 
-    def test_syntax_name(self):
-        test = self.test_node
+    def test_syntax_name(_, test_node):
+        test = test_node
         test.name = "hi"
-        self.assertEqual(test.name, "hi")
-        with self.assertRaises(TypeError):
+        assert test.name == "hi"
+        with pytest.raises(TypeError):
             test.name = 1.0
 
-    def test_get_value(self):
-        test = self.test_node
-        self.assertEqual(test.get_value("foo"), 1.5)
-        with self.assertRaises(KeyError):
+    def test_get_value(_, test_node):
+        test = test_node
+        assert test.get_value("foo") == 1.5
+        with pytest.raises(KeyError):
             test.get_value("foo2")
-        with self.assertRaises(KeyError):
+        with pytest.raises(KeyError):
             test.get_value("bar2")
 
-    def test_syntax_format(self):
-        output = self.test_node.format()
-        self.assertEqual(output, "1.51")
+    def test_syntax_format(_, test_node):
+        output = test_node.format()
+        assert output == "1.51"
 
-    def test_syntax_dict(self):
-        test = self.test_node
-        self.assertIn("foo", test)
-        self.assertEqual(test["foo"], test.nodes["foo"])
+    def test_syntax_dict(_, test_node):
+        test = test_node
+        assert "foo" in test
+        assert test["foo"] == test.nodes["foo"]
 
-    def test_syntax_comments(self):
+    def test_syntax_comments(_, test_node):
         padding = syntax_node.PaddingNode("$ hi", True)
-        test = copy.deepcopy(self.test_node)
+        test = copy.deepcopy(test_node)
         test["foo"].padding = padding
         padding = syntax_node.PaddingNode("$ foo", True)
         test["bar"].padding = padding
         comments = list(test.comments)
-        self.assertEqual(len(comments), 2)
+        assert len(comments) == 2
 
-    def test_syntax_trailing_comments(self):
+    def test_syntax_trailing_comments(_, test_node):
         # test with blank tail
-        self.assertIsNone(self.test_node.get_trailing_comment())
-        test = copy.deepcopy(self.test_node)
+        assert None is test_node.get_trailing_comment()
+        test = copy.deepcopy(test_node)
         test["bar2"].nodes["foo"] = syntax_node.ValueNode("1.23", float)
-        self.assertIsNone(test.get_trailing_comment())
+        assert None is (test.get_trailing_comment())
         test["bar2"]["foo"].padding = syntax_node.PaddingNode("c hi", True)
-        self.assertEqual(len(test.get_trailing_comment()), 1)
+        assert len(test.get_trailing_comment()) == 1
         test._delete_trailing_comment()
-        self.assertIsNone(test.get_trailing_comment())
+        assert None is (test.get_trailing_comment())
 
-    def test_syntax_str(self):
-        str(self.test_node)
-        repr(self.test_node)
-        self.test_node._pretty_str()
+    def test_syntax_str(_, test_node):
+        str(test_node)
+        repr(test_node)
+        test_node._pretty_str()
 
 
-class TestGeometryTree(TestCase):
-    def setUp(self):
+class TestGeometryTree:
+
+    @pytest.fixture
+    def test_tree(_):
         left = syntax_node.ValueNode("1", int)
         right = syntax_node.ValueNode("2", int)
         op = syntax_node.PaddingNode(" ")
-        self.test_tree = syntax_node.GeometryTree(
+        return syntax_node.GeometryTree(
             "test",
             {"left": left, "operator": op, "right": right},
             montepy.Operator.INTERSECTION,
@@ -466,25 +463,24 @@ class TestGeometryTree(TestCase):
             left,
             right,
         )
-        self.assertIs(tree.left, left)
-        self.assertIs(tree.right, right)
-        self.assertEqual(tree.operator, montepy.Operator.INTERSECTION)
+        assert tree.left is left
+        assert tree.right is right
+        assert tree.operator == montepy.Operator.INTERSECTION
 
-    def test_geometry_format(self):
-        test = self.test_tree
-        self.assertEqual(test.format(), "1 2")
+    def test_geometry_format(_, test_tree):
+        assert test_tree.format() == "1 2"
 
-    def test_geometry_str(self):
-        test = self.test_tree
+    def test_geometry_str(_, test_tree):
+        test = test_tree
         str(test)
         repr(test)
         test._pretty_str()
 
-    def test_geometry_comments(self):
-        test = copy.deepcopy(self.test_tree)
+    def test_geometry_comments(_, test_tree):
+        test = copy.deepcopy(test_tree)
         test.left.padding = syntax_node.PaddingNode("$ hi", True)
         comments = list(test.comments)
-        self.assertEqual(len(comments), 1)
+        assert len(comments) == 1
 
 
 def test_geometry_tree_mark_last_leaf_shortcut():
@@ -519,38 +515,38 @@ def test_geometry_tree_mark_last_leaf_shortcut():
     assert geom.right._right_short_type == Shortcuts.REPEAT
 
 
-class TestPaddingNode(TestCase):
+class TestPaddingNode:
     def test_padding_init(self):
         pad = syntax_node.PaddingNode(" ")
-        self.assertEqual(len(pad.nodes), 1)
-        self.assertEqual(pad.value, " ")
+        assert len(pad.nodes) == 1
+        assert pad.value == " "
 
     def test_padding_is_space(self):
         pad = syntax_node.PaddingNode(" ")
-        self.assertTrue(pad.is_space(0))
+        assert pad.is_space(0)
         pad.append("\n")
-        self.assertTrue(not pad.is_space(1))
+        assert not pad.is_space(1)
         pad.append("$ hi", True)
-        self.assertTrue(not pad.is_space(2))
-        with self.assertRaises(IndexError):
+        assert not pad.is_space(2)
+        with pytest.raises(IndexError):
             pad.is_space(5)
 
     def test_padding_append(self):
         pad = syntax_node.PaddingNode(" ")
         pad.append("\n")
-        self.assertEqual(len(pad), 2)
+        assert len(pad) == 2
         pad.append(" ")
-        self.assertEqual(len(pad), 3)
+        assert len(pad) == 3
         pad.append(" \n")
-        self.assertEqual(len(pad), 5)
+        assert len(pad) == 5
         pad.append("$ hi", True)
-        self.assertEqual(len(pad), 6)
+        assert len(pad) == 6
 
     def test_padding_format(self):
         pad = syntax_node.PaddingNode(" ")
-        self.assertEqual(pad.format(), " ")
+        assert pad.format() == " "
         pad.append("$ hi", True)
-        self.assertEqual(pad.format(), " $ hi")
+        assert pad.format() == " $ hi"
 
     def test_padding_grab_beginning_format(self):
         pad = syntax_node.PaddingNode(" ")
@@ -561,32 +557,32 @@ class TestPaddingNode(TestCase):
         ]
         answer = copy.copy(new_pad)
         pad._grab_beginning_comment(new_pad)
-        self.assertEqual(pad.nodes, answer + ["\n", " "])
+        assert pad.nodes == answer + ["\n", " "]
 
     def test_padding_eq(self):
         pad = syntax_node.PaddingNode(" ")
-        self.assertTrue(pad == " ")
-        self.assertTrue(pad != " hi ")
+        assert pad == " "
+        assert pad != " hi "
         pad1 = syntax_node.PaddingNode(" ")
-        self.assertTrue(pad == pad1)
+        assert pad == pad1
         assert not pad == 1
 
     def test_comment_init(self):
         comment = syntax_node.CommentNode("$ hi")
-        self.assertIsInstance(comment.nodes[0], syntax_node.SyntaxNode)
-        self.assertEqual(len(comment.nodes), 1)
-        self.assertTrue(comment.is_dollar)
+        assert isinstance(comment.nodes[0], syntax_node.SyntaxNode)
+        assert len(comment.nodes) == 1
+        assert comment.is_dollar
         comment = syntax_node.CommentNode(" c hi")
-        self.assertTrue(not comment.is_dollar)
-        self.assertEqual(len(list(comment.comments)), 1)
+        assert not comment.is_dollar
+        assert len(list(comment.comments)) == 1
 
     def test_comment_append(self):
         comment = syntax_node.CommentNode("c foo")
         comment.append("c bar")
-        self.assertEqual(len(comment.nodes), 2)
+        assert len(comment.nodes) == 2
         # test mismatch
         comment = syntax_node.CommentNode("$ hi")
-        with self.assertRaises(TypeError):
+        with pytest.raises(TypeError):
             comment.append("c hi")
 
     def test_comment_str(self):
@@ -596,9 +592,9 @@ class TestPaddingNode(TestCase):
 
     def test_blank_dollar_comment(self):
         comment = syntax_node.CommentNode("$")
-        self.assertTrue(comment.is_dollar)
-        self.assertEqual(len(list(comment.comments)), 1)
-        self.assertEqual(len(comment.contents), 0)
+        assert comment.is_dollar
+        assert len(list(comment.comments)) == 1
+        assert len(comment.contents) == 0
 
 
 def test_graveyard_comment():
@@ -627,41 +623,41 @@ def test_padding_has_space(padding, expect):
     assert node.has_space() == expect
 
 
-class TestParticlesNode(TestCase):
+class TestParticlesNode:
     def test_particle_init(self):
         parts = syntax_node.ParticleNode("test", ":n,p,e")
         particle = montepy.particle.Particle
         answers = {particle.NEUTRON, particle.PHOTON, particle.ELECTRON}
-        self.assertEqual(parts.particles, answers)
-        self.assertEqual(len(list(parts.comments)), 0)
+        assert parts.particles == answers
+        assert len(list(parts.comments)) == 0
         for part in parts:
-            self.assertIn(part, answers)
+            assert part in answers
         answers = [particle.NEUTRON, particle.PHOTON, particle.ELECTRON]
-        self.assertEqual(parts._particles_sorted, answers)
+        assert parts._particles_sorted == answers
 
     def test_particles_setter(self):
         parts = syntax_node.ParticleNode("test", "n,p,e")
         particle = montepy.particle.Particle
         parts.particles = {particle.TRITON}
-        self.assertEqual(parts.particles, {particle.TRITON})
+        assert parts.particles == {particle.TRITON}
         parts.particles = [particle.TRITON]
-        self.assertEqual(parts.particles, {particle.TRITON})
-        with self.assertRaises(TypeError):
+        assert parts.particles == {particle.TRITON}
+        with pytest.raises(TypeError):
             parts.particles = "hi"
-        with self.assertRaises(TypeError):
+        with pytest.raises(TypeError):
             parts.particles = {"hi"}
 
     def test_particles_add_remove(self):
         parts = syntax_node.ParticleNode("test", "n,p,e")
         particle = montepy.particle.Particle
         parts.add(particle.TRITON)
-        self.assertIn(particle.TRITON, parts)
-        self.assertEqual(parts._particles_sorted[-1], particle.TRITON)
-        with self.assertRaises(TypeError):
+        assert particle.TRITON in parts
+        assert parts._particles_sorted[-1] == particle.TRITON
+        with pytest.raises(TypeError):
             parts.add("hi")
         parts.remove(particle.NEUTRON)
-        self.assertNotIn(particle.NEUTRON, parts)
-        with self.assertRaises(TypeError):
+        assert particle.NEUTRON not in parts
+        with pytest.raises(TypeError):
             parts.remove("hi")
 
     def test_particles_sorted(self):
@@ -669,27 +665,27 @@ class TestParticlesNode(TestCase):
         particle = montepy.particle.Particle
         # lazily work around internals
         parts._particles.remove(particle.NEUTRON)
-        self.assertNotIn(particle.NEUTRON, parts._particles_sorted)
+        assert particle.NEUTRON not in parts._particles_sorted
         parts._particles.add(particle.TRITON)
-        self.assertIn(particle.TRITON, parts._particles_sorted)
+        assert particle.TRITON in parts._particles_sorted
 
     def test_particles_format(self):
         parts = syntax_node.ParticleNode("test", "n,p,e")
         repr(parts)
-        self.assertEqual(parts.format(), ":n,p,e")
+        assert parts.format() == ":n,p,e"
         parts = syntax_node.ParticleNode("test", "N,P,E")
-        self.assertEqual(parts.format(), ":N,P,E")
+        assert parts.format() == ":N,P,E"
 
 
-class TestListNode(TestCase):
+class TestListNode:
     def test_list_init(self):
         list_node = syntax_node.ListNode("list")
-        self.assertEqual(list_node.nodes, [])
+        assert list_node.nodes == []
 
     def test_list_append(self):
         list_node = syntax_node.ListNode("list")
         list_node.append(syntax_node.ValueNode("1.0", float))
-        self.assertEqual(len(list_node), 1)
+        assert len(list_node) == 1
 
     def test_list_str(self):
         list_node = syntax_node.ListNode("list")
@@ -702,18 +698,18 @@ class TestListNode(TestCase):
         list_node = syntax_node.ListNode("list")
         for i in range(20):
             list_node.append(syntax_node.ValueNode("1.0", float))
-        self.assertEqual(list_node[5], syntax_node.ValueNode("1.0", float))
+        assert list_node[5] == syntax_node.ValueNode("1.0", float)
         for val in list_node[1:5]:
-            self.assertEqual(val, syntax_node.ValueNode("1.0", float))
+            assert val == syntax_node.ValueNode("1.0", float)
         for val in list_node[1:5:1]:
-            self.assertEqual(val, syntax_node.ValueNode("1.0", float))
+            assert val == syntax_node.ValueNode("1.0", float)
         for val in list_node[::1]:
-            self.assertEqual(val, syntax_node.ValueNode("1.0", float))
+            assert val == syntax_node.ValueNode("1.0", float)
         for val in list_node[5:1:-1]:
-            self.assertEqual(val, syntax_node.ValueNode("1.0", float))
+            assert val == syntax_node.ValueNode("1.0", float)
         for val in list_node[::-1]:
-            self.assertEqual(val, syntax_node.ValueNode("1.0", float))
-        with self.assertRaises(IndexError):
+            assert val == syntax_node.ValueNode("1.0", float)
+        with pytest.raises(IndexError):
             list_node[50]
 
     def test_list_equality(self):
@@ -722,13 +718,13 @@ class TestListNode(TestCase):
             list_node1.append(syntax_node.ValueNode("1.0", float))
         assert not list_node1 == "hi"
         list2 = [syntax_node.ValueNode("1.0", float)] * 19
-        self.assertTrue(not list_node1 == list2)
+        assert not list_node1 == list2
         list2 = [syntax_node.ValueNode("1.0", float)] * 20
-        self.assertTrue(list_node1 == list2)
+        assert list_node1 == list2
         list2 = [syntax_node.ValueNode("1.0", float)] * 19 + [
             syntax_node.ValueNode("1.5", float)
         ]
-        self.assertTrue(list_node1 != list2)
+        assert list_node1 != list2
 
     def test_list_trailing_comment(self):
         list_node1 = syntax_node.ListNode("list")
@@ -737,20 +733,20 @@ class TestListNode(TestCase):
         padding = syntax_node.PaddingNode("c hi", True)
         list_node1[-1].padding = padding
         comments = list(list_node1.get_trailing_comment())
-        self.assertEqual(len(comments), 1)
+        assert len(comments) == 1
         list_node1._delete_trailing_comment()
-        self.assertIsNone(list_node1.get_trailing_comment())
+        assert None is (list_node1.get_trailing_comment())
         # test an empty list
         list_node1 = syntax_node.ListNode("list")
-        self.assertIsNone(list_node1.get_trailing_comment())
+        assert None is (list_node1.get_trailing_comment())
         list_node1._delete_trailing_comment()
-        self.assertIsNone(list_node1.get_trailing_comment())
+        assert None is (list_node1.get_trailing_comment())
 
     def test_list_format(self):
         list_node = syntax_node.ListNode("list")
         for i in range(20):
             list_node.append(syntax_node.ValueNode("1.0", float))
-        self.assertEqual(list_node.format(), "1.0 " * 19 + "1.0")
+        assert list_node.format() == "1.0 " * 19 + "1.0"
 
     def test_list_comments(self):
         list_node = syntax_node.ListNode("list")
@@ -759,22 +755,22 @@ class TestListNode(TestCase):
         padding = syntax_node.PaddingNode("$ hi", True)
         list_node[-1].padding = padding
         comments = list(list_node.comments)
-        self.assertEqual(len(comments), 1)
+        assert len(comments) == 1
 
 
-class TestMaterialssNode(TestCase):
+class TestMaterialssNode:
     def test_isotopes_init(self):
         isotope = syntax_node.MaterialsNode("test")
-        self.assertEqual(isotope.name, "test")
-        self.assertIsInstance(isotope.nodes, list)
+        assert isotope.name == "test"
+        assert isinstance(isotope.nodes, list)
 
     def test_isotopes_append(self):
         isotopes = syntax_node.MaterialsNode("test")
         zaid = syntax_node.ValueNode("1001.80c", str)
         concentration = syntax_node.ValueNode("1.5", float)
         isotopes.append_nuclide(("isotope_fraction", zaid, concentration))
-        self.assertEqual(isotopes.nodes[-1][0], zaid)
-        self.assertEqual(isotopes.nodes[-1][1], concentration)
+        assert isotopes.nodes[-1][0] == zaid
+        assert isotopes.nodes[-1][1] == concentration
 
     def test_isotopes_format(self):
         padding = syntax_node.PaddingNode(" ")
@@ -784,7 +780,7 @@ class TestMaterialssNode(TestCase):
         concentration = syntax_node.ValueNode("1.5", float)
         concentration.padding = padding
         isotopes.append_nuclide(("isotope_fraction", zaid, concentration))
-        self.assertEqual(isotopes.format(), "1001.80c 1.5 ")
+        assert isotopes.format() == "1001.80c 1.5 "
 
     def test_isotopes_str(self):
         isotopes = syntax_node.MaterialsNode("test")
@@ -802,7 +798,7 @@ class TestMaterialssNode(TestCase):
         isotopes.append_nuclide(("isotope_fraction", zaid, concentration))
         isotopes.append_nuclide(("isotope_fraction", zaid, concentration))
         for combo in isotopes:
-            self.assertEqual(len(combo), 2)
+            assert len(combo) == 2
 
     def test_isotopes_comments(self):
         padding = syntax_node.PaddingNode(" ")
@@ -815,8 +811,8 @@ class TestMaterialssNode(TestCase):
         concentration.padding = padding
         isotopes.append_nuclide(("isotope_fraction", zaid, concentration))
         comments = list(isotopes.comments)
-        self.assertEqual(len(comments), 1)
-        self.assertEqual(comments[0].contents, "hi")
+        assert len(comments) == 1
+        assert comments[0].contents == "hi"
 
     def test_isotopes_trailing_comment(self):
         padding = syntax_node.PaddingNode(" ")
@@ -829,32 +825,32 @@ class TestMaterialssNode(TestCase):
         concentration.padding = padding
         isotopes.append_nuclide(("isotope_fraction", zaid, concentration))
         comments = isotopes.get_trailing_comment()
-        self.assertEqual(len(comments), 1)
-        self.assertEqual(comments[0].contents, "hi")
+        assert len(comments) == 1
+        assert comments[0].contents == "hi"
         isotopes._delete_trailing_comment()
         comments = isotopes.get_trailing_comment()
-        self.assertIsNone(comments)
+        assert None is (comments)
 
 
-class TestShortcutNode(TestCase):
+class TestShortcutNode:
     def test_basic_shortcut_init(self):
-        with self.assertRaises(ValueError):
+        with pytest.raises(ValueError):
             syntax_node.ShortcutNode("")
         # test a blank init
         shortcut = syntax_node.ShortcutNode(
             short_type=syntax_node.Shortcuts.LOG_INTERPOLATE
         )
-        self.assertEqual(shortcut._type, syntax_node.Shortcuts.LOG_INTERPOLATE)
-        self.assertEqual(shortcut.end_padding.nodes, [" "])
-        with self.assertRaises(TypeError):
+        assert shortcut._type == syntax_node.Shortcuts.LOG_INTERPOLATE
+        assert shortcut.end_padding.nodes == [" "]
+        with pytest.raises(TypeError):
             syntax_node.ShortcutNode(short_type="")
 
     def test_shortcut_end_padding_setter(self):
         short = syntax_node.ShortcutNode()
         pad = syntax_node.PaddingNode(" ")
         short.end_padding = pad
-        self.assertEqual(short.end_padding, pad)
-        with self.assertRaises(TypeError):
+        assert short.end_padding == pad
+        with pytest.raises(TypeError):
             short.end_padding = " "
 
 
@@ -1054,55 +1050,59 @@ class ShortcutGeometryTestFixture(montepy.input_parser.cell_parser.CellParser):
         return p[0]
 
 
-class TestShortcutListIntegration(TestCase):
-    def setUp(self):
-        self.parser = ShortcutTestFixture()
+class TestShortcutListIntegration:
+    @pytest.fixture
+    def parser(_):
+        return ShortcutTestFixture()
+
+    @pytest.fixture
+    def list_node(_, parser):
         input = Input(["1 1 2i 4"], BlockType.DATA)
-        self.list_node = self.parser.parse(input.tokenize())
+        return parser.parse(input.tokenize())
 
-    def test_shortcut_list_node_init(self):
+    def test_shortcut_list_node_init(_, list_node):
         answers = [1, 1, 2, 3, 4]
-        for val, gold in zip(self.list_node, answers):
-            self.assertAlmostEqual(val.value, gold)
+        for val, gold in zip(list_node, answers):
+            assert val.value == pytest.approx(gold)
 
-    def test_shortcut_list_update_vals(self):
-        list_node = copy.deepcopy(self.list_node)
+    def test_shortcut_list_update_vals(_, list_node):
+        list_node = copy.deepcopy(list_node)
         values = list(list_node)
         list_node.update_with_new_values(values)
-        self.assertEqual(list(list_node), values)
+        assert list(list_node) == values
 
-    def test_shortcut_list_update_vals_repeat(self):
+    def test_shortcut_list_update_vals_repeat(_, parser):
         input = Input(["1 2 3 5R 0 0"], BlockType.DATA)
-        list_node = self.parser.parse(input.tokenize())
+        list_node = parser.parse(input.tokenize())
         values = list(list_node)
         values.insert(2, syntax_node.ValueNode(3.0, float))
         list_node.update_with_new_values(values)
-        self.assertEqual(len(list_node._shortcuts[0].nodes), 7)
-        self.assertEqual(list(list_node), values)
+        assert len(list_node._shortcuts[0].nodes) == 7
+        assert list(list_node) == values
 
-    def test_shortcut_list_trailing_jump(self):
+    def test_shortcut_list_trailing_jump(_, parser):
         input = Input(["1 2 3 5R 0 0"], BlockType.DATA)
-        list_node = self.parser.parse(input.tokenize())
+        list_node = parser.parse(input.tokenize())
         values = list(list_node)
         values.append(syntax_node.ValueNode(Jump(), float))
         list_node.update_with_new_values(values)
-        self.assertEqual(list(list_node), values[:-1])
+        assert list(list_node) == values[:-1]
         # test with User specified end jump
         input = Input(["1 2 3 5R 0 0 j"], BlockType.DATA)
-        list_node = self.parser.parse(input.tokenize())
+        list_node = parser.parse(input.tokenize())
         values = list(list_node)
         values.append(syntax_node.ValueNode(Jump(), float))
         list_node.update_with_new_values(values)
-        self.assertEqual(list(list_node), values)
+        assert list(list_node) == values
 
-    def test_shortcut_list_touching_shortcuts(self):
+    def test_shortcut_list_touching_shortcuts(_, parser):
         input = Input(["1 2 3 5R 3 3 4R 0 0"], BlockType.DATA)
-        list_node = self.parser.parse(input.tokenize())
+        list_node = parser.parse(input.tokenize())
         values = list(list_node)
         list_node.update_with_new_values(values)
-        self.assertEqual(list(list_node), values)
+        assert list(list_node) == values
 
-    def test_shortcut_then_jump_compress(self):
+    def test_shortcut_then_jump_compress(_, parser):
         for input_str, index in [
             ("1 2 3 5R 3 3 4R 0 0", -2),
             ("1 2 3M 4", -2),
@@ -1110,87 +1110,87 @@ class TestShortcutListIntegration(TestCase):
         ]:
             print(input_str)
             input = Input([input_str], BlockType.DATA)
-            list_node = self.parser.parse(input.tokenize())
+            list_node = parser.parse(input.tokenize())
             values = list(list_node)
             values[index].value = None
             list_node.update_with_new_values(values)
-            self.assertEqual(list(list_node), values)
+            assert list(list_node) == values
 
-    def test_shortcut_list_shortcut_cant_consume(self):
+    def test_shortcut_list_shortcut_cant_consume(_, parser):
         # try with wrong type
         input = Input(["1 2 3 5R 3 3 4R "], BlockType.DATA)
-        list_node = self.parser.parse(input.tokenize())
+        list_node = parser.parse(input.tokenize())
         values = list(list_node)
         values.append(syntax_node.ValueNode("hi", str))
         list_node.update_with_new_values(values)
-        self.assertEqual(list(list_node), values)
-        self.assertEqual(len(list_node._shortcuts[1].nodes), 5)
+        assert list(list_node) == values
+        assert len(list_node._shortcuts[1].nodes) == 5
         # try with wrong value
         input = Input(["1 2 3 5R 3 3 4R "], BlockType.DATA)
-        list_node = self.parser.parse(input.tokenize())
+        list_node = parser.parse(input.tokenize())
         values = list(list_node)
         values.append(syntax_node.ValueNode("5.0", float))
         list_node.update_with_new_values(values)
-        self.assertEqual(list(list_node), values)
-        self.assertEqual(len(list_node._shortcuts[1].nodes), 5)
+        assert list(list_node) == values
+        assert len(list_node._shortcuts[1].nodes) == 5
         # try with right value
         values[-1].value = 3.0
         list_node.update_with_new_values(values)
-        self.assertEqual(list(list_node), values)
-        self.assertEqual(len(list_node._shortcuts[1].nodes), 6)
+        assert list(list_node) == values
+        assert len(list_node._shortcuts[1].nodes) == 6
 
-    def test_shortcut_list_multiply(self):
+    def test_shortcut_list_multiply(_, parser):
         input = Input(["1 2 5M "], BlockType.DATA)
-        list_node = self.parser.parse(input.tokenize())
+        list_node = parser.parse(input.tokenize())
         values = list(list_node)
         values.append(syntax_node.ValueNode("5.0", float))
         list_node.update_with_new_values(values)
-        self.assertEqual(list(list_node), values)
-        self.assertEqual(len(list_node._shortcuts[0].nodes), 2)
+        assert list(list_node) == values
+        assert len(list_node._shortcuts[0].nodes) == 2
         input = Input(["0.5 2R 5M "], BlockType.DATA)
-        list_node = self.parser.parse(input.tokenize())
+        list_node = parser.parse(input.tokenize())
         values = list(list_node)
         values.append(syntax_node.ValueNode("5.0", float))
         list_node.update_with_new_values(values)
-        self.assertEqual(list(list_node), values)
-        self.assertEqual(len(list_node._shortcuts[1].nodes), 1)
+        assert list(list_node) == values
+        assert len(list_node._shortcuts[1].nodes) == 1
 
-    def test_shortcut_list_interpolate(self):
+    def test_shortcut_list_interpolate(_, parser):
         # try with log interpolate
         input = Input(["1.0 0.01 2ILOG 10"], BlockType.DATA)
-        list_node = self.parser.parse(input.tokenize())
+        list_node = parser.parse(input.tokenize())
         values = list(list_node)
         values.append(syntax_node.ValueNode("100", float))
         list_node.update_with_new_values(values)
-        self.assertEqual(list(list_node), values)
-        self.assertEqual(len(list_node._shortcuts[0].nodes), 5)
+        assert list(list_node) == values
+        assert len(list_node._shortcuts[0].nodes) == 5
         # try with linear interpolate
         input = Input(["1 1 2I 2.5"], BlockType.DATA)
-        list_node = self.parser.parse(input.tokenize())
+        list_node = parser.parse(input.tokenize())
         values = list(list_node)
         values.append(syntax_node.ValueNode("3", float))
         list_node.update_with_new_values(values)
-        self.assertEqual(list(list_node), values)
-        self.assertEqual(len(list_node._shortcuts[0].nodes), 5)
+        assert list(list_node) == values
+        assert len(list_node._shortcuts[0].nodes) == 5
 
 
-class TestSyntaxParsing(TestCase):
+class TestSyntaxParsing:
     def testCardInit(self):
-        with self.assertRaises(TypeError):
+        with pytest.raises(TypeError):
             Input("5", BlockType.CELL)
-        with self.assertRaises(TypeError):
+        with pytest.raises(TypeError):
             Input([5], BlockType.CELL)
-        with self.assertRaises(TypeError):
+        with pytest.raises(TypeError):
             Input(["5"], "5")
 
     def testMessageInit(self):
-        with self.assertRaises(TypeError):
+        with pytest.raises(TypeError):
             Message(["hi"], "5")
-        with self.assertRaises(TypeError):
+        with pytest.raises(TypeError):
             Message(["hi"], [5])
 
     def testTitleInit(self):
-        with self.assertRaises(TypeError):
+        with pytest.raises(TypeError):
             Title(["hi"], 5)
 
     def testMessageFinder(self):
@@ -1206,16 +1206,16 @@ test title
             with StringIO(tester) as fh:
                 generator = input_syntax_reader.read_front_matters(fh, (6, 2, 0))
                 card = next(generator)
-                self.assertIsInstance(card, montepy.input_parser.mcnp_input.Message)
-                self.assertEqual(card.lines[0], validator)
-                self.assertEqual(len(card.lines), 1)
+                assert isinstance(card, montepy.input_parser.mcnp_input.Message)
+                assert card.lines[0] == validator
+                assert len(card.lines) == 1
 
     def testReadCardStr(self):
         card = ReadInput(["Read file=hi.imcnp"], BlockType.CELL)
-        self.assertEqual(str(card), "READ INPUT: Block_Type: BlockType.CELL")
-        self.assertEqual(
-            repr(card),
-            "READ INPUT: BlockType.CELL: ['Read file=hi.imcnp'] File: hi.imcnp",
+        assert str(card) == "READ INPUT: Block_Type: BlockType.CELL"
+        assert (
+            repr(card)
+            == "READ INPUT: BlockType.CELL: ['Read file=hi.imcnp'] File: hi.imcnp"
         )
 
     def testSingleLineEndComment(self):
@@ -1223,16 +1223,16 @@ test title
         input = Input(["c"], BlockType.CELL)
         generator = input.tokenize()
         token = next(generator)
-        self.assertEqual(token.type, "COMMENT")
-        self.assertEqual(token.value, "c")
+        assert token.type == "COMMENT"
+        assert token.value == "c"
 
     def testReadCardConfusions(self):
         for file in {"A1_cells", "I1_cells"}:
             input = ReadInput([f"Read FILE={file}"], BlockType.CELL)
-            self.assertEqual(input.file_name, file)
+            assert input.file_name == file
 
     def testReadCardBadSyntax(self):
-        with self.assertRaises(ParsingError):
+        with pytest.raises(ParsingError):
             card = ReadInput(["Read 1"], BlockType.CELL)
 
     def testTitleFinder(self):
@@ -1247,8 +1247,8 @@ test title
             with StringIO(tester) as fh:
                 generator = input_syntax_reader.read_front_matters(fh, (6, 2, 0))
                 card = next(generator)
-                self.assertIsInstance(card, montepy.input_parser.mcnp_input.Title)
-                self.assertEqual(card.title, validator)
+                assert isinstance(card, montepy.input_parser.mcnp_input.Title)
+                assert card.title == validator
 
     def testCardFinder(self):
         test_string = """1 0 -1
@@ -1260,28 +1260,12 @@ test title
                 fh.path = "foo"
                 generator = input_syntax_reader.read_data(fh, (6, 2, 0))
                 card = next(generator)
-                self.assertIsInstance(card, montepy.input_parser.mcnp_input.Input)
+                assert isinstance(card, montepy.input_parser.mcnp_input.Input)
                 answer = [" " * i + "1 0 -1", "     5"]
-                self.assertEqual(len(answer), len(card.input_lines))
+                assert len(answer) == len(card.input_lines)
                 for j, line in enumerate(card.input_lines):
-                    self.assertEqual(line, answer[j])
-                self.assertEqual(
-                    card.block_type, montepy.input_parser.block_type.BlockType.CELL
-                )
-
-    # TODO ensure this is tested in Input parsers
-    """
-    def testCommentFinder(self):
-        for i in range(5):
-            tester = " " * i + test_string
-            with StringIO(tester) as fh:
-                card = next(input_syntax_reader.read_data(fh, (6, 2, 0)))
-                self.assertIsInstance(card, montepy.input_parser.mcnp_input.Comment)
-                self.assertEqual(len(card.lines), 5)
-                self.assertEqual(card.lines[0], "foo")
-                self.assertEqual(card.lines[1], "bar")
-                self.assertEqual(card.lines[3], "bop")
-    """
+                    assert line == answer[j]
+                assert card.block_type == montepy.input_parser.block_type.BlockType.CELL
 
     def testReadCardFinder(self):
         test_string = "read file=foo.imcnp "
@@ -1289,7 +1273,7 @@ test title
             fh.lineno = 0
             fh.path = "foo"
             card = next(input_syntax_reader.read_data(fh, (6, 2, 0)))
-            self.assertIsNone(card)  # the read input is hidden from the user
+            assert None is (card)  # the read input is hidden from the user
 
     def testBlockId(self):
         test_string = "1 0 -1"
@@ -1299,11 +1283,11 @@ test title
                 fh.lineno = 0
                 fh.path = "foo"
                 fh.name = "name"
-                for card in input_syntax_reader.read_data(fh, (6, 2, 0)):
+                for card in input_syntax_reader.read_data(
+                    fh, (6, 2, 0), recursion=True
+                ):
                     pass
-                self.assertEqual(
-                    montepy.input_parser.block_type.BlockType(i), card.block_type
-                )
+                assert montepy.input_parser.block_type.BlockType(i) == card.block_type
 
     def testCommentFormatInput(self):
         in_strs = ["c foo", "c bar"]
@@ -1311,11 +1295,11 @@ test title
         output = card.format()
         answer = "c foo"
         str_answer = "COMMENT: c foo"
-        self.assertEqual(repr(card), str_answer)
-        self.assertEqual("c foo", str(card))
-        self.assertEqual(len(answer), len(output))
+        assert repr(card) == str_answer
+        assert "c foo" == str(card)
+        assert len(answer) == len(output)
         for i, line in enumerate(output):
-            self.assertEqual(answer[i], line)
+            assert answer[i] == line
 
     def testMessageFormatInput(self):
         answer = ["MESSAGE: foo", "bar", ""]
@@ -1324,22 +1308,22 @@ test title
 foo
 bar
 """
-        self.assertEqual(str_answer, repr(card))
-        self.assertEqual("MESSAGE: 2 lines", str(card))
+        assert str_answer == repr(card)
+        assert "MESSAGE: 2 lines" == str(card)
         output = card.format_for_mcnp_input((6, 2, 0))
-        self.assertEqual(len(answer), len(output))
+        assert len(answer) == len(output)
         for i, line in enumerate(output):
-            self.assertEqual(answer[i], line)
+            assert answer[i] == line
 
     def testTitleFormatInput(self):
         card = montepy.input_parser.mcnp_input.Title(["foo"], "foo")
         answer = ["foo"]
         str_answer = "TITLE: foo"
-        self.assertEqual(str(card), str_answer)
+        assert str(card) == str_answer
         output = card.format_for_mcnp_input((6, 2, 0))
-        self.assertEqual(len(answer), len(output))
+        assert len(answer) == len(output)
         for i, line in enumerate(output):
-            self.assertEqual(answer[i], line)
+            assert answer[i] == line
 
     def testReadInput(self):
         # TODO ensure comments are properly glued to right input
@@ -1352,7 +1336,7 @@ bar
         for i, input in enumerate(generator):
             print(input.input_lines)
             print(input_order[i])
-            self.assertIsInstance(input, input_order[i])
+            assert isinstance(input, input_order[i])
 
     def testReadInputWithRead(self):
         generator = input_syntax_reader.read_input_syntax(
@@ -1364,7 +1348,7 @@ bar
         next(generator)  # skip data mode input
         card = next(generator)
         answer = ["1 0 -1", "c"]
-        self.assertEqual(answer, card.input_lines)
+        assert answer == card.input_lines
 
     def testReadInputWithVertMode(self):
         generator = input_syntax_reader.read_input_syntax(
@@ -1372,7 +1356,7 @@ bar
         )
         next(generator)
         next(generator)
-        with self.assertRaises(montepy.errors.UnsupportedFeature):
+        with pytest.raises(montepy.errors.UnsupportedFeature):
             next(generator)
 
     def testCardStringRepr(self):
@@ -1380,8 +1364,8 @@ bar
         card = montepy.input_parser.mcnp_input.Input(
             [in_str], montepy.input_parser.block_type.BlockType.CELL
         )
-        self.assertEqual(str(card), "INPUT: BlockType.CELL")
-        self.assertEqual(repr(card), "INPUT: BlockType.CELL: ['1 0 -1']")
+        assert str(card) == "INPUT: BlockType.CELL"
+        assert repr(card) == "INPUT: BlockType.CELL: ['1 0 -1']"
 
     def testDataInputNameParsing(self):
         tests = {
@@ -1405,53 +1389,29 @@ bar
                 [in_str], montepy.input_parser.block_type.BlockType.DATA
             )
             data_input = montepy.data_inputs.data_input.DataInput(card, fast_parse=True)
-            self.assertEqual(data_input.prefix, answer["prefix"])
+            assert data_input.prefix == answer["prefix"]
             if answer["number"]:
-                self.assertEqual(data_input._input_number.value, answer["number"])
+                assert data_input._input_number.value == answer["number"]
             if answer["classifier"]:
-                self.assertEqual(
-                    sorted(data_input.particle_classifiers),
-                    sorted(answer["classifier"]),
+                assert sorted(data_input.particle_classifiers) == sorted(
+                    answer["classifier"]
                 )
 
-    def testDataInputNameEnforcement(self):
-        tests = {
-            "kcOde5": {"prefix": "kcode", "number": False, "classifier": 0},
-            "M-300": {"prefix": "m", "number": True, "classifier": 0},
-            "M": {"prefix": "m", "number": True, "classifier": 0},
-            "f4m": {"prefix": "fm", "number": True, "classifier": 1},
-            "IMP:N,P,E": {"prefix": "imp", "number": False, "classifier": 0},
-            "IMP": {"prefix": "imp", "number": False, "classifier": 2},
-        }
-        valid = {
-            "IMP:N,P,E": {"prefix": "imp", "number": False, "classifier": 2},
-            "F1004:n,P": {"prefix": "f", "number": True, "classifier": 1},
-        }
-        # tests invalid names
-        for in_str, answer in tests.items():
-            with self.assertRaises(montepy.errors.MalformedInputError):
-                card = montepy.input_parser.mcnp_input.Input(
-                    [in_str], montepy.input_parser.block_type.BlockType.DATA
-                )
-                Fixture = DataInputTestFixture
-                Fixture._class_prefix1 = answer["prefix"]
-                Fixture._has_number1 = answer["number"]
-                Fixture._has_classifier1 = answer["classifier"]
-                card = Fixture(card)
-
-        # tests valid names
-        for in_str, answer in valid.items():
+    @pytest.mark.parametrize(
+        "in_str, answer",
+        [
+            ("kcOde5", {"prefix": "kcode", "number": False, "classifier": 0}),
+            ("M-300", {"prefix": "m", "number": True, "classifier": 0}),
+            ("M", {"prefix": "m", "number": True, "classifier": 0}),
+            ("f4m", {"prefix": "fm", "number": True, "classifier": 1}),
+            ("IMP:N,P,E", {"prefix": "imp", "number": False, "classifier": 0}),
+            ("IMP", {"prefix": "imp", "number": False, "classifier": 2}),
+        ],
+    )
+    def test_data_name_enforce_bad(_, in_str, answer):
+        with pytest.raises(montepy.errors.MalformedInputError):
             card = montepy.input_parser.mcnp_input.Input(
                 [in_str], montepy.input_parser.block_type.BlockType.DATA
-            )
-            print(card.input_lines)
-            print(
-                "Prefix",
-                answer["prefix"],
-                "number",
-                answer["number"],
-                "classifier",
-                answer["classifier"],
             )
             Fixture = DataInputTestFixture
             Fixture._class_prefix1 = answer["prefix"]
@@ -1459,90 +1419,111 @@ bar
             Fixture._has_classifier1 = answer["classifier"]
             card = Fixture(card)
 
-    def test_get_line_numbers(self):
-        answers = {
-            (5, 1, 60): 80,
-            (6, 1, 0): 80,
-            (6, 2, 0): 128,
-            (6, 3, 0): 128,
-            (6, 3, 3): 128,  # Test for newer not released versions
-            (7, 4, 0): 128,
-        }
-        for version, answer in answers.items():
-            self.assertEqual(answer, montepy.constants.get_max_line_length(version))
-        with self.assertRaises(montepy.errors.UnsupportedFeature):
+    @pytest.mark.parametrize(
+        "in_str, answer",
+        [
+            ("IMP:N,P,E", {"prefix": "imp", "number": False, "classifier": 2}),
+            ("F1004:n,P", {"prefix": "f", "number": True, "classifier": 1}),
+        ],
+    )
+    def test_dat_name_enforce_good(_, in_str, answer):
+        card = montepy.input_parser.mcnp_input.Input(
+            [in_str], montepy.input_parser.block_type.BlockType.DATA
+        )
+        Fixture = DataInputTestFixture
+        Fixture._class_prefix1 = answer["prefix"]
+        Fixture._has_number1 = answer["number"]
+        Fixture._has_classifier1 = answer["classifier"]
+        card = Fixture(card)
+
+    @pytest.mark.parametrize(
+        "version, line_number",
+        [
+            ((5, 1, 60), 80),
+            ((6, 1, 0), 80),
+            ((6, 2, 0), 128),
+            ((6, 3, 0), 128),
+            ((6, 3, 1), 128),
+            ((6, 3, 3), 128),  # Test for newer not released versions
+            ((7, 4, 0), 128),
+        ],
+    )
+    def test_get_line_numbers(_, version, line_number):
+        assert line_number == montepy.constants.get_max_line_length(version)
+        with pytest.raises(montepy.errors.UnsupportedFeature):
             montepy.constants.get_max_line_length((5, 1, 38))
 
     def test_jump(self):
         jump = Jump()
-        self.assertEqual("J", str(jump))
+        assert "J" == str(jump)
         jump2 = Jump()
-        self.assertEqual(jump, jump2)
-        with self.assertRaises(TypeError):
+        assert jump == jump2
+        with pytest.raises(TypeError):
             bool(jump)
 
     def test_jump_and_a_hop(self):
         jump = Jump()
         # first you need to hop
-        self.assertEqual("j", jump.lower())
+        assert "j" == jump.lower()
         # then you need to skip
-        self.assertEqual("Jump", jump.title())
+        assert "Jump" == jump.title()
         # before you can jump
-        self.assertEqual("J", jump.upper())
+        assert "J" == jump.upper()
         str(jump)
         repr(jump)
 
 
-class TestClassifierNode(TestCase):
+class TestClassifierNode:
     def test_classifier_init(self):
         classifier = syntax_node.ClassifierNode()
-        self.assertIsNone(classifier.prefix)
-        self.assertIsNone(classifier.number)
-        self.assertIsNone(classifier.particles)
-        self.assertIsNone(classifier.modifier)
-        self.assertIsNone(classifier.padding)
+        assert None is (classifier.prefix)
+        assert None is (classifier.number)
+        assert None is (classifier.particles)
+        assert None is (classifier.modifier)
+        assert None is (classifier.padding)
 
     def test_classifier_setter(self):
         classifier = syntax_node.ClassifierNode()
         classifier.prefix = syntax_node.ValueNode("M", str)
-        self.assertEqual(classifier.prefix.value, "M")
+        assert classifier.prefix.value == "M"
         classifier.number = syntax_node.ValueNode("124", int)
-        self.assertEqual(classifier.number.value, 124)
+        assert classifier.number.value == 124
         classifier.modifier = syntax_node.ValueNode("*", str)
-        self.assertEqual(classifier.modifier.value, "*")
+        assert classifier.modifier.value == "*"
         classifier.padding = syntax_node.PaddingNode(" ")
-        self.assertEqual(len(classifier.padding.nodes), 1)
+        assert len(classifier.padding.nodes) == 1
 
     def test_classifier_format(self):
         classifier = syntax_node.ClassifierNode()
         classifier.prefix = syntax_node.ValueNode("M", str)
-        self.assertEqual(classifier.format(), "M")
+        assert classifier.format() == "M"
         classifier.number = syntax_node.ValueNode("124", int)
-        self.assertEqual(classifier.format(), "M124")
+        assert classifier.format() == "M124"
         classifier.modifier = syntax_node.ValueNode("*", str)
-        self.assertEqual(classifier.format(), "*M124")
+        assert classifier.format() == "*M124"
         classifier.padding = syntax_node.PaddingNode(" ")
-        self.assertEqual(classifier.format(), "*M124 ")
+        assert classifier.format() == "*M124 "
         str(classifier)
         repr(classifier)
 
     def test_classifier_comments(self):
         classifier = syntax_node.ClassifierNode()
         classifier.prefix = syntax_node.ValueNode("M", str)
-        self.assertEqual(len(list(classifier.comments)), 0)
+        assert len(list(classifier.comments)) == 0
         classifier.padding = syntax_node.PaddingNode(" ")
         classifier.padding.append("$ hi", True)
-        self.assertEqual(len(list(classifier.comments)), 1)
+        assert len(list(classifier.comments)) == 1
 
 
-class TestParametersNode(TestCase):
-    def setUp(self):
-        self.param = syntax_node.ParametersNode()
+class TestParametersNode:
+    @pytest.fixture
+    def param(_):
+        param = syntax_node.ParametersNode()
         classifier = syntax_node.ClassifierNode()
         classifier.prefix = syntax_node.ValueNode("vol", str)
         list_node = syntax_node.ListNode("data")
         list_node.append(syntax_node.ValueNode("1.0", float))
-        self.param.append(
+        param.append(
             syntax_node.SyntaxNode(
                 "hi",
                 {
@@ -1552,54 +1533,52 @@ class TestParametersNode(TestCase):
                 },
             )
         )
+        return param
 
     def test_parameter_init(self):
         param = syntax_node.ParametersNode()
-        self.assertIsInstance(param.nodes, dict)
+        assert isinstance(param.nodes, dict)
 
-    def test_parameter_append(self):
-        self.assertEqual(len(self.param.nodes), 1)
-        with self.assertRaises(ValueError):
+    def test_parameter_append(_, param):
+        assert len(param.nodes) == 1
+        with pytest.raises(ValueError):
             classifier = syntax_node.ClassifierNode()
             classifier.prefix = syntax_node.ValueNode("vol", str)
-            self.param.append(syntax_node.SyntaxNode("foo", {"classifier": classifier}))
+            param.append(syntax_node.SyntaxNode("foo", {"classifier": classifier}))
 
-    def test_parameter_dict(self):
-        param = self.param
-        self.assertEqual(param["vol"], param.nodes["vol"])
-        with self.assertRaises(KeyError):
+    def test_parameter_dict(_, param):
+        assert param["vol"] == param.nodes["vol"]
+        with pytest.raises(KeyError):
             param["hi"]
-        self.assertIn("vol", param)
+        assert "vol" in param
 
-    def test_parameter_str(self):
-        str(self.param)
-        repr(self.param)
-        self.param._pretty_str()
+    def test_parameter_str(_, param):
+        str(param)
+        repr(param)
+        param._pretty_str()
 
-    def test_parameter_format(self):
-        self.assertEqual(self.param.format(), "vol=1.0")
+    def test_parameter_format(_, param):
+        assert param.format() == "vol=1.0"
 
-    def test_parameter_comments(self):
-        param = copy.deepcopy(self.param)
-        self.assertEqual(len(list(param.comments)), 0)
+    def test_parameter_comments(_, param):
+        assert len(list(param.comments)) == 0
         param["vol"]["data"][0].padding = syntax_node.PaddingNode(" ")
         param["vol"]["data"][0].padding.append("$ hi", True)
-        self.assertEqual(len(list(param.comments)), 1)
+        assert len(list(param.comments)) == 1
 
-    def test_parameter_trailing_comments(self):
-        param = copy.deepcopy(self.param)
-        self.assertIsNone(param.get_trailing_comment())
+    def test_parameter_trailing_comments(_, param):
+        assert None is (param.get_trailing_comment())
         param._delete_trailing_comment()
-        self.assertIsNone(param.get_trailing_comment())
+        assert None is (param.get_trailing_comment())
         padding = syntax_node.PaddingNode("$ hi", True)
         param["vol"]["data"][0].padding = padding
         comment = param.get_trailing_comment()
-        self.assertIsNone(comment)
+        assert None is (comment)
         padding.append(syntax_node.CommentNode("c hi"), True)
         comment = param.get_trailing_comment()
-        self.assertEqual(comment[0].contents, "hi")
+        assert comment[0].contents == "hi"
         param._delete_trailing_comment()
-        self.assertIsNone(param.get_trailing_comment())
+        assert None is (param.get_trailing_comment())
 
 
 class DataInputTestFixture(montepy.data_inputs.data_input.DataInputAbstract):

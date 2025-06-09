@@ -46,10 +46,12 @@ class MaterialParser(DataParser):
                 yield batch
 
         for group in batch_gen():
+            if group[0].type != str:
+                group[0]._convert_to_str()
             new_list.append(("foo", *group))
         return new_list
 
-    @_("isotope_fraction", "number_sequence", "parameter", "mat_parameter")
+    @_("isotope_fraction", "even_number_sequence", "parameter", "mat_parameter")
     def mat_datum(self, p):
         return p[0]
 

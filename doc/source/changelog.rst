@@ -2,10 +2,41 @@
 MontePy Changelog
 *****************
 
+1.1 releases
+============
+
+#Next Version#
+--------------
+
+**Features Added**
+
+* Added demonstration jupyter notebooks for working with Pin Cell and PWR assemblies in MontePy.
+* Add _checkvalue.py_ to codebase (:issue:`687`). 
+
+**Bugs Fixed**
+
+* Fixed bug that couldn't parse ``SDEF`` by simply not parsing the input for the time being (:pull:`767`).
+* Fixed parsing bug with ``DE LOG`` style inputs by simply not parsing them for now (:pull:`767`).
+
+1.1.0
+--------------
+
+**Features Added**
+
+* Added ``Universe.filled_cells``, a generator that yields the cells filled with that universe instance (:issue:`361`).
+* Added ``__eq__`` dunder method to ``Universe`` to support equality comparisons (:issue:`361`).
+* Changed general plane constants checker to support more than 9 constants (:issue:`761`).
+
+**Bugs Fixed**
+
+* Fixed bug where MontePy would overly aggressively round outputs and remove the user's intent (:issue:`756`).
+* Fixed bug where a cell complement in the first five characters causes a spurious vertical mode detection (:issue:`753`).
+
+
 1.0 releases
 ============
 
-1.0.0-alpha2
+1.0.0
 --------------
 
 **Features Added**
@@ -24,15 +55,26 @@ MontePy Changelog
 * Added function: :func:`~montepy.mcnp_problem.MCNP_Problem.parse` to parse arbitrary MCNP object (:issue:`88`).
 * An error is now raised when typos in object attributes are used, e.g., ``cell.nubmer`` (:issue:`508`).
 * Warnings are no longer raised for comments that exceed the maximum line lengths (:issue:`188`).
-* Particle type exceptions are now warnings, not errors (:issue:`381`). 
+* Particle type exceptions are now warnings, not errors (:issue:`381`).
+* Added :func:`~montepy.data_inputs.material.Material.clear` to ``Material`` to clear out all nuclides (:issue:`665`).
 * Allow any ``Real`` type for floating point numbers and any ``Integral`` type for integer numbers during type enforcement (:issue:`679`).
-* Add _checkvalue.py_ to codebase (:issue:`687`). 
-
+* Avoided multiple ``LineExpansionWarnings`` coming from the same object on export (:issue:`198`).
+* Added ``mcnp_str`` function to all ``MCNP_Object`` to quickly get the string that would be printed in the MCNP input file (:issue:`700`).
+* Added ``montepy.MCNP_VERSION`` as an easy way to set the default MCNP version to target for reading and writing input files (:issue:`700`).
+* Renamed `Cell.lattice` to `Cell.lattice_type`, `Lattice` to `LatticeType`, and `LatticeType.HEXAHEDRA` to `LatticeType.HEXAHEDRAL` with deprecation warnings (:issue:`728`).
 
 **Bugs Fixed**
 
 * Made it so that a material created from scratch can be written to file (:issue:`512`).
 * Added support for parsing materials with parameters mixed throughout the definition (:issue:`182`).
+* Fixed bug where ``surf.is_reflecting`` would put an extra space in the output e.g., ``* 1 PZ...`` (:issue:`697`).
+* Fixed bug where setting a lattice would print as ``LAT=None``. Also switched ``CellModifier`` to print in the cell block by default (:issue:`699`). 
+* Fixed bug that wouldn't allow cloning most surfaces (:issue:`704`).
+* Fixed bug that crashed when some cells were not assigned to any universes (:issue:`705`).
+* Fixed bug where setting ``surf.is_reflecting`` to ``False`` did not always get exported properly (:issue:`709`). 
+* Fixed bug where setting multiple universes for a cell fill not being properly exported (:issue:`714`).
+* Fixed bug where the ``i`` ("x") and ``k`` ("z") dimensions of multiple universe matrix ``fills`` were switched (:issue:`726`).
+* Fixed bug 549 — corrected blank importance printing issue (:issue:`549`).
  
 **Breaking Changes**
 
@@ -66,7 +108,14 @@ MontePy Changelog
 0.5 releases
 ============
 
-#Next Release#
+0.5.5
+--------------
+
+**Bug Fixes**
+
+* Fixed parsing bug with sigma baryon particles (e.g., ``+/-``) (:issue:`671`).
+
+0.5.4
 --------------
 
 **Bug Fixes**

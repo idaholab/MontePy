@@ -173,12 +173,15 @@ class ParticleTypeNotInCell(ParticleTypeWarning):
     pass
 
 
-class UnsupportedFeature(NotImplementedError):
+class UnsupportedFeature(ParsingError):
     """Raised when MCNP syntax that is not supported is found"""
 
-    def __init__(self, message):
+    def __init__(self, message, input=None, error_queue=None):
         self.message = message
-        super().__init__(self.message)
+        if input is not None:
+            super().__init__(input, message, error_queue)
+        else:
+            super(ParsingError, self).__init__(self, message)
 
 
 class UnknownElement(ValueError):
@@ -200,9 +203,7 @@ class IllegalState(ValueError):
 class LineExpansionWarning(Warning):
     """Warning for when a field or line expands that may damage user formatting."""
 
-    def __init__(self, message):
-        self.message = message
-        super().__init__(self.message)
+    pass
 
 
 def add_line_number_to_exception(error, broken_robot):
@@ -249,3 +250,10 @@ def add_line_number_to_exception(error, broken_robot):
     args = (message,) + args[1:]
     error.args = args
     raise error.with_traceback(trace)
+
+
+class SurfaceConstantsWarning(UserWarning):
+    """Raised when the constants of a Surface are non-conform, but do not raise an error with MCNP."""
+
+    def __init__(self, message):
+        self.message = message

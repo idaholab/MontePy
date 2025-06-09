@@ -11,7 +11,7 @@ Fixes # (issue number)
 ### General Checklist
 
 - [ ] I have performed a self-review of my own code.
-- [ ] The code follows the standards outlined in the [development documentation](https://idaholab.github.io/MontePy/developing.html).
+- [ ] The code follows the standards outlined in the [development documentation](https://www.montepy.org/en/stable/dev_standards.html).
 - [ ] I have formatted my code with `black` version 25.
 - [ ] I have added tests that prove my fix is effective or that my feature works (if applicable).
 
@@ -42,6 +42,6 @@ Fixes # (issue number)
 
 Ensure that:
 
-- [ ] The submitted code is consistent with the merge checklist outlined [here](https://www.montepy.org/developing.html#merge-checklist).
+- [ ] The submitted code is consistent with the merge checklist outlined [here](https://www.montepy.org/en/stable/dev_checklist.html#merge-checklist).
 - [ ] The PR covers all relevant aspects according to the development guidelines.
 - [ ] 100% coverage of the patch is achieved, or justification for a variance is given.

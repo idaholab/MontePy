@@ -1,7 +1,7 @@
 # Copyright 2024, Battelle Energy Alliance, LLC All Rights Reserved.
-from hypothesis import given, strategies as st, settings, HealthCheck
+from hypothesis import assume, given, note, strategies as st, settings, HealthCheck
+import pathlib
 import pytest
-from hypothesis import assume, given, note, strategies as st
 
 import montepy
 
@@ -44,6 +44,32 @@ class TestMaterial:
         for component in components:
             mat.add_nuclide(component, 0.05)
         return mat
+
+    @pytest.fixture
+    def parsed_material(_):
+        return Material(
+            """M1   1001.00c   0.05
+      1001.04c   0.05
+      1001.80c   0.05
+      1001.04p   0.05
+      1002       0.05
+      1003       0.05
+      90232      0.05
+      90232.701nc 0.05
+      92235      0.05
+      92235.80c  0.05
+      92635.80c  0.05
+      92238      0.05
+      95642      0.05
+      95242      0.05
+      27560.50c  0.05
+      94239      0.05
+      28000.60c  0.05"""
+        )
+
+    @pytest.fixture
+    def materials(_, big_material, parsed_material):
+        return (big_material, parsed_material)
 
     @pytest.fixture
     def big_mat_lib(_, big_material):
@@ -90,6 +116,19 @@ class TestMaterial:
         ):
             assert iter_key == item_key
             assert big_mat_lib.default_libraries[iter_key] == item_val
+
+    def test_mat_clear(_, big_mat_lib):
+        old_mat = big_mat_lib.clone()
+        old_len = len(big_mat_lib)
+        assert old_len > 0
+        big_mat_lib.clear()
+        assert 0 == len(big_mat_lib)
+        for part in old_mat.default_libraries:
+            assert (
+                old_mat.default_libraries[part] == big_mat_lib.default_libraries[part]
+            )
+        big_mat_lib.add_nuclide("O-16.80c", 1.0)
+        _.verify_export(big_mat_lib)
 
     def test_mat_get_nuclide_library_bad(_, big_mat_lib):
         with pytest.raises(TypeError):
@@ -185,42 +224,44 @@ class TestMaterial:
         assert pu_comp[0] not in big_material.nuclides
         _.verify_export(big_material)
 
-    def test_material_values(_, big_material):
-        # test iter
-        for value in big_material.values:
-            assert value == pytest.approx(0.05)
-        assert len(list(big_material.values)) == len(big_material)
-        # test getter setter
-        for i, comp in enumerate(big_material):
-            assert big_material.values[i] == pytest.approx(comp[1])
-            big_material.values[i] = 1.0
-            assert big_material[i][1] == pytest.approx(1.0)
-        with pytest.raises(TypeError):
-            big_material.values["hi"]
-        with pytest.raises(IndexError):
-            big_material.values[len(big_material) + 1]
-        with pytest.raises(TypeError):
-            big_material.values[0] = "hi"
-        with pytest.raises(ValueError):
-            big_material.values[0] = -1.0
-        _.verify_export(big_material)
-
-    def test_material_nuclides(_, big_material):
-        # test iter
-        for nuclide, comp in zip(big_material.nuclides, big_material):
-            assert nuclide == comp[0]
+    def test_material_values(_, materials):
+        for big_material in materials:
+            # test iter
+            for value in big_material.values:
+                assert value == pytest.approx(0.05)
+            assert len(list(big_material.values)) == len(big_material)
             # test getter setter
-        for i, comp in enumerate(big_material):
-            assert big_material.nuclides[i] == comp[0]
-            big_material.nuclides[i] = Nuclide("1001.80c")
-            assert big_material[i][0] == Nuclide("1001.80c")
-        with pytest.raises(TypeError):
-            big_material.nuclides["hi"]
-        with pytest.raises(IndexError):
-            big_material.nuclides[len(big_material) + 1]
-        with pytest.raises(TypeError):
-            big_material.nuclides[0] = "hi"
-        _.verify_export(big_material)
+            for i, comp in enumerate(big_material):
+                assert big_material.values[i] == pytest.approx(comp[1])
+                big_material.values[i] = 1.0
+                assert big_material[i][1] == pytest.approx(1.0)
+            with pytest.raises(TypeError):
+                big_material.values["hi"]
+            with pytest.raises(IndexError):
+                big_material.values[len(big_material) + 1]
+            with pytest.raises(TypeError):
+                big_material.values[0] = "hi"
+            with pytest.raises(ValueError):
+                big_material.values[0] = -1.0
+            _.verify_export(big_material)
+
+    def test_material_nuclides(_, materials):
+        for big_material in materials:
+            # test iter
+            for nuclide, comp in zip(big_material.nuclides, big_material):
+                assert nuclide == comp[0]
+                # test getter setter
+            for i, comp in enumerate(big_material):
+                assert big_material.nuclides[i] == comp[0]
+                big_material.nuclides[i] = Nuclide("1001.80c")
+                assert big_material[i][0] == Nuclide("1001.80c")
+            with pytest.raises(TypeError):
+                big_material.nuclides["hi"]
+            with pytest.raises(IndexError):
+                big_material.nuclides[len(big_material) + 1]
+            with pytest.raises(TypeError):
+                big_material.nuclides[0] = "hi"
+            _.verify_export(big_material)
 
     @given(st.integers(1, 99), st.floats(1.9, 2.3), st.floats(0, 20, allow_nan=False))
     def test_material_append(_, Z, a_multiplier, fraction):
@@ -268,29 +309,35 @@ class TestMaterial:
             ("Co-60m2.50c", True, True),
         ],
     )
-    def test_material_contains(_, big_material, content, strict, is_in):
-        if not strict:
-            assert is_in == (content in big_material), "Contains didn't work properly"
-        assert is_in == big_material.contains_all(content, strict=strict)
-        assert is_in == big_material.contains_any(content, strict=strict)
-        with pytest.raises(TypeError):
-            {} in big_material
-        with pytest.raises(TypeError):
-            big_material.contains_all("H", strict=5)
-        with pytest.raises(TypeError):
-            big_material.contains_any("H", strict=5)
+    def test_material_contains(_, materials, content, strict, is_in):
+        for big_material in materials:
+            if not strict:
+                assert is_in == (
+                    content in big_material
+                ), "Contains didn't work properly"
+            assert is_in == big_material.contains_all(content, strict=strict)
+            assert is_in == big_material.contains_any(content, strict=strict)
+            with pytest.raises(TypeError):
+                {} in big_material
+            with pytest.raises(TypeError):
+                big_material.contains_all("H", strict=5)
+            with pytest.raises(TypeError):
+                big_material.contains_any("H", strict=5)
 
-    def test_material_multi_contains(_, big_material):
-        # contains all
-        assert big_material.contains_all("1001", "U-235", "Pu-239", threshold=0.01)
-        assert not big_material.contains_all(
-            "1001", "U-235", "Pu-239", threshold=0.01, strict=True
-        )
-        assert not big_material.contains_all("1001", "U-235", "Pu-239", threshold=0.07)
-        assert not big_material.contains_all("U-235", "B-10")
-        # contains any
-        assert not big_material.contains_any("C", "B", "F")
-        print("sadness")
+    def test_material_multi_contains(_, materials):
+        for big_material in materials:
+            # contains all
+            assert big_material.contains_all("1001", "U-235", "Pu-239", threshold=0.01)
+            assert not big_material.contains_all(
+                "1001", "U-235", "Pu-239", threshold=0.01, strict=True
+            )
+            assert not big_material.contains_all(
+                "1001", "U-235", "Pu-239", threshold=0.07
+            )
+            assert not big_material.contains_all("U-235", "B-10")
+            # contains any
+            assert not big_material.contains_any("C", "B", "F")
+            print("sadness")
         assert big_material.contains_any("h-1", "C", "B")
 
     def test_material_contains_bad(_):
@@ -307,13 +354,14 @@ class TestMaterial:
             with pytest.raises(ValueError):
                 method("1001", threshold=-1.0)
 
-    def test_material_normalize(_, big_material):
-        # make sure it's not an invalid starting condition
-        assert sum(big_material.values) != pytest.approx(1.0)
-        answer = 1.0 / len(big_material)
-        big_material.normalize()
-        for value in big_material.values:
-            assert value == pytest.approx(answer)
+    def test_material_normalize(_, materials):
+        for big_material in materials:
+            # make sure it's not an invalid starting condition
+            assert sum(big_material.values) != pytest.approx(1.0)
+            answer = 1.0 / len(big_material)
+            big_material.normalize()
+            for value in big_material.values:
+                assert value == pytest.approx(answer)
 
     @pytest.mark.parametrize(
         "kwargs, length",
@@ -348,33 +396,35 @@ class TestMaterial:
             ({"library": slice("00c", "10c")}, 2),
         ],
     )
-    def test_material_find(_, big_material, kwargs, length):
-        returned = list(big_material.find(**kwargs))
-        assert len(returned) == length
-        for idx, (nuclide, fraction) in returned:
-            assert isinstance(idx, int)
-            assert isinstance(nuclide, Nuclide)
-            assert isinstance(fraction, float)
-        returned = list(big_material.find_vals(**kwargs))
-        assert len(returned) == length
-        for fraction in returned:
-            assert isinstance(fraction, float)
+    def test_material_find(_, materials, kwargs, length):
+        for big_material in materials:
+            returned = list(big_material.find(**kwargs))
+            assert len(returned) == length
+            for idx, (nuclide, fraction) in returned:
+                assert isinstance(idx, int)
+                assert isinstance(nuclide, Nuclide)
+                assert isinstance(fraction, float)
+            returned = list(big_material.find_vals(**kwargs))
+            assert len(returned) == length
+            for fraction in returned:
+                assert isinstance(fraction, float)
 
-    def test_material_find_bad(_, big_material):
-        with pytest.raises(TypeError):
-            list(big_material.find(_))
-        with pytest.raises(ValueError):
-            list(big_material.find("not_good"))
-        with pytest.raises(TypeError):
-            list(big_material.find(A="hi"))
-        with pytest.raises(TypeError):
-            list(big_material.find(meta_state="hi"))
-        with pytest.raises(TypeError):
-            list(big_material.find(element=1.23))
-        with pytest.raises(TypeError):
-            list(big_material.find(library=5))
-        with pytest.raises(TypeError):
-            list(big_material.find(strict=5))
+    def test_material_find_bad(_, materials):
+        for big_material in materials:
+            with pytest.raises(TypeError):
+                list(big_material.find(_))
+            with pytest.raises(ValueError):
+                list(big_material.find("not_good"))
+            with pytest.raises(TypeError):
+                list(big_material.find(A="hi"))
+            with pytest.raises(TypeError):
+                list(big_material.find(meta_state="hi"))
+            with pytest.raises(TypeError):
+                list(big_material.find(element=1.23))
+            with pytest.raises(TypeError):
+                list(big_material.find(library=5))
+            with pytest.raises(TypeError):
+                list(big_material.find(strict=5))
 
     def test_material_str(_):
         in_str = "M20 1001.80c 0.5 8016.80c 0.4 94239.80c 0.1"
@@ -422,25 +472,42 @@ Pu-239   (80c) 0.1
         with pytest.raises(DeprecationWarning):
             MaterialComponent(Nuclide("1001.80c"), 0.1)
 
-    def test_mat_eq(_, big_material):
-        new_mat = big_material.clone()
-        new_mat.number = big_material.number
-        assert new_mat == big_material
-        assert new_mat != 5
-        new_mat.values[-1] += 1.5
-        assert new_mat != big_material
-        new_mat.nuclides[-1].library = "09c"
-        assert new_mat != big_material
-        del new_mat[0]
-        assert new_mat != big_material
-        new_mat.number = 23
-        assert new_mat != big_material
+    def test_mat_eq(_, materials):
+        for big_material in materials:
+            new_mat = big_material.clone()
+            new_mat.number = big_material.number
+            assert new_mat == big_material
+            assert new_mat != 5
+            new_mat.values[-1] += 1.5
+            assert new_mat != big_material
+            new_mat.nuclides[-1].library = "09c"
+            assert new_mat != big_material
+            del new_mat[0]
+            assert new_mat != big_material
+            new_mat.number = 23
+            assert new_mat != big_material
 
-    def test_mat_long_str(_, big_material):
-        for i in range(23, 30):
-            big_material.add_nuclide(Nuclide(element=Element(i)), 0.123)
-        str(big_material)
-        repr(big_material)
+    def test_mat_long_str(_, materials):
+        for big_material in materials:
+            for i in range(23, 30):
+                big_material.add_nuclide(Nuclide(element=Element(i)), 0.123)
+            str(big_material)
+            repr(big_material)
+
+    @pytest.mark.parametrize("file", ["test.imcnp", "pin_cell.imcnp"])
+    def test_read_add_write(_, file):
+        problem = montepy.read_input(pathlib.Path("tests") / "inputs" / file)
+        mat = problem.materials[2]
+        mat.add_nuclide("O-16.80c", 0.3)
+        try:
+            out_file = f"mat_read_write_21ij43werr{file}"
+            problem.write_problem(out_file)
+            with open(out_file, "r") as fh:
+                for line in fh:
+                    print(line.rstrip())
+            new_problem = montepy.read_input(out_file)
+        finally:
+            pathlib.Path(out_file).unlink(True)
 
     @pytest.mark.parametrize(
         "line, mat_number, is_atom, fractions",
@@ -542,17 +609,18 @@ Pu-239   (80c) 0.1
         extra_char=st.characters(min_codepoint=97, max_codepoint=122),
         lib_suffix=st.sampled_from("cdmgpuyehorsa"),
     )
-    def test_mat_change_lib(_, big_material, lib_num, extra_char, lib_suffix):
-        mat = big_material.clone()
-        library = f"{lib_num:02g}"
-        if lib_num >= 100:
-            library += extra_char
-        library += lib_suffix
-        for wrapper in {str, Library}:
-            mat.change_libraries(wrapper(library))
-            for nuclide in mat.nuclides:
-                assert nuclide.library == Library(library)
-        _.verify_export(mat)
+    def test_mat_change_lib(_, materials, lib_num, extra_char, lib_suffix):
+        for big_material in materials:
+            mat = big_material.clone()
+            library = f"{lib_num:02g}"
+            if lib_num >= 100:
+                library += extra_char
+            library += lib_suffix
+            for wrapper in {str, Library}:
+                mat.change_libraries(wrapper(library))
+                for nuclide in mat.nuclides:
+                    assert nuclide.library == Library(library)
+            _.verify_export(mat)
 
     def test_mat_change_lib_bad(_):
         mat = Material()
@@ -578,8 +646,9 @@ Pu-239   (80c) 0.1
             mat.add_nuclide(Nuclide("1001.80c"), -1.0)
 
     @pytest.mark.filterwarnings("ignore::montepy.errors.LineExpansionWarning")
-    def test_add_nuclide_export(_, big_material):
-        _.verify_export(big_material)
+    def test_add_nuclide_export(_, materials):
+        for big_material in materials:
+            _.verify_export(big_material)
 
     def verify_export(_, mat):
         output = mat.format_for_mcnp_input((6, 3, 0))
@@ -592,7 +661,7 @@ Pu-239   (80c) 0.1
             assert old_nuc == new_nuc, "Material didn't preserve nuclides."
             assert old_frac == pytest.approx(new_frac)
         for (old_type, old_lib), (new_type, new_lib) in zip(
-            mat.default_libraries, new_mat.default_libraries
+            mat.default_libraries.items(), new_mat.default_libraries.items()
         ):
             assert old_type == new_type
             assert old_lib == new_lib
@@ -644,11 +713,11 @@ class TestThermalScattering:
         thermal._old_number = montepy.input_parser.syntax_node.ValueNode("2", int)
         with pytest.raises(montepy.errors.MalformedInputError):
             thermal.update_pointers([material])
-            with self.assertRaises(montepy.errors.IllegalState):
-                thermal.validate()
-            thermal._old_number = montepy.input_parser.syntax_node.ValueNode("2", int)
-            with self.assertRaises(montepy.errors.MalformedInputError):
-                thermal.update_pointers([material])
+        with pytest.raises(montepy.errors.IllegalState):
+            thermal.validate()
+        thermal._old_number = montepy.input_parser.syntax_node.ValueNode("2", int)
+        with pytest.raises(montepy.errors.MalformedInputError):
+            thermal.update_pointers([material])
 
     def test_thermal_scattering_add(self):
         in_str = "Mt20 grph.20t"

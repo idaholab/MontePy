@@ -202,6 +202,28 @@ class MCNP_Parser(Parser, metaclass=MetaBuilder):
                 sequence.append(p[1])
         return sequence
 
+    @_(
+        "numerical_phrase numerical_phrase",
+        "shortcut_phrase",
+        "even_number_sequence numerical_phrase numerical_phrase",
+        "even_number_sequence shortcut_phrase",
+    )
+    def even_number_sequence(self, p):
+        """
+        A list of numbers with an even number of elements*.
+
+        * shortcuts will break this.
+        """
+        if not hasattr(p, "even_number_sequence"):
+            sequence = syntax_node.ListNode("number sequence")
+            sequence.append(p[0])
+        else:
+            sequence = p[0]
+        if len(p) > 1:
+            for idx in range(1, len(p)):
+                sequence.append(p[idx])
+        return sequence
+
     @_("number_phrase", "null_phrase")
     def numerical_phrase(self, p):
         """Any number, including 0, with its padding.
@@ -384,6 +406,7 @@ class MCNP_Parser(Parser, metaclass=MetaBuilder):
         "FILE_PATH",
         "NUMBER",
         "PARTICLE",
+        "PARTICLE_SPECIAL",
         "INTERPOLATE",
         "JUMP",
         "KEYWORD",

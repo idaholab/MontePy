@@ -127,7 +127,7 @@ class DataInputAbstract(MCNP_Object):
 
     @property
     def particle_classifiers(self):
-        """The particle class part of the card identifier as a parsed list.
+        """The particle class part of the input identifier as a parsed list.
 
         This is parsed from the input that was read.
 
@@ -145,10 +145,11 @@ class DataInputAbstract(MCNP_Object):
 
     @property
     def prefix(self):
-        """The text part of the card identifier parsed from the input.
+        """The text part of the input identifier parsed from the input.
 
-        For example: for a material like: m20 the prefix is 'm'
+        For example: for a material like: ``m20`` the prefix is ``m``.
         this will always be lower case.
+        Can also be called the mnemonic.
 
         Returns
         -------
@@ -353,3 +354,88 @@ class DataInput(DataInputAbstract):
         }
         if prefix.lower() in PARSER_PREFIX_MAP:
             self._parser = PARSER_PREFIX_MAP[prefix.lower()]()
+
+
+class ForbiddenDataInput(DataInputAbstract):
+    """MCNP data input that is not actually parsed and only parroted out.
+
+    Current inputs that are in "parser jail":
+
+    * ``DE``
+    * ``SDEF``
+
+    Parameters
+    ----------
+    input : Union[Input, str]
+        the Input object representing this data input
+    fast_parse : bool
+        Whether or not to only parse the first word for the type of
+        data.
+    prefix : str
+        The input prefix found during parsing (internal use only)
+    """
+
+    def __init__(
+        self, input: InitInput = None, fast_parse: bool = False, prefix: str = None
+    ):
+        super().__init__(input, True)
+        if isinstance(input, str):
+            input = montepy.input_parser.mcnp_input.Input(
+                input.split("\n"), self._BLOCK_TYPE
+            )
+        self._input = input
+
+    @property
+    def _class_prefix(self):
+        return None
+
+    @property
+    def _has_number(self):  # pragma: no cover
+        return None
+
+    @property
+    def _has_classifier(self):  # pragma: no cover
+        return None
+
+    def _error_out(self):
+        """ """
+        raise UnsupportedFeature(
+            f"Inputs of type: {self.classifier.prefix} are not supported yet "
+            "due to their complex syntax."
+            "These will be written out correctly, but cannot be edited",
+            input,
+        )
+
+    @property
+    def _prop_error(self):
+        self._error_out()
+
+    data = _prop_error
+    """
+    Not supported.
+
+    .. warning::
+
+        Because this input was not parsed these data are not available.
+
+    raises
+    ------
+    UnsupportedFeature 
+        when called.
+    """
+
+    def format_for_mcnp_input(self, mcnp_version: tuple[int]) -> list[str]:
+        """Creates a list of strings representing this MCNP_Object that can be
+        written to file.
+
+        Parameters
+        ----------
+        mcnp_version : tuple[int]
+            The tuple for the MCNP version that must be exported to.
+
+        Returns
+        -------
+        list
+            a list of strings for the lines that this input will occupy.
+        """
+        return self._input.input_lines

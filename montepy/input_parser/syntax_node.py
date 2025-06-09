@@ -968,6 +968,8 @@ class ValueNode(SyntaxNodeBase):
             "as_int": False,
             "int_tolerance": 1e-6,
             "is_scientific": True,
+            "rel_eps": 1e-6,
+            "abs_eps": 1e-9,
         },
         int: {"value_length": 0, "zero_padding": 0, "sign": "-"},
         str: {"value_length": 0},
@@ -1054,6 +1056,17 @@ class ValueNode(SyntaxNodeBase):
         if not (allow_none and self._value is None):
             self._value = enum_class(value)
         self._formatter = self._FORMATTERS[format_type].copy()
+
+    def _convert_to_str(self):
+        """Converts this ValueNode to being a string type.
+
+        .. versionadded:: 1.0.0
+
+        """
+        self._type = str
+        self._value = str(self._token)
+        self._og_value = self._token
+        self._formatter = self._FORMATTERS[str].copy()
 
     @property
     def is_negatable_identifier(self):
@@ -1246,6 +1259,32 @@ class ValueNode(SyntaxNodeBase):
             )
         return self.value != self._og_value
 
+    def _avoid_rounding_truncation(self):
+        """
+        Detects when not enough digits are in original input to preserve precision.
+
+        This will update the precision in the formatter to the necessary
+        value to preserve the precision.
+        """
+        precision = self._formatter["precision"]
+        if self._formatter["is_scientific"]:
+            # Remember that you can test for equality to 0 with floats safely
+            if self.value != 0:
+                exp = math.floor(math.log10(abs(self.value)))
+            else:
+                exp = 0
+            val = self.value / 10**exp
+        else:
+            val = self.value
+        while not math.isclose(
+            val,
+            round(val, precision),
+            rel_tol=self._formatter["rel_eps"],
+            abs_tol=self._formatter["abs_eps"],
+        ):
+            precision += 1
+        self._formatter["precision"] = precision
+
     def format(self):
         if not self._value_changed:
             return f"{self._token}{self.padding.format() if self.padding else ''}"
@@ -1262,6 +1301,7 @@ class ValueNode(SyntaxNodeBase):
             )
         elif self._type == float:
             # default to python general if new value
+            self._avoid_rounding_truncation()
             if not self._is_reversed:
                 temp = "{value:0={sign}{zero_padding}.{precision}g}".format(
                     value=value, **self._formatter
@@ -1292,7 +1332,14 @@ class ValueNode(SyntaxNodeBase):
                 )
         else:
             temp = str(value)
+        end_line_padding = False
         if self.padding:
+            for node in self.padding.nodes:
+                if node == "\n":
+                    end_line_padding = True
+                    break
+                if isinstance(node, CommentNode):
+                    break
             if self.padding.is_space(0):
                 # if there was and end space, and we ran out of space, and there isn't
                 # a saving space later on
@@ -1310,19 +1357,32 @@ class ValueNode(SyntaxNodeBase):
         else:
             pad_str = ""
             extra_pad_str = ""
-        buffer = "{temp:<{value_length}}{padding}".format(
-            temp=temp, padding=pad_str, **self._formatter
-        )
-        if len(buffer) > self._formatter["value_length"] and self._token is not None:
-            warning = LineExpansionWarning(
-                f"The value has expanded, and may change formatting. The original value was {self._token}, new value is {temp}."
+        if not self.never_pad:
+            buffer = "{temp:<{value_length}}{padding}".format(
+                temp=temp, padding=pad_str, **self._formatter
             )
+        else:
+            buffer = "{temp}{padding}".format(
+                temp=temp, padding=pad_str, **self._formatter
+            )
+        """
+        If:
+            1. expanded
+            2. had an original value
+            3. and value doesn't end in a new line (without a comment)
+        """
+        if (
+            len(buffer) > self._formatter["value_length"]
+            and self._token is not None
+            and not end_line_padding
+        ):
+            warning = LineExpansionWarning("")
             warning.cause = "value"
             warning.og_value = self._token
             warning.new_value = temp
             warnings.warn(
                 warning,
-                stacklevel=2,
+                category=LineExpansionWarning,
             )
         return buffer + extra_pad_str
 
@@ -1577,7 +1637,7 @@ class ParticleNode(SyntaxNodeBase):
                 if match.group(0).isupper():
                     upper_match += 1
                 total_match += 1
-        if upper_match / total_match >= 0.5:
+        if total_match and upper_match / total_match >= 0.5:
             self._formatter["upper"] = True
 
     @property
