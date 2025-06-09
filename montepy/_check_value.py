@@ -188,10 +188,15 @@ def check_type(
                     ", ".join([t.__name__ for t in expected_type]),
                 )
             )
-        else:
+        elif isinstance(expected_type, type):
             msg = (
                 f'Unable to set "{name}" for "{func_name}" to "{value}" which is not of type "'
                 f'{expected_type.__name__}"'
+            )
+        else:
+            msg = (
+                f'Unable to set "{name}" for "{func_name}" to "{value}" which is not of type "'
+                f'{expected_type}"'
             )
         raise TypeError(msg)
     if expected_iter_type:
