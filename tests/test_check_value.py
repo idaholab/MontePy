@@ -5,6 +5,7 @@ import pytest
 import typing
 
 import montepy._check_value as cv
+import montepy
 
 
 @cv.check_arguments
@@ -50,7 +51,12 @@ def kw_defaults(a: str):
 
 
 @cv.check_arguments
-def union_type(a: typing.Union[int, str]):
+def union_type(a: typing.Union[montepy.Cell, str]):
+    pass
+
+
+@cv.check_arguments
+def pipe_union_type(a: montepy.Cell | str):
     pass
 
 
@@ -81,20 +87,12 @@ dt = st.datetimes()
 fl = st.floats()
 it = st.integers()
 no = st.none()
-funcs = st.sampled_from(
-    [simple_args, var_args, kwargs, kw_only, kw_defaults, defaults_used, union_type]
-)
 
 
 @given(
     st.one_of(binary, boolean, dt, fl, it, no),
     st.sampled_from(
-        [
-            simple_args,
-            var_args,
-            kwargs,
-            kw_defaults,
-        ]
+        [simple_args, var_args, kwargs, kw_defaults, union_type, pipe_union_type]
     ),
 )
 def test_dummy_bad_type_with_none(val, func):

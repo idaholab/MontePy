@@ -19,6 +19,11 @@ def str_annote_default(a: str = None):
 
 
 @cv.check_arguments
+def str_pipe_union(a: str | montepy.Cell):
+    pass
+
+
+@cv.check_arguments
 def list_type(a: list[int]):
     pass
 
@@ -48,6 +53,7 @@ no = st.none()
 funcs = st.sampled_from(
     [
         str_annotations,
+        str_pipe_union,
     ]
 )
 
