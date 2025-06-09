@@ -23,19 +23,132 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 import copy
 import os
 from collections.abc import Iterable
-
+import functools
+import inspect
 import numpy as np
+import sys
+import typing
+
+import montepy
 
 # Type for arguments that accept file paths
 PathLike = str | os.PathLike
 
 
-def check_type(name, value, expected_type, expected_iter_type=None, *, none_ok=False):
+def _argtype_default_gen(argspec, attr):
+    if attr == "args":
+        args = argspec.args
+        if argspec.defaults:
+            delta_len = len(args) - len(argspec.defaults)
+            def_iter = (True,) * delta_len + argspec.defaults
+        else:
+            def_iter = (True,) * len(args)
+        for arg, default in zip(args, def_iter):
+            yield arg, default
+    else:
+        for arg_name in argspec.kwonlyargs:
+            default = argspec.kwonlydefaults.get(arg_name, True)
+            yield arg_name, default
+
+
+def _prepare_type_checker(func_name, arg_name, args_spec, none_ok):
+    arg_type = args_spec.annotations.get(arg_name, None)
+    if arg_type:
+        # if annotations are used
+        if isinstance(arg_type, str):
+            arg_type = eval(arg_type)
+        # if annotated
+        if isinstance(arg_type, typing._AnnotatedAlias):
+            arg_type = arg_type.__args__
+        return lambda x: check_type(func_name, arg_name, x, arg_type, none_ok=none_ok)
+
+
+def _prepare_args_check(func_name, arg_name, args_spec):
+    if arg_name is None:
+        return []
+    args_check = getattr(args_spec, arg_name, None)
+    if args_check is None or not isinstance(args_check, typing._AnnotatedAlias):
+        return []
+    args_check = args_check.__metadata__
+    if not isinstance(args_check, (tuple, list)):
+        args_check = (args_check,)
+    return (checker(func_name, arg_name) for checker in args_check)
+
+
+def check_arguments(func):
+    """ """
+
+    def decorator(func):
+        args_spec = inspect.getfullargspec(func)
+        arg_checkers = {}
+        for attr in ["args", "kwonlyargs"]:
+            if attr == "args":
+                arg_checkers[attr] = []
+            else:
+                arg_checkers[attr] = {}
+            for arg_name, default in _argtype_default_gen(args_spec, attr):
+                none_ok = default is None
+                checkers = []
+                # build
+                type_checker = _prepare_type_checker(
+                    func.__qualname__, arg_name, args_spec, none_ok
+                )
+                if type_checker:
+                    checkers.append(type_checker)
+                checkers.extend(
+                    _prepare_args_check(func.__qualname__, arg_name, args_spec)
+                )
+                if attr == "args":
+                    arg_checkers[attr].append(checkers)
+                else:
+                    arg_checkers[attr][arg_name] = checkers
+
+        special_checks = {}
+        for attr in ("varargs", "varkw"):
+            checkers = []
+            arg_name = getattr(args_spec, attr, None)
+            if arg_name:
+                checkers = [
+                    _prepare_type_checker(func.__qualname__, arg_name, args_spec, False)
+                ]
+            checkers.extend(_prepare_args_check(func.__qualname__, arg_name, args_spec))
+            special_checks[attr] = checkers
+
+        @functools.wraps(func)
+        def wrapper(*args, **kwargs):
+            args_iter = iter(args)
+            for checkers, arg in zip(arg_checkers["args"], args_iter):
+                for checker in checkers:
+                    checker(arg)
+            # iterate over var args
+            for arg in args_iter:
+                for checker in special_checks["varargs"]:
+                    checker(arg)
+
+            for arg_name, arg in kwargs.items():
+                if arg_name in arg_checkers["kwonlyargs"]:
+                    checkers = arg_checkers["kwonlyargs"][arg_name]
+                else:
+                    checkers = special_checks["varkw"]
+                for checker in checkers:
+                    checker(arg)
+            return func(*args, **kwargs)
+
+        return wrapper
+
+    return decorator(func)
+
+
+def check_type(
+    func_name, name, value, expected_type, expected_iter_type=None, *, none_ok=False
+):
     """Ensure that an object is of an expected type. Optionally, if the object is
     iterable, check that each element is of a particular type.
 
     Parameters
     ----------
+    func_name : str
+        The name of the function this was called from
     name : str
         Description of value being checked
     value : object
@@ -52,21 +165,33 @@ def check_type(name, value, expected_type, expected_iter_type=None, *, none_ok=F
     if none_ok and value is None:
         return
 
+    expected_type = _convert_typing(expected_type)
+    if isinstance(expected_type, typing.GenericAlias):
+        return check_type_iterable(
+            func_name, name, value, expected_type, none_ok=none_ok
+        )
     if not isinstance(value, expected_type):
         if isinstance(expected_type, Iterable):
             msg = (
-                'Unable to set "{}" to "{}" which is not one of the '
+                'Unable to set "{}" for "{}" to "{}" which is not one of the '
                 'following types: "{}"'.format(
-                    name, value, ", ".join([t.__name__ for t in expected_type])
+                    func_name,
+                    name,
+                    value,
+                    ", ".join([t.__name__ for t in expected_type]),
                 )
+            )
+        elif isinstance(expected_type, type):
+            msg = (
+                f'Unable to set "{name}" for "{func_name}" to "{value}" which is not of type "'
+                f'{expected_type.__name__}"'
             )
         else:
             msg = (
-                f'Unable to set "{name}" to "{value}" which is not of type "'
-                f'{expected_type.__name__}"'
+                f'Unable to set "{name}" for "{func_name}" to "{value}" which is not of type "'
+                f'{expected_type}"'
             )
         raise TypeError(msg)
-
     if expected_iter_type:
         if isinstance(value, np.ndarray):
             if not issubclass(value.dtype.type, expected_iter_type):
@@ -95,6 +220,35 @@ def check_type(name, value, expected_type, expected_iter_type=None, *, none_ok=F
                         f'item must be of type "{expected_iter_type.__name__}"'
                     )
                 raise TypeError(msg)
+
+
+def check_type_iterable(
+    func_name: str,
+    name: str,
+    value: typing.Any,
+    expected_type: typing.GenericAlias,
+    *,
+    none_ok: bool = False,
+):
+    """ """
+    base_cls = expected_type.__origin__
+    args = expected_type.__args__
+    check_type(func_name, name, value, base_cls, none_ok=none_ok)
+    if base_cls == dict:
+        assert len(args) == 2, "Dict type requires two typing annotations"
+        check_type(func_name, name, list(value.keys()), list, args[0], none_ok=none_ok)
+        check_type(
+            func_name, name, list(value.values()), list, args[1], none_ok=none_ok
+        )
+    elif issubclass(base_cls, Iterable):
+        check_type(func_name, name, value, base_cls, args[0], none_ok=none_ok)
+
+
+def _convert_typing(u_type):
+    vers = sys.version_info
+    if not (vers.major == 3 and vers.minor == 9):
+        return u_type
+    return u_type.__args__
 
 
 def check_iterable_type(name, value, expected_type, min_depth=1, max_depth=1):
@@ -266,7 +420,14 @@ def check_value(name, value, accepted_values):
         raise ValueError(msg)
 
 
-def check_less_than(name, value, maximum, equality=False):
+def enforce_less_than(maximum, equality=False):
+    def wrapper(func_name, name):
+        return lambda x: check_less_than(name, x, maximum, equality, func_name)
+
+    return wrapper
+
+
+def check_less_than(name, value, maximum, equality=False, func_name=None):
     """Ensure that an object's value is less than a given value.
 
     Parameters
