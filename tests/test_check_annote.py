@@ -44,7 +44,7 @@ def cell_stuff(a: montepy.Cell):
 
 
 @cv.check_arguments
-def negative(a: typing.Annotated[int, cv.enforce_less_than(0)]):
+def negative(a: typing.Annotated[int, montepy._check_value.enforce_less_than(0)]):
     pass
 
 
