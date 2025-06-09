@@ -55,26 +55,27 @@ def _prepare_type_checker(func_name, arg_name, args_spec, none_ok):
     arg_type = args_spec.annotations.get(arg_name, None)
     if arg_type:
         # if annotations are used
-
         if isinstance(arg_type, str):
-            return lambda x: check_type(
-                func_name, arg_name, x, eval(arg_type), none_ok=none_ok
-            )
-        else:
-            return lambda x: check_type(
-                func_name, arg_name, x, arg_type, none_ok=none_ok
-            )
+            arg_type = eval(arg_type)
+        # if annotated
+        if isinstance(arg_type, typing._AnnotatedAlias):
+            arg_type = arg_type.__args__
+        return lambda x: check_type(func_name, arg_name, x, arg_type, none_ok=none_ok)
 
 
-def _prepare_args_check(args_check, func_name, arg_name):
-    if args_check is None:
+def _prepare_args_check(func_name, arg_name, args_spec):
+    if arg_name is None:
         return []
+    args_check = getattr(args_spec, arg_name, None)
+    if args_check is None or not isinstance(args_check, typing._AnnotatedAlias):
+        return []
+    args_check = args_check.__metadata__
     if not isinstance(args_check, (tuple, list)):
         args_check = (args_check,)
     return (checker(func_name, arg_name) for checker in args_check)
 
 
-def check_arguments(func=None, **args_check):
+def check_arguments(func):
     """ """
 
     def decorator(func):
@@ -95,9 +96,7 @@ def check_arguments(func=None, **args_check):
                 if type_checker:
                     checkers.append(type_checker)
                 checkers.extend(
-                    _prepare_args_check(
-                        args_check.get(arg_name, None), func.__qualname__, arg_name
-                    )
+                    _prepare_args_check(func.__qualname__, arg_name, args_spec)
                 )
                 if attr == "args":
                     arg_checkers[attr].append(checkers)
@@ -112,11 +111,7 @@ def check_arguments(func=None, **args_check):
                 checkers = [
                     _prepare_type_checker(func.__qualname__, arg_name, args_spec, False)
                 ]
-            checkers.extend(
-                _prepare_args_check(
-                    args_check.get(arg_name, None), func.__qualname__, arg_name
-                )
-            )
+            checkers.extend(_prepare_args_check(func.__qualname__, arg_name, args_spec))
             special_checks[attr] = checkers
 
         @functools.wraps(func)
@@ -141,9 +136,7 @@ def check_arguments(func=None, **args_check):
 
         return wrapper
 
-    if func is not None:
-        return decorator(func)
-    return decorator
+    return decorator(func)
 
 
 def check_type(
