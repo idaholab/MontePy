@@ -5,7 +5,7 @@ description = "A library for reading, editing, and writing MCNP input files"
 
 # gitlab limits the readme to 4,000 chars.
 readme = "README.md"
-requires-python = ">=3.9"
+requires-python = ">=3.10"
 maintainers = [
     {name = "Micah Gale", email = "mgale@montepy.org"}
 ]
