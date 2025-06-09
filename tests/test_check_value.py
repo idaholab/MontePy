@@ -60,8 +60,8 @@ def pipe_union_type(a: montepy.Cell | str):
     pass
 
 
-@cv.check_arguments(a=cv.enforce_less_than(0))
-def negative(a: int):
+@cv.check_arguments
+def negative(a: typing.Annotated[int, cv.enforce_less_than(0)]):
     pass
 
 

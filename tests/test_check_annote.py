@@ -43,6 +43,11 @@ def cell_stuff(a: montepy.Cell):
     pass
 
 
+@cv.check_arguments
+def negative(a: typing.Annotated[int, cv.enforce_less_than(0)]):
+    pass
+
+
 binary = st.binary()
 boolean = st.booleans()
 chars = st.characters()
@@ -93,3 +98,12 @@ def test_mp_namespace():
     cell_stuff(montepy.Cell())
     with pytest.raises(TypeError):
         cell_stuff("a")
+
+
+@pytest.mark.parametrize("val, raise_error", [(1, True), (-1, False)])
+def test_negative(val, raise_error):
+    if raise_error:
+        with pytest.raises(ValueError):
+            negative(val)
+    else:
+        negative(val)
