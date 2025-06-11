@@ -30,7 +30,7 @@ class ThermalScatteringLaw(DataInputAbstract):
         the parent Material object that owns this
     """
 
-    _parser = ThermalParser()
+    _parser = ThermalParser
 
     def __init__(self, input: InitInput = "", material: montepy.Material = None):
         self._old_number = self._generate_default_node(int, -1)

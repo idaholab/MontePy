@@ -1,4 +1,4 @@
-# Copyright 2024, Battelle Energy Alliance, LLC All Rights Reserved.
+# Copyright 2024-2025, Battelle Energy Alliance, LLC All Rights Reserved.
 import montepy
 import os
 import io
@@ -44,7 +44,7 @@ class TestImportance:
                 None,
             ),  # default neutron importance when nothing is set
             # Error cases
-            ("1 0 -1 IMP:N,P=h", None, ValueError),  # non-numeric value
+            ("1 0 -1 IMP:N,P=h", None, ParsingError),  # non-numeric value
             ("1 0 -1 IMP:N,P=-2", None, ValueError),  # negative value
             ("1 0 -1 IMP:N,xx=2", None, ParsingError),  # invalid particle type
         ],
@@ -94,8 +94,8 @@ class TestImportance:
     @pytest.mark.parametrize(
         "in_str, kwargs, expected_exception",
         [
-            ("IMP:N,P 1 h", {}, ValueError),  # non-numeric importance
-            ("IMP:N,P 1 -2", {}, ValueError),  # negative importance
+            ("IMP:N,P 1 h", {}, ParsingError),  # non-numeric importance
+            ("IMP:N,P 1 -2", {}, MalformedInputError),  # negative importance
             ("IMP:N,P 1 2", {"in_cell_block": 1}, TypeError),  # bad in_cell_block type
             ("IMP:N,P 1 2", {"key": 1}, TypeError),  # bad key type
             ("IMP:N,P 1 2", {"value": 1}, TypeError),  # bad value type
