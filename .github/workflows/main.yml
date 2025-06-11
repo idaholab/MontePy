@@ -173,7 +173,7 @@ jobs:
           make doctest
         name: Test all example code in documentation.
       - run: |
-          cd demo
+          cd demo/answers
           for file in *.ipynb; do papermill $file foo.ipynb; done
         name: Test all demo notebooks 
 

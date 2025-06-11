@@ -2,7 +2,7 @@
 MontePy Changelog
 *****************
 
-1.0 releases
+1.1 releases
 ============
 
 #Next Version#
@@ -10,9 +10,31 @@ MontePy Changelog
 
 **Features Added**
 
+* Added demonstration jupyter notebooks for working with Pin Cell and PWR assemblies in MontePy.
 * Added support for parallel parsing of large input files with the ``multi_process`` argument (:issue:`742`).
+
+**Bugs Fixed**
+
+* Fixed bug that couldn't parse ``SDEF`` by simply not parsing the input for the time being (:pull:`767`).
+* Fixed parsing bug with ``DE LOG`` style inputs by simply not parsing them for now (:pull:`767`).
+
+1.1.0
+--------------
+
+**Features Added**
+
 * Added ``Universe.filled_cells``, a generator that yields the cells filled with that universe instance (:issue:`361`).
 * Added ``__eq__`` dunder method to ``Universe`` to support equality comparisons (:issue:`361`).
+* Changed general plane constants checker to support more than 9 constants (:issue:`761`).
+
+**Bugs Fixed**
+
+* Fixed bug where MontePy would overly aggressively round outputs and remove the user's intent (:issue:`756`).
+* Fixed bug where a cell complement in the first five characters causes a spurious vertical mode detection (:issue:`753`).
+
+
+1.0 releases
+============
 
 1.0.0
 --------------

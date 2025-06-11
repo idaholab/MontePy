@@ -2,8 +2,9 @@
 from __future__ import annotations
 import copy
 import itertools
-from typing import Union
 from numbers import Integral, Real
+import sly
+from typing import Union
 import warnings
 
 from montepy.cells import Cells
@@ -139,7 +140,25 @@ class Cell(Numbered_MCNP_Object):
         self._density_node = self._generate_default_node(float, None)
         self._surfaces = Surfaces()
         self._complements = Cells()
-        super().__init__(input, self._parser(), number)
+        try:
+            super().__init__(input, self._parser(), number)
+        # Add more information to issue that parser can't access
+        except UnsupportedFeature as e:
+            base_mesage = e.message
+            token = sly.lex.Token()
+            token.value = ""
+            lineno = 0
+            index = 0
+            for lineno, line in enumerate(input.input_lines):
+                if "like" in line.lower():
+                    index = line.lower().index("like")
+                    # get real capitalization
+                    token.value = line[index : index + 5]
+                    break
+            err = {"message": "", "token": token, "line": lineno + 1, "index": index}
+
+            raise UnsupportedFeature(base_mesage, input, [err]) from e
+
         if not input:
             self._generate_default_tree(number)
         self._old_number = copy.deepcopy(self._tree["cell_num"])

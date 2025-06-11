@@ -119,9 +119,19 @@ class MCNP_Object(ABC, metaclass=_ExceptionContextAdder):
                     input.split("\n"), self._BLOCK_TYPE
                 )
             try:
-                self._tree = parser.parse(input.tokenize(), input)
+                try:
+                    parser.restart()
+                # raised if restarted without ever parsing
+                except AttributeError as e:
+                    pass
+                tokenizer = input.tokenize()
+                self._tree = parser.parse(tokenizer, input)
+                # consume token stream
+                tokenizer.close()
                 self._input = input
             except ValueError as e:
+                if isinstance(e, UnsupportedFeature):
+                    raise e
                 raise MalformedInputError(
                     input, f"Error parsing object of type: {type(self)}: {e.args[0]}"
                 ).with_traceback(e.__traceback__)
