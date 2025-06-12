@@ -23,3 +23,7 @@ montepy/_version.py
 htmlcov
 .hypothesis
 .mutmut-cache
+
+# Rust
+Cargo.lock
+target/

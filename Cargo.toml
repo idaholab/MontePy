@@ -1,0 +1,13 @@
+[package]
+name = "pest_parser"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+pyo3 = ">=0.25.0"
+
+[lib]
+name = "_lib"
+
+path = "pest_parser/main.rs"
+crate-type = ["cdylib"]

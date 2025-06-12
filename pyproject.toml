@@ -85,8 +85,11 @@ Changelog = "https://www.montepy.org/en/stable/changelog.html"
 "change_to_ascii" = "montepy._scripts.change_to_ascii:main"
 
 [build-system]
-requires = ["setuptools>=77.0.0", "setuptools_scm>=8"]
+requires = ["setuptools>=77.0.0", "setuptools_scm>=8", "setuptools-rust"]
 build-backend = "setuptools.build_meta"
+
+[[tool.setuptools-rust.ext-modules]]
+target = "montepy.input_parser.pest._lib"
 
 [tool.setuptools_scm]
 version_file = "montepy/_version.py"
