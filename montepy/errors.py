@@ -173,7 +173,7 @@ class ParticleTypeNotInCell(ParticleTypeWarning):
     pass
 
 
-class UnsupportedFeature(Exception):
+class UnsupportedFeature(ParsingError):
     """Raised when MCNP syntax that is not supported is found"""
 
     def __init__(self, message, input=None, error_queue=None):
