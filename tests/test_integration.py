@@ -187,7 +187,7 @@ def test_read_card_recursion():
 
 def test_problem_str(simple_problem):
     output = str(simple_problem)
-    assert "MCNP problem for: tests/inputs/test.imcnp" in output
+    assert f"MCNP problem for: {simple_problem.input_file.name}" in output
 
 
 def test_write_to_file(simple_problem):
