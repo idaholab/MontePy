@@ -187,7 +187,7 @@ def test_read_card_recursion():
 
 def test_problem_str(simple_problem):
     output = str(simple_problem)
-    assert "MCNP problem for: tests/inputs/test.imcnp" in output
+    assert f"MCNP problem for: {simple_problem.input_file.name}" in output
 
 
 def test_write_to_file(simple_problem):
@@ -1186,9 +1186,9 @@ def test_alternate_encoding():
 
 _SKIP_LINES = {
     # skip lines of added implied importances
-    "tests/inputs/test_universe_data.imcnp": {5: 1, 14: 1, 15: 1},
+    Path("tests") / "inputs" / "test_universe_data.imcnp": {5: 1, 14: 1, 15: 1},
     # I don't care about the edge case of shortcuts in a material def.
-    "tests/inputs/test_complement_edge.imcnp": {37: 0, 38: 0, 39: 0},
+    Path("tests") / "inputs" / "test_complement_edge.imcnp": {37: 0, 38: 0, 39: 0},
 }
 
 
@@ -1209,7 +1209,7 @@ def test_read_write_cycle(file):
     if ".swp" in file.suffixes:
         return
     problem = montepy.read_input(file, multi_proc=MULTI_PROC)
-    SKIPPERS = _SKIP_LINES.get(str(file), {})
+    SKIPPERS = _SKIP_LINES.get(file, {})
     fh = io.StringIO()
     # make string unclosable to keep open after reading.
     fh.close = lambda: None
@@ -1234,7 +1234,7 @@ def test_read_write_cycle(file):
                 else:
                     gold_line = next(gold_fh_iter)
             # edge case override for not fixing #527.
-            if str(file) == "tests/inputs/test_interp_edge.imcnp" and i == 1:
+            if file == Path("tests") / "inputs" / "test_interp_edge.imcnp" and i == 1:
                 assert new_line == "10214   0    (1  2I 4 )"
                 continue
             try:

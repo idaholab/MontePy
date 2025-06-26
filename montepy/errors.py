@@ -71,7 +71,8 @@ class ParsingError(MalformedInputError):
         else:
             self.message = message
 
-        # ValueError.__init__(self, self.message)
+    def __str__(self):
+        return self.message
 
 
 def _print_input(
@@ -173,7 +174,7 @@ class ParticleTypeNotInCell(ParticleTypeWarning):
     pass
 
 
-class UnsupportedFeature(Exception):
+class UnsupportedFeature(ParsingError):
     """Raised when MCNP syntax that is not supported is found"""
 
     def __init__(self, message, input=None, error_queue=None):
