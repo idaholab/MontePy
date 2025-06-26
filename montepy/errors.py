@@ -71,7 +71,8 @@ class ParsingError(MalformedInputError):
         else:
             self.message = message
 
-        # ValueError.__init__(self, self.message)
+    def __str__(self):
+        return self.message
 
 
 def _print_input(
