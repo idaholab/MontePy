@@ -52,10 +52,6 @@ class CylinderParAxis(Surface):
         self._radius = self._surface_constants[2]
 
     @staticmethod
-    def _default_surf_type():
-        return "C/Z"
-
-    @staticmethod
     def _number_of_params():
         return 3
 

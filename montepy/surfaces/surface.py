@@ -100,9 +100,6 @@ class Surface(Numbered_MCNP_Object):
         for entry in self._tree["data"]:
             self._surface_constants.append(entry)
 
-    @staticmethod
-    def _default_surf_type():
-        return "PZ"
 
     @staticmethod
     def _number_of_params():
@@ -131,7 +128,7 @@ class Surface(Numbered_MCNP_Object):
         num.is_negatable_identifier = True
         pointer = self._generate_default_node(int, None)
         pointer.is_negatable_identifier = True
-        surf_type = self._generate_default_node(str, self._default_surf_type())
+        surf_type = self._generate_default_node(str, None)
         surf_type._convert_to_enum(SurfaceType)
         surf_num = syntax_node.SyntaxNode(
             "surf_num",

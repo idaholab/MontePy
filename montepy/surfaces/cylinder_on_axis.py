@@ -35,10 +35,6 @@ class CylinderOnAxis(Surface):
             raise ValueError("CylinderOnAxis only accepts one surface_constant")
         self._radius = self._surface_constants[0]
 
-    @staticmethod
-    def _default_surf_type():
-        return "CZ"
-
     @make_prop_val_node(
         "_radius", (float, int), float, validator=_enforce_positive_radius
     )
