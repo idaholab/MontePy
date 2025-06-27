@@ -89,6 +89,9 @@ class testSurfaces(TestCase):
             surf.validate()
         with self.assertRaises(montepy.errors.IllegalState):
             surf.format_for_mcnp_input((6, 2, 0))
+        surf.number = 1
+        with self.assertRaises(montepy.errors.IllegalState):
+            surf.validate()
         # cylinder on axis
         surf = CylinderOnAxis()
         with self.assertRaises(montepy.errors.IllegalState):
@@ -154,6 +157,13 @@ class testSurfaces(TestCase):
             surf.number = "foo"
         with self.assertRaises(ValueError):
             surf.number = -5
+
+    def test_surface_surface_type_setter(self):
+        surf = montepy.surfaces.parse_surface("1 PZ 0.0")
+        with pytest.raises(ValueError):
+            surf.surface_type = "CX"
+        with pytest.raises(ValueError):
+            surf.surface_type = SurfaceType.CX
 
     def test_surface_ordering(self):
         in_str = "1 PZ 0.0"
