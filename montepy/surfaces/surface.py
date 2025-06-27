@@ -169,7 +169,7 @@ class Surface(Numbered_MCNP_Object):
         if surface_type is not None:
             if not isinstance(surface_type, (SurfaceType, str)):
                 raise TypeError(f"The surface_type must be of type: SurfaceType or str")
-            if not isinstance(surface_type, str):
+            if isinstance(surface_type, SurfaceType):
                 surface_type = surface_type.value
         surf_type = self._generate_default_node(str, surface_type)
         surf_num = syntax_node.SyntaxNode(
