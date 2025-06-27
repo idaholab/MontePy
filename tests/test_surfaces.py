@@ -81,6 +81,19 @@ class testSurfaces(TestCase):
             Surface(card)
         surf = Surface(number=5)
         assert surf.number == 5
+        # test surface_type setter
+        surf = Surface(surface_type="cx")
+        assert surf.surface_type == SurfaceType.CX
+        surf = Surface(surface_type=SurfaceType.CX)
+        assert surf.surface_type == SurfaceType.CX
+        with pytest.raises(TypeError):
+            Surface(surface_type=5)
+        with pytest.raises(ValueError):
+            AxisPlane(surface_type="Cx")
+        with pytest.raises(ValueError):
+            CylinderOnAxis(surface_type="px")
+        with pytest.raises(ValueError):
+            CylinderParAxis(surface_type="px")
 
     def test_validator(self):
         surf = Surface()
