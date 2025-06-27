@@ -124,6 +124,8 @@ class testSurfaces(TestCase):
         with self.assertRaises(montepy.errors.IllegalState):
             surf.validate()
         surf.radius = 5.0
+        with self.assertRaises(montepy.errors.IllegalState):
+            surf.validate()
         # axis plane
         surf = AxisPlane(number=5)
         with self.assertRaises(montepy.errors.IllegalState):
