@@ -5,6 +5,7 @@ from montepy.errors import *
 from montepy.utilities import *
 
 from numbers import Real
+from typing import Union
 
 
 def _enforce_positive_radius(self, value):

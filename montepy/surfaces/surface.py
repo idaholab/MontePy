@@ -121,10 +121,24 @@ class Surface(Numbered_MCNP_Object):
 
     @staticmethod
     def _number_of_params():
+        """
+        The number of defaults parameters to load into the syntax tree.
+
+        Returns
+        -------
+        int
+        """
         return 1
 
     @staticmethod
     def _allowed_surface_types():
+        """ "
+        The allowed surface types for this surface type.
+
+        Returns
+        -------
+        set[SurfaceType]
+        """
         return set(SurfaceType)
 
     def _generate_default_tree(

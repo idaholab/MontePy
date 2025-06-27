@@ -4,6 +4,8 @@ from .surface import Surface, InitInput
 from montepy.errors import *
 from montepy.utilities import *
 
+from typing import Union
+
 
 def _enforce_positive_radius(self, value):
     if value < 0.0:
