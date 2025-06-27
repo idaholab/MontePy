@@ -106,7 +106,7 @@ class testSurfaces(TestCase):
         with self.assertRaises(montepy.errors.IllegalState):
             surf.validate()
         # cylinder on axis
-        surf = CylinderOnAxis()
+        surf = CylinderOnAxis(number=5)
         with self.assertRaises(montepy.errors.IllegalState):
             surf.validate()
         with self.assertRaises(montepy.errors.IllegalState):
@@ -115,7 +115,7 @@ class testSurfaces(TestCase):
         with self.assertRaises(montepy.errors.IllegalState):
             surf.validate()
         # cylinder par axis
-        surf = CylinderParAxis()
+        surf = CylinderParAxis(number=5)
         with self.assertRaises(montepy.errors.IllegalState):
             surf.validate()
         with self.assertRaises(montepy.errors.IllegalState):
@@ -124,10 +124,8 @@ class testSurfaces(TestCase):
         with self.assertRaises(montepy.errors.IllegalState):
             surf.validate()
         surf.radius = 5.0
-        with self.assertRaises(montepy.errors.IllegalState):
-            surf.validate()
         # axis plane
-        surf = AxisPlane()
+        surf = AxisPlane(number=5)
         with self.assertRaises(montepy.errors.IllegalState):
             surf.validate()
         with self.assertRaises(montepy.errors.IllegalState):
@@ -140,7 +138,7 @@ class testSurfaces(TestCase):
         # ensure that this doesn't raise an error
         surf.validate()
         # general plane
-        surf = GeneralPlane()
+        surf = GeneralPlane(number=2)
         with self.assertRaises(montepy.errors.IllegalState):
             surf.validate()
         with self.assertRaises(montepy.errors.IllegalState):
