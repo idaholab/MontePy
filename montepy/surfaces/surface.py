@@ -377,6 +377,10 @@ class Surface(Numbered_MCNP_Object):
     def validate(self):
         if self.number is None or self.number < 1:
             raise IllegalState(
+                f"Surface: {self.number} does not have a valid number set."
+            )
+        if self.surface_type is None:
+            raise IllegalState(
                 f"Surface: {self.number} does not have a surface type set."
             )
 
