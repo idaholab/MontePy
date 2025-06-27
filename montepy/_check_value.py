@@ -72,8 +72,6 @@ def _prepare_args_check(func_name, arg_name, args_spec):
     if args_check is None or not isinstance(args_check, typing._AnnotatedAlias):
         return []
     args_check = args_check.__metadata__
-    if not isinstance(args_check, (tuple, list)):
-        args_check = (args_check,)
     return (checker(func_name, arg_name) for checker in args_check)
 
 
