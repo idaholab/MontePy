@@ -66,7 +66,9 @@ def _prepare_type_checker(func_name, arg_name, args_spec, none_ok):
 def _prepare_args_check(func_name, arg_name, args_spec):
     if arg_name is None:
         return []
-    args_check = getattr(args_spec, arg_name, None)
+    args_check = args_spec.annotations.get(arg_name, None)
+    if isinstance(args_check, str):
+        args_check = eval(args_check)
     if args_check is None or not isinstance(args_check, typing._AnnotatedAlias):
         return []
     args_check = args_check.__metadata__
