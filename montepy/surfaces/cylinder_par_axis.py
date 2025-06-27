@@ -42,10 +42,6 @@ class CylinderParAxis(Surface):
         self._radius = self._generate_default_node(float, None)
         super().__init__(input, number)
         ST = SurfaceType
-        if self.surface_type not in [ST.C_X, ST.C_Y, ST.C_Z]:
-            raise ValueError(
-                "CylinderParAxis must be a surface of types: C/X, C/Y, C/Z"
-            )
         if len(self.surface_constants) != 3:
             raise ValueError("CylinderParAxis must have exactly 3 surface_constants")
         self._coordinates = self._surface_constants[0:2]
@@ -54,6 +50,10 @@ class CylinderParAxis(Surface):
     @staticmethod
     def _number_of_params():
         return 3
+
+    @staticmethod
+    def _allowed_surface_types():
+        return {SurfaceType.C_X, SurfaceType.C_Y, SurfaceType.C_Z}
 
     @property
     def coordinates(self):

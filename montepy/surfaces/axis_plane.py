@@ -27,8 +27,6 @@ class AxisPlane(Surface):
         self._location = self._generate_default_node(float, None)
         super().__init__(input, number)
         ST = SurfaceType
-        if self.surface_type not in [ST.PX, ST.PY, ST.PZ]:
-            raise ValueError("AxisPlane must be a surface of type: PX, PY, or PZ")
         if len(self.surface_constants) != 1:
             raise ValueError("AxisPlane must have exactly 1 surface constant")
         self._location = self._surface_constants[0]
@@ -42,6 +40,10 @@ class AxisPlane(Surface):
         float
         """
         pass
+
+    @staticmethod
+    def _allowed_surface_types():
+        return {SurfaceType.PX, SurfaceType.PY, SurfaceType.PZ}
 
     def validate(self):
         super().validate()

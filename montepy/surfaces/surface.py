@@ -15,6 +15,13 @@ from montepy.surfaces.surface_type import SurfaceType
 from montepy.utilities import *
 
 
+def _surf_type_validator(self, surf_type):
+    if surf_type not in self._allowed_surface_types():
+        raise ValueError(
+            f"{type(self).__name__} must be a surface of type: {[e.value for e in self._allowed_surface_types()]}"
+        )
+
+
 class Surface(Numbered_MCNP_Object):
     """Object to hold a single MCNP surface
 
@@ -98,6 +105,13 @@ class Surface(Numbered_MCNP_Object):
                 input,
                 f"{self._surface_type.value} could not be parsed as a surface type mnemonic.",
             )
+        if (
+            self.surface_type is not None
+            and self.surface_type not in self._allowed_surface_types()
+        ):
+            raise ValueError(
+                f"{type(self).__name__} must be a surface of type: {[e.value for e in self._allowed_surface_types()]}"
+            )
         # parse the parameters
         for entry in self._tree["data"]:
             self._surface_constants.append(entry)
@@ -105,6 +119,10 @@ class Surface(Numbered_MCNP_Object):
     @staticmethod
     def _number_of_params():
         return 1
+
+    @staticmethod
+    def _allowed_surface_types():
+        return set(SurfaceType)
 
     def _generate_default_tree(self, number: int = None):
         """
@@ -149,7 +167,9 @@ class Surface(Numbered_MCNP_Object):
             },
         )
 
-    @make_prop_val_node("_surface_type", (SurfaceType, str), SurfaceType)
+    @make_prop_val_node(
+        "_surface_type", (SurfaceType, str), SurfaceType, validator=_surf_type_validator
+    )
     def surface_type(self):
         """The mnemonic for the type of surface.
 
