@@ -48,7 +48,7 @@ class CylinderParAxis(Surface):
             self._generate_default_node(float, None),
         ]
         self._radius = self._generate_default_node(float, None)
-        super().__init__(input, number)
+        super().__init__(input, number, surface_type)
         ST = SurfaceType
         if len(self.surface_constants) != 3:
             raise ValueError("CylinderParAxis must have exactly 3 surface_constants")

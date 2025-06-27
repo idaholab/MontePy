@@ -65,7 +65,7 @@ class Surface(Numbered_MCNP_Object):
         self._surface_type = self._generate_default_node(str, None)
         self._modifier = self._generate_default_node(str, None)
         if not input:
-            self._generate_default_tree(number)
+            self._generate_default_tree(number, surface_type)
         # surface number
         self._number = self._tree["surface_num"]["number"]
         self._number._convert_to_int()
@@ -172,7 +172,6 @@ class Surface(Numbered_MCNP_Object):
             if not isinstance(surface_type, str):
                 surface_type = surface_type.value
         surf_type = self._generate_default_node(str, surface_type)
-        surf_type._convert_to_enum(SurfaceType, allow_none=True)
         surf_num = syntax_node.SyntaxNode(
             "surf_num",
             {

@@ -34,7 +34,7 @@ class AxisPlane(Surface):
         surface_type: Union[SurfaceType, str] = None,
     ):
         self._location = self._generate_default_node(float, None)
-        super().__init__(input, number)
+        super().__init__(input, number, surface_type)
         ST = SurfaceType
         if len(self.surface_constants) != 1:
             raise ValueError("AxisPlane must have exactly 1 surface constant")
