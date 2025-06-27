@@ -25,6 +25,8 @@ class CylinderParAxis(Surface):
         The Input object representing the input
     number : int
         The number to set for this object.
+    surface_type: Union[SurfaceType, str]
+        The surface_type to set for this object
     """
 
     COORDINATE_PAIRS = {
@@ -34,7 +36,12 @@ class CylinderParAxis(Surface):
     }
     """Which coordinate is what value for each cylinder type."""
 
-    def __init__(self, input: InitInput = None, number: int = None):
+    def __init__(
+        self,
+        input: InitInput = None,
+        number: int = None,
+        surface_type: Union[SurfaceType, str] = None,
+    ):
         self._coordinates = [
             self._generate_default_node(float, None),
             self._generate_default_node(float, None),

@@ -19,11 +19,18 @@ class AxisPlane(Surface):
         The Input object representing the input
     number : int
         The number to set for this object.
+    surface_type: Union[SurfaceType, str]
+        The surface_type to set for this object
     """
 
     COORDINATE = {SurfaceType.PX: "x", SurfaceType.PY: "y", SurfaceType.PZ: "z"}
 
-    def __init__(self, input: InitInput = None, number: int = None):
+    def __init__(
+        self,
+        input: InitInput = None,
+        number: int = None,
+        surface_type: Union[SurfaceType, str] = None,
+    ):
         self._location = self._generate_default_node(float, None)
         super().__init__(input, number)
         ST = SurfaceType

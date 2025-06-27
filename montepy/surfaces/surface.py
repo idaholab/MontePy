@@ -35,6 +35,8 @@ class Surface(Numbered_MCNP_Object):
         The Input object representing the input
     number : int
         The number to set for this object.
+    surface_type: Union[SurfaceType, str]
+        The surface_type to set for this object
     """
 
     _parser = SurfaceParser()
@@ -43,6 +45,7 @@ class Surface(Numbered_MCNP_Object):
         self,
         input: InitInput = None,
         number: int = None,
+        surface_type: Union[SurfaceType, str] = None,
     ):
         self._CHILD_OBJ_MAP = {
             "periodic_surface": Surface,
@@ -124,7 +127,9 @@ class Surface(Numbered_MCNP_Object):
     def _allowed_surface_types():
         return set(SurfaceType)
 
-    def _generate_default_tree(self, number: int = None):
+    def _generate_default_tree(
+        self, number: int = None, surface_type: Union[SurfaceType, str] = None
+    ):
         """
         Creates a default syntax tree.
 
@@ -132,11 +137,11 @@ class Surface(Numbered_MCNP_Object):
         ----------
         number: int
             the default number for the syntax tree, should be passed from __init__
+        surface_type: Union[SurfaceType, str]
+            The surface_type to set for this object
 
         Other Parameters
         ----------------
-        self._default_surf_type: str
-            The default surface_type
         self._number_of_params: int
             the number of surface constants in the default syntax tree.
         """
@@ -147,7 +152,12 @@ class Surface(Numbered_MCNP_Object):
         num.is_negatable_identifier = True
         pointer = self._generate_default_node(int, None)
         pointer.is_negatable_identifier = True
-        surf_type = self._generate_default_node(str, None)
+        if surface_type is not None:
+            if not isinstance(surface_type, (SurfaceType, str)):
+                raise TypeError(f"The surface_type must be of type: SurfaceType or str")
+            if not isinstance(surface_type, str):
+                surface_type = surface_type.value
+        surf_type = self._generate_default_node(str, surface_type)
         surf_type._convert_to_enum(SurfaceType, allow_none=True)
         surf_num = syntax_node.SyntaxNode(
             "surf_num",
