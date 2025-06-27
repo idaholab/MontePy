@@ -161,7 +161,7 @@ class Surface(Numbered_MCNP_Object):
         """
         data = syntax_node.ListNode("surf list")
         for _ in range(self._number_of_params()):
-            data.append(self._generate_default_node(float, 0.0))
+            data.append(self._generate_default_node(float, None))
         num = self._generate_default_node(int, number)
         num.is_negatable_identifier = True
         pointer = self._generate_default_node(int, None)
