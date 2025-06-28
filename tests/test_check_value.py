@@ -160,3 +160,59 @@ def test_iterable_types(func, good, bads):
     for bad in bads:
         with pytest.raises(TypeError):
             func(bad)
+
+
+@pytest.mark.parametrize(
+    "func, fail, args",
+    [
+        # check_type
+        (cv.check_type, True, ("hi", int)),
+        (cv.check_type, False, (1, int)),
+        (cv.check_type, True, ("hi", (int, bool))),
+        (cv.check_type, False, (1, (int, bool))),
+        # check_type with iterable arg
+        (cv.check_type, True, ("hi", list, int)),
+        (cv.check_type, False, ([1], list, int)),
+        (cv.check_type, True, (["hi"], list, int)),
+        (cv.check_type, True, (1, list, int)),
+        (cv.check_type, True, (["hi"], list, (int, bool))),
+        (cv.check_type, True, (1, list, (int, bool))),
+        # check_type_iterable
+        (cv.check_type_iterable, True, ("hi", list[int])),
+        (cv.check_type_iterable, False, ([1], list[int])),
+        (cv.check_type_iterable, True, ("hi", dict[int, str])),
+        (cv.check_type_iterable, True, ({"hi": 1}, dict[int, str])),
+        (cv.check_type_iterable, True, ({1: 1}, dict[int, str])),
+        (cv.check_type_iterable, False, ({1: "hi"}, dict[int, str])),
+    ],
+)
+def test_other_type_checks(func, fail, args):
+    if fail:
+        with pytest.raises(TypeError):
+            func("foo", "bar", *args)
+    else:
+        func("foo", "bar", *args)
+
+@pytest.mark.parametrize(
+    "func, fail, args",
+    [
+        # check_less_than
+        (cv.check_less_than, True, (0, -1)),
+        (cv.check_less_than, True, (0, -1, True)),
+        (cv.check_less_than, True, (0, 0)), 
+        (cv.check_less_than, False, (0, 0, True)), 
+        (cv.check_less_than, False, (0, 1)), 
+        #check_greater_than
+        (cv.check_greater_than, False, (0, -1)),
+        (cv.check_greater_than, True, (-1, 0, True)),
+        (cv.check_greater_than, True, (0, 0)), 
+        (cv.check_greater_than, False, (0, 0, True)), 
+        (cv.check_greater_than, True, (0, 1)), 
+    ],
+)
+def test_other_value_checks(func, fail, args):
+    if fail:
+        with pytest.raises(ValueError):
+            func("foo", "bar", *args)
+    else:
+        func("foo", "bar", *args)
