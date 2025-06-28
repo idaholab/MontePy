@@ -139,7 +139,13 @@ def check_arguments(func):
 
 
 def check_type(
-    func_name, name, value, expected_type, expected_iter_type=None, *, none_ok=False
+    func_name: str,
+    name: str,
+    value: typing.Any,
+    expected_type: typing.GenericAlias,
+    expected_iter_type: typing.GenericAlias = None,
+    *,
+    none_ok: bool = False,
 ):
     """Ensure that an object is of an expected type. Optionally, if the object is
     iterable, check that each element is of a particular type.
@@ -173,8 +179,8 @@ def check_type(
             msg = (
                 'Unable to set "{}" for "{}" to "{}" which is not one of the '
                 'following types: "{}"'.format(
-                    func_name,
                     name,
+                    func_name,
                     value,
                     ", ".join([t.__name__ for t in expected_type]),
                 )
@@ -194,7 +200,7 @@ def check_type(
         if isinstance(value, np.ndarray):
             if not issubclass(value.dtype.type, expected_iter_type):
                 msg = (
-                    f'Unable to set "{name}" to "{value}" since each item '
+                    f'Unable to set "{name}" for "{func_name}" to "{value}" since each item '
                     f'must be of type "{expected_iter_type.__name__}"'
                 )
                 raise TypeError(msg)
@@ -205,16 +211,17 @@ def check_type(
             if not isinstance(item, expected_iter_type):
                 if isinstance(expected_iter_type, Iterable):
                     msg = (
-                        'Unable to set "{}" to "{}" since each item must be '
+                        'Unable to set "{}" for "{}" to "{}" since each item must be '
                         'one of the following types: "{}"'.format(
                             name,
+                            func_name,
                             value,
                             ", ".join([t.__name__ for t in expected_iter_type]),
                         )
                     )
                 else:
                     msg = (
-                        f'Unable to set "{name}" to "{value}" since each '
+                        f'Unable to set "{name}" for "{func_name}" to "{value}" since each '
                         f'item must be of type "{expected_iter_type.__name__}"'
                     )
                 raise TypeError(msg)
@@ -228,7 +235,7 @@ def check_type_iterable(
     *,
     none_ok: bool = False,
 ):
-    """ """
+    """TODO: refactor"""
     base_cls = expected_type.__origin__
     args = expected_type.__args__
     check_type(func_name, name, value, base_cls, none_ok=none_ok)
@@ -324,11 +331,13 @@ def check_iterable_type(name, value, expected_type, min_depth=1, max_depth=1):
                 raise TypeError(msg)
 
 
-def check_length(name, value, length_min, length_max=None):
+def check_length(func_name, name, value, length_min, length_max=None):
     """Ensure that a sized object has length within a given range.
 
     Parameters
     ----------
+    func_name : str
+        The name of the function this was called from
     name : str
         Description of value being checked
     value : collections.Sized
@@ -344,29 +353,31 @@ def check_length(name, value, length_min, length_max=None):
     if length_max is None:
         if len(value) < length_min:
             msg = (
-                f'Unable to set "{name}" to "{value}" since it must be at '
+                f'Unable to set "{name}" for "{func_name}" to "{value}" since it must be at '
                 f'least of length "{length_min}"'
             )
             raise ValueError(msg)
     elif not length_min <= len(value) <= length_max:
         if length_min == length_max:
             msg = (
-                f'Unable to set "{name}" to "{value}" since it must be of '
+                f'Unable to set "{name}" for "{func_name}" to "{value}" since it must be of '
                 f'length "{length_min}"'
             )
         else:
             msg = (
-                f'Unable to set "{name}" to "{value}" since it must have '
+                f'Unable to set "{name}" for "{func_name}" to "{value}" since it must have '
                 f'length between "{length_min}" and "{length_max}"'
             )
         raise ValueError(msg)
 
 
-def check_increasing(name: str, value, equality: bool = False):
+def check_increasing(func_name: str, name: str, value, equality: bool = False):
     """Ensure that a list's elements are strictly or loosely increasing.
 
     Parameters
     ----------
+    func_name : str
+        The name of the function this was called from
     name : str
         Description of value being checked
     value : iterable
@@ -378,22 +389,26 @@ def check_increasing(name: str, value, equality: bool = False):
     if equality:
         if not np.all(np.diff(value) >= 0.0):
             raise ValueError(
-                f'Unable to set "{name}" to "{value}" since its '
+                f'Unable to set "{name}"  for "{func_name}" to "{value}" since its '
                 "elements must be increasing."
             )
     elif not equality:
         if not np.all(np.diff(value) > 0.0):
             raise ValueError(
-                f'Unable to set "{name}" to "{value}" since its '
+                f'Unable to set "{name}" for "{func_name}" to "{value}" since its '
                 "elements must be strictly increasing."
             )
 
 
-def check_value(name, value, accepted_values):
+def check_value(
+    func_name: str, name: str, value: typing.GenericAlias, accepted_values: typing.Any
+):
     """Ensure that an object's value is contained in a set of acceptable values.
 
     Parameters
     ----------
+    func_name : str
+        The name of the function this was called from
     name : str
         Description of value being checked
     value : collections.Iterable
@@ -405,24 +420,28 @@ def check_value(name, value, accepted_values):
 
     if value not in accepted_values:
         msg = (
-            f'Unable to set "{name}" to "{value}" since it is not in '
+            f'Unable to set "{name}" for "{func_name}" to "{value}" since it is not in '
             f'"{accepted_values}"'
         )
         raise ValueError(msg)
 
 
 def enforce_less_than(maximum, equality=False):
+    """TODO: refactor"""
+
     def wrapper(func_name, name):
-        return lambda x: check_less_than(name, x, maximum, equality, func_name)
+        return lambda x: check_less_than(func_name, name, x, maximum, equality)
 
     return wrapper
 
 
-def check_less_than(name, value, maximum, equality=False, func_name=None):
+def check_less_than(func_name: str, name: str, value, maximum, equality=False):
     """Ensure that an object's value is less than a given value.
 
     Parameters
     ----------
+    func_name : str
+        The name of the function this was called from
     name : str
         Description of the value being checked
     value : object
@@ -437,24 +456,26 @@ def check_less_than(name, value, maximum, equality=False, func_name=None):
     if equality:
         if value > maximum:
             msg = (
-                f'Unable to set "{name}" to "{value}" since it is greater '
+                f'Unable to set "{name}" for "{func_name}" to "{value}" since it is greater '
                 f'than "{maximum}"'
             )
             raise ValueError(msg)
     else:
         if value >= maximum:
             msg = (
-                f'Unable to set "{name}" to "{value}" since it is greater '
+                f'Unable to set "{name}" for "{func_name}" to "{value}" since it is greater '
                 f'than or equal to "{maximum}"'
             )
             raise ValueError(msg)
 
 
-def check_greater_than(name, value, minimum, equality=False):
+def check_greater_than(func_name, name, value, minimum, equality=False):
     """Ensure that an object's value is greater than a given value.
 
     Parameters
     ----------
+    func_name : str
+        The name of the function this was called from
     name : str
         Description of the value being checked
     value : object
@@ -469,14 +490,14 @@ def check_greater_than(name, value, minimum, equality=False):
     if equality:
         if value < minimum:
             msg = (
-                f'Unable to set "{name}" to "{value}" since it is less than '
+                f'Unable to set "{name}" for "{func_name}" to "{value}" since it is less than '
                 f'"{minimum}"'
             )
             raise ValueError(msg)
     else:
         if value <= minimum:
             msg = (
-                f'Unable to set "{name}" to "{value}" since it is less than '
+                f'Unable to set "{name}" for "{func_name}" to "{value}" since it is less than '
                 f'or equal to "{minimum}"'
             )
             raise ValueError(msg)
