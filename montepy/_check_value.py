@@ -26,7 +26,6 @@ from collections.abc import Iterable
 import functools
 import inspect
 import numpy as np
-import sys
 import typing
 
 import montepy
@@ -165,7 +164,6 @@ def check_type(
     if none_ok and value is None:
         return
 
-    expected_type = _convert_typing(expected_type)
     if isinstance(expected_type, typing.GenericAlias):
         return check_type_iterable(
             func_name, name, value, expected_type, none_ok=none_ok
@@ -242,13 +240,6 @@ def check_type_iterable(
         )
     elif issubclass(base_cls, Iterable):
         check_type(func_name, name, value, base_cls, args[0], none_ok=none_ok)
-
-
-def _convert_typing(u_type):
-    vers = sys.version_info
-    if not (vers.major == 3 and vers.minor == 9):
-        return u_type
-    return u_type.__args__
 
 
 def check_iterable_type(name, value, expected_type, min_depth=1, max_depth=1):
