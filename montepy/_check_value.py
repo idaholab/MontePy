@@ -468,7 +468,9 @@ class CheckedList(list):
         return self + other
 
     def __iadd__(self, other):
-        check_type("CheckedList add operand", other, Iterable, self.expected_type)
+        check_type(
+            "CheckedList add operand", self.name, other, Iterable, self.expected_type
+        )
         for item in other:
             self.append(item)
         return self
@@ -482,7 +484,7 @@ class CheckedList(list):
             Item to append
 
         """
-        check_type(self.name, item, self.expected_type)
+        check_type("CheckedList.append", self.name, item, self.expected_type)
         super().append(item)
 
     def insert(self, index, item):
@@ -496,5 +498,5 @@ class CheckedList(list):
             Item to insert
 
         """
-        check_type(self.name, item, self.expected_type)
+        check_type("CheckedList.insert", self.name, item, self.expected_type)
         super().insert(index, item)
