@@ -193,21 +193,41 @@ def test_other_type_checks(func, fail, args):
     else:
         func("foo", "bar", *args)
 
+
 @pytest.mark.parametrize(
     "func, fail, args",
     [
         # check_less_than
         (cv.check_less_than, True, (0, -1)),
         (cv.check_less_than, True, (0, -1, True)),
-        (cv.check_less_than, True, (0, 0)), 
-        (cv.check_less_than, False, (0, 0, True)), 
-        (cv.check_less_than, False, (0, 1)), 
-        #check_greater_than
+        (cv.check_less_than, True, (0, 0)),
+        (cv.check_less_than, False, (0, 0, True)),
+        (cv.check_less_than, False, (0, 1)),
+        # check_greater_than
         (cv.check_greater_than, False, (0, -1)),
         (cv.check_greater_than, True, (-1, 0, True)),
-        (cv.check_greater_than, True, (0, 0)), 
-        (cv.check_greater_than, False, (0, 0, True)), 
-        (cv.check_greater_than, True, (0, 1)), 
+        (cv.check_greater_than, True, (0, 0)),
+        (cv.check_greater_than, False, (0, 0, True)),
+        (cv.check_greater_than, True, (0, 1)),
+        # check_length
+        (cv.check_length, False, ([1], 1)),
+        (cv.check_length, True, ([], 1)),
+        (cv.check_length, False, ([1], 1, 5)),
+        (cv.check_length, True, ([1] * 6, 1, 5)),
+        (cv.check_length, False, ([1], 1, 1)),
+        (cv.check_length, True, ([], 1, 1)),
+        # check_increasing
+        (cv.check_increasing, False, (range(5),)),
+        (cv.check_increasing, False, (range(5), True)),
+        (cv.check_increasing, True, (range(5, 1, -1),)),
+        (cv.check_increasing, True, (range(5, 1, -1), True)),
+        (cv.check_increasing, False, ([1] * 5, True)),
+        (cv.check_increasing, True, ([1] * 5,)),
+        # check_value
+        (cv.check_value, False, (1, range(5))),
+        (cv.check_value, True, (10, range(5))),
+        (cv.check_value, False, ("a", set("abc"))),
+        (cv.check_value, True, ("A", set("abc"))),
     ],
 )
 def test_other_value_checks(func, fail, args):
@@ -216,3 +236,33 @@ def test_other_value_checks(func, fail, args):
             func("foo", "bar", *args)
     else:
         func("foo", "bar", *args)
+
+
+def test_checked_list_bad():
+    check_list = cv.CheckedList(int, "snake")
+    with pytest.raises(TypeError):
+        check_list.append("hi")
+    with pytest.raises(TypeError):
+        check_list + ["a"]
+    with pytest.raises(TypeError):
+        ["a"] + check_list
+    with pytest.raises(TypeError):
+        check_list += ["a"]
+    with pytest.raises(TypeError):
+        check_list.insert(1, "hi")
+    with pytest.raises(TypeError):
+        check_list = cv.CheckedList(int, "snake", ["hi"])
+
+
+def test_checked_list_good():
+    check_list = cv.CheckedList(int, "snake", [1, 2, 3])
+    check_list.append(7)
+    assert len(check_list) == 4
+    assert 7 in check_list
+    assert len(check_list + [8]) == 5
+    assert len([8] + check_list) == 5
+    check_list += [8]
+    assert len(check_list) == 5
+    check_list.insert(0, 5)
+    assert check_list[0] == 5
+    assert len(check_list) == 6
