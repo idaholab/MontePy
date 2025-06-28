@@ -249,88 +249,6 @@ def check_type_iterable(
         check_type(func_name, name, value, base_cls, args[0], none_ok=none_ok)
 
 
-def check_iterable_type(name, value, expected_type, min_depth=1, max_depth=1):
-    """Ensure that an object is an iterable containing an expected type.
-
-    Parameters
-    ----------
-    name : str
-        Description of value being checked
-    value : Iterable
-        Iterable, possibly of other iterables, that should ultimately contain
-        the expected type
-    expected_type : type
-        type that the iterable should contain
-    min_depth : int
-        The minimum number of layers of nested iterables there should be before
-        reaching the ultimately contained items
-    max_depth : int
-        The maximum number of layers of nested iterables there should be before
-        reaching the ultimately contained items
-    """
-    # Initialize the tree at the very first item.
-    tree = [value]
-    index = [0]
-
-    # Traverse the tree.
-    while index[0] != len(tree[0]):
-        # If we are done with this level of the tree, go to the next branch on
-        # the level above this one.
-        if index[-1] == len(tree[-1]):
-            del index[-1]
-            del tree[-1]
-            index[-1] += 1
-            continue
-
-        # Get a string representation of the current index in case we raise an
-        # exception.
-        form = "[" + "{:d}, " * (len(index) - 1) + "{:d}]"
-        ind_str = form.format(*index)
-
-        # What is the current item we are looking at?
-        current_item = tree[-1][index[-1]]
-
-        # If this item is of the expected type, then we've reached the bottom
-        # level of this branch.
-        if isinstance(current_item, expected_type):
-            # Is this deep enough?
-            if len(tree) < min_depth:
-                msg = (
-                    f'Error setting "{name}": The item at {ind_str} does not '
-                    f"meet the minimum depth of {min_depth}"
-                )
-                raise TypeError(msg)
-
-            # This item is okay.  Move on to the next item.
-            index[-1] += 1
-
-        # If this item is not of the expected type, then it's either an error or
-        # on a deeper level of the tree.
-        else:
-            if isinstance(current_item, Iterable):
-                # The tree goes deeper here, let's explore it.
-                tree.append(current_item)
-                index.append(0)
-
-                # But first, have we exceeded the max depth?
-                if len(tree) > max_depth:
-                    msg = (
-                        f"Error setting {name}: Found an iterable at "
-                        f"{ind_str}, items in that iterable exceed the "
-                        f"maximum depth of {max_depth}"
-                    )
-                    raise TypeError(msg)
-
-            else:
-                # This item is completely unexpected.
-                msg = (
-                    f"Error setting {name}: Items must be of type "
-                    f'"{expected_type.__name__}", but item at {ind_str} is '
-                    f'of type "{type(current_item).__name__}"'
-                )
-                raise TypeError(msg)
-
-
 def check_length(func_name, name, value, length_min, length_max=None):
     """Ensure that a sized object has length within a given range.
 
@@ -501,45 +419,6 @@ def check_greater_than(func_name, name, value, minimum, equality=False):
                 f'or equal to "{minimum}"'
             )
             raise ValueError(msg)
-
-
-def check_filetype_version(obj, expected_type, expected_version):
-    """Check filetype and version of an HDF5 file.
-
-    Parameters
-    ----------
-    obj : h5py.File
-        HDF5 file to check
-    expected_type : str
-        Expected file type, e.g. 'statepoint'
-    expected_version : int
-        Expected major version number.
-
-    """
-    try:
-        this_filetype = obj.attrs["filetype"].decode()
-        this_version = obj.attrs["version"]
-
-        # Check filetype
-        if this_filetype != expected_type:
-            raise IOError(f"{obj.filename} is not a {expected_type} file.")
-
-        # Check version
-        if this_version[0] != expected_version:
-            raise IOError(
-                "{} file has a version of {} which is not "
-                "consistent with the version expected by OpenMC, {}".format(
-                    this_filetype,
-                    ".".join(str(v) for v in this_version),
-                    expected_version,
-                )
-            )
-    except AttributeError:
-        raise IOError(
-            f"Could not read {obj.filename} file. This most likely "
-            "means the file was produced by a different version of "
-            "OpenMC than the one you are using."
-        )
 
 
 class CheckedList(list):
