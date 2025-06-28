@@ -353,6 +353,22 @@ def enforce_less_than(maximum, equality=False):
     return wrapper
 
 
+def positive():
+    pass
+
+
+def negative():
+    pass
+
+
+def non_positive():
+    pass
+
+
+def non_negative():
+    pass
+
+
 def check_less_than(func_name: str, name: str, value, maximum, equality=False):
     """Ensure that an object's value is less than a given value.
 
