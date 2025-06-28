@@ -1,4 +1,12 @@
 """
+Utilities for checking values
+
+.. note::
+    Some of this software was taken from OpenMC.
+    See the LICENSE file for the specific licenses.
+"""
+
+"""
 Copyright (c) 2014-2025 Massachusetts Institute of Technology, UChicago Argonne
 LLC, Battelle Energy Alliance, and OpenMC contributors
 
@@ -22,7 +30,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 import copy
 import os
-from collections.abc import Iterable
+from collections.abc import Callable, Iterable
 import functools
 import inspect
 import numpy as np
@@ -63,6 +71,7 @@ def _prepare_type_checker(func_name, arg_name, args_spec, none_ok):
 
 
 def _prepare_args_check(func_name, arg_name, args_spec):
+    """TODO: simplify with Signature"""
     if arg_name is None:
         return []
     args_check = args_spec.annotations.get(arg_name, None)
@@ -74,8 +83,66 @@ def _prepare_args_check(func_name, arg_name, args_spec):
     return (checker(func_name, arg_name) for checker in args_check)
 
 
-def check_arguments(func):
-    """ """
+def args_checked(func: Callable):
+    """
+    A function decorator that enforces type annotations for the function when ran.
+
+    This will read the type annotations for all arguments and enforce that the argument is of
+    that type at run-time.
+    Value restrictions can also be applied as well with ``typing.Annotated``.
+
+    Examples
+    ^^^^^^^^
+
+    This will ensure that all arguments have to be an integer,
+
+    .. doctest::
+
+        >>> from montepy.utilities import *
+        >>> @args_checked
+        ... def foo(a: int) -> int:
+        ...    return a
+        >>> print(foo(1))
+        1
+        >>> print(foo("a"))
+        Traceback (most recent call last):
+        ...
+        TypeError: Unable to set "a" for "foo" to "a" which is not of type "int"
+
+    Values can be checked as by using ``typing.Annotated`` to add an annotation of the values that are allowed
+    (via a special value checking function),
+
+    .. doctest::
+
+        >>> import typing
+        >>> @args_checked
+        ... def bar(a: typing.Annotated[int, positive]) -> int:
+        ...     return a
+        >>> print(bar(1))
+        1
+        >>> print(bar(0))
+        Traceback (most recent call last):
+        ...
+        ValueError: Unable to set "a" for "bar" to "0" since it is less than or equal to "0"
+
+
+
+    Parameters
+    ----------
+    func: collections.abc.Callable
+        The function to decorate
+
+    Returns
+    -------
+    A decorated function that will do type and value checking at run time based on the annotation.
+
+    Raises
+    ------
+    TypeError
+        If an argument of the wrong type is provided
+    ValueError
+        If an argument of the right type, but wrong value is given.
+    """
 
     def decorator(func):
         args_spec = inspect.getfullargspec(func)
@@ -344,8 +411,7 @@ def check_value(
         raise ValueError(msg)
 
 
-def enforce_less_than(maximum, equality=False):
-    """TODO: refactor"""
+def less_than(maximum, equality=False):
 
     def wrapper(func_name, name):
         return lambda x: check_less_than(func_name, name, x, maximum, equality)
@@ -353,20 +419,28 @@ def enforce_less_than(maximum, equality=False):
     return wrapper
 
 
-def positive():
-    pass
+def greater_than(maximum, equality=False):
+
+    def wrapper(func_name, name):
+        return lambda x: check_less_than(func_name, name, x, maximum, equality)
+
+    return wrapper
+
+
+def positive(func_name, name):
+    return lambda x: check_greater_than(func_name, name, x, 0)
 
 
 def negative():
-    pass
+    return lambda x: check_less_than(func_name, name, x, 0)
 
 
 def non_positive():
-    pass
+    return lambda x: check_less_than(func_name, name, x, 0, True)
 
 
 def non_negative():
-    pass
+    return lambda x: check_greater_than(func_name, name, x, 0, True)
 
 
 def check_less_than(func_name: str, name: str, value, maximum, equality=False):
