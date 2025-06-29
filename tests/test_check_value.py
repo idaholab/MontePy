@@ -61,7 +61,32 @@ def pipe_union_type(a: montepy.Cell | str):
 
 
 @cv.args_checked
-def negative(a: typing.Annotated[int, cv.less_than(0)]):
+def negative_hard(a: typing.Annotated[int, cv.less_than(0)]):
+    pass
+
+
+@cv.args_checked
+def positive_hard(a: typing.Annotated[int, cv.greater_than(0)]):
+    pass
+
+
+@cv.args_checked
+def negative(a: typing.Annotated[int, cv.negative]):
+    pass
+
+
+@cv.args_checked
+def positive(a: typing.Annotated[int, cv.positive]):
+    pass
+
+
+@cv.args_checked
+def non_negative(a: typing.Annotated[int, cv.non_negative]):
+    pass
+
+
+@cv.args_checked
+def non_positive(a: typing.Annotated[int, cv.non_positive]):
     pass
 
 
@@ -138,13 +163,29 @@ def test_none_default(val, func):
     func(val)
 
 
-@pytest.mark.parametrize("val, raise_error", [(1, True), (-1, False)])
-def test_negative(val, raise_error):
+@pytest.mark.parametrize(
+    "func, val, raise_error",
+    [
+        (negative_hard, 1, True),
+        (negative_hard, -1, False),
+        (negative, 1, True),
+        (negative, -1, False),
+        (non_negative, 0, False),
+        (non_negative, -1, True),
+        (positive, 1, False),
+        (positive, -1, True),
+        (positive_hard, 1, False),
+        (positive_hard, -1, True),
+        (non_positive, 1, True),
+        (non_positive, 0, False),
+    ],
+)
+def test_pos_neg(func, val, raise_error):
     if raise_error:
         with pytest.raises(ValueError):
-            negative(val)
+            func(val)
     else:
-        negative(val)
+        func(val)
 
 
 @pytest.mark.parametrize(
