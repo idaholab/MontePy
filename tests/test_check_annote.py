@@ -8,43 +8,43 @@ import montepy
 import montepy._check_value as cv
 
 
-@cv.check_arguments
+@cv.args_checked
 def str_annotations(a: str):
     pass
 
 
-@cv.check_arguments
+@cv.args_checked
 def str_annote_default(a: str = None):
     pass
 
 
-@cv.check_arguments
+@cv.args_checked
 def str_pipe_union(a: str | montepy.Cell):
     pass
 
 
-@cv.check_arguments
+@cv.args_checked
 def list_type(a: list[int]):
     pass
 
 
-@cv.check_arguments
+@cv.args_checked
 def dict_type(a: dict[str, int]):
     pass
 
 
-@cv.check_arguments
+@cv.args_checked
 def np_array(a: np.ndarray[np.int64]):
     pass
 
 
-@cv.check_arguments
+@cv.args_checked
 def cell_stuff(a: montepy.Cell):
     pass
 
 
-@cv.check_arguments
-def negative(a: typing.Annotated[int, montepy._check_value.enforce_less_than(0)]):
+@cv.args_checked
+def negative(a: typing.Annotated[int, less_than(0)]):
     pass
 
 

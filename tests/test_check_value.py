@@ -8,13 +8,13 @@ import montepy._check_value as cv
 import montepy
 
 
-@cv.check_arguments
+@cv.args_checked
 def simple_args(a: str):
     pass
 
 
 def var_args(a: str):
-    @cv.check_arguments
+    @cv.args_checked
     def ret(a: str, *args: str):
         pass
 
@@ -22,14 +22,14 @@ def var_args(a: str):
 
 
 def kwargs(a: str):
-    @cv.check_arguments
+    @cv.args_checked
     def ret(**kwargs: str):
         pass
 
     return ret(foo=a)
 
 
-@cv.check_arguments
+@cv.args_checked
 def defaults(a: str, *args: str, b: str = None):
     pass
 
@@ -43,39 +43,39 @@ def defaults_used(a: str):
 
 
 def kw_defaults(a: str):
-    @cv.check_arguments
+    @cv.args_checked
     def ret(a: str, *args: str, b: str = None, **kwargs: str):
         pass
 
     return ret("1", foo=a)
 
 
-@cv.check_arguments
+@cv.args_checked
 def union_type(a: typing.Union[montepy.Cell, str]):
     pass
 
 
-@cv.check_arguments
+@cv.args_checked
 def pipe_union_type(a: montepy.Cell | str):
     pass
 
 
-@cv.check_arguments
-def negative(a: typing.Annotated[int, cv.enforce_less_than(0)]):
+@cv.args_checked
+def negative(a: typing.Annotated[int, cv.less_than(0)]):
     pass
 
 
-@cv.check_arguments
+@cv.args_checked
 def list_type(a: list[int]):
     pass
 
 
-@cv.check_arguments
+@cv.args_checked
 def dict_type(a: dict[str, int]):
     pass
 
 
-@cv.check_arguments
+@cv.args_checked
 def np_array(a: np.ndarray[np.int64]):
     pass
 
