@@ -8,6 +8,7 @@ You will receive an MCNP_Problem object that you will interact with.
 """
 
 from . import _check_value
+from . import types
 from . import data_inputs
 from . import input_parser
 from . import constants
