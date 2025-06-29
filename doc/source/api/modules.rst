@@ -7,7 +7,6 @@ Submodules
 .. toctree::
    :maxdepth: 1
 
-   montepy._check_value
    montepy.cell
    montepy.cells
    montepy.constants
@@ -21,6 +20,7 @@ Submodules
    montepy.particle
    montepy.surface_collection
    montepy.transforms
+   montepy.types
    montepy.universe
    montepy.universes
    montepy.utilities
