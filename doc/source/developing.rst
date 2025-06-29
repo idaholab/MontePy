@@ -207,6 +207,23 @@ In this case for both ``foo`` and ``bar`` the type for ``a`` is the exact same.
    
    would be properly enforced.
 
+
+Use with ``__future__.annotations``
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Sometimes it is necessary to include:
+
+``from __future__ import annotations``
+
+in order avoid circular imports in MontePy.
+
+What this does is treat type annotations as strings, and not evaluate them.
+When this is done ``args_checked`` will evaluate the type annotation at run time,
+from within the scope of ``montepy._checkvalue``. 
+This means that the annotations need to be in the namespace of the ``_checkvalue.py`` file,
+and not the file in which they are defined.
+This file has ``montepy`` in its namespace, and so it's always safest to have types to have their full MontePy name.
+
 Value Enforcement
 ^^^^^^^^^^^^^^^^^
 
