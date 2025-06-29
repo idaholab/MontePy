@@ -141,6 +141,17 @@ The classes are:
 Many of these nodes (which aren't leaves) behave like dicts and lists, and can be accessed with indices. 
 For more detail in how to work with them read the next section on MCNP_Objects: :ref:`mcnp-object-docs`.
 
+
+Type and Value Enforcement
+--------------------------
+
+A core principle of MontePy is that users will make mistakes and sometimes provide invalid values,
+either the wrong data type, or a nonsensical value.
+Montepy is moving to type annotations, and decorator magic to enforce this validity,
+rather than relying on a series of boiler plate type and value checks.
+All of the core functionality required is from :module:`montepy.utilities`.
+
+
 Inheritance
 -----------
 
