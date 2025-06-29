@@ -3,7 +3,7 @@ Utilities for checking values
 
 .. note::
     Some of this software was taken from OpenMC.
-    See the LICENSE file for the specific licenses.
+    See the :download:`LICENSE` file for the specific licenses.
 """
 
 """
