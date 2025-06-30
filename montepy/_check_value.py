@@ -43,45 +43,28 @@ import montepy
 PathLike = str | os.PathLike
 
 
-def _argtype_default_gen(argspec, attr):
-    if attr == "args":
-        args = argspec.args
-        if argspec.defaults:
-            delta_len = len(args) - len(argspec.defaults)
-            def_iter = (True,) * delta_len + argspec.defaults
-        else:
-            def_iter = (True,) * len(args)
-        for arg, default in zip(args, def_iter):
-            yield arg, default
-    else:
-        for arg_name in argspec.kwonlyargs:
-            default = argspec.kwonlydefaults.get(arg_name, True)
-            yield arg_name, default
-
-
-def _prepare_type_checker(func_name, arg_name, args_spec, none_ok):
-    arg_type = args_spec.annotations.get(arg_name, None)
-    if arg_type:
+def _prepare_type_checker(func_name, arg_spec, none_ok):
+    arg_type = arg_spec.annotation
+    if arg_type is not inspect._empty:
         # if annotations are used
         if isinstance(arg_type, str):
             arg_type = eval(arg_type)
         # if annotated
         if isinstance(arg_type, typing._AnnotatedAlias):
             arg_type = arg_type.__args__
-        return lambda x: check_type(func_name, arg_name, x, arg_type, none_ok=none_ok)
+        return lambda x: check_type(
+            func_name, arg_spec.name, x, arg_type, none_ok=none_ok
+        )
 
 
-def _prepare_args_check(func_name, arg_name, args_spec):
-    """TODO: simplify with Signature"""
-    if arg_name is None:
+def _prepare_args_check(func_name, arg_spec):
+    arg_check = arg_spec.annotation
+    if isinstance(arg_check, str):
+        arg_check = eval(arg_check)
+    if arg_check is None or not isinstance(arg_check, typing._AnnotatedAlias):
         return []
-    args_check = args_spec.annotations.get(arg_name, None)
-    if isinstance(args_check, str):
-        args_check = eval(args_check)
-    if args_check is None or not isinstance(args_check, typing._AnnotatedAlias):
-        return []
-    args_check = args_check.__metadata__
-    return (checker(func_name, arg_name) for checker in args_check)
+    arg_check = arg_check.__metadata__
+    return (checker(func_name, arg_spec.name) for checker in arg_check)
 
 
 def args_checked(func: Callable):
@@ -146,59 +129,32 @@ def args_checked(func: Callable):
     """
 
     def decorator(func):
-        args_spec = inspect.getfullargspec(func)
+        args_spec = inspect.signature(func)
         arg_checkers = {}
-        for attr in ["args", "kwonlyargs"]:
-            if attr == "args":
-                arg_checkers[attr] = []
-            else:
-                arg_checkers[attr] = {}
-            for arg_name, default in _argtype_default_gen(args_spec, attr):
-                none_ok = default is None
-                checkers = []
-                # build
-                type_checker = _prepare_type_checker(
-                    func.__qualname__, arg_name, args_spec, none_ok
-                )
-                if type_checker:
-                    checkers.append(type_checker)
-                checkers.extend(
-                    _prepare_args_check(func.__qualname__, arg_name, args_spec)
-                )
-                if attr == "args":
-                    arg_checkers[attr].append(checkers)
-                else:
-                    arg_checkers[attr][arg_name] = checkers
-
-        special_checks = {}
-        for attr in ("varargs", "varkw"):
+        for arg_name, arg_spec in args_spec.parameters.items():
             checkers = []
-            arg_name = getattr(args_spec, attr, None)
-            if arg_name:
-                checkers = [
-                    _prepare_type_checker(func.__qualname__, arg_name, args_spec, False)
-                ]
-            checkers.extend(_prepare_args_check(func.__qualname__, arg_name, args_spec))
-            special_checks[attr] = checkers
+            none_ok = arg_spec.default is None
+            type_checker = _prepare_type_checker(func.__qualname__, arg_spec, none_ok)
+            if type_checker:
+                checkers.append(type_checker)
+            checkers.extend(_prepare_args_check(func.__qualname__, arg_spec))
+            arg_checkers[arg_name] = checkers
 
         @functools.wraps(func)
         def wrapper(*args, **kwargs):
-            args_iter = iter(args)
-            for checkers, arg in zip(arg_checkers["args"], args_iter):
-                for checker in checkers:
-                    checker(arg)
-            # iterate over var args
-            for arg in args_iter:
-                for checker in special_checks["varargs"]:
-                    checker(arg)
-
-            for arg_name, arg in kwargs.items():
-                if arg_name in arg_checkers["kwonlyargs"]:
-                    checkers = arg_checkers["kwonlyargs"][arg_name]
+            bound = args_spec.bind(*args, **kwargs)
+            for arg_name, arg_vals in bound.arguments.items():
+                checkers = arg_checkers[arg_name]
+                arg_type = args_spec.parameters[arg_name].kind
+                if arg_type == inspect._ParameterKind.VAR_POSITIONAL:
+                    args_iter = arg_vals
+                elif arg_type == inspect._ParameterKind.VAR_KEYWORD:
+                    args_iter = arg_vals.values()
                 else:
-                    checkers = special_checks["varkw"]
-                for checker in checkers:
-                    checker(arg)
+                    args_iter = (arg_vals,)
+                for val in args_iter:
+                    for checker in checkers:
+                        checker(val)
             return func(*args, **kwargs)
 
         return wrapper
