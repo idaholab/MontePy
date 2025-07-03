@@ -203,7 +203,7 @@ In this case for both ``foo`` and ``bar`` the type for ``a`` is the exact same.
 
    ``args_checked`` will work recursively through a data structure, so the type: 
    
-   .. codeblock:: python
+   .. code-block:: python
 
         type FancyData = dict[
             tuple[str, Integral], 
