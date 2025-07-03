@@ -37,7 +37,6 @@ class CylinderOnAxis(Surface):
     ):
         self._radius = self._generate_default_node(float, None)
         super().__init__(input, number, surface_type)
-        ST = SurfaceType
         if len(self.surface_constants) != 1:
             raise ValueError("CylinderOnAxis only accepts one surface_constant")
         self._radius = self._surface_constants[0]

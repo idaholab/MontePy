@@ -35,7 +35,6 @@ class AxisPlane(Surface):
     ):
         self._location = self._generate_default_node(float, None)
         super().__init__(input, number, surface_type)
-        ST = SurfaceType
         if len(self.surface_constants) != 1:
             raise ValueError("AxisPlane must have exactly 1 surface constant")
         self._location = self._surface_constants[0]
