@@ -5,6 +5,8 @@ from .surface import Surface, InitInput
 from montepy.errors import *
 from montepy.utilities import *
 
+from typing import Union
+
 
 class AxisPlane(Surface):
     """Represents PX, PY, PZ
@@ -19,22 +21,23 @@ class AxisPlane(Surface):
         The Input object representing the input
     number : int
         The number to set for this object.
+    surface_type: Union[SurfaceType, str]
+        The surface_type to set for this object
     """
 
     COORDINATE = {SurfaceType.PX: "x", SurfaceType.PY: "y", SurfaceType.PZ: "z"}
 
-    def __init__(self, input: InitInput = None, number: int = None):
+    def __init__(
+        self,
+        input: InitInput = None,
+        number: int = None,
+        surface_type: Union[SurfaceType, str] = None,
+    ):
         self._location = self._generate_default_node(float, None)
-        super().__init__(input, number)
-        ST = SurfaceType
-        if input:
-            if self.surface_type not in [ST.PX, ST.PY, ST.PZ]:
-                raise ValueError("AxisPlane must be a surface of type: PX, PY, or PZ")
-            if len(self.surface_constants) != 1:
-                raise ValueError("AxisPlane must have exactly 1 surface constant")
-            self._location = self._surface_constants[0]
-        else:
-            self._surface_constants = [self._location]
+        super().__init__(input, number, surface_type)
+        if len(self.surface_constants) != 1:
+            raise ValueError("AxisPlane must have exactly 1 surface constant")
+        self._location = self._surface_constants[0]
 
     @make_prop_val_node("_location", (float, int), float)
     def location(self):
@@ -45,6 +48,10 @@ class AxisPlane(Surface):
         float
         """
         pass
+
+    @staticmethod
+    def _allowed_surface_types():
+        return {SurfaceType.PX, SurfaceType.PY, SurfaceType.PZ}
 
     def validate(self):
         super().validate()

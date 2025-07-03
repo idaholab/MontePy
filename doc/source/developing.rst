@@ -347,7 +347,8 @@ How to __init__
 """""""""""""""
 After running the super init method
 you will then have access to ``self.surface_type``, and ``self.surface_constants``.
-You then need to verify that the surface type is correct, and there are the correct number of surface constants. 
+You will need to implement a ``_allowed_surface_types`` to specify which surface types are allowed for your class.
+You then need to verify that there are the correct number of surface constants. 
 You will also need to add a branch in the logic for :func:`montepy.surfaces.surface_builder.surface_builder`.
 
 :func:`~montepy.surfaces.surface.Surface.find_duplicate_surfaces`

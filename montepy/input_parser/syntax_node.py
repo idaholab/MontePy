@@ -1049,7 +1049,7 @@ class ValueNode(SyntaxNodeBase):
             convert to enum.
         """
         self._type = enum_class
-        if switch_to_upper:
+        if switch_to_upper and self._value is not None:
             value = self._value.upper()
         else:
             value = self._value
