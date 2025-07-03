@@ -173,7 +173,7 @@ For type enforcement this is simple enough:
         ...
         TypeError: Unable to set "a" for "foo" to "a" which is not of type "int"
 
-For more complex types, `typing.union <https://docs.python.org/3/library/typing.html#typing.Union>`_ can be used. For instance:
+For more complex types, `typing.Union <https://docs.python.org/3/library/typing.html#typing.Union>`_ can be used. For instance:
 
 .. testcode::
 
@@ -197,13 +197,18 @@ In this case for both ``foo`` and ``bar`` the type for ``a`` is the exact same.
    sometimes libraries, like numpy, provide their own equivalent types.
    Rather you should the `numbers <https://docs.python.org/3/library/numbers.html>`_ package instead.
    Specifically ``numbers.Real`` and ``numbers.Integral`` are the most commonly used types in 
-   montepy.
+   MontePy.
 
 .. Note::
 
    ``args_checked`` will work recursively through a data structure, so the type: 
    
-   ``dict[tuple[str, Integral]], list[list[Real]]]`` 
+   .. codeblock:: python
+
+        type FancyData = dict[
+            tuple[str, Integral], 
+            list[list[Real]]
+        ] 
    
    would be properly enforced.
 
@@ -228,7 +233,7 @@ Value Enforcement
 ^^^^^^^^^^^^^^^^^
 
 MontePy also supports value enforcement in the type annotations, 
-through `typing.annotated <https://docs.python.org/3/library/typing.html#typing.Annotated>`_ 
+through `typing.Annotated <https://docs.python.org/3/library/typing.html#typing.Annotated>`_ 
 allowed values can also be specified.
 MontePy provides functions for the most common value checks, such as :func:`~montepy.utilities.positive`. For instance:
 

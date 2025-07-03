@@ -445,6 +445,7 @@ def positive(func_name, name):
         from numbers import Real
         from typing import Annotated
 
+        @args_checked
         def foo(a: Annotated[Real, positive]):
             pass
 
@@ -465,6 +466,7 @@ def negative(func_name, name):
         from numbers import Real
         from typing import Annotated
 
+        @args_checked
         def foo(a: Annotated[Real, negative]):
             pass
 
@@ -485,6 +487,7 @@ def non_positive(func_name, name):
         from numbers import Real
         from typing import Annotated
 
+        @args_checked
         def foo(a: Annotated[Real, non_positive]):
             pass
 
@@ -505,6 +508,7 @@ def non_negative(func_name, name):
         from numbers import Real
         from typing import Annotated
 
+        @args_checked
         def foo(a: Annotated[Real, non_negative]):
             pass
 
