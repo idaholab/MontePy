@@ -5,6 +5,7 @@ from montepy.errors import *
 from montepy.utilities import *
 
 from numbers import Real
+from typing import Union
 
 
 def _enforce_positive_radius(self, value):
@@ -25,6 +26,8 @@ class CylinderParAxis(Surface):
         The Input object representing the input
     number : int
         The number to set for this object.
+    surface_type: Union[SurfaceType, str]
+        The surface_type to set for this object
     """
 
     COORDINATE_PAIRS = {
@@ -34,27 +37,30 @@ class CylinderParAxis(Surface):
     }
     """Which coordinate is what value for each cylinder type."""
 
-    def __init__(self, input: InitInput = None, number: int = None):
+    def __init__(
+        self,
+        input: InitInput = None,
+        number: int = None,
+        surface_type: Union[SurfaceType, str] = None,
+    ):
         self._coordinates = [
             self._generate_default_node(float, None),
             self._generate_default_node(float, None),
         ]
         self._radius = self._generate_default_node(float, None)
-        super().__init__(input, number)
-        ST = SurfaceType
-        if input:
-            if self.surface_type not in [ST.C_X, ST.C_Y, ST.C_Z]:
-                raise ValueError(
-                    "CylinderParAxis must be a surface of types: C/X, C/Y, C/Z"
-                )
-            if len(self.surface_constants) != 3:
-                raise ValueError(
-                    "CylinderParAxis must have exactly 3 surface_constants"
-                )
-            self._coordinates = self._surface_constants[0:2]
-            self._radius = self._surface_constants[2]
-        else:
-            self._surface_constants = [*self._coordinates, self._radius]
+        super().__init__(input, number, surface_type)
+        if len(self.surface_constants) != 3:
+            raise ValueError("CylinderParAxis must have exactly 3 surface_constants")
+        self._coordinates = self._surface_constants[0:2]
+        self._radius = self._surface_constants[2]
+
+    @staticmethod
+    def _number_of_params():
+        return 3
+
+    @staticmethod
+    def _allowed_surface_types():
+        return {SurfaceType.C_X, SurfaceType.C_Y, SurfaceType.C_Z}
 
     @property
     def coordinates(self):

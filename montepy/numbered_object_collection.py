@@ -243,8 +243,11 @@ class NumberedObjectCollection(ABC):
         """
         if not isinstance(number, Integral):
             raise TypeError("The number must be an int")
+
+        if number < 0:
+            raise ValueError(f"The number must be non-negative. {number} given.")
         conflict = False
-        # only can trust cache if being
+        # only can trust cache if being updated
         if self._problem:
             if number in self.__num_cache:
                 conflict = True
@@ -476,6 +479,8 @@ class NumberedObjectCollection(ABC):
             raise TypeError(
                 f"Object must be of type: {self._obj_class.__name__}. {obj} given."
             )
+        if obj.number < 0:
+            raise ValueError(f"The number must be non-negative. {obj.number} given.")
         if obj.number in self.__num_cache:
             try:
                 if obj is self[obj.number]:
@@ -603,12 +608,12 @@ class NumberedObjectCollection(ABC):
             raise TypeError(f"object being appended must be of type: {self._obj_class}")
         if not isinstance(step, Integral):
             raise TypeError("The step number must be an int")
-        number = obj.number
+        number = obj.number if obj.number > 0 else 1
         if self._problem:
             obj.link_to_problem(self._problem)
         try:
             self.append(obj)
-        except NumberConflictError:
+        except (NumberConflictError, ValueError) as e:
             number = self.request_number(number, step)
             obj.number = number
             self.append(obj)
