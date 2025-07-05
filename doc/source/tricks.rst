@@ -3,6 +3,17 @@ Tips and Tricks
 
 Here's a random collection of some tips and tricks that should make your life easier.
 
+.. note::
+
+    All examples come from one of the MontePy test inputs.
+    You can access it by:
+
+    .. testcode::
+
+        import montepy
+        problem = montepy.read_input("tests/inputs/test.imcnp")
+        surfaces = problem.surfaces
+
 .. contents:: Table of Contents
    :depth: 3
 
@@ -22,24 +33,30 @@ Here are some examples:
 Getting Highest PZ plane
 ~~~~~~~~~~~~~~~~~~~~~~~~
 
->>> max(surfaces.pz, key = lambda x: x.location)
-Surface: 1 PZ
+.. doctest::
+
+    >>> max(surfaces.pz, key = lambda x: x.location)
+    SURFACE: 1025, PZ, periodic surface: None, transform: None, constants: [15.0]
 
 Getting the Lowest PZ plane
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Similarly you can get the lowest surface with the min function:
 
->>> min(surfaces.pz, key = lambda x: x.location)
-Surface: 5 PZ
+.. doctest::
+
+    >>> min(surfaces.pz, key = lambda x: x.location)
+    SURFACE: 1020, PZ, periodic surface: None, transform: None, constants: [10.0]
 
 Getting the Largest CZ Cylinder
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Similar to before you can use this method to find cylinders by their radius:
 
->>> max(surfaces.cz, key = lambda x: x.radius)
-surface: 10 CZ
+.. doctest::
+
+    >>> max(surfaces.cz, key = lambda x: x.radius)
+    SURFACE: 1015, CZ, periodic surface: None, transform: None, constants: [5.0]
 
 Translating Cells
 -----------------
@@ -49,19 +66,27 @@ Translating experiment axially
 
 For some problems you can quickly move a whole problem axially (in z) with a simple loop like:
 
->>> for surface in problem.surfaces.pz:
->>>     surface.location += 10
+.. testcode::
+
+    for surface in problem.surfaces.pz:
+        surface.location += 10
 
 .. note::
+
    This only works for problems that are infinite in Z, with "cutting" PZ planes, such as a fuel rod.
    This is because only the PZ surfaces are moving. If you had a sphere in the problem for instance,
    this would break the problem geometry then as the sphere would not move as well.
 
 .. note::
+
    Make sure you loop over all the surfaces in the problem, and not over all the cells. For instance:
-   
-   >>> for cell in problem.cells:
-   >>>     for surface in cell.surfaces:
-   >>>         surface.location += 10
+
+   .. testcode::
+
+       import montepy
+       problem = montepy.MCNP_Problem("foo.imcnp")
+       for cell in problem.cells:
+           for surface in cell.surfaces:
+               surface.location += 10
 
    will cause geometry errors. Surfaces are commonly used by multiple cells so each surface may be translated repeatedly.

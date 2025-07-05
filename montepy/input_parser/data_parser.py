@@ -6,14 +6,12 @@ from montepy.input_parser import syntax_node
 
 
 class DataParser(MCNP_Parser):
-    """
-    A parser for almost all data inputs.
+    """A parser for almost all data inputs.
 
-    .. versionadded:: 0.2.0
-        This was added with the major parser rework.
-
-    :returns: a syntax tree for the data input.
-    :rtype: SyntaxNode
+    Returns
+    -------
+    SyntaxNode
+        a syntax tree for the data input.
     """
 
     debugfile = None
@@ -38,9 +36,9 @@ class DataParser(MCNP_Parser):
 
     @_(
         "classifier_phrase",
-        "classifier_phrase KEYWORD padding",
+        "classifier_phrase MODIFIER padding",
         "padding classifier_phrase",
-        "padding classifier_phrase KEYWORD padding",
+        "padding classifier_phrase MODIFIER padding",
     )
     def introduction(self, p):
         ret = {}
@@ -49,8 +47,8 @@ class DataParser(MCNP_Parser):
         else:
             ret["start_pad"] = syntax_node.PaddingNode()
         ret["classifier"] = p.classifier_phrase
-        if hasattr(p, "KEYWORD"):
-            ret["keyword"] = syntax_node.ValueNode(p.KEYWORD, str, padding=p[-1])
+        if hasattr(p, "MODIFIER"):
+            ret["keyword"] = syntax_node.ValueNode(p.MODIFIER, str, padding=p[-1])
         else:
             ret["keyword"] = syntax_node.ValueNode(None, str, padding=None)
         return syntax_node.SyntaxNode("data intro", ret)
@@ -74,8 +72,8 @@ class DataParser(MCNP_Parser):
         if hasattr(p, "isotope_fractions"):
             fractions = p.isotope_fractions
         else:
-            fractions = syntax_node.IsotopesNode("isotope list")
-        fractions.append(p.isotope_fraction)
+            fractions = syntax_node.MaterialsNode("isotope list")
+        fractions.append_nuclide(p.isotope_fraction)
         return fractions
 
     @_("ZAID", "ZAID padding")
@@ -145,14 +143,12 @@ class DataParser(MCNP_Parser):
 
 
 class ClassifierParser(DataParser):
-    """
-    A parser for parsing the first word or classifier of a data input.
+    """A parser for parsing the first word or classifier of a data input.
 
-    .. versionadded:: 0.2.0
-        This was added with the major parser rework.
-
-    :returns: the classifier of the data input.
-    :rtype: ClassifierNode
+    Returns
+    -------
+    ClassifierNode
+        the classifier of the data input.
     """
 
     debugfile = None
@@ -169,20 +165,22 @@ class ClassifierParser(DataParser):
 
 
 class ParamOnlyDataParser(DataParser):
-    """
-    A parser for parsing parameter (key-value pair) only data inputs.
+    """A parser for parsing parameter (key-value pair) only data inputs.
 
     .e.g., SDEF
 
     .. versionadded:: 0.3.0
 
-    :returns: a syntax tree for the data input.
-    :rtype: SyntaxNode
+    Returns
+    -------
+    SyntaxNode
+        a syntax tree for the data input.
     """
 
     debugfile = None
 
     @_(
+        "param_introduction",
         "param_introduction spec_parameters",
     )
     def param_data_input(self, p):
@@ -209,11 +207,12 @@ class ParamOnlyDataParser(DataParser):
 
     @_("spec_parameter", "spec_parameters spec_parameter")
     def spec_parameters(self, p):
-        """
-        A list of the parameters (key, value pairs) for this input.
+        """A list of the parameters (key, value pairs) for this input.
 
-        :returns: all parameters
-        :rtype: ParametersNode
+        Returns
+        -------
+        ParametersNode
+            all parameters
         """
         if len(p) == 1:
             params = syntax_node.ParametersNode()
@@ -248,13 +247,14 @@ class ParamOnlyDataParser(DataParser):
         "spec_classifier particle_type",
     )
     def spec_classifier(self, p):
-        """
-        The classifier of a data input.
+        """The classifier of a data input.
 
         This represents the first word of the data input.
         E.g.: ``M4``, `IMP:N`, ``F104:p``
 
-        :rtype: ClassifierNode
+        Returns
+        -------
+        ClassifierNode
         """
         if hasattr(p, "spec_classifier"):
             classifier = p.spec_classifier

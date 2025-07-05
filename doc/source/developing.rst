@@ -1,132 +1,32 @@
-Developer's Guide
-=================
+.. meta::
+   :description lang=en:
+        This guide provides details on how MontePy works,
+        and guidance on how to make contributions.
+        MontePy is the most user-friendly Python library for reading, editing, and writing MCNP input files.
+
+Developer's Reference
+=====================
 
 MontePy can be thought of as having two layers: the syntax, and the semantic layers.
 The syntax layers handle the boring syntax things: like multi-line cards, and comments, etc.
 The semantic layer takes this information and makes sense of it, like what the material number in a cell card is.
 
 .. note::
+
    Punchcards are dead.
    For this reason MontePy refrains from using antiquated terminology like "cards" and "decks".
    Instead MontePy refers to "inputs", and "files" or "problems". 
 
-Contributing
-------------
+.. note:: 
+   Demo code is based on `tests/inputs/test.imcnp`. 
+   You can load this with:
 
-Here is a getting started guide to contributing. 
-If you have any questions Micah and Travis are available to give input and answer your questions.
-Before contributing you should review the :ref:`scope` and design philosophy.
+    .. testcode::
 
-Setting up and Typical Development Workflow
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-
-#. Clone the repository.
-
-#. Install the required packages. 
-   MontePy comes with the requirements specfied in ``pyproject.toml``.
-   Optional packages are also specified.
-   To install all packages needed for development simply run: 
-   
-   ``pip install .[develop]``
-
-#. Tie your work to an issue. All work on MontePy is tracked through issues. 
-   If you are working on a new feature or bug that is not covered by an issue, please file an issue first.
-
-#. Work on a new branch. The branches: ``develop`` and ``main`` are protected. 
-   All new code must be accepted through a merge request or pull request. 
-   The easiest way to make this branch is to "create pull request" from github.
-   This will create a new branch (though with an unwieldy name) that you can checkout and work on.
-
-#. Run the test cases. MontePy relies heavily on its over 380 tests for the development process.
-   These are configured so if you run: ``pytest`` from the root of the git repository 
-   all tests will be found and ran.
-
-#. Develop test cases. This is especially important if you are working on a bug fix.
-   A merge request will not be accepted until it can be shown that a test case can replicate the 
-   bug and does in deed fail without the bug fix in place.
-   To achieve this, it is recommended that you commit the test first, and push it to gitlab.
-   This way there will be a record of the CI pipeline failing that can be quickly reviewed as part of the merge request.
-
-   MontePy is currently working on migrating from ``unittest`` to ``pytest`` for test fixtures.
-   All new tests should use a ``pytest`` architecture.
-   Generally unit tests of new features go in the test file with the closest class name. 
-   Integration tests have all been dumped in ``tests/test_integration.py``. 
-   For integration tests you can likely use the ``tests/inputs/test.imcnp`` input file.
-   This is pre-loaded as an :class:`~montepy.mcnp_problem.MCNP_Problem` stored as: ``self.simple_problem``.
-   If you need to mutate it at all you must first make a ``copy.deepcopy`` of it.
-
-#. Write the code.
-
-#. Document all new classes and functions. MontePy uses `Sphinx docstrings <https://sphinx-rtd-tutorial.readthedocs.io/en/latest/docstrings.html>`_.
-
-#. Format the code with ``black``. You can simply run ``black montepy tests``
-
-#. Add more test cases as necessary. The merge request should show you the code coverage.
-   The general goal is near 100\% coverage.
-
-#. Update the documentation. Read the "Getting Started" guide and the "Developer's Guide", and see if any information there should be updated.
-   If you expect the feature to be commonly used it should be mentioned in the getting started guide.
-   Otherwise just the docstrings may suffice.
-   Another option is to write an example in the "Tips and Tricks" guide.
-
-#. Update the authors as necessary. 
-   The authors information is in ``AUTHORS`` and ``pyproject.toml``. 
-
-#. Start a merge request review. Generally Micah (@micahgale) or Travis (@tjlaboss) are good reviewers.
+        import montepy
+        problem = montepy.read_input("tests/inputs/test.imcnp")
 
 
-Deploy Process
-^^^^^^^^^^^^^^
-MontePy currently does not use a continuous deploy (CD) process.
-Changes are staged on the ``develop`` branch prior to a release.
-Both ``develop`` and ``main`` are protected branches.
-``main`` is only be used for releases.
-If someone clones ``main`` they will get the most recent official release.
-Only a select few core-developers are allowed to approve a merge to ``main`` and therefore a new release.
-``develop`` is for production quality code that has been approved for release,
-but is waiting on the next release.
-So all new features and bug fixes must first be merged onto ``develop``. 
-
-The expectation is that features once merged onto ``develop`` are stable,
-well tested, well documented, and well-formatted.
-
-Versioning
-^^^^^^^^^^
-
-Version information is stored in git tags,
-and retrieved using `setuptools scm <https://setuptools-scm.readthedocs.io/en/latest/>`_.
-The version tag shall match the regular expression:
-
-``v\d.\d+.\d+``.
-
-These tags will be applied by a maintainer during the release process,
-and cannot be applied by normal users.
-
-MontePy follows the semantic versioning standard to the best of our abilities. 
-
-Additional References:
-
-#. `Semantic versioning standard <https://semver.org/>`_
-
-Merge Checklist
-^^^^^^^^^^^^^^^
-
-Here are some common issues to check before approving a merge request.
-
-#. If this is a bug fix did the new testing fail without the fix?
-#. Were the authors and credits properly updated?
-#. Check also the authors in ``pyproject.toml``
-#. Is this merge request tied to an issue?
-
-Deploy Checklist
-^^^^^^^^^^^^^^^^
-
-For a deployment you need to:
-
-#. Run the deploy script : ``.github/scripts/deploy.sh``
-#. Manually merge onto main without creating a new commit. 
-   This is necessary because there's no way to do a github PR that will not create a new commit, which will break setuptools_scm.
-#. Update the release notes on the draft release, and finalize it on GitHub.
 
 Package Structure
 -----------------
@@ -309,6 +209,7 @@ and :func:`~montepy.input_parser.syntax_node.ValueNode.is_negatable_identifier` 
 This will make it so that ``value`` always returns a positive value, and so :func:`~montepy.input_parser.syntax_node.ValueNode.is_negative` returns a boolean value.
 
 .. note::
+
    Setting :func:`~montepy.input_parser.syntax_node.ValueNode.is_negatable_identifier` to ``True`` 
    will convert the ValueNode to an integer ValueNode (via :func:`~montepy.input_parser.syntax_node.ValueNode._convert_to_int`).
 
@@ -336,14 +237,20 @@ This should include most if not all internal state information.
 
 See this example for :class:`~montepy.cell.Cell`
 
->>> str(cell)
-CELL: 2, mat: 2, DENS: 8.0 g/cm3
->>> repr(cell)
-CELL: 2
-MATERIAL: 2, ['iron']
-density: 8.0 atom/b-cm
-SURFACE: 1005, RCC
-
+.. doctest::
+   :skipif: True # skip because multi-line doc tests are kaputt
+    
+    >>> cell = problem.cells[2]
+    >>> print(str(cell))
+    CELL: 2, mat: 2, DENS: 8.0 atom/b-cm
+    >>> print(repr(cell))
+    CELL: 2
+    MATERIAL: 2, ['iron']
+    density: 8.0 atom/b-cm
+    SURFACE: 1005, RCC
+    SURFACE: 1015, CZ
+    SURFACE: 1020, PZ
+    SURFACE: 1025, PZ
 
 Writing to File (Format for MCNP Input)
 """""""""""""""""""""""""""""""""""""""
@@ -426,7 +333,6 @@ For example the ``Surface`` number setter looks like:
         assert number > 0
         if self._problem:
             self._problem.surfaces.check_number(number)
-        self._mutated = True
         self._surface_number = number
 
 
@@ -441,7 +347,8 @@ How to __init__
 """""""""""""""
 After running the super init method
 you will then have access to ``self.surface_type``, and ``self.surface_constants``.
-You then need to verify that the surface type is correct, and there are the correct number of surface constants. 
+You will need to implement a ``_allowed_surface_types`` to specify which surface types are allowed for your class.
+You then need to verify that there are the correct number of surface constants. 
 You will also need to add a branch in the logic for :func:`montepy.surfaces.surface_builder.surface_builder`.
 
 :func:`~montepy.surfaces.surface.Surface.find_duplicate_surfaces`
@@ -487,6 +394,7 @@ Using the :func:`~montepy.data_inputs.data_parser.parse_data` function:
 The function :func:`~montepy.data_inputs.data_parser.parse_data` handles converting a ``data_input`` to the correct class automatically.
 It uses the set ``PREFIX_MATCH`` to do this. 
 This lists all classes that the function will look into for a matching class prefix.
+Inputs that should not be parsed can have their prefix added to ``VERBOTEN`` in that file.
 
 The ``parse_data`` function will use the ``fast_parse`` option for parsing the data_input.
 This method will only match the first word/classifier using the :class:`~montepy.input_parser.data_parser.ClassifierParser`.
@@ -524,7 +432,6 @@ For example the ``Surface`` number setter looks like::
         assert number > 0
         if self._problem:
             self._problem.surfaces.check_number(number)
-        self._mutated = True
         self._surface_number = number
 
 Data Cards that Modify Cells :class:`~montepy.data_inputs.cell_modifier.CellModifierInput`
@@ -727,14 +634,16 @@ For a ``Surface`` it is owned by the ``Surfaces`` collection owned by the ``MCNP
 A cell then borrows this object by referencing it in its own ``Surfaces`` collections. 
 For example:
 
->>> # owns
->>> x = Cell()
->>> hex(id(x))
-'0x7f4c6c89dc30'
->>> # borrows
->>> new_list = [x]
->>> hex(id(new_list[0]))
-'0x7f4c6c89dc30'
+.. doctest::
+
+    >>> import montepy
+    >>> # owns
+    >>> x = montepy.Cell()
+    >>> old_id = hex(id(x))
+    >>> # borrows
+    >>> new_list = [x]
+    >>> old_id == hex(id(new_list[0]))
+    True
 
 The general principle is that only one-directional pointers should be used,
 and bidirectional pointers should never be used.
@@ -783,3 +692,18 @@ Users are more like to use this dynamic code.
 In general this philosophy is: if it's not the source of truth,
 it should be a generator.
 
+Constants and Meta Data Structures
+----------------------------------
+
+MontePy uses constants and data structures to utilize meta-programming
+and remove redundant code.
+Typical constants can be found in :mod:`montepy.constants`.
+
+Here are the other data structures to be aware of:
+
+* :class:`~montepy.mcnp_problem.MCNP_Problem` ``_NUMBERED_OBJ_MAP``: maps a based numbered object to its collection
+  class. This is used for loading all problem numbered object collections in an instance.
+* :func:`montepy.data_inputs.data_parser.PREFIX_MATCHES` is a set of the data object classes. The prefix is taken from
+  the classes. A data object must be a member of this class for it to automatically parse new data objects.
+* :class:`~montepy.cell.Cell` ``_INPUTS_TO_PROPERTY`` maps a cell modifier class to the attribute to load it into for a
+  cell.  The boolean is whether multiple input instances are allowed.

@@ -9,9 +9,11 @@ C Bounding water outer capsule
 61482 0
       ( 6 #61440 ) : (#61461 ( 7: -8))
      U=6000 IMP:N=1
+      imp:+,-= 0
 61441 814 0.087
       (-61867 61870 -61759):(-61868 61869 -61759): (-61870 61868 -61759 61758)
       IMP:N=0
+      imp:+ = 1
 
 1 SO 5.0
 2 PZ 0.0
@@ -33,5 +35,8 @@ m814    26000.55c 5.657-2
         28000.50c 9.881-3
         24000.50c 1.581-2
         25055.51c 1.760-3
-
-
+m14     1001 1.0
+m813    1001 3r 2004 0.1 $ valid syntax to test shortcuts in material
+m815    8016 1.0 1001 3r 2004 0.1 $ valid syntax to test shortcuts in material
+sdef cel=2 pos=0 0 0 rad=d3 ext=d3 axs=0 0 1
+mode n + - 

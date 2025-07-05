@@ -1,7 +1,8 @@
 # Copyright 2024, Battelle Energy Alliance, LLC All Rights Reserved.
 import itertools
-from montepy.data_inputs.cell_modifier import CellModifierInput
-from montepy.data_inputs.lattice import Lattice
+
+from montepy.data_inputs.cell_modifier import CellModifierInput, InitInput
+from montepy.data_inputs.lattice import LatticeType
 from montepy.errors import *
 from montepy.input_parser.mcnp_input import Jump
 from montepy.input_parser import syntax_node
@@ -10,29 +11,35 @@ from montepy.utilities import *
 
 
 class LatticeInput(CellModifierInput):
-    """
-    Object to handle the inputs from ``LAT``.
+    """Object to handle the inputs from ``LAT``.
 
-    :param input: the Input object representing this data input
-    :type input: Input
-    :param in_cell_block: if this card came from the cell block of an input file.
-    :type in_cell_block: bool
-    :param key: the key from the key-value pair in a cell
-    :type key: str
-    :param value: the value syntax tree from the key-value pair in a cell
-    :type value: SyntaxNode
+    Parameters
+    ----------
+    input : Union[Input, str]
+        the Input object representing this data input
+    in_cell_block : bool
+        if this card came from the cell block of an input file.
+    key : str
+        the key from the key-value pair in a cell
+    value : SyntaxNode
+        the value syntax tree from the key-value pair in a cell
     """
 
-    def __init__(self, input=None, in_cell_block=False, key=None, value=None):
+    def __init__(
+        self,
+        input: InitInput = None,
+        in_cell_block: bool = False,
+        key: str = None,
+        value: syntax_node.SyntaxNode = None,
+    ):
         super().__init__(input, in_cell_block, key, value)
-        self._lattice = self._generate_default_node(int, None)
-        self._lattice._convert_to_enum(Lattice, True, int)
+        self._lattice = self._tree["data"][0]
         if self.in_cell_block:
             if key:
                 try:
                     val = value["data"][0]
                     val._convert_to_int()
-                    val._convert_to_enum(Lattice, int)
+                    val._convert_to_enum(LatticeType, int)
                 except ValueError as e:
                     raise ValueError("Cell Lattice must be 1 or 2")
                 self._lattice = val
@@ -42,7 +49,7 @@ class LatticeInput(CellModifierInput):
             for word in words:
                 try:
                     word._convert_to_int()
-                    word._convert_to_enum(Lattice, int)
+                    word._convert_to_enum(LatticeType, int)
                     self._lattice.append(word)
                 except ValueError:
                     raise MalformedInputError(
@@ -52,7 +59,7 @@ class LatticeInput(CellModifierInput):
     def _generate_default_cell_tree(self):
         list_node = syntax_node.ListNode("number sequence")
         data = self._generate_default_node(int, None)
-        data._convert_to_enum(Lattice, True, int)
+        data._convert_to_enum(LatticeType, True, int)
         list_node.append(data)
         classifier = syntax_node.ClassifierNode()
         classifier.prefix = self._generate_default_node(
@@ -84,12 +91,15 @@ class LatticeInput(CellModifierInput):
         if self.in_cell_block:
             return self.lattice is not None
 
-    @make_prop_val_node("_lattice", (Lattice, int, type(None)), Lattice, deletable=True)
+    @make_prop_val_node(
+        "_lattice", (LatticeType, int, type(None)), LatticeType, deletable=True
+    )
     def lattice(self):
-        """
-        The type of lattice being used.
+        """The type of lattice being used.
 
-        :rtype: Lattice
+        Returns
+        -------
+        LatticeType
         """
         pass
 

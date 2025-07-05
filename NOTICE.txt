@@ -3,7 +3,7 @@ Github URL:  https://github.com/idaholab/MontePy
 Licensed under MIT
 
 
-© 2024 Battelle Energy Alliance, LLC
+© 2024 - 2025 Battelle Energy Alliance, LLC
 ALL RIGHTS RESERVED
 
 Prepared by Battelle Energy Alliance, LLC

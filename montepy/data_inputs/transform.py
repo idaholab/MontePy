@@ -1,31 +1,47 @@
 # Copyright 2024, Battelle Energy Alliance, LLC All Rights Reserved.
+from __future__ import annotations
 import copy
+import numpy as np
+import re
+from typing import Union
+
+import montepy
 from montepy import mcnp_object
 from montepy.data_inputs import data_input
 from montepy.errors import *
-from montepy.numbered_mcnp_object import Numbered_MCNP_Object
+from montepy.numbered_mcnp_object import Numbered_MCNP_Object, InitInput
 from montepy.utilities import *
-import numpy as np
-import re
 
 
 class Transform(data_input.DataInputAbstract, Numbered_MCNP_Object):
-    """
-    Input to represent a transform input (TR).
+    """Input to represent a transform input (TR).
 
-    :param input: The Input syntax object this will wrap and parse.
-    :type input: Input
+    .. versionchanged:: 1.0.0
+
+        Added number parameter
+
+    Parameters
+    ----------
+    input : Union[Input, str]
+        The Input object representing the input
+    number : int
+        The number to set for this object.
     """
 
-    def __init__(self, input=None, pass_through=False):
+    def __init__(
+        self,
+        input: InitInput = None,
+        pass_through: bool = False,
+        number: int = None,
+    ):
         self._pass_through = pass_through
-        self._number = self._generate_default_node(int, -1)
         self._old_number = self._generate_default_node(int, -1)
         self._displacement_vector = np.array([])
         self._rotation_matrix = np.array([])
         self._is_in_degrees = False
         self._is_main_to_aux = True
         super().__init__(input)
+        self._load_init_num(number)
         if input:
             words = self._tree["data"]
             i = 0
@@ -86,39 +102,43 @@ class Transform(data_input.DataInputAbstract, Numbered_MCNP_Object):
 
     @property
     def hidden_transform(self):
-        """
-        Whether or not this transform is "hidden" i.e., has no number.
+        """Whether or not this transform is "hidden" i.e., has no number.
 
         If True this transform was created from a fill card, and has no number.
 
-        :rtype: bool
+        Returns
+        -------
+        bool
         """
         return self._pass_through
 
     @make_prop_pointer("_is_in_degrees", bool)
     def is_in_degrees(self):
-        """
-        The rotation matrix is in degrees and not in cosines
+        """The rotation matrix is in degrees and not in cosines
 
-        :rtype: bool
+        Returns
+        -------
+        bool
         """
         pass
 
     @make_prop_val_node("_old_number")
     def old_number(self):
-        """
-        The transform number used in the original file
+        """The transform number used in the original file
 
-        :rtype: int
+        Returns
+        -------
+        int
         """
         pass
 
     @property
     def displacement_vector(self):
-        """
-        The transform displacement vector
+        """The transform displacement vector
 
-        :rtype: numpy.array
+        Returns
+        -------
+        numpy.array
         """
         return self._displacement_vector
 
@@ -132,10 +152,11 @@ class Transform(data_input.DataInputAbstract, Numbered_MCNP_Object):
 
     @property
     def rotation_matrix(self):
-        """
-        The rotation matrix
+        """The rotation matrix
 
-        :rtype: np.array
+        Returns
+        -------
+        np.array
         """
         return self._rotation_matrix
 
@@ -149,11 +170,12 @@ class Transform(data_input.DataInputAbstract, Numbered_MCNP_Object):
 
     @make_prop_pointer("_is_main_to_aux", bool)
     def is_main_to_aux(self):
-        """
-        Whether or not the displacement vector points from the main origin to auxilary
+        """Whether or not the displacement vector points from the main origin to auxilary
         origin, or vice versa.
 
-        :rtype: bool
+        Returns
+        -------
+        bool
         """
         return self._is_main_to_aux
 
@@ -224,13 +246,19 @@ class Transform(data_input.DataInputAbstract, Numbered_MCNP_Object):
     def equivalent(self, other, tolerance):
         """Determines if this is effectively equivalent to another transformation
 
-        :param other: The transform to compare self again.
-        :type other: Transform
-        :param tolerance: the allowable difference in any attribute to still be considered equivalent.
-        :type tolerance: float
+        Parameters
+        ----------
+        other : Transform
+            The transform to compare self again.
+        tolerance : float
+            the allowable difference in any attribute to still be
+            considered equivalent.
 
-        :returns: True iff all transform elements in both are within the tolerance of each other.
-        :rtype: bool
+        Returns
+        -------
+        bool
+            True iff all transform elements in both are within the
+            tolerance of each other.
         """
 
         if self.is_in_degrees != other.is_in_degrees:

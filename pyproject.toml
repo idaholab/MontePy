@@ -12,15 +12,17 @@ maintainers = [
 authors = [
 	{name = "Micah Gale", email = "mgale@montepy.org"},
 	{name = "Travis Labossiere-Hickman", email = "Travis.LabossiereHickman@inl.gov"},
-	{name = "Brenna Carbno", email="brenna.carbno@inl.gov"}
+	{name = "Brenna Carbno", email="brenna.carbno@inl.gov"},
+	{name = "Benjaminas Marcinkevicius", email="BenjaminasDev@outlook.com"},
+	{name = "Paul Ferney", email="Paul.Ferney@inl.gov"},
 ]
 keywords = ["MCNP", "neutronics", "imcnp", "input file", "monte carlo", "radiation transport"]
-license = {file="LICENSE"}
+license = "MIT"
+license-files = ["LICENSE", "AUTHORS"]
 classifiers = [
        "Development Status :: 4 - Beta",
        "Intended Audience :: Science/Research",
        "Intended Audience :: Developers",
-       "License :: OSI Approved :: MIT License",
        "Natural Language :: English",
        "Operating System :: OS Independent",
        "Topic :: Scientific/Engineering :: Physics",
@@ -35,7 +37,7 @@ classifiers = [
 ]
 dependencies = [
 	"numpy>=1.18",
-	"sly==0.5"
+	"sly>= 0.4, <=0.5"
 ]
 
 [project.optional-dependencies]
@@ -43,43 +45,47 @@ test = [
 	"coverage[toml]>=6.3.2", 
 	"hypothesis",
 	"pytest", 
-	"hypothesis",
 	"pytest-profiling",
 	"montepy[build]",
+	"phmutest",
 ]
 # This is needed for a sphinx bug. See #414.
 doc = [
 	"sphinx>=7.4.0", 
 	"sphinxcontrib-apidoc", 
 	"pydata_sphinx_theme",
-	"sphinx-sitemap",
 	"sphinx-favicon",
+	"sphinx-copybutton",
+    	"sphinx_autodoc_typehints",
+	"autodocsumm",
 ]
-format = ["black>=23.3.0"]
+format = ["black~=25.1"]
 build = [
 	"build",
 	"setuptools>=64.0.0",
 	"setuptools-scm>=8",
 ]
 develop = [
-	"montepy[test]",
-	"montepy[doc]",
-	"montepy[format]",
+	"montepy[test,doc,format]",
 ]
+demos = ["jupyter"]
+demo-test = ["montepy[demos]", "papermill"]
+
+demo-present = ["montepy[demos]", "jupyterlab-rise"]
 
 
 [project.urls]
-Homepage = "https://idaholab.github.io/MontePy/index.html"
+Homepage = "https://www.montepy.org/"
 Repository = "https://github.com/idaholab/MontePy.git"
 Documentation = "https://www.montepy.org/"
 "Bug Tracker" = "https://github.com/idaholab/MontePy/issues"
-Changelog = "https://www.montepy.org/changelog.html"
+Changelog = "https://www.montepy.org/en/stable/changelog.html"
 
 [project.scripts]
 "change_to_ascii" = "montepy._scripts.change_to_ascii:main"
 
 [build-system]
-requires = ["setuptools>=64.0.0", "setuptools_scm>=8"]
+requires = ["setuptools>=77.0.0", "setuptools_scm>=8"]
 build-backend = "setuptools.build_meta"
 
 [tool.setuptools_scm]
@@ -105,3 +111,4 @@ minversion = "6.0"
 junit_logging = "all"
 junit_family="xunit2"
 filterwarnings="error"
+testpaths = ["tests"]

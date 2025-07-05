@@ -9,36 +9,36 @@ class MaterialParser(DataParser):
     debugfile = None
 
     @_(
-        "introduction isotopes",
-        "introduction isotopes parameters",
-        "introduction isotopes mat_parameters",
+        "classifier_phrase mat_data",
+        "padding classifier_phrase mat_data",
     )
     def material(self, p):
         ret = {}
-        for key, node in p.introduction.nodes.items():
-            ret[key] = node
-        ret["data"] = p.isotopes
-        if len(p) > 2:
-            ret["parameters"] = p[2]
+        if isinstance(p[0], syntax_node.PaddingNode):
+            ret["start_pad"] = p.padding
+        else:
+            ret["start_pad"] = syntax_node.PaddingNode()
+        ret["classifier"] = p.classifier_phrase
+        ret["data"] = p.mat_data
         return syntax_node.SyntaxNode("data", ret)
 
-    @_("isotope_fractions", "number_sequence", "isotope_hybrid_fractions")
-    def isotopes(self, p):
-        if hasattr(p, "number_sequence"):
-            return self._convert_to_isotope(p.number_sequence)
-        return p[0]
-
-    @_("number_sequence isotope_fraction", "isotope_hybrid_fractions isotope_fraction")
-    def isotope_hybrid_fractions(self, p):
-        if hasattr(p, "number_sequence"):
-            ret = self._convert_to_isotope(p.number_sequence)
+    @_("mat_datum", "mat_data mat_datum")
+    def mat_data(self, p):
+        if len(p) == 1:
+            ret = syntax_node.MaterialsNode("mat stuff")
         else:
-            ret = p[0]
-        ret.append(p.isotope_fraction)
+            ret = p.mat_data
+        datum = p.mat_datum
+        if isinstance(datum, tuple):
+            ret.append_nuclide(datum)
+        elif isinstance(datum, syntax_node.ListNode):
+            [ret.append_nuclide(n) for n in self._convert_to_isotope(datum)]
+        else:
+            ret.append_param(datum)
         return ret
 
     def _convert_to_isotope(self, old):
-        new_list = syntax_node.IsotopesNode("converted isotopes")
+        new_list = []
 
         def batch_gen():
             it = iter(old)
@@ -46,40 +46,25 @@ class MaterialParser(DataParser):
                 yield batch
 
         for group in batch_gen():
+            if group[0].type != str:
+                group[0]._convert_to_str()
             new_list.append(("foo", *group))
         return new_list
 
-    @_(
-        "mat_parameter",
-        "parameter",
-        "mat_parameters mat_parameter",
-        "mat_parameters parameter",
-    )
-    def mat_parameters(self, p):
-        """
-        A list of the parameters (key, value pairs) that allows material libraries.
-
-        :returns: all parameters
-        :rtype: ParametersNode
-        """
-        if len(p) == 1:
-            params = syntax_node.ParametersNode()
-            param = p[0]
-        else:
-            params = p[0]
-            param = p[1]
-        params.append(param)
-        return params
+    @_("isotope_fraction", "even_number_sequence", "parameter", "mat_parameter")
+    def mat_datum(self, p):
+        return p[0]
 
     @_(
         "classifier param_seperator library",
     )
     def mat_parameter(self, p):
-        """
-        A singular Key-value pair that includes a material library.
+        """A singular Key-value pair that includes a material library.
 
-        :returns: the parameter.
-        :rtype: SyntaxNode
+        Returns
+        -------
+        SyntaxNode
+            the parameter.
         """
         return syntax_node.SyntaxNode(
             p.classifier.prefix.value,
@@ -89,7 +74,5 @@ class MaterialParser(DataParser):
     @_("NUMBER_WORD")
     @_("NUMBER_WORD padding")
     def library(self, p):
-        """
-        A library name.
-        """
+        """A library name."""
         return self._flush_phrase(p, str)

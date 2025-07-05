@@ -15,5 +15,11 @@ doc/build/*
 .coverage
 .hypothesis/
 .idea/
+.venv/
 .ipynb_checkpoints/
 montepy/_version.py
+
+# various testing results
+htmlcov
+.hypothesis
+.mutmut-cache

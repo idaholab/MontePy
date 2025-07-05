@@ -1,0 +1,107 @@
+name: Alpha-Deploy
+
+on: 
+  push:
+    branches: [alpha-test]
+
+
+jobs:
+  last-minute-test:
+    runs-on: ubuntu-latest    
+    steps:
+      - uses: actions/checkout@v4
+      - name: set up python  3.12
+        uses: actions/setup-python@v5
+        with: 
+          python-version: 3.12
+      - run: pip install . montepy[develop]
+      - run: python -m pytest
+      
+  build-packages:
+    name: Build, sign, and release packages on github
+    runs-on: ubuntu-latest
+    needs: [last-minute-test]
+    permissions:
+      contents: write  # IMPORTANT: mandatory for making GitHub Releases
+      id-token: write  # IMPORTANT: mandatory for sigstore
+    env:
+      GH_TOKEN: ${{ github.token }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          fetch-tags: true
+      - name: set up python  3.12
+        uses: actions/setup-python@v5
+        with: 
+          python-version: 3.12
+      - run: pip install . montepy[build]
+      - name: Get Version
+        id: get_version
+        run: echo "version=`python -m setuptools_scm`" >> $GITHUB_OUTPUT
+      - name: Verify that this is a non-dev alpha release
+        run: .github/scripts/check_version.py --alpha 
+      - run: python -m build .
+      - name: Sign the dists with Sigstore
+        uses: sigstore/gh-action-sigstore-python@da62987e6c3e005b9835a67dd171c6e23ec6cfd6
+        with:
+          inputs: >-
+            ./dist/*.tar.gz
+            ./dist/*.whl
+      - name: Create a GitHub release
+        uses: ncipollo/release-action@bcfe5470707e8832e12347755757cec0eb3c22af
+        with:
+          tag: v${{ steps.get_version.outputs.version }}
+          name: Release ${{ steps.get_version.outputs.version }}
+          draft: true
+      - run: >-
+          gh release upload
+          'v${{ steps.get_version.outputs.version }}' dist/**
+          --repo '${{ github.repository }}'
+      - uses: actions/upload-artifact@v4
+        with: 
+           name: build
+           path: |
+               dist/*.tar.gz 
+               dist/*.whl
+
+
+  deploy-test-pypi: 
+    environment:
+      name: test-pypi
+      url: https://test.pypi.org/p/montepy  # Replace <package-name> with your PyPI project name
+    needs: [build-packages]
+    permissions:
+      contents: read
+      id-token: write
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: build
+          path: dist/
+      - name: Publish distribution 📦 to PyPI
+        uses: pypa/gh-action-pypi-publish@76f52bc884231f62b9a034ebfe128415bbaabdfc
+        with:
+          repository-url: https://test.pypi.org/legacy/
+
+  deploy-pypi: 
+    environment:
+      name: pypi
+      url: https://pypi.org/p/montepy  # Replace <package-name> with your PyPI project name
+    needs: [deploy-test-pypi, build-packages]
+    permissions:
+      contents: read
+      id-token: write
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: build
+          path: dist/
+      - name: Publish distribution 📦 to PyPI
+        uses: pypa/gh-action-pypi-publish@76f52bc884231f62b9a034ebfe128415bbaabdfc
+
+
+       
+        

@@ -44,14 +44,14 @@ def data_universe_problem():
 
 
 def test_original_input(simple_problem):
-    cell_order = [Message, Title] + [Input] * 26
+    cell_order = [Message, Title] + [Input] * 29
     for i, input_ob in enumerate(simple_problem.original_inputs):
         assert isinstance(input_ob, cell_order[i])
 
 
 def test_original_input_dos():
     dos_problem = montepy.read_input(os.path.join("tests", "inputs", "test_dos.imcnp"))
-    cell_order = [Message, Title] + [Input] * 16
+    cell_order = [Message, Title] + [Input] * 18
     for i, input_ob in enumerate(dos_problem.original_inputs):
         assert isinstance(input_ob, cell_order[i])
 
@@ -89,7 +89,7 @@ def test_material_parsing(simple_problem):
 
 
 def test_surface_parsing(simple_problem):
-    surf_numbers = [1000, 1005, 1010]
+    surf_numbers = [1000, 1005, 1010, 1015, 1020, 1025]
     for i, surf in enumerate(simple_problem.surfaces):
         assert surf.number == surf_numbers[i]
 
@@ -130,15 +130,23 @@ def test_cells_parsing_linking(simple_problem):
     mats = simple_problem.materials
     mat_answer = [mats[1], mats[2], mats[3], None, None]
     surfs = simple_problem.surfaces
-    surf_answer = [{surfs[1000]}, {surfs[1005]}, set(surfs), {surfs[1010]}, set()]
+    Surfaces = montepy.surface_collection.Surfaces
+    surf_answer = [
+        Surfaces([surfs[1000]]),
+        Surfaces([surfs[1005], *surfs[1015:1026]]),
+        surfs[1000:1011],
+        Surfaces([surfs[1010]]),
+        Surfaces(),
+    ]
     cells = simple_problem.cells
-    complements = [set()] * 4 + [{cells[99]}]
+    complements = [montepy.cells.Cells()] * 4 + [cells[99:100]]
     for i, cell in enumerate(simple_problem.cells):
+        print(cell)
+        print(surf_answer[i])
         assert cell.number == cell_numbers[i]
         assert cell.material == mat_answer[i]
-        surfaces = set(cell.surfaces)
-        assert surfaces.union(surf_answer[i]) == surfaces
-        assert set(cell.complements).union(complements[i]) == complements[i]
+        assert cell.surfaces.union(surf_answer[i]) == surf_answer[i]
+        assert cell.complements.union(complements[i]) == complements[i]
 
 
 def test_message(simple_problem):
@@ -215,18 +223,22 @@ def test_cell_material_setter(simple_problem):
 
 def test_problem_cells_setter(simple_problem):
     problem = copy.deepcopy(simple_problem)
-    cells = copy.deepcopy(simple_problem.cells)
-    cells.remove(cells[1])
+    # TODO test cells clone
+    cells = problem.cells.clone()
+    cells.remove(cells[4])
     with pytest.raises(TypeError):
         problem.cells = 5
     with pytest.raises(TypeError):
         problem.cells = [5]
     with pytest.raises(TypeError):
         problem.cells.append(5)
+    # handle cell complement copying
+    old_cell = problem.cells[99]
     problem.cells = cells
-    assert problem.cells.objects == cells.objects
+    cells.append(old_cell)
+    assert problem.cells == cells
     problem.cells = list(cells)
-    assert problem.cells[2] == cells[2]
+    assert problem.cells[6] == cells[6]
     # test that cell modifiers are still there
     problem.cells._importance.format_for_mcnp_input((6, 2, 0))
 
@@ -261,7 +273,6 @@ def test_problem_children_adder(simple_problem):
     cell.number = cell_num
     cell.universe = problem.universes[350]
     problem.cells.append(cell)
-    problem.add_cell_children_to_problem()
     assert surf in problem.surfaces
     assert mat in problem.materials
     assert mat in problem.data_inputs
@@ -276,6 +287,26 @@ def test_problem_children_adder(simple_problem):
             output = problem.cells[cell_num].format_for_mcnp_input((6, 2, 0))
         print(output)
         assert "U=350" in "\n".join(output).upper()
+
+
+def test_children_adder_hidden_tr(simple_problem):
+    problem = copy.deepcopy(simple_problem)
+    in_str = "260 0 -1000 fill = 350 (1 0 0)"
+    input = montepy.input_parser.mcnp_input.Input(
+        [in_str], montepy.input_parser.block_type.BlockType.CELL
+    )
+    cell = montepy.Cell(input)
+    cell.update_pointers(problem.cells, problem.materials, problem.surfaces)
+    problem.cells.add(cell)
+    assert cell.fill.transform not in problem.transforms
+    # test blank _fill_transform
+    in_str = "261 0 -1000 fill = 350"
+    input = montepy.input_parser.mcnp_input.Input(
+        [in_str], montepy.input_parser.block_type.BlockType.CELL
+    )
+    cell = montepy.Cell(input)
+    cell.update_pointers(problem.cells, problem.materials, problem.surfaces)
+    problem.cells.add(cell)
 
 
 def test_problem_mcnp_version_setter(simple_problem):
@@ -420,8 +451,7 @@ def test_cell_card_pass_through(simple_problem):
     assert int(output[4].split("$")[0]) == -5
     # test mass density printer
     cell.mass_density = 10.0
-    with pytest.warns(LineExpansionWarning):
-        output = cell.format_for_mcnp_input((6, 2, 0))
+    output = cell.format_for_mcnp_input((6, 2, 0))
     print(output)
     assert pytest.approx(float(output[3].split()[2])) == -10
     # ensure that surface number updated
@@ -570,7 +600,7 @@ def test_importance_write_cell(importance_problem):
         fh = io.StringIO()
         problem = copy.deepcopy(importance_problem)
         if "new" in state:
-            cell = copy.deepcopy(problem.cells[5])
+            cell = problem.cells[5].clone()
             cell.number = 999
             problem.cells.append(cell)
         problem.print_in_data_block["imp"] = False
@@ -767,6 +797,8 @@ def test_cell_not_truncate_setter(simple_problem):
     with pytest.raises(ValueError):
         cell = problem.cells[2]
         cell.not_truncated = True
+    with pytest.raises(TypeError):
+        cell.not_truncated = 5
 
 
 def test_universe_setter(simple_problem):
@@ -807,7 +839,7 @@ def test_universe_data_formatter(data_universe_problem):
     print(output)
     assert "u 350 J -350 -1" in output
     # test appending a new mutated cell
-    new_cell = copy.deepcopy(cell)
+    new_cell = cell.clone()
     new_cell.number = 1000
     new_cell.universe = universe
     new_cell.not_truncated = False
@@ -819,7 +851,7 @@ def test_universe_data_formatter(data_universe_problem):
     # test appending a new UNmutated cell
     problem = copy.deepcopy(data_universe_problem)
     cell = problem.cells[3]
-    new_cell = copy.deepcopy(cell)
+    new_cell = cell.clone()
     new_cell.number = 1000
     new_cell.universe = universe
     new_cell.not_truncated = False
@@ -855,8 +887,9 @@ def test_universe_repr(simple_problem):
 def test_lattice_format_data(simple_problem):
     problem = copy.deepcopy(simple_problem)
     cells = problem.cells
-    cells[1].lattice = 1
-    cells[99].lattice = 2
+    cells[1].lattice_type = 1
+    cells[99].lattice_type = 2
+    problem.print_in_data_block["lat"] = True
     answer = "LAT 1 2J 2"
     output = cells._lattice.format_for_mcnp_input((6, 2, 0))
     assert answer in output[0]
@@ -875,9 +908,9 @@ def test_lattice_push_to_cells(simple_problem):
     for cell, answer in zip(problem.cells, lattices):
         print(cell.number, answer)
         if isinstance(answer, int):
-            assert cell.lattice.value == answer
+            assert cell.lattice_type.value == answer
         else:
-            assert cell.lattice is None
+            assert cell.lattice_type is None
 
 
 def test_universe_problem_parsing(universe_problem):
@@ -1103,7 +1136,9 @@ def test_alternate_encoding():
 
 _SKIP_LINES = {
     # skip lines of added implied importances
-    "tests/inputs/test_universe_data.imcnp": {5: True, 14: True, 15: True},
+    "tests/inputs/test_universe_data.imcnp": {5: 1, 14: 1, 15: 1},
+    # I don't care about the edge case of shortcuts in a material def.
+    "tests/inputs/test_complement_edge.imcnp": {37: 0, 38: 0, 39: 0},
 }
 
 
@@ -1121,6 +1156,8 @@ _SKIP_LINES = {
 )
 def test_read_write_cycle(file):
     print(f"Testing against {file} *********************")
+    if ".swp" in file.suffixes:
+        return
     problem = montepy.read_input(file)
     SKIPPERS = _SKIP_LINES.get(str(file), {})
     fh = io.StringIO()
@@ -1140,8 +1177,10 @@ def test_read_write_cycle(file):
         for i, (gold_line, new_line) in enumerate(zip(gold_fh_iter, lines_iter)):
             if i in SKIPPERS:
                 # True means skip new file line
-                if SKIPPERS[i]:
+                if SKIPPERS[i] == 1:
                     new_line = next(lines_iter)
+                elif SKIPPERS[i] == 0:
+                    continue
                 else:
                     gold_line = next(gold_fh_iter)
             # edge case override for not fixing #527.
@@ -1158,3 +1197,23 @@ def test_read_write_cycle(file):
                     )
                 else:
                     raise e
+
+
+def test_arbitrary_parse(simple_problem):
+    simple_problem = simple_problem.clone()
+    for append in [False, True]:
+        cell = simple_problem.parse("20 0 -1005", append)
+        assert (cell in simple_problem.cells) == append
+        assert cell.number == 20
+        assert cell.surfaces[1005] in simple_problem.surfaces
+        surf = simple_problem.parse("5 SO 7.5", append)
+        assert (surf in simple_problem.surfaces) == append
+        assert surf.number == 5
+        mat = simple_problem.parse("m123 1001.80c 1.0 8016.80c 2.0", append)
+        assert (mat in simple_problem.materials) == append
+        assert (mat in simple_problem.data_inputs) == append
+        assert mat.number == 123
+        transform = simple_problem.parse("tr25 0 0 1", append)
+        assert (transform in simple_problem.transforms) == append
+        with pytest.raises(ParsingError):
+            simple_problem.parse("123 hello this is invalid")

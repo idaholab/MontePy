@@ -1,16 +1,19 @@
-# Copyright 2024, Battelle Energy Alliance, LLC All Rights Reserved.
+# Copyright 2024-2025, Battelle Energy Alliance, LLC All Rights Reserved.
+from __future__ import annotations
 import copy
 import itertools
-import numbers
+from numbers import Integral, Real
+import sly
+from typing import Union
+import warnings
 
 from montepy.cells import Cells
-from montepy.constants import BLANK_SPACE_CONTINUE
 from montepy.data_inputs import importance, fill, lattice_input, universe_input, volume
 from montepy.data_inputs.data_parser import PREFIX_MATCHES
 from montepy.input_parser.cell_parser import CellParser
 from montepy.input_parser import syntax_node
 from montepy.errors import *
-from montepy.numbered_mcnp_object import Numbered_MCNP_Object
+from montepy.numbered_mcnp_object import Numbered_MCNP_Object, InitInput
 from montepy.data_inputs.material import Material
 from montepy.geometry_operators import Operator
 from montepy.surfaces.half_space import HalfSpace, UnitHalfSpace
@@ -18,6 +21,7 @@ from montepy.surfaces.surface import Surface
 from montepy.surface_collection import Surfaces
 from montepy.universe import Universe
 from montepy.utilities import *
+import montepy
 
 
 def _link_geometry_to_cell(self, geom):
@@ -25,21 +29,66 @@ def _link_geometry_to_cell(self, geom):
     geom._add_new_children_to_cell(geom)
 
 
+def _lattice_deprecation_warning():
+    warnings.warn(
+        message="Cell.lattice is deprecated in favor of Cell.lattice_type",
+        category=DeprecationWarning,
+    )
+
+
 class Cell(Numbered_MCNP_Object):
-    """
-    Object to represent a single MCNP cell defined in CSG.
+    """Object to represent a single MCNP cell defined in CSG.
 
-    .. versionchanged:: 0.2.0
-        Removed the ``comments`` argument due to overall simplification of init process.
+    Examples
+    ^^^^^^^^
+
+    First the cell needs to be initialized.
+
+    .. testcode:: python
+
+        import montepy
+        cell = montepy.Cell()
+
+    Then a number can be set.
+    By default the cell is voided:
+
+    .. doctest:: python
+
+        >>> cell.number = 5
+        >>> print(cell.material)
+        None
+        >>> mat = montepy.Material()
+        >>> mat.number = 20
+        >>> mat.add_nuclide("1001.80c", 1.0)
+        >>> cell.material = mat
+        >>> # mass and atom density are different
+        >>> cell.mass_density = 0.1
+
+    Cells can be inverted with ``~`` to make a geometry definition that is a compliment of
+    that cell.
+
+    .. testcode:: python
+
+        complement = ~cell
+
+    See Also
+    --------
+
+    * :manual631sec:`5.2`
+    * :manual63sec:`5.2`
+    * :manual62:`55`
 
 
-    :param input: the input for the cell definition
-    :type input: Input
+    .. versionchanged:: 1.0.0
 
-    .. seealso::
+        Added number parameter
 
-            * :manual63sec:`5.2`
-            * :manual62:`55`
+    Parameters
+    ----------
+    input : Union[Input, str]
+        The Input syntax object this will wrap and parse.
+    number : int
+        The number to set for this object.
     """
 
     _ALLOWED_KEYWORDS = {
@@ -69,9 +118,21 @@ class Cell(Numbered_MCNP_Object):
         lattice_input.LatticeInput: ("_lattice", True),
         fill.Fill: ("_fill", True),
     }
+
     _parser = CellParser()
 
-    def __init__(self, input=None):
+    def __init__(
+        self,
+        input: InitInput = None,
+        number: int = None,
+    ):
+        self._BLOCK_TYPE = montepy.input_parser.block_type.BlockType.CELL
+        self._CHILD_OBJ_MAP = {
+            "material": Material,
+            "surfaces": Surface,
+            "complements": Cell,
+            "_fill_transform": montepy.data_inputs.transform.Transform,
+        }
         self._material = None
         self._old_number = self._generate_default_node(int, -1)
         self._load_blank_modifiers()
@@ -79,10 +140,27 @@ class Cell(Numbered_MCNP_Object):
         self._density_node = self._generate_default_node(float, None)
         self._surfaces = Surfaces()
         self._complements = Cells()
-        self._number = self._generate_default_node(int, -1)
-        super().__init__(input, self._parser)
+        try:
+            super().__init__(input, self._parser, number)
+        # Add more information to issue that parser can't access
+        except UnsupportedFeature as e:
+            base_mesage = e.message
+            token = sly.lex.Token()
+            token.value = ""
+            lineno = 0
+            index = 0
+            for lineno, line in enumerate(input.input_lines):
+                if "like" in line.lower():
+                    index = line.lower().index("like")
+                    # get real capitalization
+                    token.value = line[index : index + 5]
+                    break
+            err = {"message": "", "token": token, "line": lineno + 1, "index": index}
+
+            raise UnsupportedFeature(base_mesage, input, [err]) from e
+
         if not input:
-            self._generate_default_tree()
+            self._generate_default_tree(number)
         self._old_number = copy.deepcopy(self._tree["cell_num"])
         self._number = self._tree["cell_num"]
         mat_tree = self._tree["material"]
@@ -91,13 +169,13 @@ class Cell(Numbered_MCNP_Object):
         self._density_node.is_negatable_float = True
         if self.old_mat_number != 0:
             self._is_atom_dens = not self._density_node.is_negative
+        else:
+            self._is_atom_dens = None
         self._parse_geometry()
         self._parse_keyword_modifiers()
 
     def _parse_geometry(self):
-        """
-        Parses the cell's geometry definition, and stores it
-        """
+        """Parses the cell's geometry definition, and stores it"""
         geometry = self._tree["geometry"]
         if geometry is not None:
             self._geometry = HalfSpace.parse_input_node(geometry)
@@ -105,9 +183,7 @@ class Cell(Numbered_MCNP_Object):
             self._geometry = None
 
     def _parse_keyword_modifiers(self):
-        """
-        Parses the parameters to make the object and load as an attribute
-        """
+        """Parses the parameters to make the object and load as an attribute"""
         found_class_prefixes = set()
         for key, value in self.parameters.nodes.items():
             for input_class in PREFIX_MATCHES:
@@ -140,47 +216,34 @@ class Cell(Numbered_MCNP_Object):
                 self._tree["parameters"].append(tree, True)
 
     def _load_blank_modifiers(self):
-        """
-        Goes through and populates all the modifier attributes
-        """
+        """Goes through and populates all the modifier attributes"""
         for input_class, (attr, _) in self._INPUTS_TO_PROPERTY.items():
             setattr(self, attr, input_class(in_cell_block=True))
 
     @property
     def importance(self):
-        """
-        The importances for this cell for various particle types.
+        """The importances for this cell for various particle types.
 
         Each particle's importance is a property of Importance.
         e.g., ``cell.importance.photon = 1.0``.
 
-        :returns: the importance for the Cell.
-        :rtype: Importance
+        Returns
+        -------
+        Importance
+            the importance for the Cell.
         """
         return self._importance
 
     @property
     def universe(self):
-        """
-        The Universe that this cell is in.
+        """The Universe that this cell is in.
 
-        :returns: the Universe the cell is in.
-        :rtype: Universe
+        Returns
+        -------
+        Universe
+            the Universe the cell is in.
         """
         return self._universe.universe
-
-    @property
-    def fill(self):
-        """
-        the Fill object representing how this cell is filled.
-
-        This not only describes the universe that is filling this,
-        but more complex things like transformations, and matrix fills.
-
-        :returns: The Fill object of how this cell is to be filled.
-        :rtype: Fill
-        """
-        return self._fill
 
     @universe.setter
     def universe(self, value):
@@ -189,9 +252,29 @@ class Cell(Numbered_MCNP_Object):
         self._universe.universe = value
 
     @property
-    def not_truncated(self):
+    def fill(self):
+        """the Fill object representing how this cell is filled.
+
+        This not only describes the universe that is filling this,
+        but more complex things like transformations, and matrix fills.
+
+        Returns
+        -------
+        Fill
+            The Fill object of how this cell is to be filled.
         """
-        Indicates if this cell has been marked as not being truncated for optimization.
+        return self._fill
+
+    @property
+    def _fill_transform(self):
+        """A simple wrapper to get the transform of the fill or None."""
+        if self.fill:
+            return self.fill.transform
+        return None  # pragma: no cover
+
+    @property
+    def not_truncated(self):
+        """Indicates if this cell has been marked as not being truncated for optimization.
 
         See Note 1 from section 3.3.1.5.1 of the user manual (LA-UR-17-29981).
 
@@ -207,8 +290,11 @@ class Cell(Numbered_MCNP_Object):
 
             -- LA-UR-17-29981.
 
-        :rtype: bool
-        :returns: True if this cell has been marked as not being truncated by the parent filled cell.
+        Returns
+        -------
+        bool
+            True if this cell has been marked as not being truncated by
+            the parent filled cell.
         """
         if self.universe.number == 0:
             return False
@@ -224,41 +310,59 @@ class Cell(Numbered_MCNP_Object):
 
     @property
     def old_universe_number(self):
-        """
-        The original universe number read in from the input file.
+        """The original universe number read in from the input file.
 
-        :returns: the number of the Universe for the cell in the input file.
-        :rtype: int
+        Returns
+        -------
+        int
+            the number of the Universe for the cell in the input file.
         """
         return self._universe.old_number
 
     @property
-    def lattice(self):
-        """
-        The type of lattice being used by the cell.
+    def lattice_type(self):
+        """The type of lattice being used by the cell.
 
-        :returns: the type of lattice being used
-        :rtype: Lattice
+        Returns
+        -------
+        Lattice
+            the type of lattice being used
         """
         return self._lattice.lattice
 
-    @lattice.setter
-    def lattice(self, value):
+    @lattice_type.setter
+    def lattice_type(self, value):
         self._lattice.lattice = value
 
-    @lattice.deleter
-    def lattice(self):
+    @lattice_type.deleter
+    def lattice_type(self):
         self._lattice.lattice = None
 
     @property
+    def lattice(self):
+        _lattice_deprecation_warning()
+        return self.lattice_type
+
+    @lattice.setter
+    def lattice(self, value):
+        _lattice_deprecation_warning()
+        self.lattice_type = value
+
+    @lattice.deleter
+    def lattice(self):
+        _lattice_deprecation_warning()
+        self.lattice_type = None
+
+    @property
     def volume(self):
-        """
-        The volume for the cell.
+        """The volume for the cell.
 
         Will only return a number if the volume has been manually set.
 
-        :returns: the volume that has been manually set or None.
-        :rtype: float, None
+        Returns
+        -------
+        float, None
+            the volume that has been manually set or None.
         """
         return self._volume.volume
 
@@ -272,8 +376,7 @@ class Cell(Numbered_MCNP_Object):
 
     @property
     def volume_mcnp_calc(self):
-        """
-        Indicates whether or not MCNP will attempt to calculate the cell volume.
+        """Indicates whether or not MCNP will attempt to calculate the cell volume.
 
         This can be disabled by either manually setting the volume or disabling
         this calculation globally.
@@ -282,48 +385,50 @@ class Cell(Numbered_MCNP_Object):
 
         See :func:`~montepy.cells.Cells.allow_mcnp_volume_calc`
 
-        :returns: True iff MCNP will try to calculate the volume for this cell.
-        :rtype: bool
+        Returns
+        -------
+        bool
+            True iff MCNP will try to calculate the volume for this
+            cell.
         """
         return self._volume.is_mcnp_calculated
 
     @property
     def volume_is_set(self):
-        """
-        Whether or not the volume for this cell has been set.
+        """Whether or not the volume for this cell has been set.
 
-        :returns: true if the volume is manually set.
-        :rtype: bool
+        Returns
+        -------
+        bool
+            true if the volume is manually set.
         """
         return self._volume.set
 
     @make_prop_val_node("_old_number")
     def old_number(self):
-        """
-        The original cell number provided in the input file
+        """The original cell number provided in the input file
 
-        :rtype: int
+        Returns
+        -------
+        int
         """
         pass
 
     @make_prop_pointer("_material", (Material, type(None)), deletable=True)
     def material(self):
-        """
-        The Material object for the cell.
+        """The Material object for the cell.
 
         If the material is None this is considered to be voided.
 
-        :rtype: Material
+        Returns
+        -------
+        Material
         """
         pass
 
     @make_prop_pointer("_geometry", HalfSpace, validator=_link_geometry_to_cell)
     def geometry(self):
-        """
-        The Geometry for this problem.
-
-        .. versionadded:: 0.2.0
-            Added with the new ability to represent true CSG geometry logic.
+        """The Geometry for this problem.
 
         The HalfSpace tree that is able to represent this cell's geometry.
         MontePy's geometry is based upon dividers, which includes both Surfaces, and cells.
@@ -357,42 +462,29 @@ class Cell(Numbered_MCNP_Object):
         For better documentation please refer to `OpenMC
         <https://docs.openmc.org/en/stable/usersguide/geometry.html>`_.
 
-        :returns: this cell's geometry
-        :rtype: HalfSpace
+        Returns
+        -------
+        HalfSpace
+            this cell's geometry
         """
         pass
-
-    @property
-    def geometry_logic_string(self):  # pragma: no cover
-        """
-        The original geoemtry input string for the cell.
-
-        .. warning::
-            .. deprecated:: 0.2.0
-                This was removed to allow for :func:`geometry` to truly implement CSG geometry.
-
-        :raise DeprecationWarning: Will always be raised as an error (which will cause program to halt).
-        """
-        raise DeprecationWarning(
-            "Geometry_logic_string has been removed from cell. Use Cell.geometry instead."
-        )
 
     @make_prop_val_node(
         "_density_node", (float, int, type(None)), base_type=float, deletable=True
     )
     def _density(self):
-        """
-        This is a wrapper to allow using the prop_val_node with mass_density and atom_density.
-        """
+        """This is a wrapper to allow using the prop_val_node with mass_density and atom_density."""
         pass
 
     @property
     def atom_density(self) -> float:
-        """
-        The atom density of the material in the cell, in a/b-cm.
+        """The atom density of the material in the cell, in a/b-cm.
 
-        :returns: the atom density. If no density is set or it is in mass density will return None.
-        :rtype: float, None
+        Returns
+        -------
+        float, None
+            the atom density. If no density is set or it is in mass
+            density will return None.
         """
         if self._density and not self._is_atom_dens:
             raise AttributeError(f"Cell {self.number} is in mass density.")
@@ -400,7 +492,7 @@ class Cell(Numbered_MCNP_Object):
 
     @atom_density.setter
     def atom_density(self, density: float):
-        if not isinstance(density, numbers.Number):
+        if not isinstance(density, Real):
             raise TypeError("Atom density must be a number.")
         elif density < 0:
             raise ValueError("Atom density must be a positive number.")
@@ -413,11 +505,13 @@ class Cell(Numbered_MCNP_Object):
 
     @property
     def mass_density(self) -> float:
-        """
-        The mass density of the material in the cell, in g/cc.
+        """The mass density of the material in the cell, in g/cc.
 
-        :returns: the mass density. If no density is set or it is in atom density will return None.
-        :rtype: float, None
+        Returns
+        -------
+        float, None
+            the mass density. If no density is set or it is in atom
+            density will return None.
         """
         if self._density and self._is_atom_dens:
             raise AttributeError(f"Cell {self.number} is in atom density.")
@@ -425,7 +519,7 @@ class Cell(Numbered_MCNP_Object):
 
     @mass_density.setter
     def mass_density(self, density: float):
-        if not isinstance(density, numbers.Number):
+        if not isinstance(density, Real):
             raise TypeError("Mass density must be a number.")
         elif density < 0:
             raise ValueError("Mass density must be a positive number.")
@@ -438,44 +532,51 @@ class Cell(Numbered_MCNP_Object):
 
     @property
     def is_atom_dens(self):
-        """
-        Whether or not the density is in atom density [a/b-cm].
+        """Whether or not the density is in atom density [a/b-cm].
 
         True means it is in atom density, False means mass density [g/cc].
 
-        :rtype: bool
+        Returns
+        -------
+        bool
         """
         return self._is_atom_dens
 
     @make_prop_val_node("_old_mat_number")
     def old_mat_number(self):
-        """
-        The material number provided in the original input file
+        """The material number provided in the original input file
 
-        :rtype: int
+        Returns
+        -------
+        int
         """
         pass
 
     @make_prop_pointer("_surfaces")
     def surfaces(self):
-        """
-        List of the Surface objects associated with this cell.
+        """List of the Surface objects associated with this cell.
 
         This list does not convey any of the CGS Boolean logic
 
-        :rtype: Surfaces
+        Returns
+        -------
+        Surfaces
         """
         return self._surfaces
 
     @property
     def parameters(self):
-        """
-        A dictionary of the additional parameters for the object.
+        """A dictionary of the additional parameters for the object.
 
         e.g.: ``1 0 -1 u=1 imp:n=0.5`` has the parameters
         ``{"U": "1", "IMP:N": "0.5"}``
 
-        :returns: a dictionary of the key-value pairs of the parameters.
+        Returns
+        -------
+        unknown
+            a dictionary of the key-value pairs of the parameters.
+
+
         :rytpe: dict
         """
         return self._parameters
@@ -488,8 +589,7 @@ class Cell(Numbered_MCNP_Object):
 
     @property
     def complements(self):
-        """
-        The Cell objects that this cell is a complement of
+        """The Cell objects that this cell is a complement of
 
         :rytpe: :class:`montepy.cells.Cells`
         """
@@ -501,7 +601,9 @@ class Cell(Numbered_MCNP_Object):
 
         This returns a generator.
 
-        :rtype: generator
+        Returns
+        -------
+        generator
         """
         if self._problem:
             for cell in self._problem.cells:
@@ -510,15 +612,16 @@ class Cell(Numbered_MCNP_Object):
                         yield cell
 
     def update_pointers(self, cells, materials, surfaces):
-        """
-        Attaches this object to the appropriate objects for surfaces and materials.
+        """Attaches this object to the appropriate objects for surfaces and materials.
 
-        :param cells: a Cells collection of the cells in the problem.
-        :type cells: Cells
-        :param materials: a materials collection of the materials in the problem
-        :type materials: Materials
-        :param surfaces: a surfaces collection of the surfaces in the problem
-        :type surfaces: Surfaces
+        Parameters
+        ----------
+        cells : Cells
+            a Cells collection of the cells in the problem.
+        materials : Materials
+            a materials collection of the materials in the problem
+        surfaces : Surfaces
+            a surfaces collection of the surfaces in the problem
         """
         self._surfaces = Surfaces()
         self._complements = Cells()
@@ -537,20 +640,35 @@ class Cell(Numbered_MCNP_Object):
     def remove_duplicate_surfaces(self, deleting_dict):
         """Updates old surface numbers to prepare for deleting surfaces.
 
-        :param deleting_dict: a dict of the surfaces to delete.
-        :type deleting_dict: dict
+        .. versionchanged:: 1.0.0
+
+            The form of the deleting_dict was changed as :class:`~montepy.surfaces.Surface` is no longer hashable.
+
+        Parameters
+        ----------
+        deleting_dict : dict[int, tuple[Surface, Surface]]
+            a dict of the surfaces to delete, mapping the old surface to
+            the new surface to replace it. The keys are the number of
+            the old surface. The values are a tuple of the old surface,
+            and then the new surface.
         """
         new_deleting_dict = {}
-        for dead_surface, new_surface in deleting_dict.items():
+
+        def get_num(obj):
+            if isinstance(obj, Integral):
+                return obj
+            return obj.number
+
+        for num, (dead_surface, new_surface) in deleting_dict.items():
             if dead_surface in self.surfaces:
-                new_deleting_dict[dead_surface] = new_surface
+                new_deleting_dict[get_num(dead_surface)] = (dead_surface, new_surface)
         if len(new_deleting_dict) > 0:
             self.geometry.remove_duplicate_surfaces(new_deleting_dict)
-            for dead_surface in new_deleting_dict:
+            for dead_surface, _ in new_deleting_dict.values():
                 self.surfaces.remove(dead_surface)
 
     def _update_values(self):
-        if self.material:
+        if self.material is not None:
             mat_num = self.material.number
             self._tree["material"]["density"].is_negative = not self.is_atom_dens
         else:
@@ -561,7 +679,7 @@ class Cell(Numbered_MCNP_Object):
         for input_class, (attr, _) in self._INPUTS_TO_PROPERTY.items():
             getattr(self, attr)._update_values()
 
-    def _generate_default_tree(self):
+    def _generate_default_tree(self, number: int = None):
         material = syntax_node.SyntaxNode(
             "material",
             {
@@ -573,7 +691,7 @@ class Cell(Numbered_MCNP_Object):
         self._tree = syntax_node.SyntaxNode(
             "cell",
             {
-                "cell_num": self._generate_default_node(int, None),
+                "cell_num": self._generate_default_node(int, number),
                 "material": material,
                 "geometry": None,
                 "parameters": syntax_node.ParametersNode(),
@@ -581,11 +699,7 @@ class Cell(Numbered_MCNP_Object):
         )
 
     def validate(self):
-        """
-        Validates that the cell is in a usable state.
-
-        :raises: IllegalState if any condition exists that make the object incomplete.
-        """
+        """Validates that the cell is in a usable state."""
         if self._density and self.material is None:
             raise IllegalState(f"Cell {self.number} has a density set but no material")
         if self.material is not None and not self._density:
@@ -637,27 +751,33 @@ class Cell(Numbered_MCNP_Object):
                 ret += "atom/b-cm\n"
             else:
                 ret += "g/cc\n"
-        for surface in self._surfaces:
-            ret += str(surface) + "\n"
-        ret += "\n"
+        ret += "\n".join([str(s) for s in self.surfaces])
         return ret
 
     def __lt__(self, other):
         return self.number < other.number
 
     def __invert__(self):
+        if not self.number:
+            raise IllegalState(
+                f"Cell number must be set for a cell to be used in a geometry definition."
+            )
         base_node = UnitHalfSpace(self, True, True)
         return HalfSpace(base_node, Operator.COMPLEMENT)
 
     def format_for_mcnp_input(self, mcnp_version):
-        """
-        Creates a string representation of this MCNP_Object that can be
+        """Creates a string representation of this MCNP_Object that can be
         written to file.
 
-        :param mcnp_version: The tuple for the MCNP version that must be exported to.
-        :type mcnp_version: tuple
-        :return: a list of strings for the lines that this input will occupy.
-        :rtype: list
+        Parameters
+        ----------
+        mcnp_version : tuple
+            The tuple for the MCNP version that must be exported to.
+
+        Returns
+        -------
+        list
+            a list of strings for the lines that this input will occupy.
         """
         self.validate()
         self._update_values()
@@ -676,42 +796,52 @@ class Cell(Numbered_MCNP_Object):
             return ret
 
         ret = ""
-        for key, node in self._tree.nodes.items():
-            if key != "parameters":
-                ret += node.format()
-            else:
-                printed_importance = False
-                final_param = next(reversed(node.nodes.values()))
-                for param in node.nodes.values():
-                    if param["classifier"].prefix.value.lower() in modifier_keywords:
-                        cls = modifier_keywords[
+        with warnings.catch_warnings(record=True) as ws:
+
+            for key, node in self._tree.nodes.items():
+                if key != "parameters":
+                    ret += node.format()
+                else:
+                    printed_importance = False
+                    final_param = next(reversed(node.nodes.values()))
+                    for param in node.nodes.values():
+                        if (
                             param["classifier"].prefix.value.lower()
-                        ]
-                        attr, _ = self._INPUTS_TO_PROPERTY[cls]
-                        if attr == "_importance":
-                            if printed_importance:
-                                continue
-                            printed_importance = True
-                        # add trailing space to comment if necessary
-                        ret = cleanup_last_line(ret)
-                        ret += "\n".join(
-                            getattr(self, attr).format_for_mcnp_input(
-                                mcnp_version, param is not final_param
+                            in modifier_keywords
+                        ):
+                            cls = modifier_keywords[
+                                param["classifier"].prefix.value.lower()
+                            ]
+                            attr, _ = self._INPUTS_TO_PROPERTY[cls]
+                            if attr == "_importance":
+                                if printed_importance:
+                                    continue
+                                printed_importance = True
+                            # add trailing space to comment if necessary
+                            ret = cleanup_last_line(ret)
+                            ret += "\n".join(
+                                getattr(self, attr).format_for_mcnp_input(
+                                    mcnp_version, param is not final_param
+                                )
                             )
-                        )
-                    else:
-                        # add trailing space to comment if necessary
-                        ret = cleanup_last_line(ret)
-                        ret += param.format()
-        # check for accidental empty lines from subsequent cell modifiers that didn't print
+                        else:
+                            # add trailing space to comment if necessary
+                            ret = cleanup_last_line(ret)
+                            ret += param.format()
+            # check for accidental empty lines from subsequent cell modifiers that didn't print
+        self._flush_line_expansion_warning(ret, ws)
         ret = "\n".join([l for l in ret.splitlines() if l.strip()])
         return self.wrap_string_for_mcnp(ret, mcnp_version, True)
 
     def clone(
-        self, clone_material=False, clone_region=False, starting_number=None, step=None
+        self,
+        clone_material=False,
+        clone_region=False,
+        starting_number=None,
+        step=None,
+        add_collect=True,
     ):
-        """
-        Create a new almost independent instance of this cell with a new number.
+        """Create a new almost independent instance of this cell with a new number.
 
         This relies mostly on ``copy.deepcopy``.
         All properties and attributes will be a deep copy unless otherwise requested.
@@ -722,16 +852,22 @@ class Cell(Numbered_MCNP_Object):
 
         .. versionadded:: 0.5.0
 
-        :param clone_material: Whether to create a new clone of the material.
-        :type clone_material: bool
-        :param clone_region: Whether to clone the underlying objects (Surfaces, Cells) of this cell's region.
-        :type clone_region: bool
-        :param starting_number: The starting number to request for a new cell number.
-        :type starting_number: int
-        :param step: the step size to use to find a new valid number.
-        :type step: int
-        :returns: a cloned copy of this cell.
-        :rtype: Cell
+        Parameters
+        ----------
+        clone_material : bool
+            Whether to create a new clone of the material.
+        clone_region : bool
+            Whether to clone the underlying objects (Surfaces, Cells) of
+            this cell's region.
+        starting_number : int
+            The starting number to request for a new cell number.
+        step : int
+            the step size to use to find a new valid number.
+
+        Returns
+        -------
+        Cell
+            a cloned copy of this cell.
         """
         if not isinstance(clone_material, bool):
             raise TypeError(
@@ -739,11 +875,11 @@ class Cell(Numbered_MCNP_Object):
             )
         if not isinstance(clone_region, bool):
             raise TypeError(f"clone_region must be a boolean. {clone_region} given.")
-        if not isinstance(starting_number, (int, type(None))):
+        if not isinstance(starting_number, (Integral, type(None))):
             raise TypeError(
                 f"Starting_number must be an int. {type(starting_number)} given."
             )
-        if not isinstance(step, (int, type(None))):
+        if not isinstance(step, (Integral, type(None))):
             raise TypeError(f"step must be an int. {type(step)} given.")
         if starting_number is not None and starting_number <= 0:
             raise ValueError(f"starting_number must be >= 1. {starting_number} given.")
@@ -766,47 +902,48 @@ class Cell(Numbered_MCNP_Object):
                 result._material = None
         else:
             result._material = self._material
-
         special_keys = {"_surfaces", "_complements"}
         keys -= special_keys
         memo = {}
+
+        def num(obj):
+            if isinstance(obj, Integral):
+                return obj
+            return obj.number
+
+        # copy simple stuff
         for key in keys:
             attr = getattr(self, key)
             setattr(result, key, copy.deepcopy(attr, memo))
-        if clone_region:
+        # copy geometry
+        for special in special_keys:
+            new_objs = []
+            collection = getattr(self, special)
             region_change_map = {}
+            # get starting number
+            if not self._problem:
+                child_starting_number = starting_number
+            else:
+                child_starting_number = None
             # ensure the new geometry gets mapped to the new surfaces
-            for special in special_keys:
-                collection = getattr(self, special)
-                new_objs = []
-                for obj in collection:
-                    new_obj = obj.clone()
-                    region_change_map[obj] = new_obj
-                    new_objs.append(new_obj)
-                setattr(result, special, type(collection)(new_objs))
-
-        else:
-            region_change_map = {}
-            for special in special_keys:
-                setattr(result, special, copy.copy(getattr(self, special)))
-            leaves = result.geometry._get_leaf_objects()
-            # undo deepcopy of surfaces in cell.geometry
-            for geom_collect, collect in [
-                (leaves[0], self.complements),
-                (leaves[1], self.surfaces),
-            ]:
-                for surf in geom_collect:
-                    try:
-                        region_change_map[surf] = collect[
-                            surf.number if isinstance(surf, (Surface, Cell)) else surf
-                        ]
-                    except KeyError:
-                        # ignore empty surfaces on clone
-                        pass
-        result.geometry.remove_duplicate_surfaces(region_change_map)
+            for obj in collection:
+                if clone_region:
+                    new_obj = obj.clone(
+                        starting_number=child_starting_number, step=step
+                    )
+                    # avoid num collision of problem isn't handling this.
+                    if child_starting_number:
+                        child_starting_number = new_obj.number + step
+                else:
+                    new_obj = obj
+                region_change_map[num(obj)] = (obj, new_obj)
+                new_objs.append(new_obj)
+            setattr(result, special, type(collection)(new_objs))
+            result.geometry.remove_duplicate_surfaces(region_change_map)
         if self._problem:
             result.number = self._problem.cells.request_number(starting_number, step)
-            self._problem.cells.append(result)
+            if add_collect:
+                self._problem.cells.append(result)
         else:
             for number in itertools.count(starting_number, step):
                 result.number = number

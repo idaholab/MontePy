@@ -10,6 +10,7 @@ from montepy.surfaces.half_space import HalfSpace, UnitHalfSpace
 
 def test_halfspace_init():
     surface = montepy.surfaces.CylinderOnAxis()
+    surface.number = 1
     node = montepy.input_parser.syntax_node.GeometryTree("hi", {}, "*", " ", " ")
     half_space = HalfSpace(+surface, Operator.UNION, -surface, node)
     assert half_space.operator is Operator.UNION
@@ -32,16 +33,20 @@ def test_halfspace_init():
 
 def test_get_leaves():
     surface = montepy.surfaces.CylinderOnAxis()
+    surface.number = 1
     cell = montepy.Cell()
+    cell.number = 1
     half_space = -surface & ~cell
     cells, surfaces = half_space._get_leaf_objects()
-    assert cells == {cell}
-    assert surfaces == {surface}
+    assert cells == montepy.cells.Cells([cell])
+    assert surfaces == montepy.surface_collection.Surfaces([surface])
 
 
 def test_half_len():
     surface = montepy.surfaces.CylinderOnAxis()
     cell = montepy.Cell()
+    surface.number = 1
+    cell.number = 1
     half_space = -surface & ~cell
     assert len(half_space) == 2
 
@@ -49,6 +54,8 @@ def test_half_len():
 def test_half_eq():
     cell1 = montepy.Cell()
     cell2 = montepy.Cell()
+    cell1.number = 1
+    cell2.number = 2
     half1 = ~cell1 & ~cell2
     assert half1 == half1
     half2 = ~cell1 | ~cell2
@@ -125,6 +132,7 @@ def test_unit_str():
 # test geometry integration
 def test_surface_half_space():
     surface = montepy.surfaces.cylinder_on_axis.CylinderOnAxis()
+    surface.number = 1
     half_space = +surface
     assert isinstance(half_space, HalfSpace)
     assert isinstance(half_space, UnitHalfSpace)
@@ -145,6 +153,7 @@ def test_surface_half_space():
 
 def test_cell_half_space():
     cell = montepy.Cell()
+    cell.number = 1
     half_space = ~cell
     assert isinstance(half_space, HalfSpace)
     assert half_space.left.divider is cell
@@ -176,8 +185,12 @@ def test_parens_node_export():
 
 
 def test_intersect_half_space():
-    cell1 = ~montepy.Cell()
-    cell2 = ~montepy.Cell()
+    cell1 = montepy.Cell()
+    cell2 = montepy.Cell()
+    cell1.number = 1
+    cell2.number = 2
+    cell1 = ~cell1
+    cell2 = ~cell2
     half_space = cell1 & cell2
     assert isinstance(half_space, HalfSpace)
     assert half_space.operator is Operator.INTERSECTION
@@ -194,8 +207,12 @@ def test_intersect_half_space():
 
 
 def test_union_half_space():
-    cell1 = ~montepy.Cell()
-    cell2 = ~montepy.Cell()
+    cell1 = montepy.Cell()
+    cell2 = montepy.Cell()
+    cell1.number = 1
+    cell2.number = 2
+    cell1 = ~cell1
+    cell2 = ~cell2
     half_space = cell1 | cell2
     assert isinstance(half_space, HalfSpace)
     assert half_space.operator is Operator.UNION
@@ -208,8 +225,12 @@ def test_union_half_space():
 
 
 def test_invert_half_space():
-    cell1 = ~montepy.Cell()
-    cell2 = ~montepy.Cell()
+    cell1 = montepy.Cell()
+    cell2 = montepy.Cell()
+    cell1.number = 1
+    cell2.number = 2
+    cell1 = ~cell1
+    cell2 = ~cell2
     half_space1 = cell1 | cell2
     half_space = ~half_space1
     assert isinstance(half_space, HalfSpace)
@@ -222,10 +243,10 @@ def test_iand_recursion():
     cell1 = montepy.Cell()
     cell2 = montepy.Cell()
     cell3 = montepy.Cell()
-    half_space = ~cell1 & ~cell2
     cell1.number = 1
     cell2.number = 2
     cell3.number = 3
+    half_space = ~cell1 & ~cell2
     cell3.geometry = half_space
     half_space &= ~cell1
     assert half_space.left == ~cell1
@@ -241,6 +262,7 @@ def test_iand_recursion():
         half_space &= "hi"
     # test with unit halfspaces
     surf = montepy.surfaces.CylinderParAxis()
+    surf.number = 5
     # test going from leaf to tree
     half_space = -surf
     half_space &= +surf
@@ -252,8 +274,12 @@ def test_iand_recursion():
 
 
 def test_ior_recursion():
-    cell1 = ~montepy.Cell()
-    cell2 = ~montepy.Cell()
+    cell1 = montepy.Cell()
+    cell2 = montepy.Cell()
+    cell1.number = 1
+    cell2.number = 2
+    cell1 = ~cell1
+    cell2 = ~cell2
     half_space = cell1 | cell2
     half_space |= cell1
     assert half_space.left is cell1
@@ -269,6 +295,7 @@ def test_ior_recursion():
         half_space |= "hi"
     # test with unit halfspaces
     surf = montepy.surfaces.CylinderParAxis()
+    surf.number = 5
     half_space = -surf
     half_space |= +surf
     assert len(half_space) == 2

@@ -26,6 +26,7 @@ C surfaces
 
 C data
 C materials
+m0 plib=80p nlib=00c
 C UO2 5 atpt enriched
 m1        92235.80c           5 &
 92238.80c          95
@@ -47,4 +48,6 @@ imp:e   0 2r 1 r
 kcode 100000 1.000 50 1050
 phys:p j 1 2j 1
 mode n p e
-
+c Replicated parsing error of `FQ` for #584
+F11 1000
+FQ11 s  u

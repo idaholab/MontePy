@@ -11,9 +11,7 @@ import re
 
 
 class Jump:
-    """
-     Class to represent a default entry represented by a "jump".
-
+    """Class to represent a default entry represented by a "jump".
 
     |     I get up and nothing gets me down
     |     You got it tough, I've seen the toughest around
@@ -34,6 +32,9 @@ class Jump:
     def __repr__(self):
         return f"Jump: {hex(id(self))}"
 
+    def __format__(self, spec):
+        return format(str(self), spec)
+
     def __bool__(self):
         raise TypeError("Jump doesn't have a truthiness or falsiness")
 
@@ -41,39 +42,40 @@ class Jump:
         return type(self) == type(other)
 
     def lower(self):
-        """
-        Hop.
+        """Hop.
 
-        :rtype: str
+        Returns
+        -------
+        str
         """
         return "j"
 
     def title(self):
-        """
-        Skip.
+        """Skip.
 
-        :rtype: str
+        Returns
+        -------
+        str
         """
         return "Jump"
 
     def upper(self):
-        """
-        Jump.
+        """Jump.
 
-        :rtype: str
+        Returns
+        -------
+        str
         """
         return "J"
 
 
 class ParsingNode(ABC):
-    """
-    Object to represent a single coherent MCNP input, such as an input.
+    """Object to represent a single coherent MCNP input, such as an input.
 
-    .. versionadded:: 0.2.0
-        This was added as part of the parser rework.
-
-    :param input_lines: the lines read straight from the input file.
-    :type input_lines: list
+    Parameters
+    ----------
+    input_lines : list
+        the lines read straight from the input file.
     """
 
     def __init__(self, input_lines):
@@ -88,7 +90,9 @@ class ParsingNode(ABC):
     def input_lines(self):
         """The lines of the input read straight from the input file
 
-        :rtype: list
+        Returns
+        -------
+        list
         """
         return self._input_lines
 
@@ -98,56 +102,43 @@ class ParsingNode(ABC):
 
     @abstractmethod
     def format_for_mcnp_input(self, mcnp_version):
-        """
-        Creates a string representation of this input that can be
+        """Creates a string representation of this input that can be
         written to file.
 
-        :param mcnp_version: The tuple for the MCNP version that must be exported to.
-        :type mcnp_version: tuple
-        :return: a list of strings for the lines that this input will occupy.
-        :rtype: list
+        Parameters
+        ----------
+        mcnp_version : tuple
+            The tuple for the MCNP version that must be exported to.
+
+        Returns
+        -------
+        list
+            a list of strings for the lines that this input will occupy.
         """
         pass
 
 
-class Card(ParsingNode):  # pragma: no cover
-    """
-    .. warning::
-
-        .. deprecated:: 0.2.0
-            Punch cards are dead. Use :class:`~montepy.input_parser.mcnp_input.Input` instead.
-
-    :raises DeprecatedError: punch cards are dead.
-    """
-
-    def __init__(self, *args, **kwargs):
-        raise DeprecatedError(
-            "This has been deprecated. Use montepy.input_parser.mcnp_input.Input instead"
-        )
-
-
 class Input(ParsingNode):
-    """
-    Represents a single MCNP "Input" e.g. a single cell definition.
+    """Represents a single MCNP "Input" e.g. a single cell definition.
 
-    .. versionadded:: 0.2.0
-        This was added as part of the parser rework, and rename.
-        This was a replacement for :class:`Card`.
-
-    :param input_lines: the lines read straight from the input file.
-    :type input_lines: list
-    :param block_type: An enum showing which of three MCNP blocks this was inside of.
-    :type block_type: BlockType
-    :param input_file: the wrapper for the input file this is read from.
-    :type input_file: MCNP_InputFile
-    :param lineno: the line number this input started at. 1-indexed.
-    :type lineno: int
+    Parameters
+    ----------
+    input_lines : list
+        the lines read straight from the input file.
+    block_type : BlockType
+        An enum showing which of three MCNP blocks this was inside of.
+    input_file : MCNP_InputFile
+        the wrapper for the input file this is read from.
+    lineno : int
+        the line number this input started at. 1-indexed.
     """
 
     SPECIAL_COMMENT_PREFIXES = ["fc", "sc"]
     """Prefixes for special comments like tally comments.
-    
-    :rtype: list
+
+    Returns
+    -------
+    list
     """
 
     def __init__(self, input_lines, block_type, input_file=None, lineno=None):
@@ -167,30 +158,33 @@ class Input(ParsingNode):
 
     @property
     def block_type(self):
-        """
-        Enum representing which block of the MCNP input this came from.
+        """Enum representing which block of the MCNP input this came from.
 
-        :rtype: BlockType
+        Returns
+        -------
+        BlockType
         """
         return self._block_type
 
     @make_prop_pointer("_input_file")
     def input_file(self):
-        """
-        The file this input file was read from.
+        """The file this input file was read from.
 
-        :rtype: MCNP_InputFile
+        Returns
+        -------
+        MCNP_InputFile
         """
         pass
 
     @make_prop_pointer("_lineno")
     def line_number(self):
-        """
-        The line number this input started on.
+        """The line number this input started on.
 
         This is 1-indexed.
 
-        :rtype: int
+        Returns
+        -------
+        int
         """
         pass
 
@@ -198,8 +192,7 @@ class Input(ParsingNode):
         pass
 
     def tokenize(self):
-        """
-        Tokenizes this input as a stream of Tokens.
+        """Tokenizes this input as a stream of Tokens.
 
         This is a generator of Tokens.
         This is context dependent based on :func:`block_type`.
@@ -208,8 +201,10 @@ class Input(ParsingNode):
         * In a surface block :class:`~montepy.input_parser.tokens.SurfaceLexer` is used.
         * In a data block :class:`~montepy.input_parser.tokens.DataLexer` is used.
 
-        :returns: a generator of tokens.
-        :rtype: Token
+        Returns
+        -------
+        Token
+            a generator of tokens.
         """
         if self.block_type == BlockType.CELL:
             lexer = CellLexer()
@@ -239,56 +234,30 @@ class Input(ParsingNode):
 
     @make_prop_pointer("_lexer")
     def lexer(self):
-        """
-        The current lexer being used to parse this input.
+        """The current lexer being used to parse this input.
 
         If not currently tokenizing this will be None.
-        :rtype:MCNP_Lexer
+
+        Returns
+        -------
+        MCNP_Lexer
         """
         pass
 
-    @property
-    def words(self):  # pragma: no cover
-        """
-        .. warning::
-            .. deprecated:: 0.2.0
-
-            This has been deprecated, and removed.
-
-        :raises DeprecationWarning: use the parser and tokenize workflow instead.
-        """
-        raise DeprecationWarning(
-            "This has been deprecated. Use a parser and tokenize instead"
-        )
-
-
-class Comment(ParsingNode):  # pragma: no cover
-    """
-    .. warning::
-        .. deprecated:: 0.2.0
-            This has been replaced by :class:`~montepy.input_parser.syntax_node.CommentNode`.
-
-    :raises DeprecationWarning: Can not be created anymore.
-    """
-
-    def __init__(self, *args, **kwargs):
-        raise DeprecationWarning(
-            "This has been deprecated and replaced by montepy.input_parser.syntax_node.CommentNode."
-        )
-
 
 class ReadInput(Input):
-    """
-    A input for the read input that reads another input file
+    """A input for the read input that reads another input file
 
-    :param input_lines: the lines read straight from the input file.
-    :type input_lines: list
-    :param block_type: An enum showing which of three MCNP blocks this was inside of.
-    :type block_type: BlockType
-    :param input_file: the wrapper for the input file this is read from.
-    :type input_file: MCNP_InputFile
-    :param lineno: the line number this input started at. 1-indexed.
-    :type lineno: int
+    Parameters
+    ----------
+    input_lines : list
+        the lines read straight from the input file.
+    block_type : BlockType
+        An enum showing which of three MCNP blocks this was inside of.
+    input_file : MCNP_InputFile
+        the wrapper for the input file this is read from.
+    lineno : int
+        the line number this input started at. 1-indexed.
     """
 
     _parser = ReadParser()
@@ -319,10 +288,11 @@ class ReadInput(Input):
 
     @property
     def file_name(self):
-        """
-        The relative path to the filename specified in this read input.
+        """The relative path to the filename specified in this read input.
 
-        :rtype: str
+        Returns
+        -------
+        str
         """
         return self._parameters["file"]["data"].value
 
@@ -335,32 +305,17 @@ class ReadInput(Input):
         )
 
 
-class ReadCard(Card):  # pragma: no cover
-    """
-    .. warning::
-
-        .. deprecated:: 0.2.0
-            Punch cards are dead. Use :class:`~montepy.input_parser.mcnp_input.ReadInput` instead.
-
-    :raises DeprecatedError: punch cards are dead.
-    """
-
-    def __init__(self, *args, **kwargs):
-        raise DeprecatedError(
-            "This has been deprecated. Use montepy.input_parser.mcnp_input.ReadInput instead"
-        )
-
-
 class Message(ParsingNode):
-    """
-    Object to represent an MCNP message.
+    """Object to represent an MCNP message.
 
     These are blocks at the beginning of an input that are printed in the output.
 
-    :param input_lines: the lines read straight from the input file.
-    :type input_lines: list
-    :param lines: the strings of each line in the message block
-    :type lines: list
+    Parameters
+    ----------
+    input_lines : list
+        the lines read straight from the input file.
+    lines : list
+        the strings of each line in the message block
     """
 
     def __init__(self, input_lines, lines):
@@ -386,12 +341,13 @@ class Message(ParsingNode):
 
     @property
     def lines(self):
-        """
-        The lines of input for the message block.
+        """The lines of input for the message block.
 
         Each entry is a string of that line in the message block
 
-        :rtype: list
+        Returns
+        -------
+        list
         """
         return self._lines
 
@@ -408,21 +364,24 @@ class Message(ParsingNode):
 
 
 class Title(ParsingNode):
-    """
-    Object to represent the title for an MCNP problem
+    """Object to represent the title for an MCNP problem
 
-    :param input_lines: the lines read straight from the input file.
-    :type input_lines: list
-    :param title: The string for the title of the problem.
-    :type title: str
+    Parameters
+    ----------
+    input_lines : list
+        the lines read straight from the input file.
+    title : str
+        The string for the title of the problem.
     """
 
     def __init__(self, input_lines, title):
         """
-        :param input_lines: the lines read straight from the input file.
-        :type input_lines: list
-        :param title: The string for the title of the problem.
-        :type title: str
+        Parameters
+        ----------
+        input_lines : list
+            the lines read straight from the input file.
+        title : str
+            The string for the title of the problem.
         """
         super().__init__(input_lines)
         if not isinstance(title, str):
@@ -433,7 +392,9 @@ class Title(ParsingNode):
     def title(self):
         """The string of the title set for this problem
 
-        :rtype: str
+        Returns
+        -------
+        str
         """
         return self._title
 
@@ -444,16 +405,3 @@ class Title(ParsingNode):
         line_length = 0
         line_length = get_max_line_length(mcnp_version)
         return [self.title[0 : line_length - 1]]
-
-
-def parse_card_shortcuts(*args, **kwargs):  # pragma: no cover
-    """
-    .. warning::
-        .. deprecated:: 0.2.0
-            This is no longer necessary and should not be called.
-
-    :raises DeprecationWarning: This is not needed anymore.
-    """
-    raise DeprecationWarning(
-        "This is deprecated and unnecessary. This will be automatically handled by montepy.input_parser.parser_base.MCNP_Parser."
-    )

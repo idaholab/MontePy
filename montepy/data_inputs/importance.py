@@ -2,7 +2,8 @@
 import collections
 import copy
 import math
-from montepy.data_inputs.cell_modifier import CellModifierInput
+import warnings
+from montepy.data_inputs.cell_modifier import CellModifierInput, InitInput
 from montepy.errors import *
 from montepy.constants import DEFAULT_VERSION, rel_tol, abs_tol
 from montepy.input_parser import syntax_node
@@ -27,20 +28,27 @@ import numbers
 
 
 class Importance(CellModifierInput):
-    """
-    A data input that sets the importance for a cell(s).
+    """A data input that sets the importance for a cell(s).
 
-    :param input: the Input object representing this data input
-    :type input: Input
-    :param in_cell_block: if this card came from the cell block of an input file.
-    :type in_cell_block: bool
-    :param key: the key from the key-value pair in a cell
-    :type key: str
-    :param value: the value syntax tree from the key-value pair in a cell
-    :type value: SyntaxNode
+    Parameters
+    ----------
+    input : Union[Input, str]
+        the Input object representing this data input
+    in_cell_block : bool
+        if this card came from the cell block of an input file.
+    key : str
+        the key from the key-value pair in a cell
+    value : SyntaxNode
+        the value syntax tree from the key-value pair in a cell
     """
 
-    def __init__(self, input=None, in_cell_block=False, key=None, value=None):
+    def __init__(
+        self,
+        input: InitInput = None,
+        in_cell_block: bool = False,
+        key: str = None,
+        value: syntax_node.SyntaxNode = None,
+    ):
         self._particle_importances = {}
         self._real_tree = {}
         self._part_combos = []
@@ -175,9 +183,18 @@ class Importance(CellModifierInput):
         del self._particle_importances[particle]
 
     def __str__(self):
-        if not self.in_cell_block and self._problem is None:
-            return " ".join(self.input_lines)
-        return "".join(self.format_for_mcnp_input(DEFAULT_VERSION))
+        """
+        Create a simple, self-contained list representation of the importance settings and join them together.
+        """
+        ret = []
+        for particle, tree in self._particle_importances.items():
+            # Instead of tree["classifier"].particles.value (which doesn't exist),
+            # use str(tree["classifier"].particles) or an appropriate attribute.
+            ret.append(f"{particle}={tree['data'].nodes[0].value}")
+        if ret:
+            return f"IMPORTANCE: {', '.join(ret)}"
+        else:
+            return "IMPORTANCE: Object is empty"
 
     def __repr__(self):
         return (
@@ -245,13 +262,17 @@ class Importance(CellModifierInput):
 
     @property
     def all(self):
-        """
-        Setter for setting importance for all particle types in the problem at once.
+        """Setter for setting importance for all particle types in the problem at once.
 
-        :param importance: the importance to set all particles to.
-        :type importance: float
-        :returns: None
-        :rtype: None
+        Parameters
+        ----------
+        importance : float
+            the importance to set all particles to.
+
+        Returns
+        -------
+        None
+            None
         """
         return None
 
@@ -273,8 +294,9 @@ class Importance(CellModifierInput):
     def _check_particle_in_problem(self, particle_type):
         if self._problem:
             if particle_type not in self._problem.mode:
-                raise ParticleTypeNotInProblem(
-                    f"Particle type: {particle_type} not included in problem mode."
+                warnings.warn(
+                    f"Particle type: {particle_type} not included in problem mode.",
+                    ParticleTypeNotInProblem,
                 )
 
     def _collect_new_values(self):
@@ -285,9 +307,10 @@ class Importance(CellModifierInput):
                 try:
                     tree = cell.importance._particle_importances[particle]
                 except KeyError:
-                    raise ParticleTypeNotInCell(
+                    raise NotImplementedError(
                         f"Importance data not available for cell {cell.number} for particle: "
-                        f"{particle}, though it is in the problem"
+                        f"{particle}, though it is in the problem, and default importance logic "
+                        "is not yet implemented in MontePy."
                     )
                 new_vals[particle].append(tree["data"][0])
                 if len(particle_pairings[particle]) == 0:
@@ -359,13 +382,15 @@ class Importance(CellModifierInput):
 
     @property
     def trailing_comment(self):
-        """
-        The trailing comments and padding of an input.
+        """The trailing comments and padding of an input.
 
         Generally this will be blank as these will be moved to be a leading comment for the next input.
 
-        :returns: the trailing ``c`` style comments and intermixed padding (e.g., new lines)
-        :rtype: list
+        Returns
+        -------
+        list
+            the trailing ``c`` style comments and intermixed padding
+            (e.g., new lines)
         """
         last_tree = list(self._real_tree.values())[-1]
         if last_tree:
@@ -473,11 +498,15 @@ def __create_particle_imp_doc(particle_type):
 
 Can only be set if this particle is used in the problem mode.
 
-:param importance: The importance to set this to.
-:type importnace: float
-:returns: the importance for the particle type. If not set, defaults to 0.
-:rtype: float
-:raises ParticleTypeNotInProblem: raised if this particle is accessed while not in the problem mode.
+Parameters
+----------
+importance: float 
+    The importance to set this to.
+
+Returns
+-------
+float
+    the importance for the particle type. If not set, defaults to 0.
 """
 
 

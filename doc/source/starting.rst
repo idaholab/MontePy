@@ -1,9 +1,19 @@
+.. meta::
+   :description lang=en:
+        Montepy is the most user-friendly Python library for reading, editing, and writing MCNP input files.
+        It can be easily installed using pip.
+        This tutorial covers the basics of getting started with MontePy.
+
 Getting Started with MontePy
 ============================
 
-MontePy is a python API for reading, editing, and writing MCNP input files.
-It does not run MCNP nor does it parse MCNP output files.
-The library provides a semantic interface for working with input files, or our preferred terminology: problems.
+.. testsetup:: *
+
+   import montepy
+
+MontePy is a Python API for reading, editing, and writing MCNP input files.
+The library provides a semantic interface for working with input files ("MCNP problems").
+It does not run MCNP, nor does it parse MCNP output files.
 It understands that the second entry on a cell card is the material number,
 and will link the cell with its material object.
 
@@ -36,6 +46,31 @@ System Wide (for the current user)
 #. Install it from `PyPI <https://pypi.org/project/montepy>`_ by running ``pip install montepy``. 
    You may need to run ``pip install --user montepy`` if you are not allowed to install the package.
 
+Installing Optional Dependencies
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+MontePy offers multiple optional dependencies which some users may desire,
+though this is mostly intended for developers.
+Pip can install these through the following command:
+
+``pip install montepy[<extras>]``
+
+Where ``<extras>`` is one of the following options:
+
+#. ``demos``: installs the dependencies for running the demo problems in `jupyter <https://jupyter.org/>`_.
+
+#. ``doc``: installs the dependencies for building the website using `sphinx <https://www.sphinx-doc.org/en/master/>`_.
+
+#. ``build``: installs the dependencies for building the source distribution packages.
+
+#. ``format``: install the dependencies for formatting the code with `black <https://black.readthedocs.io/en/stable/index.html>`_. 
+
+#. ``test``: installs the dependencies for testing the software.
+
+#. ``demo-test``: installs the dependencies for testing the demos.
+
+#. ``develop``: installs everything a developer may need, specifically: ``montepy[test,doc,format,demo-test]``.
+
 Install specific version for a project
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 The best way maybe to setup a project-specific `conda <https://docs.conda.io/projects/conda/en/latest/user-guide/tasks/manage-environments.html>`_, 
@@ -46,6 +81,26 @@ You can specify a specific version from `PyPI`_ be installed using:
 
 ``pip install montepy==<version>``
 
+Tutorials and Demonstrations
+----------------------------
+
+We have presented a workshop for using MontePy in the past. 
+The demonstration Jupyter notebooks are now available in our git repository. 
+To access these demonstrations you can run:
+
+.. code-block:: bash
+
+   git clone https://github.com/idaholab/MontePy.git
+   pip install montepy[demos]
+   cd MontePy/demos
+   jupyter lab
+
+These notebooks are not complete, and have missing code you need to fill in.
+If you get stuck there are complete notebooks in the ``answers`` folder, that you can refer to. 
+
+Finally if you want to present these notebooks in a workshop, 
+we use `RISE <https://rise.readthedocs.io/en/latest/>`_.
+You can install this with ``pip install montepy[demo-present]``.
 
 Best Practices
 --------------
@@ -74,9 +129,9 @@ MontePy offers the :func:`montepy.read_input` (actually :func:`~montepy.input_pa
 It will read the specified MCNP input file, and return an MontePy :class:`~montepy.mcnp_problem.MCNP_Problem` object.
 
 >>> import montepy
->>> problem = montepy.read_input("foo.imcnp")
+>>> problem = montepy.read_input("tests/inputs/test.imcnp")
 >>> len(problem.cells)
-4
+5
 
 Writing a File
 --------------
@@ -101,8 +156,11 @@ This can be changed by ``overwrite=True``.
 The method :func:`~montepy.mcnp_problem.MCNP_Problem.write_problem`
 also accepts an open file handle, stream, or other object with a ``write()`` method.
 
->>> with open("/path/to/file", "w") as fh:
+>>> with open("foo_bar.imcnp", "w") as fh:
 ...     problem.write_problem(fh)
+>>> new_problem = montepy.read_input("foo_bar.imcnp")
+>>> len(new_problem.cells)
+5
 
 
 If no changes are made to the problem in MontePy, the entire file should just be parroted out as it was in the original file
@@ -112,7 +170,7 @@ MontePy will do its best to guess the formatting of the original value and to re
 However, this may not always be possible, especially if more digits are needed to keep information (e.g., ``10`` versus ``1000``).
 In this case MontePy will warn you that value will take up more space which may break your pretty formatting.
 
-For example say we have this simple MCNP input file (saved as foo.imcnp) ::
+For example say we have this simple MCNP input file (saved as :download:`foo.imcnp`) ::
   
         Example Problem
         1 0  -1 2 -3
@@ -129,7 +187,9 @@ For example say we have this simple MCNP input file (saved as foo.imcnp) ::
         TR1 0 0 1.0
         TR2 0 0 1.00001
 
-We can then open this file in MontePy, and then modify it slightly, and save it again::
+We can then open this file in MontePy, and then modify it slightly, and save it again:
+
+.. doctest::
 
         import montepy
         problem = montepy.read_input("foo.imcnp")
@@ -203,6 +263,7 @@ Technically these are :class:`~montepy.numbered_object_collection.NumberedObject
 but it looks like a ``dict``, walks like a ``dict``, and quacks like ``dict``, so most users can just treat it like that.
 
 .. note::
+
    Though these collections are based on a dict, they don't behave exactly like a dict.
    For a dict the iteration (e.g., ``for key in dict:``) iterates over the keys.
    Also when you check if an item is in a dict (e.g., ``if key in dict:``) it checks if the item is a key.
@@ -220,11 +281,19 @@ by its number.
 
 So say you want to access cell 2 from a problem it is accessible quickly by:
 
->>> prob.cells[2]
-CELL: 2
-MATERIAL: 2, ['iron']
-density: 8.0 atom/b-cm
-SURFACE: 1005, RCC
+
+.. doctest::
+   :skipif: True # skip because multi-line doc tests are kaputt
+
+        >>> prob = montepy.read_input("tests/inputs/test.imcnp") 
+        >>> prob.cells[2]
+        CELL: 2
+        MATERIAL: 2, ['iron']
+        density: 8.0 atom/b-cm
+        SURFACE: 1005, RCC
+        SURFACE: 1015, CZ
+        SURFACE: 1020, PZ
+        SURFACE: 1025, PZ
 
 
 Collections are Iterable
@@ -232,10 +301,12 @@ Collections are Iterable
 
 Collections are also iterable, meaning you can iterate through it quickly and easily.
 For instance say you want to increase all cell numbers by 1,000. 
-This can be done quickly with a for loop::
-        
-        for cell in problem.cells:
-          cell.number += 1000
+This can be done quickly with a for loop:
+
+.. testcode::
+
+   for cell in problem.cells:
+       cell.number += 1000
 
 Number Collisions (should) be Impossible
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -243,28 +314,18 @@ Number Collisions (should) be Impossible
 The ``NumberedObjectCollection`` has various mechanisms internally to avoid number collisions 
 (two objects having the same number).
 
->>> import montepy
->>> prob = montepy.read_input("foo.i")
->>> cell = montepy.Cell()
->>> cell.number = 2
-prob.cells.append(cell)
----------------------------------------------------------------------------
-NumberConflictError                       Traceback (most recent call last)
-<ipython-input-5-52c64b5ddb4b> in <module>
-----> 1 prob.cells.append(cell)
-~/dev/montepy/doc/montepy/numbered_object_collection.py in append(self, obj)
-    130         assert isinstance(obj, self._obj_class)
-    131         if obj.number in self.numbers:
---> 132             raise NumberConflictError(
-    133                 (
-    134                     "There was a numbering conflict when attempting to add "
-NumberConflictError: There was a numbering conflict when attempting to add CELL: 2
-None
- to <class 'montepy.cells.Cells'>. Conflict was with CELL: 2
-None
-SURFACE: 4, CZ
-SURFACE: 5, PZ
-SURFACE: 6, PZ
+.. testcode::
+
+        import montepy
+        prob = montepy.read_input("tests/inputs/test.imcnp")
+        cell = montepy.Cell(number = 2)
+        prob.cells.append(cell)
+
+.. testoutput::
+
+        Traceback (most recent call last):
+           ...
+        montepy.errors.NumberConflictError: Number 2 is already in use for the collection: <class 'montepy.cells.Cells'> by CELL: 2, mat: 2, DENS: 8.0 atom/b-cm
 
 There are a number of tools to avoid this though:
 
@@ -298,10 +359,19 @@ You can iterate over a generator, as well as check if an item is in the generato
 
 First it is iterable:
 
->>> for number in problem.cells.numbers:
->>>    print(number)
-1
-2
+.. testcode::
+
+        problem = montepy.read_input("tests/inputs/test.imcnp")
+        for number in problem.cells.numbers:
+            print(number)
+
+.. testoutput::
+
+   1
+   2
+   3
+   99
+   5
 
 You can also check if a number is in use:
 
@@ -314,18 +384,23 @@ Using the generators in this way does not cause any issues, but there are ways t
 by making "stale" information.
 This can be done by making a copy of it with ``list()``. 
 
->>> for num in problem.cells.numbers:
->>>   print(num)
-1
-2
->>> numbers = list(problem.cells.numbers)
->>> numbers
-[1,2]
->>> problem.cells[1].number = 1000
->>> 1000 in problem.cells.numbers
-True
->>> 1000 in numbers
-False
+.. doctest::
+
+        >>> for num in problem.cells.numbers:
+        ...   print(num)
+        1
+        2
+        3
+        99
+        5
+        >>> numbers = list(problem.cells.numbers)
+        >>> numbers
+        [1, 2, 3, 99, 5]
+        >>> problem.cells[1].number = 1000
+        >>> 1000 in problem.cells.numbers
+        True
+        >>> 1000 in numbers
+        False
 
 Oh no! When we made a list of the numbers we broke the link, and the new list won't update when the numbers of the cells change, 
 and you can cause issues this way.
@@ -341,12 +416,76 @@ If a ``Cell`` or a group of ``Cells`` are cloned their numbers will be to change
 However, if a whole :class:`~montepy.mcnp_problem.MCNP_Problem` is cloned these objects will not have their numbers changed.
 For an example for how to clone a numbered object see :ref:`Cloning a Cell`.
 
+Creating Objects from a String
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Sometimes its more convenient to create an MCNP object from its input string for MCNP, rather than setting a lot of properties,
+or the object you need isn't supported by MontePy yet.
+In this case there are a few ways to generate this object.
+First all :class:`~montepy.mcnp_object.MCNP_Object` constructors can take a string:
+
+.. doctest::
+
+   >>> cell = montepy.Cell("1 0 -2 imp:n=1")
+   >>> cell.number
+   1
+   >>> cell.importance[montepy.Particle.NEUTRON]
+   1.0
+   >>> # surfaces
+   >>> surf = montepy.AxisPlane("5 PZ 10")
+   >>> surf.number 
+   5
+   >>> surf.location
+   10.0
+   >>> # materials
+   >>> mat = montepy.Material("M1 1001.80c 2 8016.80c 1")
+   >>> mat.number
+   1
+   >>> thermal_scat = montepy.ThermalScatteringLaw("MT1 lwrt.40t")
+   >>> thermal_scat.old_number
+   1
+   >>> #object linking hasn't occuring
+   >>> print(thermal_scat.parent_material)
+   None
+
+For data inputs and surfaces there are some helper functions that help parse all objects of that type,
+and return the appropriate object.
+For surfaces this is: :func:`~montepy.surfaces.surface_builder.parse_surface`,
+and for data inputs this is :func:`~montepy.data_inputs.data_parser.parse_data`.
+
+.. doctest::
+
+   >>> surf = montepy.parse_surface("1 cz 5.0")
+   >>> type(surf)
+   <class 'montepy.surfaces.cylinder_on_axis.CylinderOnAxis'>
+   >>> surf.radius
+   5.0
+   >>> mat = montepy.parse_data("m1 1001.80c 1")
+   >>> type(mat)
+   <class 'montepy.data_inputs.material.Material'>
+
+
+This object is still unlinked from other objects, and won't be kept with a problem.
+So there is also :func:`~montepy.mcnp_problem.MCNP_Problem.parse`. 
+This takes a string, and then creates the MCNP object,
+links it to the problem,
+links it to its other objects (e.g., surfaces, materials, etc.),
+and appends it to necessary collections (if requested):
+
+.. testcode::
+
+   cell = problem.parse("123 0 -1005")
+   assert cell in problem.cells
+   assert cell.surfaces[1005] is problem.surfaces[1005]
+   cell = problem.parse("124 0 -1005", append=False)
+   assert cell not in problem.cells
+
 Surfaces
 --------
 
 The most important unsung heroes of an MCNP problem are the surfaces.
 They may be tedious to work with but you can't get anything done without them.
-MCNP supports *alot* of types of surfaces, and all of them are special in their own way.
+MCNP supports *a lot* of types of surfaces, and all of them are special in their own way.
 You can see all the surface types here: :class:`~montepy.surfaces.surface_type.SurfaceType`.
 By default all surfaces are an instance of :class:`~montepy.surfaces.surface.Surface`.
 They will always have the properties: ``surface_type``, and ``surface_constants``.
@@ -372,23 +511,62 @@ So there is a convenient way to update a surface, but how do you easily get the 
 For instance what if you want to shift a cell up in Z by 10 cm? 
 It would be horrible to have to get each surface by their number, and hoping you don't change the numbers along the way.
 
-One way you might think of is: oh let's just filter the surfaces by their type?::
-
-  for surface in cell.surfaces:
-    if surface.surface_type == montepy.surfaces.surface_type.SurfaceType.PZ:
-      surface.location += 10
-
-Wow that's rather verbose. 
-This was the only way to do this with the API for awhile.
-But MontePy 0.0.5 fixed this with: you guessed it: generators.
-
 The :class:`~montepy.surface_collection.Surfaces` collection has a generator for every type of surface in MCNP.
 These are very easy to find: they are just the lower case version of the 
 MCNP surface mnemonic. 
-This previous code is much simpler now::
+This previous code is much simpler now:
 
-  for surface in cell.surfaces.pz:
-    surface.location += 10
+.. testcode::
+
+    for surface in cell.surfaces.pz:
+        surface.location += 10
+
+Setting Boundary Conditions
+^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+As discussed in :manual63:`5.3.1` surfaces can have three boundary conditions:
+
+* Reflective boundary
+* White boundary
+* periodic boundary
+
+.. note::
+
+   Vacuum boundary conditions are the fourth type.
+   They are defined by cells with 0 importance though.
+
+The reflective and white boundary conditions are easiest to set as they are Boolean conditions.
+These are controlled by :func:`~montepy.surfaces.surface.Surface.is_reflecting` and 
+:func:`~montepy.surfaces.surface.Surface.is_white_boundary` respectively.
+For Example:
+
+.. testcode::
+
+   from montepy.surfaces.surface_type import SurfaceType
+
+   bottom = montepy.surfaces.axis_plane.AxisPlane()
+   bottom.surface_type = SurfaceType.PZ
+   bottom.is_reflecting = True
+
+   cyl = montepy.surfaces.cylinder_on_axis.CylinderOnAxis()
+   cyl.surface_type = SurfaceType.CZ
+   cyl.is_white_boundary = True
+
+
+Setting a periodic boundary is slightly more difficult. 
+In this case the boundary condition must be set to the other periodic surface with :func:`~montepy.surfaces.surface.Surface.periodic_surface`.
+So to continue with the previous example:
+
+.. testcode::
+
+   bottom.location = 0.0
+   bottom.is_reflecting = False
+
+   top = montepy.surfaces.axis_plane.AxisPlane()
+   top.surface_type = SurfaceType.PZ
+   top.location = 1.26
+
+   bottom.periodic_surface = top
 
 Cells 
 -----
@@ -403,18 +581,31 @@ For example: ``cell.importance.neutron`` or ``cell.importance.photon``.
 For a complete list see :class:`~montepy.particle.Particle`.
 
 You can also quickly get the information by passing an instance of :class:`~montepy.particle.Particle` as a key to importance.
-For example: ::
-    
-    for particle in problem.mode:
-        print(cell.importance[particle])
-    print(cell.importance[montepy.Particle.NEUTRON])
+For example:
+
+.. doctest::
+
+    >>> for particle in sorted(problem.mode):
+    ...     print(particle, cell.importance[particle])
+    neutron 0.0
+    photon 0.0
+    >>> print(cell.importance[montepy.Particle.NEUTRON])
+    0.0
 
 There's also a lot of convenient ways to do bulk modifications.
 There is the :func:`~montepy.data_inputs.importance.Importance.all` property that lets you set the importance for all particles in the problem at once.
-For example: ::
+For example: 
 
-    problem.set_mode("n p")
-    cell.importance.all = 2.0
+.. doctest::
+   :skipif: True
+
+    >>> problem.set_mode("n p e")
+    >>> cell.importance.all = 2.0
+    >>> for particle in sorted(problem.mode):
+    ...     print(particle, cell.importance[particle])
+    electron 2.0
+    neutron 2.0
+    photon 2.0
 
 This will set the importances for the neutron and photon. 
 
@@ -436,6 +627,11 @@ This acts like a dictionary where the key is the MCNP card name.
 So to make cell importance data show up in the cell block just run:
 ``problem.print_in_data_block["imp"] = False``.
 
+.. note::
+
+   The default for :func:`~montepy.mcnp_problem.MCNP_Problem.print_in_data_block` is ``False``,
+   that is to print the data in the cell block if this was not set in the input file or by the user.
+
 Density
 ^^^^^^^
 This gets a bit more complicated.
@@ -453,13 +649,21 @@ If the cell density is set to a mass density ``cell.atom_density`` will return `
 Setting the value for one of these densities will change the density mode.
 MontePy does not convert mass density to atom density and vice versa.
 
->>> cell.mass_density
-9.8
->>> cell.atom_density 
-None
->>> cell.atom_density = 0.5
->>> cell.mass_density
-None
+.. doctest::
+
+    >>> problem = montepy.read_input("tests/inputs/test.imcnp")
+    >>> cell = problem.cells[3]
+    >>> cell.mass_density
+    1.0
+    >>> cell.atom_density 
+    Traceback (most recent call last):
+        ...
+    AttributeError: Cell 3 is in mass density.. Did you mean: 'mass_density'?
+    >>> cell.atom_density = 0.5
+    >>> cell.mass_density
+    Traceback (most recent call last):
+        ...
+    AttributeError: Cell 3 is in atom density.. Did you mean: 'atom_density'?
 
 Geometry
 ^^^^^^^^
@@ -496,16 +700,26 @@ This is done very simply and pythonic.
 For a :class:`~montepy.surfaces.surface.Surface` you just need to mark the surface as positive (``+``) or negative (``-``) (using the unary operators).
 This actually creates a new object so don't worry about modifying the surface.
 
->>> type(+bottom_plane)
-montepy.surfaces.half_space.UnitHalfSpace
->>> type(-bottom_plane)
-montepy.surfaces.half_space.UnitHalfSpace
+.. doctest::
+
+    >>> bottom_plane = montepy.surfaces.surface.Surface()
+    >>> bottom_plane.number = 1
+    >>> top_plane = montepy.surfaces.surface.Surface()
+    >>> top_plane.number = 2
+    >>> type(+bottom_plane)
+    <class 'montepy.surfaces.half_space.UnitHalfSpace'>
+    >>> type(-bottom_plane)
+    <class 'montepy.surfaces.half_space.UnitHalfSpace'>
 
 For cells the plus/minus operator doesn't make sense. 
 Instead you use the binary not operator (``~``).
 
->>> type(~capsule_cell)
-montepy.surfaces.half_space.HalfSpace
+.. doctest::
+    
+    >>> capsule_cell = montepy.Cell()
+    >>> capsule_cell.number = 1
+    >>> type(~capsule_cell)
+    <class 'montepy.surfaces.half_space.HalfSpace'>
 
 
 Combining Half-Spaces
@@ -519,42 +733,81 @@ As with OpenMC, the set logic operations have been mapped to python's bit logic 
 * ``~``, the not operator, represents a set complement.
 
 .. note::
+
    When you combine two half-spaces with a logical operator you create a new half-space.
    In this case the concept of a side becomes much more about "in" and "out".
 
 .. note::
+
    Half-spaces need not be contiguous.
 
-Order of precedence and grouping is automatically handled by python so you can easily write complicated geometry in one-line.
+Order of precedence and grouping is automatically handled by Python so you can easily write complicated geometry in one-line.
 
-.. code-block:: python
+.. testcode::
+
+   import montepy.surfaces as surfs
+   from montepy.surfaces.surface_type import SurfaceType
+
+   # build blank surfaces 
+   bottom_plane = montepy.surfaces.axis_plane.AxisPlane(number=1)
+   bottom_plane.surface_type = SurfaceType.PZ
+   bottom_plane.location = 0.0
+
+   top_plane = montepy.surfaces.axis_plane.AxisPlane(number=2)
+   top_plane.surface_type = SurfaceType.PZ
+   top_plane.location = 10.0
+
+   fuel_cylinder = montepy.surfaces.cylinder_on_axis.CylinderOnAxis(number=3)
+   fuel_cylinder.surface_type = SurfaceType.CZ
+   fuel_cylinder.radius = 1.26 / 2
+
+   clad_cylinder = montepy.surfaces.cylinder_on_axis.CylinderOnAxis(number=4)
+   clad_cylinder.radius = (1.26 / 2) + 1e-3 # fuel, gap, cladding
+   clad_cylinder.surface_type = SurfaceType.CZ
+
+   clad_od = montepy.surfaces.cylinder_on_axis.CylinderOnAxis(number=5)
+   clad_od.radius = clad_cylinder.radius + 0.1 # add thickness
+   clad_od.surface_type = SurfaceType.CZ
+   other_fuel = montepy.surfaces.cylinder_on_axis.CylinderOnAxis(number=6)
+   other_fuel.radius = 3.0
+   other_fuel.surface_type = SurfaceType.CZ
 
    #make weird truncated fuel sample
    slug_half_space = +bottom_plane & -top_plane & -fuel_cylinder
    gas_gap = ~slug_half_space & +bottom_plane & -top_plane & -clad_cylinder
    cladding = ~gas_gap & ~slug_half_space & +bottom_plane & -top_plane & -clad_od
-
    # make weird multi-part cell
-  slugs = (+bottom_plane & -top_plane & -fuel_cylinder) | (+bottom_plane & -top_plane & -other_fuel)
+   slugs = (+bottom_plane & -top_plane & -fuel_cylinder) |  (+bottom_plane & -top_plane & -other_fuel)
 
 .. note::
+
   MontePy does not check if the geometry definition is "rational".
-  It doesn't check for being finite, existant (having any volumen at all), or being infinite.
+  It doesn't check for being finite, existant (having any volume at all), or being infinite.
   Nor does it check for overlapping geometry.
 
 Setting and Modifying Geometry
 """"""""""""""""""""""""""""""
 
 The half-space defining a cell's geometry is stored in ``cell.geometry`` (:func:`~montepy.cell.Cell.geometry`).
-This property can be rather simply set.::
+This property can be rather simply set.
 
+.. testcode::
+
+    fuel_cell = montepy.Cell()
     fuel_cell.geometry = +bottom_plane & - top_plane & - fuel_cylinder
 
-This will completely redefine the cell's geometry. You can also modify the geometry with augmented assign operators, ``&=``, and ``|=``.::
+This will completely redefine the cell's geometry. You can also modify the geometry with augmented assign operators, ``&=``, and ``|=``.
 
-        fuel_cell.geometry |= other_fuel_region
+.. testcode::
+
+    fuel_cyl = montepy.CylinderOnAxis()
+    fuel_cyl.number = 20
+    fuel_cyl.radius = 1.20
+    other_fuel_region = -fuel_cyl
+    fuel_cell.geometry |= other_fuel_region #|| 
 
 .. warning:: 
+
    Be careful when using ``&=`` and ``|=`` with complex geometries as the order of operations may not be what you expected.
    You can check the geometry logic by printing it.
    MontePy will show you its internal (`binary tree <https://en.wikipedia.org/wiki/Binary_tree>`_) representation of the logic.
@@ -581,16 +834,19 @@ The new cell will attempt to use ``starting_number`` as its number.
 If this number is taken ``step`` will be added to it until an available number is found.
 For example:
 
->>> base_cell = montepy.Cell()
->>> base_cell.number = 1
->>> # clone with an available number
->>> new_cell = base_cell.clone(starting_number=1000)
->>> new_cell.number
-1000
->>> # force a number collision
->>> new_cell = base_cell.clone(starting_number= 1, step =5)
->>> new_cell.number
-6
+.. doctest::
+
+    >>> base_cell = problem.cells[1]
+    >>> base_cell.number
+    1
+    >>> # clone with an available number
+    >>> new_cell = base_cell.clone(starting_number=1000)
+    >>> new_cell.number
+    1000
+    >>> # force a number collision
+    >>> new_cell = base_cell.clone(starting_number=1, step=5)
+    >>> new_cell.number
+    6
 
 Cells can also clone their material, and their dividers. 
 By default this is not done, and only a new ``HalfSpace`` instance is created that points to the same objects.
@@ -598,30 +854,379 @@ This is done so that the geometry definitions of the two cells can be edited wit
 For a lot of problems this is preferred in order to avoid creating geometry gaps due to not using the same surfaces in geometry definitions.
 For example, if you have a problem read in already:
 
->>> cell = problem.cells[1]
->>> cell.material.number
-1
->>> new_cell = cell.clone()
->>> #the material didn't change
->>> new_cell.material is cell.material
-True
->>> new_cell = cell.clone(clone_material=True)
->>> new_cell.material.number
-2 
->>> new_cell.material is cell.material
-False
+.. doctest::
+
+    >>> cell = problem.cells[1]
+    >>> cell.material.number
+    1
+    >>> new_cell = cell.clone()
+    >>> #the material didn't change
+    >>> new_cell.material is cell.material
+    True
+    >>> new_cell = cell.clone(clone_material=True)
+    >>> new_cell.material.number # materials 2,3 are taken.
+    4
+    >>> new_cell.material is cell.material
+    False
 
 When children objects (:class:`~montepy.data_inputs.material.Material`, :class:`~montepy.surfaces.surface.Surface`, and :class:`~montepy.cell.Cell`)
 are cloned the numbering behavior is defined by the problem's instance's instance of the respective collection (e.g., :class:`~montepy.materials.Materials`)
 by the properties: :func:`~montepy.numbered_object_collection.NumberedObjectCollection.starting_number` and :func:`~montepy.numbered_object_collection.NumberedObjectCollection.step`.
 For example:
 
->>> problem.materials.starting_number = 100
->>> problem.cells[1].material.number
-1
->>> new_cell = problem.cells[1].clone(clone_material=True)
->>> new_cell.material.number 
-100
+.. doctest::
+
+    >>> problem.materials.starting_number = 100
+    >>> problem.cells[1].material.number
+    1
+    >>> new_cell = problem.cells[1].clone(clone_material=True)
+    >>> new_cell.material.number 
+    100
+
+
+.. _mat_tutorial:
+
+Materials
+---------
+
+Materials are how the nuclide concentrations in cells are specified.
+MontePy has always supported materials, but since version 1.0.0,
+the design of the interface has significantly improved.
+
+Specifying Nuclides 
+^^^^^^^^^^^^^^^^^^^
+
+To specify a material, one needs to be able to specify the nuclides that are contained in it.
+This is done through :class:`~montepy.data_inputs.nuclide.Nuclide` objects.
+This actually a wrapper of a :class:`~montepy.data_inputs.nuclide.Nucleus` and a :class:`~montepy.data_inputs.nuclide.Library` object.
+Users should rarely need to interact with the latter two objects, but it is good to be aware of them.
+The general idea is that a ``Nuclide`` instance represents a specific set of ACE data that for a ``Nucleus``, 
+which represents only a physical nuclide with a given ``Library``.
+
+The easiest way to specify a Nuclide is by its string name. 
+MontePy supports all valid MCNP ZAIDs for MCNP 6.2, and MCNP 6.3.0.
+See :class:`~montepy.data_inputs.nuclide.Nuclide` for how metastable isomers are handled.
+However, ZAIDs (like many things in MCNP) are cumbersome.
+Therefore, MontePy also supports its own nuclide names as well, which are meant to be more intuitive.
+These are very similar to the names introduced with MCNP 6.3.1 (section 1.2.2): this follows:
+
+.. code-block::
+
+   Nn[-A][mS][.library]
+
+Where:
+
+* ``Nn`` is the atomic symbol of the nuclide, case insensitive. This is required.
+* ``A`` is the atomic mass. Zero-padding is not needed. Optional.
+* ``S`` is the metastable isomeric state. Only states 1 - 4 are allowed. Optional.
+* ``library`` is the library extension of the nuclide. This only supports MCNP 6.2, 6.3 formatting, i.e., 2 - 3 digits followed by a single letter. Optional. 
+
+The following are all valid ways to specify a nuclide:
+
+.. doctest::
+
+   >>> import montepy
+   >>> montepy.Nuclide("1001.80c")
+   Nuclide('H-1.80c')
+   >>> montepy.Nuclide("H-1.80c")
+   Nuclide('H-1.80c')
+   >>> montepy.Nuclide("H-1.710nc")
+   Nuclide('H-1.710nc')
+   >>> montepy.Nuclide("H")
+   Nuclide('H-0')
+   >>> montepy.Nuclide("Co-60m1")
+   Nuclide('Co-60m1')
+   >>> montepy.Nuclide("Co")
+   Nuclide('Co-0')
+
+
+.. note::
+
+   The new SZAID and Name syntax for nuclides introduced with MCNP 6.3.1 is not currently supported by MontePy.
+   This support likely will be added soon, but probably not prior to MCNP 6.3.1 being available on RSICC. 
+
+
+Working with Material Components
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Iterating over Material Components
+""""""""""""""""""""""""""""""""""
+
+Materials are list-like iterables of tuples.
+
+.. testcode:: 
+
+    mat = problem.materials[1]
+
+    for comp in mat:
+        print(comp)
+
+This shows:
+
+.. testoutput::
+
+    (Nuclide('U-235.80c'), 5.0)
+    (Nuclide('U-238.80c'), 95.0)
+
+If you need just the nuclide or just the fractions, these are accessible by:
+:func:`~montepy.data_inputs.material.Material.nuclides` and 
+:func:`~montepy.data_inputs.material.Material.values`, respectively.
+
+.. testcode::
+
+    for nuclide in mat.nuclides:
+        print(repr(nuclide))
+    for fraction in mat.values:
+        print(fraction)
+
+shows:
+
+.. testoutput::
+
+    Nuclide('U-235.80c')
+    Nuclide('U-238.80c')
+    5.0
+    95.0
+
+Updating Components of Materials
+""""""""""""""""""""""""""""""""
+
+Materials are also list-like in that they are settable by index.
+The material must always be set to a tuple of a nuclide and a fraction.
+
+For instance:
+
+.. testcode::
+
+    nuclide = mat[0][0]
+    mat[0] = (nuclide, 4.0)
+
+Generally this is pretty clunky, so 
+:func:`~montepy.data_inputs.material.Material.nuclides` and 
+:func:`~montepy.data_inputs.material.Material.values` are also settable.
+To undo the previous changes:
+
+.. testcode::
+
+    mat.values[0] = 5.0
+    print(mat[0])
+
+This outputs: 
+
+.. testoutput::
+
+    (Nuclide('U-235.80c'), 5.0)
+
+Adding Components to a Material
+"""""""""""""""""""""""""""""""
+
+To add components to a material use either
+:func:`~montepy.data_inputs.material.Material.add_nuclide`, or
+:func:`~montepy.data_inputs.material.Material.append`.
+:func:`~montepy.data_inputs.material.Material.add_nuclide` is generally the easier method to use.
+It accepts a nuclide or the name of a nuclide, and its fraction.
+
+.. note::
+
+    When adding a new component it is not possible to change whether the fraction is in atom fraction 
+    or mass fraction.
+    This is settable through :func:`~montepy.data_inputs.material.Material.is_atom_fraction`.
+
+.. testcode::
+
+    mat.add_nuclide("B-10.80c", 1e-6)
+    for comp in mat:
+        print(comp)
+
+.. testoutput::
+
+    (Nuclide('U-235.80c'), 5.0)
+    (Nuclide('U-238.80c'), 95.0)
+    (Nuclide('B-10.80c'), 1e-06)
+
+
+Libraries
+^^^^^^^^^
+
+MCNP nuclear data comes pre-packaged in multiple different libraries that come from different nuclear data sources
+(e.g., ENDF/B-VIII.0),
+at different temperatures, 
+and for different data needs, e.g., neutron data vs. photo-atomic data.
+For more details see `LA-UR-17-20709 <https://www.osti.gov/biblio/1342828>`_, or 
+`LANL's nuclear data libraries <https://nucleardata.lanl.gov/>`_. 
+
+All :class:`~montepy.data_inputs.nuclide.Nuclide` have a :class:`~montepy.data_inputs.nuclide.Nuclide.library`,
+though it may be just ``""``. 
+These can be manually set for each nuclide.
+If you wish to change all of the components in a material to use the same library you can use
+:func:`~montepy.data_inputs.material.Material.change_libraries`.
+
+MCNP has a precedence system for determining which library use in a specific instance.
+This precedence order is:
+
+#. The library specified with the nuclide e.g., ``80c`` in ``1001.80c``.
+#. The library specified as default for the material e.g., ``nlib = 80c``.
+#. The library specified as default in the default material, ``M0``. 
+#. The first matching entry in the ``XSDIR`` file.
+
+.. note::
+
+    MontePy currently does not support reading an ``XSDIR`` file. It will not provide information for 
+    that final step.
+
+Which library will be used for a given nuclide, material, and problem can be checked with:
+:func:`~montepy.data_inputs.material.Material.get_nuclide_library`.
+
+.. seealso::
+
+    * :manual63:`5.6.1`
+    * :manual62:`108`
+
+
+Finding Materials and Nuclides
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Next, we will cover how to find if
+
+* a nuclide is in a material
+* multiple nuclides are in a material
+* a range of nuclides (e.g., transuranics) is in a material
+* specific materials are in a problem.
+
+Check if Nuclide in Material
+""""""""""""""""""""""""""""
+
+First, you can test if a :class:`~montepy.data_inputs.nuclide.Nuclide` 
+(or :class:`~montepy.data_inputs.nuclide.Nucleus`, or :class:`~montepy.data_inputs.element.Element`, or ``str``),
+is in a material.
+This is generally interpreted broadly rather than explicitly.
+For instance, if the test nuclide has no library this will match
+for all libraries, not just the empty library.
+Similarly, an elemental nuclide, e.g., ``H-0``, will match all nuclides based
+on the element, not just the elemental nuclide.
+
+.. doctest::
+
+    >>> montepy.Nuclide('H-1.80c') in mat
+    False
+    >>> montepy.Element(92) in mat
+    True
+    >>> "U-235" in mat
+    True
+    >>> "U-235.70c" in mat
+    False
+    >>> montepy.Nuclide("B-0") in mat
+    True
+
+For more complicated checks there is the :func:`~montepy.data_inputs.material.Material.contains_all`, and 
+:func:`~montepy.data_inputs.material.Material.contains_any`.
+These functions take a plurality of nuclides as well as a threshold.
+The function ``contains_all`` returns ``True`` if and only if the material contains *all* nuclides
+with a fraction above the threshold.
+The function ``contains_any`` returns ``True`` if any of the material contains *any* nuclides
+with a fraction above the threshold.
+
+.. doctest::
+
+    >>> mat.contains_all("H-1.80c")
+    False
+    >>> mat.contains_all("U-235", "U-238", threshold=1.0)
+    True
+    >>> mat.contains_all("U-235.80c", "B-10")
+    True
+    >>> mat.contains_all("U-235.80c", "B-10", threshold=1e-3)
+    False
+    >>> mat.contains_all("H-1.80c", "U-235.80c")
+    False
+    >>> mat.contains_any("H-1.80c", "U-235.80c")
+    True
+
+Finding Nuclides
+""""""""""""""""
+
+Often you may need to only work a subset of the components in a material.
+:func:`~montepy.data_inputs.material.Material.find`.
+This returns a Generator of the index of the matching component, and then the component tuple.
+
+.. testcode::
+
+    # find all uraium nuclides
+    for idx, (nuclide, fraction) in mat.find("U"):
+        print(idx, nuclide, fraction)
+
+.. testoutput::
+
+    0  U-235   (80c) 5.0
+    1  U-238   (80c) 95.0
+
+There are also other fancy ways to pass slices, for instance to find all transuranics.
+See the examples in :func:`~montepy.data_inputs.material.Material.find` for more details.
+
+There is a related function as well :func:`~montepy.data_inputs.material.Material.find_vals`,
+which accepts the same arguments but only returns the matching fractions.
+This is great for instance to calculate the heavy metal fraction of a fuel:
+
+.. testcode::
+
+    # get all heavy metal fractions
+    hm_fraction = sum(mat.find_vals(element=slice(90,None))) # slice is requires an end value to accept a start
+    print(hm_fraction)
+
+Shows:
+
+.. testoutput::
+
+    100.0
+
+Finding Materials
+"""""""""""""""""
+
+There are a lot of cases where you may want to find specific materials in a problem,
+for instance getting all steels in a problem.
+This is done with the function :func:`~montepy.materials.Materials.get_containing`
+of :class:`~montepy.materials.Materials`.
+It takes the same arguments as :func:`~montepy.data_inputs.material.Material.contains` 
+previously discussed.
+
+Mixing Materials
+^^^^^^^^^^^^^^^^
+
+Commonly materials are a mixture of other materials.
+For instance a good idea for defining structural materials might be to create a new material for each element,
+that adds the naturally occurring nuclides of the element,
+and then mixing those elements together to make steel, zircaloy, etc.
+This mixing is done with :class:`~montepy.materials.Materials.mix`.
+Note this is a method of ``Materials`` and not ``Material``.
+
+.. note::
+
+    Materials can only be combined if they are all atom fraction or mass fraction.
+
+.. note::
+
+    The materials being mixed will be normalized prior to mixing (the original materials are unaffected).
+
+.. testcode::
+
+    mats = problem.materials
+    h2o = montepy.Material()
+    h2o.number = 1
+    h2o.add_nuclide("1001.80c", 2.0)
+    h2o.add_nuclide("8016.80c", 1.0)
+
+    boric_acid = montepy.Material()
+    boric_acid.number = 2
+    for nuclide, fraction in {
+        "1001.80c": 3.0,
+        "B-10.80c": 1.0 * 0.189,
+        "B-11.80c": 1.0 * 0.796,
+        "O-16.80c": 3.0
+    }.items():
+        boric_acid.add_nuclide(nuclide, fraction)
+
+    # boric acid concentration
+    boron_conc = 100e-6 # 100 ppm
+    borated_water = mats.mix([h2o, boric_acid], [1 - boron_conc, boron_conc])
 
 Universes
 ---------
@@ -633,16 +1238,19 @@ If a cell is not assigned to any universe it will be assigned to Universe 0, *no
 To change what cells are in a universe you can set this at the cell level.
 This is done to prevent a cell from being assigned to multiple universes
 
-.. code-block:: python
-    
+.. testcode::
+
+    problem = montepy.read_input("tests/inputs/test.imcnp")
     universe = problem.universes[350]
     for cell in problem.cells[1:5]:
         cell.universe = universe
     
 We can confirm this worked with the generator ``universe.cells``:
 
->>> [cell.number for cell in universe.cells]
-[1, 2, 3, 4, 5]
+.. doctest:: 
+
+    >>> [cell.number for cell in universe.cells]
+    [1, 2, 3, 5]
 
 Claiming Cells
 ^^^^^^^^^^^^^^
@@ -653,7 +1261,7 @@ For all cells passed (either as a single ``Cell``, a ``list`` of cells, or a ``C
 will be removed from their current universe, and moved to this universe.
 This simplifies the above code to just being:
 
-.. code-block:: python
+.. testcode::
 
    universe = problem.universes[350]
    universe.claim(problem.cells[1:5])
@@ -665,7 +1273,7 @@ Creating a new universe is very straight forward.
 You just need to initialize it with a new number,
 and then add it to the problem:
 
-.. code-block:: python
+.. testcode::
    
    universe = montepy.Universe(333)
    problem.universes.append(universe)
@@ -673,9 +1281,11 @@ and then add it to the problem:
 Now you can add cells to this universe as you normally would.
 
 .. note::
+
    A universe with no cells assigned will not be written out to the MCNP input file, and will "dissapear".
 
 .. note::
+
    Universe number collisions are not checked for when a universe is created,
    but only when it is added to the problem.
    Make sure to plan accordingly, and consider using :func:`~montepy.numbered_object_collection.NumberedObjectCollection.request_number`.
@@ -690,16 +1300,20 @@ Filling is handled by the :class:`~montepy.data_cards.fill.Fill` object in ``cel
 
 To fill a cell with a specific universe you can just run:
 
-.. code-block:: python
+.. testcode::
 
-        cell.fill.universe = universe
+    cell = problem.cells[2]
+    cell.fill.universe = universe
 
 This will then fill the cell with a single universe with no transform.
 You can also easy apply a transform to the filling universe with:
 
-.. code-block:: python
+.. testcode::
 
-        cell.fill.tranform = transform
+   import numpy as np
+   transform = montepy.data_inputs.transform.Transform(number=5)
+   transform.displacement_vector = np.array([1, 2, 0])
+   cell.fill.transform = transform
 
 .. note::
 
@@ -735,7 +1349,7 @@ If there are many errors not all may be found at once due to how errors are hand
 This is done by executing it with the ``-c`` flag, and specifying a file, or files to check.
 You can also use linux globs::
 
-        python -m montepy -c inputs/*.imcnp
+        python -m montepy -c tests/inputs/*.imcnp
 
 MontePy will then show which file it is reading, and show a warning for every potential error with the input file it has found.
 
@@ -745,15 +1359,15 @@ If you want to try to troubleshoot errors in python you can do this with the fol
    This following guide may return an incomplete problem object that may break in very wierd ways.
    Never use this for actual file editing; only use it for troubleshooting.
 
-1. Setup a new Problem object:
+#. Setup a new Problem object:
 
-   .. code-block:: python
+   .. testcode::
         
        problem = montepy.MCNP_Problem("foo.imcnp") 
 
-1. Next load the input file with the ``check_input`` set to ``True``.
+#. Next load the input file with the ``check_input`` set to ``True``.
 
-   .. code-block:: python
+   .. testcode::
         
         problem.parse_input(True)
 

@@ -6,8 +6,7 @@ import os
 
 
 class MCNP_InputFile:
-    """
-    A class to represent a distinct input file.
+    """A class to represent a distinct input file.
 
     .. Note::
         this is a bare bones implementation to be fleshed out in the future.
@@ -15,12 +14,15 @@ class MCNP_InputFile:
     .. versionchanged:: 0.3.0
         Added the overwrite attribute.
 
-    :param path: the path to the input file
-    :type path: str
-    :param parent_file: the parent file for this file if any. This occurs when a "read" input is used.
-    :type parent_file: str
-    :param overwrite: Whether to overwrite the file 'path' if it exists
-    :type overwrite: bool
+    Parameters
+    ----------
+    path : str
+        the path to the input file
+    parent_file : str
+        the parent file for this file if any. This occurs when a "read"
+        input is used.
+    overwrite : bool
+        Whether to overwrite the file 'path' if it exists
     """
 
     def __init__(self, path, parent_file=None, overwrite=False):
@@ -35,11 +37,12 @@ class MCNP_InputFile:
 
     @classmethod
     def from_open_stream(cls, fh):
-        """
-        Create an MCNP Input File from an open, writable stream
+        """Create an MCNP Input File from an open, writable stream
 
-        :param fh: An open and writable object, such as a file handle.
-        :type fh: io.TextIOBase
+        Parameters
+        ----------
+        fh : io.TextIOBase
+            An open and writable object, such as a file handle.
         """
         name = getattr(fh, "name", fh.__class__.__name__)
         inpfile = cls(path=name)
@@ -49,10 +52,11 @@ class MCNP_InputFile:
 
     @make_prop_pointer("_path")
     def path(self):
-        """
-        The path for the file.
+        """The path for the file.
 
-        :rtype: str
+        Returns
+        -------
+        str
         """
         pass
 
@@ -66,34 +70,34 @@ class MCNP_InputFile:
 
     @make_prop_pointer("_parent_file")
     def parent_file(self):
-        """
-        The parent file for this file.
+        """The parent file for this file.
 
         This is only used when this file is pointed to by a "read" input.
 
-        :rtype: str
+        Returns
+        -------
+        str
         """
         pass
 
     @make_prop_pointer("_lineno")
     def lineno(self):
-        """
-        The current line number being read in the file.
+        """The current line number being read in the file.
 
         This is 1-indexed.
 
-        :rtype: int
+        Returns
+        -------
+        int
         """
         pass
 
     def open(self, mode, encoding="ascii", replace=True):
-        """
-        Opens the underlying file, and returns self.
+        """Opens the underlying file, and returns self.
 
         This should only ever be completed from within a ``with`` statement.
         For this reason, a ``close`` functional is intentionally
         not provided.
-
 
         .. Note::
             For different encoding schemes see the available list
@@ -105,15 +109,27 @@ class MCNP_InputFile:
         .. versionchanged:: 0.2.11
             Added guardrails to raise FileExistsError and IsADirectoryError.
 
-        :param mode: the mode to open the file in
-        :type mode: str
-        :param encoding: The encoding scheme to use. If replace is true, this is ignored, and changed to ASCII
-        :type encoding: str
-        :param replace: replace all non-ASCII characters with a space (0x20)
-        :type replace: bool
-        :returns: self
-        :raises FileExistsError: if a file already exists with the same path while writing.
-        :raises IsADirectoryError: if the path given is actually a directory while writing.
+        Parameters
+        ----------
+        mode : str
+            the mode to open the file in
+        encoding : str
+            The encoding scheme to use. If replace is true, this is
+            ignored, and changed to ASCII
+        replace : bool
+            replace all non-ASCII characters with a space (0x20)
+
+        Returns
+        -------
+        unknown
+            self
+
+        Raises
+        ------
+        FileExistsError
+            if a file already exists with the same path while writing.
+        IsADirectoryError
+            if the path given is actually a directory while writing.
         """
         if "r" in mode:
             if replace:
@@ -157,7 +173,7 @@ class MCNP_InputFile:
         return line
 
     def read(self, size=-1):
-        """ """
+        """"""
         if self._fh:
             ret = self._fh.read(size)
             if self._mode == "rb" and self._replace_with_space:
@@ -166,7 +182,7 @@ class MCNP_InputFile:
             return ret
 
     def readline(self, size=-1):
-        """ """
+        """"""
         if self._fh:
             ret = self._fh.readline(size)
             if self._mode == "rb" and self._replace_with_space:
@@ -180,4 +196,4 @@ class MCNP_InputFile:
             return self._fh.write(to_write)
 
     def __str__(self):
-        return self.name
+        return str(self.name)

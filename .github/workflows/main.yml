@@ -2,6 +2,7 @@ name: CI testing
 
 on: 
   pull_request:
+    branches: [develop, alpha-test-dev, alpha-test]
   push: 
      branches: [develop, main, alpha-test]
 
@@ -41,8 +42,8 @@ jobs:
       - run: pip install --user . montepy[develop]
       - run: pip freeze
       - name: Upload build artifacts
-        uses: actions/upload-artifact@v4.3.1
-        if: ${{ matrix.python-version == '3.12'  && matrix.numpy-version == '2.0' }}
+        uses: actions/upload-artifact@v4
+        if: ${{ matrix.python-version == '3.12'}}
         with: 
            name: build
            path: dist/*
@@ -55,6 +56,11 @@ jobs:
       matrix:
         python-version: ["3.9", "3.10", "3.11", "3.12", "3.13"]
         numpy-version: ["1.0", "2.0"]
+        sly-version: ["0.5"]
+        include:
+          - python-version: "3.11"
+            numpy-version: "2.0"
+            sly-version: "0.4"
     
     steps:
       - uses: actions/checkout@v4
@@ -64,8 +70,9 @@ jobs:
           python-version: ${{ matrix.python-version }}
       - run: pip install numpy~=${{ matrix.numpy-version }}
         name: install specific numpy version
-      - run: pip install --user . montepy[test]
-      - run: pip install --user . montepy[build]
+      - run: pip install sly~=${{ matrix.sly-version }}
+        name: install specific sly version
+      - run: pip install --user . montepy[test,build]
       - run: pip uninstall -y pytest-profiling
         name: Uninstall incompatible library
         if: ${{ matrix.python-version == '3.13' }}
@@ -89,7 +96,7 @@ jobs:
           path: coverage.xml
       - name: Coveralls GitHub Action
         if: ${{ matrix.python-version == '3.12' && matrix.numpy-version == '2.0' && (success() || failure() )}}
-        uses: coverallsapp/github-action@v2
+        uses: coverallsapp/github-action@648a8eb78e6d50909eff900e4ec85cab4524a45b
         with:
           file: coverage.xml
           github-token: ${{ secrets.github_token }}
@@ -97,7 +104,7 @@ jobs:
 
 
 
-  doc-test:
+  doc-build:
     runs-on: ubuntu-latest
     
     steps:
@@ -124,8 +131,30 @@ jobs:
         run: |
              cd doc
              make linkcheck
-      - name: test sitemap
-        run: python .github/scripts/check_sitemap.py 
+  
+  doc-test:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          fetch-tags: true
+      - name: set up python 3.12
+        uses: actions/setup-python@v5
+        with: 
+          python-version: 3.12
+      - run: pip install . montepy[doc,build,demo-test,test]
+      - run: python -m phmutest README.md --replmode --log
+        name: Test readme code
+      - run: | 
+          cd doc
+          make doctest
+        name: Test all example code in documentation.
+      - run: |
+          cd demo/answers
+          for file in *.ipynb; do papermill $file foo.ipynb; done
+        name: Test all demo notebooks 
 
   format-test:
     runs-on: ubuntu-latest

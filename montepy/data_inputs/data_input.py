@@ -1,4 +1,5 @@
 # Copyright 2024, Battelle Energy Alliance, LLC All Rights Reserved.
+from __future__ import annotations
 from abc import abstractmethod
 import copy
 
@@ -11,20 +12,17 @@ from montepy.input_parser.data_parser import (
 )
 from montepy.input_parser.mcnp_input import Input
 from montepy.particle import Particle
-from montepy.mcnp_object import MCNP_Object
+from montepy.mcnp_object import MCNP_Object, InitInput
 
 import re
+from typing import Union
 
 
 class _ClassifierInput(Input):
-    """
-    A specialized subclass that returns only 1 useful token.
-    """
+    """A specialized subclass that returns only 1 useful token."""
 
     def tokenize(self):
-        """
-        Returns one token after all starting comments and spaces.
-        """
+        """Returns one token after all starting comments and spaces."""
         last_in_comment = True
         for token in super().tokenize():
             if token is None:
@@ -39,30 +37,44 @@ class _ClassifierInput(Input):
 
 
 class DataInputAbstract(MCNP_Object):
-    """
-    Parent class to describe all MCNP data inputs.
+    """Parent class to describe all MCNP data inputs.
 
-    :param input: the Input object representing this data input
-    :type input: Input
-    :param fast_parse: Whether or not to only parse the first word for the type of data.
-    :type fast_parse: bool
+    Parameters
+    ----------
+    input : Union[Input, str]
+        the Input object representing this data input
+    fast_parse : bool
+        Whether or not to only parse the first word for the type of
+        data.
     """
 
     _parser = DataParser()
 
     _classifier_parser = ClassifierParser()
 
-    def __init__(self, input=None, fast_parse=False):
+    def __init__(
+        self,
+        input: InitInput = None,
+        fast_parse=False,
+    ):
         self._particles = None
         if not fast_parse:
             super().__init__(input, self._parser)
             if input:
                 self.__split_name(input)
         else:
-            input = copy.copy(input)
-            input.__class__ = _ClassifierInput
+            if input:
+                if isinstance(input, str):
+                    input = _ClassifierInput(
+                        input.split("\n"),
+                        montepy.input_parser.block_type.BlockType.DATA,
+                    )
+                else:
+                    input = copy.copy(input)
+                    input.__class__ = _ClassifierInput
             super().__init__(input, self._classifier_parser)
-            self.__split_name(input)
+            if input:
+                self.__split_name(input)
 
     @staticmethod
     @abstractmethod
@@ -73,8 +85,11 @@ class DataInputAbstract(MCNP_Object):
 
         this must be lower case
 
-        :returns: the string of the prefix that identifies a input of this class.
-        :rtype: str
+        Returns
+        -------
+        str
+            the string of the prefix that identifies a input of this
+            class.
         """
         pass
 
@@ -85,8 +100,10 @@ class DataInputAbstract(MCNP_Object):
 
         For example: ``kcode`` doesn't allow numbers but tallies do allow it e.g., ``f7``
 
-        :returns: True if this class allows numbers
-        :rtype: bool
+        Returns
+        -------
+        bool
+            True if this class allows numbers
         """
         pass
 
@@ -101,22 +118,26 @@ class DataInputAbstract(MCNP_Object):
         * 1 : is optional
         * 2 : is mandatory
 
-        :returns: True if this class particle classifiers
-        :rtype: int
+        Returns
+        -------
+        int
+            True if this class particle classifiers
         """
         pass
 
     @property
     def particle_classifiers(self):
-        """The particle class part of the card identifier as a parsed list.
+        """The particle class part of the input identifier as a parsed list.
 
         This is parsed from the input that was read.
 
         For example: the classifier for ``F7:n`` is ``:n``, and ``imp:n,p`` is ``:n,p``
         This will be parsed as a list: ``[<Particle.NEUTRON: 'N'>, <Particle.PHOTON: 'P'>]``.
 
-        :returns: the particles listed in the input if any. Otherwise None
-        :rtype: list
+        Returns
+        -------
+        list
+            the particles listed in the input if any. Otherwise None
         """
         if self._particles:
             return self._particles
@@ -124,13 +145,16 @@ class DataInputAbstract(MCNP_Object):
 
     @property
     def prefix(self):
-        """The text part of the card identifier parsed from the input.
+        """The text part of the input identifier parsed from the input.
 
-        For example: for a material like: m20 the prefix is 'm'
+        For example: for a material like: ``m20`` the prefix is ``m``.
         this will always be lower case.
+        Can also be called the mnemonic.
 
-        :returns: The prefix read from the input
-        :rtype: str
+        Returns
+        -------
+        str
+            The prefix read from the input
         """
         return self._prefix.lower()
 
@@ -140,30 +164,35 @@ class DataInputAbstract(MCNP_Object):
 
         For example: for a transform: ``*tr5`` the modifier is ``*``
 
-        :returns: the prefix modifier that was parsed if any. None if otherwise.
-        :rtype: str
+        Returns
+        -------
+        str
+            the prefix modifier that was parsed if any. None if
+            otherwise.
         """
         return self._modifier
 
     @property
     def data(self):
-        """
-        The syntax tree actually holding the data.
+        """The syntax tree actually holding the data.
 
-        :returns: The syntax tree with the information.
-        :rtype: ListNode
+        Returns
+        -------
+        ListNode
+            The syntax tree with the information.
         """
         return self._tree["data"]
 
     @property
     def classifier(self):
-        """
-        The syntax tree object holding the data classifier.
+        """The syntax tree object holding the data classifier.
 
         For example this would container information like ``M4``, or ``F104:n``.
 
-        :returns: the classifier for this data_input.
-        :rtype: ClassifierNode
+        Returns
+        -------
+        ClassifierNode
+            the classifier for this data_input.
         """
         return self._tree["classifier"]
 
@@ -174,13 +203,18 @@ class DataInputAbstract(MCNP_Object):
         pass
 
     def update_pointers(self, data_inputs):
-        """
-        Connects data inputs to each other
+        """Connects data inputs to each other
 
-        :param data_inputs: a list of the data inputs in the problem
-        :type data_inputs: list
-        :returns: True iff this input should be removed from ``problem.data_inputs``
-        :rtype: bool, None
+        Parameters
+        ----------
+        data_inputs : list
+            a list of the data inputs in the problem
+
+        Returns
+        -------
+        bool, None
+            True iff this input should be removed from
+            ``problem.data_inputs``
         """
         pass
 
@@ -191,17 +225,22 @@ class DataInputAbstract(MCNP_Object):
         return str(self)
 
     def __split_name(self, input):
-        """
-        Parses the name of the data input as a prefix, number, and a particle classifier.
+        """Parses the name of the data input as a prefix, number, and a particle classifier.
 
         This populates the properties:
             prefix
             _input_number
             classifier
 
-        :param input: the input object representing this data input
-        :type input: input
-        :raises MalformedInputError: if the name is invalid for this DataInput
+        Parameters
+        ----------
+        input : input
+            the input object representing this data input
+
+        Raises
+        ------
+        MalformedInputError
+            if the name is invalid for this DataInput
         """
         self._classifier = self._tree["classifier"]
         self.__enforce_name(input)
@@ -212,12 +251,17 @@ class DataInputAbstract(MCNP_Object):
         self._modifier = self._classifier.modifier
 
     def __enforce_name(self, input):
-        """
-        Checks that the name is valid.
+        """Checks that the name is valid.
 
-        :param input: the input object representing this data input
-        :type input: input
-        :raises MalformedInputError: if the name is invalid for this DataInput
+        Parameters
+        ----------
+        input : input
+            the input object representing this data input
+
+        Raises
+        ------
+        MalformedInputError
+            if the name is invalid for this DataInput
         """
         classifier = self._classifier
         if self._class_prefix:
@@ -229,7 +273,7 @@ class DataInputAbstract(MCNP_Object):
             if self._has_number():
                 try:
                     num = classifier.number.value
-                    assert num > 0
+                    assert num >= 0
                 except (AttributeError, AssertionError) as e:
                     raise MalformedInputError(
                         input,
@@ -260,84 +304,24 @@ class DataInputAbstract(MCNP_Object):
         else:  # otherwise first part is equal
             return self._input_number.value < other._input_number.value
 
-    @property
-    def class_prefix(self):  # pragma: no cover
-        """The text part of the card identifier.
-
-        For example: for a material the prefix is ``m``
-
-        this must be lower case
-
-        .. deprecated:: 0.2.0
-            This has been moved to :func:`_class_prefix`
-
-        :returns: the string of the prefix that identifies a card of this class.
-        :rtype: str
-        :raises DeprecationWarning: always raised.
-        """
-        warnings.warn(
-            "This has been moved to the property _class_prefix.",
-            DeprecationWarning,
-            stacklevl=2,
-        )
-
-    @property
-    def has_number(self):  # pragma: no cover
-        """Whether or not this class supports numbering.
-
-        For example: ``kcode`` doesn't allow numbers but tallies do allow it e.g., ``f7``
-
-        .. deprecated:: 0.2.0
-            This has been moved to :func:`_has_number`
-
-        :returns: True if this class allows numbers
-        :rtype: bool
-        :raises DeprecationWarning: always raised.
-        """
-        warnings.warn(
-            "This has been moved to the property _has_number.",
-            DeprecationWarning,
-            stacklevl=2,
-        )
-
-    @property
-    def has_classifier(self):  # pragma: no cover
-        """Whether or not this class supports particle classifiers.
-
-        For example: ``kcode`` doesn't allow particle types but tallies do allow it e.g., ``f7:n``
-
-        * 0 : not allowed
-        * 1 : is optional
-        * 2 : is mandatory
-
-        .. deprecated:: 0.2.0
-            This has been moved to :func:`_has_classifier`
-
-
-        :returns: True if this class particle classifiers
-        :rtype: int
-        :raises DeprecationWarning: always raised.
-        """
-        warnings.warn(
-            "This has been moved to the property _has_classifier.",
-            DeprecationWarning,
-            stacklevl=2,
-        )
-
 
 class DataInput(DataInputAbstract):
-    """
-    Catch-all for all other MCNP data inputs.
+    """Catch-all for all other MCNP data inputs.
 
-    :param input: the Input object representing this data input
-    :type input: Input
-    :param fast_parse: Whether or not to only parse the first word for the type of data.
-    :type fast_parse: bool
-    :param prefix: The input prefix found during parsing (internal use only)
-    :type prefix: str
+    Parameters
+    ----------
+    input : Union[Input, str]
+        the Input object representing this data input
+    fast_parse : bool
+        Whether or not to only parse the first word for the type of
+        data.
+    prefix : str
+        The input prefix found during parsing (internal use only)
     """
 
-    def __init__(self, input=None, fast_parse=False, prefix=None):
+    def __init__(
+        self, input: InitInput = None, fast_parse: bool = False, prefix: str = None
+    ):
         if prefix:
             self._load_correct_parser(prefix)
         super().__init__(input, fast_parse)
@@ -355,8 +339,7 @@ class DataInput(DataInputAbstract):
         return None
 
     def _load_correct_parser(self, prefix):
-        """
-        Decides if a specialized parser needs to be loaded for barebone
+        """Decides if a specialized parser needs to be loaded for barebone
         special cases.
 
         .. versionadded:: 0.3.0
@@ -371,3 +354,88 @@ class DataInput(DataInputAbstract):
         }
         if prefix.lower() in PARSER_PREFIX_MAP:
             self._parser = PARSER_PREFIX_MAP[prefix.lower()]()
+
+
+class ForbiddenDataInput(DataInputAbstract):
+    """MCNP data input that is not actually parsed and only parroted out.
+
+    Current inputs that are in "parser jail":
+
+    * ``DE``
+    * ``SDEF``
+
+    Parameters
+    ----------
+    input : Union[Input, str]
+        the Input object representing this data input
+    fast_parse : bool
+        Whether or not to only parse the first word for the type of
+        data.
+    prefix : str
+        The input prefix found during parsing (internal use only)
+    """
+
+    def __init__(
+        self, input: InitInput = None, fast_parse: bool = False, prefix: str = None
+    ):
+        super().__init__(input, True)
+        if isinstance(input, str):
+            input = montepy.input_parser.mcnp_input.Input(
+                input.split("\n"), self._BLOCK_TYPE
+            )
+        self._input = input
+
+    @property
+    def _class_prefix(self):
+        return None
+
+    @property
+    def _has_number(self):  # pragma: no cover
+        return None
+
+    @property
+    def _has_classifier(self):  # pragma: no cover
+        return None
+
+    def _error_out(self):
+        """ """
+        raise UnsupportedFeature(
+            f"Inputs of type: {self.classifier.prefix} are not supported yet "
+            "due to their complex syntax."
+            "These will be written out correctly, but cannot be edited",
+            input,
+        )
+
+    @property
+    def _prop_error(self):
+        self._error_out()
+
+    data = _prop_error
+    """
+    Not supported.
+
+    .. warning::
+
+        Because this input was not parsed these data are not available.
+
+    raises
+    ------
+    UnsupportedFeature 
+        when called.
+    """
+
+    def format_for_mcnp_input(self, mcnp_version: tuple[int]) -> list[str]:
+        """Creates a list of strings representing this MCNP_Object that can be
+        written to file.
+
+        Parameters
+        ----------
+        mcnp_version : tuple[int]
+            The tuple for the MCNP version that must be exported to.
+
+        Returns
+        -------
+        list
+            a list of strings for the lines that this input will occupy.
+        """
+        return self._input.input_lines

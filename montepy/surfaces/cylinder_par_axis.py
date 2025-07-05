@@ -1,8 +1,11 @@
-# Copyright 2024, Battelle Energy Alliance, LLC All Rights Reserved.
+# Copyright 2024-2025, Battelle Energy Alliance, LLC All Rights Reserved.
 from .surface_type import SurfaceType
-from .surface import Surface
+from .surface import Surface, InitInput
 from montepy.errors import *
 from montepy.utilities import *
+
+from numbers import Real
+from typing import Union
 
 
 def _enforce_positive_radius(self, value):
@@ -11,11 +14,20 @@ def _enforce_positive_radius(self, value):
 
 
 class CylinderParAxis(Surface):
-    """
-    Represents surfaces: C/X, C/Y, C/Z
+    """Represents surfaces: C/X, C/Y, C/Z
 
-    :param input: The Input object representing the input
-    :type input: Input
+    .. versionchanged:: 1.0.0
+
+        Added number parameter
+
+    Parameters
+    ----------
+    input : Union[Input, str]
+        The Input object representing the input
+    number : int
+        The number to set for this object.
+    surface_type: Union[SurfaceType, str]
+        The surface_type to set for this object
     """
 
     COORDINATE_PAIRS = {
@@ -23,35 +35,36 @@ class CylinderParAxis(Surface):
         SurfaceType.C_Y: {0: "x", 1: "z"},
         SurfaceType.C_Z: {0: "x", 1: "y"},
     }
-    """Which coordinate is what value for each cylinder type.
-    """
+    """Which coordinate is what value for each cylinder type."""
 
-    def __init__(self, input=None):
+    def __init__(
+        self,
+        input: InitInput = None,
+        number: int = None,
+        surface_type: Union[SurfaceType, str] = None,
+    ):
         self._coordinates = [
             self._generate_default_node(float, None),
             self._generate_default_node(float, None),
         ]
         self._radius = self._generate_default_node(float, None)
-        super().__init__(input)
-        ST = SurfaceType
-        if input:
-            if self.surface_type not in [ST.C_X, ST.C_Y, ST.C_Z]:
-                raise ValueError(
-                    "CylinderParAxis must be a surface of types: C/X, C/Y, C/Z"
-                )
-            if len(self.surface_constants) != 3:
-                raise ValueError(
-                    "CylinderParAxis must have exactly 3 surface_constants"
-                )
-            self._coordinates = self._surface_constants[0:2]
-            self._radius = self._surface_constants[2]
-        else:
-            self._surface_constants = [*self._coordinates, self._radius]
+        super().__init__(input, number, surface_type)
+        if len(self.surface_constants) != 3:
+            raise ValueError("CylinderParAxis must have exactly 3 surface_constants")
+        self._coordinates = self._surface_constants[0:2]
+        self._radius = self._surface_constants[2]
+
+    @staticmethod
+    def _number_of_params():
+        return 3
+
+    @staticmethod
+    def _allowed_surface_types():
+        return {SurfaceType.C_X, SurfaceType.C_Y, SurfaceType.C_Z}
 
     @property
     def coordinates(self):
-        """
-        The two coordinates for this cylinder to center on.
+        """The two coordinates for this cylinder to center on.
 
         :rytpe: tuple
         """
@@ -64,19 +77,18 @@ class CylinderParAxis(Surface):
         if len(coordinates) != 2:
             raise ValueError("coordinates must have exactly two elements")
         for val in coordinates:
-            if not isinstance(val, (float, int)):
+            if not isinstance(val, Real):
                 raise TypeError(f"Coordinate must be a number. {val} given.")
         for i, val in enumerate(coordinates):
             self._coordinates[i].value = val
 
-    @make_prop_val_node(
-        "_radius", (float, int), float, validator=_enforce_positive_radius
-    )
+    @make_prop_val_node("_radius", (Real,), float, validator=_enforce_positive_radius)
     def radius(self):
-        """
-        The radius of the cylinder.
+        """The radius of the cylinder.
 
-        :rtype: float
+        Returns
+        -------
+        float
         """
         pass
 

@@ -24,6 +24,7 @@ c
 c foo end comment
 
 C surfaces
+c this comment is a ver very very very very very very very very very long line in a comment that shouldn't raise a warning but maybe?
 1000 SO 1
 1005 RCC 0 1.5 -0.5 0 0 1 0.25
 1010 SO 3

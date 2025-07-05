@@ -4,13 +4,14 @@ from montepy.input_parser import syntax_node
 
 
 class TallySegmentParser(DataParser):
-    """
-    A barebone parser for parsing tally segment inputs before they are fully implemented.
+    """A barebone parser for parsing tally segment inputs before they are fully implemented.
 
     .. versionadded:: 0.2.10
 
-    :returns: a syntax tree for the data input.
-    :rtype: SyntaxNode
+    Returns
+    -------
+    SyntaxNode
+        a syntax tree for the data input.
     """
 
     debugfile = None
@@ -40,11 +41,12 @@ class TallySegmentParser(DataParser):
 
     @_("PARTICLE", "PARTICLE padding", "TEXT", "TEXT padding")
     def end_phrase(self, p):
-        """
-        A non-zero number with or without padding.
+        """A non-zero number with or without padding.
 
-        :returns: a float ValueNode
-        :rtype: ValueNode
+        Returns
+        -------
+        ValueNode
+            a float ValueNode
         """
         return self._flush_phrase(p, str)
 

@@ -9,17 +9,25 @@ A package for helper universal utility functions
 
 
 def fortran_float(number_string):
-    """
-    Attempts to convert a FORTRAN formatted float string to a float.
+    """Attempts to convert a FORTRAN formatted float string to a float.
 
     FORTRAN allows silly things for scientific notation like ``6.02+23``
     to represent Avogadro's Number.
 
-    :param number_string: the string that will be converted to a float
-    :type number_string: str
-    :raises ValueError: If the string can not be parsed as a float.
-    :return: the parsed float of the this string
-    :rtype: float
+    Parameters
+    ----------
+    number_string : str
+        the string that will be converted to a float
+
+    Raises
+    ------
+    ValueError
+        If the string can not be parsed as a float.
+
+    Returns
+    -------
+    float
+        the parsed float of the this string
     """
     try:
         return float(number_string)
@@ -33,13 +41,17 @@ def fortran_float(number_string):
 
 
 def is_comment(line):
-    """
-    Determines if the line is a ``C comment`` style comment.
+    """Determines if the line is a ``C comment`` style comment.
 
-    :param line: the line to analyze
-    :type line: str
-    :returns: True if the line is a comment
-    :rtype: bool
+    Parameters
+    ----------
+    line : str
+        the line to analyze
+
+    Returns
+    -------
+    bool
+        True if the line is a comment
     """
     upper_start = line[0 : BLANK_SPACE_CONTINUE + 1].upper()
     non_blank_comment = upper_start and line.lstrip().upper().startswith("C ")
@@ -54,22 +66,26 @@ def is_comment(line):
 def make_prop_val_node(
     hidden_param, types=None, base_type=None, validator=None, deletable=False
 ):
-    """
-    A decorator function for making a property from a ValueNode.
+    """A decorator function for making a property from a ValueNode.
 
     This decorator is meant to handle all boiler plate. It will get and
     set the value property of the underlying ValueNode.
     By default the property is not settable unless types is set.
 
-    :param hidden_param: The string representing the parameter name of the internally stored ValueNode.
-    :type hidden_param: str
-    :param types: the acceptable types for the settable, which is passed to isinstance. If an empty tuple will be
-                type(self).
-    :type types: Class, tuple
-    :param validator: A validator function to run on values before setting. Must accept func(self, value).
-    :type validator: function
-    :param deletable: If true make this property deletable. When deleted the value will be set to None.
-    :type deletable: bool
+    Parameters
+    ----------
+    hidden_param : str
+        The string representing the parameter name of the internally
+        stored ValueNode.
+    types : Class, tuple
+        the acceptable types for the settable, which is passed to
+        isinstance. If an empty tuple will be type(self).
+    validator : function
+        A validator function to run on values before setting. Must
+        accept func(self, value).
+    deletable : bool
+        If true make this property deletable. When deleted the value
+        will be set to None.
     """
 
     def decorator(func):
@@ -122,19 +138,24 @@ def make_prop_val_node(
 def make_prop_pointer(
     hidden_param, types=None, base_type=None, validator=None, deletable=False
 ):
-    """
-    A decorator function that makes a property based off of a pointer to another object.
+    """A decorator function that makes a property based off of a pointer to another object.
 
     Note this can also be used for almost any circumstance as everything in python is a pointer.
 
-    :param hidden_param: The string representing the parameter name of the internally stored ValueNode.
-    :type hidden_param: str
-    :param types: the acceptable types for the settable, which is passed to isinstance, if an empty tuple is provided the type will be self.
-    :type types: Class, tuple
-    :param validator: A validator function to run on values before setting. Must accept func(self, value).
-    :type validator: function
-    :param deletable: If true make this property deletable. When deleted the value will be set to None.
-    :type deletable: bool
+    Parameters
+    ----------
+    hidden_param : str
+        The string representing the parameter name of the internally
+        stored ValueNode.
+    types : Class, tuple
+        the acceptable types for the settable, which is passed to
+        isinstance, if an empty tuple is provided the type will be self.
+    validator : function
+        A validator function to run on values before setting. Must
+        accept func(self, value).
+    deletable : bool
+        If true make this property deletable. When deleted the value
+        will be set to None.
     """
 
     def decorator(func):
