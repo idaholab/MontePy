@@ -368,7 +368,9 @@ class MCNP_Problem:
         """
         return self._transforms
 
-    def parse_input(self, check_input=False, replace=True):
+    def parse_input(
+        self, check_input: bool = False, replace: bool = True, *, jit_parse: bool = True
+    ):
         """Semantically parses the MCNP file provided to the constructor.
 
         Parameters

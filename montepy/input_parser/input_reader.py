@@ -1,9 +1,18 @@
-# Copyright 2024, Battelle Energy Alliance, LLC All Rights Reserved.
+# Copyright 2024-2025, Battelle Energy Alliance, LLC All Rights Reserved.
 import montepy
 from montepy.constants import DEFAULT_VERSION
 
+import io
+import os
 
-def read_input(destination, mcnp_version=DEFAULT_VERSION, replace=True):
+
+def read_input(
+    destination: str | os.PathLike | io.TextIOBase,
+    mcnp_version: tuple[int, int, int] = DEFAULT_VERSION,
+    replace: bool = True,
+    *,
+    jit_parse: bool = True,
+):
     """Reads the specified MCNP Input file.
 
     The MCNP version must be a three component tuple e.g., (6, 2, 0) and (5, 1, 60).
@@ -11,6 +20,10 @@ def read_input(destination, mcnp_version=DEFAULT_VERSION, replace=True):
     Notes
     -----
     if a stream is provided. It will not be closed by this function.
+
+    .. warning::
+
+        Probably should warn about just-in-time parsing.
 
     Parameters
     ----------
@@ -20,6 +33,8 @@ def read_input(destination, mcnp_version=DEFAULT_VERSION, replace=True):
         The version of MCNP that the input is intended for.
     replace : bool
         replace all non-ASCII characters with a space (0x20)
+    jit_parse : bool
+        Whether to do just-in-time parsing
 
     Returns
     -------
@@ -42,5 +57,5 @@ def read_input(destination, mcnp_version=DEFAULT_VERSION, replace=True):
     """
     problem = montepy.mcnp_problem.MCNP_Problem(destination)
     problem.mcnp_version = mcnp_version
-    problem.parse_input(replace=replace)
+    problem.parse_input(replace=replace, jit_parse=jit_parse)
     return problem
