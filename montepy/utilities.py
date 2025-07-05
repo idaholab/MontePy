@@ -92,6 +92,8 @@ def make_prop_val_node(
         @property
         @functools.wraps(func)
         def getter(self):
+            if hasattr(self, "_not_parsed") and self._not_parsed:
+                self._full_parse()
             result = func(self)
             if result:
                 return result
@@ -104,6 +106,8 @@ def make_prop_val_node(
         if types is not None:
 
             def setter(self, value):
+                if hasattr(self, "_not_parsed") and self._not_parsed:
+                    self._full_parse()
                 nonlocal types
                 if isinstance(types, tuple) and len(types) == 0:
                     types = type(self)
@@ -162,6 +166,8 @@ def make_prop_pointer(
         @property
         @functools.wraps(func)
         def getter(self):
+            if hasattr(self, "_not_parsed") and self._not_parsed:
+                self._full_parse()
             result = func(self)
             if result:
                 return result
@@ -170,6 +176,8 @@ def make_prop_pointer(
         if types is not None:
 
             def setter(self, value):
+                if hasattr(self, "_not_parsed") and self._not_parsed:
+                    self._full_parse()
                 nonlocal types
                 if isinstance(types, tuple) and len(types) == 0:
                     types = type(self)

@@ -65,6 +65,8 @@ class _ExceptionContextAdder(ABCMeta):
         """
         new_attrs = {}
         for key, value in attributes.items():
+            new_attrs[key] = value
+            continue
             if key.startswith("_"):
                 new_attrs[key] = value
             if callable(value):
@@ -164,6 +166,18 @@ class MCNP_Object(ABC, metaclass=_ExceptionContextAdder):
             raise AttributeError(
                 f"'{type(self).__name__}' object has no attribute '{key}'",
             )
+
+    @classmethod
+    def _jit_light_init(cls, input: InitInput):
+        instance = cls.__new__(cls)
+        instance._not_parsed = True
+        instance._input = input
+        return instance
+
+    def _full_parse(self):
+        if hasattr(self, "_not_parsed") and self._not_parsed:
+            del self._not_parsed
+            self.__init__(self._input)
 
     @staticmethod
     def _generate_default_node(
