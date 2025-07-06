@@ -30,9 +30,11 @@ class GeneralPlane(Surface):
     ):
         super().__init__(input, number)
         if input:
-            if self.surface_type != SurfaceType.P:
-                raise ValueError("A GeneralPlane must be a surface of type P")
             self._enforce_constants()
+
+    @staticmethod
+    def _allowed_surace_types():
+        return {SurfaceType.P}
 
     def validate(self):
         super().validate()
