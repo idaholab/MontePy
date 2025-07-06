@@ -10,7 +10,7 @@ import warnings
 from montepy.cells import Cells
 from montepy.data_inputs import importance, fill, lattice_input, universe_input, volume
 from montepy.data_inputs.data_parser import PREFIX_MATCHES
-from montepy.input_parser.cell_parser import CellParser
+from montepy.input_parser.cell_parser import CellParser, JitCellParser
 from montepy.input_parser import syntax_node
 from montepy.errors import *
 from montepy.numbered_mcnp_object import Numbered_MCNP_Object, InitInput
@@ -120,6 +120,7 @@ class Cell(Numbered_MCNP_Object):
     }
 
     _parser = CellParser()
+    _JitParser = JitCellParser
 
     def __init__(
         self,

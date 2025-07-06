@@ -47,6 +47,7 @@ class Surface(Numbered_MCNP_Object):
         number: int = None,
         surface_type: Union[SurfaceType, str] = None,
     ):
+        # TODO delete subclass init
         self._CHILD_OBJ_MAP = {
             "periodic_surface": Surface,
             "transform": transform.Transform,

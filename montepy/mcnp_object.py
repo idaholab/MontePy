@@ -168,16 +168,23 @@ class MCNP_Object(ABC, metaclass=_ExceptionContextAdder):
             )
 
     @classmethod
-    def _jit_light_init(cls, input: InitInput):
+    def _jit_light_init(cls, input: Input):
         instance = cls.__new__(cls)
         instance._not_parsed = True
         instance._input = input
+        parser = cls._JitParser()
+        tokenizer = input.tokenize()
+        bare_tree = parser.parse(tokenizer)
+        tokenizer.close()
+        for key, node in bare_tree.nodes.items():
+            setattr(instance, f"_{key}", node)
         return instance
 
     def _full_parse(self):
         if hasattr(self, "_not_parsed") and self._not_parsed:
             del self._not_parsed
             self.__init__(self._input)
+            # TODO update pointers
 
     @staticmethod
     def _generate_default_node(

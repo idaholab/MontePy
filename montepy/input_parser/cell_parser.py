@@ -213,3 +213,18 @@ class CellParser(MCNP_Parser):
             else:
                 sequence.append(node)
         return sequence
+
+
+class JitCellParser:
+
+    @staticmethod
+    def parse(tokenizer):
+        for token in tokenizer:
+            if token.type in {"SPACE", "COMMENT", "DOLLAR_COMMENT"}:
+                continue
+            elif token.type == "NUMBER":
+                return syntax_node.SyntaxNode(
+                    "jit_cell", {"number": syntax_node.ValueNode(token.value, int)}
+                )
+            else:
+                assert False
