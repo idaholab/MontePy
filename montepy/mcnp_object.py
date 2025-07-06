@@ -184,7 +184,15 @@ class MCNP_Object(ABC, metaclass=_ExceptionContextAdder):
         if hasattr(self, "_not_parsed") and self._not_parsed:
             del self._not_parsed
             self.__init__(self._input)
-            # TODO update pointers and relink cell to problem
+            problem = self._problem
+            if problem:
+                self.link_to_problem(self._problem)
+                args = (problem.cells, problem.surfaces, problem.data_inputs)
+                if isinstance(self, montepy.surafaces.Surface):
+                    args = args[1:]
+                elif isinstance(self, montepy.data_inputs.data_input.DataInputAbstract):
+                    args = args[2:]
+                self.update_pointers(*args)
 
     @staticmethod
     def _generate_default_node(
