@@ -8,6 +8,7 @@ from montepy.errors import *
 from montepy.input_parser.data_parser import (
     ClassifierParser,
     DataParser,
+    JitDataParser,
     ParamOnlyDataParser,
 )
 from montepy.input_parser.mcnp_input import Input
@@ -52,6 +53,8 @@ class DataInputAbstract(MCNP_Object):
 
     _classifier_parser = ClassifierParser()
 
+    _JitParser = JitDataParser
+
     def __init__(
         self,
         input: InitInput = None,
@@ -75,6 +78,15 @@ class DataInputAbstract(MCNP_Object):
             super().__init__(input, self._classifier_parser)
             if input:
                 self.__split_name(input)
+
+    @classmethod
+    def _jit_light_init(cls, input: Input):
+        instance = super()._jit_light_init(input)
+        classifier = instance._classifier
+        instance._prefix = classifier.prefix
+        instance._number = classifier.number
+        instance._particles = classifier.particles
+        return instance
 
     @staticmethod
     @abstractmethod

@@ -30,7 +30,7 @@ PREFIX_MATCHES = {
 VERBOTEN = {"de", "sdef"}
 
 
-def parse_data(input: montepy.mcnp_object.InitInput):
+def parse_data(input: montepy.mcnp_object.InitInput, *, jit_parse: bool = False):
     """Parses the data input as the appropriate object if it is supported.
 
     Parameters
@@ -48,7 +48,7 @@ def parse_data(input: montepy.mcnp_object.InitInput):
     prefix = base_input.prefix
     if base_input.prefix in VERBOTEN:
         return data_input.ForbiddenDataInput(input)
-    for data_class in PREFIX_MATCHES:
-        if prefix == data_class._class_prefix():
-            return data_class(input)
-    return data_input.DataInput(input, prefix=prefix)
+    for DataClass in PREFIX_MATCHES:
+        if prefix == DataClass._class_prefix():
+            return DataClass._jit_light_init(input)
+    return data_input.DataInput._jit_light_init(input)
