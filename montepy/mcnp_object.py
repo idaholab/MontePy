@@ -274,6 +274,8 @@ class MCNP_Object(ABC, metaclass=_ExceptionContextAdder):
         list
             a list of strings for the lines that this input will occupy.
         """
+        if hasattr(self, "_not_parsed"):
+            return self._input.input_lines
         self.validate()
         self._update_values()
         self._tree.check_for_graveyard_comments()
