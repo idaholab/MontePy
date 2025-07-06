@@ -1,7 +1,8 @@
-# Copyright 2024, Battelle Energy Alliance, LLC All Rights Reserved.
+# Copyright 2024-2025, Battelle Energy Alliance, LLC All Rights Reserved.
 import copy
 from enum import Enum
 import itertools
+from functools import partial
 import os
 import warnings
 
@@ -396,11 +397,11 @@ class MCNP_Problem:
             OBJ_MATCHER = {
                 block_type.BlockType.CELL: (Cell._jit_light_init, self._cells),
                 block_type.BlockType.SURFACE: (
-                    lambda input: surface_builder.parse_surface(input, jit_parse=True),
+                    partial(surface_builder.parse_surface, jit_parse=True),
                     self._surfaces,
                 ),
                 block_type.BlockType.DATA: (
-                    lambda input: parse_data(input, jit_parse=True),
+                    lambda input: partial(parse_data, jit_parse=True),
                     self._data_inputs,
                 ),
             }

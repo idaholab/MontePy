@@ -7,7 +7,7 @@ from montepy.surfaces.cylinder_par_axis import CylinderParAxis
 from montepy.surfaces.general_plane import GeneralPlane
 
 
-def parse_surface(input: InitInput):
+def parse_surface(input: InitInput, *, jit_parse: bool = False):
     """Builds a Surface object for the type of Surface
 
     Parameters
@@ -22,18 +22,14 @@ def parse_surface(input: InitInput):
         Surface will be given.
     """
     ST = SurfaceType
-    buffer_surface = Surface(input)
+    buffer_surface = Surface._jit_light_init(input)
     type_of_surface = buffer_surface.surface_type
-    if type_of_surface in [ST.C_X, ST.C_Y, ST.C_Z]:
-        return CylinderParAxis(input)
-    elif type_of_surface in [ST.CX, ST.CY, ST.CZ]:
-        return CylinderOnAxis(input)
-    elif type_of_surface in [ST.PX, ST.PY, ST.PZ]:
-        return AxisPlane(input)
-    elif type_of_surface == ST.P:
-        return GeneralPlane(input)
-    else:
-        return buffer_surface
+    for SurfaceClass in {CylinderOnAxis, CylinderParAxis, AxisPlane, GeneralPlane}:
+        if type_of_surface in SurfaceClass._allowed_surface_types():
+            if jit_parse:
+                return SurfaceClass._jit_light_init(input)
+            return SurfaceClass(input)
+    return Surface(input)
 
 
 surface_builder = parse_surface

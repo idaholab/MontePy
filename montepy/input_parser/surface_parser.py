@@ -1,7 +1,11 @@
 # Copyright 2024-2025, Battelle Energy Alliance, LLC All Rights Reserved.
+import montepy
 from montepy.input_parser.parser_base import MCNP_Parser
 from montepy.input_parser.tokens import SurfaceLexer
 from montepy.input_parser import syntax_node
+
+from sly.lex import Token
+import typing
 
 
 class SurfaceParser(MCNP_Parser):
@@ -49,3 +53,27 @@ class SurfaceParser(MCNP_Parser):
 
         ret["number"] = p.number_phrase
         return syntax_node.SyntaxNode("surface_number", ret)
+
+
+class JitSurfParser:
+
+    @staticmethod
+    def parse(tokenizer: typing.Generator[Token, None, None]):
+        number = None
+        surface_type = None
+        for token in tokenizer:
+            if token.type in {"SPACE", "COMMENT", "DOLLAR_COMMENT", "*", "+"}:
+                continue
+            if token.type == "NUMBER" and number is None:
+                number = syntax_node.ValueNode(token.value, int)
+            # skip pointer
+            elif token.type == "NUMBER":
+                continue
+            elif number is not None and token.type != "SURFACE_TYPE":
+                assert False
+            else:
+                surface_type = syntax_node.ValueNode(token.value, str)
+                surface_type._convert_to_enum(montepy.surfaces.SurfaceType)
+                return syntax_node.SyntaxNode(
+                    "jit surface", {"number": number, "surface_type": surface_type}
+                )
