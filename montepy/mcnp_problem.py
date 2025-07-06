@@ -392,6 +392,19 @@ class MCNP_Problem:
             ),
             block_type.BlockType.DATA: (parse_data, self._data_inputs),
         }
+        if jit_parse:
+            OBJ_MATCHER = {
+                block_type.BlockType.CELL: (Cell._jit_light_init, self._cells),
+                block_type.BlockType.SURFACE: (
+                    lambda input: surface_builder.parse_surface(input, jit_parse=True),
+                    self._surfaces,
+                ),
+                block_type.BlockType.DATA: (
+                    lambda input: parse_data(input, jit_parse=True),
+                    self._data_inputs,
+                ),
+            }
+
         try:
             for i, input in enumerate(
                 input_syntax_reader.read_input_syntax(
