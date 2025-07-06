@@ -710,14 +710,17 @@ class Cell(Numbered_MCNP_Object):
         if self.geometry is None or len(self.geometry) == 0:
             raise IllegalState(f"Cell {self.number} has no geometry defined.")
 
-    def link_to_problem(self, problem):
+    def link_to_problem(
+        self, problem: montepy.MCNP_Problem, *, jit_parse: bool = False
+    ):
         super().link_to_problem(problem)
-        self.complements.link_to_problem(problem)
-        self.surfaces.link_to_problem(problem)
-        for attr, _ in Cell._INPUTS_TO_PROPERTY.values():
-            input = getattr(self, attr, None)
-            if input:
-                input.link_to_problem(problem)
+        if not hasattr(self, "_not_parsed"):
+            self.complements.link_to_problem(problem)
+            self.surfaces.link_to_problem(problem)
+            for attr, _ in Cell._INPUTS_TO_PROPERTY.values():
+                input = getattr(self, attr, None)
+                if input:
+                    input.link_to_problem(problem)
 
     def __str__(self):
         if self.material:

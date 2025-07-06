@@ -184,7 +184,7 @@ class MCNP_Object(ABC, metaclass=_ExceptionContextAdder):
         if hasattr(self, "_not_parsed") and self._not_parsed:
             del self._not_parsed
             self.__init__(self._input)
-            # TODO update pointers
+            # TODO update pointers and relink cell to problem
 
     @staticmethod
     def _generate_default_node(

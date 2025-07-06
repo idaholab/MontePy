@@ -401,7 +401,7 @@ class MCNP_Problem:
                     self._surfaces,
                 ),
                 block_type.BlockType.DATA: (
-                    lambda input: partial(parse_data, jit_parse=True),
+                    partial(parse_data, jit_parse=True),
                     self._data_inputs,
                 ),
             }
