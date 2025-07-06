@@ -451,17 +451,19 @@ class MCNP_Problem:
                             self._materials.append(obj, insert_in_data=False)
                         if isinstance(obj, transform.Transform):
                             self._transforms.append(obj, insert_in_data=False)
-                    if trailing_comment is not None and last_obj is not None:
-                        obj._grab_beginning_comment(trailing_comment, last_obj)
-                        last_obj._delete_trailing_comment()
-                    trailing_comment = obj.trailing_comment
-                    last_obj = obj
+                    if not jit_parse:
+                        if trailing_comment is not None and last_obj is not None:
+                            obj._grab_beginning_comment(trailing_comment, last_obj)
+                            last_obj._delete_trailing_comment()
+                        trailing_comment = obj.trailing_comment
+                        last_obj = obj
         except UnsupportedFeature as e:
             if check_input:
                 warnings.warn(f"{type(e).__name__}: {e.message}", stacklevel=2)
             else:
                 raise e
-        self.__update_internal_pointers(check_input)
+        if not jit_parse:
+            self.__update_internal_pointers(check_input)
 
     def __update_internal_pointers(self, check_input=False):
         """Updates the internal pointers between objects
