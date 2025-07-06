@@ -48,7 +48,15 @@ def parse_data(input: montepy.mcnp_object.InitInput, *, jit_parse: bool = False)
     prefix = base_input.prefix
     if base_input.prefix in VERBOTEN:
         return data_input.ForbiddenDataInput(input)
+    if jit_parse and isinstance(input, str):
+        input = montepy.input_parser.mcnp_input.Input(
+            input, montepy.input_parser.block_type.BlockType.DATA
+        )
     for DataClass in PREFIX_MATCHES:
         if prefix == DataClass._class_prefix():
-            return DataClass._jit_light_init(input)
-    return data_input.DataInput._jit_light_init(input)
+            if jit_parse:
+                return DataClass._jit_light_init(input)
+            return DataClass(input)
+    if jit_parse:
+        return data_input.DataInput._jit_light_init(input)
+    return data_input.DataInput(input)

@@ -1,4 +1,5 @@
 # Copyright 2024, Battelle Energy Alliance, LLC All Rights Reserved.
+import montepy
 from montepy.surfaces.axis_plane import AxisPlane
 from montepy.surfaces.surface import Surface, InitInput
 from montepy.surfaces.surface_type import SurfaceType
@@ -22,6 +23,10 @@ def parse_surface(input: InitInput, *, jit_parse: bool = False):
         Surface will be given.
     """
     ST = SurfaceType
+    if isinstance(input, str):
+        input = montepy.input_parser.mcnp_input.Input(
+            input.split("\n"), montepy.input_parser.block_type.BlockType.SURFACE
+        )
     buffer_surface = Surface._jit_light_init(input)
     type_of_surface = buffer_surface.surface_type
     for SurfaceClass in {CylinderOnAxis, CylinderParAxis, AxisPlane, GeneralPlane}:
