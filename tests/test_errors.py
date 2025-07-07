@@ -33,5 +33,5 @@ class ObjectFixture(MCNP_Object):
 class TestErrorExceptionDeprecation:
 
     def test_deprecated_error(_):
-        with pytest.warns(DeprecationWarning):
+        with pytest.warns(FutureWarning):
             montepy.errors.ParsingError

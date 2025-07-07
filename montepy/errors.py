@@ -7,8 +7,8 @@ import montepy.exceptions
 def __getattr__(name):
     if not name.startswith("__"):  # ignore __warningregistry__ and other magic
         warnings.warn(
-            message=f"montepy.errors.{name} is deprecated. Instead, use montepy.exceptions.{name}",
-            category=DeprecationWarning,
+            message=f"montepy.errors.{name} will be deprecated. Instead, use montepy.exceptions.{name}",
+            category=FutureWarning,
             stacklevel=2,
         )
     return getattr(montepy.exceptions, name)
