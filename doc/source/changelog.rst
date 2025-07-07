@@ -26,7 +26,7 @@ MontePy Changelog
 
 **Deprecations**
 
-* Marked ``montepy.errors`` as deprecated, with a ``FutureWarning`` (:issue:`764`).
+* Marked ``montepy.errors`` as deprecated, with a ``FutureWarning``, use ``montepy.exceptions`` instead. (:issue:`764`).
 
 
 1.1.0
