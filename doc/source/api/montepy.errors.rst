@@ -1,3 +1,5 @@
+:orphan:
+
 montepy.errors module
 =====================
 
