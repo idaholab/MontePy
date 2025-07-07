@@ -3,7 +3,7 @@ from typing import Union
 import warnings
 
 import montepy
-from montepy.errors import *
+from montepy.exceptions import *
 from montepy.surfaces.surface_type import SurfaceType
 from montepy.surfaces.surface import Surface, InitInput
 

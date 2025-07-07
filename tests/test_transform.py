@@ -5,7 +5,7 @@ from unittest import TestCase
 import numpy as np
 import montepy
 from montepy.data_inputs.transform import Transform
-from montepy.errors import MalformedInputError
+from montepy.exceptions import MalformedInputError
 from montepy.input_parser.block_type import BlockType
 from montepy.input_parser.mcnp_input import Input
 
@@ -105,9 +105,9 @@ class testTransformClass(TestCase):
 
     def test_validate(self):
         transform = Transform()
-        with self.assertRaises(montepy.errors.IllegalState):
+        with self.assertRaises(montepy.exceptions.IllegalState):
             transform.validate()
-        with self.assertRaises(montepy.errors.IllegalState):
+        with self.assertRaises(montepy.exceptions.IllegalState):
             transform.format_for_mcnp_input((6, 2, 0))
 
     def test_transform_degrees_setter(self):

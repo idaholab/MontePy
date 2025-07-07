@@ -5,6 +5,18 @@ MontePy Changelog
 1.1 releases
 ============
 
+#Next Version#
+--------------
+
+**Code Quality**
+
+* Refactor ``montepy.errors`` to ``montepy.exceptions``, to reflect that it also contains warnings (:issue:`764`).
+
+**Deprecations**
+
+* Marked ``montepy.errors`` as deprecated, with a ``FutureWarning``, use ``montepy.exceptions`` instead. (:issue:`764`).
+
+
 1.1.1
 --------------
 
@@ -35,8 +47,6 @@ MontePy Changelog
 * Fixed bug where MontePy would overly aggressively round outputs and remove the user's intent (:issue:`756`).
 * Fixed bug where a cell complement in the first five characters causes a spurious vertical mode detection (:issue:`753`).
 
-1.0 releases
-============
 
 1.0 releases
 ============

@@ -6,7 +6,7 @@ from numbers import Real
 
 import montepy
 from montepy.input_parser import syntax_node
-from montepy.errors import *
+from montepy.exceptions import *
 from montepy.data_inputs import transform
 from montepy.input_parser.surface_parser import SurfaceParser
 from montepy.numbered_mcnp_object import Numbered_MCNP_Object, InitInput

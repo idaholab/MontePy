@@ -6,7 +6,7 @@ import pytest
 from montepy.cell import Cell
 from montepy.particle import Particle
 from montepy.data_inputs.importance import Importance
-from montepy.errors import *
+from montepy.exceptions import *
 from montepy.input_parser import mcnp_input, block_type
 
 
