@@ -64,5 +64,5 @@ class TestTallyParser:
     def test_de_parsing_jail(_, line):
         data = parse_data(line)
         assert data.mcnp_str() == line
-        with pytest.raises(montepy.errors.UnsupportedFeature):
+        with pytest.raises(montepy.exceptions.UnsupportedFeature):
             data.data

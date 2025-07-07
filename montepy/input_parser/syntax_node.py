@@ -12,7 +12,7 @@ from numbers import Integral, Real
 from montepy import input_parser
 from montepy import constants
 from montepy.constants import rel_tol, abs_tol
-from montepy.errors import *
+from montepy.exceptions import *
 from montepy.input_parser.shortcuts import Shortcuts
 from montepy.geometry_operators import Operator
 from montepy.particle import Particle

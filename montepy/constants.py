@@ -1,7 +1,7 @@
 # Copyright 2024-2025, Battelle Energy Alliance, LLC All Rights Reserved.
 import re
 
-from montepy.errors import UnsupportedFeature
+from montepy.exceptions import UnsupportedFeature
 
 """
 Constants related to how MCNP inputs are formatted, and MontePy behavior.

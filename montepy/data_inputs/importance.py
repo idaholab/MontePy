@@ -4,7 +4,7 @@ import copy
 import math
 import warnings
 from montepy.data_inputs.cell_modifier import CellModifierInput, InitInput
-from montepy.errors import *
+from montepy.exceptions import *
 from montepy.constants import DEFAULT_VERSION, rel_tol, abs_tol
 from montepy.input_parser import syntax_node
 from montepy.mcnp_object import MCNP_Object

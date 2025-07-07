@@ -2,7 +2,7 @@
 import glob
 import montepy
 from montepy import __main__ as main
-from montepy.errors import *
+from montepy.exceptions import *
 from unittest import TestCase
 from tests import constants
 import os

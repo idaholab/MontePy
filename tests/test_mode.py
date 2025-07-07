@@ -17,7 +17,7 @@ class TestMode(TestCase):
         self.assertIn(Particle.PHOTON, mode.particles)
         # test bad input
         in_str = "kcode"
-        with self.assertRaises(montepy.errors.MalformedInputError):
+        with self.assertRaises(montepy.exceptions.MalformedInputError):
             mode = Mode(Input([in_str], BlockType.CELL))
         in_str = "mode 1"
         with self.assertRaises(TypeError):
