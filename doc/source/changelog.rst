@@ -37,7 +37,7 @@ MontePy Changelog
 
 **Code Quality**
 
-* Refactor ``montepy.errors`` to ``montepy.exceptions``, to reflect that it also contains warnings (:issue:`764`).
+* Refactor ``montepy.errors`` to ``montepy.exceptions``, to reflect that it also contains warnings, with appropriate DeprecationWarning (:issue:`764`).
 
 
 1.0 releases
