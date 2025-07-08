@@ -33,7 +33,7 @@ class GeneralPlane(Surface):
             self._enforce_constants()
 
     @staticmethod
-    def _allowed_surace_types():
+    def _allowed_surface_types():
         return {SurfaceType.P}
 
     def validate(self):

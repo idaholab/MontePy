@@ -199,3 +199,13 @@ def make_prop_pointer(
         return getter
 
     return decorator
+
+
+def needs_full_tree(func):
+    @functools.wraps(func)
+    def decorator(self, *args, **kwargs):
+        if hasattr(self, "_not_parsed"):
+            self.full_parse()
+        return func(self, *args, **kwargs)
+
+    return decorator
