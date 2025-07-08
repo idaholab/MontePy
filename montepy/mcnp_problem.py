@@ -767,3 +767,11 @@ class MCNP_Problem:
                 if isinstance(obj, transform.Transform):
                     self._transforms.append(obj, insert_in_data=False)
         return obj
+
+    def full_parse(self):
+        for collection in [self.cells, self.surfaces, self.data_inputs]:
+            for obj in collection:
+                obj.full_parse()
+        self.cells.update_pointers(
+            self.cells, self.materials, self.surfaces, self.data_inputs, self
+        )

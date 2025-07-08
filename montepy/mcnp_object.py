@@ -180,7 +180,7 @@ class MCNP_Object(ABC, metaclass=_ExceptionContextAdder):
             setattr(instance, f"_{key}", node)
         return instance
 
-    def _full_parse(self):
+    def full_parse(self):
         if hasattr(self, "_not_parsed") and self._not_parsed:
             del self._not_parsed
             self.__init__(self._input)
