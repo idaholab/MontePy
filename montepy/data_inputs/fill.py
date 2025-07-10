@@ -84,7 +84,18 @@ class Fill(CellModifierInput):
         classifier.prefix = self._generate_default_node(
             str, self._class_prefix().upper(), None, never_pad=True
         )
-        payload = syntax_node.SyntaxNode(
+        self._tree = syntax_node.SyntaxNode(
+            "fill",
+            {
+                "classifier": classifier,
+                "param_seperator": self._generate_default_node(str, "=", None),
+                "data": self._generate_cell_data_tree(),
+            },
+        )
+
+    @staticmethod
+    def _generate_cell_data_tree():
+        return syntax_node.SyntaxNode(
             "cell fill",
             {
                 "indices": syntax_node.ListNode("fill indices"),
@@ -92,14 +103,12 @@ class Fill(CellModifierInput):
                 "transform": syntax_node.ListNode("fill transform"),
             },
         )
-        self._tree = syntax_node.SyntaxNode(
-            "fill",
-            {
-                "classifier": classifier,
-                "param_seperator": self._generate_default_node(str, "=", None),
-                "data": payload,
-            },
-        )
+
+    def _precondition_tree(self, data):
+        new_data = self._generate_cell_data_tree()
+        new_data.nodes["universes"] = data
+        self._tree.nodes["data"] = new_data
+        return new_data
 
     def _parse_cell_input(self, key, value):
         """Parses the information provided in the cell input.
@@ -112,6 +121,8 @@ class Fill(CellModifierInput):
             the value given in the cell
         """
         data = value["data"]
+        if isinstance(data, syntax_node.ListNode):
+            data = self._precondition_tree(data)
         if len(data["indices"]) > 0:
             self._parse_matrix(value)
         else:
@@ -191,14 +202,14 @@ class Fill(CellModifierInput):
                     f"Min: {min_val}, Max: {max_val}, Input: {value.format()}"
                 )
         self._old_numbers = np.zeros(self._sizes, dtype=np.dtype(int))
-        words = value["data"]["universes"]
+        words = iter(value["data"]["universes"])
         new_nodes = []
         for k in self._axis_range(2):
             for j in self._axis_range(1):
                 for i in self._axis_range(0):
                     try:
                         try:
-                            idx, val = next(words)
+                            val = next(words)
                         # if ended early
                         except StopIteration:
                             words = enumerate(it.cycle([None]))
@@ -542,48 +553,31 @@ class Fill(CellModifierInput):
         )
 
     def _update_cell_values(self):
-        new_vals = list(self._tree["data"])
         if self.transform and self.transform.is_in_degrees:
             self._tree["classifier"].modifier = "*"
         else:
             self._tree["classifier"].modifier = None
-        new_vals = self._update_cell_universes(new_vals)
-        self._update_cell_transform_values(new_vals)
+        self._update_cell_universes()
+        self._update_cell_transform_values()
 
-    def _update_cell_transform_values(self, new_vals):
+    def _update_cell_transform_values(self):
+        old_vals = self._tree["data"]["transform"]
         if self.transform is None:
-            try:
-                values = [val.value for val in self._tree["data"]]
-                start = values.index("(")
-                end = values.index(")")
-                del new_vals[start : end + 1]
-            except ValueError:
-                pass
+            old_vals.nodes.clear()
+            new_vals = []
         # Update transforms
         else:
-            start = -1
-            end = -1
-            try:
-                values = [val.value for val in self._tree["data"]]
-                start = values.index("(")
-                end = values.index(")")
-            except ValueError:
-                pass
             if self.transform.hidden_transform:
                 self.transform._update_values()
                 payload = list(self.transform._tree["data"])
             else:
                 # if started with named transform
-                if start > 0 and end > 0 and ((end - start) - 1 == 1):
-                    payload = [self._tree["data"][start + 1]]
-                else:
-                    payload = [syntax_node.ValueNode("1", int)]
+                payload = [new_vals["transform"][1]]
                 payload[0].value = self.transform.number
-            if start > 0 and end > 0:
-                new_vals = new_vals[: start + 1] + payload + new_vals[end:]
-        self._tree["data"].update_with_new_values(new_vals)
+            new_vals = [old_vals[0]] + payload + [old_vals[-1]]
+        self._tree["data"]["universes"].update_with_new_values(new_vals)
 
-    def _update_cell_universes(self, new_vals):
+    def _update_cell_universes(self):
         def _value_node_generator():
             while True:
                 value = syntax_node.ValueNode("1", int)
@@ -603,28 +597,12 @@ class Fill(CellModifierInput):
                     else self.old_universe_number
                 )
             ]
-        try:
-            start_transform = new_vals.index("(")
-        except ValueError:
-            start_transform = None
-
-        reverse_list = new_vals.copy()
-        reverse_list.reverse()
-        try:
-            start_matrix = len(new_vals) - reverse_list.index(":") + 1
-        except ValueError:
-            start_matrix = 0
-        value_nodes = it.chain(
-            new_vals[start_matrix:start_transform], _value_node_generator()
-        )
+        value_nodes = it.chain(self._tree["data"]["universes"], _value_node_generator())
         buffer = []
         for universe, value in zip(payload, value_nodes):
             value.value = universe
             buffer.append(value)
-        buffer = self._update_multi_index_limits(new_vals[:start_matrix]) + buffer
-        if start_transform:
-            buffer += new_vals[start_transform:]
-        return buffer
+        self._tree["data"]["universes"].update_with_new_values(buffer)
 
     def _update_multi_index_limits(self, new_vals):
         if not self.multiple_universes and ":" not in new_vals:
