@@ -434,32 +434,32 @@ def test_surface_card_pass_through():
 
 
 def test_surface_broken_link():
-    with pytest.raises(montepy.errors.MalformedInputError):
+    with pytest.raises(montepy.exceptions.MalformedInputError):
         montepy.read_input(
             "tests/inputs/test_broken_surf_link.imcnp", multi_proc=MULTI_PROC
         )
-    with pytest.raises(montepy.errors.MalformedInputError):
+    with pytest.raises(montepy.exceptions.MalformedInputError):
         montepy.read_input(
             "tests/inputs/test_broken_transform_link.imcnp", multi_proc=MULTI_PROC
         )
 
 
 def test_material_broken_link():
-    with pytest.raises(montepy.errors.BrokenObjectLinkError):
+    with pytest.raises(montepy.exceptions.BrokenObjectLinkError):
         problem = montepy.read_input(
             "tests/inputs/test_broken_mat_link.imcnp", multi_proc=MULTI_PROC
         )
 
 
 def test_cell_surf_broken_link():
-    with pytest.raises(montepy.errors.BrokenObjectLinkError):
+    with pytest.raises(montepy.exceptions.BrokenObjectLinkError):
         problem = montepy.read_input(
             "tests/inputs/test_broken_cell_surf_link.imcnp", multi_proc=MULTI_PROC
         )
 
 
 def test_cell_complement_broken_link():
-    with pytest.raises(montepy.errors.BrokenObjectLinkError):
+    with pytest.raises(montepy.exceptions.BrokenObjectLinkError):
         problem = montepy.read_input(
             "tests/inputs/test_broken_complement.imcnp", multi_proc=MULTI_PROC
         )
@@ -767,7 +767,7 @@ def test_check_volume_calculated(simple_problem):
 
 
 def test_redundant_volume():
-    with pytest.raises(montepy.errors.MalformedInputError):
+    with pytest.raises(montepy.exceptions.MalformedInputError):
         montepy.read_input(
             os.path.join("tests", "inputs", "test_vol_redundant.imcnp"),
             multi_proc=MULTI_PROC,
@@ -793,7 +793,7 @@ def test_enable_mcnp_vol_calc(simple_problem):
 
 def test_cell_multi_volume():
     in_str = "1 0 -1 VOL=1 VOL 5"
-    with pytest.raises(montepy.errors.RedundantParameterSpecification):
+    with pytest.raises(montepy.exceptions.RedundantParameterSpecification):
         montepy.Cell(Input([in_str], montepy.input_parser.block_type.BlockType.CELL))
 
 
@@ -1134,7 +1134,7 @@ def test_importance_rewrite(simple_problem):
 
 def test_parsing_error():
     in_file = os.path.join("tests", "inputs", "test_bad_syntax.imcnp")
-    with pytest.raises(montepy.errors.ParsingError):
+    with pytest.raises(montepy.exceptions.ParsingError):
         problem = montepy.read_input(in_file, multi_proc=MULTI_PROC)
 
 

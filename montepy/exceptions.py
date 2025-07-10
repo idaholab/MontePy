@@ -70,7 +70,6 @@ class ParsingError(MalformedInputError):
             self.message = "\n".join(messages + [message])
         else:
             self.message = message
-        ValueError.__init__(self, self.message)
 
     def __str__(self):
         return self.message
