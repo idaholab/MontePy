@@ -1,7 +1,7 @@
 # Copyright 2024, Battelle Energy Alliance, LLC All Rights Reserved.
 from abc import ABC, abstractmethod
 import math
-from montepy.errors import *
+from montepy.exceptions import *
 from montepy.input_parser.block_type import BlockType
 from montepy.constants import BLANK_SPACE_CONTINUE, get_max_line_length
 from montepy.input_parser.read_parser import ReadParser

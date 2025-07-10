@@ -7,7 +7,7 @@ from montepy._cell_data_control import CellDataPrintController
 from montepy.data_inputs.data_input import DataInput
 from montepy.data_inputs import material, thermal_scattering, transform, volume
 from montepy.data_inputs.data_parser import parse_data
-from montepy.errors import *
+from montepy.exceptions import *
 from montepy.input_parser.mcnp_input import Input, Jump
 from montepy.input_parser import syntax_node
 from montepy.input_parser.block_type import BlockType

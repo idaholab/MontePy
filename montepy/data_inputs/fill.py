@@ -6,7 +6,7 @@ import numpy as np
 import montepy
 from montepy.data_inputs.cell_modifier import CellModifierInput, InitInput
 from montepy.data_inputs.transform import Transform
-from montepy.errors import *
+from montepy.exceptions import *
 from montepy.input_parser.block_type import BlockType
 from montepy.input_parser.mcnp_input import Input, Jump
 from montepy.input_parser import syntax_node

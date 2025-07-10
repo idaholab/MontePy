@@ -6,7 +6,7 @@ import itertools as it
 
 import montepy
 import montepy.cells
-from montepy.errors import NumberConflictError
+from montepy.exceptions import NumberConflictError
 import pytest
 import os
 
@@ -49,6 +49,11 @@ class TestNumberedObjectCollection:
             cp_simple_problem.cells.check_number("5")
         # testing a number that shouldn't conflict to ensure error isn't raised
         cp_simple_problem.cells.check_number(20)
+        mat = montepy.Material()
+        cp_simple_problem.materials.append_renumber(mat)
+        assert mat.number > 0
+        with pytest.raises(ValueError):
+            cp_simple_problem.materials.check_number(-1)
 
     def test_objects(self, cp_simple_problem):
         generated = list(cp_simple_problem.cells)

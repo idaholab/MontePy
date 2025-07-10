@@ -9,7 +9,7 @@ from montepy.data_inputs import mode, transform
 from montepy._cell_data_control import CellDataPrintController
 from montepy.cell import Cell
 from montepy.cells import Cells
-from montepy.errors import *
+from montepy.exceptions import *
 from montepy.constants import DEFAULT_VERSION
 from montepy.materials import Material, Materials
 from montepy.surfaces import surface, surface_builder
