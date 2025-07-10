@@ -121,7 +121,7 @@ class Fill(CellModifierInput):
             the value given in the cell
         """
         data = value["data"]
-        if isinstance(data, syntax_node.ListNode):
+        if not isinstance(data, syntax_node.SyntaxNode):
             data = self._precondition_tree(data)
         if len(data["indices"]) > 0:
             self._parse_matrix(value)
@@ -141,7 +141,6 @@ class Fill(CellModifierInput):
                 raise ValueError(
                     f"Fill cannot have two universes in this format. {data.format()} given"
                 )
-
         if len(data["transform"]) > 0:
             trans_data = data["transform"][1:-1]
             if len(trans_data) == 1:
