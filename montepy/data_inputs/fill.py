@@ -80,18 +80,24 @@ class Fill(CellModifierInput):
                     )
 
     def _generate_default_cell_tree(self):
-        list_node = syntax_node.ListNode("number sequence")
-        list_node.append(self._generate_default_node(float, None))
         classifier = syntax_node.ClassifierNode()
         classifier.prefix = self._generate_default_node(
             str, self._class_prefix().upper(), None, never_pad=True
+        )
+        payload = syntax_node.SyntaxNode(
+            "cell fill",
+            {
+                "indices": syntax_node.ListNode("fill indices"),
+                "universes": syntax_node.ListNode("fill universes"),
+                "transform": syntax_node.ListNode("fill transform"),
+            },
         )
         self._tree = syntax_node.SyntaxNode(
             "fill",
             {
                 "classifier": classifier,
                 "param_seperator": self._generate_default_node(str, "=", None),
-                "data": list_node,
+                "data": payload,
             },
         )
 
@@ -105,39 +111,28 @@ class Fill(CellModifierInput):
         value : str
             the value given in the cell
         """
-
-        def get_universe(value):
-            if ":" in value["data"].nodes:
-                self._parse_matrix(value)
-            else:
-                data = value["data"]
-                try:
-                    val = data[0]
-                    val._convert_to_int()
-                    assert val.value >= 0
-                    self._old_number = val
-                except (TypeError, AssertionError) as e:
-                    raise ValueError(
-                        f"The fill universe must be a valid integer ≥ 0, {data} was given"
-                    )
-                # ensure only one universe is given
-                if (
-                    len(data) >= 2
-                    and isinstance(data[1], syntax_node.ValueNode)
-                    and "(" != data[1].value
-                ):
-                    raise ValueError(
-                        f"Fill cannot have two universes in this format. {data.format()} given"
-                    )
-
         data = value["data"]
-        if not isinstance(data, syntax_node.ListNode):
-            data = data.nodes
-        if "(" in data:
-            get_universe(value)
-            trans_data = value["data"][
-                list(value["data"]).index("(") + 1 : list(value["data"]).index(")") - 1
-            ]
+        if len(data["indices"]) > 0:
+            self._parse_matrix(value)
+        else:
+            uni_data = data["universes"]
+            try:
+                val = uni_data[0]
+                val._convert_to_int()
+                assert val.value >= 0
+                self._old_number = val
+            except (TypeError, AssertionError) as e:
+                raise ValueError(
+                    f"The fill universe must be a valid integer ≥ 0, {data} was given"
+                )
+            # ensure only one universe is given
+            if len(uni_data) >= 2:
+                raise ValueError(
+                    f"Fill cannot have two universes in this format. {data.format()} given"
+                )
+
+        if len(data["transform"]) > 0:
+            trans_data = data["transform"]
             if len(trans_data) == 1:
                 try:
                     transform = trans_data[0]
@@ -155,12 +150,9 @@ class Fill(CellModifierInput):
                     in_key = "*TR1"
                 else:
                     in_key = "TR1"
-                input_card = Input([in_key + " " + trans_data.format()], BlockType.DATA)
-                self._transform = Transform(input_card, pass_through=True)
+                input = Input([in_key + " " + trans_data.format()], BlockType.DATA)
+                self._transform = Transform(input, pass_through=True)
                 self._hidden_transform = True
-
-        else:
-            get_universe(value)
 
     def _parse_matrix(self, value):
         """Parses a matrix fill of universes.
