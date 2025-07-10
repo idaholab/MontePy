@@ -935,7 +935,7 @@ def test_importance_end_repeat(universe_problem):
 
 
 def test_fill_parsing(universe_problem):
-    answers = [None, np.array([[[1], [0]], [[0], [1]]]), None, 1, 1]
+    answers = [None, np.array([[[1], [0]], [[1], [0]]]), None, 1, 1]
     for cell, answer in zip(universe_problem.cells, answers):
         if answer is None:
             assert cell.fill.universe is None
@@ -993,7 +993,7 @@ def test_fill_cell_format(simple_problem, universe_problem):
     # test with complex universe lattice fill
     fill = problem.cells[2].fill
     output = fill.format_for_mcnp_input((6, 2, 0))
-    answers = ["fill= 0:1 0:1 0:0 1 0 R 1 (5)"]
+    answers = ["fill= 0:1 0:1 0:0 1 0 1 (5)"]
     assert output == answers
     problem.print_in_data_block["FILL"] = True
     # test that complex fill is not printed in data block

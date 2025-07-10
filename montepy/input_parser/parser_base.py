@@ -203,6 +203,24 @@ class MCNP_Parser(Parser, metaclass=MetaBuilder):
         return sequence
 
     @_(
+        '"(" number_sequence ")"',
+        '"(" number_sequence ")" padding',
+        '"(" padding number_sequence ")" padding',
+    )
+    def number_sequence(self, p):
+        sequence = syntax_node.ListNode("parenthetical statement")
+        sequence.append(p[0])
+        for node in list(p)[1:]:
+            if isinstance(node, syntax_node.ListNode):
+                for val in node.nodes:
+                    sequence.append(val)
+            elif isinstance(node, str):
+                sequence.append(syntax_node.PaddingNode(node))
+            else:
+                sequence.append(node)
+        return sequence
+
+    @_(
         "numerical_phrase numerical_phrase",
         "shortcut_phrase",
         "even_number_sequence numerical_phrase numerical_phrase",
@@ -547,6 +565,28 @@ class MCNP_Parser(Parser, metaclass=MetaBuilder):
                 return "*"
         return p[0]
 
+    @_('"("', '"(" padding')
+    def lparen_phrase(self, p):
+        """
+        A left parenthesis "(" and its padding.
+        """
+        pad = syntax_node.PaddingNode(p[0])
+        if len(p) > 1:
+            for node in p.padding.nodes:
+                pad.append(node)
+        return pad
+
+    @_('")"', '")" padding')
+    def rparen_phrase(self, p):
+        """
+        A right parenthesis ")" and its padding.
+        """
+        pad = syntax_node.PaddingNode(p[0])
+        if len(p) > 1:
+            for node in p.padding.nodes:
+                pad.append(node)
+        return pad
+
     def error(self, token):
         """Default error handling.
 
@@ -557,6 +597,7 @@ class MCNP_Parser(Parser, metaclass=MetaBuilder):
         token : Token
             the token that broke the parsing rules.
         """
+        # self._debug_parsing_error(token)
         if token:
             lineno = getattr(token, "lineno", 0)
             if self._input and self._input.lexer:
