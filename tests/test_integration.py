@@ -14,7 +14,7 @@ from montepy.input_parser.mcnp_input import (
     Message,
     Title,
 )
-from montepy.errors import *
+from montepy.exceptions import *
 from montepy.particle import Particle
 import numpy as np
 
@@ -915,10 +915,10 @@ def test_universe_number_collision():
         os.path.join("tests", "inputs", "test_universe_data.imcnp"),
         multi_proc=MULTI_PROC,
     )
-    with pytest.raises(montepy.errors.NumberConflictError):
+    with pytest.raises(montepy.exceptions.NumberConflictError):
         problem.universes[0].number = 350
 
-    with pytest.raises(montepy.errors.NumberConflictError):
+    with pytest.raises(montepy.exceptions.NumberConflictError):
         problem.universes[350].number = 0
 
 
@@ -1087,16 +1087,16 @@ def test_cell_validator(simple_problem):
     problem = copy.deepcopy(simple_problem)
     cell = problem.cells[1]
     del cell.mass_density
-    with pytest.raises(montepy.errors.IllegalState):
+    with pytest.raises(IllegalState):
         cell.validate()
     cell = montepy.Cell()
     # test no geometry at all
-    with pytest.raises(montepy.errors.IllegalState):
+    with pytest.raises(montepy.exceptions.IllegalState):
         cell.validate()
     surf = problem.surfaces[1000]
     cell.surfaces.append(surf)
     # test surface added but geomtry not defined
-    with pytest.raises(montepy.errors.IllegalState):
+    with pytest.raises(IllegalState):
         cell.validate()
 
 
@@ -1151,7 +1151,7 @@ def test_leading_comments(simple_problem):
 
 def test_wrap_warning(simple_problem):
     cell = copy.deepcopy(simple_problem.cells[1])
-    with pytest.warns(montepy.errors.LineExpansionWarning):
+    with pytest.warns(LineExpansionWarning):
         output = cell.wrap_string_for_mcnp("h" * 130, (6, 2, 0), True)
         assert len(output) == 2
     output = cell.wrap_string_for_mcnp("h" * 127, (6, 2, 0), True)
@@ -1166,7 +1166,7 @@ def test_expansion_warning_crash(simple_problem):
     problem.materials[1].number = 987654321
     problem.surfaces[1010].number = 123456789
     with io.StringIO() as fh:
-        with pytest.warns(montepy.errors.LineExpansionWarning):
+        with pytest.warns(montepy.exceptions.LineExpansionWarning):
             problem.write_problem(fh)
 
 

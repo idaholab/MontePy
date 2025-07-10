@@ -4,7 +4,7 @@ from io import StringIO
 import pytest
 
 import montepy
-from montepy.errors import *
+from montepy.exceptions import *
 from montepy.input_parser import input_syntax_reader
 from montepy.input_parser.mcnp_input import Input, Jump, Message, ReadInput, Title
 from montepy.input_parser.block_type import BlockType
@@ -924,7 +924,7 @@ def test_shortcut_expansion_invalid(test, exception):
         input = Input([test], BlockType.DATA)
         parsed = parser.parse(input.tokenize())
         if parsed is None:
-            raise montepy.errors.MalformedInputError("", "")
+            raise montepy.exceptions.MalformedInputError("", "")
 
 
 @pytest.mark.parametrize(
@@ -1356,7 +1356,7 @@ bar
         )
         next(generator)
         next(generator)
-        with pytest.raises(montepy.errors.UnsupportedFeature):
+        with pytest.raises(montepy.exceptions.UnsupportedFeature):
             next(generator)
 
     def testCardStringRepr(self):
@@ -1409,7 +1409,7 @@ bar
         ],
     )
     def test_data_name_enforce_bad(_, in_str, answer):
-        with pytest.raises(montepy.errors.MalformedInputError):
+        with pytest.raises(montepy.exceptions.MalformedInputError):
             card = montepy.input_parser.mcnp_input.Input(
                 [in_str], montepy.input_parser.block_type.BlockType.DATA
             )
@@ -1450,7 +1450,7 @@ bar
     )
     def test_get_line_numbers(_, version, line_number):
         assert line_number == montepy.constants.get_max_line_length(version)
-        with pytest.raises(montepy.errors.UnsupportedFeature):
+        with pytest.raises(montepy.exceptions.UnsupportedFeature):
             montepy.constants.get_max_line_length((5, 1, 38))
 
     def test_jump(self):

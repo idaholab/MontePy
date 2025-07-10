@@ -28,3 +28,10 @@ class ObjectFixture(MCNP_Object):
     @classmethod
     def bad_class(cls):
         raise ValueError("bar")
+
+
+class TestErrorExceptionDeprecation:
+
+    def test_deprecated_error(_):
+        with pytest.warns(FutureWarning):
+            montepy.errors.ParsingError

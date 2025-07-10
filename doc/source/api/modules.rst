@@ -10,7 +10,7 @@ Submodules
    montepy.cell
    montepy.cells
    montepy.constants
-   montepy.errors
+   montepy.exceptions
    montepy.geometry_operators
    montepy.materials
    montepy.mcnp_object

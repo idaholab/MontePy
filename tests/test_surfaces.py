@@ -5,7 +5,7 @@ from pathlib import Path
 import pytest
 
 import montepy
-from montepy.errors import MalformedInputError, SurfaceConstantsWarning
+from montepy.exceptions import MalformedInputError, SurfaceConstantsWarning
 from montepy.input_parser.block_type import BlockType
 from montepy.input_parser.mcnp_input import Input
 from montepy.surfaces.axis_plane import AxisPlane
@@ -81,54 +81,72 @@ class testSurfaces(TestCase):
             Surface(card)
         surf = Surface(number=5)
         assert surf.number == 5
+        # test surface_type setter
+        surf = Surface(surface_type="cx")
+        assert surf.surface_type == SurfaceType.CX
+        surf = Surface(surface_type=SurfaceType.CX)
+        assert surf.surface_type == SurfaceType.CX
+        with pytest.raises(TypeError):
+            Surface(surface_type=5)
+        with pytest.raises(ValueError):
+            AxisPlane(surface_type="Cx")
+        with pytest.raises(ValueError):
+            CylinderOnAxis(surface_type="px")
+        with pytest.raises(ValueError):
+            CylinderParAxis(surface_type="px")
 
     def test_validator(self):
         surf = Surface()
-        with self.assertRaises(montepy.errors.IllegalState):
+        # TODO is IllegalState or defaults values more desirable?
+        with self.assertRaises(montepy.exceptions.IllegalState):
             surf.validate()
-        with self.assertRaises(montepy.errors.IllegalState):
+        with self.assertRaises(montepy.exceptions.IllegalState):
             surf.format_for_mcnp_input((6, 2, 0))
-        # cylinder on axis
-        surf = CylinderOnAxis()
-        with self.assertRaises(montepy.errors.IllegalState):
+        surf.number = 1
+        with self.assertRaises(montepy.exceptions.IllegalState):
             surf.validate()
-        with self.assertRaises(montepy.errors.IllegalState):
+        # cylinder on axis
+        surf = CylinderOnAxis(number=5)
+        with self.assertRaises(montepy.exceptions.IllegalState):
+            surf.validate()
+        with self.assertRaises(montepy.exceptions.IllegalState):
             surf.format_for_mcnp_input((6, 2, 0))
         surf._surface_type = SurfaceType.CX
-        with self.assertRaises(montepy.errors.IllegalState):
+        with self.assertRaises(montepy.exceptions.IllegalState):
             surf.validate()
         # cylinder par axis
-        surf = CylinderParAxis()
-        with self.assertRaises(montepy.errors.IllegalState):
+        surf = CylinderParAxis(number=5)
+        with self.assertRaises(montepy.exceptions.IllegalState):
             surf.validate()
-        with self.assertRaises(montepy.errors.IllegalState):
+        with self.assertRaises(montepy.exceptions.IllegalState):
             surf.format_for_mcnp_input((6, 2, 0))
         surf._surface_type = SurfaceType.C_X
-        with self.assertRaises(montepy.errors.IllegalState):
+        with self.assertRaises(montepy.exceptions.IllegalState):
             surf.validate()
         surf.radius = 5.0
-        with self.assertRaises(montepy.errors.IllegalState):
+        with self.assertRaises(montepy.exceptions.IllegalState):
             surf.validate()
         # axis plane
-        surf = AxisPlane()
-        with self.assertRaises(montepy.errors.IllegalState):
+        surf = AxisPlane(number=5)
+        with self.assertRaises(montepy.exceptions.IllegalState):
             surf.validate()
-        with self.assertRaises(montepy.errors.IllegalState):
+        with self.assertRaises(montepy.exceptions.IllegalState):
             surf.format_for_mcnp_input((6, 2, 0))
         surf._surface_type = SurfaceType.PX
-        with self.assertRaises(montepy.errors.IllegalState):
+        with self.assertRaises(montepy.exceptions.IllegalState):
             surf.validate()
+        surf.number = 1
         surf.location = 0.0
         # ensure that this doesn't raise an error
         surf.validate()
         # general plane
-        surf = GeneralPlane()
-        with self.assertRaises(montepy.errors.IllegalState):
+        surf = GeneralPlane(number=2)
+        with self.assertRaises(montepy.exceptions.IllegalState):
             surf.validate()
-        with self.assertRaises(montepy.errors.IllegalState):
+        with self.assertRaises(montepy.exceptions.IllegalState):
             surf.format_for_mcnp_input((6, 2, 0))
         surf._surface_type = SurfaceType.P
-        with self.assertRaises(montepy.errors.IllegalState):
+        with self.assertRaises(montepy.exceptions.IllegalState):
             surf.validate()
 
     def test_surface_constants_setter(self):
@@ -152,6 +170,13 @@ class testSurfaces(TestCase):
             surf.number = "foo"
         with self.assertRaises(ValueError):
             surf.number = -5
+
+    def test_surface_surface_type_setter(self):
+        surf = montepy.surfaces.parse_surface("1 PZ 0.0")
+        with pytest.raises(ValueError):
+            surf.surface_type = "CX"
+        with pytest.raises(ValueError):
+            surf.surface_type = SurfaceType.CX
 
     def test_surface_ordering(self):
         in_str = "1 PZ 0.0"
@@ -308,6 +333,56 @@ class testSurfaces(TestCase):
             surf.coordinates = [3, 4, 5]
 
 
+@pytest.mark.filterwarnings("ignore")
+@pytest.mark.parametrize(
+    "cls, surf_type, params",
+    [
+        (CylinderOnAxis, SurfaceType.CZ, {"radius": 0.5}),
+        (
+            CylinderParAxis,
+            SurfaceType.C_X,
+            {"coordinates": (0.2, 0.3), "radius": 1.0, "is_white_boundary": True},
+        ),
+        (AxisPlane, SurfaceType.PZ, {"location": 10.0, "is_reflecting": True}),
+        (
+            AxisPlane,
+            SurfaceType.PZ,
+            {"location": 0.5, "periodic_surface": surface_builder("1 PZ 1.0")},
+        ),
+        (
+            CylinderOnAxis,
+            SurfaceType.CX,
+            {
+                "radius": 0.5,
+                "transform": montepy.data_inputs.data_parser.parse_data("TR1 0 0 10.0"),
+            },
+        ),
+    ],
+)
+def test_scratch_surface_generation(cls, surf_type, params: dict):
+    surf = cls(number=5)
+    surf.surface_type = surf_type
+    for attr_name, value in params.items():
+        setattr(surf, attr_name, value)
+    verify_export(surf)
+
+
+def test_unset_transform():
+    surf = surface_builder("1 10 PZ 0.0")
+    transform = montepy.data_inputs.data_parser.parse_data("TR10 0 0 5")
+    surf.update_pointers([], [transform])
+    del surf.transform
+    verify_export(surf)
+
+
+def test_unset_periodic():
+    surf = surface_builder("1 -10 PZ 0.0")
+    surf2 = surface_builder("10 PZ 10.0")
+    surf.update_pointers(montepy.Surfaces([surf2]), [])
+    del surf.periodic_surface
+    verify_export(surf)
+
+
 def verify_export(surf):
     output = surf.format_for_mcnp_input((6, 3, 0))
     print("Surface output", output)
@@ -316,7 +391,7 @@ def verify_export(surf):
 
 
 def verify_equiv_surf(surf, new_surf):
-    assert surf.number == new_surf.number, "Material number not preserved."
+    assert surf.number == new_surf.number, "Surface number not preserved."
     assert len(surf.surface_constants) == len(
         new_surf.surface_constants
     ), "number of surface constants not kept."
@@ -324,10 +399,14 @@ def verify_equiv_surf(surf, new_surf):
         assert old_const == pytest.approx(new_const)
     assert surf.is_reflecting == new_surf.is_reflecting
     assert surf.is_white_boundary == new_surf.is_white_boundary
-    if surf.old_periodic_surface:
-        assert surf.old_periodic_surface == new_surf.old_periodic_surface
-    if surf.old_transform_number:
-        assert surf.old_transform_number == new_surf._old_transform_number
+    if surf.periodic_surface:
+        assert surf.periodic_surface.number == new_surf.old_periodic_surface
+    else:
+        assert new_surf.old_periodic_surface == None
+    if surf.transform:
+        assert surf.transform.number == new_surf.old_transform_number
+    else:
+        assert new_surf.old_transform_number == None
 
 
 def verify_prob_export(problem, surf):

@@ -89,6 +89,16 @@ problem.write_problem("foo_update.imcnp")
 
 For more examples see the [getting started guide](https://www.montepy.org/en/stable/starting.html).
 
+### Use Cases
+
+Here are some possible use cases for MontePy:
+
+* Automated updating of an MCNP input file, or MCNP deck, for reactor reconfiguration, fuel shuffling, etc.
+* Parameterizing an MCNP input file to check for explore the parametric space of your MCNP modeling problem
+* Updating an MCNP model with the results from another code, such as depletion results from ORIGEN.
+* To convert an MCNP model to another Monte Carlo code like OpenMC, SERPENT, etc. 
+
+
 ## Limitations
 
 Here a few of the known bugs and limitations:

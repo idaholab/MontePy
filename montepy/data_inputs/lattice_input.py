@@ -3,7 +3,7 @@ import itertools
 
 from montepy.data_inputs.cell_modifier import CellModifierInput, InitInput
 from montepy.data_inputs.lattice import LatticeType
-from montepy.errors import *
+from montepy.exceptions import *
 from montepy.input_parser.mcnp_input import Jump
 from montepy.input_parser import syntax_node
 from montepy.mcnp_object import MCNP_Object

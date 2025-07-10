@@ -7,7 +7,7 @@ import montepy
 from montepy.data_inputs.element import Element
 from montepy.data_inputs.nuclide import Nucleus, Nuclide, Library
 from montepy.input_parser import syntax_node
-from montepy.errors import *
+from montepy.exceptions import *
 from montepy.particle import LibraryType
 
 
@@ -229,7 +229,7 @@ class TestNuclide:
             ({"name": "hello"}, ValueError),
             ({"element": "hi"}, TypeError),
             ({"Z": "hi"}, TypeError),
-            ({"Z": 1000}, montepy.errors.UnknownElement),
+            ({"Z": 1000}, UnknownElement),
             ({"Z": 1, "A": "hi"}, TypeError),
             ({"Z": 1, "A": -1}, ValueError),
             ({"A": 1}, ValueError),

@@ -8,6 +8,18 @@ MontePy Changelog
 #Next Version#
 --------------
 
+**Code Quality**
+
+* Refactor ``montepy.errors`` to ``montepy.exceptions``, to reflect that it also contains warnings (:issue:`764`).
+
+**Deprecations**
+
+* Marked ``montepy.errors`` as deprecated, with a ``FutureWarning``, use ``montepy.exceptions`` instead. (:issue:`764`).
+
+
+1.1.1
+--------------
+
 **Features Added**
 
 * Added demonstration jupyter notebooks for working with Pin Cell and PWR assemblies in MontePy.
@@ -15,8 +27,12 @@ MontePy Changelog
 
 **Bugs Fixed**
 
+* Fixed bug where surfaces created from scratch couldn't be accurately written out to the file (:issue:`652`).
+* Fixed bug where surface transformations couldn't be unset and exported properly (:issue:`711`).
+* Fixed bug where negative numbers were treated as valid by ``append_renumber`` (:issue:`690`).
 * Fixed bug that couldn't parse ``SDEF`` by simply not parsing the input for the time being (:pull:`767`).
 * Fixed parsing bug with ``DE LOG`` style inputs by simply not parsing them for now (:pull:`767`).
+
 
 1.1.0
 --------------

@@ -5,13 +5,21 @@ from typing import Union
 from numbers import Real
 
 import montepy
-from montepy.errors import *
+from montepy.input_parser import syntax_node
+from montepy.exceptions import *
 from montepy.data_inputs import transform
 from montepy.input_parser.surface_parser import SurfaceParser
 from montepy.numbered_mcnp_object import Numbered_MCNP_Object, InitInput
 from montepy.surfaces import half_space
 from montepy.surfaces.surface_type import SurfaceType
 from montepy.utilities import *
+
+
+def _surf_type_validator(self, surf_type):
+    if surf_type not in self._allowed_surface_types():
+        raise ValueError(
+            f"{type(self).__name__} must be a surface of type: {[e.value for e in self._allowed_surface_types()]}"
+        )
 
 
 class Surface(Numbered_MCNP_Object):
@@ -27,6 +35,8 @@ class Surface(Numbered_MCNP_Object):
         The Input object representing the input
     number : int
         The number to set for this object.
+    surface_type: Union[SurfaceType, str]
+        The surface_type to set for this object
     """
 
     _parser = SurfaceParser
@@ -35,68 +45,154 @@ class Surface(Numbered_MCNP_Object):
         self,
         input: InitInput = None,
         number: int = None,
+        surface_type: Union[SurfaceType, str] = None,
     ):
         self._CHILD_OBJ_MAP = {
             "periodic_surface": Surface,
             "transform": transform.Transform,
         }
         self._BLOCK_TYPE = montepy.input_parser.block_type.BlockType.SURFACE
-        self._number = self._generate_default_node(int, -1)
         super().__init__(input, self._parser(), number)
         self._periodic_surface = None
         self._old_periodic_surface = self._generate_default_node(int, None)
+        self._old_periodic_surface.is_negatable_identifier = True
         self._transform = None
         self._old_transform_number = self._generate_default_node(int, None)
+        self._old_transform_number.is_negatable_identifier = True
         self._is_reflecting = False
         self._is_white_boundary = False
         self._surface_constants = []
         self._surface_type = self._generate_default_node(str, None)
         self._modifier = self._generate_default_node(str, None)
+        if not input:
+            self._generate_default_tree(number, surface_type)
         # surface number
-        if input:
-            self._number = self._tree["surface_num"]["number"]
-            self._number._convert_to_int()
-            self._old_number = copy.deepcopy(self._number)
-            if "modifier" in self._tree["surface_num"]:
-                self._modifier = self._tree["surface_num"]["modifier"]
-                if self._modifier.value == "*":
-                    self._is_reflecting = True
-                elif "+" in self._number.token:
-                    self._is_white_boundary = True
-                    self._number._token = self._number.token.replace("+", "")
-                    self._modifier = self._generate_default_node(str, "+", None, True)
-                    self._tree["surface_num"].nodes["modifier"] = self._modifier
-            try:
+        self._number = self._tree["surface_num"]["number"]
+        self._number._convert_to_int()
+        self._old_number = copy.deepcopy(self._number)
+        if "modifier" in self._tree["surface_num"]:
+            self._modifier = self._tree["surface_num"]["modifier"]
+            if self._modifier.value == "*":
+                self._is_reflecting = True
+            elif self._number.token and "+" in self._number.token:
+                self._is_white_boundary = True
+                self._number._token = self._number.token.replace("+", "")
+                self._modifier = self._generate_default_node(str, "+", None, True)
+                self._tree["surface_num"].nodes["modifier"] = self._modifier
+        try:
+            if input:
                 assert self._number.value > 0
-            except AssertionError:
-                raise MalformedInputError(
-                    input,
-                    f"{self._number.value} could not be parsed as a valid surface number.",
-                )
-            if self._tree["pointer"].value is not None:
-                val = self._tree["pointer"]
-                val.is_negatable_identifier = True
-                if val.is_negative:
-                    self._old_periodic_surface = val
-                else:
-                    self._old_transform_number = val
-            self._surface_type = self._tree["surface_type"]
-            # parse surface mnemonic
-            try:
-                # enforce enums
-                self._surface_type._convert_to_enum(SurfaceType, switch_to_upper=True)
-            # this should never be reached due to SLY rules.
-            # still if it is somehow reached this error is more helpful to the user.
-            except ValueError:  # pragma: no cover
-                raise MalformedInputError(
-                    input,
-                    f"{self._surface_type.value} could not be parsed as a surface type mnemonic.",
-                )
-            # parse the parameters
-            for entry in self._tree["data"]:
-                self._surface_constants.append(entry)
+        except AssertionError:
+            raise MalformedInputError(
+                input,
+                f"{self._number.value} could not be parsed as a valid surface number.",
+            )
+        if self._tree["pointer"].value is not None:
+            val = self._tree["pointer"]
+            val.is_negatable_identifier = True
+            if val.is_negative:
+                self._old_periodic_surface = val
+            else:
+                self._old_transform_number = val
+        self._surface_type = self._tree["surface_type"]
+        # parse surface mnemonic
+        try:
+            # enforce enums
+            self._surface_type._convert_to_enum(
+                SurfaceType, allow_none=True, switch_to_upper=True
+            )
+        # this should never be reached due to SLY rules.
+        # still if it is somehow reached this error is more helpful to the user.
+        except ValueError:  # pragma: no cover
+            raise MalformedInputError(
+                input,
+                f"{self._surface_type.value} could not be parsed as a surface type mnemonic.",
+            )
+        if (
+            self.surface_type is not None
+            and self.surface_type not in self._allowed_surface_types()
+        ):
+            raise ValueError(
+                f"{type(self).__name__} must be a surface of type: {[e.value for e in self._allowed_surface_types()]}"
+            )
+        # parse the parameters
+        for entry in self._tree["data"]:
+            self._surface_constants.append(entry)
 
-    @make_prop_val_node("_surface_type", (SurfaceType, str), SurfaceType)
+    @staticmethod
+    def _number_of_params():
+        """
+        The number of defaults parameters to load into the syntax tree.
+
+        Returns
+        -------
+        int
+        """
+        return 1
+
+    @staticmethod
+    def _allowed_surface_types():
+        """ "
+        The allowed surface types for this surface type.
+
+        Returns
+        -------
+        set[SurfaceType]
+        """
+        return set(SurfaceType)
+
+    def _generate_default_tree(
+        self, number: int = None, surface_type: Union[SurfaceType, str] = None
+    ):
+        """
+        Creates a default syntax tree.
+
+        Parameters
+        ----------
+        number: int
+            the default number for the syntax tree, should be passed from __init__
+        surface_type: Union[SurfaceType, str]
+            The surface_type to set for this object
+
+        Other Parameters
+        ----------------
+        self._number_of_params: int
+            the number of surface constants in the default syntax tree.
+        """
+        data = syntax_node.ListNode("surf list")
+        for _ in range(self._number_of_params()):
+            data.append(self._generate_default_node(float, None))
+        num = self._generate_default_node(int, number)
+        num.is_negatable_identifier = True
+        pointer = self._generate_default_node(int, None)
+        pointer.is_negatable_identifier = True
+        if surface_type is not None:
+            if not isinstance(surface_type, (SurfaceType, str)):
+                raise TypeError(f"The surface_type must be of type: SurfaceType or str")
+            if isinstance(surface_type, SurfaceType):
+                surface_type = surface_type.value
+        surf_type = self._generate_default_node(str, surface_type)
+        surf_num = syntax_node.SyntaxNode(
+            "surf_num",
+            {
+                "modifier": syntax_node.ValueNode(None, str, never_pad=True),
+                "number": num,
+            },
+        )
+        self._tree = syntax_node.SyntaxNode(
+            "Surf tree",
+            {
+                "start_pad": syntax_node.PaddingNode(),
+                "surface_num": surf_num,
+                "pointer": pointer,
+                "surface_type": surf_type,
+                "data": data,
+            },
+        )
+
+    @make_prop_val_node(
+        "_surface_type", (SurfaceType, str), SurfaceType, validator=_surf_type_validator
+    )
     def surface_type(self):
         """The mnemonic for the type of surface.
 
@@ -278,6 +374,10 @@ class Surface(Numbered_MCNP_Object):
                 )
 
     def validate(self):
+        if self.number is None or self.number < 1:
+            raise IllegalState(
+                f"Surface: {self.number} does not have a valid number set."
+            )
         if self.surface_type is None:
             raise IllegalState(
                 f"Surface: {self.number} does not have a surface type set."
@@ -299,6 +399,8 @@ class Surface(Numbered_MCNP_Object):
             self._old_periodic_surface.value = self.periodic_surface.number
             self._old_periodic_surface.is_negative = True
             self._tree.nodes["pointer"] = self._old_periodic_surface
+        else:
+            self._tree.nodes["pointer"].value = None
 
     def __lt__(self, other):
         return self.number < other.number
@@ -335,14 +437,14 @@ class Surface(Numbered_MCNP_Object):
         return []
 
     def __neg__(self):
-        if self.number <= 0:
+        if not self.number or self.number <= 0:
             raise IllegalState(
                 f"Surface number must be set for a surface to be used in a geometry definition."
             )
         return half_space.UnitHalfSpace(self, False, False)
 
     def __pos__(self):
-        if self.number <= 0:
+        if not self.number or self.number <= 0:
             raise IllegalState(
                 f"Surface number must be set for a surface to be used in a geometry definition."
             )

@@ -1,6 +1,6 @@
 # Copyright 2024-2025, Battelle Energy Alliance, LLC All Rights Reserved.
 from __future__ import annotations
-from montepy.errors import *
+from montepy.exceptions import *
 from montepy._singleton import SingletonGroup
 from numbers import Integral
 

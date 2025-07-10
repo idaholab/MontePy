@@ -8,7 +8,7 @@ import sly
 import warnings
 
 from montepy.constants import *
-from montepy.errors import *
+from montepy.exceptions import *
 from montepy.input_parser.block_type import BlockType
 from montepy.input_parser.input_file import MCNP_InputFile
 from montepy.input_parser.mcnp_input import Input, Message, ReadInput, Title
