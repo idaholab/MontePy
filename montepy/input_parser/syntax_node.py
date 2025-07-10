@@ -1854,16 +1854,16 @@ class ListNode(SyntaxNodeBase):
         rstop = i.stop
         if rstep < 0:  # Backwards
             if rstart is None:
-                rstart = len(self.nodes) - 1
+                rstart = len(self) - 1
             if rstop is None:
                 rstop = 0
-            rstop -= 1
         else:  # Forwards
             if rstart is None:
                 rstart = 0
             if rstop is None:
                 rstop = len(self.nodes) - 1
-            rstop += 1
+            if rstop < 0:
+                rstop += len(self)
         buffer = []
         allowed_indices = range(rstart, rstop, rstep)
         for i, item in enumerate(self):

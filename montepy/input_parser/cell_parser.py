@@ -247,6 +247,8 @@ class CellParser(MCNP_Parser):
         tree["universes"] = unis
         if hasattr(p, "transform"):
             tree["transform"] = p.transform
+        else:
+            tree["transform"] = syntax_node.ListNode("fill transform")
         return syntax_node.SyntaxNode("cell fill", tree)
 
     @_("index_pair index_pair index_pair")
