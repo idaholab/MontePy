@@ -604,14 +604,13 @@ class Fill(CellModifierInput):
         for universe, value in zip(payload, value_nodes):
             value.value = universe
             buffer.append(value)
-        tree.update_with_new_values(buffer)
         # drop blank values from original
-        back_idx = 0
-        for back_idx, node in enumerate(reversed(list(tree.nodes))):
+        for back_idx, node in enumerate(reversed(list(buffer))):
             # if we should keep something on the right side
             if node.value != 0 and node.value is not None or node.token is not None:
                 break
-        tree._nodes = tree.nodes[: len(tree.nodes) - back_idx]
+        buffer = tree.nodes[: len(buffer) - back_idx]
+        tree.update_with_new_values(buffer)
 
     def _update_multi_index_limits(self):
         base_tree = self._tree["data"]["indices"]
