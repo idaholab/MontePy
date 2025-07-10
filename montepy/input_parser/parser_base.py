@@ -547,6 +547,22 @@ class MCNP_Parser(Parser, metaclass=MetaBuilder):
                 return "*"
         return p[0]
 
+    @_('"("', '"(" padding')
+    def lparen_phrase(self, p):
+        pad = syntax_node.PaddingNode(p[0])
+        if len(p) > 1:
+            for node in p.padding.nodes:
+                pad.append(node)
+        return pad
+
+    @_('")"', '")" padding')
+    def rparen_phrase(self, p):
+        pad = syntax_node.PaddingNode(p[0])
+        if len(p) > 1:
+            for node in p.padding.nodes:
+                pad.append(node)
+        return pad
+
     def error(self, token):
         """Default error handling.
 
@@ -557,6 +573,7 @@ class MCNP_Parser(Parser, metaclass=MetaBuilder):
         token : Token
             the token that broke the parsing rules.
         """
+        # self._debug_parsing_error(token)
         if token:
             lineno = getattr(token, "lineno", 0)
             if self._input and self._input.lexer:
