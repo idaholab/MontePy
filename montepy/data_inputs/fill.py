@@ -571,10 +571,10 @@ class Fill(CellModifierInput):
                 payload = list(self.transform._tree["data"])
             else:
                 # if started with named transform
-                payload = [new_vals["transform"][1]]
+                payload = [self._tree["data"]["transform"][1]]
                 payload[0].value = self.transform.number
             new_vals = [old_vals[0]] + payload + [old_vals[-1]]
-        self._tree["data"]["universes"].update_with_new_values(new_vals)
+        self._tree["data"]["transform"].update_with_new_values(new_vals)
 
     def _update_cell_universes(self):
         def _value_node_generator():
@@ -588,6 +588,7 @@ class Fill(CellModifierInput):
             payload = []
             get_number = np.vectorize(lambda u: u.number)
             payload = get_number(self.universes).T.ravel()
+            self._update_multi_index_limits()
         else:
             payload = [
                 (
@@ -603,24 +604,17 @@ class Fill(CellModifierInput):
             buffer.append(value)
         self._tree["data"]["universes"].update_with_new_values(buffer)
 
-    def _update_multi_index_limits(self, new_vals):
-        if not self.multiple_universes and ":" not in new_vals:
-            return new_vals
-        if ":" not in new_vals:
-            for min_idx, max_idx in zip(self.min_index, self.max_index):
-                new_vals.extend(
-                    [
-                        self._generate_default_node(int, str(min_idx), padding=None),
-                        syntax_node.PaddingNode(":"),
-                        self._generate_default_node(int, str(max_idx), padding=" "),
-                    ]
-                )
-            return new_vals
-        vals_iter = iter(new_vals)
-        for min_idx, max_idx in zip(self.min_index, self.max_index):
-            min_val = next(vals_iter)
-            min_val.value = min_idx
-            next(vals_iter)
-            max_val = next(vals_iter)
-            max_val.value = max_idx
-        return new_vals
+    def _update_multi_index_limits(self):
+        base_tree = self._tree["data"]["indices"]
+        if not self.multiple_universes:
+            base_tree.nodes = []
+            return
+        if len(base_tree) != 9:
+            base_tree.nodes.clear()
+            for _ in range(3):
+                base_tree.append(syntax_node.ValueNode(None, int, never_pad=True))
+                base_tree.append(syntax_node.PaddingNode(":"))
+                base_tree.append(syntax_node.ValueNode(None, int))
+            for dimension, base_idx in enumerate(range(0, 8, 3)):
+                base_tree[base_idx].value = self.min_index[dimension]
+                base_tree[base_idx + 2].value = self.max_index[dimension]
