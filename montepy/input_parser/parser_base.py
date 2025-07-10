@@ -208,11 +208,8 @@ class MCNP_Parser(Parser, metaclass=MetaBuilder):
         '"(" padding number_sequence ")" padding',
     )
     def number_sequence(self, p):
-        if isinstance(p[0], str):
-            sequence = syntax_node.ListNode("parenthetical statement")
-            sequence.append(p[0])
-        else:
-            sequence = p[0]
+        sequence = syntax_node.ListNode("parenthetical statement")
+        sequence.append(p[0])
         for node in list(p)[1:]:
             if isinstance(node, syntax_node.ListNode):
                 for val in node.nodes:

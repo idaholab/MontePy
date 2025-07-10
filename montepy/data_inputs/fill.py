@@ -211,7 +211,7 @@ class Fill(CellModifierInput):
                             val = next(words)
                         # if ended early
                         except StopIteration:
-                            words = enumerate(it.cycle([None]))
+                            words = it.cycle([None])
                             val = None
                         if val is None:
                             val = self._generate_default_node(int, None)
@@ -558,6 +558,7 @@ class Fill(CellModifierInput):
             self._tree["classifier"].modifier = None
         self._update_cell_transform_values()
         self._update_cell_universes()
+        self._update_multi_index_limits()
 
     def _update_cell_transform_values(self):
         old_vals = self._tree["data"]["transform"]
@@ -590,7 +591,6 @@ class Fill(CellModifierInput):
             payload = []
             get_number = np.vectorize(lambda u: u.number)
             payload = get_number(self.universes).T.ravel()
-            self._update_multi_index_limits()
         else:
             payload = [
                 (
@@ -615,7 +615,7 @@ class Fill(CellModifierInput):
     def _update_multi_index_limits(self):
         base_tree = self._tree["data"]["indices"]
         if not self.multiple_universes:
-            base_tree.nodes = []
+            base_tree.nodes.clear()
             return
         if len(base_tree) != 9:
             base_tree.nodes.clear()
@@ -623,6 +623,6 @@ class Fill(CellModifierInput):
                 base_tree.append(syntax_node.ValueNode(None, int, never_pad=True))
                 base_tree.append(syntax_node.PaddingNode(":"))
                 base_tree.append(syntax_node.ValueNode(None, int))
-            for dimension, base_idx in enumerate(range(0, 8, 3)):
-                base_tree[base_idx].value = self.min_index[dimension]
-                base_tree[base_idx + 2].value = self.max_index[dimension]
+        for dimension, base_idx in enumerate(range(0, 8, 3)):
+            base_tree[base_idx].value = self.min_index[dimension]
+            base_tree[base_idx + 2].value = self.max_index[dimension]
