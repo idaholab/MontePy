@@ -556,8 +556,8 @@ class Fill(CellModifierInput):
             self._tree["classifier"].modifier = "*"
         else:
             self._tree["classifier"].modifier = None
-        self._update_cell_universes()
         self._update_cell_transform_values()
+        self._update_cell_universes()
 
     def _update_cell_transform_values(self):
         old_vals = self._tree["data"]["transform"]
@@ -577,6 +577,8 @@ class Fill(CellModifierInput):
         self._tree["data"]["transform"].update_with_new_values(new_vals)
 
     def _update_cell_universes(self):
+        tree = self._tree["data"]["universes"]
+
         def _value_node_generator():
             while True:
                 value = syntax_node.ValueNode("1", int)
@@ -597,12 +599,19 @@ class Fill(CellModifierInput):
                     else self.old_universe_number
                 )
             ]
-        value_nodes = it.chain(self._tree["data"]["universes"], _value_node_generator())
+        value_nodes = it.chain(tree, _value_node_generator())
         buffer = []
         for universe, value in zip(payload, value_nodes):
             value.value = universe
             buffer.append(value)
-        self._tree["data"]["universes"].update_with_new_values(buffer)
+        tree.update_with_new_values(buffer)
+        # drop blank values from original
+        back_idx = 0
+        for back_idx, node in enumerate(reversed(list(tree.nodes))):
+            # if we should keep something on the right side
+            if node.value != 0 and node.value is not None or node.token is not None:
+                break
+        tree._nodes = tree.nodes[: len(tree.nodes) - back_idx]
 
     def _update_multi_index_limits(self):
         base_tree = self._tree["data"]["indices"]
