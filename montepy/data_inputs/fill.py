@@ -581,7 +581,7 @@ class Fill(CellModifierInput):
 
         def _value_node_generator():
             while True:
-                value = syntax_node.ValueNode("1", int)
+                value = syntax_node.ValueNode(None, int)
                 padding = syntax_node.PaddingNode(" ")
                 value.padding = padding
                 yield value
@@ -609,7 +609,7 @@ class Fill(CellModifierInput):
             # if we should keep something on the right side
             if node.value != 0 and node.value is not None or node.token is not None:
                 break
-        buffer = tree.nodes[: len(buffer) - back_idx]
+        buffer = buffer[: len(buffer) - back_idx]
         tree.update_with_new_values(buffer)
 
     def _update_multi_index_limits(self):
