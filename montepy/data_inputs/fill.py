@@ -132,7 +132,7 @@ class Fill(CellModifierInput):
                 )
 
         if len(data["transform"]) > 0:
-            trans_data = data["transform"]
+            trans_data = data["transform"][1:-1]
             if len(trans_data) == 1:
                 try:
                     transform = trans_data[0]
@@ -163,7 +163,7 @@ class Fill(CellModifierInput):
             the value in the cell
         """
         self._multi_universe = True
-        words = value["data"]
+        words = value["data"]["indices"]
         self._min_index = np.zeros((3,), dtype=np.dtype(int))
         self._max_index = np.zeros((3,), dtype=np.dtype(int))
         limits_iter = (
@@ -191,22 +191,18 @@ class Fill(CellModifierInput):
                     f"Min: {min_val}, Max: {max_val}, Input: {value.format()}"
                 )
         self._old_numbers = np.zeros(self._sizes, dtype=np.dtype(int))
-        words = enumerate(it.chain(words[9:], it.cycle([None])))
+        words = value["data"]["universes"]
         new_nodes = []
-        first_transform_n = None
         for k in self._axis_range(2):
             for j in self._axis_range(1):
                 for i in self._axis_range(0):
                     try:
-                        idx, val = next(words)
-                        # if followed by transform don't iterate over them
-                        if isinstance(
-                            val, montepy.input_parser.syntax_node.PaddingNode
-                        ):
+                        try:
+                            idx, val = next(words)
+                        # if ended early
+                        except StopIteration:
                             words = enumerate(it.cycle([None]))
                             val = None
-                            first_transform_n = val
-                            old_idx = idx
                         if val is None:
                             val = self._generate_default_node(int, None)
                             new_nodes.append(val)
@@ -220,16 +216,8 @@ class Fill(CellModifierInput):
                         )
 
         # inset new nodes
-        old_nodes = value["data"].nodes
-        if first_transform_n is not None:
-            for node_idx, node in old_nodes:
-                if node is first_transform_n:
-                    break
-            value["data"]._nodes = (
-                old_nodes[:node_idx] + new_nodes + old_nodes[node_idx:]
-            )
-        else:
-            value["data"]._nodes = old_nodes + new_nodes
+        for new_node in new_nodes:
+            value["data"]["universes"].append(new_node)
 
     @staticmethod
     def _class_prefix():
