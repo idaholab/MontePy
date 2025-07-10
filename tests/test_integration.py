@@ -993,7 +993,7 @@ def test_fill_cell_format(simple_problem, universe_problem):
     # test with complex universe lattice fill
     fill = problem.cells[2].fill
     output = fill.format_for_mcnp_input((6, 2, 0))
-    answers = ["fill= 0:1 0:1 0:0 1 0 R 1 (5)"]
+    answers = ["fill= 0:1 0:1 0:0 1 0 1 (5)"]
     assert output == answers
     problem.print_in_data_block["FILL"] = True
     # test that complex fill is not printed in data block
