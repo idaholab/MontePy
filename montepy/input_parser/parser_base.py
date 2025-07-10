@@ -567,6 +567,9 @@ class MCNP_Parser(Parser, metaclass=MetaBuilder):
 
     @_('"("', '"(" padding')
     def lparen_phrase(self, p):
+        """
+        A left parenthesis "(" and its padding.
+        """
         pad = syntax_node.PaddingNode(p[0])
         if len(p) > 1:
             for node in p.padding.nodes:
@@ -575,6 +578,9 @@ class MCNP_Parser(Parser, metaclass=MetaBuilder):
 
     @_('")"', '")" padding')
     def rparen_phrase(self, p):
+        """
+        A right parenthesis ")" and its padding.
+        """
         pad = syntax_node.PaddingNode(p[0])
         if len(p) > 1:
             for node in p.padding.nodes:

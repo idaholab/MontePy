@@ -234,6 +234,9 @@ class CellParser(MCNP_Parser):
         "indices number_sequence transform",
     )
     def cell_fill(self, p):
+        """
+        A fill parameter data in a cell.
+        """
         tree = {}
         if hasattr(p, "indices"):
             tree["indices"] = p.indices

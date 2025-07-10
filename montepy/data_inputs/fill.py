@@ -95,6 +95,9 @@ class Fill(CellModifierInput):
 
     @staticmethod
     def _generate_cell_data_tree():
+        """
+        Generates a default syntax tree for the data of a cell fill (indices, universes, transform).
+        """
         return syntax_node.SyntaxNode(
             "cell fill",
             {
@@ -105,6 +108,9 @@ class Fill(CellModifierInput):
         )
 
     def _precondition_tree(self, data):
+        """
+        Converts a listNode payload (if only one universe is given) to the proper syntax tree.
+        """
         new_data = self._generate_cell_data_tree()
         new_data.nodes["universes"] = data
         self._tree.nodes["data"] = new_data
@@ -561,6 +567,9 @@ class Fill(CellModifierInput):
         self._update_multi_index_limits()
 
     def _update_cell_transform_values(self):
+        """
+        Updates cell fill tree with the new transform data.
+        """
         old_vals = self._tree["data"]["transform"]
         if self.transform is None:
             old_vals.nodes.clear()
@@ -578,6 +587,9 @@ class Fill(CellModifierInput):
         self._tree["data"]["transform"].update_with_new_values(new_vals)
 
     def _update_cell_universes(self):
+        """
+        Updates cell fill tree with the universe(s) data.
+        """
         tree = self._tree["data"]["universes"]
 
         def _value_node_generator():
@@ -613,6 +625,9 @@ class Fill(CellModifierInput):
         tree.update_with_new_values(buffer)
 
     def _update_multi_index_limits(self):
+        """
+        Updates cell fill tree with the indices limit for a multi-universe fill.
+        """
         base_tree = self._tree["data"]["indices"]
         if not self.multiple_universes:
             base_tree.nodes.clear()
