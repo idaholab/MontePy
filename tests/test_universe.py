@@ -463,11 +463,15 @@ class TestFill:
         universes=st.lists(st.integers(0, 1_000_000), min_size=1, max_size=10),
         y_len=st.integers(1, 10),
         z_len=st.integers(1, 10),
+        fill_amount=st.floats(0.9, 1.0),
     )
     @pytest.mark.filterwarnings("ignore")
-    def test_fill_multi_unis(self, universes, y_len, z_len):
+    def test_fill_multi_unis(self, universes, y_len, z_len, fill_amount):
         fill = self.simple_fill.clone()
-        universes = np.array([[[Universe(u) for u in universes]] * y_len] * z_len)
+        universes = np.array(
+            [[[Universe(u) for u in universes]] * y_len]
+            * (int(z_len * fill_amount) + 1)
+        )
         fill.multiple_universes = True
         fill.universes = universes
         assert (fill.universes == universes).all()
