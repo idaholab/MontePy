@@ -113,20 +113,20 @@ class MCNP_Object(ABC, metaclass=_ExceptionContextAdder):
             self._BLOCK_TYPE
         except AttributeError:
             self._BLOCK_TYPE = montepy.input_parser.block_type.BlockType.DATA
-        if jit_parse:
-            self._jit_light_init(input)
         self._problem_ref = None
         self._parameters = ParametersNode()
         self._input = None
         self._init_blank()
         if input:
-            parser = self._parser()
             if not isinstance(input, (montepy.input_parser.mcnp_input.Input, str)):
                 raise TypeError(f"input must be an Input or str. {input} given.")
             if isinstance(input, str):
                 input = montepy.input_parser.mcnp_input.Input(
                     input.split("\n"), self._BLOCK_TYPE
                 )
+            if jit_parse:
+                return self._jit_light_init(input)
+            parser = self._parser()
             try:
                 try:
                     parser.restart()
@@ -153,7 +153,7 @@ class MCNP_Object(ABC, metaclass=_ExceptionContextAdder):
             if "parameters" in self._tree:
                 self._parameters = self._tree["parameters"]
         else:
-            self._generate_default_tree()
+            self._generate_default_tree(**kwargs)
         self._parse_tree()
 
     @staticmethod
