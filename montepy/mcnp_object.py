@@ -203,8 +203,8 @@ class MCNP_Object(ABC, metaclass=_ExceptionContextAdder):
         bare_tree = parser.parse(tokenizer)
         tokenizer.close()
         for key, node in bare_tree.nodes.items():
-            setattr(instance, f"_{key}", node)
-        return instance
+            setattr(self, f"_{key}", node)
+        return self
 
     def full_parse(self):
         if hasattr(self, "_not_parsed") and self._not_parsed:
