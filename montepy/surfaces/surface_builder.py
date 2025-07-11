@@ -27,13 +27,11 @@ def parse_surface(input: InitInput, *, jit_parse: bool = False):
         input = montepy.input_parser.mcnp_input.Input(
             input.split("\n"), montepy.input_parser.block_type.BlockType.SURFACE
         )
-    buffer_surface = Surface._jit_light_init(input)
+    buffer_surface = Surface(input)
     type_of_surface = buffer_surface.surface_type
     for SurfaceClass in {CylinderOnAxis, CylinderParAxis, AxisPlane, GeneralPlane}:
         if type_of_surface in SurfaceClass._allowed_surface_types():
-            if jit_parse:
-                return SurfaceClass._jit_light_init(input)
-            return SurfaceClass(input)
+            return SurfaceClass(input, jit_parse=jit_parse)
     return Surface(input)
 
 

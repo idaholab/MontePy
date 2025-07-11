@@ -393,18 +393,6 @@ class MCNP_Problem:
             ),
             block_type.BlockType.DATA: (parse_data, self._data_inputs),
         }
-        if jit_parse:
-            OBJ_MATCHER = {
-                block_type.BlockType.CELL: (Cell._jit_light_init, self._cells),
-                block_type.BlockType.SURFACE: (
-                    partial(surface_builder.parse_surface, jit_parse=True),
-                    self._surfaces,
-                ),
-                block_type.BlockType.DATA: (
-                    partial(parse_data, jit_parse=True),
-                    self._data_inputs,
-                ),
-            }
 
         try:
             for i, input in enumerate(
@@ -426,7 +414,7 @@ class MCNP_Problem:
                     obj_parser, obj_container = OBJ_MATCHER[input.block_type]
                     if len(input.input_lines) > 0:
                         try:
-                            obj = obj_parser(input)
+                            obj = obj_parser(input, jit_parse=jit_parse)
                             obj.link_to_problem(self)
                             if isinstance(
                                 obj_container,
