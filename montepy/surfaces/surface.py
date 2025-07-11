@@ -39,8 +39,6 @@ class Surface(Numbered_MCNP_Object):
         The surface_type to set for this object
     """
 
-    _parser = SurfaceParser()
-
     _JitParser = JitSurfParser
 
     def __init__(
@@ -48,14 +46,27 @@ class Surface(Numbered_MCNP_Object):
         input: InitInput = None,
         number: int = None,
         surface_type: Union[SurfaceType, str] = None,
+        *,
+        jit_parse: bool = True,
     ):
         # TODO delete subclass init
+        super().__init__(
+            input,
+            jit_parse=jit_parse,
+            number=number,
+            surface_type=surface_type,
+        )
+
+    @staticmethod
+    def _parser():
+        return SurfaceParser()
+
+    def _init_blank(self):
         self._CHILD_OBJ_MAP = {
             "periodic_surface": Surface,
             "transform": transform.Transform,
         }
         self._BLOCK_TYPE = montepy.input_parser.block_type.BlockType.SURFACE
-        super().__init__(input, self._parser, number)
         self._periodic_surface = None
         self._old_periodic_surface = self._generate_default_node(int, None)
         self._old_periodic_surface.is_negatable_identifier = True
@@ -67,9 +78,8 @@ class Surface(Numbered_MCNP_Object):
         self._surface_constants = []
         self._surface_type = self._generate_default_node(str, None)
         self._modifier = self._generate_default_node(str, None)
-        if not input:
-            self._generate_default_tree(number, surface_type)
-        # surface number
+
+    def _parse_tree(self):
         self._number = self._tree["surface_num"]["number"]
         self._number._convert_to_int()
         self._old_number = copy.deepcopy(self._number)
@@ -82,9 +92,16 @@ class Surface(Numbered_MCNP_Object):
                 self._number._token = self._number.token.replace("+", "")
                 self._modifier = self._generate_default_node(str, "+", None, True)
                 self._tree["surface_num"].nodes["modifier"] = self._modifier
+        # parse the parameters
+        for entry in self._tree["data"]:
+            self._surface_constants.append(entry)
+        self._enforce_values()
+        self._load_constants()
+
+    def _enforce_values(self):
         try:
-            if input:
-                assert self._number.value > 0
+            if self.number is not None:
+                assert self.number > 0
         except AssertionError:
             raise MalformedInputError(
                 input,
@@ -118,9 +135,9 @@ class Surface(Numbered_MCNP_Object):
             raise ValueError(
                 f"{type(self).__name__} must be a surface of type: {[e.value for e in self._allowed_surface_types()]}"
             )
-        # parse the parameters
-        for entry in self._tree["data"]:
-            self._surface_constants.append(entry)
+
+    def _load_constants(self):
+        pass
 
     @staticmethod
     def _number_of_params():

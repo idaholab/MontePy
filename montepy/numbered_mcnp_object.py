@@ -50,14 +50,11 @@ class Numbered_MCNP_Object(MCNP_Object):
     """
 
     def __init__(
-        self,
-        input: InitInput,
-        parser: montepy.input_parser.parser_base.MCNP_Parser,
-        number: int = None,
+        self, input: InitInput, number: int = None, *, jit_parse: bool = True, **kwargs
     ):
         if not input:
             self._number = self._generate_default_node(int, -1)
-        super().__init__(input, parser)
+        super().__init__(input, number=number, jit_parse=jit_parse, **kwargs)
         self._load_init_num(number)
 
     def _load_init_num(self, number):
