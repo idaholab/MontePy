@@ -102,21 +102,25 @@ class MCNP_Object(ABC, metaclass=_ExceptionContextAdder):
         The Input syntax object this will wrap and parse.
     parser : MCNP_Parser
         The parser object to parse the input with.
+
+    .. versionchanged:: 1.2.0
+        * Removed parser as an argument (now an abstract property)
+        * Added jit_parse argument
     """
 
-    def __init__(
-        self,
-        input: InitInput,
-        parser: montepy.input_parser.parser_base.MCNP_Parser,
-    ):
+    def __init__(self, input: InitInput, *, jit_parse: bool = True, **kwargs):
         try:
             self._BLOCK_TYPE
         except AttributeError:
             self._BLOCK_TYPE = montepy.input_parser.block_type.BlockType.DATA
+        if jit_parse:
+            self._jit_light_init(input)
         self._problem_ref = None
         self._parameters = ParametersNode()
         self._input = None
+        self._init_blank()
         if input:
+            parser = self._parser()
             if not isinstance(input, (montepy.input_parser.mcnp_input.Input, str)):
                 raise TypeError(f"input must be an Input or str. {input} given.")
             if isinstance(input, str):
@@ -148,6 +152,26 @@ class MCNP_Object(ABC, metaclass=_ExceptionContextAdder):
                 )
             if "parameters" in self._tree:
                 self._parameters = self._tree["parameters"]
+        else:
+            self._generate_default_tree()
+        self._parse_tree()
+
+    @staticmethod
+    @abstractmethod
+    def _parser():
+        pass
+
+    @abstractmethod
+    def _init_blank(self):
+        pass
+
+    @abstractmethod
+    def _parse_tree(self):
+        pass
+
+    @abstractmethod
+    def _generate_default_tree(self, **kwargs):
+        pass
 
     def __setattr__(self, key, value):
         # handle properties first
@@ -171,12 +195,10 @@ class MCNP_Object(ABC, metaclass=_ExceptionContextAdder):
                 f"'{type(self).__name__}' object has no attribute '{key}'",
             )
 
-    @classmethod
-    def _jit_light_init(cls, input: Input):
-        instance = cls.__new__(cls)
-        instance._not_parsed = True
-        instance._input = input
-        parser = cls._JitParser()
+    def _jit_light_init(self, input: Input):
+        self._not_parsed = True
+        self._input = input
+        parser = self._JitParser()
         tokenizer = input.tokenize()
         bare_tree = parser.parse(tokenizer)
         tokenizer.close()
