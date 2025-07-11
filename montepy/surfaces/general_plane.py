@@ -23,14 +23,8 @@ class GeneralPlane(Surface):
         The number to set for this object.
     """
 
-    def __init__(
-        self,
-        input: InitInput = None,
-        number: int = None,
-    ):
-        super().__init__(input, number)
-        if input:
-            self._enforce_constants()
+    def _load_constants(self):
+        self._enforce_constants()
 
     @staticmethod
     def _allowed_surface_types():

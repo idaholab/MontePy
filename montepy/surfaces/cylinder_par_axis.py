@@ -37,18 +37,7 @@ class CylinderParAxis(Surface):
     }
     """Which coordinate is what value for each cylinder type."""
 
-    def __init__(
-        self,
-        input: InitInput = None,
-        number: int = None,
-        surface_type: Union[SurfaceType, str] = None,
-    ):
-        self._coordinates = [
-            self._generate_default_node(float, None),
-            self._generate_default_node(float, None),
-        ]
-        self._radius = self._generate_default_node(float, None)
-        super().__init__(input, number, surface_type)
+    def _load_constants(self):
         if len(self.surface_constants) != 3:
             raise ValueError("CylinderParAxis must have exactly 3 surface_constants")
         self._coordinates = self._surface_constants[0:2]

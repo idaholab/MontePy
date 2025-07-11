@@ -49,7 +49,6 @@ class Surface(Numbered_MCNP_Object):
         *,
         jit_parse: bool = True,
     ):
-        # TODO delete subclass init
         super().__init__(
             input,
             jit_parse=jit_parse,

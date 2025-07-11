@@ -29,14 +29,7 @@ class CylinderOnAxis(Surface):
         The surface_type to set for this object
     """
 
-    def __init__(
-        self,
-        input: InitInput = None,
-        number: int = None,
-        surface_type: Union[SurfaceType, str] = None,
-    ):
-        self._radius = self._generate_default_node(float, None)
-        super().__init__(input, number, surface_type)
+    def _load_constants(self):
         if len(self.surface_constants) != 1:
             raise ValueError("CylinderOnAxis only accepts one surface_constant")
         self._radius = self._surface_constants[0]

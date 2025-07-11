@@ -27,14 +27,7 @@ class AxisPlane(Surface):
 
     COORDINATE = {SurfaceType.PX: "x", SurfaceType.PY: "y", SurfaceType.PZ: "z"}
 
-    def __init__(
-        self,
-        input: InitInput = None,
-        number: int = None,
-        surface_type: Union[SurfaceType, str] = None,
-    ):
-        self._location = self._generate_default_node(float, None)
-        super().__init__(input, number, surface_type)
+    def _load_constants(self):
         if len(self.surface_constants) != 1:
             raise ValueError("AxisPlane must have exactly 1 surface constant")
         self._location = self._surface_constants[0]
