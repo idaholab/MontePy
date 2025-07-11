@@ -73,7 +73,9 @@ class JitSurfParser:
                 assert False
             else:
                 surface_type = syntax_node.ValueNode(token.value, str)
-                surface_type._convert_to_enum(montepy.surfaces.SurfaceType)
+                surface_type._convert_to_enum(
+                    montepy.surfaces.SurfaceType, switch_to_upper=True
+                )
                 return syntax_node.SyntaxNode(
                     "jit surface", {"number": number, "surface_type": surface_type}
                 )
