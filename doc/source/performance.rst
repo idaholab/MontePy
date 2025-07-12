@@ -44,7 +44,7 @@ How to use multi-processing with Windows
 ++++++++++++++++++++++++++++++++++++++++
 
 On Windows Python has to use the spawn method for multi-processing. 
-`As covered in the Python documentation <https://docs.python.org/3/library/multiprocessing.html#windows>`_,
+`As covered in the Python documentation <https://docs.python.org/3/library/multiprocessing.html#multiprocessing-safe-main-import>`_,
 your script or module that calls MontePy needs to be "import safe", i.e., have a main-guard.
 
 For instance the following script ran on Windows would raise a ``RuntimeError``. 
