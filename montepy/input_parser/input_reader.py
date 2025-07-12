@@ -18,6 +18,12 @@ def read_input(
     -----
     if a stream is provided. It will not be closed by this function.
 
+    .. warning::
+
+        If ``multi_proc=True`` is used on Windows extra care is needed.
+        The entry point of the script needs to be import safe.
+        See :ref:`windows_warning` for more details.
+
     Parameters
     ----------
     destination : io.TextIOBase, str, os.PathLike
