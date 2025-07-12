@@ -436,7 +436,7 @@ class MCNP_Problem:
             except UnsupportedFeature as e:
                 if check_input:
                     warnings.warn(f"{type(e).__name__}: {e.message}", stacklevel=2)
-                else:
+                else:  # pragma: no cover
                     raise e
 
     def parse_input(
@@ -505,7 +505,7 @@ class MCNP_Problem:
                     if check_input:
                         warnings.warn(f"{type(e).__name__}: {e.message}", stacklevel=2)
                         continue
-                    else:
+                    else:  # pragma: no cover
                         raise e
             else:
                 obj_container.append(obj)
