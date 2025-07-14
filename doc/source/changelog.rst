@@ -15,7 +15,7 @@ MontePy Changelog
 **Deprecations**
 
 * Marked ``montepy.errors`` as deprecated, with a ``FutureWarning``, use ``montepy.exceptions`` instead. (:issue:`764`).
-
+* Dropped support for python 3.9 and 3.10 in order to comply with `SPEC 0 <https://scientific-python.org/specs/spec-0000/>`_ (:issue:`780`).
 
 1.1.1
 --------------
