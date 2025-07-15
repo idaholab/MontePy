@@ -47,7 +47,8 @@ from montepy.universes import Universes
 from montepy.surface_collection import Surfaces
 from montepy.transforms import Transforms
 
-import montepy.errors
+import montepy.exceptions
+import montepy.errors  # deprecated
 import sys
 
 

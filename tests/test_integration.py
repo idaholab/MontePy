@@ -14,7 +14,7 @@ from montepy.input_parser.mcnp_input import (
     Message,
     Title,
 )
-from montepy.errors import *
+from montepy.exceptions import *
 from montepy.particle import Particle
 import numpy as np
 
@@ -408,24 +408,24 @@ def test_surface_card_pass_through():
 
 
 def test_surface_broken_link():
-    with pytest.raises(montepy.errors.MalformedInputError):
+    with pytest.raises(montepy.exceptions.MalformedInputError):
         montepy.read_input("tests/inputs/test_broken_surf_link.imcnp")
-    with pytest.raises(montepy.errors.MalformedInputError):
+    with pytest.raises(MalformedInputError):
         montepy.read_input("tests/inputs/test_broken_transform_link.imcnp")
 
 
 def test_material_broken_link():
-    with pytest.raises(montepy.errors.BrokenObjectLinkError):
+    with pytest.raises(montepy.exceptions.BrokenObjectLinkError):
         problem = montepy.read_input("tests/inputs/test_broken_mat_link.imcnp")
 
 
 def test_cell_surf_broken_link():
-    with pytest.raises(montepy.errors.BrokenObjectLinkError):
+    with pytest.raises(montepy.exceptions.BrokenObjectLinkError):
         problem = montepy.read_input("tests/inputs/test_broken_cell_surf_link.imcnp")
 
 
 def test_cell_complement_broken_link():
-    with pytest.raises(montepy.errors.BrokenObjectLinkError):
+    with pytest.raises(montepy.exceptions.BrokenObjectLinkError):
         problem = montepy.read_input("tests/inputs/test_broken_complement.imcnp")
 
 
@@ -725,7 +725,7 @@ def test_check_volume_calculated(simple_problem):
 
 
 def test_redundant_volume():
-    with pytest.raises(montepy.errors.MalformedInputError):
+    with pytest.raises(montepy.exceptions.MalformedInputError):
         montepy.read_input(os.path.join("tests", "inputs", "test_vol_redundant.imcnp"))
 
 
@@ -869,10 +869,10 @@ def test_universe_number_collision():
     problem = montepy.read_input(
         os.path.join("tests", "inputs", "test_universe_data.imcnp")
     )
-    with pytest.raises(montepy.errors.NumberConflictError):
+    with pytest.raises(montepy.exceptions.NumberConflictError):
         problem.universes[0].number = 350
 
-    with pytest.raises(montepy.errors.NumberConflictError):
+    with pytest.raises(montepy.exceptions.NumberConflictError):
         problem.universes[350].number = 0
 
 
@@ -1041,16 +1041,16 @@ def test_cell_validator(simple_problem):
     problem = copy.deepcopy(simple_problem)
     cell = problem.cells[1]
     del cell.mass_density
-    with pytest.raises(montepy.errors.IllegalState):
+    with pytest.raises(IllegalState):
         cell.validate()
     cell = montepy.Cell()
     # test no geometry at all
-    with pytest.raises(montepy.errors.IllegalState):
+    with pytest.raises(montepy.exceptions.IllegalState):
         cell.validate()
     surf = problem.surfaces[1000]
     cell.surfaces.append(surf)
     # test surface added but geomtry not defined
-    with pytest.raises(montepy.errors.IllegalState):
+    with pytest.raises(IllegalState):
         cell.validate()
 
 
@@ -1088,7 +1088,7 @@ def test_importance_rewrite(simple_problem):
 
 def test_parsing_error():
     in_file = os.path.join("tests", "inputs", "test_bad_syntax.imcnp")
-    with pytest.raises(montepy.errors.ParsingError):
+    with pytest.raises(montepy.exceptions.ParsingError):
         problem = montepy.read_input(in_file)
 
 
@@ -1105,7 +1105,7 @@ def test_leading_comments(simple_problem):
 
 def test_wrap_warning(simple_problem):
     cell = copy.deepcopy(simple_problem.cells[1])
-    with pytest.warns(montepy.errors.LineExpansionWarning):
+    with pytest.warns(LineExpansionWarning):
         output = cell.wrap_string_for_mcnp("h" * 130, (6, 2, 0), True)
         assert len(output) == 2
     output = cell.wrap_string_for_mcnp("h" * 127, (6, 2, 0), True)
@@ -1120,7 +1120,7 @@ def test_expansion_warning_crash(simple_problem):
     problem.materials[1].number = 987654321
     problem.surfaces[1010].number = 123456789
     with io.StringIO() as fh:
-        with pytest.warns(montepy.errors.LineExpansionWarning):
+        with pytest.warns(montepy.exceptions.LineExpansionWarning):
             problem.write_problem(fh)
 
 

@@ -39,7 +39,7 @@ def test_cell_geometry_set_warns():
         [f"1 0 -1 imp:n=1"], montepy.input_parser.block_type.BlockType.CELL
     )
     cell = montepy.Cell(input)
-    with pytest.raises(montepy.errors.IllegalState):
+    with pytest.raises(montepy.exceptions.IllegalState):
         surf = montepy.surfaces.surface.Surface()
         surf.number = 5
         cell.geometry &= +surf
@@ -47,9 +47,9 @@ def test_cell_geometry_set_warns():
 
 def test_geom_invalid():
     surf = montepy.AxisPlane()
-    with pytest.raises(montepy.errors.IllegalState):
+    with pytest.raises(montepy.exceptions.IllegalState):
         -surf
-    with pytest.raises(montepy.errors.IllegalState):
+    with pytest.raises(montepy.exceptions.IllegalState):
         +surf
-    with pytest.raises(montepy.errors.IllegalState):
+    with pytest.raises(montepy.exceptions.IllegalState):
         ~montepy.Cell()

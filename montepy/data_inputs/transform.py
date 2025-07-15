@@ -8,7 +8,7 @@ from typing import Union
 import montepy
 from montepy import mcnp_object
 from montepy.data_inputs import data_input
-from montepy.errors import *
+from montepy.exceptions import *
 from montepy.numbered_mcnp_object import Numbered_MCNP_Object, InitInput
 from montepy.utilities import *
 

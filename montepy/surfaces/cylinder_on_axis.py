@@ -1,8 +1,10 @@
 # Copyright 2024, Battelle Energy Alliance, LLC All Rights Reserved.
 from .surface_type import SurfaceType
 from .surface import Surface, InitInput
-from montepy.errors import *
+from montepy.exceptions import *
 from montepy.utilities import *
+
+from typing import Union
 
 
 def _enforce_positive_radius(self, value):
@@ -23,20 +25,21 @@ class CylinderOnAxis(Surface):
         The Input object representing the input
     number : int
         The number to set for this object.
+    surface_type: Union[SurfaceType, str]
+        The surface_type to set for this object
     """
 
-    def __init__(self, input: InitInput = None, number: int = None):
+    def __init__(
+        self,
+        input: InitInput = None,
+        number: int = None,
+        surface_type: Union[SurfaceType, str] = None,
+    ):
         self._radius = self._generate_default_node(float, None)
-        super().__init__(input, number)
-        ST = SurfaceType
-        if input:
-            if self.surface_type not in [ST.CX, ST.CY, ST.CZ]:
-                raise ValueError("CylinderOnAxis must be of surface_type: CX, CY, CZ")
-            if len(self.surface_constants) != 1:
-                raise ValueError("CylinderOnAxis only accepts one surface_constant")
-            self._radius = self._surface_constants[0]
-        else:
-            self._surface_constants = [self._radius]
+        super().__init__(input, number, surface_type)
+        if len(self.surface_constants) != 1:
+            raise ValueError("CylinderOnAxis only accepts one surface_constant")
+        self._radius = self._surface_constants[0]
 
     @make_prop_val_node(
         "_radius", (float, int), float, validator=_enforce_positive_radius
@@ -49,6 +52,10 @@ class CylinderOnAxis(Surface):
         float
         """
         pass
+
+    @staticmethod
+    def _allowed_surface_types():
+        return {SurfaceType.CX, SurfaceType.CY, SurfaceType.CZ}
 
     def validate(self):
         super().validate()

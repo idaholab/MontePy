@@ -17,12 +17,12 @@ class TestCellClass(TestCase):
     # TODO test updating cell geometry once done
     def test_cell_validator(self):
         cell = Cell()
-        with self.assertRaises(montepy.errors.IllegalState):
+        with self.assertRaises(montepy.exceptions.IllegalState):
             cell.validate()
-        with self.assertRaises(montepy.errors.IllegalState):
+        with self.assertRaises(montepy.exceptions.IllegalState):
             cell.format_for_mcnp_input((6, 2, 0))
         cell.mass_density = 5.0
-        with self.assertRaises(montepy.errors.IllegalState):
+        with self.assertRaises(montepy.exceptions.IllegalState):
             cell.validate()
         del cell.mass_density
 
@@ -176,14 +176,14 @@ def test_blank_num_init():
 
 @pytest.mark.parametrize("line", ["foo", "foo bar", "1 foo", "1 1 foo"])
 def test_malformed_init(line):
-    with pytest.raises(montepy.errors.MalformedInputError):
+    with pytest.raises(montepy.exceptions.MalformedInputError):
         input = Input([line], BlockType.CELL)
         Cell(input)
 
 
 @pytest.mark.parametrize("line", ["1 like 2"])
 def test_malformed_init(line):
-    with pytest.raises(montepy.errors.UnsupportedFeature):
+    with pytest.raises(montepy.exceptions.UnsupportedFeature):
         input = Input([line], BlockType.CELL)
         Cell(input)
 
@@ -197,7 +197,7 @@ def test_malformed_init(line):
     st.integers(1),
     st.integers(1),
 )
-@pytest.mark.filterwarnings("ignore::montepy.errors.LineExpansionWarning")
+@pytest.mark.filterwarnings("ignore::montepy.exceptions.LineExpansionWarning")
 def test_cell_clone(
     has_mat, clone_region, clone_material, start_num, step, other_start, other_step
 ):

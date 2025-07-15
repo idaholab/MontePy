@@ -12,7 +12,7 @@ import montepy
 from montepy.input_parser import syntax_node
 from montepy.cell import Cell
 from montepy.constants import DEFAULT_VERSION
-from montepy.errors import *
+from montepy.exceptions import *
 from montepy.input_parser.block_type import BlockType
 from montepy.input_parser.mcnp_input import Input, Jump
 from montepy.universe import Universe
