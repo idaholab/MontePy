@@ -20,6 +20,7 @@ Submodules
    montepy.particle
    montepy.surface_collection
    montepy.transforms
+   montepy.types
    montepy.universe
    montepy.universes
    montepy.utilities

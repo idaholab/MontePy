@@ -141,6 +141,183 @@ The classes are:
 Many of these nodes (which aren't leaves) behave like dicts and lists, and can be accessed with indices. 
 For more detail in how to work with them read the next section on MCNP_Objects: :ref:`mcnp-object-docs`.
 
+
+Type and Value Enforcement
+--------------------------
+
+A core principle of MontePy is that users will make mistakes and sometimes provide invalid values,
+either the wrong data type, or a nonsensical value.
+Montepy is moving to type annotations, and decorator magic to enforce this validity,
+rather than relying on a series of boiler plate type and value checks.
+All of the core functionalities required are from :mod:`montepy.utilities`.
+
+Enforcing a function's Annotations
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+The decorator, :func:`~montepy.utilities.args_checked`, will at run time check that all values passed to a 
+function are of type (and sometimes the correct value), as detailed in the type annotations.
+
+For type enforcement this is simple enough:
+
+.. doctest::
+
+        >>> from montepy.utilities import *
+        >>>
+        >>> @args_checked
+        ... def foo(a: int) -> int:
+        ...    return a
+        >>> print(foo(1))
+        1
+        >>> print(foo("a"))
+        Traceback (most recent call last):
+        ...
+        TypeError: Unable to set "a" for "foo" to "a" which is not of type "int"
+
+For more complex types, `typing.Union <https://docs.python.org/3/library/typing.html#typing.Union>`_ can be used. For instance:
+
+.. testcode::
+
+   from numbers import Integral
+   from typing import Union
+
+   @args_checked
+   def foo(a: Union[Integral, str]):
+       pass
+
+   @args_checked
+   def bar(a: Integral | str):
+       pass
+
+In this case for both ``foo`` and ``bar`` the type for ``a`` is the exact same.
+
+.. Note::
+
+   When working with numbers avoid using the types ``float`` and ``int``.
+   An ``int`` can substitute for a ``float`` in almost all cases, and
+   sometimes libraries, like numpy, provide their own equivalent types.
+   Rather you should the `numbers <https://docs.python.org/3/library/numbers.html>`_ package instead.
+   Specifically ``numbers.Real`` and ``numbers.Integral`` are the most commonly used types in 
+   MontePy.
+
+.. Note::
+
+   ``args_checked`` will work recursively through a data structure, so the type: 
+   
+   .. code-block:: python
+
+        type FancyData = dict[
+            tuple[str, Integral], 
+            list[list[Real]]
+        ] 
+   
+   would be properly enforced.
+
+
+Use with ``__future__.annotations``
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Sometimes it is necessary to include:
+
+``from __future__ import annotations``
+
+in order avoid circular imports in MontePy.
+
+What this does is treat type annotations as strings, and not evaluate them.
+When this is done ``args_checked`` will evaluate the type annotation at run time,
+from within the scope of ``montepy._checkvalue``. 
+This means that the annotations need to be in the namespace of the ``_checkvalue.py`` file,
+and not the file in which they are defined.
+This file has ``montepy`` in its namespace, and so it's always safest to have types to have their full MontePy name.
+
+Value Enforcement
+^^^^^^^^^^^^^^^^^
+
+MontePy also supports value enforcement in the type annotations, 
+through `typing.Annotated <https://docs.python.org/3/library/typing.html#typing.Annotated>`_ 
+allowed values can also be specified.
+MontePy provides functions for the most common value checks, such as :func:`~montepy.utilities.positive`. For instance:
+
+.. testcode::
+
+   from typing import Annotated
+
+   @args_checked
+   def foo(a: Annotated[Integral, positive]):
+        pass
+
+Some enforcers accept arguments, such as :func:`~montepy.utilities.greater_than`:
+
+.. testcode::
+
+   @args_checked
+   def foo(a: Annotated[Integral, greater_than(5)]):
+       pass
+
+Though you can see how this will become very verbose very quickly.
+So :mod:`montepy.types` is meant to store most of these ``Annotated`` types.
+
+.. note::
+
+   Multiple arguments can be given ``Annotated`` for instance if you needed a value to be in:
+   (0, 5), you could write:
+
+   .. code-block:: python
+
+        def foo(a: Annotated[Real, positive, less_than(5)]):
+             pass
+
+Writing a Custom Value Enforcer
+"""""""""""""""""""""""""""""""
+
+MontePy uses higher-order functions, functions that return functions, to create value enforcers.
+It is helpful to look through the value enforcement process to understand why.
+
+#. A custom type is created/Annotated.
+   A new type is created with the enforcer stored as ``AnnotatedTypeAlias.__metadata__``.
+   For some enforcers, such as :func:`~montepy.utilities.greater_than`, this stage will accept arguments.
+#. The function is decorated. At this stage :func:`~montepy.utilities.args_checked` takes the decorated function as an argument, and then returns a new function. 
+   In this process the type annotations are unpacked into a list of enforcement function calls.
+   These are bundled into a new function that calls all of these enforcers on the passed arguments,
+   before the decorated function is called and returned.
+#. The function is called. At this stage the wrapped function is called, and all of the enforcer functions are called with the actual values passed before the nested decorated function is called.
+
+For understanding these functions it may be easiest to work backward.
+At step 3 you need a function that takes a single value, the passed argument,
+which returns nothing, but raises a ``ValueError`` if the wrong value is passed in.
+
+To help users with debugging though this enforcing function needs context.
+So during step 2 the function name, as the first argument, and the argument name, as the second argument are passed to the enforcer function generator.
+
+At step 1 additional restrictions may be passed in to change the behavior of the enforcer.
+
+Some pseudo-implementations may be helpful here.
+For a simple implementation, let's look at how :func:`~montepy.utilties.positive` could be written:
+
+.. code-block:: python
+
+   def positive(func_name, name):
+        def enforcer(x):
+            if enforcer <= 0:
+                raise ValueError(
+                     f"The value, {x}, given to {func_name} for argument, {name} is not positive"
+                )
+        return enforcer
+
+For a more complicated scenario let's look at how you might implement :func:`~montepy.utilities.greater_than`:
+
+.. code-block:: python
+
+   def greater_than(minimum: Real):
+
+        def enforcer_generator(func_name, name):
+             def enforcer(x):
+                  if x <= minimum:
+                       raise ValueError(
+                           f"The value, {x}, given to {func_name} for argument, {name} is not greater than the minimum, {minimum}"
+                       )
+             return enforcer
+        return enforcer_generator
+
 Inheritance
 -----------
 

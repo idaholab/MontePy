@@ -20,7 +20,10 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT, OR OTHERWISE, ARISING FROM,
 OUT OF, OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 
-Code from checkvalue.py from OpenMC was incorporated into montepy._check_value.
+##############################################################################
+Code from checkvalue.py from OpenMC was incorporated into montepy._check_value.py,
+and is licensed by the following:
+###############################################################################
 
 Copyright (c) 2014-2025 Massachusetts Institute of Technology, UChicago Argonne
 LLC, and OpenMC contributors

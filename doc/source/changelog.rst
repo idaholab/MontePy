@@ -52,6 +52,14 @@ MontePy Changelog
 1.0 releases
 ============
 
+#Next Version#
+--------------
+
+**Code Improvements**
+
+* Add _checkvalue.py_ to codebase (:issue:`687`). 
+
+
 1.0.0
 --------------
 
