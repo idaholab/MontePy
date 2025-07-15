@@ -24,8 +24,20 @@ def create_surfaces(problem, n_cells):
     for _ in range(int(n_surfs)):
         problem.surfaces.append_renumber(create_surface())
 
+def create_materials(problem, n_cells):
+    n_cells = N_CELLS_NOISE(n_cells)
+    n_mats = int(MATERIAL_CURVE(n_cells))
+    for _ in range(n_mats):
+        problem.materials.append_renumber(create_material())
 
-problem = montepy.MCNP_Problem("foo")
+def create_material():
+    return montepy.Material()
+
+def create_cell(problem):
+    pass
+
+
+problem= montepy.MCNP_Problem("foo")
 create_surfaces(problem, 100)
 for surf in problem.surfaces:
     print(surf.mcnp_str())

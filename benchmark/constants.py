@@ -23,6 +23,16 @@ MATERIAL_CURVE = lambda x: 1.48 * x**0.43
 
 OBJ_NUMBER = lambda: np.random.randint(1, 99_999_999)
 
+ATOM_MASS_DENSITY = lambda: np.random.binomial(1, 0.5)
+
+def MASS_DENSITY():
+    sample = np.random.normal(5.0, 1.0)
+    return sample if sample > 0.0 else 0.001
+
+def ATOM_DENSITY():
+    sample = np.random.normal(0.01, 1e-3)
+    return sample if sample > 0.0 else 0.001
+
 GEOM_OP = lambda: np.random.choice(
     [
         montepy.Operator.INTERSECTION,
