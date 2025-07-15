@@ -3,9 +3,8 @@ name = "montepy"
 dynamic = ["version"]
 description = "A library for reading, editing, and writing MCNP input files"
 
-# gitlab limits the readme to 4,000 chars.
 readme = "README.md"
-requires-python = ">=3.10"
+requires-python = ">=3.11"
 maintainers = [
     {name = "Micah Gale", email = "mgale@montepy.org"}
 ]
@@ -29,15 +28,13 @@ classifiers = [
        "Topic :: Scientific/Engineering",
        "Topic :: Scientific/Engineering :: Human Machine Interfaces",
        "Programming Language :: Python :: 3 :: Only",
-       "Programming Language :: Python :: 3.9",
-       "Programming Language :: Python :: 3.10",
        "Programming Language :: Python :: 3.11",
        "Programming Language :: Python :: 3.12",
        "Programming Language :: Python :: 3.13"
 ]
 dependencies = [
-    "numpy>=1.18",
-    "sly>= 0.4, <=0.5"
+	"numpy>=1.26",
+	"sly>= 0.4, <=0.5"
 ]
 
 [project.optional-dependencies]

@@ -1,7 +1,7 @@
 # Copyright 2024-2025, Battelle Energy Alliance, LLC All Rights Reserved.
 from __future__ import annotations
 import montepy
-from montepy.errors import *
+from montepy.exceptions import *
 from montepy.geometry_operators import Operator
 from montepy.input_parser.syntax_node import (
     GeometryTree,

@@ -22,6 +22,17 @@ MontePy can be installed with pip:
    pip install montepy
 
 
+Use cases
+---------
+
+Here are some possible use cases for MontePy:
+
+* Automated updating of an MCNP input file, or MCNP deck, for reactor reconfiguration, fuel shuffling, etc.
+* Parameterizing an MCNP input file to check for explore the parametric space of your MCNP modeling problem
+* Updating an MCNP model with the results from another code, such as depletion results from ORIGEN.
+* To convert an MCNP model to another Monte Carlo code like OpenMC, SERPENT, etc. 
+
+
 .. toctree::
    :maxdepth: 2
    :caption: Table of Contents:
