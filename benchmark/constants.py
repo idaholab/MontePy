@@ -25,13 +25,16 @@ OBJ_NUMBER = lambda: np.random.randint(1, 99_999_999)
 
 ATOM_MASS_DENSITY = lambda: np.random.binomial(1, 0.5)
 
+
 def MASS_DENSITY():
     sample = np.random.normal(5.0, 1.0)
     return sample if sample > 0.0 else 0.001
 
+
 def ATOM_DENSITY():
     sample = np.random.normal(0.01, 1e-3)
     return sample if sample > 0.0 else 0.001
+
 
 GEOM_OP = lambda: np.random.choice(
     [
@@ -44,12 +47,14 @@ GEOM_OP = lambda: np.random.choice(
 
 
 def N_CELLS_NOISE(n):
-    new_n = np.round(np.random.normal(n, 0.05*n))
+    new_n = np.round(np.random.normal(n, 0.05 * n))
     new_n = 1 if new_n < 0 else new_n
     return int(new_n)
 
+
 _st = montepy.SurfaceType
-_p=np.array([
+_p = np.array(
+    [
         0.387353,
         0.169831,
         0.127609,
@@ -73,7 +78,9 @@ _p=np.array([
         1.70e-4,
         1.57e-4,
         1.16e-4,
-        2.1e-5])
+        2.1e-5,
+    ]
+)
 _p = _p / np.sum(_p)
 SURF_TYPE = lambda: np.random.choice(
     [
@@ -102,7 +109,7 @@ SURF_TYPE = lambda: np.random.choice(
         _st.TRC,
         _st.S,
     ],
-    p = _p
+    p=_p,
 )
 
 NUM_CONSTANTS = {
@@ -129,6 +136,16 @@ NUM_CONSTANTS = {
     _st.TRC: 8,
     _st.S: 4,
 }
-SURFACE_CONSTANT = lambda :np.round(np.random.uniform(0.0, 15.0), np.random.randint(1,8))
+SURFACE_CONSTANT = lambda: np.round(
+    np.random.uniform(0.0, 15.0), np.random.randint(1, 8)
+)
 
-USES_UNIVERSES = np.random.binomial(1, 0.3234)
+USES_UNIVERSES = lambda: np.random.binomial(1, 0.3234)
+
+NUM_SURFS_IN_CELL = lambda: np.random.exponential(4.1599)
+
+CELL_GEOM_COMP = lambda: np.random.binomial(1, 7.728e-3)
+
+CELL_GEOM_INTERSECT = lambda: np.random.binomial(1, 0.987911)
+
+CELL_GEOM_SIDE = lambda: np.random.binomial(1, 0.46007)
