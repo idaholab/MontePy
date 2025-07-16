@@ -133,6 +133,12 @@ It will read the specified MCNP input file, and return an MontePy :class:`~monte
 >>> len(problem.cells)
 5
 
+.. note::
+
+   MontePy may be slow when loading large MCNP models.
+   To address this MontePy does support parsing using multi-processing,
+   but not by default. For how to use this option see: :ref:`performance`.
+
 Writing a File
 --------------
 

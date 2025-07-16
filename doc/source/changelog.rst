@@ -23,6 +23,7 @@ MontePy Changelog
 **Features Added**
 
 * Added demonstration jupyter notebooks for working with Pin Cell and PWR assemblies in MontePy.
+* Added support for parallel parsing of large input files with the ``multi_process`` argument (:issue:`742`).
 
 **Bugs Fixed**
 

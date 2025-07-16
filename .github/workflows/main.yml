@@ -100,7 +100,45 @@ jobs:
         with:
           file: coverage.xml
           github-token: ${{ secrets.github_token }}
-  
+          flag-name: serial
+          parallel: true
+
+  parallel-test:
+    strategy:
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+        python-version: ["3.13", "3.14-dev"]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: set up python 3.13
+        uses: actions/setup-python@v5
+        with: 
+          python-version: ${{ matrix.python-version }}
+      - run: pip install --user . montepy[test,build]
+      - run: MONTEPY_MULTIPROC=1 python -m pytest tests/test_integration.py
+        if: ${{ matrix.os == 'macos-latest' }}
+      - run: |
+             MONTEPY_MULTIPROC=1 coverage run --concurrency=multiprocessing -p -m pytest
+             coverage combine
+             coverage xml
+        if: ${{ matrix.os  == 'ubuntu-latest' }}
+        name: collect coverage
+      - run: | 
+         set MONTEPY_MULTIPROC=1
+         python -m pytest tests/test_integration.py
+        if: ${{ matrix.os == 'windows-latest' }}
+      - run: python benchmark/benchmark_big_model_parallel.py  
+        name: Benchmark against big model
+      - name: Coveralls Upload
+        uses: coverallsapp/github-action@648a8eb78e6d50909eff900e4ec85cab4524a45b
+        if: ${{ matrix.os  == 'ubuntu-latest' && matrix.python-version == '3.13' }}
+        with:
+          file: coverage.xml
+          github-token: ${{ secrets.github_token }}
+          flag-name: parallel
+          parallel: true
+
 
 
 
@@ -195,7 +233,7 @@ jobs:
         with: 
           python-version: 3.12
       - run: pip install . montepy[test]
-      - run: python benchmark/benchmark_big_model.py  
+      - run: python benchmark/benchmark_big_model_serial.py  
         name: Benchmark against big model
 
         
@@ -218,3 +256,14 @@ jobs:
         run: |
           echo "Changelog not updated"
           exit 1
+
+  finish:
+    needs: test
+    if: ${{ always() }}
+    runs-on: ubuntu-latest
+    steps:
+    - name: Coveralls Finished
+      uses: coverallsapp/github-action@648a8eb78e6d50909eff900e4ec85cab4524a45b
+      with:
+        parallel-finished: true
+        carryforward: "serial"

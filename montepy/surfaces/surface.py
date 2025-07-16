@@ -39,7 +39,7 @@ class Surface(Numbered_MCNP_Object):
         The surface_type to set for this object
     """
 
-    _parser = SurfaceParser()
+    _parser = SurfaceParser
 
     def __init__(
         self,
@@ -52,7 +52,7 @@ class Surface(Numbered_MCNP_Object):
             "transform": transform.Transform,
         }
         self._BLOCK_TYPE = montepy.input_parser.block_type.BlockType.SURFACE
-        super().__init__(input, self._parser, number)
+        super().__init__(input, self._parser(), number)
         self._periodic_surface = None
         self._old_periodic_surface = self._generate_default_node(int, None)
         self._old_periodic_surface.is_negatable_identifier = True
