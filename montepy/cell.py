@@ -123,26 +123,10 @@ class Cell(Numbered_MCNP_Object):
     _JitParser = JitCellParser
 
     def __init__(
-        self,
-        input: InitInput = None,
-        number: int = None,
+        self, input: InitInput = None, number: int = None, *, jit_parse: bool = True
     ):
-        self._BLOCK_TYPE = montepy.input_parser.block_type.BlockType.CELL
-        self._CHILD_OBJ_MAP = {
-            "material": Material,
-            "surfaces": Surface,
-            "complements": Cell,
-            "_fill_transform": montepy.data_inputs.transform.Transform,
-        }
-        self._material = None
-        self._old_number = self._generate_default_node(int, -1)
-        self._load_blank_modifiers()
-        self._old_mat_number = self._generate_default_node(int, -1)
-        self._density_node = self._generate_default_node(float, None)
-        self._surfaces = Surfaces()
-        self._complements = Cells()
         try:
-            super().__init__(input, self._parser, number)
+            super().__init__(input, number, jit_parse=jit_parse)
         # Add more information to issue that parser can't access
         except UnsupportedFeature as e:
             base_mesage = e.message
@@ -160,8 +144,23 @@ class Cell(Numbered_MCNP_Object):
 
             raise UnsupportedFeature(base_mesage, input, [err]) from e
 
-        if not input:
-            self._generate_default_tree(number)
+    def _init_blank(self):
+        self._BLOCK_TYPE = montepy.input_parser.block_type.BlockType.CELL
+        self._CHILD_OBJ_MAP = {
+            "material": Material,
+            "surfaces": Surface,
+            "complements": Cell,
+            "_fill_transform": montepy.data_inputs.transform.Transform,
+        }
+        self._material = None
+        self._old_number = self._generate_default_node(int, -1)
+        self._load_blank_modifiers()
+        self._old_mat_number = self._generate_default_node(int, -1)
+        self._density_node = self._generate_default_node(float, None)
+        self._surfaces = Surfaces()
+        self._complements = Cells()
+
+    def _parse_tree(self):
         self._old_number = copy.deepcopy(self._tree["cell_num"])
         self._number = self._tree["cell_num"]
         mat_tree = self._tree["material"]

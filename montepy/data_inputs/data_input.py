@@ -56,15 +56,10 @@ class DataInputAbstract(MCNP_Object):
     _JitParser = JitDataParser
 
     def __init__(
-        self,
-        input: InitInput = None,
-        fast_parse=False,
+        self, input: InitInput = None, fast_parse=False, *, jit_parse: bool = True
     ):
-        self._particles = None
         if not fast_parse:
-            super().__init__(input, self._parser)
-            if input:
-                self.__split_name(input)
+            super().__init__(input, jit_parse=jit_parse)
         else:
             if input:
                 if isinstance(input, str):
@@ -75,9 +70,17 @@ class DataInputAbstract(MCNP_Object):
                 else:
                     input = copy.copy(input)
                     input.__class__ = _ClassifierInput
-            super().__init__(input, self._classifier_parser)
-            if input:
-                self.__split_name(input)
+            self._old_parser = self._parser
+            self._parser = self._classifier_parser
+            super().__init__(input, jit_parse=jit_parse)
+            self._parser = self._old_parser
+            del self._older_parser
+
+    def _init_blank(self):
+        self._particles = None
+
+    def _parse_tree(self):
+        self.__split_name(input)
 
     @classmethod
     def _jit_light_init(cls, input: Input):

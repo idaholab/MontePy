@@ -31,6 +31,8 @@ class CellModifierInput(DataInputAbstract):
         in_cell_block: bool = False,
         key: str = None,
         value: syntax_node.SyntaxNode = None,
+        *,
+        jit_parse: bool = False,
     ):
         fast_parse = False
         if key and value:
