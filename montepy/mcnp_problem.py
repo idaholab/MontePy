@@ -406,7 +406,6 @@ class MCNP_Problem:
         for input in input_iter:
             queue.put(input)
         queue.put(None)
-        queue.cancel_join_thread()
 
     def _create_parsed_obj_generator(
         self,
