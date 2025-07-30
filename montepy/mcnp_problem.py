@@ -1,5 +1,5 @@
 # Copyright 2024-2025, Battelle Energy Alliance, LLC All Rights Reserved.
-import concurrent.futures
+from multiprocessing.pool import Pool
 import copy
 from enum import Enum
 import itertools
@@ -407,10 +407,10 @@ class MCNP_Problem:
 
         self._title = input
         if multi_proc and not check_input:
-            with concurrent.futures.ProcessPoolExecutor(
-                max_workers=num_processes,
+            with Pool(
+                num_processes,
             ) as executor:
-                for ret in executor.map(self._parse_object, input_iter, chunksize=50):
+                for ret in executor.imap(self._parse_object, input_iter, chunksize=10):
                     yield ret
 
         else:
