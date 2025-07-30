@@ -1,3 +1,4 @@
+import argparse
 import montepy
 import warnings
 
@@ -94,5 +95,10 @@ def create_problem(num_cells):
     return problem
 
 
-problem = create_problem(10)
-problem.write_problem("foo.imcnp", overwrite=True)
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser(prog="MontePy Model builder.")
+    parser.add_argument("n_cells", type= int, help="number of cells to include.")
+    parser.add_argument("output_path", type=str, help = "path to write output file to.")
+    args = parser.parse_args()
+    problem = create_problem(args.n_cells)
+    problem.write_problem(args.output_path)
