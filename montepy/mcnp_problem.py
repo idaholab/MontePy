@@ -3,9 +3,11 @@ from multiprocessing.pool import Pool
 import copy
 from enum import Enum
 import itertools
+import multiprocessing
 import os
 import pickle
 import warnings
+import queue
 
 from montepy.data_inputs import mode, transform
 from montepy._cell_data_control import CellDataPrintController
@@ -384,6 +386,28 @@ class MCNP_Problem:
         obj_parser = OBJ_MATCHER[input.block_type]
         return input, obj_parser(input)
 
+    @staticmethod
+    def _pull_from_queue(input_queue):
+        while True:
+            input = input_queue.get()
+            if input is None:
+                break
+            yield input
+
+    @staticmethod
+    def _read_from_file(input_file, mcnp_version, replace, queue):
+        input_iter = input_syntax_reader.read_input_syntax(
+            input_file, mcnp_version, replace=replace
+        )
+        input = next(input_iter)
+        if isinstance(input, mcnp_input.Message):
+            input = next(input_iter)
+
+        for input in input_iter:
+            queue.put(input)
+        queue.put(None)
+        queue.cancel_join_thread()
+
     def _create_parsed_obj_generator(
         self,
         check_input: bool = False,
@@ -407,11 +431,20 @@ class MCNP_Problem:
 
         self._title = input
         if multi_proc and not check_input:
+            input_iter.close()
+            queue = multiprocessing.Queue()
+            read_proc = multiprocessing.Process(
+                target=self._read_from_file,
+                args=(self._input_file, self.mcnp_version, replace, queue),
+            )
+            read_proc.start()
+            input_iter = self._pull_from_queue(queue)
             with Pool(
                 num_processes,
             ) as executor:
                 for ret in executor.imap(self._parse_object, input_iter, chunksize=10):
                     yield ret
+            read_proc.join()
 
         else:
             try:
