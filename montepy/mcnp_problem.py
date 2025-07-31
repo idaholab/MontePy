@@ -495,6 +495,9 @@ class MCNP_Problem:
            See `the warnings for the spawn method
            <https://docs.python.org/3/library/multiprocessing.html#the-spawn-and-forkserver-start-methods>`_.
 
+        .. versionchanged:: 1.2.0
+
+            Added the ``multi-proc`` and ``num_processes`` arguments.
 
         Parameters
         ----------

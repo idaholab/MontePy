@@ -24,6 +24,10 @@ def read_input(
         The entry point of the script needs to be import safe.
         See :ref:`windows_warning` for more details.
 
+    .. versionchanged:: 1.2.0
+
+        Added the ``multi_proc`` and ``num_processes`` arguments.
+
     Parameters
     ----------
     destination : io.TextIOBase, str, os.PathLike
