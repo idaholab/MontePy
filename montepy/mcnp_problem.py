@@ -374,6 +374,10 @@ class MCNP_Problem:
     ):
         """Semantically parses the MCNP file provided to the constructor.
 
+        .. versionchanged:: 1.2.0
+
+            Added ``jit_parse`` argument
+
         Parameters
         ----------
         check_input : bool
@@ -381,6 +385,8 @@ class MCNP_Problem:
             them as warnings to log.
         replace : bool
             replace all non-ASCII characters with a space (0x20)
+        jit_parse: bool
+            Uses just-in-time (fast) parsing when True.
         """
         trailing_comment = None
         last_obj = None

@@ -25,6 +25,10 @@ def read_input(
 
         Probably should warn about just-in-time parsing.
 
+    .. versionchanged:: 1.2.0
+
+        Added ``jit_parse`` argument
+
     Parameters
     ----------
     destination : io.TextIOBase, str, os.PathLike
