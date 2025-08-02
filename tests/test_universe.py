@@ -1,4 +1,7 @@
 # Copyright 2024 - 2025, Battelle Energy Alliance, LLC All Rights Reserved.
+import pytest
+from unittest import TestCase
+
 import copy
 import os
 
@@ -300,6 +303,11 @@ class TestFill:
         assert not fill.hidden_transform
         assert fill.old_universe_number == 5
         assert fill.old_transform_number == 3
+        # test sparse fill
+        cell = Cell("1 0 -1 fill=0:0 0:1 0:1 1 1 1")
+        fill = cell.fill
+        assert fill.old_universe_numbers[0, 0, 0] == 1
+        assert fill.old_universe_numbers[0, 1, 1] == 0
         # test bad string
         with pytest.raises(ValueError):
             input = Input(["1 0 -1 fill=hi"], BlockType.CELL)
@@ -308,20 +316,16 @@ class TestFill:
         with pytest.raises(ParsingError):
             input = Input(["1 0 -1 fill=1 (hi)"], BlockType.CELL)
             cell = Cell(input)
-            fill = cell.fill
         # test negative universe
         with pytest.raises(ValueError):
             input = Input(["1 0 -1 fill=-5"], BlockType.CELL)
             cell = Cell(input)
-            fill = cell.fill
         with pytest.raises(ValueError):
             input = Input(["1 0 -1 fill=5 (-5)"], BlockType.CELL)
             cell = Cell(input)
-            fill = cell.fill
         with pytest.raises(ValueError):
             input = Input(["1 0 -1 fill=5 1 0 0"], BlockType.CELL)
             cell = Cell(input)
-            fill = cell.fill
 
     @pytest.fixture
     def complicated_fill(self):
@@ -459,11 +463,15 @@ class TestFill:
         universes=st.lists(st.integers(0, 1_000_000), min_size=1, max_size=10),
         y_len=st.integers(1, 10),
         z_len=st.integers(1, 10),
+        fill_amount=st.floats(0.9, 1.0),
     )
     @pytest.mark.filterwarnings("ignore")
-    def test_fill_multi_unis(self, universes, y_len, z_len):
+    def test_fill_multi_unis(self, universes, y_len, z_len, fill_amount):
         fill = self.simple_fill.clone()
-        universes = np.array([[[Universe(u) for u in universes]] * y_len] * z_len)
+        universes = np.array(
+            [[[Universe(u) for u in universes]] * y_len]
+            * (int(z_len * fill_amount) + 1)
+        )
         fill.multiple_universes = True
         fill.universes = universes
         assert (fill.universes == universes).all()
