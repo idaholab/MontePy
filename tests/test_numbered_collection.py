@@ -6,7 +6,7 @@ import itertools as it
 
 import montepy
 import montepy.cells
-from montepy.errors import NumberConflictError
+from montepy.exceptions import NumberConflictError
 import pytest
 import os
 

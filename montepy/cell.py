@@ -12,7 +12,7 @@ from montepy.data_inputs import importance, fill, lattice_input, universe_input,
 from montepy.data_inputs.data_parser import PREFIX_MATCHES
 from montepy.input_parser.cell_parser import CellParser, JitCellParser
 from montepy.input_parser import syntax_node
-from montepy.errors import *
+from montepy.exceptions import *
 from montepy.numbered_mcnp_object import Numbered_MCNP_Object, InitInput
 from montepy.data_inputs.material import Material
 from montepy.geometry_operators import Operator

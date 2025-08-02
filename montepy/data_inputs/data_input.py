@@ -4,7 +4,7 @@ from abc import abstractmethod
 import copy
 
 import montepy
-from montepy.errors import *
+from montepy.exceptions import *
 from montepy.input_parser import syntax_node
 from montepy.input_parser.data_parser import (
     ClassifierParser,

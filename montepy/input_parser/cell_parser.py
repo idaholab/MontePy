@@ -1,5 +1,5 @@
 # Copyright 2024, Battelle Energy Alliance, LLC All Rights Reserved.
-from montepy.errors import *
+from montepy.exceptions import *
 from montepy.input_parser.parser_base import MCNP_Parser
 from montepy.input_parser import syntax_node
 
@@ -16,9 +16,9 @@ class CellParser(MCNP_Parser):
     debugfile = None
 
     @_(
-        "identifier_phrase material geometry_expr parameters",
+        "identifier_phrase material geometry_expr cell_parameters",
         "identifier_phrase material geometry_expr",
-        "padding identifier_phrase material geometry_expr parameters",
+        "padding identifier_phrase material geometry_expr cell_parameters",
         "padding identifier_phrase material geometry_expr",
     )
     def cell(self, p):
@@ -31,8 +31,8 @@ class CellParser(MCNP_Parser):
         dict_tree["cell_num"] = p.identifier_phrase
         dict_tree["material"] = p.material
         dict_tree["geometry"] = p.geometry_expr
-        if hasattr(p, "parameters"):
-            dict_tree["parameters"] = p.parameters
+        if hasattr(p, "cell_parameters"):
+            dict_tree["parameters"] = p.cell_parameters
         else:
             dict_tree["parameters"] = syntax_node.ParametersNode()
         return syntax_node.SyntaxNode("cell", dict_tree)
@@ -185,34 +185,102 @@ class CellParser(MCNP_Parser):
                 nodes["start_pad"].append(node)
         return syntax_node.GeometryTree("geom parens", nodes, "()", p.geometry_expr)
 
-    # support for fill card weirdness
     @_(
-        'number_sequence "(" number_sequence ")"',
-        'number_sequence "(" padding number_sequence ")"',
-        'number_sequence "(" number_sequence ")" padding',
-        'number_sequence "(" padding number_sequence ")" padding',
-        'number_sequence ":" numerical_phrase',
-        'number_sequence ":" padding numerical_phrase',
-        # support for TRCL syntax
-        '"(" number_sequence ")"',
-        '"(" number_sequence ")" padding',
-        '"(" padding number_sequence ")" padding',
+        "parameter",
+        "cell_param",
+        "cell_parameters parameter",
+        "cell_parameters cell_param",
     )
-    def number_sequence(self, p):
-        if isinstance(p[0], str):
-            sequence = syntax_node.ListNode("parenthetical statement")
-            sequence.append(p[0])
+    def cell_parameters(self, p):
+        """A list of the parameters (key, value pairs) for this input.
+
+        Returns
+        -------
+        ParametersNode
+            all parameters
+        """
+        if len(p) == 1:
+            params = syntax_node.ParametersNode()
+            param = p[0]
         else:
-            sequence = p[0]
-        for node in list(p)[1:]:
+            params = p[0]
+            param = p[1]
+        params.append(param)
+        return params
+
+    @_(
+        "classifier param_seperator cell_param_data",
+    )
+    def cell_param(self, p):
+        """A singular Key-value pair.
+
+        Returns
+        -------
+        SyntaxNode
+            the parameter.
+        """
+        return syntax_node.SyntaxNode(
+            p.classifier.prefix.value,
+            {"classifier": p.classifier, "seperator": p.param_seperator, "data": p[2]},
+        )
+
+    @_("cell_fill", "transform")
+    def cell_param_data(self, p):
+        return p[0]
+
+    @_(
+        "numerical_phrase transform",
+        "indices number_sequence",
+        "indices number_sequence transform",
+    )
+    def cell_fill(self, p):
+        """
+        A fill parameter data in a cell.
+        """
+        tree = {}
+        if hasattr(p, "indices"):
+            tree["indices"] = p.indices
+        else:
+            tree["indices"] = syntax_node.ListNode("fill indices")
+        if hasattr(p, "numerical_phrase"):
+            unis = syntax_node.ListNode("fill universes")
+            unis.append(p.numerical_phrase)
+        else:
+            unis = p.number_sequence
+        tree["universes"] = unis
+        if hasattr(p, "transform"):
+            tree["transform"] = p.transform
+        else:
+            tree["transform"] = syntax_node.ListNode("fill transform")
+        return syntax_node.SyntaxNode("cell fill", tree)
+
+    @_("index_pair index_pair index_pair")
+    def indices(self, p):
+        ret = p[0]
+        for lnode in list(p)[1:]:
+            for node in lnode.nodes:
+                ret.append(node)
+        return ret
+
+    @_('numerical_phrase ":" numerical_phrase')
+    def index_pair(self, p):
+        ret = syntax_node.ListNode("index list")
+        for node in p:
+            if isinstance(node, str):
+                node = syntax_node.PaddingNode(node)
+            ret.append(node)
+        return ret
+
+    @_("lparen_phrase number_sequence rparen_phrase")
+    def transform(self, p):
+        ret = syntax_node.ListNode("cell transform")
+        for node in p:
             if isinstance(node, syntax_node.ListNode):
-                for val in node.nodes:
-                    sequence.append(val)
-            elif isinstance(node, str):
-                sequence.append(syntax_node.PaddingNode(node))
+                for n in node.nodes:
+                    ret.append(n)
             else:
-                sequence.append(node)
-        return sequence
+                ret.append(node)
+        return ret
 
 
 class JitCellParser:

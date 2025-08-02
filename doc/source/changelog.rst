@@ -2,10 +2,36 @@
 MontePy Changelog
 *****************
 
-1.1 releases
+1.2 releases
 ============
 
 #Next Version#
+--------------
+
+**Deprecations**
+
+* Dropped support for python 3.9 and 3.10 in order to comply with `SPEC 0 <https://scientific-python.org/specs/spec-0000/>`_ (:issue:`780`).
+
+1.1 releases
+============
+
+1.1.2
+--------------
+
+**Code Quality**
+
+* Refactor ``montepy.errors`` to ``montepy.exceptions``, to reflect that it also contains warnings (:issue:`764`).
+
+**Deprecations**
+
+* Marked ``montepy.errors`` as deprecated, with a ``FutureWarning``, use ``montepy.exceptions`` instead. (:issue:`764`).
+
+**Bugs Fixed**
+
+* Fixed parsing error where MontePy could not handle a fill matrix that was sparse (:issue:`601`).
+
+
+1.1.1
 --------------
 
 **Features Added**
@@ -35,8 +61,6 @@ MontePy Changelog
 * Fixed bug where MontePy would overly aggressively round outputs and remove the user's intent (:issue:`756`).
 * Fixed bug where a cell complement in the first five characters causes a spurious vertical mode detection (:issue:`753`).
 
-1.0 releases
-============
 
 1.0 releases
 ============

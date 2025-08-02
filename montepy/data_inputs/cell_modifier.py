@@ -158,7 +158,7 @@ class CellModifierInput(DataInputAbstract):
             cells = self._problem.cells
             for cell in cells:
                 if getattr(cell, attr).set_in_cell_block:
-                    raise montepy.errors.MalformedInputError(
+                    raise montepy.exceptions.MalformedInputError(
                         cell._input,
                         f"Cell: {cell.number} provided {self._class_prefix().upper()}"
                         " data when those data were in the data block",

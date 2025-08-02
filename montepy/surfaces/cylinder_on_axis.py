@@ -1,7 +1,7 @@
 # Copyright 2024, Battelle Energy Alliance, LLC All Rights Reserved.
 from .surface_type import SurfaceType
 from .surface import Surface, InitInput
-from montepy.errors import *
+from montepy.exceptions import *
 from montepy.utilities import *
 
 from typing import Union

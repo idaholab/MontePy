@@ -12,7 +12,7 @@ from numbers import Integral, Real
 from montepy import input_parser
 from montepy import constants
 from montepy.constants import rel_tol, abs_tol
-from montepy.errors import *
+from montepy.exceptions import *
 from montepy.input_parser.shortcuts import Shortcuts
 from montepy.geometry_operators import Operator
 from montepy.particle import Particle
@@ -1013,7 +1013,7 @@ class ValueNode(SyntaxNodeBase):
         self._nodes = [self]
         self._is_reversed = False
 
-    def _convert_to_int(self):
+    def convert_to_int(self):
         """Converts a float ValueNode to an int ValueNode."""
         if self._type not in {float, int}:
             raise ValueError(f"ValueNode must be a float to convert to int")
@@ -1031,7 +1031,7 @@ class ValueNode(SyntaxNodeBase):
                     raise e
         self._formatter = self._FORMATTERS[int].copy()
 
-    def _convert_to_enum(
+    def convert_to_enum(
         self, enum_class, allow_none=False, format_type=str, switch_to_upper=False
     ):
         """Converts the ValueNode to an Enum for allowed values.
@@ -1057,7 +1057,7 @@ class ValueNode(SyntaxNodeBase):
             self._value = enum_class(value)
         self._formatter = self._FORMATTERS[format_type].copy()
 
-    def _convert_to_str(self):
+    def convert_to_str(self):
         """Converts this ValueNode to being a string type.
 
         .. versionadded:: 1.0.0
@@ -1090,7 +1090,7 @@ class ValueNode(SyntaxNodeBase):
     @is_negatable_identifier.setter
     def is_negatable_identifier(self, val):
         if val == True:
-            self._convert_to_int()
+            self.convert_to_int()
             if self.value is not None:
                 self._is_neg = self.value < 0
                 self._value = abs(self._value)
@@ -1854,16 +1854,16 @@ class ListNode(SyntaxNodeBase):
         rstop = i.stop
         if rstep < 0:  # Backwards
             if rstart is None:
-                rstart = len(self.nodes) - 1
+                rstart = len(self) - 1
             if rstop is None:
                 rstop = 0
-            rstop -= 1
         else:  # Forwards
             if rstart is None:
                 rstart = 0
             if rstop is None:
                 rstop = len(self.nodes) - 1
-            rstop += 1
+            if rstop < 0:
+                rstop += len(self)
         buffer = []
         allowed_indices = range(rstart, rstop, rstep)
         for i, item in enumerate(self):

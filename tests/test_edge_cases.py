@@ -8,7 +8,12 @@ import os
 from unittest import TestCase
 
 import montepy
-from montepy.errors import *
+from montepy.exceptions import *
+from pathlib import Path
+import os
+
+import pytest
+from unittest import TestCase
 
 
 class EdgeCaseTests(TestCase):
@@ -60,7 +65,7 @@ class EdgeCaseTests(TestCase):
         self.assertEqual(card.input_lines, [in_str])
 
     def test_long_lines(self):
-        with self.assertWarns(montepy.errors.LineOverRunWarning):
+        with self.assertWarns(montepy.exceptions.LineOverRunWarning):
             problem = montepy.read_input(
                 "tests/inputs/test_long_lines.imcnp", (5, 1, 60)
             )
@@ -102,7 +107,7 @@ class EdgeCaseTests(TestCase):
             cell = copy.deepcopy(base_cell)
             print(dens_value)
             cell.mass_density = dens_value
-            with self.assertWarns(montepy.errors.LineExpansionWarning):
+            with self.assertWarns(LineExpansionWarning):
                 output = cell.format_for_mcnp_input((6, 2, 0))
             print(output)
             parts = output[0].split()
@@ -248,5 +253,5 @@ def test_expanding_new_line():
     fill = problem.cells[1].fill
     universes = [montepy.Universe(n) for n in range(300)]
     fill.universes = np.array([[universes]])
-    with io.StringIO() as fh, pytest.warns(montepy.errors.LineExpansionWarning):
+    with io.StringIO() as fh, pytest.warns(LineExpansionWarning):
         problem.write_problem(fh)

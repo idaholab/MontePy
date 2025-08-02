@@ -4,7 +4,7 @@ from io import StringIO
 import pytest
 
 import montepy
-from montepy.errors import *
+from montepy.exceptions import *
 from montepy.input_parser import input_syntax_reader
 from montepy.input_parser.mcnp_input import Input, Jump, Message, ReadInput, Title
 from montepy.input_parser.block_type import BlockType
@@ -46,38 +46,38 @@ class TestValueNode:
 
     def test_valuenode_convert_to_int(self):
         node = syntax_node.ValueNode("1", float)
-        node._convert_to_int()
+        node.convert_to_int()
         assert node.type == int
         assert node.value == 1
         # test 1.0
         node = syntax_node.ValueNode("1.0", float)
-        node._convert_to_int()
+        node.convert_to_int()
         assert node.type == int
         assert node.value == 1
         # test wrong type
         with pytest.raises(ValueError):
             node = syntax_node.ValueNode("hi", str)
-            node._convert_to_int()
+            node.convert_to_int()
         # test real float
         with pytest.raises(ValueError):
             node = syntax_node.ValueNode("1.23", float)
-            node._convert_to_int()
+            node.convert_to_int()
 
     def test_valuenode_convert_to_enum(self):
         node = syntax_node.ValueNode("1", float)
         lat = montepy.data_inputs.lattice.LatticeType
-        node._convert_to_enum(lat)
+        node.convert_to_enum(lat)
         assert node.type == lat
         assert node.value == lat(1)
         # test with None
         with pytest.raises(ValueError):
             node = syntax_node.ValueNode(None, float)
-            node._convert_to_enum(lat)
-        node._convert_to_enum(lat, allow_none=True)
+            node.convert_to_enum(lat)
+        node.convert_to_enum(lat, allow_none=True)
         assert None is (node.value)
         st = montepy.surfaces.surface_type.SurfaceType
         node = syntax_node.ValueNode("p", str)
-        node._convert_to_enum(st, switch_to_upper=True)
+        node.convert_to_enum(st, switch_to_upper=True)
         assert node.type == st
         assert node.value == st("P")
 
@@ -308,7 +308,7 @@ class TestValueNode:
     )
     def test_value_enum_format(_, input, val, enum_class, args, answer, expand):
         node = syntax_node.ValueNode(input, args["format_type"])
-        node._convert_to_enum(enum_class, **args)
+        node.convert_to_enum(enum_class, **args)
         node.value = val
         if expand:
             warnings.simplefilter("default")
@@ -924,7 +924,7 @@ def test_shortcut_expansion_invalid(test):
         input = Input([test], BlockType.DATA)
         parsed = parser.parse(input.tokenize())
         if parsed is None:
-            raise montepy.errors.MalformedInputError("", "")
+            raise montepy.exceptions.MalformedInputError("", "")
 
 
 @pytest.mark.parametrize(
@@ -1356,7 +1356,7 @@ bar
         )
         next(generator)
         next(generator)
-        with pytest.raises(montepy.errors.UnsupportedFeature):
+        with pytest.raises(montepy.exceptions.UnsupportedFeature):
             next(generator)
 
     def testCardStringRepr(self):
@@ -1409,7 +1409,7 @@ bar
         ],
     )
     def test_data_name_enforce_bad(_, in_str, answer):
-        with pytest.raises(montepy.errors.MalformedInputError):
+        with pytest.raises(montepy.exceptions.MalformedInputError):
             card = montepy.input_parser.mcnp_input.Input(
                 [in_str], montepy.input_parser.block_type.BlockType.DATA
             )
@@ -1450,7 +1450,7 @@ bar
     )
     def test_get_line_numbers(_, version, line_number):
         assert line_number == montepy.constants.get_max_line_length(version)
-        with pytest.raises(montepy.errors.UnsupportedFeature):
+        with pytest.raises(montepy.exceptions.UnsupportedFeature):
             montepy.constants.get_max_line_length((5, 1, 38))
 
     def test_jump(self):

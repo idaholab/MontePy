@@ -10,7 +10,7 @@ from typing import Union
 import warnings
 import weakref
 
-from montepy.errors import *
+from montepy.exceptions import *
 from montepy.constants import (
     BLANK_SPACE_CONTINUE,
     COMMENT_FINDER,

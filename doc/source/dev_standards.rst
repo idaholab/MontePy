@@ -37,6 +37,21 @@ Here is a quick summary of release types used, that is not meant to be authorita
   Features are not locked at this point, and may change.
   This is signified by adding ``a\d+`` to the end of the *next* release.
 
+Dependency Support
+------------------
+
+MontePy has adopted `SPEC 0 <https://scientific-python.org/specs/spec-0000/>`_. 
+
+This project supports:
+
+* All minor versions of Python released 36 months prior to the project, and at minimum the two latest minor versions.
+
+* All minor versions of numpy released in the 24 months prior to the project, and at minimum the last three minor versions.
+* In ``pyproject.toml``, the ``requires-python`` variable should be set to the minimum supported version of Python. All supported minor versions of Python should be in the test matrix and have binary artifacts built for the release.
+
+Minimum Python and NumPy version support should be adjusted upward on every major and minor release, but never on a patch release.
+
+
 
 Design Philosophy
 -----------------
