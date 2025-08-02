@@ -3,7 +3,6 @@ import itertools as it
 from numbers import Integral, Real
 import numpy as np
 
-import montepy
 from montepy.data_inputs.cell_modifier import CellModifierInput, InitInput
 from montepy.data_inputs.transform import Transform
 from montepy.exceptions import *
@@ -175,7 +174,7 @@ class Fill(CellModifierInput):
 
         Parameters
         ----------
-        value : str
+        value : SyntaxNode
             the value in the cell
         """
         self._multi_universe = True
@@ -600,7 +599,6 @@ class Fill(CellModifierInput):
                 yield value
 
         if self.multiple_universes:
-            payload = []
             get_number = np.vectorize(lambda u: u.number)
             payload = get_number(self.universes).T.ravel()
         else:
@@ -619,7 +617,7 @@ class Fill(CellModifierInput):
         # drop blank values from original
         for back_idx, node in enumerate(reversed(list(buffer))):
             # if we should keep something on the right side
-            if node.value != 0 and node.value is not None or node.token is not None:
+            if node.value or node.token is not None:
                 break
         buffer = buffer[: len(buffer) - back_idx]
         tree.update_with_new_values(buffer)
