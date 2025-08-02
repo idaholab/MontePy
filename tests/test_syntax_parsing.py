@@ -46,38 +46,38 @@ class TestValueNode:
 
     def test_valuenode_convert_to_int(self):
         node = syntax_node.ValueNode("1", float)
-        node._convert_to_int()
+        node.convert_to_int()
         assert node.type == int
         assert node.value == 1
         # test 1.0
         node = syntax_node.ValueNode("1.0", float)
-        node._convert_to_int()
+        node.convert_to_int()
         assert node.type == int
         assert node.value == 1
         # test wrong type
         with pytest.raises(ValueError):
             node = syntax_node.ValueNode("hi", str)
-            node._convert_to_int()
+            node.convert_to_int()
         # test real float
         with pytest.raises(ValueError):
             node = syntax_node.ValueNode("1.23", float)
-            node._convert_to_int()
+            node.convert_to_int()
 
     def test_valuenode_convert_to_enum(self):
         node = syntax_node.ValueNode("1", float)
         lat = montepy.data_inputs.lattice.LatticeType
-        node._convert_to_enum(lat)
+        node.convert_to_enum(lat)
         assert node.type == lat
         assert node.value == lat(1)
         # test with None
         with pytest.raises(ValueError):
             node = syntax_node.ValueNode(None, float)
-            node._convert_to_enum(lat)
-        node._convert_to_enum(lat, allow_none=True)
+            node.convert_to_enum(lat)
+        node.convert_to_enum(lat, allow_none=True)
         assert None is (node.value)
         st = montepy.surfaces.surface_type.SurfaceType
         node = syntax_node.ValueNode("p", str)
-        node._convert_to_enum(st, switch_to_upper=True)
+        node.convert_to_enum(st, switch_to_upper=True)
         assert node.type == st
         assert node.value == st("P")
 
@@ -308,7 +308,7 @@ class TestValueNode:
     )
     def test_value_enum_format(_, input, val, enum_class, args, answer, expand):
         node = syntax_node.ValueNode(input, args["format_type"])
-        node._convert_to_enum(enum_class, **args)
+        node.convert_to_enum(enum_class, **args)
         node.value = val
         if expand:
             warnings.simplefilter("default")

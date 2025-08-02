@@ -16,6 +16,10 @@ MontePy Changelog
 
 * Marked ``montepy.errors`` as deprecated, with a ``FutureWarning``, use ``montepy.exceptions`` instead. (:issue:`764`).
 
+**Bugs Fixed**
+
+* Fixed parsing error where MontePy could not handle a fill matrix that was sparse (:issue:`601`).
+
 
 1.1.1
 --------------
