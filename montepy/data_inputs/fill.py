@@ -66,7 +66,7 @@ class Fill(CellModifierInput):
             values = self.data
             for value in values:
                 try:
-                    value._convert_to_int()
+                    value.convert_to_int()
                     if value.value is not None:
                         assert value.value >= 0
                         self._old_numbers.append(value)
@@ -134,7 +134,7 @@ class Fill(CellModifierInput):
             uni_data = data["universes"]
             try:
                 val = uni_data[0]
-                val._convert_to_int()
+                val.convert_to_int()
                 assert val.value >= 0
                 self._old_number = val
             except (TypeError, AssertionError) as e:
@@ -151,7 +151,7 @@ class Fill(CellModifierInput):
             if len(trans_data) == 1:
                 try:
                     transform = trans_data[0]
-                    transform._convert_to_int()
+                    transform.convert_to_int()
                     assert transform.value > 0
                     self._hidden_transform = False
                     self._old_transform_number = transform
@@ -193,7 +193,7 @@ class Fill(CellModifierInput):
                 (min_val, max_val), (self._min_index, self._max_index)
             ):
                 try:
-                    val._convert_to_int()
+                    val.convert_to_int()
                     limit_holder[axis] = val.value
                 except ValueError as e:
                     raise ValueError(
@@ -222,7 +222,7 @@ class Fill(CellModifierInput):
                             val = self._generate_default_node(int, None)
                             new_nodes.append(val)
                         else:
-                            val._convert_to_int()
+                            val.convert_to_int()
                             assert val.value >= 0
                         self._old_numbers[i][j][k] = val.value if val.value else 0
                     except (ValueError, AssertionError) as e:

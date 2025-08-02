@@ -68,7 +68,7 @@ class Surface(Numbered_MCNP_Object):
             self._generate_default_tree(number, surface_type)
         # surface number
         self._number = self._tree["surface_num"]["number"]
-        self._number._convert_to_int()
+        self._number.convert_to_int()
         self._old_number = copy.deepcopy(self._number)
         if "modifier" in self._tree["surface_num"]:
             self._modifier = self._tree["surface_num"]["modifier"]
@@ -98,7 +98,7 @@ class Surface(Numbered_MCNP_Object):
         # parse surface mnemonic
         try:
             # enforce enums
-            self._surface_type._convert_to_enum(
+            self._surface_type.convert_to_enum(
                 SurfaceType, allow_none=True, switch_to_upper=True
             )
         # this should never be reached due to SLY rules.
