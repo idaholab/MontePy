@@ -627,15 +627,19 @@ class Fill(CellModifierInput):
         Updates cell fill tree with the indices limit for a multi-universe fill.
         """
         base_tree = self._tree["data"]["indices"]
+        # clear out old indices if not being used
         if not self.multiple_universes:
             base_tree.nodes.clear()
             return
+        # Need (3 dimensions) x (3 nodes [#, :, #]) for all indices
         if len(base_tree) != 9:
             base_tree.nodes.clear()
+            # create blank tree
             for _ in range(3):
                 base_tree.append(syntax_node.ValueNode(None, int, never_pad=True))
                 base_tree.append(syntax_node.PaddingNode(":"))
                 base_tree.append(syntax_node.ValueNode(None, int))
+        # iterate through starting index of each dimension (3 nodes per dimension)
         for dimension, base_idx in enumerate(range(0, 8, 3)):
             base_tree[base_idx].value = self.min_index[dimension]
             base_tree[base_idx + 2].value = self.max_index[dimension]
