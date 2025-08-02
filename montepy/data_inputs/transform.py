@@ -26,6 +26,8 @@ class Transform(data_input.DataInputAbstract, Numbered_MCNP_Object):
         The Input object representing the input
     number : int
         The number to set for this object.
+    jit_parse : bool
+        Parse the object just-in-time, when the information is actually needed, if True.
     """
 
     def __init__(
@@ -33,60 +35,65 @@ class Transform(data_input.DataInputAbstract, Numbered_MCNP_Object):
         input: InitInput = None,
         pass_through: bool = False,
         number: int = None,
+        *,
+        jit_parse: bool = True,
     ):
         self._pass_through = pass_through
         self._old_number = self._generate_default_node(int, -1)
+        super().__init__(input, jit_parse=jit_parse)
+        self._load_init_num(number)
+
+    def _init_blank(self):
         self._displacement_vector = np.array([])
         self._rotation_matrix = np.array([])
         self._is_in_degrees = False
         self._is_main_to_aux = True
-        super().__init__(input)
-        self._load_init_num(number)
-        if input:
-            words = self._tree["data"]
-            i = 0
-            if len(words) < 3:
-                raise MalformedInputError(input, f"Not enough entries were provided")
-            modifier = self._classifier.modifier
-            if modifier and "*" in modifier.value:
-                self._is_in_degrees = True
-            else:
-                self._is_in_degrees = False
-            self._number = self._input_number
-            self._old_number = copy.deepcopy(self._number)
 
-            # parse displacement
-            values = []
-            for j, word in enumerate(words):
-                values.append(word.value)
-                i += 1
-                if j >= 2:
-                    break
-            self._displacement_vector = np.array(values)
+    def _parse_tree(self):
+        self._number = self._input_number
+        self._old_number = copy.deepcopy(self._number)
+        words = self._tree["data"]
+        i = 0
+        if len(words) < 3:
+            raise MalformedInputError(input, f"Not enough entries were provided")
+        modifier = self.modifier
+        if modifier and "*" in modifier.value:
+            self._is_in_degrees = True
+        else:
+            self._is_in_degrees = False
 
-            # parse rotation
-            values = []
-            for j, word in enumerate(words.nodes[i:]):
-                values.append(word.value)
-                i += 1
-                if j >= 8:
-                    break
-            self._rotation_matrix = np.array(values)
+        # parse displacement
+        values = []
+        for j, word in enumerate(words):
+            values.append(word.value)
+            i += 1
+            if j >= 2:
+                break
+        self._displacement_vector = np.array(values)
 
-            self._is_main_to_aux = True
-            if len(values) == 9:
-                try:
-                    word = words[i]
-                    word.is_negatable_identifier = True
-                    if word.value != 1:
-                        raise MalformedInputError(
-                            input, f"{word} can't be parsed as 1 or -1"
-                        )
-                    # negative means not main_to_aux
-                    self._is_main_to_aux = not word.is_negative
-                # if no more words remain don't worry
-                except IndexError:
-                    pass
+        # parse rotation
+        values = []
+        for j, word in enumerate(words.nodes[i:]):
+            values.append(word.value)
+            i += 1
+            if j >= 8:
+                break
+        self._rotation_matrix = np.array(values)
+
+        self._is_main_to_aux = True
+        if len(values) == 9:
+            try:
+                word = words[i]
+                word.is_negatable_identifier = True
+                if word.value != 1:
+                    raise MalformedInputError(
+                        input, f"{word} can't be parsed as 1 or -1"
+                    )
+                # negative means not main_to_aux
+                self._is_main_to_aux = not word.is_negative
+            # if no more words remain don't worry
+            except IndexError:
+                pass
 
     @staticmethod
     def _class_prefix():
