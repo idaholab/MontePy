@@ -96,16 +96,16 @@ class _ExceptionContextAdder(ABCMeta):
 class MCNP_Object(ABC, metaclass=_ExceptionContextAdder):
     """Abstract class for semantic representations of MCNP inputs.
 
+    .. versionchanged:: 1.2.0
+        * Removed parser as an argument (now an abstract property)
+        * Added jit_parse argument
+
     Parameters
     ----------
     input : Union[Input, str]
         The Input syntax object this will wrap and parse.
-    parser : MCNP_Parser
-        The parser object to parse the input with.
-
-    .. versionchanged:: 1.2.0
-        * Removed parser as an argument (now an abstract property)
-        * Added jit_parse argument
+    jit_parse : bool
+        Parse the object just-in-time, when the information is actually needed, if True.
     """
 
     def __init__(self, input: InitInput, *, jit_parse: bool = True, **kwargs):

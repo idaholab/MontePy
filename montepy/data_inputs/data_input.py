@@ -5,6 +5,7 @@ import copy
 
 import montepy
 from montepy.errors import *
+from montepy.input_parser import syntax_node
 from montepy.input_parser.data_parser import (
     ClassifierParser,
     DataParser,
@@ -49,7 +50,7 @@ class DataInputAbstract(MCNP_Object):
         data.
     """
 
-    _parser = DataParser()
+    _parser = DataParser
 
     _classifier_parser = ClassifierParser()
 
@@ -74,7 +75,16 @@ class DataInputAbstract(MCNP_Object):
             self._parser = self._classifier_parser
             super().__init__(input, jit_parse=jit_parse)
             self._parser = self._old_parser
-            del self._older_parser
+            del self._old_parser
+
+    def _generate_default_tree(self):
+        ret = {}
+        ret["start_pad"] = syntax_node.PaddingNode()
+        ret["classifier"] = syntax_node.ClassifierNode()
+        ret["keyword"] = syntax_node.ValueNode(None, str, padding=None)
+        ret["data"] = syntax_node.ListNode("empty data")
+        ret["parameters"] = syntax_node.ParametersNode()
+        self._tree = syntax_node.SyntaxNode("blank data tree", ret)
 
     def _init_blank(self):
         self._particles = None
@@ -82,14 +92,15 @@ class DataInputAbstract(MCNP_Object):
     def _parse_tree(self):
         self.__split_name(input)
 
-    @classmethod
-    def _jit_light_init(cls, input: Input):
-        instance = super()._jit_light_init(input)
-        classifier = instance._classifier
-        instance._prefix = classifier.prefix
-        instance._number = classifier.number
-        instance._particles = classifier.particles
-        return instance
+    def _jit_light_init(self, input: Input):
+        super()._jit_light_init(input)
+        classifier = self._classifier
+        print(classifier)
+        self._prefix = classifier.prefix.value
+        self._input_number = classifier.number
+        if classifier.particles:
+            self._particles = classifier.particles.particles
+        self._modifier = classifier.modifier
 
     @staticmethod
     @abstractmethod

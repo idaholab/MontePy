@@ -30,7 +30,7 @@ PREFIX_MATCHES = {
 VERBOTEN = {"de", "sdef"}
 
 
-def parse_data(input: montepy.mcnp_object.InitInput, *, jit_parse: bool = False):
+def parse_data(input: montepy.mcnp_object.InitInput, *, jit_parse: bool = True):
     """Parses the data input as the appropriate object if it is supported.
 
     Parameters
