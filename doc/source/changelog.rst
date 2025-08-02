@@ -2,10 +2,20 @@
 MontePy Changelog
 *****************
 
-1.1 releases
+1.2 releases
 ============
 
 #Next Version#
+--------------
+
+**Deprecations**
+
+* Dropped support for python 3.9 and 3.10 in order to comply with `SPEC 0 <https://scientific-python.org/specs/spec-0000/>`_ (:issue:`780`).
+
+1.1 releases
+============
+
+1.1.2
 --------------
 
 **Code Quality**
@@ -15,7 +25,11 @@ MontePy Changelog
 **Deprecations**
 
 * Marked ``montepy.errors`` as deprecated, with a ``FutureWarning``, use ``montepy.exceptions`` instead. (:issue:`764`).
-* Dropped support for python 3.9 and 3.10 in order to comply with `SPEC 0 <https://scientific-python.org/specs/spec-0000/>`_ (:issue:`780`).
+
+**Bugs Fixed**
+
+* Fixed parsing error where MontePy could not handle a fill matrix that was sparse (:issue:`601`).
+
 
 1.1.1
 --------------
