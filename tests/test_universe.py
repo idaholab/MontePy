@@ -313,7 +313,7 @@ class TestFill:
             input = Input(["1 0 -1 fill=hi"], BlockType.CELL)
             cell = Cell(input)
             fill = cell.fill
-        with pytest.raises(ValueError):
+        with pytest.raises(ParsingError):
             input = Input(["1 0 -1 fill=1 (hi)"], BlockType.CELL)
             cell = Cell(input)
         # test negative universe
@@ -344,8 +344,8 @@ class TestFill:
     @pytest.mark.parametrize(
         "input_str,expected_error",
         [
-            ("1 0 -1 fill=0:1 0:1 0:1 hi", ValueError),  # "String universe"
-            ("1 0 -1 fill=0:1 hi:1 0:1 hi", ValueError),  # "String index"
+            ("1 0 -1 fill=0:1 0:1 0:1 hi", ParsingError),  # "String universe"
+            ("1 0 -1 fill=0:1 hi:1 0:1 hi", ParsingError),  # "String index"
             ("1 0 -1 fill=0:1 0:1 0:1 -1", ValueError),  # "Negative universe"
             (
                 "1 0 -1 fill=0:1 1:0 0:1 1 2 3 4 5 6 7 8",

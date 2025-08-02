@@ -7,6 +7,7 @@ User Guide
 
    starting
    bugs
+   performance
    utilities
    tricks
    faq

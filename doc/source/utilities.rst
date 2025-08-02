@@ -14,6 +14,8 @@ Package Level Execution Options
           -c [input_file ...], --check [input_file ...]
                                 Check the given input file(s) for errors. Accepts globs, and multiple arguments.
 
+.. _check_opt:
+
 Checking Input Files for Errors
 -------------------------------
 MontePy can be used to check for errors that it will check for.

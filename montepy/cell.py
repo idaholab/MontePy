@@ -119,7 +119,7 @@ class Cell(Numbered_MCNP_Object):
         fill.Fill: ("_fill", True),
     }
 
-    _parser = CellParser()
+    _parser = CellParser
 
     def __init__(
         self,
@@ -141,7 +141,7 @@ class Cell(Numbered_MCNP_Object):
         self._surfaces = Surfaces()
         self._complements = Cells()
         try:
-            super().__init__(input, self._parser, number)
+            super().__init__(input, self._parser(), number)
         # Add more information to issue that parser can't access
         except UnsupportedFeature as e:
             base_mesage = e.message

@@ -12,7 +12,7 @@ htmlcov
 *.*.sw*
 *.prof
 doc/build/*
-.coverage
+.coverage*
 .hypothesis/
 .idea/
 .venv/

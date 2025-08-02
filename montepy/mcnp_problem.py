@@ -1,8 +1,10 @@
-# Copyright 2024, Battelle Energy Alliance, LLC All Rights Reserved.
+# Copyright 2024-2025, Battelle Energy Alliance, LLC All Rights Reserved.
+import concurrent.futures
 import copy
 from enum import Enum
 import itertools
 import os
+import pickle
 import warnings
 
 from montepy.data_inputs import mode, transform
@@ -22,6 +24,8 @@ from montepy.input_parser.input_file import MCNP_InputFile
 from montepy.universes import Universe, Universes
 from montepy.transforms import Transforms
 import montepy
+
+pickle.DEFAULT_PROTOCOL = pickle.HIGHEST_PROTOCOL
 
 
 class MCNP_Problem:
@@ -368,8 +372,97 @@ class MCNP_Problem:
         """
         return self._transforms
 
-    def parse_input(self, check_input=False, replace=True):
+    @staticmethod
+    def _parse_object(input):
+        if input is None:
+            return (None, None)
+        OBJ_MATCHER = {
+            block_type.BlockType.CELL: Cell,
+            block_type.BlockType.SURFACE: surface_builder.parse_surface,
+            block_type.BlockType.DATA: parse_data,
+        }
+        obj_parser = OBJ_MATCHER[input.block_type]
+        return input, obj_parser(input)
+
+    def _create_parsed_obj_generator(
+        self,
+        check_input: bool = False,
+        replace: bool = False,
+        multi_proc: bool = False,
+        num_processes: int = None,
+    ):
+        """
+        Creates a generator of parsed objects.
+
+        See ``parse_input`` for arguments.
+        """
+        input_iter = input_syntax_reader.read_input_syntax(
+            self._input_file, self.mcnp_version, replace=replace
+        )
+        input = next(input_iter)
+        self._original_inputs.append(input)
+        if isinstance(input, mcnp_input.Message):
+            self._message = input
+            input = next(input_iter)
+
+        self._title = input
+        if multi_proc and not check_input:
+            with concurrent.futures.ProcessPoolExecutor(
+                max_workers=num_processes,
+            ) as executor:
+                for ret in executor.map(self._parse_object, input_iter, chunksize=50):
+                    yield ret
+
+        else:
+            try:
+                for input in input_iter:
+                    try:
+                        ret = self._parse_object(input)
+                        yield ret
+                    except (
+                        MalformedInputError,
+                        ParsingError,
+                        UnknownElement,
+                        RedundantParameterSpecification,
+                    ) as e:
+                        if check_input:
+                            warnings.warn(
+                                f"{type(e).__name__}: {e.message}", stacklevel=2
+                            )
+                            yield (None, None)
+                        else:
+                            raise e
+            # handles errors raised by input generator not by Parsers!
+            except UnsupportedFeature as e:
+                if check_input:
+                    warnings.warn(f"{type(e).__name__}: {e.message}", stacklevel=2)
+                else:  # pragma: no cover
+                    raise e
+
+    def parse_input(
+        self,
+        check_input: bool = False,
+        replace: bool = True,
+        multi_proc: bool = False,
+        num_processes: int = None,
+    ):
         """Semantically parses the MCNP file provided to the constructor.
+
+        .. versionchanged:: 1.1.0
+            Added ``multi_proc``, ``num_processes``
+
+        .. Note::
+
+            ``check_input`` and ``multi_proc`` are incompatible. ``check_input``
+            takes precedence, and will force serial parsing.
+
+        .. Warning::
+
+           Care must be taken with ``multi_proc`` when on Windows and MacOS.
+           Your entire script must by wrapped by a ``__name__ == "__main__"`` guard.
+           See `the warnings for the spawn method
+           <https://docs.python.org/3/library/multiprocessing.html#the-spawn-and-forkserver-start-methods>`_.
+
 
         Parameters
         ----------
@@ -378,74 +471,55 @@ class MCNP_Problem:
             them as warnings to log.
         replace : bool
             replace all non-ASCII characters with a space (0x20)
+        multi_proc: bool
+            If true multiprocessing will be used to speed up the parsing process, otherwise serial parsing is used.
+        num_processes: int
+            The number of python processes to start for parsing. If ``None`` the number of CPU cores will be used.
         """
         trailing_comment = None
         last_obj = None
         last_block = None
         OBJ_MATCHER = {
-            block_type.BlockType.CELL: (Cell, self._cells),
-            block_type.BlockType.SURFACE: (
-                surface_builder.parse_surface,
-                self._surfaces,
-            ),
-            block_type.BlockType.DATA: (parse_data, self._data_inputs),
+            block_type.BlockType.CELL: self._cells,
+            block_type.BlockType.SURFACE: self._surfaces,
+            block_type.BlockType.DATA: self._data_inputs,
         }
-        try:
-            for i, input in enumerate(
-                input_syntax_reader.read_input_syntax(
-                    self._input_file, self.mcnp_version, replace=replace
-                )
+        for input, obj in self._create_parsed_obj_generator(
+            check_input, replace, multi_proc, num_processes
+        ):
+            if obj is None:
+                continue
+            if last_block != input.block_type:
+                trailing_comment = None
+                last_block = input.block_type
+            # load into container
+            obj_container = OBJ_MATCHER[input.block_type]
+            obj.link_to_problem(self)
+            if isinstance(
+                obj_container,
+                montepy.numbered_object_collection.NumberedObjectCollection,
             ):
-                self._original_inputs.append(input)
-                if i == 0 and isinstance(input, mcnp_input.Message):
-                    self._message = input
-
-                elif isinstance(input, mcnp_input.Title) and self._title is None:
-                    self._title = input
-
-                elif isinstance(input, mcnp_input.Input):
-                    if last_block != input.block_type:
-                        trailing_comment = None
-                        last_block = input.block_type
-                    obj_parser, obj_container = OBJ_MATCHER[input.block_type]
-                    if len(input.input_lines) > 0:
-                        try:
-                            obj = obj_parser(input)
-                            obj.link_to_problem(self)
-                            if isinstance(
-                                obj_container,
-                                montepy.numbered_object_collection.NumberedObjectCollection,
-                            ):
-                                obj_container.append(obj, initial_load=True)
-                            else:
-                                obj_container.append(obj)
-                        except (
-                            MalformedInputError,
-                            NumberConflictError,
-                            ParsingError,
-                            UnknownElement,
-                        ) as e:
-                            if check_input:
-                                warnings.warn(
-                                    f"{type(e).__name__}: {e.message}", stacklevel=2
-                                )
-                                continue
-                            else:
-                                raise e
-                        if isinstance(obj, Material):
-                            self._materials.append(obj, insert_in_data=False)
-                        if isinstance(obj, transform.Transform):
-                            self._transforms.append(obj, insert_in_data=False)
-                    if trailing_comment is not None and last_obj is not None:
-                        obj._grab_beginning_comment(trailing_comment, last_obj)
-                        last_obj._delete_trailing_comment()
-                    trailing_comment = obj.trailing_comment
-                    last_obj = obj
-        except UnsupportedFeature as e:
-            if check_input:
-                warnings.warn(f"{type(e).__name__}: {e.message}", stacklevel=2)
+                try:
+                    obj_container.append(obj, initial_load=True)
+                except NumberConflictError as e:
+                    if check_input:
+                        warnings.warn(f"{type(e).__name__}: {e.message}", stacklevel=2)
+                        continue
+                    else:  # pragma: no cover
+                        raise e
             else:
-                raise e
+                obj_container.append(obj)
+            if isinstance(obj, Material):
+                self._materials.append(obj, insert_in_data=False)
+            if isinstance(obj, transform.Transform):
+                self._transforms.append(obj, insert_in_data=False)
+            # handle trailing comments
+            if trailing_comment is not None and last_obj is not None:
+                obj._grab_beginning_comment(trailing_comment, last_obj)
+                last_obj._delete_trailing_comment()
+            trailing_comment = obj.trailing_comment
+            last_obj = obj
+        # internal pointers
         self.__update_internal_pointers(check_input)
 
     def __update_internal_pointers(self, check_input=False):
