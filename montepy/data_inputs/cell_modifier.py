@@ -38,15 +38,12 @@ class CellModifierInput(DataInputAbstract):
         if key and value:
             input = Input([key], BlockType.DATA)
             fast_parse = True
-        super().__init__(input, fast_parse)
         if not isinstance(in_cell_block, bool):
             raise TypeError("in_cell_block must be a bool")
         if key and not isinstance(key, str):
             raise TypeError("key must be a str")
         if value and not isinstance(value, syntax_node.SyntaxNode):
             raise TypeError("value must be from a SyntaxNode")
-        if not in_cell_block and not input:
-            self._generate_default_data_tree()
         self._in_cell_block = in_cell_block
         self._in_key = key
         self._in_value = value
@@ -56,8 +53,16 @@ class CellModifierInput(DataInputAbstract):
             self._data = value["data"]
         else:
             self._set_in_cell_block = False
-            if in_cell_block and key is None and value is None:
-                self._generate_default_cell_tree()
+        super().__init__(input, fast_parse, jit_parse=jit_parse)
+
+    def _parse_tree(self):
+        pass
+
+    def _generate_default_tree(self):
+        if self.in_cell_block and key is None and value is None:
+            self._generate_default_cell_tree()
+        else:
+            self._generate_default_data_tree()
 
     @abstractmethod
     def _generate_default_cell_tree(self):

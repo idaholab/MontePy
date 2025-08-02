@@ -81,6 +81,9 @@ class DataInputAbstract(MCNP_Object):
         ret = {}
         ret["start_pad"] = syntax_node.PaddingNode()
         ret["classifier"] = syntax_node.ClassifierNode()
+        ret["classifier"].prefix = syntax_node.ValueNode(
+            None, str, padding=None, never_pad=True
+        )
         ret["keyword"] = syntax_node.ValueNode(None, str, padding=None)
         ret["data"] = syntax_node.ListNode("empty data")
         ret["parameters"] = syntax_node.ParametersNode()
@@ -402,9 +405,14 @@ class ForbiddenDataInput(DataInputAbstract):
     """
 
     def __init__(
-        self, input: InitInput = None, fast_parse: bool = False, prefix: str = None
+        self,
+        input: InitInput = None,
+        fast_parse: bool = False,
+        prefix: str = None,
+        *,
+        jit_parse: bool = True,
     ):
-        super().__init__(input, True)
+        super().__init__(input, True, jit_parse=jit_parse)
         if isinstance(input, str):
             input = montepy.input_parser.mcnp_input.Input(
                 input.split("\n"), self._BLOCK_TYPE
