@@ -286,11 +286,7 @@ class Material(data_input.DataInputAbstract, Numbered_MCNP_Object):
     _parser = MaterialParser()
     _NEW_LINE_STR = "\n" + " " * DEFAULT_INDENT
 
-    def __init__(
-        self,
-        input: InitInput = None,
-        number: int = None,
-    ):
+    def _init_blank(self):
         self._components = []
         self._thermal_scattering = None
         self._is_atom_fraction = True
@@ -299,23 +295,20 @@ class Material(data_input.DataInputAbstract, Numbered_MCNP_Object):
         self._elements = set()
         self._nuclei = set()
         self._default_libs = _DefaultLibraries(self)
-        super().__init__(input)
-        self._load_init_num(number)
-        if input:
-            num = self._input_number
-            self._old_number = copy.deepcopy(num)
-            self._number = num
-            set_atom_frac = False
-            isotope_fractions = self._tree["data"]
-            is_first = True
-            for group in isotope_fractions:
-                if len(group) == 2:
-                    self._grab_isotope(*group, is_first=is_first)
-                    is_first = False
-                else:
-                    self._grab_default(*group)
-        else:
-            self._create_default_tree()
+
+    def _parse_tree(self):
+        num = self.classifier._number
+        self._old_number = copy.deepcopy(num)
+        self._number = num
+        set_atom_frac = False
+        isotope_fractions = self._tree["data"]
+        is_first = True
+        for group in isotope_fractions:
+            if len(group) == 2:
+                self._grab_isotope(*group, is_first=is_first)
+                is_first = False
+            else:
+                self._grab_default(*group)
 
     def _grab_isotope(
         self, nuclide: Nuclide, fraction: syntax_node.ValueNode, is_first: bool = False
@@ -345,9 +338,11 @@ class Material(data_input.DataInputAbstract, Numbered_MCNP_Object):
         except ValueError:
             pass
 
-    def _create_default_tree(self):
+    def _generate_default_tree(self, number=None):
         classifier = syntax_node.ClassifierNode()
-        classifier.number = self._number
+        if number is None:
+            number = self._generate_default_node(int, number)
+        classifier.number = number
         classifier.number.never_pad = True
         classifier.prefix = syntax_node.ValueNode("M", str, never_pad=True)
         classifier.padding = syntax_node.PaddingNode(" ")

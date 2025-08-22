@@ -294,7 +294,10 @@ class DataInputAbstract(MCNP_Object):
         """
         classifier = self._classifier
         if self._class_prefix:
-            if classifier.prefix.value.lower() != self._class_prefix():
+            if (
+                classifier.prefix.value is None
+                or classifier.prefix.value.lower() != self._class_prefix()
+            ):
                 raise MalformedInputError(
                     input,
                     f"{self._tree['classifier'].format()} has the wrong prefix for {type(self)}",

@@ -13,25 +13,12 @@ class Mode(DataInputAbstract):
         the Input object representing this data input
     """
 
-    def __init__(self, input=None):
-        super().__init__(input)
-        if input:
-            self._particles = set()
-            self._parse_and_override_particle_modes(
-                [p.value for p in self._tree["data"]]
-            )
-        else:
-            self._particles = {Particle.NEUTRON}
-            classifier = syntax_node.ClassifierNode()
-            classifier.prefix = self._generate_default_node(str, "MODE")
-            classifier.padding = syntax_node.PaddingNode(" ")
-            self._tree = syntax_node.SyntaxNode(
-                "mode",
-                {
-                    "classifier": classifier,
-                    "data": syntax_node.ListNode("particles"),
-                },
-            )
+    def _init_blank(self):
+        self._particles = {Particle.NEUTRON}
+
+    def _parse_tree(self):
+        self._particles = set()
+        self._parse_and_override_particle_modes([p.value for p in self._tree["data"]])
 
     def _parse_and_override_particle_modes(self, particles):
         self._particles = set()

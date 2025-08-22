@@ -33,16 +33,18 @@ class ThermalScatteringLaw(DataInputAbstract):
     _parser = ThermalParser()
 
     def __init__(self, input: InitInput = "", material: montepy.Material = None):
+        super().__init__(input)
+        if material:
+            self._parent_material = material
+
+    def _init_blank(self):
         self._old_number = self._generate_default_node(int, -1)
         self._parent_material = None
         self._scattering_laws = []
-        super().__init__(input)
-        if input:
-            self._old_number = self._input_number
-            self._scattering_laws = self._tree["data"].nodes
-        else:
-            if material:
-                self._parent_material = material
+
+    def _parse_tree(self):
+        self._old_number = self._input_number
+        self._scattering_laws = self._tree["data"].nodes
 
     @staticmethod
     def _class_prefix():
