@@ -17,6 +17,7 @@ class Mode(DataInputAbstract):
         self._particles = {Particle.NEUTRON}
 
     def _parse_tree(self):
+        super()._parse_tree()
         self._particles = set()
         self._parse_and_override_particle_modes([p.value for p in self._tree["data"]])
 

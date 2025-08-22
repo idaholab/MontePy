@@ -92,6 +92,7 @@ class DataInputAbstract(MCNP_Object):
     def _init_blank(self):
         self._particles = None
 
+    # TODO this enforces every time
     def _parse_tree(self):
         self.__split_name(input)
 

@@ -297,7 +297,8 @@ class Material(data_input.DataInputAbstract, Numbered_MCNP_Object):
         self._default_libs = _DefaultLibraries(self)
 
     def _parse_tree(self):
-        num = self.classifier._number
+        super()._parse_tree()
+        num = self._input_number
         self._old_number = copy.deepcopy(num)
         self._number = num
         set_atom_frac = False
