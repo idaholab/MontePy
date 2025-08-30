@@ -765,14 +765,14 @@ class TestThermalScattering:
         material.thermal_scattering.thermal_scattering_laws = ["grph.20t"]
         self.assertEqual(card.format_for_mcnp_input((6, 2, 0)), ["Mt20 grph.20t "])
 
-    def test_thermal_str(self):
+    def test_thermal_str(_):
         in_str = "Mt20 grph.20t"
         input_card = Input([in_str], BlockType.DATA)
         card = ThermalScatteringLaw(input_card)
-        self.assertEqual(str(card), "THERMAL SCATTER: ['grph.20t']")
-        self.assertEqual(
-            repr(card),
-            "THERMAL SCATTER: material: None, old_num: 20, scatter: ['grph.20t']",
+        assert str(card) == "THERMAL SCATTER: 20"
+        assert (
+            repr(card)
+            == "THERMAL SCATTER: material: None, old_num: 20, scatter: ['grph.20t']"
         )
 
     def test_thermal_scattering_add(_):
@@ -820,16 +820,6 @@ class TestThermalScattering:
         card._parent_material = material
         material.thermal_scattering.thermal_scattering_laws = ["grph.20t"]
         card.format_for_mcnp_input((6, 2, 0)) == ["Mt20 grph.20t "]
-
-    def test_thermal_str(_):
-        in_str = "Mt20 grph.20t"
-        input_card = Input([in_str], BlockType.DATA)
-        card = ThermalScatteringLaw(input_card)
-        assert str(card) == "THERMAL SCATTER: ['grph.20t']"
-        assert (
-            repr(card)
-            == "THERMAL SCATTER: material: None, old_num: 20, scatter: ['grph.20t']"
-        )
 
 
 class TestDefaultLib:
