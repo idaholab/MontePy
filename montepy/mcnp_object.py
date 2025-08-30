@@ -209,7 +209,7 @@ class MCNP_Object(ABC, metaclass=_ExceptionContextAdder):
     def full_parse(self):
         if hasattr(self, "_not_parsed") and self._not_parsed:
             del self._not_parsed
-            self.__init__(self._input)
+            self.__init__(self._input, jit_parse=False)
             problem = self._problem
             if problem:
                 self.link_to_problem(self._problem)
