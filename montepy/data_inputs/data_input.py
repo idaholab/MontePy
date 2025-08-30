@@ -100,6 +100,7 @@ class DataInputAbstract(MCNP_Object):
         classifier = self._classifier
         self._prefix = classifier.prefix.value
         self._input_number = classifier.number
+        self._number = self._input_number
         if classifier.particles:
             self._particles = classifier.particles.particles
         self._modifier = classifier.modifier

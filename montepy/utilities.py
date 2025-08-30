@@ -93,7 +93,7 @@ def make_prop_val_node(
         @functools.wraps(func)
         def getter(self):
             if not hasattr(self, hidden_param) and hasattr(self, "_not_parsed"):
-                self._full_parse()
+                self.full_parse()
             result = func(self)
             if result:
                 return result
@@ -131,6 +131,8 @@ def make_prop_val_node(
         if deletable:
 
             def deleter(self):
+                if hasattr(self, "_not_parsed"):
+                    self.full_parse()
                 setattr(self, hidden_param, None)
 
             getter = getter.deleter(deleter)
