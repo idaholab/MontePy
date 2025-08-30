@@ -548,13 +548,20 @@ Pu-239   (80c) 0.1
             assert material.parameters["gas"]["data"][0].value == pytest.approx(1.0)
 
     @pytest.mark.parametrize(
-        "line", ["Mfoo", "M-20", "M20 1001.80c foo", "M20 1001.80c 0.5 8016.80c -0.5"]
+        "line, jit_parse",
+        [
+            ("Mfoo", False),
+            ("Mfoo", True),
+            ("M-20", True),
+            ("M-20", False),
+            ("M20 1001.80c foo", False),
+            ("M20 1001.80c 0.5 8016.80c -0.5", False),
+        ],
     )
-    def test_bad_init(_, line):
+    def test_bad_init(_, line, jit_parse):
         # test invalid material number
-        input = Input([line], BlockType.DATA)
         with pytest.raises(MalformedInputError):
-            Material(input)
+            Material(line, jit_parse = jit_parse)
 
     @pytest.mark.filterwarnings("ignore")
     @given(st.integers(), st.integers())
