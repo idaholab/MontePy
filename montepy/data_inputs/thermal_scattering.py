@@ -30,10 +30,16 @@ class ThermalScatteringLaw(DataInputAbstract):
         the parent Material object that owns this
     """
 
-    _parser = ThermalParser()
+    _parser = ThermalParser
 
-    def __init__(self, input: InitInput = "", material: montepy.Material = None):
-        super().__init__(input)
+    def __init__(
+        self,
+        input: InitInput = "",
+        material: montepy.Material = None,
+        *,
+        jit_parse: bool = True,
+    ):
+        super().__init__(input, jit_parse=jit_parse)
         if material:
             self._parent_material = material
 
@@ -43,8 +49,13 @@ class ThermalScatteringLaw(DataInputAbstract):
         self._scattering_laws = []
 
     def _parse_tree(self):
+        super()._parse_tree()
         self._old_number = self._input_number
         self._scattering_laws = self._tree["data"].nodes
+
+    def _jit_light_init(self, input: Input):
+        super()._jit_light_init(input)
+        self._old_number = self._input_number
 
     @staticmethod
     def _class_prefix():
@@ -79,6 +90,7 @@ class ThermalScatteringLaw(DataInputAbstract):
         return self._parent_material
 
     @property
+    @needs_full_tree
     def thermal_scattering_laws(self):
         """The thermal scattering laws to use for this material as strings.
 
@@ -92,6 +104,7 @@ class ThermalScatteringLaw(DataInputAbstract):
         return ret
 
     @thermal_scattering_laws.setter
+    @needs_full_tree
     def thermal_scattering_laws(self, laws):
         if not isinstance(laws, list):
             raise TypeError("thermal_scattering_laws must be a list")
@@ -104,6 +117,7 @@ class ThermalScatteringLaw(DataInputAbstract):
         for law in laws:
             self._scattering_laws.append(self._generate_default_node(str, law))
 
+    @needs_full_tree
     def add_scattering_law(self, law):
         """Adds the requested scattering law to this material
 
@@ -177,7 +191,11 @@ class ThermalScatteringLaw(DataInputAbstract):
         return True
 
     def __str__(self):
-        return f"THERMAL SCATTER: {self.thermal_scattering_laws}"
+        if self.parent_material:
+            return f"THERMAL SCATTER: {self.parent_material.number}"
+        else:
+            return f"THERMAL SCATTER: {self.old_number}"
 
+    @needs_full_tree
     def __repr__(self):
         return f"THERMAL SCATTER: material: {self.parent_material}, old_num: {self.old_number}, scatter: {self.thermal_scattering_laws}"
