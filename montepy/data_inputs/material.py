@@ -283,7 +283,7 @@ class Material(data_input.DataInputAbstract, Numbered_MCNP_Object):
         The number to set for this object.
     """
 
-    _parser = MaterialParser()
+    _parser = MaterialParser
     _NEW_LINE_STR = "\n" + " " * DEFAULT_INDENT
 
     def _init_blank(self):
