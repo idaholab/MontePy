@@ -92,14 +92,12 @@ class DataInputAbstract(MCNP_Object):
     def _init_blank(self):
         self._particles = None
 
-    # TODO this enforces every time
     def _parse_tree(self):
-        self.__split_name(input)
+        self.__split_name(self._input)
 
     def _jit_light_init(self, input: Input):
         super()._jit_light_init(input)
         classifier = self._classifier
-        print(classifier)
         self._prefix = classifier.prefix.value
         self._input_number = classifier.number
         if classifier.particles:
@@ -273,7 +271,11 @@ class DataInputAbstract(MCNP_Object):
             if the name is invalid for this DataInput
         """
         self._classifier = self._tree["classifier"]
-        self.__enforce_name(input)
+        try:
+            self.__enforce_name(input)
+        except MalformedInputError as e:
+            if input:
+                raise e
         self._input_number = self._classifier.number
         self._prefix = self._classifier._prefix.value
         if self._classifier.particles:
@@ -306,6 +308,7 @@ class DataInputAbstract(MCNP_Object):
             if self._has_number():
                 try:
                     num = classifier.number.value
+                    assert num is not None
                     assert num >= 0
                 except (AttributeError, AssertionError) as e:
                     raise MalformedInputError(
