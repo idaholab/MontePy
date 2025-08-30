@@ -810,12 +810,8 @@ class TestThermalScattering:
             card.add_thermal_scattering(5)
 
     def test_thermal_scattering_format_mcnp(_):
-        in_str = "Mt20 grph.20t"
-        input_card = Input([in_str], BlockType.DATA)
-        card = ThermalScatteringLaw(input_card)
-        in_str = "M20 1001.80c 0.5 8016.80c 0.5"
-        input_card = Input([in_str], BlockType.DATA)
-        material = Material(input_card)
+        card = ThermalScatteringLaw("mt20 grph.20t")
+        material = Material("M20 1001.80c 0.5 8016.80c 0.5")
         material.thermal_scattering = card
         card._parent_material = material
         material.thermal_scattering.thermal_scattering_laws = ["grph.20t"]
