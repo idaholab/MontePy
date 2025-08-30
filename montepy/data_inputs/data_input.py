@@ -104,6 +104,7 @@ class DataInputAbstract(MCNP_Object):
         if classifier.particles:
             self._particles = classifier.particles.particles
         self._modifier = classifier.modifier
+        self.__enforce_name(input)
 
     @staticmethod
     @abstractmethod
@@ -304,7 +305,7 @@ class DataInputAbstract(MCNP_Object):
             ):
                 raise MalformedInputError(
                     input,
-                    f"{self._tree['classifier'].format()} has the wrong prefix for {type(self)}",
+                    f"{classifier.format()} has the wrong prefix for {type(self)}",
                 )
             if self._has_number():
                 try:
