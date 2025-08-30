@@ -43,6 +43,8 @@ class ThermalScatteringLaw(DataInputAbstract):
         if material:
             self._parent_material = material
 
+    _KEYS_TO_PRESERVE = {"_parent_material"}
+
     def _init_blank(self):
         self._old_number = self._generate_default_node(int, -1)
         self._parent_material = None
@@ -130,14 +132,14 @@ class ThermalScatteringLaw(DataInputAbstract):
 
     def validate(self):
         if len(self._scattering_laws) == 0:
-            if self.parent_material:
+            if self.parent_material is not None:
                 message = f"No thermal scattering laws given for MT{self.parent_material.number}."
             else:
                 message = f"No thermal scattering laws given for thermal scattering {hex(id(self))}"
             raise IllegalState(message)
 
     def _update_values(self):
-        if self.parent_material:
+        if self.parent_material is not None:
             self._tree["classifier"].number.value = self.parent_material.number
         else:
             raise MalformedInputError(
@@ -191,7 +193,7 @@ class ThermalScatteringLaw(DataInputAbstract):
         return True
 
     def __str__(self):
-        if self.parent_material:
+        if self.parent_material is not None:
             return f"THERMAL SCATTER: {self.parent_material.number}"
         else:
             return f"THERMAL SCATTER: {self.old_number}"

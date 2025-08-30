@@ -1394,7 +1394,7 @@ See <https://www.montepy.org/migrations/migrate0_1.html> for more information ""
         -------
         ThermalScatteringLaw
         """
-        return self._thermal_scattering
+        pass
 
     @property
     def cells(self) -> Generator[montepy.cell.Cell]:

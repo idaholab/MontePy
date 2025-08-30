@@ -206,13 +206,18 @@ class MCNP_Object(ABC, metaclass=_ExceptionContextAdder):
             setattr(self, f"_{key}", node)
         return self
 
+    _KEYS_TO_PRESERVE = set()
+
     def full_parse(self):
         if hasattr(self, "_not_parsed") and self._not_parsed:
             del self._not_parsed
-            self.__init__(self._input, jit_parse=False)
             problem = self._problem
+            old_data = {k: getattr(self, k) for k in self._KEYS_TO_PRESERVE}
+            self.__init__(self._input, jit_parse=False)
+            [setattr(self, k, v) for k, v in old_data.items()]
             if problem:
-                self.link_to_problem(self._problem)
+                self.link_to_problem(problem)
+                # TODO delete
                 args = (problem.cells, problem.surfaces, problem.data_inputs)
                 if isinstance(self, montepy.surafaces.Surface):
                     args = args[1:]
