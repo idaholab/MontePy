@@ -286,6 +286,16 @@ class Material(data_input.DataInputAbstract, Numbered_MCNP_Object):
     _parser = MaterialParser
     _NEW_LINE_STR = "\n" + " " * DEFAULT_INDENT
 
+    def __init__(
+        self,
+        input: InitInput = "",
+        number: int = None,
+        *,
+        jit_parse: bool = True,
+        **kwargs,
+    ):
+        Numbered_MCNP_Object.__init__(self, input, number, jit_parse=jit_parse)
+
     def _init_blank(self):
         self._components = []
         self._thermal_scattering = None

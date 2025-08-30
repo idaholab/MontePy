@@ -47,6 +47,7 @@ class Numbered_MCNP_Object(MCNP_Object):
         The parser object to parse the input with.
     number : int
         The number to set for this object.
+    jit_parse: bool
     """
 
     def __init__(

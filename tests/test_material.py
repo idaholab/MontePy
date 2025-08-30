@@ -495,7 +495,7 @@ Pu-239   (80c) 0.1
             repr(big_material)
 
     @pytest.mark.parametrize("file", ["test.imcnp", "pin_cell.imcnp"])
-    def test_read_add_write(_, file):
+    def test_read_and_write(_, file):
         problem = montepy.read_input(pathlib.Path("tests") / "inputs" / file)
         mat = problem.materials[2]
         mat.add_nuclide("O-16.80c", 0.3)

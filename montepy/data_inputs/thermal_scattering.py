@@ -40,7 +40,7 @@ class ThermalScatteringLaw(DataInputAbstract):
         jit_parse: bool = True,
     ):
         super().__init__(input, jit_parse=jit_parse)
-        if material:
+        if material is not None:
             self._parent_material = material
 
     _KEYS_TO_PRESERVE = {"_parent_material"}
