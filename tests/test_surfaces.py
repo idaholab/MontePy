@@ -71,10 +71,8 @@ class testSurfaces(TestCase):
         card = Input([in_str], BlockType.SURFACE)
         with self.assertRaises(MalformedInputError):
             Surface(card)
-        in_str = "+1 PZ foo"
-        card = Input([in_str], BlockType.SURFACE)
         with self.assertRaises(MalformedInputError):
-            Surface(card)
+            Surface("+1 PZ foo", jit_parse=False)
         surf = Surface(number=5)
         assert surf.number == 5
         # test surface_type setter
@@ -238,9 +236,7 @@ class testSurfaces(TestCase):
         bad_inputs = ["1 P 0.0", "1 PZ 0.0 10.0"]
         for bad_input in bad_inputs:
             with self.assertRaises(ValueError):
-                surf = montepy.surfaces.axis_plane.AxisPlane(
-                    Input([bad_input], BlockType.SURFACE)
-                )
+                surf = montepy.surfaces.axis_plane.AxisPlane(bad_input, jit_parse=False)
         surf = montepy.surfaces.axis_plane.AxisPlane(number=5)
         assert surf.number == 5
 
@@ -249,7 +245,7 @@ class testSurfaces(TestCase):
         for bad_input in bad_inputs:
             with self.assertRaises(ValueError):
                 surf = montepy.surfaces.cylinder_on_axis.CylinderOnAxis(
-                    Input([bad_input], BlockType.SURFACE)
+                    bad_input, jit_parse=False
                 )
         surf = montepy.surfaces.cylinder_on_axis.CylinderOnAxis(number=5)
         assert surf.number == 5
@@ -259,7 +255,7 @@ class testSurfaces(TestCase):
         for bad_input in bad_inputs:
             with self.assertRaises(ValueError):
                 surf = montepy.surfaces.cylinder_par_axis.CylinderParAxis(
-                    Input([bad_input], BlockType.SURFACE)
+                    bad_input, jit_parse=False
                 )
         surf = montepy.surfaces.cylinder_par_axis.CylinderParAxis(number=5)
         assert surf.number == 5
@@ -269,7 +265,7 @@ class testSurfaces(TestCase):
         for bad_input in bad_inputs:
             with self.assertRaises(ValueError):
                 surf = montepy.surfaces.general_plane.GeneralPlane(
-                    Input([bad_input], BlockType.SURFACE)
+                    bad_input, jit_parse=False
                 )
         surf = montepy.surfaces.general_plane.GeneralPlane(number=5)
         assert surf.number == 5
@@ -288,10 +284,14 @@ class testSurfaces(TestCase):
         warn_inputs = ["17 p 0. 0. 0. 0. 0. 1. 0. 1. 1. 0. 1. 0."]
         for error_input in error_inputs:
             with self.assertRaises(ValueError):
-                surf = montepy.surfaces.general_plane.GeneralPlane(error_input)
+                surf = montepy.surfaces.general_plane.GeneralPlane(
+                    error_input, jit_parse=False
+                )
         for warn_input in warn_inputs:
             with self.assertRaises(SurfaceConstantsWarning):
-                surf = montepy.surfaces.general_plane.GeneralPlane(warn_input)
+                surf = montepy.surfaces.general_plane.GeneralPlane(
+                    warn_input, jit_parse=False
+                )
 
     def test_cylinder_axis_radius_setter(self):
         in_str = "1 CZ 5.0"

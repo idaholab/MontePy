@@ -561,7 +561,7 @@ Pu-239   (80c) 0.1
     def test_bad_init(_, line, jit_parse):
         # test invalid material number
         with pytest.raises(MalformedInputError):
-            Material(line, jit_parse = jit_parse)
+            Material(line, jit_parse=jit_parse)
 
     @pytest.mark.filterwarnings("ignore")
     @given(st.integers(), st.integers())
