@@ -125,7 +125,11 @@ class MCNP_Object(ABC, metaclass=_ExceptionContextAdder):
                     input.split("\n"), self._BLOCK_TYPE
                 )
             if jit_parse:
-                return self._jit_light_init(input)
+                try:
+                    return self._jit_light_init(input)
+                # fall back to full parsing on any errors
+                except Exception:
+                    jit_parse = False
             parser = self._parser()
             try:
                 try:
