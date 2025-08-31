@@ -119,7 +119,7 @@ class Cell(Numbered_MCNP_Object):
         fill.Fill: ("_fill", True),
     }
 
-    _parser = CellParser()
+    _parser = CellParser
     _JitParser = JitCellParser
 
     def __init__(
@@ -159,6 +159,7 @@ class Cell(Numbered_MCNP_Object):
         self._density_node = self._generate_default_node(float, None)
         self._surfaces = Surfaces()
         self._complements = Cells()
+        self._geometry = None
 
     def _parse_tree(self):
         self._old_number = copy.deepcopy(self._tree["cell_num"])
@@ -219,6 +220,10 @@ class Cell(Numbered_MCNP_Object):
         """Goes through and populates all the modifier attributes"""
         for input_class, (attr, _) in self._INPUTS_TO_PROPERTY.items():
             setattr(self, attr, input_class(in_cell_block=True))
+
+    def _jit_light_init(self, input: Input):
+        super()._jit_light_init(input)
+        self._old_number = self._number
 
     @property
     @needs_full_tree
@@ -605,6 +610,7 @@ class Cell(Numbered_MCNP_Object):
         return self._surfaces
 
     @property
+    @needs_full_tree
     def complements(self):
         """The Cell objects that this cell is a complement of
 
@@ -656,7 +662,8 @@ class Cell(Numbered_MCNP_Object):
                     )
             else:
                 self._material = None
-        self._geometry.update_pointers(cells, surfaces, self)
+        if self._geometry:
+            self._geometry.update_pointers(cells, surfaces, self)
 
     @needs_full_tree
     def remove_duplicate_surfaces(self, deleting_dict):
@@ -860,6 +867,7 @@ class Cell(Numbered_MCNP_Object):
         ret = "\n".join([l for l in ret.splitlines() if l.strip()])
         return self.wrap_string_for_mcnp(ret, mcnp_version, True)
 
+    @needs_full_tree
     def clone(
         self,
         clone_material=False,
@@ -920,7 +928,7 @@ class Cell(Numbered_MCNP_Object):
             step = self._problem.cells.step if self._problem else 1
         # get which properties to copy over
         keys = set(vars(self))
-        keys.remove("_material")
+        keys -= {"_material", "_not_parsed"}
         result = Cell.__new__(Cell)
         if clone_material:
             if self.material is not None:

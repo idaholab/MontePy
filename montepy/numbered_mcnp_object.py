@@ -55,10 +55,6 @@ class Numbered_MCNP_Object(MCNP_Object):
     ):
         if not input:
             self._number = self._generate_default_node(int, -1)
-        super().__init__(input, number=number, jit_parse=jit_parse, **kwargs)
-        self._load_init_num(number)
-
-    def _load_init_num(self, number):
         if number is not None:
             if not isinstance(number, Integral):
                 raise TypeError(
@@ -66,6 +62,8 @@ class Numbered_MCNP_Object(MCNP_Object):
                 )
             if number < 0:
                 raise ValueError(f"Number must be 0 or greater. {number} given.")
+        super().__init__(input, number=number, jit_parse=jit_parse, **kwargs)
+        if number is not None:
             self.number = number
 
     _CHILD_OBJ_MAP = {}
