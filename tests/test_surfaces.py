@@ -43,14 +43,10 @@ class testSurfaces(TestCase):
         self.assertTrue(surf.is_white_boundary)
         # test negative surface
         with self.assertRaises(MalformedInputError):
-            in_str = "-1 PZ 0.0"
-            card = Input([in_str], BlockType.SURFACE)
-            Surface(card)
+            Surface("-1 PZ 0.0")
         # test bad surface number
         with self.assertRaises(MalformedInputError):
-            in_str = "foo PZ 0.0"
-            card = Input([in_str], BlockType.SURFACE)
-            Surface(card)
+            Surface("foo PZ 0.0")
 
         # test bad surface type
         with self.assertRaises(MalformedInputError):
@@ -140,7 +136,7 @@ class testSurfaces(TestCase):
         # ensure that this doesn't raise an error
         surf.validate()
         # general plane
-        surf = GeneralPlane(number=2)
+        surf = GeneralPlane(number=2, jit_parse=False)
         with self.assertRaises(montepy.exceptions.IllegalState):
             surf.validate()
         with self.assertRaises(montepy.exceptions.IllegalState):
