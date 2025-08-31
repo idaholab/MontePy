@@ -1,5 +1,7 @@
 # Copyright 2024, Battelle Energy Alliance, LLC All Rights Reserved.
 from montepy.constants import BLANK_SPACE_CONTINUE
+
+from collections.abc import Callable
 import functools
 import re
 
@@ -209,5 +211,32 @@ def needs_full_tree(func):
         if hasattr(self, "_not_parsed"):
             self.full_parse()
         return func(self, *args, **kwargs)
+
+    return decorator
+
+
+def prop_pointer_from_problem(
+    hidden_param: str,
+    id_param: str,
+    prob_collection_param: str,
+    types: tuple[type] = None,
+    base_type: type = None,
+    validator: Callable = None,
+    deletable: bool = False,
+):
+    def decorator(func):
+        @make_prop_pointer(hidden_param, types, base_type, validator, deletable)
+        @functools.wraps(func)
+        def pull_from_problem(self):
+            if hasattr(self, hidden_param) and getattr(self, hidden_param) is not None:
+                return func(self)
+            id_num = getattr(self, id_param)
+            prob = getattr(self, "_problem")
+            if prob is not None and id_num is not None:
+                obj = getattr(prob, prob_collection_param)[id_num]
+                setattr(self, hidden_param, obj)
+            return func(self)
+
+        return pull_from_problem
 
     return decorator
