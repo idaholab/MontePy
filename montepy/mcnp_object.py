@@ -219,7 +219,7 @@ class MCNP_Object(ABC, metaclass=_ExceptionContextAdder):
                 self.link_to_problem(problem)
                 # TODO delete
                 args = (problem.cells, problem.surfaces, problem.data_inputs)
-                if isinstance(self, montepy.surafaces.Surface):
+                if isinstance(self, montepy.surfaces.Surface):
                     args = args[1:]
                 elif isinstance(self, montepy.data_inputs.data_input.DataInputAbstract):
                     args = args[2:]

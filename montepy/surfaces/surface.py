@@ -97,6 +97,11 @@ class Surface(Numbered_MCNP_Object):
         self._enforce_values()
         self._load_constants()
 
+    def _jit_light_init(self, input: Input):
+        super()._jit_light_init(input)
+        self._enforce_values()
+        return self
+
     def _enforce_values(self):
         try:
             if self.number is not None:
@@ -106,14 +111,15 @@ class Surface(Numbered_MCNP_Object):
                 input,
                 f"{self._number.value} could not be parsed as a valid surface number.",
             )
-        if self._tree["pointer"].value is not None:
-            val = self._tree["pointer"]
-            val.is_negatable_identifier = True
-            if val.is_negative:
-                self._old_periodic_surface = val
-            else:
-                self._old_transform_number = val
-        self._surface_type = self._tree["surface_type"]
+        if hasattr(self, "_tree"):
+            if self._tree["pointer"].value is not None:
+                val = self._tree["pointer"]
+                val.is_negatable_identifier = True
+                if val.is_negative:
+                    self._old_periodic_surface = val
+                else:
+                    self._old_transform_number = val
+            self._surface_type = self._tree["surface_type"]
         # parse surface mnemonic
         try:
             # enforce enums

@@ -351,8 +351,7 @@ class Material(data_input.DataInputAbstract, Numbered_MCNP_Object):
 
     def _generate_default_tree(self, number=None):
         classifier = syntax_node.ClassifierNode()
-        if number is None:
-            number = self._generate_default_node(int, number)
+        number = self._generate_default_node(int, number)
         classifier.number = number
         classifier.number.never_pad = True
         classifier.prefix = syntax_node.ValueNode("M", str, never_pad=True)

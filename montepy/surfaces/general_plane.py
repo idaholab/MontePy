@@ -24,7 +24,8 @@ class GeneralPlane(Surface):
     """
 
     def _load_constants(self):
-        self._enforce_constants()
+        if self._input is not None:
+            self._enforce_constants()
 
     @staticmethod
     def _allowed_surface_types():
