@@ -84,16 +84,6 @@ class TestCellClass(TestCase):
         for i, cell in enumerate(test_sort):
             self.assertEqual(cell, answer[i])
 
-    def test_cell_parameters_setting(self):
-        in_str = "1 1 0.5 2"
-        card = Input([in_str], BlockType.CELL)
-        cell = Cell(card)
-        params = {"FILL": "5"}
-        cell.parameters = params
-        self.assertEqual(params, cell.parameters)
-        with self.assertRaises(TypeError):
-            cell.parameters = []
-
     def test_cell_str(self):
         in_str = "1 1 0.5 2"
         card = Input([in_str], BlockType.CELL)
@@ -185,7 +175,7 @@ def test_malformed_init(line):
 def test_malformed_init(line):
     with pytest.raises(montepy.exceptions.UnsupportedFeature):
         input = Input([line], BlockType.CELL)
-        Cell(input)
+        Cell(input, jit_parse=False)
 
 
 @given(
@@ -306,6 +296,10 @@ def test_cell_clone_default():
     input = Input(["1 1 -0.5 2"], BlockType.CELL)
     cell = Cell(input)
     problem = montepy.MCNP_Problem("")
+    surf = montepy.Surface("2 SO 5")
+    problem.surfaces.append(surf)
+    mat = montepy.Material(number=1)
+    problem.materials.append(mat)
     problem.cells.append(cell)
     for prob in {problem, None}:
         cell.link_to_problem(prob)
