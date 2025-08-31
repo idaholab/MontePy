@@ -240,3 +240,35 @@ def prop_pointer_from_problem(
         return pull_from_problem
 
     return decorator
+
+
+def prop_pointer_collect_from_problem(
+    hidden_param: str,
+    ids_param: str,
+    prob_collection_param: str,
+    collect_type: type,
+    types: tuple[type] = None,
+    base_type: type = None,
+    validator: Callable = None,
+    deletable: bool = False,
+):
+    def decorator(func):
+        @make_prop_pointer(hidden_param, types, base_type, validator, deletable)
+        @functools.wraps(func)
+        def pull_from_problem(self):
+            if hasattr(self, hidden_param) and getattr(self, hidden_param) is not None:
+                return func(self)
+            id_nums = getattr(self, id_param)
+            prob = getattr(self, "_problem")
+            if prob is not None and id_num is not None:
+                objs = getattr(prob, prob_collection_param)
+                new_collection = collect_type()
+                for id_num in id_nums:
+                    obj = objs[id_num]
+                    new_collection.append(obj)
+                setattr(self, hidden_param, new_collection)
+            return func(self)
+
+        return pull_from_problem
+
+    return decorator
