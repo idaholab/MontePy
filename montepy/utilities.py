@@ -232,9 +232,10 @@ def prop_pointer_from_problem(
                 return func(self)
             id_num = getattr(self, id_param)
             prob = getattr(self, "_problem")
+            obj = None
             if prob is not None and id_num is not None:
                 obj = getattr(prob, prob_collection_param)[id_num]
-                setattr(self, hidden_param, obj)
+            setattr(self, hidden_param, obj)
             return func(self)
 
         return pull_from_problem
@@ -260,13 +261,13 @@ def prop_pointer_collect_from_problem(
                 return func(self)
             id_nums = getattr(self, id_param)
             prob = getattr(self, "_problem")
+            new_collection = collect_type()
             if prob is not None and id_num is not None:
                 objs = getattr(prob, prob_collection_param)
-                new_collection = collect_type()
                 for id_num in id_nums:
                     obj = objs[id_num]
                     new_collection.append(obj)
-                setattr(self, hidden_param, new_collection)
+            setattr(self, hidden_param, new_collection)
             return func(self)
 
         return pull_from_problem
