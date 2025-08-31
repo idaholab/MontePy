@@ -599,9 +599,10 @@ class Cell(Numbered_MCNP_Object):
         Surfaces
         """
         if not self._surfaces and self._problem is not None:
-            self._geometry.update_pointers(self._problem.cells, self._problem.surfaces, self)
+            self._geometry.update_pointers(
+                self._problem.cells, self._problem.surfaces, self
+            )
         return self._surfaces
-
 
     @property
     def complements(self):
@@ -610,7 +611,9 @@ class Cell(Numbered_MCNP_Object):
         :rytpe: :class:`montepy.cells.Cells`
         """
         if not self._complements and self._problem is not None:
-            self._geometry.update_pointers(self._problem.cells, self._problem.surfaces, self)
+            self._geometry.update_pointers(
+                self._problem.cells, self._problem.surfaces, self
+            )
         return self._complements
 
     @property

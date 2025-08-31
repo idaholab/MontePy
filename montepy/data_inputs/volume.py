@@ -28,10 +28,17 @@ class Volume(CellModifierInput):
         the value syntax tree from the key-value pair in a cell
     """
 
-    def __init__(self, input=None, in_cell_block=False, key=None, value=None):
+    def __init__(
+        self,
+        input=None,
+        in_cell_block=False,
+        key=None,
+        value=None,
+        jit_parse: bool = True,
+    ):
         self._volume = self._generate_default_node(float, None)
         self._calc_by_mcnp = True
-        super().__init__(input, in_cell_block, key, value)
+        super().__init__(input, in_cell_block, key, value, jit_parse=jit_parse)
         if self.in_cell_block:
             if key:
                 value = self._tree["data"][0]
@@ -41,7 +48,7 @@ class Volume(CellModifierInput):
                     )
                 self._volume = value
                 self._calc_by_mcnp = False
-        elif input:
+        elif input and not jit_parse:
             self._volume = []
             tree = self._tree
             if "parameters" in tree:

@@ -59,7 +59,7 @@ class CellModifierInput(DataInputAbstract):
         pass
 
     def _generate_default_tree(self):
-        if self.in_cell_block and key is None and value is None:
+        if self.in_cell_block:
             self._generate_default_cell_tree()
         else:
             self._generate_default_data_tree()
@@ -186,9 +186,10 @@ class CellModifierInput(DataInputAbstract):
         if self.in_cell_block:
             return self.has_information
         attr, _ = montepy.Cell._INPUTS_TO_PROPERTY[type(self)]
-        for cell in self._problem.cells:
-            if getattr(cell, attr).has_information:
-                return True
+        if self._problem:
+            for cell in self._problem.cells:
+                if getattr(cell, attr).has_information:
+                    return True
         return False
 
     @property
@@ -269,6 +270,8 @@ class CellModifierInput(DataInputAbstract):
         list
             a list of strings for the lines that this input will occupy.
         """
+        if hasattr(self, "_not_parsed"):
+            return self._input.input_lines
         self.validate()
         self._tree.check_for_graveyard_comments(has_following)
         if not self._problem:
