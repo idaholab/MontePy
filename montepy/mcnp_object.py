@@ -370,8 +370,8 @@ The new input was:\n\n"""
             warning.news = news
             warnings.warn(warning, stacklevel=4)
 
-    @needs_full_tree
     @property
+    @needs_full_tree
     def comments(self) -> list[PaddingNode]:
         """The comments associated with this input if any.
 
