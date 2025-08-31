@@ -229,7 +229,8 @@ class Surface(Numbered_MCNP_Object):
         """
         pass
 
-    @property
+    @make_prop_pointer("_is_reflecting", bool)
+    @needs_full_tree
     def is_reflecting(self):
         """If true this surface is a reflecting boundary.
 
@@ -237,15 +238,10 @@ class Surface(Numbered_MCNP_Object):
         -------
         bool
         """
-        return self._is_reflecting
+        pass
 
-    @is_reflecting.setter
-    def is_reflecting(self, reflect):
-        if not isinstance(reflect, bool):
-            raise TypeError("is_reflecting must be set to a bool")
-        self._is_reflecting = reflect
-
-    @property
+    @make_prop_pointer("_is_white_boundary", bool)
+    @needs_full_tree
     def is_white_boundary(self):
         """If true this surface is a white boundary.
 
@@ -255,13 +251,8 @@ class Surface(Numbered_MCNP_Object):
         """
         return self._is_white_boundary
 
-    @is_white_boundary.setter
-    def is_white_boundary(self, white):
-        if not isinstance(white, bool):
-            raise TypeError("is_white_boundary must be set to a bool")
-        self._is_white_boundary = white
-
     @property
+    @needs_full_tree
     def surface_constants(self):
         """The constants defining the surface
 
@@ -275,6 +266,7 @@ class Surface(Numbered_MCNP_Object):
         return ret
 
     @surface_constants.setter
+    @needs_full_tree
     def surface_constants(self, constants):
         if not isinstance(constants, list):
             raise TypeError("surface_constants must be a list")
@@ -289,6 +281,7 @@ class Surface(Numbered_MCNP_Object):
             self._surface_constants[i].value = value
 
     @make_prop_val_node("_old_transform_number")
+    @needs_full_tree
     def old_transform_number(self):
         """The transformation number for this surface in the original file.
 
@@ -299,6 +292,7 @@ class Surface(Numbered_MCNP_Object):
         pass
 
     @make_prop_val_node("_old_periodic_surface")
+    @needs_full_tree
     def old_periodic_surface(self):
         """The surface number this is periodic with reference to in the original file.
 
@@ -309,6 +303,7 @@ class Surface(Numbered_MCNP_Object):
         pass
 
     @make_prop_pointer("_periodic_surface", types=(), deletable=True)
+    @needs_full_tree
     def periodic_surface(self):
         """The surface that this surface is periodic with respect to
 
@@ -319,6 +314,7 @@ class Surface(Numbered_MCNP_Object):
         pass
 
     @make_prop_pointer("_transform", transform.Transform, deletable=True)
+    @needs_full_tree
     def transform(self):
         """The Transform object that translates this surface
 
