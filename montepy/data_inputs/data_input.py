@@ -52,7 +52,7 @@ class DataInputAbstract(MCNP_Object):
 
     _parser = DataParser
 
-    _classifier_parser = ClassifierParser()
+    _classifier_parser = ClassifierParser
 
     _JitParser = JitDataParser
 
@@ -358,11 +358,16 @@ class DataInput(DataInputAbstract):
     """
 
     def __init__(
-        self, input: InitInput = None, fast_parse: bool = False, prefix: str = None
+        self,
+        input: InitInput = None,
+        *,
+        fast_parse: bool = False,
+        prefix: str = None,
+        jit_parse: bool = True,
     ):
         if prefix:
             self._load_correct_parser(prefix)
-        super().__init__(input, fast_parse)
+        super().__init__(input, fast_parse, jit_parse=jit_parse)
 
     @property
     def _class_prefix(self):
