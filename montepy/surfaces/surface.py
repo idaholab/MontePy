@@ -302,7 +302,13 @@ class Surface(Numbered_MCNP_Object):
         """
         pass
 
-    @make_prop_pointer("_periodic_surface", types=(), deletable=True)
+    @prop_pointer_from_problem(
+        "_periodic_surface",
+        "old_periodic_surface",
+        "surfaces",
+        types=(),
+        deletable=True,
+    )
     @needs_full_tree
     def periodic_surface(self):
         """The surface that this surface is periodic with respect to
@@ -313,7 +319,13 @@ class Surface(Numbered_MCNP_Object):
         """
         pass
 
-    @make_prop_pointer("_transform", transform.Transform, deletable=True)
+    @prop_pointer_from_problem(
+        "_transform",
+        "old_transform_number",
+        "tranforms",
+        transform.Transform,
+        deletable=True,
+    )
     @needs_full_tree
     def transform(self):
         """The Transform object that translates this surface
