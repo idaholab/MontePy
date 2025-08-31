@@ -31,7 +31,7 @@ def _link_geometry_to_cell(self, geom):
 
 def _lattice_deprecation_warning():
     warnings.warn(
-        message="Cell.lattice is deprecated in favor of Cell.lattice_type",
+        message="Cell.lattice is deprecated since 1.0.0 in favor of Cell.lattice_type",
         category=DeprecationWarning,
     )
 
@@ -221,6 +221,7 @@ class Cell(Numbered_MCNP_Object):
             setattr(self, attr, input_class(in_cell_block=True))
 
     @property
+    @needs_full_tree
     def importance(self):
         """The importances for this cell for various particle types.
 
@@ -235,6 +236,7 @@ class Cell(Numbered_MCNP_Object):
         return self._importance
 
     @property
+    @needs_full_tree
     def universe(self):
         """The Universe that this cell is in.
 
@@ -246,12 +248,14 @@ class Cell(Numbered_MCNP_Object):
         return self._universe.universe
 
     @universe.setter
+    @needs_full_tree
     def universe(self, value):
         if not isinstance(value, Universe):
             raise TypeError("universe must be set to a Universe")
         self._universe.universe = value
 
     @property
+    @needs_full_tree
     def fill(self):
         """the Fill object representing how this cell is filled.
 
@@ -266,6 +270,7 @@ class Cell(Numbered_MCNP_Object):
         return self._fill
 
     @property
+    @needs_full_tree
     def _fill_transform(self):
         """A simple wrapper to get the transform of the fill or None."""
         if self.fill:
@@ -273,6 +278,7 @@ class Cell(Numbered_MCNP_Object):
         return None  # pragma: no cover
 
     @property
+    @needs_full_tree
     def not_truncated(self):
         """Indicates if this cell has been marked as not being truncated for optimization.
 
@@ -301,6 +307,7 @@ class Cell(Numbered_MCNP_Object):
         return self._universe.not_truncated
 
     @not_truncated.setter
+    @needs_full_tree
     def not_truncated(self, value):
         if not isinstance(value, bool):
             raise TypeError("not_truncated_by_parent must be a bool")
@@ -309,6 +316,7 @@ class Cell(Numbered_MCNP_Object):
         self._universe._not_truncated = value
 
     @property
+    @needs_full_tree
     def old_universe_number(self):
         """The original universe number read in from the input file.
 
@@ -320,6 +328,7 @@ class Cell(Numbered_MCNP_Object):
         return self._universe.old_number
 
     @property
+    @needs_full_tree
     def lattice_type(self):
         """The type of lattice being used by the cell.
 
@@ -331,29 +340,35 @@ class Cell(Numbered_MCNP_Object):
         return self._lattice.lattice
 
     @lattice_type.setter
+    @needs_full_tree
     def lattice_type(self, value):
         self._lattice.lattice = value
 
     @lattice_type.deleter
+    @needs_full_tree
     def lattice_type(self):
         self._lattice.lattice = None
 
     @property
+    @needs_full_tree
     def lattice(self):
         _lattice_deprecation_warning()
         return self.lattice_type
 
     @lattice.setter
+    @needs_full_tree
     def lattice(self, value):
         _lattice_deprecation_warning()
         self.lattice_type = value
 
     @lattice.deleter
+    @needs_full_tree
     def lattice(self):
         _lattice_deprecation_warning()
         self.lattice_type = None
 
     @property
+    @needs_full_tree
     def volume(self):
         """The volume for the cell.
 
@@ -367,14 +382,17 @@ class Cell(Numbered_MCNP_Object):
         return self._volume.volume
 
     @volume.setter
+    @needs_full_tree
     def volume(self, value):
         self._volume.volume = value
 
     @volume.deleter
+    @needs_full_tree
     def volume(self):
         del self._volume.volume
 
     @property
+    @needs_full_tree
     def volume_mcnp_calc(self):
         """Indicates whether or not MCNP will attempt to calculate the cell volume.
 
@@ -394,6 +412,7 @@ class Cell(Numbered_MCNP_Object):
         return self._volume.is_mcnp_calculated
 
     @property
+    @needs_full_tree
     def volume_is_set(self):
         """Whether or not the volume for this cell has been set.
 
@@ -414,7 +433,14 @@ class Cell(Numbered_MCNP_Object):
         """
         pass
 
-    @make_prop_pointer("_material", (Material, type(None)), deletable=True)
+    @prop_pointer_from_problem(
+        "_material",
+        "old_mat_number",
+        "materials",
+        (Material, type(None)),
+        deletable=True,
+    )
+    @needs_full_tree
     def material(self):
         """The Material object for the cell.
 
@@ -427,6 +453,7 @@ class Cell(Numbered_MCNP_Object):
         pass
 
     @make_prop_pointer("_geometry", HalfSpace, validator=_link_geometry_to_cell)
+    @needs_full_tree
     def geometry(self):
         """The Geometry for this problem.
 
@@ -472,11 +499,13 @@ class Cell(Numbered_MCNP_Object):
     @make_prop_val_node(
         "_density_node", (float, int, type(None)), base_type=float, deletable=True
     )
+    @needs_full_tree
     def _density(self):
         """This is a wrapper to allow using the prop_val_node with mass_density and atom_density."""
         pass
 
     @property
+    @needs_full_tree
     def atom_density(self) -> float:
         """The atom density of the material in the cell, in a/b-cm.
 
@@ -491,6 +520,7 @@ class Cell(Numbered_MCNP_Object):
         return self._density
 
     @atom_density.setter
+    @needs_full_tree
     def atom_density(self, density: float):
         if not isinstance(density, Real):
             raise TypeError("Atom density must be a number.")
@@ -500,10 +530,12 @@ class Cell(Numbered_MCNP_Object):
         self._density = float(density)
 
     @atom_density.deleter
+    @needs_full_tree
     def atom_density(self):
         self._density = None
 
     @property
+    @needs_full_tree
     def mass_density(self) -> float:
         """The mass density of the material in the cell, in g/cc.
 
@@ -518,6 +550,7 @@ class Cell(Numbered_MCNP_Object):
         return self._density
 
     @mass_density.setter
+    @needs_full_tree
     def mass_density(self, density: float):
         if not isinstance(density, Real):
             raise TypeError("Mass density must be a number.")
@@ -527,10 +560,12 @@ class Cell(Numbered_MCNP_Object):
         self._density = float(density)
 
     @mass_density.deleter
+    @needs_full_tree
     def mass_density(self):
         self._density = None
 
     @property
+    @needs_full_tree
     def is_atom_dens(self):
         """Whether or not the density is in atom density [a/b-cm].
 
@@ -553,6 +588,7 @@ class Cell(Numbered_MCNP_Object):
         pass
 
     @make_prop_pointer("_surfaces")
+    @needs_full_tree
     def surfaces(self):
         """List of the Surface objects associated with this cell.
 
@@ -562,30 +598,10 @@ class Cell(Numbered_MCNP_Object):
         -------
         Surfaces
         """
+        if not self._surfaces and self._problem is not None:
+            self._geometry.update_pointers(self._problem.cells, self._problem.surfaces, self)
         return self._surfaces
 
-    @property
-    def parameters(self):
-        """A dictionary of the additional parameters for the object.
-
-        e.g.: ``1 0 -1 u=1 imp:n=0.5`` has the parameters
-        ``{"U": "1", "IMP:N": "0.5"}``
-
-        Returns
-        -------
-        unknown
-            a dictionary of the key-value pairs of the parameters.
-
-
-        :rytpe: dict
-        """
-        return self._parameters
-
-    @parameters.setter
-    def parameters(self, params):
-        if not isinstance(params, dict):
-            raise TypeError("parameters must be a dict")
-        self._parameters = params
 
     @property
     def complements(self):
@@ -593,6 +609,8 @@ class Cell(Numbered_MCNP_Object):
 
         :rytpe: :class:`montepy.cells.Cells`
         """
+        if not self._complements and self._problem is not None:
+            self._geometry.update_pointers(self._problem.cells, self._problem.surfaces, self)
         return self._complements
 
     @property
@@ -637,6 +655,7 @@ class Cell(Numbered_MCNP_Object):
                 self._material = None
         self._geometry.update_pointers(cells, surfaces, self)
 
+    @needs_full_tree
     def remove_duplicate_surfaces(self, deleting_dict):
         """Updates old surface numbers to prepare for deleting surfaces.
 

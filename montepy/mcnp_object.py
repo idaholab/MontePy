@@ -266,8 +266,8 @@ class MCNP_Object(ABC, metaclass=_ExceptionContextAdder):
             return ValueNode(default, value_type, padding_node, never_pad)
         return ValueNode(str(default), value_type, padding_node, never_pad)
 
-    @needs_full_tree
     @property
+    @needs_full_tree
     def parameters(self) -> dict[str, str]:
         """A dictionary of the additional parameters for the object.
 
