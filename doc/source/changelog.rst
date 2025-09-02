@@ -5,6 +5,13 @@ MontePy Changelog
 1.1 releases
 ============
 
+#Next Release#
+--------------
+
+**Bugs Fixed**
+
+* Fixed bug where lines that were the allowed length was raising a ``LineOverRunWarning`` when read by MontePy (:issue:`517`). 
+
 1.1.2
 --------------
 
