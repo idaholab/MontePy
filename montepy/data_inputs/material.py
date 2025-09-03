@@ -59,10 +59,37 @@ class _DefaultLibraries:
         except KeyError:
             return None
 
+    def update(self, other=None, **kwargs):
+        """Update the default libraries with the key/value pairs from other, overwriting existing keys.
+        
+        Parameters
+        ----------
+        other : dict or dict-like
+            Another dict or dict-like object to update from
+        **kwargs
+            Additional key-value pairs to update
+        """
+        if other is not None:
+            if hasattr(other, "items"):
+                for key, value in other.items():
+                    self[key] = value
+            else:
+                for key, value in other:
+                    self[key] = value
+        for key, value in kwargs.items():
+            self[key] = value
+
     def __setitem__(self, key, value):
         key = self._validate_key(key)
+        if value is None:
+            # Setting to None means unset/delete the library
+            try:
+                del self[key]
+            except KeyError:
+                pass  # Already unset, nothing to do
+            return
         if not isinstance(value, (Library, str)):
-            raise TypeError("")
+            raise TypeError("Default library value must be a Library, str, or None")
         if isinstance(value, str):
             value = Library(value)
         try:
@@ -248,16 +275,22 @@ class Material(data_input.DataInputAbstract, Numbered_MCNP_Object):
     :func:`~montepy.data_inputs.material.Material.default_libraries` acts like a dictionary,
     and can accept a string or a :class:`~montepy.particle.LibraryType` as keys.
 
+    To clear a default library, assign ``None``:
+
     .. testcode::
 
         print(mat.default_libraries["plib"])
         mat.default_libraries[montepy.LibraryType.NEUTRON] = "00c"
         print(mat.default_libraries["nlib"])
+        # Clear/unset the plib default
+        mat.default_libraries["plib"] = None
+        print(mat.default_libraries["plib"])
 
     .. testoutput::
 
         80p
         00c
+        None
 
     See Also
     --------
@@ -433,16 +466,22 @@ See <https://www.montepy.org/migrations/migrate0_1.html> for more information ""
         :func:`~montepy.data_inputs.material.Material.default_libraries` acts like a dictionary,
         and can accept a string or a :class:`~montepy.particle.LibraryType` as keys.
 
+        To clear a default library, assign ``None``:
+
         .. testcode::
 
             print(mat.default_libraries["plib"])
             mat.default_libraries[montepy.LibraryType.NEUTRON] = "00c"
             print(mat.default_libraries["nlib"])
+            # Clear/unset the plib default
+            mat.default_libraries["plib"] = None
+            print(mat.default_libraries["plib"])
 
         .. testoutput::
 
             None
             00c
+            None
 
         .. versionadded:: 1.0.0
 
