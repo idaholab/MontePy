@@ -208,7 +208,7 @@ class Materials(NumberedDataObjectCollection):
         ^^^^^^^^
 
         To set the default libraries for a problem you need to set this dictionary
-        to a Library or string.
+        to a Library or string. To clear a default library, assign ``None``.
 
         .. testcode:: python
 
@@ -219,6 +219,8 @@ class Materials(NumberedDataObjectCollection):
             problem.materials.default_libraries["nlib"] = "00c"
             # set photo-atomic
             problem.materials.default_libraries[montepy.LibraryType.PHOTO_ATOMIC] = montepy.Library("80p")
+            # clear/unset neutron default
+            problem.materials.default_libraries["nlib"] = None
 
         .. versionadded:: 1.0.0
 
