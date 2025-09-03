@@ -8,6 +8,10 @@ MontePy Changelog
 #Next Release#
 --------------
 
+**Features Added**
+
+* Allow clearing default libraries by assigning ``None`` at material and problem scopes; unset values are omitted from serialization.
+
 **Bugs Fixed**
 
 * Fixed bug where lines that were the allowed length was raising a ``LineOverRunWarning`` when read by MontePy (:issue:`517`). 
