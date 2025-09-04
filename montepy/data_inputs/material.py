@@ -61,7 +61,7 @@ class _DefaultLibraries:
 
     def update(self, other=None, **kwargs):
         """Update the default libraries with the key/value pairs from other, overwriting existing keys.
-        
+
         Parameters
         ----------
         other : dict or dict-like

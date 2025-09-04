@@ -883,21 +883,21 @@ class TestDefaultLib:
         # Set a library first
         dl["plib"] = "80p"
         assert dl["plib"] == Library("80p")
-        
+
         # Set to None to unset
         dl["plib"] = None
         assert dl["plib"] is None
-        
+
         # Setting None on unset library should not error
         dl["nlib"] = None
         assert dl["nlib"] is None
-        
+
         # Test with enum keys
         dl[LibraryType.PHOTO_ATOMIC] = "90p"
         assert dl["plib"] == Library("90p")
         dl[LibraryType.PHOTO_ATOMIC] = None
         assert dl["plib"] is None
-        
+
         # Test update method with None
         dl["nlib"] = "00c"
         dl["plib"] = "80p"
