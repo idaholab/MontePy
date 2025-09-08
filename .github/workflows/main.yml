@@ -19,7 +19,7 @@ jobs:
           fetch-depth: 0
           fetch-tags: true
       - name: set up python  ${{ matrix.python-version }}
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@v6
         with: 
           python-version: ${{ matrix.python-version }}
       - run: pip install --upgrade pip
@@ -65,7 +65,7 @@ jobs:
     steps:
       - uses: actions/checkout@v5
       - name: set up python  ${{ matrix.python-version }}
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@v6
         with: 
           python-version: ${{ matrix.python-version }}
       - run: pip install numpy~=${{ matrix.numpy-version }}
@@ -113,7 +113,7 @@ jobs:
           fetch-depth: 0
           fetch-tags: true
       - name: set up python 3.12
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@v6
         with: 
           python-version: 3.12
       - run: pip install . montepy[doc,build]
@@ -141,7 +141,7 @@ jobs:
           fetch-depth: 0
           fetch-tags: true
       - name: set up python 3.12
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@v6
         with: 
           python-version: 3.12
       - run: pip install . montepy[doc,build,demo-test,test]
@@ -162,7 +162,7 @@ jobs:
     steps:
       - uses: actions/checkout@v5
       - name: set up python 3.12
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@v6
         with: 
           python-version: 3.12
       - run: pip install . montepy[format]
@@ -174,7 +174,7 @@ jobs:
     steps:
       - uses: actions/checkout@v5
       - name: set up python 3.12
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@v6
         with: 
           python-version: 3.12
       - run: pip install . montepy[test]
@@ -191,7 +191,7 @@ jobs:
     steps:
       - uses: actions/checkout@v5
       - name: set up python 3.12
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@v6
         with: 
           python-version: 3.12
       - run: pip install . montepy[test]
