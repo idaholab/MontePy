@@ -4,7 +4,7 @@ dynamic = ["version"]
 description = "A library for reading, editing, and writing MCNP input files"
 
 readme = "README.md"
-requires-python = ">=3.11"
+requires-python = ">=3.12"
 maintainers = [
 	{name = "Micah Gale", email = "mgale@montepy.org"}
 ]
