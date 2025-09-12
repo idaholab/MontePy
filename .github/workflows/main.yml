@@ -11,7 +11,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        python-version: ["3.11", "3.12", "3.13", "3.14-dev"]
+        python-version: ["3.12", "3.13", "3.14-dev"]
 
     steps:
       - uses: actions/checkout@v4
@@ -54,12 +54,12 @@ jobs:
       actions: write
     strategy:
       matrix:
-        python-version: ["3.11", "3.12", "3.13", "3.14-dev"]
-        numpy-version: ["1.0", "2.0"]
+        python-version: ["3.12", "3.13", "3.14-dev"]
+        numpy-version: ["2.0", "2.3"]
         sly-version: ["0.5"]
         include:
-          - python-version: "3.11"
-            numpy-version: "2.0"
+          - python-version: "3.13"
+            numpy-version: "2.3"
             sly-version: "0.4"
     
     steps:
