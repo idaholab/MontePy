@@ -44,7 +44,7 @@ jobs:
         run: .github/scripts/check_version.py
       - run: python -m build .
       - name: Sign the dists with Sigstore
-        uses: sigstore/gh-action-sigstore-python@3de1a2a3c264daaa39b533c979f3793e0ddca0f8
+        uses: sigstore/gh-action-sigstore-python@314ab837895be1b179aec88460a1ebcb3a6e916c
         with:
           inputs: >-
             ./dist/*.tar.gz
