@@ -15,6 +15,7 @@ from montepy.input_parser import syntax_node
 from montepy.exceptions import *
 from montepy.numbered_mcnp_object import Numbered_MCNP_Object, InitInput
 from montepy.data_inputs.material import Material
+from montepy.materials import Materials
 from montepy.geometry_operators import Operator
 from montepy.surfaces.half_space import HalfSpace, UnitHalfSpace
 from montepy.surfaces.surface import Surface
@@ -22,6 +23,10 @@ from montepy.surface_collection import Surfaces
 from montepy.universe import Universe
 from montepy.utilities import *
 import montepy
+from montepy._check_value import args_checked
+
+from montepy.types import PositiveReal
+from montepy.mcnp_problem import MCNP_Problem
 
 
 def _link_geometry_to_cell(self, geom):
@@ -121,6 +126,7 @@ class Cell(Numbered_MCNP_Object):
 
     _parser = CellParser()
 
+    @args_checked
     def __init__(
         self,
         input: InitInput = None,
@@ -246,9 +252,8 @@ class Cell(Numbered_MCNP_Object):
         return self._universe.universe
 
     @universe.setter
-    def universe(self, value):
-        if not isinstance(value, Universe):
-            raise TypeError("universe must be set to a Universe")
+    @args_checked
+    def universe(self, value: Universe):
         self._universe.universe = value
 
     @property
@@ -300,10 +305,15 @@ class Cell(Numbered_MCNP_Object):
             return False
         return self._universe.not_truncated
 
+    @property
+    def not_truncated(self):
+        if self.universe.number == 0:
+            return False
+        return self._universe.not_truncated
+
     @not_truncated.setter
-    def not_truncated(self, value):
-        if not isinstance(value, bool):
-            raise TypeError("not_truncated_by_parent must be a bool")
+    @args_checked
+    def not_truncated(self, value: bool):
         if self.universe.number == 0 and value:
             raise ValueError("can't specify if cell is truncated for universe 0")
         self._universe._not_truncated = value
@@ -331,6 +341,7 @@ class Cell(Numbered_MCNP_Object):
         return self._lattice.lattice
 
     @lattice_type.setter
+    @args_checked
     def lattice_type(self, value):
         self._lattice.lattice = value
 
@@ -344,6 +355,7 @@ class Cell(Numbered_MCNP_Object):
         return self.lattice_type
 
     @lattice.setter
+    @args_checked
     def lattice(self, value):
         _lattice_deprecation_warning()
         self.lattice_type = value
@@ -367,7 +379,8 @@ class Cell(Numbered_MCNP_Object):
         return self._volume.volume
 
     @volume.setter
-    def volume(self, value):
+    @args_checked
+    def volume(self, value: float):
         self._volume.volume = value
 
     @volume.deleter
@@ -491,11 +504,8 @@ class Cell(Numbered_MCNP_Object):
         return self._density
 
     @atom_density.setter
-    def atom_density(self, density: float):
-        if not isinstance(density, Real):
-            raise TypeError("Atom density must be a number.")
-        elif density < 0:
-            raise ValueError("Atom density must be a positive number.")
+    @args_checked
+    def atom_density(self, density: 'PositiveReal'):
         self._is_atom_dens = True
         self._density = float(density)
 
@@ -518,11 +528,8 @@ class Cell(Numbered_MCNP_Object):
         return self._density
 
     @mass_density.setter
+    @args_checked
     def mass_density(self, density: float):
-        if not isinstance(density, Real):
-            raise TypeError("Mass density must be a number.")
-        elif density < 0:
-            raise ValueError("Mass density must be a positive number.")
         self._is_atom_dens = False
         self._density = float(density)
 
@@ -582,9 +589,8 @@ class Cell(Numbered_MCNP_Object):
         return self._parameters
 
     @parameters.setter
-    def parameters(self, params):
-        if not isinstance(params, dict):
-            raise TypeError("parameters must be a dict")
+    @args_checked
+    def parameters(self, params: dict):
         self._parameters = params
 
     @property
@@ -611,7 +617,8 @@ class Cell(Numbered_MCNP_Object):
                     if self in cell.complements:
                         yield cell
 
-    def update_pointers(self, cells, materials, surfaces):
+    @args_checked
+    def update_pointers(self, cells: Cells, materials: Materials, surfaces: Surfaces):
         """Attaches this object to the appropriate objects for surfaces and materials.
 
         Parameters
@@ -637,7 +644,8 @@ class Cell(Numbered_MCNP_Object):
                 self._material = None
         self._geometry.update_pointers(cells, surfaces, self)
 
-    def remove_duplicate_surfaces(self, deleting_dict):
+    @args_checked
+    def remove_duplicate_surfaces(self, deleting_dict: dict):
         """Updates old surface numbers to prepare for deleting surfaces.
 
         .. versionchanged:: 1.0.0
@@ -709,7 +717,8 @@ class Cell(Numbered_MCNP_Object):
         if self.geometry is None or len(self.geometry) == 0:
             raise IllegalState(f"Cell {self.number} has no geometry defined.")
 
-    def link_to_problem(self, problem):
+    @args_checked
+    def link_to_problem(self, problem: 'MCNP_Problem'):
         super().link_to_problem(problem)
         self.complements.link_to_problem(problem)
         self.surfaces.link_to_problem(problem)
@@ -833,13 +842,14 @@ class Cell(Numbered_MCNP_Object):
         ret = "\n".join([l for l in ret.splitlines() if l.strip()])
         return self.wrap_string_for_mcnp(ret, mcnp_version, True)
 
+    @args_checked
     def clone(
         self,
-        clone_material=False,
-        clone_region=False,
-        starting_number=None,
-        step=None,
-        add_collect=True,
+        clone_material: bool = False,
+        clone_region: bool = False,
+        starting_number: int = None,
+        step: int = None,
+        add_collect: bool = True,
     ):
         """Create a new almost independent instance of this cell with a new number.
 
