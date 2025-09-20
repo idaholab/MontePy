@@ -47,25 +47,41 @@ PathLike = str | os.PathLike
 def _prepare_type_checker(func_name, arg_spec, none_ok):
     arg_type = arg_spec.annotation
     if arg_type is not inspect._empty:
-        # if annotations are used
-        if isinstance(arg_type, str):
-            arg_type = eval(arg_type)
-        # if annotated
-        if isinstance(arg_type, typing._AnnotatedAlias):
-            arg_type = arg_type.__args__
-        return lambda x: check_type(
-            func_name, arg_spec.name, x, arg_type, none_ok=none_ok
-        )
+
+        def type_evaler(arg):
+            nonlocal arg_type
+            # if annotations are used
+            if isinstance(arg_type, str):
+                arg_type = eval(arg_type)
+            # if annotated
+            if isinstance(arg_type, typing._AnnotatedAlias):
+                arg_type = arg_type.__args__
+            return check_type(func_name, arg_spec.name, arg, arg_type, none_ok=none_ok)
+
+        return type_evaler
 
 
 def _prepare_args_check(func_name, arg_spec):
     arg_check = arg_spec.annotation
-    if isinstance(arg_check, str):
-        arg_check = eval(arg_check)
-    if arg_check is None or not isinstance(arg_check, typing._AnnotatedAlias):
-        return []
-    arg_check = arg_check.__metadata__
-    return (checker(func_name, arg_spec.name) for checker in arg_check)
+    checkers = []
+
+    def check_args(arg):
+        nonlocal arg_check, checkers
+        if checkers is not None:
+            if len(checkers) == 0:
+                if isinstance(arg_check, str):
+                    arg_check = eval(arg_check)
+                if arg_check is None or not isinstance(
+                    arg_check, typing._AnnotatedAlias
+                ):
+                    checkers = None
+                    return
+                arg_check = arg_check.__metadata__
+                checkers = [checker(func_name, arg_spec.name) for checker in arg_check]
+            else:
+                (checker(arg) for checker in checkers)
+
+    return check_args
 
 
 def args_checked(func: Callable):
@@ -138,7 +154,7 @@ def args_checked(func: Callable):
             type_checker = _prepare_type_checker(func.__qualname__, arg_spec, none_ok)
             if type_checker:
                 checkers.append(type_checker)
-            checkers.extend(_prepare_args_check(func.__qualname__, arg_spec))
+            checkers.append(_prepare_args_check(func.__qualname__, arg_spec))
             arg_checkers[arg_name] = checkers
 
         @functools.wraps(func)
