@@ -25,8 +25,7 @@ from montepy.utilities import *
 import montepy
 from montepy._check_value import args_checked
 
-from montepy.types import PositiveReal
-from montepy.mcnp_problem import MCNP_Problem
+from montepy.types import *
 
 
 def _link_geometry_to_cell(self, geom):
@@ -130,7 +129,7 @@ class Cell(Numbered_MCNP_Object):
     def __init__(
         self,
         input: InitInput = None,
-        number: int = None,
+        number: PositiveInt = None,
     ):
         self._BLOCK_TYPE = montepy.input_parser.block_type.BlockType.CELL
         self._CHILD_OBJ_MAP = {
@@ -342,7 +341,7 @@ class Cell(Numbered_MCNP_Object):
 
     @lattice_type.setter
     @args_checked
-    def lattice_type(self, value):
+    def lattice_type(self, value: montepy.LatticeType):
         self._lattice.lattice = value
 
     @lattice_type.deleter
@@ -356,7 +355,7 @@ class Cell(Numbered_MCNP_Object):
 
     @lattice.setter
     @args_checked
-    def lattice(self, value):
+    def lattice(self, value: montepy.LatticeType):
         _lattice_deprecation_warning()
         self.lattice_type = value
 
@@ -380,7 +379,7 @@ class Cell(Numbered_MCNP_Object):
 
     @volume.setter
     @args_checked
-    def volume(self, value: float):
+    def volume(self, value: Real):
         self._volume.volume = value
 
     @volume.deleter
@@ -505,7 +504,7 @@ class Cell(Numbered_MCNP_Object):
 
     @atom_density.setter
     @args_checked
-    def atom_density(self, density: 'PositiveReal'):
+    def atom_density(self, density: PositiveReal):
         self._is_atom_dens = True
         self._density = float(density)
 
@@ -529,7 +528,7 @@ class Cell(Numbered_MCNP_Object):
 
     @mass_density.setter
     @args_checked
-    def mass_density(self, density: float):
+    def mass_density(self, density: PositiveReal):
         self._is_atom_dens = False
         self._density = float(density)
 
@@ -687,7 +686,7 @@ class Cell(Numbered_MCNP_Object):
         for input_class, (attr, _) in self._INPUTS_TO_PROPERTY.items():
             getattr(self, attr)._update_values()
 
-    def _generate_default_tree(self, number: int = None):
+    def _generate_default_tree(self, number: Integral = None):
         material = syntax_node.SyntaxNode(
             "material",
             {
@@ -718,7 +717,7 @@ class Cell(Numbered_MCNP_Object):
             raise IllegalState(f"Cell {self.number} has no geometry defined.")
 
     @args_checked
-    def link_to_problem(self, problem: 'MCNP_Problem'):
+    def link_to_problem(self, problem: montepy.mcnp_problem.MCNP_Problem):
         super().link_to_problem(problem)
         self.complements.link_to_problem(problem)
         self.surfaces.link_to_problem(problem)
@@ -774,7 +773,7 @@ class Cell(Numbered_MCNP_Object):
         base_node = UnitHalfSpace(self, True, True)
         return HalfSpace(base_node, Operator.COMPLEMENT)
 
-    def format_for_mcnp_input(self, mcnp_version):
+    def format_for_mcnp_input(self, mcnp_version: tuple[Integral, Integral, Integral]) -> list[str]:
         """Creates a string representation of this MCNP_Object that can be
         written to file.
 
@@ -847,8 +846,8 @@ class Cell(Numbered_MCNP_Object):
         self,
         clone_material: bool = False,
         clone_region: bool = False,
-        starting_number: int = None,
-        step: int = None,
+        starting_number: PositiveInt = None,
+        step: PositiveInt = None,
         add_collect: bool = True,
     ):
         """Create a new almost independent instance of this cell with a new number.
