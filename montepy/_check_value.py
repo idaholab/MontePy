@@ -38,6 +38,7 @@ import numpy as np
 import typing
 
 import montepy
+from montepy.types import *
 
 # Type for arguments that accept file paths
 PathLike = str | os.PathLike
@@ -430,90 +431,6 @@ def greater_than(minimum: Real, equality: bool = False):
         return lambda x: check_greater_than(func_name, name, x, minimum, equality)
 
     return wrapper
-
-
-def positive(func_name, name):
-    r"""
-    A higher-order function to be used with ``args_checked`` to ensure a value is positive,
-    i.e., :math:`x\gt 0`.
-
-    Example
-    ^^^^^^^
-
-    .. testcode::
-
-        from numbers import Real
-        from typing import Annotated
-
-        @args_checked
-        def foo(a: Annotated[Real, positive]):
-            pass
-
-    """
-    return lambda x: check_greater_than(func_name, name, x, 0)
-
-
-def negative(func_name, name):
-    r"""
-    A higher-order function to be used with ``args_checked`` to ensure a value is negative,
-    i.e., :math:`x\lt 0`.
-
-    Example
-    ^^^^^^^
-
-    .. testcode::
-
-        from numbers import Real
-        from typing import Annotated
-
-        @args_checked
-        def foo(a: Annotated[Real, negative]):
-            pass
-
-    """
-    return lambda x: check_less_than(func_name, name, x, 0)
-
-
-def non_positive(func_name, name):
-    r"""
-    A higher-order function to be used with ``args_checked`` to ensure a value is non-positive,
-    i.e., :math:`x\leq 0`.
-
-    Example
-    ^^^^^^^
-
-    .. testcode::
-
-        from numbers import Real
-        from typing import Annotated
-
-        @args_checked
-        def foo(a: Annotated[Real, non_positive]):
-            pass
-
-    """
-    return lambda x: check_less_than(func_name, name, x, 0, True)
-
-
-def non_negative(func_name, name):
-    r"""
-    A higher-order function to be used with ``args_checked`` to ensure a value is non-negative,
-    i.e., :math:`x\geq 0`.
-
-    Example
-    ^^^^^^^
-
-    .. testcode::
-
-        from numbers import Real
-        from typing import Annotated
-
-        @args_checked
-        def foo(a: Annotated[Real, non_negative]):
-            pass
-
-    """
-    return lambda x: check_greater_than(func_name, name, x, 0, True)
 
 
 def check_less_than(func_name: str, name: str, value, maximum, equality=False):

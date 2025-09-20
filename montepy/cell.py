@@ -128,7 +128,7 @@ class Cell(Numbered_MCNP_Object):
     @args_checked
     def __init__(
         self,
-        input: InitInput = None,
+        input: montepy.mcnp_object.InitInput = None,
         number: PositiveInt = None,
     ):
         self._BLOCK_TYPE = montepy.input_parser.block_type.BlockType.CELL
@@ -252,7 +252,7 @@ class Cell(Numbered_MCNP_Object):
 
     @universe.setter
     @args_checked
-    def universe(self, value: Universe):
+    def universe(self, value: montepy.Universe):
         self._universe.universe = value
 
     @property
@@ -617,7 +617,12 @@ class Cell(Numbered_MCNP_Object):
                         yield cell
 
     @args_checked
-    def update_pointers(self, cells: Cells, materials: Materials, surfaces: Surfaces):
+    def update_pointers(
+        self,
+        cells: montepy.cells.Cells,
+        materials: montepy.materials.Materials,
+        surfaces: montepy.surface_collection.Surfaces,
+    ):
         """Attaches this object to the appropriate objects for surfaces and materials.
 
         Parameters
@@ -773,7 +778,9 @@ class Cell(Numbered_MCNP_Object):
         base_node = UnitHalfSpace(self, True, True)
         return HalfSpace(base_node, Operator.COMPLEMENT)
 
-    def format_for_mcnp_input(self, mcnp_version: tuple[Integral, Integral, Integral]) -> list[str]:
+    def format_for_mcnp_input(
+        self, mcnp_version: tuple[Integral, Integral, Integral]
+    ) -> list[str]:
         """Creates a string representation of this MCNP_Object that can be
         written to file.
 
