@@ -43,6 +43,9 @@ from montepy.types import *
 # Type for arguments that accept file paths
 PathLike = str | os.PathLike
 
+# TODO : switch to typing.get_type_hints
+# TODO: look into typing.get_args and typing.get_origin
+
 
 def _prepare_type_checker(func_name, arg_spec, none_ok):
     arg_type = arg_spec.annotation
