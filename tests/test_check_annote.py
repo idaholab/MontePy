@@ -18,8 +18,9 @@ def str_annote_default(a: str = None):
     pass
 
 
+#test delayed import for circular imports
 @cv.args_checked
-def str_pipe_union(a: str | montepy.Cell):
+def str_pipe_union(a: str | Cell):
     pass
 
 
@@ -107,3 +108,6 @@ def test_negative(val, raise_error):
             negative(val)
     else:
         negative(val)
+
+# for delayed import
+from montepy import Cell
