@@ -71,22 +71,22 @@ def positive_hard(a: typing.Annotated[int, cv.greater_than(0)]):
 
 
 @cv.args_checked
-def negative(a: typing.Annotated[int, cv.negative]):
+def negative(a: typing.Annotated[int, montepy.types.negative]):
     pass
 
 
 @cv.args_checked
-def positive(a: typing.Annotated[int, cv.positive]):
+def positive(a: typing.Annotated[int, montepy.types.positive]):
     pass
 
 
 @cv.args_checked
-def non_negative(a: typing.Annotated[int, cv.non_negative]):
+def non_negative(a: typing.Annotated[int, montepy.types.non_negative]):
     pass
 
 
 @cv.args_checked
-def non_positive(a: typing.Annotated[int, cv.non_positive]):
+def non_positive(a: typing.Annotated[int, montepy.types.non_positive]):
     pass
 
 
