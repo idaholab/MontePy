@@ -53,7 +53,7 @@ class _DefaultLibraries:
     __slots__ = "_libraries", "_parent"
 
     @args_checked
-    def __init__(self, parent_mat: Material):
+    def __init__(self, parent_mat: 'montepy.Material'):
         self._libraries = {}
         self._parent = weakref.ref(parent_mat)
 
