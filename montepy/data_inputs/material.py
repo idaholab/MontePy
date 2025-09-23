@@ -36,7 +36,7 @@ This is used for adding new material components.
 By default all components made from scratch are added to their own line with this many leading spaces.
 """
 
-NuclideLike = Union[Nuclide, Nucleus, Element, str, Integral]
+NuclideLike = Nuclide | Nucleus | Element | str | Integral
 
 
 class _DefaultLibraries:
@@ -66,7 +66,7 @@ class _DefaultLibraries:
             return None
 
     @args_checked
-    def __setitem__(self, key: str | LibraryType, value: Library | str) -> None:
+    def __setitem__(self, key: str | LibraryType, value: str | Library) -> None:
         key = self._validate_key(key)
         if isinstance(value, str):
             value = Library(value)
@@ -141,7 +141,7 @@ class _MatCompWrapper:
         self._index = index
         self._setter = setter
 
-    def __iter__(self) -> Any:
+    def __iter__(self) -> Generator[Nuclide | Real,None, None]:
 
         def generator():
             for component in self._parent:
@@ -149,10 +149,12 @@ class _MatCompWrapper:
 
         return generator()
 
-    def __getitem__(self, idx: int) -> Any:
+    @args_checked
+    def __getitem__(self, idx: Integral) -> Any:
         return self._parent[idx][self._index]
 
-    def __setitem__(self, idx, val):
+    @args_checked
+    def __setitem__(self, idx: Integral, val: Nuclide | Real):
         new_val = self._setter(self._parent[idx], val)
         self._parent[idx] = new_val
 
@@ -300,7 +302,7 @@ class Material(data_input.DataInputAbstract, Numbered_MCNP_Object):
     def __init__(
         self,
         input: InitInput = None,
-        number: int = None,
+        number: PositiveInt = None,
     ):
         self._components = []
         self._thermal_scattering = None
@@ -466,7 +468,7 @@ See <https://www.montepy.org/migrations/migrate0_1.html> for more information ""
 
     @args_checked
     def get_nuclide_library(
-        self, nuclide: Nuclide, library_type: LibraryType
+        self, nuclide: Nuclide | str, library_type: LibraryType | str
     ) -> Library | None:
         """Figures out which nuclear data library will be used for the given nuclide in this
         given material in this given problem.
@@ -490,9 +492,9 @@ See <https://www.montepy.org/migrations/migrate0_1.html> for more information ""
 
         Parameters
         ----------
-        nuclide : Union[Nuclide, str]
+        nuclide : Nuclide | str
             the nuclide to check.
-        library_type : LibraryType
+        library_type : LibraryType | str
             the LibraryType to check against.
 
         Returns
@@ -574,9 +576,8 @@ See <https://www.montepy.org/migrations/migrate0_1.html> for more information ""
                 f"Second element must be a fraction greater than 0. {newvalue[1]} given."
             )
 
-    def __delitem__(self, idx):
-        if not isinstance(idx, (Integral, slice)):
-            raise TypeError(f"Not a valid index. {idx} given.")
+    @args_checked
+    def __delitem__(self, idx: Integral | slice) -> None:
         if isinstance(idx, Integral):
             self.__delitem(idx)
             return
@@ -617,7 +618,7 @@ See <https://www.montepy.org/migrations/migrate0_1.html> for more information ""
         del self._components[idx]
 
     @args_checked
-    def __contains__(self, nuclide: Nuclide | Nucleus | Element | str | Integral) -> bool:
+    def __contains__(self, nuclide: NuclideLike) -> bool:
         if isinstance(nuclide, (str, Integral)):
             nuclide = Nuclide(nuclide)
         # switch to elemental
@@ -706,7 +707,7 @@ See <https://www.montepy.org/migrations/migrate0_1.html> for more information ""
             nuclide.library = new_library
 
     @args_checked
-    def add_nuclide(self, nuclide: Nuclide | Nucleus | Element | str | Integral, fraction: PositiveReal) -> None:
+    def add_nuclide(self, nuclide: NuclideLike, fraction: PositiveReal) -> None:
         """Add a new component to this material of the given nuclide, and fraction.
 
         .. versionadded:: 1.0.0
@@ -725,7 +726,7 @@ See <https://www.montepy.org/migrations/migrate0_1.html> for more information ""
     @args_checked
     def contains_all(
         self,
-        *nuclides: Nuclide | Nucleus | Element | str | Integral,
+        *nuclides: NuclideLike,
         threshold: Real = 0.0,
         strict: bool = False,
     ) -> bool:
@@ -803,7 +804,7 @@ See <https://www.montepy.org/migrations/migrate0_1.html> for more information ""
     def contains_any(
         self,
         *nuclides: NuclideLike,
-        threshold: Real = 0.0,
+        threshold: PositiveReal = 0.0,
         strict: bool = False,
     ) -> bool:
         """Checks if this material contains any of the given nuclide.
@@ -864,7 +865,6 @@ See <https://www.montepy.org/migrations/migrate0_1.html> for more information ""
         )
 
     @staticmethod
-    @staticmethod
     @args_checked
     def _promote_nuclide(nuclide: NuclideLike, strict: bool) -> NuclideLike:
         # This is necessary for python 3.9
@@ -885,7 +885,7 @@ See <https://www.montepy.org/migrations/migrate0_1.html> for more information ""
     @args_checked
     def _contains_arb(
         self,
-        *nuclides: Nuclide | Nucleus | Element | str | Integral,
+        *nuclides: NuclideLike,
         bool_func: co.abc.Callable[co.abc.Iterable[bool]] = None,
         threshold: float = 0.0,
         strict: bool = False,
@@ -1126,8 +1126,8 @@ See <https://www.montepy.org/migrations/migrate0_1.html> for more information ""
         self,
         name: str = None,
         element: Element | str | Integral | slice = None,
-        A: Integral | slice = None,
-        meta_state: Integral | slice = None,
+        A: PositiveInt | slice = None,
+        meta_state: PositiveInt | slice = None,
         library: str | slice = None,
         strict: bool = False,
     ) -> Generator[tuple[Integral, tuple[Nuclide, Real]], None, None]:
@@ -1282,9 +1282,9 @@ See <https://www.montepy.org/migrations/migrate0_1.html> for more information ""
     def find_vals(
         self,
         name: str = None,
-        element: Element | str | Integral | slice = None,
-        A: Integral | slice = None,
-        meta_state: Integral | slice = None,
+        element: Element | str | PositiveInt | slice = None,
+        A: PositiveInt | slice = None,
+        meta_state: PositiveInt | slice = None,
         library: str | slice = None,
         strict: bool = False,
     ) -> Generator[Real, None, None]:
@@ -1361,7 +1361,7 @@ See <https://www.montepy.org/migrations/migrate0_1.html> for more information ""
         return self._thermal_scattering
 
     @property
-    def cells(self) -> Generator[montepy.cell.Cell]:
+    def cells(self) -> Generator[montepy.cell.Cell, None, None]:
         """A generator of the cells that use this material.
 
         Returns
@@ -1374,7 +1374,8 @@ See <https://www.montepy.org/migrations/migrate0_1.html> for more information ""
                 if cell.material == self:
                     yield cell
 
-    def format_for_mcnp_input(self, mcnp_version):
+    @args_checked
+    def format_for_mcnp_input(self, mcnp_version: tuple[Integral, Integral, Integral]) -> list[str]:
         lines = super().format_for_mcnp_input(mcnp_version)
         if self.thermal_scattering is not None:
             lines += self.thermal_scattering.format_for_mcnp_input(mcnp_version)
