@@ -37,52 +37,60 @@ from numbers import Real, Integral
 import numpy as np
 import typing
 
-import montepy
+# import montepy
 from montepy.types import *
 
 # Type for arguments that accept file paths
 PathLike = str | os.PathLike
 
-# TODO : switch to typing.get_type_hints
-# TODO: look into typing.get_args and typing.get_origin
 
-
-def _prepare_type_checker(func_name, arg_spec, none_ok):
+def _prepare_type_checker(func, arg_spec, none_ok):
     arg_type = arg_spec.annotation
-    if arg_type is not inspect._empty:
+    if arg_type is inspect._empty:
+        return
+    if isinstance(arg_type, str):
+        arg_type = None
+    else:
+        arg_type = typing.get_type_hints(func)[arg_spec.name]
 
         def type_evaler(arg):
             nonlocal arg_type
-            # if annotations are used
-            if isinstance(arg_type, str):
-                arg_type = eval(arg_type)
-            # if annotated
-            if isinstance(arg_type, typing._AnnotatedAlias):
-                arg_type = arg_type.__args__
-            return check_type(func_name, arg_spec.name, arg, arg_type, none_ok=none_ok)
+            # if annotations are used; evaluate on first call
+            if arg_type is None:
+                arg_type = typing.get_type_hints(func)[arg_spec.name]
+            return check_type(
+                func.__qualname__, arg_spec.name, arg, arg_type, none_ok=none_ok
+            )
 
         return type_evaler
 
 
-def _prepare_args_check(func_name, arg_spec):
+def _prepare_args_check(func, arg_spec):
     arg_check = arg_spec.annotation
     checkers = []
 
+    annote_getter = lambda: typing.get_args(
+        typing.get_type_hints(func, include_extras=True)[arg_spec.name]
+    )[
+        1:
+    ]  # get the annotation args
+    if not isinstance(arg_check, typing._AnnotatedAlias):
+        return None
+    if isinstance(arg_check, str):
+        arg_check = None
+    else:
+        arg_check = annote_getter()
+
     def check_args(arg):
         nonlocal arg_check, checkers
-        if checkers is not None:
-            if len(checkers) == 0:
-                if isinstance(arg_check, str):
-                    arg_check = eval(arg_check)
-                if arg_check is None or not isinstance(
-                    arg_check, typing._AnnotatedAlias
-                ):
-                    checkers = None
-                    return
-                arg_check = arg_check.__metadata__
-                checkers = [checker(func_name, arg_spec.name) for checker in arg_check]
-            else:
-                (checker(arg) for checker in checkers)
+        if len(checkers) == 0:
+            if arg_check is None:
+                arg_check = annote_getter()
+            checkers = [
+                checker(func.__qualname__, arg_spec.name) for checker in arg_check
+            ]
+            del arg_check
+        (checker(arg) for checker in checkers)
 
     return check_args
 
@@ -154,10 +162,12 @@ def args_checked(func: Callable):
         for arg_name, arg_spec in args_spec.parameters.items():
             checkers = []
             none_ok = arg_spec.default is None
-            type_checker = _prepare_type_checker(func.__qualname__, arg_spec, none_ok)
+            type_checker = _prepare_type_checker(func, arg_spec, none_ok)
             if type_checker:
                 checkers.append(type_checker)
-            checkers.append(_prepare_args_check(func.__qualname__, arg_spec))
+            val_checker = _prepare_args_check(func, arg_spec)
+            if val_checker:
+                checkers.append(val_checker)
             arg_checkers[arg_name] = checkers
 
         @functools.wraps(func)
