@@ -90,7 +90,7 @@ def _prepare_args_check(func, arg_spec):
                 checker(func.__qualname__, arg_spec.name) for checker in arg_check
             ]
             del arg_check
-        (checker(arg) for checker in checkers)
+        return (checker(arg) for checker in checkers)
 
     return check_args
 
@@ -182,9 +182,8 @@ def args_checked(func: Callable):
                     args_iter = arg_vals.values()
                 else:
                     args_iter = (arg_vals,)
-                for val in args_iter:
-                    for checker in checkers:
-                        checker(val)
+                new_vals = [checker(val) for checker in checkers]
+                # TODO how to update the vals from here and rebind?
             return func(*args, **kwargs)
 
         return wrapper
