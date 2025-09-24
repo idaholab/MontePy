@@ -53,7 +53,7 @@ class _DefaultLibraries:
     __slots__ = "_libraries", "_parent"
 
     @args_checked
-    def __init__(self, parent_mat: 'montepy.Material'):
+    def __init__(self, parent_mat: "montepy.Material"):
         self._libraries = {}
         self._parent = weakref.ref(parent_mat)
 
@@ -93,7 +93,6 @@ class _DefaultLibraries:
     def items(self):
         for lib_type, node in self._libraries.items():
             yield (lib_type, node["data"].value)
-
 
     @staticmethod
     @args_checked
@@ -141,7 +140,7 @@ class _MatCompWrapper:
         self._index = index
         self._setter = setter
 
-    def __iter__(self) -> Generator[Nuclide | Real,None, None]:
+    def __iter__(self) -> Generator[Nuclide | Real, None, None]:
 
         def generator():
             for component in self._parent:
@@ -541,7 +540,9 @@ See <https://www.montepy.org/migrations/migrate0_1.html> for more information ""
         return gen_wrapper()
 
     @args_checked
-    def __setitem__(self, idx: Integral | slice, newvalue: tuple[Nuclide, Real]) -> None:
+    def __setitem__(
+        self, idx: Integral | slice, newvalue: tuple[Nuclide, Real]
+    ) -> None:
         """"""
         old_vals = self._components[idx]
         self._check_valid_comp(newvalue)
@@ -1375,7 +1376,9 @@ See <https://www.montepy.org/migrations/migrate0_1.html> for more information ""
                     yield cell
 
     @args_checked
-    def format_for_mcnp_input(self, mcnp_version: tuple[Integral, Integral, Integral]) -> list[str]:
+    def format_for_mcnp_input(
+        self, mcnp_version: tuple[Integral, Integral, Integral]
+    ) -> list[str]:
         lines = super().format_for_mcnp_input(mcnp_version)
         if self.thermal_scattering is not None:
             lines += self.thermal_scattering.format_for_mcnp_input(mcnp_version)
