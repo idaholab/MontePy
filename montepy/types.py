@@ -1,6 +1,8 @@
 from numbers import Real, Integral
 from typing import Annotated
 
+import montepy._check_value as cv
+
 
 def positive(func_name, name):
     r"""
@@ -20,7 +22,7 @@ def positive(func_name, name):
             pass
 
     """
-    return lambda x: check_greater_than(func_name, name, x, 0)
+    return lambda x: cv.check_greater_than(func_name, name, x, 0)
 
 
 def negative(func_name, name):
@@ -41,7 +43,7 @@ def negative(func_name, name):
             pass
 
     """
-    return lambda x: check_less_than(func_name, name, x, 0)
+    return lambda x: cv.check_less_than(func_name, name, x, 0)
 
 
 def non_positive(func_name, name):
@@ -62,7 +64,7 @@ def non_positive(func_name, name):
             pass
 
     """
-    return lambda x: check_less_than(func_name, name, x, 0, True)
+    return lambda x: cv.check_less_than(func_name, name, x, 0, True)
 
 
 def non_negative(func_name, name):
@@ -83,7 +85,7 @@ def non_negative(func_name, name):
             pass
 
     """
-    return lambda x: check_greater_than(func_name, name, x, 0, True)
+    return lambda x: cv.check_greater_than(func_name, name, x, 0, True)
 
 
 """
