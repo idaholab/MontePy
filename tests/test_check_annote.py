@@ -3,6 +3,7 @@ from hypothesis import given
 import hypothesis.strategies as st
 import numpy as np
 import pytest
+import typing
 
 import montepy
 import montepy._check_value as cv
@@ -18,7 +19,7 @@ def str_annote_default(a: str = None):
     pass
 
 
-#test delayed import for circular imports
+# test delayed import for circular imports
 @cv.args_checked
 def str_pipe_union(a: str | Cell):
     pass
@@ -40,12 +41,12 @@ def np_array(a: np.ndarray[np.int64]):
 
 
 @cv.args_checked
-def cell_stuff(a: montepy.Cell):
+def cell_stuff(a: Cell):
     pass
 
 
 @cv.args_checked
-def negative(a: typing.Annotated[int, less_than(0)]):
+def negative(a: typing.Annotated[int, cv.less_than(0)]):
     pass
 
 
@@ -108,6 +109,7 @@ def test_negative(val, raise_error):
             negative(val)
     else:
         negative(val)
+
 
 # for delayed import
 from montepy import Cell
