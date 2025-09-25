@@ -53,16 +53,16 @@ def _prepare_type_checker(func, arg_spec, none_ok):
     else:
         arg_type = typing.get_type_hints(func)[arg_spec.name]
 
-        def type_evaler(arg):
-            nonlocal arg_type
-            # if annotations are used; evaluate on first call
-            if arg_type is None:
-                arg_type = typing.get_type_hints(func)[arg_spec.name]
-            return check_type(
-                func.__qualname__, arg_spec.name, arg, arg_type, none_ok=none_ok
-            )
+    def type_evaler(arg):
+        nonlocal arg_type
+        # if annotations are used; evaluate on first call
+        if arg_type is None:
+            arg_type = typing.get_type_hints(func)[arg_spec.name]
+        return check_type(
+            func.__qualname__, arg_spec.name, arg, arg_type, none_ok=none_ok
+        )
 
-        return type_evaler
+    return type_evaler
 
 
 def _prepare_args_check(func, arg_spec):
