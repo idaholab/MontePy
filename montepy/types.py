@@ -106,3 +106,8 @@ PositiveReal = Annotated[Real, positive]
 r"""
 A real number that is positive, i.e., a member of the set :math:`\mathbb{R}_{\gt0}`.
 """
+
+NegativeReal = Annotated[Real, negative]
+r"""
+A real number that is negative, i.e., a member of the set :math:`\mathbb{R}_{\gt0}`.
+"""

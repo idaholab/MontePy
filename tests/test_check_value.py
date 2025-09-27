@@ -5,6 +5,7 @@ import pytest
 import typing
 
 import montepy._check_value as cv
+import montepy.types as ty
 import montepy
 
 
@@ -110,6 +111,26 @@ def np_array(a: np.ndarray[np.int64]):
     pass
 
 
+@cv.args_checked
+def pos_int(a: ty.PositiveInt):
+    pass
+
+
+@cv.args_checked
+def neg_int(a: ty.NegativeInt):
+    pass
+
+
+@cv.args_checked
+def pos_real(a: ty.PositiveReal):
+    pass
+
+
+@cv.args_checked
+def neg_real(a: ty.NegativeReal):
+    pass
+
+
 binary = st.binary()
 boolean = st.booleans()
 chars = st.characters()
@@ -200,12 +221,40 @@ def test_pos_neg(func, val, raise_error):
         (dict_type, {"a": 1, "b": 2}, ["a", 1, [1, "a"], {1: "a"}, {"a": "a"}]),
         (np_array, np.array([1, 2]), ["a", 1, [1, 2], np.array(["a", "b"])]),
         (tuple_type, (1, "hi"), [[1], ("hi", 1), {1: "hi"}]),
+        (pos_int, 5, [1.0, "hi", 0, -1]),
+        (neg_int, -3, [1.0, "hi", 0, 2]),
+        (pos_real, 1.5, ["hi", 0, -2]),
+        (neg_real, -1.5, ["hi", 0, 2.0]),
     ],
 )
 def test_iterable_types(func, good, bads):
     func(good)
     for bad in bads:
         with pytest.raises(TypeError):
+            func(bad)
+
+
+@pytest.mark.parametrize(
+    "func, good, bads",
+    [
+        (
+            pos_int,
+            5,
+            [(1.0, TypeError), ("hi", TypeError), (0, ValueError), (-1, ValueError)],
+        ),
+        (
+            neg_int,
+            -3,
+            [(1.0, TypeError), ("hi", TypeError), (0, ValueError), (2, ValueError)],
+        ),
+        (pos_real, 1.5, [("hi", TypeError), (0, ValueError), (-2, ValueError)]),
+        (neg_real, -1.5, [("hi", TypeError), (0, ValueError), (2.0, ValueError)]),
+    ],
+)
+def test_iterable_types(func, good, bads):
+    func(good)
+    for bad, exc in bads:
+        with pytest.raises(exc):
             func(bad)
 
 
