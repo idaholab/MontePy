@@ -37,9 +37,6 @@ from numbers import Real, Integral
 import numpy as np
 import typing
 
-# import montepy
-from montepy.types import *
-
 # Type for arguments that accept file paths
 PathLike = str | os.PathLike
 
@@ -68,13 +65,11 @@ def _prepare_type_checker(func, arg_spec, none_ok):
 def _prepare_args_check(func, arg_spec):
     arg_check = arg_spec.annotation
     checkers = []
-
     annote_getter = lambda: typing.get_args(
         typing.get_type_hints(func, include_extras=True)[arg_spec.name]
     )[
         1:
     ]  # get the annotation args
-    print(type(arg_spec), arg_spec)
     if (
         isinstance(arg_check, str) and "typing.Annotated" not in arg_check
     ) or not isinstance(arg_check, (str, typing._AnnotatedAlias)):

@@ -1,5 +1,6 @@
 # Copyright 2024-2025, Battelle Energy Alliance, LLC All Rights Reserved.
 from __future__ import annotations
+from collections.abc import Iterable
 import copy
 import itertools
 from numbers import Integral, Real
@@ -722,7 +723,7 @@ class Cell(Numbered_MCNP_Object):
             raise IllegalState(f"Cell {self.number} has no geometry defined.")
 
     @args_checked
-    def link_to_problem(self, problem: montepy.mcnp_problem.MCNP_Problem):
+    def link_to_problem(self, problem: montepy.MCNP_Problem = None):
         super().link_to_problem(problem)
         self.complements.link_to_problem(problem)
         self.surfaces.link_to_problem(problem)

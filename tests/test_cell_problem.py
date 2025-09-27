@@ -220,7 +220,7 @@ def test_cell_clone(
             collect.starting_number = other_start
             collect.step = other_step
     cell = Cell(input)
-    cell.update_pointers([], mats, surfs)
+    cell.update_pointers(montepy.Cells(), mats, surfs)
     problem = montepy.MCNP_Problem("foo")
     problem.surfaces = surfs
     problem.materials = mats
@@ -293,8 +293,10 @@ def verify_clone_format(cell):
     if cell.material is not None:
         mats = montepy.materials.Materials([cell.material])
     else:
-        mats = []
-    new_cell.update_pointers([], mats, montepy.surface_collection.Surfaces([surf]))
+        mats = montepy.Materials()
+    new_cell.update_pointers(
+        montepy.Cells(), mats, montepy.surface_collection.Surfaces([surf])
+    )
     for attr in {"number", "mass_density", "old_mat_number"}:
         assert getattr(cell, attr) == getattr(new_cell, attr)
     new_surf = list(new_cell.surfaces)[0]
@@ -332,7 +334,7 @@ def test_cell_clone_bad(args, error):
     surf = montepy.surfaces.surface.Surface()
     surf.number = 2
     surfs = montepy.surface_collection.Surfaces([surf])
-    cell.update_pointers([], [], surfs)
+    cell.update_pointers(montepy.Cells(), montepy.Materials(), surfs)
     with pytest.raises(error):
         cell.clone(*args)
 
