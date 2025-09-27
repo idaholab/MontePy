@@ -101,6 +101,11 @@ def dict_type(a: dict[str, int]):
 
 
 @cv.args_checked
+def tuple_type(a: tuple[int, str]):
+    pass
+
+
+@cv.args_checked
 def np_array(a: np.ndarray[np.int64]):
     pass
 
@@ -194,6 +199,7 @@ def test_pos_neg(func, val, raise_error):
         (list_type, [1, 2, 3], ["a", 1, [1, "a"]]),
         (dict_type, {"a": 1, "b": 2}, ["a", 1, [1, "a"], {1: "a"}, {"a": "a"}]),
         (np_array, np.array([1, 2]), ["a", 1, [1, 2], np.array(["a", "b"])]),
+        (tuple_type, (1, "hi"), [[1], ("hi", 1), {1: "hi"}]),
     ],
 )
 def test_iterable_types(func, good, bads):
