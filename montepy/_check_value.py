@@ -302,6 +302,12 @@ def check_type_iterable(
         check_type(
             func_name, name, list(value.values()), list, args[1], none_ok=none_ok
         )
+    elif base_cls == tuple:
+        assert len(args) == len(
+            value
+        ), "Tuple type must have the exact number of arguments specified."
+        for arg, val in zip(args, value):
+            check_type(func_name, name, val, arg)
     elif issubclass(base_cls, Iterable):
         check_type(func_name, name, value, base_cls, args[0], none_ok=none_ok)
 
