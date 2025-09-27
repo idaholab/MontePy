@@ -74,7 +74,10 @@ def _prepare_args_check(func, arg_spec):
     )[
         1:
     ]  # get the annotation args
-    if not isinstance(arg_check, typing._AnnotatedAlias):
+    print(type(arg_spec), arg_spec)
+    if (
+        isinstance(arg_check, str) and "typing.Annotated" not in arg_check
+    ) or not isinstance(arg_check, (str, typing._AnnotatedAlias)):
         return None
     if isinstance(arg_check, str):
         arg_check = None
