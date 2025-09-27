@@ -134,8 +134,7 @@ class _MatCompWrapper:
 
     __slots__ = "_parent", "_index", "_setter"
 
-    @args_checked
-    def __init__(self, parent: Any, index: int, setter: Any):
+    def __init__(self, parent: "Material", index: int, setter: Callable):
         self._parent = parent
         self._index = index
         self._setter = setter
@@ -331,7 +330,10 @@ class Material(data_input.DataInputAbstract, Numbered_MCNP_Object):
 
     @args_checked
     def _grab_isotope(
-        self, nuclide: Nuclide, fraction: syntax_node.ValueNode, is_first: bool = False
+        self,
+        nuclide: syntax_node.ValueNode,
+        fraction: syntax_node.ValueNode,
+        is_first: bool = False,
     ) -> None:
         """Grabs and parses the nuclide and fraction from the init function, and loads it."""
         isotope = Nuclide(node=nuclide)
@@ -728,7 +730,7 @@ See <https://www.montepy.org/migrations/migrate0_1.html> for more information ""
     def contains_all(
         self,
         *nuclides: NuclideLike,
-        threshold: Real = 0.0,
+        threshold: PositiveReal = 0.0,
         strict: bool = False,
     ) -> bool:
         """Checks if this material contains of all of the given nuclides.
@@ -866,7 +868,6 @@ See <https://www.montepy.org/migrations/migrate0_1.html> for more information ""
         )
 
     @staticmethod
-    @args_checked
     def _promote_nuclide(nuclide: NuclideLike, strict: bool) -> NuclideLike:
         # This is necessary for python 3.9
         if not isinstance(nuclide, (Nuclide, Nucleus, Element, str, Integral)):
@@ -883,7 +884,6 @@ See <https://www.montepy.org/migrations/migrate0_1.html> for more information ""
             nuclide = nuclide.nucleus
         return nuclide
 
-    @args_checked
     def _contains_arb(
         self,
         *nuclides: NuclideLike,
@@ -1415,7 +1415,9 @@ See <https://www.montepy.org/migrations/migrate0_1.html> for more information ""
         self._thermal_scattering.add_scattering_law(law)
 
     @args_checked
-    def update_pointers(self, data_inputs: list[montepy.data_inputs.DataInput]) -> None:
+    def update_pointers(
+        self, data_inputs: list[montepy.data_inputs.data_input.DataInputAbstract]
+    ) -> None:
         """Updates pointer to the thermal scattering data
 
         Parameters
