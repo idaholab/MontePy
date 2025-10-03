@@ -359,7 +359,9 @@ class NumberedObjectCollection(ABC):
             the object to delete
         """
         if not isinstance(delete, self._obj_class):
-            raise TypeError(f"Expected {self._obj_class.__name__}. {type(delete).__name__} given.")
+            raise TypeError(
+                f"Expected {self._obj_class.__name__}. {type(delete).__name__} given."
+            )
         candidate = self[delete.number]
         if delete is candidate:
             del self[delete.number]

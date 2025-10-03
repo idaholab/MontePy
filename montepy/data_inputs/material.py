@@ -62,7 +62,9 @@ class _DefaultLibraries:
     def __setitem__(self, key, value):
         key = self._validate_key(key)
         if not isinstance(value, (Library, str)):
-            raise TypeError(f"Value must be in library or str format. {type(value).__name__}")
+            raise TypeError(
+                f"Value must be in library or str format. {type(value).__name__}"
+            )
         if isinstance(value, str):
             value = Library(value)
         try:
@@ -91,7 +93,9 @@ class _DefaultLibraries:
     @staticmethod
     def _validate_key(key):
         if not isinstance(key, (str, LibraryType)):
-            raise TypeError(f"Key must be in string or LibraryType format. {type(key).__name__}")
+            raise TypeError(
+                f"Key must be in string or LibraryType format. {type(key).__name__}"
+            )
         if not isinstance(key, LibraryType):
             key = LibraryType(key.upper())
         return key
