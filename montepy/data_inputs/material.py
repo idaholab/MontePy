@@ -63,7 +63,7 @@ class _DefaultLibraries:
         key = self._validate_key(key)
         if not isinstance(value, (Library, str)):
             raise TypeError(
-                f"Value must be in library or str format. {type(value).__name__}"
+                f"Value must be a library or str. {value} of type: {type(value).__name__} given."
             )
         if isinstance(value, str):
             value = Library(value)
@@ -94,7 +94,7 @@ class _DefaultLibraries:
     def _validate_key(key):
         if not isinstance(key, (str, LibraryType)):
             raise TypeError(
-                f"Key must be in string or LibraryType format. {type(key).__name__}"
+                f"Key must be in Library or str format. {key} of type {type(key).__name__} given."
             )
         if not isinstance(key, LibraryType):
             key = LibraryType(key.upper())

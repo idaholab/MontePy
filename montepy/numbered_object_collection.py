@@ -360,7 +360,7 @@ class NumberedObjectCollection(ABC):
         """
         if not isinstance(delete, self._obj_class):
             raise TypeError(
-                f"Expected {self._obj_class.__name__}. {type(delete).__name__} given."
+                f"Expected {self._obj_class.__name__}. {delete} of type: {type(delete).__name__} given."
             )
         candidate = self[delete.number]
         if delete is candidate:
