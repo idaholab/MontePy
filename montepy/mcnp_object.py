@@ -44,11 +44,11 @@ class MCNP_Object(ABC, metaclass=_ExceptionContextAdder):
         The parser object to parse the input with.
     """
 
-    @args_checked
+    # TODO: document that all user facing children must be args checked
     def __init__(
         self,
-        input: InitInput = None,
-        parser=None,
+        input: InitInput,
+        parser: montepy.input_parser.parser_base.MCNP_Parser,
     ):
         try:
             self._BLOCK_TYPE
