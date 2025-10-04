@@ -41,12 +41,12 @@ class MCNP_Object(ABC, metaclass=_ExceptionContextAdder):
     parser : MCNP_Parser
         The parser object to parse the input with.
     """
-    
+
     @args_checked
     def __init__(
         self,
-        input: InitInput,
-        parser: montepy.input_parser.parser_base.MCNP_Parser,
+        input: InitInput = None,
+        parser=None,
     ):
         try:
             self._BLOCK_TYPE
