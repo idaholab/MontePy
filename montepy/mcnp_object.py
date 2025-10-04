@@ -1,6 +1,7 @@
 # Copyright 2024-2025, Battelle Energy Alliance, LLC All Rights Reserved.
 from __future__ import annotations
 from abc import ABC, ABCMeta, abstractmethod
+from collections.abc import Iterable
 import copy
 import itertools as it
 import sys
@@ -10,6 +11,7 @@ import warnings
 import weakref
 
 from montepy.exceptions import *
+from montepy.types import *
 from montepy.constants import (
     BLANK_SPACE_CONTINUE,
     COMMENT_FINDER,
@@ -174,7 +176,10 @@ class MCNP_Object(ABC, metaclass=_ExceptionContextAdder):
         """
         pass
 
-    def format_for_mcnp_input(self, mcnp_version: tuple[int]) -> list[str]:
+    @args_checked
+    def format_for_mcnp_input(
+        self, mcnp_version: tuple[Integral, Integral, Integral]
+    ) -> list[str]:
         """Creates a list of strings representing this MCNP_Object that can be
         written to file.
 
@@ -197,7 +202,8 @@ class MCNP_Object(ABC, metaclass=_ExceptionContextAdder):
         self._flush_line_expansion_warning(lines, ws)
         return lines
 
-    def mcnp_str(self, mcnp_version: tuple[int] = None):
+    @args_checked
+    def mcnp_str(self, mcnp_version: tuple[Integral, Integral, Integral] = None) -> str:
         """Returns a string of this input as it would appear in an MCNP input file.
 
         ..versionadded:: 1.0.0
@@ -271,25 +277,10 @@ The new input was:\n\n"""
         return list(self._tree["start_pad"].comments)
 
     @leading_comments.setter
-    def leading_comments(self, comments):
-        if not isinstance(comments, (list, tuple, CommentNode)):
-            raise TypeError(
-                f"Comments must be a CommentNode, or a list of Comments. {comments} given."
-            )
+    @args_checked
+    def leading_comments(self, comments: Iterable[CommentNode] | CommentNode):
         if isinstance(comments, CommentNode):
             comments = [comments]
-        if isinstance(comments, (list, tuple)):
-            for comment in comments:
-                if not isinstance(comment, CommentNode):
-                    raise TypeError(
-                        f"Comments must be a CommentNode, or a list of Comments. {comment} given."
-                    )
-
-        for i, comment in enumerate(comments):
-            if not isinstance(comment, CommentNode):
-                raise TypeError(
-                    f"Comment must be a CommentNode. {comment} given at index {i}."
-                )
         new_nodes = list(*zip(comments, it.cycle(["\n"])))
         if self._tree["start_pad"] is None:
             self._tree["start_pad"] = PaddingNode(" ")
@@ -300,8 +291,12 @@ The new input was:\n\n"""
         self._tree["start_pad"]._delete_trailing_comment()
 
     @staticmethod
+    @args_checked
     def wrap_string_for_mcnp(
-        string, mcnp_version, is_first_line, suppress_blank_end=True
+        string: str,
+        mcnp_version: tuple[Integral, Integral, Integral],
+        is_first_line: bool,
+        suppress_blank_end: bool = True,
     ) -> list[str]:
         """Wraps the list of the words to be a well formed MCNP input.
 
@@ -376,7 +371,8 @@ The new input was:\n\n"""
         """Validates that the object is in a usable state."""
         pass
 
-    def link_to_problem(self, problem: montepy.mcnp_problem.MCNP_Problem):
+    @args_checked
+    def link_to_problem(self, problem: montepy.mcnp_problem.MCNP_Problem = None):
         """Links the input to the parent problem for this input.
 
         This is done so that inputs can find links to other objects.
@@ -386,8 +382,6 @@ The new input was:\n\n"""
         problem : MCNP_Problem
             The problem to link this input to.
         """
-        if not isinstance(problem, (montepy.mcnp_problem.MCNP_Problem, type(None))):
-            raise TypeError("problem must be an MCNP_Problem")
         if problem is None:
             self._problem_ref = None
         else:
