@@ -6,7 +6,29 @@ import pytest
 import typing
 
 import montepy
+import montepy.types as ty
 import montepy._check_value as cv
+
+
+class Tester:
+
+    @property
+    def prop_test(self):
+        pass
+
+    @prop_test.setter
+    @cv.args_checked
+    def prop_test(self, value: str):
+        pass
+
+    @property
+    def prop_value_test(self):
+        pass
+
+    @prop_value_test.setter
+    @cv.args_checked
+    def prop_value_test(self, value: ty.PositiveReal):
+        pass
 
 
 @cv.args_checked
@@ -63,6 +85,18 @@ funcs = st.sampled_from(
         str_pipe_union,
     ]
 )
+
+
+def test_property():
+    test = Tester()
+    test.prop_test = "hi"
+    test.prop_value_test = 5
+    with pytest.raises(TypeError):
+        test.prop_test = 5
+    with pytest.raises(TypeError):
+        test.prop_value_test = "hi"
+    with pytest.raises(ValueError):
+        test.prop_value_test = -1
 
 
 @given(st.one_of(binary, boolean, dt, fl, it, no), funcs)
