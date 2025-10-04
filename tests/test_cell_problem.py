@@ -1,6 +1,5 @@
 # Copyright 2024-2025, Battelle Energy Alliance, LLC All Rights Reserved.
 from hypothesis import given, note, strategies as st
-from unittest import TestCase
 import pytest
 
 import montepy
@@ -9,112 +8,114 @@ from montepy.input_parser.block_type import BlockType
 from montepy.input_parser.mcnp_input import Input
 
 
-class TestCellClass(TestCase):
-    def test_bad_init(self):
-        with self.assertRaises(TypeError):
-            Cell(5)
+def test_bad_init():
+    with pytest.raises(TypeError):
+        Cell(5)
 
-    # TODO test updating cell geometry once done
-    def test_cell_validator(self):
-        cell = Cell()
-        with self.assertRaises(montepy.exceptions.IllegalState):
-            cell.validate()
-        with self.assertRaises(montepy.exceptions.IllegalState):
-            cell.format_for_mcnp_input((6, 2, 0))
-        cell.mass_density = 5.0
-        with self.assertRaises(montepy.exceptions.IllegalState):
-            cell.validate()
-        del cell.mass_density
 
-    # TODO test geometry stuff
+def test_cell_validator():
+    cell = Cell()
+    with pytest.raises(montepy.exceptions.IllegalState):
+        cell.validate()
+    with pytest.raises(montepy.exceptions.IllegalState):
+        cell.format_for_mcnp_input((6, 2, 0))
+    cell.mass_density = 5.0
+    with pytest.raises(montepy.exceptions.IllegalState):
+        cell.validate()
+    del cell.mass_density
 
-    def test_number_setter(self):
-        cell = Cell("1 0 2")
-        cell.number = 5
-        self.assertEqual(cell.number, 5)
-        with self.assertRaises(TypeError):
-            cell.number = "5"
-        with self.assertRaises(ValueError):
-            cell.number = -5
 
-    def test_cell_density_setter(self):
-        in_str = "1 1 0.5 2"
-        card = Input([in_str], BlockType.CELL)
-        cell = Cell(card)
-        cell.mass_density = 1.5
-        self.assertEqual(cell._density, 1.5)
-        self.assertEqual(cell.mass_density, 1.5)
-        self.assertFalse(cell.is_atom_dens)
-        with self.assertRaises(AttributeError):
-            _ = cell.atom_density
-        cell.atom_density = 1.6
-        self.assertEqual(cell._density, 1.6)
-        self.assertEqual(cell.atom_density, 1.6)
-        self.assertTrue(cell.is_atom_dens)
-        with self.assertRaises(AttributeError):
-            _ = cell.mass_density
-        with self.assertRaises(TypeError):
-            cell.atom_density = (5, True)
-        with self.assertRaises(TypeError):
-            cell.mass_density = "five"
-        with self.assertRaises(ValueError):
-            cell.atom_density = -1.5
-        with self.assertRaises(ValueError):
-            cell.mass_density = -5
+def test_number_setter():
+    cell = Cell("1 0 2")
+    cell.number = 5
+    assert cell.number == 5
+    with pytest.raises(TypeError):
+        cell.number = "5"
+    with pytest.raises(ValueError):
+        cell.number = -5
 
-    def test_cell_density_deleter(self):
-        in_str = "1 1 0.5 2"
-        card = Input([in_str], BlockType.CELL)
-        cell = Cell(card)
-        del cell.mass_density
-        self.assertIsNone(cell.mass_density)
-        cell.atom_density = 1.0
-        del cell.atom_density
-        self.assertIsNone(cell.atom_density)
 
-    def test_cell_sorting(self):
-        in_str = "1 1 0.5 2"
-        card = Input([in_str], BlockType.CELL)
-        cell1 = Cell(card)
-        in_str = "2 1 0.5 2"
-        card = Input([in_str], BlockType.CELL)
-        cell2 = Cell(card)
-        test_sort = sorted([cell2, cell1])
-        answer = [cell1, cell2]
-        for i, cell in enumerate(test_sort):
-            self.assertEqual(cell, answer[i])
+def test_cell_density_setter():
+    in_str = "1 1 0.5 2"
+    card = Input([in_str], BlockType.CELL)
+    cell = Cell(card)
+    cell.mass_density = 1.5
+    assert cell._density == 1.5
+    assert cell.mass_density == 1.5
+    assert not cell.is_atom_dens
+    with pytest.raises(AttributeError):
+        _ = cell.atom_density
+    cell.atom_density = 1.6
+    assert cell._density == 1.6
+    assert cell.atom_density == 1.6
+    assert cell.is_atom_dens
+    with pytest.raises(AttributeError):
+        _ = cell.mass_density
+    with pytest.raises(TypeError):
+        cell.atom_density = (5, True)
+    with pytest.raises(TypeError):
+        cell.mass_density = "five"
+    with pytest.raises(ValueError):
+        cell.atom_density = -1.5
+    with pytest.raises(ValueError):
+        cell.mass_density = -5
 
-    def test_cell_parameters_setting(self):
-        in_str = "1 1 0.5 2"
-        card = Input([in_str], BlockType.CELL)
-        cell = Cell(card)
-        params = {"FILL": "5"}
-        cell.parameters = params
-        self.assertEqual(params, cell.parameters)
-        with self.assertRaises(TypeError):
-            cell.parameters = []
 
-    def test_cell_str(self):
-        in_str = "1 1 0.5 2"
-        card = Input([in_str], BlockType.CELL)
-        cell = Cell(card)
-        self.assertEqual(str(cell), "CELL: 1, mat: 0, DENS: 0.5 atom/b-cm")
-        self.assertEqual(
-            repr(cell), "CELL: 1 \nVoid material \ndensity: 0.5 atom/b-cm\n"
-        )
-        in_str = "1 0 -2 imp:n=1 "
-        cell = montepy.Cell(in_str)
-        # change line length
-        old_version = montepy.MCNP_VERSION
-        montepy.MCNP_VERSION = (5, 1, 60)
-        assert cell.mcnp_str() == in_str
-        montepy.MCNP_VERSION = old_version
+def test_cell_density_deleter():
+    in_str = "1 1 0.5 2"
+    card = Input([in_str], BlockType.CELL)
+    cell = Cell(card)
+    del cell.mass_density
+    assert cell.mass_density is None
+    cell.atom_density = 1.0
+    del cell.atom_density
+    assert cell.atom_density is None
 
-    def test_cell_paremeters_no_eq(self):
-        in_str = f"1 0 -1 PWT 1.0"
-        card = Input([in_str], BlockType.CELL)
-        cell = Cell(card)
-        self.assertEqual(cell.parameters["PWT"]["data"][0].value, 1.0)
+
+def test_cell_sorting():
+    in_str = "1 1 0.5 2"
+    card = Input([in_str], BlockType.CELL)
+    cell1 = Cell(card)
+    in_str = "2 1 0.5 2"
+    card = Input([in_str], BlockType.CELL)
+    cell2 = Cell(card)
+    test_sort = sorted([cell2, cell1])
+    answer = [cell1, cell2]
+    for i, cell in enumerate(test_sort):
+        assert cell == answer[i]
+
+
+def test_cell_parameters_setting():
+    in_str = "1 1 0.5 2"
+    card = Input([in_str], BlockType.CELL)
+    cell = Cell(card)
+    params = {"FILL": "5"}
+    cell.parameters = params
+    assert params == cell.parameters
+    with pytest.raises(TypeError):
+        cell.parameters = []
+
+
+def test_cell_str():
+    in_str = "1 1 0.5 2"
+    card = Input([in_str], BlockType.CELL)
+    cell = Cell(card)
+    assert str(cell) == "CELL: 1, mat: 0, DENS: 0.5 atom/b-cm"
+    assert repr(cell) == "CELL: 1 \nVoid material \ndensity: 0.5 atom/b-cm\n"
+    in_str = "1 0 -2 imp:n=1 "
+    cell = montepy.Cell(in_str)
+    # change line length
+    old_version = montepy.MCNP_VERSION
+    montepy.MCNP_VERSION = (5, 1, 60)
+    assert cell.mcnp_str() == in_str
+    montepy.MCNP_VERSION = old_version
+
+
+def test_cell_paremeters_no_eq():
+    in_str = f"1 0 -1 PWT 1.0"
+    card = Input([in_str], BlockType.CELL)
+    cell = Cell(card)
+    assert cell.parameters["PWT"]["data"][0].value == 1.0
 
 
 @pytest.mark.parametrize(
