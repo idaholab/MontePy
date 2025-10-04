@@ -9,6 +9,27 @@ import montepy.types as ty
 import montepy
 
 
+class Tester:
+
+    @property
+    def prop_test(self):
+        pass
+
+    @prop_test.setter
+    @cv.args_checked
+    def prop_test(self, value: str):
+        pass
+
+    @property
+    def prop_value_test(self):
+        pass
+
+    @prop_value_test.setter
+    @cv.args_checked
+    def prop_value_test(self, value: ty.PositiveInt):
+        pass
+
+
 @cv.args_checked
 def simple_args(a: str):
     pass
@@ -166,6 +187,18 @@ def test_dummy_bad_type_with_none(val, func):
 def test_dummy_bad_type_no_none(val, func):
     with pytest.raises(TypeError):
         func(val)
+
+
+def test_property():
+    test = Tester()
+    test.prop_test = "hi"
+    test.prop_value_test = 5
+    with pytest.raises(TypeError):
+        test.prop_test = 5
+    with pytest.raises(TypeError):
+        test.prop_value_test = "hi"
+    with pytest.raises(ValueError):
+        test.prop_value_test = -1
 
 
 @given(
