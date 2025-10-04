@@ -1,9 +1,12 @@
 # Copyright 2024-2025, Battelle Energy Alliance, LLC All Rights Reserved.
 import montepy
 from montepy.numbered_object_collection import NumberedObjectCollection
+from montepy._check_value import args_checked
 from montepy.exceptions import *
+from montepy.types import *
+
+from collections.abc import Iterable
 import warnings
-from numbers import Integral
 
 
 class Cells(NumberedObjectCollection):
@@ -22,7 +25,10 @@ class Cells(NumberedObjectCollection):
         the problem to link this collection to.
     """
 
-    def __init__(self, cells=None, problem=None):
+    @args_checked
+    def __init__(
+        self, cells: Iterable[Cell] = None, problem: montepy.MCNP_Problem = None
+    ):
         self.__blank_modifiers = set()
         super().__init__(montepy.Cell, cells, problem)
         self.__setup_blank_cell_modifiers()
@@ -53,7 +59,12 @@ class Cells(NumberedObjectCollection):
                 else:
                     raise e
 
-    def set_equal_importance(self, importance, vacuum_cells=tuple()):
+    @args_checked
+    def set_equal_importance(
+        self,
+        importance: PositiveReal,
+        vacuum_cells: Iterable[Cell | PositiveInt] = tuple(),
+    ):
         """Sets all cells except the vacuum cells to the same importance using :func:`montepy.data_cards.importance.Importance.all`.
 
         The vacuum cells will be set to 0.0. You can specify cell numbers or cell objects.
@@ -65,12 +76,8 @@ class Cells(NumberedObjectCollection):
         vacuum_cells : list
             the cells that are the vacuum boundary with 0 importance
         """
-        if not isinstance(vacuum_cells, (list, tuple, set)):
-            raise TypeError("vacuum_cells must be a list or set")
         cells_buff = set()
         for cell in vacuum_cells:
-            if not isinstance(cell, (montepy.Cell, Integral)):
-                raise TypeError("vacuum cell must be a Cell or a cell number")
             if isinstance(cell, Integral):
                 cells_buff.add(self[cell])
             else:
@@ -99,7 +106,8 @@ class Cells(NumberedObjectCollection):
             raise TypeError("allow_mcnp_volume_calc must be set to a bool")
         self._volume.is_mcnp_calculated = value
 
-    def link_to_problem(self, problem):
+    @args_checked
+    def link_to_problem(self, problem: montepy.MCNP_Problem):
         """Links the input to the parent problem for this input.
 
         This is done so that inputs can find links to other objects.
@@ -193,8 +201,13 @@ class Cells(NumberedObjectCollection):
                     ret += buf
         return ret
 
+    @args_checked
     def clone(
-        self, clone_material=False, clone_region=False, starting_number=None, step=None
+        self,
+        clone_material: bool = False,
+        clone_region: bool = False,
+        starting_number: PositiveInt = None,
+        step: PositiveInt = None,
     ):
         """Create a new instance of this collection, with all new independent
         objects with new numbers.
