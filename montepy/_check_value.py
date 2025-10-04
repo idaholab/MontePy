@@ -65,14 +65,14 @@ def _prepare_type_checker(func, arg_spec, none_ok):
 def _prepare_args_check(func, arg_spec):
     arg_check = arg_spec.annotation
     checkers = []
-    annote_getter = lambda: typing.get_args(
-        typing.get_type_hints(func, include_extras=True)[arg_spec.name]
-    )[
-        1:
-    ]  # get the annotation args
-    if (
-        isinstance(arg_check, str) and "typing.Annotated" not in arg_check
-    ) or not isinstance(arg_check, (str, typing._AnnotatedAlias)):
+
+    def annote_getter():
+        type_hint = typing.get_type_hints(func, include_extras=True)[arg_spec.name]
+        if isinstance(type_hint, typing._AnnotatedAlias):
+            return typing.get_args(type_hint)[1:]
+        return []
+
+    if not isinstance(arg_check, (str, typing._AnnotatedAlias)):
         return None
     if isinstance(arg_check, str):
         arg_check = None
@@ -87,7 +87,7 @@ def _prepare_args_check(func, arg_spec):
             checkers = [
                 checker(func.__qualname__, arg_spec.name) for checker in arg_check
             ]
-            del arg_check
+            arg_check = ""
         return [checker(arg) for checker in checkers]
 
     return check_args
