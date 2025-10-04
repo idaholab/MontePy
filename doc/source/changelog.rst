@@ -15,6 +15,8 @@ MontePy Changelog
 
 * Added descriptive TypeError messages (:issue:`801`)
 
+
+
 1.1.2
 --------------
 
