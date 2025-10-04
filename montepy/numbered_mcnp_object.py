@@ -123,7 +123,8 @@ class Numbered_MCNP_Object(MCNP_Object):
                 except (TypeError, AssertionError):
                     prob_collect.append(child_collect)
 
-    def clone(self, starting_number=None, step=None):
+    @args_checked
+    def clone(self, starting_number: PositiveInt = None, step: PositiveInt = None):
         """Create a new independent instance of this object with a new number.
 
         This relies mostly on ``copy.deepcopy``.
