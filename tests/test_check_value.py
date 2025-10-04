@@ -26,7 +26,7 @@ class Tester:
 
     @prop_value_test.setter
     @cv.args_checked
-    def prop_value_test(self, value: ty.PositiveInt):
+    def prop_value_test(self, value: ty.PositiveReal):
         pass
 
 
