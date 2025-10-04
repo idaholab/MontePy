@@ -97,7 +97,7 @@ def test_surface_parsing(simple_problem):
 def test_data_card_parsing(simple_problem):
     M = material.Material
     V = volume.Volume
-    cards = [
+    inputs = [
         M,
         M,
         M,
@@ -116,13 +116,13 @@ def test_data_card_parsing(simple_problem):
         "MODE",
         V,
     ]
-    for i, card in enumerate(simple_problem.data_inputs):
-        if isinstance(cards[i], str):
-            assert card.classifier.format().upper().rstrip() == cards[i]
+    for i, data_input in enumerate(simple_problem.data_inputs):
+        if isinstance(inputs[i], str):
+            assert data_input.classifier.format().upper().rstrip() == inputs[i]
         else:
-            assert isinstance(card, cards[i])
+            assert isinstance(data_input, inputs[i])
         if i == 2:
-            assert card.thermal_scattering is not None
+            assert data_input.thermal_scattering is not None
 
 
 def test_cells_parsing_linking(simple_problem):
@@ -256,14 +256,11 @@ def test_problem_children_adder(simple_problem):
     problem = copy.deepcopy(simple_problem)
     BT = montepy.input_parser.block_type.BlockType
     in_str = "5 SO 5.0"
-    card = montepy.input_parser.mcnp_input.Input([in_str], BT.SURFACE)
-    surf = montepy.surfaces.surface_builder.surface_builder(card)
+    surf = montepy.surfaces.surface_builder.surface_builder(in_str)
     in_str = "M5 6000.70c 1.0"
-    card = montepy.input_parser.mcnp_input.Input([in_str], BT.SURFACE)
-    mat = montepy.data_inputs.material.Material(card)
+    mat = montepy.data_inputs.material.Material(in_str)
     in_str = "TR1 0 0 1"
-    input = montepy.input_parser.mcnp_input.Input([in_str], BT.DATA)
-    transform = montepy.data_inputs.transform.Transform(input)
+    transform = montepy.data_inputs.transform.Transform(in_str)
     surf.transform = transform
     cell_num = 1000
     cell = montepy.Cell()
@@ -292,19 +289,13 @@ def test_problem_children_adder(simple_problem):
 def test_children_adder_hidden_tr(simple_problem):
     problem = copy.deepcopy(simple_problem)
     in_str = "260 0 -1000 fill = 350 (1 0 0)"
-    input = montepy.input_parser.mcnp_input.Input(
-        [in_str], montepy.input_parser.block_type.BlockType.CELL
-    )
-    cell = montepy.Cell(input)
+    cell = montepy.Cell(in_str)
     cell.update_pointers(problem.cells, problem.materials, problem.surfaces)
     problem.cells.add(cell)
     assert cell.fill.transform not in problem.transforms
     # test blank _fill_transform
     in_str = "261 0 -1000 fill = 350"
-    input = montepy.input_parser.mcnp_input.Input(
-        [in_str], montepy.input_parser.block_type.BlockType.CELL
-    )
-    cell = montepy.Cell(input)
+    cell = montepy.Cell(in_str)
     cell.update_pointers(problem.cells, problem.materials, problem.surfaces)
     problem.cells.add(cell)
 
@@ -856,8 +847,6 @@ def test_universe_data_formatter(data_universe_problem):
     new_cell.universe = universe
     new_cell.not_truncated = False
     # lazily implement pulling cell in from other model
-    new_cell._mutated = False
-    new_cell._universe._mutated = False
     problem.cells.append(new_cell)
     with pytest.warns(LineExpansionWarning):
         output = problem.cells._universe.format_for_mcnp_input((6, 2, 0))
@@ -898,11 +887,8 @@ def test_lattice_format_data(simple_problem):
 def test_lattice_push_to_cells(simple_problem):
     problem = copy.deepcopy(simple_problem)
     lattices = [1, 2, Jump(), Jump()]
-    card = Input(
-        ["Lat " + " ".join(list(map(str, lattices)))],
-        montepy.input_parser.block_type.BlockType.DATA,
-    )
-    lattice = montepy.data_inputs.lattice_input.LatticeInput(card)
+    lattice_str = "Lat " + " ".join(list(map(str, lattices)))
+    lattice = montepy.data_inputs.lattice_input.LatticeInput(lattice_str)
     lattice.link_to_problem(problem)
     lattice.push_to_cells()
     for cell, answer in zip(problem.cells, lattices):

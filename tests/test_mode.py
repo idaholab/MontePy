@@ -15,7 +15,7 @@ def test_mode_init():
     assert len(mode) == 2
     assert Particle.NEUTRON in mode
     assert Particle.PHOTON in mode.particles
-    # Test with Input object
+    # Test with Input object (constructor test)
     mode2 = Mode(Input([in_str], BlockType.CELL))
     assert len(mode2) == 2
     assert Particle.NEUTRON in mode2
@@ -31,6 +31,7 @@ def test_mode_init():
     assert len(mode) == 1
     assert Particle.NEUTRON in mode
 
+
 def test_mode_add():
     mode = Mode()
     with pytest.raises(TypeError):
@@ -42,6 +43,7 @@ def test_mode_add():
     mode.add(Particle.NEGATIVE_MUON)
     assert Particle.NEGATIVE_MUON in mode
     assert len(mode) == 3
+
 
 def test_mode_remove():
     mode = Mode()
@@ -61,6 +63,7 @@ def test_mode_remove():
     output = mode.format_for_mcnp_input((6, 2, 0))
     assert "p" not in output[0].lower()
 
+
 def test_mode_iter():
     mode = Mode()
     mode.add("p")
@@ -70,6 +73,7 @@ def test_mode_iter():
         assert particle in parts
         i += 1
     assert i == 2
+
 
 def test_mode_format_input():
     mode = Mode()
@@ -82,6 +86,7 @@ def test_mode_format_input():
     assert "N" in output[0]
     assert "P" in output[0]
     assert "E" in output[0]
+
 
 def test_set_mode():
     particles = {Particle.ELECTRON, Particle.PHOTON}

@@ -1,4 +1,3 @@
-
 # Copyright 2024, Battelle Energy Alliance, LLC All Rights Reserved.
 import pytest
 
@@ -25,13 +24,16 @@ def test_data_card_init():
     # TODO test comments
     # assert comment == data_card.comments[0]
 
+
 def test_data_card_empty_constructor():
     card = DataInput()
+
 
 def test_data_card_str():
     in_str = "vol 1 1 0"
     data = DataInput(in_str)
     assert str(data) == "DATA INPUT: vol "
+
 
 def test_data_card_format_mcnp():
     in_strs = ["c foo", "c bar", "m1 1001.80c 1.0 $ bar"]
@@ -41,6 +43,7 @@ def test_data_card_format_mcnp():
     assert len(output) == len(in_strs)
     for answer, out in zip(in_strs, output):
         assert answer == out
+
 
 def test_comment_setter():
     in_str = "m1 1001.80c 1.0"
@@ -65,23 +68,28 @@ in_strs = {
     "ksrc": "ksrc 1.0 0.0 0.0",
 }
 
+
 @pytest.mark.parametrize(
     "identifier, ident_case, w, expected_type",
     [
         (identifier, ident_case, in_strs[identifier], identifiers[identifier])
-        for identifier, ident_case in itertools.product(in_strs.keys(), [lambda x: x, lambda x: x.upper()])
+        for identifier, ident_case in itertools.product(
+            in_strs.keys(), [lambda x: x, lambda x: x.upper()]
+        )
         for ident_case in [ident_case(identifier)]
-    ]
+    ],
 )
 def test_data_parser(identifier, ident_case, w, expected_type):
     obj = parse_data(w)
     assert isinstance(obj, expected_type)
+
 
 def test_data_card_mutate_print():
     in_str = "IMP:N 1 1"
     data = DataInput(in_str)
     output = data.format_for_mcnp_input((6, 2, 0))
     assert output == [in_str]
+
 
 def test_print_in_data_block():
     cell_controller = CellDataPrintController()
@@ -98,6 +106,7 @@ def test_print_in_data_block():
         cell_controller["a"] = True
     with pytest.raises(KeyError):
         cell_controller["a"]
+
 
 def test_volume_init_cell():
     vol = 1.0
@@ -296,7 +305,6 @@ def test_volume_init_cell():
         data_input = DataInput("ksrc 0 0 0")
         data_input.link_to_problem(problem)
         new_data = data_input.clone()
-
 
 
 def test_classifier_start_comment():
