@@ -26,6 +26,8 @@ from montepy.input_parser.syntax_node import (
 )
 import montepy
 
+from montepy._check_value import args_checked
+
 InitInput = Union[montepy.input_parser.mcnp_input.Input, str]
 
 
@@ -97,7 +99,8 @@ class MCNP_Object(ABC, metaclass=_ExceptionContextAdder):
     parser : MCNP_Parser
         The parser object to parse the input with.
     """
-
+    
+    @args_checked
     def __init__(
         self,
         input: InitInput,
@@ -111,8 +114,6 @@ class MCNP_Object(ABC, metaclass=_ExceptionContextAdder):
         self._parameters = ParametersNode()
         self._input = None
         if input:
-            if not isinstance(input, (montepy.input_parser.mcnp_input.Input, str)):
-                raise TypeError(f"input must be an Input or str. {input} given.")
             if isinstance(input, str):
                 input = montepy.input_parser.mcnp_input.Input(
                     input.split("\n"), self._BLOCK_TYPE
