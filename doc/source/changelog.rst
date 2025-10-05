@@ -15,6 +15,9 @@ MontePy Changelog
 
 * Added descriptive TypeError messages (:issue:`801`)
 
+** Features Added**
+
+* Allow setting ``cell.fill.universes`` with a numpy array of universe IDs (:issue:`736`).
 
 
 1.1.2

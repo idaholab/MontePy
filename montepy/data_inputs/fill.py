@@ -293,10 +293,37 @@ class Fill(CellModifierInput):
     def universes(self, value):
         if not isinstance(value, (np.ndarray, type(None))):
             raise TypeError(f"Universes must be set to an array. {value} given.")
+
+        if value is None:
+            self.universe = None
+            self.multiple_universes = False
+            self._universes = None
+            return
+
         if value.ndim != 3:
             raise ValueError(
                 f"3D array must be given for fill.universes. Array of shape: {value.shape} given."
             )
+
+        # Setting by universe IDs
+        if np.issubdtype(value.dtype, np.integer):
+            if self._problem is None:
+                raise IllegalState(
+                    "Universe IDs can only be set if the Fill is part of a Problem."
+                )
+
+            universes_array = np.empty(value.shape, dtype=object)
+            for i, uid in np.ndenumerate(value):
+                if uid == 0:
+                    universes_array[i] = None
+                else:
+                    try:
+                        universes_array[i] = self._problem.universes[uid]
+                    except KeyError:
+                        raise ValueError(
+                            f"Universe ID {uid} at index {i} is not defined in the problem."
+                        )
+            value = universes_array
 
         def is_universes(array):
             type_checker = lambda x: isinstance(x, (Universe, type(None)))
