@@ -413,8 +413,25 @@ class TestFill:
         fill.multiple_universes = False
         with pytest.raises(ValueError):
             fill.universes = np.array([1, 2])
-        with pytest.raises(TypeError):
-            fill.universes = np.array([[[1]]])
+
+        # Test setting universes with integer IDs when a problem is attached
+        problem = montepy.MCNP_Problem("test")
+        uni1 = montepy.Universe(1)
+        problem.universes.append(uni1)
+        cell = montepy.Cell(number=1)
+        problem.cells.append(cell)
+        cell.fill.universes = np.array([[[1, 0]]])
+        assert cell.fill.universes[0, 0, 0] is uni1
+        assert cell.fill.universes[0, 0, 1] is None
+
+        # Test that it raises IllegalState when no problem is attached
+        cell_no_problem = montepy.Cell(number=2)
+        with pytest.raises(IllegalState):
+            cell_no_problem.fill.universes = np.array([[[1]]])
+
+        # Test that it raises ValueError for bad IDs
+        with pytest.raises(ValueError):
+            cell.fill.universes = np.array([[[999]]])
 
     def test_fill_str(self, complicated_fill):
         fill = copy.deepcopy(complicated_fill)
