@@ -433,6 +433,14 @@ class TestFill:
         with pytest.raises(ValueError):
             cell.fill.universes = np.array([[[999]]])
 
+        # Test that it raises ValueError for non-3D array
+        with pytest.raises(ValueError):
+            cell.fill.universes = np.array([1, 2])
+
+        # Test that it raises TypeError for wrong data type in array
+        with pytest.raises(TypeError):
+            cell.fill.universes = np.array([[['a', 'b']]])
+
     def test_fill_str(self, complicated_fill):
         fill = copy.deepcopy(complicated_fill)
         output = str(fill)
