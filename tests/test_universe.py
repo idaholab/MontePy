@@ -439,7 +439,7 @@ class TestFill:
 
         # Test that it raises TypeError for wrong data type in array
         with pytest.raises(TypeError):
-            cell.fill.universes = np.array([[['a', 'b']]])
+            cell.fill.universes = np.array([[["a", "b"]]])
 
     def test_fill_str(self, complicated_fill):
         fill = copy.deepcopy(complicated_fill)
