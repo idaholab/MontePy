@@ -111,8 +111,7 @@ class Universe(Numbered_MCNP_Object):
 
     def __repr__(self):
         return f"<Universe: {self.number}>"
-    
-    
+
     def __eq__(self, other):
         if not isinstance(other, type(self)):
             return False
