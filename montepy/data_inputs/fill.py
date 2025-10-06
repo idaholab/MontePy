@@ -321,9 +321,9 @@ class Fill(CellModifierInput):
         >>> problem.universes.append(u2)
         >>> cell.fill.universes = np.array([[[1, 2, 0]]])
         >>> cell.fill.universes[0, 0, 0]
-        <Universe: 1>
+        Universe: Number: 1 Problem: set, Cells: []
         >>> cell.fill.universes[0, 0, 1]
-        <Universe: 2>
+        Universe: Number: 2 Problem: set, Cells: []
         >>> print(cell.fill.universes[0, 0, 2])
         None
 
