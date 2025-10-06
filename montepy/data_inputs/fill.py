@@ -331,6 +331,7 @@ class Fill(CellModifierInput):
         """
         if self.multiple_universes:
             return self._universes
+        return None
 
     @universes.setter
     def universes(self, value):
