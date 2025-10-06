@@ -2,6 +2,7 @@
 import itertools as it
 from numbers import Integral, Real
 import numpy as np
+import io
 
 from montepy.data_inputs.cell_modifier import CellModifierInput, InitInput
 from montepy.data_inputs.transform import Transform
@@ -309,19 +310,21 @@ class Fill(CellModifierInput):
 
         >>> import montepy
         >>> import numpy as np
-        >>> problem = montepy.MCNP_Problem()
+        >>> import io
+        >>> problem = montepy.MCNP_Problem(io.StringIO())
         >>> cell = montepy.Cell()
-        >>> problem.add_cell(cell)
+        >>> cell.number = 1
+        >>> problem.cells.append(cell)
         >>> u1 = montepy.Universe(number=1)
         >>> u2 = montepy.Universe(number=2)
-        >>> problem.add_universe(u1)
-        >>> problem.add_universe(u2)
+        >>> problem.universes.append(u1)
+        >>> problem.universes.append(u2)
         >>> cell.fill.universes = np.array([[[1, 2, 0]]])
         >>> cell.fill.universes[0, 0, 0]
         <Universe: 1>
         >>> cell.fill.universes[0, 0, 1]
         <Universe: 2>
-        >>> cell.fill.universes[0, 0, 2]
+        >>> print(cell.fill.universes[0, 0, 2])
         None
 
 
