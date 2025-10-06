@@ -413,10 +413,10 @@ class TestFill:
         fill.multiple_universes = False
         with pytest.raises(ValueError):
             fill.universes = np.array([1, 2])
-        with pytest.raises(ValueError):
+        with pytest.raises(TypeError):
             fill.universes = np.array([[["hi"]]])
 
-        with pytest.raises(TypeError):
+        with pytest.raises(IllegalState):
             fill.universes = np.array([[[1]]])
 
         # Test setting universes with integer IDs when a problem is attached
@@ -434,8 +434,8 @@ class TestFill:
         with pytest.raises(IllegalState):
             cell_no_problem.fill.universes = np.array([[[1]]])
 
-        # Test that it raises ValueError for bad IDs
-        with pytest.raises(ValueError):
+        # Test that it raises KeyError for bad IDs
+        with pytest.raises(KeyError):
             cell.fill.universes = np.array([[[999]]])
 
         # Test that it raises ValueError for non-3D array

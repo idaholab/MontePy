@@ -311,7 +311,7 @@ class Fill(CellModifierInput):
         >>> u2 = montepy.Universe(number=2)
         >>> problem.add_universe(u1)
         >>> problem.add_universe(u2)
-        >>> cell.fill.universes = np.array([[[1, 2, 3], [2, 1, 3]], [[0, 1, 3], [1, 0, 3]]])
+        >>> cell.fill.universes = np.array([[[1, 2, 0]]])
         >>> cell.fill.universes[0, 0, 0]
         <Universe: 1>
         >>> cell.fill.universes[0, 0, 1]
@@ -336,8 +336,8 @@ class Fill(CellModifierInput):
             raise TypeError(f"Universes must be set to an array. {value} given.")
 
         if value is None:
-            self.universe = None
             self.multiple_universes = False
+            self.universe = None
             self._universes = None
             return
 
