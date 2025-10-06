@@ -304,6 +304,8 @@ class Fill(CellModifierInput):
         --------
         Setting the universes with a numpy array of universe IDs:
 
+        >>> import montepy
+        >>> import numpy as np
         >>> problem = montepy.MCNP_Problem()
         >>> cell = montepy.Cell()
         >>> problem.add_cell(cell)
