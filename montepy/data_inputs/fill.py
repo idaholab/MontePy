@@ -269,6 +269,9 @@ class Fill(CellModifierInput):
                 "A single universe can only be set when multiple_universes is False."
             )
         self._universe = value
+        if value is not None:
+            self._universes = None
+            self.multiple_universes = False
 
     @universe.deleter
     def universe(self):
@@ -378,6 +381,7 @@ class Fill(CellModifierInput):
                 f"All values in array must be a Universe (or None). {value} given."
             )
         self.multiple_universes = True
+        self._universe = None
         if self.min_index is None:
             self.min_index = np.array([0] * 3)
         self.max_index = self.min_index + np.array(value.shape) - 1
@@ -386,6 +390,7 @@ class Fill(CellModifierInput):
     @universes.deleter
     def universes(self):
         self._universes = None
+        self.multiple_universes = False
 
     @make_prop_pointer(
         "_min_index",
@@ -439,6 +444,8 @@ class Fill(CellModifierInput):
         if not isinstance(value, bool):
             raise TypeError("Multiple_univeses must be set to a bool")
         self._multi_universe = value
+        if not value:
+            self._universes = None
 
     @make_prop_val_node("_old_number")
     def old_universe_number(self):
