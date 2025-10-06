@@ -296,7 +296,7 @@ class Fill(CellModifierInput):
         --------
 
         :manual631sub:`5.5.5.3`
-        :manual630sub:`5.5.5.3`
+        :manual63sub:`5.5.5.3`
         :manual62:`87`
 
 
@@ -310,8 +310,7 @@ class Fill(CellModifierInput):
 
         >>> import montepy
         >>> import numpy as np
-        >>> import io
-        >>> problem = montepy.MCNP_Problem(io.StringIO())
+        >>> problem = montepy.MCNP_Problem("")
         >>> cell = montepy.Cell()
         >>> cell.number = 1
         >>> problem.cells.append(cell)

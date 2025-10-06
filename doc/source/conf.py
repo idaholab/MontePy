@@ -98,12 +98,7 @@ extlinks = {
     "manual63": (UM63 + "#subsection.%s", "MCNP 6.3.0 manual § %s"),
     "manual63part": (UM63 + "#part.%s", "MCNP 6.3.0 manual part %s"),
     "manual63chapter": (UM63 + "#chapter.%s", "MCNP 6.3.0 manual Ch. %s"),
-    # MCNP 6.3.0 User's Manual
-    "manual630sec": (UM63 + "#section.%s", "MCNP 6.3.0 manual § %s"),
-    "manual630": (UM63 + "#subsection.%s", "MCNP 6.3.0 manual § %s"),
-    "manual630part": (UM63 + "#part.%s", "MCNP 6.3.0 manual part %s"),
-    "manual630chapter": (UM63 + "#chapter.%s", "MCNP 6.3.0 manual Ch. %s"),
-    "manual630sub": (UM63 + "#subsubsection.%s", "MCNP 6.3.0 manual § %s"),
+    "manual63sub": (UM63 + "#subsubsection.%s", "MCNP 6.3.0 manual § %s"),
     # MCNP 6.3.1 User's Manual
     "manual631sec": (UM631 + "#section.%s", "MCNP 6.3.1 manual § %s"),
     "manual631": (UM631 + "#subsection.%s", "MCNP 6.3.1 manual § %s"),
