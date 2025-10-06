@@ -5,8 +5,26 @@ import numpy as np
 
 from montepy.data_inputs.cell_modifier import CellModifierInput, InitInput
 from montepy.data_inputs.transform import Transform
-from montepy.exceptions import *
-from montepy.input_parser.block_type import BlockType
+from montepy.exceptio        Examples
+        --------
+        Setting the universes with a numpy array of universe IDs:
+
+        >>> import montepy
+        >>> import numpy as np
+        >>> problem = montepy.MCNP_Problem()
+        >>> cell = montepy.Cell()
+        >>> problem.add_cell(cell)
+        >>> u1 = montepy.Universe(number=1)
+        >>> u2 = montepy.Universe(number=2)
+        >>> problem.add_universe(u1)
+        >>> problem.add_universe(u2)
+        >>> cell.fill.universes = np.array([[[1, 2, 0], [2, 1, 0]], [[0, 1, 0], [1, 0, 0]]])
+        >>> cell.fill.universes[0, 0, 0]
+        <Universe: 1>
+        >>> cell.fill.universes[0, 0, 1]
+        <Universe: 2>
+        >>> cell.fill.universes[0, 0, 2]
+        Noneontepy.input_parser.block_type import BlockType
 from montepy.input_parser.mcnp_input import Input, Jump
 from montepy.input_parser import syntax_node
 from montepy.mcnp_object import MCNP_Object
