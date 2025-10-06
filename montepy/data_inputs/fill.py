@@ -280,11 +280,52 @@ class Fill(CellModifierInput):
 
         Only returns a value when :func:`multiple_universes` is true, otherwise none.
 
+
         Returns
         -------
         np.ndarray
             the universes that the cell will be filled with as a 3-D
             array.
+
+
+        See Also
+        --------
+
+        :manual631sub:`5.5.5.3`
+        :manual630sub:`5.5.5.3`
+        :manual62:`87`
+
+
+        .. versionchanged:: 1.2.0
+            Now it can be set with a numpy array of universe IDs.
+
+
+        Examples
+        --------
+        Setting the universes with a numpy array of universe IDs:
+
+        >>> problem = montepy.MCNP_Problem()
+        >>> cell = montepy.Cell()
+        >>> problem.add_cell(cell)
+        >>> u1 = montepy.Universe(number=1)
+        >>> u2 = montepy.Universe(number=2)
+        >>> problem.add_universe(u1)
+        >>> problem.add_universe(u2)
+        >>> cell.fill.universes = np.array([[[1, 2, 3], [2, 1, 3]], [[0, 1, 3], [1, 0, 3]]])
+        >>> cell.fill.universes[0, 0, 0]
+        <Universe: 1>
+        >>> cell.fill.universes[0, 0, 1]
+        <Universe: 2>
+        >>> cell.fill.universes[0, 0, 2]
+        None
+
+
+        Parameters
+        ----------
+        value : np.ndarray or None
+            A 3D numpy array of :class:`~montepy.universe.Universe` objects,
+            a 3D numpy array of integer universe IDs, or None to clear the
+            universes.
         """
         if self.multiple_universes:
             return self._universes
@@ -313,16 +354,16 @@ class Fill(CellModifierInput):
                 )
 
             universes_array = np.empty(value.shape, dtype=object)
-            for i, uid in np.ndenumerate(value):
+            for idx_tuple, uid in np.ndenumerate(value):
                 if uid == 0:
-                    universes_array[i] = None
+                    universes_array[idx_tuple] = None
                 else:
                     try:
-                        universes_array[i] = self._problem.universes[uid]
-                    except KeyError:
-                        raise ValueError(
-                            f"Universe ID {uid} at index {i} is not defined in the problem."
-                        )
+                        universes_array[idx_tuple] = self._problem.universes[uid]
+                    except KeyError as e:
+                        raise KeyError(
+                            f"Universe ID {uid} at index {idx_tuple} is not defined in the problem."
+                        ) from e
             value = universes_array
 
         def is_universes(array):

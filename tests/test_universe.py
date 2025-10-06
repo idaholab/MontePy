@@ -413,6 +413,11 @@ class TestFill:
         fill.multiple_universes = False
         with pytest.raises(ValueError):
             fill.universes = np.array([1, 2])
+        with pytest.raises(ValueError):
+            fill.universes = np.array([[["hi"]]])
+
+        with pytest.raises(TypeError):
+            fill.universes = np.array([[[1]]])
 
         # Test setting universes with integer IDs when a problem is attached
         problem = montepy.MCNP_Problem("test")
@@ -440,6 +445,12 @@ class TestFill:
         # Test that it raises TypeError for wrong data type in array
         with pytest.raises(TypeError):
             cell.fill.universes = np.array([[["a", "b"]]])
+
+        # Test setting universes to None
+        cell.fill.universes = None
+        assert cell.fill.universes is None
+        assert cell.fill.multiple_universes is False
+        assert cell.fill.universe is None
 
     def test_fill_str(self, complicated_fill):
         fill = copy.deepcopy(complicated_fill)
