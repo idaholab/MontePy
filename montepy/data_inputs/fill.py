@@ -2,7 +2,6 @@
 import itertools as it
 from numbers import Integral, Real
 import numpy as np
-import io
 
 from montepy.data_inputs.cell_modifier import CellModifierInput, InitInput
 from montepy.data_inputs.transform import Transform
@@ -295,9 +294,9 @@ class Fill(CellModifierInput):
         See Also
         --------
 
-        :manual631sub:`5.5.5.3`
-        :manual63sub:`5.5.5.3`
-        :manual62:`87`
+        * :manual631sub:`5.5.5.3`
+        * :manual63sub:`5.5.5.3`
+        * :manual62:`87`
 
 
         .. versionchanged:: 1.2.0
