@@ -147,7 +147,7 @@ def read_data(fh, mcnp_version, block_type=None, recursion=False):
 
     def flush_block():
         nonlocal block_counter, block_type
-        if len(input_raw_lines) > 0:          
+        if len(input_raw_lines) > 0:
             # warn once for extra blocks
             if block_counter == 3:
                 warnings.warn(
@@ -155,13 +155,12 @@ def read_data(fh, mcnp_version, block_type=None, recursion=False):
                     UndefinedBlock,
                     stacklevel=2,
                 )
-            
+
             yield from flush_input()
         block_counter += 1
         if block_counter < 3:
             block_type = BlockType(block_counter)
 
-            
     def flush_input():
         nonlocal input_raw_lines
         start_line = current_file.lineno + 1 - len(input_raw_lines)
@@ -240,7 +239,7 @@ def read_data(fh, mcnp_version, block_type=None, recursion=False):
         else:
             continue_input = False
         has_non_comments = has_non_comments or not line_is_comment
-        if block_counter==3:
+        if block_counter == 3:
             block_length += 1
         input_raw_lines.append(line.rstrip())
     yield from flush_block()
