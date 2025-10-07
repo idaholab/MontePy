@@ -19,9 +19,6 @@ MontePy Changelog
 
 1.1.2
 --------------
-**Features Added**
-
-* Added checking for additional input after the ``data`` block, and raising a warning if it exists.
 
 **Code Quality**
 
