@@ -9,11 +9,13 @@ class LineOverRunWarning(UserWarning):
     def __init__(self, message):
         self.message = message
 
+
 class UndefinedBlock(UserWarning):
     """Raised when additional blocks exist after the default data block."""
 
     def __init__(self, message):
         self.message = message
+
 
 class MalformedInputError(ValueError):
     """Raised when there is an error with the MCNP input not related to the parser."""
