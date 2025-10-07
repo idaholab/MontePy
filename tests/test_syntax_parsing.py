@@ -13,6 +13,7 @@ from montepy.input_parser.parser_base import MCNP_Parser
 from montepy.input_parser.shortcuts import Shortcuts
 from montepy.input_parser import syntax_node
 from montepy.particle import Particle
+from montepy.exceptions import UndefinedBlock
 import warnings
 
 
@@ -1471,6 +1472,28 @@ bar
         assert "J" == jump.upper()
         str(jump)
         repr(jump)
+    def test_extra_block_warning(self):
+        # Define constants for better readability and maintainability
+        INPUT_FILE = "tests/inputs/test_pin_cell_extra_block_warning.imcnp"
+        EXPECTED_LINE = 34
+        EXPECTED_WARNING_TYPE = UndefinedBlock
+
+        # Setup: Use the common pattern for defining the generator
+        generator = input_syntax_reader.read_input_syntax(
+            MCNP_InputFile(INPUT_FILE)
+        )
+
+        # Check that the expected warning is raised
+        with pytest.warns(EXPECTED_WARNING_TYPE) as recs:
+            # Exhaust generator so parser runs and warnings are emitted
+            for _ in generator:
+                pass
+
+        # Assertions
+        assert len(recs) == 1, f"Expected exactly one warning, but got {len(recs)}"
+        warning = recs[0]
+        assert issubclass(warning.category, EXPECTED_WARNING_TYPE), f"Expected warning type {EXPECTED_WARNING_TYPE}, but got {warning.category}"
+        assert str(warning.message) == f"Unexpected input after line {EXPECTED_LINE}", f"Expected warning message 'Unexpected input after line {EXPECTED_LINE}', but got '{str(warning.message)}'"
 
 
 class TestClassifierNode:
