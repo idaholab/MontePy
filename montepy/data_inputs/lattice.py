@@ -39,8 +39,6 @@ class __DeprecatedLattice:
 
 class __DeprecatedLatticeType:
     """Helper for renamed attribute"""
-    def __call__(self, *args, **kwargs):
-        return LatticeType(*args, **kwargs)
 
     @property
     def RECTANGULAR(self):
@@ -60,4 +58,3 @@ class __DeprecatedLatticeType:
 
 
 Lattice = __DeprecatedLattice()
-# LatticeType = __DeprecatedLatticeType()
