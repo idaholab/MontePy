@@ -16,6 +16,10 @@ MontePy Changelog
 
 * Fixed bug where lines that were the allowed length was raising a ``LineOverRunWarning`` when read by MontePy (:issue:`517`). 
 
+* Added descriptive TypeError messages (:issue:`801`)
+
+
+
 1.1.2
 --------------
 

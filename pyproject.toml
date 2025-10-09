@@ -16,6 +16,7 @@ authors = [
 	{name = "Benjaminas Marcinkevicius", email="BenjaminasDev@outlook.com"},
 	{name = "Paul Ferney", email="Paul.Ferney@inl.gov"},
 	{name = "Vikranth Udandarao", email="vikranth22570@iiitd.ac.in"},
+	{name = "Digvijay Yeware", email="yewaredigvijay@gmail.com"}
 ]
 keywords = ["MCNP", "neutronics", "imcnp", "input file", "monte carlo", "radiation transport"]
 license = "MIT"

@@ -1,7 +1,5 @@
 # Copyright 2024, Battelle Energy Alliance, LLC All Rights Reserved.
-from unittest import TestCase
 import pytest
-
 import montepy
 from montepy.geometry_operators import Operator
 from montepy.input_parser import syntax_node

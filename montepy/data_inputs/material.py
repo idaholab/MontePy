@@ -118,7 +118,9 @@ class _DefaultLibraries:
     @staticmethod
     def _validate_key(key):
         if not isinstance(key, (str, LibraryType)):
-            raise TypeError("")
+            raise TypeError(
+                f"Key must be in Library or str format. {key} of type {type(key).__name__} given."
+            )
         if not isinstance(key, LibraryType):
             key = LibraryType(key.upper())
         return key
