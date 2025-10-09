@@ -15,6 +15,24 @@ MontePy Changelog
 1.1 releases
 ============
 
+#Next Release#
+--------------
+
+**Features Added**
+
+* Make `LatticeType.RECTANGULAR` and `LatticeType.HEXAHEDRAL` synonymous (:issue:`808`).
+
+**Bugs Fixed**
+
+* Fixed bug where lines that were the allowed length was raising a ``LineOverRunWarning`` when read by MontePy (:issue:`517`). 
+
+* Added descriptive TypeError messages (:issue:`801`)
+
+** Features Added**
+
+* Allow setting ``cell.fill.universes`` with a numpy array of universe IDs (:issue:`736`).
+
+
 1.1.2
 --------------
 
