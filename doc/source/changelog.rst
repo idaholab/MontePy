@@ -2,6 +2,16 @@
 MontePy Changelog
 *****************
 
+1.2 releases
+============
+
+#Next Version#
+--------------
+
+**Deprecations**
+
+* Dropped support for python 3.9 and 3.10 in order to comply with `SPEC 0 <https://scientific-python.org/specs/spec-0000/>`_ (:issue:`780`).
+
 1.1 releases
 ============
 
