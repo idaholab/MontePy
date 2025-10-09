@@ -8,6 +8,9 @@ MontePy Changelog
 #Next Release#
 --------------
 
+**Features Added**
+
+* Make `LatticeType.RECTANGULAR` and `LatticeType.HEXAHEDRAL` synonymous (:issue:`808`).
 
 **Bugs Fixed**
 
