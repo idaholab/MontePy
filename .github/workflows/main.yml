@@ -2,24 +2,24 @@ name: CI testing
 
 on: 
   pull_request:
-    branches: [develop, alpha-test-dev, alpha-test]
+    branches: [develop, alpha-test-dev, alpha-test, minor-rel-dev]
   push: 
-     branches: [develop, main, alpha-test]
+     branches: [develop, main, alpha-test, minor-rel-dev]
 
 jobs:
   build:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        python-version: ["3.11", "3.12", "3.13", "3.14-dev"]
+        python-version: ["3.12", "3.13", "3.14-dev"]
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
         with: 
           fetch-depth: 0
           fetch-tags: true
       - name: set up python  ${{ matrix.python-version }}
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@v6
         with: 
           python-version: ${{ matrix.python-version }}
       - run: pip install --upgrade pip
@@ -54,18 +54,18 @@ jobs:
       actions: write
     strategy:
       matrix:
-        python-version: ["3.11", "3.12", "3.13", "3.14-dev"]
-        numpy-version: ["1.0", "2.0"]
+        python-version: ["3.12", "3.13", "3.14-dev"]
+        numpy-version: ["2.0", "2.3"]
         sly-version: ["0.5"]
         include:
-          - python-version: "3.11"
-            numpy-version: "2.0"
+          - python-version: "3.13"
+            numpy-version: "2.3"
             sly-version: "0.4"
     
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - name: set up python  ${{ matrix.python-version }}
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@v6
         with: 
           python-version: ${{ matrix.python-version }}
       - run: pip install numpy~=${{ matrix.numpy-version }}
@@ -146,12 +146,12 @@ jobs:
     runs-on: ubuntu-latest
     
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
         with:
           fetch-depth: 0
           fetch-tags: true
       - name: set up python 3.12
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@v6
         with: 
           python-version: 3.12
       - run: pip install . montepy[doc,build]
@@ -174,12 +174,12 @@ jobs:
     runs-on: ubuntu-latest
     
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
         with:
           fetch-depth: 0
           fetch-tags: true
       - name: set up python 3.12
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@v6
         with: 
           python-version: 3.12
       - run: pip install . montepy[doc,build,demo-test,test]
@@ -198,9 +198,9 @@ jobs:
     runs-on: ubuntu-latest
     
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - name: set up python 3.12
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@v6
         with: 
           python-version: 3.12
       - run: pip install . montepy[format]
@@ -210,9 +210,9 @@ jobs:
     runs-on: ubuntu-latest
     
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - name: set up python 3.12
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@v6
         with: 
           python-version: 3.12
       - run: pip install . montepy[test]
@@ -227,9 +227,9 @@ jobs:
     runs-on: ubuntu-latest
     
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - name: set up python 3.12
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@v6
         with: 
           python-version: 3.12
       - run: pip install . montepy[test]
@@ -242,7 +242,7 @@ jobs:
     if: github.ref != 'refs/heads/main'
     
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - name: Check for changes
         uses: dorny/paths-filter@v3
         id: changes

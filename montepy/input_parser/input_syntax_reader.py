@@ -215,11 +215,13 @@ def read_data(fh, mcnp_version, block_type=None, recursion=False):
         old_line = line
         line = line[:line_length]
         if len(old_line) != len(line):
-            if len(line.split("$")[0]) >= line_length and not COMMENT_FINDER.match(
+            comment_free = old_line.split("$")[0]
+            if len(comment_free.rstrip()) > line_length and not COMMENT_FINDER.match(
                 line
             ):
                 warnings.warn(
-                    f"The line: {old_line} exceeded the allowed line length of: {line_length} for MCNP {mcnp_version}",
+                    f"The line number {fh.lineno} exceeded the allowed line length of: {line_length} for MCNP{mcnp_version} "
+                    f'and "{comment_free[line_length -1:].rstrip()}" was removed.',
                     LineOverRunWarning,
                 )
             # if extra length is a comment keep it long

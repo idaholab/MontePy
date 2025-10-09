@@ -4,7 +4,7 @@ dynamic = ["version"]
 description = "A library for reading, editing, and writing MCNP input files"
 
 readme = "README.md"
-requires-python = ">=3.11"
+requires-python = ">=3.12"
 maintainers = [
 	{name = "Micah Gale", email = "mgale@montepy.org"}
 ]
@@ -14,6 +14,7 @@ authors = [
 	{name = "Brenna Carbno", email="brenna.carbno@inl.gov"},
 	{name = "Benjaminas Marcinkevicius", email="BenjaminasDev@outlook.com"},
 	{name = "Paul Ferney", email="Paul.Ferney@inl.gov"},
+	{name = "Digvijay Yeware", email="yewaredigvijay@gmail.com"}
 ]
 keywords = ["MCNP", "neutronics", "imcnp", "input file", "monte carlo", "radiation transport"]
 license = "MIT"
