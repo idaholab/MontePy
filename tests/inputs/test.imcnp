@@ -44,8 +44,8 @@ m2        26054.80c        5.85
           26057        2.12 $ very very very very very very very very very very very very very very long line that exceeds line limit
           26058.80c        0.28 $ trailing comment shouldn't move #458.
 C water
-C foo
-m3        1001.80c           2
+C foo               valid input up to the line length limit
+m3        1001.80c 2.00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
            8016.80c           1
            plib=84p
 MT3 lwtr.23t h-zr.20t h/zr.28t

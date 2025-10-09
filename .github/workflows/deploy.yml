@@ -9,9 +9,9 @@ jobs:
   last-minute-test:
     runs-on: ubuntu-latest    
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - name: set up python  3.14
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@v6
         with: 
           python-version: 3.14
       - run: pip install . montepy[develop]
@@ -28,12 +28,12 @@ jobs:
     env:
       GH_TOKEN: ${{ github.token }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
         with:
           fetch-depth: 0
           fetch-tags: true
       - name: set up python  3.14
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@v6
         with: 
           python-version: 3.14
       - run: pip install . montepy[build]
@@ -44,13 +44,13 @@ jobs:
         run: .github/scripts/check_version.py
       - run: python -m build .
       - name: Sign the dists with Sigstore
-        uses: sigstore/gh-action-sigstore-python@047e8aa38a2a125cc0bf1332cfb9b53f9fdc0733
+        uses: sigstore/gh-action-sigstore-python@f909491f27c345faa936da468c9ddfac57cbeb49
         with:
           inputs: >-
             ./dist/*.tar.gz
             ./dist/*.whl
       - name: Create a GitHub release
-        uses: ncipollo/release-action@bcfe5470707e8832e12347755757cec0eb3c22af
+        uses: ncipollo/release-action@b7eabc95ff50cbeeedec83973935c8f306dfcd0b
         with:
           tag: v${{ steps.get_version.outputs.version }}
           name: Release ${{ steps.get_version.outputs.version }}
@@ -78,12 +78,12 @@ jobs:
       id-token: write
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@v5
         with:
           name: build
           path: dist/
       - name: Publish distribution 📦 to PyPI
-        uses: pypa/gh-action-pypi-publish@76f52bc884231f62b9a034ebfe128415bbaabdfc
+        uses: pypa/gh-action-pypi-publish@ed0c53931b1dc9bd32cbe73a98c7f6766f8a527e
         with:
           repository-url: https://test.pypi.org/legacy/
 
@@ -97,12 +97,12 @@ jobs:
       id-token: write
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@v5
         with:
           name: build
           path: dist/
       - name: Publish distribution 📦 to PyPI
-        uses: pypa/gh-action-pypi-publish@76f52bc884231f62b9a034ebfe128415bbaabdfc
+        uses: pypa/gh-action-pypi-publish@ed0c53931b1dc9bd32cbe73a98c7f6766f8a527e
 
 
        
