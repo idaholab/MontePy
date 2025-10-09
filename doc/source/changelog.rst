@@ -2,6 +2,16 @@
 MontePy Changelog
 *****************
 
+1.2 releases
+============
+
+#Next Version#
+--------------
+
+**Deprecations**
+
+* Dropped support for python 3.9 and 3.10 in order to comply with `SPEC 0 <https://scientific-python.org/specs/spec-0000/>`_ (:issue:`780`).
+
 1.1 releases
 ============
 
@@ -18,6 +28,9 @@ MontePy Changelog
 
 * Added descriptive TypeError messages (:issue:`801`)
 
+** Features Added**
+
+* Allow setting ``cell.fill.universes`` with a numpy array of universe IDs (:issue:`736`).
 
 
 1.1.2
