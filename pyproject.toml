@@ -28,12 +28,12 @@ classifiers = [
        "Topic :: Scientific/Engineering",
        "Topic :: Scientific/Engineering :: Human Machine Interfaces",
        "Programming Language :: Python :: 3 :: Only",
-       "Programming Language :: Python :: 3.11",
        "Programming Language :: Python :: 3.12",
-       "Programming Language :: Python :: 3.13"
+       "Programming Language :: Python :: 3.13",
+       "Programming Language :: Python :: 3.14"
 ]
 dependencies = [
-	"numpy>=1.26",
+	"numpy>=2.0",
 	"sly>= 0.4, <=0.5"
 ]
 
