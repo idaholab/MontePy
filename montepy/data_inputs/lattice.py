@@ -37,24 +37,4 @@ class __DeprecatedLattice:
         return LatticeType.HEXAGONAL
 
 
-class __DeprecatedLatticeType:
-    """Helper for renamed attribute"""
-
-    @property
-    def RECTANGULAR(self):
-        return LatticeType.RECTANGULAR
-
-    @property
-    def HEXAGONAL(self):
-        return LatticeType.HEXAGONAL
-
-    @property
-    def HEXAHEDRAL(self):
-        warn(
-            message="LatticeType.HEXAHEDRAL is deprecated in favor of LatticeType.RECTANGULAR",
-            category=DeprecationWarning,
-        )
-        return LatticeType.RECTANGULAR
-
-
 Lattice = __DeprecatedLattice()
