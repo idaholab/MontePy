@@ -249,6 +249,10 @@ class TestLattice:
         assert "Lattice_values : LatticeType.RECTANGULAR" in out
 
     def test_deprecated_lattice(self):
+        assert (
+            montepy.data_inputs.lattice.LatticeType.HEXAHEDRAL
+            is montepy.data_inputs.lattice.LatticeType.RECTANGULAR
+        )
         with pytest.warns(DeprecationWarning, match="HEXAGONAL"):
             montepy.data_inputs.lattice.Lattice.HEXAGONAL
         with pytest.warns(DeprecationWarning, match="RECTANGULAR"):
