@@ -17,6 +17,14 @@ Fixes # (issue number)
 
 ---
 
+### LLM Disclosure
+
+Were any large language models (LLM or "AI") used in to generate any of this code?
+
+- [ ] Yes
+    - Model(s) used:
+- [ ] No
+
 <details open> 
 
 <summary><h3>Documentation Checklist</h3></summary>
