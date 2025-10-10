@@ -1,12 +1,15 @@
 # Copyright 2024, Battelle Energy Alliance, LLC All Rights Reserved.
+from collections.abc import Iterable
 import copy
 from enum import Enum
 import itertools
+import io
 import os
 import warnings
 
 from montepy.data_inputs import mode, transform
 from montepy._cell_data_control import CellDataPrintController
+from montepy._check_value import args_checked
 from montepy.cell import Cell
 from montepy.cells import Cells
 from montepy.exceptions import *
@@ -14,6 +17,7 @@ from montepy.constants import DEFAULT_VERSION
 from montepy.materials import Material, Materials
 from montepy.surfaces import surface, surface_builder
 from montepy.surface_collection import Surfaces
+import montepy.types as ty
 
 # weird way to avoid circular imports
 from montepy.data_inputs import parse_data
@@ -45,7 +49,8 @@ class MCNP_Problem:
         Universe: Universes,
     }
 
-    def __init__(self, destination):
+    @args_checked
+    def __init__(self, destination: str | os.PathLike | io.TextIOBase):
         if hasattr(destination, "read") and callable(getattr(destination, "read")):
             self._input_file = MCNP_InputFile.from_open_stream(destination)
         elif isinstance(destination, (str, os.PathLike)):
@@ -154,10 +159,9 @@ class MCNP_Problem:
         return self._cells
 
     @cells.setter
-    def cells(self, cells):
-        if not isinstance(cells, (Cells, list)):
-            raise TypeError("cells must be an instance of list or Cells")
-        if isinstance(cells, list):
+    @args_checked
+    def cells(self, cells: Iterable[montepy.Cell] | Cells):
+        if not isinstance(cells, Cells):
             cells = Cells(cells)
         if cells is self.cells:
             return
@@ -174,7 +178,7 @@ class MCNP_Problem:
         """
         return self._mode
 
-    def set_mode(self, particles):
+    def set_mode(self, particles: Iterable[str] | str):
         """Sets the mode of problem to the given particles.
 
         For details see: :func:`montepy.data_cards.mode.Mode.set`.
@@ -213,12 +217,15 @@ class MCNP_Problem:
         return self._mcnp_version
 
     @mcnp_version.setter
-    def mcnp_version(self, version):
+    @args_checked
+    def mcnp_version(
+        self, version: tuple[ty.PositiveInt, typ.PositiveInt, ty.PositiveInt]
+    ):
         """
         Parameters
         ----------
         version : tuple
-            the version tuple. Must be greater than 6.2.0
+            the version tuple. Must be greater than (5, 1, 60)
         """
         if version < (5, 1, 60):
             raise ValueError(f"The mcnp_version {version} is not supported by MontePy")
@@ -238,9 +245,8 @@ class MCNP_Problem:
         return self._surfaces
 
     @surfaces.setter
-    def surfaces(self, surfs):
-        if not isinstance(surfs, (list, Surfaces)):
-            raise TypeError("Surfaces must be of type list or Surfaces")
+    @args_checked
+    def surfaces(self, surfs: Iterable[montepy.Surface] | Surfaces):
         if isinstance(surfs, list):
             surfs = Surfaces(surfs)
         surfs.link_to_problem(self)
@@ -259,6 +265,7 @@ class MCNP_Problem:
         self.__relink_objs()
         return self._materials
 
+    ####### TODO                    START HERE
     @materials.setter
     def materials(self, mats):
         if not isinstance(mats, (list, Materials)):
