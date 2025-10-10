@@ -1,7 +1,7 @@
 name: CI testing
 
 on: 
-  pull_request:
+  pull_request_target:
     branches: [develop, alpha-test-dev, alpha-test]
   push: 
      branches: [develop, main, alpha-test]
