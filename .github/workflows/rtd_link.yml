@@ -1,6 +1,6 @@
 name: add RTD links
 on:
-  pull_request:
+  pull_request_target:
     types: [opened, reopened, edited]
 jobs:
   add_rtd_link:
