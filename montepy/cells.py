@@ -9,6 +9,11 @@ from numbers import Integral
 class Cells(NumberedObjectCollection):
     """A collections of multiple :class:`montepy.cell.Cell` objects.
 
+    This collection can be sliced to get a subset of the cells.
+    Slicing is done based on the cell numbers, not their order in the input.
+    For example, ``problem.cells[1:10]`` will return a new `Cells` collection
+    containing cells with numbers from 1 to 10, inclusive.
+
     Notes
     -----
 

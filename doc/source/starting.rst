@@ -295,6 +295,25 @@ So say you want to access cell 2 from a problem it is accessible quickly by:
         SURFACE: 1020, PZ
         SURFACE: 1025, PZ
 
+Slicing Collections by Number
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Unlike a normal Python list, slicing a collection is based on the object numbers, not their position.
+The slice is also inclusive of the end-point. For example, ``problem.cells[1:3]`` will include
+cells with numbers 1, 2, and 3.
+
+.. testcode::
+
+    for cell in problem.cells[1:3]:
+        print(cell.number)
+
+This will print:
+
+.. testoutput::
+
+    1
+    2
+    3
+
 
 Collections are Iterable
 ^^^^^^^^^^^^^^^^^^^^^^^^
