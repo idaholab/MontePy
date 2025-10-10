@@ -1,10 +1,6 @@
 # Copyright 2024 - 2025, Battelle Energy Alliance, LLC All Rights Reserved.
-import pytest
-from unittest import TestCase
-
 import copy
 import os
-
 from hypothesis import given, strategies as st
 import numpy as np
 from types import GeneratorType
@@ -43,84 +39,84 @@ class TestUniverseInput:
         self.universe = UniverseInput(in_cell_block=True, key="u", value=tree)
 
     def test_universe_card_init(self):
-        card = self.universe
-        assert card.old_number == 5
-        assert not card.not_truncated
+        universe_input = self.universe
+        assert universe_input.old_number == 5
+        assert not universe_input.not_truncated
         # test bad float
         with pytest.raises(ValueError):
             tree = copy.deepcopy(self.tree)
             tree["data"].nodes.pop()
             tree["data"].append(syntax_node.ValueNode("5.5", float))
-            card = UniverseInput(in_cell_block=True, key="U", value=tree)
+            UniverseInput(in_cell_block=True, key="U", value=tree)
 
         # test string
         with pytest.raises(ValueError):
             tree["data"].nodes.pop()
             tree["data"].append(syntax_node.ValueNode("hi", str))
-            card = UniverseInput(in_cell_block=True, key="U", value=tree)
+            UniverseInput(in_cell_block=True, key="U", value=tree)
 
         # test negative universe
         tree["data"].nodes.pop()
         tree["data"].append(syntax_node.ValueNode("-3", float))
-        card = UniverseInput(in_cell_block=True, key="U", value=tree)
-        assert card.old_number == 3
-        assert card.not_truncated is True
+        universe_input_neg = UniverseInput(in_cell_block=True, key="U", value=tree)
+        assert universe_input_neg.old_number == 3
+        assert universe_input_neg.not_truncated is True
 
         universes = [1, 2, 3]
-        card = Input(["U " + " ".join(list(map(str, universes)))], BlockType.DATA)
-        uni_card = UniverseInput(card)
+        input_obj = Input(["U " + " ".join(list(map(str, universes)))], BlockType.DATA)
+        uni_card = UniverseInput(input_obj)
         assert uni_card.old_numbers == universes
 
         # test jump
-        card = Input(["U J"], BlockType.DATA)
-        uni_card = UniverseInput(card)
+        input_obj = Input(["U J"], BlockType.DATA)
+        uni_card = UniverseInput(input_obj)
         assert uni_card.old_numbers[0] == None
 
         # test bad float
         with pytest.raises(MalformedInputError):
-            card = Input(["U 5.5"], BlockType.DATA)
-            uni_card = UniverseInput(card)
+            input_obj = Input(["U 5.5"], BlockType.DATA)
+            UniverseInput(input_obj)
 
         # test bad str
         with pytest.raises(MalformedInputError):
-            card = Input(["U hi"], BlockType.DATA)
-            uni_card = UniverseInput(card)
+            input_obj = Input(["U hi"], BlockType.DATA)
+            UniverseInput(input_obj)
 
         # test bad negative
-        card = Input(["U -2"], BlockType.DATA)
-        uni_card = UniverseInput(card)
+        input_obj = Input(["U -2"], BlockType.DATA)
+        UniverseInput(input_obj)
 
     def test_str(self):
-        card = copy.deepcopy(self.universe)
+        universe_input = copy.deepcopy(self.universe)
         uni = Universe(5)
-        card.universe = uni
-        output = str(card)
+        universe_input.universe = uni
+        output = str(universe_input)
         assert "u=5" in output
-        output = repr(card)
+        output = repr(universe_input)
         assert "UNIVERSE" in output
         assert "set_in_block: True" in output
         assert "Universe : Universe(5)" in output
 
     def test_merge(self):
-        card = copy.deepcopy(self.universe)
+        universe_input = copy.deepcopy(self.universe)
         with pytest.raises(MalformedInputError):
-            card.merge(card)
+            universe_input.merge(universe_input)
 
     def test_universe_setter(self):
-        card = copy.deepcopy(self.universe)
+        universe_input = copy.deepcopy(self.universe)
         uni = Universe(5)
-        card.universe = uni
-        assert card.universe == uni
+        universe_input.universe = uni
+        assert universe_input.universe == uni
         with pytest.raises(TypeError):
-            card.universe = 5
+            universe_input.universe = 5
 
     def test_universe_truncate_setter(self):
-        card = copy.deepcopy(self.universe)
-        assert card.not_truncated is False
-        card.not_truncated = True
-        assert card.not_truncated is True
+        universe_input = copy.deepcopy(self.universe)
+        assert universe_input.not_truncated is False
+        universe_input.not_truncated = True
+        assert universe_input.not_truncated is True
         with pytest.raises(TypeError):
-            card.not_truncated = 5
+            universe_input.not_truncated = 5
 
 
 class TestUniverse:
@@ -207,11 +203,11 @@ class TestLattice:
         for answer, lattice in zip(lattices, lattice._lattice):
             assert LatticeType(answer) == lattice.value
         with pytest.raises(MalformedInputError):
-            card = Input(["Lat 3"], BlockType.DATA)
-            LatticeInput(card)
+            input_obj = Input(["Lat 3"], BlockType.DATA)
+            LatticeInput(input_obj)
         with pytest.raises(MalformedInputError):
-            card = Input(["Lat str"], BlockType.DATA)
-            LatticeInput(card)
+            input_obj = Input(["Lat str"], BlockType.DATA)
+            LatticeInput(input_obj)
 
     def test_lattice_setter(self):
         lattice = copy.deepcopy(self.lattice)
@@ -250,12 +246,16 @@ class TestLattice:
         out = repr(lattice)
         assert "in_cell: True" in out
         assert "set_in_block: True" in out
-        assert "Lattice_values : LatticeType.HEXAHEDRAL" in out
+        assert "Lattice_values : LatticeType.RECTANGULAR" in out
 
     def test_deprecated_lattice(self):
+        assert (
+            montepy.data_inputs.lattice.LatticeType.HEXAHEDRAL
+            is montepy.data_inputs.lattice.LatticeType.RECTANGULAR
+        )
         with pytest.warns(DeprecationWarning, match="HEXAGONAL"):
             montepy.data_inputs.lattice.Lattice.HEXAGONAL
-        with pytest.warns(DeprecationWarning, match="HEXAHEDRAL"):
+        with pytest.warns(DeprecationWarning, match="RECTANGULAR"):
             lattype = montepy.data_inputs.lattice.Lattice.HEXAHEDRA
         cell = montepy.Cell()
         with pytest.warns(DeprecationWarning):
@@ -362,23 +362,23 @@ class TestFill:
             fill = cell.fill
 
     def test_data_fill_init(self):
-        card = Input(["FiLl 1 2 3 4"], BlockType.DATA)
-        fill = Fill(card)
+        input_obj = Input(["FiLl 1 2 3 4"], BlockType.DATA)
+        fill = Fill(input_obj)
         answer = [1, 2, 3, 4]
         assert fill.old_universe_numbers == answer
         # jump
-        card = Input(["FiLl 1 2J 4"], BlockType.DATA)
-        fill = Fill(card)
+        input_obj = Input(["FiLl 1 2J 4"], BlockType.DATA)
+        fill = Fill(input_obj)
         answer = [1, None, None, 4]
         assert fill.old_universe_numbers == answer
         # test negative universe
         with pytest.raises(MalformedInputError):
-            card = Input(["FiLl 1 -2 3 4"], BlockType.DATA)
-            fill = Fill(card)
+            input_obj = Input(["FiLl 1 -2 3 4"], BlockType.DATA)
+            fill = Fill(input_obj)
         # test string universe
         with pytest.raises(MalformedInputError):
-            card = Input(["FiLl 1 foo"], BlockType.DATA)
-            fill = Fill(card)
+            input_obj = Input(["FiLl 1 foo"], BlockType.DATA)
+            fill = Fill(input_obj)
 
     def test_fill_universe_setter(self):
 
@@ -414,7 +414,43 @@ class TestFill:
         with pytest.raises(ValueError):
             fill.universes = np.array([1, 2])
         with pytest.raises(TypeError):
+            fill.universes = np.array([[["hi"]]])
+
+        with pytest.raises(IllegalState):
             fill.universes = np.array([[[1]]])
+
+        # Test setting universes with integer IDs when a problem is attached
+        problem = montepy.MCNP_Problem("test")
+        uni1 = montepy.Universe(1)
+        problem.universes.append(uni1)
+        cell = montepy.Cell(number=1)
+        problem.cells.append(cell)
+        cell.fill.universes = np.array([[[1, 0]]])
+        assert cell.fill.universes[0, 0, 0] is uni1
+        assert cell.fill.universes[0, 0, 1] is None
+
+        # Test that it raises IllegalState when no problem is attached
+        cell_no_problem = montepy.Cell(number=2)
+        with pytest.raises(IllegalState):
+            cell_no_problem.fill.universes = np.array([[[1]]])
+
+        # Test that it raises KeyError for bad IDs
+        with pytest.raises(KeyError):
+            cell.fill.universes = np.array([[[999]]])
+
+        # Test that it raises ValueError for non-3D array
+        with pytest.raises(ValueError):
+            cell.fill.universes = np.array([1, 2])
+
+        # Test that it raises TypeError for wrong data type in array
+        with pytest.raises(TypeError):
+            cell.fill.universes = np.array([[["a", "b"]]])
+
+        # Test setting universes to None
+        cell.fill.universes = None
+        assert cell.fill.universes is None
+        assert cell.fill.multiple_universes is False
+        assert cell.fill.universe is None
 
     def test_fill_str(self, complicated_fill):
         fill = copy.deepcopy(complicated_fill)
@@ -424,9 +460,9 @@ class TestFill:
         assert "Fill" in output
 
     def test_fill_merge(self):
-        card = Input(["FiLl 1 2 3 4"], BlockType.DATA)
-        fill1 = Fill(card)
-        fill2 = Fill(card)
+        input_obj = Input(["FiLl 1 2 3 4"], BlockType.DATA)
+        fill1 = Fill(input_obj)
+        fill2 = Fill(input_obj)
         with pytest.raises(MalformedInputError):
             fill1.merge(fill2)
 

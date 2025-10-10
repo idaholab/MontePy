@@ -8,24 +8,23 @@ MontePy Changelog
 #Next Version#
 --------------
 
-**Deprecations**
 
-* Dropped support for python 3.9 and 3.10 in order to comply with `SPEC 0 <https://scientific-python.org/specs/spec-0000/>`_ (:issue:`780`).
+**Features Added**
 
-1.1 releases
-============
-
-#Next Release#
---------------
-
+* Make `LatticeType.RECTANGULAR` and `LatticeType.HEXAHEDRAL` synonymous (:issue:`808`).
+* Allow setting ``cell.fill.universes`` with a numpy array of universe IDs (:issue:`736`).
 
 **Bugs Fixed**
 
 * Fixed bug where lines that were the allowed length was raising a ``LineOverRunWarning`` when read by MontePy (:issue:`517`). 
-
 * Added descriptive TypeError messages (:issue:`801`)
 
+**Deprecations**
 
+* Dropped support for python 3.9 through 3.11, and numpy 1.26 in order to comply with `SPEC 0 <https://scientific-python.org/specs/spec-0000/>`_ (:issue:`780`).
+
+1.1 releases
+============
 
 1.1.2
 --------------

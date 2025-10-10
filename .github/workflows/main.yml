@@ -11,7 +11,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        python-version: ["3.11", "3.12", "3.13", "3.14-dev"]
+        python-version: ["3.12", "3.13", "3.14"]
 
     steps:
       - uses: actions/checkout@v5
@@ -43,7 +43,7 @@ jobs:
       - run: pip freeze
       - name: Upload build artifacts
         uses: actions/upload-artifact@v4
-        if: ${{ matrix.python-version == '3.12'}}
+        if: ${{ matrix.python-version == '3.13'}}
         with: 
            name: build
            path: dist/*
@@ -54,12 +54,12 @@ jobs:
       actions: write
     strategy:
       matrix:
-        python-version: ["3.11", "3.12", "3.13", "3.14-dev"]
-        numpy-version: ["1.0", "2.0"]
+        python-version: ["3.12", "3.13", "3.14"]
+        numpy-version: ["2.0", "2.3"]
         sly-version: ["0.5"]
         include:
-          - python-version: "3.11"
-            numpy-version: "2.0"
+          - python-version: "3.13"
+            numpy-version: "2.3"
             sly-version: "0.4"
     
     steps:
@@ -83,23 +83,24 @@ jobs:
       - run: coverage xml
         if:  ${{ success() || failure() }}
       - name: Upload test report
-        if: ${{ matrix.python-version == '3.12' && matrix.numpy-version == '2.0' && (success() || failure() )}}
+        if: ${{ matrix.python-version == '3.14' && matrix.numpy-version == '2.3' && (success() || failure() )}}
         uses: actions/upload-artifact@v4
         with:
           name: test
           path: test_report.xml
       - name: Upload coverage report
-        if: ${{ matrix.python-version == '3.12' && matrix.numpy-version == '2.0' && (success() || failure() )}}
+        if: ${{ matrix.python-version == '3.14' && matrix.numpy-version == '2.3' && (success() || failure() )}}
         uses: actions/upload-artifact@v4
         with:
           name: coverage
           path: coverage.xml
       - name: Coveralls GitHub Action
-        if: ${{ matrix.python-version == '3.12' && matrix.numpy-version == '2.0' && (success() || failure() )}}
+        if: ${{ matrix.python-version == '3.14' && matrix.numpy-version == '2.3' && (success() || failure() )}}
         uses: coverallsapp/github-action@648a8eb78e6d50909eff900e4ec85cab4524a45b
         with:
           file: coverage.xml
-          github-token: ${{ secrets.github_token }}
+          fail-on-error: false
+          format: cobertura
   
 
 
@@ -115,7 +116,7 @@ jobs:
       - name: set up python 3.12
         uses: actions/setup-python@v6
         with: 
-          python-version: 3.12
+          python-version: 3.14
       - run: pip install . montepy[doc,build]
       - run: sphinx-build doc/source/ doc/build/html -W --keep-going -E
         name: Build site strictly
@@ -140,10 +141,10 @@ jobs:
         with:
           fetch-depth: 0
           fetch-tags: true
-      - name: set up python 3.12
+      - name: set up python 3.14
         uses: actions/setup-python@v6
         with: 
-          python-version: 3.12
+          python-version: 3.14
       - run: pip install . montepy[doc,build,demo-test,test]
       - run: python -m phmutest README.md --replmode --log
         name: Test readme code
@@ -160,11 +161,12 @@ jobs:
     runs-on: ubuntu-latest
     
     steps:
+
       - uses: actions/checkout@v5
-      - name: set up python 3.12
+      - name: set up python 3.14
         uses: actions/setup-python@v6
         with: 
-          python-version: 3.12
+          python-version: 3.14
       - run: pip install . montepy[format]
       - run: black --check montepy/ tests/
   
@@ -173,10 +175,10 @@ jobs:
     
     steps:
       - uses: actions/checkout@v5
-      - name: set up python 3.12
+      - name: set up python 3.14
         uses: actions/setup-python@v6
         with: 
-          python-version: 3.12
+          python-version: 3.14
       - run: pip install . montepy[test]
       - run: pytest --profile
         name: Profile test suite
@@ -190,10 +192,10 @@ jobs:
     
     steps:
       - uses: actions/checkout@v5
-      - name: set up python 3.12
+      - name: set up python 3.14
         uses: actions/setup-python@v6
         with: 
-          python-version: 3.12
+          python-version: 3.14
       - run: pip install . montepy[test]
       - run: python benchmark/benchmark_big_model.py  
         name: Benchmark against big model

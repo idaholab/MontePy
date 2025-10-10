@@ -4,7 +4,6 @@ from abc import ABC, ABCMeta, abstractmethod
 from collections.abc import Iterable
 import copy
 import itertools as it
-import sys
 import textwrap
 from typing import Union
 import warnings
@@ -99,15 +98,10 @@ class MCNP_Object(ABC, metaclass=_ExceptionContextAdder):
         if key.startswith("_"):
             super().__setattr__(key, value)
         else:
-            # kwargs added in 3.10
-            if sys.version_info >= (3, 10):
-                raise AttributeError(
-                    f"'{type(self).__name__}' object has no attribute '{key}'",
-                    obj=self,
-                    name=key,
-                )
             raise AttributeError(
                 f"'{type(self).__name__}' object has no attribute '{key}'",
+                obj=self,
+                name=key,
             )
 
     @staticmethod
