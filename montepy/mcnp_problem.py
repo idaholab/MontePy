@@ -612,14 +612,16 @@ class MCNP_Problem:
                             warning.handled = True
                     for line in lines:
                         inp.write(line + "\n")
-                if terminate:
-                    inp.write("\n")
-            for line in self.cells._run_children_format_for_mcnp(
-                self.data_inputs, self.mcnp_version
-            ):
-                inp.write(line + "\n")
 
-            inp.write("\n")
+                # writing cell data in DATA BLOCK if needed otherwise adding termination line
+                if obj.__class__.__module__.startswith("montepy.data_inputs"):
+                    for line in self.cells._run_children_format_for_mcnp(
+                        self.data_inputs, self.mcnp_version
+                    ):
+                        inp.write(line + "\n")
+                elif terminate:
+                    inp.write("\n")
+
         self._handle_warnings(warning_catch)
 
     def _handle_warnings(self, warning_queue):
