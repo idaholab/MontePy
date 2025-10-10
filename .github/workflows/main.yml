@@ -100,7 +100,7 @@ jobs:
         with:
           file: coverage.xml
           fail-on-error: false
-          format: corbertura
+          format: cobertura
   
 
 
