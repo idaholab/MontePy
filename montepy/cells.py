@@ -1,4 +1,5 @@
 # Copyright 2024-2025, Battelle Energy Alliance, LLC All Rights Reserved.
+from __future__ import annotations
 import montepy
 from montepy.numbered_object_collection import NumberedObjectCollection
 from montepy._check_value import args_checked
@@ -27,7 +28,7 @@ class Cells(NumberedObjectCollection):
 
     @args_checked
     def __init__(
-        self, cells: Iterable[Cell] = None, problem: montepy.MCNP_Problem = None
+        self, cells: Iterable[montepy.Cell] = None, problem: montepy.MCNP_Problem = None
     ):
         self.__blank_modifiers = set()
         super().__init__(montepy.Cell, cells, problem)
@@ -63,7 +64,7 @@ class Cells(NumberedObjectCollection):
     def set_equal_importance(
         self,
         importance: PositiveReal,
-        vacuum_cells: Iterable[Cell | PositiveInt] = tuple(),
+        vacuum_cells: Iterable[montepy.Cell | PositiveInt] = tuple(),
     ):
         """Sets all cells except the vacuum cells to the same importance using :func:`montepy.data_cards.importance.Importance.all`.
 
@@ -107,7 +108,7 @@ class Cells(NumberedObjectCollection):
         self._volume.is_mcnp_calculated = value
 
     @args_checked
-    def link_to_problem(self, problem: montepy.MCNP_Problem):
+    def link_to_problem(self, problem: montepy.MCNP_Problem = None):
         """Links the input to the parent problem for this input.
 
         This is done so that inputs can find links to other objects.
