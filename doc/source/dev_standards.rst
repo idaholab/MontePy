@@ -226,6 +226,15 @@ Here is the docstrings for :class:`~montepy.cell.Cell`.
             number: int = None,
         ):
 
+
+Adding New Object to Website
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+The Sphinx website uses `autodoc <https://www.sphinx-doc.org/en/master/usage/extensions/autodoc.html>`_ to add the doc strings to the website, 
+but not ``apidoc``.
+Each new file will needs its own ``rst`` file in ``doc/source/api``.
+See ``doc/source/api/montepy.cell.rst`` as an example.
+
 Testing
 -------
 
