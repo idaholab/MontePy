@@ -182,8 +182,11 @@ def args_checked(func: Callable):
                 else:
                     args_iter = (arg_vals,)
                 for val in args_iter:
-                    new_vals = [checker(val) for checker in checkers]
-                # TODO how to update the vals from here and rebind?
+                    # TODO unit test
+                    checker_slice = slice(None)
+                    if val is None:
+                        checker_slice = slice(1)
+                    new_vals = [checker(val) for checker in checkers[checker_slice]]
             return func(*args, **kwargs)
 
         return wrapper
