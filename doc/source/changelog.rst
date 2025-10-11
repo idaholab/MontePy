@@ -8,6 +8,9 @@ MontePy Changelog
 #Next Release#
 --------------
 
+**Deprecations**
+
+* Improved documentation for NumberedObjectCollections on Slicing behavior.
 
 **Bugs Fixed**
 
