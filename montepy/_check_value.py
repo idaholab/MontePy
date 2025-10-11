@@ -31,6 +31,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 import copy
 import os
 from collections.abc import Callable, Iterable
+from enum import EnumType
 import functools
 import inspect
 from numbers import Real, Integral
@@ -227,7 +228,9 @@ def check_type(
             func_name, name, value, expected_type, none_ok=none_ok
         )
     if not isinstance(value, expected_type):
-        if isinstance(expected_type, Iterable):
+        if isinstance(expected_type, Iterable) and not isinstance(
+            expected_type, EnumType
+        ):
             msg = (
                 'Unable to set "{}" for "{}" to "{}" which is not one of the '
                 'following types: "{}"'.format(
