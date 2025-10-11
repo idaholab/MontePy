@@ -8,6 +8,7 @@ from numbers import Integral
 
 from montepy.mcnp_object import MCNP_Object, InitInput
 import montepy
+import montepy.types as ty
 from montepy.utilities import *
 
 
@@ -124,7 +125,9 @@ class Numbered_MCNP_Object(MCNP_Object):
                     prob_collect.append(child_collect)
 
     @args_checked
-    def clone(self, starting_number: PositiveInt = None, step: PositiveInt = None):
+    def clone(
+        self, starting_number: ty.PositiveInt = None, step: ty.PositiveInt = None
+    ):
         """Create a new independent instance of this object with a new number.
 
         This relies mostly on ``copy.deepcopy``.
