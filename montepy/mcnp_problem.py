@@ -219,7 +219,7 @@ class MCNP_Problem:
     @mcnp_version.setter
     @args_checked
     def mcnp_version(
-        self, version: tuple[ty.PositiveInt, typ.PositiveInt, ty.PositiveInt]
+        self, version: tuple[ty.PositiveInt, ty.PositiveInt, ty.PositiveInt]
     ):
         """
         Parameters
@@ -247,7 +247,7 @@ class MCNP_Problem:
     @surfaces.setter
     @args_checked
     def surfaces(self, surfs: Iterable[montepy.Surface] | Surfaces):
-        if isinstance(surfs, list):
+        if not isinstance(surfs, Surfaces):
             surfs = Surfaces(surfs)
         surfs.link_to_problem(self)
         self._surfaces = surfs
@@ -265,12 +265,10 @@ class MCNP_Problem:
         self.__relink_objs()
         return self._materials
 
-    ####### TODO                    START HERE
     @materials.setter
-    def materials(self, mats):
-        if not isinstance(mats, (list, Materials)):
-            raise TypeError("materials must be of type list and Materials")
-        if isinstance(mats, list):
+    @args_checked
+    def materials(self, mats: Iterable[montepy.Material] | Materials):
+        if not isinstance(mats, Materials):
             mats = Materials(mats)
         mats.link_to_problem(self)
         self._materials = mats
@@ -345,7 +343,8 @@ class MCNP_Problem:
         return self._title
 
     @title.setter
-    def title(self, title):
+    @args_checked
+    def title(self, title: str):
         """
         Parameters
         ----------
@@ -375,7 +374,8 @@ class MCNP_Problem:
         """
         return self._transforms
 
-    def parse_input(self, check_input=False, replace=True):
+    @args_checked
+    def parse_input(self, check_input: bool = False, replace: bool = True):
         """Semantically parses the MCNP file provided to the constructor.
 
         Parameters
@@ -499,7 +499,8 @@ class MCNP_Problem:
         for delete_index in to_delete[::-1]:
             del self._data_inputs[delete_index]
 
-    def remove_duplicate_surfaces(self, tolerance):
+    @args_checked
+    def remove_duplicate_surfaces(self, tolerance: ty.PositiveReal):
         """Finds duplicate surfaces in the problem, and remove them.
 
         Parameters
@@ -540,7 +541,10 @@ class MCNP_Problem:
             " as the children are automatically added with the cell."
         )
 
-    def write_problem(self, destination, overwrite=False):
+    @args_checked
+    def write_problem(
+        self, destination: str | os.PathLike | io.TextIOBase, overwrite: bool = False
+    ):
         """Write the problem to a file or writeable object.
 
         Parameters
@@ -562,7 +566,8 @@ class MCNP_Problem:
                 f"destination f{destination} is not a file path or writable object"
             )
 
-    def write_to_file(self, file_path, overwrite=False):
+    @args_checked
+    def write_to_file(self, file_path: str | os.PathLike, overwrite: bool = False):
         """Writes the problem to a file.
 
         .. versionchanged:: 0.3.0
@@ -690,6 +695,7 @@ class MCNP_Problem:
             ret += "\n"
         return ret
 
+    @args_checked
     def parse(self, input: str, append: bool = True) -> montepy.mcnp_object.MCNP_Object:
         """Parses the MCNP object given by the string, and links it adds it to this problem.
 
