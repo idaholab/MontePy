@@ -1,19 +1,16 @@
 MontePy API 
 ===========
 
-Submodules
-----------
+Base Objects
+------------
 
 .. toctree::
    :maxdepth: 1
 
    montepy.cell
    montepy.cells
-   montepy.constants
-   montepy.exceptions
    montepy.geometry_operators
    montepy.materials
-   montepy.mcnp_object
    montepy.mcnp_problem
    montepy.numbered_mcnp_object
    montepy.numbered_object_collection
@@ -22,15 +19,30 @@ Submodules
    montepy.transforms
    montepy.universe
    montepy.universes
-   montepy.utilities
 
-Subpackages
------------
+Surfaces
+--------
 
 .. toctree::
    :maxdepth: 2
 
-   montepy.data_inputs
-   montepy.input_parser
    montepy.surfaces
 
+Data Inputs
+-----------
+
+.. toctree::
+   :maxdepth: 2
+   
+   montepy.data_inputs
+
+Developer Focused Objects
+-------------------------
+.. toctree::
+   :maxdepth: 2
+   
+   montepy.constants
+   montepy.exceptions
+   montepy.mcnp_object
+   montepy.utilities
+   montepy.input_parser

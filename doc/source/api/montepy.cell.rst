@@ -1,4 +1,4 @@
-montepy.cell module
+:class:`montepy.cell` -- A Region of Space in the Problem.
 ===================
 
 
