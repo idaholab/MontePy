@@ -1,3 +1,4 @@
+from collections.abc import Iterable, Callable
 from numbers import Real, Integral
 from typing import Annotated
 
