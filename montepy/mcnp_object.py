@@ -452,6 +452,13 @@ The new input was:\n\n"""
 
     @_problem.setter
     def _problem(self, problem):
+        """
+        The problem this object is associated with if any.
+
+        Returns
+        -------
+        montepy.MCNP_Problem | None
+        """
         if problem is None:
             self._problem_ref = None
             return
