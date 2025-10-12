@@ -14,6 +14,7 @@ from montepy.constants import DEFAULT_VERSION
 from montepy.materials import Material, Materials
 from montepy.surfaces import surface, surface_builder
 from montepy.surface_collection import Surfaces
+from montepy.data_inputs.data_input import DataInputAbstract
 
 # weird way to avoid circular imports
 from montepy.data_inputs import parse_data
@@ -613,8 +614,8 @@ class MCNP_Problem:
                     for line in lines:
                         inp.write(line + "\n")
 
-                # writing cell data in DATA BLOCK if needed otherwise adding termination line
-                if obj.__class__.__module__.startswith("montepy.data_inputs"):
+                # writing cell data in DATA BLOCK if the last written object inherits DataInputAbstract and there is cell data to write
+                if isinstance(obj, (DataInputAbstract)):
                     for line in self.cells._run_children_format_for_mcnp(
                         self.data_inputs, self.mcnp_version
                     ):
