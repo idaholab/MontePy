@@ -20,6 +20,10 @@ class Materials(NumberedDataObjectCollection):
     For example, ``problem.materials[1:10]`` will return a new `Materials` collection
     containing materials with numbers from 1 to 10, inclusive.
 
+    See also
+    --------
+    :class:`~montepy.numbered_object_collection.NumberedObjectCollection`
+
 
     Notes
     -----

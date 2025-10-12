@@ -303,7 +303,7 @@ However, the slicing behavior is different from standard Python lists. The indic
 used for slicing correspond to the object numbers, and the slice is inclusive of the endpoint.
 
 For example, ``problem.cells[1:3]`` will return a new ``Cells`` collection containing
-cells with the numbers 1, 2, and 3, if they exist.
+cells with the numbers 1, 2, and 3, *if* they exist.
 
 .. testcode::
 

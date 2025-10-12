@@ -11,8 +11,13 @@ class Cells(NumberedObjectCollection):
 
     This collection can be sliced to get a subset of the cells.
     Slicing is done based on the cell numbers, not their order in the input.
-    For example, ``problem.cells[1:10]`` will return a new `Cells` collection
-    containing cells with numbers from 1 to 10, inclusive.
+    For example, ``problem.cells[1:3]`` will return a new `Cells` collection
+    containing cells with numbers from 1 to 3, inclusive.
+
+    See also
+    --------
+    :class:`~montepy.numbered_object_collection.NumberedObjectCollection`
+
 
     Notes
     -----
