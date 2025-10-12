@@ -230,10 +230,9 @@ Here is the docstrings for :class:`~montepy.cell.Cell`.
 Adding New Object to Website
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-The Sphinx website uses `autodoc <https://www.sphinx-doc.org/en/master/usage/extensions/autodoc.html>`_ to add the doc strings to the website, 
-but not ``apidoc``.
-Each new file will needs its own ``rst`` file in ``doc/source/api``.
-See ``doc/source/api/montepy.cell.rst`` as an example.
+The Sphinx website uses `autosummary <https://www.sphinx-doc.org/es/master/usage/extensions/autosummary.html#generating-stub-pages-automatically>_`.
+Each class or module must be pointed to in ``doc/source/api/modules.rst``, 
+it is preferable to point to the classes themselves, and not the modules.
 
 Testing
 -------
