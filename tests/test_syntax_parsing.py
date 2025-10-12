@@ -1477,6 +1477,7 @@ bar
         # Define constants for better readability and maintainability
         INPUT_FILE = "tests/inputs/test_pin_cell_extra_block_warning.imcnp"
         EXPECTED_LINE = 34
+        EXPECTED_CONTENT = "M101   92235.80c 0.04\n       92238.80c 0.96\n"
         EXPECTED_WARNING_TYPE = UndefinedBlock
 
         # Setup: Use the common pattern for defining the generator
@@ -1495,8 +1496,9 @@ bar
             warning.category, EXPECTED_WARNING_TYPE
         ), f"Expected warning type {EXPECTED_WARNING_TYPE}, but got {warning.category}"
         assert (
-            str(warning.message) == f"Unexpected input after line {EXPECTED_LINE}"
-        ), f"Expected warning message 'Unexpected input after line {EXPECTED_LINE}', but got '{str(warning.message)}'"
+            str(warning.message)
+            == f"Unexpected input after line {EXPECTED_LINE}\n line content: {EXPECTED_CONTENT}"
+        ), f"Expected warning message 'Unexpected input after line {EXPECTED_LINE}\n line content: {EXPECTED_CONTENT}', but got '{str(warning.message)}'"
 
 
 class TestClassifierNode:
