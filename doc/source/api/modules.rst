@@ -5,10 +5,11 @@ MontePy API
 Base Problem
 ------------
 
-.. toctree::
-   :maxdepth: 1
+.. autosummary::
+   :toctree:
+   :template: myclass.rst
 
-   montepy.mcnp_problem
+   montepy.mcnp_problem.MCNP_Problem
 
 Base Objects
 ------------
