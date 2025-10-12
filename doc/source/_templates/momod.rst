@@ -1,9 +1,8 @@
 {{ fullname }}
 {{ underline }}
 
-.. currentmodule:: {{ module }}
 
-.. autoclass:: {{ objname }}
+.. automodule:: {{ objname }}
     :members:
     :inherited-members:
     :undoc-members:

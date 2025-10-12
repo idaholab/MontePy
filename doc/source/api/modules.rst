@@ -6,105 +6,126 @@ Base Problem
 ------------
 
 .. autosummary::
-   :toctree:
+   :toctree: generated
    :nosignatures:
    :template: myclass.rst
 
    montepy.MCNP_Problem
+   montepy.read_input
 
 Base Objects
 ------------
 
 .. autosummary::
-   :toctree:
+   :toctree: generated
+   :nosignatures:
    :template: myclass.rst
-
+   
    montepy.Cell
    montepy.Universe
 
 Collections
 -----------
 
-.. toctree::
-   :maxdepth: 1
+.. autosummary::
+   :toctree: generated
+   :nosignatures:
+   :template: myclass.rst
 
-   montepy.cells
-   montepy.materials
-   montepy.surface_collection
-   montepy.transforms
-   montepy.universes
+   montepy.Cells
+   montepy.Materials
+   montepy.Surfaces
+   montepy.Transforms
+   montepy.Universes
 
-Surfaces
---------
+Surface Objects
+---------------
 
 General Surface utilities
 ^^^^^^^^^^^^^^^^^^^^^^^^^
 
-.. toctree::
-   :maxdepth: 1
+.. autosummary::
+   :toctree: generated
+   :nosignatures:
+   :template: myclass.rst
 
-   montepy.surfaces.surface
-   montepy.surfaces.half_space
+   montepy.Surface
+   montepy.HalfSpace
 
 
 Cylinders 
 ^^^^^^^^^
 
-.. toctree::
-   :maxdepth: 1
+.. autosummary::
+   :toctree: generated
+   :nosignatures:
+   :template: myclass.rst
 
-   montepy.surfaces.cylinder_par_axis
-   montepy.surfaces.cylinder_on_axis
+   montepy.CylinderParAxis
+   montepy.CylinderOnAxis
 
 Planes 
 ^^^^^^
 
-.. toctree::
-   :maxdepth: 1
+.. autosummary::
+   :toctree: generated
+   :nosignatures:
+   :template: myclass.rst
 
-   montepy.surfaces.general_plane
-   montepy.surfaces.axis_plane
+   montepy.GeneralPlane
+   montepy.AxisPlane
 
 
 Data Inputs
 -----------
 
+Materials
+^^^^^^^^^
+
+.. autosummary::
+   :toctree: generated
+   :nosignatures:
+   :template: myclass.rst
+   
+   montepy.Element
+   montepy.Material
+   montepy.Nuclide
+   montepy.ThermalScatteringLaw
+   
+
+
 Cell Modifiers
 ^^^^^^^^^^^^^^
 
-.. toctree::
-   :maxdepth: 1
+.. note:: 
+
+   You will rarely create these directly,
+   rather use the corresponding property in :class:`montepy.Cell`.
+
+.. autosummary::
+   :toctree: generated
+   :nosignatures:
+   :template: myclass.rst
    
 
-   montepy.data_inputs.fill
-   montepy.data_inputs.importance
-   montepy.data_inputs.lattice
-   montepy.data_inputs.lattice_input
-   montepy.data_inputs.universe_input
-   montepy.data_inputs.volume
+   montepy.data_inputs.fill.Fill
+   montepy.data_inputs.importance.Importance
+   montepy.data_inputs.lattice.LatticeType
+   montepy.data_inputs.lattice_input.LatticeInput
+   montepy.data_inputs.universe_input.UniverseInput
+   montepy.data_inputs.volume.Volume
 
-materials
-^^^^^^^^^
-
-
-.. toctree::
-   :maxdepth: 1
-   
-   montepy.data_inputs.element
-   montepy.data_inputs.isotope
-   montepy.data_inputs.material
-   montepy.data_inputs.material_component
-   montepy.data_inputs.nuclide
-   montepy.data_inputs.thermal_scattering
 
 Misc.
 ^^^^^
 
-.. toctree::
-   :maxdepth: 1
+.. autosummary::
+   :toctree: generated
+   :nosignatures:
+   :template: myclass.rst
    
-   montepy.data_inputs.mode
-   montepy.data_inputs.transform
+   montepy.Mode
+   montepy.Transform
 
 Developer Focused Objects
 -------------------------
@@ -112,67 +133,122 @@ Developer Focused Objects
 Abstract Classes
 ^^^^^^^^^^^^^^^^
 
-.. toctree::
-   :maxdepth: 1
+.. autosummary::
+   :toctree: generated
+   :nosignatures:
+   :template: myclass.rst
    
-   montepy.mcnp_object
-   montepy.data_inputs.cell_modifier
-   montepy.data_inputs.data_input
-   montepy.geometry_operators
-   montepy.numbered_mcnp_object
-   montepy.numbered_object_collection
+   montepy.mcnp_object.MCNP_Object
+   montepy.data_inputs.cell_modifier.CellModifier
+   montepy.data_inputs.data_input.DataInputAbstract
+   montepy.numbered_mcnp_object.Numbered_MCNP_Object
+   montepy.numbered_object_collection.NumberedObjectCollection
 
+# TODO grab hidden things
+
+Enumerations
+^^^^^^^^^^^^
+
+.. autosummary::
+   :toctree: generated
+   :nosignatures:
+   :template: myclass.rst
+
+   montepy.geometry_operators.Operator
+   montepy.particle.Particle
+   montepy.SurfaceType
+   montepy.input_parser.shortcuts.Shortcuts
+   montepy.input_parser.block_type.BlockType
 
 Universal Utilities and constants
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-.. toctree::
-   :maxdepth: 1
+.. autosummary::
+   :toctree: generated
+   :nosignatures:
 
    montepy.constants
    montepy.exceptions
-   montepy.particle
-   montepy.surfaces.surface_type
    montepy.utilities
+
+# TODO grab hidden things
    
 Object Builders
 ^^^^^^^^^^^^^^^
 
-.. toctree::
-   :maxdepth: 1
+.. autosummary::
+   :toctree: generated
+   :nosignatures:
 
-   montepy.data_inputs.data_parser
-   montepy.input_parser.input_reader
+   montepy.data_inputs.data_parser.parse_data
    montepy.input_parser.input_syntax_reader
-   montepy.surfaces.surface_builder
-
-Parsers 
-^^^^^^^
-
-.. toctree::
-   :maxdepth: 1
-
-   montepy.input_parser.parser_base
-   montepy.input_parser.cell_parser
-   montepy.input_parser.data_parser
-   montepy.input_parser.material_parser
-   montepy.input_parser.read_parser
-   montepy.input_parser.surface_parser
-   montepy.input_parser.tally_parser
-   montepy.input_parser.tally_seg_parser
-   montepy.input_parser.thermal_parser
-   montepy.input_parser.tokens
-
+   montepy.surfaces.surface_builder.parse_surface
 
 Parser Data Types
 ^^^^^^^^^^^^^^^^^
 
-.. toctree::
-   :maxdepth: 1
+.. autosummary::
+   :toctree: generated
+   :nosignatures:
+   :template: myclass.rst
 
-   montepy.input_parser.block_type
-   montepy.input_parser.input_file
-   montepy.input_parser.mcnp_input
-   montepy.input_parser.shortcuts
-   montepy.input_parser.syntax_node
+   montepy.input_parser.input_file.MCNP_InputFile
+   montepy.input_parser.mcnp_input.Input
+   montepy.input_parser.mcnp_input.Jump
+   montepy.input_parser.mcnp_input.Message
+   montepy.input_parser.mcnp_input.ParsingNode
+   montepy.input_parser.mcnp_input.ReadInput
+   montepy.input_parser.mcnp_input.Title
+   montepy.input_parser.syntax_node.ClassifierNode
+   montepy.input_parser.syntax_node.CommentNode
+   montepy.input_parser.syntax_node.GeometryTree
+   montepy.input_parser.syntax_node.ListNode
+   montepy.input_parser.syntax_node.MaterialsNode
+   montepy.input_parser.syntax_node.PaddingNode
+   montepy.input_parser.syntax_node.ParametersNode
+   montepy.input_parser.syntax_node.ParticleNode
+   montepy.input_parser.syntax_node.ShortcutNode
+   montepy.input_parser.syntax_node.SyntaxNode
+   montepy.input_parser.syntax_node.SyntaxNodeBase
+   montepy.input_parser.syntax_node.ValueNode
 
+# TODO grab hidden things
+
+Parsers 
+^^^^^^^
+
+.. autosummary::
+   :toctree: generated
+   :nosignatures:
+   :template: myclass.rst
+
+   montepy.input_parser.parser_base.ParserBase
+   montepy.input_parser.cell_parser.CellParser
+   montepy.input_parser.data_parser.DataParser
+   montepy.input_parser.data_parser.ClassifierParser
+   montepy.input_parser.data_parser.ParamsOnlyDataParser
+   montepy.input_parser.material_parser.MaterialParser
+   montepy.input_parser.read_parser.ReadParser
+   montepy.input_parser.surface_parser.SurfaceParser
+   montepy.input_parser.tally_parser.TallyParser
+   montepy.input_parser.tally_seg_parser.TallySegParser
+   montepy.input_parser.thermal_parser.ThermalParser
+   montepy.input_parser.tokens.MCNP_Lexer
+   montepy.input_parser.tokens.ParticleLexer
+   montepy.input_parser.tokens.CellLexer
+   montepy.input_parser.tokens.DataLexer
+   montepy.input_parser.tokens.SurfaceLexer
+
+
+
+
+Deprecated Objects
+------------------
+
+.. autosummary::
+   :toctree: generated
+   :nosignatures:
+   :template: myclass.rst
+
+   montepy.data_inputs.isotope.Isotope
+   montepy.data_inputs.material_component.MaterialComponent
