@@ -139,12 +139,16 @@ Abstract Classes
    :template: myclass.rst
    
    montepy.mcnp_object.MCNP_Object
-   montepy.data_inputs.cell_modifier.CellModifier
+   montepy.data_inputs.cell_modifier.CellModifierInput
    montepy.data_inputs.data_input.DataInputAbstract
    montepy.data_inputs.data_input.ForbiddenDataInput
    montepy.numbered_mcnp_object.Numbered_MCNP_Object
    montepy.numbered_object_collection.NumberedDataObjectCollection
    montepy.numbered_object_collection.NumberedObjectCollection
+   montepy.mcnp_object._ExceptionContextAdder
+   montepy.input_parser.parser_base.MetaBuilder
+   montepy.input_parser.parser_base.SLY_Supressor
+
 
 
 Enumerations
@@ -221,16 +225,16 @@ Parsers
    :nosignatures:
    :template: myclass.rst
 
-   montepy.input_parser.parser_base.ParserBase
+   montepy.input_parser.parser_base.MCNP_Parser
    montepy.input_parser.cell_parser.CellParser
    montepy.input_parser.data_parser.DataParser
    montepy.input_parser.data_parser.ClassifierParser
-   montepy.input_parser.data_parser.ParamsOnlyDataParser
+   montepy.input_parser.data_parser.ParamOnlyDataParser
    montepy.input_parser.material_parser.MaterialParser
    montepy.input_parser.read_parser.ReadParser
    montepy.input_parser.surface_parser.SurfaceParser
    montepy.input_parser.tally_parser.TallyParser
-   montepy.input_parser.tally_seg_parser.TallySegParser
+   montepy.input_parser.tally_seg_parser.TallySegmentParser
    montepy.input_parser.thermal_parser.ThermalParser
    montepy.input_parser.tokens.MCNP_Lexer
    montepy.input_parser.tokens.ParticleLexer
