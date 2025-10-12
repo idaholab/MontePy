@@ -141,10 +141,11 @@ Abstract Classes
    montepy.mcnp_object.MCNP_Object
    montepy.data_inputs.cell_modifier.CellModifier
    montepy.data_inputs.data_input.DataInputAbstract
+   montepy.data_inputs.data_input.ForbiddenDataInput
    montepy.numbered_mcnp_object.Numbered_MCNP_Object
+   montepy.numbered_object_collection.NumberedDataObjectCollection
    montepy.numbered_object_collection.NumberedObjectCollection
 
-# TODO grab hidden things
 
 Enumerations
 ^^^^^^^^^^^^
@@ -171,7 +172,6 @@ Universal Utilities and constants
    montepy.exceptions
    montepy.utilities
 
-# TODO grab hidden things
    
 Object Builders
 ^^^^^^^^^^^^^^^
@@ -212,7 +212,6 @@ Parser Data Types
    montepy.input_parser.syntax_node.SyntaxNodeBase
    montepy.input_parser.syntax_node.ValueNode
 
-# TODO grab hidden things
 
 Parsers 
 ^^^^^^^
