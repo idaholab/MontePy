@@ -143,26 +143,27 @@ def read_data(fh, mcnp_version, block_type=None, recursion=False):
     continue_input = False
     has_non_comments = False
     input_raw_lines = []
-    block_length = -1
+    terminate_reading = False
 
     def flush_block():
         nonlocal block_counter, block_type
-        if len(input_raw_lines) > 0:
-            # warn once for extra blocks
-            if block_counter == 3:
-                warnings.warn(
-                    f"Unexpected input after line {current_file.lineno-block_length}",
-                    UndefinedBlock,
-                    stacklevel=2,
-                )
-
+        # keep parsing while there is input or termination has not been triggered
+        if len(input_raw_lines) > 0 and not terminate_reading:
             yield from flush_input()
         block_counter += 1
         if block_counter < 3:
             block_type = BlockType(block_counter)
 
     def flush_input():
-        nonlocal input_raw_lines
+        nonlocal input_raw_lines, terminate_reading
+        # IF 3  BLOCKS are parsed, the rest should be ignored with a warning and print 3 lines
+        if block_counter == 3:
+            warnings.warn(
+                f"Unexpected input after line {current_file.lineno-1}\n line content: {'\n'.join(input_raw_lines[0:3])}\n",
+                UndefinedBlock,
+                stacklevel=6,
+            )
+            terminate_reading = True
         start_line = current_file.lineno + 1 - len(input_raw_lines)
         input = Input(
             input_raw_lines,
@@ -241,8 +242,6 @@ def read_data(fh, mcnp_version, block_type=None, recursion=False):
         else:
             continue_input = False
         has_non_comments = has_non_comments or not line_is_comment
-        if block_counter == 3:
-            block_length += 1
         input_raw_lines.append(line.rstrip())
     yield from flush_block()
 
