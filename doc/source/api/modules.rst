@@ -7,18 +7,20 @@ Base Problem
 
 .. autosummary::
    :toctree:
+   :nosignatures:
    :template: myclass.rst
 
-   montepy.mcnp_problem.MCNP_Problem
+   montepy.MCNP_Problem
 
 Base Objects
 ------------
 
-.. toctree::
-   :maxdepth: 1
+.. autosummary::
+   :toctree:
+   :template: myclass.rst
 
-   montepy.cell
-   montepy.universe
+   montepy.Cell
+   montepy.Universe
 
 Collections
 -----------
