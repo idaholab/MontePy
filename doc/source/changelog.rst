@@ -23,6 +23,10 @@ MontePy Changelog
 
 * Dropped support for python 3.9 through 3.11, and numpy 1.26 in order to comply with `SPEC 0 <https://scientific-python.org/specs/spec-0000/>`_ (:issue:`780`).
 
+**Documentation**
+
+* Reorganized Python API documentation. Some hyperlinks may be broken now (:pull:`828`).
+
 1.1 releases
 ============
 
