@@ -18,7 +18,7 @@ MontePy Changelog
 
 * Added descriptive TypeError messages (:issue:`801`)
 
-
+* Fixed but with cell data writting in DATA BLOCK, removed redundant line termination
 
 1.1.2
 --------------
