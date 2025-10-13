@@ -95,7 +95,7 @@ class Importance(CellModifierInput):
             particles.particles = self._problem.mode.particles
         classifier.particles = particles
         list_node = syntax_node.ListNode("imp data")
-        list_node.append(self._generate_default_node(float, 0.0))
+        list_node.append(self._generate_default_node(float, 1.0))
         tree = syntax_node.SyntaxNode(
             "Importance",
             {
@@ -163,7 +163,7 @@ class Importance(CellModifierInput):
             val = self._particle_importances[particle]["data"][0]
             return val.value
         except KeyError:
-            return 0.0
+            return 1.0
 
     def __setitem__(self, particle, value):
         if not isinstance(particle, Particle):
