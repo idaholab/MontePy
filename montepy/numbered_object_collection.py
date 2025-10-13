@@ -20,6 +20,7 @@ def _enforce_positive(self, num):
 class NumberedObjectCollection(ABC):
     """A collections of MCNP objects.
 
+
     .. _collect ex:
 
     Examples
@@ -1138,6 +1139,19 @@ class NumberedObjectCollection(ABC):
 
 
 class NumberedDataObjectCollection(NumberedObjectCollection):
+    """
+    This is a an abstract collection for numbered objects that are also Data Inputs.
+
+    This collection can be sliced to get a subset of the numberedDataObjectCollection.
+    Slicing is done based on the numberedDataObjectCollection numbers, not their order in the input.
+    For example, ``problem.numberedDataObjectCollection[1:3]`` will return a new `numberedDataObjectCollection`
+    containing numberedDataObjectCollection with numbers from 1 to 3, inclusive.
+
+    See also
+    --------
+    :class:`~montepy.numbered_object_collection.NumberedObjectCollection`
+    """
+
     def __init__(self, obj_class, objects=None, problem=None):
         self._last_index = None
         if problem and objects:

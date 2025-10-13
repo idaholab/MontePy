@@ -11,6 +11,9 @@ MontePy Changelog
 
 * Added checking for additional input after the ``data`` block, and raising a warning if it exists.
 
+**Documentation**
+
+* Improved documentation for NumberedObjectCollections on Slicing behavior. (:issue:`798`)
 
 **Bugs Fixed**
 
