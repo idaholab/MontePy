@@ -1140,6 +1140,8 @@ class NumberedObjectCollection(ABC):
 
 class NumberedDataObjectCollection(NumberedObjectCollection):
     """
+    This is a an abstract collection for numbered objects that are also Data Inputs.
+
     This collection can be sliced to get a subset of the numberedDataObjectCollection.
     Slicing is done based on the numberedDataObjectCollection numbers, not their order in the input.
     For example, ``problem.numberedDataObjectCollection[1:3]`` will return a new `numberedDataObjectCollection`
