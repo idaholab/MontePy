@@ -10,10 +10,10 @@ jobs:
     runs-on: ubuntu-latest    
     steps:
       - uses: actions/checkout@v5
-      - name: set up python  3.12
+      - name: set up python  3.14
         uses: actions/setup-python@v6
         with: 
-          python-version: 3.12
+          python-version: 3.14
       - run: pip install . montepy[develop]
       - run: python -m pytest
       
@@ -31,10 +31,10 @@ jobs:
         with:
           fetch-depth: 0
           fetch-tags: true
-      - name: set up python  3.12
+      - name: set up python  3.14
         uses: actions/setup-python@v6
         with: 
-          python-version: 3.12
+          python-version: 3.14
       - run: pip install . montepy[build]
       - name: Get Version
         id: get_version
@@ -102,6 +102,3 @@ jobs:
       - name: Publish distribution 📦 to PyPI
         uses: pypa/gh-action-pypi-publish@ed0c53931b1dc9bd32cbe73a98c7f6766f8a527e
 
-
-       
-        
