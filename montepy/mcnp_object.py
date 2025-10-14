@@ -479,6 +479,9 @@ The new input was:\n\n"""
         return self._tree.get_trailing_comment()
 
     def _delete_trailing_comment(self):
+        """
+        Deletes trailing comments from an object when it has been moved to another object.
+        """
         self._tree._delete_trailing_comment()
 
     def _grab_beginning_comment(self, padding: list[PaddingNode], last_obj=None):
