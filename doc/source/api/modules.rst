@@ -184,7 +184,9 @@ Object Builders
    :nosignatures:
 
    montepy.data_inputs.data_parser.parse_data
-   montepy.input_parser.input_syntax_reader
+   montepy.input_parser.input_syntax_reader.read_input_syntax
+   montepy.input_parser.input_syntax_reader.read_data
+   montepy.input_parser.input_syntax_reader.read_front_matters
    montepy.surfaces.surface_builder.parse_surface
 
 Parser Data Types
