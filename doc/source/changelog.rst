@@ -13,7 +13,8 @@ MontePy Changelog
 
 * Make `LatticeType.RECTANGULAR` and `LatticeType.HEXAHEDRAL` synonymous (:issue:`808`).
 * Allow setting ``cell.fill.universes`` with a numpy array of universe IDs (:issue:`736`).
-
+* Added Boundary condition type to the representation of a ``montepy.Surface`` (e.g., ``repr(surf)``)  (:issue:`682`).
+* Changed default importance value from 0.0 to 1.0 to match MCNP defaults. (:issue:`735`)
 **Bugs Fixed**
 
 * Fixed bug where lines that were the allowed length was raising a ``LineOverRunWarning`` when read by MontePy (:issue:`517`). 
@@ -37,9 +38,7 @@ MontePy Changelog
 1.1.3
 --------------
 
-**Features**
 
-* Changed default importance value from 0.0 to 1.0 to match MCNP defaults. (:issue:`735`)
 
 **Documentation**
 
