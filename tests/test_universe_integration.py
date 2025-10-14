@@ -55,7 +55,7 @@ def test_fill_setter(cells):
 
 def test_lattice_setter(cells):
     for basic_cell in cells:
-        basic_cell.lattice_type = montepy.data_inputs.lattice.LatticeType.HEXAHEDRAL
+        basic_cell.lattice_type = montepy.data_inputs.lattice.LatticeType.RECTANGULAR
         cell_verify(basic_cell)
 
 
@@ -63,7 +63,7 @@ def test_uni_fill_latt_setter(cells):
     for basic_cell in cells:
         base_uni = montepy.Universe(1)
         lat_uni = montepy.Universe(2)
-        basic_cell.lattice_type = montepy.data_inputs.lattice.LatticeType.HEXAHEDRAL
+        basic_cell.lattice_type = montepy.data_inputs.lattice.LatticeType.RECTANGULAR
         basic_cell.fill.universe = base_uni
         basic_cell.universe = lat_uni
         cell_verify(basic_cell)
@@ -91,7 +91,7 @@ def test_mc_workshop_edge_case():
     unit_cell.geometry &= -z_top_surf & +z_bot_surf
     unit_cell.importance.neutron = 1.0
     # set fill and stuff
-    unit_cell.lattice_type = montepy.data_inputs.lattice.LatticeType.HEXAHEDRAL
+    unit_cell.lattice_type = montepy.data_inputs.lattice.LatticeType.RECTANGULAR
     unit_cell.fill.universe = universe
     # assign to own universe
     lat_universe = montepy.Universe(5)
