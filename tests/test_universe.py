@@ -246,12 +246,16 @@ class TestLattice:
         out = repr(lattice)
         assert "in_cell: True" in out
         assert "set_in_block: True" in out
-        assert "Lattice_values : LatticeType.HEXAHEDRAL" in out
+        assert "Lattice_values : LatticeType.RECTANGULAR" in out
 
     def test_deprecated_lattice(self):
+        assert (
+            montepy.data_inputs.lattice.LatticeType.HEXAHEDRAL
+            is montepy.data_inputs.lattice.LatticeType.RECTANGULAR
+        )
         with pytest.warns(DeprecationWarning, match="HEXAGONAL"):
             montepy.data_inputs.lattice.Lattice.HEXAGONAL
-        with pytest.warns(DeprecationWarning, match="HEXAHEDRAL"):
+        with pytest.warns(DeprecationWarning, match="RECTANGULAR"):
             lattype = montepy.data_inputs.lattice.Lattice.HEXAHEDRA
         cell = montepy.Cell()
         with pytest.warns(DeprecationWarning):
@@ -410,7 +414,43 @@ class TestFill:
         with pytest.raises(ValueError):
             fill.universes = np.array([1, 2])
         with pytest.raises(TypeError):
+            fill.universes = np.array([[["hi"]]])
+
+        with pytest.raises(IllegalState):
             fill.universes = np.array([[[1]]])
+
+        # Test setting universes with integer IDs when a problem is attached
+        problem = montepy.MCNP_Problem("test")
+        uni1 = montepy.Universe(1)
+        problem.universes.append(uni1)
+        cell = montepy.Cell(number=1)
+        problem.cells.append(cell)
+        cell.fill.universes = np.array([[[1, 0]]])
+        assert cell.fill.universes[0, 0, 0] is uni1
+        assert cell.fill.universes[0, 0, 1] is None
+
+        # Test that it raises IllegalState when no problem is attached
+        cell_no_problem = montepy.Cell(number=2)
+        with pytest.raises(IllegalState):
+            cell_no_problem.fill.universes = np.array([[[1]]])
+
+        # Test that it raises KeyError for bad IDs
+        with pytest.raises(KeyError):
+            cell.fill.universes = np.array([[[999]]])
+
+        # Test that it raises ValueError for non-3D array
+        with pytest.raises(ValueError):
+            cell.fill.universes = np.array([1, 2])
+
+        # Test that it raises TypeError for wrong data type in array
+        with pytest.raises(TypeError):
+            cell.fill.universes = np.array([[["a", "b"]]])
+
+        # Test setting universes to None
+        cell.fill.universes = None
+        assert cell.fill.universes is None
+        assert cell.fill.multiple_universes is False
+        assert cell.fill.universe is None
 
     def test_fill_str(self, complicated_fill):
         fill = copy.deepcopy(complicated_fill)

@@ -3,7 +3,6 @@ import argparse
 import glob
 import montepy
 from pathlib import Path
-import sys
 
 """
 Module to make module executable from CLI.
