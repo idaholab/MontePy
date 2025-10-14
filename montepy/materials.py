@@ -15,6 +15,16 @@ Material = montepy.data_inputs.material.Material
 class Materials(NumberedDataObjectCollection):
     """A container of multiple :class:`~montepy.data_inputs.material.Material` instances.
 
+    This collection can be sliced to get a subset of the materials.
+    Slicing is done based on the material numbers, not their order in the input.
+    For example, ``problem.materials[1:10]`` will return a new `Materials` collection
+    containing materials with numbers from 1 to 10, inclusive.
+
+    See also
+    --------
+    :class:`~montepy.numbered_object_collection.NumberedObjectCollection`
+
+
     Notes
     -----
     When items are added to this (and this object is linked to a problem),
