@@ -8,13 +8,17 @@ MontePy Changelog
 #Next Release#
 --------------
 
+**Features**
+
+* Changed default importance value from 0.0 to 1.0 to match MCNP defaults. (:issue:`735`)
+
 **Documentation**
 
 * Improved documentation for NumberedObjectCollections on Slicing behavior. (:issue:`798`)
 
 **Bugs Fixed**
 
-* Fixed bug where lines that were the allowed length was raising a ``LineOverRunWarning`` when read by MontePy (:issue:`517`). 
+* Fixed bug where lines that were the allowed length was raising a ``LineOverRunWarning`` when read by MontePy (:issue:`517`).
 
 * Added descriptive TypeError messages (:issue:`801`)
 
