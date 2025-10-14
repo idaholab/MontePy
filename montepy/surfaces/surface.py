@@ -330,11 +330,18 @@ class Surface(Numbered_MCNP_Object):
         return f"SURFACE: {self.number}, {self.surface_type}"
 
     def __repr__(self):
+        if self.is_reflecting:
+            boundary = "reflecting"
+        elif self.is_white_boundary:
+            boundary = "white"
+        else:
+            boundary = "None"
         return (
             f"SURFACE: {self.number}, {self.surface_type}, "
             f"periodic surface: {self.periodic_surface}, "
             f"transform: {self.transform}, "
-            f"constants: {self.surface_constants}"
+            f"constants: {self.surface_constants}, "
+            f"Boundary: {boundary}"
         )
 
     def update_pointers(self, surfaces, data_inputs):

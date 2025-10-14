@@ -8,6 +8,10 @@ MontePy Changelog
 #Next Release#
 --------------
 
+**Features Added**
+
+* Added Boundary condition type to ``__repr__`` for ``surfaces``  (:issue:`682`).
+
 **Documentation**
 
 * Improved documentation for NumberedObjectCollections on Slicing behavior. (:issue:`798`)
