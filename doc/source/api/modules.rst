@@ -168,9 +168,8 @@ Enumerations
 Universal Utilities and constants
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-.. autosummary::
-   :toctree: generated
-   :nosignatures:
+.. toctree::
+   :maxdepth: 1
 
    montepy.constants
    montepy.exceptions
