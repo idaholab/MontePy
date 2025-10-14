@@ -238,20 +238,26 @@ def test_surface_format_for_mcnp():
 
 
 def test_surface_str():
-    surf = Surface("+1 PZ 0.0")
-    assert str(surf) == "SURFACE: 1, PZ"
+    surf_white = Surface("+1 PZ 0.0")
+    assert str(surf_white) == "SURFACE: 1, PZ"
     assert (
-        repr(surf)
+        repr(surf_white)
         == "SURFACE: 1, PZ, periodic surface: None, transform: None, constants: [0.0], Boundary: White"
     )
 
-
-def test_surface_reflective():
-    surf = Surface("*1 PZ 0.0")
-    assert str(surf) == "SURFACE: 1, PZ"
+    surf_ref = Surface("*1 PZ 0.0")
+    assert str(surf_ref) == "SURFACE: 1, PZ"
     assert (
-        repr(surf)
+        repr(surf_ref)
         == "SURFACE: 1, PZ, periodic surface: None, transform: None, constants: [0.0], Boundary: Reflective"
+    )
+
+    surf_ref.is_reflecting = False
+    surf_ref.is_white_boundary = False
+    assert str(surf_ref) == "SURFACE: 1, PZ"
+    assert (
+        repr(surf_ref)
+        == "SURFACE: 1, PZ, periodic surface: None, transform: None, constants: [0.0], Boundary: None"
     )
 
 

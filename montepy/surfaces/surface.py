@@ -330,11 +330,11 @@ class Surface(Numbered_MCNP_Object):
         return f"SURFACE: {self.number}, {self.surface_type}"
 
     def __repr__(self):
-        boundary = (
-            "Reflective"
-            if self.is_reflecting
-            else "White" if self.is_white_boundary else "None"
-        )
+        boundary = "None"
+        if self.is_reflecting:
+            boundary = "Reflective"
+        elif self.is_white_boundary:
+            boundary = "White"
         return (
             f"SURFACE: {self.number}, {self.surface_type}, "
             f"periodic surface: {self.periodic_surface}, "

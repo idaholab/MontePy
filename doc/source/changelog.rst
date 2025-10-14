@@ -10,7 +10,7 @@ MontePy Changelog
 
 **Features Added**
 
-* Added Boundary condition type to ``__repr__`` for ``surfaces``  (:issue:`682`).
+* Added Boundary condition type to the representation of a ``montepy.Surface`` (e.g., ``repr(surf)``)  (:issue:`682`).
 
 **Documentation**
 
