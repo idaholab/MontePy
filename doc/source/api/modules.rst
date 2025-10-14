@@ -172,6 +172,7 @@ Universal Utilities and constants
    :toctree: generated
    :nosignatures:
 
+   montepy.constants
    montepy.exceptions
    montepy.utilities
 
