@@ -8,6 +8,9 @@ MontePy Changelog
 #Next Version#
 --------------
 
+**Documentation**
+
+* Improved documentation for NumberedObjectCollections on Slicing behavior. (:issue:`798`)
 
 **Features Added**
 

@@ -8,6 +8,15 @@ from montepy.data_inputs.transform import Transform
 class Transforms(NumberedDataObjectCollection):
     """A container of multiple :class:`~montepy.data_inputs.transform.Transform` instances.
 
+    This collection can be sliced to get a subset of the Transforms.
+    Slicing is done based on the Transform numbers, not their order in the input.
+    For example, ``problem.transforms[1:3]`` will return a new `Transforms` collection
+    containing Transforms with numbers from 1 to 3, inclusive.
+
+    See also
+    --------
+    :class:`~montepy.numbered_object_collection.NumberedObjectCollection`
+
     Notes
     -----
 
