@@ -242,7 +242,16 @@ def test_surface_str():
     assert str(surf) == "SURFACE: 1, PZ"
     assert (
         repr(surf)
-        == "SURFACE: 1, PZ, periodic surface: None, transform: None, constants: [0.0]"
+        == "SURFACE: 1, PZ, periodic surface: None, transform: None, constants: [0.0], Boundary: White"
+    )
+
+
+def test_surface_reflective():
+    surf = Surface("*1 PZ 0.0")
+    assert str(surf) == "SURFACE: 1, PZ"
+    assert (
+        repr(surf)
+        == "SURFACE: 1, PZ, periodic surface: None, transform: None, constants: [0.0], Boundary: Reflective"
     )
 
 
