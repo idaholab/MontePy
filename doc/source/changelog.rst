@@ -37,6 +37,10 @@ MontePy Changelog
 1.1.3
 --------------
 
+**Features Added**
+
+* Added Boundary condition type to the representation of a ``montepy.Surface`` (e.g., ``repr(surf)``)  (:issue:`682`).
+
 **Documentation**
 
 * Improved documentation for NumberedObjectCollections on Slicing behavior. (:issue:`798`)
