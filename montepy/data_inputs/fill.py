@@ -348,7 +348,10 @@ class Fill(CellModifierInput):
             self._universes = None
             return
 
-        if value.ndim != 3:
+        if value.ndim == 2:
+            value = np.expand_dims(value, axis=2)
+
+        elif value.ndim < 2 or value.ndim > 3:
             raise ValueError(
                 f"3D array must be given for fill.universes. Array of shape: {value.shape} given."
             )
