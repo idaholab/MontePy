@@ -10,6 +10,7 @@ from . import surface_builder
 from .axis_plane import AxisPlane
 from .cylinder_par_axis import CylinderParAxis
 from .cylinder_on_axis import CylinderOnAxis
+from .general_plane import GeneralPlane
 from .half_space import HalfSpace, UnitHalfSpace
 from .surface import Surface
 from .surface_type import SurfaceType

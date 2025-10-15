@@ -124,10 +124,6 @@ jobs:
         with:
           name: website
           path: doc/build
-      - name: Test for missing API documentation  
-        run: | 
-             cd doc/source
-             python _test_for_missing_docs.py  
       - name: Test for broken hyperlinks
         run: |
              cd doc

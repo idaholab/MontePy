@@ -295,6 +295,28 @@ So say you want to access cell 2 from a problem it is accessible quickly by:
         SURFACE: 1020, PZ
         SURFACE: 1025, PZ
 
+Slicing Collections
+^^^^^^^^^^^^^^^^^^^
+
+Collections can be sliced to get a new collection containing a subset of objects.
+However, the slicing behavior is different from standard Python lists. The indices
+used for slicing correspond to the object numbers, and the slice is inclusive of the endpoint.
+
+For example, ``problem.cells[1:3]`` will return a new ``Cells`` collection containing
+cells with the numbers 1, 2, and 3, *if* they exist.
+
+.. testcode::
+
+    problem = montepy.read_input("tests/inputs/test.imcnp")
+    for cell in problem.cells[1:3]:
+        print(cell.number)
+
+.. testoutput::
+
+    1
+    2
+    3
+
 
 Collections are Iterable
 ^^^^^^^^^^^^^^^^^^^^^^^^

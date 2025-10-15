@@ -23,6 +23,7 @@ from montepy.data_inputs.transform import Transform
 from montepy.data_inputs.nuclide import Library, Nuclide
 from montepy.data_inputs.element import Element
 from montepy.data_inputs.lattice import LatticeType
+from montepy.data_inputs import Mode
 from montepy.data_inputs.thermal_scattering import ThermalScatteringLaw
 from montepy.data_inputs.data_parser import parse_data
 

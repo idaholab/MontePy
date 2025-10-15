@@ -98,7 +98,7 @@ class Numbered_MCNP_Object(MCNP_Object):
     def _add_children_objs(self, problem):
         """Adds all children objects from self to the given problem.
 
-        This is called from an append_hook in `NumberedObjectCollection`.
+        This is called from an :func:`~montepy.numbered_object_collection.NumberedObjectCollection._append_hook`.
         """
         # skip lambda transforms
         filters = {montepy.Transform: lambda transform: not transform.hidden_transform}

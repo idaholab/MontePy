@@ -389,6 +389,13 @@ The new input was:\n\n"""
 
     @_problem.setter
     def _problem(self, problem):
+        """
+        The problem this object is associated with if any.
+
+        Returns
+        -------
+        montepy.MCNP_Problem | None
+        """
         if problem is None:
             self._problem_ref = None
             return
@@ -409,6 +416,9 @@ The new input was:\n\n"""
         return self._tree.get_trailing_comment()
 
     def _delete_trailing_comment(self):
+        """
+        Deletes trailing comments from an object when it has been moved to another object.
+        """
         self._tree._delete_trailing_comment()
 
     def _grab_beginning_comment(self, padding: list[PaddingNode], last_obj=None):
