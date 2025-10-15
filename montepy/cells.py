@@ -6,7 +6,6 @@ from montepy._check_value import args_checked
 from montepy.exceptions import *
 from montepy.types import *
 
-from collections.abc import Iterable
 import warnings
 
 

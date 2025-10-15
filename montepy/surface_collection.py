@@ -1,9 +1,11 @@
 # Copyright 2024, Battelle Energy Alliance, LLC All Rights Reserved.
 from __future__ import annotations
 import montepy
+from montepy._check_value import args_checked
+from montepy.numbered_object_collection import NumberedObjectCollection
 from montepy.surfaces.surface import Surface
 from montepy.surfaces.surface_type import SurfaceType
-from montepy.numbered_object_collection import NumberedObjectCollection
+import montepy as ty
 
 
 def __create_surface_generator(surf_type):
@@ -61,7 +63,12 @@ class Surfaces(NumberedObjectCollection):
         the list of surfaces to start with if needed
     """
 
-    def __init__(self, surfaces: list = None, problem: montepy.MCNP_Problem = None):
+    @args_checked
+    def __init__(
+        self,
+        surfaces: ty.Iterable[Surface] = None,
+        problem: montepy.MCNP_Problem = None,
+    ):
         super().__init__(Surface, surfaces, problem)
 
 

@@ -1,8 +1,10 @@
 # Copyright 2024, Battelle Energy Alliance, LLC All Rights Reserved.
 from __future__ import annotations
 import montepy
-from montepy.numbered_object_collection import NumberedDataObjectCollection
+from montepy._check_value import args_checked
 from montepy.data_inputs.transform import Transform
+from montepy.numbered_object_collection import NumberedDataObjectCollection
+import montepy.types as ty
 
 
 class Transforms(NumberedDataObjectCollection):
@@ -23,5 +25,9 @@ class Transforms(NumberedDataObjectCollection):
     For examples see the ``NumberedObjectCollection`` :ref:`collect ex`.
     """
 
-    def __init__(self, objects: list = None, problem: montepy.MCNP_Problem = None):
+    def __init__(
+        self,
+        objects: ty.Iterable[Transform] = None,
+        problem: montepy.MCNP_Problem = None,
+    ):
         super().__init__(Transform, objects, problem)

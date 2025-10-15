@@ -1,8 +1,11 @@
 # Copyright 2024, Battelle Energy Alliance, LLC All Rights Reserved.
 from __future__ import annotations
+
 import montepy
+from montepy._check_value import args_checked
 from montepy.numbered_object_collection import NumberedObjectCollection
 from montepy.universe import Universe
+import montepy.types as ty
 
 
 class Universes(NumberedObjectCollection):
@@ -23,5 +26,10 @@ class Universes(NumberedObjectCollection):
     For examples see the ``NumberedObjectCollection`` :ref:`collect ex`.
     """
 
-    def __init__(self, objects: list = None, problem: montepy.MCNP_Problem = None):
+    @args_checked
+    def __init__(
+        self,
+        objects: ty.Iterable[Universe] = None,
+        problem: montepy.MCNP_Problem = None,
+    ):
         super().__init__(Universe, objects, problem)

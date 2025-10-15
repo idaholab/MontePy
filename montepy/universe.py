@@ -7,11 +7,13 @@ import numpy as np
 
 
 import montepy
+from montepy._check_value import args_checked
 from montepy.cells import Cells
 from montepy.input_parser.mcnp_input import Input
 from montepy.input_parser.block_type import BlockType
 from montepy.input_parser import syntax_node
 from montepy.numbered_mcnp_object import Numbered_MCNP_Object
+import montepy.types as ty
 
 
 class Universe(Numbered_MCNP_Object):
@@ -24,12 +26,9 @@ class Universe(Numbered_MCNP_Object):
         The number for the universe, must be ≥ 0
     """
 
-    def __init__(self, number: int):
+    @args_checked
+    def __init__(self, number: ty.PositiveInt):
         self._number = self._generate_default_node(int, -1)
-        if not isinstance(number, Integral):
-            raise TypeError("number must be int")
-        if number < 0:
-            raise ValueError(f"Universe number must be ≥ 0. {number} given.")
         self._number = self._generate_default_node(int, number)
 
         class Parser:
@@ -73,7 +72,8 @@ class Universe(Numbered_MCNP_Object):
                 elif cell.fill.universe == self:
                     yield cell
 
-    def claim(self, cells):
+    @args_checked
+    def claim(self, cells: montepy.Cell | ty.Iterable[montepy.Cell]):
         """Take the given cells and move them into this universe, and out of their original universe.
 
         Can be given a single Cell, a list of cells, or a Cells object.
@@ -88,9 +88,7 @@ class Universe(Numbered_MCNP_Object):
         TypeError
             if bad parameter is given.
         """
-        if not isinstance(cells, (montepy.Cell, list, Cells)):
-            raise TypeError(f"Cells being claimed must be a Cell, list, or Cells")
-        if isinstance(cells, list):
+        if not isinstance(cells, Cells):
             cells = Cells(cells)
         if isinstance(cells, montepy.Cell):
             cells = Cells([cells])
