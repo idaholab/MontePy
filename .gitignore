@@ -1,6 +1,7 @@
 __pycache__/
 build/*
 doc/build
+doc/source/api/generated
 dist/*
 *egg-info/*
 *.mcnp
