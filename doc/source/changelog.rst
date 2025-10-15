@@ -18,7 +18,7 @@ MontePy Changelog
 
 * Added descriptive TypeError messages (:issue:`801`)
 
-* Fixed but with cell data writting in DATA BLOCK, removed redundant line termination
+* Fixed a bug that caused to write an extra termination line between the data block and the cell data section in the MCNP input. (:pull:`819`)
 
 1.1.2
 --------------
