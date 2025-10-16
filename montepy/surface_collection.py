@@ -5,7 +5,7 @@ from montepy._check_value import args_checked
 from montepy.numbered_object_collection import NumberedObjectCollection
 from montepy.surfaces.surface import Surface
 from montepy.surfaces.surface_type import SurfaceType
-import montepy as ty
+import montepy.types as ty
 
 
 def __create_surface_generator(surf_type):

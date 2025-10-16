@@ -27,7 +27,7 @@ class Universe(Numbered_MCNP_Object):
     """
 
     @args_checked
-    def __init__(self, number: ty.PositiveInt):
+    def __init__(self, number: ty.NonNegativeInt):
         self._number = self._generate_default_node(int, -1)
         self._number = self._generate_default_node(int, number)
 
