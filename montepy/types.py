@@ -103,6 +103,11 @@ r"""
 An integer that is negative, i.e., a member of the set :math:`\mathbb{Z}_{\lt0}`.
 """
 
+NonNegativeInt = Annotated[Integral, non_negative]
+r"""
+An integer that is negative, i.e., a member of the set :math:`\mathbb{Z}_{\geq0}`.
+"""
+
 PositiveReal = Annotated[Real, positive]
 r"""
 A real number that is positive, i.e., a member of the set :math:`\mathbb{R}_{\gt0}`.
