@@ -1,6 +1,7 @@
 # Copyright 2024-2025, Battelle Energy Alliance, LLC All Rights Reserved.
 from __future__ import annotations
 import montepy
+from montepy._check_value import args_checked
 from montepy.exceptions import *
 from montepy.geometry_operators import Operator
 from montepy.input_parser.syntax_node import (
@@ -10,6 +11,7 @@ from montepy.input_parser.syntax_node import (
     CommentNode,
 )
 from montepy.utilities import *
+import montepy.types as ty
 
 from numbers import Integral
 
@@ -68,15 +70,14 @@ class HalfSpace:
         the node this was parsed from.
     """
 
-    def __init__(self, left, operator, right=None, node=None):
-        if not isinstance(left, HalfSpace):
-            raise TypeError(f"left must be a HalfSpace. {left} given.")
-        if not isinstance(right, (HalfSpace, type(None))):
-            raise TypeError(f"right must be a HalfSpace, or None. {right} given.")
-        if not isinstance(operator, Operator):
-            raise TypeError(f"operator must be of type Operator. {operator} given.")
-        if not isinstance(node, (GeometryTree, type(None))):
-            raise TypeError(f"node must be a GeometryTree or None. {node} given.")
+    @args_checked
+    def __init__(
+        self,
+        left: HalfSpace,
+        operator: Operator,
+        right: HalfSpace = None,
+        node: GeometryTree = None,
+    ):
         if right is None and operator not in {Operator.COMPLEMENT, Operator.GROUP}:
             raise ValueError(f"Both sides required for: {operator}")
         self._left = left
@@ -134,7 +135,8 @@ class HalfSpace:
         pass
 
     @staticmethod
-    def parse_input_node(node):
+    @args_checked
+    def parse_input_node(node: GeometryTree):
         """Parses the given syntax node as a half_space.
 
         Parameters
@@ -147,8 +149,6 @@ class HalfSpace:
         HalfSpace
             the HalfSpace properly representing the input geometry.
         """
-        if not isinstance(node, GeometryTree):
-            raise TypeError("Node must be a GeoemtryTree.")
         sides = []
         for side in (node.left, node.right):
             if side is None:
@@ -213,6 +213,7 @@ class HalfSpace:
                 if item not in parent:
                     parent.append(item)
 
+    @args_checked
     def remove_duplicate_surfaces(
         self,
         deleting_dict: dict[
@@ -396,9 +397,8 @@ class HalfSpace:
             index = midpoint - total_len
             operator_node._nodes[i] = node[:index] + ":" + node[index + 1 :]
 
-    def __iand__(self, other):
-        if not isinstance(other, HalfSpace):
-            raise TypeError(f"Right hand side must be HalfSpace. {other} given.")
+    @args_checked
+    def __iand__(self, other: HalfSpace):
         if isinstance(self, UnitHalfSpace):
             return self & other
         right_leaf = (
@@ -414,9 +414,8 @@ class HalfSpace:
         self._add_new_children_to_cell(other)
         return self
 
-    def __ior__(self, other):
-        if not isinstance(other, HalfSpace):
-            raise TypeError(f"Right hand side must be HalfSpace. {other} given.")
+    @args_checked
+    def __ior__(self, other: HalfSpace):
         if isinstance(self, UnitHalfSpace):
             return self | other
         right_leaf = (
@@ -432,14 +431,12 @@ class HalfSpace:
         self._add_new_children_to_cell(other)
         return self
 
-    def __and__(self, other):
-        if not isinstance(other, HalfSpace):
-            raise TypeError(f"Right hand side must be HalfSpace. {other} given.")
+    @args_checked
+    def __and__(self, other: HalfSpace):
         return HalfSpace(self, Operator.INTERSECTION, other)
 
-    def __or__(self, other):
-        if not isinstance(other, HalfSpace):
-            raise TypeError(f"Right hand side must be HalfSpace. {other} given.")
+    @args_checked
+    def __or__(self, other: HalfSpace):
         return HalfSpace(self, Operator.UNION, other)
 
     def __invert__(self):
@@ -452,10 +449,9 @@ class HalfSpace:
             length += len(self.right)
         return length
 
-    def __eq__(self, other):
+    @args_checked
+    def __eq__(self, other: HalfSpace):
         # don't allow subclassing on right side
-        if type(self) != type(other):
-            raise TypeError(f"HalfSpaces can only be compared to each other")
         if self.operator != other.operator:
             return False
         if (self.right is None) != (other.right is None):
@@ -527,19 +523,14 @@ class UnitHalfSpace(HalfSpace):
         the node if any this UnitHalfSpace was built from
     """
 
-    def __init__(self, divider, side, is_cell, node=None):
-        if not isinstance(
-            divider, (int, montepy.Cell, montepy.surfaces.surface.Surface)
-        ):
-            raise TypeError(
-                f"divider must be an int, Cell, or Surface. {divider} given"
-            )
-        if not isinstance(side, bool):
-            raise TypeError(f"side must be bool. {side} given.")
-        if not isinstance(is_cell, bool):
-            raise TypeError(f"is_cell must be bool. {is_cell} given.")
-        if not isinstance(node, (ValueNode, type(None))):
-            raise TypeError(f"node must be a ValueNode or None. {node} given.")
+    @args_checked
+    def __init__(
+        self,
+        divider: ty.PositiveInt | montepy.Cell | montepy.Surface,
+        side: bool,
+        is_cell: bool,
+        node: ValueNode = None,
+    ):
         self._divider = divider
         self._side = side
         self._is_cell = is_cell
@@ -559,9 +550,8 @@ class UnitHalfSpace(HalfSpace):
 
     # done manually to avoid circular imports
     @divider.setter
-    def divider(self, div):
-        if not isinstance(div, (montepy.Cell, montepy.surfaces.surface.Surface)):
-            raise TypeError("Divider must be a Cell or Surface")
+    @args_checked
+    def divider(self, div: montepy.Cell | montepy.Surface):
         if self.is_cell != isinstance(div, montepy.Cell):
             raise TypeError("Divider type must match with is_cell")
         self._divider = div
@@ -629,7 +619,8 @@ class UnitHalfSpace(HalfSpace):
         return self.is_cell or self._side
 
     @staticmethod
-    def parse_input_node(node, is_cell=False):
+    @args_checked
+    def parse_input_node(node: ValueNode, is_cell: bool = False):
         """Parses the given syntax node as a UnitHalfSpace.
 
         Parameters
@@ -644,10 +635,6 @@ class UnitHalfSpace(HalfSpace):
         UnitHalfSpace
             the HalfSpace properly representing the input geometry.
         """
-        if not isinstance(node, ValueNode):
-            raise TypeError(f"Must be called on a ValueNode. {node} given.")
-        if not isinstance(is_cell, bool):
-            raise TypeError("is_cell must be a bool.")
         node.is_negatable_identifier = True
         if is_cell:
             side = True
@@ -718,6 +705,7 @@ class UnitHalfSpace(HalfSpace):
             return (cell_cont(self._divider), surf_cont())
         return (cell_cont(), surf_cont(self._divider))
 
+    @args_checked
     def remove_duplicate_surfaces(
         self,
         deleting_dict: dict[
