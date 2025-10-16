@@ -411,8 +411,7 @@ class TestFill:
         with pytest.raises(TypeError):
             fill.universes = "hi"
         fill.multiple_universes = False
-        with pytest.raises(ValueError):
-            fill.universes = np.array([1, 2])
+
         with pytest.raises(TypeError):
             fill.universes = np.array([[["hi"]]])
 
@@ -438,10 +437,6 @@ class TestFill:
         with pytest.raises(KeyError):
             cell.fill.universes = np.array([[[999]]])
 
-        # Test that it raises ValueError for non-3D array
-        with pytest.raises(ValueError):
-            cell.fill.universes = np.array([1])
-
         # Test that it raises TypeError for wrong data type in array
         with pytest.raises(TypeError):
             cell.fill.universes = np.array([[["a", "b"]]])
@@ -460,10 +455,20 @@ class TestFill:
         assert fill.universes.shape == (2, 2, 1)
         assert fill.universes[0, 0, 0] is uni1
         assert fill.universes[1, 0, 0] is uni2
+        del fill.universes
 
-        # Test 1D array raises ValueError
-        with pytest.raises(ValueError):
-            fill.universes = np.array([uni1, uni2])
+        # Test setting universes with Universe for 1D array
+        fill.universes = np.array([uni1, uni2])
+        assert fill.universes.shape == (2, 1, 1)
+        assert fill.universes[0, 0, 0] is uni1
+        assert fill.universes[1, 0, 0] is uni2
+        del fill.universes
+
+        # Test setting universe with Universe for 0D array
+        fill.universes = np.array(uni1)
+        assert fill.universes.shape == (1, 1, 1)
+        assert fill.universes[0, 0, 0] is uni1
+        del fill.universes
 
         # Test 4D array raises ValueError
         with pytest.raises(ValueError):

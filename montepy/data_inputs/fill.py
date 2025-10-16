@@ -25,6 +25,9 @@ def _verify_3d_index(self, indices):
 class Fill(CellModifierInput):
     """Object to handle the ``FILL`` input in cell and data blocks.
 
+    .. versionchanged:: 1.2.0
+        Now supports setting the universes with a numpy array of upto 3-dimensional universe IDs.
+
     Parameters
     ----------
     input : Union[Input, str]
@@ -35,6 +38,42 @@ class Fill(CellModifierInput):
         the key from the key-value pair in a cell
     value : SyntaxNode
         the value syntax tree from the key-value pair in a cell
+
+
+
+    Examples
+    --------
+    Setting the universes with a numpy array of universe IDs:
+
+    >>> import montepy
+    >>> import numpy as np
+    >>> problem = montepy.MCNP_Problem("")
+    >>> cell = montepy.Cell()
+    >>> cell.number = 1
+    >>> problem.cells.append(cell)
+    >>> u1 = montepy.Universe(number=1)
+    >>> u2 = montepy.Universe(number=2)
+    >>> problem.universes.append(u1)
+    >>> problem.universes.append(u2)
+    >>> cell.fill.universes = np.array([[[1, 2, 0]]])
+    >>> cell.fill.universes[0, 0, 0]
+    Universe: Number: 1 Problem: set, Cells: []
+    >>> cell.fill.universes[0, 0, 1]
+    Universe: Number: 2 Problem: set, Cells: []
+    >>> print(cell.fill.universes[0, 0, 2])
+    None
+
+    Arrays with fewer than 3 dimensions are expanded to 3D:
+
+    >>> cell.fill.universes = np.array([1, 2])  # 1D array
+    >>> cell.fill.universes.shape
+    (2, 1, 1)
+    >>> cell.fill.universes = np.array([[1, 2]])  # 2D array
+    >>> cell.fill.universes.shape
+    (1, 2, 1)
+    >>> cell.fill.universes = np.array(1)  # 0D array
+    >>> cell.fill.universes.shape
+    (1, 1, 1)
     """
 
     DIMENSIONS = {"i": 0, "j": 1, "k": 2}
@@ -348,10 +387,11 @@ class Fill(CellModifierInput):
             self._universes = None
             return
 
-        if value.ndim == 2:
-            value = np.expand_dims(value, axis=2)
+        if value.ndim <= 2:
+            for _ in range(3 - value.ndim):
+                value = np.expand_dims(value, axis=value.ndim)
 
-        elif value.ndim < 2 or value.ndim > 3:
+        elif value.ndim > 3:
             raise ValueError(
                 f"3D array must be given for fill.universes. Array of shape: {value.shape} given."
             )
