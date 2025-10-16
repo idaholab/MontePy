@@ -41,6 +41,7 @@ class Importance(CellModifierInput):
     value : SyntaxNode
         the value syntax tree from the key-value pair in a cell
     """
+    _DEFAULT_IMP = 1.0
 
     def __init__(
         self,
@@ -98,7 +99,7 @@ class Importance(CellModifierInput):
             particles.particles = self._problem.mode.particles
         classifier.particles = particles
         list_node = syntax_node.ListNode("imp data")
-        list_node.append(self._generate_default_node(float, 1.0))
+        list_node.append(self._generate_default_node(float, self._DEFAULT_IMP))
         tree = syntax_node.SyntaxNode(
             "Importance",
             {
@@ -128,8 +129,13 @@ class Importance(CellModifierInput):
 
     @property
     def has_information(self):
+        has_info = []
+        for part in self:
+            has_info.append(not math.isclose(self[part], self._DEFAULT_IMP, rel_tol=rel_tol, abs_tol=abs_tol))
+        if any(has_info):
+            return True
         if self.in_cell_block:
-            return self._explicitly_set
+            return self.set_in_cell_block
 
     def merge(self, other):
         if not isinstance(other, type(self)):
@@ -166,7 +172,7 @@ class Importance(CellModifierInput):
             val = self._particle_importances[particle]["data"][0]
             return val.value
         except KeyError:
-            return 1.0
+            return self._DEFAULT_IMP
 
     def __setitem__(self, particle, value):
         if not isinstance(particle, Particle):

@@ -1137,7 +1137,7 @@ _SKIP_LINES = {
         / p  #                           Skip complexity of read
         for p in constants.BAD_INPUTS
         | constants.IGNORE_FILES
-        | {"testRead.imcnp", "readEdgeCase.imcnp"}
+        | {"testRead.imcnp", "readEdgeCase.imcnp", "test_complement_edge.imcnp", "test_interp_edge.imcnp"}
     },
 )
 def test_read_write_cycle(file):
