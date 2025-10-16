@@ -2,15 +2,43 @@
 MontePy Changelog
 *****************
 
+1.2 releases
+============
+
+#Next Version#
+--------------
+
+
+**Features Added**
+
+* Make `LatticeType.RECTANGULAR` and `LatticeType.HEXAHEDRAL` synonymous (:issue:`808`).
+* Allow setting ``cell.fill.universes`` with a numpy array of universe IDs (:issue:`736`).
+* Added Boundary condition type to the representation of a ``montepy.Surface`` (e.g., ``repr(surf)``)  (:issue:`682`).
+* Changed default importance value from 0.0 to 1.0 to match MCNP defaults. (:issue:`735`)
+**Bugs Fixed**
+
+* Fixed bug where lines that were the allowed length was raising a ``LineOverRunWarning`` when read by MontePy (:issue:`517`). 
+* Added descriptive TypeError messages (:issue:`801`)
+
+**Documentation**
+
+* Improved documentation for NumberedObjectCollections on Slicing behavior. (:issue:`798`)
+
+**Deprecations**
+
+* Dropped support for python 3.9 through 3.11, and numpy 1.26 in order to comply with `SPEC 0 <https://scientific-python.org/specs/spec-0000/>`_ (:issue:`780`).
+
+**Documentation**
+
+* Reorganized Python API documentation. Some hyperlinks may be broken now (:pull:`828`).
+
 1.1 releases
 ============
 
-#Next Release#
+1.1.3
 --------------
 
-**Features**
 
-* Changed default importance value from 0.0 to 1.0 to match MCNP defaults. (:issue:`735`)
 
 **Documentation**
 
@@ -18,11 +46,8 @@ MontePy Changelog
 
 **Bugs Fixed**
 
-* Fixed bug where lines that were the allowed length was raising a ``LineOverRunWarning`` when read by MontePy (:issue:`517`).
-
+* Fixed bug where lines that were the allowed length was raising a ``LineOverRunWarning`` when read by MontePy (:issue:`517`). 
 * Added descriptive TypeError messages (:issue:`801`)
-
-
 
 1.1.2
 --------------
