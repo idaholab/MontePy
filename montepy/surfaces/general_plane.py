@@ -3,9 +3,11 @@ from typing import Union
 import warnings
 
 import montepy
+from montepy._check_value import args_checked
 from montepy.exceptions import *
 from montepy.surfaces.surface_type import SurfaceType
 from montepy.surfaces.surface import Surface, InitInput
+import montepy.types as ty
 
 
 class GeneralPlane(Surface):
@@ -23,10 +25,11 @@ class GeneralPlane(Surface):
         The number to set for this object.
     """
 
+    @args_checked
     def __init__(
         self,
         input: InitInput = None,
-        number: int = None,
+        number: ty.PositiveInt = None,
     ):
         super().__init__(input, number)
         if input:

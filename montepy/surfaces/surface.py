@@ -5,6 +5,7 @@ from typing import Union
 from numbers import Real
 
 import montepy
+from montepy._check_value import args_checked
 from montepy.input_parser import syntax_node
 from montepy.exceptions import *
 from montepy.data_inputs import transform
@@ -12,6 +13,7 @@ from montepy.input_parser.surface_parser import SurfaceParser
 from montepy.numbered_mcnp_object import Numbered_MCNP_Object, InitInput
 from montepy.surfaces import half_space
 from montepy.surfaces.surface_type import SurfaceType
+import montepy.types as ty
 from montepy.utilities import *
 
 
@@ -41,11 +43,12 @@ class Surface(Numbered_MCNP_Object):
 
     _parser = SurfaceParser()
 
+    @args_checked
     def __init__(
         self,
         input: InitInput = None,
-        number: int = None,
-        surface_type: Union[SurfaceType, str] = None,
+        number: ty.PositiveInt = None,
+        surface_type: SurfaceType | str = None,
     ):
         self._CHILD_OBJ_MAP = {
             "periodic_surface": Surface,
@@ -107,13 +110,6 @@ class Surface(Numbered_MCNP_Object):
             raise MalformedInputError(
                 input,
                 f"{self._surface_type.value} could not be parsed as a surface type mnemonic.",
-            )
-        if (
-            self.surface_type is not None
-            and self.surface_type not in self._allowed_surface_types()
-        ):
-            raise ValueError(
-                f"{type(self).__name__} must be a surface of type: {[e.value for e in self._allowed_surface_types()]}"
             )
         # parse the parameters
         for entry in self._tree["data"]:
@@ -204,7 +200,7 @@ class Surface(Numbered_MCNP_Object):
         """
         pass
 
-    @property
+    @make_prop_pointer("_is_reflecting", bool)
     def is_reflecting(self):
         """If true this surface is a reflecting boundary.
 
@@ -212,15 +208,9 @@ class Surface(Numbered_MCNP_Object):
         -------
         bool
         """
-        return self._is_reflecting
+        pass
 
-    @is_reflecting.setter
-    def is_reflecting(self, reflect):
-        if not isinstance(reflect, bool):
-            raise TypeError("is_reflecting must be set to a bool")
-        self._is_reflecting = reflect
-
-    @property
+    @make_prop_pointer("_is_white_boundary", bool)
     def is_white_boundary(self):
         """If true this surface is a white boundary.
 
@@ -228,13 +218,7 @@ class Surface(Numbered_MCNP_Object):
         -------
         bool
         """
-        return self._is_white_boundary
-
-    @is_white_boundary.setter
-    def is_white_boundary(self, white):
-        if not isinstance(white, bool):
-            raise TypeError("is_white_boundary must be set to a bool")
-        self._is_white_boundary = white
+        pass
 
     @property
     def surface_constants(self):
@@ -250,16 +234,10 @@ class Surface(Numbered_MCNP_Object):
         return ret
 
     @surface_constants.setter
-    def surface_constants(self, constants):
-        if not isinstance(constants, list):
-            raise TypeError("surface_constants must be a list")
+    @args_checked
+    def surface_constants(self, constants: ty.Iterable[Real]):
         if len(constants) != len(self._surface_constants):
             raise ValueError(f"Cannot change the length of the surface constants.")
-        for constant in constants:
-            if not isinstance(constant, Real):
-                raise TypeError(
-                    f"The surface constant provided: {constant} must be a float"
-                )
         for i, value in enumerate(constants):
             self._surface_constants[i].value = value
 
@@ -425,7 +403,10 @@ class Surface(Numbered_MCNP_Object):
     def __ne__(self, other):
         return not self == other
 
-    def find_duplicate_surfaces(self, surfaces, tolerance):
+    @args_checked
+    def find_duplicate_surfaces(
+        self, surfaces: montepy.Surfaces, tolerance: ty.PositiveReal
+    ):
         """Finds all surfaces that are effectively the same as this one.
 
         Parameters

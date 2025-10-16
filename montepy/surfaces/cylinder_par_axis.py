@@ -1,11 +1,15 @@
 # Copyright 2024-2025, Battelle Energy Alliance, LLC All Rights Reserved.
+from __future__ import annotations
+
+import montepy
 from .surface_type import SurfaceType
 from .surface import Surface, InitInput
+from montepy._check_value import args_checked
 from montepy.exceptions import *
 from montepy.utilities import *
+import montepy.types as ty
 
 from numbers import Real
-from typing import Union
 
 
 def _enforce_positive_radius(self, value):
@@ -37,11 +41,12 @@ class CylinderParAxis(Surface):
     }
     """Which coordinate is what value for each cylinder type."""
 
+    @args_checked
     def __init__(
         self,
         input: InitInput = None,
-        number: int = None,
-        surface_type: Union[SurfaceType, str] = None,
+        number: ty.PositiveInt = None,
+        surface_type: SurfaceType | str = None,
     ):
         self._coordinates = [
             self._generate_default_node(float, None),
@@ -71,14 +76,10 @@ class CylinderParAxis(Surface):
         return (self._coordinates[0].value, self._coordinates[1].value)
 
     @coordinates.setter
-    def coordinates(self, coordinates):
-        if not isinstance(coordinates, (list, tuple)):
-            raise TypeError("coordinates must be a list")
+    @args_checked
+    def coordinates(self, coordinates: ty.Iterable[Real]):
         if len(coordinates) != 2:
             raise ValueError("coordinates must have exactly two elements")
-        for val in coordinates:
-            if not isinstance(val, Real):
-                raise TypeError(f"Coordinate must be a number. {val} given.")
         for i, val in enumerate(coordinates):
             self._coordinates[i].value = val
 
@@ -99,7 +100,10 @@ class CylinderParAxis(Surface):
         if any({c is None for c in self.coordinates}):
             raise IllegalState(f"Surface: {self.number} does not have coordinates set.")
 
-    def find_duplicate_surfaces(self, surfaces, tolerance):
+    @args_checked
+    def find_duplicate_surfaces(
+        self, surfaces: montepy.Surfaces, tolerance: ty.PositiveReal
+    ):
         ret = []
         # do not assume transform and periodic surfaces are the same.
         if not self.old_periodic_surface:
