@@ -1121,8 +1121,6 @@ def test_alternate_encoding():
 
 
 _SKIP_LINES = {
-    # skip lines of added implied importances
-    "tests/inputs/test_universe_data.imcnp": {5: 1, 14: 1, 15: 1},
     # I don't care about the edge case of shortcuts in a material def.
     "tests/inputs/test_complement_edge.imcnp": {37: 0, 38: 0, 39: 0},
 }
@@ -1137,7 +1135,12 @@ _SKIP_LINES = {
         / p  #                           Skip complexity of read
         for p in constants.BAD_INPUTS
         | constants.IGNORE_FILES
-        | {"testRead.imcnp", "readEdgeCase.imcnp", "test_complement_edge.imcnp", "test_interp_edge.imcnp"}
+        | {
+            "testRead.imcnp",
+            "readEdgeCase.imcnp",
+            "test_complement_edge.imcnp",
+            "test_interp_edge.imcnp",
+        }
     },
 )
 def test_read_write_cycle(file):

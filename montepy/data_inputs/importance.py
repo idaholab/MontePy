@@ -41,6 +41,7 @@ class Importance(CellModifierInput):
     value : SyntaxNode
         the value syntax tree from the key-value pair in a cell
     """
+
     _DEFAULT_IMP = 1.0
 
     def __init__(
@@ -131,7 +132,11 @@ class Importance(CellModifierInput):
     def has_information(self):
         has_info = []
         for part in self:
-            has_info.append(not math.isclose(self[part], self._DEFAULT_IMP, rel_tol=rel_tol, abs_tol=abs_tol))
+            has_info.append(
+                not math.isclose(
+                    self[part], self._DEFAULT_IMP, rel_tol=rel_tol, abs_tol=abs_tol
+                )
+            )
         if any(has_info):
             return True
         if self.in_cell_block:
