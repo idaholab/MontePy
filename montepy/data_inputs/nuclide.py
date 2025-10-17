@@ -492,7 +492,7 @@ class Nuclide:
         element: Element = None,
         Z: ty.PositiveInt = None,
         A: ty.NonNegativeInt = 0,
-        meta_state: int = 0,
+        meta_state: MetaState = 0,
         library: str = "",
         node: ValueNode = None,
     ):

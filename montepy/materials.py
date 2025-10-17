@@ -12,6 +12,7 @@ from montepy._check_value import args_checked
 from montepy.numbered_object_collection import NumberedDataObjectCollection
 
 Material = montepy.data_inputs.material.Material
+from montepy.data_inputs.nuclide import NuclideLike
 
 
 class Materials(NumberedDataObjectCollection):
@@ -52,11 +53,7 @@ class Materials(NumberedDataObjectCollection):
     @args_checked
     def get_containing_any(
         self,
-        *nuclides: montepy.data_inputs.nuclide.Nuclide
-        | montepy.data_inputs.nuclide.Nucleus
-        | montepy.Element
-        | str
-        | int,
+        *nuclides: NuclideLike,
         threshold: Real = 0.0,
         strict: bool = False,
     ) -> Generator[Material]:
@@ -115,11 +112,7 @@ class Materials(NumberedDataObjectCollection):
     @args_checked
     def get_containing_all(
         self,
-        *nuclides: montepy.data_inputs.nuclide.Nuclide
-        | montepy.data_inputs.nuclide.Nucleus
-        | montepy.Element
-        | str
-        | int,
+        *nuclides: NuclideLike,
         threshold: Real = 0.0,
         strict: bool = False,
     ) -> Generator[Material]:
@@ -177,11 +170,7 @@ class Materials(NumberedDataObjectCollection):
 
     def _contains_arb(
         self,
-        *nuclides: montepy.data_inputs.nuclide.Nuclide
-        | montepy.data_inputs.nuclide.Nucleus
-        | montepy.Element
-        | str
-        | int,
+        *nuclides: NuclideLike,
         bool_func: co.abc.Callable[co.abc.Iterable[bool]],
         threshold: Real = 0.0,
         strict: bool = False,

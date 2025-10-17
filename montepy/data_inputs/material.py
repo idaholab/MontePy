@@ -13,7 +13,13 @@ import weakref
 
 import montepy
 from montepy.data_inputs import data_input, thermal_scattering
-from montepy.data_inputs.nuclide import Library, Nucleus, Nuclide
+from montepy.data_inputs.nuclide import (
+    Library,
+    Nucleus,
+    Nuclide,
+    NuclideLike,
+    MetaState,
+)
 from montepy.data_inputs.element import Element
 from montepy.input_parser import syntax_node
 from montepy.input_parser.material_parser import MaterialParser
@@ -35,8 +41,6 @@ The default number of spaces to indent on a new line by.
 This is used for adding new material components.
 By default all components made from scratch are added to their own line with this many leading spaces.
 """
-
-NuclideLike = Nuclide | Nucleus | Element | str | Integral
 
 
 class _DefaultLibraries:
@@ -1128,7 +1132,7 @@ See <https://www.montepy.org/migrations/migrate0_1.html> for more information ""
         name: str = None,
         element: Element | str | Integral | slice = None,
         A: PositiveInt | slice = None,
-        meta_state: PositiveInt | slice = None,
+        meta_state: MetaState | slice = None,
         library: str | slice = None,
         strict: bool = False,
     ) -> Generator[tuple[Integral, tuple[Nuclide, Real]], None, None]:
@@ -1285,7 +1289,7 @@ See <https://www.montepy.org/migrations/migrate0_1.html> for more information ""
         name: str = None,
         element: Element | str | PositiveInt | slice = None,
         A: PositiveInt | slice = None,
-        meta_state: PositiveInt | slice = None,
+        meta_state: MetaState | slice = None,
         library: str | slice = None,
         strict: bool = False,
     ) -> Generator[Real, None, None]:
