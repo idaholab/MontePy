@@ -13,7 +13,9 @@ import re
 
 type NucleusLike = str | int | Element | Nucleus
 
-type MetaState = ty.Annotated[Integral, ty.cv.greater_than(0, True), ty.cv.less_than(5)]
+type MetaState = ty.Annotated[
+    ty.Integral, ty.cv.greater_than(0, True), ty.cv.less_than(5)
+]
 
 DEFAULT_NUCLIDE_WIDTH = 11
 """How many characters wide a nuclide with spacing should be."""
@@ -552,7 +554,8 @@ class Nuclide:
         return ret
 
     @classmethod
-    def _parse_zaid(cls, ZAID) -> dict[str, object]:
+    @args_checked
+    def _parse_zaid(cls, ZAID: ty.PositiveInt) -> dict[str, object]:
         """Parses the ZAID fully including metastable isomers.
 
         See Table 3-32 of LA-UR-17-29881
@@ -740,7 +743,8 @@ class Nuclide:
         return self.Z * _ZAID_A_ADDER + self.A
 
     @classmethod
-    def _parse_fancy_name(cls, identifier):
+    @args_checked
+    def _parse_fancy_name(cls, identifier: NucleusLike):
         """Parses a fancy name that is a ZAID, a Symbol-A, or nucleus, nuclide, or element.
 
         Parameters
