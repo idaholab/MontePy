@@ -1,8 +1,10 @@
 # Copyright 2024-2025, Battelle Energy Alliance, LLC All Rights Reserved.
 from __future__ import annotations
+
+from montepy._check_value import args_checked
 from montepy.exceptions import *
 from montepy._singleton import SingletonGroup
-from numbers import Integral
+import montepy.types as ty
 
 MAX_Z_NUM = 118
 
@@ -27,9 +29,8 @@ class Element(SingletonGroup):
 
     __slots__ = "_Z"
 
-    def __init__(self, Z: int):
-        if not isinstance(Z, Integral):
-            raise TypeError(f"Z must be an int. {Z} of type {type(Z)} given.")
+    @args_checked
+    def __init__(self, Z: ty.PositiveInt):
         self._Z = Z
         if Z not in self.__Z_TO_SYMBOL:
             raise UnknownElement(f"Z={Z}")
@@ -83,6 +84,7 @@ class Element(SingletonGroup):
         return (type(self), (self.Z,))
 
     @classmethod
+    @args_checked
     def get_by_symbol(cls, symbol: str) -> Element:
         """Get an element by it's symbol.
 
@@ -105,6 +107,7 @@ class Element(SingletonGroup):
             raise UnknownElement(f"The symbol: {symbol}")
 
     @classmethod
+    @args_checked
     def get_by_name(cls, name: str) -> Element:
         """Get an element by it's name.
 

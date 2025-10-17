@@ -1,6 +1,8 @@
 # Copyright 2024, Battelle Energy Alliance, LLC All Rights Reserved.
+import re
 
 import montepy
+from montepy._check_value import args_checked
 from montepy.data_inputs import (
     data_input,
     fill,
@@ -13,7 +15,6 @@ from montepy.data_inputs import (
     volume,
 )
 from montepy.data_inputs import transform
-import re
 
 PREFIX_MATCHES = {
     fill.Fill,
@@ -30,6 +31,7 @@ PREFIX_MATCHES = {
 VERBOTEN = {"de", "sdef"}
 
 
+@args_checked
 def parse_data(input: montepy.mcnp_object.InitInput):
     """Parses the data input as the appropriate object if it is supported.
 

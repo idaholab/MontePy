@@ -131,7 +131,7 @@ class CellModifierInput(DataInputAbstract):
 
     @property
     @abstractmethod
-    def has_information(self) -> boool:
+    def has_information(self) -> bool:
         """For a cell instance of :class:`montepy.data_cards.cell_modifier.CellModifierCard` returns True iff there is information here worth printing out.
 
         e.g., a manually set volume for a cell
