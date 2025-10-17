@@ -7,3 +7,4 @@ montepy.types module
    :inherited-members:
    :undoc-members:
    :show-inheritance:
+   :private-members:
