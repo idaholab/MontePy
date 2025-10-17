@@ -282,6 +282,7 @@ class Fill(CellModifierInput):
         """The universes that this cell will be filled with in a lattice.
 
         Only returns a value when :func:`multiple_universes` is true, otherwise none.
+        Arrays with fewer than 3 dimensions are automatically expanded to 3D by adding dimensions at the end (e.g., a 1D array of shape (N,) becomes (N, 1, 1) and a 0D array becomes (1, 1, 1)).
 
 
         Returns
@@ -299,10 +300,10 @@ class Fill(CellModifierInput):
         * :manual62:`87`
 
 
-        .. versionchanged:: 1.2.0
-            Now supports setting the universes with a numpy array of upto 3-dimensional universe IDs. For example, a 2D array will be expanded to 3D automatically.
-            Similarly, a 1D and 0D array will be expanded to 3D automatically. i.e a 1D array of shape (N,) will become (N, 1, 1) and a 0D array will become (1, 1, 1).
-            For more information see the :func:`universes` setter. And the following example.
+.. versionchanged:: 1.2.0
+        - Now supports setting the universes with a numpy array of up to 3-dimensional universe IDs.
+        - Automatic expansion of lower-dimensional arrays to 3D
+
 
 
         Examples
@@ -347,7 +348,8 @@ class Fill(CellModifierInput):
         value : np.ndarray or None
             A 3D numpy array of :class:`~montepy.universe.Universe` objects,
             a 3D numpy array of integer universe IDs, or None to clear the
-            universes.
+            universes. Arrays with 0, 1, or 2 dimensions are automatically
+            expanded to 3D by adding dimensions at the end.
         """
         if self.multiple_universes:
             return self._universes
