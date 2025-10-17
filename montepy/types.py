@@ -1,6 +1,6 @@
 from collections.abc import Iterable, Callable
 from numbers import Real, Integral
-from typing import Annotated
+from typing import Annotated, Self
 
 import montepy._check_value as cv
 
