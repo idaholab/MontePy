@@ -174,6 +174,7 @@ Universal Utilities and constants
    montepy.constants
    montepy.exceptions
    montepy.utilities
+   montepy.types
 
    
 Object Builders
