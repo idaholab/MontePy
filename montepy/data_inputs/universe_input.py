@@ -1,5 +1,7 @@
 # Copyright 2024, Battelle Energy Alliance, LLC All Rights Reserved.
 import itertools
+
+from montepy._check_value import args_checked
 from montepy.data_inputs.cell_modifier import CellModifierInput, InitInput
 from montepy.exceptions import *
 from montepy.constants import DEFAULT_VERSION
@@ -7,6 +9,7 @@ from montepy.input_parser.mcnp_input import Jump
 from montepy.input_parser import syntax_node
 from montepy.mcnp_object import MCNP_Object
 from montepy.universe import Universe
+import montepy.types as ty
 from montepy.utilities import *
 
 
@@ -26,6 +29,7 @@ class UniverseInput(CellModifierInput):
         the value syntax tree from the key-value pair in a cell
     """
 
+    @args_checked
     def __init__(
         self,
         input: InitInput = None,
@@ -99,17 +103,17 @@ class UniverseInput(CellModifierInput):
         return ret
 
     @property
-    def has_information(self):
+    def has_information(self) -> bool:
         if self.in_cell_block:
             return self.universe is not None and self.universe.number != 0
 
     @make_prop_pointer("_universe", Universe)
-    def universe(self):
+    def universe(self) -> Universe:
         if self.in_cell_block:
             return self._universe
 
     @property
-    def not_truncated(self):
+    def not_truncated(self) -> bool:
         """Indicates if this cell has been marked as not being truncated for optimization.
 
         See Note 1 from section 3.3.1.5.1 of the user manual (LA-UR-17-29981).
@@ -133,9 +137,8 @@ class UniverseInput(CellModifierInput):
         return self._not_truncated
 
     @not_truncated.setter
-    def not_truncated(self, value):
-        if not isinstance(value, bool):
-            raise TypeError("truncated_by_parent must be a bool")
+    @args_checked
+    def not_truncated(self, value: bool):
         self._not_truncated = value
 
     @property

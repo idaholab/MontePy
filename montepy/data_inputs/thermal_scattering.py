@@ -2,10 +2,12 @@
 from __future__ import annotations
 
 import montepy
+from montepy._check_value import args_checked
 from montepy.data_inputs.data_input import DataInputAbstract, InitInput
 from montepy.input_parser.thermal_parser import ThermalParser
 from montepy import mcnp_object
 from montepy.exceptions import *
+import montepy.types as ty
 from montepy.utilities import *
 
 
@@ -32,6 +34,7 @@ class ThermalScatteringLaw(DataInputAbstract):
 
     _parser = ThermalParser()
 
+    @args_checked
     def __init__(self, input: InitInput = "", material: montepy.Material = None):
         self._old_number = self._generate_default_node(int, -1)
         self._parent_material = None
@@ -67,7 +70,7 @@ class ThermalScatteringLaw(DataInputAbstract):
         pass
 
     @property
-    def parent_material(self):
+    def parent_material(self) -> Material:
         """The Material object this is tied to.
 
         Returns
@@ -77,12 +80,12 @@ class ThermalScatteringLaw(DataInputAbstract):
         return self._parent_material
 
     @property
-    def thermal_scattering_laws(self):
+    def thermal_scattering_laws(self) -> list[str]:
         """The thermal scattering laws to use for this material as strings.
 
         Returns
         -------
-        list
+        list[str]
         """
         ret = []
         for law in self._scattering_laws:
@@ -90,14 +93,8 @@ class ThermalScatteringLaw(DataInputAbstract):
         return ret
 
     @thermal_scattering_laws.setter
-    def thermal_scattering_laws(self, laws):
-        if not isinstance(laws, list):
-            raise TypeError("thermal_scattering_laws must be a list")
-        for law in laws:
-            if not isinstance(law, str):
-                raise TypeError(
-                    f"element {law} in thermal_scattering_laws must be a string"
-                )
+    @args_checked
+    def thermal_scattering_laws(self, laws: ty.Iterable[str]):
         self._scattering_laws.clear()
         for law in laws:
             self._scattering_laws.append(self._generate_default_node(str, law))
