@@ -1,12 +1,14 @@
 # Copyright 2024, Battelle Energy Alliance, LLC All Rights Reserved.
 import itertools
 
+from montepy._check_value import args_checked
 from montepy.data_inputs.cell_modifier import CellModifierInput, InitInput
 from montepy.data_inputs.lattice import LatticeType
 from montepy.exceptions import *
 from montepy.input_parser.mcnp_input import Jump
 from montepy.input_parser import syntax_node
 from montepy.mcnp_object import MCNP_Object
+import montepy.types as ty
 from montepy.utilities import *
 
 
@@ -25,6 +27,7 @@ class LatticeInput(CellModifierInput):
         the value syntax tree from the key-value pair in a cell
     """
 
+    @args_checked
     def __init__(
         self,
         input: InitInput = None,
@@ -94,7 +97,7 @@ class LatticeInput(CellModifierInput):
     @make_prop_val_node(
         "_lattice", (LatticeType, int, type(None)), LatticeType, deletable=True
     )
-    def lattice(self):
+    def lattice(self) -> LatticeType:
         """The type of lattice being used.
 
         Returns
