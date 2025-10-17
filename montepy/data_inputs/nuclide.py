@@ -1,4 +1,6 @@
 # Copyright 2024-2025, Battelle Energy Alliance, LLC All Rights Reserved.
+from __future__ import annotations
+
 from montepy._check_value import args_checked
 from montepy.constants import MAX_ATOMIC_SYMBOL_LENGTH
 from montepy._singleton import SingletonGroup
@@ -11,11 +13,7 @@ import montepy.types as ty
 from functools import total_ordering
 import re
 
-type NucleusLike = str | int | Element | Nucleus
-
-type MetaState = ty.Annotated[
-    ty.Integral, ty.cv.greater_than(0, True), ty.cv.less_than(5)
-]
+MetaState = ty.Annotated[ty.Integral, ty.cv.greater_than(0, True), ty.cv.less_than(5)]
 
 DEFAULT_NUCLIDE_WIDTH = 11
 """How many characters wide a nuclide with spacing should be."""
@@ -769,7 +767,7 @@ class Nuclide:
         A = 0
         isomer = 0
         library = ""
-        if isinstance(identifier, Real):
+        if isinstance(identifier, ty.Real):
             if identifier > _ZAID_A_ADDER:
                 parts = Nuclide._parse_zaid(int(identifier))
                 element, A, isomer = (
@@ -828,3 +826,6 @@ class Nuclide:
 
     def __format__(self, format_str):
         return str(self).__format__(format_str)
+
+
+NucleusLike = str | int | Element | Nucleus

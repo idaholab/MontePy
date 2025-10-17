@@ -1,7 +1,9 @@
 # Copyright 2024 - 2025, Battelle Energy Alliance, LLC All Rights Reserved.
+from __future__ import annotations
 import itertools as it
 import numpy as np
 
+import montepy
 from montepy._check_value import args_checked
 from montepy.data_inputs.cell_modifier import CellModifierInput, InitInput
 from montepy.data_inputs.transform import Transform

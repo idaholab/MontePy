@@ -15,7 +15,7 @@ from montepy.data_inputs.nuclide import (
     Library,
     Nucleus,
     Nuclide,
-    NuclideLike,
+    NucleusLike,
     MetaState,
 )
 from montepy.data_inputs.element import Element
@@ -612,7 +612,7 @@ See <https://www.montepy.org/migrations/migrate0_1.html> for more information ""
         del self._components[idx]
 
     @args_checked
-    def __contains__(self, nuclide: NuclideLike) -> bool:
+    def __contains__(self, nuclide: NucleusLike) -> bool:
         if isinstance(nuclide, (str, Integral)):
             nuclide = Nuclide(nuclide)
         # switch to elemental
@@ -701,7 +701,7 @@ See <https://www.montepy.org/migrations/migrate0_1.html> for more information ""
             nuclide.library = new_library
 
     @args_checked
-    def add_nuclide(self, nuclide: NuclideLike, fraction: ty.PositiveReal):
+    def add_nuclide(self, nuclide: NucleusLike, fraction: ty.PositiveReal):
         """Add a new component to this material of the given nuclide, and fraction.
 
         .. versionadded:: 1.0.0
@@ -720,7 +720,7 @@ See <https://www.montepy.org/migrations/migrate0_1.html> for more information ""
     @args_checked
     def contains_all(
         self,
-        *nuclides: NuclideLike,
+        *nuclides: NucleusLike,
         threshold: ty.PositiveReal = 0.0,
         strict: bool = False,
     ) -> bool:
@@ -797,7 +797,7 @@ See <https://www.montepy.org/migrations/migrate0_1.html> for more information ""
     @args_checked
     def contains_any(
         self,
-        *nuclides: NuclideLike,
+        *nuclides: NucleusLike,
         threshold: ty.PositiveReal = 0.0,
         strict: bool = False,
     ) -> bool:
@@ -860,7 +860,7 @@ See <https://www.montepy.org/migrations/migrate0_1.html> for more information ""
 
     @staticmethod
     @args_checked
-    def _promote_nuclide(nuclide: NuclideLike, strict: bool) -> NuclideLike:
+    def _promote_nuclide(nuclide: NucleusLike, strict: bool) -> Nuclide:
         if isinstance(nuclide, (str, Integral)):
             nuclide = Nuclide(nuclide)
         # treat elemental as element
@@ -872,7 +872,7 @@ See <https://www.montepy.org/migrations/migrate0_1.html> for more information ""
 
     def _contains_arb(
         self,
-        *nuclides: NuclideLike,
+        *nuclides: NucleusLike,
         bool_func: co.abc.Callable[co.abc.Iterable[bool]] = None,
         threshold: float = 0.0,
         strict: bool = False,
