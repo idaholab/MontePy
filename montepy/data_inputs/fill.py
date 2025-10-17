@@ -302,6 +302,7 @@ class Fill(CellModifierInput):
 
 
         .. versionchanged:: 1.2.0
+
             * Now supports setting the universes with a numpy array of up to 3-dimensional universe IDs.
             * Automatic expansion of lower-dimensional arrays to 3D
 
