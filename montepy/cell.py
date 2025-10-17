@@ -645,7 +645,8 @@ class Cell(Numbered_MCNP_Object):
                     )
             else:
                 self._material = None
-        self._geometry.update_pointers(cells, surfaces, self)
+        if self.geometry:
+            self._geometry.update_pointers(cells, surfaces, self)
 
     @args_checked
     def remove_duplicate_surfaces(self, deleting_dict: dict):
