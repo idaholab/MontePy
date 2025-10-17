@@ -5,10 +5,11 @@ import copy
 import itertools
 from numbers import Integral, Real
 import sly
-from typing import Union
 import warnings
 
+import montepy
 from montepy.cells import Cells
+from montepy._check_value import args_checked
 from montepy.data_inputs import importance, fill, lattice_input, universe_input, volume
 from montepy.data_inputs.data_parser import PREFIX_MATCHES
 from montepy.input_parser.cell_parser import CellParser
@@ -21,12 +22,9 @@ from montepy.geometry_operators import Operator
 from montepy.surfaces.half_space import HalfSpace, UnitHalfSpace
 from montepy.surfaces.surface import Surface
 from montepy.surface_collection import Surfaces
+import montepy.types as ty
 from montepy.universe import Universe
 from montepy.utilities import *
-import montepy
-from montepy._check_value import args_checked
-
-from montepy.types import *
 
 
 def _link_geometry_to_cell(self, geom):
@@ -130,7 +128,7 @@ class Cell(Numbered_MCNP_Object):
     def __init__(
         self,
         input: montepy.mcnp_object.InitInput = None,
-        number: PositiveInt = None,
+        number: ty.PositiveInt = None,
     ):
         self._BLOCK_TYPE = montepy.input_parser.block_type.BlockType.CELL
         self._CHILD_OBJ_MAP = {
@@ -505,7 +503,7 @@ class Cell(Numbered_MCNP_Object):
 
     @atom_density.setter
     @args_checked
-    def atom_density(self, density: PositiveReal):
+    def atom_density(self, density: ty.PositiveReal):
         self._is_atom_dens = True
         self._density = float(density)
 
@@ -529,7 +527,7 @@ class Cell(Numbered_MCNP_Object):
 
     @mass_density.setter
     @args_checked
-    def mass_density(self, density: PositiveReal):
+    def mass_density(self, density: ty.PositiveReal):
         self._is_atom_dens = False
         self._density = float(density)
 
@@ -854,8 +852,8 @@ class Cell(Numbered_MCNP_Object):
         self,
         clone_material: bool = False,
         clone_region: bool = False,
-        starting_number: PositiveInt = None,
-        step: PositiveInt = None,
+        starting_number: ty.PositiveInt = None,
+        step: ty.PositiveInt = None,
         add_collect: bool = True,
     ):
         """Create a new almost independent instance of this cell with a new number.
@@ -886,22 +884,6 @@ class Cell(Numbered_MCNP_Object):
         Cell
             a cloned copy of this cell.
         """
-        if not isinstance(clone_material, bool):
-            raise TypeError(
-                f"clone_material must be a boolean. {clone_material} given."
-            )
-        if not isinstance(clone_region, bool):
-            raise TypeError(f"clone_region must be a boolean. {clone_region} given.")
-        if not isinstance(starting_number, (Integral, type(None))):
-            raise TypeError(
-                f"Starting_number must be an int. {type(starting_number)} given."
-            )
-        if not isinstance(step, (Integral, type(None))):
-            raise TypeError(f"step must be an int. {type(step)} given.")
-        if starting_number is not None and starting_number <= 0:
-            raise ValueError(f"starting_number must be >= 1. {starting_number} given.")
-        if step is not None and step <= 0:
-            raise ValueError(f"step must be >= 1. {step} given.")
         if starting_number is None:
             starting_number = (
                 self._problem.cells.starting_number if self._problem else 1
