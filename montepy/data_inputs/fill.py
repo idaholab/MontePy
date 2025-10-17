@@ -281,75 +281,75 @@ class Fill(CellModifierInput):
     def universes(self):
         """The universes that this cell will be filled with in a lattice.
 
-        Only returns a value when :func:`multiple_universes` is true, otherwise none.
-        Arrays with fewer than 3 dimensions are automatically expanded to 3D by adding dimensions at the end (e.g., a 1D array of shape (N,) becomes (N, 1, 1) and a 0D array becomes (1, 1, 1)).
+                Only returns a value when :func:`multiple_universes` is true, otherwise none.
+                Arrays with fewer than 3 dimensions are automatically expanded to 3D by adding dimensions at the end (e.g., a 1D array of shape (N,) becomes (N, 1, 1) and a 0D array becomes (1, 1, 1)).
 
 
-        Returns
-        -------
-        np.ndarray
-            the universes that the cell will be filled with as a 3-D
-            array.
+                Returns
+                -------
+                np.ndarray
+                    the universes that the cell will be filled with as a 3-D
+                    array.
 
 
-        See Also
-        --------
+                See Also
+                --------
 
-        * :manual631sub:`5.5.5.3`
-        * :manual63sub:`5.5.5.3`
-        * :manual62:`87`
-
-
-.. versionchanged:: 1.2.0
-        - Now supports setting the universes with a numpy array of up to 3-dimensional universe IDs.
-        - Automatic expansion of lower-dimensional arrays to 3D
+                * :manual631sub:`5.5.5.3`
+                * :manual63sub:`5.5.5.3`
+                * :manual62:`87`
 
 
-
-        Examples
-        --------
-        Setting the universes with a numpy array of universe IDs:
-
-        >>> import montepy
-        >>> import numpy as np
-        >>> problem = montepy.MCNP_Problem("")
-        >>> cell = montepy.Cell()
-        >>> cell.number = 1
-        >>> problem.cells.append(cell)
-        >>> u1 = montepy.Universe(number=1)
-        >>> u2 = montepy.Universe(number=2)
-        >>> problem.universes.append(u1)
-        >>> problem.universes.append(u2)
-        >>> cell.fill.universes = np.array([[[1, 2, 0]]])
-        >>> cell.fill.universes[0, 0, 0]
-        Universe: Number: 1 Problem: set, Cells: []
-        >>> cell.fill.universes[0, 0, 1]
-        Universe: Number: 2 Problem: set, Cells: []
-        >>> print(cell.fill.universes[0, 0, 2])
-        None
-
-        Arrays with fewer than 3 dimensions are expanded to 3D:
-
-        >>> cell.fill.universes = np.array([1, 2])  # 1D array
-        >>> cell.fill.universes.shape
-        (2, 1, 1)
-        >>> cell.fill.universes = np.array([[1, 2]])  # 2D array
-        >>> cell.fill.universes.shape
-        (1, 2, 1)
-        >>> cell.fill.universes = np.array(1)  # 0D array
-        >>> cell.fill.universes.shape
-        (1, 1, 1)
+        .. versionchanged:: 1.2.0
+                - Now supports setting the universes with a numpy array of up to 3-dimensional universe IDs.
+                - Automatic expansion of lower-dimensional arrays to 3D
 
 
 
+                Examples
+                --------
+                Setting the universes with a numpy array of universe IDs:
 
-        Parameters
-        ----------
-        value : np.ndarray or None
-            A 3D numpy array of :class:`~montepy.universe.Universe` objects,
-            a 3D numpy array of integer universe IDs, or None to clear the
-            universes. Arrays with 0, 1, or 2 dimensions are automatically
-            expanded to 3D by adding dimensions at the end.
+                >>> import montepy
+                >>> import numpy as np
+                >>> problem = montepy.MCNP_Problem("")
+                >>> cell = montepy.Cell()
+                >>> cell.number = 1
+                >>> problem.cells.append(cell)
+                >>> u1 = montepy.Universe(number=1)
+                >>> u2 = montepy.Universe(number=2)
+                >>> problem.universes.append(u1)
+                >>> problem.universes.append(u2)
+                >>> cell.fill.universes = np.array([[[1, 2, 0]]])
+                >>> cell.fill.universes[0, 0, 0]
+                Universe: Number: 1 Problem: set, Cells: []
+                >>> cell.fill.universes[0, 0, 1]
+                Universe: Number: 2 Problem: set, Cells: []
+                >>> print(cell.fill.universes[0, 0, 2])
+                None
+
+                Arrays with fewer than 3 dimensions are expanded to 3D:
+
+                >>> cell.fill.universes = np.array([1, 2])  # 1D array
+                >>> cell.fill.universes.shape
+                (2, 1, 1)
+                >>> cell.fill.universes = np.array([[1, 2]])  # 2D array
+                >>> cell.fill.universes.shape
+                (1, 2, 1)
+                >>> cell.fill.universes = np.array(1)  # 0D array
+                >>> cell.fill.universes.shape
+                (1, 1, 1)
+
+
+
+
+                Parameters
+                ----------
+                value : np.ndarray or None
+                    A 3D numpy array of :class:`~montepy.universe.Universe` objects,
+                    a 3D numpy array of integer universe IDs, or None to clear the
+                    universes. Arrays with 0, 1, or 2 dimensions are automatically
+                    expanded to 3D by adding dimensions at the end.
         """
         if self.multiple_universes:
             return self._universes
