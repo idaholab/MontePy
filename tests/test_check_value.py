@@ -149,7 +149,7 @@ def np_array(a: np.ndarray[np.int64]):
 
 
 @cv.args_checked
-def np_array_union(a: np.ndarray[int | str]):
+def np_array_union(a: np.ndarray[montepy.Cell | int]):
     pass
 
 
