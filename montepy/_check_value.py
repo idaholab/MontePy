@@ -285,7 +285,9 @@ def check_type(
                 return
 
         for item in value:
-            if not isinstance(item, expected_iter_type):
+            try:
+                check_type(func_name, name, item, expected_iter_type)
+            except TypeError as e:
                 if isinstance(expected_iter_type, Iterable):
                     msg = (
                         'Unable to set "{}" for "{}" to "{}" since each item must be '
@@ -301,7 +303,7 @@ def check_type(
                         f'Unable to set "{name}" for "{func_name}" to "{value}" since each '
                         f'item must be of type "{expected_iter_type.__name__}"'
                     )
-                raise TypeError(msg)
+                raise TypeError(msg) from e
 
 
 def check_type_iterable(
