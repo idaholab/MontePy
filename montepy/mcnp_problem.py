@@ -50,7 +50,7 @@ class MCNP_Problem:
     }
 
     @args_checked
-    def __init__(self, destination: str | os.PathLike | io.TextIOBase):
+    def __init__(self, destination: str | os.PathLike | io.TextIOBase = None):
         if hasattr(destination, "read") and callable(getattr(destination, "read")):
             self._input_file = MCNP_InputFile.from_open_stream(destination)
         elif isinstance(destination, (str, os.PathLike)):
@@ -386,6 +386,8 @@ class MCNP_Problem:
         replace : bool
             replace all non-ASCII characters with a space (0x20)
         """
+        if self.input_file is None:
+            return
         trailing_comment = None
         last_obj = None
         last_block = None
