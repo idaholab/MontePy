@@ -36,6 +36,7 @@ import functools
 import inspect
 from numbers import Real, Integral
 import numpy as np
+import types
 import typing
 
 # Type for arguments that accept file paths
@@ -226,11 +227,7 @@ def check_type(
     if none_ok and value is None:
         return
 
-    if isinstance(expected_type, typing.GenericAlias):
-        return check_type_iterable(
-            func_name, name, value, expected_type, none_ok=none_ok
-        )
-    if not isinstance(value, expected_type):
+    def raise_error():
         if isinstance(expected_type, Iterable) and not isinstance(
             expected_type, EnumType
         ):
@@ -254,6 +251,28 @@ def check_type(
                 f'{expected_type}"'
             )
         raise TypeError(msg)
+
+    # detect complicated recursion of types
+    if isinstance(expected_type, types.UnionType):
+        # handle cases isisntance can't (not all types are classes
+        if not all((isinstance(t, type) for t in expected_type.__args__)):
+            errors = []
+            for arg in expected_type.__args__:
+                try:
+                    check_type(func_name, name, value, arg, none_ok=none_ok)
+                except TypeError as e:
+                    errors.append(e)
+            if len(errors) == len(expected_type.__args__):
+                raise_error()
+            return
+
+    if isinstance(expected_type, typing.GenericAlias):
+        return check_type_iterable(
+            func_name, name, value, expected_type, none_ok=none_ok
+        )
+
+    if not isinstance(value, expected_type):
+        raise_error()
     if expected_iter_type:
         if isinstance(value, np.ndarray):
             if not issubclass(value.dtype.type, expected_iter_type):
