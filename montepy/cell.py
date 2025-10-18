@@ -939,7 +939,8 @@ class Cell(Numbered_MCNP_Object):
                 region_change_map[num(obj)] = (obj, new_obj)
                 new_objs.append(new_obj)
             setattr(result, special, type(collection)(new_objs))
-            result.geometry.remove_duplicate_surfaces(region_change_map)
+            if self.geometry:
+                result.geometry.remove_duplicate_surfaces(region_change_map)
         if self._problem:
             result.number = self._problem.cells.request_number(starting_number, step)
             if add_collect:
