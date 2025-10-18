@@ -213,7 +213,6 @@ def test_cell_clone(
         for collect in (surfs, mats):
             collect.starting_number = other_start
             collect.step = other_step
-    cell = Cell()
     cell.update_pointers(montepy.Cells(), mats, surfs)
     problem = montepy.MCNP_Problem("foo")
     problem.surfaces = surfs

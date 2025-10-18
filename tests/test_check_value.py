@@ -134,6 +134,16 @@ def tuple_type(a: tuple[int, str]):
 
 
 @cv.args_checked
+def iterable_tuple_type(a: Iterable[tuple[str, str]]):
+    pass
+
+
+@cv.args_checked
+def dict_tuple_type(a: dict[int, tuple[str, str]]):
+    pass
+
+
+@cv.args_checked
 def np_array(a: np.ndarray[np.int64]):
     pass
 
@@ -277,6 +287,12 @@ def test_pos_neg(func, val, raise_error):
         (np_array, np.array([1, 2]), ["a", 1, [1, 2], np.array(["a", "b"])]),
         (np_array_union, np.array([1, 2]), ["a", 1, [1, 2], np.array([True, False])]),
         (tuple_type, (1, "hi"), [[1], ("hi", 1), {1: "hi"}]),
+        (iterable_tuple_type, [("hi", "foo"), ("a", "b")], ["a", [1, 2], [(1, 5)]]),
+        (
+            dict_tuple_type,
+            {1: ("hi", "foo"), 2: ("a", "b")},
+            ["a", [1, 2], [(1, 5)], {"a": "c"}, {1: ("a" "b")}],
+        ),
         (pos_int, 5, [1.0, "hi", 0, -1]),
         (neg_int, -3, [1.0, "hi", 0, 2]),
         (pos_real, 1.5, ["hi", 0, -2]),

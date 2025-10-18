@@ -1,4 +1,6 @@
 from __future__ import annotations
+
+from collections.abc import Iterable
 from hypothesis import given
 import hypothesis.strategies as st
 import numpy as np
@@ -41,6 +43,11 @@ def str_annote_default(a: str = None):
     pass
 
 
+@cv.args_checked
+def union_generic_alias(a: Iterable[montepy.Cell] | str):
+    pass
+
+
 # test delayed import for circular imports
 @cv.args_checked
 def str_pipe_union(a: str | Cell):
@@ -59,6 +66,16 @@ def dict_type(a: dict[str, int]):
 
 @cv.args_checked
 def np_array(a: np.ndarray[np.int64]):
+    pass
+
+
+@cv.args_checked
+def iterable_tuple_type(a: Iterable[tuple[str, str]]):
+    pass
+
+
+@cv.args_checked
+def dict_tuple_type(a: dict[int, tuple[str, str]]):
     pass
 
 
@@ -83,6 +100,7 @@ funcs = st.sampled_from(
     [
         str_annotations,
         str_pipe_union,
+        union_generic_alias,
     ]
 )
 
