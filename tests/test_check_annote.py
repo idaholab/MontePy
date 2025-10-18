@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from collections.abc import Iterable
-from hypothesis import given
+from hypothesis import assume, given
 import hypothesis.strategies as st
 import numpy as np
 import pytest
@@ -119,6 +119,8 @@ def test_property():
 
 @given(st.one_of(binary, boolean, dt, fl, it, no), funcs)
 def test_dummy_bad_type(val, func):
+    assume(not (isinstance(val, Iterable) and len(val) == 0))
+    func("hi")
     with pytest.raises(TypeError):
         func(val)
 
