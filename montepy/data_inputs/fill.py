@@ -19,7 +19,7 @@ from montepy.utilities import *
 
 def _verify_3d_index(self, indices):
     for index in indices:
-        if not isinstance(index, Integral):
+        if not isinstance(index, ty.Integral):
             raise TypeError(f"Index values for fill must be an int. {index} given.")
     if len(indices) != 3:
         raise ValueError(f"3 values must be given for fill. {indices} given")
@@ -543,7 +543,7 @@ class Fill(CellModifierInput):
         pass
 
     @args_checked
-    def merge(self, other: typing.Self):
+    def merge(self, other: Fill):
         raise MalformedInputError(
             other._input, "Cannot have two lattice inputs for the problem"
         )

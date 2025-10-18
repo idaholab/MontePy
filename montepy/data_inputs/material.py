@@ -559,7 +559,7 @@ See <https://www.montepy.org/migrations/migrate0_1.html> for more information ""
         return len(self._components)
 
     @args_checked
-    def _check_valid_comp(self, newvalue: tuple[Nuclide, PositiveReal]) -> None:
+    def _check_valid_comp(self, newvalue: tuple[Nuclide, ty.PositiveReal]) -> None:
         """Checks valid compositions and raises an error if needed."""
         if len(newvalue) != 2:
             raise ValueError(
@@ -1113,7 +1113,7 @@ See <https://www.montepy.org/migrations/migrate0_1.html> for more information ""
         self,
         name: str = None,
         element: Element | str | Integral | slice = None,
-        A: PositiveInt | slice = None,
+        A: ty.PositiveInt | slice = None,
         meta_state: MetaState | slice = None,
         library: str | slice = None,
         strict: bool = False,
@@ -1269,8 +1269,8 @@ See <https://www.montepy.org/migrations/migrate0_1.html> for more information ""
     def find_vals(
         self,
         name: str = None,
-        element: Element | str | PositiveInt | slice = None,
-        A: PositiveInt | slice = None,
+        element: Element | str | ty.PositiveInt | slice = None,
+        A: ty.PositiveInt | slice = None,
         meta_state: MetaState | slice = None,
         library: str | slice = None,
         strict: bool = False,

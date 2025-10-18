@@ -1,4 +1,5 @@
 # Copyright 2024, Battelle Energy Alliance, LLC All Rights Reserved.
+from __future__ import annotations
 import collections
 import copy
 import math
@@ -133,7 +134,7 @@ class Importance(CellModifierInput):
             return True
 
     @args_checked
-    def merge(self, other: ty.Self):
+    def merge(self, other: Importance):
         if self.in_cell_block != other.in_cell_block:
             raise ValueError("Can not mix cell-level and data-level Importance objects")
         if other.set_in_cell_block:
