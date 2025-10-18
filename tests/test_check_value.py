@@ -1,5 +1,5 @@
 from collections.abc import Iterable
-from hypothesis import given, example
+from hypothesis import assume, given, example
 import hypothesis.strategies as st
 import numpy as np
 import pytest
@@ -84,8 +84,7 @@ def pipe_union_type(a: montepy.Cell | str):
 
 
 @cv.args_checked
-def union_generic_alias(a: Iterable[int] | str):
-    print("FOOOOOOOOOO")
+def union_generic_alias(a: Iterable[montepy.Cell] | str):
     pass
 
 
@@ -189,6 +188,7 @@ no = st.none()
     ),
 )
 def test_dummy_bad_type_with_none(val, func):
+    assume(not (isinstance(val, Iterable) and len(val) == 0))
     func("hi")
     with pytest.raises(TypeError):
         func(val)
