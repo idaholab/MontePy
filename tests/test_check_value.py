@@ -1,4 +1,5 @@
-from hypothesis import given
+from collections.abc import Iterable
+from hypothesis import given, example
 import hypothesis.strategies as st
 import numpy as np
 import pytest
@@ -83,6 +84,12 @@ def pipe_union_type(a: montepy.Cell | str):
 
 
 @cv.args_checked
+def union_generic_alias(a: Iterable[int] | str):
+    print("FOOOOOOOOOO")
+    pass
+
+
+@cv.args_checked
 def negative_hard(a: typing.Annotated[int, cv.less_than(0)]):
     pass
 
@@ -133,6 +140,11 @@ def np_array(a: np.ndarray[np.int64]):
 
 
 @cv.args_checked
+def np_array_union(a: np.ndarray[int | str]):
+    pass
+
+
+@cv.args_checked
 def pos_int(a: ty.PositiveInt):
     pass
 
@@ -161,13 +173,23 @@ it = st.integers()
 no = st.none()
 
 
+@example(5, union_generic_alias)
 @given(
     st.one_of(binary, boolean, dt, fl, it, no),
     st.sampled_from(
-        [simple_args, var_args, kwargs, kw_defaults, union_type, pipe_union_type]
+        [
+            simple_args,
+            var_args,
+            kwargs,
+            kw_defaults,
+            union_type,
+            pipe_union_type,
+            union_generic_alias,
+        ]
     ),
 )
 def test_dummy_bad_type_with_none(val, func):
+    func("hi")
     with pytest.raises(TypeError):
         func(val)
 
@@ -253,6 +275,7 @@ def test_pos_neg(func, val, raise_error):
         (list_type, [1, 2, 3], ["a", 1, [1, "a"]]),
         (dict_type, {"a": 1, "b": 2}, ["a", 1, [1, "a"], {1: "a"}, {"a": "a"}]),
         (np_array, np.array([1, 2]), ["a", 1, [1, 2], np.array(["a", "b"])]),
+        (np_array_union, np.array([1, 2]), ["a", 1, [1, 2], np.array([True, False])]),
         (tuple_type, (1, "hi"), [[1], ("hi", 1), {1: "hi"}]),
         (pos_int, 5, [1.0, "hi", 0, -1]),
         (neg_int, -3, [1.0, "hi", 0, 2]),
