@@ -53,7 +53,7 @@ def kwargs(a: str):
 
 
 @cv.args_checked
-def defaults(a: str, *args: str, b: str = None):
+def defaults(a: str, *args: str, b: ty.PositiveInt = None):
     pass
 
 
@@ -140,6 +140,10 @@ def iterable_tuple_type(a: Iterable[tuple[str, str]]):
 
 @cv.args_checked
 def dict_tuple_type(a: dict[int, tuple[str, str]]):
+    pass
+
+@cv.args_checked
+def list_annotated(a: list[ty.PositiveReal]):
     pass
 
 
@@ -325,11 +329,13 @@ def test_iterable_types(func, good, bads):
         ),
         (pos_real, 1.5, [("hi", TypeError), (0, ValueError), (-2, ValueError)]),
         (neg_real, -1.5, [("hi", TypeError), (0, ValueError), (2.0, ValueError)]),
+        (list_annotated, [1, 1.5], [("hi", TypeError), (["hi"], TypeError), ([-1, 2], ValueError)])
     ],
 )
 def test_iterable_types(func, good, bads):
     func(good)
     for bad, exc in bads:
+        print(bad)
         with pytest.raises(exc):
             func(bad)
 
