@@ -200,7 +200,7 @@ no = st.none()
 def test_dummy_bad_type_with_none(val, func):
     assume(not (isinstance(val, Iterable) and len(val) == 0))
     func("hi")
-    with pytest.raises(TypeError):
+    with pytest.raises(TypeError, match="Unable to set.+"):
         func(val)
 
 
@@ -217,7 +217,7 @@ def test_dummy_bad_type_with_none(val, func):
     ),
 )
 def test_dummy_bad_type_no_none(val, func):
-    with pytest.raises(TypeError):
+    with pytest.raises(TypeError, match="Unable to set.+"):
         func(val)
 
 
@@ -225,9 +225,9 @@ def test_property():
     test = Tester()
     test.prop_test = "hi"
     test.prop_value_test = 5
-    with pytest.raises(TypeError):
+    with pytest.raises(TypeError, match="Unable to set.+"):
         test.prop_test = 5
-    with pytest.raises(TypeError):
+    with pytest.raises(TypeError, match="Unable to set.+"):
         test.prop_value_test = "hi"
     with pytest.raises(ValueError):
         test.prop_value_test = -1
@@ -285,7 +285,11 @@ def test_pos_neg(func, val, raise_error):
         (list_type, [1, 2, 3], ["a", 1, [1, "a"]]),
         (dict_type, {"a": 1, "b": 2}, ["a", 1, [1, "a"], {1: "a"}, {"a": "a"}]),
         (np_array, np.array([1, 2]), ["a", 1, [1, 2], np.array(["a", "b"])]),
-        (np_array_union, np.array([1, 2]), ["a", 1, [1, 2], np.array([True, False])]),
+        (
+            np_array_union,
+            np.array([1, 2]),
+            ["a", 1, [1, 2], np.array([montepy.Cell(), montepy.Cell()])],
+        ),
         (tuple_type, (1, "hi"), [[1], ("hi", 1), {1: "hi"}]),
         (iterable_tuple_type, [("hi", "foo"), ("a", "b")], ["a", [1, 2], [(1, 5)]]),
         (
@@ -302,7 +306,7 @@ def test_pos_neg(func, val, raise_error):
 def test_iterable_types(func, good, bads):
     func(good)
     for bad in bads:
-        with pytest.raises(TypeError):
+        with pytest.raises(TypeError, match="Unable to set.+"):
             func(bad)
 
 
@@ -356,7 +360,7 @@ def test_iterable_types(func, good, bads):
 )
 def test_other_type_checks(func, fail, args):
     if fail:
-        with pytest.raises(TypeError):
+        with pytest.raises(TypeError, match="Unable to set.+"):
             func("foo", "bar", *args)
     else:
         func("foo", "bar", *args)
@@ -408,17 +412,17 @@ def test_other_value_checks(func, fail, args):
 
 def test_checked_list_bad():
     check_list = cv.CheckedList(int, "snake")
-    with pytest.raises(TypeError):
+    with pytest.raises(TypeError, match="Unable to set.+"):
         check_list.append("hi")
-    with pytest.raises(TypeError):
+    with pytest.raises(TypeError, match="Unable to set.+"):
         check_list + ["a"]
-    with pytest.raises(TypeError):
+    with pytest.raises(TypeError, match="Unable to set.+"):
         ["a"] + check_list
-    with pytest.raises(TypeError):
+    with pytest.raises(TypeError, match="Unable to set.+"):
         check_list += ["a"]
-    with pytest.raises(TypeError):
+    with pytest.raises(TypeError, match="Unable to set.+"):
         check_list.insert(1, "hi")
-    with pytest.raises(TypeError):
+    with pytest.raises(TypeError, match="Unable to set.+"):
         check_list = cv.CheckedList(int, "snake", ["hi"])
 
 
