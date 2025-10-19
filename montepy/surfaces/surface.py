@@ -111,6 +111,13 @@ class Surface(Numbered_MCNP_Object):
                 input,
                 f"{self._surface_type.value} could not be parsed as a surface type mnemonic.",
             )
+        if (
+            self.surface_type is not None
+            and self.surface_type not in self._allowed_surface_types()
+        ):
+            raise ValueError(
+                f"{type(self).__name__} must be a surface of type: {[e.value for e in self._allowed_surface_types()]}"
+            )
         # parse the parameters
         for entry in self._tree["data"]:
             self._surface_constants.append(entry)
