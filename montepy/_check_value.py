@@ -156,43 +156,40 @@ def args_checked(func: Callable):
         If an argument of the right type, but wrong value is given.
     """
 
-    def decorator(func):
-        args_spec = inspect.signature(func)
-        arg_checkers = {}
-        for arg_name, arg_spec in args_spec.parameters.items():
-            checkers = []
-            none_ok = arg_spec.default is None
-            type_checker = _prepare_type_checker(func, arg_spec, none_ok)
-            if type_checker:
-                checkers.append(type_checker)
-            val_checker = _prepare_args_check(func, arg_spec)
-            if val_checker:
-                checkers.append(val_checker)
-            arg_checkers[arg_name] = checkers
+    args_spec = inspect.signature(func)
+    arg_checkers = {}
+    for arg_name, arg_spec in args_spec.parameters.items():
+        checkers = []
+        none_ok = arg_spec.default is None
+        type_checker = _prepare_type_checker(func, arg_spec, none_ok)
+        if type_checker:
+            checkers.append(type_checker)
+        val_checker = _prepare_args_check(func, arg_spec)
+        if val_checker:
+            checkers.append(val_checker)
+        arg_checkers[arg_name] = checkers
 
-        @functools.wraps(func)
-        def wrapper(*args, **kwargs):
-            bound = args_spec.bind(*args, **kwargs)
-            for arg_name, arg_vals in bound.arguments.items():
-                checkers = arg_checkers[arg_name]
-                arg_type = args_spec.parameters[arg_name].kind
-                if arg_type == inspect._ParameterKind.VAR_POSITIONAL:
-                    args_iter = arg_vals
-                elif arg_type == inspect._ParameterKind.VAR_KEYWORD:
-                    args_iter = arg_vals.values()
-                else:
-                    args_iter = (arg_vals,)
-                for val in args_iter:
-                    # TODO unit test
-                    checker_slice = slice(None)
-                    if val is None:
-                        checker_slice = slice(1)
-                    new_vals = [checker(val) for checker in checkers[checker_slice]]
-            return func(*args, **kwargs)
+    @functools.wraps(func)
+    def wrapper(*args, **kwargs):
+        bound = args_spec.bind(*args, **kwargs)
+        for arg_name, arg_vals in bound.arguments.items():
+            checkers = arg_checkers[arg_name]
+            arg_type = args_spec.parameters[arg_name].kind
+            if arg_type == inspect._ParameterKind.VAR_POSITIONAL:
+                args_iter = arg_vals
+            elif arg_type == inspect._ParameterKind.VAR_KEYWORD:
+                args_iter = arg_vals.values()
+            else:
+                args_iter = (arg_vals,)
+            for val in args_iter:
+                # TODO unit test
+                checker_slice = slice(None)
+                if val is None:
+                    checker_slice = slice(1)
+                new_vals = [checker(val) for checker in checkers[checker_slice]]
+        return func(*args, **kwargs)
 
-        return wrapper
-
-    return decorator(func)
+    return wrapper
 
 
 def check_type(
