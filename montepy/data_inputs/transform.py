@@ -163,6 +163,7 @@ class Transform(data_input.DataInputAbstract, Numbered_MCNP_Object):
         return self._rotation_matrix
 
     @rotation_matrix.setter
+    @args_checked
     def rotation_matrix(self, matrix: np.ndarray[float]):
         if len(matrix) < 5 or len(matrix) > 9:
             raise ValueError("rotation_matrix must have between 5 and 9 components.")
@@ -244,7 +245,7 @@ class Transform(data_input.DataInputAbstract, Numbered_MCNP_Object):
             )
 
     @args_checked
-    def equivalent(self, other: ty.Self, tolerance: ty.PositiveReal):
+    def equivalent(self, other: Transform, tolerance: ty.PositiveReal):
         """Determines if this is effectively equivalent to another transformation
 
         Parameters

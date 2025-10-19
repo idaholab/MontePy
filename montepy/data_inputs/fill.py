@@ -342,7 +342,7 @@ class Fill(CellModifierInput):
 
     @universes.setter
     @args_checked
-    def universes(self, value: np.ndarray[Universe | ty.NonNegativeInt]):
+    def universes(self, value: np.ndarray[Universe | ty.NonNegativeInt] = None):
         if value is None:
             self.multiple_universes = False
             self.universe = None
