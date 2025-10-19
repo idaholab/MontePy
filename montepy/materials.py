@@ -239,7 +239,7 @@ class Materials(NumberedDataObjectCollection):
     def mix(
         self,
         materials: list[Material],
-        fractions: list[Real],
+        fractions: list[ty.NonNegativeReal],
         starting_number: ty.PositiveInt = None,
         step: ty.PositiveInt = None,
     ) -> Material:

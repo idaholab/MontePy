@@ -117,3 +117,7 @@ NegativeReal = Annotated[Real, negative]
 r"""
 A real number that is negative, i.e., a member of the set :math:`\mathbb{R}_{\gt0}`.
 """
+NonNegativeReal = Annotated[Real, non_negative]
+r"""
+A real number that is not negative, i.e., a member of the set :math:`\mathbb{R}_{\geq0}`.
+"""

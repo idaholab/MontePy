@@ -2,6 +2,7 @@
 
 from montepy.constants import BLANK_SPACE_CONTINUE
 from montepy._check_value import args_checked
+import montepy.types as ty
 
 import functools
 import re
@@ -12,7 +13,7 @@ A package for helper universal utility functions
 
 
 @args_checked
-def fortran_float(number_string: str):
+def fortran_float(number_string: str | ty.Real):
     """Attempts to convert a FORTRAN formatted float string to a float.
 
     FORTRAN allows silly things for scientific notation like ``6.02+23``
