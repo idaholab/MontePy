@@ -274,36 +274,60 @@ def check_type(
     if not isinstance(value, expected_type):
         raise_error()
     if expected_iter_type:
-        if isinstance(value, np.ndarray):
-            if not issubclass(value.dtype.type, expected_iter_type):
+
+        def raise_iter_err(e=None):
+            if isinstance(expected_iter_type, Iterable):
                 msg = (
-                    f'Unable to set "{name}" for "{func_name}" to "{value}" since each item '
-                    f'must be of type "{expected_iter_type.__name__}"'
+                    'Unable to set "{}" for "{}" to "{}" since each item must be '
+                    'one of the following types: "{}"'.format(
+                        name,
+                        func_name,
+                        value,
+                        ", ".join([t.__name__ for t in expected_iter_type]),
+                    )
                 )
-                raise TypeError(msg)
             else:
-                return
+                msg = (
+                    f'Unable to set "{name}" for "{func_name}" to "{value}" since each '
+                    f'item must be of type "{expected_iter_type.__name__}"'
+                )
+            if e is not None:
+                raise TypeError(msg) from e
+            raise TypeError(msg)
+
+        def check_np_type(e_type):
+            dtype = value.dtype.type
+            if dtype == np.object_:
+                for element in value.flat:
+                    try:
+                        check_type(func_name, name, element, e_type)
+                    except TypeError as e:
+                        raise_iter_err(e)
+            else:
+                if not issubclass(value.dtype.type, e_type):
+                    raise_iter_err()
+
+        if isinstance(value, np.ndarray):
+            if value.dtype.type != np.object_ and isinstance(
+                expected_iter_type, types.UnionType
+            ):
+                errors = []
+                for t_arg in expected_iter_type.__args__:
+                    try:
+                        check_np_type(t_arg)
+                    except TypeError as e:
+                        errors.append(e)
+                if len(errors) != len(expected_iter_type.__args__):
+                    raise_iter_err()
+            else:
+                check_np_type(expected_iter_type)
+            return
 
         for item in value:
             try:
                 check_type(func_name, name, item, expected_iter_type)
             except TypeError as e:
-                if isinstance(expected_iter_type, Iterable):
-                    msg = (
-                        'Unable to set "{}" for "{}" to "{}" since each item must be '
-                        'one of the following types: "{}"'.format(
-                            name,
-                            func_name,
-                            value,
-                            ", ".join([t.__name__ for t in expected_iter_type]),
-                        )
-                    )
-                else:
-                    msg = (
-                        f'Unable to set "{name}" for "{func_name}" to "{value}" since each '
-                        f'item must be of type "{expected_iter_type.__name__}"'
-                    )
-                raise TypeError(msg) from e
+                raise_iter_err(e)
 
 
 def check_type_iterable(
