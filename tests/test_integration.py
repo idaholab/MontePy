@@ -1121,8 +1121,8 @@ def test_alternate_encoding():
 
 
 _SKIP_LINES = {
-    # I don't care about the edge case of shortcuts in a material def.
-    "tests/inputs/test_complement_edge.imcnp": {37: 0, 38: 0, 39: 0},
+    "tests\\inputs\\test_complement_edge.imcnp": {38: 0, 39: 0},
+    "tests\\inputs\\test_interp_edge.imcnp": {1: 0},
 }
 
 
@@ -1135,12 +1135,7 @@ _SKIP_LINES = {
         / p  #                           Skip complexity of read
         for p in constants.BAD_INPUTS
         | constants.IGNORE_FILES
-        | {
-            "testRead.imcnp",
-            "readEdgeCase.imcnp",
-            "test_complement_edge.imcnp",
-            "test_interp_edge.imcnp",
-        }
+        | {"testRead.imcnp", "readEdgeCase.imcnp"}
     },
 )
 def test_read_write_cycle(file):
@@ -1172,10 +1167,6 @@ def test_read_write_cycle(file):
                     continue
                 else:
                     gold_line = next(gold_fh_iter)
-            # edge case override for not fixing #527.
-            if str(file) == "tests/inputs/test_interp_edge.imcnp" and i == 1:
-                assert new_line == "10214   0    (1  2I 4 )"
-                continue
             try:
                 assert new_line == gold_line.rstrip().expandtabs(8)
             except AssertionError as e:
