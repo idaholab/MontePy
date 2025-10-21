@@ -143,19 +143,18 @@ def read_data(fh, mcnp_version, block_type=None, recursion=False):
     continue_input = False
     has_non_comments = False
     input_raw_lines = []
-    terminate_reading = False
 
     def flush_block():
         nonlocal block_counter, block_type
         # keep parsing while there is input or termination has not been triggered
-        if len(input_raw_lines) > 0 and not terminate_reading:
+        if len(input_raw_lines) > 0:
             yield from flush_input()
         block_counter += 1
         if block_counter < 3:
             block_type = BlockType(block_counter)
 
     def flush_input():
-        nonlocal input_raw_lines, terminate_reading
+        nonlocal input_raw_lines
         # IF 3  BLOCKS are parsed, the rest should be ignored with a warning and print 3 lines
         if block_counter == 3:
             joined_lines = "\n".join(input_raw_lines[0:3])
@@ -165,7 +164,10 @@ def read_data(fh, mcnp_version, block_type=None, recursion=False):
                 UndefinedBlock,
                 stacklevel=6,
             )
-            terminate_reading = True
+            return
+            
+            
+        print(f"Still parsing lines...", input_raw_lines)
         start_line = current_file.lineno + 1 - len(input_raw_lines)
         input = Input(
             input_raw_lines,
@@ -203,6 +205,7 @@ def read_data(fh, mcnp_version, block_type=None, recursion=False):
             and input_raw_lines
         ):
             yield from flush_input()
+
         # die if it is a vertical syntax format
         start_o_line = line[0:BLANK_SPACE_CONTINUE]
         # eliminate comments, and inputs that use # for other syntax
