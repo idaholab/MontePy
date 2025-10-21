@@ -165,8 +165,7 @@ def read_data(fh, mcnp_version, block_type=None, recursion=False):
                 stacklevel=6,
             )
             return
-            
-            
+
         print(f"Still parsing lines...", input_raw_lines)
         start_line = current_file.lineno + 1 - len(input_raw_lines)
         input = Input(
