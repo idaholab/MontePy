@@ -156,7 +156,7 @@ def read_data(fh, mcnp_version, block_type=None, recursion=False):
     def flush_input():
         nonlocal input_raw_lines
         # IF 3  BLOCKS are parsed, the rest should be ignored with a warning and print 3 lines
-        if block_counter == 3:
+        if block_counter >= 3:
             joined_lines = "\n".join(input_raw_lines[0:3])
             msg = f"Unexpected input after line {current_file.lineno - 1}\n line content: {joined_lines}\n"
             warnings.warn(
