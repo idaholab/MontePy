@@ -11,6 +11,7 @@ MontePy Changelog
 
 **Features Added**
 
+* Allow multiple universe fills to accept 2D MNCP lattices (:issue:`719`)
 * Make `LatticeType.RECTANGULAR` and `LatticeType.HEXAHEDRAL` synonymous (:issue:`808`).
 * Allow setting ``cell.fill.universes`` with a numpy array of universe IDs (:issue:`736`).
 
@@ -28,6 +29,10 @@ MontePy Changelog
 
 * Dropped support for python 3.9 through 3.11, and numpy 1.26 in order to comply with `SPEC 0 <https://scientific-python.org/specs/spec-0000/>`_ (:issue:`780`).
 
+**Documentation**
+
+* Reorganized Python API documentation. Some hyperlinks may be broken now (:pull:`828`).
+
 1.1 releases
 ============
 
@@ -36,6 +41,10 @@ MontePy Changelog
 **Features Added**
 
 * Added checking for additional input after the ``data`` block, and raising a warning if it exists.
+
+**Features Added**
+
+* Added Boundary condition type to the representation of a ``montepy.Surface`` (e.g., ``repr(surf)``)  (:issue:`682`).
 
 **Documentation**
 

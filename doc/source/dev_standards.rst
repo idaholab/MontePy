@@ -226,6 +226,14 @@ Here is the docstrings for :class:`~montepy.cell.Cell`.
             number: int = None,
         ):
 
+
+Adding New Object to Website
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+The Sphinx website uses `autosummary <https://www.sphinx-doc.org/es/master/usage/extensions/autosummary.html#generating-stub-pages-automatically>_`.
+Each class or module must be pointed to in ``doc/source/api/modules.rst``, 
+it is preferable to point to the classes themselves, and not the modules.
+
 Testing
 -------
 
