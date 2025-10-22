@@ -11,6 +11,7 @@ MontePy Changelog
 
 **Features Added**
 
+* Added checking for additional input after the ``data`` block, and raising a warning if it exists.
 * Allow multiple universe fills to accept 2D MNCP lattices (:issue:`719`)
 * Make `LatticeType.RECTANGULAR` and `LatticeType.HEXAHEDRAL` synonymous (:issue:`808`).
 * Allow setting ``cell.fill.universes`` with a numpy array of universe IDs (:issue:`736`).
@@ -38,10 +39,6 @@ MontePy Changelog
 
 1.1.3
 --------------
-**Features Added**
-
-* Added checking for additional input after the ``data`` block, and raising a warning if it exists.
-
 **Features Added**
 
 * Added Boundary condition type to the representation of a ``montepy.Surface`` (e.g., ``repr(surf)``)  (:issue:`682`).
