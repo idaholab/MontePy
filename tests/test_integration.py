@@ -1119,7 +1119,14 @@ def test_alternate_encoding():
         os.path.join("tests", "inputs", "bad_encoding.imcnp"), replace=True
     )
 
+"""
+file_path: {line_number (0-indexed): flag}
 
+Flags: 
+    0: skip line in both files
+    1: skip line in output file
+    2+: skip line in gold file
+"""
 _SKIP_LINES = {
     "tests\\inputs\\test_complement_edge.imcnp": {38: 0, 39: 0},
     "tests\\inputs\\test_interp_edge.imcnp": {1: 0},
