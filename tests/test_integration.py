@@ -1119,6 +1119,7 @@ def test_alternate_encoding():
         os.path.join("tests", "inputs", "bad_encoding.imcnp"), replace=True
     )
 
+
 """
 file_path: {line_number (0-indexed): flag}
 
