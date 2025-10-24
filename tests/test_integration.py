@@ -1146,6 +1146,11 @@ _SKIP_LINES = {
     },
 )
 def test_read_write_cycle(file):
+    """
+    Warning: this test is a Rube Goldberg machine of edge cases.
+
+    Please ask @micahgale before modifying it.
+    """
     print(f"Testing against {file} *********************")
     if ".swp" in file.suffixes:
         return
