@@ -488,7 +488,7 @@ class Nuclide:
     @args_checked
     def __init__(
         self,
-        name: NucleusLike = "",
+        name: NuclideLike = "",
         element: Element = None,
         Z: ty.PositiveInt = None,
         A: ty.NonNegativeInt = 0,
@@ -742,7 +742,7 @@ class Nuclide:
 
     @classmethod
     @args_checked
-    def _parse_fancy_name(cls, identifier: NucleusLike):
+    def _parse_fancy_name(cls, identifier: NuclideLike):
         """Parses a fancy name that is a ZAID, a Symbol-A, or nucleus, nuclide, or element.
 
         Parameters
