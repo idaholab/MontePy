@@ -47,7 +47,7 @@ def negative(func_name, name, x):
     cv.check_less_than(func_name, name, x, 0)
 
 
-def non_positive(func_name, name):
+def non_positive(func_name, name, x):
     r"""
     A higher-order function to be used with ``args_checked`` to ensure a value is non-positive,
     i.e., :math:`x\leq 0`.
@@ -65,10 +65,10 @@ def non_positive(func_name, name):
             pass
 
     """
-    return lambda x: cv.check_less_than(func_name, name, x, 0, True)
+    cv.check_less_than(func_name, name, x, 0, True)
 
 
-def non_negative(func_name, name):
+def non_negative(func_name, name, x):
     r"""
     A higher-order function to be used with ``args_checked`` to ensure a value is non-negative,
     i.e., :math:`x\geq 0`.
@@ -86,7 +86,7 @@ def non_negative(func_name, name):
             pass
 
     """
-    return lambda x: cv.check_greater_than(func_name, name, x, 0, True)
+    cv.check_greater_than(func_name, name, x, 0, True)
 
 
 """

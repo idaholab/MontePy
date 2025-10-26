@@ -50,13 +50,13 @@ def _prepare_type_checker(func, arg_spec, none_ok):
     if isinstance(arg_type, str):
         arg_type = None
     else:
-        arg_type = typing.get_type_hints(func)[arg_spec.name]
+        arg_type = typing.get_type_hints(func, include_extras=True)[arg_spec.name]
 
     def type_evaler(arg):
         nonlocal arg_type
         # if annotations are used; evaluate on first call
         if arg_type is None:
-            arg_type = typing.get_type_hints(func)[arg_spec.name]
+            arg_type = typing.get_type_hints(func, include_extras=True)[arg_spec.name]
         return check_type_and_value(
             func.__qualname__, arg_spec.name, arg, arg_type, none_ok=none_ok
         )
@@ -166,8 +166,9 @@ def check_type_and_value(
 ):
     annotations = []
     if isinstance(expected_type, typing._AnnotatedAlias):
-        annotations = typing.get_args(expected_type)[1:]
-    print(annotations, expected_type, type(expected_type))
+        args = typing.get_args(expected_type)
+        annotations = args[1:]
+        expected_type = args[0]
     print(func_name, name, value, expected_type)
     check_type(
         func_name, name, value, expected_type, expected_iter_type, none_ok=none_ok
@@ -283,7 +284,9 @@ def check_type(
             if dtype == np.object_:
                 for element in value.flat:
                     try:
-                        check_type_and_value(func_name, name, element, e_type)
+                        check_type_and_value(
+                            func_name, f"{name}-elements", element, e_type
+                        )
                     except TypeError as e:
                         raise_iter_err(e)
             else:
@@ -308,7 +311,9 @@ def check_type(
 
         for item in value:
             try:
-                check_type_and_value(func_name, name, item, expected_iter_type)
+                check_type_and_value(
+                    func_name, f"{name}-item", item, expected_iter_type
+                )
             except TypeError as e:
                 raise_iter_err(e)
 
@@ -322,23 +327,39 @@ def check_type_iterable(
     none_ok: bool = False,
 ):
     """TODO: refactor"""
-    base_cls = typing.get_origin(expected_type)
-    args = typing.get_args(expected_type)
+    type_args = typing.get_args(expected_type)
+    base_cls = type_args[0]
+    args = type_args[1:]
+    print("iterable", func_name, name, value, expected_type)
     check_type_and_value(func_name, name, value, base_cls, none_ok=none_ok)
     if base_cls == dict:
         assert len(args) == 2, "Dict type requires two typing annotations"
-        check_type(func_name, name, list(value.keys()), list, args[0], none_ok=none_ok)
-        check_type(
-            func_name, name, list(value.values()), list, args[1], none_ok=none_ok
+        check_type_and_value(
+            func_name,
+            f"{name}-keys",
+            list(value.keys()),
+            list,
+            args[0],
+            none_ok=none_ok,
+        )
+        check_type_and_value(
+            func_name,
+            f"{name}-values",
+            list(value.values()),
+            list,
+            args[1],
+            none_ok=none_ok,
         )
     elif base_cls == tuple:
         assert len(args) == len(
             value
         ), "Tuple type must have the exact number of arguments specified."
-        for arg, val in zip(args, value):
-            check_type_and_value(func_name, name, val, arg)
+        for idx, (arg, val) in enumerate(zip(args, value)):
+            check_type_and_value(func_name, f"{name}-item[{idx}]", val, arg)
     elif issubclass(base_cls, Iterable):
-        check_type_and_value(func_name, name, value, base_cls, args[0], none_ok=none_ok)
+        check_type_and_value(
+            func_name, f"{name}-items", value, base_cls, args[0], none_ok=none_ok
+        )
 
 
 def check_length(func_name, name, value, length_min, length_max=None):
