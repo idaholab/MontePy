@@ -99,7 +99,7 @@ class Mode(DataInputAbstract):
         self._particles.remove(particle)
 
     @args_checked
-    def set(self, particles: ty.Iterable[Particle | str]):
+    def set(self, particles: str | ty.Iterable[Particle | str]):
         """Completely override the current mode.
 
         Can specify it as:

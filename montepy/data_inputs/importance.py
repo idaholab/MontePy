@@ -282,7 +282,7 @@ class Importance(CellModifierInput):
 
     @all.setter
     @args_checked
-    def all(self, value: ty.PositiveReal):
+    def all(self, value: ty.NonNegativeReal):
         value = float(value)
         if self._problem:
             for particle in self._problem.mode:

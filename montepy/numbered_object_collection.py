@@ -226,7 +226,7 @@ class NumberedObjectCollection(ABC):
             yield obj.number
 
     @args_checked
-    def check_number(self, number: ty.PositiveInt):
+    def check_number(self, number: ty.NonNegativeInt):
         """Checks if the number is already in use, and if so raises an error.
 
         Parameters
