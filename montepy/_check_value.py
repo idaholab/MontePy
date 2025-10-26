@@ -292,7 +292,17 @@ def check_type(
                     except TypeError as e:
                         raise_iter_err(e)
             else:
-                if not issubclass(value.dtype.type, e_type):
+                if isinstance(e_type, type):
+                    e_types = [e_type]
+                else:
+                    buff = typing.get_args(e_type)
+                    e_types = []
+                    for typ in buff:
+                        if isinstance(typ, type):
+                            e_types.append(typ)
+                        else:
+                            e_types.append(typing.get_args(typ)[0])
+                if not any((issubclass(dtype, typ) for typ in e_types)):
                     raise_iter_err()
 
         if isinstance(value, np.ndarray):
