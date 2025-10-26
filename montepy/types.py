@@ -185,3 +185,5 @@ NonNegativeReal = Annotated[Real, non_negative]
 r"""
 A real number that is not negative, i.e., a member of the set :math:`\mathbb{R}_{\geq0}`.
 """
+
+VersionType = tuple[PositiveInt, NonNegativeInt, NonNegativeInt]

@@ -28,6 +28,7 @@ from montepy.input_parser.syntax_node import (
 import montepy
 from montepy._exception_context import _ExceptionContextAdder
 from montepy._check_value import args_checked
+import montepy.types as ty
 
 InitInput = Union[montepy.input_parser.mcnp_input.Input, str]
 
@@ -171,15 +172,13 @@ class MCNP_Object(ABC, metaclass=_ExceptionContextAdder):
         pass
 
     @args_checked
-    def format_for_mcnp_input(
-        self, mcnp_version: tuple[Integral, Integral, Integral]
-    ) -> list[str]:
+    def format_for_mcnp_input(self, mcnp_version: ty.VersionType) -> list[str]:
         """Creates a list of strings representing this MCNP_Object that can be
         written to file.
 
         Parameters
         ----------
-        mcnp_version : tuple[int]
+        mcnp_version : ty.VersionType
             The tuple for the MCNP version that must be exported to.
 
         Returns
@@ -197,14 +196,14 @@ class MCNP_Object(ABC, metaclass=_ExceptionContextAdder):
         return lines
 
     @args_checked
-    def mcnp_str(self, mcnp_version: tuple[Integral, Integral, Integral] = None) -> str:
+    def mcnp_str(self, mcnp_version: ty.VersionType = None) -> str:
         """Returns a string of this input as it would appear in an MCNP input file.
 
         ..versionadded:: 1.0.0
 
         Parameters
         ----------
-        mcnp_version: tuple[int]
+        mcnp_version: ty.VersionType
             The tuple for the MCNP version that must be exported to.
 
         Returns
@@ -288,7 +287,7 @@ The new input was:\n\n"""
     @args_checked
     def wrap_string_for_mcnp(
         string: str,
-        mcnp_version: tuple[Integral, Integral, Integral],
+        mcnp_version: ty.VersionType,
         is_first_line: bool,
         suppress_blank_end: bool = True,
     ) -> list[str]:

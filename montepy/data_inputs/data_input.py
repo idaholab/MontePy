@@ -428,9 +428,7 @@ class ForbiddenDataInput(DataInputAbstract):
     """
 
     @args_checked
-    def format_for_mcnp_input(
-        self, mcnp_version: tuple[ty.PositiveInt, ty.PositiveInt, ty.PositiveInt]
-    ) -> list[str]:
+    def format_for_mcnp_input(self, mcnp_version: ty.VersionType) -> list[str]:
         """Creates a list of strings representing this MCNP_Object that can be
         written to file.
 

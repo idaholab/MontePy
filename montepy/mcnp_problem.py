@@ -218,9 +218,7 @@ class MCNP_Problem:
 
     @mcnp_version.setter
     @args_checked
-    def mcnp_version(
-        self, version: tuple[ty.PositiveInt, ty.PositiveInt, ty.PositiveInt]
-    ):
+    def mcnp_version(self, version: ty.VersionType):
         """
         Parameters
         ----------

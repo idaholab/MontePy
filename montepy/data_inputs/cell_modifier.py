@@ -241,7 +241,7 @@ class CellModifierInput(DataInputAbstract):
     @args_checked
     def format_for_mcnp_input(
         self,
-        mcnp_version: tuple[ty.PositiveInt, ty.PositiveInt, ty.PositiveInt],
+        mcnp_version: ty.VersionType,
         has_following: bool = False,
         always_print: bool = False,
     ) -> list[str]:
@@ -250,7 +250,7 @@ class CellModifierInput(DataInputAbstract):
 
         Parameters
         ----------
-        mcnp_version : tuple
+        mcnp_version : ty.VersionType
             The tuple for the MCNP version that must be exported to.
         has_following: bool
             If true this is followed by another input, and a new line will be inserted if this ends in a comment.
@@ -297,16 +297,14 @@ class CellModifierInput(DataInputAbstract):
         return []
 
     @args_checked
-    def mcnp_str(
-        self, mcnp_version: tuple[ty.PositiveInt, ty.PositiveInt, ty.PositiveInt] = None
-    ) -> str:
+    def mcnp_str(self, mcnp_version: ty.VersionType = None) -> str:
         """Returns a string of this input as it would appear in an MCNP input file.
 
         ..versionadded:: 1.0.0
 
         Parameters
         ----------
-        mcnp_version: tuple[int]
+        mcnp_version: ty.VersionType
             The tuple for the MCNP version that must be exported to.
 
         Returns
