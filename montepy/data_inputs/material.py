@@ -15,7 +15,7 @@ from montepy.data_inputs.nuclide import (
     Library,
     Nucleus,
     Nuclide,
-    NucleusLike,
+    NuclideLike,
     MetaState,
 )
 from montepy.data_inputs.element import Element
@@ -151,11 +151,11 @@ class _MatCompWrapper:
         return generator()
 
     @args_checked
-    def __getitem__(self, idx: ty.NonNegativeInt) -> Any:
+    def __getitem__(self, idx: ty.Integral) -> Any:
         return self._parent[idx][self._index]
 
     @args_checked
-    def __setitem__(self, idx: ty.NonNegativeInt, val: Nuclide | ty.PositiveReal):
+    def __setitem__(self, idx: ty.Integral, val: Nuclide | ty.PositiveReal):
         new_val = self._setter(self._parent[idx], val)
         self._parent[idx] = new_val
 
@@ -523,7 +523,7 @@ See <https://www.montepy.org/migrations/migrate0_1.html> for more information ""
         return None
 
     @args_checked
-    def __getitem__(self, idx: ty.NonNegativeInt | slice) -> Any:
+    def __getitem__(self, idx: ty.Integral | slice) -> Any:
         """"""
         if isinstance(idx, Integral):
             comp = self._components[idx]
@@ -544,7 +544,7 @@ See <https://www.montepy.org/migrations/migrate0_1.html> for more information ""
 
     @args_checked
     def __setitem__(
-        self, idx: ty.NonNegativeInt | slice, newvalue: tuple[Nuclide, Real]
+        self, idx: ty.Integral | slice, newvalue: tuple[Nuclide, Real]
     ) -> None:
         """"""
         old_vals = self._components[idx]
@@ -559,7 +559,7 @@ See <https://www.montepy.org/migrations/migrate0_1.html> for more information ""
         return len(self._components)
 
     @args_checked
-    def _check_valid_comp(self, newvalue: tuple[Nuclide, ty.PositiveReal]) -> None:
+    def _check_valid_comp(self, newvalue: tuple[Nuclide, ty.NonNegativeReal]) -> None:
         """Checks valid compositions and raises an error if needed."""
         if len(newvalue) != 2:
             raise ValueError(
@@ -571,7 +571,7 @@ See <https://www.montepy.org/migrations/migrate0_1.html> for more information ""
             )
 
     @args_checked
-    def __delitem__(self, idx: ty.NegativeInt | slice) -> None:
+    def __delitem__(self, idx: ty.Integral | slice) -> None:
         if isinstance(idx, Integral):
             self.__delitem(idx)
             return
@@ -585,7 +585,7 @@ See <https://www.montepy.org/migrations/migrate0_1.html> for more information ""
             self.__delitem(0)
 
     @args_checked
-    def __delitem(self, idx: ty.NonNegativeInt) -> None:
+    def __delitem(self, idx: ty.Integral) -> None:
         comp = self._components[idx]
         element = self[idx][0].element
         nucleus = self[idx][0].nucleus
@@ -612,7 +612,7 @@ See <https://www.montepy.org/migrations/migrate0_1.html> for more information ""
         del self._components[idx]
 
     @args_checked
-    def __contains__(self, nuclide: NucleusLike) -> bool:
+    def __contains__(self, nuclide: NuclideLike) -> bool:
         if isinstance(nuclide, (str, Integral)):
             nuclide = Nuclide(nuclide)
         # switch to elemental
@@ -636,7 +636,7 @@ See <https://www.montepy.org/migrations/migrate0_1.html> for more information ""
             return element in self._elements
 
     @args_checked
-    def append(self, nuclide_frac_pair: tuple[Nuclide, ty.PositiveReal]):
+    def append(self, nuclide_frac_pair: tuple[Nuclide, ty.NonNegativeReal]):
         """Appends the tuple to this material.
 
         .. versionadded:: 1.0.0
@@ -701,7 +701,7 @@ See <https://www.montepy.org/migrations/migrate0_1.html> for more information ""
             nuclide.library = new_library
 
     @args_checked
-    def add_nuclide(self, nuclide: NucleusLike, fraction: ty.PositiveReal):
+    def add_nuclide(self, nuclide: NuclideLike, fraction: ty.NonNegativeReal):
         """Add a new component to this material of the given nuclide, and fraction.
 
         .. versionadded:: 1.0.0
@@ -720,7 +720,7 @@ See <https://www.montepy.org/migrations/migrate0_1.html> for more information ""
     @args_checked
     def contains_all(
         self,
-        *nuclides: NucleusLike,
+        *nuclides: NuclideLike,
         threshold: ty.PositiveReal = 0.0,
         strict: bool = False,
     ) -> bool:
@@ -797,7 +797,7 @@ See <https://www.montepy.org/migrations/migrate0_1.html> for more information ""
     @args_checked
     def contains_any(
         self,
-        *nuclides: NucleusLike,
+        *nuclides: NuclideLike,
         threshold: ty.PositiveReal = 0.0,
         strict: bool = False,
     ) -> bool:
@@ -860,7 +860,7 @@ See <https://www.montepy.org/migrations/migrate0_1.html> for more information ""
 
     @staticmethod
     @args_checked
-    def _promote_nuclide(nuclide: NucleusLike, strict: bool) -> Nuclide:
+    def _promote_nuclide(nuclide: NuclideLike, strict: bool) -> Nuclide:
         if isinstance(nuclide, (str, Integral)):
             nuclide = Nuclide(nuclide)
         # treat elemental as element
@@ -872,7 +872,7 @@ See <https://www.montepy.org/migrations/migrate0_1.html> for more information ""
 
     def _contains_arb(
         self,
-        *nuclides: NucleusLike,
+        *nuclides: NuclideLike,
         bool_func: co.abc.Callable[co.abc.Iterable[bool]] = None,
         threshold: float = 0.0,
         strict: bool = False,

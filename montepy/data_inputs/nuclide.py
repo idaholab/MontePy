@@ -829,3 +829,4 @@ class Nuclide:
 
 
 NucleusLike = str | int | Element | Nucleus
+NuclideLike = NucleusLike | Nuclide
