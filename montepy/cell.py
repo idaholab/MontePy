@@ -339,7 +339,6 @@ class Cell(Numbered_MCNP_Object):
         return self._lattice.lattice
 
     @lattice_type.setter
-    @args_checked
     def lattice_type(self, value: montepy.LatticeType = None):
         self._lattice.lattice = value
 
@@ -615,7 +614,6 @@ class Cell(Numbered_MCNP_Object):
                     if self in cell.complements:
                         yield cell
 
-    @args_checked
     def update_pointers(
         self,
         cells: montepy.cells.Cells,
