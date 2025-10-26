@@ -53,7 +53,7 @@ def kwargs(a: str):
 
 
 @cv.args_checked
-def defaults(a: str, *args: str, b: ty.PositiveInt = None):
+def defaults(a: str, *args: str, b: str = None):
     pass
 
 
