@@ -89,12 +89,12 @@ def union_generic_alias(a: Iterable[montepy.Cell] | str):
 
 
 @cv.args_checked
-def negative_hard(a: typing.Annotated[int, cv.less_than(0)]):
+def negative_hard(a: typing.Annotated[int, ty.less_than(0)]):
     pass
 
 
 @cv.args_checked
-def positive_hard(a: typing.Annotated[int, cv.greater_than(0)]):
+def positive_hard(a: typing.Annotated[int, ty.greater_than(0)]):
     pass
 
 

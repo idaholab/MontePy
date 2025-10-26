@@ -89,6 +89,70 @@ def non_negative(func_name, name, x):
     cv.check_greater_than(func_name, name, x, 0, True)
 
 
+def less_than(maximum: Real, equality=False):
+    r"""
+    A higher-order function for use with ``args_checked`` to enforce a value being less than a value.
+
+
+    Examples
+    ^^^^^^^^
+    This can be used to annotate a value
+
+    .. testcode::
+
+        import numbers
+        import typing
+
+        @args_checked
+        def foo(a: typing.Annotated[numbers.Real, less_than(5)]):
+            pass
+
+    Parameters
+    ----------
+    maximum: Real
+        The maximum value to be tested against.
+    equality: bool
+        if true test for :math:`x\leq m` rather than :math:`x\lt m`
+    """
+
+    def wrapper(func_name, name, x):
+        cv.check_less_than(func_name, name, x, maximum, equality)
+
+    return wrapper
+
+
+def greater_than(minimum: Real, equality: bool = False):
+    r"""
+    A higher-order function for use with ``args_checked`` to enforce a value being greater than a value.
+
+
+    Examples
+    ^^^^^^^^
+    This can be used to annotate a value
+
+    .. testcode::
+
+        import numbers
+        import typing
+
+        @args_checked
+        def foo(a: typing.Annotated[numbers.Real, greater_than(5)]):
+            pass
+
+    Parameters
+    ----------
+    minimum: Real
+        The minimum value to be tested against.
+    equality: bool
+        if true test for :math:`x\geq m` rather than :math:`x\gt m`
+    """
+
+    def wrapper(func_name, name, x):
+        cv.check_greater_than(func_name, name, x, minimum, equality)
+
+    return wrapper
+
+
 """
 Common types to be used for type annotations.
 """

@@ -13,7 +13,7 @@ import montepy.types as ty
 from functools import total_ordering
 import re
 
-MetaState = ty.Annotated[ty.Integral, ty.cv.greater_than(0, True), ty.cv.less_than(5)]
+MetaState = ty.Annotated[ty.Integral, ty.greater_than(0, True), ty.less_than(5)]
 
 DEFAULT_NUCLIDE_WIDTH = 11
 """How many characters wide a nuclide with spacing should be."""
