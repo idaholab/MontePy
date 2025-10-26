@@ -1,6 +1,7 @@
 # Copyright 2024, Battelle Energy Alliance, LLC All Rights Reserved.
 from __future__ import annotations
 
+import montepy
 from .surface_type import SurfaceType
 from .surface import Surface, InitInput
 from montepy._check_value import args_checked

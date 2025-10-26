@@ -117,7 +117,7 @@ class Mode(DataInputAbstract):
         ValueError
             if string is not a valid particle shorthand.
         """
-        if isinstance(particles, ty.Iterable):
+        if isinstance(particles, ty.Iterable) and not isinstance(particles, str):
             is_str = True
             for particle in particles:
                 if not isinstance(particle, str):
