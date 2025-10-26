@@ -36,6 +36,11 @@ def simple_args(a: str):
     pass
 
 
+@cv.args_checked
+def union_annotated(a: str | typing.Annotated[str, lambda f, n, x: True]):
+    pass
+
+
 def var_args(a: str):
     @cv.args_checked
     def ret(a: str, *args: str):
@@ -197,6 +202,7 @@ no = st.none()
             kwargs,
             kw_defaults,
             union_type,
+            union_annotated,
             pipe_union_type,
             union_generic_alias,
         ]
