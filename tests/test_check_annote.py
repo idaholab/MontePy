@@ -85,7 +85,7 @@ def cell_stuff(a: Cell):
 
 
 @cv.args_checked
-def negative(a: typing.Annotated[int, cv.less_than(0)]):
+def negative(a: typing.Annotated[int, ty.less_than(0)]):
     pass
 
 
