@@ -265,7 +265,7 @@ def check_type(
                         name,
                         func_name,
                         value,
-                        ", ".join([t.__name__ for t in expected_iter_type]),
+                        ", ".join([str(t) for t in expected_iter_type]),
                     )
                 )
             else:
