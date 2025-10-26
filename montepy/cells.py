@@ -111,9 +111,8 @@ class Cells(NumberedObjectCollection):
         return self._volume.is_mcnp_calculated
 
     @allow_mcnp_volume_calc.setter
-    def allow_mcnp_volume_calc(self, value):
-        if not isinstance(value, bool):
-            raise TypeError("allow_mcnp_volume_calc must be set to a bool")
+    @args_checked
+    def allow_mcnp_volume_calc(self, value: bool):
         self._volume.is_mcnp_calculated = value
 
     @args_checked
@@ -254,16 +253,6 @@ class Cells(NumberedObjectCollection):
         type(self)
             a cloned copy of this object.
         """
-        if not isinstance(starting_number, (Integral, type(None))):
-            raise TypeError(
-                f"Starting_number must be an int. {type(starting_number)} given."
-            )
-        if not isinstance(step, (Integral, type(None))):
-            raise TypeError(f"step must be an int. {type(step)} given.")
-        if starting_number is not None and starting_number <= 0:
-            raise ValueError(f"starting_number must be >= 1. {starting_number} given.")
-        if step is not None and step <= 0:
-            raise ValueError(f"step must be >= 1. {step} given.")
         if starting_number is None:
             starting_number = self.starting_number
         if step is None:

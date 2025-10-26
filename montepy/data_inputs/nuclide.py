@@ -153,9 +153,8 @@ class Library(SingletonGroup):
     def __hash__(self):
         return hash(self._library.upper())
 
-    def __eq__(self, other):
-        if not isinstance(other, (type(self), str)):
-            raise TypeError(f"Can only compare Library instances.")
+    @args_checked
+    def __eq__(self, other: str | Library):
         if not isinstance(other, type(self)):
             return self.library.upper() == other.upper()
         # due to SingletonGroup
@@ -170,9 +169,8 @@ class Library(SingletonGroup):
     def __repr__(self):
         return f"Library('{self.library}')"
 
-    def __lt__(self, other):
-        if not isinstance(other, (str, type(self))):
-            raise TypeError(f"Can only compare Library instances.")
+    @args_checked
+    def __lt__(self, other: str | Library):
         if isinstance(other, str):
             other = Library(other)
         if self.suffix == other.suffix:
@@ -317,11 +315,8 @@ class Nucleus(SingletonGroup):
     def __hash__(self):
         return hash((self.element, self.A, self.meta_state))
 
-    def __eq__(self, other):
-        if not isinstance(other, type(self)):
-            raise TypeError(
-                f"Nucleus can only be compared to a Nucleus. {other} of type {type(other)} given."
-            )
+    @args_checked
+    def __eq__(self, other: Nucleus):
         # due to SingletonGroup
         return (
             self.element == other.element
@@ -332,11 +327,8 @@ class Nucleus(SingletonGroup):
     def __reduce__(self):
         return (type(self), (self.element, self.A, self._meta_state))
 
-    def __lt__(self, other):
-        if not isinstance(other, type(self)):
-            raise TypeError(
-                f"Can't compare Nuclide to other values. {other} of type {type(other)}."
-            )
+    @args_checked
+    def __lt__(self, other: Nucleus):
         return (self.Z, self.A, self.meta_state) < (other.Z, other.A, other.meta_state)
 
     def __str__(self):
@@ -810,18 +802,12 @@ class Nuclide:
         suffix = f" ({self._library})" if str(self._library) else "()"
         return f"{self.element.symbol:>2}-{self.A:<3}{meta_suffix:<2}{suffix:>5}"
 
-    def __eq__(self, other):
-        if not isinstance(other, type(self)):
-            raise TypeError(
-                f"Cannot compare Nuclide to other values. {other} of type {type(other)}."
-            )
+    @args_checked
+    def __eq__(self, other: Nuclide):
         return self.nucleus == other.nucleus and self.library == other.library
 
-    def __lt__(self, other):
-        if not isinstance(other, type(self)):
-            raise TypeError(
-                f"Cannot compare Nuclide to other values. {other} of type {type(other)}."
-            )
+    @args_checked
+    def __lt__(self, other: Nuclide):
         return (self.nucleus, self.library) < (other.nucleus, other.library)
 
     def __format__(self, format_str):

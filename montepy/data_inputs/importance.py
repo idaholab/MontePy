@@ -159,9 +159,8 @@ class Importance(CellModifierInput):
     def __contains__(self, value):
         return value in self._particle_importances
 
-    def __getitem__(self, particle):
-        if not isinstance(particle, Particle):
-            raise TypeError("Key must be a particle")
+    @args_checked
+    def __getitem__(self, particle: Particle):
         self._check_particle_in_problem(particle)
         try:
             val = self._particle_importances[particle]["data"][0]
@@ -169,21 +168,15 @@ class Importance(CellModifierInput):
         except KeyError:
             return 0.0
 
-    def __setitem__(self, particle, value):
-        if not isinstance(particle, Particle):
-            raise TypeError("Key must be a particle")
+    @args_checked
+    def __setitem__(self, particle: Particle, value: ty.NonNegativeReal):
         self._check_particle_in_problem(particle)
-        if not isinstance(value, numbers.Number):
-            raise TypeError("importance must be a number")
-        if value < 0:
-            raise ValueError("importance must be ≥ 0")
         if particle not in self._particle_importances:
             self._generate_default_cell_tree(particle)
         self._particle_importances[particle]["data"][0].value = value
 
-    def __delitem__(self, particle):
-        if not isinstance(particle, Particle):
-            raise TypeError("Key must be a particle")
+    @args_checked
+    def __delitem__(self, particle: Particle):
         del self._particle_importances[particle]
 
     def __str__(self):

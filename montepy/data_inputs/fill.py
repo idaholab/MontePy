@@ -442,9 +442,8 @@ class Fill(CellModifierInput):
         return self._multi_universe
 
     @multiple_universes.setter
-    def multiple_universes(self, value):
-        if not isinstance(value, bool):
-            raise TypeError("Multiple_univeses must be set to a bool")
+    @args_checked
+    def multiple_universes(self, value: bool):
         self._multi_universe = value
         if not value:
             self._universes = None
@@ -518,9 +517,8 @@ class Fill(CellModifierInput):
         return self._transform
 
     @transform.setter
-    def transform(self, value):
-        if not isinstance(value, (Transform, type(None))):
-            raise TypeError("Transform must be set to a Transform.")
+    @args_checked
+    def transform(self, value: Transform = None):
         self._transform = value
         if value is not None:
             self._hidden_transform = value.hidden_transform

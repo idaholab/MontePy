@@ -7,8 +7,8 @@ import copy
 import itertools as it
 import enum
 import math
-from numbers import Integral, Real
 
+from montepy._check_value import args_checked
 from montepy import input_parser
 from montepy import constants
 from montepy.constants import rel_tol, abs_tol
@@ -17,6 +17,7 @@ from montepy.input_parser.shortcuts import Shortcuts
 from montepy.geometry_operators import Operator
 from montepy.particle import Particle
 from montepy.utilities import fortran_float
+import montepy.types as ty
 
 
 class SyntaxNodeBase(ABC):
@@ -71,9 +72,8 @@ class SyntaxNodeBase(ABC):
         return self._name
 
     @name.setter
-    def name(self, name):
-        if not isinstance(name, str):
-            raise TypeError("Name must be a string")
+    @args_checked
+    def name(self, name: str):
         self._name = name
 
     @abstractmethod
@@ -1154,7 +1154,7 @@ class ValueNode(SyntaxNodeBase):
             token = self._token
             if isinstance(token, input_parser.mcnp_input.Jump):
                 token = "J"
-            if isinstance(token, (Integral, Real)):
+            if isinstance(token, (ty.Integral, ty.Real)):
                 token = str(token)
             self._formatter["value_length"] = len(token)
             if self.padding:
@@ -1178,7 +1178,7 @@ class ValueNode(SyntaxNodeBase):
 
     def _reverse_engineer_float(self):
         token = self._token
-        if isinstance(token, Real):
+        if isinstance(token, ty.Real):
             token = str(token)
         if isinstance(token, input_parser.mcnp_input.Jump):
             token = "J"
@@ -1496,7 +1496,7 @@ class ValueNode(SyntaxNodeBase):
             self.padding = PaddingNode(" ")
 
     def __eq__(self, other):
-        if not isinstance(other, (type(self), str, Real)):
+        if not isinstance(other, (type(self), str, ty.Real)):
             return False
         if isinstance(other, ValueNode):
             other_val = other.value
@@ -1561,18 +1561,15 @@ class ParticleNode(SyntaxNodeBase):
         return self._particles
 
     @particles.setter
-    def particles(self, values):
-        if not isinstance(values, (list, set)):
-            raise TypeError(f"Particles must be a set. {values} given.")
-        for value in values:
-            if not isinstance(value, Particle):
-                raise TypeError(f"All particles must be a Particle. {value} given")
+    @args_checked
+    def particles(self, values: list[Particle] | set[Particle]):
         if isinstance(values, list):
             self._order = values
             values = set(values)
         self._particles = values
 
-    def add(self, value):
+    @args_checked
+    def add(self, value: Particle):
         """Add a particle to this node.
 
         Parameters
@@ -1580,12 +1577,11 @@ class ParticleNode(SyntaxNodeBase):
         value : Particle
             the particle to add.
         """
-        if not isinstance(value, Particle):
-            raise TypeError(f"All particles must be a Particle. {value} given")
         self._order.append(value)
         self._particles.add(value)
 
-    def remove(self, value):
+    @args_checked
+    def remove(self, value: Particle):
         """Remove a particle from this node.
 
         Parameters
@@ -1593,8 +1589,6 @@ class ParticleNode(SyntaxNodeBase):
         value : Particle
             the particle to remove.
         """
-        if not isinstance(value, Particle):
-            raise TypeError(f"All particles must be a Particle. {value} given")
         self._particles.remove(value)
         self._order.remove(value)
 
@@ -2020,7 +2014,8 @@ class ShortcutNode(ListNode):
     }
     _num_finder = re.compile(r"\d+")
 
-    def __init__(self, p=None, short_type=None, data_type=float):
+    @args_checked
+    def __init__(self, p=None, short_type: Shortcuts = None, data_type: type = float):
         self._type = None
         self._end_pad = None
         self._nodes = collections.deque()
@@ -2046,8 +2041,6 @@ class ShortcutNode(ListNode):
             elif self._type in {Shortcuts.INTERPOLATE, Shortcuts.LOG_INTERPOLATE}:
                 self._expand_interpolate(p)
         elif short_type is not None:
-            if not isinstance(short_type, Shortcuts):
-                raise TypeError(f"Shortcut type must be Shortcuts. {short_type} given.")
             self._type = short_type
             if self._type in {
                 Shortcuts.INTERPOLATE,
@@ -2089,11 +2082,8 @@ class ShortcutNode(ListNode):
         return self._end_pad
 
     @end_padding.setter
-    def end_padding(self, padding):
-        if not isinstance(padding, PaddingNode):
-            raise TypeError(
-                f"End padding must be of type PaddingNode. {padding} given."
-            )
+    @args_checked
+    def end_padding(self, padding: PaddingNode):
         self._end_pad = padding
 
     @property

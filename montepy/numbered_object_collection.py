@@ -144,10 +144,11 @@ class NumberedObjectCollection(ABC):
         the problem to link this collection to.
     """
 
+    @args_checked
     def __init__(
         self,
         obj_class: type,
-        objects: list = None,
+        objects: ty.Iterable[montepy.numbered_mcnp_object.Numbered_MCNP_Object] = None,
         problem: montepy.MCNP_Problem = None,
     ):
         self.__num_cache = {}
@@ -160,8 +161,6 @@ class NumberedObjectCollection(ABC):
         if problem is not None:
             self._problem_ref = weakref.ref(problem)
         if objects:
-            if not isinstance(objects, list):
-                raise TypeError("NumberedObjectCollection must be built from a list")
             for obj in objects:
                 if not isinstance(obj, obj_class):
                     raise TypeError(
@@ -306,6 +305,7 @@ class NumberedObjectCollection(ABC):
         self._objects.clear()
         self.__num_cache.clear()
 
+    @args_checked
     def extend(
         self, other_list: ty.Iterable[montepy.numbered_mcnp_object.Numbered_MCNP_Object]
     ):
@@ -321,8 +321,6 @@ class NumberedObjectCollection(ABC):
         NumberConflictError
             if these items conflict with existing elements.
         """
-        if not isinstance(other_list, (list, type(self))):
-            raise TypeError("The extending list must be a list")
         # this is the optimized version to get all numbers
         if self._problem:
             nums = set(self.__num_cache)
@@ -711,25 +709,22 @@ class NumberedObjectCollection(ABC):
         # obj_class is always implemented in child classes.
         return type(self)(numbered_objects)
 
-    def __getitem__(self, i):
+    @args_checked
+    def __getitem__(self, i: slice | ty.Integral):
         if isinstance(i, slice):
             return self.__get_slice(i)
-        elif not isinstance(i, Integral):
-            raise TypeError("index must be an int or slice")
         ret = self.get(i)
         if ret is None:
             raise KeyError(f"Object with number {i} not found in {type(self)}")
         return ret
 
-    def __delitem__(self, idx):
-        if not isinstance(idx, Integral):
-            raise TypeError("index must be an int")
+    @args_checked
+    def __delitem__(self, idx: ty.Integral):
         obj = self[idx]
         self.__internal_delete(obj)
 
-    def __setitem__(self, key, newvalue):
-        if not isinstance(key, Integral):
-            raise TypeError("index must be an int")
+    @args_checked
+    def __setitem__(self, key: ty.Integral, newvalue):
         self.append(newvalue)
 
     def __len__(self):

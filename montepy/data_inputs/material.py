@@ -992,15 +992,8 @@ See <https://www.montepy.org/migrations/migrate0_1.html> for more information ""
         Generator[float]
         """
 
-        def setter(old_val, new_val):
-            if not isinstance(new_val, Real):
-                raise TypeError(
-                    f"Value must be set to a float. {new_val} of type {type(new_val)} given."
-                )
-            if new_val < 0.0:
-                raise ValueError(
-                    f"Value must be greater than or equal to 0. {new_val} given."
-                )
+        @args_checked
+        def setter(old_val, new_val: ty.NonNegativeReal):
             return (old_val[0], new_val)
 
         return _MatCompWrapper(self, 1, setter)
@@ -1058,11 +1051,8 @@ See <https://www.montepy.org/migrations/migrate0_1.html> for more information ""
         Generator[Nuclide]
         """
 
-        def setter(old_val, new_val):
-            if not isinstance(new_val, Nuclide):
-                raise TypeError(
-                    f"Nuclide must be set to a Nuclide. {new_val} of type {type(new_val)} given."
-                )
+        @args_checked
+        def setter(old_val, new_val: Nuclide):
             return (new_val, old_val[1])
 
         return _MatCompWrapper(self, 0, setter)

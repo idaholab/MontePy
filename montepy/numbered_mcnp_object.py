@@ -61,14 +61,9 @@ class Numbered_MCNP_Object(MCNP_Object):
         super().__init__(input, parser)
         self._load_init_num(number)
 
-    def _load_init_num(self, number):
+    @args_checked
+    def _load_init_num(self, number: ty.NonNegativeInt = None):
         if number is not None:
-            if not isinstance(number, Integral):
-                raise TypeError(
-                    f"Number must be an int. {number} of type {type(number)} given."
-                )
-            if number < 0:
-                raise ValueError(f"Number must be 0 or greater. {number} given.")
             self.number = number
 
     _CHILD_OBJ_MAP = {}
@@ -156,16 +151,6 @@ class Numbered_MCNP_Object(MCNP_Object):
         type(self)
             a cloned copy of this object.
         """
-        if not isinstance(starting_number, (Integral, type(None))):
-            raise TypeError(
-                f"Starting_number must be an int. {type(starting_number)} given."
-            )
-        if not isinstance(step, (Integral, type(None))):
-            raise TypeError(f"step must be an int. {type(step)} given.")
-        if starting_number is not None and starting_number <= 0:
-            raise ValueError(f"starting_number must be >= 1. {starting_number} given.")
-        if step is not None and step <= 0:
-            raise ValueError(f"step must be >= 1. {step} given.")
         ret = copy.deepcopy(self)
         if self._problem:
             ret.link_to_problem(self._problem)
