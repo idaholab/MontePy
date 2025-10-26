@@ -406,7 +406,7 @@ class NumberedObjectCollection(ABC):
     @make_prop_pointer(
         "_start_num",
         Integral,
-        validator=lambda _, x: ty.positive("starting_number", "starting_number")(x),
+        validator=lambda _, x: ty.positive("starting_number", "starting_number", x),
     )
     def starting_number(self):
         """The starting number to use when an object is cloned.
@@ -419,7 +419,7 @@ class NumberedObjectCollection(ABC):
         pass
 
     @make_prop_pointer(
-        "_step", Integral, validator=lambda _, x: ty.positive("step", "step")(x)
+        "_step", Integral, validator=lambda _, x: ty.positive("step", "step", x)
     )
     def step(self):
         """The step size to use to find a valid number during cloning.
