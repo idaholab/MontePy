@@ -154,7 +154,6 @@ def args_checked(func: Callable):
     return wrapper
 
 
-# TODO remove closures
 def check_type_and_value(
     func_name: str,
     name: str,
@@ -169,7 +168,6 @@ def check_type_and_value(
         args = typing.get_args(expected_type)
         annotations = args[1:]
         expected_type = args[0]
-    print(func_name, name, value, expected_type)
     check_type(
         func_name, name, value, expected_type, expected_iter_type, none_ok=none_ok
     )
@@ -326,11 +324,8 @@ def check_type_iterable(
     *,
     none_ok: bool = False,
 ):
-    """TODO: refactor"""
-    type_args = typing.get_args(expected_type)
-    base_cls = type_args[0]
-    args = type_args[1:]
-    print("iterable", func_name, name, value, expected_type)
+    base_cls = typing.get_origin(expected_type)
+    args = typing.get_args(expected_type)
     check_type_and_value(func_name, name, value, base_cls, none_ok=none_ok)
     if base_cls == dict:
         assert len(args) == 2, "Dict type requires two typing annotations"
