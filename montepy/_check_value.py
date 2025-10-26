@@ -57,42 +57,11 @@ def _prepare_type_checker(func, arg_spec, none_ok):
         # if annotations are used; evaluate on first call
         if arg_type is None:
             arg_type = typing.get_type_hints(func)[arg_spec.name]
-        return check_type(
+        return check_type_and_value(
             func.__qualname__, arg_spec.name, arg, arg_type, none_ok=none_ok
         )
 
     return type_evaler
-
-
-def _prepare_args_check(func, arg_spec):
-    arg_check = arg_spec.annotation
-    checkers = []
-
-    def annote_getter():
-        type_hint = typing.get_type_hints(func, include_extras=True)[arg_spec.name]
-        if isinstance(type_hint, typing._AnnotatedAlias):
-            return typing.get_args(type_hint)[1:]
-        return []
-
-    if not isinstance(arg_check, (str, typing._AnnotatedAlias)):
-        return None
-    if isinstance(arg_check, str):
-        arg_check = None
-    else:
-        arg_check = annote_getter()
-
-    def check_args(arg):
-        nonlocal arg_check, checkers
-        if len(checkers) == 0:
-            if arg_check is None:
-                arg_check = annote_getter()
-            checkers = [
-                checker(func.__qualname__, arg_spec.name) for checker in arg_check
-            ]
-            arg_check = ""
-        return [checker(arg) for checker in checkers]
-
-    return check_args
 
 
 def args_checked(func: Callable):
@@ -164,9 +133,6 @@ def args_checked(func: Callable):
         type_checker = _prepare_type_checker(func, arg_spec, none_ok)
         if type_checker:
             checkers.append(type_checker)
-        val_checker = _prepare_args_check(func, arg_spec)
-        if val_checker:
-            checkers.append(val_checker)
         arg_checkers[arg_name] = checkers
 
     @functools.wraps(func)
@@ -182,14 +148,34 @@ def args_checked(func: Callable):
             else:
                 args_iter = (arg_vals,)
             for val in args_iter:
-                # TODO unit test
-                checker_slice = slice(None)
-                if val is None:
-                    checker_slice = slice(1)
-                new_vals = [checker(val) for checker in checkers[checker_slice]]
+                [checker(val) for checker in checkers]
         return func(*args, **kwargs)
 
     return wrapper
+
+
+# TODO remove closures
+def check_type_and_value(
+    func_name: str,
+    name: str,
+    value: typing.Any,
+    expected_type: typing.GenericAlias,
+    expected_iter_type: typing.GenericAlias = None,
+    *,
+    none_ok: bool = False,
+):
+    annotations = []
+    if isinstance(expected_type, typing._AnnotatedAlias):
+        annotations = typing.get_args(expected_type)[1:]
+    print(annotations, expected_type, type(expected_type))
+    print(func_name, name, value, expected_type)
+    check_type(
+        func_name, name, value, expected_type, expected_iter_type, none_ok=none_ok
+    )
+    if value is None:
+        return
+    for annotation in annotations:
+        annotation(func_name, name, value)
 
 
 def check_type(
@@ -256,7 +242,7 @@ def check_type(
             errors = []
             for arg in expected_type.__args__:
                 try:
-                    check_type(func_name, name, value, arg, none_ok=none_ok)
+                    check_type_and_value(func_name, name, value, arg, none_ok=none_ok)
                 except TypeError as e:
                     errors.append(e)
             if len(errors) == len(expected_type.__args__):
@@ -297,7 +283,7 @@ def check_type(
             if dtype == np.object_:
                 for element in value.flat:
                     try:
-                        check_type(func_name, name, element, e_type)
+                        check_type_and_value(func_name, name, element, e_type)
                     except TypeError as e:
                         raise_iter_err(e)
             else:
@@ -322,7 +308,7 @@ def check_type(
 
         for item in value:
             try:
-                check_type(func_name, name, item, expected_iter_type)
+                check_type_and_value(func_name, name, item, expected_iter_type)
             except TypeError as e:
                 raise_iter_err(e)
 
@@ -336,9 +322,9 @@ def check_type_iterable(
     none_ok: bool = False,
 ):
     """TODO: refactor"""
-    base_cls = expected_type.__origin__
-    args = expected_type.__args__
-    check_type(func_name, name, value, base_cls, none_ok=none_ok)
+    base_cls = typing.get_origin(expected_type)
+    args = typing.get_args(expected_type)
+    check_type_and_value(func_name, name, value, base_cls, none_ok=none_ok)
     if base_cls == dict:
         assert len(args) == 2, "Dict type requires two typing annotations"
         check_type(func_name, name, list(value.keys()), list, args[0], none_ok=none_ok)
@@ -350,9 +336,9 @@ def check_type_iterable(
             value
         ), "Tuple type must have the exact number of arguments specified."
         for arg, val in zip(args, value):
-            check_type(func_name, name, val, arg)
+            check_type_and_value(func_name, name, val, arg)
     elif issubclass(base_cls, Iterable):
-        check_type(func_name, name, value, base_cls, args[0], none_ok=none_ok)
+        check_type_and_value(func_name, name, value, base_cls, args[0], none_ok=none_ok)
 
 
 def check_length(func_name, name, value, length_min, length_max=None):

@@ -5,7 +5,7 @@ from typing import Annotated, Self
 import montepy._check_value as cv
 
 
-def positive(func_name, name):
+def positive(func_name, name, x):
     r"""
     A higher-order function to be used with ``args_checked`` to ensure a value is positive,
     i.e., :math:`x\gt 0`.
@@ -23,10 +23,10 @@ def positive(func_name, name):
             pass
 
     """
-    return lambda x: cv.check_greater_than(func_name, name, x, 0)
+    cv.check_greater_than(func_name, name, x, 0)
 
 
-def negative(func_name, name):
+def negative(func_name, name, x):
     r"""
     A higher-order function to be used with ``args_checked`` to ensure a value is negative,
     i.e., :math:`x\lt 0`.
@@ -44,7 +44,7 @@ def negative(func_name, name):
             pass
 
     """
-    return lambda x: cv.check_less_than(func_name, name, x, 0)
+    cv.check_less_than(func_name, name, x, 0)
 
 
 def non_positive(func_name, name):
