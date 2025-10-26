@@ -301,6 +301,11 @@ def test_pos_neg(func, val, raise_error):
             np.array([1, 2]),
             ["a", 1, [1, 2], np.array([montepy.Cell(), montepy.Cell()])],
         ),
+        (
+            np_array_union,
+            np.array([montepy.Cell(), montepy.Cell()]),
+            ["a", 1, [1, 2], np.array(["a", "b"])],
+        ),
         (tuple_type, (1, "hi"), [[1], ("hi", 1), {1: "hi"}]),
         (iterable_tuple_type, [("hi", "foo"), ("a", "b")], ["a", [1, 2], [(1, 5)]]),
         (
