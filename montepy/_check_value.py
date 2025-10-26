@@ -235,9 +235,9 @@ def check_type(
         raise TypeError(msg)
 
     # detect complicated recursion of types
-    if isinstance(expected_type, types.UnionType):
-        # handle cases isisntance can't (not all types are classes
-        if not all((isinstance(t, type) for t in expected_type.__args__)):
+    if isinstance(expected_type, (types.UnionType, typing._UnionGenericAlias)):
+        # handle cases isisntance can't (not all types are classes)
+        if not all((isinstance(t, type) for t in typing.get_args(expected_type))):
             errors = []
             for arg in expected_type.__args__:
                 try:
