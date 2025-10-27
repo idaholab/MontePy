@@ -247,7 +247,7 @@ class NumberedObjectCollection(ABC):
 
         if number < 0:
             raise ValueError(f"The number must be non-negative. {number} given.")
-        
+
         conflict = number in self.__num_cache
 
         if conflict:
