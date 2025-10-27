@@ -247,14 +247,9 @@ class NumberedObjectCollection(ABC):
 
         if number < 0:
             raise ValueError(f"The number must be non-negative. {number} given.")
-        conflict = False
-        # only can trust cache if being updated
-        if self._problem:
-            if number in self.__num_cache:
-                conflict = True
-        else:
-            if number in self.numbers:
-                conflict = True
+        
+        conflict = number in self.__num_cache
+
         if conflict:
             raise NumberConflictError(
                 f"Number {number} is already in use for the collection: {type(self).__name__} by {self[number]}"
