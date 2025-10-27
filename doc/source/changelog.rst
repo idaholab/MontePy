@@ -8,6 +8,8 @@ MontePy Changelog
 #Next Version#
 --------------
 
+**Performance Improvement**
+* Optimized O(N^2) scaling in NumberedObjectCollection.check_number by improving NumberedObjectCollection.check_number to O(N) (:`issue:`823`).
 
 **Features Added**
 
