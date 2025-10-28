@@ -268,10 +268,7 @@ def check_type(
                     )
                 )
             else:
-                try:
-                    type_str = expected_type.__name__
-                except AttributeError:
-                    type_str = str(expected_type)
+                type_str = str(expected_iter_type)
                 msg = (
                     f'Unable to set "{name}" for "{func_name}" to "{value}" since each '
                     f'item must be of type "{type_str}"'
