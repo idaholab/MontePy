@@ -3,14 +3,12 @@ from __future__ import annotations
 import collections as co
 import copy
 import math
-import montepy.types as ty
 from typing import Generator, Any
-
-from montepy.utilities import *
 import weakref
 
 import montepy
 from montepy.data_inputs import data_input, thermal_scattering
+from montepy.data_inputs.element import Element
 from montepy.data_inputs.nuclide import (
     Library,
     Nucleus,
@@ -18,14 +16,13 @@ from montepy.data_inputs.nuclide import (
     NuclideLike,
     MetaState,
 )
-from montepy.data_inputs.element import Element
+from montepy.exceptions import *
 from montepy.input_parser import syntax_node
 from montepy.input_parser.material_parser import MaterialParser
 from montepy.numbered_mcnp_object import Numbered_MCNP_Object, InitInput
-from montepy.exceptions import *
-import montepy.types as ty
-from montepy.utilities import *
 from montepy.particle import LibraryType
+from montepy.utilities import *
+import montepy.types as ty
 
 
 MAX_PRINT_ELEMENTS: int = 5
@@ -137,7 +134,7 @@ class _MatCompWrapper:
 
     __slots__ = "_parent", "_index", "_setter"
 
-    def __init__(self, parent: "Material", index: int, setter: Callable):
+    def __init__(self, parent: "Material", index: int, setter: ty.Callable):
         self._parent = parent
         self._index = index
         self._setter = setter
@@ -861,7 +858,7 @@ See <https://www.montepy.org/migrations/migrate0_1.html> for more information ""
     @staticmethod
     @args_checked
     def _promote_nuclide(nuclide: NuclideLike, strict: bool) -> Nuclide:
-        if isinstance(nuclide, (str, Integral)):
+        if isinstance(nuclide, (str, ty.Integral)):
             nuclide = Nuclide(nuclide)
         # treat elemental as element
         if isinstance(nuclide, (Nucleus, Nuclide)) and nuclide.A == 0 and not strict:

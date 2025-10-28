@@ -1,7 +1,7 @@
 # Copyright 2024-2025, Battelle Energy Alliance, LLC All Rights Reserved.
 from __future__ import annotations
+
 import montepy
-from montepy.utilities import *
 from montepy.exceptions import *
 from montepy.geometry_operators import Operator
 from montepy.input_parser.syntax_node import (
@@ -10,8 +10,8 @@ from montepy.input_parser.syntax_node import (
     ValueNode,
     CommentNode,
 )
-from montepy.utilities import *
 import montepy.types as ty
+from montepy.utilities import *
 
 
 class HalfSpace:

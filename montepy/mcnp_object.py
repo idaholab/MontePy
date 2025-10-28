@@ -1,7 +1,6 @@
 # Copyright 2024-2025, Battelle Energy Alliance, LLC All Rights Reserved.
 from __future__ import annotations
 from abc import ABC, ABCMeta, abstractmethod
-from collections.abc import Iterable
 import copy
 import itertools as it
 import textwrap
@@ -270,7 +269,7 @@ The new input was:\n\n"""
 
     @leading_comments.setter
     @args_checked
-    def leading_comments(self, comments: Iterable[CommentNode] | CommentNode):
+    def leading_comments(self, comments: ty.Iterable[CommentNode] | CommentNode):
         if isinstance(comments, CommentNode):
             comments = [comments]
         new_nodes = list(*zip(comments, it.cycle(["\n"])))

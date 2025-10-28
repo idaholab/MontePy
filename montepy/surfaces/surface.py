@@ -3,18 +3,16 @@ from __future__ import annotations
 import copy
 from typing import Union
 
-
 import montepy
-from montepy.utilities import *
-from montepy.input_parser import syntax_node
-from montepy.exceptions import *
 from montepy.data_inputs import transform
+from montepy.exceptions import *
 from montepy.input_parser.surface_parser import SurfaceParser
+from montepy.input_parser import syntax_node
 from montepy.numbered_mcnp_object import Numbered_MCNP_Object, InitInput
 from montepy.surfaces import half_space
 from montepy.surfaces.surface_type import SurfaceType
-import montepy.types as ty
 from montepy.utilities import *
+import montepy.types as ty
 
 
 def _surf_type_validator(self, surf_type):

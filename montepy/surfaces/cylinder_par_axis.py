@@ -2,12 +2,11 @@
 from __future__ import annotations
 
 import montepy
-from .surface_type import SurfaceType
 from .surface import Surface, InitInput
-from montepy.utilities import *
+from .surface_type import SurfaceType
 from montepy.exceptions import *
-from montepy.utilities import *
 import montepy.types as ty
+from montepy.utilities import *
 
 
 def _enforce_positive_radius(self, value):

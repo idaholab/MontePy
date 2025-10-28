@@ -4,14 +4,14 @@ from __future__ import annotations
 import collections as co
 import copy
 from typing import Generator, Union
-import montepy.types as ty
 
 import montepy
-from montepy.utilities import *
+from montepy.data_inputs.nuclide import NuclideLike
 from montepy.numbered_object_collection import NumberedDataObjectCollection
+from montepy.utilities import *
+import montepy.types as ty
 
 Material = montepy.data_inputs.material.Material
-from montepy.data_inputs.nuclide import NuclideLike
 
 
 class Materials(NumberedDataObjectCollection):

@@ -1,31 +1,27 @@
 # Copyright 2024-2025, Battelle Energy Alliance, LLC All Rights Reserved.
 from __future__ import annotations
-from collections.abc import Iterable
+
 import copy
 import itertools
-
 import sly
 import warnings
 
 import montepy
 from montepy.cells import Cells
-
-# args_checked imported from montepy.utilities via wildcard
 from montepy.data_inputs import importance, fill, lattice_input, universe_input, volume
 from montepy.data_inputs.data_parser import PREFIX_MATCHES
-from montepy.input_parser.cell_parser import CellParser
-from montepy.input_parser import syntax_node
-from montepy.exceptions import *
-from montepy.numbered_mcnp_object import Numbered_MCNP_Object, InitInput
 from montepy.data_inputs.material import Material
-from montepy.materials import Materials
 from montepy.geometry_operators import Operator
+from montepy.input_parser import syntax_node
+from montepy.input_parser.cell_parser import CellParser
+from montepy.numbered_mcnp_object import Numbered_MCNP_Object, InitInput
+from montepy.surface_collection import Surfaces
 from montepy.surfaces.half_space import HalfSpace, UnitHalfSpace
 from montepy.surfaces.surface import Surface
-from montepy.surface_collection import Surfaces
-import montepy.types as ty
 from montepy.universe import Universe
+from montepy.exceptions import *
 from montepy.utilities import *
+import montepy.types as ty
 
 
 def _link_geometry_to_cell(self, geom):

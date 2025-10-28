@@ -1,5 +1,5 @@
 # Copyright 2024, Battelle Energy Alliance, LLC All Rights Reserved.
-from collections.abc import Iterable
+
 import copy
 from enum import Enum
 import itertools
@@ -160,7 +160,7 @@ class MCNP_Problem:
 
     @cells.setter
     @args_checked
-    def cells(self, cells: Iterable[montepy.Cell] | Cells):
+    def cells(self, cells: ty.Iterable[montepy.Cell] | Cells):
         if not isinstance(cells, Cells):
             cells = Cells(cells)
         if cells is self.cells:
@@ -178,7 +178,7 @@ class MCNP_Problem:
         """
         return self._mode
 
-    def set_mode(self, particles: Iterable[str] | str):
+    def set_mode(self, particles: ty.Iterable[str] | str):
         """Sets the mode of problem to the given particles.
 
         For details see: :func:`montepy.data_cards.mode.Mode.set`.
@@ -244,7 +244,7 @@ class MCNP_Problem:
 
     @surfaces.setter
     @args_checked
-    def surfaces(self, surfs: Iterable[montepy.Surface] | Surfaces):
+    def surfaces(self, surfs: ty.Iterable[montepy.Surface] | Surfaces):
         if not isinstance(surfs, Surfaces):
             surfs = Surfaces(surfs)
         surfs.link_to_problem(self)
@@ -265,7 +265,7 @@ class MCNP_Problem:
 
     @materials.setter
     @args_checked
-    def materials(self, mats: Iterable[montepy.Material] | Materials):
+    def materials(self, mats: ty.Iterable[montepy.Material] | Materials):
         if not isinstance(mats, Materials):
             mats = Materials(mats)
         mats.link_to_problem(self)

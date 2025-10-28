@@ -1,12 +1,12 @@
 # Copyright 2024-2025, Battelle Energy Alliance, LLC All Rights Reserved.
 from __future__ import annotations
+import warnings
+
 import montepy
+from montepy.exceptions import *
 from montepy.numbered_object_collection import NumberedObjectCollection
 from montepy.utilities import *
-from montepy.exceptions import *
 import montepy.types as ty
-
-import warnings
 
 
 class Cells(NumberedObjectCollection):
@@ -37,7 +37,9 @@ class Cells(NumberedObjectCollection):
 
     @args_checked
     def __init__(
-        self, cells: Iterable[montepy.Cell] = None, problem: montepy.MCNP_Problem = None
+        self,
+        cells: ty.Iterable[montepy.Cell] = None,
+        problem: montepy.MCNP_Problem = None,
     ):
         self.__blank_modifiers = set()
         super().__init__(montepy.Cell, cells, problem)
@@ -73,7 +75,7 @@ class Cells(NumberedObjectCollection):
     def set_equal_importance(
         self,
         importance: ty.PositiveReal,
-        vacuum_cells: Iterable[montepy.Cell | ty.PositiveInt] = tuple(),
+        vacuum_cells: ty.Iterable[montepy.Cell | ty.PositiveInt] = tuple(),
     ):
         """Sets all cells except the vacuum cells to the same importance using :func:`montepy.data_cards.importance.Importance.all`.
 
