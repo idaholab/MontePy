@@ -3,10 +3,10 @@ from __future__ import annotations
 import collections as co
 import copy
 import math
-from numbers import Integral, Real
+import montepy.types as ty
 from typing import Generator, Any
 
-from montepy._check_value import args_checked
+from montepy.utilities import *
 import weakref
 
 import montepy
@@ -142,7 +142,7 @@ class _MatCompWrapper:
         self._index = index
         self._setter = setter
 
-    def __iter__(self) -> Generator[Nuclide | Real, None, None]:
+    def __iter__(self) -> Generator[Nuclide | ty.Real, None, None]:
 
         def generator():
             for component in self._parent:
@@ -525,7 +525,7 @@ See <https://www.montepy.org/migrations/migrate0_1.html> for more information ""
     @args_checked
     def __getitem__(self, idx: ty.Integral | slice) -> Any:
         """"""
-        if isinstance(idx, Integral):
+        if isinstance(idx, ty.Integral):
             comp = self._components[idx]
             return self.__unwrap_comp(comp)
         # else it's a slice
@@ -544,7 +544,7 @@ See <https://www.montepy.org/migrations/migrate0_1.html> for more information ""
 
     @args_checked
     def __setitem__(
-        self, idx: ty.Integral | slice, newvalue: tuple[Nuclide, Real]
+        self, idx: ty.Integral | slice, newvalue: tuple[Nuclide, ty.Real]
     ) -> None:
         """"""
         old_vals = self._components[idx]
@@ -572,7 +572,7 @@ See <https://www.montepy.org/migrations/migrate0_1.html> for more information ""
 
     @args_checked
     def __delitem__(self, idx: ty.Integral | slice) -> None:
-        if isinstance(idx, Integral):
+        if isinstance(idx, ty.Integral):
             self.__delitem(idx)
             return
         # else it's a slice
@@ -613,7 +613,7 @@ See <https://www.montepy.org/migrations/migrate0_1.html> for more information ""
 
     @args_checked
     def __contains__(self, nuclide: NuclideLike) -> bool:
-        if isinstance(nuclide, (str, Integral)):
+        if isinstance(nuclide, (str, ty.Integral)):
             nuclide = Nuclide(nuclide)
         # switch to elemental
         if isinstance(nuclide, (Nucleus, Nuclide)) and nuclide.A == 0:
@@ -1102,12 +1102,12 @@ See <https://www.montepy.org/migrations/migrate0_1.html> for more information ""
     def find(
         self,
         name: str = None,
-        element: Element | str | Integral | slice = None,
+        element: Element | str | ty.Integral | slice = None,
         A: ty.PositiveInt | slice = None,
         meta_state: MetaState | slice = None,
         library: str | slice = None,
         strict: bool = False,
-    ) -> Generator[tuple[Integral, tuple[Nuclide, Real]], None, None]:
+    ) -> Generator[tuple[ty.Integral, tuple[Nuclide, ty.Real]], None, None]:
         """Finds all components that meet the given criteria.
 
         The criteria are additive, and a component must match all criteria.
@@ -1264,7 +1264,7 @@ See <https://www.montepy.org/migrations/migrate0_1.html> for more information ""
         meta_state: MetaState | slice = None,
         library: str | slice = None,
         strict: bool = False,
-    ) -> Generator[Real, None, None]:
+    ) -> Generator[ty.Real, None, None]:
         """A wrapper for :func:`find` that only returns the fractions of the components.
 
         For more examples see that function.

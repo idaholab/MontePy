@@ -4,11 +4,10 @@ from __future__ import annotations
 import collections as co
 import copy
 from typing import Generator, Union
-from numbers import Integral, Real
+import montepy.types as ty
 
 import montepy
-import montepy.types as ty
-from montepy._check_value import args_checked
+from montepy.utilities import *
 from montepy.numbered_object_collection import NumberedDataObjectCollection
 
 Material = montepy.data_inputs.material.Material
@@ -54,7 +53,7 @@ class Materials(NumberedDataObjectCollection):
     def get_containing_any(
         self,
         *nuclides: NuclideLike,
-        threshold: Real = 0.0,
+        threshold: ty.Real = 0.0,
         strict: bool = False,
     ) -> Generator[Material]:
         """Get all materials that contain any of these these nuclides.
@@ -113,7 +112,7 @@ class Materials(NumberedDataObjectCollection):
     def get_containing_all(
         self,
         *nuclides: NuclideLike,
-        threshold: Real = 0.0,
+        threshold: ty.Real = 0.0,
         strict: bool = False,
     ) -> Generator[Material]:
         """Get all materials that contain all of these nuclides.
@@ -170,9 +169,9 @@ class Materials(NumberedDataObjectCollection):
 
     def _contains_arb(
         self,
-        *nuclides: NucleusLike,
+        *nuclides: NuclideLike,
         bool_func: co.abc.Callable[co.abc.Iterable[bool]],
-        threshold: Real = 0.0,
+        threshold: ty.Real = 0.0,
         strict: bool = False,
     ) -> Generator[Material]:
         nuclide_finders = []

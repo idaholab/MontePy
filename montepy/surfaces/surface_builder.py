@@ -1,5 +1,5 @@
 # Copyright 2024, Battelle Energy Alliance, LLC All Rights Reserved.
-from montepy._check_value import args_checked
+from montepy.utilities import *
 from montepy.surfaces.axis_plane import AxisPlane
 from montepy.surfaces.surface import Surface, InitInput
 from montepy.surfaces.surface_type import SurfaceType

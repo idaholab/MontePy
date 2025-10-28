@@ -2,9 +2,9 @@
 from __future__ import annotations
 import montepy
 from montepy.numbered_object_collection import NumberedObjectCollection
-from montepy._check_value import args_checked
+from montepy.utilities import *
 from montepy.exceptions import *
-from montepy.types import *
+import montepy.types as ty
 
 import warnings
 
@@ -72,8 +72,8 @@ class Cells(NumberedObjectCollection):
     @args_checked
     def set_equal_importance(
         self,
-        importance: PositiveReal,
-        vacuum_cells: Iterable[montepy.Cell | PositiveInt] = tuple(),
+        importance: ty.PositiveReal,
+        vacuum_cells: Iterable[montepy.Cell | ty.PositiveInt] = tuple(),
     ):
         """Sets all cells except the vacuum cells to the same importance using :func:`montepy.data_cards.importance.Importance.all`.
 
@@ -88,7 +88,7 @@ class Cells(NumberedObjectCollection):
         """
         cells_buff = set()
         for cell in vacuum_cells:
-            if isinstance(cell, Integral):
+            if isinstance(cell, ty.Integral):
                 cells_buff.add(self[cell])
             else:
                 cells_buff.add(cell)
@@ -215,8 +215,8 @@ class Cells(NumberedObjectCollection):
         self,
         clone_material: bool = False,
         clone_region: bool = False,
-        starting_number: PositiveInt = None,
-        step: PositiveInt = None,
+        starting_number: ty.PositiveInt = None,
+        step: ty.PositiveInt = None,
     ):
         """Create a new instance of this collection, with all new independent
         objects with new numbers.

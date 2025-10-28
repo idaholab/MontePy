@@ -6,7 +6,7 @@ import re
 from typing import Union
 
 import montepy
-from montepy._check_value import args_checked
+from montepy.utilities import *
 from montepy import mcnp_object
 from montepy.data_inputs import data_input
 from montepy.exceptions import *

@@ -3,7 +3,7 @@ from abc import ABC, abstractmethod
 import math
 
 from montepy.exceptions import *
-from montepy._check_value import args_checked
+from montepy.utilities import *
 from montepy.input_parser.block_type import BlockType
 from montepy.constants import BLANK_SPACE_CONTINUE, get_max_line_length
 from montepy.input_parser.read_parser import ReadParser

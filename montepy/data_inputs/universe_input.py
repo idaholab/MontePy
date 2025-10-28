@@ -1,7 +1,7 @@
 # Copyright 2024, Battelle Energy Alliance, LLC All Rights Reserved.
 import itertools
 
-from montepy._check_value import args_checked
+from montepy.utilities import *
 from montepy.data_inputs.cell_modifier import CellModifierInput, InitInput
 from montepy.exceptions import *
 from montepy.constants import DEFAULT_VERSION

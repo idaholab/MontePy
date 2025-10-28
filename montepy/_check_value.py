@@ -34,7 +34,6 @@ from collections.abc import Callable, Iterable
 from enum import EnumType
 import functools
 import inspect
-from numbers import Real, Integral
 import numpy as np
 import types
 import typing

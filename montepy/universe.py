@@ -1,13 +1,13 @@
 # Copyright 2024-2025, Battelle Energy Alliance, LLC All Rights Reserved.
 from __future__ import annotations
 
-from numbers import Integral
+import montepy.types as ty
 from typing import Generator
 import numpy as np
 
 
 import montepy
-from montepy._check_value import args_checked
+from montepy.utilities import *
 from montepy.cells import Cells
 from montepy.input_parser.mcnp_input import Input
 from montepy.input_parser.block_type import BlockType

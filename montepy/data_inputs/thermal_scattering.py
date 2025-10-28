@@ -2,7 +2,7 @@
 from __future__ import annotations
 
 import montepy
-from montepy._check_value import args_checked
+from montepy.utilities import *
 from montepy.data_inputs.data_input import DataInputAbstract, InitInput
 from montepy.input_parser.thermal_parser import ThermalParser
 from montepy import mcnp_object

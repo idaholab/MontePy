@@ -1,6 +1,6 @@
 # Copyright 2024 - 2025, Battelle Energy Alliance, LLC All Rights Reserved.
 import montepy
-from montepy._check_value import args_checked
+from montepy.utilities import *
 from montepy.data_inputs.data_input import DataInputAbstract, InitInput
 from montepy.input_parser import syntax_node
 from montepy.input_parser.block_type import BlockType

@@ -1,7 +1,7 @@
 # Copyright 2024-2025, Battelle Energy Alliance, LLC All Rights Reserved.
 from __future__ import annotations
 import montepy
-from montepy._check_value import args_checked
+from montepy.utilities import *
 from montepy.exceptions import *
 from montepy.geometry_operators import Operator
 from montepy.input_parser.syntax_node import (
@@ -12,8 +12,6 @@ from montepy.input_parser.syntax_node import (
 )
 from montepy.utilities import *
 import montepy.types as ty
-
-from numbers import Integral
 
 
 class HalfSpace:
@@ -585,7 +583,7 @@ class UnitHalfSpace(HalfSpace):
                 side = "+"
         else:
             side = "-"
-        if isinstance(self.divider, Integral):
+        if isinstance(self.divider, ty.Integral):
             div = self.divider
         else:
             div = self.divider.number
@@ -653,7 +651,7 @@ class UnitHalfSpace(HalfSpace):
         if self._is_cell:
             container = cells
             par_container = self._cell.complements
-        if isinstance(self.divider, Integral):
+        if isinstance(self.divider, ty.Integral):
             try:
                 self._divider = container[self._divider]
                 if self._divider not in par_container:
@@ -669,7 +667,7 @@ class UnitHalfSpace(HalfSpace):
 
     def _ensure_has_nodes(self):
         if self.node is None:
-            if isinstance(self.divider, Integral):
+            if isinstance(self.divider, ty.Integral):
                 num = self.divider
             else:
                 num = self.divider.number
@@ -680,7 +678,7 @@ class UnitHalfSpace(HalfSpace):
             self._node = node
 
     def _update_node(self):
-        if isinstance(self.divider, Integral):
+        if isinstance(self.divider, ty.Integral):
             self._node.value = self.divider
         else:
             self._node.value = self.divider.number
@@ -735,7 +733,7 @@ class UnitHalfSpace(HalfSpace):
         """
 
         def num(obj):
-            if isinstance(obj, Integral):
+            if isinstance(obj, ty.Integral):
                 return obj
             return obj.number
 

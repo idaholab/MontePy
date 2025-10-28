@@ -5,7 +5,7 @@ import copy
 import re
 
 import montepy
-from montepy._check_value import args_checked
+from montepy.utilities import *
 from montepy.exceptions import *
 from montepy.input_parser.data_parser import (
     ClassifierParser,

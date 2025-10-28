@@ -3,13 +3,14 @@ from __future__ import annotations
 from collections.abc import Iterable
 import copy
 import itertools
-from numbers import Integral, Real
+
 import sly
 import warnings
 
 import montepy
 from montepy.cells import Cells
-from montepy._check_value import args_checked
+
+# args_checked imported from montepy.utilities via wildcard
 from montepy.data_inputs import importance, fill, lattice_input, universe_input, volume
 from montepy.data_inputs.data_parser import PREFIX_MATCHES
 from montepy.input_parser.cell_parser import CellParser
@@ -377,7 +378,7 @@ class Cell(Numbered_MCNP_Object):
 
     @volume.setter
     @args_checked
-    def volume(self, value: Real):
+    def volume(self, value: ty.Real):
         self._volume.volume = value
 
     @volume.deleter
@@ -665,7 +666,7 @@ class Cell(Numbered_MCNP_Object):
         new_deleting_dict = {}
 
         def get_num(obj):
-            if isinstance(obj, Integral):
+            if isinstance(obj, ty.Integral):
                 return obj
             return obj.number
 
@@ -689,7 +690,7 @@ class Cell(Numbered_MCNP_Object):
         for input_class, (attr, _) in self._INPUTS_TO_PROPERTY.items():
             getattr(self, attr)._update_values()
 
-    def _generate_default_tree(self, number: Integral = None):
+    def _generate_default_tree(self, number: ty.Integral = None):
         material = syntax_node.SyntaxNode(
             "material",
             {
@@ -777,7 +778,7 @@ class Cell(Numbered_MCNP_Object):
         return HalfSpace(base_node, Operator.COMPLEMENT)
 
     def format_for_mcnp_input(
-        self, mcnp_version: tuple[Integral, Integral, Integral]
+        self, mcnp_version: tuple[ty.Integral, ty.Integral, ty.Integral]
     ) -> list[str]:
         """Creates a string representation of this MCNP_Object that can be
         written to file.
@@ -905,7 +906,7 @@ class Cell(Numbered_MCNP_Object):
         memo = {}
 
         def num(obj):
-            if isinstance(obj, Integral):
+            if isinstance(obj, ty.Integral):
                 return obj
             return obj.number
 

@@ -2,10 +2,10 @@
 from __future__ import annotations
 import copy
 from typing import Union
-from numbers import Real
+
 
 import montepy
-from montepy._check_value import args_checked
+from montepy.utilities import *
 from montepy.input_parser import syntax_node
 from montepy.exceptions import *
 from montepy.data_inputs import transform
@@ -240,7 +240,7 @@ class Surface(Numbered_MCNP_Object):
 
     @surface_constants.setter
     @args_checked
-    def surface_constants(self, constants: ty.Iterable[Real]):
+    def surface_constants(self, constants: ty.Iterable[ty.Real]):
         if len(constants) != len(self._surface_constants):
             raise ValueError(f"Cannot change the length of the surface constants.")
         for i, value in enumerate(constants):

@@ -4,10 +4,9 @@ from abc import ABC
 import itertools as it
 import typing
 import weakref
-from numbers import Integral
 
 import montepy
-from montepy._check_value import args_checked
+from montepy.utilities import *
 from montepy.numbered_mcnp_object import Numbered_MCNP_Object
 from montepy.exceptions import *
 from montepy.utilities import *
@@ -403,7 +402,7 @@ class NumberedObjectCollection(ABC):
 
     @make_prop_pointer(
         "_start_num",
-        Integral,
+        ty.Integral,
         validator=lambda _, x: ty.positive("starting_number", "starting_number", x),
     )
     def starting_number(self):
@@ -417,7 +416,7 @@ class NumberedObjectCollection(ABC):
         pass
 
     @make_prop_pointer(
-        "_step", Integral, validator=lambda _, x: ty.positive("step", "step", x)
+        "_step", ty.Integral, validator=lambda _, x: ty.positive("step", "step", x)
     )
     def step(self):
         """The step size to use to find a valid number during cloning.

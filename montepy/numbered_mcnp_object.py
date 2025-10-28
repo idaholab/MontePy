@@ -4,7 +4,6 @@ from abc import abstractmethod
 import copy
 import itertools
 from typing import Union
-from numbers import Integral
 
 from montepy.mcnp_object import MCNP_Object, InitInput
 import montepy
@@ -69,7 +68,7 @@ class Numbered_MCNP_Object(MCNP_Object):
     _CHILD_OBJ_MAP = {}
     """"""
 
-    @make_prop_val_node("_number", Integral, validator=_number_validator)
+    @make_prop_val_node("_number", ty.Integral, validator=_number_validator)
     def number(self):
         """The current number of the object that will be written out to a new input.
 

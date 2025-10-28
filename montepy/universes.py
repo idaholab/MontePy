@@ -2,7 +2,7 @@
 from __future__ import annotations
 
 import montepy
-from montepy._check_value import args_checked
+from montepy.utilities import *
 from montepy.numbered_object_collection import NumberedObjectCollection
 from montepy.universe import Universe
 import montepy.types as ty

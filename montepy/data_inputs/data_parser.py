@@ -2,7 +2,7 @@
 import re
 
 import montepy
-from montepy._check_value import args_checked
+from montepy.utilities import *
 from montepy.data_inputs import (
     data_input,
     fill,

@@ -8,7 +8,7 @@ import itertools as it
 import enum
 import math
 
-from montepy._check_value import args_checked
+from montepy.utilities import *
 from montepy import input_parser
 from montepy import constants
 from montepy.constants import rel_tol, abs_tol

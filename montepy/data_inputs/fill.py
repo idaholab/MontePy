@@ -4,7 +4,7 @@ import itertools as it
 import numpy as np
 
 import montepy
-from montepy._check_value import args_checked
+from montepy.utilities import *
 from montepy.data_inputs.cell_modifier import CellModifierInput, InitInput
 from montepy.data_inputs.transform import Transform
 from montepy.exceptions import *

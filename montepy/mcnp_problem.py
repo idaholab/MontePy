@@ -9,7 +9,7 @@ import warnings
 
 from montepy.data_inputs import mode, transform
 from montepy._cell_data_control import CellDataPrintController
-from montepy._check_value import args_checked
+from montepy.utilities import *
 from montepy.cell import Cell
 from montepy.cells import Cells
 from montepy.exceptions import *

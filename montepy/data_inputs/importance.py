@@ -5,7 +5,7 @@ import copy
 import math
 import warnings
 
-from montepy._check_value import args_checked
+from montepy.utilities import *
 from montepy.data_inputs.cell_modifier import CellModifierInput, InitInput
 from montepy.exceptions import *
 from montepy.constants import DEFAULT_VERSION, rel_tol, abs_tol

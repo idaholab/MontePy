@@ -1,7 +1,7 @@
 # Copyright 2024, Battelle Energy Alliance, LLC All Rights Reserved.
 from __future__ import annotations
 import montepy
-from montepy._check_value import args_checked
+from montepy.utilities import *
 from montepy.data_inputs.transform import Transform
 from montepy.numbered_object_collection import NumberedDataObjectCollection
 import montepy.types as ty
