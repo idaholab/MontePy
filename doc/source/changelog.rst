@@ -11,6 +11,8 @@ MontePy Changelog
 
 **Features Added**
 
+* Added checking for additional input after the ``data`` block, and raising a warning if it exists (:issue:`525`).
+* Allow multiple universe fills to accept 2D MNCP lattices (:issue:`719`).
 * Make `LatticeType.RECTANGULAR` and `LatticeType.HEXAHEDRAL` synonymous (:issue:`808`).
 * Allow setting ``cell.fill.universes`` with a numpy array of universe IDs (:issue:`736`).
 
@@ -18,6 +20,7 @@ MontePy Changelog
 
 * Fixed bug where lines that were the allowed length was raising a ``LineOverRunWarning`` when read by MontePy (:issue:`517`). 
 * Added descriptive TypeError messages (:issue:`801`)
+* Fixed a bug that caused to write an extra termination line between the data block and the cell data section in the MCNP input. (:pull:`819`) (:issue:`703`).
 
 **Documentation**
 
@@ -36,7 +39,6 @@ MontePy Changelog
 
 1.1.3
 --------------
-
 **Features Added**
 
 * Added Boundary condition type to the representation of a ``montepy.Surface`` (e.g., ``repr(surf)``)  (:issue:`682`).
@@ -49,6 +51,7 @@ MontePy Changelog
 
 * Fixed bug where lines that were the allowed length was raising a ``LineOverRunWarning`` when read by MontePy (:issue:`517`). 
 * Added descriptive TypeError messages (:issue:`801`)
+
 
 1.1.2
 --------------
