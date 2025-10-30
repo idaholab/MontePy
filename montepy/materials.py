@@ -55,7 +55,7 @@ class Materials(NumberedDataObjectCollection):
         *nuclides: NuclideLike,
         threshold: ty.Real = 0.0,
         strict: bool = False,
-    ) -> Generator[Material]:
+    ) -> Generator[Material, None, None]:
         """Get all materials that contain any of these these nuclides.
 
         This uses :func:`~montepy.data_inputs.material.Material.contains` under the hood.
@@ -93,7 +93,7 @@ class Materials(NumberedDataObjectCollection):
 
         Returns
         -------
-        Generator[Material]
+        Generator[Material, None, None]
             A generator of all matching materials
 
         Raises
@@ -114,7 +114,7 @@ class Materials(NumberedDataObjectCollection):
         *nuclides: NuclideLike,
         threshold: ty.Real = 0.0,
         strict: bool = False,
-    ) -> Generator[Material]:
+    ) -> Generator[Material, None, None]:
         """Get all materials that contain all of these nuclides.
 
         This uses :func:`~montepy.data_inputs.material.Material.contains` under the hood.
@@ -152,7 +152,7 @@ class Materials(NumberedDataObjectCollection):
 
         Returns
         -------
-        Generator[Material]
+        Generator[Material, None, None]
             A generator of all matching materials
 
         Raises
@@ -173,7 +173,7 @@ class Materials(NumberedDataObjectCollection):
         bool_func: co.abc.Callable[co.abc.Iterable[bool]],
         threshold: ty.Real = 0.0,
         strict: bool = False,
-    ) -> Generator[Material]:
+    ) -> Generator[Material, None, None]:
         nuclide_finders = []
         for nuclide in nuclides:
             nuclide_finders.append(Material._promote_nuclide(nuclide, strict))

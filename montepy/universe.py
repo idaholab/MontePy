@@ -43,7 +43,7 @@ class Universe(Numbered_MCNP_Object):
 
         Returns
         -------
-        Generator
+        Generator[montepy.Cell, None, None]
             a generator returning every cell in this universe.
         """
         if self._problem:
@@ -57,7 +57,7 @@ class Universe(Numbered_MCNP_Object):
 
         Returns
         -------
-        Generator[Cell]
+        Generator[Cell, None, None]
             an iterator of the Cell objects which use this universe as their fill.
         """
         if not self._problem:
