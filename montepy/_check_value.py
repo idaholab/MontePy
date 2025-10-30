@@ -297,6 +297,8 @@ def check_type(
             else:
                 if isinstance(e_type, type):
                     e_types = [e_type]
+                elif isinstance(e_type, typing._AnnotatedAlias):
+                    e_types = [typing.get_args(e_type)[0]]
                 else:
                     buff = typing.get_args(e_type)
                     e_types = []
@@ -310,15 +312,15 @@ def check_type(
 
         if isinstance(value, np.ndarray):
             if value.dtype.type != np.object_ and isinstance(
-                expected_iter_type, types.UnionType
+                expected_iter_type, _UNION_TYPES
             ):
                 errors = []
-                for t_arg in expected_iter_type.__args__:
+                for t_arg in typing.get_args(expected_iter_type):
                     try:
                         check_np_type(t_arg)
                     except TypeError as e:
                         errors.append(e)
-                if len(errors) != len(expected_iter_type.__args__):
+                if len(errors) == len(expected_iter_type.__args__):
                     raise_iter_err()
             else:
                 check_np_type(expected_iter_type)
