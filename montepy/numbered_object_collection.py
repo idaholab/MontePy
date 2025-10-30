@@ -244,10 +244,8 @@ class NumberedObjectCollection(ABC):
         """
         if not isinstance(number, Integral):
             raise TypeError("The number must be an int")
-
         if number < 0:
             raise ValueError(f"The number must be non-negative. {number} given.")
-
         conflict = False
         # only can trust cache if being updated
         if self._problem:
@@ -256,7 +254,6 @@ class NumberedObjectCollection(ABC):
         else:
             if number in self.numbers:
                 conflict = True
-
         if conflict:
             raise NumberConflictError(
                 f"Number {number} is already in use for the collection: {type(self).__name__} by {self[number]}"
