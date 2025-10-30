@@ -8,6 +8,9 @@ MontePy Changelog
 #Next Version#
 --------------
 
+**Performance Improvement**
+
+* Optimized :math:`\mathcal{O}(N^2)` scaling in :func:`montepy.NumberedObjectCollection.request_number` by improving ``NumberedObjectCollection.check_number`` to :math:`\mathcal{O}(N)` (:issue:`786`). 
 
 **Features Added**
 
