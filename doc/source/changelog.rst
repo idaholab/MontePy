@@ -16,6 +16,10 @@ MontePy Changelog
 * Make `LatticeType.RECTANGULAR` and `LatticeType.HEXAHEDRAL` synonymous (:issue:`808`).
 * Allow setting ``cell.fill.universes`` with a numpy array of universe IDs (:issue:`736`).
 
+**Performance Improvement**
+
+* Optimized :math:`\mathcal{O}(N^2)` scaling in :func:`montepy.NumberedObjectCollection.request_number` by improving ``NumberedObjectCollection.check_number`` to :math:`\mathcal{O}(N)` (:issue:`786`). 
+
 **Bugs Fixed**
 
 * Fixed bug where lines that were the allowed length was raising a ``LineOverRunWarning`` when read by MontePy (:issue:`517`). 
@@ -25,14 +29,13 @@ MontePy Changelog
 **Documentation**
 
 * Improved documentation for NumberedObjectCollections on Slicing behavior. (:issue:`798`)
+* Reorganized Python API documentation. Some hyperlinks may be broken now (:pull:`828`).
 
 **Deprecations**
 
 * Dropped support for python 3.9 through 3.11, and numpy 1.26 in order to comply with `SPEC 0 <https://scientific-python.org/specs/spec-0000/>`_ (:issue:`780`).
 
-**Documentation**
 
-* Reorganized Python API documentation. Some hyperlinks may be broken now (:pull:`828`).
 
 1.1 releases
 ============

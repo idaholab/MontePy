@@ -626,14 +626,16 @@ class NumberedObjectCollection(ABC):
         If starting_number, or step are not specified :func:`starting_number`,
         and :func:`step` are used as default values.
 
-
         .. versionchanged:: 0.5.0
             In 0.5.0 the default values were changed to reference :func:`starting_number` and :func:`step`.
+
+        .. versionchanged:: 1.2.0
+            start_num is now only a suggestion for the starting point. The returned number is not guaranteed to be start_num, but will be the next available number after start_num (or after the last assigned number).
 
         Parameters
         ----------
         start_num : int
-            the starting number to check.
+            Suggested starting number to check. Not guaranteed to be the returned value.
         step : int
             the increment to jump by to find new numbers.
 
@@ -646,13 +648,21 @@ class NumberedObjectCollection(ABC):
             start_num = self.starting_number
         if step is None:
             step = self.step
-        number = start_num
+        try:
+            self.check_number(start_num)
+            return start_num
+        except NumberConflictError:
+            pass
+        # Increment to next available number. If not set use start_num as is
+        last_assigned = getattr(self, "_last_assigned_number", start_num - step) + step
+        number = max(start_num, last_assigned)
         while True:
             try:
                 self.check_number(number)
                 break
             except NumberConflictError:
                 number += step
+        self._last_assigned_number = number
         return number
 
     @args_checked
