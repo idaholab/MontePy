@@ -39,7 +39,7 @@ extensions = [
     "sphinx.ext.extlinks",
     "sphinx.ext.doctest",
     "sphinx.ext.mathjax",
-#    "sphinx_autodoc_typehints",
+    "sphinx_autodoc_typehints",
     "sphinx_favicon",
     "sphinx_copybutton",
     "autodocsumm",
