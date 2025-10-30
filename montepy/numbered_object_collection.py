@@ -248,7 +248,12 @@ class NumberedObjectCollection(ABC):
         if number < 0:
             raise ValueError(f"The number must be non-negative. {number} given.")
 
-        conflict = number in self.__num_cache
+        conflict = False
+        # only can trust cache if being updated
+        if self._problem and number in self.__num_cache:
+            conflict = True
+        elif number in self.numbers:
+            conflict = True
 
         if conflict:
             raise NumberConflictError(
@@ -654,13 +659,16 @@ class NumberedObjectCollection(ABC):
             start_num = self.starting_number
         if step is None:
             step = self.step
-        number = start_num
+
+        number = getattr(self, "_last_assigned_number", start_num - step) + step
         while True:
             try:
                 self.check_number(number)
                 break
             except NumberConflictError:
                 number += step
+
+        self._last_assigned_number = number
         return number
 
     def next_number(self, step=1):
