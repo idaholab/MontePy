@@ -35,11 +35,18 @@ from enum import EnumType
 import functools
 import inspect
 import numpy as np
+import sys
 import types
 import typing
 
 # Type for arguments that accept file paths
 PathLike = str | os.PathLike
+
+_UNION_TYPES = (types.UnionType, typing._UnionGenericAlias)
+
+# handle 3.14 deprecation of typing._UnionGenericAlias
+if sys.version_info >= (3, 14):  # pragma: no cover
+    _UNION_TYPES = _UNION_TYPES[:-1]
 
 
 def _prepare_type_checker(func, arg_spec, none_ok):
@@ -234,7 +241,7 @@ def check_type(
         raise TypeError(msg)
 
     # detect complicated recursion of types
-    if isinstance(expected_type, (types.UnionType, typing._UnionGenericAlias)):
+    if isinstance(expected_type, _UNION_TYPES):
         # handle cases isisntance can't (not all types are classes)
         if not all((isinstance(t, type) for t in typing.get_args(expected_type))):
             errors = []
