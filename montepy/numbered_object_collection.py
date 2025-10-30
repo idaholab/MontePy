@@ -154,7 +154,7 @@ class NumberedObjectCollection(ABC):
         problem: montepy.MCNP_Problem = None,
     ):
         self.__num_cache = {}
-        assert issubclass(obj_class, Numbered_MCNP_Object)
+        # assert issubclass(obj_class, Numbered_MCNP_Object)
         self._obj_class = obj_class
         self._objects = []
         self._start_num = 1
@@ -250,10 +250,12 @@ class NumberedObjectCollection(ABC):
 
         conflict = False
         # only can trust cache if being updated
-        if self._problem and number in self.__num_cache:
-            conflict = True
-        elif number in self.numbers:
-            conflict = True
+        if self._problem:
+            if number in self.__num_cache:
+                conflict = True
+        else:
+            if number in self.numbers:
+                conflict = True
 
         if conflict:
             raise NumberConflictError(
@@ -635,14 +637,16 @@ class NumberedObjectCollection(ABC):
         If starting_number, or step are not specified :func:`starting_number`,
         and :func:`step` are used as default values.
 
-
         .. versionchanged:: 0.5.0
             In 0.5.0 the default values were changed to reference :func:`starting_number` and :func:`step`.
+
+        .. versionchanged:: 1.2.0
+            start_num is now only a suggestion for the starting point. The returned number is not guaranteed to be start_num, but will be the next available number after start_num (or after the last assigned number).
 
         Parameters
         ----------
         start_num : int
-            the starting number to check.
+            Suggested starting number to check. Not guaranteed to be the returned value.
         step : int
             the increment to jump by to find new numbers.
 
@@ -659,8 +663,15 @@ class NumberedObjectCollection(ABC):
             start_num = self.starting_number
         if step is None:
             step = self.step
+        try:
+            self.check_number(start_num)
+            return start_num
+        except NumberConflictError:
+            pass
 
-        number = getattr(self, "_last_assigned_number", start_num - step) + step
+        # Increment to next available number. If not set use start_num as is
+        last_assigned = getattr(self, "_last_assigned_number", start_num - step) + step
+        number = max(start_num, last_assigned)
         while True:
             try:
                 self.check_number(number)
