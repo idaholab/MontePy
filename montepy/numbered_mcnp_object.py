@@ -3,7 +3,6 @@ from __future__ import annotations
 from abc import abstractmethod
 import copy
 import itertools
-from typing import Union
 
 from montepy.mcnp_object import MCNP_Object, InitInput
 import montepy
@@ -41,7 +40,7 @@ class Numbered_MCNP_Object(MCNP_Object):
 
     Parameters
     ----------
-    input : Union[Input, str]
+    input : Input | str
         The Input syntax object this will wrap and parse.
     parser : MCNP_Parser
         The parser object to parse the input with.

@@ -85,7 +85,7 @@ class Cell(Numbered_MCNP_Object):
 
     Parameters
     ----------
-    input : Union[Input, str]
+    input : Input | str
         The Input syntax object this will wrap and parse.
     number : int
         The number to set for this object.

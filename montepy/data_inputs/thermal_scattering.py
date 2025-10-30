@@ -26,7 +26,7 @@ class ThermalScatteringLaw(DataInputAbstract):
 
     Parameters
     ----------
-    input : Union[Input, str]
+    input : Input | str
         the Input object representing this data input
     material : Material
         the parent Material object that owns this

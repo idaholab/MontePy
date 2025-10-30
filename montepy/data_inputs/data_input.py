@@ -42,7 +42,7 @@ class DataInputAbstract(MCNP_Object):
 
     Parameters
     ----------
-    input : Union[Input, str]
+    input : Input | str
         the Input object representing this data input
     fast_parse : bool
         Whether or not to only parse the first word for the type of
@@ -311,7 +311,7 @@ class DataInput(DataInputAbstract):
 
     Parameters
     ----------
-    input : Union[Input, str]
+    input : Input | str
         the Input object representing this data input
     fast_parse : bool
         Whether or not to only parse the first word for the type of
@@ -368,7 +368,7 @@ class ForbiddenDataInput(DataInputAbstract):
 
     Parameters
     ----------
-    input : Union[Input, str]
+    input : Input | str
         the Input object representing this data input
     fast_parse : bool
         Whether or not to only parse the first word for the type of

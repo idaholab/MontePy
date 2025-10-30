@@ -37,7 +37,7 @@ def parse_data(input: montepy.mcnp_object.InitInput):
 
     Parameters
     ----------
-    input : Union[Input, str]
+    input : Input | str
         the Input object for this Data input
 
     Returns

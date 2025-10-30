@@ -9,8 +9,6 @@ from montepy.exceptions import *
 from montepy.utilities import *
 import montepy.types as ty
 
-from typing import Union
-
 
 def _enforce_positive_radius(self, value):
     if value < 0.0:
@@ -26,11 +24,11 @@ class CylinderOnAxis(Surface):
 
     Parameters
     ----------
-    input : Union[Input, str]
+    input : Input | str
         The Input object representing the input
     number : int
         The number to set for this object.
-    surface_type: Union[SurfaceType, str]
+    surface_type: SurfaceType | str
         The surface_type to set for this object
     """
 

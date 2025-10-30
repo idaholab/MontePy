@@ -4,7 +4,6 @@ from abc import ABC, ABCMeta, abstractmethod
 import copy
 import itertools as it
 import textwrap
-from typing import Union
 import warnings
 import weakref
 
@@ -28,7 +27,7 @@ from montepy._exception_context import _ExceptionContextAdder
 from montepy.utilities import *
 import montepy.types as ty
 
-InitInput = Union[montepy.input_parser.mcnp_input.Input, str]
+InitInput = montepy.input_parser.mcnp_input.Input | str
 
 
 class MCNP_Object(ABC, metaclass=_ExceptionContextAdder):
@@ -36,7 +35,7 @@ class MCNP_Object(ABC, metaclass=_ExceptionContextAdder):
 
     Parameters
     ----------
-    input : Union[Input, str]
+    input : Input | str
         The Input syntax object this will wrap and parse.
     parser : MCNP_Parser
         The parser object to parse the input with.

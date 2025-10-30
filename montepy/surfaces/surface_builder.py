@@ -14,7 +14,7 @@ def parse_surface(input: InitInput):
 
     Parameters
     ----------
-    input : Union[Input, str]
+    input : Input | str
         The Input object representing the input
 
     Returns
@@ -46,7 +46,7 @@ surface_builder = parse_surface
 
 Parameters
 ----------
-input : Union[Input, str]
+input : Input | str
     The Input object representing the input
 
 Returns

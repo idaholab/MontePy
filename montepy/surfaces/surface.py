@@ -1,7 +1,6 @@
 # Copyright 2024-2025, Battelle Energy Alliance, LLC All Rights Reserved.
 from __future__ import annotations
 import copy
-from typing import Union
 
 import montepy
 from montepy.data_inputs import transform
@@ -31,11 +30,11 @@ class Surface(Numbered_MCNP_Object):
 
     Parameters
     ----------
-    input : Union[Input, str]
+    input : Input | str
         The Input object representing the input
     number : int
         The number to set for this object.
-    surface_type: Union[SurfaceType, str]
+    surface_type: SurfaceType | str
         The surface_type to set for this object
     """
 
@@ -143,7 +142,7 @@ class Surface(Numbered_MCNP_Object):
         return set(SurfaceType)
 
     def _generate_default_tree(
-        self, number: int = None, surface_type: Union[SurfaceType, str] = None
+        self, number: int = None, surface_type: SurfaceType | str = None
     ):
         """
         Creates a default syntax tree.
@@ -152,7 +151,7 @@ class Surface(Numbered_MCNP_Object):
         ----------
         number: int
             the default number for the syntax tree, should be passed from __init__
-        surface_type: Union[SurfaceType, str]
+        surface_type: SurfaceType | str
             The surface_type to set for this object
 
         Other Parameters

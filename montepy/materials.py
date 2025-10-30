@@ -3,7 +3,7 @@
 from __future__ import annotations
 import collections as co
 import copy
-from typing import Generator, Union
+from typing import Generator
 
 import montepy
 from montepy.data_inputs.nuclide import NuclideLike
@@ -81,7 +81,7 @@ class Materials(NumberedDataObjectCollection):
 
         Parameters
         ----------
-        *nuclides : Union[Nuclide, Nucleus, Element, str, int]
+        *nuclides : Nuclide | Nucleus | Element | str | int
             a plurality of nuclides to check for.
         threshold : float
             the minimum concentration of a nuclide to be considered. The
@@ -140,7 +140,7 @@ class Materials(NumberedDataObjectCollection):
 
         Parameters
         ----------
-        *nuclides : Union[Nuclide, Nucleus, Element, str, int]
+        *nuclides : Nuclide | Nucleus | Element | str | int
             a plurality of nuclides to check for.
         threshold : float
             the minimum concentration of a nuclide to be considered. The
@@ -288,9 +288,9 @@ class Materials(NumberedDataObjectCollection):
         fractions
             the corresponding fractions for each material in either atom
             or mass fractions, depending on the materials fraction type.
-        starting_number : Union[int, None]
+        starting_number : int | None
             the starting number to assign this new material.
-        step : Union[int, None]
+        step : int | None
             the step size to take when finding a new number.
 
         Returns

@@ -3,7 +3,6 @@ from __future__ import annotations
 import copy
 import numpy as np
 import re
-from typing import Union
 
 import montepy
 from montepy.utilities import *
@@ -24,7 +23,7 @@ class Transform(data_input.DataInputAbstract, Numbered_MCNP_Object):
 
     Parameters
     ----------
-    input : Union[Input, str]
+    input : Input | str
         The Input object representing the input
     number : int
         The number to set for this object.

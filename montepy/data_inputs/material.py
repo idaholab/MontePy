@@ -287,7 +287,7 @@ class Material(data_input.DataInputAbstract, Numbered_MCNP_Object):
 
     Parameters
     ----------
-    input : Union[Input, str]
+    input : Input | str
         The Input syntax object this will wrap and parse.
     number : int
         The number to set for this object.
@@ -498,7 +498,7 @@ See <https://www.montepy.org/migrations/migrate0_1.html> for more information ""
 
         Returns
         -------
-        Union[Library, None]
+        Library | None
             the library that will be used in this scenario by MCNP.
 
         Raises
@@ -689,7 +689,7 @@ See <https://www.montepy.org/migrations/migrate0_1.html> for more information ""
 
         Parameters
         ----------
-        new_library : Union[str, Library]
+        new_library : str | Library
             the new library to set all Nuclides to use.
         """
         if isinstance(new_library, str):
@@ -763,7 +763,7 @@ See <https://www.montepy.org/migrations/migrate0_1.html> for more information ""
 
         Parameters
         ----------
-        *nuclides : Union[Nuclide, Nucleus, Element, str, int]
+        *nuclides : Nuclide | Nucleus | Element | str | int
             a plurality of nuclides to check for.
         threshold : float
             the minimum concentration of a nuclide to be considered. The
@@ -827,7 +827,7 @@ See <https://www.montepy.org/migrations/migrate0_1.html> for more information ""
 
         Parameters
         ----------
-        *nuclides : Union[Nuclide, Nucleus, Element, str, int]
+        *nuclides : Nuclide | Nucleus | Element | str | int
             a plurality of nuclides to check for.
         threshold : float
             the minimum concentration of a nuclide to be considered. The

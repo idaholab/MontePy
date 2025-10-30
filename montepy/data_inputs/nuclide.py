@@ -739,8 +739,7 @@ class Nuclide:
 
         Parameters
         ----------
-        identifier
-        idenitifer : Union[str, int, element, Nucleus, Nuclide]
+        identifier : str | int | element | Nucleus | Nuclide
 
         Returns
         -------

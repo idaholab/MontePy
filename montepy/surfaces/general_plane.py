@@ -1,5 +1,4 @@
 # Copyright 2024, Battelle Energy Alliance, LLC All Rights Reserved.
-from typing import Union
 import warnings
 
 import montepy
@@ -19,7 +18,7 @@ class GeneralPlane(Surface):
 
     Parameters
     ----------
-    input : Union[Input, str]
+    input : Input | str
         The Input object representing the input
     number : int
         The number to set for this object.

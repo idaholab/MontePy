@@ -19,7 +19,7 @@ class UniverseInput(CellModifierInput):
 
     Parameters
     ----------
-    input : Union[Input, str]
+    input : Input | str
         the Input object representing this data input
     in_cell_block : bool
         if this card came from the cell block of an input file.
