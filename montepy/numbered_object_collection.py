@@ -154,7 +154,7 @@ class NumberedObjectCollection(ABC):
         problem: montepy.MCNP_Problem = None,
     ):
         self.__num_cache = {}
-        # assert issubclass(obj_class, Numbered_MCNP_Object)
+        assert issubclass(obj_class, Numbered_MCNP_Object)
         self._obj_class = obj_class
         self._objects = []
         self._start_num = 1
@@ -668,7 +668,6 @@ class NumberedObjectCollection(ABC):
             return start_num
         except NumberConflictError:
             pass
-
         # Increment to next available number. If not set use start_num as is
         last_assigned = getattr(self, "_last_assigned_number", start_num - step) + step
         number = max(start_num, last_assigned)
@@ -678,7 +677,6 @@ class NumberedObjectCollection(ABC):
                 break
             except NumberConflictError:
                 number += step
-
         self._last_assigned_number = number
         return number
 
