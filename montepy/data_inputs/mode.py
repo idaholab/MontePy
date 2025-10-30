@@ -44,7 +44,7 @@ class Mode(DataInputAbstract):
             self._particles.add(Particle(particle.upper()))
 
     @property
-    def particles(self) -> set[Particle]:
+    def particles(self):
         """The type of particles involved in this problem.
 
         The set will contain instances of :class:`montepy.particle.Particle`.
