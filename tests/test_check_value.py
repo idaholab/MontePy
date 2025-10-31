@@ -4,6 +4,7 @@ import hypothesis.strategies as st
 import numpy as np
 import pytest
 import typing
+import inspect
 
 import montepy._check_value as cv
 import montepy.types as ty
@@ -159,7 +160,12 @@ def np_array(a: np.ndarray[np.int64]):
 
 
 @cv.args_checked
-def np_array_union(a: np.ndarray[montepy.Cell | int]):
+def np_array_union(a: np.ndarray[montepy.Cell | ty.Integral]):
+    pass
+
+
+@cv.args_checked
+def np_array_union_annotated(a: np.ndarray[montepy.Cell | ty.PositiveInt]):
     pass
 
 
@@ -299,11 +305,16 @@ def test_pos_neg(func, val, raise_error):
         (
             np_array_union,
             np.array([1, 2]),
-            ["a", 1, [1, 2], np.array([montepy.Cell(), montepy.Cell()])],
+            ["a", 1, [1, 2], np.array([montepy.Material(), montepy.Material()])],
         ),
         (
             np_array_union,
             np.array([montepy.Cell(), montepy.Cell()]),
+            ["a", 1, [1, 2], np.array(["a", "b"])],
+        ),
+        (
+            np_array_union_annotated,
+            np.array([1, 2]),
             ["a", 1, [1, 2], np.array(["a", "b"])],
         ),
         (tuple_type, (1, "hi"), [[1], ("hi", 1), {1: "hi"}]),
@@ -313,15 +324,16 @@ def test_pos_neg(func, val, raise_error):
             {1: ("hi", "foo"), 2: ("a", "b")},
             ["a", [1, 2], [(1, 5)], {"a": "c"}, {1: ("a" "b")}],
         ),
-        (pos_int, 5, [1.0, "hi", 0, -1]),
-        (neg_int, -3, [1.0, "hi", 0, 2]),
-        (pos_real, 1.5, ["hi", 0, -2]),
-        (neg_real, -1.5, ["hi", 0, 2.0]),
+        (pos_int, 5, [1.0, "hi"]),
+        (neg_int, -3, [1.0, "hi"]),
+        (pos_real, 1.5, ["hi"]),
+        (neg_real, -1.5, ["hi"]),
     ],
 )
 def test_iterable_types(func, good, bads):
     func(good)
     for bad in bads:
+        print(bad)
         with pytest.raises(TypeError, match="Unable to set.+"):
             func(bad)
 
@@ -346,9 +358,20 @@ def test_iterable_types(func, good, bads):
             [1, 1.5],
             [("hi", TypeError), (["hi"], TypeError), ([-1, 2], ValueError)],
         ),
+        (
+            np_array_union_annotated,
+            np.array([1, 2]),
+            [
+                ("a", TypeError),
+                (1, TypeError),
+                ([1, 2], TypeError),
+                (np.array(["a", "b"]), TypeError),
+                (np.array([-1, 5]), ValueError),
+            ],
+        ),
     ],
 )
-def test_iterable_types(func, good, bads):
+def test_iterable_types_values(func, good, bads):
     func(good)
     for bad, exc in bads:
         print(bad)
