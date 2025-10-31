@@ -286,14 +286,12 @@ def check_type(
                 )
             if e is not None:
                 raise TypeError(msg) from e
-            raise TypeError(msg) # pragma: no cover
+            raise TypeError(msg)  # pragma: no cover
 
         def check_np_type(e_type):
             for element in value.flat:
                 try:
-                    check_type_and_value(
-                        func_name, f"{name}-elements", element, e_type
-                    )
+                    check_type_and_value(func_name, f"{name}-elements", element, e_type)
                 except TypeError as e:
                     raise_iter_err(e)
 
