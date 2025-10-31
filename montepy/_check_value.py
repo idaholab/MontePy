@@ -319,13 +319,7 @@ def check_type(
                 expected_iter_type, _UNION_TYPES
             ):
                 errors = []
-                for t_arg in typing.get_args(expected_iter_type):
-                    try:
-                        check_np_type(t_arg)
-                    except TypeError as e:
-                        errors.append(e)
-                if len(errors) == len(expected_iter_type.__args__):
-                    raise_iter_err()
+                check_np_type(expected_iter_type)
             else:
                 check_np_type(expected_iter_type)
             return
