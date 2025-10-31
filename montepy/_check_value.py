@@ -86,6 +86,8 @@ def args_checked(func: Callable):
     .. doctest::
 
         >>> from montepy.utilities import *
+        >>> import montepy.types as ty
+        >>>
         >>> @args_checked
         ... def foo(a: int) -> int:
         ...    return a
@@ -102,8 +104,10 @@ def args_checked(func: Callable):
     .. doctest::
 
         >>> import typing
+        >>> import montepy.types as ty
+        >>>
         >>> @args_checked
-        ... def bar(a: typing.Annotated[int, positive]) -> int:
+        ... def bar(a: typing.Annotated[int, ty.positive]) -> int:
         ...     return a
         >>> print(bar(1))
         1

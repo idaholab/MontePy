@@ -84,6 +84,7 @@ For type enforcement this is simple enough:
 .. doctest::
 
         >>> from montepy.utilities import *
+        >>> import montepy.types as ty
         >>>
         >>> @args_checked
         ... def foo(a: int) -> int:
@@ -159,9 +160,10 @@ MontePy provides functions for the most common value checks, such as :func:`~mon
 .. testcode::
 
    from typing import Annotated
+   import montepy.types as ty
 
    @args_checked
-   def foo(a: Annotated[Integral, positive]):
+   def foo(a: Annotated[Integral, ty.positive]):
         pass
 
 Some enforcers accept arguments, such as :func:`~montepy.utilities.greater_than`:
@@ -169,7 +171,7 @@ Some enforcers accept arguments, such as :func:`~montepy.utilities.greater_than`
 .. testcode::
 
    @args_checked
-   def foo(a: Annotated[Integral, greater_than(5)]):
+   def foo(a: Annotated[Integral, ty.greater_than(5)]):
        pass
 
 Though you can see how this will become very verbose very quickly.
@@ -180,9 +182,11 @@ So :mod:`montepy.types` is meant to store most of these ``Annotated`` types.
    Multiple arguments can be given ``Annotated`` for instance if you needed a value to be in:
    (0, 5), you could write:
 
-   .. code-block:: python
+   .. code-block:: Python
 
-        def foo(a: Annotated[Real, positive, less_than(5)]):
+        import montepy.types as ty
+
+        def foo(a: Annotated[ty.Real, ty.positive, ty.less_than(5)]):
              pass
 
 Writing a Custom Value Enforcer

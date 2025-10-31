@@ -13,10 +13,11 @@ def positive(func_name, name, x):
     Example
     ^^^^^^^
 
-    .. testcode::
+    .. code-block:: python
 
         from numbers import Real
         from typing import Annotated
+        from montepy.utilities import *
 
         @args_checked
         def foo(a: Annotated[Real, positive]):
@@ -34,10 +35,11 @@ def negative(func_name, name, x):
     Example
     ^^^^^^^
 
-    .. testcode::
+    .. code-block:: python
 
         from numbers import Real
         from typing import Annotated
+        from montepy.utilities import *
 
         @args_checked
         def foo(a: Annotated[Real, negative]):
@@ -55,10 +57,11 @@ def non_positive(func_name, name, x):
     Example
     ^^^^^^^
 
-    .. testcode::
+    .. code-block:: python
 
         from numbers import Real
         from typing import Annotated
+        from montepy.utilities import *
 
         @args_checked
         def foo(a: Annotated[Real, non_positive]):
@@ -76,10 +79,11 @@ def non_negative(func_name, name, x):
     Example
     ^^^^^^^
 
-    .. testcode::
+    .. code-block:: python
 
         from numbers import Real
         from typing import Annotated
+        from montepy.utilities import *
 
         @args_checked
         def foo(a: Annotated[Real, non_negative]):
@@ -98,10 +102,11 @@ def less_than(maximum: Real, equality=False):
     ^^^^^^^^
     This can be used to annotate a value
 
-    .. testcode::
+    .. code-block:: python
 
         import numbers
         import typing
+        from montepy.utilities import *
 
         @args_checked
         def foo(a: typing.Annotated[numbers.Real, less_than(5)]):
@@ -130,10 +135,11 @@ def greater_than(minimum: Real, equality: bool = False):
     ^^^^^^^^
     This can be used to annotate a value
 
-    .. testcode::
+    .. code-block:: python
 
         import numbers
         import typing
+        from montepy.utilities import *
 
         @args_checked
         def foo(a: typing.Annotated[numbers.Real, greater_than(5)]):
