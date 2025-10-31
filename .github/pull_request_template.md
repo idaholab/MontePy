@@ -17,6 +17,14 @@ Fixes # (issue number)
 
 ---
 
+### LLM Disclosure
+
+Were any large language models (LLM or "AI") used in to generate any of this code?
+
+- [ ] Yes
+    - Model(s) used:
+- [ ] No
+
 <details open> 
 
 <summary><h3>Documentation Checklist</h3></summary>
@@ -42,6 +50,7 @@ Fixes # (issue number)
 
 Ensure that:
 
+- [ ] This PR fully addresses and resolves the referenced issue(s).
 - [ ] The submitted code is consistent with the merge checklist outlined [here](https://www.montepy.org/en/stable/dev_checklist.html#merge-checklist).
 - [ ] The PR covers all relevant aspects according to the development guidelines.
 - [ ] 100% coverage of the patch is achieved, or justification for a variance is given.

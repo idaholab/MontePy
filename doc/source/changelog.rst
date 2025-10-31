@@ -8,12 +8,53 @@ MontePy Changelog
 #Next Version#
 --------------
 
+**Performance Improvement**
+
+* Optimized :math:`\mathcal{O}(N^2)` scaling in :func:`montepy.NumberedObjectCollection.request_number` by improving ``NumberedObjectCollection.check_number`` to :math:`\mathcal{O}(N)` (:issue:`786`). 
+
+**Features Added**
+
+* Added checking for additional input after the ``data`` block, and raising a warning if it exists (:issue:`525`).
+* Allow multiple universe fills to accept 2D MNCP lattices (:issue:`719`).
+* Make `LatticeType.RECTANGULAR` and `LatticeType.HEXAHEDRAL` synonymous (:issue:`808`).
+* Allow setting ``cell.fill.universes`` with a numpy array of universe IDs (:issue:`736`).
+
+**Bugs Fixed**
+
+* Fixed bug where lines that were the allowed length was raising a ``LineOverRunWarning`` when read by MontePy (:issue:`517`). 
+* Added descriptive TypeError messages (:issue:`801`)
+* Fixed a bug that caused to write an extra termination line between the data block and the cell data section in the MCNP input. (:pull:`819`) (:issue:`703`).
+
+**Documentation**
+
+* Improved documentation for NumberedObjectCollections on Slicing behavior. (:issue:`798`)
+
 **Deprecations**
 
-* Dropped support for python 3.9 and 3.10 in order to comply with `SPEC 0 <https://scientific-python.org/specs/spec-0000/>`_ (:issue:`780`).
+* Dropped support for python 3.9 through 3.11, and numpy 1.26 in order to comply with `SPEC 0 <https://scientific-python.org/specs/spec-0000/>`_ (:issue:`780`).
+
+**Documentation**
+
+* Reorganized Python API documentation. Some hyperlinks may be broken now (:pull:`828`).
 
 1.1 releases
 ============
+
+1.1.3
+--------------
+**Features Added**
+
+* Added Boundary condition type to the representation of a ``montepy.Surface`` (e.g., ``repr(surf)``)  (:issue:`682`).
+
+**Documentation**
+
+* Improved documentation for NumberedObjectCollections on Slicing behavior. (:issue:`798`)
+
+**Bugs Fixed**
+
+* Fixed bug where lines that were the allowed length was raising a ``LineOverRunWarning`` when read by MontePy (:issue:`517`). 
+* Added descriptive TypeError messages (:issue:`801`)
+
 
 1.1.2
 --------------

@@ -269,6 +269,9 @@ class Fill(CellModifierInput):
                 "A single universe can only be set when multiple_universes is False."
             )
         self._universe = value
+        if value is not None:
+            self._universes = None
+            self.multiple_universes = False
 
     @universe.deleter
     def universe(self):
@@ -280,23 +283,119 @@ class Fill(CellModifierInput):
 
         Only returns a value when :func:`multiple_universes` is true, otherwise none.
 
+        Arrays with fewer than 3 dimensions are automatically expanded to 3D by adding dimensions at the end (e.g., a 1D array of shape (N,) becomes (N, 1, 1) and a 0D array becomes (1, 1, 1)).
+
+
         Returns
         -------
         np.ndarray
             the universes that the cell will be filled with as a 3-D
             array.
+
+
+        See Also
+        --------
+
+        * :manual631sub:`5.5.5.3`
+        * :manual63sub:`5.5.5.3`
+        * :manual62:`87`
+
+
+        .. versionchanged:: 1.2.0
+
+            * Now supports setting the universes with a numpy array of up to 3-dimensional universe IDs.
+            * Automatic expansion of lower-dimensional arrays to 3D
+
+
+
+        Examples
+        --------
+        Setting the universes with a numpy array of universe IDs:
+
+        >>> import montepy
+        >>> import numpy as np
+        >>> problem = montepy.MCNP_Problem("")
+        >>> cell = montepy.Cell()
+        >>> cell.number = 1
+        >>> problem.cells.append(cell)
+        >>> u1 = montepy.Universe(number=1)
+        >>> u2 = montepy.Universe(number=2)
+        >>> problem.universes.append(u1)
+        >>> problem.universes.append(u2)
+        >>> cell.fill.universes = np.array([[[1, 2, 0]]])
+        >>> cell.fill.universes[0, 0, 0]
+        Universe: Number: 1 Problem: set, Cells: []
+        >>> cell.fill.universes[0, 0, 1]
+        Universe: Number: 2 Problem: set, Cells: []
+        >>> print(cell.fill.universes[0, 0, 2])
+        None
+
+        Arrays with fewer than 3 dimensions are expanded to 3D:
+
+        >>> cell.fill.universes = np.array([1, 2])  # 1D array
+        >>> cell.fill.universes.shape
+        (2, 1, 1)
+        >>> cell.fill.universes = np.array([[1, 2]])  # 2D array
+        >>> cell.fill.universes.shape
+        (1, 2, 1)
+        >>> cell.fill.universes = np.array(1)  # 0D array
+        >>> cell.fill.universes.shape
+        (1, 1, 1)
+
+
+
+
+        Parameters
+        ----------
+        value : np.ndarray or None
+            A 3D numpy array of :class:`~montepy.universe.Universe` objects,
+            a 3D numpy array of integer universe IDs, or None to clear the
+            universes. Arrays with 0, 1, or 2 dimensions are automatically
+            expanded to 3D by adding dimensions at the end.
         """
         if self.multiple_universes:
             return self._universes
+        return None
 
     @universes.setter
     def universes(self, value):
         if not isinstance(value, (np.ndarray, type(None))):
             raise TypeError(f"Universes must be set to an array. {value} given.")
-        if value.ndim != 3:
+
+        if value is None:
+            self.multiple_universes = False
+            self.universe = None
+            self._universes = None
+            return
+
+        if value.ndim <= 2:
+            for _ in range(3 - value.ndim):
+                value = np.expand_dims(value, axis=value.ndim)
+
+        elif value.ndim > 3:
             raise ValueError(
                 f"3D array must be given for fill.universes. Array of shape: {value.shape} given."
             )
+
+        # Setting by universe IDs
+        if np.issubdtype(value.dtype, np.integer):
+            if self._problem is None:
+                raise IllegalState(
+                    "Universe IDs can only be set if the Fill is part of a Problem."
+                )
+
+            universes_array = np.empty(value.shape, dtype=object)
+            for idx_tuple, uid in np.ndenumerate(value):
+                if uid == 0:
+                    universes_array[idx_tuple] = None
+                else:
+                    try:
+                        universes_array[idx_tuple] = self._problem.universes[uid]
+                    except KeyError as e:
+                        raise KeyError(
+                            f"Universe ID {uid} at index {idx_tuple} is not defined in the problem."
+                        ) from e
+            value = universes_array
 
         def is_universes(array):
             type_checker = lambda x: isinstance(x, (Universe, type(None)))
@@ -307,6 +406,7 @@ class Fill(CellModifierInput):
                 f"All values in array must be a Universe (or None). {value} given."
             )
         self.multiple_universes = True
+        self._universe = None
         if self.min_index is None:
             self.min_index = np.array([0] * 3)
         self.max_index = self.min_index + np.array(value.shape) - 1
@@ -315,6 +415,7 @@ class Fill(CellModifierInput):
     @universes.deleter
     def universes(self):
         self._universes = None
+        self.multiple_universes = False
 
     @make_prop_pointer(
         "_min_index",
@@ -368,6 +469,8 @@ class Fill(CellModifierInput):
         if not isinstance(value, bool):
             raise TypeError("Multiple_univeses must be set to a bool")
         self._multi_universe = value
+        if not value:
+            self._universes = None
 
     @make_prop_val_node("_old_number")
     def old_universe_number(self):
