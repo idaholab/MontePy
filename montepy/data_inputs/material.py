@@ -1098,7 +1098,7 @@ See <https://www.montepy.org/migrations/migrate0_1.html> for more information ""
     @args_checked
     def find(
         self,
-        name: str = None,
+        name: NuclideLike = None,
         element: Element | str | ty.Integral | slice = None,
         A: ty.PositiveInt | slice = None,
         meta_state: MetaState | slice = None,
@@ -1190,7 +1190,7 @@ See <https://www.montepy.org/migrations/migrate0_1.html> for more information ""
 
         Parameters
         ----------
-        name : str
+        name : NuclideLike
             The name to pass to Nuclide to search by a specific Nuclide.
             If an element name is passed this will only match elemental
             nuclides.
