@@ -305,7 +305,7 @@ def test_pos_neg(func, val, raise_error):
         (
             np_array_union,
             np.array([1, 2]),
-            ["a", 1, [1, 2], np.array([montepy.Material(), montepy.Material()])],
+            ["a", 5, [1, 2], np.array([montepy.Nuclide("H1"), montepy.Nuclide("H2")])],
         ),
         (
             np_array_union,
