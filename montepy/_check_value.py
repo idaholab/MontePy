@@ -286,33 +286,16 @@ def check_type(
                 )
             if e is not None:
                 raise TypeError(msg) from e
-            raise TypeError(msg)
+            raise TypeError(msg) # pragma: no cover
 
         def check_np_type(e_type):
-            dtype = value.dtype.type
-            if dtype == np.object_:
-                for element in value.flat:
-                    try:
-                        check_type_and_value(
-                            func_name, f"{name}-elements", element, e_type
-                        )
-                    except TypeError as e:
-                        raise_iter_err(e)
-            else:
-                if isinstance(e_type, type):
-                    e_types = [e_type]
-                elif isinstance(e_type, typing._AnnotatedAlias):
-                    e_types = [typing.get_args(e_type)[0]]
-                else:
-                    buff = typing.get_args(e_type)
-                    e_types = []
-                    for typ in buff:
-                        if isinstance(typ, type):
-                            e_types.append(typ)
-                        else:
-                            e_types.append(typing.get_args(typ)[0])
-                if not any((issubclass(dtype, typ) for typ in e_types)):
-                    raise_iter_err()
+            for element in value.flat:
+                try:
+                    check_type_and_value(
+                        func_name, f"{name}-elements", element, e_type
+                    )
+                except TypeError as e:
+                    raise_iter_err(e)
 
         if isinstance(value, np.ndarray):
             if value.dtype.type != np.object_ and isinstance(
