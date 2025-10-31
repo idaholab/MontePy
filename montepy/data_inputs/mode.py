@@ -120,7 +120,7 @@ class Mode(DataInputAbstract):
         if isinstance(particles, ty.Iterable) and not isinstance(particles, str):
             is_str = True
             for particle in particles:
-                if not isinstance(particle, str):
+                if isinstance(particle, Particle):
                     is_str = False
         else:
             particles = particles.split()

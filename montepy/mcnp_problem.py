@@ -51,6 +51,7 @@ class MCNP_Problem:
 
     @args_checked
     def __init__(self, destination: str | os.PathLike | io.TextIOBase = None):
+        self._input_file = None
         if hasattr(destination, "read") and callable(getattr(destination, "read")):
             self._input_file = MCNP_InputFile.from_open_stream(destination)
         elif isinstance(destination, (str, os.PathLike)):

@@ -32,7 +32,7 @@ class _ExceptionContextAdder(ABCMeta):
 
         if isinstance(func, staticmethod):
             return staticmethod(wrapped)
-        if isinstance(func, classmethod):
+        if isinstance(func, classmethod):  # pragma: no cover
             return classmethod(wrapped)
         return wrapped
 

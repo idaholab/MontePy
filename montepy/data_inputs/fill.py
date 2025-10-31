@@ -402,10 +402,6 @@ class Fill(CellModifierInput):
             type_checker = lambda x: isinstance(x, (Universe, type(None)))
             return map(type_checker, array.flat)
 
-        if value.dtype != np.object_ or not all(is_universes(value)):
-            raise TypeError(
-                f"All values in array must be a Universe (or None). {value} given."
-            )
         self.multiple_universes = True
         self._universe = None
         if self.min_index is None:

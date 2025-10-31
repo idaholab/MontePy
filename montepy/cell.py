@@ -373,8 +373,7 @@ class Cell(Numbered_MCNP_Object):
         return self._volume.volume
 
     @volume.setter
-    @args_checked
-    def volume(self, value: ty.Real):
+    def volume(self, value: ty.PositiveReal):
         self._volume.volume = value
 
     @volume.deleter

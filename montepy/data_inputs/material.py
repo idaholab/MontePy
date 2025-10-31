@@ -545,7 +545,6 @@ See <https://www.montepy.org/migrations/migrate0_1.html> for more information ""
     ) -> None:
         """"""
         old_vals = self._components[idx]
-        self._check_valid_comp(newvalue)
         node_idx = self._tree["data"].nodes.index((old_vals[0]._tree, old_vals[1]), idx)
         # grab fraction
         old_vals[1].value = newvalue[1]
@@ -554,18 +553,6 @@ See <https://www.montepy.org/migrations/migrate0_1.html> for more information ""
 
     def __len__(self):
         return len(self._components)
-
-    @args_checked
-    def _check_valid_comp(self, newvalue: tuple[Nuclide, ty.NonNegativeReal]) -> None:
-        """Checks valid compositions and raises an error if needed."""
-        if len(newvalue) != 2:
-            raise ValueError(
-                f"Invalid component given. Must be tuple of Nuclide, fraction. {newvalue} given."
-            )
-        if newvalue[1] < 0.0:
-            raise ValueError(
-                f"Second element must be a fraction greater than 0. {newvalue[1]} given."
-            )
 
     @args_checked
     def __delitem__(self, idx: ty.Integral | slice) -> None:
@@ -643,7 +630,6 @@ See <https://www.montepy.org/migrations/migrate0_1.html> for more information ""
         nuclide_frac_pair : tuple[Nuclide, float]
             a tuple of the nuclide and the fraction to add.
         """
-        self._check_valid_comp(nuclide_frac_pair)
         self._elements.add(nuclide_frac_pair[0].element)
         self._nuclei.add(nuclide_frac_pair[0].nucleus)
         # node for fraction

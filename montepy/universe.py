@@ -90,8 +90,6 @@ class Universe(Numbered_MCNP_Object):
         """
         if isinstance(cells, montepy.Cell):
             cells = Cells([cells])
-        if not isinstance(cells, Cells):
-            cells = Cells(cells)
 
         for cell in cells:
             cell.universe = self

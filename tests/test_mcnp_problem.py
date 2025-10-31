@@ -47,3 +47,17 @@ def test_problem_clone(problem):
         ):
             assert old_obj is not new_obj
             assert new_obj._problem is new_problem
+
+
+def test_blank_parse():
+    problem = MCNP_Problem()
+    problem.parse_input()
+
+
+def test_surfaces_setter(problem):
+    surfs = montepy.Surfaces()
+    problem.surfaces = surfs
+    assert problem.surfaces is surfs
+    assert problem.surfaces._problem is problem
+    problem.surfaces = []
+    assert len(problem.surfaces) == 0

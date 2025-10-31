@@ -161,10 +161,6 @@ class NumberedObjectCollection(ABC):
             self._problem_ref = weakref.ref(problem)
         if objects:
             for obj in objects:
-                if not isinstance(obj, obj_class):
-                    raise TypeError(
-                        f"The object: {obj} being added to a NumberedObjectCollection is not of type {obj_class}"
-                    )
                 if obj.number in self.__num_cache:
                     raise NumberConflictError(
                         (
