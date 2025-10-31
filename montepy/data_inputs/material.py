@@ -541,7 +541,7 @@ See <https://www.montepy.org/migrations/migrate0_1.html> for more information ""
 
     @args_checked
     def __setitem__(
-        self, idx: ty.Integral | slice, newvalue: tuple[Nuclide, ty.Real]
+        self, idx: ty.Integral | slice, newvalue: tuple[Nuclide, ty.NonNegativeReal]
     ) -> None:
         """"""
         old_vals = self._components[idx]
