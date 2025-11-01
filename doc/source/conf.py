@@ -58,7 +58,7 @@ html_logo = "monty.svg"
 html_baseurl = "https://www.montepy.org/en/stable/"
 html_extra_path = ["robots.txt", "foo.imcnp"]
 
-jupyterlite_contents = ["demo/"]
+jupyterlite_contents = ["_contents/"]
 jupyterlite_config = "jupyter_lite_config.json"
 #jupyterlite_dir = "../"
 # List of patterns, relative to source directory, that match files and
