@@ -2,6 +2,7 @@ __pycache__/
 build/*
 doc/build
 doc/source/api/generated
+doc/_output
 dist/*
 *egg-info/*
 *.mcnp
@@ -19,6 +20,8 @@ doc/build/*
 .venv/
 .ipynb_checkpoints/
 montepy/_version.py
+.vscode/
+.jupyterlite.doit.db
 
 # various testing results
 htmlcov

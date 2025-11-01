@@ -102,7 +102,7 @@ These tutorial are:
 
 #. an introduction
 
-.. jupyterlite:: 0_IntroToMontePy.ipynb
+.. jupyterlite::
     :new_tab: True
 
 To access these demonstrations you can run:
