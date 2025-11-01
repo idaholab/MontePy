@@ -14,6 +14,8 @@ htmlcov
 .idea/*
 *.*.sw*
 *.prof
+*.whl
+*.tar.gz
 doc/build/*
 .coverage
 .hypothesis/
