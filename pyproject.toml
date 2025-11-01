@@ -57,7 +57,7 @@ doc = [
   	"sphinx_autodoc_typehints",
 	"autodocsumm",
 	"jupyterlite-sphinx",
-	"jupyterlite-pyodide-kernel"
+	"jupyterlite-xeus"
 ]
 format = ["black~=25.1"]
 build = [
