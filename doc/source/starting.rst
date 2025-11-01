@@ -95,6 +95,16 @@ Tutorials and Demonstrations
 
 We have presented a workshop for using MontePy in the past. 
 The demonstration Jupyter notebooks are now available in our git repository. 
+
+These can be ran in your browser using `jupyter lite <https://jupyterlite.readthedocs.io/en/stable/index.html>`_. 
+
+These tutorial are:
+
+#. an introduction
+
+.. jupyterlite:: 0_IntroToMontePy.ipynb
+    :new_tab: True
+
 To access these demonstrations you can run:
 
 .. code-block:: bash

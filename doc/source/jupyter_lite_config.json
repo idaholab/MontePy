@@ -1,5 +1,5 @@
 {
   "LiteBuildConfig": {
-    "output_dir": "build/html"
+    "output_dir": "build/html/lite"
   }
 }
