@@ -47,8 +47,14 @@ test = [
 	"montepy[build]",
 	"phmutest",
 ]
-# This is needed for a sphinx bug. See #414.
+build = [
+	"build",
+	"setuptools>=64.0.0",
+	"setuptools-scm>=8",
+]
 doc = [
+	"montepy[build]",
+	# This is needed for a sphinx bug. See #414.
 	"sphinx>=7.4.0", 
 	"sphinxcontrib-apidoc", 
 	"pydata_sphinx_theme",
@@ -60,11 +66,6 @@ doc = [
 	"jupyterlite-pyodide-kernel"
 ]
 format = ["black~=25.1"]
-build = [
-	"build",
-	"setuptools>=64.0.0",
-	"setuptools-scm>=8",
-]
 develop = [
 	"montepy[test,doc,format]",
 ]

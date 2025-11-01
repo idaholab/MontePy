@@ -2,6 +2,7 @@ __pycache__/
 build/*
 doc/build
 doc/source/api/generated
+doc/source/.cache
 doc/_output
 dist/*
 *egg-info/*
