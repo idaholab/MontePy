@@ -1,0 +1,9 @@
+name: xeus-python-kernel
+channels:
+  - https://prefix.dev/emscripten-forge-dev
+  - https://prefix.dev/conda-forge
+dependencies:
+  - numpy
+  - montepy
+  - xeus-python
+  - jupyterlite-xeus
