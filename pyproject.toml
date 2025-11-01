@@ -54,8 +54,10 @@ doc = [
 	"pydata_sphinx_theme",
 	"sphinx-favicon",
 	"sphinx-copybutton",
-    	"sphinx_autodoc_typehints",
+  	"sphinx_autodoc_typehints",
 	"autodocsumm",
+	"jupyterlite-sphinx",
+	"jupyterlite-pyodide-kernel"
 ]
 format = ["black~=25.1"]
 build = [
