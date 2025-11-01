@@ -7,6 +7,15 @@
 Getting Started with MontePy
 ============================
 
+.. replite::  
+   :width: 100%
+   :height: 600px
+   :prompt: Try MontePy 
+
+   %pip install montepy
+   import montepy
+   problem = montepy.read_input("models/pin_cell.imcnp")
+
 .. testsetup:: *
 
    import montepy
