@@ -27,6 +27,7 @@ MontePy Changelog
 
 **Documentation**
 
+* Added a web browser instance of ``jupyter`` to the website allowing testing out MontePy with no python installed locally (:issue:`796`).
 * Improved documentation for NumberedObjectCollections on Slicing behavior. (:issue:`798`)
 
 **Deprecations**
