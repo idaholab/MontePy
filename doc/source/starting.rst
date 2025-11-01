@@ -7,14 +7,6 @@
 Getting Started with MontePy
 ============================
 
-.. replite::  
-   :width: 100%
-   :height: 600px
-   :prompt: Try MontePy 
-
-   %pip install montepy
-   import montepy
-   problem = montepy.read_input("models/pin_cell.imcnp")
 
 .. testsetup:: *
 
@@ -38,6 +30,21 @@ and will link the cell with its material object.
     MontePy will likely break.
 
     Due to the manuals for these earlier versions of MCNP being export controlled, these versions will likely never be fully supported.
+
+
+Run Interactively in your Browser
+---------------------------------
+
+You can run python and MontePy straight from your browser below:
+
+.. replite::  
+   :width: 100%
+   :height: 600px
+   :prompt: Try MontePy 
+
+   %pip install montepy
+   import montepy
+   problem = montepy.read_input("models/pin_cell.imcnp")
 
 Installing
 ----------
@@ -98,12 +105,12 @@ The demonstration Jupyter notebooks are now available in our git repository.
 
 These can be ran in your browser using `jupyter lite <https://jupyterlite.readthedocs.io/en/stable/index.html>`_. 
 
-These tutorial are:
+These tutorial can be launched here:
 
-#. an introduction
-
-.. jupyterlite::
-    :new_tab: True
+.. jupyterlite:: 
+   :new_tab: True
+   :new_tab_button_text: Launch jupyter in your browswer
+   
 
 To access these demonstrations you can run:
 

@@ -56,14 +56,14 @@ favicons = [
 html_logo = "monty.svg"
 
 html_baseurl = "https://www.montepy.org/en/stable/"
+html_extra_path = ["robots.txt", "foo.imcnp"]
 
 #jupyter lite
-html_extra_path = ["robots.txt", "foo.imcnp"]
 jupyterlite_config = "jupyter_lite_config.json"
 # List of patterns, relative to source directory, that match files and
 # directories to ignore when looking for source files.
 # This pattern also affects html_static_path and html_extra_path.
-exclude_patterns = []
+exclude_patterns = ["_contents/*"]
 
 # autodoc
 autodoc_typehints = "both"
