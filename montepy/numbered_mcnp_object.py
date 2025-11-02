@@ -42,8 +42,6 @@ class Numbered_MCNP_Object(MCNP_Object):
     ----------
     input : Input | str
         The Input syntax object this will wrap and parse.
-    parser : MCNP_Parser
-        The parser object to parse the input with.
     number : int
         The number to set for this object.
     jit_parse: bool
@@ -54,7 +52,7 @@ class Numbered_MCNP_Object(MCNP_Object):
     ):
         if not input:
             self._number = self._generate_default_node(int, -1)
-        super().__init__(input, parser)
+        super().__init__(input)
         self._load_init_num(number)
 
     @args_checked
