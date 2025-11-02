@@ -2,9 +2,9 @@ name: CI testing
 
 on: 
   pull_request:
-    branches: [develop, alpha-test-dev, alpha-test, minor-rel-dev]
+    branches: ["*dev*", alpha-test*]
   push: 
-     branches: [develop, main, alpha-test, minor-rel-dev]
+     branches: ["*dev*", main, alpha-test*]
 
 jobs:
   build:

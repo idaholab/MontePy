@@ -229,8 +229,10 @@ def test_surface_constants_setter():
     assert surf.surface_constants[0] == 10.0
     with pytest.raises(TypeError):
         surf.surface_constants = "foo"
-    with pytest.raises(ValueError):
+    with pytest.raises(TypeError):
         surf.surface_constants = [1, "foo"]
+    with pytest.raises(ValueError):
+        surf.surface_constants = [1, 2, 3, 4, 5]
 
 
 def test_surface_number_setter():

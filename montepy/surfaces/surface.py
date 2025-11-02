@@ -1,18 +1,17 @@
 # Copyright 2024-2025, Battelle Energy Alliance, LLC All Rights Reserved.
 from __future__ import annotations
 import copy
-from typing import Union
-from numbers import Real
 
 import montepy
-from montepy.input_parser import syntax_node
-from montepy.exceptions import *
 from montepy.data_inputs import transform
+from montepy.exceptions import *
 from montepy.input_parser.surface_parser import JitSurfParser, SurfaceParser
+from montepy.input_parser import syntax_node
 from montepy.numbered_mcnp_object import Numbered_MCNP_Object, InitInput
 from montepy.surfaces import half_space
 from montepy.surfaces.surface_type import SurfaceType
 from montepy.utilities import *
+import montepy.types as ty
 
 
 def _surf_type_validator(self, surf_type):
@@ -31,21 +30,22 @@ class Surface(Numbered_MCNP_Object):
 
     Parameters
     ----------
-    input : Union[Input, str]
+    input : Input | str
         The Input object representing the input
     number : int
         The number to set for this object.
-    surface_type: Union[SurfaceType, str]
+    surface_type: SurfaceType | str
         The surface_type to set for this object
     """
 
     _JitParser = JitSurfParser
 
+    @args_checked
     def __init__(
         self,
         input: InitInput = None,
-        number: int = None,
-        surface_type: Union[SurfaceType, str] = None,
+        number: ty.PositiveInt = None,
+        surface_type: SurfaceType | str = None,
         *,
         jit_parse: bool = True,
     ):
@@ -167,7 +167,7 @@ class Surface(Numbered_MCNP_Object):
         return set(SurfaceType)
 
     def _generate_default_tree(
-        self, number: int = None, surface_type: Union[SurfaceType, str] = None
+        self, number: int = None, surface_type: SurfaceType | str = None
     ):
         """
         Creates a default syntax tree.
@@ -176,7 +176,7 @@ class Surface(Numbered_MCNP_Object):
         ----------
         number: int
             the default number for the syntax tree, should be passed from __init__
-        surface_type: Union[SurfaceType, str]
+        surface_type: SurfaceType | str
             The surface_type to set for this object
 
         Other Parameters
@@ -192,8 +192,6 @@ class Surface(Numbered_MCNP_Object):
         pointer = self._generate_default_node(int, None)
         pointer.is_negatable_identifier = True
         if surface_type is not None:
-            if not isinstance(surface_type, (SurfaceType, str)):
-                raise TypeError(f"The surface_type must be of type: SurfaceType or str")
             if isinstance(surface_type, SurfaceType):
                 surface_type = surface_type.value
         surf_type = self._generate_default_node(str, surface_type)
@@ -249,7 +247,7 @@ class Surface(Numbered_MCNP_Object):
         -------
         bool
         """
-        return self._is_white_boundary
+        pass
 
     @property
     @needs_full_tree
@@ -266,17 +264,11 @@ class Surface(Numbered_MCNP_Object):
         return ret
 
     @surface_constants.setter
+    @args_checked
     @needs_full_tree
-    def surface_constants(self, constants):
-        if not isinstance(constants, list):
-            raise TypeError("surface_constants must be a list")
+    def surface_constants(self, constants: ty.Iterable[ty.Real]):
         if len(constants) != len(self._surface_constants):
             raise ValueError(f"Cannot change the length of the surface constants.")
-        for constant in constants:
-            if not isinstance(constant, Real):
-                raise TypeError(
-                    f"The surface constant provided: {constant} must be a float"
-                )
         for i, value in enumerate(constants):
             self._surface_constants[i].value = value
 
@@ -458,7 +450,10 @@ class Surface(Numbered_MCNP_Object):
     def __ne__(self, other):
         return not self == other
 
-    def find_duplicate_surfaces(self, surfaces, tolerance):
+    @args_checked
+    def find_duplicate_surfaces(
+        self, surfaces: montepy.Surfaces, tolerance: ty.PositiveReal
+    ):
         """Finds all surfaces that are effectively the same as this one.
 
         Parameters

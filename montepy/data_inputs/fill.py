@@ -1,8 +1,10 @@
 # Copyright 2024 - 2025, Battelle Energy Alliance, LLC All Rights Reserved.
+from __future__ import annotations
 import itertools as it
-from numbers import Integral, Real
 import numpy as np
 
+import montepy
+from montepy.utilities import *
 from montepy.data_inputs.cell_modifier import CellModifierInput, InitInput
 from montepy.data_inputs.transform import Transform
 from montepy.exceptions import *
@@ -10,13 +12,14 @@ from montepy.input_parser.block_type import BlockType
 from montepy.input_parser.mcnp_input import Input, Jump
 from montepy.input_parser import syntax_node
 from montepy.mcnp_object import MCNP_Object
+import montepy.types as ty
 from montepy.universe import Universe
 from montepy.utilities import *
 
 
 def _verify_3d_index(self, indices):
     for index in indices:
-        if not isinstance(index, Integral):
+        if not isinstance(index, ty.Integral):
             raise TypeError(f"Index values for fill must be an int. {index} given.")
     if len(indices) != 3:
         raise ValueError(f"3 values must be given for fill. {indices} given")
@@ -27,7 +30,7 @@ class Fill(CellModifierInput):
 
     Parameters
     ----------
-    input : Union[Input, str]
+    input : Input | str
         the Input object representing this data input
     in_cell_block : bool
         if this card came from the cell block of an input file.
@@ -40,6 +43,7 @@ class Fill(CellModifierInput):
     DIMENSIONS = {"i": 0, "j": 1, "k": 2}
     """Maps the dimension to its axis number"""
 
+    @args_checked
     def __init__(
         self,
         input: InitInput = None,
@@ -93,7 +97,7 @@ class Fill(CellModifierInput):
         )
 
     @staticmethod
-    def _generate_cell_data_tree():
+    def _generate_cell_data_tree() -> syntax_node.SyntaxNode:
         """
         Generates a default syntax tree for the data of a cell fill (indices, universes, transform).
         """
@@ -106,7 +110,7 @@ class Fill(CellModifierInput):
             },
         )
 
-    def _precondition_tree(self, data):
+    def _precondition_tree(self, data: syntax_node.ListNode) -> syntax_node.SyntaxNode:
         """
         Converts a listNode payload (if only one universe is given) to the proper syntax tree.
         """
@@ -115,7 +119,7 @@ class Fill(CellModifierInput):
         self._tree.nodes["data"] = new_data
         return new_data
 
-    def _parse_cell_input(self, key, value):
+    def _parse_cell_input(self, key: str, value: str):
         """Parses the information provided in the cell input.
 
         Parameters
@@ -169,7 +173,7 @@ class Fill(CellModifierInput):
                 self._transform = Transform(input, pass_through=True)
                 self._hidden_transform = True
 
-    def _parse_matrix(self, value):
+    def _parse_matrix(self, value: syntax_node.SyntaxNode):
         """Parses a matrix fill of universes.
 
         Parameters
@@ -247,7 +251,7 @@ class Fill(CellModifierInput):
         return 0
 
     @property
-    def universe(self):
+    def universe(self) -> Universe:
         """The universe that this cell will be filled with.
 
         Only returns a value when :func:`multiple_universes` is False, otherwise none.
@@ -261,9 +265,8 @@ class Fill(CellModifierInput):
             return self._universe
 
     @universe.setter
-    def universe(self, value):
-        if not isinstance(value, (Universe, type(None))):
-            raise TypeError(f"Universe must be set to a Universe. {value} given.")
+    @args_checked
+    def universe(self, value: Universe = None):
         if self.multiple_universes:
             raise ValueError(
                 "A single universe can only be set when multiple_universes is False."
@@ -278,7 +281,7 @@ class Fill(CellModifierInput):
         self._universe = None
 
     @property
-    def universes(self):
+    def universes(self) -> np.ndarray[Universe]:
         """The universes that this cell will be filled with in a lattice.
 
         Only returns a value when :func:`multiple_universes` is true, otherwise none.
@@ -288,7 +291,7 @@ class Fill(CellModifierInput):
 
         Returns
         -------
-        np.ndarray
+        np.ndarray[Universe]
             the universes that the cell will be filled with as a 3-D
             array.
 
@@ -358,10 +361,8 @@ class Fill(CellModifierInput):
         return None
 
     @universes.setter
-    def universes(self, value):
-        if not isinstance(value, (np.ndarray, type(None))):
-            raise TypeError(f"Universes must be set to an array. {value} given.")
-
+    @args_checked
+    def universes(self, value: np.ndarray[Universe | ty.NonNegativeInt] = None):
         if value is None:
             self.multiple_universes = False
             self.universe = None
@@ -401,10 +402,6 @@ class Fill(CellModifierInput):
             type_checker = lambda x: isinstance(x, (Universe, type(None)))
             return map(type_checker, array.flat)
 
-        if value.dtype != np.object_ or not all(is_universes(value)):
-            raise TypeError(
-                f"All values in array must be a Universe (or None). {value} given."
-            )
         self.multiple_universes = True
         self._universe = None
         if self.min_index is None:
@@ -423,7 +420,7 @@ class Fill(CellModifierInput):
         validator=_verify_3d_index,
         deletable=True,
     )
-    def min_index(self):
+    def min_index(self) -> np.ndarray[ty.Integral]:
         """The minimum indices of the matrix in each dimension.
 
         For the order of the indices see: ``DIMENSIONS``.
@@ -441,7 +438,7 @@ class Fill(CellModifierInput):
         validator=_verify_3d_index,
         deletable=True,
     )
-    def max_index(self):
+    def max_index(self) -> np.ndarray[ty.Integral]:
         """The maximum indices of the matrix in each dimension.
 
         For the order of the indices see: ``DIMENSIONS``.
@@ -454,7 +451,7 @@ class Fill(CellModifierInput):
         pass
 
     @property
-    def multiple_universes(self):
+    def multiple_universes(self) -> bool:
         """Whether or not this cell is filled with multiple universes in a matrix.
 
         Returns
@@ -465,15 +462,14 @@ class Fill(CellModifierInput):
         return self._multi_universe
 
     @multiple_universes.setter
-    def multiple_universes(self, value):
-        if not isinstance(value, bool):
-            raise TypeError("Multiple_univeses must be set to a bool")
+    @args_checked
+    def multiple_universes(self, value: bool):
         self._multi_universe = value
         if not value:
             self._universes = None
 
     @make_prop_val_node("_old_number")
-    def old_universe_number(self):
+    def old_universe_number(self) -> int:
         """The number of the universe that this is filled by taken from the input.
 
         Returns
@@ -484,7 +480,7 @@ class Fill(CellModifierInput):
         pass
 
     @property
-    def old_universe_numbers(self):
+    def old_universe_numbers(self) -> np.ndarray[int]:
         """The numbers of the universes that this is filled by taken from the input.
 
         Returns
@@ -500,7 +496,7 @@ class Fill(CellModifierInput):
         return self._old_numbers
 
     @property
-    def hidden_transform(self):
+    def hidden_transform(self) -> bool:
         """Whether or not the transform used is hidden.
 
         This is true when an unnumbered transform is used
@@ -514,7 +510,7 @@ class Fill(CellModifierInput):
         return self._hidden_transform
 
     @property
-    def has_information(self):
+    def has_information(self) -> bool:
         if self.in_cell_block:
             return self.universe is not None or self.universes is not None
 
@@ -530,7 +526,7 @@ class Fill(CellModifierInput):
         return val
 
     @property
-    def transform(self):
+    def transform(self) -> montepy.Transform:
         """The transform for this fill (if any).
 
         Returns
@@ -541,9 +537,8 @@ class Fill(CellModifierInput):
         return self._transform
 
     @transform.setter
-    def transform(self, value):
-        if not isinstance(value, (Transform, type(None))):
-            raise TypeError("Transform must be set to a Transform.")
+    @args_checked
+    def transform(self, value: Transform = None):
         self._transform = value
         if value is not None:
             self._hidden_transform = value.hidden_transform
@@ -565,7 +560,8 @@ class Fill(CellModifierInput):
         """
         pass
 
-    def merge(self, other):
+    @args_checked
+    def merge(self, other: Fill):
         raise MalformedInputError(
             other._input, "Cannot have two lattice inputs for the problem"
         )
@@ -605,7 +601,7 @@ class Fill(CellModifierInput):
         self._old_number = None
         self._universe = None
 
-    def _axis_range(self, axis):
+    def _axis_range(self, axis) -> range:
         """Returns an iterator for iterating over the given axis.
 
         Parameters
@@ -615,12 +611,11 @@ class Fill(CellModifierInput):
 
         Returns
         -------
-        unknown
-            range
+        range
         """
         return range(self._axis_size(axis))
 
-    def _axis_size(self, axis):
+    def _axis_size(self, axis: ty.Integral) -> int:
         """Get the length of the given axis.
 
         Parameters
@@ -636,7 +631,7 @@ class Fill(CellModifierInput):
         return int(self.max_index[axis] - self.min_index[axis]) + 1
 
     @property
-    def _sizes(self):
+    def _sizes(self) -> tuple[int, int, int]:
         """The axis sizes of the matrix.
 
         Returns

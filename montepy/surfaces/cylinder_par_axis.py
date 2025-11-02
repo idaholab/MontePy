@@ -1,11 +1,12 @@
 # Copyright 2024-2025, Battelle Energy Alliance, LLC All Rights Reserved.
-from .surface_type import SurfaceType
-from .surface import Surface, InitInput
-from montepy.exceptions import *
-from montepy.utilities import *
+from __future__ import annotations
 
-from numbers import Real
-from typing import Union
+import montepy
+from .surface import Surface, InitInput
+from .surface_type import SurfaceType
+from montepy.exceptions import *
+import montepy.types as ty
+from montepy.utilities import *
 
 
 def _enforce_positive_radius(self, value):
@@ -22,11 +23,11 @@ class CylinderParAxis(Surface):
 
     Parameters
     ----------
-    input : Union[Input, str]
+    input : Input | str
         The Input object representing the input
     number : int
         The number to set for this object.
-    surface_type: Union[SurfaceType, str]
+    surface_type: SurfaceType | str
         The surface_type to set for this object
     """
 
@@ -60,18 +61,16 @@ class CylinderParAxis(Surface):
         return (self._coordinates[0].value, self._coordinates[1].value)
 
     @coordinates.setter
-    def coordinates(self, coordinates):
-        if not isinstance(coordinates, (list, tuple)):
-            raise TypeError("coordinates must be a list")
+    @args_checked
+    def coordinates(self, coordinates: ty.Iterable[ty.Real]):
         if len(coordinates) != 2:
             raise ValueError("coordinates must have exactly two elements")
-        for val in coordinates:
-            if not isinstance(val, Real):
-                raise TypeError(f"Coordinate must be a number. {val} given.")
         for i, val in enumerate(coordinates):
             self._coordinates[i].value = val
 
-    @make_prop_val_node("_radius", (Real,), float, validator=_enforce_positive_radius)
+    @make_prop_val_node(
+        "_radius", (ty.Real,), float, validator=_enforce_positive_radius
+    )
     def radius(self):
         """The radius of the cylinder.
 
@@ -88,7 +87,10 @@ class CylinderParAxis(Surface):
         if any({c is None for c in self.coordinates}):
             raise IllegalState(f"Surface: {self.number} does not have coordinates set.")
 
-    def find_duplicate_surfaces(self, surfaces, tolerance):
+    @args_checked
+    def find_duplicate_surfaces(
+        self, surfaces: montepy.Surfaces, tolerance: ty.PositiveReal
+    ):
         ret = []
         # do not assume transform and periodic surfaces are the same.
         if not self.old_periodic_surface:

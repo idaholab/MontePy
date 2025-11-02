@@ -1,9 +1,12 @@
 # Copyright 2024-2025, Battelle Energy Alliance, LLC All Rights Reserved.
-import montepy
-from montepy.numbered_object_collection import NumberedObjectCollection
-from montepy.exceptions import *
+from __future__ import annotations
 import warnings
-from numbers import Integral
+
+import montepy
+from montepy.exceptions import *
+from montepy.numbered_object_collection import NumberedObjectCollection
+from montepy.utilities import *
+import montepy.types as ty
 
 
 class Cells(NumberedObjectCollection):
@@ -32,7 +35,12 @@ class Cells(NumberedObjectCollection):
         the problem to link this collection to.
     """
 
-    def __init__(self, cells=None, problem=None):
+    @args_checked
+    def __init__(
+        self,
+        cells: ty.Iterable[montepy.Cell] = None,
+        problem: montepy.MCNP_Problem = None,
+    ):
         self.__blank_modifiers = set()
         super().__init__(montepy.Cell, cells, problem)
         self.__setup_blank_cell_modifiers()
@@ -63,7 +71,12 @@ class Cells(NumberedObjectCollection):
                 else:
                     raise e
 
-    def set_equal_importance(self, importance, vacuum_cells=tuple()):
+    @args_checked
+    def set_equal_importance(
+        self,
+        importance: ty.PositiveReal,
+        vacuum_cells: ty.Iterable[montepy.Cell | ty.PositiveInt] = tuple(),
+    ):
         """Sets all cells except the vacuum cells to the same importance using :func:`montepy.data_cards.importance.Importance.all`.
 
         The vacuum cells will be set to 0.0. You can specify cell numbers or cell objects.
@@ -75,13 +88,9 @@ class Cells(NumberedObjectCollection):
         vacuum_cells : list
             the cells that are the vacuum boundary with 0 importance
         """
-        if not isinstance(vacuum_cells, (list, tuple, set)):
-            raise TypeError("vacuum_cells must be a list or set")
         cells_buff = set()
         for cell in vacuum_cells:
-            if not isinstance(cell, (montepy.Cell, Integral)):
-                raise TypeError("vacuum cell must be a Cell or a cell number")
-            if isinstance(cell, Integral):
+            if isinstance(cell, ty.Integral):
                 cells_buff.add(self[cell])
             else:
                 cells_buff.add(cell)
@@ -104,12 +113,12 @@ class Cells(NumberedObjectCollection):
         return self._volume.is_mcnp_calculated
 
     @allow_mcnp_volume_calc.setter
-    def allow_mcnp_volume_calc(self, value):
-        if not isinstance(value, bool):
-            raise TypeError("allow_mcnp_volume_calc must be set to a bool")
+    @args_checked
+    def allow_mcnp_volume_calc(self, value: bool):
         self._volume.is_mcnp_calculated = value
 
-    def link_to_problem(self, problem):
+    @args_checked
+    def link_to_problem(self, problem: montepy.MCNP_Problem = None):
         """Links the input to the parent problem for this input.
 
         This is done so that inputs can find links to other objects.
@@ -203,8 +212,13 @@ class Cells(NumberedObjectCollection):
                     ret += buf
         return ret
 
+    @args_checked
     def clone(
-        self, clone_material=False, clone_region=False, starting_number=None, step=None
+        self,
+        clone_material: bool = False,
+        clone_region: bool = False,
+        starting_number: ty.PositiveInt = None,
+        step: ty.PositiveInt = None,
     ):
         """Create a new instance of this collection, with all new independent
         objects with new numbers.
@@ -241,16 +255,6 @@ class Cells(NumberedObjectCollection):
         type(self)
             a cloned copy of this object.
         """
-        if not isinstance(starting_number, (Integral, type(None))):
-            raise TypeError(
-                f"Starting_number must be an int. {type(starting_number)} given."
-            )
-        if not isinstance(step, (Integral, type(None))):
-            raise TypeError(f"step must be an int. {type(step)} given.")
-        if starting_number is not None and starting_number <= 0:
-            raise ValueError(f"starting_number must be >= 1. {starting_number} given.")
-        if step is not None and step <= 0:
-            raise ValueError(f"step must be >= 1. {step} given.")
         if starting_number is None:
             starting_number = self.starting_number
         if step is None:

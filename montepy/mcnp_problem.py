@@ -1,13 +1,16 @@
-# Copyright 2024-2025, Battelle Energy Alliance, LLC All Rights Reserved.
+
+# Copyright 2024, Battelle Energy Alliance, LLC All Rights Reserved.
+
 import copy
 from enum import Enum
 import itertools
-from functools import partial
+import io
 import os
 import warnings
 
 from montepy.data_inputs import mode, transform
 from montepy._cell_data_control import CellDataPrintController
+from montepy.utilities import *
 from montepy.cell import Cell
 from montepy.cells import Cells
 from montepy.exceptions import *
@@ -15,6 +18,7 @@ from montepy.constants import DEFAULT_VERSION
 from montepy.materials import Material, Materials
 from montepy.surfaces import surface, surface_builder
 from montepy.surface_collection import Surfaces
+import montepy.types as ty
 
 # weird way to avoid circular imports
 from montepy.data_inputs import parse_data
@@ -46,7 +50,9 @@ class MCNP_Problem:
         Universe: Universes,
     }
 
-    def __init__(self, destination):
+    @args_checked
+    def __init__(self, destination: str | os.PathLike | io.TextIOBase = None):
+        self._input_file = None
         if hasattr(destination, "read") and callable(getattr(destination, "read")):
             self._input_file = MCNP_InputFile.from_open_stream(destination)
         elif isinstance(destination, (str, os.PathLike)):
@@ -155,10 +161,9 @@ class MCNP_Problem:
         return self._cells
 
     @cells.setter
-    def cells(self, cells):
-        if not isinstance(cells, (Cells, list)):
-            raise TypeError("cells must be an instance of list or Cells")
-        if isinstance(cells, list):
+    @args_checked
+    def cells(self, cells: ty.Iterable[montepy.Cell] | Cells):
+        if not isinstance(cells, Cells):
             cells = Cells(cells)
         if cells is self.cells:
             return
@@ -175,7 +180,7 @@ class MCNP_Problem:
         """
         return self._mode
 
-    def set_mode(self, particles):
+    def set_mode(self, particles: ty.Iterable[str] | str):
         """Sets the mode of problem to the given particles.
 
         For details see: :func:`montepy.data_cards.mode.Mode.set`.
@@ -214,12 +219,13 @@ class MCNP_Problem:
         return self._mcnp_version
 
     @mcnp_version.setter
-    def mcnp_version(self, version):
+    @args_checked
+    def mcnp_version(self, version: ty.VersionType):
         """
         Parameters
         ----------
         version : tuple
-            the version tuple. Must be greater than 6.2.0
+            the version tuple. Must be greater than (5, 1, 60)
         """
         if version < (5, 1, 60):
             raise ValueError(f"The mcnp_version {version} is not supported by MontePy")
@@ -239,10 +245,9 @@ class MCNP_Problem:
         return self._surfaces
 
     @surfaces.setter
-    def surfaces(self, surfs):
-        if not isinstance(surfs, (list, Surfaces)):
-            raise TypeError("Surfaces must be of type list or Surfaces")
-        if isinstance(surfs, list):
+    @args_checked
+    def surfaces(self, surfs: ty.Iterable[montepy.Surface] | Surfaces):
+        if not isinstance(surfs, Surfaces):
             surfs = Surfaces(surfs)
         surfs.link_to_problem(self)
         self._surfaces = surfs
@@ -261,10 +266,9 @@ class MCNP_Problem:
         return self._materials
 
     @materials.setter
-    def materials(self, mats):
-        if not isinstance(mats, (list, Materials)):
-            raise TypeError("materials must be of type list and Materials")
-        if isinstance(mats, list):
+    @args_checked
+    def materials(self, mats: ty.Iterable[montepy.Material] | Materials):
+        if not isinstance(mats, Materials):
             mats = Materials(mats)
         mats.link_to_problem(self)
         self._materials = mats
@@ -339,7 +343,8 @@ class MCNP_Problem:
         return self._title
 
     @title.setter
-    def title(self, title):
+    @args_checked
+    def title(self, title: str):
         """
         Parameters
         ----------
@@ -369,9 +374,8 @@ class MCNP_Problem:
         """
         return self._transforms
 
-    def parse_input(
-        self, check_input: bool = False, replace: bool = True, *, jit_parse: bool = True
-    ):
+    @args_checked
+    def parse_input(self, check_input: bool = False, replace: bool = True, *, jit_parse: bool = True):
         """Semantically parses the MCNP file provided to the constructor.
 
         .. versionchanged:: 1.2.0
@@ -388,6 +392,8 @@ class MCNP_Problem:
         jit_parse: bool
             Uses just-in-time (fast) parsing when True.
         """
+        if self.input_file is None:
+            return
         trailing_comment = None
         last_obj = None
         last_block = None
@@ -504,7 +510,8 @@ class MCNP_Problem:
         for delete_index in to_delete[::-1]:
             del self._data_inputs[delete_index]
 
-    def remove_duplicate_surfaces(self, tolerance):
+    @args_checked
+    def remove_duplicate_surfaces(self, tolerance: ty.PositiveReal):
         """Finds duplicate surfaces in the problem, and remove them.
 
         Parameters
@@ -545,7 +552,10 @@ class MCNP_Problem:
             " as the children are automatically added with the cell."
         )
 
-    def write_problem(self, destination, overwrite=False):
+    @args_checked
+    def write_problem(
+        self, destination: str | os.PathLike | io.TextIOBase, overwrite: bool = False
+    ):
         """Write the problem to a file or writeable object.
 
         Parameters
@@ -567,7 +577,8 @@ class MCNP_Problem:
                 f"destination f{destination} is not a file path or writable object"
             )
 
-    def write_to_file(self, file_path, overwrite=False):
+    @args_checked
+    def write_to_file(self, file_path: str | os.PathLike, overwrite: bool = False):
         """Writes the problem to a file.
 
         .. versionchanged:: 0.3.0
@@ -697,6 +708,7 @@ class MCNP_Problem:
             ret += "\n"
         return ret
 
+    @args_checked
     def parse(self, input: str, append: bool = True) -> montepy.mcnp_object.MCNP_Object:
         """Parses the MCNP object given by the string, and links it adds it to this problem.
 

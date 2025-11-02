@@ -1,7 +1,10 @@
-# Copyright 2024, Battelle Energy Alliance, LLC All Rights Reserved.
-from montepy.constants import BLANK_SPACE_CONTINUE
+# Copyright 2024-2025, Battelle Energy Alliance, LLC All Rights Reserved.
 
+from montepy.constants import BLANK_SPACE_CONTINUE
 from collections.abc import Callable
+from montepy._check_value import args_checked
+import montepy.types as ty
+
 import functools
 import re
 
@@ -10,7 +13,8 @@ A package for helper universal utility functions
 """
 
 
-def fortran_float(number_string):
+@args_checked
+def fortran_float(number_string: str | ty.Real):
     """Attempts to convert a FORTRAN formatted float string to a float.
 
     FORTRAN allows silly things for scientific notation like ``6.02+23``
@@ -42,7 +46,8 @@ def fortran_float(number_string):
             raise ValueError(f"Value Not parsable as float: {number_string}") from e
 
 
-def is_comment(line):
+@args_checked
+def is_comment(line: str):
     """Determines if the line is a ``C comment`` style comment.
 
     Parameters
@@ -259,10 +264,10 @@ def prop_pointer_collect_from_problem(
         def pull_from_problem(self):
             if hasattr(self, hidden_param) and getattr(self, hidden_param) is not None:
                 return func(self)
-            id_nums = getattr(self, id_param)
+            id_nums = getattr(self, ids_param)
             prob = getattr(self, "_problem")
             new_collection = collect_type()
-            if prob is not None and id_num is not None:
+            if prob is not None and id_nums is not None:
                 objs = getattr(prob, prob_collection_param)
                 for id_num in id_nums:
                     obj = objs[id_num]

@@ -3,11 +3,10 @@ from __future__ import annotations
 from abc import abstractmethod
 import copy
 import itertools
-from typing import Union
-from numbers import Integral
 
 from montepy.mcnp_object import MCNP_Object, InitInput
 import montepy
+import montepy.types as ty
 from montepy.utilities import *
 
 
@@ -41,7 +40,7 @@ class Numbered_MCNP_Object(MCNP_Object):
 
     Parameters
     ----------
-    input : Union[Input, str]
+    input : Input | str
         The Input syntax object this will wrap and parse.
     parser : MCNP_Parser
         The parser object to parse the input with.
@@ -55,21 +54,18 @@ class Numbered_MCNP_Object(MCNP_Object):
     ):
         if not input:
             self._number = self._generate_default_node(int, -1)
-        if number is not None:
-            if not isinstance(number, Integral):
-                raise TypeError(
-                    f"Number must be an int. {number} of type {type(number)} given."
-                )
-            if number < 0:
-                raise ValueError(f"Number must be 0 or greater. {number} given.")
-        super().__init__(input, number=number, jit_parse=jit_parse, **kwargs)
+        super().__init__(input, parser)
+        self._load_init_num(number)
+
+    @args_checked
+    def _load_init_num(self, number: ty.NonNegativeInt = None):
         if number is not None:
             self.number = number
 
     _CHILD_OBJ_MAP = {}
     """"""
 
-    @make_prop_val_node("_number", Integral, validator=_number_validator)
+    @make_prop_val_node("_number", ty.Integral, validator=_number_validator)
     def number(self):
         """The current number of the object that will be written out to a new input.
 
@@ -119,7 +115,10 @@ class Numbered_MCNP_Object(MCNP_Object):
                 except (TypeError, AssertionError):
                     prob_collect.append(child_collect)
 
-    def clone(self, starting_number=None, step=None):
+    @args_checked
+    def clone(
+        self, starting_number: ty.PositiveInt = None, step: ty.PositiveInt = None
+    ):
         """Create a new independent instance of this object with a new number.
 
         This relies mostly on ``copy.deepcopy``.
@@ -148,16 +147,6 @@ class Numbered_MCNP_Object(MCNP_Object):
         type(self)
             a cloned copy of this object.
         """
-        if not isinstance(starting_number, (Integral, type(None))):
-            raise TypeError(
-                f"Starting_number must be an int. {type(starting_number)} given."
-            )
-        if not isinstance(step, (Integral, type(None))):
-            raise TypeError(f"step must be an int. {type(step)} given.")
-        if starting_number is not None and starting_number <= 0:
-            raise ValueError(f"starting_number must be >= 1. {starting_number} given.")
-        if step is not None and step <= 0:
-            raise ValueError(f"step must be >= 1. {step} given.")
         ret = copy.deepcopy(self)
         if self._problem:
             ret.link_to_problem(self._problem)

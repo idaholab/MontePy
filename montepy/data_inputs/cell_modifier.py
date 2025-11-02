@@ -1,10 +1,14 @@
 # Copyright 2024 - 2025, Battelle Energy Alliance, LLC All Rights Reserved.
-from abc import abstractmethod
 import montepy
+from montepy.utilities import *
 from montepy.data_inputs.data_input import DataInputAbstract, InitInput
 from montepy.input_parser import syntax_node
 from montepy.input_parser.block_type import BlockType
 from montepy.input_parser.mcnp_input import Input, Jump
+import montepy.types as ty
+
+from abc import abstractmethod
+import typing
 import warnings
 
 
@@ -15,7 +19,7 @@ class CellModifierInput(DataInputAbstract):
 
     Parameters
     ----------
-    input : Union[Input, str]
+    input : Input | str
         the Input object representing this data input
     in_cell_block : bool
         if this card came from the cell block of an input file.
@@ -25,6 +29,7 @@ class CellModifierInput(DataInputAbstract):
         the value syntax tree from the key-value pair in a cell
     """
 
+    @args_checked
     def __init__(
         self,
         input: InitInput = None,
@@ -38,12 +43,9 @@ class CellModifierInput(DataInputAbstract):
         if key and value:
             input = Input([key], BlockType.DATA)
             fast_parse = True
-        if not isinstance(in_cell_block, bool):
-            raise TypeError("in_cell_block must be a bool")
-        if key and not isinstance(key, str):
-            raise TypeError("key must be a str")
-        if value and not isinstance(value, syntax_node.SyntaxNode):
-            raise TypeError("value must be from a SyntaxNode")
+        super().__init__(input, fast_parse)
+        if not in_cell_block and not input:
+            self._generate_default_data_tree()
         self._in_cell_block = in_cell_block
         self._in_key = key
         self._in_value = value
@@ -87,7 +89,7 @@ class CellModifierInput(DataInputAbstract):
         )
 
     @property
-    def in_cell_block(self):
+    def in_cell_block(self) -> bool:
         """True if this object represents an input from the cell block section of a file.
 
         Returns
@@ -97,12 +99,12 @@ class CellModifierInput(DataInputAbstract):
         return self._in_cell_block
 
     @property
-    def set_in_cell_block(self):
+    def set_in_cell_block(self) -> bool:
         """True if this data were set in the cell block in the input"""
         return self._set_in_cell_block
 
     @abstractmethod
-    def merge(self, other):
+    def merge(self, other: typing.Self):
         """Merges the data from another card of same type into this one.
 
         Parameters
@@ -139,7 +141,7 @@ class CellModifierInput(DataInputAbstract):
 
     @property
     @abstractmethod
-    def has_information(self):
+    def has_information(self) -> bool:
         """For a cell instance of :class:`montepy.data_cards.cell_modifier.CellModifierCard` returns True iff there is information here worth printing out.
 
         e.g., a manually set volume for a cell
@@ -173,7 +175,7 @@ class CellModifierInput(DataInputAbstract):
         pass
 
     @property
-    def _is_worth_printing(self):
+    def _is_worth_printing(self) -> bool:
         """Determines if this object has information that is worth printing in the input file.
 
         Uses the :func:`has_information` property for all applicable cell(s)
@@ -194,7 +196,7 @@ class CellModifierInput(DataInputAbstract):
 
     @property
     @abstractmethod
-    def _tree_value(self):
+    def _tree_value(self) -> syntax_node.ValueNode:
         """The ValueNode that holds the information for this instance, that should be included in the data block.
 
         Returns
@@ -204,14 +206,14 @@ class CellModifierInput(DataInputAbstract):
         """
         pass
 
-    def _collect_new_values(self):
+    def _collect_new_values(self) -> list[syntax_node.ValueNode]:
         """Gets a list of the ValueNodes that hold the information for all cells.
 
         This will be a list in the same order as :func:`montepy.mcnp_problem.MCNP_Problem.cells`.
 
         Returns
         -------
-        list
+        list[ValueNode]
             a list of the ValueNodes to update the data block syntax
             tree with
         """
@@ -234,7 +236,7 @@ class CellModifierInput(DataInputAbstract):
             new_vals = self._collect_new_values()
             self.data.update_with_new_values(new_vals)
 
-    def _format_tree(self):
+    def _format_tree(self) -> str:
         """Formats the syntax tree for printing in an input file.
 
         By default this runs ``self._tree.format()``.
@@ -247,18 +249,19 @@ class CellModifierInput(DataInputAbstract):
         """
         return self._tree.format()
 
+    @args_checked
     def format_for_mcnp_input(
         self,
-        mcnp_version: tuple[int],
+        mcnp_version: ty.VersionType,
         has_following: bool = False,
         always_print: bool = False,
-    ):
+    ) -> list[str]:
         """Creates a string representation of this MCNP_Object that can be
         written to file.
 
         Parameters
         ----------
-        mcnp_version : tuple
+        mcnp_version : ty.VersionType
             The tuple for the MCNP version that must be exported to.
         has_following: bool
             If true this is followed by another input, and a new line will be inserted if this ends in a comment.
@@ -306,14 +309,15 @@ class CellModifierInput(DataInputAbstract):
             )
         return []
 
-    def mcnp_str(self, mcnp_version: tuple[int] = None):
+    @args_checked
+    def mcnp_str(self, mcnp_version: ty.VersionType = None) -> str:
         """Returns a string of this input as it would appear in an MCNP input file.
 
         ..versionadded:: 1.0.0
 
         Parameters
         ----------
-        mcnp_version: tuple[int]
+        mcnp_version: ty.VersionType
             The tuple for the MCNP version that must be exported to.
 
         Returns

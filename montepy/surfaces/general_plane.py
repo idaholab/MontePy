@@ -1,11 +1,12 @@
 # Copyright 2024, Battelle Energy Alliance, LLC All Rights Reserved.
-from typing import Union
 import warnings
 
 import montepy
+from montepy.utilities import *
 from montepy.exceptions import *
 from montepy.surfaces.surface_type import SurfaceType
 from montepy.surfaces.surface import Surface, InitInput
+import montepy.types as ty
 
 
 class GeneralPlane(Surface):
@@ -17,7 +18,7 @@ class GeneralPlane(Surface):
 
     Parameters
     ----------
-    input : Union[Input, str]
+    input : Input | str
         The Input object representing the input
     number : int
         The number to set for this object.

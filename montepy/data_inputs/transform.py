@@ -3,13 +3,14 @@ from __future__ import annotations
 import copy
 import numpy as np
 import re
-from typing import Union
 
 import montepy
+from montepy.utilities import *
 from montepy import mcnp_object
 from montepy.data_inputs import data_input
 from montepy.exceptions import *
 from montepy.numbered_mcnp_object import Numbered_MCNP_Object, InitInput
+import montepy.types as ty
 from montepy.utilities import *
 
 
@@ -22,7 +23,7 @@ class Transform(data_input.DataInputAbstract, Numbered_MCNP_Object):
 
     Parameters
     ----------
-    input : Union[Input, str]
+    input : Input | str
         The Input object representing the input
     number : int
         The number to set for this object.
@@ -30,11 +31,12 @@ class Transform(data_input.DataInputAbstract, Numbered_MCNP_Object):
         Parse the object just-in-time, when the information is actually needed, if True.
     """
 
+    @args_checked
     def __init__(
         self,
         input: InitInput = None,
         pass_through: bool = False,
-        number: int = None,
+        number: ty.PositiveInt = None,
         *,
         jit_parse: bool = True,
     ):
@@ -108,7 +110,7 @@ class Transform(data_input.DataInputAbstract, Numbered_MCNP_Object):
         return 0
 
     @property
-    def hidden_transform(self):
+    def hidden_transform(self) -> bool:
         """Whether or not this transform is "hidden" i.e., has no number.
 
         If True this transform was created from a fill card, and has no number.
@@ -120,7 +122,7 @@ class Transform(data_input.DataInputAbstract, Numbered_MCNP_Object):
         return self._pass_through
 
     @make_prop_pointer("_is_in_degrees", bool)
-    def is_in_degrees(self):
+    def is_in_degrees(self) -> bool:
         """The rotation matrix is in degrees and not in cosines
 
         Returns
@@ -130,7 +132,7 @@ class Transform(data_input.DataInputAbstract, Numbered_MCNP_Object):
         pass
 
     @make_prop_val_node("_old_number")
-    def old_number(self):
+    def old_number(self) -> int:
         """The transform number used in the original file
 
         Returns
@@ -140,43 +142,41 @@ class Transform(data_input.DataInputAbstract, Numbered_MCNP_Object):
         pass
 
     @property
-    def displacement_vector(self):
+    def displacement_vector(self) -> np.ndarray[float]:
         """The transform displacement vector
 
         Returns
         -------
-        numpy.array
+        numpy.ndarray[float]
         """
         return self._displacement_vector
 
     @displacement_vector.setter
-    def displacement_vector(self, vector):
-        if not isinstance(vector, np.ndarray):
-            raise TypeError("displacement_vector must be a numpy array")
+    @args_checked
+    def displacement_vector(self, vector: np.ndarray[float]):
         if len(vector) != 3:
             raise ValueError("displacement_vector must have three components")
         self._displacement_vector = vector
 
     @property
-    def rotation_matrix(self):
+    def rotation_matrix(self) -> np.ndarray[float]:
         """The rotation matrix
 
         Returns
         -------
-        np.array
+        np.ndarray[float]
         """
         return self._rotation_matrix
 
     @rotation_matrix.setter
-    def rotation_matrix(self, matrix):
-        if not isinstance(matrix, np.ndarray):
-            raise TypeError("rotation_matrix must be a numpy array")
+    @args_checked
+    def rotation_matrix(self, matrix: np.ndarray[float]):
         if len(matrix) < 5 or len(matrix) > 9:
             raise ValueError("rotation_matrix must have between 5 and 9 components.")
         self._rotation_matrix = matrix
 
     @make_prop_pointer("_is_main_to_aux", bool)
-    def is_main_to_aux(self):
+    def is_main_to_aux(self) -> bool:
         """Whether or not the displacement vector points from the main origin to auxilary
         origin, or vice versa.
 
@@ -184,7 +184,7 @@ class Transform(data_input.DataInputAbstract, Numbered_MCNP_Object):
         -------
         bool
         """
-        return self._is_main_to_aux
+        pass
 
     def __str__(self):
         return f"TRANSFORM: {self.number}"
@@ -250,7 +250,8 @@ class Transform(data_input.DataInputAbstract, Numbered_MCNP_Object):
                 f"Transform: {self.number} does not have a valid displacement Vector"
             )
 
-    def equivalent(self, other, tolerance):
+    @args_checked
+    def equivalent(self, other: Transform, tolerance: ty.PositiveReal):
         """Determines if this is effectively equivalent to another transformation
 
         Parameters
