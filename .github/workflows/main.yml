@@ -118,7 +118,7 @@ jobs:
         with: 
           python-version: 3.14
       - run: pip install . montepy[doc,build]
-      - run: sphinx-build doc/source/ doc/build/html -W --keep-going -E
+      - run: make html SPHINXOPTS="-W --keep-going -E"
         name: Build site strictly
       - uses: actions/upload-artifact@v5
         with:
