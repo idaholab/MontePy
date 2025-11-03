@@ -3,6 +3,7 @@ build/*
 doc/build
 doc/source/api/generated
 doc/source/.cache
+doc/source/_contents
 doc/_output
 dist/*
 *egg-info/*

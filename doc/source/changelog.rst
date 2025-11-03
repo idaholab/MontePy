@@ -28,10 +28,10 @@ MontePy Changelog
 **Documentation**
 
 * Added a web browser instance of ``jupyter`` to the website allowing testing out MontePy with no python installed locally (:issue:`796`).
-
-.. jupyterlite:: 
-   :new_tab: True
-   :new_tab_button_text: Launch jupyter in your browswer
+  
+  .. jupyterlite:: 
+      :new_tab: True
+      :new_tab_button_text: Launch jupyter in your browswer
 
 * Improved documentation for :class:`~montepy.numbered_object_collection.NumberedObjectCollection` on Slicing behavior. (:issue:`798`)
 * Reorganized Python API documentation. Some hyperlinks may be broken now (:pull:`828`).
