@@ -10,7 +10,7 @@ MontePy Changelog
 
 **Performance Improvement**
 
-* Optimized :math:`\mathcal{O}(N^2)` scaling in :func:`montepy.NumberedObjectCollection.request_number` by improving ``NumberedObjectCollection.check_number`` to :math:`\mathcal{O}(N)` (:issue:`786`). 
+* Optimized :math:`\mathcal{O}(N^2)` scaling in :func:`~montepy.numbered_object_collection.NumberedObjectCollection.request_number` by improving ``NumberedObjectCollection.check_number`` to :math:`\mathcal{O}(N)` (:issue:`786`). 
 
 **Features Added**
 
@@ -28,15 +28,18 @@ MontePy Changelog
 **Documentation**
 
 * Added a web browser instance of ``jupyter`` to the website allowing testing out MontePy with no python installed locally (:issue:`796`).
-* Improved documentation for NumberedObjectCollections on Slicing behavior. (:issue:`798`)
+
+.. jupyterlite:: 
+   :new_tab: True
+   :new_tab_button_text: Launch jupyter in your browswer
+
+* Improved documentation for :class:`~montepy.numbered_object_collection.NumberedObjectCollection` on Slicing behavior. (:issue:`798`)
+* Reorganized Python API documentation. Some hyperlinks may be broken now (:pull:`828`).
 
 **Deprecations**
 
 * Dropped support for python 3.9 through 3.11, and numpy 1.26 in order to comply with `SPEC 0 <https://scientific-python.org/specs/spec-0000/>`_ (:issue:`780`).
 
-**Documentation**
-
-* Reorganized Python API documentation. Some hyperlinks may be broken now (:pull:`828`).
 
 1.1 releases
 ============
