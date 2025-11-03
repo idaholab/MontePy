@@ -16,7 +16,7 @@ MontePy Changelog
 
 * Added checking for additional input after the ``data`` block, and raising a warning if it exists (:issue:`525`).
 * Allow multiple universe fills to accept 2D MNCP lattices (:issue:`719`).
-* Make `LatticeType.RECTANGULAR` and `LatticeType.HEXAHEDRAL` synonymous (:issue:`808`).
+* Make ``LatticeType.RECTANGULAR`` and ``LatticeType.HEXAHEDRAL`` synonymous (:issue:`808`).
 * Allow setting ``cell.fill.universes`` with a numpy array of universe IDs (:issue:`736`).
 
 **Bugs Fixed**
