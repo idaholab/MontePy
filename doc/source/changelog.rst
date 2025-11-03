@@ -49,7 +49,7 @@ MontePy Changelog
 
 **Documentation**
 
-* Improved documentation for NumberedObjectCollections on Slicing behavior. (:issue:`798`)
+* Improved documentation for :class:`~montepy.numbered_object_collection.NumberedObjectCollection` on Slicing behavior. (:issue:`798`)
 
 **Bugs Fixed**
 
