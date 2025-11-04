@@ -24,6 +24,7 @@ MontePy Changelog
 * Fixed bug where lines that were the allowed length was raising a ``LineOverRunWarning`` when read by MontePy (:issue:`517`). 
 * Added descriptive TypeError messages (:issue:`801`)
 * Fixed a bug that caused to write an extra termination line between the data block and the cell data section in the MCNP input. (:pull:`819`) (:issue:`703`).
+* Avoided parsing ``FMESH`` inputs that have more complicated syntax to parse (:issue:`846`).
 
 **Documentation**
 
