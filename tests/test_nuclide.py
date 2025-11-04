@@ -1,6 +1,7 @@
 # Copyright 2024, Battelle Energy Alliance, LLC All Rights Reserved.
 import pytest
 from hypothesis import assume, example, given, note, strategies as st, settings
+import numpy as np
 
 import montepy
 
@@ -383,11 +384,52 @@ class TestElement:
 
 class TestNucleus:
 
+    @staticmethod
+    def _semi_emper_binding_energy_p_nucleon(Z, A):
+        """
+        Calculates the base nuclide's binding energy using the semi-empirical mass-formula.
+
+        Based on Wikipedia: <https://en.wikipedia.org/wiki/Semi-empirical_mass_formula>
+        """
+        CONSTANTS = {
+            "A_V": 15.8,
+            "A_S": 18.3,
+            "A_C": 0.714,
+            "A_A": 23.2,
+            "A_P": 12,
+            "K_P": -1 / 2,
+        }
+        """
+        Units MeV
+        based on "least-squares (1)" from Alonso, Finn.
+        """
+        FUNCTIONS = {
+            "A_V": lambda z, a: a,
+            "A_S": lambda z, a: np.pow(a, 2 / 3),
+            "A_C": lambda z, a: (z * (z - 1)) / (np.pow(a, 1 / 3)),
+            "A_A": lambda z, a: (a - 2 * z) ** 2 / a,
+        }
+        energy = 0.0
+        for constant, func in zip(CONSTANTS.values(), FUNCTIONS.values()):
+            energy += constant * func(Z, A)
+        # handle even odd stuff
+        N = A - Z
+        delta = 34 / (np.pow(A, 3 / 4))
+        even_n = N % 2 == 0
+        even_z = Z % 2 == 0
+        parity_match = even_z == even_z
+        # 0 for parity mismatch
+        if not parity_match:
+            return energy / A
+        energy += delta * 1 if even_n else -1
+        return energy / A
+
     @example(Z=97, A=185, meta=2)
     @given(Z=st.integers(1, 99), A=st.integers(0, 300), meta=st.integers(0, 4))
     def test_nucleus_init_eq_hash(_, Z, A, meta):
         # avoid metastable elemental
         assume((A == 0) == (meta == 0))
+        print(_._semi_emper_binding_energy_p_nucleon(Z, A))
         nucleus = Nucleus(Element(Z), A, meta)
         assert nucleus.Z == Z
         assert nucleus.A == A
