@@ -392,29 +392,30 @@ class TestNucleus:
         Based on Wikipedia: <https://en.wikipedia.org/wiki/Semi-empirical_mass_formula>
         """
         CONSTANTS = {
-            "A_V": 15.8,
-            "A_S": 18.3,
-            "A_C": 0.714,
-            "A_A": 23.2,
-            "A_P": 12,
-            "K_P": -1 / 2,
+            "A_V": 15.75,
+            "A_S": 17.8,
+            "A_C": 0.711,
+            "A_A": 23.7,
+            "A_P": 11.18,
         }
         """
         Units MeV
-        based on "least-squares (1)" from Alonso, Finn.
+        based on Rohlf
         """
         FUNCTIONS = {
             "A_V": lambda z, a: a,
-            "A_S": lambda z, a: np.pow(a, 2 / 3),
-            "A_C": lambda z, a: (z * (z - 1)) / (np.pow(a, 1 / 3)),
+            "A_S": lambda z, a: np.pow(a, 2.0 / 3),
+            "A_C": lambda z, a: (z * (z - 1)) / (np.pow(a, 1.0 / 3)),
             "A_A": lambda z, a: (a - 2 * z) ** 2 / a,
         }
         energy = 0.0
         for constant, func in zip(CONSTANTS.values(), FUNCTIONS.values()):
+            print(func(Z, A), constant * func(Z, A))
             energy += constant * func(Z, A)
+        print(energy, energy / A)
         # handle even odd stuff
         N = A - Z
-        delta = 34 / (np.pow(A, 3 / 4))
+        delta = CONSTANTS["A_P"] / (np.pow(A, 1 / 2))
         even_n = N % 2 == 0
         even_z = Z % 2 == 0
         parity_match = even_z == even_z
