@@ -1,6 +1,6 @@
 # Copyright 2024, Battelle Energy Alliance, LLC All Rights Reserved.
 import pytest
-from hypothesis import assume, given, note, strategies as st, settings
+from hypothesis import assume, example, given, note, strategies as st, settings
 
 import montepy
 
@@ -383,6 +383,7 @@ class TestElement:
 
 class TestNucleus:
 
+    @example(Z=97, A=185, meta=2)
     @given(Z=st.integers(1, 99), A=st.integers(0, 300), meta=st.integers(0, 4))
     def test_nucleus_init_eq_hash(_, Z, A, meta):
         # avoid metastable elemental
