@@ -67,7 +67,7 @@ build = [
 develop = [
 	"montepy[test,doc,format]",
 ]
-demos = ["jupyter", "ipykernel~=6.0"]
+demos = ["jupyter", "ipykernel>=6,<8"]
 demo-test = ["montepy[demos]", "papermill"]
 
 demo-present = ["montepy[demos]", "jupyterlab-rise"]

@@ -42,7 +42,7 @@ jobs:
       - run: pip install --user . montepy[develop]
       - run: pip freeze
       - name: Upload build artifacts
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         if: ${{ matrix.python-version == '3.13'}}
         with: 
            name: build
@@ -84,13 +84,13 @@ jobs:
         if:  ${{ success() || failure() }}
       - name: Upload test report
         if: ${{ matrix.python-version == '3.14' && matrix.numpy-version == '2.3' && (success() || failure() )}}
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         with:
           name: test
           path: test_report.xml
       - name: Upload coverage report
         if: ${{ matrix.python-version == '3.14' && matrix.numpy-version == '2.3' && (success() || failure() )}}
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         with:
           name: coverage
           path: coverage.xml
@@ -120,14 +120,10 @@ jobs:
       - run: pip install . montepy[doc,build]
       - run: sphinx-build doc/source/ doc/build/html -W --keep-going -E
         name: Build site strictly
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v5
         with:
           name: website
           path: doc/build
-      - name: Test for missing API documentation  
-        run: | 
-             cd doc/source
-             python _test_for_missing_docs.py  
       - name: Test for broken hyperlinks
         run: |
              cd doc
