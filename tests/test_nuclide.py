@@ -393,9 +393,9 @@ class TestNucleus:
         """
         CONSTANTS = {
             "A_V": 15.75,
-            "A_S": 17.8,
-            "A_C": 0.711,
-            "A_A": 23.7,
+            "A_S": -17.8,
+            "A_C": -0.711,
+            "A_A": -23.7,
             "A_P": 11.18,
         }
         """
@@ -409,10 +409,8 @@ class TestNucleus:
             "A_A": lambda z, a: (a - 2 * z) ** 2 / a,
         }
         energy = 0.0
-        for constant, func in zip(CONSTANTS.values(), FUNCTIONS.values()):
-            print(func(Z, A), constant * func(Z, A))
+        for (name, constant), func in zip(CONSTANTS.items(), FUNCTIONS.values()):
             energy += constant * func(Z, A)
-        print(energy, energy / A)
         # handle even odd stuff
         N = A - Z
         delta = CONSTANTS["A_P"] / (np.pow(A, 1 / 2))
@@ -430,7 +428,12 @@ class TestNucleus:
     def test_nucleus_init_eq_hash(_, Z, A, meta):
         # avoid metastable elemental
         assume((A == 0) == (meta == 0))
-        print(_._semi_emper_binding_energy_p_nucleon(Z, A))
+        # use SEMF to rule out non-physical nuclides
+        # start caring after iron
+        if Z > 26 and A > 0:
+            assume(
+                _._semi_emper_binding_energy_p_nucleon(Z, A) > 7.5
+            )  # 7.5 MeV per nucleon cutoff
         nucleus = Nucleus(Element(Z), A, meta)
         assert nucleus.Z == Z
         assert nucleus.A == A
