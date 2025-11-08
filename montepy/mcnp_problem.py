@@ -1,4 +1,3 @@
-
 # Copyright 2024, Battelle Energy Alliance, LLC All Rights Reserved.
 
 import copy
@@ -375,7 +374,9 @@ class MCNP_Problem:
         return self._transforms
 
     @args_checked
-    def parse_input(self, check_input: bool = False, replace: bool = True, *, jit_parse: bool = True):
+    def parse_input(
+        self, check_input: bool = False, replace: bool = True, *, jit_parse: bool = True
+    ):
         """Semantically parses the MCNP file provided to the constructor.
 
         .. versionchanged:: 1.2.0

@@ -528,7 +528,6 @@ See <https://www.montepy.org/migrations/migrate0_1.html> for more information ""
             return self._problem.materials.default_libraries[library_type]
         return None
 
-    
     @args_checked
     @needs_full_tree
     def __getitem__(self, idx: ty.Integral | slice) -> Any:

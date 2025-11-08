@@ -125,7 +125,11 @@ class Cell(Numbered_MCNP_Object):
 
     @args_checked
     def __init__(
-        self, input: InitInput = None, number: ty.PositiveInt = None, *, jit_parse: bool = True
+        self,
+        input: InitInput = None,
+        number: ty.PositiveInt = None,
+        *,
+        jit_parse: bool = True,
     ):
         try:
             super().__init__(input, number, jit_parse=jit_parse)

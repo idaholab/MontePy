@@ -37,8 +37,9 @@ class Volume(CellModifierInput):
         input: InitInput = None,
         in_cell_block: bool = False,
         key: str = None,
-        value: syntax_node.SyntaxNode = None,*,
-        jit_parse: bool = True
+        value: syntax_node.SyntaxNode = None,
+        *,
+        jit_parse: bool = True,
     ):
         self._volume = self._generate_default_node(float, None)
         self._calc_by_mcnp = True

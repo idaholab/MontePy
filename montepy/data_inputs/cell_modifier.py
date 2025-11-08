@@ -29,7 +29,6 @@ class CellModifierInput(DataInputAbstract):
         the value syntax tree from the key-value pair in a cell
     """
 
-
     def _parse_tree(self):
         pass
 
