@@ -3,6 +3,7 @@ from __future__ import annotations
 from abc import ABC, ABCMeta, abstractmethod
 import copy
 import itertools as it
+import re
 import textwrap
 import warnings
 import weakref
@@ -161,6 +162,22 @@ class MCNP_Object(ABC, metaclass=_ExceptionContextAdder):
                 elif isinstance(self, montepy.data_inputs.data_input.DataInputAbstract):
                     args = args[2:]
                 self.update_pointers(*args)
+
+    def search(search: str | re.Pattern) -> bool:
+        """
+        Searches this input for the given string, or compiled regular expression.
+
+        Parameters
+        ----------
+        search : str | re.Pattern
+            The pattern to search for.
+
+        Returns
+        -------
+        bool
+            Whether this
+        """
+        return self._input.search()
 
     @staticmethod
     def _generate_default_node(

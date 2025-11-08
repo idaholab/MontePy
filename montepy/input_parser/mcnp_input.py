@@ -1,6 +1,7 @@
 # Copyright 2024, Battelle Energy Alliance, LLC All Rights Reserved.
 from abc import ABC, abstractmethod
 import math
+import re
 
 from montepy.exceptions import *
 from montepy.utilities import *
@@ -10,7 +11,6 @@ from montepy.input_parser.read_parser import ReadParser
 from montepy.input_parser.tokens import CellLexer, SurfaceLexer, DataLexer
 from montepy.utilities import *
 import montepy.types as ty
-import re
 
 
 class Jump:
@@ -243,6 +243,28 @@ class Input(ParsingNode):
         MCNP_Lexer
         """
         pass
+
+    def search(self, search: str | re.Pattern) -> bool:
+        """
+        Searches this input for the given string, or compiled regular expression.
+
+        Parameters
+        ----------
+        search : str | re.Pattern
+            The pattern to search for.
+
+        Returns
+        -------
+        bool
+            Whether this
+        """
+        searcher = lambda line: search in line
+        if isinstance(search, re.Pattern):
+            searcher = lambda line: (search.match(line)) is not None
+        for line in self.input_lines:
+            if searcher(line):
+                return True
+        return False
 
 
 class ReadInput(Input):
