@@ -29,6 +29,30 @@ class CellModifierInput(DataInputAbstract):
         the value syntax tree from the key-value pair in a cell
     """
 
+    def __init__(
+        self,
+        input: InitInput = None,
+        in_cell_block: bool = False,
+        key: str = None,
+        value: syntax_node.SyntaxNode = None,
+        *,
+        jit_parse: bool = False,
+    ):
+        fast_parse = False
+        if key and value:
+            input = Input([key], BlockType.DATA)
+            fast_parse = True
+        self._in_cell_block = in_cell_block
+        self._in_key = key
+        self._in_value = value
+        if key and in_cell_block:
+            self._set_in_cell_block = True
+            self._tree = value
+            self._data = value["data"]
+        else:
+            self._set_in_cell_block = False
+        super().__init__(input, fast_parse, jit_parse=jit_parse)
+
     def _parse_tree(self):
         pass
 
