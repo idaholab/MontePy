@@ -155,7 +155,7 @@ class MCNP_Object(ABC, metaclass=_ExceptionContextAdder):
             [setattr(self, k, v) for k, v in old_data.items()]
             if problem:
                 self.link_to_problem(problem)
-                # TODO delete
+                # TODO delete update_pointers
                 args = (problem.cells, problem.surfaces, problem.data_inputs)
                 if isinstance(self, montepy.surfaces.Surface):
                     args = args[1:]
@@ -527,3 +527,11 @@ The new input was:\n\n"""
             a new instance identical to this object.
         """
         return copy.deepcopy(self)
+
+    def __str__(self):
+        # TODO ensure this doesn't pull attributes on JIT_parsed objects.
+        # Switch to hooks system.
+        pass
+
+    def __repr__(self):
+        pass
