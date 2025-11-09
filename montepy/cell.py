@@ -232,7 +232,7 @@ class Cell(Numbered_MCNP_Object):
         self._old_number = self._number
 
     @property
-    @needs_full_tree
+    @needs_full_ast
     def importance(self):
         """The importances for this cell for various particle types.
 
@@ -247,7 +247,7 @@ class Cell(Numbered_MCNP_Object):
         return self._importance
 
     @property
-    @needs_full_tree
+    @needs_full_ast
     def universe(self):
         """The Universe that this cell is in.
 
@@ -260,12 +260,12 @@ class Cell(Numbered_MCNP_Object):
 
     @universe.setter
     @args_checked
-    @needs_full_tree
+    @needs_full_ast
     def universe(self, value: montepy.Universe):
         self._universe.universe = value
 
     @property
-    @needs_full_tree
+    @needs_full_ast
     def fill(self):
         """the Fill object representing how this cell is filled.
 
@@ -280,7 +280,7 @@ class Cell(Numbered_MCNP_Object):
         return self._fill
 
     @property
-    @needs_full_tree
+    @needs_full_ast
     def _fill_transform(self):
         """A simple wrapper to get the transform of the fill or None."""
         if self.fill:
@@ -288,7 +288,7 @@ class Cell(Numbered_MCNP_Object):
         return None  # pragma: no cover
 
     @property
-    @needs_full_tree
+    @needs_full_ast
     def not_truncated(self):
         """Indicates if this cell has been marked as not being truncated for optimization.
 
@@ -324,14 +324,14 @@ class Cell(Numbered_MCNP_Object):
 
     @not_truncated.setter
     @args_checked
-    @needs_full_tree
+    @needs_full_ast
     def not_truncated(self, value: bool):
         if self.universe.number == 0 and value:
             raise ValueError("can't specify if cell is truncated for universe 0")
         self._universe._not_truncated = value
 
     @property
-    @needs_full_tree
+    @needs_full_ast
     def old_universe_number(self):
         """The original universe number read in from the input file.
 
@@ -343,7 +343,7 @@ class Cell(Numbered_MCNP_Object):
         return self._universe.old_number
 
     @property
-    @needs_full_tree
+    @needs_full_ast
     def lattice_type(self):
         """The type of lattice being used by the cell.
 
@@ -356,36 +356,36 @@ class Cell(Numbered_MCNP_Object):
 
     @lattice_type.setter
     @args_checked
-    @needs_full_tree
+    @needs_full_ast
     def lattice_type(self, value: montepy.LatticeType = None):
         self._lattice.lattice = value
 
     @lattice_type.deleter
-    @needs_full_tree
+    @needs_full_ast
     def lattice_type(self):
         self._lattice.lattice = None
 
     @property
-    @needs_full_tree
+    @needs_full_ast
     def lattice(self):
         _lattice_deprecation_warning()
         return self.lattice_type
 
     @lattice.setter
     @args_checked
-    @needs_full_tree
+    @needs_full_ast
     def lattice(self, value: montepy.LatticeType):
         _lattice_deprecation_warning()
         self.lattice_type = value
 
     @lattice.deleter
-    @needs_full_tree
+    @needs_full_ast
     def lattice(self):
         _lattice_deprecation_warning()
         self.lattice_type = None
 
     @property
-    @needs_full_tree
+    @needs_full_ast
     def volume(self):
         """The volume for the cell.
 
@@ -400,17 +400,17 @@ class Cell(Numbered_MCNP_Object):
 
     @volume.setter
     @args_checked
-    @needs_full_tree
+    @needs_full_cst
     def volume(self, value: ty.PositiveReal):
         self._volume.volume = value
 
     @volume.deleter
-    @needs_full_tree
+    @needs_full_cst
     def volume(self):
         del self._volume.volume
 
     @property
-    @needs_full_tree
+    @needs_full_ast
     def volume_mcnp_calc(self):
         """Indicates whether or not MCNP will attempt to calculate the cell volume.
 
@@ -430,7 +430,7 @@ class Cell(Numbered_MCNP_Object):
         return self._volume.is_mcnp_calculated
 
     @property
-    @needs_full_tree
+    @needs_full_ast
     def volume_is_set(self):
         """Whether or not the volume for this cell has been set.
 
@@ -458,7 +458,7 @@ class Cell(Numbered_MCNP_Object):
         (Material, type(None)),
         deletable=True,
     )
-    @needs_full_tree
+    @needs_full_ast
     def material(self):
         """The Material object for the cell.
 
@@ -471,7 +471,7 @@ class Cell(Numbered_MCNP_Object):
         pass
 
     @make_prop_pointer("_geometry", HalfSpace, validator=_link_geometry_to_cell)
-    @needs_full_tree
+    @needs_full_ast
     def geometry(self):
         """The Geometry for this problem.
 
@@ -517,13 +517,13 @@ class Cell(Numbered_MCNP_Object):
     @make_prop_val_node(
         "_density_node", (float, int, type(None)), base_type=float, deletable=True
     )
-    @needs_full_tree
+    @needs_full_ast
     def _density(self):
         """This is a wrapper to allow using the prop_val_node with mass_density and atom_density."""
         pass
 
     @property
-    @needs_full_tree
+    @needs_full_ast
     def atom_density(self) -> float:
         """The atom density of the material in the cell, in a/b-cm.
 
@@ -539,18 +539,18 @@ class Cell(Numbered_MCNP_Object):
 
     @atom_density.setter
     @args_checked
-    @needs_full_tree
+    @needs_full_cst
     def atom_density(self, density: ty.PositiveReal):
         self._is_atom_dens = True
         self._density = float(density)
 
     @atom_density.deleter
-    @needs_full_tree
+    @needs_full_cst
     def atom_density(self):
         self._density = None
 
     @property
-    @needs_full_tree
+    @needs_full_ast
     def mass_density(self) -> float:
         """The mass density of the material in the cell, in g/cc.
 
@@ -566,18 +566,18 @@ class Cell(Numbered_MCNP_Object):
 
     @mass_density.setter
     @args_checked
-    @needs_full_tree
+    @needs_full_cst
     def mass_density(self, density: ty.PositiveReal):
         self._is_atom_dens = False
         self._density = float(density)
 
     @mass_density.deleter
-    @needs_full_tree
+    @needs_full_cst
     def mass_density(self):
         self._density = None
 
     @property
-    @needs_full_tree
+    @needs_full_ast
     def is_atom_dens(self):
         """Whether or not the density is in atom density [a/b-cm].
 
@@ -600,7 +600,7 @@ class Cell(Numbered_MCNP_Object):
         pass
 
     @make_prop_pointer("_surfaces")
-    @needs_full_tree
+    @needs_full_ast
     def surfaces(self):
         """List of the Surface objects associated with this cell.
 
@@ -617,7 +617,7 @@ class Cell(Numbered_MCNP_Object):
         return self._surfaces
 
     @property
-    @needs_full_tree
+    @needs_full_ast
     def parameters(self):
         """A dictionary of the additional parameters for the object.
 
@@ -636,7 +636,7 @@ class Cell(Numbered_MCNP_Object):
 
     @parameters.setter
     @args_checked
-    @needs_full_tree
+    @needs_full_cst
     def parameters(self, params: dict):
         self._parameters = params
 
@@ -701,7 +701,7 @@ class Cell(Numbered_MCNP_Object):
             self._geometry.update_pointers(cells, surfaces, self)
 
     @args_checked
-    @needs_full_tree
+    @needs_full_cst
     def remove_duplicate_surfaces(self, deleting_dict: dict):
         """Updates old surface numbers to prepare for deleting surfaces.
 
@@ -907,7 +907,7 @@ class Cell(Numbered_MCNP_Object):
         return self.wrap_string_for_mcnp(ret, mcnp_version, True)
 
     @args_checked
-    @needs_full_tree
+    @needs_full_cst
     def clone(
         self,
         clone_material: bool = False,

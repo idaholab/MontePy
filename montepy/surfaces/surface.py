@@ -228,7 +228,7 @@ class Surface(Numbered_MCNP_Object):
         pass
 
     @make_prop_pointer("_is_reflecting", bool)
-    @needs_full_tree
+    @needs_full_ast
     def is_reflecting(self):
         """If true this surface is a reflecting boundary.
 
@@ -239,7 +239,7 @@ class Surface(Numbered_MCNP_Object):
         pass
 
     @make_prop_pointer("_is_white_boundary", bool)
-    @needs_full_tree
+    @needs_full_ast
     def is_white_boundary(self):
         """If true this surface is a white boundary.
 
@@ -250,7 +250,7 @@ class Surface(Numbered_MCNP_Object):
         pass
 
     @property
-    @needs_full_tree
+    @needs_full_ast
     def surface_constants(self):
         """The constants defining the surface
 
@@ -265,7 +265,7 @@ class Surface(Numbered_MCNP_Object):
 
     @surface_constants.setter
     @args_checked
-    @needs_full_tree
+    @needs_full_ast
     def surface_constants(self, constants: ty.Iterable[ty.Real]):
         if len(constants) != len(self._surface_constants):
             raise ValueError(f"Cannot change the length of the surface constants.")
@@ -273,7 +273,7 @@ class Surface(Numbered_MCNP_Object):
             self._surface_constants[i].value = value
 
     @make_prop_val_node("_old_transform_number")
-    @needs_full_tree
+    @needs_full_ast
     def old_transform_number(self):
         """The transformation number for this surface in the original file.
 
@@ -284,7 +284,7 @@ class Surface(Numbered_MCNP_Object):
         pass
 
     @make_prop_val_node("_old_periodic_surface")
-    @needs_full_tree
+    @needs_full_ast
     def old_periodic_surface(self):
         """The surface number this is periodic with reference to in the original file.
 
@@ -301,7 +301,7 @@ class Surface(Numbered_MCNP_Object):
         types=(),
         deletable=True,
     )
-    @needs_full_tree
+    @needs_full_ast
     def periodic_surface(self):
         """The surface that this surface is periodic with respect to
 
@@ -318,7 +318,7 @@ class Surface(Numbered_MCNP_Object):
         transform.Transform,
         deletable=True,
     )
-    @needs_full_tree
+    @needs_full_ast
     def transform(self):
         """The Transform object that translates this surface
 

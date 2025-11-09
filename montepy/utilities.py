@@ -97,6 +97,7 @@ def make_prop_val_node(
 
     def decorator(func):
         @property
+        @needs_full_ast
         @functools.wraps(func)
         def getter(self):
             if not hasattr(self, hidden_param) and hasattr(self, "_not_parsed"):
@@ -112,6 +113,7 @@ def make_prop_val_node(
 
         if types is not None:
 
+            @needs_full_cst
             def setter(self, value):
                 if hasattr(self, "_not_parsed"):
                     self.full_parse()
@@ -137,6 +139,7 @@ def make_prop_val_node(
 
         if deletable:
 
+            @needs_full_cst
             def deleter(self):
                 if hasattr(self, "_not_parsed"):
                     self.full_parse()
@@ -210,7 +213,7 @@ def make_prop_pointer(
     return decorator
 
 
-def needs_full_tree(func):
+def needs_full_ast(func):
     @functools.wraps(func)
     def decorator(self, *args, **kwargs):
         if hasattr(self, "_not_parsed"):
@@ -218,6 +221,9 @@ def needs_full_tree(func):
         return func(self, *args, **kwargs)
 
     return decorator
+
+
+needs_full_cst = needs_full_ast
 
 
 def prop_pointer_from_problem(

@@ -217,7 +217,7 @@ class MCNP_Object(ABC, metaclass=_ExceptionContextAdder):
         return ValueNode(str(default), value_type, padding_node, never_pad)
 
     @property
-    @needs_full_tree
+    @needs_full_ast
     def parameters(self) -> dict[str, str]:
         """A dictionary of the additional parameters for the object.
 
@@ -234,7 +234,7 @@ class MCNP_Object(ABC, metaclass=_ExceptionContextAdder):
         """
         return self._parameters
 
-    @needs_full_tree
+    @needs_full_ast
     @abstractmethod
     def _update_values(self):
         """Method to update values in syntax tree with new values.
@@ -323,7 +323,7 @@ The new input was:\n\n"""
             warnings.warn(warning, stacklevel=4)
 
     @property
-    @needs_full_tree
+    @needs_full_ast
     def comments(self) -> list[PaddingNode]:
         """The comments associated with this input if any.
 
@@ -338,7 +338,7 @@ The new input was:\n\n"""
         return list(self._tree.comments)
 
     @property
-    @needs_full_tree
+    @needs_full_ast
     def leading_comments(self) -> list[PaddingNode]:
         """Any comments that come before the beginning of the input proper.
 
@@ -360,7 +360,7 @@ The new input was:\n\n"""
         self._tree["start_pad"]._nodes = new_nodes
 
     @leading_comments.deleter
-    @needs_full_tree
+    @needs_full_ast
     def leading_comments(self):
         self._tree["start_pad"]._delete_trailing_comment()
 
@@ -481,7 +481,7 @@ The new input was:\n\n"""
             return
         self.link_to_problem(problem)
 
-    @needs_full_tree
+    @needs_full_ast
     @property
     def trailing_comment(self) -> list[PaddingNode]:
         """The trailing comments and padding of an input.
