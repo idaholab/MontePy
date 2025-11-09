@@ -51,9 +51,8 @@ class Surface(Numbered_MCNP_Object):
     ):
         super().__init__(
             input,
-            jit_parse=jit_parse,
             number=number,
-            surface_type=surface_type,
+            jit_parse=jit_parse,
         )
 
     @staticmethod

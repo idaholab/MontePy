@@ -9,8 +9,8 @@ from montepy.surfaces.cylinder_par_axis import CylinderParAxis
 from montepy.surfaces.general_plane import GeneralPlane
 
 
-@args_checked
-def parse_surface(input: InitInput, *, jit_parse: bool = False):
+#@args_checked
+def parse_surface(input: InitInput, *, jit_parse: bool = True):
     """Builds a Surface object for the type of Surface
 
     Parameters

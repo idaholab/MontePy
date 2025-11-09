@@ -52,7 +52,7 @@ class Numbered_MCNP_Object(MCNP_Object):
     ):
         if not input:
             self._number = self._generate_default_node(int, -1)
-        super().__init__(input)
+        super().__init__(input, jit_parse=jit_parse, **kwargs)
         self._load_init_num(number)
 
     @args_checked
