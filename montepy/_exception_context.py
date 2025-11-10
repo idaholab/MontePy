@@ -1,5 +1,6 @@
-import functools
 from abc import ABC, ABCMeta, abstractmethod
+import functools
+import inspect
 
 from montepy.exceptions import *
 
@@ -44,7 +45,7 @@ class _ExceptionContextAdder(ABCMeta):
         for key, value in attributes.items():
             if key.startswith("_"):
                 new_attrs[key] = value
-            if callable(value):
+            if inspect.isfunction(value):
                 new_attrs[key] = _ExceptionContextAdder._wrap_attr_call(value)
             elif isinstance(value, property):
                 new_props = {}
