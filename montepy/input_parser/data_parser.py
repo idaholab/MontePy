@@ -321,9 +321,8 @@ class JitDataParser:
                         classifier.particles = particles
                 except StopIteration:
                     pass
-                finally:
-                    return syntax_node.SyntaxNode(
-                        "classifier", {"classifier": classifier}
-                    )
+                return syntax_node.SyntaxNode(
+                    "classifier", {"classifier": classifier}
+                )
             else:
                 assert False
