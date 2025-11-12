@@ -28,14 +28,27 @@ class Universe(Numbered_MCNP_Object):
 
     @args_checked
     def __init__(self, number: ty.NonNegativeInt):
-        self._number = self._generate_default_node(int, -1)
+        super().__init__(Input(["U"], BlockType.DATA), number)
         self._number = self._generate_default_node(int, number)
 
+    # dummy abstract methods
+    @staticmethod
+    def _parser():
         class Parser:
-            def parse(self, token_gen, input):
+            @staticmethod
+            def parse(token_gen, input):
                 return syntax_node.SyntaxNode("fake universe", {})
 
-        super().__init__(Input(["U"], BlockType.DATA), Parser(), number)
+        return Parser
+
+    def _init_blank(self):
+        self._number = self._generate_default_node(int, -1)
+
+    def _parse_tree(self):
+        pass
+
+    def _generate_default_tree(self, **kwargs):
+        pass
 
     @property
     def cells(self) -> Generator[montepy.Cell, None, None]:
