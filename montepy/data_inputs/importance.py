@@ -46,21 +46,15 @@ class Importance(CellModifierInput):
         the value syntax tree from the key-value pair in a cell
     """
 
-    @args_checked
-    def __init__(
-        self,
-        input: InitInput = None,
-        in_cell_block: bool = False,
-        key: str = None,
-        value: syntax_node.SyntaxNode = None,
-    ):
+    def _init_blank(self):
         self._particle_importances = {}
         self._real_tree = {}
         self._part_combos = []
-        super().__init__(input, in_cell_block, key, value)
+
+    def parse_tree(self):
         if self.in_cell_block:
-            if key:
-                val = value["data"]
+            if self._in_key:
+                val = self._in_value["data"]
                 if isinstance(val, syntax_node.ListNode):
                     val = value["data"][0]
                 if val.type != float or val.value < 0:
@@ -70,7 +64,7 @@ class Importance(CellModifierInput):
                 self._part_combos.append(self.particle_classifiers)
                 for particle in self.particle_classifiers:
                     self._particle_importances[particle] = value
-        elif input:
+        else:
             values = []
             for node in self._tree["data"]:
                 try:
