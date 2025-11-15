@@ -235,6 +235,10 @@ def prop_pointer_from_problem(
     validator: Callable = None,
     deletable: bool = False,
 ):
+    """
+    TODO
+    """
+
     def decorator(func):
         @make_prop_pointer(hidden_param, types, base_type, validator, deletable)
         @functools.wraps(func)
@@ -264,6 +268,10 @@ def prop_pointer_collect_from_problem(
     validator: Callable = None,
     deletable: bool = False,
 ):
+    """
+    TODO
+    """
+
     def decorator(func):
         @make_prop_pointer(hidden_param, types, base_type, validator, deletable)
         @functools.wraps(func)

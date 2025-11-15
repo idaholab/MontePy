@@ -29,26 +29,21 @@ class UniverseInput(CellModifierInput):
         the value syntax tree from the key-value pair in a cell
     """
 
-    @args_checked
-    def __init__(
-        self,
-        input: InitInput = None,
-        in_cell_block: bool = False,
-        key: str = None,
-        value: syntax_node.SyntaxNode = None,
-    ):
+    def _init_blank(self):
         self._universe = None
         self._old_numbers = []
         self._old_number = self._generate_default_node(int, Jump())
         self._not_truncated = False
-        super().__init__(input, in_cell_block, key, value)
+
+    def _parse_tree(self):
+        # TODO break this down into parse_cell_tree, and parse_data_tree
         if self.in_cell_block:
-            if key:
+            if self._in_key:
                 val = self._tree["data"][0]
                 val.is_negatable_identifier = True
                 self._not_truncated = val.is_negative
                 self._old_number = val
-        elif input:
+        else:
             self._universes = []
             for node in self.data:
                 try:
