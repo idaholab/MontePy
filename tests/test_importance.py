@@ -28,7 +28,7 @@ class TestImportance:
                     "neutron": 1.0,
                     "photon": 1.0,
                     "all": None,
-                    "alpha_particle": 0.0,
+                    "alpha_particle": 1.0,
                     "in_cell_block": True,
                 },
                 None,
@@ -40,7 +40,7 @@ class TestImportance:
             ),
             (
                 "1 0 -1",
-                {"neutron": 0.0},
+                {"neutron": 1.0},
                 None,
             ),  # default neutron importance when nothing is set
             # Error cases
@@ -267,9 +267,9 @@ class TestImportance:
         """
         cell = cell_with_importance
         del cell.importance.neutron
-        assert cell.importance.neutron == pytest.approx(0.0)
+        assert cell.importance.neutron == pytest.approx(1.0)
         del cell.importance[Particle.PHOTON]
-        assert cell.importance.photon == pytest.approx(0.0)
+        assert cell.importance.photon == pytest.approx(1.0)
         with pytest.raises(TypeError):
             del cell.importance[""]
 
@@ -312,3 +312,8 @@ class TestImportance:
         prob.print_in_data_block["imp"] = True
         with pytest.raises(NotImplementedError):
             prob.write_problem(io.StringIO())
+
+    def test_default_cell_importance(self):
+        """Test that new cells have default importance of 1.0 (Issue #735)"""
+        cell = montepy.Cell()
+        assert cell.importance.neutron == 1.0
