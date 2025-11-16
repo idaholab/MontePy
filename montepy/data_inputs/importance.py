@@ -42,6 +42,8 @@ class Importance(CellModifierInput):
         the value syntax tree from the key-value pair in a cell
     """
 
+    _DEFAULT_IMP = 1.0
+
     def __init__(
         self,
         input: InitInput = None,
@@ -52,6 +54,7 @@ class Importance(CellModifierInput):
         self._particle_importances = {}
         self._real_tree = {}
         self._part_combos = []
+        self._explicitly_set = False
         super().__init__(input, in_cell_block, key, value)
         if self.in_cell_block:
             if key:
@@ -62,6 +65,7 @@ class Importance(CellModifierInput):
                     raise ValueError(
                         f"Cell importance must be a number ≥ 0. {val.value} was given"
                     )
+                self._explicitly_set = True
                 self._part_combos.append(self.particle_classifiers)
                 for particle in self.particle_classifiers:
                     self._particle_importances[particle] = value
@@ -76,6 +80,7 @@ class Importance(CellModifierInput):
                     raise MalformedInputError(
                         input, f"Importances must be ≥ 0 value: {node} given"
                     )
+            self._explicitly_set = True
             self._part_combos.append(self.particle_classifiers)
             for particle in self.particle_classifiers:
                 self._particle_importances[particle] = copy.deepcopy(self._tree)
@@ -95,7 +100,7 @@ class Importance(CellModifierInput):
             particles.particles = self._problem.mode.particles
         classifier.particles = particles
         list_node = syntax_node.ListNode("imp data")
-        list_node.append(self._generate_default_node(float, 0.0))
+        list_node.append(self._generate_default_node(float, self._DEFAULT_IMP))
         tree = syntax_node.SyntaxNode(
             "Importance",
             {
@@ -125,8 +130,17 @@ class Importance(CellModifierInput):
 
     @property
     def has_information(self):
-        if self.in_cell_block:
+        has_info = []
+        for part in self:
+            has_info.append(
+                not math.isclose(
+                    self[part], self._DEFAULT_IMP, rel_tol=rel_tol, abs_tol=abs_tol
+                )
+            )
+        if any(has_info):
             return True
+        if self.in_cell_block:
+            return self.set_in_cell_block
 
     def merge(self, other):
         if not isinstance(other, type(self)):
@@ -163,7 +177,7 @@ class Importance(CellModifierInput):
             val = self._particle_importances[particle]["data"][0]
             return val.value
         except KeyError:
-            return 0.0
+            return self._DEFAULT_IMP
 
     def __setitem__(self, particle, value):
         if not isinstance(particle, Particle):
@@ -175,6 +189,7 @@ class Importance(CellModifierInput):
             raise ValueError("importance must be ≥ 0")
         if particle not in self._particle_importances:
             self._generate_default_cell_tree(particle)
+        self._explicitly_set = True
         self._particle_importances[particle]["data"][0].value = value
 
     def __delitem__(self, particle):
@@ -213,6 +228,7 @@ class Importance(CellModifierInput):
                     value = self._particle_importances[particle]["data"][i]
                     # force generating the default tree
                     cell.importance[particle] = value.value
+                    cell.importance._explicitly_set = True
                     # replace default ValueNode with actual valueNode
                     tree = cell.importance._particle_importances[particle]
                     tree.nodes["classifier"] = copy.deepcopy(
@@ -284,6 +300,7 @@ class Importance(CellModifierInput):
         if value < 0.0:
             raise ValueError("Importance must be ≥ 0.0")
         if self._problem:
+            self._explicitly_set = True
             for particle in self._problem.mode:
                 self._particle_importances[particle]["data"][0].value = value
 
@@ -506,7 +523,7 @@ importance: float
 Returns
 -------
 float
-    the importance for the particle type. If not set, defaults to 0.
+    the importance for the particle type. If not set, defaults to 1.0.
 """
 
 

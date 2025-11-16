@@ -609,10 +609,10 @@ For example:
 
     >>> for particle in sorted(problem.mode):
     ...     print(particle, cell.importance[particle])
-    neutron 0.0
-    photon 0.0
+    neutron 1.0
+    photon 1.0
     >>> print(cell.importance[montepy.Particle.NEUTRON])
-    0.0
+    1.0
 
 There's also a lot of convenient ways to do bulk modifications.
 There is the :func:`~montepy.data_inputs.importance.Importance.all` property that lets you set the importance for all particles in the problem at once.
@@ -629,7 +629,10 @@ For example:
     neutron 2.0
     photon 2.0
 
-This will set the importances for the neutron and photon. 
+This will set the importances for the neutron and photon.
+
+You can also delete an importance to reset it to the default value (1.0).
+For example: ``del cell.importance.neutron``.
 
 There is also the method: :func:`~montepy.cells.Cells.set_equal_importance`.
 This method sets all of the cells for all particles in the problem to the same importance.
