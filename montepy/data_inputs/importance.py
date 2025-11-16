@@ -46,9 +46,8 @@ class Importance(CellModifierInput):
         the value syntax tree from the key-value pair in a cell
     """
 
-
     _DEFAULT_IMP = 1.0
-    
+
     @args_checked
     def __init__(
         self,
