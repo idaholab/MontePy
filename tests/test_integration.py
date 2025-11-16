@@ -1123,9 +1123,15 @@ def test_alternate_encoding():
     )
 
 
+"""
+file_path: {line_number (0-indexed): flag}
+
+Flags: 
+    0: skip line in both files
+    1: skip line in output file
+    2+: skip line in gold file
+"""
 _SKIP_LINES = {
-    # skip lines of added implied importances
-    "tests/inputs/test_universe_data.imcnp": {5: 1, 14: 1, 15: 1},
     # I don't care about the edge case of shortcuts in a material def.
     "tests/inputs/test_complement_edge.imcnp": {37: 0, 38: 0, 39: 0},
 }
@@ -1144,6 +1150,11 @@ _SKIP_LINES = {
     },
 )
 def test_read_write_cycle(file):
+    """
+    Warning: this test is a Rube Goldberg machine of edge cases.
+
+    Please ask @micahgale before modifying it.
+    """
     print(f"Testing against {file} *********************")
     if ".swp" in file.suffixes:
         return

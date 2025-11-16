@@ -228,10 +228,17 @@ class Cell(Numbered_MCNP_Object):
         Each particle's importance is a property of Importance.
         e.g., ``cell.importance.photon = 1.0``.
 
+        Deleting an importance resets it to the default value (1.0).
+        e.g., ``del cell.importance.neutron``.
+
         Returns
         -------
         Importance
             the importance for the Cell.
+
+        .. versionchanged:: 1.2.0
+
+            Default importance value changed from 0.0 to 1.0 to match MCNP defaults.
         """
         return self._importance
 
