@@ -119,7 +119,11 @@ def test_fill_multi_universe_order(cells):
         cell.fill.universes = unis
         output = cell.format_for_mcnp_input((6, 2, 0))
         words = " ".join(output).split()
-        new_universes = list(map(int, words[7:]))
+        start_idx = 6
+        if "imp:n=1" in words:
+            start_idx += 1
+        print(output)
+        new_universes = list(map(int, words[start_idx:]))
         assert (numbers.flatten("f") == new_universes).all()
 
 
