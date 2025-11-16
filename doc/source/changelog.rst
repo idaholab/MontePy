@@ -18,6 +18,8 @@ MontePy Changelog
 * Allow multiple universe fills to accept 2D MNCP lattices (:issue:`719`).
 * Make `LatticeType.RECTANGULAR` and `LatticeType.HEXAHEDRAL` synonymous (:issue:`808`).
 * Allow setting ``cell.fill.universes`` with a numpy array of universe IDs (:issue:`736`).
+* Added Boundary condition type to the representation of a ``montepy.Surface`` (e.g., ``repr(surf)``)  (:issue:`682`).
+* Changed default importance value from 0.0 to 1.0 to match MCNP defaults. (:issue:`735`)
 
 **Bugs Fixed**
 
@@ -25,10 +27,6 @@ MontePy Changelog
 * Added descriptive TypeError messages (:issue:`801`)
 * Fixed a bug that caused to write an extra termination line between the data block and the cell data section in the MCNP input. (:pull:`819`) (:issue:`703`).
 * Avoided parsing ``FMESH`` inputs that have more complicated syntax to parse (:issue:`846`).
-
-**Documentation**
-
-* Improved documentation for NumberedObjectCollections on Slicing behavior. (:issue:`798`)
 
 **Deprecations**
 
@@ -43,9 +41,7 @@ MontePy Changelog
 
 1.1.3
 --------------
-**Features Added**
 
-* Added Boundary condition type to the representation of a ``montepy.Surface`` (e.g., ``repr(surf)``)  (:issue:`682`).
 
 **Documentation**
 
