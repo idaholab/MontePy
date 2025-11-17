@@ -70,6 +70,6 @@ class TestTallyParser:
 
 class TestFmesh:
     # this is hacky; just makes sure it doesn't crash
-    @pytest.mark.parametrize("line", ["fmesh1:n vec=0 0 0", "fmesh1:n vec=0, 0, 0"])
+    @pytest.mark.parametrize("line", ["fmesh14:n vec=0 0 0", "fmesh14:n vec=0, 0, 0"])
     def test_fmesh_parse(_, line):
         parse_data(line)
