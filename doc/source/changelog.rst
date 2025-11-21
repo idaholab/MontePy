@@ -5,7 +5,7 @@ MontePy Changelog
 1.2 releases
 ============
 
-#Next Version#
+1.2.0
 --------------
 
 **Performance Improvement**
