@@ -33,6 +33,16 @@ Here are some possible use cases for MontePy:
 * To convert an MCNP model to another Monte Carlo code like OpenMC, SERPENT, etc. 
 
 
+Try it Now
+----------
+
+.. jupyterlite:: 
+   :new_tab: True
+   :new_tab_button_text: Launch jupyter in your browswer
+
+Contents
+--------
+
 .. toctree::
    :maxdepth: 2
    :caption: Table of Contents:
