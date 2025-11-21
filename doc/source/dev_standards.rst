@@ -69,6 +69,7 @@ Design Philosophy
 #. Avoid relative imports when possible. Use top level ones instead: e.g., ``import montepy.cell.Cell``.
 #. Defer to vanilla python, and only use the standard library. Currently the only dependencies are `numpy <https://numpy.org/>`_ and `sly <https://github.com/dabeaz/sly>`_. 
    There must be good justification for breaking from this convention and complicating things for the user.
+#. Test all user inputs for type and value. This should largely be done using ``@args_checked``, see: :ref:`args_type`.
 
 Style Guide
 -----------

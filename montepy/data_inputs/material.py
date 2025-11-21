@@ -3,20 +3,26 @@ from __future__ import annotations
 import collections as co
 import copy
 import math
-from numbers import Integral, Real
-from typing import Generator, Union
+from typing import Generator, Any
 import weakref
 
 import montepy
 from montepy.data_inputs import data_input, thermal_scattering
-from montepy.data_inputs.nuclide import Library, Nucleus, Nuclide
 from montepy.data_inputs.element import Element
+from montepy.data_inputs.nuclide import (
+    Library,
+    Nucleus,
+    Nuclide,
+    NuclideLike,
+    MetaState,
+)
+from montepy.exceptions import *
 from montepy.input_parser import syntax_node
 from montepy.input_parser.material_parser import MaterialParser
 from montepy.numbered_mcnp_object import Numbered_MCNP_Object, InitInput
-from montepy.exceptions import *
-from montepy.utilities import *
 from montepy.particle import LibraryType
+from montepy.utilities import *
+import montepy.types as ty
 
 
 MAX_PRINT_ELEMENTS: int = 5
@@ -32,8 +38,6 @@ This is used for adding new material components.
 By default all components made from scratch are added to their own line with this many leading spaces.
 """
 
-NuclideLike = Union[Nuclide, Nucleus, Element, str, Integral]
-
 
 class _DefaultLibraries:
     """A dictionary wrapper for handling the default libraries for a material.
@@ -48,23 +52,22 @@ class _DefaultLibraries:
 
     __slots__ = "_libraries", "_parent"
 
-    def __init__(self, parent_mat: Material):
+    @args_checked
+    def __init__(self, parent_mat: montepy.Material):
         self._libraries = {}
         self._parent = weakref.ref(parent_mat)
 
-    def __getitem__(self, key):
+    @args_checked
+    def __getitem__(self, key: str | LibraryType) -> Library:
         key = self._validate_key(key)
         try:
             return Library(self._libraries[key]["data"].value)
         except KeyError:
             return None
 
-    def __setitem__(self, key, value):
+    @args_checked
+    def __setitem__(self, key: str | LibraryType, value: str | Library):
         key = self._validate_key(key)
-        if not isinstance(value, (Library, str)):
-            raise TypeError(
-                f"Value must be a library or str. {value} of type: {type(value).__name__} given."
-            )
         if isinstance(value, str):
             value = Library(value)
         try:
@@ -75,7 +78,8 @@ class _DefaultLibraries:
             self._libraries[key] = node
         node["data"].value = str(value)
 
-    def __delitem__(self, key):
+    @args_checked
+    def __delitem__(self, key: str | LibraryType):
         key = self._validate_key(key)
         node = self._libraries.pop(key)
         self._parent()._delete_param_lib(node)
@@ -86,22 +90,20 @@ class _DefaultLibraries:
     def __iter__(self):
         return iter(self._libraries)
 
-    def items(self):
+    def items(self) -> Generator[tuple[LibraryType, Library], None, None]:
         for lib_type, node in self._libraries.items():
             yield (lib_type, node["data"].value)
 
     @staticmethod
-    def _validate_key(key):
-        if not isinstance(key, (str, LibraryType)):
-            raise TypeError(
-                f"Key must be in Library or str format. {key} of type {type(key).__name__} given."
-            )
+    @args_checked
+    def _validate_key(key: str | LibraryType) -> LibraryType:
         if not isinstance(key, LibraryType):
             key = LibraryType(key.upper())
         return key
 
     @staticmethod
-    def _generate_default_node(key: LibraryType, val: str):
+    @args_checked
+    def _generate_default_node(key: LibraryType, val: str) -> syntax_node.SyntaxNode:
         classifier = syntax_node.ClassifierNode()
         classifier.prefix = key.value
         ret = {
@@ -111,17 +113,19 @@ class _DefaultLibraries:
         }
         return syntax_node.SyntaxNode("mat library", ret)
 
-    def _load_node(self, key: Union[str, LibraryType], node: syntax_node.SyntaxNode):
+    @args_checked
+    def _load_node(self, key: str | LibraryType, node: syntax_node.SyntaxNode) -> None:
         key = self._validate_key(key)
         self._libraries[key] = node
 
-    def __getstate__(self):
+    def __getstate__(self) -> dict:
         return {"_libraries": self._libraries}
 
-    def __setstate__(self, state):
+    def __setstate__(self, state: dict) -> None:
         self._libraries = state["_libraries"]
 
-    def _link_to_parent(self, parent_mat: Material):
+    @args_checked
+    def _link_to_parent(self, parent_mat: Material) -> None:
         self._parent = weakref.ref(parent_mat)
 
 
@@ -130,12 +134,12 @@ class _MatCompWrapper:
 
     __slots__ = "_parent", "_index", "_setter"
 
-    def __init__(self, parent, index, setter):
+    def __init__(self, parent: "Material", index: int, setter: ty.Callable):
         self._parent = parent
         self._index = index
         self._setter = setter
 
-    def __iter__(self):
+    def __iter__(self) -> Generator[Nuclide | ty.Real, None, None]:
 
         def generator():
             for component in self._parent:
@@ -143,10 +147,12 @@ class _MatCompWrapper:
 
         return generator()
 
-    def __getitem__(self, idx):
+    @args_checked
+    def __getitem__(self, idx: ty.Integral) -> Any:
         return self._parent[idx][self._index]
 
-    def __setitem__(self, idx, val):
+    @args_checked
+    def __setitem__(self, idx: ty.Integral, val: Nuclide | ty.PositiveReal):
         new_val = self._setter(self._parent[idx], val)
         self._parent[idx] = new_val
 
@@ -281,7 +287,7 @@ class Material(data_input.DataInputAbstract, Numbered_MCNP_Object):
 
     Parameters
     ----------
-    input : Union[Input, str]
+    input : Input | str
         The Input syntax object this will wrap and parse.
     number : int
         The number to set for this object.
@@ -290,10 +296,11 @@ class Material(data_input.DataInputAbstract, Numbered_MCNP_Object):
     _parser = MaterialParser()
     _NEW_LINE_STR = "\n" + " " * DEFAULT_INDENT
 
+    @args_checked
     def __init__(
         self,
         input: InitInput = None,
-        number: int = None,
+        number: ty.PositiveInt = None,
     ):
         self._components = []
         self._thermal_scattering = None
@@ -321,9 +328,13 @@ class Material(data_input.DataInputAbstract, Numbered_MCNP_Object):
         else:
             self._create_default_tree()
 
+    @args_checked
     def _grab_isotope(
-        self, nuclide: Nuclide, fraction: syntax_node.ValueNode, is_first: bool = False
-    ):
+        self,
+        nuclide: syntax_node.ValueNode,
+        fraction: syntax_node.ValueNode,
+        is_first: bool = False,
+    ) -> None:
         """Grabs and parses the nuclide and fraction from the init function, and loads it."""
         isotope = Nuclide(node=nuclide)
         fraction.is_negatable_float = True
@@ -340,7 +351,8 @@ class Material(data_input.DataInputAbstract, Numbered_MCNP_Object):
         self._nuclei.add(isotope.nucleus)
         self._components.append((isotope, fraction))
 
-    def _grab_default(self, param: syntax_node.SyntaxNode):
+    @args_checked
+    def _grab_default(self, param: syntax_node.SyntaxNode) -> None:
         """Grabs and parses default libraris from init process."""
         try:
             lib_type = LibraryType(param["classifier"].prefix.value.upper())
@@ -349,7 +361,7 @@ class Material(data_input.DataInputAbstract, Numbered_MCNP_Object):
         except ValueError:
             pass
 
-    def _create_default_tree(self):
+    def _create_default_tree(self) -> None:
         classifier = syntax_node.ClassifierNode()
         classifier.number = self._number
         classifier.number.never_pad = True
@@ -424,7 +436,7 @@ See <https://www.montepy.org/migrations/migrate0_1.html> for more information ""
         )
 
     @make_prop_pointer("_default_libs")
-    def default_libraries(self):
+    def default_libraries(self) -> dict[LibraryType, Library]:
         """The default libraries that are used when a nuclide doesn't have a relevant library specified.
 
         Default Libraries
@@ -453,9 +465,10 @@ See <https://www.montepy.org/migrations/migrate0_1.html> for more information ""
         """
         pass
 
+    @args_checked
     def get_nuclide_library(
-        self, nuclide: Nuclide, library_type: LibraryType
-    ) -> Union[Library, None]:
+        self, nuclide: Nuclide | str, library_type: LibraryType | str
+    ) -> Library | None:
         """Figures out which nuclear data library will be used for the given nuclide in this
         given material in this given problem.
 
@@ -478,14 +491,14 @@ See <https://www.montepy.org/migrations/migrate0_1.html> for more information ""
 
         Parameters
         ----------
-        nuclide : Union[Nuclide, str]
+        nuclide : Nuclide | str
             the nuclide to check.
-        library_type : LibraryType
+        library_type : LibraryType | str
             the LibraryType to check against.
 
         Returns
         -------
-        Union[Library, None]
+        Library | None
             the library that will be used in this scenario by MCNP.
 
         Raises
@@ -493,14 +506,8 @@ See <https://www.montepy.org/migrations/migrate0_1.html> for more information ""
         TypeError
             If arguments of the wrong type are given.
         """
-        if not isinstance(nuclide, (Nuclide, str)):
-            raise TypeError(f"nuclide must be a Nuclide. {nuclide} given.")
         if isinstance(nuclide, str):
             nuclide = Nuclide(nuclide)
-        if not isinstance(library_type, (str, LibraryType)):
-            raise TypeError(
-                f"Library_type must be a LibraryType. {library_type} given."
-            )
         if not isinstance(library_type, LibraryType):
             library_type = LibraryType(library_type.upper())
         if nuclide.library.library_type == library_type:
@@ -512,11 +519,10 @@ See <https://www.montepy.org/migrations/migrate0_1.html> for more information ""
             return self._problem.materials.default_libraries[library_type]
         return None
 
-    def __getitem__(self, idx):
+    @args_checked
+    def __getitem__(self, idx: ty.Integral | slice) -> Any:
         """"""
-        if not isinstance(idx, (Integral, slice)):
-            raise TypeError(f"Not a valid index. {idx} given.")
-        if isinstance(idx, Integral):
+        if isinstance(idx, ty.Integral):
             comp = self._components[idx]
             return self.__unwrap_comp(comp)
         # else it's a slice
@@ -533,12 +539,12 @@ See <https://www.montepy.org/migrations/migrate0_1.html> for more information ""
 
         return gen_wrapper()
 
-    def __setitem__(self, idx, newvalue):
+    @args_checked
+    def __setitem__(
+        self, idx: ty.Integral | slice, newvalue: tuple[Nuclide, ty.NonNegativeReal]
+    ) -> None:
         """"""
-        if not isinstance(idx, (Integral, slice)):
-            raise TypeError(f"Not a valid index. {idx} given.")
         old_vals = self._components[idx]
-        self._check_valid_comp(newvalue)
         node_idx = self._tree["data"].nodes.index((old_vals[0]._tree, old_vals[1]), idx)
         # grab fraction
         old_vals[1].value = newvalue[1]
@@ -548,31 +554,9 @@ See <https://www.montepy.org/migrations/migrate0_1.html> for more information ""
     def __len__(self):
         return len(self._components)
 
-    def _check_valid_comp(self, newvalue: tuple[Nuclide, Real]):
-        """Checks valid compositions and raises an error if needed."""
-        if not isinstance(newvalue, tuple):
-            raise TypeError(
-                f"Invalid component given. Must be tuple of Nuclide, fraction. {newvalue} given."
-            )
-        if len(newvalue) != 2:
-            raise ValueError(
-                f"Invalid component given. Must be tuple of Nuclide, fraction. {newvalue} given."
-            )
-        if not isinstance(newvalue[0], Nuclide):
-            raise TypeError(f"First element must be an Nuclide. {newvalue[0]} given.")
-        if not isinstance(newvalue[1], Real):
-            raise TypeError(
-                f"Second element must be a fraction greater than 0. {newvalue[1]} given."
-            )
-        if newvalue[1] < 0.0:
-            raise ValueError(
-                f"Second element must be a fraction greater than 0. {newvalue[1]} given."
-            )
-
-    def __delitem__(self, idx):
-        if not isinstance(idx, (Integral, slice)):
-            raise TypeError(f"Not a valid index. {idx} given.")
-        if isinstance(idx, Integral):
+    @args_checked
+    def __delitem__(self, idx: ty.Integral | slice) -> None:
+        if isinstance(idx, ty.Integral):
             self.__delitem(idx)
             return
         # else it's a slice
@@ -584,7 +568,8 @@ See <https://www.montepy.org/migrations/migrate0_1.html> for more information ""
         if end == 0:
             self.__delitem(0)
 
-    def __delitem(self, idx):
+    @args_checked
+    def __delitem(self, idx: ty.Integral) -> None:
         comp = self._components[idx]
         element = self[idx][0].element
         nucleus = self[idx][0].nucleus
@@ -610,12 +595,9 @@ See <https://www.montepy.org/migrations/migrate0_1.html> for more information ""
         self._tree["data"].nodes.remove((comp[0]._tree, comp[1]))
         del self._components[idx]
 
-    def __contains__(self, nuclide):
-        if not isinstance(nuclide, (Nuclide, Nucleus, Element, str, Integral)):
-            raise TypeError(
-                f"Can only check if a Nuclide, Nucleus, Element, or str is in a material. {nuclide} given."
-            )
-        if isinstance(nuclide, (str, Integral)):
+    @args_checked
+    def __contains__(self, nuclide: NuclideLike) -> bool:
+        if isinstance(nuclide, (str, ty.Integral)):
             nuclide = Nuclide(nuclide)
         # switch to elemental
         if isinstance(nuclide, (Nucleus, Nuclide)) and nuclide.A == 0:
@@ -637,7 +619,8 @@ See <https://www.montepy.org/migrations/migrate0_1.html> for more information ""
             element = nuclide
             return element in self._elements
 
-    def append(self, nuclide_frac_pair: tuple[Nuclide, float]):
+    @args_checked
+    def append(self, nuclide_frac_pair: tuple[Nuclide, ty.NonNegativeReal]):
         """Appends the tuple to this material.
 
         .. versionadded:: 1.0.0
@@ -647,7 +630,6 @@ See <https://www.montepy.org/migrations/migrate0_1.html> for more information ""
         nuclide_frac_pair : tuple[Nuclide, float]
             a tuple of the nuclide and the fraction to add.
         """
-        self._check_valid_comp(nuclide_frac_pair)
         self._elements.add(nuclide_frac_pair[0].element)
         self._nuclei.add(nuclide_frac_pair[0].nucleus)
         # node for fraction
@@ -685,26 +667,24 @@ See <https://www.montepy.org/migrations/migrate0_1.html> for more information ""
             padding.check_for_graveyard_comments(True)
         add_new_line_padding()
 
-    def change_libraries(self, new_library: Union[str, Library]):
+    @args_checked
+    def change_libraries(self, new_library: str | Library):
         """Change the library for all nuclides in the material.
 
         .. versionadded:: 1.0.0
 
         Parameters
         ----------
-        new_library : Union[str, Library]
+        new_library : str | Library
             the new library to set all Nuclides to use.
         """
-        if not isinstance(new_library, (Library, str)):
-            raise TypeError(
-                f"new_library must be a Library or str. {new_library} given."
-            )
         if isinstance(new_library, str):
             new_library = Library(new_library)
         for nuclide, _ in self:
             nuclide.library = new_library
 
-    def add_nuclide(self, nuclide: NuclideLike, fraction: float):
+    @args_checked
+    def add_nuclide(self, nuclide: NuclideLike, fraction: ty.NonNegativeReal):
         """Add a new component to this material of the given nuclide, and fraction.
 
         .. versionadded:: 1.0.0
@@ -717,17 +697,14 @@ See <https://www.montepy.org/migrations/migrate0_1.html> for more information ""
         fraction : float
             the fraction of this component being added.
         """
-        if not isinstance(nuclide, (Nuclide, str, Integral)):
-            raise TypeError(
-                f"Nuclide must of type Nuclide, str, or int. {nuclide} of type {type(nuclide)} given."
-            )
         nuclide = self._promote_nuclide(nuclide, True)
         self.append((nuclide, fraction))
 
+    @args_checked
     def contains_all(
         self,
         *nuclides: NuclideLike,
-        threshold: float = 0.0,
+        threshold: ty.PositiveReal = 0.0,
         strict: bool = False,
     ) -> bool:
         """Checks if this material contains of all of the given nuclides.
@@ -772,7 +749,7 @@ See <https://www.montepy.org/migrations/migrate0_1.html> for more information ""
 
         Parameters
         ----------
-        *nuclides : Union[Nuclide, Nucleus, Element, str, int]
+        *nuclides : Nuclide | Nucleus | Element | str | int
             a plurality of nuclides to check for.
         threshold : float
             the minimum concentration of a nuclide to be considered. The
@@ -800,10 +777,11 @@ See <https://www.montepy.org/migrations/migrate0_1.html> for more information ""
             *nuclides, bool_func=all, threshold=threshold, strict=strict
         )
 
+    @args_checked
     def contains_any(
         self,
         *nuclides: NuclideLike,
-        threshold: float = 0.0,
+        threshold: ty.PositiveReal = 0.0,
         strict: bool = False,
     ) -> bool:
         """Checks if this material contains any of the given nuclide.
@@ -835,7 +813,7 @@ See <https://www.montepy.org/migrations/migrate0_1.html> for more information ""
 
         Parameters
         ----------
-        *nuclides : Union[Nuclide, Nucleus, Element, str, int]
+        *nuclides : Nuclide | Nucleus | Element | str | int
             a plurality of nuclides to check for.
         threshold : float
             the minimum concentration of a nuclide to be considered. The
@@ -864,14 +842,9 @@ See <https://www.montepy.org/migrations/migrate0_1.html> for more information ""
         )
 
     @staticmethod
-    def _promote_nuclide(nuclide, strict):
-        # This is necessary for python 3.9
-        if not isinstance(nuclide, (Nuclide, Nucleus, Element, str, Integral)):
-            raise TypeError(
-                f"Nuclide must be a type that can be converted to a Nuclide. The allowed types are: "
-                f"Nuclide, Nucleus, str, int. {nuclide} given."
-            )
-        if isinstance(nuclide, (str, Integral)):
+    @args_checked
+    def _promote_nuclide(nuclide: NuclideLike, strict: bool) -> Nuclide:
+        if isinstance(nuclide, (str, ty.Integral)):
             nuclide = Nuclide(nuclide)
         # treat elemental as element
         if isinstance(nuclide, (Nucleus, Nuclide)) and nuclide.A == 0 and not strict:
@@ -882,22 +855,13 @@ See <https://www.montepy.org/migrations/migrate0_1.html> for more information ""
 
     def _contains_arb(
         self,
-        *nuclides: Union[Nuclide, Nucleus, Element, str, Integral],
+        *nuclides: NuclideLike,
         bool_func: co.abc.Callable[co.abc.Iterable[bool]] = None,
         threshold: float = 0.0,
         strict: bool = False,
     ) -> bool:
         nuclide_finders = []
-        if not isinstance(threshold, Real):
-            raise TypeError(
-                f"Threshold must be a float. {threshold} of type: {type(threshold)} given"
-            )
-        if threshold < 0.0:
-            raise ValueError(f"Threshold must be positive or zero. {threshold} given.")
-        if not isinstance(strict, bool):
-            raise TypeError(
-                f"Strict must be bool. {strict} of type: {type(strict)} given."
-            )
+        # All checks are now handled by type hints and args_checked
         for nuclide in nuclides:
             nuclide_finders.append(self._promote_nuclide(nuclide, strict))
 
@@ -953,7 +917,7 @@ See <https://www.montepy.org/migrations/migrate0_1.html> for more information ""
             val_node.value /= total_frac
 
     @property
-    def values(self):
+    def values(self) -> Generator[ty.PositiveReal, None, None]:
         """Get just the fractions, or values from this material.
 
         This acts like a list. It is iterable, and indexable.
@@ -1011,21 +975,14 @@ See <https://www.montepy.org/migrations/migrate0_1.html> for more information ""
         Generator[float]
         """
 
-        def setter(old_val, new_val):
-            if not isinstance(new_val, Real):
-                raise TypeError(
-                    f"Value must be set to a float. {new_val} of type {type(new_val)} given."
-                )
-            if new_val < 0.0:
-                raise ValueError(
-                    f"Value must be greater than or equal to 0. {new_val} given."
-                )
+        @args_checked
+        def setter(old_val, new_val: ty.NonNegativeReal):
             return (old_val[0], new_val)
 
         return _MatCompWrapper(self, 1, setter)
 
     @property
-    def nuclides(self):
+    def nuclides(self) -> Generator[Nuclide]:
         """Get just the fractions, or values from this material.
 
         This acts like a list. It is iterable, and indexable.
@@ -1077,11 +1034,8 @@ See <https://www.montepy.org/migrations/migrate0_1.html> for more information ""
         Generator[Nuclide]
         """
 
-        def setter(old_val, new_val):
-            if not isinstance(new_val, Nuclide):
-                raise TypeError(
-                    f"Nuclide must be set to a Nuclide. {new_val} of type {type(new_val)} given."
-                )
+        @args_checked
+        def setter(old_val, new_val: Nuclide):
             return (new_val, old_val[1])
 
         return _MatCompWrapper(self, 0, setter)
@@ -1127,15 +1081,16 @@ See <https://www.montepy.org/migrations/migrate0_1.html> for more information ""
             return lambda val: getattr(val, attr) == filter_obj
         return lambda val: val == filter_obj
 
+    @args_checked
     def find(
         self,
-        name: str = None,
-        element: Union[Element, str, Integral, slice] = None,
-        A: Union[int, slice] = None,
-        meta_state: Union[int, slice] = None,
-        library: Union[str, slice] = None,
+        name: NuclideLike = None,
+        element: Element | str | ty.Integral | slice = None,
+        A: ty.PositiveInt | slice = None,
+        meta_state: MetaState | slice = None,
+        library: str | slice = None,
         strict: bool = False,
-    ) -> Generator[tuple[int, tuple[Nuclide, float]]]:
+    ) -> Generator[tuple[ty.Integral, tuple[Nuclide, ty.Real]], None, None]:
         """Finds all components that meet the given criteria.
 
         The criteria are additive, and a component must match all criteria.
@@ -1221,7 +1176,7 @@ See <https://www.montepy.org/migrations/migrate0_1.html> for more information ""
 
         Parameters
         ----------
-        name : str
+        name : NuclideLike
             The name to pass to Nuclide to search by a specific Nuclide.
             If an element name is passed this will only match elemental
             nuclides.
@@ -1248,26 +1203,7 @@ See <https://www.montepy.org/migrations/migrate0_1.html> for more information ""
             match.
         """
         # nuclide type enforcement handled by `Nuclide`
-        if not isinstance(element, (Element, str, Integral, slice, type(None))):
-            raise TypeError(
-                f"Element must be only Element, str, int or slice types. {element} of type{type(element)} given."
-            )
-        if not isinstance(A, (Integral, slice, type(None))):
-            raise TypeError(
-                f"A must be an int or a slice. {A} of type {type(A)} given."
-            )
-        if not isinstance(meta_state, (Integral, slice, type(None))):
-            raise TypeError(
-                f"meta_state must an int or a slice. {meta_state} of type {type(meta_state)} given."
-            )
-        if not isinstance(library, (str, slice, type(None))):
-            raise TypeError(
-                f"library must a str or a slice. {library} of type {type(library)} given."
-            )
-        if not isinstance(strict, bool):
-            raise TypeError(
-                f"strict must be a bool. {strict} of type {type(strict)} given."
-            )
+        # All checks are now handled by type hints and args_checked
         if name:
             fancy_nuclide = Nuclide(name)
             if fancy_nuclide.A == 0 and not strict:
@@ -1302,15 +1238,16 @@ See <https://www.montepy.org/migrations/migrate0_1.html> for more information ""
             if found:
                 yield idx, component
 
+    @args_checked
     def find_vals(
         self,
         name: str = None,
-        element: Union[Element, str, int, slice] = None,
-        A: Union[int, slice] = None,
-        meta_state: Union[int, slice] = None,
-        library: Union[str, slice] = None,
+        element: Element | str | ty.PositiveInt | slice = None,
+        A: ty.PositiveInt | slice = None,
+        meta_state: MetaState | slice = None,
+        library: str | slice = None,
         strict: bool = False,
-    ) -> Generator[float]:
+    ) -> Generator[ty.Real, None, None]:
         """A wrapper for :func:`find` that only returns the fractions of the components.
 
         For more examples see that function.
@@ -1384,7 +1321,7 @@ See <https://www.montepy.org/migrations/migrate0_1.html> for more information ""
         return self._thermal_scattering
 
     @property
-    def cells(self) -> Generator[montepy.cell.Cell]:
+    def cells(self) -> Generator[montepy.cell.Cell, None, None]:
         """A generator of the cells that use this material.
 
         Returns
@@ -1397,7 +1334,8 @@ See <https://www.montepy.org/migrations/migrate0_1.html> for more information ""
                 if cell.material == self:
                     yield cell
 
-    def format_for_mcnp_input(self, mcnp_version):
+    @args_checked
+    def format_for_mcnp_input(self, mcnp_version: ty.VersionType) -> list[str]:
         lines = super().format_for_mcnp_input(mcnp_version)
         if self.thermal_scattering is not None:
             lines += self.thermal_scattering.format_for_mcnp_input(mcnp_version)
@@ -1415,7 +1353,8 @@ See <https://www.montepy.org/migrations/migrate0_1.html> for more information ""
             ):
                 node.value = nuclide.mcnp_str()
 
-    def add_thermal_scattering(self, law):
+    @args_checked
+    def add_thermal_scattering(self, law: str) -> None:
         """Adds thermal scattering law to the material
 
         Parameters
@@ -1423,16 +1362,14 @@ See <https://www.montepy.org/migrations/migrate0_1.html> for more information ""
         law : str
             the law that is mcnp formatted
         """
-        if not isinstance(law, str):
-            raise TypeError(
-                f"Thermal Scattering law for material {self.number} must be a string"
-            )
         self._thermal_scattering = thermal_scattering.ThermalScatteringLaw(
             material=self
         )
         self._thermal_scattering.add_scattering_law(law)
 
-    def update_pointers(self, data_inputs: list[montepy.data_inputs.DataInput]):
+    def update_pointers(
+        self, data_inputs: list[montepy.data_inputs.data_input.DataInputAbstract]
+    ):
         """Updates pointer to the thermal scattering data
 
         Parameters
@@ -1483,7 +1420,7 @@ See <https://www.montepy.org/migrations/migrate0_1.html> for more information ""
         ]
         return f"MATERIAL: {self.number}, {print_elements}"
 
-    def get_material_elements(self):
+    def get_material_elements(self) -> list[Element]:
         """Get the elements that are contained in this material.
 
         This is sorted by the most common element to the least common.

@@ -199,7 +199,10 @@ class TestMaterial:
             big_material["hi"] = 5
         with pytest.raises(TypeError):
             big_material[2] = 5
-        with pytest.raises(ValueError):
+        with pytest.raises(
+            AssertionError,
+            match="Tuple type must have the exact number of arguments specified.",
+        ):
             big_material[2] = (5,)
         with pytest.raises(TypeError):
             big_material[2] = (5, 1.0)
@@ -279,7 +282,10 @@ class TestMaterial:
         mat = Material()
         with pytest.raises(TypeError):
             mat.append(5)
-        with pytest.raises(ValueError):
+        with pytest.raises(
+            AssertionError,
+            match="Tuple type must have the exact number of arguments specified.",
+        ):
             mat.append((1, 2, 3))
         with pytest.raises(TypeError):
             mat.append(("hi", 1))

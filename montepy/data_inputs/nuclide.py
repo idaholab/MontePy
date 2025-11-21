@@ -1,15 +1,19 @@
 # Copyright 2024-2025, Battelle Energy Alliance, LLC All Rights Reserved.
+from __future__ import annotations
+
+from montepy.utilities import *
 from montepy.constants import MAX_ATOMIC_SYMBOL_LENGTH
 from montepy._singleton import SingletonGroup
 from montepy.data_inputs.element import Element
 from montepy.utilities import *
 from montepy.input_parser.syntax_node import PaddingNode, ValueNode
 from montepy.particle import LibraryType
+import montepy.types as ty
 
 from functools import total_ordering
 import re
-from typing import Union
-from numbers import Real, Integral
+
+MetaState = ty.Annotated[ty.Integral, ty.greater_than(0, True), ty.less_than(5)]
 
 DEFAULT_NUCLIDE_WIDTH = 11
 """How many characters wide a nuclide with spacing should be."""
@@ -70,12 +74,11 @@ class Library(SingletonGroup):
     }
     _LIBRARY_RE = re.compile(r"(\d{2,3})[a-z]?([a-z])", re.I)
 
+    @args_checked
     def __init__(self, library: str):
         self._lib_type = None
         self._suffix = ""
         self._num = None
-        if not isinstance(library, str):
-            raise TypeError(f"library must be a str. {library} given.")
         if library:
             match = self._LIBRARY_RE.fullmatch(library)
             if not match:
@@ -150,9 +153,8 @@ class Library(SingletonGroup):
     def __hash__(self):
         return hash(self._library.upper())
 
-    def __eq__(self, other):
-        if not isinstance(other, (type(self), str)):
-            raise TypeError(f"Can only compare Library instances.")
+    @args_checked
+    def __eq__(self, other: str | Library):
         if not isinstance(other, type(self)):
             return self.library.upper() == other.upper()
         # due to SingletonGroup
@@ -167,9 +169,8 @@ class Library(SingletonGroup):
     def __repr__(self):
         return f"Library('{self.library}')"
 
-    def __lt__(self, other):
-        if not isinstance(other, (str, type(self))):
-            raise TypeError(f"Can only compare Library instances.")
+    @args_checked
+    def __lt__(self, other: str | Library):
         if isinstance(other, str):
             other = Library(other)
         if self.suffix == other.suffix:
@@ -218,32 +219,19 @@ class Nucleus(SingletonGroup):
 
     __slots__ = "_element", "_A", "_meta_state"
 
+    @args_checked
     def __init__(
         self,
         element: Element,
-        A: int = 0,
-        meta_state: int = 0,
+        A: ty.NonNegativeInt = 0,
+        meta_state: MetaState = 0,
     ):
-        if not isinstance(element, Element):
-            raise TypeError(
-                f"Only type Element is allowed for element argument. {element} given."
-            )
         self._element = element
 
-        if not isinstance(A, Integral):
-            raise TypeError(f"A number must be an int. {A} given.")
-        if A < 0:
-            raise ValueError(f"A cannot be negative. {A} given.")
         self._A = A
-        if not isinstance(meta_state, (Integral, type(None))):
-            raise TypeError(f"Meta state must be an int. {meta_state} given.")
         if A == 0 and meta_state != 0:
             raise ValueError(
                 f"A metastable elemental state is Non-sensical. A: {A}, meta_state: {meta_state} given."
-            )
-        if meta_state not in range(0, 5):
-            raise ValueError(
-                f"Meta state can only be in the range: [0,4]. {meta_state} given."
             )
         self._meta_state = meta_state
 
@@ -327,11 +315,8 @@ class Nucleus(SingletonGroup):
     def __hash__(self):
         return hash((self.element, self.A, self.meta_state))
 
-    def __eq__(self, other):
-        if not isinstance(other, type(self)):
-            raise TypeError(
-                f"Nucleus can only be compared to a Nucleus. {other} of type {type(other)} given."
-            )
+    @args_checked
+    def __eq__(self, other: Nucleus):
         # due to SingletonGroup
         return (
             self.element == other.element
@@ -342,11 +327,8 @@ class Nucleus(SingletonGroup):
     def __reduce__(self):
         return (type(self), (self.element, self.A, self._meta_state))
 
-    def __lt__(self, other):
-        if not isinstance(other, type(self)):
-            raise TypeError(
-                f"Can't compare Nuclide to other values. {other} of type {type(other)}."
-            )
+    @args_checked
+    def __lt__(self, other: Nucleus):
         return (self.Z, self.A, self.meta_state) < (other.Z, other.A, other.meta_state)
 
     def __str__(self):
@@ -495,23 +477,20 @@ class Nuclide:
     }
     _STUPID_ZAID_SWAP = {95242: 95642, 95642: 95242}
 
+    @args_checked
     def __init__(
         self,
-        name: Union[str, int, Element, Nucleus] = "",
+        name: NuclideLike = "",
         element: Element = None,
-        Z: int = None,
-        A: int = 0,
-        meta_state: int = 0,
+        Z: ty.PositiveInt = None,
+        A: ty.NonNegativeInt = 0,
+        meta_state: MetaState = 0,
         library: str = "",
         node: ValueNode = None,
     ):
         self._library = Library("")
         ZAID = ""
 
-        if not isinstance(name, (str, Integral, Element, Nucleus, Nuclide, type(None))):
-            raise TypeError(
-                f"Name must be str, int, Element, or Nucleus. {name} of type {type(name)} given."
-            )
         if name:
             element, A, meta_state, new_library = self._parse_fancy_name(name)
             # give library precedence always
@@ -538,8 +517,6 @@ class Nuclide:
         self._nucleus = Nucleus(element, A, meta_state)
         if len(parts) > 1 and library == "":
             library = parts[1]
-        if not isinstance(library, str):
-            raise TypeError(f"Library can only be str. {library} given.")
         self._library = Library(library)
         if not node:
             padding_num = DEFAULT_NUCLIDE_WIDTH - len(self.mcnp_str())
@@ -567,7 +544,8 @@ class Nuclide:
         return ret
 
     @classmethod
-    def _parse_zaid(cls, ZAID) -> dict[str, object]:
+    @args_checked
+    def _parse_zaid(cls, ZAID: ty.PositiveInt) -> dict[str, object]:
         """Parses the ZAID fully including metastable isomers.
 
         See Table 3-32 of LA-UR-17-29881
@@ -755,13 +733,13 @@ class Nuclide:
         return self.Z * _ZAID_A_ADDER + self.A
 
     @classmethod
-    def _parse_fancy_name(cls, identifier):
+    @args_checked
+    def _parse_fancy_name(cls, identifier: NuclideLike):
         """Parses a fancy name that is a ZAID, a Symbol-A, or nucleus, nuclide, or element.
 
         Parameters
         ----------
-        identifier
-        idenitifer : Union[str, int, element, Nucleus, Nuclide]
+        identifier : str | int | element | Nucleus | Nuclide
 
         Returns
         -------
@@ -780,7 +758,7 @@ class Nuclide:
         A = 0
         isomer = 0
         library = ""
-        if isinstance(identifier, Real):
+        if isinstance(identifier, ty.Real):
             if identifier > _ZAID_A_ADDER:
                 parts = Nuclide._parse_zaid(int(identifier))
                 element, A, isomer = (
@@ -823,19 +801,17 @@ class Nuclide:
         suffix = f" ({self._library})" if str(self._library) else "()"
         return f"{self.element.symbol:>2}-{self.A:<3}{meta_suffix:<2}{suffix:>5}"
 
-    def __eq__(self, other):
-        if not isinstance(other, type(self)):
-            raise TypeError(
-                f"Cannot compare Nuclide to other values. {other} of type {type(other)}."
-            )
+    @args_checked
+    def __eq__(self, other: Nuclide):
         return self.nucleus == other.nucleus and self.library == other.library
 
-    def __lt__(self, other):
-        if not isinstance(other, type(self)):
-            raise TypeError(
-                f"Cannot compare Nuclide to other values. {other} of type {type(other)}."
-            )
+    @args_checked
+    def __lt__(self, other: Nuclide):
         return (self.nucleus, self.library) < (other.nucleus, other.library)
 
     def __format__(self, format_str):
         return str(self).__format__(format_str)
+
+
+NucleusLike = str | int | Element | Nucleus
+NuclideLike = NucleusLike | Nuclide

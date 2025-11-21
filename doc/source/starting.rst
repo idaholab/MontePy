@@ -1363,7 +1363,7 @@ You can also easy apply a transform to the filling universe with:
 
    import numpy as np
    transform = montepy.data_inputs.transform.Transform(number=5)
-   transform.displacement_vector = np.array([1, 2, 0])
+   transform.displacement_vector = np.array([1.0, 2.0, 0.0])
    cell.fill.transform = transform
 
 .. note::

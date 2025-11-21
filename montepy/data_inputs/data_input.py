@@ -2,8 +2,10 @@
 from __future__ import annotations
 from abc import abstractmethod
 import copy
+import re
 
 import montepy
+from montepy.utilities import *
 from montepy.exceptions import *
 from montepy.input_parser.data_parser import (
     ClassifierParser,
@@ -11,11 +13,10 @@ from montepy.input_parser.data_parser import (
     ParamOnlyDataParser,
 )
 from montepy.input_parser.mcnp_input import Input
+from montepy.input_parser import syntax_node
 from montepy.particle import Particle
 from montepy.mcnp_object import MCNP_Object, InitInput
-
-import re
-from typing import Union
+import montepy.types as ty
 
 
 class _ClassifierInput(Input):
@@ -41,7 +42,7 @@ class DataInputAbstract(MCNP_Object):
 
     Parameters
     ----------
-    input : Union[Input, str]
+    input : Input | str
         the Input object representing this data input
     fast_parse : bool
         Whether or not to only parse the first word for the type of
@@ -55,7 +56,7 @@ class DataInputAbstract(MCNP_Object):
     def __init__(
         self,
         input: InitInput = None,
-        fast_parse=False,
+        fast_parse: bool = False,
     ):
         self._particles = None
         if not fast_parse:
@@ -78,7 +79,7 @@ class DataInputAbstract(MCNP_Object):
 
     @staticmethod
     @abstractmethod
-    def _class_prefix():
+    def _class_prefix() -> str:
         """The text part of the input identifier.
 
         For example: for a material the prefix is ``m``
@@ -95,7 +96,7 @@ class DataInputAbstract(MCNP_Object):
 
     @staticmethod
     @abstractmethod
-    def _has_number():
+    def _has_number() -> bool:
         """Whether or not this class supports numbering.
 
         For example: ``kcode`` doesn't allow numbers but tallies do allow it e.g., ``f7``
@@ -109,7 +110,7 @@ class DataInputAbstract(MCNP_Object):
 
     @staticmethod
     @abstractmethod
-    def _has_classifier():
+    def _has_classifier() -> ty.PositiveInt:
         """Whether or not this class supports particle classifiers.
 
         For example: ``kcode`` doesn't allow particle types but tallies do allow it e.g., ``f7:n``
@@ -126,7 +127,7 @@ class DataInputAbstract(MCNP_Object):
         pass
 
     @property
-    def particle_classifiers(self):
+    def particle_classifiers(self) -> list[montepy.Particle]:
         """The particle class part of the input identifier as a parsed list.
 
         This is parsed from the input that was read.
@@ -136,7 +137,7 @@ class DataInputAbstract(MCNP_Object):
 
         Returns
         -------
-        list
+        list[montepy.Particle]
             the particles listed in the input if any. Otherwise None
         """
         if self._particles:
@@ -144,7 +145,7 @@ class DataInputAbstract(MCNP_Object):
         return None
 
     @property
-    def prefix(self):
+    def prefix(self) -> str:
         """The text part of the input identifier parsed from the input.
 
         For example: for a material like: ``m20`` the prefix is ``m``.
@@ -159,7 +160,7 @@ class DataInputAbstract(MCNP_Object):
         return self._prefix.lower()
 
     @property
-    def prefix_modifier(self):
+    def prefix_modifier(self) -> str:
         """The modifier to a name prefix that was parsed from the input.
 
         For example: for a transform: ``*tr5`` the modifier is ``*``
@@ -173,7 +174,7 @@ class DataInputAbstract(MCNP_Object):
         return self._modifier
 
     @property
-    def data(self):
+    def data(self) -> syntax_node.ListNode:
         """The syntax tree actually holding the data.
 
         Returns
@@ -310,7 +311,7 @@ class DataInput(DataInputAbstract):
 
     Parameters
     ----------
-    input : Union[Input, str]
+    input : Input | str
         the Input object representing this data input
     fast_parse : bool
         Whether or not to only parse the first word for the type of
@@ -319,6 +320,7 @@ class DataInput(DataInputAbstract):
         The input prefix found during parsing (internal use only)
     """
 
+    @args_checked
     def __init__(
         self, input: InitInput = None, fast_parse: bool = False, prefix: str = None
     ):
@@ -366,7 +368,7 @@ class ForbiddenDataInput(DataInputAbstract):
 
     Parameters
     ----------
-    input : Union[Input, str]
+    input : Input | str
         the Input object representing this data input
     fast_parse : bool
         Whether or not to only parse the first word for the type of
@@ -375,6 +377,7 @@ class ForbiddenDataInput(DataInputAbstract):
         The input prefix found during parsing (internal use only)
     """
 
+    @args_checked
     def __init__(
         self, input: InitInput = None, fast_parse: bool = False, prefix: str = None
     ):
@@ -424,7 +427,8 @@ class ForbiddenDataInput(DataInputAbstract):
         when called.
     """
 
-    def format_for_mcnp_input(self, mcnp_version: tuple[int]) -> list[str]:
+    @args_checked
+    def format_for_mcnp_input(self, mcnp_version: ty.VersionType) -> list[str]:
         """Creates a list of strings representing this MCNP_Object that can be
         written to file.
 

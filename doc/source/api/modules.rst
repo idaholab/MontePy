@@ -171,9 +171,11 @@ Universal Utilities and constants
 .. toctree::
    :maxdepth: 1
 
+   montepy._check_value
    montepy.constants
    montepy.exceptions
    montepy.utilities
+   montepy.types
 
    
 Object Builders

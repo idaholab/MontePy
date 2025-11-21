@@ -997,6 +997,9 @@ def test_universe_cells_claim(universe_problem):
     universe = problem.universes[1]
     universe.claim(problem.cells[2])
     assert problem.cells[2].universe == universe
+    universe.claim(list(problem.cells[1:5]))
+    for cell in problem.cells[1:5]:
+        assert cell.universe is universe
     universe = montepy.Universe(5)
     problem.universes.append(universe)
     universe.claim(problem.cells)
@@ -1214,3 +1217,13 @@ def test_arbitrary_parse(simple_problem):
         assert (transform in simple_problem.transforms) == append
         with pytest.raises(ParsingError):
             simple_problem.parse("123 hello this is invalid")
+
+
+def test_volume_setter(simple_problem):
+    cell = simple_problem.cells[1]
+    cell.volume = 10
+    assert cell.volume == pytest.approx(10.0)
+    with pytest.raises(TypeError):
+        cell.volume = "hi"
+    with pytest.raises(ValueError):
+        cell.volume = -1
