@@ -14,6 +14,11 @@ build:
       - git fetch --unshallow || true
       - git config remote.origin.fetch '+refs/heads/*:refs/remotes/origin/*' || true
       - git fetch --all --tags || true
+    pre_build:
+      # ensure that all builds have necessary jupyterlite files
+      - cd doc && make html
+      - mkdir -p $READTHEDOCS_OUTPUT/html 
+      - cp -r doc/build/html/* "$READTHEDOCS_OUTPUT/html" 
 
 # Build documentation in the "docs/" directory with Sphinx
 sphinx:
