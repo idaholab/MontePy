@@ -7,6 +7,7 @@
 Getting Started with MontePy
 ============================
 
+
 .. testsetup:: *
 
    import montepy
@@ -29,6 +30,21 @@ and will link the cell with its material object.
     MontePy will likely break.
 
     Due to the manuals for these earlier versions of MCNP being export controlled, these versions will likely never be fully supported.
+
+
+Run Interactively in your Browser
+---------------------------------
+
+You can run python and MontePy straight from your browser below:
+
+.. replite::  
+   :width: 100%
+   :height: 600px
+   :prompt: Try MontePy 
+
+   %pip install montepy
+   import montepy
+   problem = montepy.read_input("models/pin_cell.imcnp")
 
 Installing
 ----------
@@ -86,6 +102,16 @@ Tutorials and Demonstrations
 
 We have presented a workshop for using MontePy in the past. 
 The demonstration Jupyter notebooks are now available in our git repository. 
+
+These can be ran in your browser using `jupyter lite <https://jupyterlite.readthedocs.io/en/stable/index.html>`_. 
+
+These tutorial can be launched here:
+
+.. jupyterlite:: 
+   :new_tab: True
+   :new_tab_button_text: Launch jupyter in your browswer
+   
+
 To access these demonstrations you can run:
 
 .. code-block:: bash
@@ -609,10 +635,10 @@ For example:
 
     >>> for particle in sorted(problem.mode):
     ...     print(particle, cell.importance[particle])
-    neutron 0.0
-    photon 0.0
+    neutron 1.0
+    photon 1.0
     >>> print(cell.importance[montepy.Particle.NEUTRON])
-    0.0
+    1.0
 
 There's also a lot of convenient ways to do bulk modifications.
 There is the :func:`~montepy.data_inputs.importance.Importance.all` property that lets you set the importance for all particles in the problem at once.
@@ -629,7 +655,10 @@ For example:
     neutron 2.0
     photon 2.0
 
-This will set the importances for the neutron and photon. 
+This will set the importances for the neutron and photon.
+
+You can also delete an importance to reset it to the default value (1.0).
+For example: ``del cell.importance.neutron``.
 
 There is also the method: :func:`~montepy.cells.Cells.set_equal_importance`.
 This method sets all of the cells for all particles in the problem to the same importance.

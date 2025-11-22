@@ -61,6 +61,7 @@ class Importance(CellModifierInput):
                     raise ValueError(
                         f"Cell importance must be a number ≥ 0. {val.value} was given"
                     )
+                self._explicitly_set = True
                 self._part_combos.append(self.particle_classifiers)
                 for particle in self.particle_classifiers:
                     self._particle_importances[particle] = value
@@ -75,6 +76,7 @@ class Importance(CellModifierInput):
                     raise MalformedInputError(
                         input, f"Importances must be ≥ 0 value: {node} given"
                     )
+            self._explicitly_set = True
             self._part_combos.append(self.particle_classifiers)
             for particle in self.particle_classifiers:
                 self._particle_importances[particle] = copy.deepcopy(self._tree)
@@ -94,7 +96,7 @@ class Importance(CellModifierInput):
             particles.particles = self._problem.mode.particles
         classifier.particles = particles
         list_node = syntax_node.ListNode("imp data")
-        list_node.append(self._generate_default_node(float, 0.0))
+        list_node.append(self._generate_default_node(float, self._DEFAULT_IMP))
         tree = syntax_node.SyntaxNode(
             "Importance",
             {
@@ -124,8 +126,17 @@ class Importance(CellModifierInput):
 
     @property
     def has_information(self):
-        if self.in_cell_block:
+        has_info = []
+        for part in self:
+            has_info.append(
+                not math.isclose(
+                    self[part], self._DEFAULT_IMP, rel_tol=rel_tol, abs_tol=abs_tol
+                )
+            )
+        if any(has_info):
             return True
+        if self.in_cell_block:
+            return self.set_in_cell_block
 
     @args_checked
     def merge(self, other: Importance):
@@ -160,13 +171,14 @@ class Importance(CellModifierInput):
             val = self._particle_importances[particle]["data"][0]
             return val.value
         except KeyError:
-            return 0.0
+            return self._DEFAULT_IMP
 
     @args_checked
     def __setitem__(self, particle: Particle, value: ty.NonNegativeReal):
         self._check_particle_in_problem(particle)
         if particle not in self._particle_importances:
             self._generate_default_cell_tree(particle)
+        self._explicitly_set = True
         self._particle_importances[particle]["data"][0].value = value
 
     @args_checked
@@ -204,6 +216,7 @@ class Importance(CellModifierInput):
                     value = self._particle_importances[particle]["data"][i]
                     # force generating the default tree
                     cell.importance[particle] = value.value
+                    cell.importance._explicitly_set = True
                     # replace default ValueNode with actual valueNode
                     tree = cell.importance._particle_importances[particle]
                     tree.nodes["classifier"] = copy.deepcopy(
@@ -272,6 +285,7 @@ class Importance(CellModifierInput):
     def all(self, value: ty.NonNegativeReal):
         value = float(value)
         if self._problem:
+            self._explicitly_set = True
             for particle in self._problem.mode:
                 self._particle_importances[particle]["data"][0].value = value
 
@@ -494,7 +508,7 @@ importance: float
 Returns
 -------
 float
-    the importance for the particle type. If not set, defaults to 0.
+    the importance for the particle type. If not set, defaults to 1.0.
 """
 
 

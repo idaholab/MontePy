@@ -2,6 +2,9 @@ __pycache__/
 build/*
 doc/build
 doc/source/api/generated
+doc/source/.cache
+doc/source/_contents
+doc/_output
 dist/*
 *egg-info/*
 *.mcnp
@@ -12,6 +15,8 @@ htmlcov
 .idea/*
 *.*.sw*
 *.prof
+*.whl
+*.tar.gz
 doc/build/*
 .coverage
 .hypothesis/
@@ -20,6 +25,8 @@ doc/build/*
 .venv/
 .ipynb_checkpoints/
 montepy/_version.py
+.vscode/
+.jupyterlite.doit.db
 
 # various testing results
 htmlcov

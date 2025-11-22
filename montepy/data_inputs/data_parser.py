@@ -28,7 +28,7 @@ PREFIX_MATCHES = {
     universe_input.UniverseInput,
 }
 
-VERBOTEN = {"de", "sdef"}
+VERBOTEN = {"de", "sdef", "fmesh"}
 
 
 @args_checked

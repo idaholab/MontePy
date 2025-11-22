@@ -5,16 +5,21 @@ MontePy Changelog
 1.2 releases
 ============
 
-#Next Version#
+1.2.0
 --------------
 
+**Performance Improvement**
+
+* Optimized :math:`\mathcal{O}(N^2)` scaling in :func:`~montepy.numbered_object_collection.NumberedObjectCollection.request_number` by improving ``NumberedObjectCollection.check_number`` to :math:`\mathcal{O}(N)` (:issue:`786`). 
 
 **Features Added**
 
 * Added checking for additional input after the ``data`` block, and raising a warning if it exists (:issue:`525`).
 * Allow multiple universe fills to accept 2D MNCP lattices (:issue:`719`).
-* Make `LatticeType.RECTANGULAR` and `LatticeType.HEXAHEDRAL` synonymous (:issue:`808`).
+* Make ``LatticeType.RECTANGULAR`` and ``LatticeType.HEXAHEDRAL`` synonymous (:issue:`808`).
 * Allow setting ``cell.fill.universes`` with a numpy array of universe IDs (:issue:`736`).
+* Added Boundary condition type to the representation of a ``montepy.Surface`` (e.g., ``repr(surf)``)  (:issue:`682`).
+* Changed default importance value from 0.0 to 1.0 to match MCNP defaults. (:issue:`735`)
 
 **Performance Improvement**
 
@@ -25,10 +30,17 @@ MontePy Changelog
 * Fixed bug where lines that were the allowed length was raising a ``LineOverRunWarning`` when read by MontePy (:issue:`517`). 
 * Added descriptive TypeError messages (:issue:`801`)
 * Fixed a bug that caused to write an extra termination line between the data block and the cell data section in the MCNP input. (:pull:`819`) (:issue:`703`).
+* Avoided parsing ``FMESH`` inputs that have more complicated syntax to parse (:issue:`846`).
 
 **Documentation**
 
-* Improved documentation for NumberedObjectCollections on Slicing behavior. (:issue:`798`)
+* Added a web browser instance of ``jupyter`` to the website allowing testing out MontePy with no python installed locally (:issue:`796`).
+  
+  .. jupyterlite:: 
+      :new_tab: True
+      :new_tab_button_text: Launch jupyter in your browswer
+
+* Improved documentation for :class:`~montepy.numbered_object_collection.NumberedObjectCollection` on Slicing behavior. (:issue:`798`)
 * Reorganized Python API documentation. Some hyperlinks may be broken now (:pull:`828`).
 
 **Deprecations**
@@ -36,19 +48,16 @@ MontePy Changelog
 * Dropped support for python 3.9 through 3.11, and numpy 1.26 in order to comply with `SPEC 0 <https://scientific-python.org/specs/spec-0000/>`_ (:issue:`780`).
 
 
-
 1.1 releases
 ============
 
 1.1.3
 --------------
-**Features Added**
 
-* Added Boundary condition type to the representation of a ``montepy.Surface`` (e.g., ``repr(surf)``)  (:issue:`682`).
 
 **Documentation**
 
-* Improved documentation for NumberedObjectCollections on Slicing behavior. (:issue:`798`)
+* Improved documentation for :class:`~montepy.numbered_object_collection.NumberedObjectCollection` on Slicing behavior. (:issue:`798`)
 
 **Bugs Fixed**
 

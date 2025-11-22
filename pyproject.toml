@@ -14,7 +14,8 @@ authors = [
 	{name = "Brenna Carbno", email="brenna.carbno@inl.gov"},
 	{name = "Benjaminas Marcinkevicius", email="BenjaminasDev@outlook.com"},
 	{name = "Paul Ferney", email="Paul.Ferney@inl.gov"},
-	{name = "Digvijay Yeware", email="yewaredigvijay@gmail.com"}
+	{name = "Digvijay Yeware", email="yewaredigvijay@gmail.com"},
+	{name = "Harsh Dayal", email="harshdayal13@gmail.com"},
 ]
 keywords = ["MCNP", "neutronics", "imcnp", "input file", "monte carlo", "radiation transport"]
 license = "MIT"
@@ -60,11 +61,26 @@ doc = [
     "autodocsumm",
 ]
 format = ["black~=25.1"]
+
 build = [
     "build",
     "setuptools>=64.0.0",
     "setuptools-scm>=8",
 ]
+doc = [
+	"montepy[build]",
+	# This is needed for a sphinx bug. See #414.
+	"sphinx>=7.4.0", 
+	"sphinxcontrib-apidoc", 
+	"pydata_sphinx_theme",
+	"sphinx-favicon",
+	"sphinx-copybutton",
+  	"sphinx_autodoc_typehints",
+	"autodocsumm",
+	"jupyterlite-sphinx",
+	"jupyterlite-pyodide-kernel"
+]
+format = ["black~=25.1"]
 develop = [
     "montepy[test,doc,format]",
 ]
