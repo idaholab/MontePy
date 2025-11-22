@@ -46,41 +46,43 @@ class Importance(CellModifierInput):
         the value syntax tree from the key-value pair in a cell
     """
 
+    _DEFAULT_IMP = 1.0
+
     def _init_blank(self):
         self._particle_importances = {}
         self._real_tree = {}
         self._part_combos = []
 
-    def parse_tree(self):
-        if self.in_cell_block:
-            if self._in_key:
-                val = self._in_value["data"]
-                if isinstance(val, syntax_node.ListNode):
-                    val = value["data"][0]
-                if val.type != float or val.value < 0:
-                    raise ValueError(
-                        f"Cell importance must be a number ≥ 0. {val.value} was given"
-                    )
-                self._explicitly_set = True
-                self._part_combos.append(self.particle_classifiers)
-                for particle in self.particle_classifiers:
-                    self._particle_importances[particle] = value
-        else:
-            values = []
-            for node in self._tree["data"]:
-                try:
-                    value = node.value
-                    assert value >= 0
-                    values.append(node)
-                except (AttributeError, AssertionError) as e:
-                    raise MalformedInputError(
-                        input, f"Importances must be ≥ 0 value: {node} given"
-                    )
+    def _parse_cell_tree(self):
+        if self._in_key:
+            val = self._in_value["data"]
+            if isinstance(val, syntax_node.ListNode):
+                val = value["data"][0]
+            if val.type != float or val.value < 0:
+                raise ValueError(
+                    f"Cell importance must be a number ≥ 0. {val.value} was given"
+                )
             self._explicitly_set = True
             self._part_combos.append(self.particle_classifiers)
             for particle in self.particle_classifiers:
-                self._particle_importances[particle] = copy.deepcopy(self._tree)
-                self._real_tree[particle] = copy.deepcopy(self._tree)
+                self._particle_importances[particle] = value
+    
+    def _parse_data_tree(self):
+        values = []
+        for node in self._tree["data"]:
+            try:
+                value = node.value
+                assert value >= 0
+                values.append(node)
+            except (AttributeError, AssertionError) as e:
+                raise MalformedInputError(
+                    input, f"Importances must be ≥ 0 value: {node} given"
+                )
+        self._explicitly_set = True
+        self._part_combos.append(self.particle_classifiers)
+        for particle in self.particle_classifiers:
+            self._particle_importances[particle] = copy.deepcopy(self._tree)
+            self._real_tree[particle] = copy.deepcopy(self._tree)
 
     def _generate_default_cell_tree(self, particle=None):
         classifier = syntax_node.ClassifierNode()

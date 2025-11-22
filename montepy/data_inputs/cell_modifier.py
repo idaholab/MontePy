@@ -36,7 +36,7 @@ class CellModifierInput(DataInputAbstract):
         key: str = None,
         value: syntax_node.SyntaxNode = None,
         *,
-        jit_parse: bool = False,
+        jit_parse: bool = True,
     ):
         fast_parse = False
         if key and value:
@@ -54,6 +54,17 @@ class CellModifierInput(DataInputAbstract):
         super().__init__(input, fast_parse, jit_parse=jit_parse)
 
     def _parse_tree(self):
+        if self.in_cell_block:
+            self._parse_cell_tree()
+        else:
+            self._parse_data_tree()
+
+    @abstractmethod
+    def _parse_cell_tree(self):
+        pass
+
+    @abstractmethod
+    def _parse_data_tree(self):
         pass
 
     def _generate_default_tree(self):
