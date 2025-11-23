@@ -31,6 +31,13 @@ ATOM_MASS_DENSITY = lambda: np.random.binomial(1, 0.98586)
 
 IS_VOID = lambda: np.random.binomial(1, 0.27046)
 
+HAS_TALLIES = lambda: np.random.binomial(1, 0.0227)
+
+
+def NUM_TALLIES():
+    sample = int(np.random(2.105, 1.0))
+    return sample if sample >= 1 else 1
+
 
 def MASS_DENSITY():
     sample = np.random.normal(11.165, 8.54)
@@ -820,4 +827,8 @@ LIBRARIES = lambda: np.random.choice(
         6.0845956305911674e-05,
         3.068111251304152e-05,
     ],
+)
+
+TALLY_TYPE = lambda: np.random.choice(
+    [4, 2, 1, 6, 5, 7], p=[0.4625, 0.2750, 0.0750, 0.0750, 0.1000, 0.0125]
 )
