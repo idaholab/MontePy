@@ -5,6 +5,7 @@ import cProfile
 import pstats
 from pstats import SortKey
 
+
 def dump_stats(n_cells):
     pr = cProfile.Profile()
     pr.enable()
@@ -21,5 +22,6 @@ def collect_samples():
         n_cells = int(n_cells)
         print(f"****************** {n_cells} ***************")
         dump_stats(n_cells)
+
 
 collect_samples()
