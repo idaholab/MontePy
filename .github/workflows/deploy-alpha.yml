@@ -9,7 +9,7 @@ jobs:
   last-minute-test:
     runs-on: ubuntu-latest    
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
       - name: set up python  3.14
         uses: actions/setup-python@v6
         with: 
@@ -27,7 +27,7 @@ jobs:
     env:
       GH_TOKEN: ${{ github.token }}
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
         with:
           fetch-depth: 0
           fetch-tags: true
