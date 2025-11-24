@@ -96,7 +96,7 @@ jobs:
           path: coverage.xml
       - name: Coveralls GitHub Action
         if: ${{ matrix.python-version == '3.14' && matrix.numpy-version == '2.3' && (success() || failure() )}}
-        uses: coverallsapp/github-action@648a8eb78e6d50909eff900e4ec85cab4524a45b
+        uses: coverallsapp/github-action@5cbfd81b66ca5d10c19b062c04de0199c215fb6e
         with:
           file: coverage.xml
           fail-on-error: false
