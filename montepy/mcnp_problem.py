@@ -9,7 +9,7 @@ from montepy.data_inputs import mode, transform
 from montepy._cell_data_control import CellDataPrintController
 from montepy.cell import Cell
 from montepy.cells import Cells
-from montepy.errors import *
+from montepy.exceptions import *
 from montepy.constants import DEFAULT_VERSION
 from montepy.materials import Material, Materials
 from montepy.surfaces import surface, surface_builder
@@ -612,14 +612,16 @@ class MCNP_Problem:
                             warning.handled = True
                     for line in lines:
                         inp.write(line + "\n")
-                if terminate:
-                    inp.write("\n")
-            for line in self.cells._run_children_format_for_mcnp(
-                self.data_inputs, self.mcnp_version
-            ):
-                inp.write(line + "\n")
 
-            inp.write("\n")
+                # writing cell data in DATA BLOCK if the last written object inherits DataInputAbstract and there is cell data to write
+                if objects is self.data_inputs:
+                    for line in self.cells._run_children_format_for_mcnp(
+                        self.data_inputs, self.mcnp_version
+                    ):
+                        inp.write(line + "\n")
+                elif terminate:
+                    inp.write("\n")
+
         self._handle_warnings(warning_catch)
 
     def _handle_warnings(self, warning_queue):

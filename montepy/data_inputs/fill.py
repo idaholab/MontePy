@@ -5,7 +5,7 @@ import numpy as np
 
 from montepy.data_inputs.cell_modifier import CellModifierInput, InitInput
 from montepy.data_inputs.transform import Transform
-from montepy.errors import *
+from montepy.exceptions import *
 from montepy.input_parser.block_type import BlockType
 from montepy.input_parser.mcnp_input import Input, Jump
 from montepy.input_parser import syntax_node
@@ -66,7 +66,7 @@ class Fill(CellModifierInput):
             values = self.data
             for value in values:
                 try:
-                    value._convert_to_int()
+                    value.convert_to_int()
                     if value.value is not None:
                         assert value.value >= 0
                         self._old_numbers.append(value)
@@ -79,8 +79,6 @@ class Fill(CellModifierInput):
                     )
 
     def _generate_default_cell_tree(self):
-        list_node = syntax_node.ListNode("number sequence")
-        list_node.append(self._generate_default_node(float, None))
         classifier = syntax_node.ClassifierNode()
         classifier.prefix = self._generate_default_node(
             str, self._class_prefix().upper(), None, never_pad=True
@@ -90,9 +88,32 @@ class Fill(CellModifierInput):
             {
                 "classifier": classifier,
                 "param_seperator": self._generate_default_node(str, "=", None),
-                "data": list_node,
+                "data": self._generate_cell_data_tree(),
             },
         )
+
+    @staticmethod
+    def _generate_cell_data_tree():
+        """
+        Generates a default syntax tree for the data of a cell fill (indices, universes, transform).
+        """
+        return syntax_node.SyntaxNode(
+            "cell fill",
+            {
+                "indices": syntax_node.ListNode("fill indices"),
+                "universes": syntax_node.ListNode("fill universes"),
+                "transform": syntax_node.ListNode("fill transform"),
+            },
+        )
+
+    def _precondition_tree(self, data):
+        """
+        Converts a listNode payload (if only one universe is given) to the proper syntax tree.
+        """
+        new_data = self._generate_cell_data_tree()
+        new_data.nodes["universes"] = data
+        self._tree.nodes["data"] = new_data
+        return new_data
 
     def _parse_cell_input(self, key, value):
         """Parses the information provided in the cell input.
@@ -104,43 +125,33 @@ class Fill(CellModifierInput):
         value : str
             the value given in the cell
         """
-
-        def get_universe(value):
-            if ":" in value["data"].nodes:
-                self._parse_matrix(value)
-            else:
-                data = value["data"]
-                try:
-                    val = data[0]
-                    val._convert_to_int()
-                    assert val.value >= 0
-                    self._old_number = val
-                except (TypeError, AssertionError) as e:
-                    raise ValueError(
-                        f"The fill universe must be a valid integer ≥ 0, {data} was given"
-                    )
-                # ensure only one universe is given
-                if (
-                    len(data) >= 2
-                    and isinstance(data[1], syntax_node.ValueNode)
-                    and "(" != data[1].value
-                ):
-                    raise ValueError(
-                        f"Fill cannot have two universes in this format. {data.format()} given"
-                    )
-
         data = value["data"]
-        if not isinstance(data, syntax_node.ListNode):
-            data = data.nodes
-        if "(" in data:
-            get_universe(value)
-            trans_data = value["data"][
-                list(value["data"]).index("(") + 1 : list(value["data"]).index(")") - 1
-            ]
+        if not isinstance(data, syntax_node.SyntaxNode):
+            data = self._precondition_tree(data)
+        if len(data["indices"]) > 0:
+            self._parse_matrix(value)
+        else:
+            uni_data = data["universes"]
+            try:
+                val = uni_data[0]
+                val.convert_to_int()
+                assert val.value >= 0
+                self._old_number = val
+            except (TypeError, AssertionError) as e:
+                raise ValueError(
+                    f"The fill universe must be a valid integer ≥ 0, {data} was given"
+                )
+            # ensure only one universe is given
+            if len(uni_data) >= 2:
+                raise ValueError(
+                    f"Fill cannot have two universes in this format. {data.format()} given"
+                )
+        if len(data["transform"]) > 0:
+            trans_data = data["transform"][1:-1]
             if len(trans_data) == 1:
                 try:
                     transform = trans_data[0]
-                    transform._convert_to_int()
+                    transform.convert_to_int()
                     assert transform.value > 0
                     self._hidden_transform = False
                     self._old_transform_number = transform
@@ -154,23 +165,20 @@ class Fill(CellModifierInput):
                     in_key = "*TR1"
                 else:
                     in_key = "TR1"
-                input_card = Input([in_key + " " + trans_data.format()], BlockType.DATA)
-                self._transform = Transform(input_card, pass_through=True)
+                input = Input([in_key + " " + trans_data.format()], BlockType.DATA)
+                self._transform = Transform(input, pass_through=True)
                 self._hidden_transform = True
-
-        else:
-            get_universe(value)
 
     def _parse_matrix(self, value):
         """Parses a matrix fill of universes.
 
         Parameters
         ----------
-        value : str
+        value : SyntaxNode
             the value in the cell
         """
         self._multi_universe = True
-        words = value["data"]
+        words = value["data"]["indices"]
         self._min_index = np.zeros((3,), dtype=np.dtype(int))
         self._max_index = np.zeros((3,), dtype=np.dtype(int))
         limits_iter = (
@@ -185,7 +193,7 @@ class Fill(CellModifierInput):
                 (min_val, max_val), (self._min_index, self._max_index)
             ):
                 try:
-                    val._convert_to_int()
+                    val.convert_to_int()
                     limit_holder[axis] = val.value
                 except ValueError as e:
                     raise ValueError(
@@ -198,19 +206,33 @@ class Fill(CellModifierInput):
                     f"Min: {min_val}, Max: {max_val}, Input: {value.format()}"
                 )
         self._old_numbers = np.zeros(self._sizes, dtype=np.dtype(int))
-        words = iter(words[9:])
+        words = iter(value["data"]["universes"])
+        new_nodes = []
         for k in self._axis_range(2):
             for j in self._axis_range(1):
                 for i in self._axis_range(0):
-                    val = next(words)
                     try:
-                        val._convert_to_int()
-                        assert val.value >= 0
-                        self._old_numbers[i][j][k] = val.value
+                        try:
+                            val = next(words)
+                        # if ended early
+                        except StopIteration:
+                            words = it.cycle([None])
+                            val = None
+                        if val is None:
+                            val = self._generate_default_node(int, None)
+                            new_nodes.append(val)
+                        else:
+                            val.convert_to_int()
+                            assert val.value >= 0
+                        self._old_numbers[i][j][k] = val.value if val.value else 0
                     except (ValueError, AssertionError) as e:
                         raise ValueError(
                             f"Values provided must be valid universes. {val.value} given."
                         )
+
+        # inset new nodes
+        for new_node in new_nodes:
+            value["data"]["universes"].append(new_node)
 
     @staticmethod
     def _class_prefix():
@@ -247,6 +269,9 @@ class Fill(CellModifierInput):
                 "A single universe can only be set when multiple_universes is False."
             )
         self._universe = value
+        if value is not None:
+            self._universes = None
+            self.multiple_universes = False
 
     @universe.deleter
     def universe(self):
@@ -258,23 +283,119 @@ class Fill(CellModifierInput):
 
         Only returns a value when :func:`multiple_universes` is true, otherwise none.
 
+        Arrays with fewer than 3 dimensions are automatically expanded to 3D by adding dimensions at the end (e.g., a 1D array of shape (N,) becomes (N, 1, 1) and a 0D array becomes (1, 1, 1)).
+
+
         Returns
         -------
         np.ndarray
             the universes that the cell will be filled with as a 3-D
             array.
+
+
+        See Also
+        --------
+
+        * :manual631sub:`5.5.5.3`
+        * :manual63sub:`5.5.5.3`
+        * :manual62:`87`
+
+
+        .. versionchanged:: 1.2.0
+
+            * Now supports setting the universes with a numpy array of up to 3-dimensional universe IDs.
+            * Automatic expansion of lower-dimensional arrays to 3D
+
+
+
+        Examples
+        --------
+        Setting the universes with a numpy array of universe IDs:
+
+        >>> import montepy
+        >>> import numpy as np
+        >>> problem = montepy.MCNP_Problem("")
+        >>> cell = montepy.Cell()
+        >>> cell.number = 1
+        >>> problem.cells.append(cell)
+        >>> u1 = montepy.Universe(number=1)
+        >>> u2 = montepy.Universe(number=2)
+        >>> problem.universes.append(u1)
+        >>> problem.universes.append(u2)
+        >>> cell.fill.universes = np.array([[[1, 2, 0]]])
+        >>> cell.fill.universes[0, 0, 0]
+        Universe: Number: 1 Problem: set, Cells: []
+        >>> cell.fill.universes[0, 0, 1]
+        Universe: Number: 2 Problem: set, Cells: []
+        >>> print(cell.fill.universes[0, 0, 2])
+        None
+
+        Arrays with fewer than 3 dimensions are expanded to 3D:
+
+        >>> cell.fill.universes = np.array([1, 2])  # 1D array
+        >>> cell.fill.universes.shape
+        (2, 1, 1)
+        >>> cell.fill.universes = np.array([[1, 2]])  # 2D array
+        >>> cell.fill.universes.shape
+        (1, 2, 1)
+        >>> cell.fill.universes = np.array(1)  # 0D array
+        >>> cell.fill.universes.shape
+        (1, 1, 1)
+
+
+
+
+        Parameters
+        ----------
+        value : np.ndarray or None
+            A 3D numpy array of :class:`~montepy.universe.Universe` objects,
+            a 3D numpy array of integer universe IDs, or None to clear the
+            universes. Arrays with 0, 1, or 2 dimensions are automatically
+            expanded to 3D by adding dimensions at the end.
         """
         if self.multiple_universes:
             return self._universes
+        return None
 
     @universes.setter
     def universes(self, value):
         if not isinstance(value, (np.ndarray, type(None))):
             raise TypeError(f"Universes must be set to an array. {value} given.")
-        if value.ndim != 3:
+
+        if value is None:
+            self.multiple_universes = False
+            self.universe = None
+            self._universes = None
+            return
+
+        if value.ndim <= 2:
+            for _ in range(3 - value.ndim):
+                value = np.expand_dims(value, axis=value.ndim)
+
+        elif value.ndim > 3:
             raise ValueError(
                 f"3D array must be given for fill.universes. Array of shape: {value.shape} given."
             )
+
+        # Setting by universe IDs
+        if np.issubdtype(value.dtype, np.integer):
+            if self._problem is None:
+                raise IllegalState(
+                    "Universe IDs can only be set if the Fill is part of a Problem."
+                )
+
+            universes_array = np.empty(value.shape, dtype=object)
+            for idx_tuple, uid in np.ndenumerate(value):
+                if uid == 0:
+                    universes_array[idx_tuple] = None
+                else:
+                    try:
+                        universes_array[idx_tuple] = self._problem.universes[uid]
+                    except KeyError as e:
+                        raise KeyError(
+                            f"Universe ID {uid} at index {idx_tuple} is not defined in the problem."
+                        ) from e
+            value = universes_array
 
         def is_universes(array):
             type_checker = lambda x: isinstance(x, (Universe, type(None)))
@@ -285,6 +406,7 @@ class Fill(CellModifierInput):
                 f"All values in array must be a Universe (or None). {value} given."
             )
         self.multiple_universes = True
+        self._universe = None
         if self.min_index is None:
             self.min_index = np.array([0] * 3)
         self.max_index = self.min_index + np.array(value.shape) - 1
@@ -293,6 +415,7 @@ class Fill(CellModifierInput):
     @universes.deleter
     def universes(self):
         self._universes = None
+        self.multiple_universes = False
 
     @make_prop_pointer(
         "_min_index",
@@ -346,6 +469,8 @@ class Fill(CellModifierInput):
         if not isinstance(value, bool):
             raise TypeError("Multiple_univeses must be set to a bool")
         self._multi_universe = value
+        if not value:
+            self._universes = None
 
     @make_prop_val_node("_old_number")
     def old_universe_number(self):
@@ -535,57 +660,48 @@ class Fill(CellModifierInput):
         )
 
     def _update_cell_values(self):
-        new_vals = list(self._tree["data"])
         if self.transform and self.transform.is_in_degrees:
             self._tree["classifier"].modifier = "*"
         else:
             self._tree["classifier"].modifier = None
-        new_vals = self._update_cell_universes(new_vals)
-        self._update_cell_transform_values(new_vals)
+        self._update_cell_transform_values()
+        self._update_cell_universes()
+        self._update_multi_index_limits()
 
-    def _update_cell_transform_values(self, new_vals):
+    def _update_cell_transform_values(self):
+        """
+        Updates cell fill tree with the new transform data.
+        """
+        old_vals = self._tree["data"]["transform"]
         if self.transform is None:
-            try:
-                values = [val.value for val in self._tree["data"]]
-                start = values.index("(")
-                end = values.index(")")
-                del new_vals[start : end + 1]
-            except ValueError:
-                pass
+            old_vals.nodes.clear()
+            new_vals = []
         # Update transforms
         else:
-            start = -1
-            end = -1
-            try:
-                values = [val.value for val in self._tree["data"]]
-                start = values.index("(")
-                end = values.index(")")
-            except ValueError:
-                pass
             if self.transform.hidden_transform:
                 self.transform._update_values()
                 payload = list(self.transform._tree["data"])
             else:
                 # if started with named transform
-                if start > 0 and end > 0 and ((end - start) - 1 == 1):
-                    payload = [self._tree["data"][start + 1]]
-                else:
-                    payload = [syntax_node.ValueNode("1", int)]
+                payload = [self._tree["data"]["transform"][1]]
                 payload[0].value = self.transform.number
-            if start > 0 and end > 0:
-                new_vals = new_vals[: start + 1] + payload + new_vals[end:]
-        self._tree["data"].update_with_new_values(new_vals)
+            new_vals = [old_vals[0]] + payload + [old_vals[-1]]
+        self._tree["data"]["transform"].update_with_new_values(new_vals)
 
-    def _update_cell_universes(self, new_vals):
+    def _update_cell_universes(self):
+        """
+        Updates cell fill tree with the universe(s) data.
+        """
+        tree = self._tree["data"]["universes"]
+
         def _value_node_generator():
             while True:
-                value = syntax_node.ValueNode("1", int)
+                value = syntax_node.ValueNode(None, int)
                 padding = syntax_node.PaddingNode(" ")
                 value.padding = padding
                 yield value
 
         if self.multiple_universes:
-            payload = []
             get_number = np.vectorize(lambda u: u.number)
             payload = get_number(self.universes).T.ravel()
         else:
@@ -596,47 +712,37 @@ class Fill(CellModifierInput):
                     else self.old_universe_number
                 )
             ]
-        try:
-            start_transform = new_vals.index("(")
-        except ValueError:
-            start_transform = None
-
-        reverse_list = new_vals.copy()
-        reverse_list.reverse()
-        try:
-            start_matrix = len(new_vals) - reverse_list.index(":") + 1
-        except ValueError:
-            start_matrix = 0
-        value_nodes = it.chain(
-            new_vals[start_matrix:start_transform], _value_node_generator()
-        )
+        value_nodes = it.chain(tree, _value_node_generator())
         buffer = []
         for universe, value in zip(payload, value_nodes):
             value.value = universe
             buffer.append(value)
-        buffer = self._update_multi_index_limits(new_vals[:start_matrix]) + buffer
-        if start_transform:
-            buffer += new_vals[start_transform:]
-        return buffer
+        # drop blank values from original
+        for back_idx, node in enumerate(reversed(list(buffer))):
+            # if we should keep something on the right side
+            if node.value or node.token is not None:
+                break
+        buffer = buffer[: len(buffer) - back_idx]
+        tree.update_with_new_values(buffer)
 
-    def _update_multi_index_limits(self, new_vals):
-        if not self.multiple_universes and ":" not in new_vals:
-            return new_vals
-        if ":" not in new_vals:
-            for min_idx, max_idx in zip(self.min_index, self.max_index):
-                new_vals.extend(
-                    [
-                        self._generate_default_node(int, str(min_idx), padding=None),
-                        syntax_node.PaddingNode(":"),
-                        self._generate_default_node(int, str(max_idx), padding=" "),
-                    ]
-                )
-            return new_vals
-        vals_iter = iter(new_vals)
-        for min_idx, max_idx in zip(self.min_index, self.max_index):
-            min_val = next(vals_iter)
-            min_val.value = min_idx
-            next(vals_iter)
-            max_val = next(vals_iter)
-            max_val.value = max_idx
-        return new_vals
+    def _update_multi_index_limits(self):
+        """
+        Updates cell fill tree with the indices limit for a multi-universe fill.
+        """
+        base_tree = self._tree["data"]["indices"]
+        # clear out old indices if not being used
+        if not self.multiple_universes:
+            base_tree.nodes.clear()
+            return
+        # Need (3 dimensions) x (3 nodes [#, :, #]) for all indices
+        if len(base_tree) != 9:
+            base_tree.nodes.clear()
+            # create blank tree
+            for _ in range(3):
+                base_tree.append(syntax_node.ValueNode(None, int, never_pad=True))
+                base_tree.append(syntax_node.PaddingNode(":"))
+                base_tree.append(syntax_node.ValueNode(None, int))
+        # iterate through starting index of each dimension (3 nodes per dimension)
+        for dimension, base_idx in enumerate(range(0, 8, 3)):
+            base_tree[base_idx].value = self.min_index[dimension]
+            base_tree[base_idx + 2].value = self.max_index[dimension]

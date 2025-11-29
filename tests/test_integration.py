@@ -14,7 +14,7 @@ from montepy.input_parser.mcnp_input import (
     Message,
     Title,
 )
-from montepy.errors import *
+from montepy.exceptions import *
 from montepy.particle import Particle
 import numpy as np
 
@@ -97,7 +97,7 @@ def test_surface_parsing(simple_problem):
 def test_data_card_parsing(simple_problem):
     M = material.Material
     V = volume.Volume
-    cards = [
+    inputs = [
         M,
         M,
         M,
@@ -116,13 +116,13 @@ def test_data_card_parsing(simple_problem):
         "MODE",
         V,
     ]
-    for i, card in enumerate(simple_problem.data_inputs):
-        if isinstance(cards[i], str):
-            assert card.classifier.format().upper().rstrip() == cards[i]
+    for i, data_input in enumerate(simple_problem.data_inputs):
+        if isinstance(inputs[i], str):
+            assert data_input.classifier.format().upper().rstrip() == inputs[i]
         else:
-            assert isinstance(card, cards[i])
+            assert isinstance(data_input, inputs[i])
         if i == 2:
-            assert card.thermal_scattering is not None
+            assert data_input.thermal_scattering is not None
 
 
 def test_cells_parsing_linking(simple_problem):
@@ -256,14 +256,11 @@ def test_problem_children_adder(simple_problem):
     problem = copy.deepcopy(simple_problem)
     BT = montepy.input_parser.block_type.BlockType
     in_str = "5 SO 5.0"
-    card = montepy.input_parser.mcnp_input.Input([in_str], BT.SURFACE)
-    surf = montepy.surfaces.surface_builder.surface_builder(card)
+    surf = montepy.surfaces.surface_builder.surface_builder(in_str)
     in_str = "M5 6000.70c 1.0"
-    card = montepy.input_parser.mcnp_input.Input([in_str], BT.SURFACE)
-    mat = montepy.data_inputs.material.Material(card)
+    mat = montepy.data_inputs.material.Material(in_str)
     in_str = "TR1 0 0 1"
-    input = montepy.input_parser.mcnp_input.Input([in_str], BT.DATA)
-    transform = montepy.data_inputs.transform.Transform(input)
+    transform = montepy.data_inputs.transform.Transform(in_str)
     surf.transform = transform
     cell_num = 1000
     cell = montepy.Cell()
@@ -292,19 +289,13 @@ def test_problem_children_adder(simple_problem):
 def test_children_adder_hidden_tr(simple_problem):
     problem = copy.deepcopy(simple_problem)
     in_str = "260 0 -1000 fill = 350 (1 0 0)"
-    input = montepy.input_parser.mcnp_input.Input(
-        [in_str], montepy.input_parser.block_type.BlockType.CELL
-    )
-    cell = montepy.Cell(input)
+    cell = montepy.Cell(in_str)
     cell.update_pointers(problem.cells, problem.materials, problem.surfaces)
     problem.cells.add(cell)
     assert cell.fill.transform not in problem.transforms
     # test blank _fill_transform
     in_str = "261 0 -1000 fill = 350"
-    input = montepy.input_parser.mcnp_input.Input(
-        [in_str], montepy.input_parser.block_type.BlockType.CELL
-    )
-    cell = montepy.Cell(input)
+    cell = montepy.Cell(in_str)
     cell.update_pointers(problem.cells, problem.materials, problem.surfaces)
     problem.cells.add(cell)
 
@@ -408,24 +399,24 @@ def test_surface_card_pass_through():
 
 
 def test_surface_broken_link():
-    with pytest.raises(montepy.errors.MalformedInputError):
+    with pytest.raises(montepy.exceptions.MalformedInputError):
         montepy.read_input("tests/inputs/test_broken_surf_link.imcnp")
-    with pytest.raises(montepy.errors.MalformedInputError):
+    with pytest.raises(MalformedInputError):
         montepy.read_input("tests/inputs/test_broken_transform_link.imcnp")
 
 
 def test_material_broken_link():
-    with pytest.raises(montepy.errors.BrokenObjectLinkError):
+    with pytest.raises(montepy.exceptions.BrokenObjectLinkError):
         problem = montepy.read_input("tests/inputs/test_broken_mat_link.imcnp")
 
 
 def test_cell_surf_broken_link():
-    with pytest.raises(montepy.errors.BrokenObjectLinkError):
+    with pytest.raises(montepy.exceptions.BrokenObjectLinkError):
         problem = montepy.read_input("tests/inputs/test_broken_cell_surf_link.imcnp")
 
 
 def test_cell_complement_broken_link():
-    with pytest.raises(montepy.errors.BrokenObjectLinkError):
+    with pytest.raises(montepy.exceptions.BrokenObjectLinkError):
         problem = montepy.read_input("tests/inputs/test_broken_complement.imcnp")
 
 
@@ -725,7 +716,7 @@ def test_check_volume_calculated(simple_problem):
 
 
 def test_redundant_volume():
-    with pytest.raises(montepy.errors.MalformedInputError):
+    with pytest.raises(montepy.exceptions.MalformedInputError):
         montepy.read_input(os.path.join("tests", "inputs", "test_vol_redundant.imcnp"))
 
 
@@ -856,8 +847,6 @@ def test_universe_data_formatter(data_universe_problem):
     new_cell.universe = universe
     new_cell.not_truncated = False
     # lazily implement pulling cell in from other model
-    new_cell._mutated = False
-    new_cell._universe._mutated = False
     problem.cells.append(new_cell)
     with pytest.warns(LineExpansionWarning):
         output = problem.cells._universe.format_for_mcnp_input((6, 2, 0))
@@ -869,10 +858,10 @@ def test_universe_number_collision():
     problem = montepy.read_input(
         os.path.join("tests", "inputs", "test_universe_data.imcnp")
     )
-    with pytest.raises(montepy.errors.NumberConflictError):
+    with pytest.raises(montepy.exceptions.NumberConflictError):
         problem.universes[0].number = 350
 
-    with pytest.raises(montepy.errors.NumberConflictError):
+    with pytest.raises(montepy.exceptions.NumberConflictError):
         problem.universes[350].number = 0
 
 
@@ -898,11 +887,8 @@ def test_lattice_format_data(simple_problem):
 def test_lattice_push_to_cells(simple_problem):
     problem = copy.deepcopy(simple_problem)
     lattices = [1, 2, Jump(), Jump()]
-    card = Input(
-        ["Lat " + " ".join(list(map(str, lattices)))],
-        montepy.input_parser.block_type.BlockType.DATA,
-    )
-    lattice = montepy.data_inputs.lattice_input.LatticeInput(card)
+    lattice_str = "Lat " + " ".join(list(map(str, lattices)))
+    lattice = montepy.data_inputs.lattice_input.LatticeInput(lattice_str)
     lattice.link_to_problem(problem)
     lattice.push_to_cells()
     for cell, answer in zip(problem.cells, lattices):
@@ -935,7 +921,7 @@ def test_importance_end_repeat(universe_problem):
 
 
 def test_fill_parsing(universe_problem):
-    answers = [None, np.array([[[1], [0]], [[0], [1]]]), None, 1, 1]
+    answers = [None, np.array([[[1], [0]], [[1], [0]]]), None, 1, 1]
     for cell, answer in zip(universe_problem.cells, answers):
         if answer is None:
             assert cell.fill.universe is None
@@ -993,7 +979,7 @@ def test_fill_cell_format(simple_problem, universe_problem):
     # test with complex universe lattice fill
     fill = problem.cells[2].fill
     output = fill.format_for_mcnp_input((6, 2, 0))
-    answers = ["fill= 0:1 0:1 0:0 1 0 R 1 (5)"]
+    answers = ["fill= 0:1 0:1 0:0 1 0 1 (5)"]
     assert output == answers
     problem.print_in_data_block["FILL"] = True
     # test that complex fill is not printed in data block
@@ -1041,16 +1027,16 @@ def test_cell_validator(simple_problem):
     problem = copy.deepcopy(simple_problem)
     cell = problem.cells[1]
     del cell.mass_density
-    with pytest.raises(montepy.errors.IllegalState):
+    with pytest.raises(IllegalState):
         cell.validate()
     cell = montepy.Cell()
     # test no geometry at all
-    with pytest.raises(montepy.errors.IllegalState):
+    with pytest.raises(montepy.exceptions.IllegalState):
         cell.validate()
     surf = problem.surfaces[1000]
     cell.surfaces.append(surf)
     # test surface added but geomtry not defined
-    with pytest.raises(montepy.errors.IllegalState):
+    with pytest.raises(IllegalState):
         cell.validate()
 
 
@@ -1088,7 +1074,7 @@ def test_importance_rewrite(simple_problem):
 
 def test_parsing_error():
     in_file = os.path.join("tests", "inputs", "test_bad_syntax.imcnp")
-    with pytest.raises(montepy.errors.ParsingError):
+    with pytest.raises(montepy.exceptions.ParsingError):
         problem = montepy.read_input(in_file)
 
 
@@ -1105,7 +1091,7 @@ def test_leading_comments(simple_problem):
 
 def test_wrap_warning(simple_problem):
     cell = copy.deepcopy(simple_problem.cells[1])
-    with pytest.warns(montepy.errors.LineExpansionWarning):
+    with pytest.warns(LineExpansionWarning):
         output = cell.wrap_string_for_mcnp("h" * 130, (6, 2, 0), True)
         assert len(output) == 2
     output = cell.wrap_string_for_mcnp("h" * 127, (6, 2, 0), True)
@@ -1120,7 +1106,7 @@ def test_expansion_warning_crash(simple_problem):
     problem.materials[1].number = 987654321
     problem.surfaces[1010].number = 123456789
     with io.StringIO() as fh:
-        with pytest.warns(montepy.errors.LineExpansionWarning):
+        with pytest.warns(montepy.exceptions.LineExpansionWarning):
             problem.write_problem(fh)
 
 
@@ -1134,9 +1120,15 @@ def test_alternate_encoding():
     )
 
 
+"""
+file_path: {line_number (0-indexed): flag}
+
+Flags: 
+    0: skip line in both files
+    1: skip line in output file
+    2+: skip line in gold file
+"""
 _SKIP_LINES = {
-    # skip lines of added implied importances
-    "tests/inputs/test_universe_data.imcnp": {5: 1, 14: 1, 15: 1},
     # I don't care about the edge case of shortcuts in a material def.
     "tests/inputs/test_complement_edge.imcnp": {37: 0, 38: 0, 39: 0},
 }
@@ -1155,6 +1147,11 @@ _SKIP_LINES = {
     },
 )
 def test_read_write_cycle(file):
+    """
+    Warning: this test is a Rube Goldberg machine of edge cases.
+
+    Please ask @micahgale before modifying it.
+    """
     print(f"Testing against {file} *********************")
     if ".swp" in file.suffixes:
         return

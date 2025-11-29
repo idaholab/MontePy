@@ -4,13 +4,12 @@ from abc import ABC, ABCMeta, abstractmethod
 import copy
 import functools
 import itertools as it
-import sys
 import textwrap
 from typing import Union
 import warnings
 import weakref
 
-from montepy.errors import *
+from montepy.exceptions import *
 from montepy.constants import (
     BLANK_SPACE_CONTINUE,
     COMMENT_FINDER,
@@ -154,15 +153,10 @@ class MCNP_Object(ABC, metaclass=_ExceptionContextAdder):
         if key.startswith("_"):
             super().__setattr__(key, value)
         else:
-            # kwargs added in 3.10
-            if sys.version_info >= (3, 10):
-                raise AttributeError(
-                    f"'{type(self).__name__}' object has no attribute '{key}'",
-                    obj=self,
-                    name=key,
-                )
             raise AttributeError(
                 f"'{type(self).__name__}' object has no attribute '{key}'",
+                obj=self,
+                name=key,
             )
 
     @staticmethod
@@ -458,6 +452,13 @@ The new input was:\n\n"""
 
     @_problem.setter
     def _problem(self, problem):
+        """
+        The problem this object is associated with if any.
+
+        Returns
+        -------
+        montepy.MCNP_Problem | None
+        """
         if problem is None:
             self._problem_ref = None
             return
@@ -478,6 +479,9 @@ The new input was:\n\n"""
         return self._tree.get_trailing_comment()
 
     def _delete_trailing_comment(self):
+        """
+        Deletes trailing comments from an object when it has been moved to another object.
+        """
         self._tree._delete_trailing_comment()
 
     def _grab_beginning_comment(self, padding: list[PaddingNode], last_obj=None):

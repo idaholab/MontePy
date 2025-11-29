@@ -2,24 +2,24 @@ name: CI testing
 
 on: 
   pull_request:
-    branches: [develop, alpha-test-dev, alpha-test]
+    branches: [develop, alpha-test-dev, alpha-test, minor-rel-dev]
   push: 
-     branches: [develop, main, alpha-test]
+     branches: [develop, main, alpha-test, minor-rel-dev]
 
 jobs:
   build:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        python-version: ["3.9", "3.10", "3.11", "3.12", "3.13"]
+        python-version: ["3.12", "3.13", "3.14"]
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
         with: 
           fetch-depth: 0
           fetch-tags: true
       - name: set up python  ${{ matrix.python-version }}
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@v6
         with: 
           python-version: ${{ matrix.python-version }}
       - run: pip install --upgrade pip
@@ -42,8 +42,8 @@ jobs:
       - run: pip install --user . montepy[develop]
       - run: pip freeze
       - name: Upload build artifacts
-        uses: actions/upload-artifact@v4
-        if: ${{ matrix.python-version == '3.12'}}
+        uses: actions/upload-artifact@v5
+        if: ${{ matrix.python-version == '3.13'}}
         with: 
            name: build
            path: dist/*
@@ -54,18 +54,18 @@ jobs:
       actions: write
     strategy:
       matrix:
-        python-version: ["3.9", "3.10", "3.11", "3.12", "3.13"]
-        numpy-version: ["1.0", "2.0"]
+        python-version: ["3.12", "3.13", "3.14"]
+        numpy-version: ["2.0", "2.3"]
         sly-version: ["0.5"]
         include:
-          - python-version: "3.11"
-            numpy-version: "2.0"
+          - python-version: "3.13"
+            numpy-version: "2.3"
             sly-version: "0.4"
     
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       - name: set up python  ${{ matrix.python-version }}
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@v6
         with: 
           python-version: ${{ matrix.python-version }}
       - run: pip install numpy~=${{ matrix.numpy-version }}
@@ -83,23 +83,24 @@ jobs:
       - run: coverage xml
         if:  ${{ success() || failure() }}
       - name: Upload test report
-        if: ${{ matrix.python-version == '3.12' && matrix.numpy-version == '2.0' && (success() || failure() )}}
-        uses: actions/upload-artifact@v4
+        if: ${{ matrix.python-version == '3.14' && matrix.numpy-version == '2.3' && (success() || failure() )}}
+        uses: actions/upload-artifact@v5
         with:
           name: test
           path: test_report.xml
       - name: Upload coverage report
-        if: ${{ matrix.python-version == '3.12' && matrix.numpy-version == '2.0' && (success() || failure() )}}
-        uses: actions/upload-artifact@v4
+        if: ${{ matrix.python-version == '3.14' && matrix.numpy-version == '2.3' && (success() || failure() )}}
+        uses: actions/upload-artifact@v5
         with:
           name: coverage
           path: coverage.xml
       - name: Coveralls GitHub Action
-        if: ${{ matrix.python-version == '3.12' && matrix.numpy-version == '2.0' && (success() || failure() )}}
-        uses: coverallsapp/github-action@v2
+        if: ${{ matrix.python-version == '3.14' && matrix.numpy-version == '2.3' && (success() || failure() )}}
+        uses: coverallsapp/github-action@5cbfd81b66ca5d10c19b062c04de0199c215fb6e
         with:
           file: coverage.xml
-          github-token: ${{ secrets.github_token }}
+          fail-on-error: false
+          format: cobertura
   
 
 
@@ -108,25 +109,21 @@ jobs:
     runs-on: ubuntu-latest
     
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
         with:
           fetch-depth: 0
           fetch-tags: true
       - name: set up python 3.12
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@v6
         with: 
-          python-version: 3.12
+          python-version: 3.14
       - run: pip install . montepy[doc,build]
-      - run: sphinx-build doc/source/ doc/build/html -W --keep-going -E
+      - run: cd doc && make html SPHINXOPTS="-W --keep-going -E"
         name: Build site strictly
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v5
         with:
           name: website
           path: doc/build
-      - name: Test for missing API documentation  
-        run: | 
-             cd doc/source
-             python _test_for_missing_docs.py  
       - name: Test for broken hyperlinks
         run: |
              cd doc
@@ -136,14 +133,14 @@ jobs:
     runs-on: ubuntu-latest
     
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
         with:
           fetch-depth: 0
           fetch-tags: true
-      - name: set up python 3.12
-        uses: actions/setup-python@v5
+      - name: set up python 3.14
+        uses: actions/setup-python@v6
         with: 
-          python-version: 3.12
+          python-version: 3.14
       - run: pip install . montepy[doc,build,demo-test,test]
       - run: python -m phmutest README.md --replmode --log
         name: Test readme code
@@ -160,11 +157,12 @@ jobs:
     runs-on: ubuntu-latest
     
     steps:
-      - uses: actions/checkout@v4
-      - name: set up python 3.12
-        uses: actions/setup-python@v5
+
+      - uses: actions/checkout@v6
+      - name: set up python 3.14
+        uses: actions/setup-python@v6
         with: 
-          python-version: 3.12
+          python-version: 3.14
       - run: pip install . montepy[format]
       - run: black --check montepy/ tests/
   
@@ -172,11 +170,11 @@ jobs:
     runs-on: ubuntu-latest
     
     steps:
-      - uses: actions/checkout@v4
-      - name: set up python 3.12
-        uses: actions/setup-python@v5
+      - uses: actions/checkout@v6
+      - name: set up python 3.14
+        uses: actions/setup-python@v6
         with: 
-          python-version: 3.12
+          python-version: 3.14
       - run: pip install . montepy[test]
       - run: pytest --profile
         name: Profile test suite
@@ -189,11 +187,11 @@ jobs:
     runs-on: ubuntu-latest
     
     steps:
-      - uses: actions/checkout@v4
-      - name: set up python 3.12
-        uses: actions/setup-python@v5
+      - uses: actions/checkout@v6
+      - name: set up python 3.14
+        uses: actions/setup-python@v6
         with: 
-          python-version: 3.12
+          python-version: 3.14
       - run: pip install . montepy[test]
       - run: python benchmark/benchmark_big_model.py  
         name: Benchmark against big model
@@ -204,7 +202,7 @@ jobs:
     if: github.ref != 'refs/heads/main'
     
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       - name: Check for changes
         uses: dorny/paths-filter@v3
         id: changes

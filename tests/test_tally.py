@@ -64,5 +64,12 @@ class TestTallyParser:
     def test_de_parsing_jail(_, line):
         data = parse_data(line)
         assert data.mcnp_str() == line
-        with pytest.raises(montepy.errors.UnsupportedFeature):
+        with pytest.raises(montepy.exceptions.UnsupportedFeature):
             data.data
+
+
+class TestFmesh:
+    # this is hacky; just makes sure it doesn't crash
+    @pytest.mark.parametrize("line", ["fmesh14:n vec=0 0 0", "fmesh14:n vec=0, 0, 0"])
+    def test_fmesh_parse(_, line):
+        parse_data(line)

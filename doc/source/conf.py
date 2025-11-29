@@ -33,6 +33,7 @@ release = version  # Will be true at website deployment.
 # ones.
 extensions = [
     "sphinx.ext.autodoc",
+    "sphinx.ext.autosummary",
     "sphinx.ext.napoleon",
     "sphinx.ext.intersphinx",
     "sphinx.ext.extlinks",
@@ -41,6 +42,7 @@ extensions = [
     "sphinx_favicon",
     "sphinx_copybutton",
     "autodocsumm",
+    "jupyterlite_sphinx",
 ]
 
 # Add any paths that contain templates here, relative to this directory.
@@ -55,10 +57,14 @@ html_logo = "monty.svg"
 
 html_baseurl = "https://www.montepy.org/en/stable/"
 html_extra_path = ["robots.txt", "foo.imcnp"]
+
+# jupyter lite
+jupyterlite_config = "jupyter_lite_config.json"
+jupyterlite_overrides = "jupyter_lite.json"
 # List of patterns, relative to source directory, that match files and
 # directories to ignore when looking for source files.
 # This pattern also affects html_static_path and html_extra_path.
-exclude_patterns = []
+exclude_patterns = ["_contents/*"]
 
 # autodoc
 autodoc_typehints = "both"
@@ -98,11 +104,13 @@ extlinks = {
     "manual63": (UM63 + "#subsection.%s", "MCNP 6.3.0 manual § %s"),
     "manual63part": (UM63 + "#part.%s", "MCNP 6.3.0 manual part %s"),
     "manual63chapter": (UM63 + "#chapter.%s", "MCNP 6.3.0 manual Ch. %s"),
+    "manual63sub": (UM63 + "#subsubsection.%s", "MCNP 6.3.0 manual § %s"),
     # MCNP 6.3.1 User's Manual
     "manual631sec": (UM631 + "#section.%s", "MCNP 6.3.1 manual § %s"),
     "manual631": (UM631 + "#subsection.%s", "MCNP 6.3.1 manual § %s"),
     "manual631part": (UM631 + "#part.%s", "MCNP 6.3.1 manual part %s"),
     "manual631chapter": (UM631 + "#chapter.%s", "MCNP 6.3.1 manual Ch. %s"),
+    "manual631sub": (UM631 + "#subsubsection.%s", "MCNP 6.3.1 manual § %s"),
     # MCNP 6.2 User's manual
     "manual62": (UM62 + "#page=%s", "MCNP 6.2 manual p. %s"),
     "issue": ("https://github.com/idaholab/MontePy/issues/%s", "#%s"),

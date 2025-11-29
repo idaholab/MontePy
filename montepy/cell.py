@@ -12,7 +12,7 @@ from montepy.data_inputs import importance, fill, lattice_input, universe_input,
 from montepy.data_inputs.data_parser import PREFIX_MATCHES
 from montepy.input_parser.cell_parser import CellParser
 from montepy.input_parser import syntax_node
-from montepy.errors import *
+from montepy.exceptions import *
 from montepy.numbered_mcnp_object import Numbered_MCNP_Object, InitInput
 from montepy.data_inputs.material import Material
 from montepy.geometry_operators import Operator
@@ -227,10 +227,17 @@ class Cell(Numbered_MCNP_Object):
         Each particle's importance is a property of Importance.
         e.g., ``cell.importance.photon = 1.0``.
 
+        Deleting an importance resets it to the default value (1.0).
+        e.g., ``del cell.importance.neutron``.
+
         Returns
         -------
         Importance
             the importance for the Cell.
+
+        .. versionchanged:: 1.2.0
+
+            Default importance value changed from 0.0 to 1.0 to match MCNP defaults.
         """
         return self._importance
 

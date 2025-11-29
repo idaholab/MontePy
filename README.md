@@ -15,6 +15,7 @@
 [![PyPI version](https://badge.fury.io/py/montepy.svg)](https://badge.fury.io/py/montepy)
 [![Conda Version](https://img.shields.io/conda/vn/conda-forge/montepy.svg)](https://anaconda.org/conda-forge/montepy)
 [![PyPI pyversions](https://img.shields.io/pypi/pyversions/montepy.svg)](https://pypi.org/project/montepy/)
+[![SPEC 0 — Minimum Supported Dependencies](https://img.shields.io/badge/SPEC-0-green?labelColor=%23004811&color=%235CA038)](https://scientific-python.org/specs/spec-0000/)
 
 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.15185506.svg)](https://doi.org/10.5281/zenodo.15185506)
 
@@ -88,6 +89,16 @@ problem.write_problem("foo_update.imcnp")
 ```
 
 For more examples see the [getting started guide](https://www.montepy.org/en/stable/starting.html).
+
+### Use Cases
+
+Here are some possible use cases for MontePy:
+
+* Automated updating of an MCNP input file, or MCNP deck, for reactor reconfiguration, fuel shuffling, etc.
+* Parameterizing an MCNP input file to check for explore the parametric space of your MCNP modeling problem
+* Updating an MCNP model with the results from another code, such as depletion results from ORIGEN.
+* To convert an MCNP model to another Monte Carlo code like OpenMC, SERPENT, etc. 
+
 
 ## Limitations
 

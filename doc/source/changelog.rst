@@ -2,10 +2,82 @@
 MontePy Changelog
 *****************
 
+1.2 releases
+============
+
+1.2.0
+--------------
+
+**Performance Improvement**
+
+* Optimized :math:`\mathcal{O}(N^2)` scaling in :func:`~montepy.numbered_object_collection.NumberedObjectCollection.request_number` by improving ``NumberedObjectCollection.check_number`` to :math:`\mathcal{O}(N)` (:issue:`786`). 
+
+**Features Added**
+
+* Added checking for additional input after the ``data`` block, and raising a warning if it exists (:issue:`525`).
+* Allow multiple universe fills to accept 2D MNCP lattices (:issue:`719`).
+* Make ``LatticeType.RECTANGULAR`` and ``LatticeType.HEXAHEDRAL`` synonymous (:issue:`808`).
+* Allow setting ``cell.fill.universes`` with a numpy array of universe IDs (:issue:`736`).
+* Added Boundary condition type to the representation of a ``montepy.Surface`` (e.g., ``repr(surf)``)  (:issue:`682`).
+* Changed default importance value from 0.0 to 1.0 to match MCNP defaults. (:issue:`735`)
+
+**Bugs Fixed**
+
+* Fixed bug where lines that were the allowed length was raising a ``LineOverRunWarning`` when read by MontePy (:issue:`517`). 
+* Added descriptive TypeError messages (:issue:`801`)
+* Fixed a bug that caused to write an extra termination line between the data block and the cell data section in the MCNP input. (:pull:`819`) (:issue:`703`).
+* Avoided parsing ``FMESH`` inputs that have more complicated syntax to parse (:issue:`846`).
+
+**Documentation**
+
+* Added a web browser instance of ``jupyter`` to the website allowing testing out MontePy with no python installed locally (:issue:`796`).
+  
+  .. jupyterlite:: 
+      :new_tab: True
+      :new_tab_button_text: Launch jupyter in your browswer
+
+* Improved documentation for :class:`~montepy.numbered_object_collection.NumberedObjectCollection` on Slicing behavior. (:issue:`798`)
+* Reorganized Python API documentation. Some hyperlinks may be broken now (:pull:`828`).
+
+**Deprecations**
+
+* Dropped support for python 3.9 through 3.11, and numpy 1.26 in order to comply with `SPEC 0 <https://scientific-python.org/specs/spec-0000/>`_ (:issue:`780`).
+
+
 1.1 releases
 ============
 
-#Next Version#
+1.1.3
+--------------
+
+
+**Documentation**
+
+* Improved documentation for :class:`~montepy.numbered_object_collection.NumberedObjectCollection` on Slicing behavior. (:issue:`798`)
+
+**Bugs Fixed**
+
+* Fixed bug where lines that were the allowed length was raising a ``LineOverRunWarning`` when read by MontePy (:issue:`517`). 
+* Added descriptive TypeError messages (:issue:`801`)
+
+
+1.1.2
+--------------
+
+**Code Quality**
+
+* Refactor ``montepy.errors`` to ``montepy.exceptions``, to reflect that it also contains warnings (:issue:`764`).
+
+**Deprecations**
+
+* Marked ``montepy.errors`` as deprecated, with a ``FutureWarning``, use ``montepy.exceptions`` instead. (:issue:`764`).
+
+**Bugs Fixed**
+
+* Fixed parsing error where MontePy could not handle a fill matrix that was sparse (:issue:`601`).
+
+
+1.1.1
 --------------
 
 **Features Added**
@@ -14,8 +86,12 @@ MontePy Changelog
 
 **Bugs Fixed**
 
+* Fixed bug where surfaces created from scratch couldn't be accurately written out to the file (:issue:`652`).
+* Fixed bug where surface transformations couldn't be unset and exported properly (:issue:`711`).
+* Fixed bug where negative numbers were treated as valid by ``append_renumber`` (:issue:`690`).
 * Fixed bug that couldn't parse ``SDEF`` by simply not parsing the input for the time being (:pull:`767`).
 * Fixed parsing bug with ``DE LOG`` style inputs by simply not parsing them for now (:pull:`767`).
+
 
 1.1.0
 --------------

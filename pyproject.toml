@@ -3,9 +3,8 @@ name = "montepy"
 dynamic = ["version"]
 description = "A library for reading, editing, and writing MCNP input files"
 
-# gitlab limits the readme to 4,000 chars.
 readme = "README.md"
-requires-python = ">=3.9"
+requires-python = ">=3.12"
 maintainers = [
 	{name = "Micah Gale", email = "mgale@montepy.org"}
 ]
@@ -15,6 +14,8 @@ authors = [
 	{name = "Brenna Carbno", email="brenna.carbno@inl.gov"},
 	{name = "Benjaminas Marcinkevicius", email="BenjaminasDev@outlook.com"},
 	{name = "Paul Ferney", email="Paul.Ferney@inl.gov"},
+	{name = "Digvijay Yeware", email="yewaredigvijay@gmail.com"},
+	{name = "Harsh Dayal", email="harshdayal13@gmail.com"},
 ]
 keywords = ["MCNP", "neutronics", "imcnp", "input file", "monte carlo", "radiation transport"]
 license = "MIT"
@@ -29,14 +30,12 @@ classifiers = [
        "Topic :: Scientific/Engineering",
        "Topic :: Scientific/Engineering :: Human Machine Interfaces",
        "Programming Language :: Python :: 3 :: Only",
-       "Programming Language :: Python :: 3.9",
-       "Programming Language :: Python :: 3.10",
-       "Programming Language :: Python :: 3.11",
        "Programming Language :: Python :: 3.12",
-       "Programming Language :: Python :: 3.13"
+       "Programming Language :: Python :: 3.13",
+       "Programming Language :: Python :: 3.14"
 ]
 dependencies = [
-	"numpy>=1.18",
+	"numpy>=2.0",
 	"sly>= 0.4, <=0.5"
 ]
 
@@ -49,26 +48,29 @@ test = [
 	"montepy[build]",
 	"phmutest",
 ]
-# This is needed for a sphinx bug. See #414.
-doc = [
-	"sphinx>=7.4.0", 
-	"sphinxcontrib-apidoc", 
-	"pydata_sphinx_theme",
-	"sphinx-favicon",
-	"sphinx-copybutton",
-    	"sphinx_autodoc_typehints",
-	"autodocsumm",
-]
-format = ["black~=25.1"]
 build = [
 	"build",
 	"setuptools>=64.0.0",
 	"setuptools-scm>=8",
 ]
+doc = [
+	"montepy[build]",
+	# This is needed for a sphinx bug. See #414.
+	"sphinx>=7.4.0", 
+	"sphinxcontrib-apidoc", 
+	"pydata_sphinx_theme",
+	"sphinx-favicon",
+	"sphinx-copybutton",
+  	"sphinx_autodoc_typehints",
+	"autodocsumm",
+	"jupyterlite-sphinx",
+	"jupyterlite-pyodide-kernel"
+]
+format = ["black~=25.1"]
 develop = [
 	"montepy[test,doc,format]",
 ]
-demos = ["jupyter"]
+demos = ["jupyter", "ipykernel>=6,<8"]
 demo-test = ["montepy[demos]", "papermill"]
 
 demo-present = ["montepy[demos]", "jupyterlab-rise"]

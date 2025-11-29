@@ -1,13 +1,23 @@
 # Copyright 2024-2025, Battelle Energy Alliance, LLC All Rights Reserved.
 import montepy
 from montepy.numbered_object_collection import NumberedObjectCollection
-from montepy.errors import *
+from montepy.exceptions import *
 import warnings
 from numbers import Integral
 
 
 class Cells(NumberedObjectCollection):
     """A collections of multiple :class:`montepy.cell.Cell` objects.
+
+    This collection can be sliced to get a subset of the cells.
+    Slicing is done based on the cell numbers, not their order in the input.
+    For example, ``problem.cells[1:3]`` will return a new `Cells` collection
+    containing cells with numbers from 1 to 3, inclusive.
+
+    See also
+    --------
+    :class:`~montepy.numbered_object_collection.NumberedObjectCollection`
+
 
     Notes
     -----

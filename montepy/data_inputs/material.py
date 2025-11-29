@@ -14,7 +14,7 @@ from montepy.data_inputs.element import Element
 from montepy.input_parser import syntax_node
 from montepy.input_parser.material_parser import MaterialParser
 from montepy.numbered_mcnp_object import Numbered_MCNP_Object, InitInput
-from montepy.errors import *
+from montepy.exceptions import *
 from montepy.utilities import *
 from montepy.particle import LibraryType
 
@@ -62,7 +62,9 @@ class _DefaultLibraries:
     def __setitem__(self, key, value):
         key = self._validate_key(key)
         if not isinstance(value, (Library, str)):
-            raise TypeError("")
+            raise TypeError(
+                f"Value must be a library or str. {value} of type: {type(value).__name__} given."
+            )
         if isinstance(value, str):
             value = Library(value)
         try:
@@ -91,7 +93,9 @@ class _DefaultLibraries:
     @staticmethod
     def _validate_key(key):
         if not isinstance(key, (str, LibraryType)):
-            raise TypeError("")
+            raise TypeError(
+                f"Key must be in Library or str format. {key} of type {type(key).__name__} given."
+            )
         if not isinstance(key, LibraryType):
             key = LibraryType(key.upper())
         return key

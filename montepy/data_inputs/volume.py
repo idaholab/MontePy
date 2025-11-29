@@ -1,6 +1,6 @@
 # Copyright 2024, Battelle Energy Alliance, LLC All Rights Reserved.
 from montepy.data_inputs.cell_modifier import CellModifierInput
-from montepy.errors import *
+from montepy.exceptions import *
 from montepy.constants import DEFAULT_VERSION
 from montepy.input_parser.mcnp_input import Jump
 from montepy.input_parser import syntax_node
