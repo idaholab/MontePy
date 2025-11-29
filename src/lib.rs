@@ -5,11 +5,11 @@ pub mod parser {
         Input(Vec<&'src str>),
     }
     
-    pub fn input_parser<'src>() -> impl Parser<'src, &'src str, char> {
-        choice((
-                just("\n     "),
-                just("&\n"),
-                any().repeated().at_least(1).collect::<String>()
-        )).repeated().collect()
+    pub fn input_parser<'src>() -> impl Parser<'src, &'src str, McnpInput<'src>> {
+        none_of("&\n").repeated().then(
+            choice((
+                    just("\n      "),
+                    just("&\n")
+            ))).repeated().collect().to(McnpInput::Input)
     }
 }
