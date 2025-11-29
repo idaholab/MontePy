@@ -9,8 +9,8 @@ chumsky = { version = ">=0.11", Numbers = true}
 cstree = ">=0.13"
 rowan = ">=0.15"
 
-[lib]
-name = "_lib"
+#[lib]
+#name = "_lib"
 
-path = "monteparser/lib.rs"
-crate-type = ["cdylib"]
+#crate-type = ["cdylib"]
+
