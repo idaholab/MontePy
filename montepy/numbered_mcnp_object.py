@@ -76,7 +76,7 @@ class Numbered_MCNP_Object(MCNP_Object):
     @number.setter
     @needs_full_cst
     @args_checked
-    def number(self, value: ty.PositiveInt):
+    def number(self, value: ty.NonNegativeInt):
         _number_validator(self, value)
         self._number.value = value
 

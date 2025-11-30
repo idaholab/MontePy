@@ -783,7 +783,7 @@ class Cell(Numbered_MCNP_Object):
 
     @args_checked
     def link_to_problem(
-        self, problem: montepy.MCNP_Problem, *, jit_parse: bool = False
+        self, problem: montepy.MCNP_Problem = None, *, jit_parse: bool = False
     ):
         super().link_to_problem(problem)
         if not hasattr(self, "_not_parsed"):
