@@ -27,9 +27,12 @@ class Universe(Numbered_MCNP_Object):
     """
 
     @args_checked
-    def __init__(self, number: ty.NonNegativeInt):
+    def __init__(self, number: ty.NonNegativeInt, *, jit_parse: bool = False):
         super().__init__(Input(["U"], BlockType.DATA), number)
         self._number = self._generate_default_node(int, number)
+
+    def full_parse(self):
+        pass
 
     # dummy abstract methods
     @staticmethod

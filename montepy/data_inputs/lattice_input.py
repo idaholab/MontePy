@@ -27,6 +27,9 @@ class LatticeInput(CellModifierInput):
         the value syntax tree from the key-value pair in a cell
     """
 
+    def _init_blank(self):
+        self._lattice = self._generate_default_node(int, None)
+
     def _parse_cell_tree(self):
         if self._in_key:
             try:
