@@ -204,6 +204,7 @@ class DataInputAbstract(MCNP_Object):
         return self._modifier
 
     @property
+    @needs_full_ast
     def data(self) -> syntax_node.ListNode:
         """The syntax tree actually holding the data.
 

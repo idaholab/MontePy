@@ -350,6 +350,7 @@ The new input was:\n\n"""
         return list(self._tree["start_pad"].comments)
 
     @leading_comments.setter
+    @needs_full_cst
     @args_checked
     def leading_comments(self, comments: ty.Iterable[CommentNode] | CommentNode):
         if isinstance(comments, CommentNode):
@@ -360,7 +361,7 @@ The new input was:\n\n"""
         self._tree["start_pad"]._nodes = new_nodes
 
     @leading_comments.deleter
-    @needs_full_ast
+    @needs_full_cst
     def leading_comments(self):
         self._tree["start_pad"]._delete_trailing_comment()
 
