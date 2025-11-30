@@ -124,6 +124,7 @@ class Volume(CellModifierInput):
             return self._volume
 
     @property
+    @needs_full_ast
     def is_mcnp_calculated(self) -> bool:
         """Indicates whether or not the cell volume will attempt to be calculated by MCNP.
 
@@ -144,6 +145,7 @@ class Volume(CellModifierInput):
         return self._calc_by_mcnp
 
     @is_mcnp_calculated.setter
+    @needs_full_cst
     def is_mcnp_calculated(self, value):
         if not self.in_cell_block:
             self._calc_by_mcnp = value
