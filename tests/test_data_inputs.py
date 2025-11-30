@@ -112,10 +112,12 @@ def test_volume_init_cell():
     vol = 1.0
     list_node = syntax_node.ListNode("data")
     list_node.append(syntax_node.ValueNode(str(vol), float))
+    classifier = syntax_node.ClassifierNode()
+    classifier.prefix = syntax_node.ValueNode("VoL", str)
     node = syntax_node.SyntaxNode(
         "volume",
         {
-            "classifier": syntax_node.ValueNode("VoL", str),
+            "classifier": classifier,
             "seperator": syntax_node.ValueNode("=", str),
             "data": list_node,
         },
@@ -134,7 +136,7 @@ def test_volume_init_cell():
         node = syntax_node.SyntaxNode(
             "volume",
             {
-                "classifier": syntax_node.ValueNode("VoL", str),
+                "classifier": classifier,
                 "seperator": syntax_node.ValueNode("=", str),
                 "data": list_node,
             },
@@ -146,7 +148,7 @@ def test_volume_init_cell():
         node = syntax_node.SyntaxNode(
             "volume",
             {
-                "classifier": syntax_node.ValueNode("VoL", str),
+                "classifier": classifier,
                 "seperator": syntax_node.ValueNode("=", str),
                 "data": list_node,
             },
@@ -226,10 +228,12 @@ def test_volume_setter():
     vol = 1.0
     list_node = syntax_node.ListNode("data")
     list_node.append(syntax_node.ValueNode(str(vol), float))
+    classifier = syntax_node.ClassifierNode()
+    classifier.prefix = syntax_node.ValueNode("VoL", str)
     node = syntax_node.SyntaxNode(
         "volume",
         {
-            "classifier": syntax_node.ValueNode("VoL", str),
+            "classifier": classifier,
             "seperator": syntax_node.ValueNode("=", str),
             "data": list_node,
         },
@@ -247,10 +251,12 @@ def test_volume_deleter():
     vol = 1.0
     list_node = syntax_node.ListNode("data")
     list_node.append(syntax_node.ValueNode(str(vol), float))
+    classifier = syntax_node.ClassifierNode()
+    classifier.prefix = syntax_node.ValueNode("VoL", str)
     node = syntax_node.SyntaxNode(
         "volume",
         {
-            "classifier": syntax_node.ValueNode("VoL", str),
+            "classifier": classifier,
             "seperator": syntax_node.ValueNode("=", str),
             "data": list_node,
         },
@@ -264,10 +270,12 @@ def test_volume_merge():
     vol = 1.0
     list_node = syntax_node.ListNode("data")
     list_node.append(syntax_node.ValueNode(str(vol), float))
+    classifier = syntax_node.ClassifierNode()
+    classifier.prefix = syntax_node.ValueNode("VoL", str)
     node = syntax_node.SyntaxNode(
         "volume",
         {
-            "classifier": syntax_node.ValueNode("VoL", str),
+            "classifier": classifier,
             "seperator": syntax_node.ValueNode("=", str),
             "data": list_node,
         },
@@ -282,10 +290,12 @@ def test_volume_repr():
     vol = 1.0
     list_node = syntax_node.ListNode("data")
     list_node.append(syntax_node.ValueNode(str(vol), float))
+    classifier = syntax_node.ClassifierNode()
+    classifier.prefix = syntax_node.ValueNode("VoL", str)
     node = syntax_node.SyntaxNode(
         "volume",
         {
-            "classifier": syntax_node.ValueNode("VoL", str),
+            "classifier": classifier,
             "seperator": syntax_node.ValueNode("=", str),
             "data": list_node,
         },
