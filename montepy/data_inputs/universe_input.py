@@ -35,25 +35,24 @@ class UniverseInput(CellModifierInput):
         self._old_number = self._generate_default_node(int, Jump())
         self._not_truncated = False
 
-    def _parse_tree(self):
-        # TODO break this down into parse_cell_tree, and parse_data_tree
-        if self.in_cell_block:
-            if self._in_key:
-                val = self._tree["data"][0]
-                val.is_negatable_identifier = True
-                self._not_truncated = val.is_negative
-                self._old_number = val
-        else:
-            self._universes = []
-            for node in self.data:
-                try:
-                    node.is_negatable_identifier = True
-                    self._old_numbers.append(node)
-                except ValueError:
-                    raise MalformedInputError(
-                        input,
-                        f"Cell universes must be an integer ≥ 0. {node} was given",
-                    )
+    def _parse_cell_tree(self):
+        if self._in_key:
+            val = self._tree["data"][0]
+            val.is_negatable_identifier = True
+            self._not_truncated = val.is_negative
+            self._old_number = val
+
+    def _parse_data_tree(self):
+        self._universes = []
+        for node in self.data:
+            try:
+                node.is_negatable_identifier = True
+                self._old_numbers.append(node)
+            except ValueError:
+                raise MalformedInputError(
+                    input,
+                    f"Cell universes must be an integer ≥ 0. {node} was given",
+                )
 
     def _generate_default_cell_tree(self):
         list_node = syntax_node.ListNode("number sequence")

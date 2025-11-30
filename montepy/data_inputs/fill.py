@@ -43,14 +43,7 @@ class Fill(CellModifierInput):
     DIMENSIONS = {"i": 0, "j": 1, "k": 2}
     """Maps the dimension to its axis number"""
 
-    @args_checked
-    def __init__(
-        self,
-        input: InitInput = None,
-        in_cell_block: bool = False,
-        key: str = None,
-        value: syntax_node.SyntaxNode = None,
-    ):
+    def _init_blank(self):
         self._old_number = self._generate_default_node(int, None)
         self._old_numbers = None
         self._universe = None
@@ -61,26 +54,27 @@ class Fill(CellModifierInput):
         self._multi_universe = False
         self._min_index = None
         self._max_index = None
-        super().__init__(input, in_cell_block, key, value)
-        if self.in_cell_block:
-            if key:
-                self._parse_cell_input(key, value)
-        elif input:
-            self._old_numbers = []
-            values = self.data
-            for value in values:
-                try:
-                    value.convert_to_int()
-                    if value.value is not None:
-                        assert value.value >= 0
-                        self._old_numbers.append(value)
-                    else:
-                        self._old_numbers.append(value)
-                except (ValueError, AssertionError) as e:
-                    raise MalformedInputError(
-                        input,
-                        f"Cell fill must be set to a valid universe, {value} was given",
-                    )
+
+    def _parse_cell_tree(self):
+        if self._in_key:
+            self._parse_cell_input(self._in_key, self._in_value)
+
+    def _parse_data_tree(self):
+        self._old_numbers = []
+        values = self.data
+        for value in values:
+            try:
+                value.convert_to_int()
+                if value.value is not None:
+                    assert value.value >= 0
+                    self._old_numbers.append(value)
+                else:
+                    self._old_numbers.append(value)
+            except (ValueError, AssertionError) as e:
+                raise MalformedInputError(
+                    input,
+                    f"Cell fill must be set to a valid universe, {value} was given",
+                )
 
     def _generate_default_cell_tree(self):
         classifier = syntax_node.ClassifierNode()

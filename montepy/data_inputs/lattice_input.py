@@ -27,37 +27,28 @@ class LatticeInput(CellModifierInput):
         the value syntax tree from the key-value pair in a cell
     """
 
-    @args_checked
-    def __init__(
-        self,
-        input: InitInput = None,
-        in_cell_block: bool = False,
-        key: str = None,
-        value: syntax_node.SyntaxNode = None,
-    ):
-        super().__init__(input, in_cell_block, key, value)
-        self._lattice = self._tree["data"][0]
-        if self.in_cell_block:
-            if key:
-                try:
-                    val = value["data"][0]
-                    val.convert_to_int()
-                    val.convert_to_enum(LatticeType, int)
-                except ValueError as e:
-                    raise ValueError("Cell Lattice must be 1 or 2")
-                self._lattice = val
-        elif input:
-            self._lattice = []
-            words = self.data
-            for word in words:
-                try:
-                    word.convert_to_int()
-                    word.convert_to_enum(LatticeType, int)
-                    self._lattice.append(word)
-                except ValueError:
-                    raise MalformedInputError(
-                        input, f"Cell lattice must be 1 or 2. {word} given."
-                    )
+    def _parse_cell_tree(self):
+        if self._in_key:
+            try:
+                val = value["data"][0]
+                val.convert_to_int()
+                val.convert_to_enum(LatticeType, int)
+            except ValueError as e:
+                raise ValueError("Cell Lattice must be 1 or 2")
+            self._lattice = val
+
+    def _parse_data_tree(self):
+        self._lattice = []
+        words = self.data
+        for word in words:
+            try:
+                word.convert_to_int()
+                word.convert_to_enum(LatticeType, int)
+                self._lattice.append(word)
+            except ValueError:
+                raise MalformedInputError(
+                    input, f"Cell lattice must be 1 or 2. {word} given."
+                )
 
     def _generate_default_cell_tree(self):
         list_node = syntax_node.ListNode("number sequence")

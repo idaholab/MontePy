@@ -31,53 +31,45 @@ class Volume(CellModifierInput):
         the value syntax tree from the key-value pair in a cell
     """
 
-    @args_checked
-    def __init__(
-        self,
-        input: InitInput = None,
-        in_cell_block: bool = False,
-        key: str = None,
-        value: syntax_node.SyntaxNode = None,
-        *,
-        jit_parse: bool = True,
-    ):
+    def _init_blank(self):
         self._volume = self._generate_default_node(float, None)
         self._calc_by_mcnp = True
-        super().__init__(input, in_cell_block, key, value, jit_parse=jit_parse)
-        if self.in_cell_block:
-            if key:
-                value = self._tree["data"][0]
-                if value.type != float or value.value < 0:
-                    raise ValueError(
-                        f"Cell volume must be a number ≥ 0.0. {value} was given"
-                    )
-                self._volume = value
-                self._calc_by_mcnp = False
-        elif input and not jit_parse:
-            self._volume = []
-            tree = self._tree
-            if "parameters" in tree:
-                raise MalformedInputError(
-                    input, f"Volume card can't accept any key-value parameters"
+
+    def _parse_cell_tree(self):
+        if self._in_key:
+            value = self._tree["data"][0]
+            if value.type != float or value.value < 0:
+                raise ValueError(
+                    f"Cell volume must be a number ≥ 0.0. {value} was given"
                 )
-            if (
-                "keyword" in tree
-                and tree["keyword"].value
-                and tree["keyword"].value.lower() == "no"
-            ):
-                self._calc_by_mcnp = False
-            for node in tree["data"]:
-                if node.value is not None:
-                    try:
-                        assert node.type == float
-                        assert node.value >= 0
-                        self._volume.append(node)
-                    except AssertionError:
-                        raise MalformedInputError(
-                            input, f"Cell volumes by a number ≥ 0.0: {node} given"
-                        )
-                else:
+            self._volume = value
+            self._calc_by_mcnp = False
+
+    def _parse_data_tree(self):
+        self._volume = []
+        tree = self._tree
+        if "parameters" in tree:
+            raise MalformedInputError(
+                input, f"Volume card can't accept any key-value parameters"
+            )
+        if (
+            "keyword" in tree
+            and tree["keyword"].value
+            and tree["keyword"].value.lower() == "no"
+        ):
+            self._calc_by_mcnp = False
+        for node in tree["data"]:
+            if node.value is not None:
+                try:
+                    assert node.type == float
+                    assert node.value >= 0
                     self._volume.append(node)
+                except AssertionError:
+                    raise MalformedInputError(
+                        input, f"Cell volumes by a number ≥ 0.0: {node} given"
+                    )
+            else:
+                self._volume.append(node)
 
     def _generate_default_cell_tree(self):
         list_node = syntax_node.ListNode("number sequence")

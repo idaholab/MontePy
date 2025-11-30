@@ -57,7 +57,7 @@ class Importance(CellModifierInput):
         if self._in_key:
             val = self._in_value["data"]
             if isinstance(val, syntax_node.ListNode):
-                val = value["data"][0]
+                val = self._in_value["data"][0]
             if val.type != float or val.value < 0:
                 raise ValueError(
                     f"Cell importance must be a number ≥ 0. {val.value} was given"
@@ -65,8 +65,8 @@ class Importance(CellModifierInput):
             self._explicitly_set = True
             self._part_combos.append(self.particle_classifiers)
             for particle in self.particle_classifiers:
-                self._particle_importances[particle] = value
-    
+                self._particle_importances[particle] = self._in_value
+
     def _parse_data_tree(self):
         values = []
         for node in self._tree["data"]:
@@ -109,7 +109,7 @@ class Importance(CellModifierInput):
         )
         self._tree = tree
         self._particle_importances[particle] = tree
-    
+
     def _generate_default_data_tree(self, particle=None):
         self._tree = _generate_default_data_tree(Particle.NEUTRON)
 
