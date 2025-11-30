@@ -210,10 +210,11 @@ def test_volume_init_data():
 
 
 def test_volumes_for_only_some_cells():
-    cells = [
-        montepy.Cell(Input([f"{i + 1} 0 -1 u=3"], BlockType.CELL)) for i in range(10)
-    ]
-    prob = MCNP_Problem(None)
+    cells = montepy.Cells(
+        [montepy.Cell(f"{i + 1} 0 -1 u=3", jit_parse=False) for i in range(10)]
+    )
+    prob = MCNP_Problem()
+    prob.surfaces.append(montepy.Surface("1 PZ 1"))
     prob.cells = cells
     vol_card = Input(["VOL 1 1 2 3 5"], BlockType.DATA)
     vol_data = volume.Volume(vol_card, in_cell_block=False)
