@@ -167,6 +167,13 @@ class Cell(Numbered_MCNP_Object):
         self._complements = Cells()
         self._geometry = None
 
+    def full_parse(self):
+        super().full_parse()
+        if self.geometry and self._problem:
+            self._geometry.update_pointers(
+                self._problem.cells, self._problem.surfaces, self
+            )
+
     def _parse_tree(self):
         self._old_number = copy.deepcopy(self._tree["cell_num"])
         self._number = self._tree["cell_num"]
@@ -674,38 +681,6 @@ class Cell(Numbered_MCNP_Object):
                 if cell != self:
                     if self in cell.complements:
                         yield cell
-
-    def update_pointers(
-        self,
-        cells: montepy.cells.Cells,
-        materials: montepy.materials.Materials,
-        surfaces: montepy.surface_collection.Surfaces,
-    ):
-        """Attaches this object to the appropriate objects for surfaces and materials.
-
-        Parameters
-        ----------
-        cells : Cells
-            a Cells collection of the cells in the problem.
-        materials : Materials
-            a materials collection of the materials in the problem
-        surfaces : Surfaces
-            a surfaces collection of the surfaces in the problem
-        """
-        self._surfaces = Surfaces()
-        self._complements = Cells()
-        if self.old_mat_number is not None:
-            if self.old_mat_number > 0:
-                try:
-                    self._material = materials[self.old_mat_number]
-                except KeyError:
-                    raise BrokenObjectLinkError(
-                        "Cell", self.number, "Material", self.old_mat_number
-                    )
-            else:
-                self._material = None
-        if self.geometry:
-            self._geometry.update_pointers(cells, surfaces, self)
 
     @args_checked
     @needs_full_cst

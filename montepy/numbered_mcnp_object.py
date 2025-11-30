@@ -121,6 +121,7 @@ class Numbered_MCNP_Object(MCNP_Object):
                     prob_collect.append(child_collect)
 
     @args_checked
+    @needs_full_cst
     def clone(
         self, starting_number: ty.PositiveInt = None, step: ty.PositiveInt = None
     ):

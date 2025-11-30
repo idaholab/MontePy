@@ -147,6 +147,8 @@ class MCNP_Object(ABC, metaclass=_ExceptionContextAdder):
     _KEYS_TO_PRESERVE = set()
 
     def full_parse(self):
+        # TODO deprecate update_pointers
+        # TODO test for catastrophic surface, material, transform renumbering
         if hasattr(self, "_not_parsed") and self._not_parsed:
             del self._not_parsed
             problem = self._problem
@@ -155,13 +157,6 @@ class MCNP_Object(ABC, metaclass=_ExceptionContextAdder):
             [setattr(self, k, v) for k, v in old_data.items()]
             if problem:
                 self.link_to_problem(problem)
-                # TODO delete update_pointers
-                args = (problem.cells, problem.surfaces, problem.data_inputs)
-                if isinstance(self, montepy.surfaces.Surface):
-                    args = args[1:]
-                elif isinstance(self, montepy.data_inputs.data_input.DataInputAbstract):
-                    args = args[2:]
-                self.update_pointers(*args)
 
     def search(search: str | re.Pattern) -> bool:
         """
