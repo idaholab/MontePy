@@ -560,6 +560,7 @@ class Fill(CellModifierInput):
             other._input, "Cannot have two lattice inputs for the problem"
         )
 
+    @needs_full_ast
     def push_to_cells(self):
         def get_universe(number):
             return self._problem.universes[number]

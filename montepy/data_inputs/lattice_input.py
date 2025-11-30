@@ -104,6 +104,7 @@ class LatticeInput(CellModifierInput):
     def _tree_value(self):
         return self._lattice
 
+    @needs_full_ast
     def push_to_cells(self):
         if self._problem and not self.in_cell_block:
             cells = self._problem.cells

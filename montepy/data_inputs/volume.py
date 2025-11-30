@@ -171,6 +171,8 @@ class Volume(CellModifierInput):
             other._input, "Cannot have two volume inputs for the problem"
         )
 
+    @needs_full_ast
+    # TODO prevent from mass updates
     def push_to_cells(self):
         if not self.in_cell_block and self._problem and self._volume:
             self._check_redundant_definitions()

@@ -444,7 +444,7 @@ class NumberedObjectCollection(ABC):
         """A hook that is called every time append is called."""
         if initial_load:
             return
-        if self._problem:
+        if self._problem and not hasattr(obj, "_not_parsed"):
             obj._add_children_objs(self._problem)
 
     def _delete_hook(self, obj, **kwargs):

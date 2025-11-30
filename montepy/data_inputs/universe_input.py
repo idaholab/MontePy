@@ -159,6 +159,7 @@ class UniverseInput(CellModifierInput):
             other._input, "Cannot have two universe inputs for the problem"
         )
 
+    @needs_full_ast
     def push_to_cells(self):
         if not self._problem:
             return

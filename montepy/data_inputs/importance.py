@@ -215,6 +215,7 @@ class Importance(CellModifierInput):
             f"\n{self._particle_importances}"
         )
 
+    @needs_full_ast
     def push_to_cells(self):
         if self._problem and not self.in_cell_block:
             self._check_redundant_definitions()
