@@ -29,7 +29,6 @@ class CellModifierInput(DataInputAbstract):
         the value syntax tree from the key-value pair in a cell
     """
 
-
     def __init__(
         self,
         input: InitInput = None,
@@ -40,6 +39,10 @@ class CellModifierInput(DataInputAbstract):
         jit_parse: bool = True,
         **kwargs,
     ):
+        self._problem_ref = None
+        self._parameters = syntax_node.ParametersNode()
+        self._input = None
+        self._init_blank()
         fast_parse = False
         if key and value:
             input = Input([key], BlockType.DATA)
@@ -47,24 +50,26 @@ class CellModifierInput(DataInputAbstract):
         self._in_cell_block = in_cell_block
         self._in_key = key
         self._in_value = value
+        if input is None and value is None:
+            self._generate_default_tree(**kwargs)
+        elif value is not None:
+            self._parse_classifier(input, self._parse_input, jit_parse=jit_parse)
+        else:
+            super().__init__(input, jit_parse=jit_parse)
         if key and in_cell_block:
             self._set_in_cell_block = True
             self._tree = value
             self._data = value["data"]
         else:
             self._set_in_cell_block = False
-        if input is None and value is None:
-            self._generate_default_node(**kwargs)
-        self._parse_tree()
-        # TODO find a way to invoke __split_name, and parse the classifier
-        # but without over writing _tree and killing _parse_tree
-        self._DataInputAbstract__split_name(input)
+        if not jit_parse:
+            self._parse_tree()
 
     def _parse_tree(self):
+        super()._parse_tree()
         if self.in_cell_block:
             self._parse_cell_tree()
         else:
-            super()._parse_tree()
             self._parse_data_tree()
 
     @abstractmethod

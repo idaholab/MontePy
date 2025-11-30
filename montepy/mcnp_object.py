@@ -59,45 +59,50 @@ class MCNP_Object(ABC, metaclass=_ExceptionContextAdder):
         self._input = None
         self._init_blank()
         if input:
-            if isinstance(input, str):
-                input = montepy.input_parser.mcnp_input.Input(
-                    input.split("\n"), self._BLOCK_TYPE
-                )
+            self._parse_input(input, jit_parse)
             if jit_parse:
-                try:
-                    return self._jit_light_init(input)
-                # fall back to full parsing on any errors
-                except Exception:
-                    jit_parse = False
-            parser = self._parser()
-            try:
-                try:
-                    parser.restart()
-                # raised if restarted without ever parsing
-                except AttributeError as e:
-                    pass
-                tokenizer = input.tokenize()
-                self._tree = parser.parse(tokenizer, input)
-                # consume token stream
-                tokenizer.close()
-                self._input = input
-            except ValueError as e:
-                if isinstance(e, UnsupportedFeature):
-                    raise e
-                raise MalformedInputError(
-                    input, f"Error parsing object of type: {type(self)}: {e.args[0]}"
-                ).with_traceback(e.__traceback__)
-            if self._tree is None:
-                raise ParsingError(
-                    input,
-                    "",
-                    parser.log.clear_queue(),
-                )
-            if "parameters" in self._tree:
-                self._parameters = self._tree["parameters"]
+                return
         else:
             self._generate_default_tree(**kwargs)
         self._parse_tree()
+
+    def _parse_input(self, input, jit_parse):
+        if isinstance(input, str):
+            input = montepy.input_parser.mcnp_input.Input(
+                input.split("\n"), self._BLOCK_TYPE
+            )
+        if jit_parse:
+            try:
+                return self._jit_light_init(input)
+            # fall back to full parsing on any errors
+            except Exception:
+                jit_parse = False
+        parser = self._parser()
+        try:
+            try:
+                parser.restart()
+            # raised if restarted without ever parsing
+            except AttributeError as e:
+                pass
+            tokenizer = input.tokenize()
+            self._tree = parser.parse(tokenizer, input)
+            # consume token stream
+            tokenizer.close()
+            self._input = input
+        except ValueError as e:
+            if isinstance(e, UnsupportedFeature):
+                raise e
+            raise MalformedInputError(
+                input, f"Error parsing object of type: {type(self)}: {e.args[0]}"
+            ).with_traceback(e.__traceback__)
+        if self._tree is None:
+            raise ParsingError(
+                input,
+                "",
+                parser.log.clear_queue(),
+            )
+        if "parameters" in self._tree:
+            self._parameters = self._tree["parameters"]
 
     @staticmethod
     @abstractmethod
@@ -142,6 +147,7 @@ class MCNP_Object(ABC, metaclass=_ExceptionContextAdder):
         tokenizer.close()
         for key, node in bare_tree.nodes.items():
             setattr(self, f"_{key}", node)
+        self._tree = bare_tree
         return self
 
     _KEYS_TO_PRESERVE = set()

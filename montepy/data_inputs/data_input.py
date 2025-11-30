@@ -63,20 +63,26 @@ class DataInputAbstract(MCNP_Object):
         if not fast_parse:
             super().__init__(input, jit_parse=jit_parse)
         else:
-            if input:
-                if isinstance(input, str):
-                    input = _ClassifierInput(
-                        input.split("\n"),
-                        montepy.input_parser.block_type.BlockType.DATA,
-                    )
-                else:
-                    input = copy.copy(input)
-                    input.__class__ = _ClassifierInput
-            self._old_parser = self._parser
-            self._parser = self._classifier_parser
+            self._parse_classifier(input, jit_parse=jit_parse)
+
+    def _parse_classifier(self, input, parsing_func=None, jit_parse=True):
+        if input:
+            if isinstance(input, str):
+                input = _ClassifierInput(
+                    input.split("\n"),
+                    montepy.input_parser.block_type.BlockType.DATA,
+                )
+            else:
+                input = copy.copy(input)
+                input.__class__ = _ClassifierInput
+        self._old_parser = self._parser
+        self._parser = self._classifier_parser
+        if parsing_func is None:
             super().__init__(input, jit_parse=jit_parse)
-            self._parser = self._old_parser
-            del self._old_parser
+        else:
+            parsing_func(input, jit_parse=jit_parse)
+        self._parser = self._old_parser
+        del self._old_parser
 
     def _generate_default_tree(self):
         ret = {}
