@@ -109,6 +109,9 @@ class Importance(CellModifierInput):
         )
         self._tree = tree
         self._particle_importances[particle] = tree
+    
+    def _generate_default_data_tree(self, particle=None):
+        self._tree = _generate_default_data_tree(Particle.NEUTRON)
 
     @property
     def _tree_value(self, particle):
@@ -457,7 +460,7 @@ class Importance(CellModifierInput):
 
 def _generate_default_data_tree(particle):
     list_node = syntax_node.ListNode("number sequence")
-    list_node.append(syntax_node.ValueNode(None, float))
+    list_node.append(syntax_node.ValueNode(str(Importance._DEFAULT_IMP), float))
     classifier = syntax_node.ClassifierNode()
     classifier.prefix = syntax_node.ValueNode("IMP", str)
     classifier.padding = syntax_node.PaddingNode(" ")

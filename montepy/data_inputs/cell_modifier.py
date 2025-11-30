@@ -57,6 +57,7 @@ class CellModifierInput(DataInputAbstract):
         if self.in_cell_block:
             self._parse_cell_tree()
         else:
+            super()._parse_tree()
             self._parse_data_tree()
 
     @abstractmethod
