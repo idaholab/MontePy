@@ -135,7 +135,11 @@ class Importance(CellModifierInput):
         for part in self:
             has_info.append(
                 not math.isclose(
-                    self[part], self._DEFAULT_IMP, rel_tol=rel_tol, abs_tol=abs_tol
+                    # avoid __getitem__ to avoid warnings of not in problem due to default values
+                    self._particle_importances[part]["data"][0].value,
+                    self._DEFAULT_IMP,
+                    rel_tol=rel_tol,
+                    abs_tol=abs_tol,
                 )
             )
         if any(has_info):
