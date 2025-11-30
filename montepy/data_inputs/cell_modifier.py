@@ -29,6 +29,7 @@ class CellModifierInput(DataInputAbstract):
         the value syntax tree from the key-value pair in a cell
     """
 
+
     def __init__(
         self,
         input: InitInput = None,
@@ -37,6 +38,7 @@ class CellModifierInput(DataInputAbstract):
         value: syntax_node.SyntaxNode = None,
         *,
         jit_parse: bool = True,
+        **kwargs,
     ):
         fast_parse = False
         if key and value:
@@ -51,7 +53,12 @@ class CellModifierInput(DataInputAbstract):
             self._data = value["data"]
         else:
             self._set_in_cell_block = False
-        super().__init__(input, fast_parse, jit_parse=jit_parse)
+        if input is None and value is None:
+            self._generate_default_node(**kwargs)
+        self._parse_tree()
+        # TODO find a way to invoke __split_name, and parse the classifier
+        # but without over writing _tree and killing _parse_tree
+        self._DataInputAbstract__split_name(input)
 
     def _parse_tree(self):
         if self.in_cell_block:
@@ -67,6 +74,26 @@ class CellModifierInput(DataInputAbstract):
     @abstractmethod
     def _parse_data_tree(self):
         pass
+
+    def full_parse(self):
+        # TODO deprecate update_pointers
+        # TODO test for catastrophic surface, material, transform renumbering
+        if hasattr(self, "_not_parsed") and self._not_parsed:
+            del self._not_parsed
+            problem = self._problem
+            old_data = {k: getattr(self, k) for k in self._KEYS_TO_PRESERVE}
+            if self.in_cell_block:
+                self.__init__(
+                    in_cell_block=True,
+                    key=self._in_key,
+                    value=self._in_value,
+                    jit_parse=False,
+                )
+            else:
+                self.__init__(self._input, jit_parse=False)
+            [setattr(self, k, v) for k, v in old_data.items()]
+            if problem:
+                self.link_to_problem(problem)
 
     def _generate_default_tree(self):
         if self.in_cell_block:
