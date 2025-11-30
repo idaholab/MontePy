@@ -120,6 +120,10 @@ class Cell(Numbered_MCNP_Object):
         fill.Fill: ("_fill", True),
     }
 
+    @staticmethod
+    def _parent_collections():
+        return (("cells", "complements", True),)
+
     _parser = CellParser
     _JitParser = JitCellParser
 

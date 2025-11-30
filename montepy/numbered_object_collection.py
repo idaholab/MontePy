@@ -246,6 +246,28 @@ class NumberedObjectCollection(ABC):
                 f"Number {number} is already in use for the collection: {type(self).__name__} by {self[number]}"
             )
 
+    def search_parent_objs_by_child(self, child, parent_prop, prop_container=False):
+        """ """
+        search_str = str(child.number)
+        for obj in self:
+            # possible candidate without full parsing
+            if obj.search(search_str):
+                # trigger full parse
+                if isinstance(parent_prop, tuple):
+                    parent_obj = obj
+                    for prop in parent_prop:
+                        # go through multiple levels of getattr
+                        parent_obj = getattr(parent_obj, prop)
+                else:
+                    parent_obj = getattr(obj, parent_prop)
+                if prop_container:
+                    if child in parent_obj:
+                        # already parsed and linked by this point, nothing further to do.
+                        pass
+                else:
+                    if child is parent_obj:
+                        pass
+
     def _update_number(self, old_num, new_num, obj):
         """Updates the number associated with a specific object in the internal cache.
 

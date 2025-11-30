@@ -155,6 +155,10 @@ class MCNP_Object(ABC, metaclass=_ExceptionContextAdder):
     def full_parse(self):
         # TODO deprecate update_pointers
         # TODO test for catastrophic surface, material, transform renumbering
+        # TODO update str and repr to be jit safe
+        # TODO update push to cell method
+        # TODO make way for pulling leading comments from neighbors
+        # TODO handle material-thermal linking
         if hasattr(self, "_not_parsed") and self._not_parsed:
             del self._not_parsed
             problem = self._problem

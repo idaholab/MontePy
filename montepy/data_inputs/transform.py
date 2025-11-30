@@ -31,6 +31,13 @@ class Transform(data_input.DataInputAbstract, Numbered_MCNP_Object):
         Parse the object just-in-time, when the information is actually needed, if True.
     """
 
+    @staticmethod
+    def _parent_collections():
+        return (
+            ("surfaces", "transform", False),
+            ("cells", ("fill", "transform"), False),
+        )
+
     @args_checked
     def __init__(
         self,

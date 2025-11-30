@@ -40,6 +40,10 @@ class Surface(Numbered_MCNP_Object):
 
     _JitParser = JitSurfParser
 
+    @staticmethod
+    def _parent_collections():
+        return (("cells", "surfaces", True), ("surfaces", "periodic_surface", False))
+
     @args_checked
     def __init__(
         self,

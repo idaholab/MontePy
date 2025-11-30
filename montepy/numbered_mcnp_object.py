@@ -10,27 +10,6 @@ import montepy.types as ty
 from montepy.utilities import *
 
 
-def _number_validator(self, number):
-    if number < 0:
-        raise ValueError("number must be >= 0")
-    if self._problem:
-        obj_map = montepy.MCNP_Problem._NUMBERED_OBJ_MAP
-        try:
-            collection_type = obj_map[type(self)]
-        except KeyError as e:
-            found = False
-            for obj_class in obj_map:
-                if isinstance(self, obj_class):
-                    collection_type = obj_map[obj_class]
-                    found = True
-                    break
-            if not found:
-                raise e
-        collection = getattr(self._problem, collection_type.__name__.lower())
-        collection.check_number(number)
-        collection._update_number(self.number, number, self)
-
-
 class Numbered_MCNP_Object(MCNP_Object):
     """An abstract class to represent an mcnp object that has a number.
 
@@ -79,6 +58,41 @@ class Numbered_MCNP_Object(MCNP_Object):
     def number(self, value: ty.NonNegativeInt):
         _number_validator(self, value)
         self._number.value = value
+
+    def _number_validator(self, number):
+        if number < 0:
+            raise ValueError("number must be >= 0")
+        if self._problem:
+            obj_map = montepy.MCNP_Problem._NUMBERED_OBJ_MAP
+            try:
+                collection_type = obj_map[type(self)]
+            except KeyError as e:
+                found = False
+                for obj_class in obj_map:
+                    if isinstance(self, obj_class):
+                        collection_type = obj_map[obj_class]
+                        found = True
+                        break
+                if not found:
+                    raise e
+            collection = getattr(self._problem, collection_type.__name__.lower())
+            collection.check_number(number)
+            self._find_impacted_parents(number)
+            collection._update_number(self.number, number, self)
+
+    def _find_impacted_parents(self, new_number):
+        if self.number == new_number:
+            return
+        if not self._problem:
+            return
+        for collection_name, parent_prop, is_container in self._parent_collections():
+            collection = getattr(self._problem, collection_name)
+            collection.search_parent_objs_by_child_num(self, parent_prop, is_container)
+
+    @abstractmethod
+    @staticmethod
+    def _parent_collections():
+        pass
 
     @property
     @abstractmethod

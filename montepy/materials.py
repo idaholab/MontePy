@@ -43,6 +43,10 @@ class Materials(NumberedDataObjectCollection):
         the list of materials to start with if needed
     """
 
+    @staticmethod
+    def _parent_collections():
+        return ("cells", "material", False)
+
     @args_checked
     def __init__(
         self, objects: list[Material] = None, problem: montepy.MCNP_Problem = None
