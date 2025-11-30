@@ -63,7 +63,7 @@ class Numbered_MCNP_Object(MCNP_Object):
     _CHILD_OBJ_MAP = {}
     """"""
 
-    @make_prop_val_node("_number", ty.Integral, validator=_number_validator)
+    @property
     def number(self):
         """The current number of the object that will be written out to a new input.
 
@@ -71,7 +71,14 @@ class Numbered_MCNP_Object(MCNP_Object):
         -------
         int
         """
-        pass
+        return self._number.value
+
+    @number.setter
+    @needs_full_cst
+    @args_checked
+    def number(self, value: ty.PositiveInt):
+        _number_validator(self, value)
+        self._number.value = value
 
     @property
     @abstractmethod
