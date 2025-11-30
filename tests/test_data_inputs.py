@@ -141,7 +141,7 @@ def test_volume_init_cell():
                 "data": list_node,
             },
         )
-        card = volume.Volume(key="VoL", value=node, in_cell_block=True)
+        card = volume.Volume(key="VoL", value=node, in_cell_block=True, jit_parse=False)
     with pytest.raises(ValueError):
         list_node = syntax_node.ListNode("data")
         list_node.append(syntax_node.ValueNode("-1", float))
@@ -153,7 +153,7 @@ def test_volume_init_cell():
                 "data": list_node,
             },
         )
-        card = volume.Volume(key="VoL", value=node, in_cell_block=True)
+        card = volume.Volume(key="VoL", value=node, in_cell_block=True, jit_parse=False)
 
 
 def test_volume_init_data():
@@ -186,7 +186,7 @@ def test_volume_init_data():
 def test_volume_init_data():
     in_str = "VOL 1 1 2J 0"
     input_card = Input([in_str], BlockType.DATA)
-    vol_card = parse_data(input_card)
+    vol_card = parse_data(input_card, jit_parse=False)
     answers = [1.0, 1.0, None, None, 0.0]
     for i, vol in enumerate(vol_card._volume):
         if isinstance(vol, syntax_node.ValueNode):
@@ -201,12 +201,12 @@ def test_volume_init_data():
     in_str = "VOL NO s 1 2J 0"
     input_card = Input([in_str], BlockType.DATA)
     with pytest.raises(MalformedInputError):
-        vol_card = parse_data(input_card)
+        vol_card = parse_data(input_card, jit_parse=False)
     # negative volume
     in_str = "VOL NO -1 1 2J 0"
     input_card = Input([in_str], BlockType.DATA)
     with pytest.raises(MalformedInputError):
-        vol_card = parse_data(input_card)
+        vol_card = parse_data(input_card, jit_parse=False)
 
 
 def test_volumes_for_only_some_cells():
