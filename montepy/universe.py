@@ -26,6 +26,10 @@ class Universe(Numbered_MCNP_Object):
         The number for the universe, must be ≥ 0
     """
 
+    @staticmethod
+    def _parent_collections():
+        return (("cells", "universe", False),)
+
     @args_checked
     def __init__(self, number: ty.NonNegativeInt, *, jit_parse: bool = False):
         super().__init__(Input(["U"], BlockType.DATA), number)

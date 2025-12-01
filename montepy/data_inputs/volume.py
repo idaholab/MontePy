@@ -172,17 +172,16 @@ class Volume(CellModifierInput):
         )
 
     @needs_full_ast
-    # TODO prevent from mass updates
     def push_to_cells(self):
         if not self.in_cell_block and self._problem and self._volume:
             self._check_redundant_definitions()
             cells = self._problem.cells
-            for i, cell in enumerate(cells):
-                if i >= len(self._volume):
-                    return
-                vol = self._volume[i]
+            for vol, cell in zip(cells, self._volume):
                 if not isinstance(vol, Jump):
-                    cell._volume._volume = vol
+                    cell._volume._accept_from_data(vol)
+
+    def _accept_and_update(self, value):
+        self.volume = value
 
     def _clear_data(self):
         del self._volume

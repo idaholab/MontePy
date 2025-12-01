@@ -218,12 +218,20 @@ class Importance(CellModifierInput):
     @needs_full_ast
     def push_to_cells(self):
         if self._problem and not self.in_cell_block:
+            # TODO
             self._check_redundant_definitions()
+            part_keys = self._particle_importances.keys()
+            cell_importances = []
+            for imp_group in zip(*self._particle_importances.values()):
+                cell_importances.append({k: v for k, v in zip(part_keys, imp_group)})
+            for cell_imp, cell in zip(cell_importances, self._problem.cells):
+                cell._importance._accept_from_data(cell_imp)
             for particle in self._particle_importances:
                 if not self._particle_importances[particle]:
                     continue
                 for i, cell in enumerate(self._problem.cells):
-                    value = self._particle_importances[particle]["data"][i]
+                    # TODO
+                    value = self._particle_importances[partiVcle]["data"][i]
                     # force generating the default tree
                     cell.importance[particle] = value.value
                     cell.importance._explicitly_set = True
@@ -236,6 +244,11 @@ class Importance(CellModifierInput):
                     data = tree["data"]
                     data.nodes.pop()
                     data.nodes.append(value)
+
+    def _accept_and_update(self, value):
+        for part, value in value.items():
+            self[part] = value
+        self.importance._explicitly_set = True
 
     def _format_tree(self):
         if self.in_cell_block:

@@ -81,8 +81,6 @@ class CellModifierInput(DataInputAbstract):
         pass
 
     def full_parse(self):
-        # TODO deprecate update_pointers
-        # TODO test for catastrophic surface, material, transform renumbering
         if hasattr(self, "_not_parsed") and self._not_parsed:
             del self._not_parsed
             problem = self._problem
@@ -97,6 +95,14 @@ class CellModifierInput(DataInputAbstract):
             else:
                 self.__init__(self._input, jit_parse=False)
             [setattr(self, k, v) for k, v in old_data.items()]
+            if hasattr(self, "_parked_value"):
+                try:
+                    self._accept_and_update(self._parked_value)
+                except (ValueError, TypeError) as e:
+                    raise type(e)(
+                        f"Invalid value given for data block input for {type(self).__name__}. "
+                        f"Original error: {e}"
+                    ) from e
             if problem:
                 self.link_to_problem(problem)
 
@@ -164,6 +170,16 @@ class CellModifierInput(DataInputAbstract):
         if problem and not hasattr(self, "_not_parsed") and self.set_in_cell_block:
             self._problem.print_in_data_block[self._class_prefix()] = False
 
+    def _accept_from_data(self, value):
+        if hasattr(self, "_not_parsed"):
+            self._parked_data = value
+        else:
+            self._accept_and_update(value)
+
+    @abstractmethod
+    def _accept_and_update(self, value):
+        pass
+
     @abstractmethod
     def push_to_cells(self):
         """After being linked to the problem update all cells attributes with this data.
@@ -195,6 +211,7 @@ class CellModifierInput(DataInputAbstract):
 
     def _check_redundant_definitions(self):
         """Checks that data wasn't given in data block and the cell block."""
+        # TODO Use this less and more safely
         attr, _ = montepy.Cell._INPUTS_TO_PROPERTY[type(self)]
         if not self._in_cell_block and self._problem:
             cells = self._problem.cells

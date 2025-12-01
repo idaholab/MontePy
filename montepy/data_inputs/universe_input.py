@@ -161,6 +161,7 @@ class UniverseInput(CellModifierInput):
 
     @needs_full_ast
     def push_to_cells(self):
+        # TODO figure out how to handle object queries
         if not self._problem:
             return
         if not self.in_cell_block:
@@ -172,7 +173,7 @@ class UniverseInput(CellModifierInput):
                 ):
                     if isinstance(uni_number, (Jump, type(None))):
                         continue
-                    cell._universe._old_number = uni_number
+                    cell._universe._accept_from_data(uni_number)
                     if uni_number.is_negative:
                         cell._universe._not_truncated = True
             universes = self._problem.universes
@@ -187,6 +188,10 @@ class UniverseInput(CellModifierInput):
                 else:
                     universe = universes[uni_num]
                 cell._universe._universe = universe
+
+    def _accept_and_update(self, value):
+        # TODO
+        pass
 
     def _clear_data(self):
         del self._old_numbers
