@@ -642,7 +642,8 @@ class NumberedObjectCollection(ABC):
             self.append(obj)
         except (NumberConflictError, ValueError) as e:
             number = self.request_number(number, step)
-            obj.number = number
+            # avoid object searching
+            obj._number.value = number
             self.append(obj)
 
         return number
