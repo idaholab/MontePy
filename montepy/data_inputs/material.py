@@ -296,6 +296,10 @@ class Material(data_input.DataInputAbstract, Numbered_MCNP_Object):
     _parser = MaterialParser
     _NEW_LINE_STR = "\n" + " " * DEFAULT_INDENT
 
+    @staticmethod
+    def _parent_collections():
+        return (("cells", "material", False),)
+
     @args_checked
     def __init__(
         self,

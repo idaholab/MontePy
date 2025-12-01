@@ -251,6 +251,7 @@ class NumberedObjectCollection(ABC):
         search_str = str(child.number)
         for obj in self:
             # possible candidate without full parsing
+            # treat no input as a negative find since it will already be parsed
             if obj.search(search_str):
                 # trigger full parse
                 if isinstance(parent_prop, tuple):

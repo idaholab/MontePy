@@ -56,7 +56,7 @@ class Numbered_MCNP_Object(MCNP_Object):
     @needs_full_cst
     @args_checked
     def number(self, value: ty.NonNegativeInt):
-        _number_validator(self, value)
+        self._number_validator(value)
         self._number.value = value
 
     def _number_validator(self, number):
@@ -87,10 +87,10 @@ class Numbered_MCNP_Object(MCNP_Object):
             return
         for collection_name, parent_prop, is_container in self._parent_collections():
             collection = getattr(self._problem, collection_name)
-            collection.search_parent_objs_by_child_num(self, parent_prop, is_container)
+            collection.search_parent_objs_by_child(self, parent_prop, is_container)
 
-    @abstractmethod
     @staticmethod
+    @abstractmethod
     def _parent_collections():
         pass
 

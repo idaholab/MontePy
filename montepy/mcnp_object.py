@@ -168,7 +168,7 @@ class MCNP_Object(ABC, metaclass=_ExceptionContextAdder):
             if problem:
                 self.link_to_problem(problem)
 
-    def search(search: str | re.Pattern) -> bool:
+    def search(self, search: str | re.Pattern) -> bool:
         """
         Searches this input for the given string, or compiled regular expression.
 
@@ -182,7 +182,9 @@ class MCNP_Object(ABC, metaclass=_ExceptionContextAdder):
         bool
             Whether this
         """
-        return self._input.search()
+        if self._input is None:
+            return
+        return self._input.search(search)
 
     @staticmethod
     def _generate_default_node(
