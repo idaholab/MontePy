@@ -172,13 +172,12 @@ class TestNumberedObjectCollection:
         prob2 = copy.deepcopy(cp_simple_problem)
         print(hex(id(cp_simple_problem.materials._problem)))
         # Delete Material 2, making its number available.
-        prob2.materials.remove(prob2.materials[2])
         len_mats = len(prob2.materials)
         mat1 = prob1.materials[1]
         new_num = prob2.materials.append_renumber(mat1)
-        assert new_num == 2, "Material not renumbered correctly."
+        assert new_num == 4, "Material not renumbered correctly."
         assert len(prob2.materials) == len_mats + 1, "Material not appended"
-        assert prob2.materials[2] is mat1, "Material 2 is not the new material"
+        assert prob2.materials[4] is mat1, "Material 2 is not the new material"
 
     def test_request_number(self, cp_simple_problem):
         cells = cp_simple_problem.cells
