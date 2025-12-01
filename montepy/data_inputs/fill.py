@@ -593,6 +593,9 @@ class Fill(CellModifierInput):
             for cell in self._problem.cells:
                 cell._fill.push_to_cells()
 
+    def _accept_and_update(self, value):
+        pass
+
     def _clear_data(self):
         self._old_number = None
         self._universe = None

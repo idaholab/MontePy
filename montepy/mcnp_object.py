@@ -157,7 +157,6 @@ class MCNP_Object(ABC, metaclass=_ExceptionContextAdder):
         # TODO test for catastrophic surface, material, transform renumbering
         # TODO update str and repr to be jit safe
         # TODO update push to cell method
-        # TODO make way for pulling leading comments from neighbors
         # TODO handle material-thermal linking
         if hasattr(self, "_not_parsed") and self._not_parsed:
             del self._not_parsed
@@ -354,7 +353,17 @@ The new input was:\n\n"""
         list
             the leading comments.
         """
-        return list(self._tree["start_pad"].comments)
+        possible_comments = list(self._tree["start_pad"].comments)
+        if (
+            not possible_comments
+            and not hasattr(self, "_grabbed_leading")
+            and self._problem
+        ):
+            leading_comments = self._problem._get_leading_comment(self)
+            if leading_comments:
+                self.leading_comments = leading_comments
+                return leading_comments
+        return possible_comments
 
     @leading_comments.setter
     @needs_full_cst

@@ -678,6 +678,22 @@ class MCNP_Problem:
             warning = LineExpansionWarning(message)
             warnings.warn(warning, stacklevel=3)
 
+    def _get_leading_comment(self, obj):
+        if isinstance(obj, Cell):
+            return self.cells._get_leading_comment(obj)
+        if isinstance(obj, Surface):
+            return self.surfaces._get_leading_comment(obj)
+        # data inputs now
+        try:
+            idx = self.data_inputs.index(obj)
+            if idx <= 0:
+                return None
+            comment = self.data_inputs[idx - 1].trailing_comment
+            self.data_inputs[idx - 1]._delete_trailing_comment()
+            return comment
+        except ValueError as e:
+            raise ValueError(f"Object: {obj} is not part of this problem.") from e
+
     def __load_data_inputs_to_object(self, data_inputs):
         """Loads data input into their appropriate problem attribute.
 

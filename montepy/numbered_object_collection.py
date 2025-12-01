@@ -269,6 +269,23 @@ class NumberedObjectCollection(ABC):
                     if child is parent_obj:
                         pass
 
+    def _get_leading_comment(self, obj):
+        """
+        TODO
+        """
+        try:
+            assert obj in self
+        except AssertionError:
+            raise KeyError(
+                f"obj: {obj} is not in this collection: {type(self).__name__}"
+            )
+        idx = self._objects.index(obj)
+        if idx <= 0:
+            return None
+        comment = self._objects[idx - 1].trailing_comment
+        self._objects[idx - 1]._delete_trailing_comment()
+        return comment
+
     def _update_number(self, old_num, new_num, obj):
         """Updates the number associated with a specific object in the internal cache.
 
@@ -1201,6 +1218,10 @@ class NumberedDataObjectCollection(NumberedObjectCollection):
             if insert_in_data:
                 self._problem.data_inputs.insert(index + 1, obj)
             self._last_index = index + 1
+
+    def _get_leading_comment(self, obj):
+        """ """
+        raise NotImplementedError(f"Should search through data_inputs directly.")
 
     def _delete_hook(self, obj):
         if self._problem:
