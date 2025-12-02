@@ -29,7 +29,7 @@ class _ExceptionContextAdder(ABCMeta):
                     finally:
                         del self._handling_exception
                 else:
-                    raise e
+                    raise e.with_traceback(e.__traceback__.tb_next.tb_next)
 
         if isinstance(func, staticmethod):
             return staticmethod(wrapped)

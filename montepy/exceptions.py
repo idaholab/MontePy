@@ -232,7 +232,7 @@ def add_line_number_to_exception(error, broken_robot):
     """
     # avoid calling this n times recursively
     if hasattr(error, "montepy_handled"):
-        raise error
+        raise error.with_traceback(error.__traceback__.tb_next.tb_next)
     error.montepy_handled = True
     args = error.args
     trace = error.__traceback__
@@ -256,7 +256,7 @@ def add_line_number_to_exception(error, broken_robot):
             message = f"{message}\n\nError came from an object of type {type(broken_robot)} from an unknown file."
     args = (message,) + args[1:]
     error.args = args
-    raise error.with_traceback(trace)
+    raise error.with_traceback(trace.tb_next.tb_next)
 
 
 class SurfaceConstantsWarning(UserWarning):

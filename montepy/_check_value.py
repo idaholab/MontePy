@@ -159,7 +159,11 @@ def args_checked(func: Callable):
                 args_iter = (arg_vals,)
             for val in args_iter:
                 [checker(val) for checker in checkers]
-        return func(*args, **kwargs)
+        try:
+            return func(*args, **kwargs)
+        except Exception as e:
+            et, ei, tb = sys.exc_info()
+            raise e.with_traceback(e.__traceback__.tb_next)
 
     return wrapper
 
