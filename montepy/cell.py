@@ -659,6 +659,7 @@ class Cell(Numbered_MCNP_Object):
         self._parameters = params
 
     @property
+    @needs_full_ast
     def complements(self):
         """The Cell objects that this cell is a complement of
 

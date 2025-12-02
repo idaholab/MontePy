@@ -361,14 +361,14 @@ The new input was:\n\n"""
         ):
             leading_comments = self._problem._get_leading_comment(self)
             if leading_comments:
-                self.leading_comments = leading_comments
+                self._grab_beginning_comment(leading_comments)
                 return leading_comments
         return possible_comments
 
     @leading_comments.setter
     @needs_full_cst
     @args_checked
-    def leading_comments(self, comments: ty.Iterable[CommentNode] | CommentNode):
+    def leading_comments(self, comments: ty.Iterable[CommentNode | str] | CommentNode):
         if isinstance(comments, CommentNode):
             comments = [comments]
         new_nodes = list(*zip(comments, it.cycle(["\n"])))
@@ -498,8 +498,8 @@ The new input was:\n\n"""
             return
         self.link_to_problem(problem)
 
-    @needs_full_ast
     @property
+    @needs_full_ast
     def trailing_comment(self) -> list[PaddingNode]:
         """The trailing comments and padding of an input.
 
