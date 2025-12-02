@@ -31,6 +31,7 @@ class Mode(DataInputAbstract):
             self._particles.add(Particle(particle.upper()))
 
     @property
+    @needs_full_ast
     def particles(self):
         """The type of particles involved in this problem.
 
@@ -43,6 +44,7 @@ class Mode(DataInputAbstract):
         return self._particles.copy()
 
     @args_checked
+    @needs_full_cst
     def add(self, particle: Particle | str | syntax_node.ValueNode):
         """Adds the given particle to the problem.
 
@@ -68,6 +70,7 @@ class Mode(DataInputAbstract):
         self._particles.add(particle)
 
     @args_checked
+    @needs_full_cst
     def remove(self, particle: Particle | str):
         """Remove the given particle from the problem
 
@@ -86,6 +89,7 @@ class Mode(DataInputAbstract):
         self._particles.remove(particle)
 
     @args_checked
+    @needs_full_cst
     def set(self, particles: str | ty.Iterable[Particle | str]):
         """Completely override the current mode.
 
@@ -120,12 +124,15 @@ class Mode(DataInputAbstract):
                     raise ValueError("cannot mix particle and string in mode")
             self._particles = set(particles)
 
+    @needs_full_ast
     def __contains__(self, obj):
         return obj in self._particles
 
+    @needs_full_ast
     def __iter__(self):
         return iter(self._particles)
 
+    @needs_full_ast
     def __len__(self):
         return len(self._particles)
 
