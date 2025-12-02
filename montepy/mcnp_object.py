@@ -362,7 +362,8 @@ The new input was:\n\n"""
             leading_comments = self._problem._get_leading_comment(self)
             if leading_comments:
                 self._grab_beginning_comment(leading_comments)
-                return leading_comments
+                self._grabbed_leading = True
+                return self.leading_comments
         return possible_comments
 
     @leading_comments.setter

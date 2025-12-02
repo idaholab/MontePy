@@ -681,7 +681,7 @@ class MCNP_Problem:
     def _get_leading_comment(self, obj):
         if isinstance(obj, Cell):
             return self.cells._get_leading_comment(obj)
-        if isinstance(obj, Surface):
+        if isinstance(obj, surface.Surface):
             return self.surfaces._get_leading_comment(obj)
         # data inputs now
         try:
