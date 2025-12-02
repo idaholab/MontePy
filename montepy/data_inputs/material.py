@@ -315,8 +315,6 @@ class Material(data_input.DataInputAbstract, Numbered_MCNP_Object):
         self._components = []
         self._thermal_scattering = None
         self._is_atom_fraction = True
-        self._number = self._generate_default_node(int, -1, None)
-        self._number.never_pad = True
         self._elements = set()
         self._nuclei = set()
         self._default_libs = _DefaultLibraries(self)
@@ -369,7 +367,7 @@ class Material(data_input.DataInputAbstract, Numbered_MCNP_Object):
         except ValueError:
             pass
 
-    def _generate_default_tree(self, number=None):
+    def _generate_default_tree(self, number=-1):
         classifier = syntax_node.ClassifierNode()
         number = self._generate_default_node(int, number)
         classifier.number = number

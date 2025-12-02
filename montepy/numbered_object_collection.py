@@ -507,7 +507,7 @@ class NumberedObjectCollection(ABC):
             raise TypeError(
                 f"Object must be of type: {self._obj_class.__name__}. {obj} given."
             )
-        if obj.number is None or obj.number < 0:
+        if obj.number < 0:
             raise ValueError(f"The number must be non-negative. {obj.number} given.")
         if obj.number in self.__num_cache:
             try:
@@ -635,7 +635,7 @@ class NumberedObjectCollection(ABC):
         """
         if not isinstance(obj, self._obj_class):
             raise TypeError(f"object being appended must be of type: {self._obj_class}")
-        number = obj.number if obj.number is not None and obj.number > 0 else 1
+        number = obj.number if obj.number > 0 else 1
         if self._problem:
             obj.link_to_problem(self._problem)
         try:
