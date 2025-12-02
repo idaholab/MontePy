@@ -21,6 +21,19 @@ class ObjectFixture(MCNP_Object):
     def _update_values(self):
         pass
 
+    def _init_blank(self):
+        pass
+
+    def _generate_default_tree(self):
+        pass
+
+    @staticmethod
+    def _parser():
+        pass
+
+    def _parse_tree(self):
+        pass
+
     @staticmethod
     def bad_static():
         raise ValueError("foo")
