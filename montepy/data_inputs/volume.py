@@ -176,12 +176,12 @@ class Volume(CellModifierInput):
         if not self.in_cell_block and self._problem and self._volume:
             self._check_redundant_definitions()
             cells = self._problem.cells
-            for vol, cell in zip(cells, self._volume):
+            for cell, vol in zip(cells, self._volume):
                 if not isinstance(vol, Jump):
                     cell._volume._accept_from_data(vol)
 
     def _accept_and_update(self, value):
-        self.volume = value
+        self._volume = value
 
     def _clear_data(self):
         del self._volume
