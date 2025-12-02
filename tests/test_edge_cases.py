@@ -29,13 +29,16 @@ def test_interp_surface_edge_case():
 
 def test_excess_mt():
     with pytest.raises(MalformedInputError):
-        montepy.read_input(os.path.join("tests", "inputs", "test_excess_mt.imcnp"))
+        montepy.read_input(
+            os.path.join("tests", "inputs", "test_excess_mt.imcnp"), jit_parse=False
+        )
 
 
 def test_missing_mat_for_mt():
     with pytest.raises(MalformedInputError):
         montepy.read_input(
-            os.path.join("tests", "inputs", "test_missing_mat_for_mt.imcnp")
+            os.path.join("tests", "inputs", "test_missing_mat_for_mt.imcnp"),
+            jit_parse=False,
         )
 
 
@@ -45,7 +48,9 @@ def test_orphaning_mt():
         ["MT5 lwtr.01t"],
         montepy.input_parser.block_type.BlockType.DATA,
     )
-    problem.data_inputs.append(montepy.data_inputs.data_parser.parse_data(input_obj))
+    problem.data_inputs.append(
+        montepy.data_inputs.data_parser.parse_data(input_obj, jit_parse=False)
+    )
     with io.StringIO() as stream:
         with pytest.raises(MalformedInputError):
             problem.write_problem(stream)
