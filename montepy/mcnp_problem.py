@@ -464,10 +464,9 @@ class MCNP_Problem:
                 warnings.warn(f"{type(e).__name__}: {e.message}", stacklevel=2)
             else:
                 raise e
-        if not jit_parse:
-            self.__update_internal_pointers(check_input)
+        self.__update_internal_pointers(check_input, jit_parse)
 
-    def __update_internal_pointers(self, check_input=False):
+    def __update_internal_pointers(self, check_input=False, jit_parse=True):
         """Updates the internal pointers between objects
 
         Parameters
@@ -484,6 +483,9 @@ class MCNP_Problem:
                 raise e
 
         self.__load_data_inputs_to_object(self._data_inputs)
+        # TODO
+        if jit_parse:
+            return
         self._cells.update_pointers(
             self.cells,
             self.materials,
