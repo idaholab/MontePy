@@ -6,7 +6,7 @@ description = "A library for reading, editing, and writing MCNP input files"
 readme = "README.md"
 requires-python = ">=3.12"
 maintainers = [
-	{name = "Micah Gale", email = "mgale@montepy.org"}
+    {name = "Micah Gale", email = "mgale@montepy.org"}
 ]
 authors = [
 	{name = "Micah Gale", email = "mgale@montepy.org"},
@@ -41,17 +41,19 @@ dependencies = [
 
 [project.optional-dependencies]
 test = [
-	"coverage[toml]>=6.3.2", 
-	"hypothesis",
-	"pytest", 
-	"pytest-profiling",
-	"montepy[build]",
-	"phmutest",
+    "coverage[toml]>=6.3.2", 
+    "hypothesis",
+    "pytest", 
+    "pytest-profiling",
+    "pytest-xdist",
+    "pytest-cov",
+    "montepy[build]",
+    "phmutest",
 ]
 build = [
-	"build",
-	"setuptools>=64.0.0",
-	"setuptools-scm>=8",
+    "build",
+    "setuptools>=64.0.0",
+    "setuptools-scm>=8",
 ]
 doc = [
 	"montepy[build]",
@@ -68,7 +70,7 @@ doc = [
 ]
 format = ["black~=25.1"]
 develop = [
-	"montepy[test,doc,format]",
+    "montepy[test,doc,format]",
 ]
 demos = ["jupyter", "ipykernel>=6,<8"]
 demo-test = ["montepy[demos]", "papermill"]
@@ -104,8 +106,8 @@ precision = 2
 show_missing = true
 fail_under = 90.0
 exclude_also = [
-	"\\s+@abstractmethod\\s*",
-	"pass",
+    "\\s+@abstractmethod\\s*",
+    "pass",
 ]
 
 [tool.pytest.ini_options]

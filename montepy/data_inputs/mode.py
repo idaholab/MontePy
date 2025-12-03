@@ -1,7 +1,9 @@
 # Copyright 2024, Battelle Energy Alliance, LLC All Rights Reserved.
-from montepy.data_inputs.data_input import DataInputAbstract
+from montepy.utilities import *
+from montepy.data_inputs.data_input import DataInputAbstract, InitInput
 from montepy.input_parser import syntax_node
 from montepy.particle import Particle
+import montepy.types as ty
 
 
 class Mode(DataInputAbstract):
@@ -13,7 +15,8 @@ class Mode(DataInputAbstract):
         the Input object representing this data input
     """
 
-    def __init__(self, input=None):
+    @args_checked
+    def __init__(self, input: InitInput = None):
         super().__init__(input)
         if input:
             self._particles = set()
@@ -52,7 +55,8 @@ class Mode(DataInputAbstract):
         """
         return self._particles.copy()
 
-    def add(self, particle):
+    @args_checked
+    def add(self, particle: Particle | str | syntax_node.ValueNode):
         """Adds the given particle to the problem.
 
         If specifying particle type by string this must be the MCNP shorthand,
@@ -68,8 +72,6 @@ class Mode(DataInputAbstract):
         ValueError
             if string is not a valid particle shorthand.
         """
-        if not isinstance(particle, (Particle, str, syntax_node.ValueNode)):
-            raise TypeError("particle must be a Particle instance")
         if isinstance(particle, (str, syntax_node.ValueNode)):
             # error catching not needed
             # enum will raise ValueError "foo is not a valid Particle"
@@ -78,7 +80,8 @@ class Mode(DataInputAbstract):
             particle = Particle(particle.upper())
         self._particles.add(particle)
 
-    def remove(self, particle):
+    @args_checked
+    def remove(self, particle: Particle | str):
         """Remove the given particle from the problem
 
         Parameters
@@ -91,13 +94,12 @@ class Mode(DataInputAbstract):
         ValueError
             if string is not a valid particle shorthand.
         """
-        if not isinstance(particle, (Particle, str)):
-            raise TypeError("particle must be a Particle instance")
         if isinstance(particle, str):
             particle = Particle(particle.upper())
         self._particles.remove(particle)
 
-    def set(self, particles):
+    @args_checked
+    def set(self, particles: str | ty.Iterable[Particle | str]):
         """Completely override the current mode.
 
         Can specify it as:
@@ -115,14 +117,10 @@ class Mode(DataInputAbstract):
         ValueError
             if string is not a valid particle shorthand.
         """
-        if not isinstance(particles, (list, set, str)):
-            raise TypeError("particles must be a list, string, or set")
-        if isinstance(particles, (list, set)):
+        if isinstance(particles, ty.Iterable) and not isinstance(particles, str):
             is_str = True
             for particle in particles:
-                if not isinstance(particle, (str, Particle)):
-                    raise TypeError("particle must be a Particle or string")
-                if not isinstance(particle, str):
+                if isinstance(particle, Particle):
                     is_str = False
         else:
             particles = particles.split()

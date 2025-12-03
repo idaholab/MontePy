@@ -2,10 +2,8 @@
 from __future__ import annotations
 from abc import ABC, ABCMeta, abstractmethod
 import copy
-import functools
 import itertools as it
 import textwrap
-from typing import Union
 import warnings
 import weakref
 
@@ -23,67 +21,13 @@ from montepy.input_parser.syntax_node import (
     ParametersNode,
     ValueNode,
 )
+
 import montepy
+from montepy._exception_context import _ExceptionContextAdder
+from montepy.utilities import *
+import montepy.types as ty
 
-InitInput = Union[montepy.input_parser.mcnp_input.Input, str]
-
-
-class _ExceptionContextAdder(ABCMeta):
-    """A metaclass for wrapping all class properties and methods in :func:`~montepy.errors.add_line_number_to_exception`."""
-
-    @staticmethod
-    def _wrap_attr_call(func):
-        """Wraps the function, and returns the modified function."""
-
-        @functools.wraps(func)
-        def wrapped(*args, **kwargs):
-            try:
-                return func(*args, **kwargs)
-            except Exception as e:
-                if len(args) > 0 and isinstance(args[0], MCNP_Object):
-                    self = args[0]
-                    if hasattr(self, "_handling_exception"):
-                        raise e
-                    self._handling_exception = True
-                    try:
-                        add_line_number_to_exception(e, self)
-                    finally:
-                        del self._handling_exception
-                else:
-                    raise e
-
-        if isinstance(func, staticmethod):
-            return staticmethod(wrapped)
-        if isinstance(func, classmethod):
-            return classmethod(wrapped)
-        return wrapped
-
-    def __new__(meta, classname, bases, attributes):
-        """This will replace all properties and callable attributes with
-        wrapped versions.
-        """
-        new_attrs = {}
-        for key, value in attributes.items():
-            if key.startswith("_"):
-                new_attrs[key] = value
-            if callable(value):
-                new_attrs[key] = _ExceptionContextAdder._wrap_attr_call(value)
-            elif isinstance(value, property):
-                new_props = {}
-                for attr_name in {"fget", "fset", "fdel", "doc"}:
-                    try:
-                        assert getattr(value, attr_name)
-                        new_props[attr_name] = _ExceptionContextAdder._wrap_attr_call(
-                            getattr(value, attr_name)
-                        )
-                    except (AttributeError, AssertionError):
-                        new_props[attr_name] = None
-
-                new_attrs[key] = property(**new_props)
-            else:
-                new_attrs[key] = value
-        cls = super().__new__(meta, classname, bases, new_attrs)
-        return cls
+InitInput = montepy.input_parser.mcnp_input.Input | str
 
 
 class MCNP_Object(ABC, metaclass=_ExceptionContextAdder):
@@ -91,12 +35,13 @@ class MCNP_Object(ABC, metaclass=_ExceptionContextAdder):
 
     Parameters
     ----------
-    input : Union[Input, str]
+    input : Input | str
         The Input syntax object this will wrap and parse.
     parser : MCNP_Parser
         The parser object to parse the input with.
     """
 
+    # TODO: document that all user facing children must be args checked
     def __init__(
         self,
         input: InitInput,
@@ -110,8 +55,6 @@ class MCNP_Object(ABC, metaclass=_ExceptionContextAdder):
         self._parameters = ParametersNode()
         self._input = None
         if input:
-            if not isinstance(input, (montepy.input_parser.mcnp_input.Input, str)):
-                raise TypeError(f"input must be an Input or str. {input} given.")
             if isinstance(input, str):
                 input = montepy.input_parser.mcnp_input.Input(
                     input.split("\n"), self._BLOCK_TYPE
@@ -225,13 +168,14 @@ class MCNP_Object(ABC, metaclass=_ExceptionContextAdder):
         """
         pass
 
-    def format_for_mcnp_input(self, mcnp_version: tuple[int]) -> list[str]:
+    @args_checked
+    def format_for_mcnp_input(self, mcnp_version: ty.VersionType) -> list[str]:
         """Creates a list of strings representing this MCNP_Object that can be
         written to file.
 
         Parameters
         ----------
-        mcnp_version : tuple[int]
+        mcnp_version : ty.VersionType
             The tuple for the MCNP version that must be exported to.
 
         Returns
@@ -248,14 +192,15 @@ class MCNP_Object(ABC, metaclass=_ExceptionContextAdder):
         self._flush_line_expansion_warning(lines, ws)
         return lines
 
-    def mcnp_str(self, mcnp_version: tuple[int] = None):
+    @args_checked
+    def mcnp_str(self, mcnp_version: ty.VersionType = None) -> str:
         """Returns a string of this input as it would appear in an MCNP input file.
 
         ..versionadded:: 1.0.0
 
         Parameters
         ----------
-        mcnp_version: tuple[int]
+        mcnp_version: ty.VersionType
             The tuple for the MCNP version that must be exported to.
 
         Returns
@@ -322,25 +267,10 @@ The new input was:\n\n"""
         return list(self._tree["start_pad"].comments)
 
     @leading_comments.setter
-    def leading_comments(self, comments):
-        if not isinstance(comments, (list, tuple, CommentNode)):
-            raise TypeError(
-                f"Comments must be a CommentNode, or a list of Comments. {comments} given."
-            )
+    @args_checked
+    def leading_comments(self, comments: ty.Iterable[CommentNode] | CommentNode):
         if isinstance(comments, CommentNode):
             comments = [comments]
-        if isinstance(comments, (list, tuple)):
-            for comment in comments:
-                if not isinstance(comment, CommentNode):
-                    raise TypeError(
-                        f"Comments must be a CommentNode, or a list of Comments. {comment} given."
-                    )
-
-        for i, comment in enumerate(comments):
-            if not isinstance(comment, CommentNode):
-                raise TypeError(
-                    f"Comment must be a CommentNode. {comment} given at index {i}."
-                )
         new_nodes = list(*zip(comments, it.cycle(["\n"])))
         if self._tree["start_pad"] is None:
             self._tree["start_pad"] = PaddingNode(" ")
@@ -351,8 +281,12 @@ The new input was:\n\n"""
         self._tree["start_pad"]._delete_trailing_comment()
 
     @staticmethod
+    @args_checked
     def wrap_string_for_mcnp(
-        string, mcnp_version, is_first_line, suppress_blank_end=True
+        string: str,
+        mcnp_version: ty.VersionType,
+        is_first_line: bool,
+        suppress_blank_end: bool = True,
     ) -> list[str]:
         """Wraps the list of the words to be a well formed MCNP input.
 
@@ -427,7 +361,8 @@ The new input was:\n\n"""
         """Validates that the object is in a usable state."""
         pass
 
-    def link_to_problem(self, problem: montepy.mcnp_problem.MCNP_Problem):
+    @args_checked
+    def link_to_problem(self, problem: montepy.mcnp_problem.MCNP_Problem = None):
         """Links the input to the parent problem for this input.
 
         This is done so that inputs can find links to other objects.
@@ -437,8 +372,6 @@ The new input was:\n\n"""
         problem : MCNP_Problem
             The problem to link this input to.
         """
-        if not isinstance(problem, (montepy.mcnp_problem.MCNP_Problem, type(None))):
-            raise TypeError("problem must be an MCNP_Problem")
         if problem is None:
             self._problem_ref = None
         else:

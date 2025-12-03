@@ -1,4 +1,5 @@
 # Copyright 2024, Battelle Energy Alliance, LLC All Rights Reserved.
+from montepy.utilities import *
 from montepy.surfaces.axis_plane import AxisPlane
 from montepy.surfaces.surface import Surface, InitInput
 from montepy.surfaces.surface_type import SurfaceType
@@ -7,12 +8,13 @@ from montepy.surfaces.cylinder_par_axis import CylinderParAxis
 from montepy.surfaces.general_plane import GeneralPlane
 
 
+@args_checked
 def parse_surface(input: InitInput):
     """Builds a Surface object for the type of Surface
 
     Parameters
     ----------
-    input : Union[Input, str]
+    input : Input | str
         The Input object representing the input
 
     Returns
@@ -44,7 +46,7 @@ surface_builder = parse_surface
 
 Parameters
 ----------
-input : Union[Input, str]
+input : Input | str
     The Input object representing the input
 
 Returns

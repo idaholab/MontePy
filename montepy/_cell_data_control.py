@@ -1,5 +1,6 @@
 # Copyright 2024, Battelle Energy Alliance, LLC All Rights Reserved.
 import montepy
+from montepy.utilities import *
 
 
 class CellDataPrintController:
@@ -8,19 +9,15 @@ class CellDataPrintController:
     def __init__(self):
         self._print_data = {}
 
-    def __getitem__(self, key):
-        if not isinstance(key, str):
-            raise TypeError("Key must be a str")
+    @args_checked
+    def __getitem__(self, key: str):
         if key.upper() in montepy.Cell._ALLOWED_KEYWORDS:
             return self._print_data.get(key.lower(), False)
         else:
             raise KeyError(f"{key} is not a supported cell modifier in MCNP")
 
-    def __setitem__(self, key, value):
-        if not isinstance(key, str):
-            raise TypeError("Key must be a str")
-        if not isinstance(value, bool):
-            raise TypeError("Must be set to a boolean value")
+    @args_checked
+    def __setitem__(self, key: str, value: bool):
         if key.upper() in montepy.Cell._ALLOWED_KEYWORDS:
             self._print_data[key.lower()] = value
         else:

@@ -2,6 +2,17 @@
 MontePy Changelog
 *****************
 
+1.3 releases
+============
+
+#next release#
+--------------
+
+**Features Added**
+
+
+* Add _checkvalue.py_ to codebase (:issue:`687`). 
+
 1.2 releases
 ============
 
@@ -21,6 +32,10 @@ MontePy Changelog
 * Added Boundary condition type to the representation of a ``montepy.Surface`` (e.g., ``repr(surf)``)  (:issue:`682`).
 * Changed default importance value from 0.0 to 1.0 to match MCNP defaults. (:issue:`735`)
 
+**Performance Improvement**
+
+* Optimized :math:`\mathcal{O}(N^2)` scaling in :func:`montepy.NumberedObjectCollection.request_number` by improving ``NumberedObjectCollection.check_number`` to :math:`\mathcal{O}(N)` (:issue:`786`). 
+
 **Bugs Fixed**
 
 * Fixed bug where lines that were the allowed length was raising a ``LineOverRunWarning`` when read by MontePy (:issue:`517`). 
@@ -37,6 +52,11 @@ MontePy Changelog
       :new_tab_button_text: Launch jupyter in your browswer
 
 * Improved documentation for :class:`~montepy.numbered_object_collection.NumberedObjectCollection` on Slicing behavior. (:issue:`798`)
+* Reorganized Python API documentation. Some hyperlinks may be broken now (:pull:`828`).
+
+**Documentation**
+
+* Improved documentation for NumberedObjectCollections on Slicing behavior. (:issue:`798`)
 * Reorganized Python API documentation. Some hyperlinks may be broken now (:pull:`828`).
 
 **Deprecations**
@@ -83,6 +103,7 @@ MontePy Changelog
 **Features Added**
 
 * Added demonstration jupyter notebooks for working with Pin Cell and PWR assemblies in MontePy.
+* Add _checkvalue.py_ to codebase (:issue:`687`). 
 
 **Bugs Fixed**
 
@@ -110,6 +131,14 @@ MontePy Changelog
 
 1.0 releases
 ============
+
+#Next Version#
+--------------
+
+**Code Improvements**
+
+* Add _checkvalue.py_ to codebase (:issue:`687`). 
+
 
 1.0.0
 --------------
