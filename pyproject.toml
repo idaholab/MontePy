@@ -88,7 +88,7 @@ Changelog = "https://www.montepy.org/en/stable/changelog.html"
 
 [build-system]
 requires = ["setuptools>=77.0.0", "setuptools_scm>=8", "setuptools-rust"]
-build-backend = "setuptools.build_meta"
+build-backend = "maturin"
 
 [[tool.setuptools-rust.ext-modules]]
 target = "montepy.input_parser.pest._lib"
@@ -110,6 +110,9 @@ exclude_also = [
 	"\\s+@abstractmethod\\s*",
 	"pass",
 ]
+
+[tool.maturin]
+module-anem="montepy._input_parser"
 
 [tool.pytest.ini_options]
 minversion = "6.0"
