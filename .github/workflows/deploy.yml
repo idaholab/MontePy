@@ -59,7 +59,7 @@ jobs:
           gh release upload
           'v${{ steps.get_version.outputs.version }}' dist/**
           --repo '${{ github.repository }}'
-      - uses: actions/upload-artifact@v5
+      - uses: actions/upload-artifact@v6
         with: 
            name: build
            path: |
