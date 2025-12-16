@@ -136,7 +136,7 @@ MontePy Changelog
 * Avoided multiple ``LineExpansionWarnings`` coming from the same object on export (:issue:`198`).
 * Added ``mcnp_str`` function to all ``MCNP_Object`` to quickly get the string that would be printed in the MCNP input file (:issue:`700`).
 * Added ``montepy.MCNP_VERSION`` as an easy way to set the default MCNP version to target for reading and writing input files (:issue:`700`).
-* Renamed `Cell.lattice` to `Cell.lattice_type`, `Lattice` to `LatticeType`, and `LatticeType.HEXAHEDRA` to `LatticeType.HEXAHEDRAL` with deprecation warnings (:issue:`728`).
+* Renamed ``Cell.lattice`` to ``Cell.lattice_type``, ``Lattice`` to ``LatticeType``, and ``LatticeType.HEXAHEDRA`` to ``LatticeType.HEXAHEDRAL`` with deprecation warnings (:issue:`728`).
 
 **Bugs Fixed**
 
