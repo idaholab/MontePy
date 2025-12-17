@@ -229,7 +229,7 @@ class Cell(Numbered_MCNP_Object):
 
         Deleting an importance resets it to the default value (1.0).
         e.g., ``del cell.importance.neutron``.
-        
+
         .. versionchanged:: 1.2.0
 
             Default importance value changed from 0.0 to 1.0 to match MCNP defaults.
@@ -349,7 +349,7 @@ class Cell(Numbered_MCNP_Object):
     def lattice(self):
         """
         .. deprecated:: 1.0.0
-            
+
             Use :func:`lattice_type` instead.
         """
         _lattice_deprecation_warning()
