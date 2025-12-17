@@ -922,6 +922,13 @@ class Cell(Numbered_MCNP_Object):
         for key in keys:
             attr = getattr(self, key)
             setattr(result, key, copy.deepcopy(attr, memo))
+        # Clear weakrefs so the cloned cell isn't linked to original collection/problem
+        # This prevents number conflict checks against the original collection
+        result._collection_ref = None
+        result._problem_ref = None
+        # Update the geometry's _cell references to point to result, not the deepcopied intermediate
+        if result._geometry is not None:
+            result._geometry._set_cell(result)
         # copy geometry
         for special in special_keys:
             new_objs = []

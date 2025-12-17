@@ -5,6 +5,7 @@ import copy
 import itertools
 from typing import Union
 from numbers import Integral
+import weakref
 
 from montepy.mcnp_object import MCNP_Object, InitInput
 import montepy
@@ -14,22 +15,31 @@ from montepy.utilities import *
 def _number_validator(self, number):
     if number < 0:
         raise ValueError("number must be >= 0")
-    if self._problem:
-        obj_map = montepy.MCNP_Problem._NUMBERED_OBJ_MAP
-        try:
-            collection_type = obj_map[type(self)]
-        except KeyError as e:
-            found = False
-            for obj_class in obj_map:
-                if isinstance(self, obj_class):
-                    collection_type = obj_map[obj_class]
-                    found = True
-                    break
-            if not found:
-                raise e
-        collection = getattr(self._problem, collection_type.__name__.lower())
-        collection.check_number(number)
-        collection._update_number(self.number, number, self)
+
+    # Only validate against collection if linked to a problem
+    if self._problem is not None:
+        if self._collection is not None:
+            collection = self._collection
+        else:
+            # Find collection via _problem
+            obj_map = montepy.MCNP_Problem._NUMBERED_OBJ_MAP
+            collection_type = obj_map.get(type(self))
+
+            if collection_type is None:
+                # Finding via inheritance
+                for obj_class in obj_map:
+                    if isinstance(self, obj_class):
+                        collection_type = obj_map[obj_class]
+                        break
+
+            if collection_type is not None:
+                collection = getattr(self._problem, collection_type.__name__.lower())
+            else:
+                collection = None
+
+        if collection is not None:
+            collection.check_number(number)
+            collection._update_number(self.number, number, self)
 
 
 class Numbered_MCNP_Object(MCNP_Object):

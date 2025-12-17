@@ -86,6 +86,7 @@ class TestNumberedObjectCollection:
         extender = copy.deepcopy(extender)
         for surf in extender:
             surf._problem = None
+            surf._collection_ref = None
         surfaces[1000].number = 1
         extender[0].number = 1000
         extender[1].number = 70
@@ -161,6 +162,7 @@ class TestNumberedObjectCollection:
             cells.append_renumber(cell, "hi")
         cell = copy.deepcopy(cell)
         cell._problem = None
+        cell._collection_ref = None
         cell.number = 1
         cells.append_renumber(cell)
         assert cell.number == 4

@@ -178,6 +178,7 @@ class NumberedObjectCollection(ABC):
                         )
                     )
                 self.__num_cache[obj.number] = obj
+                obj._collection_ref = weakref.ref(self)
             self._objects = objects
 
     def link_to_problem(self, problem):
@@ -196,8 +197,18 @@ class NumberedObjectCollection(ABC):
             self._problem_ref = None
         else:
             self._problem_ref = weakref.ref(problem)
+        # Rebuild the number cache to ensure it reflects current object numbers
+        # after deepcopy/unpickling when the cache might be stale
+        self.__num_cache.clear()
+        for obj in self._objects:
+            self.__num_cache[obj.number] = obj
         for obj in self:
             obj.link_to_problem(problem)
+            # the _collection_ref that points to the main cells collection.
+            if problem is not None:
+                existing_coll = obj._collection
+                if existing_coll is None or existing_coll._problem is not problem:
+                    obj._collection_ref = weakref.ref(self)
 
     @property
     def _problem(self):
@@ -340,11 +351,15 @@ class NumberedObjectCollection(ABC):
                     "The object in the list {obj} is not of type: {self._obj_class}"
                 )
             if obj.number in nums:
-                raise NumberConflictError(
-                    (
-                        f"When adding to {type(self).__name__} there was a number collision due to "
-                        f"adding {obj} which conflicts with {self[obj.number]}"
+                try:
+                    conflicting_obj = self[obj.number]
+                    conflict_msg = (
+                        f"adding {obj} which conflicts with {conflicting_obj}"
                     )
+                except KeyError:
+                    conflict_msg = f"adding {obj} which conflicts with existing object number {obj.number}"
+                raise NumberConflictError(
+                    f"When adding to {type(self).__name__} there was a number collision due to {conflict_msg}"
                 )
             nums.add(obj.number)
         for obj in other_list:
@@ -496,6 +511,7 @@ class NumberedObjectCollection(ABC):
                 )
         self.__num_cache[obj.number] = obj
         self._objects.append(obj)
+        obj._collection_ref = weakref.ref(self)
         self._append_hook(obj, **kwargs)
         if self._problem:
             obj.link_to_problem(self._problem)
@@ -507,6 +523,7 @@ class NumberedObjectCollection(ABC):
         """
         self.__num_cache.pop(obj.number, None)
         self._objects.remove(obj)
+        obj._collection_ref = None
         self._delete_hook(obj, **kwargs)
 
     def add(self, obj: Numbered_MCNP_Object):
@@ -613,6 +630,7 @@ class NumberedObjectCollection(ABC):
         number = obj.number if obj.number > 0 else 1
         if self._problem:
             obj.link_to_problem(self._problem)
+        obj._collection_ref = None
         try:
             self.append(obj)
         except (NumberConflictError, ValueError) as e:
