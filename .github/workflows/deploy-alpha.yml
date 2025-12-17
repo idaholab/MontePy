@@ -43,7 +43,7 @@ jobs:
         run: .github/scripts/check_version.py --alpha 
       - run: python -m build .
       - name: Sign the dists with Sigstore
-        uses: sigstore/gh-action-sigstore-python@27dac9cce16c9883a0d4b51c9e0a520102d68016
+        uses: sigstore/gh-action-sigstore-python@cd06a1783504a0c8e550f0d0cd47d3bbae8d71bd
         with:
           inputs: >-
             ./dist/*.tar.gz
@@ -58,7 +58,7 @@ jobs:
           gh release upload
           'v${{ steps.get_version.outputs.version }}' dist/**
           --repo '${{ github.repository }}'
-      - uses: actions/upload-artifact@v5
+      - uses: actions/upload-artifact@v6
         with: 
            name: build
            path: |
@@ -76,7 +76,7 @@ jobs:
       id-token: write
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/download-artifact@v6
+      - uses: actions/download-artifact@v7
         with:
           name: build
           path: dist/
@@ -95,7 +95,7 @@ jobs:
       id-token: write
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/download-artifact@v6
+      - uses: actions/download-artifact@v7
         with:
           name: build
           path: dist/
