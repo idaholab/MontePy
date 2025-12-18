@@ -2,9 +2,10 @@ import glob
 import os
 import re
 import shutil
+import sys
 
-OLD_FINDER = re.compile(r'-\s+"\s+\\"(.+?)\\"')
-NEW_FINDER = re.compile(r'\+\s+"\s+\\"(.+?)\\"')
+OLD_FINDER = re.compile(r'-.+?"(https://.+?)\\"')
+NEW_FINDER = re.compile(r'\+.+?"(https://.+?)\\"')
 
 
 def map_urls(patch_file):
@@ -23,6 +24,7 @@ def replace_urls(urls, path):
     shutil.copy(path, f"{path}.bak")
     with open(f"{path}.bak", "r") as in_fh, open(path, "w") as out_fh:
         for line in in_fh:
+            old_line = line
             for old_url, new_url in urls.items():
                 line = line.replace(old_url, new_url)
             out_fh.write(line)
@@ -30,7 +32,7 @@ def replace_urls(urls, path):
 
 
 def main():
-    urls = map_urls("links.patch")
+    urls = map_urls(sys.argv[1])
     for path in glob.glob("demo/answers/*.ipynb"):
         print(path)
         replace_urls(urls, path)
