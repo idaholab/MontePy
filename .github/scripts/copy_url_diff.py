@@ -1,22 +1,30 @@
+import collections as co
 import glob
 import os
 import re
 import shutil
 import sys
 
-OLD_FINDER = re.compile(r'-.+?"(https://.+?)\\"')
-NEW_FINDER = re.compile(r'\+.+?"(https://.+?)\\"')
+URL_FINDER = re.compile(r'("(https://.+?)\\"|\((https://.+?)\))')
+REMOVE_FINDER = re.compile(r"^-")
+ADD_FINDER = re.compile(r"^\+")
 
 
 def map_urls(patch_file):
     urls = {}
+    queue = co.deque()
     with open(patch_file, "r") as fh:
         for line in fh:
-            if match := OLD_FINDER.match(line):
-                old_url = match.group(1)
-                line = next(fh)
-                new_url = NEW_FINDER.match(line).group(1)
-                urls[old_url] = new_url
+            # removed line
+            if REMOVE_FINDER.match(line):
+                for match in URL_FINDER.finditer(line):
+                    groups = [g for g in match.groups() if g is not None]
+                    queue.append(groups[-1])  # get url
+            # add line that will be replacements
+            elif ADD_FINDER.match(line):
+                for match in URL_FINDER.finditer(line):
+                    groups = [g for g in match.groups() if g is not None]
+                    urls[queue.popleft()] = groups[-1]
     return urls
 
 
