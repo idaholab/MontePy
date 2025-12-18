@@ -10,7 +10,7 @@ This is less focused on defining a strict scope and more-so on providing guideli
 Mission
 -------
 
-MontePy's mission is to improve the user experience for working with MCNP input files through the power of python automation?
+MontePy's mission is to improve the user experience for working with MCNP input files through the power of Python automation.
 
 Principles 
 ----------

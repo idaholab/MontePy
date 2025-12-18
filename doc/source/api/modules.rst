@@ -123,7 +123,8 @@ Misc.
    :toctree: generated
    :nosignatures:
    :template: myclass.rst
-   
+
+   montepy.data_inputs.DataInput
    montepy.Mode
    montepy.Transform
 

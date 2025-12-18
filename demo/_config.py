@@ -8,7 +8,13 @@ Y_RES = 800
 def IFrame(src, width=X_RES, height=Y_RES, extras=None, **kwargs):
     return _iframe(src, width, height, extras, **kwargs)
 
+
 def install_montepy():
     if "pyodide" in sys.modules:
         import piplite
-        piplite.install("montepy")
+        import pyodide
+
+        async def _install():
+            await piplite.install("montepy")
+
+        pyodide.webloop.run_sync(_install())
