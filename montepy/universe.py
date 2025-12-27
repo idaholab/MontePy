@@ -114,6 +114,38 @@ class Universe(Numbered_MCNP_Object):
         for cell in cells:
             cell.universe = self
 
+    @args_checked
+    def soft_claim(self, cells: montepy.Cell | ty.Iterable[montepy.Cell]):
+        if isinstance(cells, montepy.Cell):
+            cells = Cells([cells])
+
+        for cell in cells:
+            # only claim if user hasn't given it a more interesting universe
+            if cell.universe is None or cell.universe.number == 0:
+                cell.universe = self
+
+    def grab_cells_from_jit_parse(self):
+        if not self._problem:
+            return
+        cells_to_claim = []
+        for cell in self._problem.cells:
+            if not hasattr(cell, "_not_parsed"):
+                if cell._universe.old_number == self.number:
+                    cells_to_claim.append(cell)
+            else:
+                uni_inp = cell._universe
+                if (
+                    hasattr(uni_inp, "_parked_data")
+                    and uni_inp._parked_data.value == self.number
+                ):
+                    cells_to_claim.append(cell)
+                elif cell.search(str(self.number)):
+                    cell.full_parse()
+                    # TODO does uni_inp get thrown out?
+                    if uni_inp.old_number == self.number:
+                        cells_to_claim.append(cell)
+        self.soft_claim(cells_to_claim)
+
     @property
     def old_number(self):
         """Original universe number from the input file."""

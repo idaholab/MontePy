@@ -2,7 +2,11 @@
 import itertools
 
 from montepy.utilities import *
-from montepy.data_inputs.cell_modifier import CellModifierInput, InitInput
+from montepy.data_inputs.cell_modifier import (
+    CellModifierInput,
+    InitInput,
+    cell_mod_prop,
+)
 from montepy.exceptions import *
 from montepy.constants import DEFAULT_VERSION
 from montepy.input_parser.mcnp_input import Jump
@@ -70,6 +74,42 @@ class UniverseInput(CellModifierInput):
             },
         )
 
+    @needs_full_ast
+    def _find_and_populate_universe(self, number) -> Universe:
+        if self.in_cell_block:
+            raise IllegalStateError(
+                f"This should only be called for data block instances."
+            )
+        if not self._problem:
+            return
+        found = False
+        if len(self._data) > 0:
+            for datum in self._data:
+                if datum.value == number:
+                    found = True
+                    break
+        else:
+            for cell in self._problem.cells:
+                u_inp = cell._universe
+                # fully parsed
+                if not hasattr(u_inp, "_not_parsed"):
+                    if u_inp.old_number == number:
+                        found = True
+                        break
+                else:
+                    if cell.search(number):
+                        cell.full_parse()
+                        if cell._universe.old_number == number:
+                            found == True
+                            break
+        print(found)
+        # universe exists
+        if found:
+            uni = montepy.Universe(number)
+            uni.link_to_problem(self._problem)
+            uni.grab_cells_from_jit_parse()
+            return uni
+
     @staticmethod
     def _class_prefix():
         return "u"
@@ -101,6 +141,7 @@ class UniverseInput(CellModifierInput):
         if self.in_cell_block:
             return self.universe is not None and self.universe.number != 0
 
+    @cell_mod_prop("_universe")
     @prop_pointer_from_problem("_universe", "old_number", "universes", Universe)
     def universe(self) -> Universe:
         if self.in_cell_block:
@@ -190,8 +231,7 @@ class UniverseInput(CellModifierInput):
                 cell._universe._universe = universe
 
     def _accept_and_update(self, value):
-        # TODO
-        pass
+        self._old_number = value
 
     def _clear_data(self):
         del self._old_numbers

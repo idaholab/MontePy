@@ -115,6 +115,7 @@ class CellModifierInput(DataInputAbstract):
                 )
             else:
                 self.__init__(self._input, jit_parse=False)
+                self.push_to_cells()
             [setattr(self, k, v) for k, v in old_data.items()]
             if hasattr(self, "_parked_value"):
                 try:

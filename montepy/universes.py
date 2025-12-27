@@ -33,3 +33,13 @@ class Universes(NumberedObjectCollection):
         problem: montepy.MCNP_Problem = None,
     ):
         super().__init__(Universe, objects, problem)
+
+    def __getitem__(self, key):
+        try:
+            return super().__getitem__(key)
+        except KeyError as e:
+            if self._problem:
+                new_uni = self._problem.cells._universe._find_and_populate_universe(key)
+                if new_uni:
+                    return new_uni
+            raise e
