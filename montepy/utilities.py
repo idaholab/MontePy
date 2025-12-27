@@ -103,7 +103,7 @@ def make_prop_val_node(
             if not hasattr(self, hidden_param) and hasattr(self, "_not_parsed"):
                 self.full_parse()
             result = func(self)
-            if result:
+            if result is not None:
                 return result
             else:
                 val = getattr(self, hidden_param)

@@ -124,7 +124,8 @@ class UniverseInput(CellModifierInput):
 
     @make_prop_val_node("_old_number")
     def old_number(self):
-        pass
+        if self._old_number.value is None:
+            return 0
 
     @property
     def old_numbers(self):
