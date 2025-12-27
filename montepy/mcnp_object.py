@@ -181,6 +181,8 @@ class MCNP_Object(ABC, metaclass=_ExceptionContextAdder):
         bool
             Whether this
         """
+        # TODO make num_search
+        # \Dnumber(\D|$)
         if self._input is None:
             return
         return self._input.search(search)

@@ -40,12 +40,16 @@ class Cells(NumberedObjectCollection):
         self,
         cells: ty.Iterable[montepy.Cell] = None,
         problem: montepy.MCNP_Problem = None,
+        jit_parse: bool = True,
     ):
         self.__blank_modifiers = set()
+        self.__loaded_inputs = set()
         super().__init__(montepy.Cell, cells, problem)
-        self.__setup_blank_cell_modifiers()
+        self.__setup_blank_cell_modifiers(problem, jit_parse=jit_parse)
 
-    def __setup_blank_cell_modifiers(self, problem=None, check_input=False):
+    def __setup_blank_cell_modifiers(
+        self, problem=None, check_input=False, jit_parse: bool = True
+    ):
         inputs_to_always_update = {"_universe", "_fill"}
         inputs_to_property = montepy.Cell._INPUTS_TO_PROPERTY
         for card_class, (attr, _) in inputs_to_property.items():
@@ -58,7 +62,7 @@ class Cells(NumberedObjectCollection):
                     card = getattr(self, attr)
                 if problem is not None:
                     card.link_to_problem(problem)
-                    if (
+                    if not jit_parse and (
                         attr not in self.__blank_modifiers
                         or attr in inputs_to_always_update
                     ):
@@ -156,6 +160,7 @@ class Cells(NumberedObjectCollection):
             them as warnings to log.
         """
 
+        # TODO remove
         def handle_error(e):
             if check_input:
                 warnings.warn(f"{type(e).__name__}: {e.message}", stacklevel=3)
@@ -203,6 +208,41 @@ class Cells(NumberedObjectCollection):
                 handle_error(e)
                 continue
         self.__setup_blank_cell_modifiers(problem, check_input)
+
+    def grab_input(self, input: MCNP_Object, problem, check_input: bool = False):
+        def handle_error(e):
+            if check_input:
+                warnings.warn(f"{type(e).__name__}: {e.message}", stacklevel=3)
+            else:
+                raise e
+
+        inputs_to_property = montepy.Cell._INPUTS_TO_PROPERTY
+        inputs_to_always_update = {"_universe", "_fill"}
+        self.__blank_modifiers = set()
+        if type(input) in inputs_to_property:
+            input_class = type(input)
+            attr, cant_repeat = inputs_to_property[input_class]
+            # start fresh for loading cell modifiers
+            delattr(self, attr)
+            if cant_repeat and input_class in self.__loaded_inputs:
+                try:
+                    raise MalformedInputError(
+                        input,
+                        f"The input: {type(input)} is only allowed once in a problem",
+                    )
+                except MalformedInputError as e:
+                    handle_error(e)
+            if not hasattr(self, attr):
+                setattr(self, attr, input)
+                problem.print_in_data_block[input._class_prefix()] = True
+            else:
+                try:
+                    getattr(self, attr).merge(input)
+                    data_inputs.remove(input)
+                except MalformedInputError as e:
+                    handle_error(e)
+            if cant_repeat:
+                self.__loaded_inputs.add(type(input))
 
     def _run_children_format_for_mcnp(self, data_inputs, mcnp_version):
         ret = []

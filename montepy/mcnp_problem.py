@@ -379,7 +379,7 @@ class MCNP_Problem:
     ):
         """Semantically parses the MCNP file provided to the constructor.
 
-        .. versionchanged:: 1.2.0
+        .. versionchanged:: 1.3.0
 
             Added ``jit_parse`` argument
 
@@ -451,8 +451,12 @@ class MCNP_Problem:
                                 raise e
                         if isinstance(obj, Material):
                             self._materials.append(obj, insert_in_data=False)
-                        if isinstance(obj, transform.Transform):
+                        elif isinstance(obj, transform.Transform):
                             self._transforms.append(obj, insert_in_data=False)
+                        elif isinstance(
+                            obj, montepy.data_inputs.cell_modifier.CellModifierInput
+                        ):
+                            self.cells.grab_input(obj, self, check_input)
                     if not jit_parse:
                         if trailing_comment is not None and last_obj is not None:
                             obj._grab_beginning_comment(trailing_comment, last_obj)
