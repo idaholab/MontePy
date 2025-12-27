@@ -151,24 +151,6 @@ def make_prop_val_node(
     return decorator
 
 
-def cell_mod_make_prop_val_node(
-    hidden_param,
-    cells_param,
-    types=None,
-    base_type=None,
-    validator=None,
-    deletable=False,
-):
-    base_decorator = make_prop_val_node(
-        hidden_param, types, base_type, validator, deletable
-    )
-
-    def getter(self):
-        pass
-
-    return property(getter, base_decorator.setter, base_decorator.deleter)
-
-
 def make_prop_pointer(
     hidden_param, types=None, base_type=None, validator=None, deletable=False
 ):

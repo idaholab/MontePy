@@ -12,6 +12,27 @@ import typing
 import warnings
 
 
+def cell_mod_prop(
+    cells_param,
+):
+    def decorator(func):
+        # must decorate a property
+        assert isinstance(func, property)
+        base_prop = func
+
+        def getter(self):
+            if hasattr(self, "_not_parsed") and self._not_parsed:
+                if self._problem:
+                    data_version = getattr(self._problem.cells, cells_param)
+                    data_version.full_parse()
+                    data_version.push_to_cells()
+            return base_prop.fget(self)
+
+        return property(getter, base_prop.fset, base_prop.fdel)
+
+    return decorator
+
+
 class CellModifierInput(DataInputAbstract):
     """Abstract Parent class for Data Inputs that modify cells / geometry.
 
