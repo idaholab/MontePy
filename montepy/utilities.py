@@ -248,7 +248,7 @@ def prop_pointer_from_problem(
             id_num = getattr(self, id_param)
             prob = getattr(self, "_problem")
             obj = None
-            if id_num == 0:
+            if id_num == 0 and hidden_param != "_universe":
                 return None
             if prob is not None and id_num is not None:
                 obj = getattr(prob, prob_collection_param)[id_num]

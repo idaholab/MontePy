@@ -101,7 +101,7 @@ class UniverseInput(CellModifierInput):
         if self.in_cell_block:
             return self.universe is not None and self.universe.number != 0
 
-    @make_prop_pointer("_universe", Universe)
+    @prop_pointer_from_problem("_universe", "old_number", "universes", Universe)
     def universe(self) -> Universe:
         if self.in_cell_block:
             return self._universe
