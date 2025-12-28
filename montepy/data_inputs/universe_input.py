@@ -1,6 +1,7 @@
 # Copyright 2024, Battelle Energy Alliance, LLC All Rights Reserved.
 import itertools
 
+import montepy
 from montepy.utilities import *
 from montepy.data_inputs.cell_modifier import (
     CellModifierInput,
@@ -76,15 +77,18 @@ class UniverseInput(CellModifierInput):
 
     @needs_full_ast
     def _find_and_populate_universe(self, number) -> Universe:
+        # TODO warn about universe 0
         if self.in_cell_block:
             raise IllegalStateError(
                 f"This should only be called for data block instances."
             )
         if not self._problem:
             return
-        found = False
-        if len(self._data) > 0:
-            for datum in self._data:
+        found = number == 0
+        if found:
+            pass
+        elif len(self.data) > 0:
+            for datum in self.data:
                 if datum.value == number:
                     found = True
                     break

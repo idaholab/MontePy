@@ -162,7 +162,6 @@ def args_checked(func: Callable):
         try:
             return func(*args, **kwargs)
         except Exception as e:
-            et, ei, tb = sys.exc_info()
             raise e.with_traceback(e.__traceback__.tb_next)
 
     return wrapper

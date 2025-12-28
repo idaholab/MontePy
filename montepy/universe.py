@@ -121,7 +121,8 @@ class Universe(Numbered_MCNP_Object):
 
         for cell in cells:
             # only claim if user hasn't given it a more interesting universe
-            if cell.universe is None or cell.universe.number == 0:
+            # avoids recursion from creating JIT universes
+            if cell._universe._universe is None or cell._universe._universe.number == 0:
                 cell.universe = self
 
     def grab_cells_from_jit_parse(self):
