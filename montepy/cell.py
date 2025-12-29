@@ -122,6 +122,17 @@ class Cell(Numbered_MCNP_Object):
 
     _KEYS_TO_PRESERVE = {v[0] for v in _INPUTS_TO_PROPERTY.values()}
 
+    def _load_old_data(self, old_data):
+        cell_mod_keys = {v[0] for v in self._INPUTS_TO_PROPERTY.values()}
+        for key, value in old_data.items():
+            if key in cell_mod_keys:
+                new_obj = getattr(self, key)
+                # grab the only data that needs to survive
+                if hasattr(value, "_parked_value"):
+                    new_obj._accept_from_data(value._parked_value)
+            else:
+                setattr(self, key, value)
+
     @staticmethod
     def _parent_collections():
         return (("cells", "complements", True),)
@@ -228,6 +239,7 @@ class Cell(Numbered_MCNP_Object):
             class_pref = input_class._class_prefix()
             if class_pref in found_class_prefixes:
                 continue
+
             if class_pref == "imp":
                 for key in self._tree["parameters"].nodes.keys():
                     if class_pref in key:

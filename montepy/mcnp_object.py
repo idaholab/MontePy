@@ -167,9 +167,12 @@ class MCNP_Object(ABC, metaclass=_ExceptionContextAdder):
                 if getattr(self, k, None) is not None
             }
             self.__init__(self._input, jit_parse=False)
-            [setattr(self, k, v) for k, v in old_data.items()]
+            self._load_old_data(old_data)
             if problem:
                 self.link_to_problem(problem)
+
+    def _load_old_data(self, old_data):
+        [setattr(self, k, v) for k, v in old_data.items()]
 
     def search(self, search: str | re.Pattern) -> bool:
         """
