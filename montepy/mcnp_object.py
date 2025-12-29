@@ -161,7 +161,11 @@ class MCNP_Object(ABC, metaclass=_ExceptionContextAdder):
         if hasattr(self, "_not_parsed") and self._not_parsed:
             del self._not_parsed
             problem = self._problem
-            old_data = {k: getattr(self, k) for k in self._KEYS_TO_PRESERVE}
+            old_data = {
+                k: getattr(self, k, None)
+                for k in self._KEYS_TO_PRESERVE
+                if getattr(self, k, None) is not None
+            }
             self.__init__(self._input, jit_parse=False)
             [setattr(self, k, v) for k, v in old_data.items()]
             if problem:

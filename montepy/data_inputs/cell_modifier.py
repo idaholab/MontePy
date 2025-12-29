@@ -100,11 +100,17 @@ class CellModifierInput(DataInputAbstract):
     def _parse_data_tree(self):
         pass
 
+    _KEYS_TO_PRESERVE = {"_parked_value"}
+
     def full_parse(self):
         if hasattr(self, "_not_parsed") and self._not_parsed:
             del self._not_parsed
             problem = self._problem
-            old_data = {k: getattr(self, k) for k in self._KEYS_TO_PRESERVE}
+            old_data = {
+                k: getattr(self, k, None)
+                for k in self._KEYS_TO_PRESERVE
+                if getattr(self, k, None) is not None
+            }
             if self.in_cell_block:
                 self.__init__(
                     in_cell_block=True,
@@ -195,6 +201,7 @@ class CellModifierInput(DataInputAbstract):
         if hasattr(self, "_not_parsed"):
             self._parked_value = value
         else:
+            # TODO raise error if already parsed
             self._accept_and_update(value)
 
     @abstractmethod

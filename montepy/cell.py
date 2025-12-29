@@ -120,6 +120,8 @@ class Cell(Numbered_MCNP_Object):
         fill.Fill: ("_fill", True),
     }
 
+    _KEYS_TO_PRESERVE = {v[0] for v in _INPUTS_TO_PROPERTY.values()}
+
     @staticmethod
     def _parent_collections():
         return (("cells", "complements", True),)
