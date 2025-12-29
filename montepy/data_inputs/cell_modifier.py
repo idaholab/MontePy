@@ -24,7 +24,6 @@ def cell_mod_prop(
             if hasattr(self, "_not_parsed") and self._not_parsed:
                 if self._problem:
                     data_version = getattr(self._problem.cells, cells_param)
-                    data_version.full_parse()
                     data_version.push_to_cells()
             return base_prop.fget(self)
 
@@ -83,8 +82,8 @@ class CellModifierInput(DataInputAbstract):
             self._data = value["data"]
         else:
             self._set_in_cell_block = False
-        if not jit_parse:
-            self._parse_tree()
+        if jit_parse:
+            self._not_parsed = True
 
     def _parse_tree(self):
         super()._parse_tree()

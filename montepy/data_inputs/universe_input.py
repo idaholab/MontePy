@@ -106,7 +106,6 @@ class UniverseInput(CellModifierInput):
                         if cell._universe.old_number == number:
                             found == True
                             break
-        print(found)
         # universe exists
         if found:
             uni = montepy.Universe(number)
