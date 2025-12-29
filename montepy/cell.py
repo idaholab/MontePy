@@ -212,7 +212,9 @@ class Cell(Numbered_MCNP_Object):
                     attr, ban_repeat = Cell._INPUTS_TO_PROPERTY[input_class]
                     key = str(value["classifier"]).lower()
                     found_class_prefixes.add(value["classifier"].prefix.value.lower())
-                    input = input_class(in_cell_block=True, key=key, value=value)
+                    input = input_class(
+                        in_cell_block=True, key=key, value=value, jit_parse=False
+                    )
                     if not getattr(self, attr).set_in_cell_block:
                         setattr(self, attr, input)
                     else:

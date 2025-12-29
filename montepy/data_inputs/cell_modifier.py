@@ -72,8 +72,11 @@ class CellModifierInput(DataInputAbstract):
         self._in_value = value
         if input is None and value is None:
             self._generate_default_tree(**kwargs)
+        # handle cell parsing
         elif value is not None:
             self._parse_classifier(input, self._parse_input, jit_parse=jit_parse)
+            self._tree = value
+            self._parse_tree()
         else:
             super().__init__(input, jit_parse=jit_parse)
         if key and in_cell_block:
