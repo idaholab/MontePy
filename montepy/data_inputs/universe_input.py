@@ -87,7 +87,9 @@ class UniverseInput(CellModifierInput):
         found = number == 0
         if found:
             pass
-        elif len(self.data) > 0:
+        elif len(self.data) > 1 or (
+            len(self.data) == 1 and self.data[0].value is not None
+        ):
             for datum in self.data:
                 if datum.value == number:
                     found = True
