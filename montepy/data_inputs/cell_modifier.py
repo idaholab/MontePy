@@ -193,7 +193,7 @@ class CellModifierInput(DataInputAbstract):
 
     def _accept_from_data(self, value):
         if hasattr(self, "_not_parsed"):
-            self._parked_data = value
+            self._parked_value = value
         else:
             self._accept_and_update(value)
 
@@ -351,7 +351,7 @@ class CellModifierInput(DataInputAbstract):
         list
             a list of strings for the lines that this input will occupy.
         """
-        if hasattr(self, "_not_parsed"):
+        if hasattr(self, "_not_parsed") and self._input is not None:
             return self._input.input_lines
         self.validate()
         self._tree.check_for_graveyard_comments(has_following)
