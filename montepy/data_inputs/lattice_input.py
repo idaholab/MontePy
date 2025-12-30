@@ -33,7 +33,7 @@ class LatticeInput(CellModifierInput):
     def _parse_cell_tree(self):
         if self._in_key:
             try:
-                val = value["data"][0]
+                val = self._tree["data"][0]
                 val.convert_to_int()
                 val.convert_to_enum(LatticeType, int)
             except ValueError as e:

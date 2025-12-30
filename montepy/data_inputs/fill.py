@@ -245,6 +245,7 @@ class Fill(CellModifierInput):
         return 0
 
     @property
+    @needs_full_ast
     def universe(self) -> Universe:
         """The universe that this cell will be filled with.
 
@@ -259,6 +260,7 @@ class Fill(CellModifierInput):
             return self._universe
 
     @universe.setter
+    @needs_full_cst
     @args_checked
     def universe(self, value: Universe = None):
         if self.multiple_universes:
@@ -271,10 +273,12 @@ class Fill(CellModifierInput):
             self.multiple_universes = False
 
     @universe.deleter
+    @needs_full_cst
     def universe(self):
         self._universe = None
 
     @property
+    @needs_full_ast
     def universes(self) -> np.ndarray[Universe]:
         """The universes that this cell will be filled with in a lattice.
 
@@ -355,6 +359,7 @@ class Fill(CellModifierInput):
         return None
 
     @universes.setter
+    @needs_full_cst
     @args_checked
     def universes(self, value: np.ndarray[Universe | ty.NonNegativeInt] = None):
         if value is None:
@@ -404,6 +409,7 @@ class Fill(CellModifierInput):
         self._universes = value
 
     @universes.deleter
+    @needs_full_cst
     def universes(self):
         self._universes = None
         self.multiple_universes = False
@@ -414,6 +420,7 @@ class Fill(CellModifierInput):
         validator=_verify_3d_index,
         deletable=True,
     )
+    @needs_full_ast
     def min_index(self) -> np.ndarray[ty.Integral]:
         """The minimum indices of the matrix in each dimension.
 
@@ -432,6 +439,7 @@ class Fill(CellModifierInput):
         validator=_verify_3d_index,
         deletable=True,
     )
+    @needs_full_ast
     def max_index(self) -> np.ndarray[ty.Integral]:
         """The maximum indices of the matrix in each dimension.
 
@@ -445,6 +453,7 @@ class Fill(CellModifierInput):
         pass
 
     @property
+    @needs_full_ast
     def multiple_universes(self) -> bool:
         """Whether or not this cell is filled with multiple universes in a matrix.
 
@@ -456,6 +465,7 @@ class Fill(CellModifierInput):
         return self._multi_universe
 
     @multiple_universes.setter
+    @needs_full_cst
     @args_checked
     def multiple_universes(self, value: bool):
         self._multi_universe = value
@@ -463,6 +473,7 @@ class Fill(CellModifierInput):
             self._universes = None
 
     @make_prop_val_node("_old_number")
+    @needs_full_ast
     def old_universe_number(self) -> int:
         """The number of the universe that this is filled by taken from the input.
 
@@ -474,6 +485,7 @@ class Fill(CellModifierInput):
         pass
 
     @property
+    @needs_full_ast
     def old_universe_numbers(self) -> np.ndarray[int]:
         """The numbers of the universes that this is filled by taken from the input.
 
@@ -490,6 +502,7 @@ class Fill(CellModifierInput):
         return self._old_numbers
 
     @property
+    @needs_full_ast
     def hidden_transform(self) -> bool:
         """Whether or not the transform used is hidden.
 
@@ -520,6 +533,7 @@ class Fill(CellModifierInput):
         return val
 
     @property
+    @needs_full_ast
     def transform(self) -> montepy.Transform:
         """The transform for this fill (if any).
 
@@ -531,6 +545,7 @@ class Fill(CellModifierInput):
         return self._transform
 
     @transform.setter
+    @needs_full_cst
     @args_checked
     def transform(self, value: Transform = None):
         self._transform = value
@@ -540,10 +555,12 @@ class Fill(CellModifierInput):
             self._hidden_transform = False
 
     @transform.deleter
+    @needs_full_cst
     def transform(self):
         self._transform = None
 
     @make_prop_val_node("_old_transform_number")
+    @needs_full_ast
     def old_transform_number(self):
         """The number of the transform specified in the input.
 
