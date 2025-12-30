@@ -5,7 +5,11 @@ import numpy as np
 
 import montepy
 from montepy.utilities import *
-from montepy.data_inputs.cell_modifier import CellModifierInput, InitInput
+from montepy.data_inputs.cell_modifier import (
+    CellModifierInput,
+    InitInput,
+    cell_mod_prop,
+)
 from montepy.data_inputs.transform import Transform
 from montepy.exceptions import *
 from montepy.input_parser.block_type import BlockType
@@ -244,7 +248,8 @@ class Fill(CellModifierInput):
     def _has_classifier():
         return 0
 
-    @property
+    @cell_mod_prop("universes")
+    @prop_pointer_from_problem("_universe", "old_universe_number", "universes")
     @needs_full_ast
     def universe(self) -> Universe:
         """The universe that this cell will be filled with.
@@ -355,6 +360,14 @@ class Fill(CellModifierInput):
             expanded to 3D by adding dimensions at the end.
         """
         if self.multiple_universes:
+            if self._universes is None:
+                if not self._problem:
+                    raise IllegalState(
+                        f"Can't find Universes for a fill detached from a problem"
+                    )
+                self.universes = np.empty_like(self._old_numbers, dtype="o")
+                for coord, old_num in np.ndenumerate(self._old_numbers):
+                    self.universes[coord] = self._problem.universes[old_num]
             return self._universes
         return None
 
@@ -532,7 +545,7 @@ class Fill(CellModifierInput):
         val.value = self.universe.number if self.universe else None
         return val
 
-    @property
+    @prop_pointer_from_problem("_transform", "_old_transform_number", "transforms")
     @needs_full_ast
     def transform(self) -> montepy.Transform:
         """The transform for this fill (if any).
@@ -579,39 +592,13 @@ class Fill(CellModifierInput):
 
     @needs_full_ast
     def push_to_cells(self):
-        # TODO ... how
-        def get_universe(number):
-            return self._problem.universes[number]
-
-        if self.in_cell_block:
-            if self.old_transform_number:
-                self._transform = self._problem.transforms[self.old_transform_number]
-            if (
-                self.old_universe_number is not None
-                or self.old_universe_numbers is not None
-            ):
-                if isinstance(self.old_universe_numbers, np.ndarray):
-                    self._universes = np.empty_like(
-                        self.old_universe_numbers, dtype="O"
-                    )
-                    for i in self._axis_range(0):
-                        for j in self._axis_range(1):
-                            for k in self._axis_range(2):
-                                self._universes[i][j][k] = get_universe(
-                                    self.old_universe_numbers[i][j][k].item()
-                                )
-                else:
-                    self._universe = get_universe(self.old_universe_number)
-        else:
-            if not self.set_in_cell_block and self.old_universe_numbers:
-                for cell, old_number in zip(self._problem.cells, self._old_numbers):
-                    if not isinstance(old_number, Jump):
-                        cell._fill._old_number = old_number
-            for cell in self._problem.cells:
-                cell._fill.push_to_cells()
+        if not self.set_in_cell_block and self.old_universe_numbers:
+            for cell, old_number in zip(self._problem.cells, self._old_numbers):
+                if not isinstance(old_number, Jump):
+                    cell._fill._accept_from_data(old_number)
 
     def _accept_and_update(self, value):
-        pass
+        self._old_number = value
 
     def _clear_data(self):
         self._old_number = None
