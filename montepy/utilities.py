@@ -237,6 +237,8 @@ def prop_pointer_from_problem(
 ):
     """
     TODO
+
+    TODO raise BrokenObjectLinkError
     """
 
     def decorator(func):
