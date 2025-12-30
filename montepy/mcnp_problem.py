@@ -59,7 +59,7 @@ class MCNP_Problem:
         self._title = None
         self._message = None
         self.__unpickled = False
-        self._print_in_data_block = CellDataPrintController()
+        self._print_in_data_block = CellDataPrintController(self)
         self._original_inputs = []
         for collect_type in self._NUMBERED_OBJ_MAP.values():
             attr_name = f"_{collect_type.__name__.lower()}"
@@ -295,6 +295,8 @@ class MCNP_Problem:
         -------
         dict[str, bool]
         """
+        if not hasattr(self._print_in_data_block, "_problem"):
+            self._print_in_data_block.link_to_problem(self)
         return self._print_in_data_block
 
     @property
