@@ -248,7 +248,7 @@ class Fill(CellModifierInput):
     def _has_classifier():
         return 0
 
-    @cell_mod_prop("universes")
+    @cell_mod_prop("_fill")
     @prop_pointer_from_problem("_universe", "old_universe_number", "universes")
     @needs_full_ast
     def universe(self) -> Universe:
@@ -365,9 +365,9 @@ class Fill(CellModifierInput):
                     raise IllegalState(
                         f"Can't find Universes for a fill detached from a problem"
                     )
-                self.universes = np.empty_like(self._old_numbers, dtype="o")
+                self._universes = np.empty_like(self._old_numbers, dtype="O")
                 for coord, old_num in np.ndenumerate(self._old_numbers):
-                    self.universes[coord] = self._problem.universes[old_num]
+                    self._universes[coord] = self._problem.universes[old_num]
             return self._universes
         return None
 
@@ -545,7 +545,7 @@ class Fill(CellModifierInput):
         val.value = self.universe.number if self.universe else None
         return val
 
-    @prop_pointer_from_problem("_transform", "_old_transform_number", "transforms")
+    @prop_pointer_from_problem("_transform", "old_transform_number", "transforms")
     @needs_full_ast
     def transform(self) -> montepy.Transform:
         """The transform for this fill (if any).
