@@ -226,6 +226,7 @@ class Cell(Numbered_MCNP_Object):
                     input = input_class(
                         in_cell_block=True, key=key, value=value, jit_parse=False
                     )
+                    input.link_to_problem(self._problem)
                     if not getattr(self, attr).set_in_cell_block:
                         setattr(self, attr, input)
                     else:
@@ -253,6 +254,7 @@ class Cell(Numbered_MCNP_Object):
         """Goes through and populates all the modifier attributes"""
         for input_class, (attr, _) in self._INPUTS_TO_PROPERTY.items():
             setattr(self, attr, input_class(in_cell_block=True))
+            getattr(self, attr).link_to_problem(self._problem)
 
     def _jit_light_init(self, input: Input):
         super()._jit_light_init(input)
