@@ -259,5 +259,10 @@ def test_expanding_new_line():
     fill = problem.cells[1].fill
     universes = [montepy.Universe(n) for n in range(300)]
     fill.universes = np.array([[universes]])
+    # is the problem:
+    #    print fill
+    #    grab universe numbers
+    #    Grab universes -> soft_claim
+    #    parse other cells
     with io.StringIO() as fh, pytest.warns(LineExpansionWarning):
         problem.write_problem(fh)
