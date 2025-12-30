@@ -23,7 +23,7 @@ def test_build_arbitrary_cell_geometry(first_surf, new_surfaces):
     cell = montepy.Cell(input)
     surf = montepy.surfaces.surface.Surface()
     surf.number = first_surf
-    cell.update_pointers([], [], montepy.surface_collection.Surfaces([surf]))
+    cell.geometry.update_pointers([], montepy.surface_collection.Surfaces([surf]), cell)
     for surf_num, operator in new_surfaces:
         surf = montepy.surfaces.surface.Surface()
         surf.number = surf_num
