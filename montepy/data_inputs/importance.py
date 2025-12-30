@@ -130,6 +130,7 @@ class Importance(CellModifierInput):
         return 2
 
     @property
+    @needs_full_ast
     def has_information(self):
         has_info = []
         for part in self:
@@ -147,6 +148,7 @@ class Importance(CellModifierInput):
         if self.in_cell_block:
             return self.set_in_cell_block
 
+    @needs_full_ast
     @args_checked
     def merge(self, other: Importance):
         if self.in_cell_block != other.in_cell_block:
@@ -167,12 +169,15 @@ class Importance(CellModifierInput):
                     "Cannot have two importance inputs for the same particle type",
                 )
 
+    @needs_full_ast
     def __iter__(self):
         return iter(self._particle_importances.keys())
 
+    @needs_full_ast
     def __contains__(self, value):
         return value in self._particle_importances
 
+    @needs_full_ast
     @args_checked
     def __getitem__(self, particle: Particle):
         self._check_particle_in_problem(particle)
@@ -182,6 +187,7 @@ class Importance(CellModifierInput):
         except KeyError:
             return self._DEFAULT_IMP
 
+    @needs_full_cst
     @args_checked
     def __setitem__(self, particle: Particle, value: ty.NonNegativeReal):
         self._check_particle_in_problem(particle)
@@ -190,6 +196,7 @@ class Importance(CellModifierInput):
         self._explicitly_set = True
         self._particle_importances[particle]["data"][0].value = value
 
+    @needs_full_cst
     @args_checked
     def __delitem__(self, particle: Particle):
         del self._particle_importances[particle]
@@ -304,6 +311,7 @@ class Importance(CellModifierInput):
         return None
 
     @all.setter
+    @needs_full_cst
     @args_checked
     def all(self, value: ty.NonNegativeReal):
         value = float(value)
@@ -406,6 +414,7 @@ class Importance(CellModifierInput):
         pass
 
     @property
+    @needs_full_ast
     def trailing_comment(self) -> syntax_node.CommentNode:
         """The trailing comments and padding of an input.
 
@@ -421,12 +430,14 @@ class Importance(CellModifierInput):
         if last_tree:
             return last_tree.get_trailing_comment()
 
+    @needs_full_cst
     def _delete_trailing_comment(self):
         for part, tree in reversed(self._real_tree.items()):
             tree._delete_trailing_comment()
             self.__delete_common_trailing(part)
             break
 
+    @needs_full_cst
     def __delete_common_trailing(self, part):
         to_delete = {part}
         for combo_set in self._part_combos:
@@ -439,6 +450,7 @@ class Importance(CellModifierInput):
             for part in to_delete:
                 self._real_tree[part]._delete_trailing_comment()
 
+    @needs_full_cst
     def _grab_beginning_comment(self, new_padding, last_obj=None):
         last_tree = None
         last_padding = None
