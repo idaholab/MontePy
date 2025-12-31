@@ -187,6 +187,11 @@ class ThermalScatteringLaw(DataInputAbstract):
         self._parent_material = mat
         return True
 
+    @args_checked
+    def _link_to_parent(self, mat: montepy.Material):
+        # TODO errors
+        self._parent_material = mat
+
     def __str__(self):
         if self.parent_material is not None:
             return f"THERMAL SCATTER: {self.parent_material.number}"

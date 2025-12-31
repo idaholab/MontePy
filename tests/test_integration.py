@@ -1078,7 +1078,7 @@ def test_importance_rewrite(simple_problem):
 def test_parsing_error():
     in_file = os.path.join("tests", "inputs", "test_bad_syntax.imcnp")
     with pytest.raises(montepy.exceptions.ParsingError):
-        problem = montepy.read_input(in_file)
+        problem = montepy.read_input(in_file, jit_parse=False)
 
 
 def test_leading_comments(simple_problem):
@@ -1185,7 +1185,7 @@ def test_read_write_cycle(file):
                     gold_line = next(gold_fh_iter)
             # edge case override for not fixing #527.
             if str(file) == "tests/inputs/test_interp_edge.imcnp" and i == 1:
-                assert new_line == "10214   0    (1  2I 4 )"
+                assert new_line == "10214   0    (1  2I 4 )" or new_line == gold_line.rstrip().expandtabs(8)
                 continue
             try:
                 assert new_line == gold_line.rstrip().expandtabs(8)

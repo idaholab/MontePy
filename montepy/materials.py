@@ -52,6 +52,20 @@ class Materials(NumberedDataObjectCollection):
         self, objects: list[Material] = None, problem: montepy.MCNP_Problem = None
     ):
         super().__init__(Material, objects, problem)
+        self._tsl_queue = {}
+
+    @args_checked
+    def append(self, obj: montepy.Material | montepy.ThermalScatteringLaw, **kwargs):
+        if isinstance(obj, montepy.Material):
+            if obj.number in self._tsl_queue:
+                tsl = self._tsl_queue.pop(obj.number)
+                tsl._link_to_parent(obj)
+            super().append(obj, **kwargs)
+        elif isinstance(obj, montepy.ThermalScatteringLaw):
+            try:
+                obj._link_to_parent(self[obj.old_number])
+            except KeyError:
+                self._tsl_queue[obj.old_number] = obj
 
     @args_checked
     def get_containing_any(

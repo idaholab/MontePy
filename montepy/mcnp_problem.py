@@ -451,7 +451,7 @@ class MCNP_Problem:
                                 continue
                             else:
                                 raise e
-                        if isinstance(obj, Material):
+                        if isinstance(obj, (Material, montepy.ThermalScatteringLaw)):
                             self._materials.append(obj, insert_in_data=False)
                         elif isinstance(obj, transform.Transform):
                             self._transforms.append(obj, insert_in_data=False)
