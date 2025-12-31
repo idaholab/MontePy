@@ -172,7 +172,9 @@ class NumberedObjectCollection(ABC):
             self._objects = objects
 
     @args_checked
-    def link_to_problem(self, problem: montepy.MCNP_Problem = None):
+    def link_to_problem(
+        self, problem: montepy.MCNP_Problem = None, *, deepcopy: bool = False
+    ):
         """Links the card to the parent problem for this card.
 
         This is done so that cards can find links to other objects.
@@ -181,13 +183,15 @@ class NumberedObjectCollection(ABC):
         ----------
         problem : MCNP_Problem
             The problem to link this card to.
+        deepcopy : bool
+            If this is occuring during a problem level deepcopy
         """
         if problem is None:
             self._problem_ref = None
         else:
             self._problem_ref = weakref.ref(problem)
         for obj in self:
-            obj.link_to_problem(problem)
+            obj.link_to_problem(problem, deepcopy=deepcopy)
 
     @property
     def _problem(self):

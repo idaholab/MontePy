@@ -92,7 +92,8 @@ def test_data_card_mutate_print():
 
 
 def test_print_in_data_block():
-    cell_controller = CellDataPrintController()
+    problem = montepy.MCNP_Problem()
+    cell_controller = CellDataPrintController(problem)
     cell_controller["imp"] = True
     cell_controller["Imp"] = True
     assert cell_controller["IMP"]

@@ -473,7 +473,12 @@ The new input was:\n\n"""
         pass
 
     @args_checked
-    def link_to_problem(self, problem: montepy.mcnp_problem.MCNP_Problem = None):
+    def link_to_problem(
+        self,
+        problem: montepy.mcnp_problem.MCNP_Problem = None,
+        *,
+        deepcopy: bool = False,
+    ):
         """Links the input to the parent problem for this input.
 
         This is done so that inputs can find links to other objects.
@@ -482,6 +487,8 @@ The new input was:\n\n"""
         ----------
         problem : MCNP_Problem
             The problem to link this input to.
+        deepcopy : bool
+            If this is occuring during a problem level deepcopy
         """
         if problem is None:
             self._problem_ref = None

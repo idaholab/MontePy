@@ -104,10 +104,10 @@ class MCNP_Problem:
                     collection,
                     montepy.numbered_object_collection.NumberedObjectCollection,
                 ):
-                    collection.link_to_problem(self)
+                    collection.link_to_problem(self, deepcopy=True)
                 else:
                     for obj in collection:
-                        obj.link_to_problem(self)
+                        obj.link_to_problem(self, deepcopy=True)
             self.__unpickled = False
 
     def __unlink_objs(self):
@@ -122,7 +122,7 @@ class MCNP_Problem:
                 collection.link_to_problem(None)
             else:
                 for obj in collection:
-                    obj.link_to_problem(None)
+                    obj.link_to_problem(None, deepcopy=True)
         self.__unpickled = True
         self.__relink_objs()
 
@@ -784,17 +784,12 @@ class MCNP_Problem:
                 obj = montepy.Cell(input)
                 # let final parsing error bubble up
         obj.link_to_problem(self)
-        if isinstance(obj, montepy.Cell):
-            obj.update_pointers(self.cells, self.materials, self.surfaces)
-            if append:
+        if append:
+            if isinstance(obj, montepy.Cell):
                 self.cells.append(obj)
-        elif isinstance(obj, montepy.surfaces.surface.Surface):
-            obj.update_pointers(self.surfaces, self.data_inputs)
-            if append:
+            elif isinstance(obj, montepy.surfaces.surface.Surface):
                 self.surfaces.append(obj)
-        else:
-            obj.update_pointers(self.data_inputs)
-            if append:
+            else:
                 self.data_inputs.append(obj)
                 if isinstance(obj, Material):
                     self._materials.append(obj, insert_in_data=False)

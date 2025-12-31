@@ -196,7 +196,7 @@ class CellModifierInput(DataInputAbstract):
         """
         pass
 
-    def link_to_problem(self, problem):
+    def link_to_problem(self, problem, *, deepcopy: bool = False):
         super().link_to_problem(problem)
         if problem and not hasattr(self, "_not_parsed") and self.set_in_cell_block:
             self._problem.print_in_data_block[self._class_prefix()] = False

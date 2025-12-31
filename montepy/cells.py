@@ -122,7 +122,9 @@ class Cells(NumberedObjectCollection):
         self._volume.is_mcnp_calculated = value
 
     @args_checked
-    def link_to_problem(self, problem: montepy.MCNP_Problem = None):
+    def link_to_problem(
+        self, problem: montepy.MCNP_Problem = None, *, deepcopy: bool = False
+    ):
         """Links the input to the parent problem for this input.
 
         This is done so that inputs can find links to other objects.
@@ -131,11 +133,13 @@ class Cells(NumberedObjectCollection):
         ----------
         problem : MCNP_Problem
             The problem to link this input to.
+        deepcopy : bool
+            If this is occuring during a problem level deepcopy
         """
-        super().link_to_problem(problem)
+        super().link_to_problem(problem, deepcopy=deepcopy)
         inputs_to_property = montepy.Cell._INPUTS_TO_PROPERTY
         for attr, _ in inputs_to_property.values():
-            getattr(self, attr).link_to_problem(problem)
+            getattr(self, attr).link_to_problem(problem, deepcopy=deepcopy)
 
     def update_pointers(
         self, cells, materials, surfaces, data_inputs, problem, check_input=False
