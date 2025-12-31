@@ -40,6 +40,6 @@ class Universes(NumberedObjectCollection):
         except KeyError as e:
             if self._problem:
                 new_uni = self._problem.cells._universe._find_and_populate_universe(key)
-                if new_uni:
+                if new_uni is not None:
                     return new_uni
             raise e

@@ -103,10 +103,10 @@ class UniverseInput(CellModifierInput):
                         found = True
                         break
                 else:
-                    if cell.search(number):
+                    if cell.search(str(number)):
                         cell.full_parse()
                         if cell._universe.old_number == number:
-                            found == True
+                            found = True
                             break
         # universe exists
         if found:
