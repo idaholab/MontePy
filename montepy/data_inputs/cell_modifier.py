@@ -49,6 +49,7 @@ class CellModifierInput(DataInputAbstract):
         the value syntax tree from the key-value pair in a cell
     """
 
+    @args_checked
     def __init__(
         self,
         input: InitInput = None,
