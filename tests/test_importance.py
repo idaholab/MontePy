@@ -13,11 +13,6 @@ from montepy.input_parser import mcnp_input, block_type
 class TestImportance:
     default_test_input_path = os.path.join("tests", "inputs")
 
-    def create_cell_from_input(self, in_str, block=block_type.BlockType.CELL):
-        """Helper to create a Cell object from a given input string."""
-        card = mcnp_input.Input([in_str], block)
-        return Cell(card)
-
     @pytest.mark.parametrize(
         "in_str, expected, error",
         [
@@ -53,9 +48,9 @@ class TestImportance:
         """Test importance parsing from cell input string."""
         if error is not None:
             with pytest.raises(error):
-                self.create_cell_from_input(in_str)
+                montepy.Cell(in_str, jit_parse=False)
         else:
-            cell = self.create_cell_from_input(in_str)
+            cell = montepy.Cell(in_str)
             for attr, value in expected.items():
                 actual = getattr(cell.importance, attr)
                 assert actual == pytest.approx(
@@ -84,7 +79,7 @@ class TestImportance:
     )
     def test_importance_init_data_valid(self, in_str, expected_values):
         """Test importance data initialization for multiple particles."""
-        imp = Importance(in_str)
+        imp = Importance(in_str, jit_parse=False)
         for particle, value in expected_values.items():
             actual = [val.value for val in imp._particle_importances[particle]["data"]]
             assert actual == pytest.approx(
@@ -105,18 +100,24 @@ class TestImportance:
     def test_importance_init_data_invalid(self, in_str, kwargs, expected_exception):
         """Test invalid importance data initialization."""
         with pytest.raises(expected_exception):
-            Importance(in_str, **kwargs)
+            imp = Importance(in_str, **kwargs, jit_parse=False)
 
     @pytest.fixture
     def cell_with_importance(self):
         """
         Fixture providing a cell with importance assignments and block_type.BlockType.CELL
         """
-        return self.create_cell_from_input("1 0 -1 IMP:N,P=1")
+        return montepy.Cell("1 0 -1 IMP:N,P=1")
 
     @pytest.fixture
     def empty_cell(self):
-        return self.create_cell_from_input("1 0 -1")
+        return montepy.Cell("1 0 -1")
+
+    @pytest.fixture
+    def problem(_):
+        problem = montepy.MCNP_Problem()
+        problem.parse("1 so 5")
+        return problem
 
     @pytest.fixture
     def test_importance_values(self):
@@ -199,7 +200,7 @@ class TestImportance:
         with pytest.raises(TypeError):
             imp["hi"]
 
-    def test_importance_all_setter(self, cell_with_importance):
+    def test_importance_all_setter(self, cell_with_importance, problem):
         """
         Test the 'all' setter for importance values.
 
@@ -207,7 +208,6 @@ class TestImportance:
             parsed_cells: Fixture providing cells with importance assignments
         """
         cell = cell_with_importance
-        problem = montepy.mcnp_problem.MCNP_Problem("foo")
         problem.mode.add(Particle.NEUTRON)
         problem.mode.add(Particle.PHOTON)
         imp = cell.importance
@@ -238,10 +238,12 @@ class TestImportance:
         cell.importance.neutron = 2.5
         assert cell.importance.neutron == pytest.approx(2.5)
         problem = montepy.mcnp_problem.MCNP_Problem("foo")
-        cell.link_to_problem(problem)
+        problem.parse("1 so 5")
         # test problem mode enforcement
-        with pytest.raises(ParticleTypeNotInProblem):
+        cell.link_to_problem(problem)
+        with pytest.warns(ParticleTypeNotInProblem):
             cell.importance.photon = 1.0
+        problem.mode.add("n")
         # test wrong type
         with pytest.raises(TypeError):
             cell.importance.neutron = "h"
@@ -302,7 +304,8 @@ class TestImportance:
     def test_redundant_importance(self):
         with pytest.raises(MalformedInputError):
             montepy.read_input(
-                os.path.join(self.default_test_input_path, "test_imp_redundant.imcnp"), jit_parse=False
+                os.path.join(self.default_test_input_path, "test_imp_redundant.imcnp"),
+                jit_parse=False,
             )
 
     def test_default_importance_not_implemented(self):
