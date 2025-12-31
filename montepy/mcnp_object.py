@@ -152,6 +152,13 @@ class MCNP_Object(ABC, metaclass=_ExceptionContextAdder):
 
     _KEYS_TO_PRESERVE = set()
 
+    @property
+    def full_parsed(self):
+        """
+        TODO
+        """
+        return not hasattr(self, "_not_parsed")
+
     def full_parse(self):
         # TODO deprecate update_pointers
         # TODO test for catastrophic surface, material, transform renumbering

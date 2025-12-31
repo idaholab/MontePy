@@ -363,7 +363,7 @@ class CellModifierInput(DataInputAbstract):
             a list of strings for the lines that this input will occupy.
         """
         if hasattr(self, "_not_parsed") and self._input is not None:
-            return self._input.input_lines
+            return self._original_lines()
         self.validate()
         self._tree.check_for_graveyard_comments(has_following)
         if not self._problem:
@@ -397,6 +397,9 @@ class CellModifierInput(DataInputAbstract):
                 suppress_blank_end=not self.in_cell_block,
             )
         return []
+
+    def _original_lines(self):
+        return self._input.input_lines
 
     @args_checked
     def mcnp_str(self, mcnp_version: ty.VersionType = None) -> str:

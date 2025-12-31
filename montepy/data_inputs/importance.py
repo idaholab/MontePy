@@ -27,6 +27,7 @@ import numbers
 #
 # * _tree      : the syntax tree from parsing. Only used on initial parsing
 # * _real_tree : holds unique trees for every particle type. This is used in data block formatting.
+# * _inputs    : holds the original Importance inputs from all distinct instances
 # * _particle_importances : a dictionary of ParameterNodes that maps a particle to it's ParameterNode
 # * _part_combos : a list of ParticleNode that show which particles were combined on the original input
 
@@ -51,6 +52,7 @@ class Importance(CellModifierInput):
     def _init_blank(self):
         self._particle_importances = {}
         self._real_tree = {}
+        self._inputs = []
         self._part_combos = []
 
     def _parse_cell_tree(self):
@@ -148,9 +150,18 @@ class Importance(CellModifierInput):
         if self.in_cell_block:
             return self.set_in_cell_block
 
-    @needs_full_ast
     @args_checked
     def merge(self, other: Importance):
+        # ensure all parsed or none are parsed
+        if not self.full_parsed:
+            if other.full_parsed:
+                self.full_parse()
+            else:
+                self._inputs.append(other)
+                return
+        # if full parsed
+        elif not other.full_parsed:
+            other.full_parse()
         if self.in_cell_block != other.in_cell_block:
             raise ValueError("Can not mix cell-level and data-level Importance objects")
         if other.set_in_cell_block:
@@ -168,6 +179,21 @@ class Importance(CellModifierInput):
                     other._input,
                     "Cannot have two importance inputs for the same particle type",
                 )
+
+    def full_parse(self):
+        if hasattr(self, "_not_parsed") and self._not_parsed:
+            super().full_parse()
+        # handle all other inputs
+        for input in self._inputs:
+            input.full_parse()
+            self.merge(input)
+        self._inputs.clear()
+
+    def _original_lines(self):
+        ret = super()._original_lines()
+        for input in self._inputs:
+            ret += input._input.input_lines
+        return ret
 
     @needs_full_ast
     def __iter__(self):
