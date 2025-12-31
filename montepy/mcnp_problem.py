@@ -735,7 +735,9 @@ class MCNP_Problem:
         return ret
 
     @args_checked
-    def parse(self, input: str, append: bool = True) -> montepy.mcnp_object.MCNP_Object:
+    def parse(
+        self, input: str, append: bool = True, *, jit_parse: bool = True
+    ) -> montepy.mcnp_object.MCNP_Object:
         """Parses the MCNP object given by the string, and links it adds it to this problem.
 
         This attempts to identify the input type by trying to parse it in the following order:
@@ -758,6 +760,7 @@ class MCNP_Problem:
             this does not need to meet MCNP line length rules.
         append : bool
             Whether to append this parsed object to this problem.
+        TODO
 
         Returns
         -------
@@ -776,12 +779,12 @@ class MCNP_Problem:
             if the object's number is already taken
         """
         try:
-            obj = montepy.parse_data(input)
+            obj = montepy.parse_data(input, jit_parse=jit_parse)
         except ParsingError:
             try:
-                obj = montepy.parse_surface(input)
+                obj = montepy.parse_surface(input, jit_parse=jit_parse)
             except ParsingError:
-                obj = montepy.Cell(input)
+                obj = montepy.Cell(input, jit_parse=jit_parse)
                 # let final parsing error bubble up
         obj.link_to_problem(self)
         if append:
