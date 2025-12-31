@@ -489,6 +489,7 @@ class MCNP_Problem:
                 raise e
 
         self.__load_data_inputs_to_object(self._data_inputs)
+        self.cells.finalize_init()
         # TODO
         if jit_parse:
             return

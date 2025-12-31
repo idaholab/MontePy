@@ -218,7 +218,6 @@ class Cells(NumberedObjectCollection):
 
         inputs_to_property = montepy.Cell._INPUTS_TO_PROPERTY
         inputs_to_always_update = {"_universe", "_fill"}
-        self.__blank_modifiers = set()
         if type(input) in inputs_to_property:
             input_class = type(input)
             attr, cant_repeat = inputs_to_property[input_class]
@@ -243,6 +242,14 @@ class Cells(NumberedObjectCollection):
                     handle_error(e)
             if cant_repeat:
                 self.__loaded_inputs.add(type(input))
+
+    def finalize_init(self):
+        """
+        TODO
+        """
+        for input_class, (attr, _) in montepy.Cell._INPUTS_TO_PROPERTY.items():
+            if input_class not in self.__loaded_inputs:
+                self._problem.print_in_data_block[input_class._class_prefix()] = False
 
     def _run_children_format_for_mcnp(self, data_inputs, mcnp_version):
         ret = []

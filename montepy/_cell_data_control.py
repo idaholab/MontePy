@@ -8,7 +8,7 @@ class CellDataPrintController:
     """Class for controlling if cell modifier data is printed in cell or data blocks."""
 
     _CLASSIFIER_TO_ATTRIBUTE = {
-        k._class_prefix: v[0] for k, v in montepy.Cell._INPUTS_TO_PROPERTY.items()
+        k._class_prefix(): v[0] for k, v in montepy.Cell._INPUTS_TO_PROPERTY.items()
     }
 
     def __init__(self, problem):
@@ -25,17 +25,17 @@ class CellDataPrintController:
     @args_checked
     def __setitem__(self, key: str, value: bool):
         if key.upper() in montepy.Cell._ALLOWED_KEYWORDS:
-            self._print_data[key.lower()] = value
             # check if previously set, and has changed
             if (
                 key.lower() in self._print_data
                 and self._print_data[key.lower()] != value
             ):
                 getattr(
-                    self._problem.cells, self._CLASSIFIER_TO_ATTRIBUTE[key.lower()]
+                    self._problem().cells, self._CLASSIFIER_TO_ATTRIBUTE[key.lower()]
                 ).full_parse()
-                for cell in problem.cells:
+                for cell in self._problem().cells:
                     cell.full_parse()
+            self._print_data[key.lower()] = value
         else:
             raise KeyError(f"{key} is not a supported cell modifier in MCNP")
 
