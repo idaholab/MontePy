@@ -226,7 +226,8 @@ class Cells(NumberedObjectCollection):
             input_class = type(input)
             attr, cant_repeat = inputs_to_property[input_class]
             # start fresh for loading cell modifiers
-            delattr(self, attr)
+            if getattr(self, attr)._input is None:
+                delattr(self, attr)
             if cant_repeat and input_class in self.__loaded_inputs:
                 try:
                     raise MalformedInputError(
@@ -241,11 +242,10 @@ class Cells(NumberedObjectCollection):
             else:
                 try:
                     getattr(self, attr).merge(input)
-                    data_inputs.remove(input)
+                    self._problem.data_inputs.remove(input)
                 except MalformedInputError as e:
                     handle_error(e)
-            if cant_repeat:
-                self.__loaded_inputs.add(type(input))
+            self.__loaded_inputs.add(type(input))
 
     def finalize_init(self):
         """
