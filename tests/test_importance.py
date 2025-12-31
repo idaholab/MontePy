@@ -302,7 +302,7 @@ class TestImportance:
     def test_redundant_importance(self):
         with pytest.raises(MalformedInputError):
             montepy.read_input(
-                os.path.join(self.default_test_input_path, "test_imp_redundant.imcnp")
+                os.path.join(self.default_test_input_path, "test_imp_redundant.imcnp"), jit_parse=False
             )
 
     def test_default_importance_not_implemented(self):
