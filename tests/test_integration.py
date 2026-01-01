@@ -1185,7 +1185,10 @@ def test_read_write_cycle(file):
                     gold_line = next(gold_fh_iter)
             # edge case override for not fixing #527.
             if str(file) == "tests/inputs/test_interp_edge.imcnp" and i == 1:
-                assert new_line == "10214   0    (1  2I 4 )" or new_line == gold_line.rstrip().expandtabs(8)
+                assert (
+                    new_line == "10214   0    (1  2I 4 )"
+                    or new_line == gold_line.rstrip().expandtabs(8)
+                )
                 continue
             try:
                 assert new_line == gold_line.rstrip().expandtabs(8)

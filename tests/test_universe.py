@@ -63,9 +63,8 @@ class TestUniverseInput:
         assert universe_input_neg.not_truncated is True
 
         universes = [1, 2, 3]
-        input_obj = Input(["U " + " ".join(list(map(str, universes)))], BlockType.DATA)
-        uni_card = UniverseInput(input_obj)
-        assert uni_card.old_numbers == universes
+        uni = UniverseInput("U " + " ".join(list(map(str, universes))))
+        assert uni.old_numbers == universes
 
         # test jump
         input_obj = Input(["U J"], BlockType.DATA)
@@ -75,27 +74,26 @@ class TestUniverseInput:
         # test bad float
         with pytest.raises(MalformedInputError):
             input_obj = Input(["U 5.5"], BlockType.DATA)
-            UniverseInput(input_obj)
+            UniverseInput(input_obj, jit_parse=False)
 
         # test bad str
         with pytest.raises(MalformedInputError):
             input_obj = Input(["U hi"], BlockType.DATA)
-            UniverseInput(input_obj)
+            uni = UniverseInput(input_obj)
+            uni.old_numbers
 
         # test bad negative
         input_obj = Input(["U -2"], BlockType.DATA)
-        UniverseInput(input_obj)
+        UniverseInput(input_obj, jit_parse=False)
 
     def test_str(self):
         universe_input = copy.deepcopy(self.universe)
         uni = Universe(5)
         universe_input.universe = uni
         output = str(universe_input)
-        assert "u=5" in output
+        assert "UniverseInput" in output
         output = repr(universe_input)
-        assert "UNIVERSE" in output
-        assert "set_in_block: True" in output
-        assert "Universe : Universe(5)" in output
+        assert "in_cell_block=True" in output
 
     def test_merge(self):
         universe_input = copy.deepcopy(self.universe)
@@ -169,7 +167,9 @@ class TestUniverse:
 
 
 class TestLattice:
-    def setup_method(self):
+
+    @pytest.fixture
+    def tree(self):
         list_node = syntax_node.ListNode("numbers")
         list_node.append(syntax_node.ValueNode("1", float))
         classifier = syntax_node.ClassifierNode()
@@ -182,13 +182,14 @@ class TestLattice:
                 "data": list_node,
             },
         )
-        self.tree = tree
-        self.lattice = LatticeInput(in_cell_block=True, key="lat", value=tree)
+        return tree
 
-    def test_lattice_init(self):
-        lattice = self.lattice
+    @pytest.fixture
+    def lattice(self, tree):
+        return LatticeInput(in_cell_block=True, key="lat", value=tree)
+
+    def test_lattice_init(self, lattice, tree):
         assert lattice.lattice == LatticeType(1)
-        tree = copy.deepcopy(self.tree)
         with pytest.raises(ValueError):
             tree["data"].nodes.pop()
             tree["data"].append(syntax_node.ValueNode("hi", str))
@@ -199,18 +200,18 @@ class TestLattice:
             LatticeInput(in_cell_block=True, key="lat", value=tree)
         lattices = [1, 2, None, None]
         input = Input(["Lat " + " ".join(list(map(str, lattices)))], BlockType.DATA)
-        lattice = LatticeInput(input)
+        lattice = LatticeInput(input, jit_parse=False)
         for answer, lattice in zip(lattices, lattice._lattice):
             assert LatticeType(answer) == lattice.value
         with pytest.raises(MalformedInputError):
             input_obj = Input(["Lat 3"], BlockType.DATA)
-            LatticeInput(input_obj)
+            LatticeInput(input_obj, jit_parse=False)
         with pytest.raises(MalformedInputError):
             input_obj = Input(["Lat str"], BlockType.DATA)
-            LatticeInput(input_obj)
+            lat = LatticeInput(input_obj)
+            lat.lattice
 
-    def test_lattice_setter(self):
-        lattice = copy.deepcopy(self.lattice)
+    def test_lattice_setter(self, lattice):
         lattice.lattice = LatticeType(2)
         assert LatticeType(2) == lattice.lattice
         lattice.lattice = 1
@@ -223,30 +224,26 @@ class TestLattice:
         with pytest.raises(ValueError):
             lattice.lattice = -1
 
-    def test_lattice_deleter(self):
-        lattice = self.lattice
+    def test_lattice_deleter(self, lattice):
+        print(repr(lattice))
         del lattice.lattice
         assert lattice.lattice is None
 
-    def test_lattice_merge(self):
-        lattice = self.lattice
+    def test_lattice_merge(self, lattice):
         with pytest.raises(MalformedInputError):
             lattice.merge(lattice)
 
-    def test_lattice_cell_format(self):
-        lattice = self.lattice
+    def test_lattice_cell_format(self, lattice):
         output = lattice.format_for_mcnp_input(DEFAULT_VERSION)
+        print(output)
         assert "lat=1" in output[0]
         lattice.lattice = None
         output = lattice.format_for_mcnp_input(DEFAULT_VERSION)
         assert output == []
 
-    def test_lattice_repr(self):
-        lattice = self.lattice
+    def test_lattice_repr(self, lattice):
         out = repr(lattice)
-        assert "in_cell: True" in out
-        assert "set_in_block: True" in out
-        assert "Lattice_values : LatticeType.RECTANGULAR" in out
+        assert "in_cell_block=True" in out
 
     def test_deprecated_lattice(self):
         assert (
