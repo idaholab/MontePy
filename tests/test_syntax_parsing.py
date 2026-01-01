@@ -1368,35 +1368,49 @@ bar
         assert str(card) == "INPUT: BlockType.CELL"
         assert repr(card) == "INPUT: BlockType.CELL: ['1 0 -1']"
 
-    def testDataInputNameParsing(self):
-        tests = {
-            "kcOde": {"prefix": "kcode", "number": None, "classifier": None},
-            "M300": {"prefix": "m", "number": 300, "classifier": None},
-            "IMP:N,P,E": {
-                "prefix": "imp",
-                "number": None,
-                "classifier": [Particle.NEUTRON, Particle.PHOTON, Particle.ELECTRON],
-            },
-            "F1004:n,P": {
-                "prefix": "f",
-                "number": 1004,
-                "classifier": [Particle.NEUTRON, Particle.PHOTON],
-            },
-        }
-        for in_str, answer in tests.items():
-            # Testing parsing the names
-            print("in", in_str, "answer", answer)
-            card = montepy.input_parser.mcnp_input.Input(
-                [in_str], montepy.input_parser.block_type.BlockType.DATA
+    @pytest.mark.parametrize(
+        "in_str, answer",
+        [
+            ("kcOde", {"prefix": "kcode", "number": None, "classifier": None}),
+            ("M300", {"prefix": "m", "number": 300, "classifier": None}),
+            (
+                "IMP:N,P,E",
+                {
+                    "prefix": "imp",
+                    "number": None,
+                    "classifier": [
+                        Particle.NEUTRON,
+                        Particle.PHOTON,
+                        Particle.ELECTRON,
+                    ],
+                },
+            ),
+            (
+                "F1004:n,P",
+                {
+                    "prefix": "f",
+                    "number": 1004,
+                    "classifier": [Particle.NEUTRON, Particle.PHOTON],
+                },
+            ),
+        ],
+    )
+    def testDataInputNameParsing(self, in_str, answer):
+        # Testing parsing the names
+        print("in", in_str, "answer", answer)
+        card = montepy.input_parser.mcnp_input.Input(
+            [in_str], montepy.input_parser.block_type.BlockType.DATA
+        )
+        data_input = montepy.data_inputs.data_input.DataInput(
+            card, fast_parse=True, jit_parse=False
+        )
+        assert data_input.prefix == answer["prefix"]
+        if answer["number"]:
+            assert data_input._input_number.value == answer["number"]
+        if answer["classifier"]:
+            assert sorted(data_input.particle_classifiers) == sorted(
+                answer["classifier"]
             )
-            data_input = montepy.data_inputs.data_input.DataInput(card, fast_parse=True)
-            assert data_input.prefix == answer["prefix"]
-            if answer["number"]:
-                assert data_input._input_number.value == answer["number"]
-            if answer["classifier"]:
-                assert sorted(data_input.particle_classifiers) == sorted(
-                    answer["classifier"]
-                )
 
     @pytest.mark.parametrize(
         "in_str, answer",
@@ -1619,7 +1633,7 @@ class DataInputTestFixture(montepy.data_inputs.data_input.DataInputAbstract):
         :param input_card: the Card object representing this data input
         :type input_card: Input
         """
-        super().__init__(input_card, fast_parse=True)
+        super().__init__(input_card, fast_parse=True, jit_parse=False)
 
     def _class_prefix(self):
         return self._class_prefix1
