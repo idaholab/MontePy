@@ -32,26 +32,28 @@ class LatticeInput(CellModifierInput):
 
     def _parse_cell_tree(self):
         if self._in_key:
-            try:
-                val = self._tree["data"][0]
-                val.convert_to_int()
-                val.convert_to_enum(LatticeType, int)
-            except ValueError as e:
-                raise ValueError("Cell Lattice must be 1 or 2")
+            val = self._tree["data"][0]
+            if val.type is not LatticeType:
+                try:
+                    val.convert_to_int()
+                    val.convert_to_enum(LatticeType, int)
+                except ValueError as e:
+                    raise ValueError("Cell Lattice must be 1 or 2") from e
             self._lattice = val
 
     def _parse_data_tree(self):
         self._lattice = []
         words = self.data
         for word in words:
-            try:
-                word.convert_to_int()
-                word.convert_to_enum(LatticeType, int)
-                self._lattice.append(word)
-            except ValueError:
-                raise MalformedInputError(
-                    input, f"Cell lattice must be 1 or 2. {word} given."
-                )
+            if word.type is not LatticeType:
+                try:
+                    word.convert_to_int()
+                    word.convert_to_enum(LatticeType, int)
+                except ValueError as e:
+                    raise MalformedInputError(
+                        input, f"Cell lattice must be 1 or 2. {word} given."
+                    ) from e
+            self._lattice.append(word)
 
     def _generate_default_cell_tree(self):
         list_node = syntax_node.ListNode("number sequence")
@@ -84,6 +86,7 @@ class LatticeInput(CellModifierInput):
         return 0
 
     @property
+    @needs_full_ast
     def has_information(self):
         if self.in_cell_block:
             return self.lattice is not None
@@ -101,6 +104,7 @@ class LatticeInput(CellModifierInput):
         pass
 
     @property
+    @needs_full_ast
     def _tree_value(self):
         return self._lattice
 

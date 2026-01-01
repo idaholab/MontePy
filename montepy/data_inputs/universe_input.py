@@ -133,6 +133,7 @@ class UniverseInput(CellModifierInput):
             return 0
 
     @property
+    @needs_full_ast
     def old_numbers(self):
         ret = []
         for value in self._old_numbers:
@@ -154,6 +155,7 @@ class UniverseInput(CellModifierInput):
             return self._universe
 
     @property
+    @needs_full_ast
     def not_truncated(self) -> bool:
         """Indicates if this cell has been marked as not being truncated for optimization.
 
@@ -178,11 +180,13 @@ class UniverseInput(CellModifierInput):
         return self._not_truncated
 
     @not_truncated.setter
+    @needs_full_cst
     @args_checked
     def not_truncated(self, value: bool):
         self._not_truncated = value
 
     @property
+    @needs_full_ast
     def _tree_value(self):
         val = self._old_number
         val.value = 0
