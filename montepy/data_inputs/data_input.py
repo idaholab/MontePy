@@ -89,8 +89,10 @@ class DataInputAbstract(MCNP_Object):
         ret["start_pad"] = syntax_node.PaddingNode()
         ret["classifier"] = syntax_node.ClassifierNode()
         ret["classifier"].prefix = syntax_node.ValueNode(
-            None, str, padding=None, never_pad=True
+            self._class_prefix(), str, padding=None, never_pad=True
         )
+        if self._has_number():
+            ret["classifier"].number = self._generate_default_node(int, -1)
         ret["keyword"] = syntax_node.ValueNode(None, str, padding=None)
         ret["data"] = syntax_node.ListNode("empty data")
         ret["parameters"] = syntax_node.ParametersNode()

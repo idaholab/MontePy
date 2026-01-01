@@ -5,6 +5,7 @@ import numpy as np
 import re
 
 import montepy
+from montepy.input_parser import syntax_node
 from montepy.utilities import *
 from montepy import mcnp_object
 from montepy.data_inputs import data_input
@@ -57,6 +58,13 @@ class Transform(data_input.DataInputAbstract, Numbered_MCNP_Object):
         self._rotation_matrix = np.array([])
         self._is_in_degrees = False
         self._is_main_to_aux = True
+
+    def _generate_default_tree(self):
+        super()._generate_default_tree()
+        list_node = syntax_node.ListNode("transform list")
+        for _ in range(3):
+            list_node.append(self._generate_default_node(float, "0"))
+        self._tree.nodes["data"] = list_node
 
     def _parse_tree(self):
         super()._parse_tree()
@@ -208,7 +216,8 @@ class Transform(data_input.DataInputAbstract, Numbered_MCNP_Object):
             self._classifier.modifier = self._generate_default_node(
                 str, "", padding=None
             )
-        if self.is_in_degrees:
+        # avoid parsing mid-update
+        if self._is_in_degrees:
             self._classifier.modifier.value = "*"
         else:
             self._classifier.modifier.value = ""
@@ -251,6 +260,9 @@ class Transform(data_input.DataInputAbstract, Numbered_MCNP_Object):
         self.data.update_with_new_values(new_values)
 
     def validate(self):
+        if self.number <= 0:
+            raise IllegalState(f"Transform: {self.number} does not have a valid number")
+
         if self.displacement_vector is None or len(self.displacement_vector) != 3:
             raise IllegalState(
                 f"Transform: {self.number} does not have a valid displacement Vector"
