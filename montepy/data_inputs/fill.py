@@ -566,6 +566,7 @@ class Fill(CellModifierInput):
             self._hidden_transform = value.hidden_transform
         else:
             self._hidden_transform = False
+            self._old_transform_number.value = None
 
     @transform.deleter
     @needs_full_cst
@@ -658,7 +659,7 @@ class Fill(CellModifierInput):
         )
 
     def _update_cell_values(self):
-        if self.transform and self.transform.is_in_degrees:
+        if self._transform and self.transform.is_in_degrees:
             self._tree["classifier"].modifier = "*"
         else:
             self._tree["classifier"].modifier = None
@@ -671,12 +672,12 @@ class Fill(CellModifierInput):
         Updates cell fill tree with the new transform data.
         """
         old_vals = self._tree["data"]["transform"]
-        if self.transform is None:
+        if self._transform is None and self.old_transform_number is None:
             old_vals.nodes.clear()
             new_vals = []
         # Update transforms
         else:
-            if self.transform.hidden_transform:
+            if self.hidden_transform:
                 self.transform._update_values()
                 payload = list(self.transform._tree["data"])
             else:
