@@ -43,19 +43,20 @@ def test_surface_init():
     assert Surface(Input([in_str], BlockType.SURFACE)).is_white_boundary
     # test negative surface
     with pytest.raises(MalformedInputError):
-        Surface("-1 PZ 0.0")
+        Surface("-1 PZ 0.0", jit_parse=False)
     with pytest.raises(MalformedInputError):
-        Surface(Input(["-1 PZ 0.0"], BlockType.SURFACE))
+        surface = Surface(Input(["-1 PZ 0.0"], BlockType.SURFACE))
+        surface.surface_constants
     # test bad surface number
     with pytest.raises(MalformedInputError):
-        Surface("foo PZ 0.0")
+        Surface("foo PZ 0.0", jit_parse=False)
     with pytest.raises(MalformedInputError):
-        Surface(Input(["foo PZ 0.0"], BlockType.SURFACE))
+        Surface(Input(["foo PZ 0.0"], BlockType.SURFACE), jit_parse=False)
     # test bad surface type
     with pytest.raises(MalformedInputError):
-        Surface("1 INL 0.0")
+        Surface("1 INL 0.0", jit_parse=False)
     with pytest.raises(MalformedInputError):
-        Surface(Input(["1 INL 0.0"], BlockType.SURFACE))
+        Surface(Input(["1 INL 0.0"], BlockType.SURFACE), jit_parse=False)
 
 
 def test_surface_transform_and_periodic():
@@ -74,7 +75,7 @@ def test_surface_transform_and_periodic():
     card = Input([in_str], BlockType.SURFACE)
     with pytest.raises(MalformedInputError):
         Surface(card)
-    with self.assertRaises(MalformedInputError):
+    with pytest.raises(MalformedInputError):
         Surface("+1 PZ foo", jit_parse=False)
     surf = Surface(number=5)
     assert surf.number == 5
@@ -273,26 +274,11 @@ def test_surface_format_for_mcnp():
 
 def test_surface_str():
     surf_white = Surface("+1 PZ 0.0")
-    assert str(surf_white) == "SURFACE: 1, PZ"
-    assert (
-        repr(surf_white)
-        == "SURFACE: 1, PZ, periodic surface: None, transform: None, constants: [0.0], Boundary: White"
-    )
+    assert str(surf_white) == "Surface: 1"
+    assert repr(surf_white) == "Surface('+1 PZ 0.0', number=1, jit_parse=True)"
 
     surf_ref = Surface("*1 PZ 0.0")
-    assert str(surf_ref) == "SURFACE: 1, PZ"
-    assert (
-        repr(surf_ref)
-        == "SURFACE: 1, PZ, periodic surface: None, transform: None, constants: [0.0], Boundary: Reflective"
-    )
-
-    surf_ref.is_reflecting = False
-    surf_ref.is_white_boundary = False
-    assert str(surf_ref) == "SURFACE: 1, PZ"
-    assert (
-        repr(surf_ref)
-        == "SURFACE: 1, PZ, periodic surface: None, transform: None, constants: [0.0], Boundary: None"
-    )
+    assert repr(surf_ref) == "Surface('*1 PZ 0.0', number=1, jit_parse=True)"
 
 
 def test_surface_builder():
@@ -317,9 +303,11 @@ def test_axis_plane_init():
     bad_inputs = ["1 P 0.0", "1 PZ 0.0 10.0"]
     for bad_input in bad_inputs:
         with pytest.raises(ValueError):
-            montepy.surfaces.axis_plane.AxisPlane(bad_input)
+            montepy.surfaces.axis_plane.AxisPlane(bad_input, jit_parse=False)
         with pytest.raises(ValueError):
-            montepy.surfaces.axis_plane.AxisPlane(Input([bad_input], BlockType.SURFACE))
+            montepy.surfaces.axis_plane.AxisPlane(
+                Input([bad_input], BlockType.SURFACE), jit_parse=False
+            )
     surf = montepy.surfaces.axis_plane.AxisPlane(number=5)
     assert surf.number == 5
 
@@ -328,9 +316,9 @@ def test_cylinder_on_axis_init():
     bad_inputs = ["1 P 0.0", "1 CZ 0.0 10.0"]
     for bad_input in bad_inputs:
         with pytest.raises(ValueError):
-            montepy.surfaces.cylinder_on_axis.CylinderOnAxis(bad_input)
+            montepy.surfaces.cylinder_on_axis.CylinderOnAxis(bad_input, jit_parse=False)
         with pytest.raises(ValueError):
-            montepy.surfaces.cylinder_on_axis.CylinderOnAxis(bad_input)
+            montepy.surfaces.cylinder_on_axis.CylinderOnAxis(bad_input, jit_parse=False)
     surf = montepy.surfaces.cylinder_on_axis.CylinderOnAxis(number=5)
     assert surf.number == 5
 
@@ -339,10 +327,12 @@ def test_cylinder_par_axis_init():
     bad_inputs = ["1 P 0.0", "1 C/Z 0.0"]
     for bad_input in bad_inputs:
         with pytest.raises(ValueError):
-            montepy.surfaces.cylinder_par_axis.CylinderParAxis(bad_input)
+            montepy.surfaces.cylinder_par_axis.CylinderParAxis(
+                bad_input, jit_parse=False
+            )
         with pytest.raises(ValueError):
             montepy.surfaces.cylinder_par_axis.CylinderParAxis(
-                Input([bad_input], BlockType.SURFACE)
+                Input([bad_input], BlockType.SURFACE), jit_parse=False
             )
     surf = montepy.surfaces.cylinder_par_axis.CylinderParAxis(number=5)
     assert surf.number == 5
@@ -352,10 +342,10 @@ def test_gen_plane_init():
     bad_inputs = ["1 PZ 0.0", "1 P 0.0"]
     for bad_input in bad_inputs:
         with pytest.raises(ValueError):
-            montepy.surfaces.general_plane.GeneralPlane(bad_input)
+            montepy.surfaces.general_plane.GeneralPlane(bad_input, jit_parse=False)
         with pytest.raises(ValueError):
             montepy.surfaces.general_plane.GeneralPlane(
-                Input([bad_input], BlockType.SURFACE)
+                Input([bad_input], BlockType.SURFACE), jit_parse=False
             )
     surf = montepy.surfaces.general_plane.GeneralPlane(number=5)
     assert surf.number == 5

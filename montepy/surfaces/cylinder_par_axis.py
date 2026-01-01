@@ -53,6 +53,7 @@ class CylinderParAxis(Surface):
         return {SurfaceType.C_X, SurfaceType.C_Y, SurfaceType.C_Z}
 
     @property
+    @needs_full_ast
     def coordinates(self):
         """The two coordinates for this cylinder to center on.
 
@@ -62,6 +63,7 @@ class CylinderParAxis(Surface):
 
     @coordinates.setter
     @args_checked
+    @needs_full_cst
     def coordinates(self, coordinates: ty.Iterable[ty.Real]):
         if len(coordinates) != 2:
             raise ValueError("coordinates must have exactly two elements")
@@ -87,6 +89,7 @@ class CylinderParAxis(Surface):
         if any({c is None for c in self.coordinates}):
             raise IllegalState(f"Surface: {self.number} does not have coordinates set.")
 
+    @needs_full_ast
     @args_checked
     def find_duplicate_surfaces(
         self, surfaces: montepy.Surfaces, tolerance: ty.PositiveReal

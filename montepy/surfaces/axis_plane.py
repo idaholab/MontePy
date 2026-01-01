@@ -53,6 +53,7 @@ class AxisPlane(Surface):
         if self.location is None:
             raise IllegalState(f"Surface: {self.number} does not have a location set.")
 
+    @needs_full_ast
     @args_checked
     def find_duplicate_surfaces(
         self, surfaces: montepy.Surfaces, tolerance: ty.PositiveReal

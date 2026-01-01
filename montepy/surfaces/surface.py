@@ -56,6 +56,7 @@ class Surface(Numbered_MCNP_Object):
         super().__init__(
             input,
             number=number,
+            surface_type=surface_type,
             jit_parse=jit_parse,
         )
 
@@ -94,6 +95,7 @@ class Surface(Numbered_MCNP_Object):
                 self._number._token = self._number.token.replace("+", "")
                 self._modifier = self._generate_default_node(str, "+", None, True)
                 self._tree["surface_num"].nodes["modifier"] = self._modifier
+        self._surface_type = self._tree["surface_type"]
         # parse the parameters
         for entry in self._tree["data"]:
             self._surface_constants.append(entry)
