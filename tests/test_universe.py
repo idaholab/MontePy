@@ -26,7 +26,7 @@ class TestUniverseInput:
         list_node = syntax_node.ListNode("numbers")
         list_node.append(syntax_node.ValueNode("5", float))
         classifier = syntax_node.ClassifierNode()
-        classifier.prefix = "u"
+        classifier.prefix = syntax_node.ValueNode("u", str)
         tree = syntax_node.SyntaxNode(
             "lattice",
             {
@@ -315,17 +315,19 @@ class TestFill:
             fill = cell.fill
         with pytest.raises(ValueError):
             input = Input(["1 0 -1 fill=1 (hi)"], BlockType.CELL)
-            cell = Cell(input)
+            cell = Cell(input, jit_parse=False)
         # test negative universe
         with pytest.raises(ValueError):
             input = Input(["1 0 -1 fill=-5"], BlockType.CELL)
             cell = Cell(input)
+            cell.fill
         with pytest.raises(ValueError):
             input = Input(["1 0 -1 fill=5 (-5)"], BlockType.CELL)
-            cell = Cell(input)
+            cell = Cell(input, jit_parse=False)
         with pytest.raises(ValueError):
             input = Input(["1 0 -1 fill=5 1 0 0"], BlockType.CELL)
             cell = Cell(input)
+            cell.fill
 
     @pytest.fixture
     def complicated_fill(self):
@@ -374,11 +376,11 @@ class TestFill:
         # test negative universe
         with pytest.raises(MalformedInputError):
             input_obj = Input(["FiLl 1 -2 3 4"], BlockType.DATA)
-            fill = Fill(input_obj)
+            fill = Fill(input_obj, jit_parse=False)
         # test string universe
         with pytest.raises(MalformedInputError):
             input_obj = Input(["FiLl 1 foo"], BlockType.DATA)
-            fill = Fill(input_obj)
+            fill = Fill(input_obj, jit_parse=False)
 
     def test_fill_universe_setter(self):
 

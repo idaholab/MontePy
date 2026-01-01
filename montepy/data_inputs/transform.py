@@ -49,7 +49,7 @@ class Transform(data_input.DataInputAbstract, Numbered_MCNP_Object):
     ):
         self._pass_through = pass_through
         self._old_number = self._generate_default_node(int, -1)
-        super().__init__(input, jit_parse=jit_parse)
+        data_input.DataInputAbstract.__init__(self, input, jit_parse=jit_parse)
         self._load_init_num(number)
 
     def _init_blank(self):
@@ -59,6 +59,7 @@ class Transform(data_input.DataInputAbstract, Numbered_MCNP_Object):
         self._is_main_to_aux = True
 
     def _parse_tree(self):
+        super()._parse_tree()
         self._number = self._input_number
         self._old_number = copy.deepcopy(self._number)
         words = self._tree["data"]
@@ -117,6 +118,7 @@ class Transform(data_input.DataInputAbstract, Numbered_MCNP_Object):
         return 0
 
     @property
+    @needs_full_ast
     def hidden_transform(self) -> bool:
         """Whether or not this transform is "hidden" i.e., has no number.
 
@@ -129,6 +131,7 @@ class Transform(data_input.DataInputAbstract, Numbered_MCNP_Object):
         return self._pass_through
 
     @make_prop_pointer("_is_in_degrees", bool)
+    @needs_full_ast
     def is_in_degrees(self) -> bool:
         """The rotation matrix is in degrees and not in cosines
 
@@ -139,6 +142,7 @@ class Transform(data_input.DataInputAbstract, Numbered_MCNP_Object):
         pass
 
     @make_prop_val_node("_old_number")
+    @needs_full_ast
     def old_number(self) -> int:
         """The transform number used in the original file
 
@@ -149,6 +153,7 @@ class Transform(data_input.DataInputAbstract, Numbered_MCNP_Object):
         pass
 
     @property
+    @needs_full_ast
     def displacement_vector(self) -> np.ndarray[float]:
         """The transform displacement vector
 
@@ -159,6 +164,7 @@ class Transform(data_input.DataInputAbstract, Numbered_MCNP_Object):
         return self._displacement_vector
 
     @displacement_vector.setter
+    @needs_full_cst
     @args_checked
     def displacement_vector(self, vector: np.ndarray[float]):
         if len(vector) != 3:
@@ -166,6 +172,7 @@ class Transform(data_input.DataInputAbstract, Numbered_MCNP_Object):
         self._displacement_vector = vector
 
     @property
+    @needs_full_ast
     def rotation_matrix(self) -> np.ndarray[float]:
         """The rotation matrix
 
@@ -176,6 +183,7 @@ class Transform(data_input.DataInputAbstract, Numbered_MCNP_Object):
         return self._rotation_matrix
 
     @rotation_matrix.setter
+    @needs_full_cst
     @args_checked
     def rotation_matrix(self, matrix: np.ndarray[float]):
         if len(matrix) < 5 or len(matrix) > 9:
@@ -183,6 +191,7 @@ class Transform(data_input.DataInputAbstract, Numbered_MCNP_Object):
         self._rotation_matrix = matrix
 
     @make_prop_pointer("_is_main_to_aux", bool)
+    @needs_full_ast
     def is_main_to_aux(self) -> bool:
         """Whether or not the displacement vector points from the main origin to auxilary
         origin, or vice versa.
@@ -247,6 +256,7 @@ class Transform(data_input.DataInputAbstract, Numbered_MCNP_Object):
                 f"Transform: {self.number} does not have a valid displacement Vector"
             )
 
+    @needs_full_ast
     @args_checked
     def equivalent(self, other: Transform, tolerance: ty.PositiveReal):
         """Determines if this is effectively equivalent to another transformation
