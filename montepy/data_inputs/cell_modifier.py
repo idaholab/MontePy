@@ -406,6 +406,8 @@ class CellModifierInput(DataInputAbstract):
         return []
 
     def _original_lines(self):
+        if self.in_cell_block:
+            return self._tree.format().split("\n")
         return self._input.input_lines
 
     @args_checked
