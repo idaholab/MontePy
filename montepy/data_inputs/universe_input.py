@@ -212,12 +212,13 @@ class UniverseInput(CellModifierInput):
 
     @needs_full_ast
     def push_to_cells(self):
-        # TODO figure out how to handle object queries
         if not self._problem:
             return
         if not self.in_cell_block:
             cells = self._problem.cells
-            if self._old_numbers:
+            if len(self._old_numbers) > 1 or (
+                len(self._old_numbers) == 1 and self._old_numbers[0].value is not None
+            ):
                 self._check_redundant_definitions()
                 for cell, uni_number in itertools.zip_longest(
                     cells, self._old_numbers, fillvalue=None
