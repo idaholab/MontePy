@@ -593,7 +593,7 @@ class Fill(CellModifierInput):
 
     @needs_full_ast
     def push_to_cells(self):
-        if not self.set_in_cell_block and self.old_universe_numbers:
+        if not self.set_in_cell_block and self.old_universe_numbers and self._problem:
             for cell, old_number in zip(self._problem.cells, self._old_numbers):
                 if not isinstance(old_number, Jump):
                     cell._fill._accept_from_data(old_number)
