@@ -575,12 +575,12 @@ The new input was:\n\n"""
         return f"{type(self).__name__}"
 
     def __repr__(self):
-        ret = f"{type(self).__name_}("
+        ret = f"{type(self).__name__}("
         if self._input:
             args = [f"{repr('\n'.join(self._input.input_lines))}"]
         else:
             args = []
-        args += self._reper_args
+        args += self._repr_args()
         args.append(f"jit_parse={not self.full_parsed}")
         return ret + ", ".join(args) + ")"
 
