@@ -1420,21 +1420,7 @@ See <https://www.montepy.org/migrations/migrate0_1.html> for more information ""
         return 0
 
     @needs_full_ast
-    def __repr__(self):
-        ret = f"MATERIAL: {self.number} fractions: "
-        if self.is_atom_fraction:
-            ret += "atom\n"
-        else:
-            ret += "mass\n"
-
-        for component in self:
-            ret += f"{component[0]} {component[1]}\n"
-        if self.thermal_scattering:
-            ret += f"Thermal Scattering: {self.thermal_scattering}"
-
-        return ret
-
-    def __str__(self):
+    def pretty_str(self):
         elements = self.get_material_elements()
         print_el = []
         if len(elements) > MAX_PRINT_ELEMENTS:

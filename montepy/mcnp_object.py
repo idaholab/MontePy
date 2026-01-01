@@ -572,7 +572,17 @@ The new input was:\n\n"""
     def __str__(self):
         # TODO ensure this doesn't pull attributes on JIT_parsed objects.
         # Switch to hooks system.
-        pass
+        return f"{type(self).__name__}"
 
     def __repr__(self):
-        pass
+        ret = f"{type(self).__name_}("
+        if self._input:
+            args = [f"{repr('\n'.join(self._input.input_lines))}"]
+        else:
+            args = []
+        args += self._reper_args
+        args.append(f"jit_parse={not self.full_parsed}")
+        return ret + ", ".join(args) + ")"
+
+    def _repr_args(self):
+        return []

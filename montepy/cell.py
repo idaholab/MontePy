@@ -797,42 +797,6 @@ class Cell(Numbered_MCNP_Object):
                 if input:
                     input.link_to_problem(problem)
 
-    def __str__(self):
-        if self.material:
-            mat_num = self.material.number
-        else:
-            mat_num = 0
-        if self._density:
-            if self.is_atom_dens:
-                units = "atom/b-cm"
-            else:
-                units = "g/cm3"
-            dens_str = f"DENS: {self._density} {units}"
-        else:
-            dens_str = "DENS: None"
-        ret = f"CELL: {self.number}, mat: {mat_num}, {dens_str}"
-        if self.universe and self.universe.number != 0:
-            ret += f", universe: {self.universe.number}"
-        if self.fill.universe:
-            ret += f", filled by: {self.fill.universe}"
-
-        return ret
-
-    def __repr__(self):
-        ret = f"CELL: {self.number} \n"
-        if self.material:
-            ret += str(self.material) + "\n"
-        else:
-            ret += "Void material \n"
-        if self._density:
-            ret += f"density: {self._density} "
-            if self._is_atom_dens:
-                ret += "atom/b-cm\n"
-            else:
-                ret += "g/cc\n"
-        ret += "\n".join([str(s) for s in self.surfaces])
-        return ret
-
     def __lt__(self, other):
         return self.number < other.number
 

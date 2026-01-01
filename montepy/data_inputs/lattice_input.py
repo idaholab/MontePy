@@ -127,16 +127,5 @@ class LatticeInput(CellModifierInput):
     def _clear_data(self):
         del self._lattice
 
-    def __str__(self):
-        return "Lattice: {self.lattice}"
-
-    def __repr__(self):
-        ret = (
-            f"Lattice: in_cell: {self._in_cell_block}"
-            f" set_in_block: {self.set_in_cell_block}, "
-            f"Lattice_values : {self.lattice}"
-        )
-        return ret
-
     def _update_cell_values(self):
         pass

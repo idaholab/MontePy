@@ -188,18 +188,6 @@ class Volume(CellModifierInput):
     def _clear_data(self):
         del self._volume
 
-    def __str__(self):
-        ret = "\n".join(self.format_for_mcnp_input(DEFAULT_VERSION))
-        return ret
-
-    def __repr__(self):
-        ret = (
-            f"VOLUME: in_cell: {self._in_cell_block}, calc_by_mcnp: {self.is_mcnp_calculated},"
-            f" set_in_block: {self.set_in_cell_block}, "
-            f"Volume : {self._volume if hasattr(self, '_volume') else ''}"
-        )
-        return ret
-
     def _update_values(self):
         if self.in_cell_block:
             self._update_cell_values()

@@ -645,19 +645,6 @@ class Fill(CellModifierInput):
         """
         return (self._axis_size(0), self._axis_size(1), self._axis_size(2))
 
-    def __str__(self):
-        return f"Fill: Universe: {self.universe}, transform: {self.transform}"
-
-    def __repr__(self):
-        return (
-            f"Fill: set_in_cell: {self.set_in_cell_block}, in_cell: {self.in_cell_block} "
-            f"old_number: {self.old_universe_number}, old_transform: {self._old_transform_number} "
-            f"old_numbers: {self.old_universe_numbers} "
-            f"Universe: {self.universe}, universes: {self.universes}, transform: {self.transform} "
-            f"Multi_universe: {self._multi_universe} hidden_transform: {self.hidden_transform} "
-            f"Min/Max: {str(self.min_index) + ' ' +str(self.max_index) if self._multi_universe == True  else 'None'}"
-        )
-
     def _update_cell_values(self):
         if self._transform and self.transform.is_in_degrees:
             self._tree["classifier"].modifier = "*"

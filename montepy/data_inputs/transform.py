@@ -193,16 +193,6 @@ class Transform(data_input.DataInputAbstract, Numbered_MCNP_Object):
         """
         pass
 
-    def __str__(self):
-        return f"TRANSFORM: {self.number}"
-
-    def __repr__(self):
-        ret = f"TRANSFORM: {self.number}\n"
-        ret += f"DISPLACE: {self.displacement_vector}\n"
-        ret += f"ROTATE: {self.rotation_matrix}\n"
-        ret += f"MAIN_TO_AUX: {self.is_main_to_aux}\n"
-        return ret
-
     def _update_values(self):
         # update in degrees
         if self._classifier.modifier is None:

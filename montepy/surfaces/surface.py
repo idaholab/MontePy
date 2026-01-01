@@ -354,23 +354,6 @@ class Surface(Numbered_MCNP_Object):
                 if self in cell.surfaces:
                     yield cell
 
-    def __str__(self):
-        return f"SURFACE: {self.number}, {self.surface_type}"
-
-    def __repr__(self):
-        boundary = "None"
-        if self.is_reflecting:
-            boundary = "Reflective"
-        elif self.is_white_boundary:
-            boundary = "White"
-        return (
-            f"SURFACE: {self.number}, {self.surface_type}, "
-            f"periodic surface: {self.periodic_surface}, "
-            f"transform: {self.transform}, "
-            f"constants: {self.surface_constants}, "
-            f"Boundary: {boundary}"
-        )
-
     def update_pointers(self, surfaces, data_inputs):
         """Updates the internal pointers to the appropriate objects.
 

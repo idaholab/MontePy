@@ -473,16 +473,12 @@ class NumberedObjectCollection(ABC):
         return self._iter
 
     def __str__(self):
-        base_class_name = self.__class__.__name__
+        base_class_name = type(self).__name__
         numbers = list(self.numbers)
         return f"{base_class_name}: {numbers}"
 
     def __repr__(self):
-        return (
-            f"Numbered_object_collection: obj_class: {self._obj_class}, problem: {self._problem}\n"
-            f"Objects: {self._objects}\n"
-            f"Number cache: {self.__num_cache}"
-        )
+        return f"{type(self).__name__}(repr(self._objects))"
 
     def _append_hook(self, obj, initial_load=False):
         """A hook that is called every time append is called."""

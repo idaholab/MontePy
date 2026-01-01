@@ -155,16 +155,6 @@ class Universe(Numbered_MCNP_Object):
     def _update_values(self):
         pass
 
-    def __str__(self):
-        return f"Universe({self.number})"
-
-    def __repr__(self):
-        return (
-            f"Universe: Number: {self.number} "
-            f"Problem: {'set' if self._problem else 'not set'}, "
-            f"Cells: {[cell.number for cell in self.cells] if self._problem else ''}"
-        )
-
     def __eq__(self, other):
         if not isinstance(other, type(self)):
             return False

@@ -200,3 +200,9 @@ class Numbered_MCNP_Object(MCNP_Object):
             ret.number = number
             if number != self.number:
                 return ret
+
+    def __str__(self):
+        return f"{type(self).__name__}: {self.number}"
+
+    def _repr_args(self):
+        return [f"number={self.number}"]

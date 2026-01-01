@@ -242,19 +242,6 @@ class UniverseInput(CellModifierInput):
     def _clear_data(self):
         del self._old_numbers
 
-    def __str__(self):
-        ret = "\n".join(self.format_for_mcnp_input(DEFAULT_VERSION))
-        return ret
-
-    def __repr__(self):
-        ret = (
-            f"UNIVERSE: in_cell: {self._in_cell_block}"
-            f" set_in_block: {self.set_in_cell_block}, "
-            f"Universe : {self._universe}, "
-            f"Old Numbers: {self._old_numbers if hasattr(self, '_old_numbers') else ''}"
-        )
-        return ret
-
     def _update_cell_values(self):
         if self.universe is not None:
             self._tree["data"][0].is_negatable_identifier = True

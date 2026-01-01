@@ -436,3 +436,11 @@ class CellModifierInput(DataInputAbstract):
             return "\n".join(
                 self.format_for_mcnp_input(mcnp_version, always_print=True)
             )
+
+    def _repr_args(self):
+        ret = []
+        if self.in_cell_block:
+            ret.append(f"in_cell_block={self._in_cell_block}")
+            ret.append(f"key={self._in_key}")
+            ret.append(f"value={self._in_value}")
+        return ret

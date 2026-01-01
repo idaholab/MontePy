@@ -724,15 +724,7 @@ class MCNP_Problem:
         return f"MCNP problem for: {self._input_file}, {self._title}"
 
     def __repr__(self):
-        ret = f"MCNP problem for: {self._input_file}\n"
-        if self.message:
-            ret += str(self._message) + "\n"
-        ret += str(self._title) + "\n"
-        for collection in [self.cells, self.surfaces, self.data_inputs]:
-            for obj in collection:
-                ret += f"{obj}\n"
-            ret += "\n"
-        return ret
+        return f"MCNP_Problem({repr(self._input_file)})"
 
     @args_checked
     def parse(
