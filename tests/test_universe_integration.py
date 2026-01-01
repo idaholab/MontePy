@@ -135,6 +135,7 @@ def test_fill_long_mcnp_str_wrap(cells):
         )  # length set to not wrap at 128, but do so at 80
         new_cell = cell.clone()
         prob = montepy.MCNP_Problem("")
+        prob.parse("2 so 5.0")
         new_cell.link_to_problem(prob)
         for obj in [cell, cell.fill, new_cell, new_cell.fill]:
             old_vers = montepy.MCNP_VERSION

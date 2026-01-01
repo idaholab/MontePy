@@ -31,15 +31,16 @@ class LatticeInput(CellModifierInput):
         self._lattice = self._generate_default_node(int, None)
 
     def _parse_cell_tree(self):
-        if self._in_key:
-            val = self._tree["data"][0]
-            if val.type is not LatticeType:
-                try:
-                    val.convert_to_int()
-                    val.convert_to_enum(LatticeType, int)
-                except ValueError as e:
-                    raise ValueError("Cell Lattice must be 1 or 2") from e
-            self._lattice = val
+        val = self._tree["data"]
+        if isinstance(val, syntax_node.ListNode):
+            val = val[0]
+        if val.type is not LatticeType:
+            try:
+                val.convert_to_int()
+                val.convert_to_enum(LatticeType, int)
+            except ValueError as e:
+                raise ValueError("Cell Lattice must be 1 or 2") from e
+        self._lattice = val
 
     def _parse_data_tree(self):
         self._lattice = []
