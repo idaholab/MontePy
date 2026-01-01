@@ -164,7 +164,9 @@ class Volume(CellModifierInput):
         bool
             true if the volume is manually set.
         """
-        return self.volume is not None
+        return (self.volume is not None) or (
+            hasattr(self, "_parked_value") and self._parked_value.value is not None
+        )
 
     def merge(self, other):
         raise MalformedInputError(

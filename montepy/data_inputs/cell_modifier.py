@@ -277,6 +277,13 @@ class CellModifierInput(DataInputAbstract):
         if self.in_cell_block:
             return self.has_information
         attr, _ = montepy.Cell._INPUTS_TO_PROPERTY[type(self)]
+        # handle not fully parsed
+        if len(self.data) > 1 or (
+            len(self.data) == 1
+            and self.data[0] is not None
+            and self.data[0].value is not None
+        ):
+            return True
         if self._problem:
             for cell in self._problem.cells:
                 if getattr(cell, attr).has_information:
