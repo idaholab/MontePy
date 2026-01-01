@@ -230,6 +230,9 @@ class Input(ParsingNode):
             token.value = token.value.rstrip("\n")
             if token.value:
                 yield token
+        # if closed upstream
+        except GeneratorExit:
+            generator.close()
         self._lexer = None
 
     @make_prop_pointer("_lexer")
