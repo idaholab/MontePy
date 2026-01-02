@@ -40,6 +40,8 @@ class Surface(Numbered_MCNP_Object):
 
     _JitParser = JitSurfParser
 
+    _POINTER_ATTRS = {"transform", "periodic_surface"}
+
     @staticmethod
     def _parent_collections():
         return (("cells", "surfaces", True), ("surfaces", "periodic_surface", False))
@@ -319,7 +321,7 @@ class Surface(Numbered_MCNP_Object):
     @prop_pointer_from_problem(
         "_transform",
         "old_transform_number",
-        "tranforms",
+        "transforms",
         transform.Transform,
         deletable=True,
     )
@@ -355,42 +357,6 @@ class Surface(Numbered_MCNP_Object):
             for cell in self._problem.cells:
                 if self in cell.surfaces:
                     yield cell
-
-    def update_pointers(self, surfaces, data_inputs):
-        """Updates the internal pointers to the appropriate objects.
-
-        Right now only periodic surface links will be made.
-        Eventually transform pointers should be made.
-
-        Parameters
-        ----------
-        surfaces : Surfaces
-            A Surfaces collection of the surfaces in the problem.
-        data_cards : list
-            the data_cards in the problem.
-        """
-        if self.old_periodic_surface:
-            try:
-                self._periodic_surface = surfaces[self.old_periodic_surface]
-            except KeyError:
-                raise BrokenObjectLinkError(
-                    "Surface",
-                    self.number,
-                    "Periodic Surface",
-                    self.old_periodic_surface,
-                )
-        if self.old_transform_number:
-            for input in data_inputs:
-                if isinstance(input, transform.Transform):
-                    if input.number == self.old_transform_number:
-                        self._transform = input
-            if not self.transform:
-                raise BrokenObjectLinkError(
-                    "Surface",
-                    self.number,
-                    "Transform",
-                    self.old_transform_number,
-                )
 
     def validate(self):
         if self.number is None or self.number < 1:

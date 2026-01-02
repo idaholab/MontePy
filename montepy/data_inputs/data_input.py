@@ -247,22 +247,6 @@ class DataInputAbstract(MCNP_Object):
     def _update_values(self):
         pass
 
-    def update_pointers(self, data_inputs):
-        """Connects data inputs to each other
-
-        Parameters
-        ----------
-        data_inputs : list
-            a list of the data inputs in the problem
-
-        Returns
-        -------
-        bool, None
-            True iff this input should be removed from
-            ``problem.data_inputs``
-        """
-        pass
-
     def __split_name(self, input):
         """Parses the name of the data input as a prefix, number, and a particle classifier.
 

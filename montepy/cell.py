@@ -92,6 +92,8 @@ class Cell(Numbered_MCNP_Object):
         The number to set for this object.
     """
 
+    _POINTER_ATTRS = {"material", "complements", "surfaces", "fill"}  # TODO special
+
     _ALLOWED_KEYWORDS = {
         "IMP",
         "VOL",
@@ -788,18 +790,16 @@ class Cell(Numbered_MCNP_Object):
             raise IllegalState(f"Cell {self.number} has no geometry defined.")
 
     @args_checked
-    # TODO delete jit_parse
     def link_to_problem(
         self,
         problem: montepy.MCNP_Problem = None,
         *,
-        jit_parse: bool = False,
         deepcopy: bool = False,
     ):
         super().link_to_problem(problem)
         if not hasattr(self, "_not_parsed") and not deepcopy:
-            self.complements.link_to_problem(problem)
-            self.surfaces.link_to_problem(problem)
+            self._complements.link_to_problem(problem)
+            self._surfaces.link_to_problem(problem)
             for attr, _ in Cell._INPUTS_TO_PROPERTY.values():
                 input = getattr(self, attr, None)
                 if input:

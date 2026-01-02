@@ -252,8 +252,16 @@ def prop_pointer_from_problem(
             obj = None
             if id_num == 0 and hidden_param != "_universe":
                 return None
-            if prob is not None and id_num is not None:
-                obj = getattr(prob, prob_collection_param)[id_num]
+            try:
+                if prob is not None and id_num is not None:
+                    obj = getattr(prob, prob_collection_param)[id_num]
+            except KeyError as e:
+                raise BrokenObjectLinkError(
+                    type(self).__name__,
+                    self.number,
+                    prob_collection_param.rstrip("s"),  # plural to singular,
+                    id_num,
+                )
             setattr(self, hidden_param, obj)
             return func(self)
 

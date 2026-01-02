@@ -1395,18 +1395,6 @@ See <https://www.montepy.org/migrations/migrate0_1.html> for more information ""
         )
         self._thermal_scattering.add_scattering_law(law)
 
-    def update_pointers(
-        self, data_inputs: list[montepy.data_inputs.data_input.DataInputAbstract]
-    ):
-        """Updates pointer to the thermal scattering data
-
-        Parameters
-        ----------
-        data_inputs : list[DataInput]
-            a list of the data inputs in the problem
-        """
-        pass
-
     @staticmethod
     def _class_prefix():
         return "m"

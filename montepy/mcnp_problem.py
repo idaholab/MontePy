@@ -385,6 +385,10 @@ class MCNP_Problem:
 
             Added ``jit_parse`` argument
 
+        .. note:
+
+            ``ceck_input`` takes priority over ``jit_parse`` and will force it be ``False``.
+
         Parameters
         ----------
         check_input : bool
@@ -397,6 +401,8 @@ class MCNP_Problem:
         """
         if self.input_file is None:
             return
+        if check_input:
+            jit_parse = False
         trailing_comment = None
         last_obj = None
         last_block = None
@@ -490,35 +496,18 @@ class MCNP_Problem:
 
         self.__load_data_inputs_to_object(self._data_inputs)
         self.cells.finalize_init()
-        # TODO
         if jit_parse:
             return
-        self._cells.update_pointers(
-            self.cells,
-            self.materials,
-            self.surfaces,
-            self._data_inputs,
-            self,
-            check_input,
-        )
-        for surface in self._surfaces:
-            try:
-                surface.update_pointers(self.surfaces, self._data_inputs)
-            except (BrokenObjectLinkError,) as e:
-                handle_error(e)
-        to_delete = []
-        for data_index, data_input in enumerate(self._data_inputs):
-            try:
-                if data_input.update_pointers(self._data_inputs):
-                    to_delete.append(data_index)
-            except (
-                BrokenObjectLinkError,
-                MalformedInputError,
-            ) as e:
-                handle_error(e)
-                continue
-        for delete_index in to_delete[::-1]:
-            del self._data_inputs[delete_index]
+
+        for collection_type in self._NUMBERED_OBJ_MAP.values():
+            print("hi", collection_type)
+            attr = collection_type.__name__.lower()
+            collection = getattr(self, attr)
+            attrs_to_poke = collection._obj_type._POINTER_ATTRS
+            for obj in collection:
+                for attr in attrs_to_poke:
+                    # trigger pulling objects from problem with decorator
+                    getattr(obj, attr)
 
     @args_checked
     def remove_duplicate_surfaces(self, tolerance: ty.PositiveReal):
@@ -724,7 +713,7 @@ class MCNP_Problem:
         return f"MCNP problem for: {self._input_file}, {self._title}"
 
     def __repr__(self):
-        return f"MCNP_Problem({repr(self._input_file)})"
+        return f"MCNP_Problem({repr(str(self._input_file))})"
 
     @args_checked
     def parse(

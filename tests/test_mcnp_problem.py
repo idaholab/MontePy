@@ -29,7 +29,7 @@ def test_problem_str(problem, problem_path):
 
 
 def test_problem_repr(problem, problem_path):
-    assert repr(problem).startswith(f"MCNP problem for: {problem_path}")
+    assert repr(problem) == "MCNP_Problem('tests/inputs/test.imcnp')"
 
 
 def test_problem_write_type(problem):

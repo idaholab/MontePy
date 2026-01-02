@@ -142,51 +142,6 @@ class ThermalScatteringLaw(DataInputAbstract):
                 f"MT{self.old_number} input is detached from a parent material",
             )
 
-    def update_pointers(self, data_inputs):
-        """Updates pointer to the thermal scattering data
-
-        Parameters
-        ----------
-        data_inputs : list
-            a list of the data inputs in the problem
-
-        Returns
-        -------
-        bool
-            True iff this input should be removed from
-            ``problem.data_inputs``
-        """
-        # use caching first
-        if self._problem:
-            try:
-                mat = self._problem.materials[self.old_number]
-            except KeyError:
-                raise MalformedInputError(
-                    self._input, "MT input is detached from a parent material"
-                )
-        # brute force it
-        found = False
-        for data_input in data_inputs:
-            if isinstance(data_input, montepy.data_inputs.material.Material):
-                if data_input.number == self.old_number:
-                    mat = data_input
-                    found = True
-                    break
-        # actually update things
-        if not found:
-            raise MalformedInputError(
-                self._input, "MT input is detached from a parent material"
-            )
-
-        if mat.thermal_scattering:
-            raise MalformedInputError(
-                self,
-                f"Multiple MT inputs were specified for this material: {self.old_number}.",
-            )
-        mat.thermal_scattering = self
-        self._parent_material = mat
-        return True
-
     @args_checked
     def _link_to_parent(self, mat: montepy.Material):
         # TODO errors
