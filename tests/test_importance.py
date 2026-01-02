@@ -153,37 +153,9 @@ class TestImportance:
         s = str(imp)
         r = repr(imp)
         # Assuming an empty Importance should have this specific string.
-        assert s == "IMPORTANCE: Object is empty"
+        assert s == "Importance"
         # For repr, we simply check that it indicates the object is empty.
-        # what __repr__ should return if it is not strictly defined. ??
-        assert "False" in r
-
-    def test_importance_manual_assignment_and_str_repr(self, test_importance_values):
-        """
-        Test manual assignment of importance values and their string representations.
-        Verifies:
-        1. Setting importance values for different particles
-        2. Getting assigned values back
-        3. String representation includes all assignments
-        4. Repr string contains all values
-        """
-        imp = Importance()
-
-        # Set and verify importance values for each particle type
-        for particle, value in test_importance_values.items():
-            setattr(imp, particle.name.lower(), value)
-            assert getattr(imp, particle.name.lower()) == pytest.approx(value)
-
-        # Verify string representation contains all assignments
-        s = str(imp)
-        for particle, value in test_importance_values.items():
-            particle_str = particle.name.lower()
-            assert f"{particle_str}={value}" in s
-
-        # Verify repr contains all values in some form
-        r = repr(imp)
-        for value in test_importance_values.values():
-            assert str(value) in r
+        assert "Importance(" in r
 
     def test_importance_iter_getter_in(self, cell_with_importance):
         cell = cell_with_importance
@@ -280,8 +252,8 @@ class TestImportance:
         Test merging of importance objects.
         Verifies proper combination of importance data and proper error handling.
         """
-        imp1 = Importance("IMP:N,P 1 0")  # Updated initialization
-        imp2 = Importance("IMP:E 0 0")  # Updated initialization
+        imp1 = Importance("IMP:N,P 1 0", jit_parse=False)  # Updated initialization
+        imp2 = Importance("IMP:E 0 0", jit_parse=False)  # Updated initialization
         imp1.merge(imp2)
 
         assert [

@@ -89,10 +89,15 @@ class DataInputAbstract(MCNP_Object):
         ret["start_pad"] = syntax_node.PaddingNode()
         ret["classifier"] = syntax_node.ClassifierNode()
         ret["classifier"].prefix = syntax_node.ValueNode(
-            self._class_prefix(), str, padding=None, never_pad=True
+            self._class_prefix().upper(),
+            str,
+            padding=None,
+            never_pad=self._has_number(),
         )
         if self._has_number():
             ret["classifier"].number = self._generate_default_node(int, -1)
+        else:
+            ret["classifier"].prefix.padding = syntax_node.PaddingNode(" ")
         ret["keyword"] = syntax_node.ValueNode(None, str, padding=None)
         ret["data"] = syntax_node.ListNode("empty data")
         ret["parameters"] = syntax_node.ParametersNode()
@@ -376,15 +381,15 @@ class DataInput(DataInputAbstract):
 
     @staticmethod
     def _class_prefix():
-        return None
+        return ""
 
     @staticmethod
     def _has_number():  # pragma: no cover
-        return None
+        return False
 
     @staticmethod
     def _has_classifier():  # pragma: no cover
-        return None
+        return 1
 
     def _load_correct_parser(self, prefix):
         """Decides if a specialized parser needs to be loaded for barebone

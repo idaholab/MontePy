@@ -1022,7 +1022,7 @@ def test_universe_cells2(universe_problem):
 def test_data_print_control_str(simple_problem):
     assert (
         str(simple_problem.print_in_data_block)
-        == "Print data in data block: {'imp': False, 'u': False, 'fill': False, 'vol': True}"
+        == "Print data in data block: {'vol': True, 'imp': False, 'u': False, 'lat': False, 'fill': False}"
     )
 
 

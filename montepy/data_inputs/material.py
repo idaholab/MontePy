@@ -1419,6 +1419,20 @@ See <https://www.montepy.org/migrations/migrate0_1.html> for more information ""
     def _has_classifier():
         return 0
 
+    def comp_str(self):
+        ret = f"MATERIAL: {self.number} fractions: "
+        if self.is_atom_fraction:
+            ret += "atom\n"
+        else:
+            ret += "mass\n"
+
+        for component in self:
+            ret += f"{component[0]} {component[1]}\n"
+        if self.thermal_scattering:
+            ret += f"Thermal Scattering: {self.thermal_scattering}"
+
+        return ret
+
     @needs_full_ast
     def pretty_str(self):
         elements = self.get_material_elements()

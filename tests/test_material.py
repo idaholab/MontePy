@@ -442,12 +442,14 @@ MATERIAL: 20 fractions: atom
  O-16    (80c) 0.4
 Pu-239   (80c) 0.1
 """
+        assert material.comp_str() == answers
         output = repr(material)
         print(output)
-        assert output == answers
+        assert output == "Material('M20 1001.80c 0.5 8016.80c 0.4 94239.80c 0.1', number=20, jit_parse=False)"
         output = str(material)
         print(output)
-        assert output == "MATERIAL: 20, ['hydrogen', 'oxygen', 'plutonium']"
+        assert output == "Material: 20"
+        assert material.pretty_str() == "MATERIAL: 20, ['hydrogen', 'oxygen', 'plutonium']"
 
     def test_material_sort(_):
         in_str = "M20 1001.80c 0.5 8016.80c 0.5"
@@ -782,10 +784,10 @@ class TestThermalScattering:
         in_str = "Mt20 grph.20t"
         input_card = Input([in_str], BlockType.DATA)
         card = ThermalScatteringLaw(input_card)
-        assert str(card) == "THERMAL SCATTER: 20"
+        assert str(card) == "ThermalScatteringLaw"
         assert (
             repr(card)
-            == "THERMAL SCATTER: material: None, old_num: 20, scatter: ['grph.20t']"
+            == "ThermalScatteringLaw('Mt20 grph.20t', jit_parse=True)"
         )
 
     def test_thermal_scattering_add(_):

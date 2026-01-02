@@ -30,6 +30,10 @@ class Mode(DataInputAbstract):
                 raise TypeError(f"Mode particle must be a str. {particle} given.")
             self._particles.add(Particle(particle.upper()))
 
+    def _generate_default_tree(self):
+        super()._generate_default_tree()
+        self._tree["data"].append(self._generate_default_node(str, "N"))
+
     @property
     @needs_full_ast
     def particles(self):
