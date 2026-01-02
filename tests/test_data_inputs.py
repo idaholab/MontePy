@@ -32,7 +32,7 @@ def test_data_card_empty_constructor():
 def test_data_card_str():
     in_str = "vol 1 1 0"
     data = DataInput(in_str)
-    assert str(data) == "DATA INPUT: vol "
+    assert str(data) == "DataInput: vol"
 
 
 def test_data_card_format_mcnp():
@@ -303,7 +303,7 @@ def test_volume_repr():
         },
     )
     card = volume.Volume(key="VoL", value=node, in_cell_block=True)
-    assert "VOLUME" in repr(card)
+    assert "Volume" in repr(card)
 
 
 def test_data_clone():

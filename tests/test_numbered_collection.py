@@ -361,13 +361,7 @@ class TestNumberedObjectCollection:
     def test_str(self, cp_simple_problem):
         cells = cp_simple_problem.cells
         assert str(cells) == "Cells: [1, 2, 3, 99, 5]"
-        key_phrases = [
-            "Numbered_object_collection: obj_class: <class 'montepy.cell.Cell'>",
-            "Objects: [CELL: 1",
-            "Number cache: {1: CELL: 1",
-        ]
-        for phrase in key_phrases:
-            assert phrase in repr(cells)
+        assert "Cells([Cell(" in repr(cells)
 
     def test_data_init(_, cp_simple_problem):
         new_mats = montepy.materials.Materials(

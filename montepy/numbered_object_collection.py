@@ -478,7 +478,7 @@ class NumberedObjectCollection(ABC):
         return f"{base_class_name}: {numbers}"
 
     def __repr__(self):
-        return f"{type(self).__name__}(repr(self._objects))"
+        return f"{type(self).__name__}({repr(self._objects)})"
 
     def _append_hook(self, obj, initial_load=False):
         """A hook that is called every time append is called."""

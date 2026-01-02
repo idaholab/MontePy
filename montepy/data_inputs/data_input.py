@@ -302,7 +302,7 @@ class DataInputAbstract(MCNP_Object):
             if the name is invalid for this DataInput
         """
         classifier = self._classifier
-        if self._class_prefix:
+        if self._class_prefix():
             if (
                 classifier.prefix.value is None
                 or classifier.prefix.value.lower() != self._class_prefix()
@@ -374,16 +374,16 @@ class DataInput(DataInputAbstract):
             self._load_correct_parser(prefix)
         super().__init__(input, fast_parse, jit_parse=jit_parse)
 
-    @property
-    def _class_prefix(self):
+    @staticmethod
+    def _class_prefix():
         return None
 
-    @property
-    def _has_number(self):  # pragma: no cover
+    @staticmethod
+    def _has_number():  # pragma: no cover
         return None
 
-    @property
-    def _has_classifier(self):  # pragma: no cover
+    @staticmethod
+    def _has_classifier():  # pragma: no cover
         return None
 
     def _load_correct_parser(self, prefix):
@@ -402,6 +402,9 @@ class DataInput(DataInputAbstract):
         }
         if prefix.lower() in PARSER_PREFIX_MAP:
             self._parser = PARSER_PREFIX_MAP[prefix.lower()]()
+
+    def __str__(self):
+        return super().__str__() + f": {self.classifier.prefix.value}"
 
 
 class ForbiddenDataInput(DataInputAbstract):

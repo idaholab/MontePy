@@ -109,8 +109,8 @@ def test_cell_parameters_setting():
 def test_cell_str():
     in_str = "1 1 0.5 2"
     cell = Cell(in_str)
-    assert str(cell) == "CELL: 1, mat: 0, DENS: 0.5 atom/b-cm"
-    assert repr(cell) == "CELL: 1 \nVoid material \ndensity: 0.5 atom/b-cm\n"
+    assert str(cell) == "Cell: 1"
+    assert repr(cell) == "Cell('1 1 0.5 2', number=1, jit_parse=True)"
     in_str = "1 0 -2 imp:n=1 "
     cell = montepy.Cell(in_str)
     # change line length

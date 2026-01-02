@@ -44,7 +44,7 @@ class CellDataPrintController:
 
     def __getstate__(self):
         state = self.__dict__.copy()
-        del state["_problem"]
+        state.pop("_problem", None)
         return state
 
     def __str__(self):
