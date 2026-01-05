@@ -178,7 +178,7 @@ class NumberedObjectCollection(ABC):
                         )
                     )
                 self.__num_cache[obj.number] = obj
-                obj._collection_ref = weakref.ref(self)
+                self._link_to_collection(obj)
             self._objects = objects
 
     def link_to_problem(self, problem):
@@ -197,24 +197,39 @@ class NumberedObjectCollection(ABC):
             self._problem_ref = None
         else:
             self._problem_ref = weakref.ref(problem)
-        # Rebuild the number cache to ensure it reflects current object numbers
-        # after deepcopy/unpickling when the cache might be stale
-        self.__num_cache.clear()
-        for obj in self._objects:
-            self.__num_cache[obj.number] = obj
         for obj in self:
             obj.link_to_problem(problem)
             # the _collection_ref that points to the main cells collection.
             if problem is not None:
                 existing_coll = obj._collection
                 if existing_coll is None or existing_coll._problem is not problem:
-                    obj._collection_ref = weakref.ref(self)
+                    self._link_to_collection(obj)
 
     @property
     def _problem(self):
         if self._problem_ref is not None:
             return self._problem_ref()
         return None
+
+    def _link_to_collection(self, obj):
+        """Links the given object to this collection via a weakref.
+
+        Parameters
+        ----------
+        obj : Numbered_MCNP_Object
+            The object to link to this collection.
+        """
+        obj._collection_ref = weakref.ref(self)
+
+    def _unlink_from_collection(self, obj):
+        """Unlinks the given object from this collection.
+
+        Parameters
+        ----------
+        obj : Numbered_MCNP_Object
+            The object to unlink from this collection.
+        """
+        obj._collection_ref = None
 
     def __getstate__(self):
         state = self.__dict__.copy()
@@ -351,15 +366,9 @@ class NumberedObjectCollection(ABC):
                     "The object in the list {obj} is not of type: {self._obj_class}"
                 )
             if obj.number in nums:
-                try:
-                    conflicting_obj = self[obj.number]
-                    conflict_msg = (
-                        f"adding {obj} which conflicts with {conflicting_obj}"
-                    )
-                except KeyError:
-                    conflict_msg = f"adding {obj} which conflicts with existing object number {obj.number}"
                 raise NumberConflictError(
-                    f"When adding to {type(self).__name__} there was a number collision due to {conflict_msg}"
+                    f"When adding to {type(self).__name__} there was a number collision due to "
+                    f"adding {obj} which conflicts with existing object number {obj.number}"
                 )
             nums.add(obj.number)
         for obj in other_list:
@@ -511,7 +520,7 @@ class NumberedObjectCollection(ABC):
                 )
         self.__num_cache[obj.number] = obj
         self._objects.append(obj)
-        obj._collection_ref = weakref.ref(self)
+        self._link_to_collection(obj)
         self._append_hook(obj, **kwargs)
         if self._problem:
             obj.link_to_problem(self._problem)
@@ -523,7 +532,7 @@ class NumberedObjectCollection(ABC):
         """
         self.__num_cache.pop(obj.number, None)
         self._objects.remove(obj)
-        obj._collection_ref = None
+        self._unlink_from_collection(obj)
         self._delete_hook(obj, **kwargs)
 
     def add(self, obj: Numbered_MCNP_Object):
@@ -630,7 +639,7 @@ class NumberedObjectCollection(ABC):
         number = obj.number if obj.number > 0 else 1
         if self._problem:
             obj.link_to_problem(self._problem)
-        obj._collection_ref = None
+        self._unlink_from_collection(obj)
         try:
             self.append(obj)
         except (NumberConflictError, ValueError) as e:

@@ -187,22 +187,6 @@ class HalfSpace:
         if self.right is not None:
             self.right.update_pointers(cells, surfaces, cell)
 
-    def _set_cell(self, cell):
-        """Sets the _cell reference for this HalfSpace and all children.
-
-        This is used during cloning to update the _cell references to point
-        to the cloned cell rather than the original (or a deepcopied intermediate).
-
-        Parameters
-        ----------
-        cell : Cell
-            the cell this HalfSpace should be tied to.
-        """
-        self._cell = cell
-        self.left._set_cell(cell)
-        if self.right is not None:
-            self.right._set_cell(cell)
-
     def _add_new_children_to_cell(self, other):
         """Adds the cells and surfaces from a new tree to this parent cell.
 
@@ -691,19 +675,6 @@ class UnitHalfSpace(HalfSpace):
                 raise BrokenObjectLinkError(
                     "Cell", self._cell.number, "Surface", self._divider
                 )
-
-    def _set_cell(self, cell):
-        """Sets the _cell reference for this UnitHalfSpace.
-
-        This is used during cloning to update the _cell references to point
-        to the cloned cell rather than the original (or a deepcopied intermediate).
-
-        Parameters
-        ----------
-        cell : Cell
-            the cell this UnitHalfSpace should be tied to.
-        """
-        self._cell = cell
 
     def _ensure_has_nodes(self):
         if self.node is None:

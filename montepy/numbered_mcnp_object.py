@@ -35,11 +35,12 @@ def _number_validator(self, number):
             if collection_type is not None:
                 collection = getattr(self._problem, collection_type.__name__.lower())
             else:
-                collection = None
+                raise TypeError(
+                    f"Could not find collection type for {type(self).__name__} in problem."
+                )
 
-        if collection is not None:
-            collection.check_number(number)
-            collection._update_number(self.number, number, self)
+        collection.check_number(number)
+        collection._update_number(self.number, number, self)
 
 
 class Numbered_MCNP_Object(MCNP_Object):
@@ -69,6 +70,7 @@ class Numbered_MCNP_Object(MCNP_Object):
             self._number = self._generate_default_node(int, -1)
         super().__init__(input, parser)
         self._load_init_num(number)
+        self._collection_ref = None
 
     def _load_init_num(self, number):
         if number is not None:
@@ -132,6 +134,24 @@ class Numbered_MCNP_Object(MCNP_Object):
                     prob_collect.update(child_collect)
                 except (TypeError, AssertionError):
                     prob_collect.append(child_collect)
+
+    @property
+    def _collection(self):
+        """Returns the parent collection this object belongs to, if any."""
+        if self._collection_ref is not None:
+            return self._collection_ref()
+        return None
+
+    def __getstate__(self):
+        state = super().__getstate__()
+        # Remove _collection_ref weakref as it can't be pickled
+        if "_collection_ref" in state:
+            del state["_collection_ref"]
+        return state
+
+    def __setstate__(self, crunchy_data):
+        crunchy_data["_collection_ref"] = None
+        super().__setstate__(crunchy_data)
 
     def clone(self, starting_number=None, step=None):
         """Create a new independent instance of this object with a new number.

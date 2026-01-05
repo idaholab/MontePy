@@ -107,7 +107,6 @@ class MCNP_Object(ABC, metaclass=_ExceptionContextAdder):
         except AttributeError:
             self._BLOCK_TYPE = montepy.input_parser.block_type.BlockType.DATA
         self._problem_ref = None
-        self._collection_ref = None
         self._parameters = ParametersNode()
         self._input = None
         if input:
@@ -225,13 +224,6 @@ class MCNP_Object(ABC, metaclass=_ExceptionContextAdder):
 
         """
         pass
-
-    @property
-    def _collection(self):
-        """Returns the parent collection this object belongs to, if any."""
-        if self._collection_ref is not None:
-            return self._collection_ref()
-        return None
 
     def format_for_mcnp_input(self, mcnp_version: tuple[int]) -> list[str]:
         """Creates a list of strings representing this MCNP_Object that can be
@@ -498,7 +490,7 @@ The new input was:\n\n"""
 
     def __getstate__(self):
         state = self.__dict__.copy()
-        bad_keys = {"_problem_ref", "_collection_ref", "_parser"}
+        bad_keys = {"_problem_ref", "_parser"}
         for key in bad_keys:
             if key in state:
                 del state[key]
@@ -506,7 +498,6 @@ The new input was:\n\n"""
 
     def __setstate__(self, crunchy_data):
         crunchy_data["_problem_ref"] = None
-        crunchy_data["_collection_ref"] = None
         self.__dict__.update(crunchy_data)
 
     def clone(self) -> montepy.mcnp_object.MCNP_Object:
