@@ -5,6 +5,13 @@ MontePy Changelog
 1.2 releases
 ============
 
+#Next Version#
+--------------
+
+**Performance Improvement**
+
+* Implement _collection_ref to link objects to their NumberedObjectCollection parent (:issue:`867`).
+
 1.2.0
 --------------
 
@@ -14,7 +21,6 @@ MontePy Changelog
 
 **Features Added**
 
-* Implement _collection_ref to link objects to their NumberedObjectCollection parent (:issue:`867`).
 * Added checking for additional input after the ``data`` block, and raising a warning if it exists (:issue:`525`).
 * Allow multiple universe fills to accept 2D MNCP lattices (:issue:`719`).
 * Make ``LatticeType.RECTANGULAR`` and ``LatticeType.HEXAHEDRAL`` synonymous (:issue:`808`).
