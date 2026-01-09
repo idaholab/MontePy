@@ -219,7 +219,7 @@ class NumberedObjectCollection(ABC):
         obj : Numbered_MCNP_Object
             The object to link to this collection.
         """
-        obj._collection_ref = weakref.ref(self)
+        obj._link_to_collection(self)
 
     def _unlink_from_collection(self, obj):
         """Unlinks the given object from this collection.
@@ -229,7 +229,7 @@ class NumberedObjectCollection(ABC):
         obj : Numbered_MCNP_Object
             The object to unlink from this collection.
         """
-        obj._collection_ref = None
+        obj._unlink_from_collection()
 
     def __getstate__(self):
         state = self.__dict__.copy()

@@ -16,29 +16,9 @@ def _number_validator(self, number):
     if number < 0:
         raise ValueError("number must be >= 0")
 
-    # Only validate against collection if linked to a problem
-    if self._problem is not None:
-        if self._collection is not None:
-            collection = self._collection
-        else:
-            # Find collection via _problem
-            obj_map = montepy.MCNP_Problem._NUMBERED_OBJ_MAP
-            collection_type = obj_map.get(type(self))
-
-            if collection_type is None:
-                # Finding via inheritance
-                for obj_class in obj_map:
-                    if isinstance(self, obj_class):
-                        collection_type = obj_map[obj_class]
-                        break
-
-            if collection_type is not None:
-                collection = getattr(self._problem, collection_type.__name__.lower())
-            else:
-                raise TypeError(
-                    f"Could not find collection type for {type(self).__name__} in problem."
-                )
-
+    # Only validate against collection if linked to a collection
+    if self._collection is not None:
+        collection = self._collection
         collection.check_number(number)
         collection._update_number(self.number, number, self)
 
@@ -69,8 +49,8 @@ class Numbered_MCNP_Object(MCNP_Object):
         if not input:
             self._number = self._generate_default_node(int, -1)
         super().__init__(input, parser)
-        self._load_init_num(number)
         self._collection_ref = None
+        self._load_init_num(number)
 
     def _load_init_num(self, number):
         if number is not None:
@@ -142,11 +122,24 @@ class Numbered_MCNP_Object(MCNP_Object):
             return self._collection_ref()
         return None
 
+    def _link_to_collection(self, collection):
+        """Links this object to the given collection via a weakref.
+
+        Parameters
+        ----------
+        collection : NumberedObjectCollection
+            The collection to link this object to.
+        """
+        self._collection_ref = weakref.ref(collection)
+
+    def _unlink_from_collection(self):
+        """Unlinks this object from its collection."""
+        self._collection_ref = None
+
     def __getstate__(self):
         state = super().__getstate__()
         # Remove _collection_ref weakref as it can't be pickled
-        if "_collection_ref" in state:
-            del state["_collection_ref"]
+        state.pop("_collection_ref", None)
         return state
 
     def __setstate__(self, crunchy_data):
