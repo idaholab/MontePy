@@ -34,7 +34,9 @@ class SphereAtOrigin(Surface):
         self._radius = self._generate_default_node(float, None)
         super().__init__(input, number, surface_type="SO")
         if len(self.surface_constants) != 1:
-            raise ValueError("SphereOnAxis must have exactly 1 surface_constant")
+            raise ValueError(
+                f"{self.__class__.__name__} must have exactly 1 surface_constant"
+            )
         self._radius = self._surface_constants[0]
 
     @make_prop_val_node(
@@ -63,9 +65,7 @@ class SphereAtOrigin(Surface):
                     if self.transform:
                         # TODO: Ensure that this checks transformed origin
                         if surface.transform:
-                            if self.transform.equivalent(
-                                surface.transform, tolerance
-                            ):
+                            if self.transform.equivalent(surface.transform, tolerance):
                                 ret.append(surface)
                     else:
                         if surface.transform is None:

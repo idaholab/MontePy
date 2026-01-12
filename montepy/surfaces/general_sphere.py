@@ -43,9 +43,11 @@ class GeneralSphere(Surface):
         super().__init__(input, number, surface_type="S")
         print(self.surface_constants)
         if input and self.surface_type != SurfaceType.S:
-            raise ValueError("A GeneralSphere must be a surface of type S")
+            raise ValueError(f"A {self.__class__.__name__} must be a surface of type S")
         if len(self.surface_constants) != 4:
-            raise ValueError("A GeneralSphere must have exactly 4 surface_constants")
+            raise ValueError(
+                f"A {self.__class__.__name__} must have exactly 4 surface_constants"
+            )
         self._location = self._surface_constants[:3]
         self._radius = self._surface_constants[3]
 
@@ -94,8 +96,6 @@ class GeneralSphere(Surface):
                 if match:
                     if self.transform:
                         if surface.transform:
-                            if self.transform.equivalent(
-                                    surface.transform, tolerance
-                            ):
+                            if self.transform.equivalent(surface.transform, tolerance):
                                 ret.append(surface)
         return []

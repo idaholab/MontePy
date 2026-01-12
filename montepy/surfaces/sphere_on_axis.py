@@ -41,7 +41,9 @@ class SphereOnAxis(Surface):
         self._radius = self._generate_default_node(float, None)
         super().__init__(input, number, surface_type)
         if len(self.surface_constants) != 2:
-            raise ValueError("SphereOnAxis must have exactly 2 surface_constants")
+            raise ValueError(
+                f"{self.__class__.__name__} must have exactly 2 surface_constants"
+            )
         self._location, self._radius = self._surface_constants
 
     @staticmethod
@@ -87,16 +89,13 @@ class SphereOnAxis(Surface):
         # do not assume transform and periodic surfaces are the same.
         for surface in surfaces:
             if surface != self and surface.surface_type == self.surface_type:
-                if not surface.old_periodic_surface:
-                    if abs(self.radius - surface.radius) < tolerance:
-                        if self.transform:
-                            # TODO: Ensure that this checks transformed origin
-                            if surface.transform:
-                                if self.transform.equivalent(
-                                    surface.transform, tolerance
-                                ):
-                                    ret.append(surface)
-                        else:
-                            if surface.transform is None:
+                if abs(self.radius - surface.radius) < tolerance:
+                    if self.transform:
+                        # TODO: Ensure that this checks transformed origin
+                        if surface.transform:
+                            if self.transform.equivalent(surface.transform, tolerance):
                                 ret.append(surface)
+                    else:
+                        if surface.transform is None:
+                            ret.append(surface)
         return []
