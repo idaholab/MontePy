@@ -12,6 +12,7 @@ from .axis_plane import AxisPlane
 from .cylinder_par_axis import CylinderParAxis
 from .cylinder_on_axis import CylinderOnAxis
 from .sphere_on_axis import SphereOnAxis
+from .general_sphere import GeneralSphere
 from .general_plane import GeneralPlane
 from .half_space import HalfSpace, UnitHalfSpace
 from .surface import Surface
