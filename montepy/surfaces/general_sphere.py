@@ -16,18 +16,12 @@ def _enforce_positive_radius(self, value):
 class GeneralSphere(Surface):
     """Represents surface S
 
-    .. versionchanged:: 1.0.0
-
-        Added number parameter
-
     Parameters
     ----------
     input : Union[Input, str]
         The Input object representing the input
     number : int
         The number to set for this object.
-    surface_type: Union[SurfaceType, str]
-        The surface_type to set for this object
     """
 
     def __init__(
