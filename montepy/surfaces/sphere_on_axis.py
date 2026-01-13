@@ -74,7 +74,6 @@ class SphereOnAxis(Surface):
 
     @staticmethod
     def _allowed_surface_types():
-        # TODO: Should this just return set(SphereOnAxis.keys()) ?
         return {SurfaceType.SX, SurfaceType.SY, SurfaceType.SZ}
 
     def validate(self):
@@ -87,15 +86,20 @@ class SphereOnAxis(Surface):
     def find_duplicate_surfaces(self, surfaces, tolerance):
         ret = []
         # do not assume transform and periodic surfaces are the same.
-        for surface in surfaces:
-            if surface != self and surface.surface_type == self.surface_type:
-                if abs(self.radius - surface.radius) < tolerance:
-                    if self.transform:
-                        # TODO: Ensure that this checks transformed origin
-                        if surface.transform:
-                            if self.transform.equivalent(surface.transform, tolerance):
-                                ret.append(surface)
-                    else:
-                        if surface.transform is None:
-                            ret.append(surface)
-        return []
+        if not self.old_periodic_surface:
+            for surface in surfaces:
+                if surface != self and surface.surface_type == self.surface_type:
+                    if not surface.old_periodic_surface:
+                        if abs(self.radius - surface.radius) < tolerance:
+                            if self.transform:
+                                if surface.transform:
+                                    if self.transform.equivalent(
+                                            surface.transform, tolerance
+                                    ):
+                                        ret.append(surface)
+                            else:
+                                if surface.transform is None:
+                                    ret.append(surface)
+            return ret
+        else:
+            return []

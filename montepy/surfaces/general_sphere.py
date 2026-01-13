@@ -90,18 +90,21 @@ class GeneralSphere(Surface):
 
     def find_duplicate_surfaces(self, surfaces, tolerance):
         ret = []
-        # do not assume transform surfaces are the same.
-        for surface in surfaces:
-            if surface != self and surface.surface_type == self.surface_type:
-                match = True
-                if abs(self.radius - surface.radius) >= tolerance:
-                    match = False
-                for i, coordinate in enumerate(self.coordinates):
-                    if abs(coordinate - surface.coordinates[i]) >= tolerance:
-                        match = False
-                if match:
-                    if self.transform:
-                        if surface.transform:
-                            if self.transform.equivalent(surface.transform, tolerance):
-                                ret.append(surface)
-        return []
+        # do not assume transform and periodic surfaces are the same.
+        if not self.old_periodic_surface:
+            for surface in surfaces:
+                if surface != self and surface.surface_type == self.surface_type:
+                    if not surface.old_periodic_surface:
+                        if abs(self.radius - surface.radius) < tolerance:
+                            if self.transform:
+                                if surface.transform:
+                                    if self.transform.equivalent(
+                                            surface.transform, tolerance
+                                    ):
+                                        ret.append(surface)
+                            else:
+                                if surface.transform is None:
+                                    ret.append(surface)
+            return ret
+        else:
+            return []
