@@ -11,6 +11,9 @@ from montepy.surfaces.axis_plane import AxisPlane
 from montepy.surfaces.cylinder_on_axis import CylinderOnAxis
 from montepy.surfaces.cylinder_par_axis import CylinderParAxis
 from montepy.surfaces.general_plane import GeneralPlane
+from montepy.surfaces.general_sphere import GeneralSphere
+from montepy.surfaces.sphere_at_origin import SphereAtOrigin
+from montepy.surfaces.sphere_on_axis import SphereOnAxis
 from montepy.surfaces.surface import Surface
 from montepy.surfaces.surface_builder import surface_builder
 from montepy.surfaces.surface_type import SurfaceType
@@ -267,13 +270,17 @@ def test_surface_builder():
         ("2 Cx 10.0", CylinderOnAxis),
         ("3 C/Z 4 3 5", CylinderParAxis),
         ("6 p 1 2 3 4", GeneralPlane),
-        ("7 so 5", Surface),
         ("10 C/x 25 0 -5", CylinderParAxis),
         ("11 c/Y 25 0 -5", CylinderParAxis),
         ("12 CY 3", CylinderOnAxis),
         ("13 cz 0", CylinderOnAxis),
         ("14 px 1.e-3", AxisPlane),
         ("15 PY .1", AxisPlane),
+        ("16 S -1 2+0 -3.0 1", GeneralSphere),
+        ("17 1 so 1.e-1", SphereAtOrigin),
+        ("18 sx -0.2 +1", SphereOnAxis),
+        ("19 sY -0.2 2", SphereOnAxis),
+        ("20 Sz -0.2 3.0", SphereOnAxis),
     ]
     for in_str, surf_plane in testers:
         assert isinstance(surface_builder(in_str), surf_plane)
