@@ -4,6 +4,7 @@ from .surface import Surface, InitInput
 from montepy.exceptions import *
 from montepy.utilities import *
 
+from numbers import Real
 from typing import Union
 
 
@@ -41,14 +42,13 @@ class GeneralSphere(Surface):
         ]
         self._radius = self._generate_default_node(float, None)
         super().__init__(input, number, surface_type="S")
-        print(self.surface_constants)
         if input and self.surface_type != SurfaceType.S:
             raise ValueError(f"A {self.__class__.__name__} must be a surface of type S")
         if len(self.surface_constants) != 4:
             raise ValueError(
                 f"A {self.__class__.__name__} must have exactly 4 surface_constants"
             )
-        self._location = self._surface_constants[:3]
+        self._coordinates = self._surface_constants[:3]
         self._radius = self._surface_constants[3]
 
     @staticmethod
@@ -73,7 +73,19 @@ class GeneralSphere(Surface):
 
         :rytpe: tuple
         """
-        return (c.value for c in self._coordinates)
+        return tuple(c.value for c in self._coordinates)
+
+    @coordinates.setter
+    def coordinates(self, coordinates):
+        if not isinstance(coordinates, (list, tuple)):
+            raise TypeError("coordinates must be a list")
+        if len(coordinates) != 3:
+            raise ValueError("coordinates must have exactly three elements")
+        for val in coordinates:
+            if not isinstance(val, Real):
+                raise TypeError(f"Coordinate must be a number. {val} given.")
+        for i, val in enumerate(coordinates):
+            self._coordinates[i].value = val
 
     def validate(self):
         super().validate()
