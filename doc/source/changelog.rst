@@ -5,8 +5,16 @@ MontePy Changelog
 1.2 releases
 ============
 
-1.2.0
+#Next Version#
 --------------
+
+**Features Added**
+
+* Added support for ``Surface`` subtypes for spheres (:issue:`876`).
+
+
+1.2.0
+-----
 
 **Performance Improvement**
 
