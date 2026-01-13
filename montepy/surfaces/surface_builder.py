@@ -5,6 +5,9 @@ from montepy.surfaces.surface_type import SurfaceType
 from montepy.surfaces.cylinder_on_axis import CylinderOnAxis
 from montepy.surfaces.cylinder_par_axis import CylinderParAxis
 from montepy.surfaces.general_plane import GeneralPlane
+from montepy.surfaces.general_sphere import GeneralSphere
+from montepy.surfaces.sphere_at_origin import SphereAtOrigin
+from montepy.surfaces.sphere_on_axis import SphereOnAxis
 
 
 def parse_surface(input: InitInput):
@@ -32,6 +35,12 @@ def parse_surface(input: InitInput):
         return AxisPlane(input)
     elif type_of_surface == ST.P:
         return GeneralPlane(input)
+    elif type_of_surface == ST.S:
+        return GeneralSphere(input)
+    elif type_of_surface == ST.SO:
+        return SphereAtOrigin(input)
+    elif type_of_surface in [ST.SX, ST.SY, ST.SZ]:
+        return SphereOnAxis(input)
     else:
         return buffer_surface
 
