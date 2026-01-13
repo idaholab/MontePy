@@ -99,7 +99,7 @@ class GeneralSphere(Surface):
                             if self.transform:
                                 if surface.transform:
                                     if self.transform.equivalent(
-                                            surface.transform, tolerance
+                                        surface.transform, tolerance
                                     ):
                                         ret.append(surface)
                             else:
