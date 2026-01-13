@@ -160,6 +160,22 @@ def test_validator():
     surf = GeneralSphere(number=3)
     with pytest.raises(montepy.exceptions.IllegalState):
         surf.validate()
+    surf.radius = 1.0
+    with pytest.raises(montepy.exceptions.IllegalState):
+        surf.validate()
+    with pytest.raises(montepy.exceptions.IllegalState):
+        surf.format_for_mcnp_input((6, 3, 0))
+    # sphere at origin
+    surf = SphereAtOrigin(number=4)
+    with pytest.raises(montepy.exceptions.IllegalState):
+        surf.validate()
+    # sphere on axis
+    surf = SphereOnAxis(number=5)
+    with pytest.raises(montepy.exceptions.IllegalState):
+        surf.validate()
+    surf.radius = 1.0
+    with pytest.raises(montepy.exceptions.IllegalState):
+        surf.validate()
     with pytest.raises(montepy.exceptions.IllegalState):
         surf.format_for_mcnp_input((6, 3, 0))
 
@@ -343,15 +359,38 @@ def test_gen_plane_init():
 
 
 def test_gen_sphere_init():
-    bad_inputs = ["1 SZ 0.0", "1 S 0.0"]
-    for bad_input in bad_inputs:
-        with pytest.raises(ValueError):
-            montepy.surfaces.general_sphere.GeneralSphere(bad_input)
-        with pytest.raises(ValueError):
-            montepy.surfaces.general_sphere.GeneralSphere(
-                Input([bad_input], BlockType.SURFACE)
-            )
-    surf = montepy.surfaces.general_sphere.GeneralSphere(number=5)
+    bad_input = "1 S 0.0"
+    with pytest.raises(ValueError):
+        GeneralSphere(bad_input)
+    with pytest.raises(ValueError):
+        GeneralSphere(
+            Input([bad_input], BlockType.SURFACE)
+        )
+    surf = GeneralSphere(number=5)
+    assert surf.number == 5
+
+
+def test_axis_sphere_init():
+    bad_input = "1 SZ 0.0"
+    with pytest.raises(ValueError):
+        SphereOnAxis(bad_input)
+    with pytest.raises(ValueError):
+        SphereOnAxis(
+            Input([bad_input], BlockType.SURFACE)
+        )
+    surf = SphereOnAxis(number=5)
+    assert surf.number == 5
+
+
+def test_origin_sphere_init():
+    bad_input = "1 SO 0.0 0.1 1.0"
+    with pytest.raises(ValueError):
+        SphereAtOrigin(bad_input)
+    with pytest.raises(ValueError):
+        SphereAtOrigin(
+            Input([bad_input], BlockType.SURFACE)
+        )
+    surf = SphereAtOrigin(number=5)
     assert surf.number == 5
 
 
@@ -371,6 +410,17 @@ def test_axis_sphere_location_setter():
     assert surf.location == 10.0
     with pytest.raises(TypeError):
         surf.location = "hi"
+
+
+def test_sphere_axis_radius_setter():
+    surf = surface_builder("1 SX 0.0 5.0")
+    assert surf.radius == 5.0
+    surf.radius = 3.0
+    assert surf.radius == 3.0
+    with pytest.raises(TypeError):
+        surf.radius = "foo"
+    with pytest.raises(ValueError):
+        surf.radius = -5.0
 
 
 def test_general_plane_constants():
@@ -430,17 +480,27 @@ def test_cylinder_location_setter():
         surf.coordinates = [3, 4, 5]
 
 
-def test_sphere_location_setter():
+def test_sphere_coordinate_setter():
     surf = surface_builder("1 S 3.0 4.0 5 6e0")
     assert surf.coordinates == (3.0, 4.0, 5)
     surf.coordinates = [1, 2, 3]
     assert surf.coordinates == (1, 2, 3)
-    # test wrong type
+    # test wrong length
     with pytest.raises(TypeError):
-        surf.coordinates = "fo"
+        surf.coordinates = 6
     # test length issues
     with pytest.raises(ValueError):
         surf.coordinates = [6, 7]
+
+
+def test_sphere_location_setter():
+    surf = surface_builder("1 SX 3.0 6e0")
+    assert surf.location == 3.0
+    surf.location = 4.0
+    assert surf.location == 4.0
+    # test length issues
+    with pytest.raises(TypeError):
+        surf.location = "over there"
 
 
 @pytest.mark.filterwarnings("ignore")
