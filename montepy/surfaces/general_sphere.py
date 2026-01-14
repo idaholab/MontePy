@@ -65,7 +65,7 @@ Represents a general sphere surface, or ``S`` surface.
     def coordinates(self):
         """The three coordinates for the sphere center
 
-        :rytpe: tuple
+        :rytpe: tuple[float]
         """
         return tuple(c.value for c in self._coordinates)
 
