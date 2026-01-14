@@ -14,7 +14,7 @@ def _enforce_positive_radius(self, value):
 
 
 class GeneralSphere(Surface):
-    """Represents surface S
+Represents a general sphere surface, or ``S`` surface. 
 
     Parameters
     ----------
