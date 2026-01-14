@@ -14,7 +14,7 @@ def _enforce_positive_radius(self, value):
 
 
 class GeneralSphere(Surface):
-Represents a general sphere surface, or ``S`` surface. 
+    """Represents surface S
 
     Parameters
     ----------
@@ -65,7 +65,7 @@ Represents a general sphere surface, or ``S`` surface.
     def coordinates(self):
         """The three coordinates for the sphere center
 
-        :rytpe: tuple[float]
+        :rytpe: tuple
         """
         return tuple(c.value for c in self._coordinates)
 
@@ -89,22 +89,5 @@ Represents a general sphere surface, or ``S`` surface.
             raise IllegalState(f"Surface: {self.number} does not have coordinates set.")
 
     def find_duplicate_surfaces(self, surfaces, tolerance):
-        ret = []
-        # do not assume transform and periodic surfaces are the same.
-        if not self.old_periodic_surface:
-            for surface in surfaces:
-                if surface != self and surface.surface_type == self.surface_type:
-                    if not surface.old_periodic_surface:
-                        if abs(self.radius - surface.radius) < tolerance:
-                            if self.transform:
-                                if surface.transform:
-                                    if self.transform.equivalent(
-                                        surface.transform, tolerance
-                                    ):
-                                        ret.append(surface)
-                            else:
-                                if surface.transform is None:
-                                    ret.append(surface)
-            return ret
-        else:
-            return []
+        """Duplicate sphere finding is not yet implemented"""
+        return []

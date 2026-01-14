@@ -84,22 +84,5 @@ class SphereOnAxis(Surface):
             raise IllegalState(f"Surface: {self.number} does not have a location set.")
 
     def find_duplicate_surfaces(self, surfaces, tolerance):
-        ret = []
-        # do not assume transform and periodic surfaces are the same.
-        if not self.old_periodic_surface:
-            for surface in surfaces:
-                if surface != self and surface.surface_type == self.surface_type:
-                    if not surface.old_periodic_surface:
-                        if abs(self.radius - surface.radius) < tolerance:
-                            if self.transform:
-                                if surface.transform:
-                                    if self.transform.equivalent(
-                                        surface.transform, tolerance
-                                    ):
-                                        ret.append(surface)
-                            else:
-                                if surface.transform is None:
-                                    ret.append(surface)
-            return ret
-        else:
-            return []
+        """Duplicate sphere finding is not yet implemented"""
+        return []
