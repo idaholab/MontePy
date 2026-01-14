@@ -13,7 +13,7 @@ def _enforce_positive_radius(self, value):
 
 
 class SphereAtOrigin(Surface):
-    """Represents surface SO
+    """Represents surface SO: a sphere at the origin
 
     Parameters
     ----------
@@ -21,8 +21,6 @@ class SphereAtOrigin(Surface):
         The Input object representing the input
     number : int
         The number to set for this object.
-    surface_type: Union[SurfaceType, str]
-        The surface_type to set for this object
     """
 
     def __init__(
@@ -32,7 +30,7 @@ class SphereAtOrigin(Surface):
     ):
         self._location = self._generate_default_node(float, None)
         self._radius = self._generate_default_node(float, None)
-        super().__init__(input, number, surface_type="SO")
+        super().__init__(input, number)
         if len(self.surface_constants) != 1:
             raise ValueError(
                 f"{self.__class__.__name__} must have exactly 1 surface_constant"

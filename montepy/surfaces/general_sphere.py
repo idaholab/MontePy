@@ -14,7 +14,7 @@ def _enforce_positive_radius(self, value):
 
 
 class GeneralSphere(Surface):
-    """Represents surface S
+    """Represents surface S: a general sphere
 
     Parameters
     ----------
@@ -35,7 +35,7 @@ class GeneralSphere(Surface):
             self._generate_default_node(float, None),
         ]
         self._radius = self._generate_default_node(float, None)
-        super().__init__(input, number, surface_type="S")
+        super().__init__(input, number)
         if input and self.surface_type != SurfaceType.S:
             raise ValueError(f"A {self.__class__.__name__} must be a surface of type S")
         if len(self.surface_constants) != 4:
