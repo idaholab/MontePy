@@ -482,7 +482,7 @@ def test_sphere_coordinate_setter():
     assert surf.coordinates == (3.0, 4.0, 5)
     surf.coordinates = [1, 2, 3]
     assert surf.coordinates == (1, 2, 3)
-    # test wrong length
+    # test wrong type
     with pytest.raises(TypeError):
         surf.coordinates = 6
     # test length issues
