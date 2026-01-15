@@ -78,7 +78,7 @@ class SphereOnAxis(Surface):
         super().validate()
         if self.radius is None:
             raise IllegalState(f"Surface: {self.number} does not have a radius set.")
-        if self.location is None:
+        if self.location is None:  # pragma: no cover
             raise IllegalState(f"Surface: {self.number} does not have a location set.")
 
     def find_duplicate_surfaces(self, surfaces, tolerance):

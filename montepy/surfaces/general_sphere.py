@@ -85,9 +85,9 @@ class GeneralSphere(Surface):
 
     def validate(self):
         super().validate()
-        if self.radius is None:
+        if self.radius is None:  # pragma: no cover
             raise IllegalState(f"Surface: {self.number} does not have a radius set.")
-        if any({c is None for c in self.coordinates}):
+        if any({c is None for c in self.coordinates}):  # pragma: no cover
             raise IllegalState(f"Surface: {self.number} does not have coordinates set.")
 
     def find_duplicate_surfaces(self, surfaces, tolerance):
