@@ -15,7 +15,7 @@ def _enforce_positive_radius(self, value):
 class SphereAtOrigin(Surface):
     """Represents surface SO: a sphere at the origin
 
-    .. version-added:: 1.3.0
+    .. versionadded:: 1.3.0
 
     Parameters
     ----------

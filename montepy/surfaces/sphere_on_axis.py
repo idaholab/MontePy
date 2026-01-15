@@ -15,7 +15,7 @@ def _enforce_positive_radius(self, value):
 class SphereOnAxis(Surface):
     """Represents surfaces SX, SY, and SZ: spheres on axes
 
-    .. version-added:: 1.3.0
+    .. versionadded:: 1.3.0
 
     Parameters
     ----------
