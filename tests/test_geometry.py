@@ -269,6 +269,8 @@ def test_iand_recursion():
     half_space = -surf | +surf
     half_space &= +surf
     assert len(half_space) == 3
+    assert half_space.operator == Operator.INTERSECTION
+    assert str(half_space) == "((-5:+5)*+5)"
 
 
 def test_ior_recursion():
@@ -300,6 +302,12 @@ def test_ior_recursion():
     half_space = -surf | +surf
     half_space |= +surf
     assert len(half_space) == 3
+    # test with complex tree
+    half_space = -surf & +surf
+    half_space |= +surf
+    assert len(half_space) == 3
+    assert half_space.operator == Operator.UNION
+    assert str(half_space) == "((-5*+5):+5)"
 
 
 def test_parse_input_tree():
