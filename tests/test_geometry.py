@@ -247,10 +247,12 @@ def test_iand_recursion():
     half_space = ~cell1 & ~cell2
     cell3.geometry = half_space
     half_space &= ~cell1
-    assert half_space.left == ~cell1
+    # lazy tree enforcement
+    assert str(half_space) == "((#1*#2)*#1)"
+    assert half_space.right == ~cell1
     assert not isinstance(half_space.right, UnitHalfSpace)
-    assert half_space.right.left == ~cell2
-    assert half_space.right.right == ~cell1
+    assert half_space.left.left == ~cell1
+    assert half_space.left.right == ~cell2
     assert half_space.operator == Operator.INTERSECTION
     assert len(half_space) == 3
     for i in range(1, 100):
@@ -265,6 +267,7 @@ def test_iand_recursion():
     half_space = -surf
     half_space &= +surf
     assert len(half_space) == 2
+    assert str(half_space) == "(-5*+5)"
     # test with actual tree
     half_space = -surf | +surf
     half_space &= +surf
