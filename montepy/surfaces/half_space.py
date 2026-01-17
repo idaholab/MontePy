@@ -410,20 +410,13 @@ class HalfSpace:
     def __ior__(self, other):
         if not isinstance(other, HalfSpace):
             raise TypeError(f"Right hand side must be HalfSpace. {other} given.")
+        self._add_new_children_to_cell(other)
         if isinstance(self, UnitHalfSpace):
             return self | other
-        right_leaf = (
-            self.right is not None and isinstance(self.right, UnitHalfSpace)
-        ) or self.right is None
-        if right_leaf:
-            if self.right is not None:
-                self.right = self.right | other
-                return self
-            else:
-                return (~self.left) | other
-        self.right |= other
-        self._add_new_children_to_cell(other)
-        return self
+        if self.right is None:
+            # if this is a complement operator delete self
+            return (~self.left) | other
+        return self | other
 
     def __and__(self, other):
         if not isinstance(other, HalfSpace):
