@@ -53,3 +53,16 @@ def test_geom_invalid():
         +surf
     with pytest.raises(montepy.exceptions.IllegalState):
         ~montepy.Cell()
+
+
+def test_geom_recursive_iand_formatting():
+    cell = montepy.Cell(number=1)
+    surf = montepy.AxisPlane(number=1)
+    cell.geometry = +surf | -surf
+    cell.geometry &= +surf
+    assert cell.mcnp_str() == "1 0 (1 : -1) 1 "
+    cell = montepy.Cell(number=1)
+    surf = montepy.AxisPlane(number=1)
+    cell.geometry = +surf & -surf
+    cell.geometry |= +surf
+    assert cell.mcnp_str() == "1 0 1 -1 : 1 "
