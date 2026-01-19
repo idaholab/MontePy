@@ -225,13 +225,13 @@ class MCNP_Object(ABC, metaclass=_ExceptionContextAdder):
         """
         pass
 
-    def format_for_mcnp_input(self, mcnp_version: tuple[int]) -> list[str]:
+    def format_for_mcnp_input(self, mcnp_version: tuple[int, int, int]) -> list[str]:
         """Creates a list of strings representing this MCNP_Object that can be
         written to file.
 
         Parameters
         ----------
-        mcnp_version : tuple[int]
+        mcnp_version : tuple[int, int, int]
             The tuple for the MCNP version that must be exported to.
 
         Returns
@@ -242,7 +242,6 @@ class MCNP_Object(ABC, metaclass=_ExceptionContextAdder):
         self.validate()
         self._update_values()
         self._tree.check_for_graveyard_comments()
-        message = None
         with warnings.catch_warnings(record=True) as ws:
             lines = self.wrap_string_for_mcnp(self._tree.format(), mcnp_version, True)
         self._flush_line_expansion_warning(lines, ws)
