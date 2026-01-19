@@ -165,6 +165,7 @@ def test_validator():
     surf = GeneralSphere(number=3)
     with pytest.raises(IllegalState):
         surf.validate()
+    surf.surface_type = SurfaceType.S
     surf.radius = 1.0
     with pytest.raises(IllegalState):
         surf.validate()
@@ -174,12 +175,14 @@ def test_validator():
     surf = SphereAtOrigin(number=4)
     with pytest.raises(IllegalState):
         surf.validate()
+    surf.surface_type = SurfaceType.SO
     with pytest.raises(IllegalState):
         surf.format_for_mcnp_input(vers)
     # sphere on axis
     surf = SphereOnAxis(number=5)
     with pytest.raises(IllegalState):
         surf.validate()
+    surf.surface_type = SurfaceType.SZ
     surf.radius = 1.0
     with pytest.raises(IllegalState):
         surf.validate()
