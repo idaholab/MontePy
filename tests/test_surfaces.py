@@ -166,6 +166,8 @@ def test_validator():
     with pytest.raises(IllegalState):
         surf.validate()
     surf.surface_type = SurfaceType.S
+    with pytest.raises(IllegalState):
+        surf.validate()
     surf.radius = 1.0
     with pytest.raises(IllegalState):
         surf.validate()
@@ -183,6 +185,8 @@ def test_validator():
     with pytest.raises(IllegalState):
         surf.validate()
     surf.surface_type = SurfaceType.SZ
+    with pytest.raises(IllegalState):
+        surf.validate()
     surf.radius = 1.0
     with pytest.raises(IllegalState):
         surf.validate()
@@ -381,9 +385,9 @@ def test_axis_plane_location_setter():
 
 def test_sphere_radius_setter():
     for sphere_string in (
-        "1 S 0.0 -1.0 2.0 5.0",
-        "1 SX 0.0 5.0",
-        "1 SO 5.0",
+        "1 S  0.0 -1.0 2.0 5.0",
+        "1 SX 0.0          5.0",
+        "1 SO              5.0",
     ):
         surf = surface_builder(sphere_string)
         assert surf.radius == 5.0
@@ -449,6 +453,8 @@ def test_sphere_coordinate_setter():
     # test wrong type
     with pytest.raises(TypeError):
         surf.coordinates = 6
+    with pytest.raises(TypeError):
+        surf.coordinates = (6, 7, "eight")
     # test length issues
     with pytest.raises(ValueError):
         surf.coordinates = [6, 7]
