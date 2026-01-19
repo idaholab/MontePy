@@ -76,6 +76,19 @@ Planes
    montepy.AxisPlane
 
 
+Spheres
+^^^^^^^
+
+.. autosummary::
+   :toctree: generated
+   :nosignatures:
+   :template: myclass.rst
+
+   montepy.GeneralSphere
+   montepy.SphereAtOrigin
+   montepy.SphereOnAxis
+
+
 Data Inputs
 -----------
 
