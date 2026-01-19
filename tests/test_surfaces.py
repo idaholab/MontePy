@@ -192,24 +192,28 @@ def test_validator():
 
 def test_surface_constants_setter():
     in_str = "1 PZ 0.0"
-    surf = Surface(in_str)
-    surf.surface_constants = [10.0]
-    assert surf.surface_constants[0] == 10.0
-    with pytest.raises(TypeError):
-        surf.surface_constants = "foo"
-    with pytest.raises(ValueError):
-        surf.surface_constants = [1, "foo"]
+    input_obj = Input([in_str], BlockType.SURFACE)
+    for arg in (in_str, input_obj):
+        surf = Surface(arg)
+        surf.surface_constants = [10.0]
+        assert surf.surface_constants[0] == 10.0
+        with pytest.raises(TypeError):
+            surf.surface_constants = "foo"
+        with pytest.raises(ValueError):
+            surf.surface_constants = [1, "foo"]
 
 
 def test_surface_number_setter():
     in_str = "1 PZ 0.0"
-    surf = Surface(in_str)
-    surf.number = 20
-    assert surf.number == 20
-    with pytest.raises(TypeError):
-        surf.number = "foo"
-    with pytest.raises(ValueError):
-        surf.number = -5
+    input_obj = Input([in_str], BlockType.SURFACE)
+    for arg in (in_str, input_obj):
+        surf = Surface(arg)
+        surf.number = 20
+        assert surf.number == 20
+        with pytest.raises(TypeError):
+            surf.number = "foo"
+        with pytest.raises(ValueError):
+            surf.number = -5
 
 
 def test_surface_surface_type_setter():
@@ -224,30 +228,6 @@ def test_surface_surface_type_setter():
         surf.surface_type = "CX"
     with pytest.raises(ValueError):
         surf.surface_type = SurfaceType.CX
-
-
-def test_surface_constants_setter():
-    in_str = "1 PZ 0.0"
-    input_obj = Input([in_str], BlockType.SURFACE)
-    surf = Surface(input_obj)
-    surf.surface_constants = [10.0]
-    assert surf.surface_constants[0] == 10.0
-    with pytest.raises(TypeError):
-        surf.surface_constants = "foo"
-    with pytest.raises(ValueError):
-        surf.surface_constants = [1, "foo"]
-
-
-def test_surface_number_setter():
-    in_str = "1 PZ 0.0"
-    input_obj = Input([in_str], BlockType.SURFACE)
-    surf = Surface(input_obj)
-    surf.number = 20
-    assert surf.number == 20
-    with pytest.raises(TypeError):
-        surf.number = "foo"
-    with pytest.raises(ValueError):
-        surf.number = -5
 
 
 def test_surface_ordering():
