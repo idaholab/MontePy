@@ -5,12 +5,17 @@ MontePy Changelog
 1.2 releases
 ============
 
-#Next Version#
+#Next_Version#
 --------------
 
 **Features Added**
 
 * Added support for ``Surface`` subtypes for spheres (:issue:`876`).
+
+
+**Bugs Fixed**
+
+* Fixed a bug where ``&=`` and ``|=`` for geometry definitions (``HalfSpace`` ) were not handled operator precedence properly (:issue:`879`).
 
 
 1.2.0
