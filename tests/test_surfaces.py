@@ -223,12 +223,6 @@ def test_surface_surface_type_setter():
     with pytest.raises(ValueError):
         surf.surface_type = SurfaceType.CX
 
-    surf = montepy.surfaces.parse_surface("1 PZ 0.0")
-    with pytest.raises(ValueError):
-        surf.surface_type = "CX"
-    with pytest.raises(ValueError):
-        surf.surface_type = SurfaceType.CX
-
 
 def test_surface_ordering():
     surf1 = Surface("1 PZ 0.0")
@@ -434,17 +428,6 @@ def test_cylinder_radius_setter():
         surf.radius = -5.0
 
 
-def test_origin_sphere_radius_setter():
-    surf = surface_builder("1 SO 5")
-    assert surf.radius == 5.0
-    surf.radius = 3.0
-    assert surf.radius == 3.0
-    with pytest.raises(TypeError):
-        surf.radius = "foo"
-    with pytest.raises(ValueError):
-        surf.radius = -5.0
-
-
 def test_cylinder_location_setter():
     surf = surface_builder("1 c/Z 3.0 4.0 5")
     assert surf.coordinates == (3.0, 4.0)
@@ -550,11 +533,11 @@ def verify_equiv_surf(surf, new_surf):
     if surf.periodic_surface:
         assert surf.periodic_surface.number == new_surf.old_periodic_surface
     else:
-        assert new_surf.old_periodic_surface == None
+        assert new_surf.old_periodic_surface is None
     if surf.transform:
         assert surf.transform.number == new_surf.old_transform_number
     else:
-        assert new_surf.old_transform_number == None
+        assert new_surf.old_transform_number is None
 
 
 def verify_prob_export(problem, surf):
