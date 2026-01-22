@@ -67,7 +67,7 @@ class Cells(NumberedObjectCollection):
         """Sets all cells except the vacuum cells to the same importance using :func:`montepy.data_cards.importance.Importance.all`.
 
         The "vacuum" cells are those on the outside of a vacuum boundary condition, i.e., the "graveyard".
-                That is to say, their importance will be set to 0.0. You can specify cell numbers or cell objects.
+        That is to say, their importance will be set to 0.0. You can specify cell numbers or cell objects.
 
         Parameters
         ----------
