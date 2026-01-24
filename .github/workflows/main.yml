@@ -14,7 +14,7 @@ jobs:
         python-version: ["3.12", "3.13", "3.14"]
 
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
         with: 
           fetch-depth: 0
           fetch-tags: true
@@ -42,7 +42,7 @@ jobs:
       - run: pip install --user . montepy[develop]
       - run: pip freeze
       - name: Upload build artifacts
-        uses: actions/upload-artifact@v5
+        uses: actions/upload-artifact@v6
         if: ${{ matrix.python-version == '3.13'}}
         with: 
            name: build
@@ -63,7 +63,7 @@ jobs:
             sly-version: "0.4"
     
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
       - name: set up python  ${{ matrix.python-version }}
         uses: actions/setup-python@v6
         with: 
@@ -84,19 +84,19 @@ jobs:
         if:  ${{ success() || failure() }}
       - name: Upload test report
         if: ${{ matrix.python-version == '3.14' && matrix.numpy-version == '2.3' && (success() || failure() )}}
-        uses: actions/upload-artifact@v5
+        uses: actions/upload-artifact@v6
         with:
           name: test
           path: test_report.xml
       - name: Upload coverage report
         if: ${{ matrix.python-version == '3.14' && matrix.numpy-version == '2.3' && (success() || failure() )}}
-        uses: actions/upload-artifact@v5
+        uses: actions/upload-artifact@v6
         with:
           name: coverage
           path: coverage.xml
       - name: Coveralls GitHub Action
         if: ${{ matrix.python-version == '3.14' && matrix.numpy-version == '2.3' && (success() || failure() )}}
-        uses: coverallsapp/github-action@648a8eb78e6d50909eff900e4ec85cab4524a45b
+        uses: coverallsapp/github-action@5cbfd81b66ca5d10c19b062c04de0199c215fb6e
         with:
           file: coverage.xml
           fail-on-error: false
@@ -109,7 +109,7 @@ jobs:
     runs-on: ubuntu-latest
     
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
         with:
           fetch-depth: 0
           fetch-tags: true
@@ -120,7 +120,7 @@ jobs:
       - run: pip install . montepy[doc,build]
       - run: cd doc && make html SPHINXOPTS="-W --keep-going -E"
         name: Build site strictly
-      - uses: actions/upload-artifact@v5
+      - uses: actions/upload-artifact@v6
         with:
           name: website
           path: doc/build
@@ -133,7 +133,7 @@ jobs:
     runs-on: ubuntu-latest
     
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
         with:
           fetch-depth: 0
           fetch-tags: true
@@ -158,7 +158,7 @@ jobs:
     
     steps:
 
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
       - name: set up python 3.14
         uses: actions/setup-python@v6
         with: 
@@ -170,7 +170,7 @@ jobs:
     runs-on: ubuntu-latest
     
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
       - name: set up python 3.14
         uses: actions/setup-python@v6
         with: 
@@ -187,7 +187,7 @@ jobs:
     runs-on: ubuntu-latest
     
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
       - name: set up python 3.14
         uses: actions/setup-python@v6
         with: 
@@ -202,7 +202,7 @@ jobs:
     if: github.ref != 'refs/heads/main'
     
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
       - name: Check for changes
         uses: dorny/paths-filter@v3
         id: changes

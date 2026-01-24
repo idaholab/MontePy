@@ -4,13 +4,20 @@ from pathlib import Path
 import pytest
 
 import montepy
-from montepy.exceptions import MalformedInputError, SurfaceConstantsWarning
+from montepy.exceptions import (
+    MalformedInputError,
+    SurfaceConstantsWarning,
+    IllegalState,
+)
 from montepy.input_parser.block_type import BlockType
 from montepy.input_parser.mcnp_input import Input
 from montepy.surfaces.axis_plane import AxisPlane
 from montepy.surfaces.cylinder_on_axis import CylinderOnAxis
 from montepy.surfaces.cylinder_par_axis import CylinderParAxis
 from montepy.surfaces.general_plane import GeneralPlane
+from montepy.surfaces.general_sphere import GeneralSphere
+from montepy.surfaces.sphere_at_origin import SphereAtOrigin
+from montepy.surfaces.sphere_on_axis import SphereOnAxis
 from montepy.surfaces.surface import Surface
 from montepy.surfaces.surface_builder import surface_builder
 from montepy.surfaces.surface_type import SurfaceType
@@ -96,47 +103,50 @@ def test_surface_transform_bad():
         CylinderOnAxis(surface_type="px")
     with pytest.raises(ValueError):
         CylinderParAxis(surface_type="px")
+    with pytest.raises(ValueError):
+        SphereOnAxis(surface_type="SO")
 
 
 def test_validator():
+    vers = (6, 3, 0)
     surf = Surface()
     # TODO is IllegalState or defaults values more desirable?
-    with pytest.raises(montepy.exceptions.IllegalState):
+    with pytest.raises(IllegalState):
         surf.validate()
-    with pytest.raises(montepy.exceptions.IllegalState):
-        surf.format_for_mcnp_input((6, 2, 0))
+    with pytest.raises(IllegalState):
+        surf.format_for_mcnp_input(vers)
     surf.number = 1
-    with pytest.raises(montepy.exceptions.IllegalState):
+    with pytest.raises(IllegalState):
         surf.validate()
     # cylinder on axis
     surf = CylinderOnAxis(number=5)
-    with pytest.raises(montepy.exceptions.IllegalState):
+    with pytest.raises(IllegalState):
         surf.validate()
-    with pytest.raises(montepy.exceptions.IllegalState):
-        surf.format_for_mcnp_input((6, 2, 0))
+    with pytest.raises(IllegalState):
+        surf.format_for_mcnp_input(vers)
     surf._surface_type = SurfaceType.CX
-    with pytest.raises(montepy.exceptions.IllegalState):
+    with pytest.raises(IllegalState):
         surf.validate()
     # cylinder par axis
     surf = CylinderParAxis(number=5)
-    with pytest.raises(montepy.exceptions.IllegalState):
+    with pytest.raises(IllegalState):
         surf.validate()
-    with pytest.raises(montepy.exceptions.IllegalState):
-        surf.format_for_mcnp_input((6, 2, 0))
+    with pytest.raises(IllegalState):
+        surf.format_for_mcnp_input(vers)
     surf._surface_type = SurfaceType.C_X
-    with pytest.raises(montepy.exceptions.IllegalState):
+    with pytest.raises(IllegalState):
         surf.validate()
     surf.radius = 5.0
-    with pytest.raises(montepy.exceptions.IllegalState):
+    with pytest.raises(IllegalState):
         surf.validate()
     # axis plane
     surf = AxisPlane(number=5)
-    with pytest.raises(montepy.exceptions.IllegalState):
+    with pytest.raises(IllegalState):
         surf.validate()
-    with pytest.raises(montepy.exceptions.IllegalState):
-        surf.format_for_mcnp_input((6, 2, 0))
+    with pytest.raises(IllegalState):
+        surf.format_for_mcnp_input(vers)
     surf._surface_type = SurfaceType.PX
-    with pytest.raises(montepy.exceptions.IllegalState):
+    with pytest.raises(IllegalState):
         surf.validate()
     surf.number = 1
     surf.location = 0.0
@@ -144,35 +154,70 @@ def test_validator():
     surf.validate()
     # general plane
     surf = GeneralPlane(number=2)
-    with pytest.raises(montepy.exceptions.IllegalState):
+    with pytest.raises(IllegalState):
         surf.validate()
-    with pytest.raises(montepy.exceptions.IllegalState):
-        surf.format_for_mcnp_input((6, 2, 0))
+    with pytest.raises(IllegalState):
+        surf.format_for_mcnp_input(vers)
     surf._surface_type = SurfaceType.P
-    with pytest.raises(montepy.exceptions.IllegalState):
+    with pytest.raises(IllegalState):
         surf.validate()
+    # general sphere
+    surf = GeneralSphere(number=3)
+    with pytest.raises(IllegalState):
+        surf.validate()
+    surf.surface_type = SurfaceType.S
+    with pytest.raises(IllegalState):
+        surf.validate()
+    surf.radius = 1.0
+    with pytest.raises(IllegalState):
+        surf.validate()
+    with pytest.raises(IllegalState):
+        surf.format_for_mcnp_input(vers)
+    # sphere at origin
+    surf = SphereAtOrigin(number=4)
+    with pytest.raises(IllegalState):
+        surf.validate()
+    surf.surface_type = SurfaceType.SO
+    with pytest.raises(IllegalState):
+        surf.format_for_mcnp_input(vers)
+    # sphere on axis
+    surf = SphereOnAxis(number=5)
+    with pytest.raises(IllegalState):
+        surf.validate()
+    surf.surface_type = SurfaceType.SZ
+    with pytest.raises(IllegalState):
+        surf.validate()
+    surf.radius = 1.0
+    with pytest.raises(IllegalState):
+        surf.validate()
+    with pytest.raises(IllegalState):
+        surf.format_for_mcnp_input(vers)
 
 
 def test_surface_constants_setter():
     in_str = "1 PZ 0.0"
-    surf = Surface(in_str)
-    surf.surface_constants = [10.0]
-    assert surf.surface_constants[0] == 10.0
-    with pytest.raises(TypeError):
-        surf.surface_constants = "foo"
-    with pytest.raises(ValueError):
-        surf.surface_constants = [1, "foo"]
+    input_obj = Input([in_str], BlockType.SURFACE)
+    for arg in (in_str, input_obj):
+        surf = Surface(arg)
+        surf.surface_constants = [10.0]
+        assert surf.surface_constants[0] == 10.0
+        with pytest.raises(TypeError):
+            surf.surface_constants = "foo"
+        with pytest.raises(ValueError):
+            surf.surface_constants = [1, "foo"]
 
 
 def test_surface_number_setter():
     in_str = "1 PZ 0.0"
-    surf = Surface(in_str)
-    surf.number = 20
-    assert surf.number == 20
-    with pytest.raises(TypeError):
-        surf.number = "foo"
-    with pytest.raises(ValueError):
-        surf.number = -5
+    input_obj = Input([in_str], BlockType.SURFACE)
+    for arg in (in_str, input_obj):
+        surf = Surface(arg)
+        surf.number = 20
+        assert surf.number == 20
+        with pytest.raises(TypeError):
+            surf.number = "foo"
+        with pytest.raises(ValueError):
+            surf.number = -5
 
 
 def test_surface_surface_type_setter():
@@ -269,13 +314,17 @@ def test_surface_builder():
         ("2 Cx 10.0", CylinderOnAxis),
         ("3 C/Z 4 3 5", CylinderParAxis),
         ("6 p 1 2 3 4", GeneralPlane),
-        ("7 so 5", Surface),
         ("10 C/x 25 0 -5", CylinderParAxis),
         ("11 c/Y 25 0 -5", CylinderParAxis),
         ("12 CY 3", CylinderOnAxis),
         ("13 cz 0", CylinderOnAxis),
         ("14 px 1.e-3", AxisPlane),
         ("15 PY .1", AxisPlane),
+        ("16 S -1 2+0 -3.0 1", GeneralSphere),
+        ("17 1 so 1.e-1", SphereAtOrigin),
+        ("18 sx -0.2 +1", SphereOnAxis),
+        ("19 sY -0.2 2", SphereOnAxis),
+        ("20 Sz -0.2 3.0", SphereOnAxis),
     ]
     for in_str, surf_plane in testers:
         assert isinstance(surface_builder(in_str), surf_plane)
@@ -296,10 +345,10 @@ def test_cylinder_on_axis_init():
     bad_inputs = ["1 P 0.0", "1 CZ 0.0 10.0"]
     for bad_input in bad_inputs:
         with pytest.raises(ValueError):
-            montepy.surfaces.cylinder_on_axis.CylinderOnAxis(bad_input)
+            CylinderOnAxis(bad_input)
         with pytest.raises(ValueError):
-            montepy.surfaces.cylinder_on_axis.CylinderOnAxis(bad_input)
-    surf = montepy.surfaces.cylinder_on_axis.CylinderOnAxis(number=5)
+            CylinderOnAxis(bad_input)
+    surf = CylinderOnAxis(number=5)
     assert surf.number == 5
 
 
@@ -307,12 +356,10 @@ def test_cylinder_par_axis_init():
     bad_inputs = ["1 P 0.0", "1 C/Z 0.0"]
     for bad_input in bad_inputs:
         with pytest.raises(ValueError):
-            montepy.surfaces.cylinder_par_axis.CylinderParAxis(bad_input)
+            CylinderParAxis(bad_input)
         with pytest.raises(ValueError):
-            montepy.surfaces.cylinder_par_axis.CylinderParAxis(
-                Input([bad_input], BlockType.SURFACE)
-            )
-    surf = montepy.surfaces.cylinder_par_axis.CylinderParAxis(number=5)
+            CylinderParAxis(Input([bad_input], BlockType.SURFACE))
+    surf = CylinderParAxis(number=5)
     assert surf.number == 5
 
 
@@ -329,6 +376,36 @@ def test_gen_plane_init():
     assert surf.number == 5
 
 
+def test_gen_sphere_init():
+    bad_input = "1 S 0.0"
+    with pytest.raises(ValueError):
+        GeneralSphere(bad_input)
+    with pytest.raises(ValueError):
+        GeneralSphere(Input([bad_input], BlockType.SURFACE))
+    surf = GeneralSphere(number=5)
+    assert surf.number == 5
+
+
+def test_axis_sphere_init():
+    bad_input = "1 SZ 0.0"
+    with pytest.raises(ValueError):
+        SphereOnAxis(bad_input)
+    with pytest.raises(ValueError):
+        SphereOnAxis(Input([bad_input], BlockType.SURFACE))
+    surf = SphereOnAxis(number=5)
+    assert surf.number == 5
+
+
+def test_origin_sphere_init():
+    bad_input = "1 SO 0.0 0.1 1.0"
+    with pytest.raises(ValueError):
+        SphereAtOrigin(bad_input)
+    with pytest.raises(ValueError):
+        SphereAtOrigin(Input([bad_input], BlockType.SURFACE))
+    surf = SphereAtOrigin(number=5)
+    assert surf.number == 5
+
+
 def test_axis_plane_location_setter():
     surf = surface_builder("1 PZ 0.0")
     assert surf.location == 0.0
@@ -336,6 +413,22 @@ def test_axis_plane_location_setter():
     assert surf.location == 10.0
     with pytest.raises(TypeError):
         surf.location = "hi"
+
+
+def test_sphere_radius_setter():
+    for sphere_string in (
+        "1 S  0.0 -1.0 2.0 5.0",
+        "1 SX 0.0          5.0",
+        "1 SO              5.0",
+    ):
+        surf = surface_builder(sphere_string)
+        assert surf.radius == 5.0
+        surf.radius = 3.0
+        assert surf.radius == 3.0
+        with pytest.raises(TypeError):
+            surf.radius = "foo"
+        with pytest.raises(ValueError):
+            surf.radius = -5.0
 
 
 def test_general_plane_constants():
@@ -382,6 +475,31 @@ def test_cylinder_location_setter():
     # test length issues
     with pytest.raises(ValueError):
         surf.coordinates = [3, 4, 5]
+
+
+def test_sphere_coordinate_setter():
+    surf = surface_builder("1 S 3.0 4.0 5 6e0")
+    assert surf.coordinates == (3.0, 4.0, 5)
+    surf.coordinates = [1, 2, 3]
+    assert surf.coordinates == (1, 2, 3)
+    # test wrong type
+    with pytest.raises(TypeError):
+        surf.coordinates = 6
+    with pytest.raises(TypeError):
+        surf.coordinates = (6, 7, "eight")
+    # test length issues
+    with pytest.raises(ValueError):
+        surf.coordinates = [6, 7]
+
+
+def test_sphere_location_setter():
+    surf = surface_builder("1 SX 3.0 6e0")
+    assert surf.location == 3.0
+    surf.location = 4.0
+    assert surf.location == 4.0
+    # test length issues
+    with pytest.raises(TypeError):
+        surf.location = "over there"
 
 
 @pytest.mark.filterwarnings("ignore")
@@ -453,11 +571,11 @@ def verify_equiv_surf(surf, new_surf):
     if surf.periodic_surface:
         assert surf.periodic_surface.number == new_surf.old_periodic_surface
     else:
-        assert new_surf.old_periodic_surface == None
+        assert new_surf.old_periodic_surface is None
     if surf.transform:
         assert surf.transform.number == new_surf.old_transform_number
     else:
-        assert new_surf.old_transform_number == None
+        assert new_surf.old_transform_number is None
 
 
 def verify_prob_export(problem, surf):

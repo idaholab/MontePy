@@ -572,16 +572,18 @@ This previous code is much simpler now:
 Setting Boundary Conditions
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-As discussed in :manual63:`5.3.1` surfaces can have three boundary conditions:
+As discussed in :manual63:`5.3.1`, surfaces can have three boundary conditions:
 
 * Reflective boundary
+* Periodic boundary
 * White boundary
-* periodic boundary
 
 .. note::
 
-   Vacuum boundary conditions are the fourth type.
-   They are defined by cells with 0 importance though.
+   Several Monte Carlo codes have vacuum boundary conditions as a fourth type.
+   In MCNP, a vacuum boundary is defined by a cell with zero importance.
+   These are often called the "graveyard".
+   Refer to the :ref:`CellImportance` section to see how to set these.
 
 The reflective and white boundary conditions are easiest to set as they are Boolean conditions.
 These are controlled by :func:`~montepy.surfaces.surface.Surface.is_reflecting` and 
@@ -618,6 +620,8 @@ So to continue with the previous example:
 
 Cells 
 -----
+
+.. _CellImportance:
 
 Setting Cell Importances
 ^^^^^^^^^^^^^^^^^^^^^^^^
@@ -663,7 +667,8 @@ For example: ``del cell.importance.neutron``.
 There is also the method: :func:`~montepy.cells.Cells.set_equal_importance`.
 This method sets all of the cells for all particles in the problem to the same importance.
 You can optionally pass a list of cells to this function.
-These cells are the "vacuum boundary" cells.
+These cells are the "vacuum boundary" or "graveyard" cells.
+That is to say, a particle that crosses into one of these cells is killed.
 Their importances will all be set to 0.
 
 

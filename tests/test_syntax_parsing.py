@@ -16,7 +16,6 @@ from montepy.particle import Particle
 from montepy.exceptions import UndefinedBlock
 import warnings
 
-
 lat = montepy.data_inputs.lattice.LatticeType
 st = montepy.surfaces.surface_type.SurfaceType
 

@@ -322,10 +322,10 @@ def test_problem_duplicate_surface_remover():
 
 def test_surface_periodic():
     problem = montepy.read_input("tests/inputs/test_surfaces.imcnp")
-    surf = problem.surfaces[1]
     periodic = problem.surfaces[2]
+    surf = problem.surfaces[3]
     assert surf.periodic_surface == periodic
-    assert "1 -2 SO" in surf.format_for_mcnp_input((6, 2, 0))[0]
+    assert "3 -2 PZ" in surf.format_for_mcnp_input((6, 2, 0))[0]
     surf.periodic_surface = problem.surfaces[3]
     assert surf.periodic_surface == problem.surfaces[3]
     del surf.periodic_surface
@@ -379,11 +379,11 @@ def test_surface_card_pass_through():
     problem = montepy.read_input("tests/inputs/test_surfaces.imcnp")
     surf = problem.surfaces[1]
     # Test input pass through
-    answer = ["1 -2 SO -5"]
+    answer = ["1 SO -5"]
     assert surf.format_for_mcnp_input((6, 2, 0)) == answer
     # Test changing periodic surface
     new_prob = copy.deepcopy(problem)
-    surf = new_prob.surfaces[1]
+    surf = new_prob.surfaces[3]
     new_prob.surfaces[2].number = 5
     assert int(surf.format_for_mcnp_input((6, 2, 0))[0].split()[1]) == -5
     # Test changing transform
