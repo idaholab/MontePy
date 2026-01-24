@@ -1,4 +1,7 @@
 # Copyright 2026, Battelle Energy Alliance, LLC All Rights Reserved.
+from __future__ import annotations
+
+import montepy
 from .surface_type import SurfaceType
 from .surface import Surface, InitInput
 from montepy.exceptions import *
@@ -25,10 +28,11 @@ class SphereAtOrigin(Surface):
         The number to set for this object.
     """
 
+    @args_checked
     def __init__(
         self,
         input: InitInput = None,
-        number: int = None,
+        number: ty.PositiveInt = None,
     ):
         self._location = self._generate_default_node(float, None)
         self._radius = self._generate_default_node(float, None)
@@ -56,6 +60,9 @@ class SphereAtOrigin(Surface):
         if self.radius is None:
             raise IllegalState(f"Surface: {self.number} does not have a radius set.")
 
-    def find_duplicate_surfaces(self, surfaces, tolerance):  # pragma: no cover
+    @args_checked
+    def find_duplicate_surfaces(
+        self, surfaces: montepy.Surfaces, tolerance: ty.PositiveReal
+    ):  # pragma: no cover
         """Duplicate sphere finding is not yet implemented"""
         return []

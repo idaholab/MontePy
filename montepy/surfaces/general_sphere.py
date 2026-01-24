@@ -1,11 +1,12 @@
 # Copyright 2026, Battelle Energy Alliance, LLC All Rights Reserved.
+from __future__ import annotations
+
+import montepy
 from .surface_type import SurfaceType
 from .surface import Surface, InitInput
 from montepy.exceptions import *
 from montepy.utilities import *
-
-from numbers import Real
-from typing import Union
+import montepy.types as ty
 
 
 def _enforce_positive_radius(self, value):
@@ -26,10 +27,12 @@ class GeneralSphere(Surface):
         The number to set for this object.
     """
 
+    @args_checked
     def __init__(
         self,
         input: InitInput = None,
-        number: int = None,
+        number: ty.PositiveInt = None,
+        surface_type: SurfaceType | str = None,
     ):
         self._coordinates = [
             self._generate_default_node(float, None),
@@ -72,14 +75,10 @@ class GeneralSphere(Surface):
         return tuple(c.value for c in self._coordinates)
 
     @coordinates.setter
-    def coordinates(self, coordinates):
-        if not isinstance(coordinates, (list, tuple)):
-            raise TypeError("coordinates must be a list")
+    @args_checked
+    def coordinates(self, coordinates: ty.Iterable[ty.Real]):
         if len(coordinates) != 3:
             raise ValueError("coordinates must have exactly three elements")
-        for val in coordinates:
-            if not isinstance(val, Real):
-                raise TypeError(f"Coordinate must be a number. {val} given.")
         for i, val in enumerate(coordinates):
             self._coordinates[i].value = val
 
@@ -90,6 +89,9 @@ class GeneralSphere(Surface):
         if any({c is None for c in self.coordinates}):
             raise IllegalState(f"Surface: {self.number} does not have coordinates set.")
 
-    def find_duplicate_surfaces(self, surfaces, tolerance):  # pragma: no cover
+    @args_checked
+    def find_duplicate_surfaces(
+        self, surfaces: montepy.Surfaces, tolerance: ty.PositiveReal
+    ):  # pragma: no cover
         """Duplicate sphere finding is not yet implemented"""
         return []

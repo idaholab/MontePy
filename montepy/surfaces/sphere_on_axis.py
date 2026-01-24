@@ -1,10 +1,12 @@
 # Copyright 2026, Battelle Energy Alliance, LLC All Rights Reserved.
+from __future__ import annotations
+
+import montepy
 from .surface_type import SurfaceType
 from .surface import Surface, InitInput
 from montepy.exceptions import *
 from montepy.utilities import *
-
-from typing import Union
+import montepy.types as ty
 
 
 def _enforce_positive_radius(self, value):
@@ -29,11 +31,12 @@ class SphereOnAxis(Surface):
 
     COORDINATE = {SurfaceType.SX: "x", SurfaceType.SY: "y", SurfaceType.SZ: "z"}
 
+    @args_checked
     def __init__(
         self,
         input: InitInput = None,
-        number: int = None,
-        surface_type: Union[SurfaceType, str] = None,
+        number: ty.PositiveInt = None,
+        surface_type: SurfaceType | str = None,
     ):
         self._location = self._generate_default_node(float, None)
         self._radius = self._generate_default_node(float, None)
@@ -81,6 +84,9 @@ class SphereOnAxis(Surface):
         if self.location is None:
             raise IllegalState(f"Surface: {self.number} does not have a location set.")
 
-    def find_duplicate_surfaces(self, surfaces, tolerance):  # pragma: no cover
+    @args_checked
+    def find_duplicate_surfaces(
+        self, surfaces: montepy.Surfaces, tolerance: ty.PositiveReal
+    ):  # pragma: no cover
         """Duplicate sphere finding is not yet implemented"""
         return []
