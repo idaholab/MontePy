@@ -17,6 +17,10 @@ MontePy Changelog
 
 * Fixed a bug where ``&=`` and ``|=`` for geometry definitions (``HalfSpace`` ) were not handled operator precedence properly (:issue:`879`).
 
+**Documentation**
+
+* Clarify vacuum boundary condition / zero-importance cell / graveyard (:issue:`744`).
+  
 
 1.2.0
 -----
