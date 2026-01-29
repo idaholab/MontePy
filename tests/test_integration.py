@@ -150,7 +150,7 @@ def test_cells_parsing_linking(simple_problem):
 
 
 def test_message(simple_problem):
-    lines = ["this is a message", "it should show up at the beginning", "foo"]
+    lines = ["n=test.", "iXr"]
     for i, line in enumerate(simple_problem.message.lines):
         assert line == lines[i]
 
