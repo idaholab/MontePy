@@ -79,11 +79,13 @@ autodoc_default_options = {
     "show-inheritance": True,
     "inherited-members": True,
 }
-
+# link checking
 linkcheck_ignore = [
     "https://nucleardata.lanl.gov/.*",
     "https://www.osti.gov/.*",  # Ignore osti.gov URLs
 ]
+
+nitpicky=True
 
 # -- External link configuration ---------------------------------------------
 UM63 = (
