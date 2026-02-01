@@ -55,6 +55,8 @@ class TestNumberedObjectCollection:
         with pytest.raises(ValueError):
             cp_simple_problem.materials.check_number(-1)
 
+    
+
     def test_objects(self, cp_simple_problem):
         generated = list(cp_simple_problem.cells)
         objects = cp_simple_problem.cells.objects

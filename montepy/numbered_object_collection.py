@@ -178,7 +178,7 @@ class NumberedObjectCollection(ABC):
                         )
                     )
                 self.__num_cache[obj.number] = obj
-                self._link_to_collection(obj)
+                obj._link_to_collection(self)
             self._objects = objects
 
     def link_to_problem(self, problem):
@@ -203,33 +203,13 @@ class NumberedObjectCollection(ABC):
             if problem is not None:
                 existing_coll = obj._collection
                 if existing_coll is None or existing_coll._problem is not problem:
-                    self._link_to_collection(obj)
+                    obj._link_to_collection(self)
 
     @property
     def _problem(self):
         if self._problem_ref is not None:
             return self._problem_ref()
         return None
-
-    def _link_to_collection(self, obj):
-        """Links the given object to this collection via a weakref.
-
-        Parameters
-        ----------
-        obj : Numbered_MCNP_Object
-            The object to link to this collection.
-        """
-        obj._link_to_collection(self)
-
-    def _unlink_from_collection(self, obj):
-        """Unlinks the given object from this collection.
-
-        Parameters
-        ----------
-        obj : Numbered_MCNP_Object
-            The object to unlink from this collection.
-        """
-        obj._unlink_from_collection()
 
     def __getstate__(self):
         state = self.__dict__.copy()
@@ -520,7 +500,7 @@ class NumberedObjectCollection(ABC):
                 )
         self.__num_cache[obj.number] = obj
         self._objects.append(obj)
-        self._link_to_collection(obj)
+        obj._link_to_collection(self)
         self._append_hook(obj, **kwargs)
         if self._problem:
             obj.link_to_problem(self._problem)
@@ -532,7 +512,7 @@ class NumberedObjectCollection(ABC):
         """
         self.__num_cache.pop(obj.number, None)
         self._objects.remove(obj)
-        self._unlink_from_collection(obj)
+        obj._unlink_from_collection()
         self._delete_hook(obj, **kwargs)
 
     def add(self, obj: Numbered_MCNP_Object):
@@ -639,7 +619,7 @@ class NumberedObjectCollection(ABC):
         number = obj.number if obj.number > 0 else 1
         if self._problem:
             obj.link_to_problem(self._problem)
-        self._unlink_from_collection(obj)
+        obj._unlink_from_collection()
         try:
             self.append(obj)
         except (NumberConflictError, ValueError) as e:
