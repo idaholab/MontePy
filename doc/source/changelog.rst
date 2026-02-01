@@ -5,15 +5,25 @@ MontePy Changelog
 1.2 releases
 ============
 
-#Next Version#
+#Next_Version#
 --------------
 
-**Performance Improvement**
+**Features Added**
 
-* Implement _collection_ref to link objects to their NumberedObjectCollection parent (:issue:`867`).
+* Added support for ``Surface`` subtypes for spheres (:issue:`876`).
+
+
+**Bugs Fixed**
+
+* Fixed a bug where ``&=`` and ``|=`` for geometry definitions (``HalfSpace`` ) were not handled operator precedence properly (:issue:`879`).
+
+**Documentation**
+
+* Clarify vacuum boundary condition / zero-importance cell / graveyard (:issue:`744`).
+  
 
 1.2.0
---------------
+-----
 
 **Performance Improvement**
 

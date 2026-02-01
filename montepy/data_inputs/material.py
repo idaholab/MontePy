@@ -18,7 +18,6 @@ from montepy.exceptions import *
 from montepy.utilities import *
 from montepy.particle import LibraryType
 
-
 MAX_PRINT_ELEMENTS: int = 5
 """
 The maximum number of elements to print in a material string descripton.

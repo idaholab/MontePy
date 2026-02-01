@@ -15,7 +15,6 @@ from montepy.input_parser.mcnp_input import Input, Message, ReadInput, Title
 from montepy.input_parser.read_parser import ReadParser
 from montepy.utilities import is_comment
 
-
 reading_queue = deque()
 
 

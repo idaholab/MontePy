@@ -52,7 +52,6 @@ import montepy.exceptions
 import montepy.errors  # deprecated
 import sys
 
-
 try:
     from . import _version
 

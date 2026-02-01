@@ -12,7 +12,7 @@ Fixes # (issue number)
 
 - [ ] I have performed a self-review of my own code.
 - [ ] The code follows the standards outlined in the [development documentation](https://www.montepy.org/en/stable/dev_standards.html).
-- [ ] I have formatted my code with `black` version 25.
+- [ ] I have formatted my code with `black` version 25 or 26.
 - [ ] I have added tests that prove my fix is effective or that my feature works (if applicable).
 
 ---
