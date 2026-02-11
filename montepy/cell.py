@@ -927,6 +927,10 @@ class Cell(Numbered_MCNP_Object):
         for key in keys:
             attr = getattr(self, key)
             setattr(result, key, copy.deepcopy(attr, memo))
+        # Clear collection ref so cloned cell isn't linked to original collection
+        # This prevents number conflict checks against the original collection
+        # The clone will be properly linked when added to a collection
+        result._collection_ref = None
         # copy geometry
         for special in special_keys:
             new_objs = []

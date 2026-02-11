@@ -8,6 +8,11 @@ MontePy Changelog
 #Next_Version#
 --------------
 
+**Performance Improvement**
+
+* Implement _collection_ref to link objects to their NumberedObjectCollection parent (:issue:`849`).
+
+
 **Features Added**
 
 * Added support for ``Surface`` subtypes for spheres (:issue:`876`).

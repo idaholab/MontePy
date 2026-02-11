@@ -178,6 +178,7 @@ class NumberedObjectCollection(ABC):
                         )
                     )
                 self.__num_cache[obj.number] = obj
+                obj._link_to_collection(self)
             self._objects = objects
 
     def link_to_problem(self, problem):
@@ -198,6 +199,11 @@ class NumberedObjectCollection(ABC):
             self._problem_ref = weakref.ref(problem)
         for obj in self:
             obj.link_to_problem(problem)
+            # the _collection_ref that points to the main cells collection.
+            if problem is not None:
+                existing_coll = obj._collection
+                if existing_coll is None or existing_coll._problem is not problem:
+                    obj._link_to_collection(self)
 
     @property
     def _problem(self):
@@ -341,10 +347,8 @@ class NumberedObjectCollection(ABC):
                 )
             if obj.number in nums:
                 raise NumberConflictError(
-                    (
-                        f"When adding to {type(self).__name__} there was a number collision due to "
-                        f"adding {obj} which conflicts with {self[obj.number]}"
-                    )
+                    f"When adding to {type(self).__name__} there was a number collision due to "
+                    f"adding {obj} which conflicts with existing object number {obj.number}"
                 )
             nums.add(obj.number)
         for obj in other_list:
@@ -496,6 +500,7 @@ class NumberedObjectCollection(ABC):
                 )
         self.__num_cache[obj.number] = obj
         self._objects.append(obj)
+        obj._link_to_collection(self)
         self._append_hook(obj, **kwargs)
         if self._problem:
             obj.link_to_problem(self._problem)
@@ -507,6 +512,7 @@ class NumberedObjectCollection(ABC):
         """
         self.__num_cache.pop(obj.number, None)
         self._objects.remove(obj)
+        obj._unlink_from_collection()
         self._delete_hook(obj, **kwargs)
 
     def add(self, obj: Numbered_MCNP_Object):
@@ -613,6 +619,7 @@ class NumberedObjectCollection(ABC):
         number = obj.number if obj.number > 0 else 1
         if self._problem:
             obj.link_to_problem(self._problem)
+        obj._unlink_from_collection()
         try:
             self.append(obj)
         except (NumberConflictError, ValueError) as e:

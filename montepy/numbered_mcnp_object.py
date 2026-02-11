@@ -5,6 +5,7 @@ import copy
 import itertools
 from typing import Union
 from numbers import Integral
+import weakref
 
 from montepy.mcnp_object import MCNP_Object, InitInput
 import montepy
@@ -14,20 +15,10 @@ from montepy.utilities import *
 def _number_validator(self, number):
     if number < 0:
         raise ValueError("number must be >= 0")
-    if self._problem:
-        obj_map = montepy.MCNP_Problem._NUMBERED_OBJ_MAP
-        try:
-            collection_type = obj_map[type(self)]
-        except KeyError as e:
-            found = False
-            for obj_class in obj_map:
-                if isinstance(self, obj_class):
-                    collection_type = obj_map[obj_class]
-                    found = True
-                    break
-            if not found:
-                raise e
-        collection = getattr(self._problem, collection_type.__name__.lower())
+
+    # Only validate against collection if linked to a collection
+    if self._collection is not None:
+        collection = self._collection
         collection.check_number(number)
         collection._update_number(self.number, number, self)
 
@@ -58,6 +49,7 @@ class Numbered_MCNP_Object(MCNP_Object):
         if not input:
             self._number = self._generate_default_node(int, -1)
         super().__init__(input, parser)
+        self._collection_ref = None
         self._load_init_num(number)
 
     def _load_init_num(self, number):
@@ -122,6 +114,37 @@ class Numbered_MCNP_Object(MCNP_Object):
                     prob_collect.update(child_collect)
                 except (TypeError, AssertionError):
                     prob_collect.append(child_collect)
+
+    @property
+    def _collection(self):
+        """Returns the parent collection this object belongs to, if any."""
+        if self._collection_ref is not None:
+            return self._collection_ref()
+        return None
+
+    def _link_to_collection(self, collection):
+        """Links this object to the given collection via a weakref.
+
+        Parameters
+        ----------
+        collection : NumberedObjectCollection
+            The collection to link this object to.
+        """
+        self._collection_ref = weakref.ref(collection)
+
+    def _unlink_from_collection(self):
+        """Unlinks this object from its collection."""
+        self._collection_ref = None
+
+    def __getstate__(self):
+        state = super().__getstate__()
+        # Remove _collection_ref weakref as it can't be pickled
+        state.pop("_collection_ref", None)
+        return state
+
+    def __setstate__(self, crunchy_data):
+        crunchy_data["_collection_ref"] = None
+        super().__setstate__(crunchy_data)
 
     def clone(self, starting_number=None, step=None):
         """Create a new independent instance of this object with a new number.
