@@ -230,8 +230,10 @@ class TestNumberedObjectCollection:
         with pytest.raises(TypeError):
             cells.extend_renumber([], step="hi")
         # Test return value
+        size_before = len(cells)
         result = cells.extend_renumber([])
-        assert result is cells
+        assert result is None
+        assert len(cells) == size_before
 
     def test_request_number(self, cp_simple_problem):
         cells = cp_simple_problem.cells
