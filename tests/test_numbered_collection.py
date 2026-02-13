@@ -197,6 +197,42 @@ class TestNumberedObjectCollection:
         assert len(prob2.materials) == len_mats + 1, "Material not appended"
         assert prob2.materials[2] is mat1, "Material 2 is not the new material"
 
+    def test_extend_renumber(self, cp_simple_problem):
+        cells = copy.deepcopy(cp_simple_problem.cells)
+        size = len(cells)
+        # Test basic extend
+        new_cells = []
+        for i in range(10, 13):
+            cell = montepy.Cell()
+            cell.number = i
+            new_cells.append(cell)
+        cells.extend_renumber(new_cells)
+        assert len(cells) == size + 3
+        assert 10 in cells.numbers
+        # Test with conflicting numbers
+        conflict_cells = []
+        for i in range(1, 3):
+            cell = copy.deepcopy(cells[i])
+            cell._problem = None
+            cell._collection_ref = None
+            cell.number = 1  # conflict
+            conflict_cells.append(cell)
+        cells.extend_renumber(conflict_cells, step=1)
+        assert len(cells) == size + 5
+        # Check if renumbering happened
+        assert conflict_cells[0].number != 1
+        assert conflict_cells[1].number != 1
+        # Test type errors
+        with pytest.raises(TypeError):
+            cells.extend_renumber(5)
+        with pytest.raises(TypeError):
+            cells.extend_renumber([5])
+        with pytest.raises(TypeError):
+            cells.extend_renumber([], step="hi")
+        # Test return value
+        result = cells.extend_renumber([])
+        assert result is cells
+
     def test_request_number(self, cp_simple_problem):
         cells = cp_simple_problem.cells
         assert cells.request_number(6) == 6

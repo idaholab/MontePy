@@ -629,6 +629,39 @@ class NumberedObjectCollection(ABC):
 
         return number
 
+    def extend_renumber(self, other_list, step=1):
+        """Extends the collection with the given list, but will renumber objects if collision occurs.
+
+        This behaves like extend, except if there is a number collision the object will
+        be renumbered to an available number. The number will be incremented by step
+        until an available number is found.
+
+        Parameters
+        ----------
+        other_list : list
+            the list of objects to add.
+             step : int
+            the incrementing step to use to find new numbers (default: 1).
+
+        Returns
+        -------
+        self
+            returns the collection for method chaining."""
+
+        if not isinstance(other_list, (list, type(self))):
+            raise TypeError("The extending list must be a list")
+        if not isinstance(step, Integral):
+            raise TypeError("The step number must be an int")
+
+        for obj in other_list:
+            if not isinstance(obj, self._obj_class):
+                raise TypeError(
+                    f"The object in the list {obj} is not of type: {self._obj_class}"
+                )
+            self.append_renumber(obj, step)
+
+        return self
+
     def request_number(self, start_num=None, step=None):
         """Requests a new available number.
 
