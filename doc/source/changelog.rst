@@ -10,7 +10,7 @@ MontePy Changelog
 
 **Performance Improvement**
 
-* Implement _collection_ref to link objects to their NumberedObjectCollection parent (:issue:`849`).
+* Implement ``_collection_ref`` to link objects to their ``NumberedObjectCollection`` parent (:issue:`849`).
 
 
 **Features Added**
