@@ -2,15 +2,15 @@
 MontePy Changelog
 *****************
 
-1.2 releases
+1.3 releases
 ============
 
-#Next_Version#
+1.3.0
 --------------
 
 **Performance Improvement**
 
-* Implement _collection_ref to link objects to their NumberedObjectCollection parent (:issue:`849`).
+* Implement ``_collection_ref`` to link objects to their ``NumberedObjectCollection`` parent (:issue:`849`).
 
 
 **Features Added**
@@ -25,6 +25,9 @@ MontePy Changelog
 **Documentation**
 
 * Clarify vacuum boundary condition / zero-importance cell / graveyard (:issue:`744`).
+
+1.2 releases
+============
   
 
 1.2.0
