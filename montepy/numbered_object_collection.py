@@ -640,13 +640,10 @@ class NumberedObjectCollection(ABC):
         ----------
         other_list : list
             the list of objects to add.
-             step : int
+        step : int
             the incrementing step to use to find new numbers (default: 1).
 
-        Returns
-        -------
-        self
-            returns the collection for method chaining."""
+        """
 
         if not isinstance(other_list, (list, type(self))):
             raise TypeError("The extending list must be a list")
@@ -666,8 +663,6 @@ class NumberedObjectCollection(ABC):
                 obj.number = new_num
 
             self.append(obj)  # After loop all objects are added i.e extended
-
-        return self
 
     def request_number(self, start_num=None, step=None):
         """Requests a new available number.
