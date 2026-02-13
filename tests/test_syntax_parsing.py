@@ -16,7 +16,6 @@ from montepy.particle import Particle
 from montepy.exceptions import UndefinedBlock
 import warnings
 
-
 lat = montepy.data_inputs.lattice.LatticeType
 st = montepy.surfaces.surface_type.SurfaceType
 
@@ -1303,11 +1302,11 @@ test title
             assert answer[i] == line
 
     def testMessageFormatInput(self):
-        answer = ["MESSAGE: foo", "bar", ""]
-        card = montepy.input_parser.mcnp_input.Message(answer, ["foo", "bar"])
+        answer = ["MESSAGE: o=", "Output.o", ""]
+        card = montepy.input_parser.mcnp_input.Message(answer, ["o=", "Output.o"])
         str_answer = """MESSAGE:
-foo
-bar
+o=
+Output.o
 """
         assert str_answer == repr(card)
         assert "MESSAGE: 2 lines" == str(card)

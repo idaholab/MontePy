@@ -2,11 +2,47 @@
 MontePy Changelog
 *****************
 
-1.2 releases
+
+#next release#
+--------------
+
+**Features Added**
+
+
+* Add _checkvalue.py_ to codebase (:issue:`687`). 
+
+
+1.3 releases
 ============
 
-1.2.0
+
+1.3.0
 --------------
+
+**Performance Improvement**
+
+* Implement ``_collection_ref`` to link objects to their ``NumberedObjectCollection`` parent (:issue:`849`).
+
+
+**Features Added**
+
+* Added support for ``Surface`` subtypes for spheres (:issue:`876`).
+
+
+**Bugs Fixed**
+
+* Fixed a bug where ``&=`` and ``|=`` for geometry definitions (``HalfSpace`` ) were not handled operator precedence properly (:issue:`879`).
+
+**Documentation**
+
+* Clarify vacuum boundary condition / zero-importance cell / graveyard (:issue:`744`).
+
+1.2 releases
+============
+  
+
+1.2.0
+-----
 
 **Performance Improvement**
 
@@ -41,6 +77,14 @@ MontePy Changelog
       :new_tab_button_text: Launch jupyter in your browswer
 
 * Improved documentation for :class:`~montepy.numbered_object_collection.NumberedObjectCollection` on Slicing behavior. (:issue:`798`)
+<<<<<<< HEAD
+=======
+* Reorganized Python API documentation. Some hyperlinks may be broken now (:pull:`828`).
+
+**Documentation**
+
+* Improved documentation for NumberedObjectCollections on Slicing behavior. (:issue:`798`)
+>>>>>>> minor-rel-dev
 * Reorganized Python API documentation. Some hyperlinks may be broken now (:pull:`828`).
 
 **Deprecations**
@@ -149,7 +193,7 @@ MontePy Changelog
 * Avoided multiple ``LineExpansionWarnings`` coming from the same object on export (:issue:`198`).
 * Added ``mcnp_str`` function to all ``MCNP_Object`` to quickly get the string that would be printed in the MCNP input file (:issue:`700`).
 * Added ``montepy.MCNP_VERSION`` as an easy way to set the default MCNP version to target for reading and writing input files (:issue:`700`).
-* Renamed `Cell.lattice` to `Cell.lattice_type`, `Lattice` to `LatticeType`, and `LatticeType.HEXAHEDRA` to `LatticeType.HEXAHEDRAL` with deprecation warnings (:issue:`728`).
+* Renamed ``Cell.lattice`` to ``Cell.lattice_type``, ``Lattice`` to ``LatticeType``, and ``LatticeType.HEXAHEDRA`` to ``LatticeType.HEXAHEDRAL`` with deprecation warnings (:issue:`728`).
 
 **Bugs Fixed**
 
@@ -445,20 +489,20 @@ MontePy Changelog
 **Added**
 
 * User formatting is preserved automatically
-* Cell geometry is now stored in `cell.geometry` and can be set with bitwise operators. e.g., `cell.geometry = + inner_sphere & - outer_sphere`. This was heavily influenced by OpenMC.
-* You can now check an input file for errors from the command line. `python -m montepy -c /path/to/inputs/*.imcnp`
+* Cell geometry is now stored in ``cell.geometry`` and can be set with bitwise operators. e.g., ``cell.geometry = + inner_sphere & - outer_sphere``. This was heavily influenced by OpenMC.
+* You can now check an input file for errors from the command line. ``python -m montepy -c /path/to/inputs/*.imcnp``
 * The error reporting for syntax errors should be much more intuitive now, and easy to read.
-* Dollar sign comments are kept and are available in `obj.comments`
-* All comments are now in a generator `.comments`
+* Dollar sign comments are kept and are available in ``obj.comments``
+* All comments are now in a generator ``.comments``
 
 **Deprecated**
 
-* `montepy.data_cards` moved to `montepy.data_inputs`
-* `montepy.data_cards.data_card` is now `montepy.data_inputs.data_input`
-* `Montepy.Cell.geometry_logic_string` was completely removed.
+* ``montepy.data_cards`` moved to ``montepy.data_inputs``
+* ``montepy.data_cards.data_card`` is now ``montepy.data_inputs.data_input``
+* ``Montepy.Cell.geometry_logic_string`` was completely removed.
 * Much of the internal functions with how objects are written to file were changed and/or deprecated.
-* `montepy.data_cards.data_card.DataCard.class_prefix` was moved to `_class_prefix` as the user usually shouldn't see this. Same goes for `has_classifier` and `has_number`.
-* Most of the data types inside `montepy.input_parser.mcnp_input` were deprecated or changed
+* ``montepy.data_cards.data_card.DataCard.class_prefix`` was moved to ``_class_prefix`` as the user usually shouldn't see this. Same goes for ``has_classifier`` and ``has_number``.
+* Most of the data types inside ``montepy.input_parser.mcnp_input`` were deprecated or changed
 
 0.1 releases
 ============
@@ -475,7 +519,7 @@ MontePy Changelog
 
 **fixed**
 
-* Fixed bug that `+=` didn't work with Numbered object collections
+* Fixed bug that ``+=`` didn't work with Numbered object collections
 * Updated the Documentation URL for sphinx
 * Improved (and then removed) guidance on weird gitlab installation workflow.
 
@@ -484,11 +528,11 @@ MontePy Changelog
 
 **Fixed**
 
-* When a `PX` style surface was `1 PZ 0` this would cause a validation error.
-* Empty "cell modifiers" would be printed in the data block even if they had no useful information. E.g., `U 30J`
-* Volumes couldn't start with a jump e.g., `vol j 1.0`
+* When a ``PX`` style surface was ``1 PZ 0`` this would cause a validation error.
+* Empty "cell modifiers" would be printed in the data block even if they had no useful information. E.g., ``U 30J``
+* Volumes couldn't start with a jump e.g., ``vol j 1.0``
 * "Cell modifiers" were printed both in the cell block and the data block.
-* Running `problem.cells = []` would make the problem impossible to write to file.
+* Running ``problem.cells = []`` would make the problem impossible to write to file.
 * Support was added for tabs.
 
 0.1.0
@@ -498,19 +542,19 @@ MontePy Changelog
 **Added**
 
 * Added infrastructure to support cell modifier inputs easily
-* Added support for importances, and particle modes: `imp`, `mode`.
-* Added support for cell volumes `vol`.
-* Add support for Universes, lattices, and fills `U`, `fill`, `lat`.
+* Added support for importances, and particle modes: ``imp``, ``mode``.
+* Added support for cell volumes ``vol``.
+* Add support for Universes, lattices, and fills ``U``, ``fill``, ``lat``.
 * Created universal system for parsing parameters
 * If you create an object from scratch and write it out to a file while it is missing, it will gracefully fail with a helpful error message.
 * Added support for detecting metastable isotopes.
-* Improved the experience with densities in `Cell` instead of having `cell.density` now there is `cell.mass_density` and `cell.atom_density`.
+* Improved the experience with densities in ``Cell`` instead of having ``cell.density`` now there is ``cell.mass_density`` and ``cell.atom_density``.
 
 
 **Fixed**
 
-* Supported parameters that don't have equal signs. MCNP supports `1 0 -1 u 1`
-* Now doesn't try to expand shortcuts inside of `FC` and `SC` comments.
+* Supported parameters that don't have equal signs. MCNP supports ``1 0 -1 u 1``
+* Now doesn't try to expand shortcuts inside of ``FC`` and ``SC`` comments.
 
 **Code Quality**
 
@@ -526,15 +570,15 @@ MontePy Changelog
 
 **Added:**
 
- * `NumberedObjectCollections` which is implemented for `cells`, `surfaces`, and `materials`. This changed these collections from being a list to acting like a dict. Objects are now retrievable by their number e.g., `cells[1005]` will retrieve cell 1005.
- *  Implemented "pass-through" of the original inputs. If an object is not edited or mutated, the original formatting from the input file will be copied out to the output.
- * Support was added for most MCNP shortcuts: (`R`, `I`, `M`, `LOG`), `J` still needs some better support. MontePy will expand these shortcuts, but will not "recompress" them.
- * Added sphinx documentation website. This documents the API, has a starting guide for the users, and a guide for developers.
+* ``NumberedObjectCollections`` which is implemented for ``cells``, ``surfaces``, and ``materials``. This changed these collections from being a list to acting like a dict. Objects are now retrievable by their number e.g., ``cells[1005]`` will retrieve cell 1005.
+*  Implemented "pass-through" of the original inputs. If an object is not edited or mutated, the original formatting from the input file will be copied out to the output.
+* Support was added for most MCNP shortcuts: (``R``, ``I``, ``M``, ``LOG``), ``J`` still needs some better support. MontePy will expand these shortcuts, but will not "recompress" them.
+* Added sphinx documentation website. This documents the API, has a starting guide for the users, and a guide for developers.
 
 
 **Changed:**
 
-* Object numbers are now generalized: e.g., `cell.cell_number` has changed to `cell.number`. The `.number` property is standardized across all numbered objects.
+* Object numbers are now generalized: e.g., ``cell.cell_number`` has changed to ``cell.number``. The ``.number`` property is standardized across all numbered objects.
 
 **Fixed:**
 

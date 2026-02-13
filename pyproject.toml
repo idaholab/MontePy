@@ -68,7 +68,7 @@ doc = [
 	"jupyterlite-sphinx",
 	"jupyterlite-pyodide-kernel"
 ]
-format = ["black~=25.1"]
+format = ["black>=26.1,<27.0"]
 develop = [
     "montepy[test,doc,format]",
 ]

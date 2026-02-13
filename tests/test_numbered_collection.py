@@ -55,6 +55,21 @@ class TestNumberedObjectCollection:
         with pytest.raises(ValueError):
             cp_simple_problem.materials.check_number(-1)
 
+    def test_update_number_not_in_cache(self):
+        """Test that _update_number silently returns when object is not in cache."""
+        cells = montepy.Cells()
+        cell1 = montepy.Cell()
+        cell1.number = 1
+        cells.append(cell1)
+        # Create a cell that is NOT in this collection
+        other_cell = montepy.Cell()
+        other_cell.number = 999
+        # Call _update_number with an object that isn't tracked by this collection
+        cells._update_number(1, 10, other_cell)
+        # The original cell 1 should still be accessible and unchanged
+        assert cells[1] is cell1
+        assert cells[1].number == 1
+
     def test_objects(self, cp_simple_problem):
         generated = list(cp_simple_problem.cells)
         objects = cp_simple_problem.cells.objects
@@ -86,6 +101,7 @@ class TestNumberedObjectCollection:
         extender = copy.deepcopy(extender)
         for surf in extender:
             surf._problem = None
+            surf._collection_ref = None
         surfaces[1000].number = 1
         extender[0].number = 1000
         extender[1].number = 70
@@ -161,6 +177,7 @@ class TestNumberedObjectCollection:
             cells.append_renumber(cell, "hi")
         cell = copy.deepcopy(cell)
         cell._problem = None
+        cell._collection_ref = None
         cell.number = 1
         cells.append_renumber(cell)
         assert cell.number == 4

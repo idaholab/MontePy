@@ -273,14 +273,14 @@ class Cell(Numbered_MCNP_Object):
         Deleting an importance resets it to the default value (1.0).
         e.g., ``del cell.importance.neutron``.
 
+        .. versionchanged:: 1.2.0
+
+            Default importance value changed from 0.0 to 1.0 to match MCNP defaults.
+
         Returns
         -------
         Importance
             the importance for the Cell.
-
-        .. versionchanged:: 1.2.0
-
-            Default importance value changed from 0.0 to 1.0 to match MCNP defaults.
         """
         return self._importance
 
@@ -387,7 +387,7 @@ class Cell(Numbered_MCNP_Object):
 
         Returns
         -------
-        Lattice
+        LatticeType
             the type of lattice being used
         """
         return self._lattice.lattice
@@ -406,6 +406,11 @@ class Cell(Numbered_MCNP_Object):
     @property
     @needs_full_ast
     def lattice(self):
+        """
+        .. deprecated:: 1.0.0
+
+            Use :func:`lattice_type` instead.
+        """
         _lattice_deprecation_warning()
         return self.lattice_type
 
@@ -956,6 +961,10 @@ class Cell(Numbered_MCNP_Object):
         for key in keys:
             attr = getattr(self, key)
             setattr(result, key, copy.deepcopy(attr, memo))
+        # Clear collection ref so cloned cell isn't linked to original collection
+        # This prevents number conflict checks against the original collection
+        # The clone will be properly linked when added to a collection
+        result._collection_ref = None
         # copy geometry
         for special in special_keys:
             new_objs = []
