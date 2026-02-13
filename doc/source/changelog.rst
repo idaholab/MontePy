@@ -2,7 +2,7 @@
 MontePy Changelog
 *****************
 
-1.2 releases
+1.3 releases
 ============
 
 #Next_Version#
@@ -25,6 +25,9 @@ MontePy Changelog
 **Documentation**
 
 * Clarify vacuum boundary condition / zero-importance cell / graveyard (:issue:`744`).
+
+1.2 releases
+============
   
 
 1.2.0
