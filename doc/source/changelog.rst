@@ -5,7 +5,7 @@ MontePy Changelog
 1.3 releases
 ============
 
-#Next_Version#
+1.3.0
 --------------
 
 **Performance Improvement**
