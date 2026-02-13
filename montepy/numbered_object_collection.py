@@ -629,6 +629,41 @@ class NumberedObjectCollection(ABC):
 
         return number
 
+    def extend_renumber(self, other_list, step=1):
+        """Extends the collection with the given list, renumbering objects that have conflicts.
+
+        This differs from extend() which fails on conflicts, and append_renumber()
+        which handles single objects. This method processes multiple
+        objects by checking and renumbering before adding.
+
+        Parameters
+        ----------
+        other_list : list
+            the list of objects to add.
+        step : int
+            the incrementing step to use to find new numbers (default: 1).
+
+        """
+
+        if not isinstance(other_list, (list, type(self))):
+            raise TypeError("The extending list must be a list")
+        if not isinstance(step, Integral):
+            raise TypeError("The step number must be an int")
+
+        for obj in other_list:
+            if not isinstance(obj, self._obj_class):
+                raise TypeError(
+                    f"The object in the list {obj} is not of type: {self._obj_class}"
+                )
+
+            try:
+                self.check_number(obj.number)
+            except NumberConflictError:
+                new_num = self.request_number(obj.number if obj.number > 0 else 1, step)
+                obj.number = new_num
+
+            self.append(obj)  # After loop all objects are added i.e extended
+
     def request_number(self, start_num=None, step=None):
         """Requests a new available number.
 
