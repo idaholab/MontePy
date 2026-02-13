@@ -60,18 +60,29 @@ NumberConflictError: There was a numbering conflict when attempting to add CELL:
 <!-- If applicable, please include a small section of the input file you were working on. If it includes any specific values please change or remove them. For example: -->
 
 ```
+Example MCNP Input File
+C cells
 1 1 20
-         -1000  $ dollar comment
-        imp:n,p=1 U=350 trcl=5
+         -999  $ dollar comment
+        imp:n,p=1 $U=350 
+        trcl=5
+2 0     #1  imp:n,p=0
 
 C surfaces
-1000 SO 1
+999 SO 1
 
 C data
 C materials
 C UO2 5 atpt enriched
 m1        92235.80c           5 &
 92238.80c          95
+c transforms
+*tr5  0.0  0.0  1.0 
+c run parameters
+ksrc  0.0  0.0  1.0
+kcode 100 0.1 1 11
+
+Stuff that comes after the data block ignored by MCNP
 ```
 
 ## Version
