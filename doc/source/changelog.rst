@@ -16,7 +16,6 @@ MontePy Changelog
 **Features Added**
 
 * Added support for ``Surface`` subtypes for spheres (:issue:`876`).
-* Added ``extend_renumber`` method to numbered object collections (:issue:`881`).
 
 **Bugs Fixed**
 
