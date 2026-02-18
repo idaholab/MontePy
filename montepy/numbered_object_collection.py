@@ -632,7 +632,7 @@ class NumberedObjectCollection(ABC):
     def extend_renumber(self, other_list, step=1):
         """Extends the collection with the given list, renumbering objects that have conflicts.
 
-        This differs from extend() which fails on conflicts, and append_renumber()
+        This differs from :func:`extend` which fails on conflicts, and :func:`append_renumber`
         which handles single objects. This method processes multiple
         objects by checking and renumbering before adding.
 
