@@ -949,3 +949,37 @@ class TestMaterials:
             assert new_mat.number == starting_num
         else:
             assert (new_mat.number - starting_num) % step == 0
+
+    def test_append_renumber_with_none_number(self, cp_simple_problem):
+        """Test that append_renumber works when object has None number."""
+        # Create a cell with None number (this triggers the bug)
+        cell = montepy.Cell()
+        assert cell.number is None
+
+        # This should not raise TypeError
+        result = cp_simple_problem.cells.append_renumber(cell)
+
+        # The cell should be assigned the next available number
+        assert result is not None
+        assert result > 0
+        assert cell.number == result
+        assert cell in cp_simple_problem.cells
+
+    def test_extend_renumber_with_none_number(self, cp_simple_problem):
+        """Test that extend_renumber works when objects have None numbers."""
+        # Create cells with None numbers
+        cell1 = montepy.Cell()
+        cell2 = montepy.Cell()
+        assert cell1.number is None
+        assert cell2.number is None
+
+        # This should not raise TypeError
+        cp_simple_problem.cells.extend_renumber([cell1, cell2])
+
+        # The cells should be assigned numbers
+        assert cell1.number is not None
+        assert cell2.number is not None
+        assert cell1.number > 0
+        assert cell2.number > 0
+        assert cell1 in cp_simple_problem.cells
+        assert cell2 in cp_simple_problem.cells

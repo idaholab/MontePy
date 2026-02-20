@@ -616,7 +616,14 @@ class NumberedObjectCollection(ABC):
             raise TypeError(f"object being appended must be of type: {self._obj_class}")
         if not isinstance(step, Integral):
             raise TypeError("The step number must be an int")
-        number = obj.number if obj.number and obj.number > 0 else 1
+        # If obj.number is None, assign a new number and append
+        if obj.number is None:
+            obj.number = self.request_number(1, step)
+            if self._problem:
+                obj.link_to_problem(self._problem)
+            self.append(obj)
+            return obj.number
+        number = obj.number if obj.number > 0 else 1
         if self._problem:
             obj.link_to_problem(self._problem)
         obj._unlink_from_collection()
@@ -656,10 +663,14 @@ class NumberedObjectCollection(ABC):
                     f"The object in the list {obj} is not of type: {self._obj_class}"
                 )
 
+            # If obj.number is None, assign a new number first
+            if obj.number is None:
+                obj.number = self.request_number(1, step)
+
             try:
                 self.check_number(obj.number)
             except NumberConflictError:
-                new_num = self.request_number(obj.number if obj.number and obj.number > 0 else 1, step)
+                new_num = self.request_number(obj.number if obj.number is not None and obj.number > 0 else 1, step)
                 obj.number = new_num
 
             self.append(obj)  # After loop all objects are added i.e extended
