@@ -10,14 +10,14 @@ MontePy Changelog
 
 
 * Add _checkvalue.py_ to codebase (:issue:`687`). 
+* Added ``extend_renumber`` to ``NumberedObjectCollection`` with related test cases (:issue:`881`).
 
 
 1.3 releases
 ============
 
-
 1.3.0
---------------
+-----
 
 **Performance Improvement**
 
@@ -27,7 +27,6 @@ MontePy Changelog
 **Features Added**
 
 * Added support for ``Surface`` subtypes for spheres (:issue:`876`).
-
 
 **Bugs Fixed**
 
