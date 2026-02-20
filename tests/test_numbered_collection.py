@@ -183,6 +183,20 @@ class TestNumberedObjectCollection:
         assert cell.number == 4
         assert len(cells) == size + 2
 
+    def test_append_renumber_with_none_number(self, cp_simple_problem):
+        """Test append_renumber when object has no number assigned (None)."""
+        cells = copy.deepcopy(cp_simple_problem.cells)
+        size = len(cells)
+        # Create a new cell without assigning a number (number will be None)
+        cell = montepy.Cell()
+        assert cell.number is None
+        # This should work and assign the next available number
+        new_number = cells.append_renumber(cell)
+        assert new_number > 0
+        assert len(cells) == size + 1
+        # The cell should be in the collection now
+        assert cell in cells
+
     def test_append_renumber_problems(self, cp_simple_problem):
         print(hex(id(cp_simple_problem.materials._problem)))
         prob1 = copy.deepcopy(cp_simple_problem)
