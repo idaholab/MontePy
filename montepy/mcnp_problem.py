@@ -597,7 +597,8 @@ class MCNP_Problem:
                 (self.surfaces, True),
                 (self.data_inputs, True),
             ]
-            for objects, terminate in objects_list:
+            for idx, (objects, terminate) in enumerate(objects_list):
+                is_last_section = (idx == len(objects_list) - 1)
                 for obj in objects:
                     lines = obj.format_for_mcnp_input(self.mcnp_version)
                     if warning_catch:
@@ -619,7 +620,7 @@ class MCNP_Problem:
                         self.data_inputs, self.mcnp_version
                     ):
                         inp.write(line + "\n")
-                elif terminate:
+                elif terminate and not is_last_section:
                     inp.write("\n")
 
         self._handle_warnings(warning_catch)
