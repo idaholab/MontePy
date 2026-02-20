@@ -5,7 +5,12 @@ from montepy import Cell, Universe
 
 @pytest.fixture
 def basic_parsed_cell():
-    return Cell("1 0 -2 imp:n=1")
+    cell = montepy.Cell()
+    cell.number = 1
+    sphere = montepy.Surface("1 SO 10.0")
+    cell.geometry = -sphere
+    cell.importance.neutron = 1.0
+    return cell
 
 
 @pytest.fixture
