@@ -28,20 +28,16 @@ class SphereAtOrigin(Surface):
         The number to set for this object.
     """
 
-    @args_checked
-    def __init__(
-        self,
-        input: InitInput = None,
-        number: ty.PositiveInt = None,
-    ):
-        self._location = self._generate_default_node(float, None)
-        self._radius = self._generate_default_node(float, None)
-        super().__init__(input, number)
+    def _load_constants(self):
         if len(self.surface_constants) != 1:
             raise ValueError(
                 f"{self.__class__.__name__} must have exactly 1 surface_constant"
             )
         self._radius = self._surface_constants[0]
+
+    @staticmethod
+    def _allowed_surface_types():
+        return {SurfaceType.SO}
 
     @make_prop_val_node(
         "_radius", (float, int), float, validator=_enforce_positive_radius

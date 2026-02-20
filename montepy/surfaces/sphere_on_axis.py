@@ -31,21 +31,16 @@ class SphereOnAxis(Surface):
 
     COORDINATE = {SurfaceType.SX: "x", SurfaceType.SY: "y", SurfaceType.SZ: "z"}
 
-    @args_checked
-    def __init__(
-        self,
-        input: InitInput = None,
-        number: ty.PositiveInt = None,
-        surface_type: SurfaceType | str = None,
-    ):
-        self._location = self._generate_default_node(float, None)
-        self._radius = self._generate_default_node(float, None)
-        super().__init__(input, number, surface_type)
+    def _load_constants(self):
         if len(self.surface_constants) != 2:
             raise ValueError(
                 f"{self.__class__.__name__} must have exactly 2 surface_constants"
             )
         self._location, self._radius = self._surface_constants
+
+    @staticmethod
+    def _allowed_surface_types():
+        return {SurfaceType.SX, SurfaceType.SY, SurfaceType.SZ}
 
     @staticmethod
     def _number_of_params():

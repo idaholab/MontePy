@@ -43,12 +43,18 @@ class GeneralSphere(Surface):
         super().__init__(input, number)
         if input and self.surface_type != SurfaceType.S:
             raise ValueError(f"A {self.__class__.__name__} must be a surface of type S")
+
+    def _load_constants(self):
         if len(self.surface_constants) != 4:
             raise ValueError(
                 f"A {self.__class__.__name__} must have exactly 4 surface_constants"
             )
         self._coordinates = self._surface_constants[:3]
         self._radius = self._surface_constants[3]
+
+    @staticmethod
+    def _allowed_surface_types():
+        return {SurfaceType.S}
 
     @staticmethod
     def _number_of_params():
