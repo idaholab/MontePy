@@ -615,6 +615,36 @@ class NumberedObjectCollection(ABC):
         return number
 
     @args_checked
+    def extend_renumber(
+        self,
+        other_list: ty.Iterable[montepy.numbered_mcnp_object.Numbered_MCNP_Object],
+        step: ty.PositiveInt = 1,
+    ):
+        """Extends the collection with the given list, renumbering objects that have conflicts.
+
+        This differs from :func:`extend` which fails on conflicts, and :func:`append_renumber`
+        which handles single objects. This method processes multiple
+        objects by checking and renumbering before adding.
+
+        Parameters
+        ----------
+        other_list : list
+            the list of objects to add.
+        step : int
+            the incrementing step to use to find new numbers (default: 1).
+
+        """
+
+        for obj in other_list:
+            try:
+                self.check_number(obj.number)
+            except NumberConflictError:
+                new_num = self.request_number(obj.number if obj.number > 0 else 1, step)
+                obj.number = new_num
+
+            self.append(obj)  # After loop all objects are added i.e extended
+
+    @args_checked
     def request_number(
         self, start_num: ty.PositiveInt = None, step: ty.PositiveInt = None
     ):
