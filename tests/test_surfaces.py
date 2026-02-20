@@ -403,9 +403,9 @@ def test_gen_plane_init():
 def test_gen_sphere_init():
     bad_input = "1 S 0.0"
     with pytest.raises(ValueError):
-        GeneralSphere(bad_input)
+        GeneralSphere(bad_input, jit_parse=False)
     with pytest.raises(ValueError):
-        GeneralSphere(Input([bad_input], BlockType.SURFACE))
+        GeneralSphere(Input([bad_input], BlockType.SURFACE), jit_parse=False)
     surf = GeneralSphere(number=5)
     assert surf.number == 5
 
@@ -413,9 +413,9 @@ def test_gen_sphere_init():
 def test_axis_sphere_init():
     bad_input = "1 SZ 0.0"
     with pytest.raises(ValueError):
-        SphereOnAxis(bad_input)
+        SphereOnAxis(bad_input, jit_parse=False)
     with pytest.raises(ValueError):
-        SphereOnAxis(Input([bad_input], BlockType.SURFACE))
+        SphereOnAxis(Input([bad_input], BlockType.SURFACE), jit_parse=False)
     surf = SphereOnAxis(number=5)
     assert surf.number == 5
 
@@ -423,9 +423,9 @@ def test_axis_sphere_init():
 def test_origin_sphere_init():
     bad_input = "1 SO 0.0 0.1 1.0"
     with pytest.raises(ValueError):
-        SphereAtOrigin(bad_input)
+        SphereAtOrigin(bad_input, jit_parse=False)
     with pytest.raises(ValueError):
-        SphereAtOrigin(Input([bad_input], BlockType.SURFACE))
+        SphereAtOrigin(Input([bad_input], BlockType.SURFACE), jit_parse=False)
     surf = SphereAtOrigin(number=5)
     assert surf.number == 5
 
@@ -561,17 +561,19 @@ def test_scratch_surface_generation(cls, surf_type, params: dict):
 
 
 def test_unset_transform():
+    prob = montepy.MCNP_Problem()
     surf = surface_builder("1 10 PZ 0.0")
-    transform = montepy.data_inputs.data_parser.parse_data("TR10 0 0 5")
-    surf.update_pointers([], [transform])
+    prob.surfaces.append(surf)
+    prob.parse("TR10 0 0 5")
     del surf.transform
     verify_export(surf)
 
 
 def test_unset_periodic():
+    prob = montepy.MCNP_Problem()
     surf = surface_builder("1 -10 PZ 0.0")
-    surf2 = surface_builder("10 PZ 10.0")
-    surf.update_pointers(montepy.Surfaces([surf2]), [])
+    prob.surfaces.append(surf)
+    prob.parse("10 PZ 10.0")
     del surf.periodic_surface
     verify_export(surf)
 

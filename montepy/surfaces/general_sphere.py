@@ -27,23 +27,6 @@ class GeneralSphere(Surface):
         The number to set for this object.
     """
 
-    @args_checked
-    def __init__(
-        self,
-        input: InitInput = None,
-        number: ty.PositiveInt = None,
-        surface_type: SurfaceType | str = None,
-    ):
-        self._coordinates = [
-            self._generate_default_node(float, None),
-            self._generate_default_node(float, None),
-            self._generate_default_node(float, None),
-        ]
-        self._radius = self._generate_default_node(float, None)
-        super().__init__(input, number)
-        if input and self.surface_type != SurfaceType.S:
-            raise ValueError(f"A {self.__class__.__name__} must be a surface of type S")
-
     def _load_constants(self):
         if len(self.surface_constants) != 4:
             raise ValueError(
@@ -73,6 +56,7 @@ class GeneralSphere(Surface):
         pass
 
     @property
+    @needs_full_ast
     def coordinates(self):
         """The three coordinates for the sphere center
 
@@ -81,6 +65,7 @@ class GeneralSphere(Surface):
         return tuple(c.value for c in self._coordinates)
 
     @coordinates.setter
+    @needs_full_cst
     @args_checked
     def coordinates(self, coordinates: ty.Iterable[ty.Real]):
         if len(coordinates) != 3:
