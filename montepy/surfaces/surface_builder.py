@@ -44,6 +44,7 @@ def parse_surface(input: InitInput, *, jit_parse: bool = True):
     }:
         if type_of_surface in SurfaceClass._allowed_surface_types():
             return SurfaceClass(input, jit_parse=jit_parse)
+    return Surface(input, jit_parse=jit_parse)
 
 
 surface_builder = parse_surface
