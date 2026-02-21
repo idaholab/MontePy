@@ -1,4 +1,5 @@
 # Copyright 2024, Battelle Energy Alliance, LLC All Rights Reserved.
+from __future__ import annotations
 import re
 
 import montepy
@@ -32,7 +33,12 @@ VERBOTEN = {"de", "sdef", "fmesh"}
 
 
 @args_checked
-def parse_data(input: montepy.mcnp_object.InitInput, *, jit_parse: bool = True):
+def parse_data(
+    input: montepy.mcnp_object.InitInput,
+    problem: montepy.MCNP_Problem = None,
+    *,
+    jit_parse: bool = True,
+):
     """Parses the data input as the appropriate object if it is supported.
 
     Parameters
@@ -52,5 +58,9 @@ def parse_data(input: montepy.mcnp_object.InitInput, *, jit_parse: bool = True):
         return data_input.ForbiddenDataInput(input)
     for DataClass in PREFIX_MATCHES:
         if prefix == DataClass._class_prefix():
+            if issubclass(
+                DataClass, montepy.data_inputs.cell_modifier.CellModifierInput
+            ):
+                return DataClass(input, problem=problem, jit_parse=jit_parse)
             return DataClass(input, jit_parse=jit_parse)
     return data_input.DataInput(input, jit_parse=jit_parse)

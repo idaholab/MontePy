@@ -32,6 +32,8 @@ class Transform(data_input.DataInputAbstract, Numbered_MCNP_Object):
         Parse the object just-in-time, when the information is actually needed, if True.
     """
 
+    _POINTER_ATTRS = set()
+
     @staticmethod
     def _parent_collections():
         return (

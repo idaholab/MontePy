@@ -12,7 +12,7 @@ from montepy.surfaces.sphere_at_origin import SphereAtOrigin
 from montepy.surfaces.sphere_on_axis import SphereOnAxis
 
 
-def parse_surface(input: InitInput, *, jit_parse: bool = True):
+def parse_surface(input: InitInput, problem=None, *, jit_parse: bool = True):
     """Builds a Surface object for the type of Surface
 
     Parameters

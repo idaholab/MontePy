@@ -1,4 +1,6 @@
 # Copyright 2024 - 2025, Battelle Energy Alliance, LLC All Rights Reserved.
+from __future__ import annotations
+
 import montepy
 from montepy.utilities import *
 from montepy.data_inputs.data_input import DataInputAbstract, InitInput
@@ -57,6 +59,7 @@ class CellModifierInput(DataInputAbstract):
         key: str = None,
         value: syntax_node.SyntaxNode = None,
         *,
+        problem: montepy.MCNP_Problem = None,
         jit_parse: bool = True,
         **kwargs,
     ):
@@ -71,6 +74,14 @@ class CellModifierInput(DataInputAbstract):
         self._in_cell_block = in_cell_block
         self._in_key = key
         self._in_value = value
+        if key and in_cell_block:
+            self._set_in_cell_block = True
+            self._tree = value
+            self._data = value["data"]
+        else:
+            self._set_in_cell_block = False
+        if problem:
+            self.link_to_problem(problem)
         if input is None and value is None:
             self._generate_default_tree(**kwargs)
             self._parse_tree()
@@ -81,12 +92,6 @@ class CellModifierInput(DataInputAbstract):
             self._parse_tree()
         else:
             super().__init__(input, jit_parse=jit_parse)
-        if key and in_cell_block:
-            self._set_in_cell_block = True
-            self._tree = value
-            self._data = value["data"]
-        else:
-            self._set_in_cell_block = False
         if jit_parse:
             self._not_parsed = True
 
@@ -96,6 +101,7 @@ class CellModifierInput(DataInputAbstract):
             self._parse_cell_tree()
         else:
             self._parse_data_tree()
+            self.push_to_cells()
 
     @abstractmethod
     def _parse_cell_tree(self):

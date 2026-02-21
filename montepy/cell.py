@@ -147,6 +147,7 @@ class Cell(Numbered_MCNP_Object):
         self,
         input: InitInput = None,
         number: ty.PositiveInt = None,
+        problem: montepy.MCNP_Problem = None,
         *,
         jit_parse: bool = True,
     ):

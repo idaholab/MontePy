@@ -26,6 +26,8 @@ class Universe(Numbered_MCNP_Object):
         The number for the universe, must be ≥ 0
     """
 
+    _POINTER_ATTRS = set()
+
     @staticmethod
     def _parent_collections():
         return (("cells", "universe", False),)

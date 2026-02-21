@@ -435,7 +435,7 @@ class MCNP_Problem:
                     obj_parser, obj_container = OBJ_MATCHER[input.block_type]
                     if len(input.input_lines) > 0:
                         try:
-                            obj = obj_parser(input, jit_parse=jit_parse)
+                            obj = obj_parser(input, problem=self, jit_parse=jit_parse)
                             obj.link_to_problem(self)
                             if isinstance(
                                 obj_container,
@@ -503,7 +503,7 @@ class MCNP_Problem:
             print("hi", collection_type)
             attr = collection_type.__name__.lower()
             collection = getattr(self, attr)
-            attrs_to_poke = collection._obj_type._POINTER_ATTRS
+            attrs_to_poke = collection._obj_class._POINTER_ATTRS
             for obj in collection:
                 for attr in attrs_to_poke:
                     # trigger pulling objects from problem with decorator

@@ -54,7 +54,9 @@ class MCNP_Object(ABC, metaclass=_ExceptionContextAdder):
             self._BLOCK_TYPE
         except AttributeError:
             self._BLOCK_TYPE = montepy.input_parser.block_type.BlockType.DATA
-        self._problem_ref = None
+        # Preserve an existing problem reference when re-initializing
+        if not hasattr(self, "_problem_ref"):
+            self._problem_ref = None
         self._parameters = ParametersNode()
         self._input = None
         self._init_blank()

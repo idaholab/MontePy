@@ -294,6 +294,7 @@ class Material(data_input.DataInputAbstract, Numbered_MCNP_Object):
 
     _parser = MaterialParser
     _NEW_LINE_STR = "\n" + " " * DEFAULT_INDENT
+    _POINTER_ATTRS = set()
 
     @staticmethod
     def _parent_collections():
