@@ -691,13 +691,14 @@ class TestNumberedObjectCollection:
         _, read_simple_problem, start_num, step, clone_mat, clone_region
     ):
         cp_simple_problem = copy.deepcopy(read_simple_problem)
-        cells = copy.deepcopy(cp_simple_problem.cells)
+        cells = cp_simple_problem.cells
         if start_num <= 0 or step <= 0:
             with pytest.raises(ValueError):
                 cells.clone(starting_number=start_num, step=step)
             return
         for clear in [False, True]:
             if clear:
+                cells = copy.deepcopy(cp_simple_problem.cells)
                 cells.link_to_problem(None)
             new_cells = cells.clone(clone_mat, clone_region, start_num, step)
             for new_cell, old_cell in zip(new_cells, cells):
