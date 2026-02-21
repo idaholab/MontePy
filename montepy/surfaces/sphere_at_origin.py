@@ -41,7 +41,7 @@ class SphereAtOrigin(Surface):
 
     @staticmethod
     def _number_of_params():
-        return 2
+        return 1
 
     @make_prop_val_node(
         "_radius", (float, int), float, validator=_enforce_positive_radius
