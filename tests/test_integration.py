@@ -405,24 +405,32 @@ def test_surface_card_pass_through():
 
 def test_surface_broken_link():
     with pytest.raises(montepy.exceptions.MalformedInputError):
-        montepy.read_input("tests/inputs/test_broken_surf_link.imcnp")
+        montepy.read_input("tests/inputs/test_broken_surf_link.imcnp", jit_parse=False)
     with pytest.raises(MalformedInputError):
-        montepy.read_input("tests/inputs/test_broken_transform_link.imcnp")
+        montepy.read_input(
+            "tests/inputs/test_broken_transform_link.imcnp", jit_parse=False
+        )
 
 
 def test_material_broken_link():
     with pytest.raises(montepy.exceptions.BrokenObjectLinkError):
-        problem = montepy.read_input("tests/inputs/test_broken_mat_link.imcnp")
+        problem = montepy.read_input(
+            "tests/inputs/test_broken_mat_link.imcnp", jit_parse=False
+        )
 
 
 def test_cell_surf_broken_link():
     with pytest.raises(montepy.exceptions.BrokenObjectLinkError):
-        problem = montepy.read_input("tests/inputs/test_broken_cell_surf_link.imcnp")
+        problem = montepy.read_input(
+            "tests/inputs/test_broken_cell_surf_link.imcnp", jit_parse=False
+        )
 
 
 def test_cell_complement_broken_link():
     with pytest.raises(montepy.exceptions.BrokenObjectLinkError):
-        problem = montepy.read_input("tests/inputs/test_broken_complement.imcnp")
+        problem = montepy.read_input(
+            "tests/inputs/test_broken_complement.imcnp", jit_parse=False
+        )
 
 
 def test_cell_card_pass_through(simple_problem):
