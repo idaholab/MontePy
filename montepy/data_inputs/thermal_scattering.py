@@ -1,5 +1,6 @@
 # Copyright 2024, Battelle Energy Alliance, LLC All Rights Reserved.
 from __future__ import annotations
+import warnings
 
 import montepy
 from montepy.utilities import *
@@ -144,5 +145,9 @@ class ThermalScatteringLaw(DataInputAbstract):
 
     @args_checked
     def _link_to_parent(self, mat: montepy.Material):
-        # TODO errors
+        if mat.thermal_scattering:
+            warnings.warn(
+                f"Multiple MT inputs were specified for this material: {self.old_number}.",
+                MalformedInputWarning,
+            )
         self._parent_material = mat

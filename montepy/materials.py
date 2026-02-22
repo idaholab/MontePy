@@ -60,10 +60,12 @@ class Materials(NumberedDataObjectCollection):
             if obj.number in self._tsl_queue:
                 tsl = self._tsl_queue.pop(obj.number)
                 tsl._link_to_parent(obj)
+                obj.thermal_scattering = tsl
             super().append(obj, **kwargs)
         elif isinstance(obj, montepy.ThermalScatteringLaw):
             try:
                 obj._link_to_parent(self[obj.old_number])
+                self[obj.old_number].thermal_scattering = obj
             except KeyError:
                 self._tsl_queue[obj.old_number] = obj
 

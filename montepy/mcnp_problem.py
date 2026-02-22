@@ -500,7 +500,6 @@ class MCNP_Problem:
             return
 
         for collection_type in self._NUMBERED_OBJ_MAP.values():
-            print("hi", collection_type)
             attr = collection_type.__name__.lower()
             collection = getattr(self, attr)
             attrs_to_poke = collection._obj_class._POINTER_ATTRS
