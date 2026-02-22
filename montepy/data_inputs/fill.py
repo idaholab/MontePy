@@ -54,7 +54,7 @@ class Fill(CellModifierInput):
         self._universes = None
         self._transform = None
         self._hidden_transform = None
-        self._old_transform_number = None
+        self._old_transform_number = self._generate_default_node(int, None)
         self._multi_universe = False
         self._min_index = None
         self._max_index = None
