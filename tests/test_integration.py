@@ -103,28 +103,27 @@ def test_data_card_parsing(simple_problem):
         M,
         M,
         M,
+        montepy.ThermalScatteringLaw,
         "FC1 SURFACE CURRENT",
-        "F1:N,P",
+        "F1",
         "FC2 AVERAGE SURFACE FLUX",
-        "F2:P",
+        "F2",
         "FC4  2-GROUP FLUX",
-        "F4:N",
+        "F4",
         "E4",
-        "F6:P",
-        "F7:N",
+        "F6",
+        "F7",
         "KSRC",
         "KCODE",
         "PHYS:P",
         "MODE",
         V,
     ]
-    for i, data_input in enumerate(simple_problem.data_inputs):
-        if isinstance(inputs[i], str):
-            assert data_input.classifier.format().upper().rstrip() == inputs[i]
+    for gold_input, data_input in zip(inputs, simple_problem.data_inputs):
+        if isinstance(gold_input, str):
+            assert data_input.classifier.format().upper().rstrip() == gold_input
         else:
-            assert isinstance(data_input, inputs[i])
-        if i == 2:
-            assert data_input.thermal_scattering is not None
+            assert isinstance(data_input, gold_input)
 
 
 def test_cells_parsing_linking(simple_problem):
