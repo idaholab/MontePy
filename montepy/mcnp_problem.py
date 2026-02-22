@@ -507,7 +507,10 @@ class MCNP_Problem:
             for obj in collection:
                 for attr in attrs_to_poke:
                     # trigger pulling objects from problem with decorator
-                    getattr(obj, attr)
+                    try:
+                        getattr(obj, attr)
+                    except Exception as e:
+                        handle_error(e)
 
     @args_checked
     def remove_duplicate_surfaces(self, tolerance: ty.PositiveReal):

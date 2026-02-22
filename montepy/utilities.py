@@ -3,6 +3,7 @@
 from montepy.constants import BLANK_SPACE_CONTINUE
 from collections.abc import Callable
 from montepy._check_value import args_checked
+from montepy.exceptions import *
 import montepy.types as ty
 
 import functools
