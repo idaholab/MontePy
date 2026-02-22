@@ -613,7 +613,15 @@ class NumberedObjectCollection(ABC):
             raise TypeError(f"object being appended must be of type: {self._obj_class}")
         if not isinstance(step, Integral):
             raise TypeError("The step number must be an int")
-        number = obj.number if obj.number > 0 else 1
+        # If the object has no number yet (None) or an invalid number (<=0),
+        # start renumbering from 1.  We must assign a concrete number before
+        # calling append() because __internal_append requires obj.number to be
+        # a non-None integer.
+        if obj.number is None or obj.number <= 0:
+            number = 1
+            obj.number = number
+        else:
+            number = obj.number
         if self._problem:
             obj.link_to_problem(self._problem)
         obj._unlink_from_collection()
