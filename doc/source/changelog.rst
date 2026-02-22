@@ -8,6 +8,10 @@ MontePy Changelog
 #Next Version#
 ==============
 
+**Bugs Fixed**
+
+* Fixed a bug where ``append_renumber`` raised a ``TypeError`` when called with an object whose ``number`` is ``None`` (e.g. an object created with no arguments) (:issue:`880`).
+
 **Performance Improvement**
 
 * Removed Guardrails from :func:`~montepy.numbered_object_collection.NumberedObjectCollection` (:issue:`895`)
