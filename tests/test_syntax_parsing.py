@@ -200,7 +200,7 @@ class TestValueNode:
     def test_value_has_changed(self):
         # test None no change
         node = syntax_node.ValueNode(None, int)
-        assert not node._value_changed
+        assert node._value_changed
         # test None changed
         node.value = 5
         assert node._value_changed

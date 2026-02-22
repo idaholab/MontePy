@@ -1249,8 +1249,6 @@ class ValueNode(SyntaxNodeBase):
         -------
         bool
         """
-        if self.value is None and self._og_value is None:
-            return False
         if self.value is None or self._og_value is None:
             return True
         if self._type in {float, int}:
