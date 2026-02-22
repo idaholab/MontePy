@@ -495,7 +495,12 @@ class MCNP_Problem:
                 raise e
 
         self.__load_data_inputs_to_object(self._data_inputs)
-        self.cells.finalize_init()
+        for collect_type in self._NUMBERED_OBJ_MAP.values():
+            try:
+                attr_name = f"_{collect_type.__name__.lower()}"
+                getattr(self, attr_name).finalize_init()
+            except (BrokenObjectLinkError, MalformedInputError) as e:
+                handle_error(e)
         if jit_parse:
             return
 
@@ -508,7 +513,7 @@ class MCNP_Problem:
                     # trigger pulling objects from problem with decorator
                     try:
                         getattr(obj, attr)
-                    except Exception as e:
+                    except (BrokenObjectLinkError, MalformedInputError) as e:
                         handle_error(e)
 
     @args_checked

@@ -199,6 +199,10 @@ class NumberedObjectCollection(ABC):
                 if existing_coll is None or existing_coll._problem is not problem:
                     obj._link_to_collection(self)
 
+    def finalize_init(self):
+        """TODO"""
+        pass
+
     @property
     def _problem(self):
         if self._problem_ref is not None:

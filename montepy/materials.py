@@ -69,6 +69,14 @@ class Materials(NumberedDataObjectCollection):
             except KeyError:
                 self._tsl_queue[obj.old_number] = obj
 
+    def finalize_init(self):
+        # Raise error for unflushed connection
+        for num, tsl in self._tsl_queue.items():
+            raise MalformedInputError(
+                tsl._input,
+                f'Thermal scattering Law "MT" input has no parent material with number: {num}',
+            )
+
     @args_checked
     def get_containing_any(
         self,
