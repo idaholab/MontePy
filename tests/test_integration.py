@@ -65,6 +65,7 @@ def test_original_input_tabs():
 
 # TODO formalize this or see if this is covered by other tests.
 def test_lazy_comments_check(simple_problem):
+    simple_problem = copy.deepcopy(simple_problem)
     material2 = simple_problem.materials[2]
     for comment in material2._tree.comments:
         print(repr(comment))
@@ -95,6 +96,7 @@ def test_surface_parsing(simple_problem):
 
 
 def test_data_card_parsing(simple_problem):
+    simple_problem = copy.deepcopy(simple_problem)
     M = material.Material
     V = volume.Volume
     inputs = [
@@ -126,6 +128,7 @@ def test_data_card_parsing(simple_problem):
 
 
 def test_cells_parsing_linking(simple_problem):
+    simple_problem = copy.deepcopy(simple_problem)
     cell_numbers = [1, 2, 3, 99, 5]
     mats = simple_problem.materials
     mat_answer = [mats[1], mats[2], mats[3], None, None]
@@ -174,6 +177,7 @@ def test_problem_str(simple_problem):
 
 def test_write_to_file(simple_problem):
     out = "foo.imcnp"
+    simple_problem = copy.deepcopy(simple_problem)
     try:
         problem = copy.deepcopy(simple_problem)
         problem.write_to_file(out)
@@ -211,6 +215,7 @@ def test_write_to_file(simple_problem):
 
 
 def test_cell_material_setter(simple_problem):
+    simple_problem = copy.deepcopy(simple_problem)
     cell = copy.deepcopy(simple_problem.cells[1])
     mat = simple_problem.materials[2]
     cell.material = mat
@@ -363,7 +368,7 @@ def test_materials_setter(simple_problem):
 
 
 def test_reverse_pointers(simple_problem):
-    problem = simple_problem
+    problem = copy.deepcopy(simple_problem)
     complements = list(problem.cells[99].cells_complementing_this)
     assert problem.cells[5] in complements
     assert len(complements) == 1
@@ -500,6 +505,7 @@ def test_cutting_comments_print_mutate():
 
 
 def test_comments_setter(simple_problem):
+    simple_problem = copy.deepcopy(simple_problem)
     cell = copy.deepcopy(simple_problem.cells[1])
     comment = simple_problem.surfaces[1000].comments[0]
     cell.leading_comments = [comment]
@@ -519,6 +525,8 @@ def test_problem_linker():
 
 
 def test_importance_parsing(importance_problem, simple_problem):
+    importance_problem = copy.deepcopy(importance_problem)
+    simple_problem = copy.deepcopy(simple_problem)
     cell = importance_problem.cells[1]
     assert cell.importance.neutron == 1.0
     assert cell.importance.photon == 1.0
@@ -712,6 +720,7 @@ def test_set_equal_importance(importance_problem):
 
 
 def test_check_volume_calculated(simple_problem):
+    simple_problem = copy.deepcopy(simple_problem)
     assert not simple_problem.cells[1].volume_mcnp_calc
 
 
@@ -744,6 +753,7 @@ def test_cell_multi_volume():
 
 
 def test_universe_cell_parsing(simple_problem):
+    simple_problem = copy.deepcopy(simple_problem)
     answers = [350] + [0] * 4
     for cell, answer in zip(simple_problem.cells, answers):
         print(cell, answer)
