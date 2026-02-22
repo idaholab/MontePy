@@ -6,15 +6,19 @@ import traceback
 class LineOverRunWarning(UserWarning):
     """Raised when non-comment inputs exceed the allowed line length in an input."""
 
-    def __init__(self, message):
-        self.message = message
+    pass
 
 
 class UndefinedBlock(UserWarning):
     """Raised when additional blocks exist after the default data block."""
 
-    def __init__(self, message):
-        self.message = message
+    pass
+
+
+class MalformedInputWarning(UserWarning):
+    """Raised when there is a possible, but not fatal error with the MCNP input not related to the parser."""
+
+    pass
 
 
 class MalformedInputError(ValueError):
