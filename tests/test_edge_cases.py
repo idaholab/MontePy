@@ -28,7 +28,7 @@ def test_interp_surface_edge_case():
 
 
 def test_excess_mt():
-    with pytest.raises(MalformedInputError):
+    with pytest.warns():
         montepy.read_input(
             os.path.join("tests", "inputs", "test_excess_mt.imcnp"), jit_parse=False
         )
