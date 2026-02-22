@@ -127,6 +127,11 @@ class TestNumberedObjectCollection:
             cells.append(cell)
         with pytest.raises(TypeError):
             cells.append(5)
+        # Directly set a negative internal value to cover the guard in
+        # __internal_append (bypasses the property-level validator).
+        cell._number.value = -1
+        with pytest.raises(ValueError):
+            cells.append(cell)
         cell.number = 20
         cells.append(cell)
         assert len(cells) == size + 1
