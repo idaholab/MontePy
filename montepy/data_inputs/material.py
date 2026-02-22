@@ -1365,8 +1365,6 @@ See <https://www.montepy.org/migrations/migrate0_1.html> for more information ""
     @args_checked
     def format_for_mcnp_input(self, mcnp_version: ty.VersionType) -> list[str]:
         lines = super().format_for_mcnp_input(mcnp_version)
-        if self.thermal_scattering is not None:
-            lines += self.thermal_scattering.format_for_mcnp_input(mcnp_version)
         return lines
 
     def _update_values(self):
