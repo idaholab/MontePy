@@ -19,11 +19,16 @@ Fixes # (issue number)
 
 ### LLM Disclosure
 
-Were any large language models (LLM or "AI") used in to generate any of this code?
+1. Are you?
 
-- [ ] Yes
-    - Model(s) used:
-- [ ] No
+   - [ ] A human user 
+   - [ ] A large language model (LLM), including ones acting on behalf of a human
+
+1. Were any large language models (LLM or "AI") used in to generate any of this code?
+
+  - [ ] Yes
+      - Model(s) used:
+  - [ ] No
 
 <details open> 
 
