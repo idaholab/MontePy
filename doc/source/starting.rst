@@ -603,7 +603,7 @@ For Example:
    cyl.is_white_boundary = True
 
 
-Setting a periodic boundary is slightly more difficult. 
+Setting a Periodic boundary is slightly more difficult. 
 In this case the boundary condition must be set to the other periodic surface with :func:`~montepy.surfaces.surface.Surface.periodic_surface`.
 So to continue with the previous example:
 
