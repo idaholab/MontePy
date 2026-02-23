@@ -356,7 +356,7 @@ This can be done quickly with a for loop:
    for cell in problem.cells:
        cell.number += 1000
 
-Number Collisions (should) be Impossible
+Number Collisions Should Be Impossible
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 The ``NumberedObjectCollection`` has various mechanisms internally to avoid number collisions 
@@ -838,7 +838,7 @@ Order of precedence and grouping is automatically handled by Python so you can e
 .. note::
 
   MontePy does not check if the geometry definition is "rational".
-  It doesn't check for being finite, existant (having any volume at all), or being infinite.
+  It doesn't check for being finite, existent (having any volume at all), or being infinite.
   Nor does it check for overlapping geometry.
 
 Setting and Modifying Geometry
@@ -1338,7 +1338,7 @@ Now you can add cells to this universe as you normally would.
 
 .. note::
 
-   A universe with no cells assigned will not be written out to the MCNP input file, and will "dissapear".
+   A universe with no cells assigned will not be written out to the MCNP input file, and will "disappear".
 
 .. note::
 
@@ -1412,7 +1412,7 @@ MontePy will then show which file it is reading, and show a warning for every po
 If you want to try to troubleshoot errors in python you can do this with the following steps.
 
 .. warning::
-   This following guide may return an incomplete problem object that may break in very wierd ways.
+   This following guide may return an incomplete problem object that may break in very weird ways.
    Never use this for actual file editing; only use it for troubleshooting.
 
 #. Setup a new Problem object:

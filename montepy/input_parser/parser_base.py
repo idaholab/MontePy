@@ -50,7 +50,7 @@ class MetaBuilder(sly.yacc.ParserMeta):
 
 
 class SLY_Supressor:
-    """This is a fake logger meant to mostly make warnings dissapear."""
+    """This is a fake logger meant to mostly make warnings disappear."""
 
     def __init__(self):
         self._parse_fail_queue = []
