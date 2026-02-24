@@ -203,6 +203,7 @@ class TestNumberedObjectCollection:
         assert new_cell.number > 0, "Assigned number must be positive"
         assert assigned == new_cell.number, "Return value must match assigned number"
         assert assigned in cells.numbers, "Cell must be present in collection"
+        assert new_cell in cells, "Cell object must be iterable-accessible in collection"
         assert len(cells) == size + 1
 
     def test_append_renumber_problems(self, cp_simple_problem):
