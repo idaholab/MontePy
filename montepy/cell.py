@@ -395,7 +395,7 @@ class Cell(Numbered_MCNP_Object):
         This does not guarantee that MCNP will able to calculate the volume.
         Complex geometries may make this impossible.
 
-        See :func:`~montepy.cells.Cells.allow_mcnp_volume_calc`
+        See :attr:`~montepy.cells.Cells.allow_mcnp_volume_calc`
 
         Returns
         -------

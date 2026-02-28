@@ -174,7 +174,7 @@ class Material(data_input.DataInputAbstract, Numbered_MCNP_Object):
 
     Materials look like a list of tuples, and is iterable.
     Whether or not the material is defined in mass fraction or atom fraction
-    is stored for the whole material in :func:`~montepy.data_inputs.material.Material.is_atom_fraction`.
+    is stored for the whole material in :attr:`~montepy.data_inputs.material.Material.is_atom_fraction`.
     The fractions (atom or mass) of the componenets are always positive,
     because MontePy believes in physics.
 
@@ -206,7 +206,7 @@ class Material(data_input.DataInputAbstract, Numbered_MCNP_Object):
     You can check if a Nuclide is in a Material
     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-    You can check if a :class:`~montepy.data_inputs.nuclide.Nuclide` or :class:`~montepy.data_input.element.Element` is
+    You can check if a :class:`~montepy.data_inputs.nuclide.Nuclide` or :class:`~montepy.data_inputs.element.Element` is
     in a Material with ``in``.
 
     .. doctest::
@@ -244,11 +244,11 @@ class Material(data_input.DataInputAbstract, Numbered_MCNP_Object):
     Default Libraries
     ^^^^^^^^^^^^^^^^^
 
-    Also materials have the concept of :func:`~montepy.data_inputs.material.Material.default_libraries`.
+    Also materials have the concept of :attr:`~montepy.data_inputs.material.Material.default_libraries`.
     These are the libraries set by ``NLIB``, ``PLIB``, etc.,
     which are used when a library of the correct :class:`~montepy.particle.LibraryType` is not provided with the
     nuclide.
-    :func:`~montepy.data_inputs.material.Material.default_libraries` acts like a dictionary,
+    :attr:`~montepy.data_inputs.material.Material.default_libraries` acts like a dictionary,
     and can accept a string or a :class:`~montepy.particle.LibraryType` as keys.
 
     .. testcode::
@@ -429,11 +429,11 @@ See <https://www.montepy.org/migrations/migrate0_1.html> for more information ""
         Default Libraries
         ^^^^^^^^^^^^^^^^^
 
-        Also materials have the concept of :func:`~montepy.data_inputs.material.Material.default_libraries`.
+        Also materials have the concept of :attr:`~montepy.data_inputs.material.Material.default_libraries`.
         These are the libraries set by ``NLIB``, ``PLIB``, etc.,
         which are used when a library of the correct :class:`~montepy.particle.LibraryType` is not provided with the
         nuclide.
-        :func:`~montepy.data_inputs.material.Material.default_libraries` acts like a dictionary,
+        :attr:`~montepy.data_inputs.material.Material.default_libraries` acts like a dictionary,
         and can accept a string or a :class:`~montepy.particle.LibraryType` as keys.
 
         .. testcode::
@@ -462,7 +462,7 @@ See <https://www.montepy.org/migrations/migrate0_1.html> for more information ""
 
         #. The library extension for the nuclide. For example if the nuclide is ``1001.80c`` for ``LibraryType("nlib")``, ``Library("80c")`` will be returned.
 
-        #. Next if a relevant nuclide library isn't provided the :func:`~montepy.data_inputs.material.Material.default_libraries` will be used.
+        #. Next if a relevant nuclide library isn't provided the :attr:`~montepy.data_inputs.material.Material.default_libraries` will be used.
 
         #. Finally if the two other options failed ``M0`` will be checked. These are stored in :func:`montepy.materials.Materials.default_libraries`.
 
