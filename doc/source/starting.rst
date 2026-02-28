@@ -302,7 +302,7 @@ Collections are Accessible by Number
 
 As mentioned before :class:`~montepy.numbered_object_collection.NumberedObjectCollection` 
 looks like a ``dict``, walks like a ``dict``, and quacks like ``dict``.
-This mainly means you can quickly get an object (e.g., :class:`~montepy.cell.Cell`, :class:`~montepy.surfaces.surface.Surface`, :class:`~montepy.data_cards.material.Material`) 
+This mainly means you can quickly get an object (e.g., :class:`~montepy.cell.Cell`, :class:`~montepy.surfaces.surface.Surface`, :class:`~montepy.data_inputs.material.Material`) 
 by its number.
 
 So say you want to access cell 2 from a problem it is accessible quickly by:
@@ -586,8 +586,8 @@ As discussed in :manual63:`5.3.1`, surfaces can have three boundary conditions:
    Refer to the :ref:`CellImportance` section to see how to set these.
 
 The reflective and white boundary conditions are easiest to set as they are Boolean conditions.
-These are controlled by :func:`~montepy.surfaces.surface.Surface.is_reflecting` and 
-:func:`~montepy.surfaces.surface.Surface.is_white_boundary` respectively.
+These are controlled by :attr:`~montepy.surfaces.surface.Surface.is_reflecting` and 
+:attr:`~montepy.surfaces.surface.Surface.is_white_boundary` respectively.
 For Example:
 
 .. testcode::
@@ -604,7 +604,7 @@ For Example:
 
 
 Setting a Periodic boundary is slightly more difficult. 
-In this case the boundary condition must be set to the other periodic surface with :func:`~montepy.surfaces.surface.Surface.periodic_surface`.
+In this case the boundary condition must be set to the other periodic surface with :attr:`~montepy.surfaces.surface.Surface.periodic_surface`.
 So to continue with the previous example:
 
 .. testcode::
@@ -627,7 +627,7 @@ Setting Cell Importances
 ^^^^^^^^^^^^^^^^^^^^^^^^
 
 All cells have an importance that can be modified. 
-This is generally accessed through ``cell.importance`` (:func:`~montepy.cell.Cell.importance`). 
+This is generally accessed through ``cell.importance`` (:attr:`~montepy.cell.Cell.importance`). 
 You can access the importance for a specific particle type by its name in lower case.
 For example: ``cell.importance.neutron`` or ``cell.importance.photon``.
 For a complete list see :class:`~montepy.particle.Particle`.
@@ -678,14 +678,14 @@ Setting How Cell Data Gets displayed in the Input file
 
 Much of the cell data can show up in the cell block or the data block, like the importance card.
 These are referred to MontePy as "cell modifiers".
-You can change how these cell modifiers are printed with :func:`~montepy.mcnp_problem.MCNP_Problem.print_in_data_block`.
+You can change how these cell modifiers are printed with :attr:`~montepy.mcnp_problem.MCNP_Problem.print_in_data_block`.
 This acts like a dictionary where the key is the MCNP card name.
 So to make cell importance data show up in the cell block just run:
 ``problem.print_in_data_block["imp"] = False``.
 
 .. note::
 
-   The default for :func:`~montepy.mcnp_problem.MCNP_Problem.print_in_data_block` is ``False``,
+   The default for :attr:`~montepy.mcnp_problem.MCNP_Problem.print_in_data_block` is ``False``,
    that is to print the data in the cell block if this was not set in the input file or by the user.
 
 Density
@@ -743,7 +743,7 @@ The two half-spaces can be viewed as in or out of the cell.
 
 So how are these half-spaces identified?
 In MCNP this generally done by marking the half-space as the positive or negative one.
-In MontePy these are changed to boolean values for the :func:`~montepy.surfaces.half_space.UnitHalfSpace.side` parameter simplicity with True being the positive side.
+In MontePy these are changed to boolean values for the :attr:`~montepy.surfaces.half_space.UnitHalfSpace.side` parameter simplicity with True being the positive side.
 For cell complements the side is implicitly handled by the CSG logic, and can always be thought of as the "outside"
 (though ``side`` will return True).
 
@@ -844,7 +844,7 @@ Order of precedence and grouping is automatically handled by Python so you can e
 Setting and Modifying Geometry
 """"""""""""""""""""""""""""""
 
-The half-space defining a cell's geometry is stored in ``cell.geometry`` (:func:`~montepy.cell.Cell.geometry`).
+The half-space defining a cell's geometry is stored in ``cell.geometry`` (:attr:`~montepy.cell.Cell.geometry`).
 This property can be rather simply set.
 
 .. testcode::
@@ -1025,8 +1025,8 @@ This shows:
     (Nuclide('U-238.80c'), 95.0)
 
 If you need just the nuclide or just the fractions, these are accessible by:
-:func:`~montepy.data_inputs.material.Material.nuclides` and 
-:func:`~montepy.data_inputs.material.Material.values`, respectively.
+:attr:`~montepy.data_inputs.material.Material.nuclides` and 
+:attr:`~montepy.data_inputs.material.Material.values`, respectively.
 
 .. testcode::
 
@@ -1058,8 +1058,8 @@ For instance:
     mat[0] = (nuclide, 4.0)
 
 Generally this is pretty clunky, so 
-:func:`~montepy.data_inputs.material.Material.nuclides` and 
-:func:`~montepy.data_inputs.material.Material.values` are also settable.
+:attr:`~montepy.data_inputs.material.Material.nuclides` and 
+:attr:`~montepy.data_inputs.material.Material.values` are also settable.
 To undo the previous changes:
 
 .. testcode::
@@ -1086,7 +1086,7 @@ It accepts a nuclide or the name of a nuclide, and its fraction.
 
     When adding a new component it is not possible to change whether the fraction is in atom fraction 
     or mass fraction.
-    This is settable through :func:`~montepy.data_inputs.material.Material.is_atom_fraction`.
+    This is settable through :attr:`~montepy.data_inputs.material.Material.is_atom_fraction`.
 
 .. testcode::
 
@@ -1111,7 +1111,7 @@ and for different data needs, e.g., neutron data vs. photo-atomic data.
 For more details see `LA-UR-17-20709 <https://www.osti.gov/biblio/1342828>`_, or 
 `LANL's nuclear data libraries <https://nucleardata.lanl.gov/>`_. 
 
-All :class:`~montepy.data_inputs.nuclide.Nuclide` have a :class:`~montepy.data_inputs.nuclide.Nuclide.library`,
+All :class:`~montepy.data_inputs.nuclide.Nuclide` have a :attr:`~montepy.data_inputs.nuclide.Nuclide.library`,
 though it may be just ``""``. 
 These can be manually set for each nuclide.
 If you wish to change all of the components in a material to use the same library you can use
@@ -1239,9 +1239,9 @@ Finding Materials
 
 There are a lot of cases where you may want to find specific materials in a problem,
 for instance getting all steels in a problem.
-This is done with the function :func:`~montepy.materials.Materials.get_containing`
+This is done with the function :func:`~montepy.materials.Materials.get_containing_all`
 of :class:`~montepy.materials.Materials`.
-It takes the same arguments as :func:`~montepy.data_inputs.material.Material.contains` 
+It takes the same arguments as :func:`~montepy.data_inputs.material.Material.contains_all` 
 previously discussed.
 
 Mixing Materials
@@ -1251,7 +1251,7 @@ Commonly materials are a mixture of other materials.
 For instance a good idea for defining structural materials might be to create a new material for each element,
 that adds the naturally occurring nuclides of the element,
 and then mixing those elements together to make steel, zircaloy, etc.
-This mixing is done with :class:`~montepy.materials.Materials.mix`.
+This mixing is done with :func:`~montepy.materials.Materials.mix`.
 Note this is a method of ``Materials`` and not ``Material``.
 
 .. note::
@@ -1352,7 +1352,7 @@ Filling Cells
 ^^^^^^^^^^^^^
 
 What's the point of creating a universe if you can't fill a cell with it, and therefore use it?
-Filling is handled by the :class:`~montepy.data_cards.fill.Fill` object in ``cell.fill``.
+Filling is handled by the :class:`~montepy.data_inputs.fill.Fill` object in ``cell.fill``.
 
 To fill a cell with a specific universe you can just run:
 
@@ -1387,9 +1387,9 @@ References
 
 See the following cell properties for more details:
 
-* :func:`~montepy.cell.Cell.universe`
-* :func:`~montepy.cell.Cell.lattice`
-* :func:`~montepy.cell.Cell.fill`
+* :attr:`~montepy.cell.Cell.universe`
+* :attr:`~montepy.cell.Cell.lattice`
+* :attr:`~montepy.cell.Cell.fill`
 
 Running as an Executable
 ------------------------

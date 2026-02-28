@@ -144,6 +144,26 @@ apidoc_separate_modules = True
 
 suppress_warnings = ["epub.unknown_project_files"]
 
+# Nitpicky mode: treat broken cross-references as warnings (CI uses -W to
+# promote them to errors, so this catches new regressions early).
+nitpicky = True
+
+# Ignore cross-references that cannot be resolved: third-party symbols that
+# are not documented via intersphinx, and deprecated aliases kept for
+# backwards compatibility.
+nitpick_ignore = [
+    # sly is not documented via intersphinx
+    ("py:class", "sly.Parser"),
+    ("py:class", "sly.Lexer"),
+    # montepy.errors is a deprecated shim; the canonical path is montepy.exceptions
+    ("py:class", "montepy.errors.MalformedInputError"),
+    ("py:exc", "montepy.errors.MalformedInputError"),
+    # Private extension-point methods documented in the developer guide but
+    # excluded from autodoc by default; keep as cross-refs for discoverability.
+    ("py:func", "montepy.data_inputs.cell_modifier.CellModifierInput._format_tree"),
+    ("py:func", "montepy.data_inputs.cell_modifier.CellModifierInput._check_redundant_definitions"),
+]
+
 
 # Add any paths that contain custom static files (such as style sheets) here,
 # relative to this directory. They are copied after the builtin static files,

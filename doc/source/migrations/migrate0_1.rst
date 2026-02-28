@@ -30,7 +30,7 @@ Deprecations
 The following properties and objects are currently deprecated 
 and were removed in MontePy 1.0.0.
 
-* :func:`~montepy.data_inputs.material.Material.material_components`. 
+* :attr:`~montepy.data_inputs.material.Material.material_components`. 
   This is the dictionary that caused this design problem. 
 
 * :class:`~montepy.data_inputs.material_component.MaterialComponent`:
@@ -86,7 +86,7 @@ and creates a generator of all matching component tuples.
 
 If you want to check if a ``Material`` contains a specific ``Nuclide``
 you can simply test ``nuclide in material``.
-The :func:`~montepy.data_inputs.material.Material.contains` function will provide more options,
+The :func:`~montepy.data_inputs.material.Material.contains_all` function will provide more options,
 such as setting a minimum threshold and testing for multiple nuclides at once.
 
 Adding Nuclides
@@ -101,8 +101,8 @@ Editing a material composition will be very similar to editing a ``list``.
 Existing components can be set to a nuclide component nuclide.
 Also existing components can be deleted with ``del``. 
 For just editing the fractions or nuclides the functions:
-:func:`~montepy.data_inputs.material.Material.nuclides`
-and :func:`~montepy.data_inputs.material.Material.values` provide the easiest interface.
+:attr:`~montepy.data_inputs.material.Material.nuclides`
+and :attr:`~montepy.data_inputs.material.Material.values` provide the easiest interface.
 
 
 ``Isotope`` Deprecation and Removal

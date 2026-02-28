@@ -223,7 +223,7 @@ This is in order to avoid allowing ``1.5`` as a valid int, since in this case th
 ``_convert_to_enum`` takes a class instance, which is a subclass of ``Enum``. 
 You can specify a ``format_type``, which specifies what the data should be treated as while formatting it with new data.
 For example :class:`~montepy.surfaces.surface_type.SurfaceType` (e.g., ``PZ``) uses ``str`` as its format type,
-whereas :class:`~montepy.data_inputs.lattice.Lattice` (e.g., ``1`` or ``2``) uses ``int`` is its format type.
+whereas :class:`~montepy.data_inputs.lattice.LatticeType` (e.g., ``1`` or ``2``) uses ``int`` is its format type.
 
 How to __str__ vs __repr__
 """"""""""""""""""""""""""
@@ -308,7 +308,7 @@ Collection: :class:`~montepy.numbered_object_collection.NumberedDataObjectCollec
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 This is a subclass of :class:`~montepy.numbered_object_collection.NumberedObjectCollection`,
 which is designed for :class:`~montepy.data_inputs.data_input.DataInputAbstract` instances.
-It is a wrapper that will ensure that all of its items are also in :func:`~montepy.mcnp_problem.MCNP_Problem.data_inputs`.
+It is a wrapper that will ensure that all of its items are also in :attr:`~montepy.mcnp_problem.MCNP_Problem.data_inputs`.
 
 
 Numbered Object :class:`~montepy.numbered_mcnp_object.Numbered_MCNP_Object`
@@ -497,7 +497,7 @@ If this boolean is false repeats of this class are allowed and they will be merg
 (e.g., ``IMP:N,P=1 IMP:E=0`` makes sense despite there being two ``IMP`` specified.
 If True only one instance of the object is allowed.
 (e.g., ``VOL=5 VOL=10`` makes no sense).
-For finding which class to use the :func:`~montepy.data_inputs.data_parser.PREFIX_MATCHES` set is used. See above.
+For finding which class to use the :obj:`~montepy.data_inputs.data_parser.PREFIX_MATCHES` set is used. See above.
 The key, value pairs in ``Cell.parameters`` is iterated over. 
 If any of the keys is a partial match to the ``PREFIX_MATCHES`` dict then that class is used,
 and constructed. 
@@ -563,11 +563,11 @@ The goal is to delete any internal data that has already been pushed to the cell
 so that if a user goes crazy and somehow access this object they cannot modify the data,
 and get into weird end-use behavior.
 
-:func:`~montepy.mcnp_problem.MCNP_Problem.print_in_data_block`
+:attr:`~montepy.mcnp_problem.MCNP_Problem.print_in_data_block`
 """"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 
 There is a flag system for controlling if data are output in the cell block or the data block.
-This is controlled by :func:`~montepy.mcnp_problem.MCNP_Problem.print_in_data_block`.
+This is controlled by :attr:`~montepy.mcnp_problem.MCNP_Problem.print_in_data_block`.
 This acts like a dictionary.
 The key is the string prefix that mcnp uses but is case insensitive.
 So controlling the printing of ``cell.importance`` data is handled by:
@@ -703,7 +703,7 @@ Here are the other data structures to be aware of:
 
 * :class:`~montepy.mcnp_problem.MCNP_Problem` ``_NUMBERED_OBJ_MAP``: maps a based numbered object to its collection
   class. This is used for loading all problem numbered object collections in an instance.
-* :func:`montepy.data_inputs.data_parser.PREFIX_MATCHES` is a set of the data object classes. The prefix is taken from
+* :obj:`montepy.data_inputs.data_parser.PREFIX_MATCHES` is a set of the data object classes. The prefix is taken from
   the classes. A data object must be a member of this class for it to automatically parse new data objects.
 * :class:`~montepy.cell.Cell` ``_INPUTS_TO_PROPERTY`` maps a cell modifier class to the attribute to load it into for a
   cell.  The boolean is whether multiple input instances are allowed.
