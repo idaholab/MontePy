@@ -46,6 +46,24 @@ def test_universe_setter(cells):
         cell_verify(basic_cell)
 
 
+def test_universe_nullify(cells):
+    """Cell.universe can be set to None (or deleted) to reset to the default."""
+    for basic_cell in cells:
+        uni = Universe(5)
+        basic_cell.universe = uni
+        assert basic_cell.universe is not None
+
+        # Setting to None should work
+        basic_cell.universe = None
+        assert basic_cell.universe is None
+
+        # Setting back, then using del
+        basic_cell.universe = uni
+        assert basic_cell.universe is not None
+        del basic_cell.universe
+        assert basic_cell.universe is None
+
+
 def test_fill_setter(cells):
     for basic_cell in cells:
         uni = Universe(5)
