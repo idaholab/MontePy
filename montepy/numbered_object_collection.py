@@ -616,7 +616,9 @@ class NumberedObjectCollection(ABC):
             raise TypeError(f"object being appended must be of type: {self._obj_class}")
         if not isinstance(step, Integral):
             raise TypeError("The step number must be an int")
-        number = obj.number if obj.number > 0 else 1
+        if obj.number is None or obj.number <= 0:
+            obj.number = 1
+        number = obj.number
         if self._problem:
             obj.link_to_problem(self._problem)
         obj._unlink_from_collection()
