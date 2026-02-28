@@ -253,7 +253,7 @@ class NumberedObjectCollection(ABC):
         if number < 0:
             raise ValueError(f"The number must be non-negative. {number} given.")
         conflict = False
-        # only can trust cache if being updated
+        # __num_cache is treated as authoritative: any present key is considered in use
         if number in self.__num_cache:
             conflict = True
 
