@@ -21,25 +21,36 @@ import numpy as np
 from tests import constants
 
 
-@pytest.fixture(scope="module")
-def simple_problem():
-    return montepy.read_input(os.path.join("tests", "inputs", "test.imcnp"))
-
-
-@pytest.fixture(scope="module")
-def importance_problem():
-    return montepy.read_input(os.path.join("tests", "inputs", "test_importance.imcnp"))
-
-
-@pytest.fixture(scope="module")
-def universe_problem():
-    return montepy.read_input(os.path.join("tests", "inputs", "test_universe.imcnp"))
-
-
-@pytest.fixture(scope="module")
-def data_universe_problem():
+@pytest.fixture(scope="module", params=[True, False])
+def simple_problem(request):
+    # jit_parse flag for the problem instance
     return montepy.read_input(
-        os.path.join("tests", "inputs", "test_universe_data.imcnp")
+        os.path.join("tests", "inputs", "test.imcnp"),
+        jit_parse=request.param,
+    )
+
+
+@pytest.fixture(scope="module", params=[True, False])
+def importance_problem(request):
+    return montepy.read_input(
+        os.path.join("tests", "inputs", "test_importance.imcnp"),
+        jit_parse=request.param,
+    )
+
+
+@pytest.fixture(scope="module", params=[True, False])
+def universe_problem(request):
+    return montepy.read_input(
+        os.path.join("tests", "inputs", "test_universe.imcnp"),
+        jit_parse=request.param,
+    )
+
+
+@pytest.fixture(scope="module", params=[True, False])
+def data_universe_problem(request):
+    return montepy.read_input(
+        os.path.join("tests", "inputs", "test_universe_data.imcnp"),
+        jit_parse=request.param,
     )
 
 
@@ -479,7 +490,7 @@ def test_thermal_scattering_pass_through(simple_problem):
     mat.number = 5
     output = therm.format_for_mcnp_input((6, 2, 0))
     # Filter out comment lines
-    output_filtered = [line for line in output if not line.startswith('C')]
+    output_filtered = [line for line in output if not line.startswith("C")]
     assert output_filtered == ["MT5 lwtr.23t h-zr.20t h/zr.28t"]
 
 
@@ -805,9 +816,7 @@ def test_universe_cells1(data_universe_problem):
     problem = copy.deepcopy(data_universe_problem)
     answers = {350: [1], 0: [2, 3, 5], 1: [99]}
     for uni_number, cell_answers in answers.items():
-        for cell, answer in zip(
-            problem.universes[uni_number].cells, cell_answers
-        ):
+        for cell, answer in zip(problem.universes[uni_number].cells, cell_answers):
             assert cell.number == answer
 
 
