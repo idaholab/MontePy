@@ -14,7 +14,7 @@ MontePy Changelog
 
 **Performance Improvement**
 
-* Removed Guardrails from :func:`~montepy.numbered_object_collection.NumberedObjectCollection` (:issue:`895`)
+* Removed Guardrails from :class:`~montepy.numbered_object_collection.NumberedObjectCollection` (:issue:`895`)
 
 **Feature Added**
 
