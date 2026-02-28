@@ -12,6 +12,7 @@ MontePy Changelog
 
 * Fixed a bug where ``append_renumber`` raised a ``TypeError`` when called with an object whose ``number`` is ``None`` (e.g. an object created with no arguments) (:issue:`880`).
 * Fixed a bug where the importance of cells made from scratch are usually not printed to the output file (:pull:`921`).
+* ``Cell.universe`` can now be set to ``None`` (or deleted via ``del cell.universe``) to reset the universe assignment back to the default (:issue:`902`).
 
 **Feature Added**
 

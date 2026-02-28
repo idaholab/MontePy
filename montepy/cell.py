@@ -254,9 +254,16 @@ class Cell(Numbered_MCNP_Object):
 
     @universe.setter
     def universe(self, value):
+        if value is None:
+            self._universe._universe = None
+            return
         if not isinstance(value, Universe):
             raise TypeError("universe must be set to a Universe")
         self._universe.universe = value
+
+    @universe.deleter
+    def universe(self):
+        self._universe._universe = None
 
     @property
     def fill(self):
