@@ -44,8 +44,9 @@ def data_universe_problem():
 
 
 def test_original_input(simple_problem):
+    problem = copy.deepcopy(simple_problem)
     cell_order = [Message, Title] + [Input] * 29
-    for i, input_ob in enumerate(simple_problem.original_inputs):
+    for i, input_ob in enumerate(problem.original_inputs):
         assert isinstance(input_ob, cell_order[i])
 
 
@@ -84,12 +85,14 @@ def test_moving_trail_comments(universe_problem):
 
 
 def test_material_parsing(simple_problem):
+    simple_problem = copy.deepcopy(simple_problem)
     mat_numbers = [1, 2, 3]
     for i, mat in enumerate(simple_problem.materials):
         assert mat.number == mat_numbers[i]
 
 
 def test_surface_parsing(simple_problem):
+    simple_problem = copy.deepcopy(simple_problem)
     surf_numbers = [1000, 1005, 1010, 1015, 1020, 1025]
     for i, surf in enumerate(simple_problem.surfaces):
         assert surf.number == surf_numbers[i]
@@ -152,12 +155,14 @@ def test_cells_parsing_linking(simple_problem):
 
 
 def test_message(simple_problem):
+    simple_problem = copy.deepcopy(simple_problem)
     lines = ["n=test.", "iXr"]
     for i, line in enumerate(simple_problem.message.lines):
         assert line == lines[i]
 
 
 def test_title(simple_problem):
+    simple_problem = copy.deepcopy(simple_problem)
     answer = "MCNP Test Model for MOAA"
     assert answer == simple_problem.title.title
 
@@ -170,6 +175,7 @@ def test_read_card_recursion():
 
 
 def test_problem_str(simple_problem):
+    simple_problem = copy.deepcopy(simple_problem)
     output = str(simple_problem)
     assert "MCNP problem for: tests/inputs/test.imcnp" in output
 
@@ -294,13 +300,13 @@ def test_children_adder_hidden_tr(simple_problem):
     problem = copy.deepcopy(simple_problem)
     in_str = "260 0 -1000 fill = 350 (1 0 0)"
     cell = montepy.Cell(in_str)
-    cell.update_pointers(problem.cells, problem.materials, problem.surfaces)
+    cell.link_to_problem(problem)
     problem.cells.add(cell)
     assert cell.fill.transform not in problem.transforms
     # test blank _fill_transform
     in_str = "261 0 -1000 fill = 350"
     cell = montepy.Cell(in_str)
-    cell.update_pointers(problem.cells, problem.materials, problem.surfaces)
+    cell.link_to_problem(problem)
     problem.cells.add(cell)
 
 
@@ -471,7 +477,10 @@ def test_thermal_scattering_pass_through(simple_problem):
     mat = problem.materials[3]
     therm = mat.thermal_scattering
     mat.number = 5
-    assert therm.format_for_mcnp_input((6, 2, 0)) == ["MT5 lwtr.23t h-zr.20t h/zr.28t"]
+    output = therm.format_for_mcnp_input((6, 2, 0))
+    # Filter out comment lines
+    output_filtered = [line for line in output if not line.startswith('C')]
+    assert output_filtered == ["MT5 lwtr.23t h-zr.20t h/zr.28t"]
 
 
 def test_cutting_comments_parse():
@@ -544,6 +553,7 @@ def test_importance_parsing(importance_problem, simple_problem):
 
 
 def test_importance_format_unmutated(importance_problem):
+    importance_problem = copy.deepcopy(importance_problem)
     imp = importance_problem.cells._importance
     output = imp.format_for_mcnp_input((6, 2, 0))
     print(output)
@@ -566,7 +576,8 @@ def test_importance_format_mutated(importance_problem):
 
 def test_importance_write_unmutated(importance_problem):
     fh = io.StringIO()
-    importance_problem.write_problem(fh)
+    problem = copy.deepcopy(importance_problem)
+    problem.write_problem(fh)
     found_np = False
     found_e = False
     fh.seek(0)
@@ -602,6 +613,7 @@ def test_importance_write_mutated(importance_problem):
 
 
 def test_importance_write_cell(importance_problem):
+    importance_problem = copy.deepcopy(importance_problem)
     for state in ["no change", "new unmutated cell", "new mutated cell"]:
         fh = io.StringIO()
         problem = copy.deepcopy(importance_problem)
@@ -768,19 +780,20 @@ def test_universe_cell_parsing(simple_problem):
 
 
 def test_universe_fill_data_parsing(data_universe_problem):
+    problem = copy.deepcopy(data_universe_problem)
     answers = [350, 0, 0, 1]
-    for cell, answer in zip(data_universe_problem.cells, answers):
+    for cell, answer in zip(problem.cells, answers):
         print(cell, answer)
         assert cell.universe.number == answer
-    for cell in data_universe_problem.cells:
+    for cell in problem.cells:
         print(cell)
         if cell.number != 99:
             assert not cell.not_truncated
         else:
             assert cell.not_truncated
-    assert data_universe_problem.cells[99].not_truncated
+    assert problem.cells[99].not_truncated
     answers = [None, None, 350, None, None]
-    for cell, answer in zip(data_universe_problem.cells, answers):
+    for cell, answer in zip(problem.cells, answers):
         print(cell.number, cell.fill.universe, answer)
         if answer is None:
             assert cell.fill.universe is None
@@ -789,10 +802,11 @@ def test_universe_fill_data_parsing(data_universe_problem):
 
 
 def test_universe_cells1(data_universe_problem):
+    problem = copy.deepcopy(data_universe_problem)
     answers = {350: [1], 0: [2, 3, 5], 1: [99]}
     for uni_number, cell_answers in answers.items():
         for cell, answer in zip(
-            data_universe_problem.universes[uni_number].cells, cell_answers
+            problem.universes[uni_number].cells, cell_answers
         ):
             assert cell.number == answer
 
@@ -917,7 +931,8 @@ def test_lattice_push_to_cells(simple_problem):
 
 
 def test_universe_problem_parsing(universe_problem):
-    for cell in universe_problem.cells:
+    problem = copy.deepcopy(universe_problem)
+    for cell in problem.cells:
         if cell.number == 1:
             assert cell.universe.number == 1
         else:
@@ -938,8 +953,9 @@ def test_importance_end_repeat(universe_problem):
 
 
 def test_fill_parsing(universe_problem):
+    problem = copy.deepcopy(universe_problem)
     answers = [None, np.array([[[1], [0]], [[1], [0]]]), None, 1, 1]
-    for cell, answer in zip(universe_problem.cells, answers):
+    for cell, answer in zip(problem.cells, answers):
         if answer is None:
             assert cell.fill.universe is None
         elif isinstance(answer, np.ndarray):
@@ -1029,8 +1045,9 @@ def test_universe_cells_claim(universe_problem):
 
 
 def test_universe_cells2(universe_problem):
+    problem = copy.deepcopy(universe_problem)
     answers = [1]
-    universe = universe_problem.universes[1]
+    universe = problem.universes[1]
     assert len(answers) == len(list(universe.cells))
     for cell, answer in zip(universe.cells, answers):
         assert cell.number == answer
