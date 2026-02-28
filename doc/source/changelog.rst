@@ -8,6 +8,10 @@ MontePy Changelog
 #Next Version#
 ==============
 
+**Performance Improvement**
+
+* Removed Guardrails from :func:`~montepy.numbered_object_collection.NumberedObjectCollection` (:issue:`895`)
+
 **Feature Added**
 
 * Added ``extend_renumber`` to ``NumberedObjectCollection`` with related test cases (:issue:`881`).
