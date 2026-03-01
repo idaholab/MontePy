@@ -216,7 +216,8 @@ class HalfSpace:
     def remove_duplicate_surfaces(
         self,
         deleting_dict: dict[
-            int, tuple[montepy.surfaces.surface.Surface, montepy.surfaces.surface.Surface]
+            int,
+            tuple[montepy.surfaces.surface.Surface, montepy.surfaces.surface.Surface],
         ],
     ):
         """Updates old surface numbers to prepare for deleting surfaces.
@@ -707,7 +708,8 @@ class UnitHalfSpace(HalfSpace):
     def remove_duplicate_surfaces(
         self,
         deleting_dict: dict[
-            int, tuple[montepy.surfaces.surface.Surface, montepy.surfaces.surface.Surface]
+            int,
+            tuple[montepy.surfaces.surface.Surface, montepy.surfaces.surface.Surface],
         ],
     ):
         """Updates old surface numbers to prepare for deleting surfaces.
