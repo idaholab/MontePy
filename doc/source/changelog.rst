@@ -12,6 +12,10 @@ MontePy Changelog
 
 * Fixed a bug where ``append_renumber`` raised a ``TypeError`` when called with an object whose ``number`` is ``None`` (e.g. an object created with no arguments) (:issue:`880`).
 
+**Documentation**
+
+* Enable Sphinx nitpicky mode and fix ~30 broken cross-references in the developer guide, user guide, and migration docs (:issue:`889`).
+
 **Feature Added**
 
 * Added ``extend_renumber`` to ``NumberedObjectCollection`` with related test cases (:issue:`881`).

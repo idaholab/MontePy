@@ -82,6 +82,9 @@ autodoc_default_options = {
 linkcheck_ignore = [
     "https://nucleardata.lanl.gov/.*",
     "https://www.osti.gov/.*",  # Ignore osti.gov URLs
+    # GitHub returns 429/502 for link-checkers hitting issue/PR links in CI;
+    # the :issue: and :pull: extlinks are validated by the PR workflow itself.
+    r"https://github\.com/idaholab/MontePy/(issues|pull)/.*",
 ]
 
 # -- External link configuration ---------------------------------------------
