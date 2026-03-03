@@ -8,6 +8,6 @@ jobs:
       pull-requests: write
     runs-on: ubuntu-latest
     steps:
-      - uses: readthedocs/actions/preview@v1
+      - uses: readthedocs/actions/preview@31a30360a2d7530806bff6855aa209167f06a89c
         with:
           project-slug: "montepy"
