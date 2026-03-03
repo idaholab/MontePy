@@ -9,6 +9,8 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
     strategy:
       matrix:
         python-version: ["3.12", "3.13", "3.14"]
@@ -107,6 +109,8 @@ jobs:
 
   doc-build:
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
     
     steps:
       - uses: actions/checkout@0c366fd6a839edf440554fa01a7085ccba70ac98
@@ -131,6 +135,8 @@ jobs:
   
   doc-test:
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
     
     steps:
       - uses: actions/checkout@0c366fd6a839edf440554fa01a7085ccba70ac98
@@ -155,6 +161,8 @@ jobs:
 
   format-test:
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
     
     steps:
 
@@ -168,6 +176,8 @@ jobs:
   
   profile:
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
     
     steps:
       - uses: actions/checkout@0c366fd6a839edf440554fa01a7085ccba70ac98
@@ -185,6 +195,8 @@ jobs:
   
   benchmark:
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
     
     steps:
       - uses: actions/checkout@0c366fd6a839edf440554fa01a7085ccba70ac98
@@ -199,6 +211,8 @@ jobs:
         
   changelog-test:
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
     if: github.ref != 'refs/heads/main'
     
     steps:
