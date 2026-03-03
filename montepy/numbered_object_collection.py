@@ -1122,10 +1122,7 @@ class NumberedObjectCollection(ABC):
         -------
         Numbered_MCNP_Object
         """
-        ret = self.__num_cache.get(i)
-        if ret is not None and ret.number == i:
-            return ret
-        return default
+        return self.__num_cache.get(i, default)
 
     def keys(self) -> typing.Generator[int, None, None]:
         """Get iterator of the collection's numbers.
