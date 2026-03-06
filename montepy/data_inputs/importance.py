@@ -96,8 +96,6 @@ class Importance(CellModifierInput):
             particle = Particle.NEUTRON
         else:
             particles = syntax_node.ParticleNode("imp particle", particle.value.lower())
-        if self._problem:
-            particles.particles = self._problem.mode.particles
         classifier.particles = particles
         list_node = syntax_node.ListNode("imp data")
         list_node.append(self._generate_default_node(float, self._DEFAULT_IMP))

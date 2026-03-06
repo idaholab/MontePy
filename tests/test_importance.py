@@ -317,3 +317,34 @@ class TestImportance:
         """Test that new cells have default importance of 1.0 (Issue #735)"""
         cell = montepy.Cell()
         assert cell.importance.neutron == 1.0
+
+    def test_multi_particle_same_value_after_append(self):
+        """Regression test for #913: same value for multiple particles after cell is linked to problem."""
+        cell = montepy.Cell()
+        problem = montepy.mcnp_problem.MCNP_Problem("foo")
+        problem.mode.add(Particle.NEUTRON)
+        problem.mode.add(Particle.PHOTON)
+        cell.link_to_problem(problem)
+        cell.importance.photon = 2.0
+        cell.importance.neutron = 2.0
+        assert cell.importance.photon == pytest.approx(2.0)
+        assert cell.importance.neutron == pytest.approx(2.0)
+        output = cell.importance.mcnp_str()
+        # Output must not contain duplicate particle classifiers like "p,n" or "n,p"
+        assert "n,p" not in output and "p,n" not in output
+
+    def test_multi_particle_different_values_after_append(self):
+        """Regression test for #913: different values for multiple particles after cell is linked to problem."""
+        cell = montepy.Cell()
+        problem = montepy.mcnp_problem.MCNP_Problem("foo")
+        problem.mode.add(Particle.NEUTRON)
+        problem.mode.add(Particle.PHOTON)
+        cell.link_to_problem(problem)
+        cell.importance.photon = 3.0
+        cell.importance.neutron = 4.0
+        assert cell.importance.photon == pytest.approx(3.0)
+        assert cell.importance.neutron == pytest.approx(4.0)
+        # Must not raise ValueError during formatting
+        output = cell.importance.mcnp_str()
+        assert "p=3.0" in output
+        assert "n=4.0" in output
