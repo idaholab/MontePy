@@ -55,6 +55,7 @@ class Importance(CellModifierInput):
         self._real_tree = {}
         self._part_combos = []
         self._explicitly_set = False
+        self._pending_all_importance = None
         super().__init__(input, in_cell_block, key, value)
         if self.in_cell_block:
             if key:
@@ -140,7 +141,7 @@ class Importance(CellModifierInput):
         if any(has_info):
             return True
         if self.in_cell_block:
-            return self.set_in_cell_block
+            return self.set_in_cell_block or self._explicitly_set
 
     def merge(self, other):
         if not isinstance(other, type(self)):
@@ -162,6 +163,16 @@ class Importance(CellModifierInput):
                     other._input,
                     "Cannot have two importance inputs for the same particle type",
                 )
+
+    def link_to_problem(self, problem):
+        super().link_to_problem(problem)
+        if problem and self._pending_all_importance is not None:
+            pending = self._pending_all_importance
+            self._pending_all_importance = None
+            for particle in problem.mode:
+                if particle not in self._particle_importances:
+                    self._generate_default_cell_tree(particle)
+                self._particle_importances[particle]["data"][0].value = pending
 
     def __iter__(self):
         return iter(self._particle_importances.keys())
@@ -299,10 +310,15 @@ class Importance(CellModifierInput):
         value = float(value)
         if value < 0.0:
             raise ValueError("Importance must be ≥ 0.0")
+        self._explicitly_set = True
         if self._problem:
-            self._explicitly_set = True
             for particle in self._problem.mode:
+                if particle not in self._particle_importances:
+                    self._generate_default_cell_tree(particle)
                 self._particle_importances[particle]["data"][0].value = value
+        else:
+            # Cell not yet linked to a problem; defer until link_to_problem is called.
+            self._pending_all_importance = value
 
     def _clear_data(self):
         if not self.in_cell_block:
