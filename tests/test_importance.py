@@ -341,9 +341,9 @@ class TestImportance:
 
         # After append, importances for all mode particles must be 2.0
         for particle in prob.mode:
-            assert new_cell.importance[particle] == pytest.approx(2.0), (
-                f"Expected importance[{particle}] == 2.0 after all= set before append"
-            )
+            assert new_cell.importance[particle] == pytest.approx(
+                2.0
+            ), f"Expected importance[{particle}] == 2.0 after all= set before append"
 
         # has_information must be True so the cell is written out
         assert new_cell.importance.has_information
@@ -366,9 +366,9 @@ class TestImportance:
         new_cell.importance.all = 2.0
 
         for particle in prob.mode:
-            assert new_cell.importance[particle] == pytest.approx(2.0), (
-                f"Expected importance[{particle}] == 2.0 after all= set after append"
-            )
+            assert new_cell.importance[particle] == pytest.approx(
+                2.0
+            ), f"Expected importance[{particle}] == 2.0 after all= set after append"
         assert new_cell.importance.has_information
 
     def test_892_importance_individual_default_value(self):
@@ -381,9 +381,9 @@ class TestImportance:
 
         # Even though values equal default, they were explicitly set
         assert new_cell.importance._explicitly_set
-        assert new_cell.importance.has_information, (
-            "has_information should be True when importance was explicitly set to default"
-        )
+        assert (
+            new_cell.importance.has_information
+        ), "has_information should be True when importance was explicitly set to default"
 
     def test_892_importance_all_default_value_still_written(self):
         """importance.all = 1.0 (default) set before append must still be marked for writing (Issue #892)."""
@@ -393,6 +393,6 @@ class TestImportance:
         prob.cells.append(new_cell)
 
         assert new_cell.importance._explicitly_set
-        assert new_cell.importance.has_information, (
-            "has_information should be True when importance.all = 1.0 was explicitly set"
-        )
+        assert (
+            new_cell.importance.has_information
+        ), "has_information should be True when importance.all = 1.0 was explicitly set"

@@ -21,6 +21,7 @@ MontePy Changelog
 **Bugs Fixed**
 
 * Fixed a bug where ``&=`` and ``|=`` for geometry definitions (``HalfSpace`` ) were not handled operator precedence properly (:issue:`879`).
+* Fixed a bug where importances explicitly set on newly-created cells were not written to the MCNP input file (:issue:`892`).
 
 **Documentation**
 
