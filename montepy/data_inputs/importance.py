@@ -247,7 +247,9 @@ class Importance(CellModifierInput):
             particles_printed = set()
             ret = ""
             for particle in self:
-                if particle in particles_printed:
+                if particle in particles_printed or (
+                    self._problem and particle not in self._problem.mode
+                ):
                     continue
                 other_particles = self._particle_importances[particle][
                     "classifier"
