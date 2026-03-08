@@ -246,10 +246,10 @@ class Material(data_input.DataInputAbstract, Numbered_MCNP_Object):
 
     Also materials have the concept of :attr:`~montepy.data_inputs.material.Material.default_libraries`.
     These are the libraries set by ``NLIB``, ``PLIB``, etc.,
-    which are used when a library of the correct :class:`~montepy.particle.LibraryType` is not provided with the
+    which are used when a library of the correct :class:`~montepy.LibraryType` is not provided with the
     nuclide.
     :attr:`~montepy.data_inputs.material.Material.default_libraries` acts like a dictionary,
-    and can accept a string or a :class:`~montepy.particle.LibraryType` as keys.
+    and can accept a string or a :class:`~montepy.LibraryType` as keys.
 
     .. testcode::
 
@@ -431,10 +431,10 @@ See <https://www.montepy.org/migrations/migrate0_1.html> for more information ""
 
         Also materials have the concept of :attr:`~montepy.data_inputs.material.Material.default_libraries`.
         These are the libraries set by ``NLIB``, ``PLIB``, etc.,
-        which are used when a library of the correct :class:`~montepy.particle.LibraryType` is not provided with the
+        which are used when a library of the correct :class:`~montepy.LibraryType` is not provided with the
         nuclide.
         :attr:`~montepy.data_inputs.material.Material.default_libraries` acts like a dictionary,
-        and can accept a string or a :class:`~montepy.particle.LibraryType` as keys.
+        and can accept a string or a :class:`~montepy.LibraryType` as keys.
 
         .. testcode::
 

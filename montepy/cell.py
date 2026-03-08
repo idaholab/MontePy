@@ -395,7 +395,7 @@ class Cell(Numbered_MCNP_Object):
         This does not guarantee that MCNP will able to calculate the volume.
         Complex geometries may make this impossible.
 
-        See :attr:`~montepy.cells.Cells.allow_mcnp_volume_calc`
+        See :attr:`~montepy.Cells.allow_mcnp_volume_calc`
 
         Returns
         -------
@@ -654,7 +654,7 @@ class Cell(Numbered_MCNP_Object):
 
         .. versionchanged:: 1.0.0
 
-            The form of the deleting_dict was changed as :class:`~montepy.surfaces.Surface` is no longer hashable.
+            The form of the deleting_dict was changed as :class:`~montepy.Surface` is no longer hashable.
 
         Parameters
         ----------

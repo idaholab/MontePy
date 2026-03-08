@@ -29,7 +29,7 @@ InitInput = Union[montepy.input_parser.mcnp_input.Input, str]
 
 
 class _ExceptionContextAdder(ABCMeta):
-    """A metaclass for wrapping all class properties and methods in :func:`~montepy.errors.add_line_number_to_exception`."""
+    """A metaclass for wrapping all class properties and methods in :func:`~montepy.exceptions.add_line_number_to_exception`."""
 
     @staticmethod
     def _wrap_attr_call(func):

@@ -160,7 +160,7 @@ nitpicky = True
 
 # Exact (type, target) pairs that cannot be resolved and should be ignored.
 nitpick_ignore = [
-    # sly is not documented via intersphinx — ignore all sly.* refs
+    # sly has no intersphinx inventory; all sly.* cross-refs are unresolvable
     ("py:class", "sly.Parser"),
     ("py:class", "sly.Lexer"),
     ("py:class", "sly.lex.Token"),
@@ -172,52 +172,49 @@ nitpick_ignore = [
     ("py:class", "montepy.errors.MalformedInputError"),
     ("py:exc", "montepy.errors.MalformedInputError"),
     # Private extension-point methods documented in the developer guide but
-    # excluded from autodoc by default; keep as cross-refs for discoverability.
+    # excluded from autodoc by default; keep as cross-refs for discoverability
     ("py:func", "montepy.data_inputs.cell_modifier.CellModifierInput._format_tree"),
     ("py:func", "montepy.data_inputs.cell_modifier.CellModifierInput._check_redundant_definitions"),
-    # Private internal class not exposed in the public API
-    ("py:class", "montepy._singleton.SingletonGroup"),
-    # Full-path refs to internal classes not re-exported at the public API level
-    ("py:class", "montepy.data_inputs.nuclide.Nucleus"),
-    ("py:class", "montepy.data_inputs.nuclide.Library"),
-    ("py:class", "montepy.particle.LibraryType"),
-    ("py:class", "montepy.surfaces.Surface"),
-    # numpy types referenced with full module path (not in intersphinx for numpy)
-    ("py:class", "numpy.array"),
-    ("py:class", "numpy.ndarry"),  # typo in source docstring; ignore rather than break build
-    # Internal cross-refs using non-public module paths
-    ("py:attr", "montepy.cells.Cells.allow_mcnp_volume_calc"),
-    ("py:meth", "montepy.data_inputs.mode.Mode.set"),
-    ("py:func", "montepy.errors.add_line_number_to_exception"),
     ("py:func", "montepy.mcnp_object.MCNP_Object._generate_default_node"),
+    ("py:func", "montepy.input_parser.syntax_node.ValueNode._convert_to_enum"),
+    ("py:func", "montepy.input_parser.syntax_node.ValueNode._convert_to_int"),
+    # Internal constant referenced in developing.rst; not in the public API
     ("py:obj", "montepy.data_inputs.data_parser.PREFIX_MATCHES"),
+    # Private internal classes not exposed in the public API
+    ("py:class", "montepy._singleton.SingletonGroup"),
+    ("py:class", "montepy.data_inputs.nuclide.Nucleus"),
+    # montepy.data_inputs.mode.Mode.set: Mode is public but autosummary indexes
+    # it under the internal module path, not montepy.Mode; keep until cross-refs
+    # in the codebase are migrated to the public API path
+    ("py:meth", "montepy.data_inputs.mode.Mode.set"),
 ]
 
 # Regex patterns for cross-reference targets that cannot be resolved.
 nitpick_ignore_regex = [
     # Sphinx/autodoc generates bare type names that are not valid cross-ref targets
-    (r"py:class", r"^(self|self\._\w+|generator|unknown|function|Class|InitInput|MCNP_Input|ClassifierNode)$"),
+    (r"py:class", r"^(self|self\._\w+|generator|unknown|function|Class|InitInput|MCNP_Input)$"),
     # sly Token is not in any intersphinx inventory
     (r"py:class", r"^Token$"),
-    # Bare unqualified names from :type: annotations in older docstrings
-    (r"py:class", r"^(Nucleus|Library|LibraryType|ListNode|MCNP_Input|enum|hexahedron|class)$"),
+    # Bare unqualified names from :type: annotations in older docstrings;
+    # ClassifierNode is an internal parser class not re-exported publicly
+    (r"py:class", r"^(Nucleus|Library|LibraryType|ListNode|MCNP_Input|ClassifierNode|enum|hexahedron|class)$"),
     (r"py:class", r"^A rectangular prism is a type$"),
-    # numpy alias "np" and full "numpy" module not in intersphinx inventory
+    # numpy alias "np" is not in the numpy intersphinx inventory
     (r"py:class", r"^np\..*"),
-    (r"py:class", r"^numpy\..*"),
     # Sphinx autosummary generates internal node type refs
     (r"py:class", r"^montepy\.input_parser\.syntax_node\.(IsotopesNode|ListNode)$"),
     # Old class names that no longer exist (renamed in refactoring)
     (r"py:class", r"^montepy\.(data_cards|mcnp_card|data_input)\..+$"),
     (r"py:func", r"^montepy\.(data_cards|mcnp_card|data_input)\..+$"),
-    # Cross-refs using internal module paths instead of the public API path.
+    # Cross-refs using internal module paths (montepy.cell.Cell) instead of the
+    # public API path (montepy.Cell) that autosummary uses for inventory entries.
     # These are correct conceptually; the path mismatch is a known limitation.
     # TODO: migrate all cross-refs to public API paths (montepy.Cell, etc.)
-    (r"py:attr", r"^montepy\.(cell|cells|mcnp_problem|mcnp_object|surfaces|data_inputs)\..+$"),
-    (r"py:func", r"^montepy\.(cell|cells|mcnp_problem|mcnp_object|errors|surfaces|data_inputs|materials|universe|input_parser)\..+$"),
-    (r"py:meth", r"^montepy\.(cell|cells|mcnp_problem|mcnp_object|surfaces|data_inputs)\..+$"),
+    (r"py:attr", r"^montepy\.(cell|mcnp_problem|surfaces|data_inputs)\..+$"),
+    (r"py:func", r"^montepy\.(cell|cells|mcnp_problem|surfaces|data_inputs|materials|universe)\..+$"),
+    # montepy.input_parser and montepy.data_inputs are subpackages referenced
+    # with :mod: in developing.rst; they are not indexed as modules by autodoc
     (r"py:mod", r"^montepy\.(surfaces|data_inputs|input_parser|input_parser\..+)$"),
-    (r"py:obj", r"^montepy\.(cell|cells|mcnp_problem|mcnp_object|surfaces|data_inputs)\..+$"),
 ]
 
 

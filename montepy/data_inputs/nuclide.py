@@ -104,7 +104,7 @@ class Library(SingletonGroup):
 
     @property
     def library_type(self) -> LibraryType:
-        """The :class:`~montepy.particle.LibraryType` of this library.
+        """The :class:`~montepy.LibraryType` of this library.
 
         This corresponds to the type of library this would specified
         in a material definition e.g., ``NLIB``, ``PLIB``, etc.

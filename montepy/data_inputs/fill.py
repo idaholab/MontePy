@@ -430,7 +430,7 @@ class Fill(CellModifierInput):
 
         Returns
         -------
-        :class:`numpy.ndarry`
+        :class:`numpy.ndarray`
             the minimum indices of the matrix for complex fills
         """
         pass
@@ -448,7 +448,7 @@ class Fill(CellModifierInput):
 
         Returns
         -------
-        :class:`numpy.ndarry`
+        :class:`numpy.ndarray`
             the maximum indices of the matrix for complex fills
         """
         pass
