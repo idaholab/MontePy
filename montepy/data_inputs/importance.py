@@ -133,7 +133,8 @@ class Importance(CellModifierInput):
         has_info = []
         for part in self:
             has_info.append(
-                not math.isclose(
+                self._explicitly_set
+                or not math.isclose(
                     self[part], self._DEFAULT_IMP, rel_tol=rel_tol, abs_tol=abs_tol
                 )
             )
