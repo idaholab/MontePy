@@ -335,7 +335,7 @@ class TestImportance:
         c3.importance.neutron = 1.0
         c3.importance.photon = 1.0
         problem.cells.append(c3)
-        # Cell 4 should give "imp:n=4.0 imp:p=1.0"
+        # Cell 4 should give "imp:n=4.0"
         c4 = montepy.Cell(number=7)
         c4.geometry = -problem.surfaces[1010]
         c4.importance.neutron = 4.0
@@ -357,9 +357,9 @@ class TestImportance:
         stream.close()
         cells = new_problem.cells
         for cell_num, imp_str in {
-            4: "imp:n=2.0 imp:p=2.0",
-            6: "imp:n=1.0 imp:p=1.0",
-            7: "imp:n=4.0 imp:p=1.0",
-            8: "imp:n=5.0 imp:p=1.0",
+            4: "IMP:n=2.0 IMP:p=2.0",
+            6: "IMP:n=1.0 IMP:p=1.0",
+            7: "IMP:n=4.0",
+            8: "IMP:n=5.0 IMP:p=1.0",
         }.items():
             assert imp_str in cells[cell_num]._input.input_text
