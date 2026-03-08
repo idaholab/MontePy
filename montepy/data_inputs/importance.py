@@ -3,6 +3,8 @@ import collections
 import copy
 import math
 import warnings
+
+import montepy
 from montepy.data_inputs.cell_modifier import CellModifierInput, InitInput
 from montepy.exceptions import *
 from montepy.constants import DEFAULT_VERSION, rel_tol, abs_tol
@@ -300,10 +302,13 @@ class Importance(CellModifierInput):
         value = float(value)
         if value < 0.0:
             raise ValueError("Importance must be ≥ 0.0")
+        self._explicitly_set = True
         if self._problem:
-            self._explicitly_set = True
             for particle in self._problem.mode:
                 self._particle_importances[particle]["data"][0].value = value
+        else:
+            for particle in montepy.Particle:
+                self[particle] = value
 
     def _clear_data(self):
         if not self.in_cell_block:
