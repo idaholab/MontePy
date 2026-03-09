@@ -20,6 +20,7 @@ jobs:
         with: 
           fetch-depth: 0
           fetch-tags: true
+          persist-credentials: false
       - name: set up python  ${{ matrix.python-version }}
         uses: actions/setup-python@0c366fd6a839edf440554fa01a7085ccba70ac98
         with: 
@@ -66,6 +67,8 @@ jobs:
     
     steps:
       - uses: actions/checkout@0c366fd6a839edf440554fa01a7085ccba70ac98
+        with:
+          persist-credentials: false
       - name: set up python  ${{ matrix.python-version }}
         uses: actions/setup-python@0c366fd6a839edf440554fa01a7085ccba70ac98
         with: 
@@ -117,6 +120,7 @@ jobs:
         with:
           fetch-depth: 0
           fetch-tags: true
+          persist-credentials: false
       - name: set up python 3.12
         uses: actions/setup-python@0c366fd6a839edf440554fa01a7085ccba70ac98
         with: 
@@ -143,6 +147,7 @@ jobs:
         with:
           fetch-depth: 0
           fetch-tags: true
+          persist-credentials: false
       - name: set up python 3.14
         uses: actions/setup-python@0c366fd6a839edf440554fa01a7085ccba70ac98
         with: 
@@ -167,6 +172,8 @@ jobs:
     steps:
 
       - uses: actions/checkout@0c366fd6a839edf440554fa01a7085ccba70ac98
+        with:
+          persist-credentials: false
       - name: set up python 3.14
         uses: actions/setup-python@0c366fd6a839edf440554fa01a7085ccba70ac98
         with: 
@@ -181,6 +188,8 @@ jobs:
     
     steps:
       - uses: actions/checkout@0c366fd6a839edf440554fa01a7085ccba70ac98
+        with:
+          persist-credentials: false
       - name: set up python 3.14
         uses: actions/setup-python@0c366fd6a839edf440554fa01a7085ccba70ac98
         with: 
@@ -200,6 +209,8 @@ jobs:
     
     steps:
       - uses: actions/checkout@0c366fd6a839edf440554fa01a7085ccba70ac98
+        with:
+          persist-credentials: false
       - name: set up python 3.14
         uses: actions/setup-python@0c366fd6a839edf440554fa01a7085ccba70ac98
         with: 
@@ -217,6 +228,8 @@ jobs:
     
     steps:
       - uses: actions/checkout@0c366fd6a839edf440554fa01a7085ccba70ac98
+        with:
+          persist-credentials: false
       - name: Check for changes
         uses: dorny/paths-filter@668c092af3649c4b664c54e4b704aa46782f6f7c
         id: changes

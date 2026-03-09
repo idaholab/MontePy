@@ -12,6 +12,8 @@ jobs:
     runs-on: ubuntu-latest    
     steps:
       - uses: actions/checkout@0c366fd6a839edf440554fa01a7085ccba70ac98
+        with:
+          persist-credentials: false
       - name: set up python  3.14
         uses: actions/setup-python@0c366fd6a839edf440554fa01a7085ccba70ac98
         with: 
@@ -33,6 +35,7 @@ jobs:
         with:
           fetch-depth: 0
           fetch-tags: true
+          persist-credentials: false
       - name: set up python  3.14
         uses: actions/setup-python@0c366fd6a839edf440554fa01a7085ccba70ac98
         with: 
