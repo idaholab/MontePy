@@ -56,7 +56,8 @@ jobs:
             ./dist/*.tar.gz
             ./dist/*.whl
       - name: Create a GitHub release
-        run:| gh release create "v${ steps.get_version.outputs.version }" \
+        run: | 
+            gh release create "v${ steps.get_version.outputs.version }" \
             --title="Release ${ steps.get_version.outputs.version }" \
             --generate-notes -d
       - run: >-
