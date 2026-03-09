@@ -16,13 +16,13 @@ jobs:
         python-version: ["3.12", "3.13", "3.14"]
 
     steps:
-      - uses: actions/checkout@0c366fd6a839edf440554fa01a7085ccba70ac98
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
         with: 
           fetch-depth: 0
           fetch-tags: true
           persist-credentials: false
       - name: set up python  ${{ matrix.python-version }}
-        uses: actions/setup-python@0c366fd6a839edf440554fa01a7085ccba70ac98
+        uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405
         with: 
           python-version: ${{ matrix.python-version }}
       - run: pip install --upgrade pip
@@ -66,11 +66,11 @@ jobs:
             sly-version: "0.4"
     
     steps:
-      - uses: actions/checkout@0c366fd6a839edf440554fa01a7085ccba70ac98
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
         with:
           persist-credentials: false
       - name: set up python  ${{ matrix.python-version }}
-        uses: actions/setup-python@0c366fd6a839edf440554fa01a7085ccba70ac98
+        uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405
         with: 
           python-version: ${{ matrix.python-version }}
       - run: pip install numpy~=${{ matrix.numpy-version }}
@@ -116,13 +116,13 @@ jobs:
       contents: read
     
     steps:
-      - uses: actions/checkout@0c366fd6a839edf440554fa01a7085ccba70ac98
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
         with:
           fetch-depth: 0
           fetch-tags: true
           persist-credentials: false
       - name: set up python 3.12
-        uses: actions/setup-python@0c366fd6a839edf440554fa01a7085ccba70ac98
+        uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405
         with: 
           python-version: 3.14
       - run: pip install . montepy[doc,build]
@@ -143,13 +143,13 @@ jobs:
       contents: read
     
     steps:
-      - uses: actions/checkout@0c366fd6a839edf440554fa01a7085ccba70ac98
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
         with:
           fetch-depth: 0
           fetch-tags: true
           persist-credentials: false
       - name: set up python 3.14
-        uses: actions/setup-python@0c366fd6a839edf440554fa01a7085ccba70ac98
+        uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405
         with: 
           python-version: 3.14
       - run: pip install . montepy[doc,build,demo-test,test]
@@ -171,11 +171,11 @@ jobs:
     
     steps:
 
-      - uses: actions/checkout@0c366fd6a839edf440554fa01a7085ccba70ac98
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
         with:
           persist-credentials: false
       - name: set up python 3.14
-        uses: actions/setup-python@0c366fd6a839edf440554fa01a7085ccba70ac98
+        uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405
         with: 
           python-version: 3.14
       - run: pip install . montepy[format]
@@ -187,11 +187,11 @@ jobs:
       contents: read
     
     steps:
-      - uses: actions/checkout@0c366fd6a839edf440554fa01a7085ccba70ac98
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
         with:
           persist-credentials: false
       - name: set up python 3.14
-        uses: actions/setup-python@0c366fd6a839edf440554fa01a7085ccba70ac98
+        uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405
         with: 
           python-version: 3.14
       - run: pip install . montepy[test]
@@ -208,11 +208,11 @@ jobs:
       contents: read
     
     steps:
-      - uses: actions/checkout@0c366fd6a839edf440554fa01a7085ccba70ac98
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
         with:
           persist-credentials: false
       - name: set up python 3.14
-        uses: actions/setup-python@0c366fd6a839edf440554fa01a7085ccba70ac98
+        uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405
         with: 
           python-version: 3.14
       - run: pip install . montepy[test]
@@ -227,7 +227,7 @@ jobs:
     if: github.ref != 'refs/heads/main'
     
     steps:
-      - uses: actions/checkout@0c366fd6a839edf440554fa01a7085ccba70ac98
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
         with:
           persist-credentials: false
       - name: Check for changes
