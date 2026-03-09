@@ -127,6 +127,11 @@ class TestNumberedObjectCollection:
             cells.append(cell)
         with pytest.raises(TypeError):
             cells.append(5)
+        # Directly set a negative internal value to cover the guard in
+        # __internal_append (bypasses the property-level validator).
+        cell._number.value = -1
+        with pytest.raises(ValueError):
+            cells.append(cell)
         cell.number = 20
         cells.append(cell)
         assert len(cells) == size + 1
@@ -182,6 +187,26 @@ class TestNumberedObjectCollection:
         cells.append_renumber(cell)
         assert cell.number == 4
         assert len(cells) == size + 2
+
+    def test_append_renumber_none_number(self, cp_simple_problem):
+        """Test that append_renumber assigns the next available number when
+        the object has no number yet (number is None).  Regression test for
+        GitHub issue #880.
+        """
+        cells = copy.deepcopy(cp_simple_problem.cells)
+        size = len(cells)
+        # montepy.Cell() created from scratch has number == None
+        new_cell = montepy.Cell()
+        assert new_cell.number is None, "Sanity: fresh Cell should have number=None"
+        assigned = cells.append_renumber(new_cell)
+        assert new_cell.number is not None, "Cell should have been assigned a number"
+        assert new_cell.number > 0, "Assigned number must be positive"
+        assert assigned == new_cell.number, "Return value must match assigned number"
+        assert assigned in cells.numbers, "Cell must be present in collection"
+        assert (
+            new_cell in cells
+        ), "Cell object must be iterable-accessible in collection"
+        assert len(cells) == size + 1
 
     def test_append_renumber_problems(self, cp_simple_problem):
         print(hex(id(cp_simple_problem.materials._problem)))
