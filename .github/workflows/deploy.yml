@@ -57,11 +57,9 @@ jobs:
             ./dist/*.tar.gz
             ./dist/*.whl
       - name: Create a GitHub release
-        uses: ncipollo/release-action@b7eabc95ff50cbeeedec83973935c8f306dfcd0b
-        with:
-          tag: v${{ steps.get_version.outputs.version }}
-          name: Release ${{ steps.get_version.outputs.version }}
-          draft: true
+        run:| gh release create "v${ steps.get_version.outputs.version }" \
+            --title="Release ${ steps.get_version.outputs.version }" \
+            --generate-notes -d
       - run: >-
           gh release upload
           'v${{ steps.get_version.outputs.version }}' dist/**
