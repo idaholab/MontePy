@@ -1,4 +1,4 @@
-from collections.abc import Iterable, Callable
+from collections.abc import Iterable, Callable, Sequence
 from numbers import Real, Integral
 from typing import Annotated, Self
 

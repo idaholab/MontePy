@@ -237,7 +237,7 @@ class Surface(Numbered_MCNP_Object):
 
     @surface_constants.setter
     @args_checked
-    def surface_constants(self, constants: ty.Iterable[ty.Real]):
+    def surface_constants(self, constants: ty.Sequence[ty.Real]):
         if len(constants) != len(self._surface_constants):
             raise ValueError(f"Cannot change the length of the surface constants.")
         for i, value in enumerate(constants):
