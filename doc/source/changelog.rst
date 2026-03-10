@@ -8,9 +8,7 @@ MontePy Changelog
 
 **Features Added**
 
-
 * Add _checkvalue.py_ to codebase (:issue:`687`). 
-* Added ``extend_renumber`` to ``NumberedObjectCollection`` with related test cases (:issue:`881`).
 
 
 1.3 releases

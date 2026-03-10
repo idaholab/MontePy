@@ -32,7 +32,6 @@ class GeneralSphere(Surface):
         self,
         input: InitInput = None,
         number: ty.PositiveInt = None,
-        surface_type: SurfaceType | str = None,
     ):
         self._coordinates = [
             self._generate_default_node(float, None),
@@ -76,7 +75,7 @@ class GeneralSphere(Surface):
 
     @coordinates.setter
     @args_checked
-    def coordinates(self, coordinates: ty.Iterable[ty.Real]):
+    def coordinates(self, coordinates: ty.Sequence[ty.Real]):
         if len(coordinates) != 3:
             raise ValueError("coordinates must have exactly three elements")
         for i, val in enumerate(coordinates):

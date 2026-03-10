@@ -1,4 +1,4 @@
-# Copyright 2024-2025, Battelle Energy Alliance, LLC All Rights Reserved.
+# Copyright 2024-2026, Battelle Energy Alliance, LLC All Rights Reserved.
 from __future__ import annotations
 
 import montepy
@@ -74,7 +74,7 @@ class CylinderParAxis(Surface):
 
     @coordinates.setter
     @args_checked
-    def coordinates(self, coordinates: ty.Iterable[ty.Real]):
+    def coordinates(self, coordinates: ty.Sequence[ty.Real]):
         if len(coordinates) != 2:
             raise ValueError("coordinates must have exactly two elements")
         for i, val in enumerate(coordinates):
