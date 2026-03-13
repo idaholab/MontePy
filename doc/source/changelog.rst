@@ -10,6 +10,7 @@ MontePy Changelog
 
 **Bugs Fixed**
 
+* Fixed a bug where ``write_problem`` added two unnecessary trailing blank lines when writing a problem with empty cell and/or surface blocks (e.g. a pure ``READ`` include file) (:issue:`523`).
 * Fixed a bug where ``append_renumber`` raised a ``TypeError`` when called with an object whose ``number`` is ``None`` (e.g. an object created with no arguments) (:issue:`880`).
 
 **Feature Added**

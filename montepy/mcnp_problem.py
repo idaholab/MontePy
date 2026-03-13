@@ -619,7 +619,7 @@ class MCNP_Problem:
                         self.data_inputs, self.mcnp_version
                     ):
                         inp.write(line + "\n")
-                elif terminate:
+                elif terminate and objects:
                     inp.write("\n")
 
         self._handle_warnings(warning_catch)

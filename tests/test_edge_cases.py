@@ -254,3 +254,20 @@ def test_expanding_new_line():
     fill.universes = np.array([[universes]])
     with io.StringIO() as fh, pytest.warns(LineExpansionWarning):
         problem.write_problem(fh)
+
+
+def test_no_trailing_blank_lines_for_empty_blocks():
+    """Ensure write_problem does not emit blank-line terminators for empty
+    cell/surface blocks (e.g. a pure-READ include file). Regression for
+    GitHub issue #523."""
+    problem = montepy.read_input(Path("tests") / "inputs" / "testReadRec2.imcnp")
+    assert len(problem.cells) == 0
+    assert len(problem.surfaces) == 0
+    with io.StringIO() as fh:
+        problem.write_problem(fh)
+        content = fh.getvalue()
+    # The output must end with exactly one newline (no extra blank lines)
+    assert content == content.rstrip("\n") + "\n", (
+        f"write_problem added unexpected trailing blank lines; "
+        f"got trailing newlines: {len(content) - len(content.rstrip(chr(10)))}"
+    )
