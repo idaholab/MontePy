@@ -187,6 +187,14 @@ nitpick_ignore = [
     # it under the internal module path, not montepy.Mode; keep until cross-refs
     # in the codebase are migrated to the public API path
     ("py:meth", "montepy.data_inputs.mode.Mode.set"),
+    # Library and LibraryType are documented via public re-export paths
+    # (montepy.Library / montepy.LibraryType in modules.rst), but Python type
+    # annotations in source files resolve to the canonical module paths below.
+    # Sphinx generates inventory entries for the autosummary path only, so these
+    # canonical-path refs remain unresolvable until all docstrings migrate to the
+    # public API path.
+    ("py:class", "montepy.data_inputs.nuclide.Library"),
+    ("py:class", "montepy.particle.LibraryType"),
 ]
 
 # Regex patterns for cross-reference targets that cannot be resolved.

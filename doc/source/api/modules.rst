@@ -101,6 +101,7 @@ Materials
    :template: myclass.rst
    
    montepy.Element
+   montepy.Library
    montepy.Material
    montepy.Nuclide
    montepy.ThermalScatteringLaw
@@ -174,6 +175,7 @@ Enumerations
    :template: myclass.rst
 
    montepy.geometry_operators.Operator
+   montepy.LibraryType
    montepy.particle.Particle
    montepy.SurfaceType
    montepy.input_parser.shortcuts.Shortcuts
