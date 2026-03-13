@@ -35,8 +35,8 @@ Top Level
 ^^^^^^^^^
 The top level of the package is reserved for only a select few objects.
 All children of :class:`~montepy.numbered_object_collection.NumberedObjectCollection` can live here.
-The other allowed classes are: ``Exceptions``, :class:`~montepy.mcnp_card.MCNP_Card`, :class:`~montepy.mcnp_problem.MCNP_Problem`, :class:`~montepy.cell.Cell`,
-:class:`~montepy.particle.Particle`, and :class:`~montepy.universe.Universe`.
+The other allowed classes are: ``Exceptions``, :class:`~montepy.mcnp_object.MCNP_Object`, :class:`~montepy.MCNP_Problem`, :class:`~montepy.Cell`,
+:class:`~montepy.particle.Particle`, and :class:`~montepy.Universe`.
 Utility functions are allowed at this level as well.
 
 
@@ -44,21 +44,21 @@ input_parser
 ^^^^^^^^^^^^
 The :mod:`montepy.input_parser` contains all functions and classes involved in syntax parsing.
 Generally this is all invoked through :func:`~montepy.input_parser.input_reader.read_input`,
-which returns an :class:`~montepy.mcnp_problem.MCNP_Problem` instance.
+which returns an :class:`~montepy.MCNP_Problem` instance.
 
 
 data_inputs
 ^^^^^^^^^^^
-This package is for all :class:`~montepy.mcnp_card.MCNP_Card` children that should exist
+This package is for all :class:`~montepy.mcnp_object.MCNP_Object` children that should exist
 in the data block in an MCNP input. 
-For example :class:`~montepy.data_inputs.material.Material` lives here.
+For example :class:`~montepy.Material` lives here.
 
 surfaces
 ^^^^^^^^
 This package contains all surface classes.
-All classes need to be children of :class:`~montepy.surfaces.surface.Surface`.
+All classes need to be children of :class:`~montepy.Surface`.
 When possible new surface classes should combine similar planes.
-For example :class:`~montepy.surfaces.axis_plane.AxisPlane` covers ``PX``, ``PY``, and ``PZ``.
+For example :class:`~montepy.AxisPlane` covers ``PX``, ``PY``, and ``PZ``.
 
 
 Introduction to SLY and Syntax Trees
@@ -152,7 +152,7 @@ Input: :class:`~montepy.mcnp_object.MCNP_Object`
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 All classes that represent a single input card *must* subclass this. 
-For example: some children are: :class:`~montepy.cell.Cell`, :class:`~montepy.surfaces.surface.Surface`.
+For example: some children are: :class:`~montepy.Cell`, :class:`~montepy.Surface`.
 
 How to __init__
 """""""""""""""
@@ -222,7 +222,7 @@ It should be noted that the value is found by running ``int(self.token)``, that 
 This is in order to avoid allowing ``1.5`` as a valid int, since in this case the floor would be taken.
 ``_convert_to_enum`` takes a class instance, which is a subclass of ``Enum``. 
 You can specify a ``format_type``, which specifies what the data should be treated as while formatting it with new data.
-For example :class:`~montepy.surfaces.surface_type.SurfaceType` (e.g., ``PZ``) uses ``str`` as its format type,
+For example :class:`~montepy.SurfaceType` (e.g., ``PZ``) uses ``str`` as its format type,
 whereas :class:`~montepy.data_inputs.lattice.LatticeType` (e.g., ``1`` or ``2``) uses ``int`` is its format type.
 
 How to __str__ vs __repr__
@@ -235,7 +235,7 @@ For numbered objects this should include their number, and a few high level deta
 For ``__repr__`` this should include debugging information.
 This should include most if not all internal state information.
 
-See this example for :class:`~montepy.cell.Cell`
+See this example for :class:`~montepy.Cell`
 
 .. doctest::
    :skipif: True # skip because multi-line doc tests are kaputt
@@ -254,7 +254,7 @@ See this example for :class:`~montepy.cell.Cell`
 
 Writing to File (Format for MCNP Input)
 """""""""""""""""""""""""""""""""""""""
-MontePy (via :func:`~montepy.mcnp_problem.MCNP_Problem.write_problem`) writes
+MontePy (via :func:`~montepy.MCNP_Problem.write_problem`) writes
 a class to file path or file handle  by calling its :func:`~montepy.mcnp_object.MCNP_Object.format_for_mcnp_input` method.
 This must return a list of strings that faithfully represent this objects state, and tries to replicate the user formatting.
 Each string in the list represents one line in the MCNP input file to be written.
@@ -275,7 +275,7 @@ Next the abstract method, :func:`~montepy.mcnp_object.MCNP_Object._update_values
 This function updates the syntax tree with current values.
 Most values should not need to be updated, since their value is linked to a ValueNode, which is pointed to and modified by the object.
 This should only really by used to update information controlled by other objects.
-For instance :class:`~montepy.cell.Cell` will update its material number based on ``self.material.number``,
+For instance :class:`~montepy.Cell` will update its material number based on ``self.material.number``,
 since the cell object does not control a material's number.
 Finally ``self._tree`` is formatted.
 Remember ``self._tree`` is a syntax tree of type :class:`~montepy.input_parser.syntax_node.SyntaxNode`.
@@ -308,7 +308,7 @@ Collection: :class:`~montepy.numbered_object_collection.NumberedDataObjectCollec
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 This is a subclass of :class:`~montepy.numbered_object_collection.NumberedObjectCollection`,
 which is designed for :class:`~montepy.data_inputs.data_input.DataInputAbstract` instances.
-It is a wrapper that will ensure that all of its items are also in :attr:`~montepy.mcnp_problem.MCNP_Problem.data_inputs`.
+It is a wrapper that will ensure that all of its items are also in :attr:`~montepy.MCNP_Problem.data_inputs`.
 
 
 Numbered Object :class:`~montepy.numbered_mcnp_object.Numbered_MCNP_Object`
@@ -336,7 +336,7 @@ For example the ``Surface`` number setter looks like:
         self._surface_number = number
 
 
-Surface: :class:`~montepy.surfaces.surface.Surface`
+Surface: :class:`~montepy.Surface`
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 This is the parent class for all Surface classes.
 You will also need to update :func:`~montepy.surfaces.surface_builder.surface_builder`.
@@ -351,7 +351,7 @@ You will need to implement a ``_allowed_surface_types`` to specify which surface
 You then need to verify that there are the correct number of surface constants. 
 You will also need to add a branch in the logic for :func:`montepy.surfaces.surface_builder.surface_builder`.
 
-:func:`~montepy.surfaces.surface.Surface.find_duplicate_surfaces`
+:func:`~montepy.Surface.find_duplicate_surfaces`
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 This function is meant to find very similar surfaces that cause geometry errors,
 such as two ``PZ`` surfaces that are 1 micron apart.
@@ -402,10 +402,10 @@ Based upon this the function will decide which class to run for a full parse.
 By default all subclasses will use the :class:`~montepy.input_parser.data_parser.DataParser` class.
 If you need to use a custom parser you do so by setting ``self._parser``.
 
-How to add an object to :class:`~montepy.mcnp_problem.MCNP_Problem`
+How to add an object to :class:`~montepy.MCNP_Problem`
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 
-the :class:`~montepy.mcnp_problem.MCNP_Problem` automatically consumes problem level data inputs,
+the :class:`~montepy.MCNP_Problem` automatically consumes problem level data inputs,
 and adds them to itself.
 Cards this would be appropriate for would be things like ``mode`` and ``kcode``. 
 To do this it uses the dictionary ``inputs_to_property`` in the ``__load_data_inputs_to_object`` method.
@@ -479,7 +479,7 @@ At the ``Cells`` level the object should be stored in a ``_protected`` attribute
 See more below.
 
 
-How these objects are added to :class:`~montepy.cell.Cell` and :class:`~montepy.cells.Cells`
+How these objects are added to :class:`~montepy.Cell` and :class:`~montepy.Cells`
 """"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 
 Due to the number of classes that will ultimately be subclasses of this class,
@@ -563,11 +563,11 @@ The goal is to delete any internal data that has already been pushed to the cell
 so that if a user goes crazy and somehow access this object they cannot modify the data,
 and get into weird end-use behavior.
 
-:attr:`~montepy.mcnp_problem.MCNP_Problem.print_in_data_block`
+:attr:`~montepy.MCNP_Problem.print_in_data_block`
 """"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 
 There is a flag system for controlling if data are output in the cell block or the data block.
-This is controlled by :attr:`~montepy.mcnp_problem.MCNP_Problem.print_in_data_block`.
+This is controlled by :attr:`~montepy.MCNP_Problem.print_in_data_block`.
 This acts like a dictionary.
 The key is the string prefix that mcnp uses but is case insensitive.
 So controlling the printing of ``cell.importance`` data is handled by:
@@ -701,9 +701,9 @@ Typical constants can be found in :mod:`montepy.constants`.
 
 Here are the other data structures to be aware of:
 
-* :class:`~montepy.mcnp_problem.MCNP_Problem` ``_NUMBERED_OBJ_MAP``: maps a based numbered object to its collection
+* :class:`~montepy.MCNP_Problem` ``_NUMBERED_OBJ_MAP``: maps a based numbered object to its collection
   class. This is used for loading all problem numbered object collections in an instance.
 * :obj:`montepy.data_inputs.data_parser.PREFIX_MATCHES` is a set of the data object classes. The prefix is taken from
   the classes. A data object must be a member of this class for it to automatically parse new data objects.
-* :class:`~montepy.cell.Cell` ``_INPUTS_TO_PROPERTY`` maps a cell modifier class to the attribute to load it into for a
+* :class:`~montepy.Cell` ``_INPUTS_TO_PROPERTY`` maps a cell modifier class to the attribute to load it into for a
   cell.  The boolean is whether multiple input instances are allowed.

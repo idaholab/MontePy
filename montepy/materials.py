@@ -13,7 +13,7 @@ Material = montepy.data_inputs.material.Material
 
 
 class Materials(NumberedDataObjectCollection):
-    """A container of multiple :class:`~montepy.data_inputs.material.Material` instances.
+    """A container of multiple :class:`~montepy.Material` instances.
 
     This collection can be sliced to get a subset of the materials.
     Slicing is done based on the material numbers, not their order in the input.
@@ -28,7 +28,7 @@ class Materials(NumberedDataObjectCollection):
     Notes
     -----
     When items are added to this (and this object is linked to a problem),
-    they will also be added to :attr:`montepy.mcnp_problem.MCNP_Problem.data_inputs`.
+    they will also be added to :attr:`montepy.MCNP_Problem.data_inputs`.
 
     Notes
     -----
@@ -58,7 +58,7 @@ class Materials(NumberedDataObjectCollection):
     ) -> Generator[Material]:
         """Get all materials that contain any of these these nuclides.
 
-        This uses :func:`~montepy.data_inputs.material.Material.contains_all` under the hood.
+        This uses :func:`~montepy.Material.contains_all` under the hood.
         See that documentation for more guidance.
 
         Examples
@@ -122,7 +122,7 @@ class Materials(NumberedDataObjectCollection):
     ) -> Generator[Material]:
         """Get all materials that contain all of these nuclides.
 
-        This uses :func:`~montepy.data_inputs.material.Material.contains_all` under the hood.
+        This uses :func:`~montepy.Material.contains_all` under the hood.
         See that documentation for more guidance.
 
         Examples

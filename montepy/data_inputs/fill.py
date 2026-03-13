@@ -348,7 +348,7 @@ class Fill(CellModifierInput):
         Parameters
         ----------
         value : np.ndarray or None
-            A 3D numpy array of :class:`~montepy.universe.Universe` objects,
+            A 3D numpy array of :class:`~montepy.Universe` objects,
             a 3D numpy array of integer universe IDs, or None to clear the
             universes. Arrays with 0, 1, or 2 dimensions are automatically
             expanded to 3D by adding dimensions at the end.

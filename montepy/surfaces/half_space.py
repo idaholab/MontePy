@@ -171,7 +171,7 @@ class HalfSpace:
 
         1. Link this HalfSpace (and its children) to the parent cell.
         2. Update the divider parameter to point to the relevant surface or cell.
-        3. Update the parent's :attr:`~montepy.cell.Cell.surfaces`, and :attr:`~montepy.cell.Cell.complements`.
+        3. Update the parent's :attr:`~montepy.Cell.surfaces`, and :attr:`~montepy.Cell.complements`.
 
         Parameters
         ----------
@@ -223,11 +223,11 @@ class HalfSpace:
         """Updates old surface numbers to prepare for deleting surfaces.
 
         This will ensure any new surfaces or complements properly get added to the parent
-        cell's :attr:`~montepy.cell.Cell.surfaces` and :attr:`~montepy.cell.Cell.complements`.
+        cell's :attr:`~montepy.Cell.surfaces` and :attr:`~montepy.Cell.complements`.
 
         .. versionchanged:: 1.0.0
 
-            The form of the deleting_dict was changed as :class:`~montepy.surfaces.surface.Surface` is no longer hashable.
+            The form of the deleting_dict was changed as :class:`~montepy.Surface` is no longer hashable.
 
         Parameters
         ----------
@@ -715,11 +715,11 @@ class UnitHalfSpace(HalfSpace):
         """Updates old surface numbers to prepare for deleting surfaces.
 
         This will ensure any new surfaces or complements properly get added to the parent
-        cell's :attr:`~montepy.cell.Cell.surfaces` and :attr:`~montepy.cell.Cell.complements`.
+        cell's :attr:`~montepy.Cell.surfaces` and :attr:`~montepy.Cell.complements`.
 
         .. versionchanged:: 1.0.0
 
-            The form of the deleting_dict was changed as :class:`~montepy.surfaces.surface.Surface` is no longer hashable.
+            The form of the deleting_dict was changed as :class:`~montepy.Surface` is no longer hashable.
 
         Parameters
         ----------

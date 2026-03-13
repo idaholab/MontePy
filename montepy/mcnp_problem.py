@@ -177,7 +177,7 @@ class MCNP_Problem:
     def set_mode(self, particles):
         """Sets the mode of problem to the given particles.
 
-        For details see: :meth:`~montepy.data_inputs.mode.Mode.set`.
+        For details see: :meth:`~montepy.Mode.set`.
 
         Parameters
         ----------

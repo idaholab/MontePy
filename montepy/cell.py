@@ -603,7 +603,7 @@ class Cell(Numbered_MCNP_Object):
     def complements(self):
         """The Cell objects that this cell is a complement of
 
-        :rytpe: :class:`montepy.cells.Cells`
+        :rtype: :class:`montepy.Cells`
         """
         return self._complements
 

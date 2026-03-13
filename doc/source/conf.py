@@ -183,10 +183,6 @@ nitpick_ignore = [
     # Private internal classes not exposed in the public API
     ("py:class", "montepy._singleton.SingletonGroup"),
     ("py:class", "montepy.data_inputs.nuclide.Nucleus"),
-    # montepy.data_inputs.mode.Mode.set: Mode is public but autosummary indexes
-    # it under the internal module path, not montepy.Mode; keep until cross-refs
-    # in the codebase are migrated to the public API path
-    ("py:meth", "montepy.data_inputs.mode.Mode.set"),
     # Library and LibraryType are documented via public re-export paths
     # (montepy.Library / montepy.LibraryType in modules.rst), but Python type
     # annotations in source files resolve to the canonical module paths below.
@@ -205,8 +201,7 @@ nitpick_ignore_regex = [
     (r"py:class", r"^Token$"),
     # Bare unqualified names from :type: annotations in older docstrings;
     # ClassifierNode is an internal parser class not re-exported publicly
-    (r"py:class", r"^(Nucleus|Library|LibraryType|ListNode|MCNP_Input|ClassifierNode|enum|hexahedron|class)$"),
-    (r"py:class", r"^A rectangular prism is a type$"),
+    (r"py:class", r"^(Nucleus|Library|LibraryType|ListNode|MCNP_Input|ClassifierNode|enum|class)$"),
     # numpy alias "np" is not in the numpy intersphinx inventory
     (r"py:class", r"^np\..*"),
     # Sphinx autosummary generates internal node type refs
@@ -214,12 +209,6 @@ nitpick_ignore_regex = [
     # Old class names that no longer exist (renamed in refactoring)
     (r"py:class", r"^montepy\.(data_cards|mcnp_card|data_input)\..+$"),
     (r"py:func", r"^montepy\.(data_cards|mcnp_card|data_input)\..+$"),
-    # Cross-refs using internal module paths (montepy.cell.Cell) instead of the
-    # public API path (montepy.Cell) that autosummary uses for inventory entries.
-    # These are correct conceptually; the path mismatch is a known limitation.
-    # TODO: migrate all cross-refs to public API paths (montepy.Cell, etc.)
-    (r"py:attr", r"^montepy\.(cell|mcnp_problem|surfaces|data_inputs)\..+$"),
-    (r"py:func", r"^montepy\.(cell|cells|mcnp_problem|surfaces|data_inputs|materials|universe)\..+$"),
     # montepy.input_parser and montepy.data_inputs are subpackages referenced
     # with :mod: in developing.rst; they are not indexed as modules by autodoc
     (r"py:mod", r"^montepy\.(surfaces|data_inputs|input_parser|input_parser\..+)$"),
