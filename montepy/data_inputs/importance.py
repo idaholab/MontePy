@@ -27,6 +27,12 @@ import numbers
 # * _real_tree : holds unique trees for every particle type. This is used in data block formatting.
 # * _particle_importances : a dictionary of ParameterNodes that maps a particle to it's ParameterNode
 # * _part_combos : a list of ParticleNode that show which particles were combined on the original input
+#
+# Defaults and all or nothing
+#
+# The default value is stored in _DEFAULT_IMP
+#
+#
 
 
 class Importance(CellModifierInput):
@@ -46,6 +52,11 @@ class Importance(CellModifierInput):
 
     _DEFAULT_IMP = 1.0
 
+    _ALL_OR_NOTHING = True
+    """
+    Marks that if one cell has a value all cells must have values, no matter the default.
+    """
+
     def __init__(
         self,
         input: InitInput = None,
@@ -56,7 +67,7 @@ class Importance(CellModifierInput):
         self._particle_importances = {}
         self._real_tree = {}
         self._part_combos = []
-        self._explicitly_set = False
+        self.__explicitly_set = False
         super().__init__(input, in_cell_block, key, value)
         if self.in_cell_block:
             if key:
@@ -474,6 +485,21 @@ class Importance(CellModifierInput):
                 list(self._real_tree.values())[-1]["start_pad"]._grab_beginning_comment(
                     new_padding
                 )
+
+    @property
+    def _explicitly_set(self):
+        return self.__explicitly_set
+
+    @_explicitly_set.setter
+    def _explicitly_set(self, value):
+        if value and self._problem:
+            self._problem.print_in_data_block._set_all_or_none(self._class_prefix())
+        self.__explicitly_set = value
+
+    def link_to_problem(self, problem):
+        super().link_to_problem(problem)
+        if problem and self._explicitly_set:
+            self._problem.print_in_data_block._set_all_or_none(self._class_prefix())
 
 
 def _generate_default_data_tree(particle):
