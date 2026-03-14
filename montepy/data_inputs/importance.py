@@ -268,6 +268,10 @@ class Importance(CellModifierInput):
                     data.nodes.append(value)
 
     def _format_tree(self):
+        def ensure_has_end_space(ret):
+            if ret and ret[-1] != " ":
+                return ret + " "
+            return ret
         if self.in_cell_block:
             particles_printed = set()
             ret = ""
@@ -293,6 +297,7 @@ class Importance(CellModifierInput):
                             to_remove.add(other_part)
                 for removee in to_remove:
                     other_particles.remove(removee)
+                ret = ensure_has_end_space(ret)
                 ret += self._particle_importances[particle].format()
                 particles_printed.add(particle)
             # catch default values
@@ -301,6 +306,7 @@ class Importance(CellModifierInput):
                 for particle in missed_defaults:
                     # trigger adding syntax tree
                     self[particle] = self._DEFAULT_IMP
+                    ret = ensure_has_end_space(ret)
                     ret += self._particle_importances[particle].format()
             return ret
         else:
