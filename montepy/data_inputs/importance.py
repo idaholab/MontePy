@@ -107,10 +107,10 @@ class Importance(CellModifierInput):
         if particle is None:
             particles = syntax_node.ParticleNode("imp particle", "n")
             particle = Particle.NEUTRON
+            if self._problem:
+                particles.particles = self._problem.mode.particles
         else:
             particles = syntax_node.ParticleNode("imp particle", particle.value.lower())
-        if self._problem:
-            particles.particles = self._problem.mode.particles
         classifier.particles = particles
         list_node = syntax_node.ListNode("imp data")
         list_node.append(self._generate_default_node(float, self._DEFAULT_IMP))
@@ -281,6 +281,13 @@ class Importance(CellModifierInput):
                     other_particles.remove(removee)
                 ret += self._particle_importances[particle].format()
                 particles_printed.add(particle)
+            # catch default values
+            if self._problem:
+                missed_defaults = self._problem.mode.particles - particles_printed
+                for particle in missed_defaults:
+                    # trigger adding syntax tree
+                    self[particle] = self._DEFAULT_IMP
+                    ret += self._particle_importances[particle].format()
             return ret
         else:
             printed_parts = set()
