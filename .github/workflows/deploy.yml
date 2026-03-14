@@ -7,11 +7,15 @@ on:
 
 jobs:
   last-minute-test:
+    permissions:
+      contents: read
     runs-on: ubuntu-latest    
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+        with:
+          persist-credentials: false
       - name: set up python  3.14
-        uses: actions/setup-python@v6
+        uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405
         with: 
           python-version: 3.14
       - run: pip install . montepy[develop]
@@ -20,6 +24,8 @@ jobs:
   
   build-packages:
     name: Build, sign, and release packages on github
+    environment:
+      name: build-pypi
     runs-on: ubuntu-latest
     needs: [last-minute-test]
     permissions:
@@ -28,12 +34,13 @@ jobs:
     env:
       GH_TOKEN: ${{ github.token }}
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
         with:
           fetch-depth: 0
           fetch-tags: true
+          persist-credentials: false
       - name: set up python  3.14
-        uses: actions/setup-python@v6
+        uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405
         with: 
           python-version: 3.14
       - run: pip install . montepy[build]
@@ -44,22 +51,21 @@ jobs:
         run: .github/scripts/check_version.py
       - run: python -m build .
       - name: Sign the dists with Sigstore
-        uses: sigstore/gh-action-sigstore-python@cd06a1783504a0c8e550f0d0cd47d3bbae8d71bd
+        uses: sigstore/gh-action-sigstore-python@a309ff8b426b58ec0e2a45f0f869d46889d02405
         with:
           inputs: >-
             ./dist/*.tar.gz
             ./dist/*.whl
       - name: Create a GitHub release
-        uses: ncipollo/release-action@b7eabc95ff50cbeeedec83973935c8f306dfcd0b
-        with:
-          tag: v${{ steps.get_version.outputs.version }}
-          name: Release ${{ steps.get_version.outputs.version }}
-          draft: true
+        run: | 
+             gh release create "v${ steps.get_version.outputs.version }" \
+             --title="Release ${ steps.get_version.outputs.version }" \
+             --generate-notes -d
       - run: >-
           gh release upload
           'v${{ steps.get_version.outputs.version }}' dist/**
           --repo '${{ github.repository }}'
-      - uses: actions/upload-artifact@v7
+      - uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f
         with: 
            name: build
            path: |
@@ -78,7 +84,7 @@ jobs:
       id-token: write
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/download-artifact@v8
+      - uses: actions/download-artifact@70fc10c6e5e1ce46ad2ea6f2b72d43f7d47b13c3
         with:
           name: build
           path: dist/
@@ -97,7 +103,7 @@ jobs:
       id-token: write
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/download-artifact@v8
+      - uses: actions/download-artifact@70fc10c6e5e1ce46ad2ea6f2b72d43f7d47b13c3
         with:
           name: build
           path: dist/
