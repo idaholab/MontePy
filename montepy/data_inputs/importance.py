@@ -141,7 +141,7 @@ class Importance(CellModifierInput):
     def _has_classifier():
         return 2
 
-    def keys(self) -> collections.abc.Generator[montepy.Particle, None, None]:
+    def keys(self) -> collections.abc.Generator[Particle, None, None]:
         """
         Returns a generator of all of the particles that have set values for this importance.
 
@@ -159,7 +159,7 @@ class Importance(CellModifierInput):
 
     def items(
         self,
-    ) -> collections.abc.Generator[tuple[montepy.Particle, float], None, None]:
+    ) -> collections.abc.Generator[tuple[Particle, float], None, None]:
         """Returns a generator of the particle and the importance value for all importances set for this cell.
 
         .. versionadded:: 1.4.0
