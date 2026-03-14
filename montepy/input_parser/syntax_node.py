@@ -1056,6 +1056,7 @@ class ValueNode(SyntaxNodeBase):
         if not (allow_none and self._value is None):
             self._value = enum_class(value)
         self._formatter = self._FORMATTERS[format_type].copy()
+        self._og_value = self._value
 
     def convert_to_str(self):
         """Converts this ValueNode to being a string type.
