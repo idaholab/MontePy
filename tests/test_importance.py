@@ -353,6 +353,9 @@ class TestImportance:
         stream = io.StringIO()
         problem.write_problem(stream)
         stream.seek(0)
+        for line in stream:
+            print(line.rstrip())
+        stream.seek(0)
         new_problem = montepy.read_input(stream)
         stream.close()
         cells = new_problem.cells
@@ -362,4 +365,5 @@ class TestImportance:
             7: "IMP:n=4.0 IMP:p=1.0",
             8: "IMP:n=5.0 IMP:p=1.0",
         }.items():
+            print(cell_num, imp_str)
             assert imp_str in cells[cell_num]._input.input_text

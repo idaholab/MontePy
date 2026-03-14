@@ -141,6 +141,20 @@ class Importance(CellModifierInput):
     def _has_classifier():
         return 2
 
+    def keys(self):
+        """ """
+        yield from self._particle_importances.keys()
+
+    def values(self):
+        """ """
+        for tree in self._particle_importances.values():
+            yield tree["data"][0].value
+
+    def items(self):
+        """ """
+        for part in self:
+            yield (part, self._particle_importances[part]["data"][0].value)
+
     @property
     def has_information(self):
         has_info = []
