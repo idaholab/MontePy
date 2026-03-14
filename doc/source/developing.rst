@@ -126,7 +126,7 @@ The classes are:
   It is meant to hold a single value, both its semantic value and its text representation, and its surrounding white-space (and comments), or padding.
 * :class:`~montepy.input_parser.syntax_node.PaddingNode` is the companion to the ``ValueNode``. It encapsulates all following padding for a value.
   Padding is considered to be white-space or a comment (:class:`~montepy.input_parser.syntax_node.CommentNode`).
-* :class:`~montepy.input_parser.syntax_node.ListNode` is a node meant to contain a list of arbitrary length of values.
+* ``ListNode`` is a node meant to contain a list of arbitrary length of values.
 * :class:`~montepy.input_parser.syntax_node.ShortcutNode` is a helper to a ``ListNode`` for when MCNP shortcuts (e.g., ``1 10r``) are used.
   They are nested inside of a ``ListNode`` and should be mostly transparent to the user and developer.
 * :class:`~montepy.input_parser.syntax_node.ParametersNode` is a node to hold the parameters for an input. 
@@ -136,7 +136,7 @@ The classes are:
 * :class:`~montepy.input_parser.syntax_node.ClassifierNode` is a node to represent the data classification "word" that describes what the data are for.
   For example for a material it would contain ``M34``. For a cell importance it could be ``imp:n``.
   It can contain: a data keyword, a number, a particle designator (:class:`~montepy.input_parser.syntax_node.ParticleNode`), and a modifier character (e.g., ``*`` in ``*TR5``).
-* :class:`~montepy.input_parser.syntax_node.IsotopesNode` is a node that represents an MCNP style isotope identifier (e.g., ``1001.80c``).
+* ``IsotopesNode`` is a node that represents an MCNP style isotope identifier (e.g., ``1001.80c``).
 
 Many of these nodes (which aren't leaves) behave like dicts and lists, and can be accessed with indices. 
 For more detail in how to work with them read the next section on MCNP_Objects: :ref:`mcnp-object-docs`.
@@ -197,7 +197,7 @@ This property can be set, and should be.
 
 You should not store the nested value; instead you should store the entire ValueNode in a private attribute,
 and then use :func:`~montepy.utilities.make_prop_val_node` to provide the appropriate property.
-Even if an input isn't provided a ValueNode needs to be stored. The utility :func:`~montepy.mcnp_object.MCNP_Object._generate_default_node` can help simplify this.
+Even if an input isn't provided a ValueNode needs to be stored. The utility ``_generate_default_node()`` can help simplify this.
 
 The parsers can't always know what data type should in a specific position, so largely it treats all numerical values as floats.
 This should be changed during the init so the value_nodes are the correct data type.
@@ -211,12 +211,12 @@ This will make it so that ``value`` always returns a positive value, and so :fun
 .. note::
 
    Setting :func:`~montepy.input_parser.syntax_node.ValueNode.is_negatable_identifier` to ``True`` 
-   will convert the ValueNode to an integer ValueNode (via :func:`~montepy.input_parser.syntax_node.ValueNode._convert_to_int`).
+   will convert the ValueNode to an integer ValueNode (via ``_convert_to_int()``).
 
 Next, if you do not need to change the :func:`~montepy.input_parser.syntax_node.ValueNode.type` for the ValueNode, but do not need to markt the ValueNode as negative;
 there are methods to handle this.
-These methods are :func:`~montepy.input_parser.syntax_node.ValueNode._convert_to_int`, and
-:func:`~montepy.input_parser.syntax_node.ValueNode._convert_to_enum`.
+These methods are ``_convert_to_int()``, and
+``_convert_to_enum()``.
 ``_convert_to_int`` is a rather straight forward function to run, and takes no arguments.
 It should be noted that the value is found by running ``int(self.token)``, that is that the original string value, and not the float value is converted.
 This is in order to avoid allowing ``1.5`` as a valid int, since in this case the floor would be taken.
@@ -497,7 +497,7 @@ If this boolean is false repeats of this class are allowed and they will be merg
 (e.g., ``IMP:N,P=1 IMP:E=0`` makes sense despite there being two ``IMP`` specified.
 If True only one instance of the object is allowed.
 (e.g., ``VOL=5 VOL=10`` makes no sense).
-For finding which class to use the :obj:`~montepy.data_inputs.data_parser.PREFIX_MATCHES` set is used. See above.
+For finding which class to use the ``PREFIX_MATCHES`` set is used. See above.
 The key, value pairs in ``Cell.parameters`` is iterated over. 
 If any of the keys is a partial match to the ``PREFIX_MATCHES`` dict then that class is used,
 and constructed. 
@@ -527,11 +527,11 @@ which needs to be implemented.
 For the data-block isntance this is a bit more complicated.
 First all new data for every cell is collected by :func:`~montepy.data_inputs.cell_modifier.CellModifierInput._collect_new_values`.
 By default this will get the *ValueNode* that is returned from the abstract method :func:`~montepy.data_inputs.cell_modifier.CellModifierInput._tree_value`.
-These values will then be passed to :func:`~montepy.input_parser.syntax_node.ListNode.update_with_new_values`.
+These values will then be passed to ``ListNode.update_with_new_values()``.
 
 Finally, the syntax tree is formatted.
 Once again this is wrapped to allow adding more complexity.
-The tree is formatted by :func:`~montepy.data_inputs.cell_modifier.CellModifierInput._format_tree`.
+The tree is formatted by ``_format_tree()``.
 
 :func:`~montepy.data_inputs.cell_modifier.CellModifierInput.merge`
 """"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
@@ -542,7 +542,7 @@ One use case for this is combining the data from: ``IMP:N,P=1 IMP:E=0.5`` into o
 so there's no redundant data.
 This will automatically be called by the loading hooks, and you do not need to worry about
 deleting other.
-If merging isn't allowed :class:`~montepy.errors.MalformedInputError` should be raised.
+If merging isn't allowed :exc:`~montepy.exceptions.MalformedInputError` should be raised.
 
 
 :func:`~montepy.data_inputs.cell_modifier.CellModifierInput.push_to_cells`
@@ -552,8 +552,8 @@ This is how data provided in the data block are provided to the ``Cell`` objects
 There should be a ``self.in_cell_block`` guard.
 
 You need to check that there was no double specifying of data in both the cell and data block.
-This should be raise :class:`~montepy.errors.MalformedInputError`.
-This checking and error handling is handled by the method :func:`~montepy.data_inputs.cell_modifier.CellModifierInput._check_redundant_definitions`.
+This should be raise :exc:`~montepy.exceptions.MalformedInputError`.
+This checking and error handling is handled by the method ``_check_redundant_definitions()``.
 
 :func:`~montepy.data_inputs.cell_modifier.CellModifierInput._clear_data`
 """"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
@@ -703,7 +703,7 @@ Here are the other data structures to be aware of:
 
 * :class:`~montepy.MCNP_Problem` ``_NUMBERED_OBJ_MAP``: maps a based numbered object to its collection
   class. This is used for loading all problem numbered object collections in an instance.
-* :obj:`montepy.data_inputs.data_parser.PREFIX_MATCHES` is a set of the data object classes. The prefix is taken from
+* ``PREFIX_MATCHES`` is a set of the data object classes. The prefix is taken from
   the classes. A data object must be a member of this class for it to automatically parse new data objects.
 * :class:`~montepy.Cell` ``_INPUTS_TO_PROPERTY`` maps a cell modifier class to the attribute to load it into for a
   cell.  The boolean is whether multiple input instances are allowed.

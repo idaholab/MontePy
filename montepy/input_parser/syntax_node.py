@@ -2479,7 +2479,7 @@ class ShortcutNode(ListNode):
 
 
 class ClassifierNode(SyntaxNodeBase):
-    """A node to represent the classifier for a :class:`montepy.data_input.DataInput`
+    """A node to represent the classifier for a :class:`montepy.data_inputs.data_input.DataInput`
 
     e.g., represents ``M4``, ``F104:n,p``, ``IMP:n,e``.
     """

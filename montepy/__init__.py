@@ -50,6 +50,12 @@ from montepy.transforms import Transforms
 
 import montepy.exceptions
 import montepy.errors  # deprecated
+
+# Ensure re-exported classes resolve to the top-level montepy path in autodoc
+# rather than their canonical module path (e.g. montepy.data_inputs.nuclide.Library).
+# This avoids nitpick warnings for classes accessible as montepy.Library etc.
+Library.__module__ = "montepy"
+LibraryType.__module__ = "montepy"
 import sys
 
 try:

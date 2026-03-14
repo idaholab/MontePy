@@ -168,29 +168,6 @@ nitpick_ignore = [
     ("py:class", "sly.yacc.Parser"),
     ("py:class", "sly.yacc.ParserMeta"),
     ("py:class", "sly.yacc.YaccProduction"),
-    # montepy.errors is a deprecated shim; the canonical path is montepy.exceptions
-    ("py:class", "montepy.errors.MalformedInputError"),
-    ("py:exc", "montepy.errors.MalformedInputError"),
-    # Private extension-point methods documented in the developer guide but
-    # excluded from autodoc by default; keep as cross-refs for discoverability
-    ("py:func", "montepy.data_inputs.cell_modifier.CellModifierInput._format_tree"),
-    ("py:func", "montepy.data_inputs.cell_modifier.CellModifierInput._check_redundant_definitions"),
-    ("py:func", "montepy.mcnp_object.MCNP_Object._generate_default_node"),
-    ("py:func", "montepy.input_parser.syntax_node.ValueNode._convert_to_enum"),
-    ("py:func", "montepy.input_parser.syntax_node.ValueNode._convert_to_int"),
-    # Internal constant referenced in developing.rst; not in the public API
-    ("py:obj", "montepy.data_inputs.data_parser.PREFIX_MATCHES"),
-    # Private internal classes not exposed in the public API
-    ("py:class", "montepy._singleton.SingletonGroup"),
-    ("py:class", "montepy.data_inputs.nuclide.Nucleus"),
-    # Library and LibraryType are documented via public re-export paths
-    # (montepy.Library / montepy.LibraryType in modules.rst), but Python type
-    # annotations in source files resolve to the canonical module paths below.
-    # Sphinx generates inventory entries for the autosummary path only, so these
-    # canonical-path refs remain unresolvable until all docstrings migrate to the
-    # public API path.
-    ("py:class", "montepy.data_inputs.nuclide.Library"),
-    ("py:class", "montepy.particle.LibraryType"),
 ]
 
 # Regex patterns for cross-reference targets that cannot be resolved.
@@ -201,14 +178,9 @@ nitpick_ignore_regex = [
     (r"py:class", r"^Token$"),
     # Bare unqualified names from :type: annotations in older docstrings;
     # ClassifierNode is an internal parser class not re-exported publicly
-    (r"py:class", r"^(Nucleus|Library|LibraryType|ListNode|MCNP_Input|ClassifierNode|enum|class)$"),
+    (r"py:class", r"^(ClassifierNode|enum|class)$"),
     # numpy alias "np" is not in the numpy intersphinx inventory
     (r"py:class", r"^np\..*"),
-    # Sphinx autosummary generates internal node type refs
-    (r"py:class", r"^montepy\.input_parser\.syntax_node\.(IsotopesNode|ListNode)$"),
-    # Old class names that no longer exist (renamed in refactoring)
-    (r"py:class", r"^montepy\.(data_cards|mcnp_card|data_input)\..+$"),
-    (r"py:func", r"^montepy\.(data_cards|mcnp_card|data_input)\..+$"),
     # montepy.input_parser and montepy.data_inputs are subpackages referenced
     # with :mod: in developing.rst; they are not indexed as modules by autodoc
     (r"py:mod", r"^montepy\.(surfaces|data_inputs|input_parser|input_parser\..+)$"),
