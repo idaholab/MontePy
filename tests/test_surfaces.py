@@ -620,5 +620,4 @@ def test_surface_is_white_bound_setter(cp_simple_problem, in_str, expected):
 def test_surface_preserves_mnemonic_case(in_str, expected):
     """Surface mnemonics should be written with the original case (issue #522)."""
     surf = Surface(in_str)
-    result = surf.format_for_mcnp_input((6, 2, 0))[0]
-    assert result == expected
+    assert surf.mcnp_str() == expected

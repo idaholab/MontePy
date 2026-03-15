@@ -1056,7 +1056,6 @@ class ValueNode(SyntaxNodeBase):
         if not (allow_none and self._value is None):
             self._value = enum_class(value)
         self._formatter = self._FORMATTERS[format_type].copy()
-        self._og_value = self._value
 
     def convert_to_str(self):
         """Converts this ValueNode to being a string type.
@@ -1258,6 +1257,17 @@ class ValueNode(SyntaxNodeBase):
             return not math.isclose(
                 self._print_value, self._og_value, rel_tol=rel_tol, abs_tol=abs_tol
             )
+        if isinstance(self._type, type) and issubclass(self._type, enum.Enum):
+            # Compare case-insensitively: the original token may differ in case
+            # from the normalised enum value (e.g. "sO" → SurfaceType.SO).
+            # If the canonical value matches the original token modulo case,
+            # the user has not changed the field and the original token is kept.
+            og = (
+                self._og_value
+                if isinstance(self._og_value, str)
+                else str(self._og_value)
+            )
+            return self.value.value.upper() != og.upper()
         return self.value != self._og_value
 
     def _avoid_rounding_truncation(self):
