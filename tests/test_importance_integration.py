@@ -59,5 +59,33 @@ def test_print_explicit_default_imp(problem):  # based on #892
         assert imp_str in cells[cell_num]._input.input_text
 
 
-def test_splitting_part_combos(problem):
-    pass
+def test_splitting_part_combos(problem):  # based on #913
+    # Works, but produces invalid MCNP
+    c2 = montepy.Cell(number=4)
+    c2.geometry = -problem.surfaces[1000] & +problem.surfaces[1005]
+    problem.cells.append(c2)
+    c2.importance.photon = 2.0
+    c2.importance.neutron = 2.0
+
+    # Crashes MontePy
+    c3 = montepy.Cell(number=6)
+    c3.geometry = -problem.surfaces[1015] & +problem.surfaces[1010]
+    problem.cells.append(c3)
+    c3.importance.photon = 3.0
+    c3.importance.neutron = 4.0
+
+    with io.StringIO() as stream:
+        problem.write_problem(stream)
+        stream.seek(0)
+        print(stream.read())
+        stream.seek(0)
+        new_problem = montepy.read_input(stream)
+        stream.close()
+
+    cells = new_problem.cells
+    for cell_num, imp_str in {
+        4: "IMP:n=2.0 IMP:p=2.0",
+        6: "IMP:n=4.0 IMP:p=3.0",
+    }.items():
+        print(cell_num, imp_str)
+        assert imp_str in cells[cell_num]._input.input_text
