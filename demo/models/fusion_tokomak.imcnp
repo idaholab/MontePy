@@ -1,0 +1,35 @@
+Broken fusion radial model of simple Tokamak
+C This is vaguely based on the 2015 ARC concept design:
+C
+C B.N. Sorbom, et al. ARC: A compact, high-field, fusion nuclear science facility and demonstration power plant with demountable magnets,
+c     Fusion Engineering and Design, Volume 100, 2015, Pages 378-405 doi: 10.1016/j.fusengdes.2015.07.008
+c
+C cells
+1   0           -1       +100 -105 imp:n=1 $ source cell
+5   0           +1  -5   +100 -105 imp:n=1 $ vacuum 
+10  5   -19.3   +5  -10  +100 -105 imp:n=1 $ tungsten first wall
+13  20   -5.0  +10  -12  +100 -105 imp:n=1 $ vacuum vessel
+15  10   -0.5  +15 -20   +100 -105 imp:n=1 $ breeder blanket
+20  0          +20 -25   +100 -105 imp:n=1 $ void behind magnets
+25  15   -8.9  +25 -30   +100 -105 imp:n=1 $magnets
+30  0          +30 :     -100 : +105 imp:n-1 $graveyard cell
+
+c surfaces
+1    CZ 1    $ source cell
+5    CZ 113  $ inner wall of first wall
+10   CZ 114  $ outer wall of first wall
+12   CZ 115  $ outer wall of vacuum vessel
+15   CZ 150  $ outer wall of breeder blanket
+20   CZ 151  $ outer wall of breeder cladding
+25   CZ 200  $ inner radius of magnets
+30   CZ 201  $ outer radius of magnets
+*100 PZ -50  $ reflective boundary
+*105 PZ  50  
+
+c data
+M5  $ tungsten
+M10 $ breeder
+M15 $ magnets
+M20  $ stainless steel
+SDEF cel=1
+NPS 1000
