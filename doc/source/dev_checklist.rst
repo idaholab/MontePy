@@ -95,4 +95,4 @@ For a deployment you need to:
 #. Update the release notes on the draft release, and finalize it on GitHub.
 #. Update the `Conda feedstock and deploy <https://github.com/conda-forge/montepy-feedstock>`_ if it doesn't happen
    automatically.
-#. Upload the release archive to `Zenodo <https://doi.org/10.5281/zenodo.15185600>`_.
+#. Upload the release archive to `Zenodo <https://doi.org/10.5281/zenodo.15185506>`_.
