@@ -3,6 +3,8 @@ import collections
 import copy
 import math
 import warnings
+
+import montepy
 from montepy.data_inputs.cell_modifier import CellModifierInput, InitInput
 from montepy.exceptions import *
 from montepy.constants import DEFAULT_VERSION, rel_tol, abs_tol
@@ -25,6 +27,12 @@ import numbers
 # * _real_tree : holds unique trees for every particle type. This is used in data block formatting.
 # * _particle_importances : a dictionary of ParameterNodes that maps a particle to it's ParameterNode
 # * _part_combos : a list of ParticleNode that show which particles were combined on the original input
+#
+# Defaults and all or nothing
+#
+# The default value is stored in _DEFAULT_IMP
+#
+#
 
 
 class Importance(CellModifierInput):
@@ -44,6 +52,11 @@ class Importance(CellModifierInput):
 
     _DEFAULT_IMP = 1.0
 
+    _ALL_OR_NOTHING = True
+    """
+    Marks that if one cell has a value all cells must have values, no matter the default.
+    """
+
     def __init__(
         self,
         input: InitInput = None,
@@ -54,7 +67,7 @@ class Importance(CellModifierInput):
         self._particle_importances = {}
         self._real_tree = {}
         self._part_combos = []
-        self._explicitly_set = False
+        self.__explicitly_set = False
         super().__init__(input, in_cell_block, key, value)
         if self.in_cell_block:
             if key:
@@ -96,8 +109,6 @@ class Importance(CellModifierInput):
             particle = Particle.NEUTRON
         else:
             particles = syntax_node.ParticleNode("imp particle", particle.value.lower())
-        if self._problem:
-            particles.particles = self._problem.mode.particles
         classifier.particles = particles
         list_node = syntax_node.ListNode("imp data")
         list_node.append(self._generate_default_node(float, self._DEFAULT_IMP))
@@ -128,12 +139,39 @@ class Importance(CellModifierInput):
     def _has_classifier():
         return 2
 
+    def keys(self) -> collections.abc.Generator[Particle, None, None]:
+        """
+        Returns a generator of all of the particles that have set values for this importance.
+
+        .. versionadded:: 1.4.0
+        """
+        yield from self._particle_importances.keys()
+
+    def values(self) -> collections.abc.Generator[float, None, None]:
+        """Returns a generator of the importance values set for this cell in the order in which they were set.
+
+        .. versionadded:: 1.4.0
+        """
+        for tree in self._particle_importances.values():
+            yield tree["data"][0].value
+
+    def items(
+        self,
+    ) -> collections.abc.Generator[tuple[Particle, float], None, None]:
+        """Returns a generator of the particle and the importance value for all importances set for this cell.
+
+        .. versionadded:: 1.4.0
+        """
+        for part in self:
+            yield (part, self._particle_importances[part]["data"][0].value)
+
     @property
     def has_information(self):
         has_info = []
         for part in self:
             has_info.append(
-                not math.isclose(
+                self._explicitly_set
+                or not math.isclose(
                     self[part], self._DEFAULT_IMP, rel_tol=rel_tol, abs_tol=abs_tol
                 )
             )
@@ -240,11 +278,21 @@ class Importance(CellModifierInput):
                     data.nodes.append(value)
 
     def _format_tree(self):
+        def ensure_has_end_space(ret, strip_new_lines=False):
+            if strip_new_lines:
+                ret = ret.rstrip("\n")
+            if ret and ret[-1] != " ":
+                # remove new lines that exist
+                return ret.rstrip() + " "
+            return ret
+
         if self.in_cell_block:
             particles_printed = set()
             ret = ""
             for particle in self:
-                if particle in particles_printed:
+                if particle in particles_printed or (
+                    self._problem and particle not in self._problem.mode
+                ):
                     continue
                 other_particles = self._particle_importances[particle][
                     "classifier"
@@ -263,8 +311,17 @@ class Importance(CellModifierInput):
                             to_remove.add(other_part)
                 for removee in to_remove:
                     other_particles.remove(removee)
+                ret = ensure_has_end_space(ret)
                 ret += self._particle_importances[particle].format()
                 particles_printed.add(particle)
+            # catch default values
+            if self._problem:
+                missed_defaults = self._problem.mode.particles - particles_printed
+                for particle in missed_defaults:
+                    # trigger adding syntax tree
+                    self[particle] = self._DEFAULT_IMP
+                    ret = ensure_has_end_space(ret, strip_new_lines=True)
+                    ret += self._particle_importances[particle].format()
             return ret
         else:
             printed_parts = set()
@@ -299,10 +356,13 @@ class Importance(CellModifierInput):
         value = float(value)
         if value < 0.0:
             raise ValueError("Importance must be ≥ 0.0")
+        self._explicitly_set = True
         if self._problem:
-            self._explicitly_set = True
             for particle in self._problem.mode:
                 self._particle_importances[particle]["data"][0].value = value
+        else:
+            for particle in montepy.Particle:
+                self[particle] = value
 
     def _clear_data(self):
         if not self.in_cell_block:
@@ -466,6 +526,21 @@ class Importance(CellModifierInput):
                 list(self._real_tree.values())[-1]["start_pad"]._grab_beginning_comment(
                     new_padding
                 )
+
+    @property
+    def _explicitly_set(self):
+        return self.__explicitly_set
+
+    @_explicitly_set.setter
+    def _explicitly_set(self, value):
+        if value and self._problem:
+            self._problem.print_in_data_block._set_all_or_none(self._class_prefix())
+        self.__explicitly_set = value
+
+    def link_to_problem(self, problem):
+        super().link_to_problem(problem)
+        if problem and self._explicitly_set:
+            self._problem.print_in_data_block._set_all_or_none(self._class_prefix())
 
 
 def _generate_default_data_tree(particle):
