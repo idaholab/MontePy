@@ -7,6 +7,7 @@ class CellDataPrintController:
 
     def __init__(self):
         self._print_data = {}
+        self._all_or_nothing = {}
 
     def __getitem__(self, key):
         if not isinstance(key, str):
@@ -25,6 +26,14 @@ class CellDataPrintController:
             self._print_data[key.lower()] = value
         else:
             raise KeyError(f"{key} is not a supported cell modifier in MCNP")
+
+    def _set_all_or_none(self, key, all_in=True):
+        """ """
+        self._all_or_nothing[key.upper()] = all_in
+
+    def _get_all_or_none(self, key):
+        """ """
+        return self._all_or_nothing.get(key.upper(), False)
 
     def __str__(self):
         return f"Print data in data block: {self._print_data}"

@@ -82,6 +82,7 @@ autodoc_default_options = {
 linkcheck_ignore = [
     "https://nucleardata.lanl.gov/.*",
     "https://www.osti.gov/.*",  # Ignore osti.gov URLs
+    "https://zenodo.org/.*",
 ]
 
 # -- External link configuration ---------------------------------------------
