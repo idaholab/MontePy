@@ -253,13 +253,10 @@ class NumberedObjectCollection(ABC):
         if number < 0:
             raise ValueError(f"The number must be non-negative. {number} given.")
         conflict = False
-        # only can trust cache if being updated
-        if self._problem:
-            if number in self.__num_cache:
-                conflict = True
-        else:
-            if number in self.numbers:
-                conflict = True
+        # __num_cache is treated as authoritative: any present key is considered in use
+        if number in self.__num_cache:
+            conflict = True
+
         if conflict:
             raise NumberConflictError(
                 f"Number {number} is already in use for the collection: {type(self).__name__} by {self[number]}"
@@ -1125,18 +1122,7 @@ class NumberedObjectCollection(ABC):
         -------
         Numbered_MCNP_Object
         """
-        try:
-            ret = self.__num_cache[i]
-            if ret.number == i:
-                return ret
-        except KeyError:
-            pass
-        for obj in self._objects:
-            self.__num_cache[obj.number] = obj
-            if obj.number == i:
-                self.__num_cache[i] = obj
-                return obj
-        return default
+        return self.__num_cache.get(i, default)
 
     def keys(self) -> typing.Generator[int, None, None]:
         """Get iterator of the collection's numbers.

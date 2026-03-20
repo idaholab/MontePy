@@ -1257,6 +1257,26 @@ class ValueNode(SyntaxNodeBase):
             return not math.isclose(
                 self._print_value, self._og_value, rel_tol=rel_tol, abs_tol=abs_tol
             )
+        if isinstance(self._type, type) and issubclass(self._type, enum.Enum):
+            canonical = self.value.value
+            if isinstance(canonical, str):
+                # Compare case-insensitively: the original token may differ in
+                # case from the normalised enum value (e.g. "sO" → SO).
+                # If they match modulo case the field is unchanged and the
+                # original token casing is preserved on write.
+                #
+                # _og_value may not be a string for integer-based enums (e.g.
+                # Lattice), where convert_to_int() runs before convert_to_enum()
+                # leaving _og_value as an int.  Normalise to str for the
+                # case-insensitive compare.
+                og = (
+                    self._og_value
+                    if isinstance(self._og_value, str)
+                    else str(self._og_value)
+                )
+                return canonical.upper() != og.upper()
+            # Integer-valued enums (e.g. Lattice): case is irrelevant; fall
+            # through to the exact-equality check below.
         return self.value != self._og_value
 
     def _avoid_rounding_truncation(self):
