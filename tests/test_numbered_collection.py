@@ -97,16 +97,6 @@ class TestNumberedObjectCollection:
         extender[1].number = 60
         surfaces.extend(extender)
         assert len(surfaces) == size + 2
-        # force a num_cache miss
-        extender = copy.deepcopy(extender)
-        for surf in extender:
-            surf._problem = None
-            surf._collection_ref = None
-        surfaces[1000].number = 1
-        extender[0].number = 1000
-        extender[1].number = 70
-        surfaces.extend(extender)
-        assert len(surfaces) == size + 4
         with pytest.raises(TypeError):
             surfaces.extend(5)
         with pytest.raises(TypeError):

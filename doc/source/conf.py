@@ -85,6 +85,7 @@ linkcheck_ignore = [
     # GitHub returns 429/502 for link-checkers hitting issue/PR links in CI;
     # the :issue: and :pull: extlinks are validated by the PR workflow itself.
     r"https://github\.com/idaholab/MontePy/(issues|pull)/.*",
+    "https://zenodo.org/.*",
 ]
 
 # -- External link configuration ---------------------------------------------

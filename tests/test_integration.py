@@ -1130,7 +1130,9 @@ Flags:
 """
 _SKIP_LINES = {
     # I don't care about the edge case of shortcuts in a material def.
-    "tests/inputs/test_complement_edge.imcnp": {37: 0, 38: 0, 39: 0},
+    # Also technically this file's importance is invalid, but a good test of defaults,
+    # allow expansion
+    "tests/inputs/test_complement_edge.imcnp": {2: 0, 6: 0, 15: 0, 37: 0, 38: 0, 39: 0},
 }
 
 
@@ -1162,12 +1164,12 @@ def test_read_write_cycle(file):
     fh.close = lambda: None
     problem.write_problem(fh)
     fh.seek(0)
+    lines = [line.rstrip() for line in fh]
+    [print(line) for line in lines]
+    fh.seek(0)
     # test valid syntax
     new_problem = montepy.read_input(fh)
     # verify lines are similar
-    fh.seek(0)
-    lines = [line.rstrip() for line in fh]
-    [print(line) for line in lines]
     with open(file, "r") as gold_fh:
         gold_fh_iter = iter(gold_fh)
         lines_iter = iter(lines)
@@ -1185,7 +1187,9 @@ def test_read_write_cycle(file):
                 assert new_line == "10214   0    (1  2I 4 )"
                 continue
             try:
-                assert new_line == gold_line.rstrip().expandtabs(8)
+                assert new_line == gold_line.rstrip().expandtabs(
+                    8
+                ), f"line {i} is not matching"
             except AssertionError as e:
                 # handle case of making importance explicit
                 if "IMP:n=0.0" in new_line:

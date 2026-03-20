@@ -177,6 +177,15 @@ class CellModifierInput(DataInputAbstract):
             True if this object should be included in the output
         """
         if self.in_cell_block:
+            # if has to be all or nothing printed
+            if (
+                hasattr(self, "_ALL_OR_NOTHING")
+                and self._problem
+                and self._problem.print_in_data_block._get_all_or_none(
+                    self._class_prefix()
+                )
+            ):
+                return True
             return self.has_information
         attr, _ = montepy.Cell._INPUTS_TO_PROPERTY[type(self)]
         for cell in self._problem.cells:
