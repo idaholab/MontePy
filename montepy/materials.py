@@ -48,7 +48,7 @@ class Materials(NumberedDataObjectCollection):
         self,
         *nuclides: Union[
             montepy.data_inputs.nuclide.Nuclide,
-            montepy.data_inputs.nuclide.Nucleus,
+            montepy.Nucleus,
             montepy.Element,
             str,
             int,
@@ -112,7 +112,7 @@ class Materials(NumberedDataObjectCollection):
         self,
         *nuclides: Union[
             montepy.data_inputs.nuclide.Nuclide,
-            montepy.data_inputs.nuclide.Nucleus,
+            montepy.Nucleus,
             montepy.Element,
             str,
             int,
@@ -176,7 +176,7 @@ class Materials(NumberedDataObjectCollection):
         self,
         *nuclides: Union[
             montepy.data_inputs.nuclide.Nuclide,
-            montepy.data_inputs.nuclide.Nucleus,
+            montepy.Nucleus,
             montepy.Element,
             str,
             int,
@@ -192,7 +192,7 @@ class Materials(NumberedDataObjectCollection):
         def sort_by_type(nuclide):
             type_map = {
                 montepy.data_inputs.element.Element: 0,
-                montepy.data_inputs.nuclide.Nucleus: 1,
+                montepy.Nucleus: 1,
                 montepy.data_inputs.nuclide.Nuclide: 2,
             }
             return type_map[type(nuclide)]

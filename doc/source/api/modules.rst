@@ -103,6 +103,7 @@ Materials
    montepy.Element
    montepy.Library
    montepy.Material
+   montepy.Nucleus
    montepy.Nuclide
    montepy.ThermalScatteringLaw
    

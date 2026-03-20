@@ -114,7 +114,7 @@ they may be an isomer, or event an element.
 Rather the MCNP generalized terminology of :class:`montepy.Nuclide` was adopted.
 The idea of a specific nuclide, e.g., ``H-1`` was separated from an
 MCNP material component e.g., ``1001.80c``. 
-The actual ``Nuclide`` information was moved to a new class: :class:`~montepy.data_inputs.nuclide.Nucleus`
+The actual ``Nuclide`` information was moved to a new class: :class:`~montepy.Nucleus`
 that is immutable. 
 The :class:`~montepy.Nuclide` wraps this and adds a :class:`~montepy.Library` object to specify the nuclear data that is used.
 It makes sense to be able to change a library.

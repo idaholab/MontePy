@@ -339,7 +339,7 @@ For example the ``Surface`` number setter looks like:
 Surface: :class:`~montepy.Surface`
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 This is the parent class for all Surface classes.
-You will also need to update :func:`~montepy.surfaces.surface_builder.surface_builder`.
+You will also need to update :func:`~montepy.surfaces.surface_builder.parse_surface`.
 You should expose clear parameters such as ``radius`` or ``location``.
 ``format_for_mcnp_input()`` is handled by default.
 
@@ -349,7 +349,7 @@ After running the super init method
 you will then have access to ``self.surface_type``, and ``self.surface_constants``.
 You will need to implement a ``_allowed_surface_types`` to specify which surface types are allowed for your class.
 You then need to verify that there are the correct number of surface constants. 
-You will also need to add a branch in the logic for :func:`montepy.surfaces.surface_builder.surface_builder`.
+You will also need to add a branch in the logic for :func:`montepy.surfaces.surface_builder.parse_surface`.
 
 :func:`~montepy.Surface.find_duplicate_surfaces`
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
