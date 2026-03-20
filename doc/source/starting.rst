@@ -542,7 +542,7 @@ But for some of our favorite surfaces
 (``CX``, ``CY``, ``CZ``, ``C\X``, ``C\Y``, ``C\Z``, ``PX``, ``PY``, ``PZ``),
 these will be a special subclass of ``Surface``, 
 that will truly understand surface constants for what the mean.
-See :mod:`montepy.surfaces` for specific classes, and their documentation.
+See the `API documentation <api/modules.html>`_ for specific surface classes and their documentation.
 
 Two useful examples are the :class:`~montepy.CylinderOnAxis`, 
 which covers ``CX``, ``CY``, and ``CZ``,

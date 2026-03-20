@@ -42,7 +42,7 @@ Utility functions are allowed at this level as well.
 
 input_parser
 ^^^^^^^^^^^^
-The :mod:`montepy.input_parser` contains all functions and classes involved in syntax parsing.
+The ``montepy.input_parser`` contains all functions and classes involved in syntax parsing.
 Generally this is all invoked through :func:`~montepy.input_parser.input_reader.read_input`,
 which returns an :class:`~montepy.MCNP_Problem` instance.
 
@@ -606,7 +606,7 @@ It has had to implement some janky metaclass properties in order to allow subcla
 
 First, read the `SLY Documentation <https://sly.readthedocs.io/en/latest/sly.html#writing-a-parser>`_.
 You should also be aware of the tokens that are available.
-See the tokens module: :mod:`montepy.input_parser.tokens` for what tokens are available.
+See the tokens module: ``montepy.input_parser.tokens`` for what tokens are available.
 The tokenization process is slightly contextual.
 The context is only changed by the :class:`~montepy.input_parser.block_type.BlockType`.
 The lexers used are:
@@ -697,7 +697,7 @@ Constants and Meta Data Structures
 
 MontePy uses constants and data structures to utilize meta-programming
 and remove redundant code.
-Typical constants can be found in :mod:`montepy.constants`.
+Typical constants can be found in ``montepy.constants``.
 
 Here are the other data structures to be aware of:
 

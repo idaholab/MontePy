@@ -182,9 +182,6 @@ nitpick_ignore_regex = [
     (r"py:class", r"^(ClassifierNode|enum|class)$"),
     # numpy alias "np" is not in the numpy intersphinx inventory
     (r"py:class", r"^np\..*"),
-    # montepy.input_parser and montepy.data_inputs are subpackages referenced
-    # with :mod: in developing.rst; they are not indexed as modules by autodoc
-    (r"py:mod", r"^montepy\.(surfaces|data_inputs|input_parser|input_parser\..+)$"),
 ]
 
 
