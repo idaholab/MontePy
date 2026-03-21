@@ -208,7 +208,7 @@ class CellModifierInput(DataInputAbstract):
     def _collect_new_values(self):
         """Gets a list of the ValueNodes that hold the information for all cells.
 
-        This will be a list in the same order as :attr:`montepy.mcnp_problem.MCNP_Problem.cells`.
+        This will be a list in the same order as :attr:`montepy.MCNP_Problem.cells`.
 
         Returns
         -------

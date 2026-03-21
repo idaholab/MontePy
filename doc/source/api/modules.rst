@@ -51,6 +51,7 @@ General Surface utilities
 
    montepy.Surface
    montepy.HalfSpace
+   montepy.UnitHalfSpace
 
 
 Cylinders 
@@ -100,6 +101,7 @@ Materials
    :nosignatures:
    :template: myclass.rst
    
+   montepy.SingletonGroup
    montepy.Element
    montepy.Library
    montepy.Material

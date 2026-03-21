@@ -18,7 +18,8 @@ from .constants import DEFAULT_VERSION as MCNP_VERSION
 
 from montepy.data_inputs.material import Material
 from montepy.data_inputs.transform import Transform
-from montepy.data_inputs.nuclide import Library, Nuclide
+from montepy.data_inputs.nuclide import Library, Nuclide, Nucleus
+from montepy._singleton import SingletonGroup
 from montepy.data_inputs.element import Element
 from montepy.data_inputs.lattice import LatticeType
 from montepy.data_inputs import Mode
@@ -56,6 +57,8 @@ import montepy.errors  # deprecated
 # This avoids nitpick warnings for classes accessible as montepy.Library etc.
 Library.__module__ = "montepy"
 LibraryType.__module__ = "montepy"
+Nucleus.__module__ = "montepy"
+SingletonGroup.__module__ = "montepy"
 import sys
 
 try:

@@ -743,7 +743,7 @@ The two half-spaces can be viewed as in or out of the cell.
 
 So how are these half-spaces identified?
 In MCNP this generally done by marking the half-space as the positive or negative one.
-In MontePy these are changed to boolean values for the :attr:`~montepy.surfaces.half_space.UnitHalfSpace.side` parameter simplicity with True being the positive side.
+In MontePy these are changed to boolean values for the :attr:`~montepy.UnitHalfSpace.side` parameter simplicity with True being the positive side.
 For cell complements the side is implicitly handled by the CSG logic, and can always be thought of as the "outside"
 (though ``side`` will return True).
 
@@ -954,7 +954,7 @@ Specifying Nuclides
 
 To specify a material, one needs to be able to specify the nuclides that are contained in it.
 This is done through :class:`~montepy.Nuclide` objects.
-This actually a wrapper of a :class:`~montepy.data_inputs.nuclide.Nucleus` and a :class:`~montepy.Library` object.
+This actually a wrapper of a :class:`~montepy.Nucleus` and a :class:`~montepy.Library` object.
 Users should rarely need to interact with the latter two objects, but it is good to be aware of them.
 The general idea is that a ``Nuclide`` instance represents a specific set of ACE data that for a ``Nucleus``, 
 which represents only a physical nuclide with a given ``Library``.
@@ -1153,7 +1153,7 @@ Check if Nuclide in Material
 """"""""""""""""""""""""""""
 
 First, you can test if a :class:`~montepy.Nuclide` 
-(or :class:`~montepy.data_inputs.nuclide.Nucleus`, or :class:`~montepy.Element`, or ``str``),
+(or :class:`~montepy.Nucleus`, or :class:`~montepy.Element`, or ``str``),
 is in a material.
 This is generally interpreted broadly rather than explicitly.
 For instance, if the test nuclide has no library this will match

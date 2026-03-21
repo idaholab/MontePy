@@ -2019,7 +2019,7 @@ class MaterialsNode(SyntaxNodeBase):
 
 
 class ShortcutNode(ListNode):
-    """A node that pretends to be a :class:`ListNode` but is actually representing a shortcut.
+    """A node that pretends to be a :class:`~montepy.input_parser.syntax_node.ListNode` but is actually representing a shortcut.
 
     This takes the shortcut tokens, and expands it into their "virtual" values.
 

@@ -45,7 +45,7 @@ class Library(SingletonGroup):
 
     Raises
     ------
-    TypeErrror
+    TypeError
         if a string is not provided.
     ValueError
         if a valid library is not provided.

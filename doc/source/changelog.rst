@@ -26,7 +26,7 @@ MontePy Changelog
 **Feature Added**
 
 * Added ``extend_renumber`` to ``NumberedObjectCollection`` with related test cases (:issue:`881`).
-* Made :class:`montepy.data_inputs.Importance` more ``dict``-like with ``keys``, ``values``, and ``items`` functions (:pull:`921`).
+* Made :class:`montepy.data_inputs.importance.Importance` more ``dict``-like with ``keys``, ``values``, and ``items`` functions (:pull:`921`).
 
 1.3.0
 --------------
