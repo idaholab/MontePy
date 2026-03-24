@@ -138,6 +138,7 @@ html_theme_options = {
             "type": "fontawesome",
         },
     ],
+    "show_toc_level": 2,
 }
 html_sidebars = {
     "**": ["search-field.html", "sidebar-nav-bs.html", "sidebar-ethical-ads.html"]
