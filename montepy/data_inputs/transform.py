@@ -156,7 +156,7 @@ class Transform(data_input.DataInputAbstract, Numbered_MCNP_Object):
 
         Returns
         -------
-        np.array
+        numpy.ndarray
         """
         return self._rotation_matrix
 

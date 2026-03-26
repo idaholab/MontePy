@@ -4,7 +4,7 @@ import copy
 import itertools
 from numbers import Integral, Real
 import sly
-from typing import Union
+from typing import Generator, Union
 import warnings
 
 from montepy.cells import Cells
@@ -585,7 +585,7 @@ class Cell(Numbered_MCNP_Object):
 
         Returns
         -------
-        unknown
+        dict
             a dictionary of the key-value pairs of the parameters.
 
 
@@ -615,7 +615,7 @@ class Cell(Numbered_MCNP_Object):
 
         Returns
         -------
-        generator
+        Generator[Cell, None, None]
         """
         if self._problem:
             for cell in self._problem.cells:

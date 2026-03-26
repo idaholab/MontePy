@@ -42,7 +42,7 @@ Utility functions are allowed at this level as well.
 
 input_parser
 ^^^^^^^^^^^^
-The ``montepy.input_parser`` contains all functions and classes involved in syntax parsing.
+The :mod:`montepy.input_parser` contains all functions and classes involved in syntax parsing.
 Generally this is all invoked through :func:`~montepy.input_parser.input_reader.read_input`,
 which returns an :class:`~montepy.MCNP_Problem` instance.
 
@@ -126,7 +126,7 @@ The classes are:
   It is meant to hold a single value, both its semantic value and its text representation, and its surrounding white-space (and comments), or padding.
 * :class:`~montepy.input_parser.syntax_node.PaddingNode` is the companion to the ``ValueNode``. It encapsulates all following padding for a value.
   Padding is considered to be white-space or a comment (:class:`~montepy.input_parser.syntax_node.CommentNode`).
-* ``ListNode`` is a node meant to contain a list of arbitrary length of values.
+* :class:`~montepy.input_parser.syntax_node.ListNode` is a node meant to contain a list of arbitrary length of values.
 * :class:`~montepy.input_parser.syntax_node.ShortcutNode` is a helper to a ``ListNode`` for when MCNP shortcuts (e.g., ``1 10r``) are used.
   They are nested inside of a ``ListNode`` and should be mostly transparent to the user and developer.
 * :class:`~montepy.input_parser.syntax_node.ParametersNode` is a node to hold the parameters for an input. 
@@ -136,7 +136,7 @@ The classes are:
 * :class:`~montepy.input_parser.syntax_node.ClassifierNode` is a node to represent the data classification "word" that describes what the data are for.
   For example for a material it would contain ``M34``. For a cell importance it could be ``imp:n``.
   It can contain: a data keyword, a number, a particle designator (:class:`~montepy.input_parser.syntax_node.ParticleNode`), and a modifier character (e.g., ``*`` in ``*TR5``).
-* ``IsotopesNode`` is a node that represents an MCNP style isotope identifier (e.g., ``1001.80c``).
+* :class:`~montepy.input_parser.syntax_node.MaterialsNode` is a node that represents an MCNP style isotope identifier (e.g., ``1001.80c``).
 
 Many of these nodes (which aren't leaves) behave like dicts and lists, and can be accessed with indices. 
 For more detail in how to work with them read the next section on MCNP_Objects: :ref:`mcnp-object-docs`.
@@ -197,7 +197,7 @@ This property can be set, and should be.
 
 You should not store the nested value; instead you should store the entire ValueNode in a private attribute,
 and then use :func:`~montepy.utilities.make_prop_val_node` to provide the appropriate property.
-Even if an input isn't provided a ValueNode needs to be stored. The utility ``_generate_default_node()`` can help simplify this.
+Even if an input isn't provided a ValueNode needs to be stored. The utility :func:`~montepy.mcnp_object.MCNP_Object._generate_default_node` can help simplify this.
 
 The parsers can't always know what data type should in a specific position, so largely it treats all numerical values as floats.
 This should be changed during the init so the value_nodes are the correct data type.
@@ -211,12 +211,12 @@ This will make it so that ``value`` always returns a positive value, and so :fun
 .. note::
 
    Setting :func:`~montepy.input_parser.syntax_node.ValueNode.is_negatable_identifier` to ``True`` 
-   will convert the ValueNode to an integer ValueNode (via ``_convert_to_int()``).
+   will convert the ValueNode to an integer ValueNode (via :func:`~montepy.input_parser.syntax_node.ValueNode._convert_to_int`).
 
 Next, if you do not need to change the :func:`~montepy.input_parser.syntax_node.ValueNode.type` for the ValueNode, but do not need to markt the ValueNode as negative;
 there are methods to handle this.
-These methods are ``_convert_to_int()``, and
-``_convert_to_enum()``.
+These methods are :func:`~montepy.input_parser.syntax_node.ValueNode._convert_to_int`, and
+:func:`~montepy.input_parser.syntax_node.ValueNode._convert_to_enum`.
 ``_convert_to_int`` is a rather straight forward function to run, and takes no arguments.
 It should be noted that the value is found by running ``int(self.token)``, that is that the original string value, and not the float value is converted.
 This is in order to avoid allowing ``1.5`` as a valid int, since in this case the floor would be taken.
@@ -606,7 +606,7 @@ It has had to implement some janky metaclass properties in order to allow subcla
 
 First, read the `SLY Documentation <https://sly.readthedocs.io/en/latest/sly.html#writing-a-parser>`_.
 You should also be aware of the tokens that are available.
-See the tokens module: ``montepy.input_parser.tokens`` for what tokens are available.
+See the tokens module: :mod:`montepy.input_parser.tokens` for what tokens are available.
 The tokenization process is slightly contextual.
 The context is only changed by the :class:`~montepy.input_parser.block_type.BlockType`.
 The lexers used are:
@@ -697,7 +697,7 @@ Constants and Meta Data Structures
 
 MontePy uses constants and data structures to utilize meta-programming
 and remove redundant code.
-Typical constants can be found in ``montepy.constants``.
+Typical constants can be found in :mod:`montepy.constants`.
 
 Here are the other data structures to be aware of:
 

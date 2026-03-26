@@ -41,6 +41,7 @@ from montepy.particle import Particle, LibraryType
 from montepy.universe import Universe
 from montepy.cell import Cell
 from montepy.mcnp_problem import MCNP_Problem
+from montepy.mcnp_object import InitInput
 
 # collections
 from montepy.cells import Cells

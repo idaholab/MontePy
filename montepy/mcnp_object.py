@@ -5,7 +5,7 @@ import copy
 import functools
 import itertools as it
 import textwrap
-from typing import Union
+from typing import TypeAlias, Union
 import warnings
 import weakref
 
@@ -25,7 +25,7 @@ from montepy.input_parser.syntax_node import (
 )
 import montepy
 
-InitInput = Union[montepy.input_parser.mcnp_input.Input, str]
+InitInput: TypeAlias = Union[montepy.input_parser.mcnp_input.Input, str]
 
 
 class _ExceptionContextAdder(ABCMeta):
@@ -172,7 +172,7 @@ class MCNP_Object(ABC, metaclass=_ExceptionContextAdder):
 
         Parameters
         ----------
-        value_type : Class
+        value_type : type
             the data type for the ValueNode.
         default : value_type
             the default value to provide (type needs to agree with
@@ -205,7 +205,7 @@ class MCNP_Object(ABC, metaclass=_ExceptionContextAdder):
 
         Returns
         -------
-        unknown
+        dict
             a dictionary of the key-value pairs of the parameters.
 
 

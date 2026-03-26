@@ -125,7 +125,7 @@ class MCNP_Parser(Parser, metaclass=MetaBuilder):
 
         Parameters
         ----------
-        token_generator : generator
+        token_generator : collections.abc.Generator
             the token generator from ``lexer.tokenize``.
         input : Input
             the input that is being lexed and parsed.
@@ -186,7 +186,7 @@ class MCNP_Parser(Parser, metaclass=MetaBuilder):
 
         Returns
         -------
-        ListNode
+        montepy.input_parser.syntax_node.ListNode
         """
         if len(p) == 1:
             sequence = syntax_node.ListNode("number sequence")
@@ -517,7 +517,7 @@ class MCNP_Parser(Parser, metaclass=MetaBuilder):
 
         Returns
         -------
-        ClassifierNode
+        montepy.input_parser.syntax_node.ClassifierNode
         """
         if hasattr(p, "classifier"):
             classifier = p.classifier
@@ -544,7 +544,7 @@ class MCNP_Parser(Parser, metaclass=MetaBuilder):
 
         Returns
         -------
-        ClassifierNode
+        montepy.input_parser.syntax_node.ClassifierNode
         """
         classifier = p.classifier
         if len(p) > 1:

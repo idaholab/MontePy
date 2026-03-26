@@ -208,6 +208,12 @@ Object Builders
    montepy.input_parser.input_syntax_reader.read_front_matters
    montepy.surfaces.surface_builder.parse_surface
 
+Type Aliases
+^^^^^^^^^^^^
+
+.. autodata:: montepy.InitInput
+   :no-value:
+
 Parser Data Types
 ^^^^^^^^^^^^^^^^^
 

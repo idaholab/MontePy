@@ -147,7 +147,13 @@ apidoc_module_dir = "../../montepy"
 apidoc_module_first = True
 apidoc_separate_modules = True
 
-suppress_warnings = ["epub.unknown_project_files"]
+suppress_warnings = [
+    "epub.unknown_project_files",
+    # autosummary.import_cycle is a cosmetic warning triggered by re-exporting
+    # classes at the top-level montepy namespace (e.g. montepy.AxisPlane); safe
+    # to suppress because the re-exports are intentional.
+    "autosummary.import_cycle",
+]
 
 # -- Intersphinx mapping -----------------------------------------------------
 # Allows cross-references to Python stdlib, NumPy, etc.
@@ -170,19 +176,30 @@ nitpick_ignore = [
     ("py:class", "sly.yacc.Parser"),
     ("py:class", "sly.yacc.ParserMeta"),
     ("py:class", "sly.yacc.YaccProduction"),
+    # sly.lex.Token appears as bare "Token" in autodoc-generated type annotations
+    ("py:class", "Token"),
+    # InitInput is a Union TypeAlias in mcnp_object.py; autodoc generates a
+    # :class: cross-ref for it but TypeAliases are not indexed as classes
+    ("py:class", "InitInput"),
+    # Private methods referenced in developing.rst; not in the public autodoc index
+    ("py:func", "montepy.mcnp_object.MCNP_Object._generate_default_node"),
+    ("py:func", "montepy.input_parser.syntax_node.ValueNode._convert_to_int"),
+    ("py:func", "montepy.input_parser.syntax_node.ValueNode._convert_to_enum"),
+    # Subpackages referenced with :mod: in docs; autodoc indexes individual classes
+    # but not the package-level modules themselves
+    ("py:mod", "montepy.input_parser"),
+    ("py:mod", "montepy.input_parser.tokens"),
+    ("py:mod", "montepy.data_inputs"),
+    ("py:mod", "montepy.surfaces"),
+    # typing.Union is not in the Python intersphinx inventory as a py:data target
+    ("py:data", "typing.Union"),
 ]
 
 # Regex patterns for cross-reference targets that cannot be resolved.
 nitpick_ignore_regex = [
-    # Sphinx/autodoc generates bare type names that are not valid cross-ref targets
-    (r"py:class", r"^(self|self\._\w+|generator|unknown|function|Class|InitInput|MCNP_Input)$"),
-    # sly Token is not in any intersphinx inventory
-    (r"py:class", r"^Token$"),
-    # Bare unqualified names from :type: annotations in older docstrings;
-    # ClassifierNode is an internal parser class not re-exported publicly
-    (r"py:class", r"^(ClassifierNode|enum|class)$"),
-    # numpy alias "np" is not in the numpy intersphinx inventory
-    (r"py:class", r"^np\..*"),
+    # sphinx_autodoc_typehints generates "self" and "self._attr" refs for some
+    # return-type annotations; these cannot be resolved and are harmless
+    (r"py:class", r"^self(\._\w+)?$"),
 ]
 
 
