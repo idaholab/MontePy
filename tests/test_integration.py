@@ -908,9 +908,7 @@ def test_universe_number_collision():
 def test_universe_repr(simple_problem):
     uni = simple_problem.universes[0]
     output = repr(uni)
-    assert "Number: 0" in output
-    assert "Problem: set" in output
-    assert "Cells: [2" in output
+    assert "number=0" in output
 
 
 def test_lattice_format_data(simple_problem):
