@@ -4,7 +4,7 @@ Publications
 Permanent Link to Software
 --------------------------
 
-* Zenodo: `DOI:10.5281/zenodo.15185600 <https://doi.org/10.5281/zenodo.15185600>`_
+* Zenodo: `DOI:10.5281/zenodo.15185506 <https://doi.org/10.5281/zenodo.15185506>`_
 * OSTI/DOE code: `DOI:10.11578/dc.20240115.1 <https://doi.org/10.11578/dc.20240115.1>`_
 
 
