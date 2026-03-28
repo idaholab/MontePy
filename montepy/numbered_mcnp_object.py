@@ -11,17 +11,6 @@ import montepy.types as ty
 from montepy.utilities import *
 
 
-def _number_validator(self, number):
-    if number < 0:
-        raise ValueError("number must be >= 0")
-
-    # Only validate against collection if linked to a collection
-    if self._collection is not None:
-        collection = self._collection
-        collection.check_number(number)
-        collection._update_number(self.number, number, self)
-
-
 class Numbered_MCNP_Object(MCNP_Object):
     """An abstract class to represent an mcnp object that has a number.
 
@@ -55,6 +44,8 @@ class Numbered_MCNP_Object(MCNP_Object):
     _CHILD_OBJ_MAP = {}
     """"""
 
+    _KEYS_TO_PRESERVE = {"_collection_ref"}
+
     @property
     def number(self):
         """The current number of the object that will be written out to a new input.
@@ -75,20 +66,8 @@ class Numbered_MCNP_Object(MCNP_Object):
     def _number_validator(self, number):
         if number < 0:
             raise ValueError("number must be >= 0")
-        if self._problem:
-            obj_map = montepy.MCNP_Problem._NUMBERED_OBJ_MAP
-            try:
-                collection_type = obj_map[type(self)]
-            except KeyError as e:
-                found = False
-                for obj_class in obj_map:
-                    if isinstance(self, obj_class):
-                        collection_type = obj_map[obj_class]
-                        found = True
-                        break
-                if not found:
-                    raise e
-            collection = getattr(self._problem, collection_type.__name__.lower())
+        if self._collection is not None:
+            collection = self._collection
             collection.check_number(number)
             self._find_impacted_parents(number)
             collection._update_number(self.number, number, self)
@@ -162,6 +141,11 @@ class Numbered_MCNP_Object(MCNP_Object):
         collection : NumberedObjectCollection
             The collection to link this object to.
         """
+        existing = self._collection
+        if existing is not None and existing is not collection:
+            raise IllegalState(
+                f"{self} is already linked to collection {existing} and cannot be linked to {collection}"
+            )
         self._collection_ref = weakref.ref(collection)
 
     def _unlink_from_collection(self):

@@ -169,7 +169,8 @@ class NumberedObjectCollection(ABC):
                         )
                     )
                 self.__num_cache[obj.number] = obj
-                obj._link_to_collection(self)
+                if obj._collection is None:
+                    obj._link_to_collection(self)
             self._objects = objects
 
     @args_checked
@@ -527,7 +528,8 @@ class NumberedObjectCollection(ABC):
                 )
         self.__num_cache[obj.number] = obj
         self._objects.append(obj)
-        obj._link_to_collection(self)
+        if obj._collection is None:
+            obj._link_to_collection(self)
         self._append_hook(obj, **kwargs)
         if self._problem:
             obj.link_to_problem(self._problem)

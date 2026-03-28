@@ -123,6 +123,7 @@ class Cell(Numbered_MCNP_Object):
     }
 
     _KEYS_TO_PRESERVE = {v[0] for v in _INPUTS_TO_PROPERTY.values()}
+    _KEYS_TO_PRESERVE |= {"_collection_ref"}
 
     def _load_old_data(self, old_data):
         cell_mod_keys = {v[0] for v in self._INPUTS_TO_PROPERTY.values()}
