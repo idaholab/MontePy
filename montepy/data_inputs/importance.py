@@ -548,8 +548,8 @@ class Importance(CellModifierInput):
             self._problem.print_in_data_block._set_all_or_none(self._class_prefix())
         self.__explicitly_set = value
 
-    def link_to_problem(self, problem):
-        super().link_to_problem(problem)
+    def link_to_problem(self, problem, *, deepcopy: bool = False):
+        super().link_to_problem(problem, deepcopy=deepcopy)
         if problem and self._explicitly_set:
             self._problem.print_in_data_block._set_all_or_none(self._class_prefix())
 
