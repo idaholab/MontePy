@@ -9,17 +9,20 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
     strategy:
       matrix:
         python-version: ["3.12", "3.13", "3.14"]
 
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
         with: 
           fetch-depth: 0
           fetch-tags: true
+          persist-credentials: false
       - name: set up python  ${{ matrix.python-version }}
-        uses: actions/setup-python@v6
+        uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405
         with: 
           python-version: ${{ matrix.python-version }}
       - run: pip install --upgrade pip
@@ -42,7 +45,7 @@ jobs:
       - run: pip install --user . montepy[develop]
       - run: pip freeze
       - name: Upload build artifacts
-        uses: actions/upload-artifact@v6
+        uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f
         if: ${{ matrix.python-version == '3.13'}}
         with: 
            name: build
@@ -63,9 +66,11 @@ jobs:
             sly-version: "0.4"
     
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+        with:
+          persist-credentials: false
       - name: set up python  ${{ matrix.python-version }}
-        uses: actions/setup-python@v6
+        uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405
         with: 
           python-version: ${{ matrix.python-version }}
       - run: pip install numpy~=${{ matrix.numpy-version }}
@@ -84,13 +89,13 @@ jobs:
         if:  ${{ success() || failure() }}
       - name: Upload test report
         if: ${{ matrix.python-version == '3.14' && matrix.numpy-version == '2.3' && (success() || failure() )}}
-        uses: actions/upload-artifact@v6
+        uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f
         with:
           name: test
           path: test_report.xml
       - name: Upload coverage report
         if: ${{ matrix.python-version == '3.14' && matrix.numpy-version == '2.3' && (success() || failure() )}}
-        uses: actions/upload-artifact@v6
+        uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f
         with:
           name: coverage
           path: coverage.xml
@@ -107,20 +112,23 @@ jobs:
 
   doc-build:
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
     
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
         with:
           fetch-depth: 0
           fetch-tags: true
+          persist-credentials: false
       - name: set up python 3.12
-        uses: actions/setup-python@v6
+        uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405
         with: 
           python-version: 3.14
       - run: pip install . montepy[doc,build]
       - run: cd doc && make html SPHINXOPTS="-W --keep-going -E"
         name: Build site strictly
-      - uses: actions/upload-artifact@v6
+      - uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f
         with:
           name: website
           path: doc/build
@@ -131,14 +139,17 @@ jobs:
   
   doc-test:
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
     
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
         with:
           fetch-depth: 0
           fetch-tags: true
+          persist-credentials: false
       - name: set up python 3.14
-        uses: actions/setup-python@v6
+        uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405
         with: 
           python-version: 3.14
       - run: pip install . montepy[doc,build,demo-test,test]
@@ -155,12 +166,16 @@ jobs:
 
   format-test:
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
     
     steps:
 
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+        with:
+          persist-credentials: false
       - name: set up python 3.14
-        uses: actions/setup-python@v6
+        uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405
         with: 
           python-version: 3.14
       - run: pip install . montepy[format]
@@ -168,11 +183,15 @@ jobs:
   
   profile:
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
     
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+        with:
+          persist-credentials: false
       - name: set up python 3.14
-        uses: actions/setup-python@v6
+        uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405
         with: 
           python-version: 3.14
       - run: pip install . montepy[test]
@@ -185,11 +204,15 @@ jobs:
   
   benchmark:
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
     
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+        with:
+          persist-credentials: false
       - name: set up python 3.14
-        uses: actions/setup-python@v6
+        uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405
         with: 
           python-version: 3.14
       - run: pip install . montepy[test]
@@ -199,12 +222,16 @@ jobs:
         
   changelog-test:
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
     if: github.ref != 'refs/heads/main'
     
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+        with:
+          persist-credentials: false
       - name: Check for changes
-        uses: dorny/paths-filter@v3
+        uses: dorny/paths-filter@fbd0ab8f3e69293af611ebaee6363fc25e6d187d
         id: changes
         with:
           filters: |

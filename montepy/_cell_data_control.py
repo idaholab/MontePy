@@ -13,6 +13,7 @@ class CellDataPrintController:
 
     def __init__(self, problem):
         self._print_data = {}
+        self._all_or_nothing = {}
         self._problem = weakref.ref(problem)
 
     @args_checked
@@ -46,6 +47,14 @@ class CellDataPrintController:
         state = self.__dict__.copy()
         state.pop("_problem", None)
         return state
+
+    def _set_all_or_none(self, key, all_in=True):
+        """ """
+        self._all_or_nothing[key.upper()] = all_in
+
+    def _get_all_or_none(self, key):
+        """ """
+        return self._all_or_nothing.get(key.upper(), False)
 
     def __str__(self):
         return f"Print data in data block: {self._print_data}"

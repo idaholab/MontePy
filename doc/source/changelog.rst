@@ -16,6 +16,25 @@ MontePy Changelog
 1.3 releases
 ============
 
+#Next Version#
+--------------
+
+**Bugs Fixed**
+
+* Fixed a bug where surface type mnemonics (e.g. ``SO``, ``PZ``) were always written in uppercase, discarding the original case supplied by the user (e.g. ``sO``, ``Pz``) (:issue:`522`).
+
+* Fixed a bug where ``append_renumber`` raised a ``TypeError`` when called with an object whose ``number`` is ``None`` (e.g. an object created with no arguments) (:issue:`880`).
+* Fixed a bug where the importance of cells made from scratch are usually not printed to the output file (:pull:`921`).
+
+**Performance Improvement**
+
+* Removed Guardrails from :class:`~montepy.numbered_object_collection.NumberedObjectCollection` (:issue:`895`)
+
+**Feature Added**
+
+* Added ``extend_renumber`` to ``NumberedObjectCollection`` with related test cases (:issue:`881`).
+* Made :class:`montepy.data_inputs.Importance` more ``dict``-like with ``keys``, ``values``, and ``items`` functions (:pull:`921`).
+
 1.3.0
 -----
 
@@ -352,7 +371,7 @@ MontePy Changelog
 * Fixed bug with appending and renumbering numbered objects from other MCNP problems (:issue:`466`).
 * Fixed bug with dynamic typing and the parsers that only appear in edge cases (:issue:`461`).
 * Fixed parser bug with having spaces in the start of the transform input for the fill of a cell (:pull:`479`).
-* Fixed bug with trying to get trailing comments from non-existant parts of the syntax tree (:pull:`480`).
+* Fixed bug with trying to get trailing comments from non-existent parts of the syntax tree (:pull:`480`).
 
 **Code Quality**
 

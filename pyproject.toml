@@ -70,7 +70,7 @@ doc = [
 ]
 format = ["black>=26.1,<27.0"]
 develop = [
-    "montepy[test,doc,format]",
+	"montepy[test,doc,format,build]",
 ]
 demos = ["jupyter", "ipykernel>=6,<8"]
 demo-test = ["montepy[demos]", "papermill"]

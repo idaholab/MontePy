@@ -249,7 +249,7 @@ Here are the principles for writing new tests:
 #. Use property based testing with `hypothesis <https://hypothesis.readthedocs.io/en/latest/>`_, when it makes sense.
    This is generally for complicated functions that users use frequently, such as constructors.
    See this `tutorial for an introduction to property based testing
-   <https://semaphoreci.com/blog/property-based-testing-python-hypothesis-pytest>`_. 
+   <https://semaphore.io/blog/property-based-testing-python-hypothesis-pytest>`_. 
 
 Test Organization
 ^^^^^^^^^^^^^^^^^

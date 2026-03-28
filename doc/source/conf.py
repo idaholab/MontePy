@@ -83,6 +83,7 @@ autodoc_default_options = {
 linkcheck_ignore = [
     "https://nucleardata.lanl.gov/.*",
     "https://www.osti.gov/.*",  # Ignore osti.gov URLs
+    "https://zenodo.org/.*",
 ]
 
 # -- External link configuration ---------------------------------------------
@@ -135,6 +136,7 @@ html_theme_options = {
             "type": "fontawesome",
         },
     ],
+    "show_toc_level": 2,
 }
 html_sidebars = {
     "**": ["search-field.html", "sidebar-nav-bs.html", "sidebar-ethical-ads.html"]

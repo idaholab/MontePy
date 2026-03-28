@@ -120,7 +120,7 @@ def test_fill_multi_universe_order(cells):
         output = cell.format_for_mcnp_input((6, 2, 0))
         words = " ".join(output).split()
         start_idx = 6
-        if "imp:n=1" in words:
+        if "imp" in words[3].lower():
             start_idx += 1
         print(output)
         new_universes = list(map(int, words[start_idx:]))

@@ -248,13 +248,10 @@ class NumberedObjectCollection(ABC):
             if this number is in use.
         """
         conflict = False
-        # only can trust cache if being updated
-        if self._problem:
-            if number in self.__num_cache:
-                conflict = True
-        else:
-            if number in self.numbers:
-                conflict = True
+        # __num_cache is treated as authoritative: any present key is considered in use
+        if number in self.__num_cache:
+            conflict = True
+
         if conflict:
             raise NumberConflictError(
                 f"Number {number} is already in use for the collection: {type(self).__name__} by {self[number]}"
@@ -645,7 +642,9 @@ class NumberedObjectCollection(ABC):
         """
         if not isinstance(obj, self._obj_class):
             raise TypeError(f"object being appended must be of type: {self._obj_class}")
-        number = obj.number if obj.number > 0 else 1
+        if obj.number is None or obj.number <= 0:
+            obj.number = 1
+        number = obj.number
         if self._problem:
             obj.link_to_problem(self._problem)
         obj._unlink_from_collection()
@@ -1141,18 +1140,7 @@ class NumberedObjectCollection(ABC):
         -------
         Numbered_MCNP_Object
         """
-        try:
-            ret = self.__num_cache[i]
-            if ret.number == i:
-                return ret
-        except KeyError:
-            pass
-        for obj in self._objects:
-            self.__num_cache[obj.number] = obj
-            if obj.number == i:
-                self.__num_cache[i] = obj
-                return obj
-        return default
+        return self.__num_cache.get(i, default)
 
     def keys(self) -> typing.Generator[int, None, None]:
         """Get iterator of the collection's numbers.

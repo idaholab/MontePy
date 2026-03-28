@@ -661,3 +661,21 @@ def test_surface_is_white_bound_setter(cp_simple_problem, in_str, expected):
     verify_prob_export(cp_simple_problem, surf)
     with pytest.raises(TypeError):
         surf.is_white_boundary = 1
+
+
+@pytest.mark.parametrize(
+    "in_str,expected",
+    [
+        ("1 so 0.0", "1 so 0.0"),
+        ("1 sO 0.0", "1 sO 0.0"),
+        ("1 So 0.0", "1 So 0.0"),
+        ("1 SO 0.0", "1 SO 0.0"),
+        ("1 pz 0.0", "1 pz 0.0"),
+        ("1 PZ 0.0", "1 PZ 0.0"),
+        ("1 Pz 0.0", "1 Pz 0.0"),
+    ],
+)
+def test_surface_preserves_mnemonic_case(in_str, expected):
+    """Surface mnemonics should be written with the original case (issue #522)."""
+    surf = Surface(in_str)
+    assert surf.mcnp_str() == expected

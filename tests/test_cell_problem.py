@@ -286,9 +286,6 @@ def verify_internal_links(cell):
 
 def verify_clone_format(cell):
     surf = list(cell.surfaces)[0]
-    old_num = surf.number
-    num = 1000
-    surf.number = num
     output = cell.format_for_mcnp_input((6, 3, 0))
     note(output)
     problem = montepy.MCNP_Problem()
@@ -303,8 +300,7 @@ def verify_clone_format(cell):
     for attr in {"number", "mass_density", "old_mat_number"}:
         assert getattr(cell, attr) == getattr(new_cell, attr)
     new_surf = list(new_cell.surfaces)[0]
-    assert new_surf.number == num
-    surf.number = old_num
+    assert new_surf.number == surf.number
 
 
 def test_cell_clone_default():
