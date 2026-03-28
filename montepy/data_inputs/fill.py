@@ -615,7 +615,7 @@ class Fill(CellModifierInput):
 
         Returns
         -------
-        dict
+        range
             range
         """
         return range(self._axis_size(axis))

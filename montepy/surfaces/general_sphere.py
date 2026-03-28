@@ -67,7 +67,7 @@ class GeneralSphere(Surface):
     def coordinates(self):
         """The three coordinates for the sphere center
 
-        :rytpe: tuple
+        :rtype: tuple
         """
         return tuple(c.value for c in self._coordinates)
 

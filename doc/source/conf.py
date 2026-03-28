@@ -176,15 +176,8 @@ nitpick_ignore = [
     ("py:class", "sly.yacc.Parser"),
     ("py:class", "sly.yacc.ParserMeta"),
     ("py:class", "sly.yacc.YaccProduction"),
-    # sly.lex.Token appears as bare "Token" in autodoc-generated type annotations
-    ("py:class", "Token"),
-    # InitInput is a Union TypeAlias in mcnp_object.py; autodoc generates a
-    # :class: cross-ref for it but TypeAliases are not indexed as classes
-    # Private methods referenced in developing.rst; not in the public autodoc index
     # Subpackages referenced with :mod: in docs; autodoc indexes individual classes
     # but not the package-level modules themselves
-    ("py:mod", "montepy.data_inputs"),
-    ("py:mod", "montepy.surfaces"),
     # typing.Union is not in the Python intersphinx inventory as a py:data target
     ("py:data", "typing.Union"),
 ]

@@ -7,7 +7,7 @@ class LatticeType(Enum):
     """Represents the options for the lattice ``LAT``."""
 
     RECTANGULAR = 1
-    """Rectangular hexahedral lattice type (a solid with six rectangular faces)."""
+    """Rectangular hexahedral lattice type (a solid with six faces)."""
     HEXAHEDRAL = RECTANGULAR
     """Alias for :attr:`RECTANGULAR`; hexahedra are solids with six faces."""
     HEXAGONAL = 2

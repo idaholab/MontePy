@@ -66,7 +66,7 @@ class CylinderParAxis(Surface):
     def coordinates(self):
         """The two coordinates for this cylinder to center on.
 
-        :rytpe: tuple
+        :rtype: tuple
         """
         return (self._coordinates[0].value, self._coordinates[1].value)
 

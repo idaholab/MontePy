@@ -19,7 +19,6 @@ from .constants import DEFAULT_VERSION as MCNP_VERSION
 from montepy.data_inputs.material import Material
 from montepy.data_inputs.transform import Transform
 from montepy.data_inputs.nuclide import Library, Nuclide, Nucleus
-from montepy._singleton import SingletonGroup
 from montepy.data_inputs.element import Element
 from montepy.data_inputs.lattice import LatticeType
 from montepy.data_inputs import Mode
@@ -41,7 +40,6 @@ from montepy.particle import Particle, LibraryType
 from montepy.universe import Universe
 from montepy.cell import Cell
 from montepy.mcnp_problem import MCNP_Problem
-from montepy.mcnp_object import InitInput
 
 # collections
 from montepy.cells import Cells
@@ -53,13 +51,6 @@ from montepy.transforms import Transforms
 import montepy.exceptions
 import montepy.errors  # deprecated
 
-# Ensure re-exported classes resolve to the top-level montepy path in autodoc
-# rather than their canonical module path (e.g. montepy.data_inputs.nuclide.Library).
-# This avoids nitpick warnings for classes accessible as montepy.Library etc.
-Library.__module__ = "montepy"
-LibraryType.__module__ = "montepy"
-Nucleus.__module__ = "montepy"
-SingletonGroup.__module__ = "montepy"
 import sys
 
 try:

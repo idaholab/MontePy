@@ -823,7 +823,7 @@ class CommentNode(SyntaxNodeBase):
 
     Parameters
     ----------
-    input : Token
+    input : sly.lex.Token
         the token from the lexer
     """
 

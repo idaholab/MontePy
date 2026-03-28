@@ -199,6 +199,8 @@ You should not store the nested value; instead you should store the entire Value
 and then use :func:`~montepy.utilities.make_prop_val_node` to provide the appropriate property.
 Even if an input isn't provided a ValueNode needs to be stored. The utility :meth:`~montepy.mcnp_object.MCNP_Object._generate_default_node` can help simplify this.
 
+.. automethod:: montepy.mcnp_object.MCNP_Object._generate_default_node
+
 The parsers can't always know what data type should in a specific position, so largely it treats all numerical values as floats.
 This should be changed during the init so the value_nodes are the correct data type.
 First: if the sign of the value (positive/negative) carries information beyond the value being negative, this should be marked. 
@@ -217,6 +219,10 @@ Next, if you do not need to change the :func:`~montepy.input_parser.syntax_node.
 there are methods to handle this.
 These methods are :meth:`~montepy.input_parser.syntax_node.ValueNode._convert_to_int`, and
 :meth:`~montepy.input_parser.syntax_node.ValueNode._convert_to_enum`.
+
+.. automethod:: montepy.input_parser.syntax_node.ValueNode._convert_to_int
+.. automethod:: montepy.input_parser.syntax_node.ValueNode._convert_to_enum
+
 ``_convert_to_int`` is a rather straight forward function to run, and takes no arguments.
 It should be noted that the value is found by running ``int(self.token)``, that is that the original string value, and not the float value is converted.
 This is in order to avoid allowing ``1.5`` as a valid int, since in this case the floor would be taken.
@@ -525,13 +531,15 @@ Next the values need to be updated via :func:`~montepy.mcnp_object.MCNP_Object._
 For the cell level instance this calls :func:`~montepy.data_inputs.cell_modifier.CellModifierInput._update_cell_values`,
 which needs to be implemented.
 For the data-block isntance this is a bit more complicated.
-First all new data for every cell is collected by :func:`~montepy.data_inputs.cell_modifier.CellModifierInput._collect_new_values`.
-By default this will get the *ValueNode* that is returned from the abstract method :func:`~montepy.data_inputs.cell_modifier.CellModifierInput._tree_value`.
-These values will then be passed to ``ListNode.update_with_new_values()``.
+First all new data for every cell is collected by :meth:`~montepy.data_inputs.cell_modifier.CellModifierInput._collect_new_values`.
+By default this will get the *ValueNode* that is returned from the abstract method :meth:`~montepy.data_inputs.cell_modifier.CellModifierInput._tree_value`.
+These values will then be passed to :meth:`~montepy.input_parser.syntax_node.ListNode.update_with_new_values`.
 
 Finally, the syntax tree is formatted.
 Once again this is wrapped to allow adding more complexity.
-The tree is formatted by ``_format_tree()``.
+The tree is formatted by :meth:`~montepy.data_inputs.cell_modifier.CellModifierInput._format_tree`.
+
+.. automethod:: montepy.data_inputs.cell_modifier.CellModifierInput._format_tree
 
 :func:`~montepy.data_inputs.cell_modifier.CellModifierInput.merge`
 """"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
@@ -553,7 +561,9 @@ There should be a ``self.in_cell_block`` guard.
 
 You need to check that there was no double specifying of data in both the cell and data block.
 This should be raise :exc:`~montepy.exceptions.MalformedInputError`.
-This checking and error handling is handled by the method ``_check_redundant_definitions()``.
+This checking and error handling is handled by the method :meth:`~montepy.data_inputs.cell_modifier.CellModifierInput._check_redundant_definitions`.
+
+.. automethod:: montepy.data_inputs.cell_modifier.CellModifierInput._check_redundant_definitions
 
 :func:`~montepy.data_inputs.cell_modifier.CellModifierInput._clear_data`
 """"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""

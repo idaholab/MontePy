@@ -101,7 +101,6 @@ Materials
    :nosignatures:
    :template: myclass.rst
    
-   montepy.SingletonGroup
    montepy.Element
    montepy.Library
    montepy.Material
@@ -157,6 +156,7 @@ Abstract Classes
    :template: myclass.rst
    
    montepy.mcnp_object.MCNP_Object
+   montepy._singleton.SingletonGroup
    montepy.data_inputs.cell_modifier.CellModifierInput
    montepy.data_inputs.data_input.DataInputAbstract
    montepy.data_inputs.data_input.ForbiddenDataInput
@@ -194,6 +194,16 @@ Universal Utilities and constants
    montepy.exceptions
    montepy.utilities
 
+Subpackages
+^^^^^^^^^^^
+
+.. toctree::
+   :maxdepth: 1
+
+   montepy.data_inputs
+   montepy.surfaces
+   montepy.input_parser
+
    
 Object Builders
 ^^^^^^^^^^^^^^^
@@ -211,7 +221,7 @@ Object Builders
 Type Aliases
 ^^^^^^^^^^^^
 
-.. autodata:: montepy.InitInput
+.. autodata:: montepy.mcnp_object.InitInput
    :no-value:
 
 Parser Data Types

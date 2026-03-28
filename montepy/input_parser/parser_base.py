@@ -73,7 +73,7 @@ class SLY_Supressor:
         ----------
         msg : str
             The message to display.
-        token : Token
+        token : sly.lex.Token
             the token that caused the error if any.
         lineno : int
             the current lineno of the error (from SLY not the file), if
@@ -594,7 +594,7 @@ class MCNP_Parser(Parser, metaclass=MetaBuilder):
 
         Parameters
         ----------
-        token : Token
+        token : sly.lex.Token
             the token that broke the parsing rules.
         """
         # self._debug_parsing_error(token)

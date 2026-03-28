@@ -205,11 +205,11 @@ class MCNP_Object(ABC, metaclass=_ExceptionContextAdder):
 
         Returns
         -------
-        dict
+        dict[str, str]
             a dictionary of the key-value pairs of the parameters.
 
 
-        :rytpe: dict
+        :rtype: dict
         """
         return self._parameters
 

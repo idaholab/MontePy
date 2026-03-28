@@ -4,7 +4,8 @@ import copy
 import itertools
 from numbers import Integral, Real
 import sly
-from typing import Generator, Union
+from typing import Union
+import collections.abc
 import warnings
 
 from montepy.cells import Cells
@@ -577,7 +578,7 @@ class Cell(Numbered_MCNP_Object):
         return self._surfaces
 
     @property
-    def parameters(self):
+    def parameters(self) -> dict[str, str]:
         """A dictionary of the additional parameters for the object.
 
         e.g.: ``1 0 -1 u=1 imp:n=0.5`` has the parameters
@@ -585,11 +586,8 @@ class Cell(Numbered_MCNP_Object):
 
         Returns
         -------
-        dict
+        dict[str, str]
             a dictionary of the key-value pairs of the parameters.
-
-
-        :rytpe: dict
         """
         return self._parameters
 
@@ -615,7 +613,7 @@ class Cell(Numbered_MCNP_Object):
 
         Returns
         -------
-        Generator[Cell, None, None]
+        collections.abc.Generator[Cell, None, None]
         """
         if self._problem:
             for cell in self._problem.cells:
