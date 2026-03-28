@@ -180,15 +180,9 @@ nitpick_ignore = [
     ("py:class", "Token"),
     # InitInput is a Union TypeAlias in mcnp_object.py; autodoc generates a
     # :class: cross-ref for it but TypeAliases are not indexed as classes
-    ("py:class", "InitInput"),
     # Private methods referenced in developing.rst; not in the public autodoc index
-    ("py:func", "montepy.mcnp_object.MCNP_Object._generate_default_node"),
-    ("py:func", "montepy.input_parser.syntax_node.ValueNode._convert_to_int"),
-    ("py:func", "montepy.input_parser.syntax_node.ValueNode._convert_to_enum"),
     # Subpackages referenced with :mod: in docs; autodoc indexes individual classes
     # but not the package-level modules themselves
-    ("py:mod", "montepy.input_parser"),
-    ("py:mod", "montepy.input_parser.tokens"),
     ("py:mod", "montepy.data_inputs"),
     ("py:mod", "montepy.surfaces"),
     # typing.Union is not in the Python intersphinx inventory as a py:data target
