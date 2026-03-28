@@ -276,15 +276,24 @@ class Importance(CellModifierInput):
             ):
                 cell_importances.append({k: v for k, v in zip(part_keys, imp_group)})
             for cell_imp, cell in zip(cell_importances, self._problem.cells):
-                cell._importance._accept_from_data(cell_imp)
+                for particle, val in cell_imp.items():
+                    cell._importance._accept_from_data(particle, val)
+
+    def _accept_from_data(self, key, value):
+        if hasattr(self, "_not_parsed"):
+            if not hasattr(self, "_parked_value"):
+                self._parked_value = {}
+            self._parked_value[key] = value
+        else:
+            self._accept_and_update({key: value})
 
     def _accept_and_update(self, value):
-        data_tree = self._tree["data"]
-        data_tree.nodes.pop()
-        for part, value in value.items():
-            self[part] = value.value
-            data.append(value)
-        self.importance._explicitly_set = True
+        for part, val in value.items():
+            self[part] = val.value
+            data_tree = self._particle_importances[part]["data"]
+            data_tree.nodes.pop()
+            data_tree.nodes.append(val)
+        self._explicitly_set = True
 
     def _format_tree(self):
         def ensure_has_end_space(ret, strip_new_lines=False):
