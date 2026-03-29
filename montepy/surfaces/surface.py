@@ -5,6 +5,7 @@ from collections.abc import Callable
 from dataclasses import asdict, dataclass
 from typing import Union
 from numbers import Real
+import warnings
 
 import montepy
 from montepy.input_parser import syntax_node
@@ -61,6 +62,7 @@ class _SurfaceClassFactory(_ExceptionContextAdder):
         _SurfaceClassFactory.build_params_props(namespace, spec, param_loaders)
         namespace["_PARAM_LOADERS"] = param_loaders
         namespace["_NUM_PARAMS"] = spec.num_param_values
+        namespace["_ALLOWED_SURFACE_TYPES"] = spec.surface_types
         return super().__new__(cls, name, bases, namespace, **kwargs)
 
     @classmethod
@@ -126,14 +128,14 @@ class _SurfaceClassFactory(_ExceptionContextAdder):
         def dummy_tuple_setter(self, vals):
             if not isinstance(vals, (list, tuple)):
                 raise TypeError(f"{name} must be a list")
-            if len(coordinates) != length:
+            if len(vals) != length:
                 raise ValueError(f"{name} must have exactly {length} elements")
             for val in vals:
                 if not isinstance(val, Real):
                     # assume it ends in an "s"
                     raise TypeError(f"{name[:-1]} must be a number. {val} given.")
             for in_val, storage in zip(vals, getattr(self, hidden_param)):
-                storage.value = val
+                storage.value = in_val
 
         return dummy_tuple_setter
 
@@ -156,6 +158,9 @@ class Surface(Numbered_MCNP_Object):
     """
 
     _parser = SurfaceParser()
+    _PARAM_LOADERS: list = []
+    _NUM_PARAMS: int = 0
+    _ALLOWED_SURFACE_TYPES: set = None
 
     def __init__(
         self,
@@ -259,8 +264,8 @@ class Surface(Numbered_MCNP_Object):
         """
         return cls._NUM_PARAMS
 
-    @staticmethod
-    def _allowed_surface_types():
+    @classmethod
+    def _allowed_surface_types(cls):
         """ "
         The allowed surface types for this surface type.
 
@@ -268,7 +273,9 @@ class Surface(Numbered_MCNP_Object):
         -------
         set[SurfaceType]
         """
-        return set(SurfaceType)
+        if cls._ALLOWED_SURFACE_TYPES is None:
+            return set(SurfaceType)
+        return cls._ALLOWED_SURFACE_TYPES
 
     def _generate_default_tree(
         self, number: int = None, surface_type: Union[SurfaceType, str] = None
@@ -609,27 +616,477 @@ class Surface(Numbered_MCNP_Object):
         return half_space.UnitHalfSpace(self, True, False)
 
 
-# CylinderOnAxis spec
-cylinder_on_axis_spec = _SurfaceTypeSpec(
+# ---------------------------------------------------------------------------
+# Shared validators
+# ---------------------------------------------------------------------------
+
+
+def _enforce_positive_radius(self, value):
+    if value < 0.0:
+        raise ValueError(f"Radius must be positive. {value} given")
+
+
+# ---------------------------------------------------------------------------
+# CylinderOnAxis  (CX, CY, CZ)
+# ---------------------------------------------------------------------------
+
+_cylinder_on_axis_spec = _SurfaceTypeSpec(
     surface_types={SurfaceType.CX, SurfaceType.CY, SurfaceType.CZ},
     num_param_values=1,
     params=[
         _SurfaceParamSpec(
-            **{
-                "name": "radius",
-                "types": (float, int),
-                "base_type": float,
-                "description": "RADIUS!",
-                "start_idx": 0,
-            }
+            name="radius",
+            start_idx=0,
+            description="The radius :math:`R` of the cylinder",
+            types=(float, int),
+            base_type=float,
+            validator=_enforce_positive_radius,
         )
     ],
 )
 
 
 class CylinderOnAxis(
-    Surface, metaclass=_SurfaceClassFactory, spec=cylinder_on_axis_spec
+    Surface, metaclass=_SurfaceClassFactory, spec=_cylinder_on_axis_spec
 ):
-    """Represents surfaces: CX, CY, CZ"""
+    """Represents surfaces CX, CY, CZ: an infinite cylinder whose axis lies on
+    a coordinate axis.
 
-    pass
+    The surface equation (e.g. for CZ) is:
+
+    .. math::
+
+        x^2 + y^2 - R^2 = 0
+
+    .. versionchanged:: 1.0.0
+
+        Added number parameter
+
+    Parameters
+    ----------
+    input : Union[Input, str]
+        The Input object representing the input
+    number : int
+        The number to set for this object.
+    surface_type : Union[SurfaceType, str]
+        The surface_type to set for this object
+    """
+
+    def validate(self):
+        super().validate()
+        if self.radius is None:
+            raise IllegalState(f"Surface: {self.number} does not have a radius set.")
+
+
+# ---------------------------------------------------------------------------
+# CylinderParAxis  (C/X, C/Y, C/Z)
+# ---------------------------------------------------------------------------
+
+_cylinder_par_axis_spec = _SurfaceTypeSpec(
+    surface_types={SurfaceType.C_X, SurfaceType.C_Y, SurfaceType.C_Z},
+    num_param_values=3,
+    params=[
+        _SurfaceParamSpec(
+            name="coordinates",
+            start_idx=0,
+            is_tuple=True,
+            tuple_length=2,
+            description="The two off-axis coordinates :math:`(a_1, a_2)` of the cylinder axis",
+            types=(float, int),
+            base_type=float,
+        ),
+        _SurfaceParamSpec(
+            name="radius",
+            start_idx=2,
+            description="The radius :math:`R` of the cylinder",
+            types=(float, int),
+            base_type=float,
+            validator=_enforce_positive_radius,
+        ),
+    ],
+)
+
+
+class CylinderParAxis(
+    Surface, metaclass=_SurfaceClassFactory, spec=_cylinder_par_axis_spec
+):
+    """Represents surfaces C/X, C/Y, C/Z: an infinite cylinder whose axis is
+    parallel to a coordinate axis but offset from it.
+
+    The surface equation (e.g. for C/Z) is:
+
+    .. math::
+
+        (x - x_0)^2 + (y - y_0)^2 - R^2 = 0
+
+    .. versionchanged:: 1.0.0
+
+        Added number parameter
+
+    Parameters
+    ----------
+    input : Union[Input, str]
+        The Input object representing the input
+    number : int
+        The number to set for this object.
+    surface_type : Union[SurfaceType, str]
+        The surface_type to set for this object
+    """
+
+    COORDINATE_PAIRS = {
+        SurfaceType.C_X: {0: "y", 1: "z"},
+        SurfaceType.C_Y: {0: "x", 1: "z"},
+        SurfaceType.C_Z: {0: "x", 1: "y"},
+    }
+    """Which coordinate corresponds to which axis for each cylinder type."""
+
+    def validate(self):
+        super().validate()
+        if self.radius is None:
+            raise IllegalState(f"Surface: {self.number} does not have a radius set.")
+        if any(c is None for c in self.coordinates):
+            raise IllegalState(f"Surface: {self.number} does not have coordinates set.")
+
+
+# ---------------------------------------------------------------------------
+# AxisPlane  (PX, PY, PZ)
+# ---------------------------------------------------------------------------
+
+_axis_plane_spec = _SurfaceTypeSpec(
+    surface_types={SurfaceType.PX, SurfaceType.PY, SurfaceType.PZ},
+    num_param_values=1,
+    params=[
+        _SurfaceParamSpec(
+            name="location",
+            start_idx=0,
+            description="The location :math:`d` of the plane along the axis",
+            types=(float, int),
+            base_type=float,
+        ),
+    ],
+)
+
+
+class AxisPlane(Surface, metaclass=_SurfaceClassFactory, spec=_axis_plane_spec):
+    """Represents surfaces PX, PY, PZ: a plane normal to a coordinate axis.
+
+    The surface equation (e.g. for PZ) is:
+
+    .. math::
+
+        z - d = 0
+
+    .. versionchanged:: 1.0.0
+
+        Added number parameter
+
+    Parameters
+    ----------
+    input : Union[Input, str]
+        The Input object representing the input
+    number : int
+        The number to set for this object.
+    surface_type : Union[SurfaceType, str]
+        The surface_type to set for this object
+    """
+
+    COORDINATE = {SurfaceType.PX: "x", SurfaceType.PY: "y", SurfaceType.PZ: "z"}
+    """Maps surface type to the axis name for the plane's location."""
+
+    @property
+    def d(self):
+        """Alias for :attr:`location` following MCNP manual notation (:math:`d`).
+
+        Returns
+        -------
+        float
+        """
+        return self.location
+
+    @d.setter
+    def d(self, value):
+        self.location = value
+
+    def validate(self):
+        super().validate()
+        if self.location is None:
+            raise IllegalState(f"Surface: {self.number} does not have a location set.")
+
+
+# ---------------------------------------------------------------------------
+# GeneralPlane  (P)
+# ---------------------------------------------------------------------------
+
+_general_plane_spec = _SurfaceTypeSpec(
+    surface_types={SurfaceType.P},
+    num_param_values=4,
+    params=[
+        _SurfaceParamSpec(
+            name="A",
+            start_idx=0,
+            description="Coefficient :math:`A` in :math:`Ax + By + Cz - D = 0`",
+            types=(float, int),
+            base_type=float,
+        ),
+        _SurfaceParamSpec(
+            name="B",
+            start_idx=1,
+            description="Coefficient :math:`B` in :math:`Ax + By + Cz - D = 0`",
+            types=(float, int),
+            base_type=float,
+        ),
+        _SurfaceParamSpec(
+            name="C",
+            start_idx=2,
+            description="Coefficient :math:`C` in :math:`Ax + By + Cz - D = 0`",
+            types=(float, int),
+            base_type=float,
+        ),
+        _SurfaceParamSpec(
+            name="D",
+            start_idx=3,
+            description="Offset :math:`D` in :math:`Ax + By + Cz - D = 0`",
+            types=(float, int),
+            base_type=float,
+        ),
+        _SurfaceParamSpec(
+            name="normal",
+            start_idx=0,
+            is_tuple=True,
+            tuple_length=3,
+            description="Normal vector :math:`(A, B, C)` of the plane",
+            types=(float, int),
+            base_type=float,
+        ),
+    ],
+)
+
+
+class GeneralPlane(Surface, metaclass=_SurfaceClassFactory, spec=_general_plane_spec):
+    """Represents surface P: a general plane.
+
+    The surface equation is:
+
+    .. math::
+
+        Ax + By + Cz - D = 0
+
+    May also be defined by three points (9 surface constants).
+
+    .. versionchanged:: 1.0.0
+
+        Added number parameter
+
+    Parameters
+    ----------
+    input : Union[Input, str]
+        The Input object representing the input
+    number : int
+        The number to set for this object.
+    """
+
+    def __init__(self, input=None, number=None):
+        super().__init__(input, number)
+        if input:
+            self._enforce_constants()
+
+    def validate(self):
+        super().validate()
+        self._enforce_constants(_validation_call=True)
+
+    def _enforce_constants(self, _validation_call=False):
+        if len(self.surface_constants) not in {4, 9}:
+            message = (
+                f"A GeneralPlane must have either 4 or 9 surface constants. "
+                f"{len(self.surface_constants)} constants are provided."
+            )
+            if len(self.surface_constants) < 9:
+                if not _validation_call:
+                    raise ValueError(message)
+                else:
+                    raise IllegalState(message)
+            else:
+                warnings.warn(message, SurfaceConstantsWarning)
+
+
+# ---------------------------------------------------------------------------
+# SphereAtOrigin  (SO)
+# ---------------------------------------------------------------------------
+
+_sphere_at_origin_spec = _SurfaceTypeSpec(
+    surface_types={SurfaceType.SO},
+    num_param_values=1,
+    params=[
+        _SurfaceParamSpec(
+            name="radius",
+            start_idx=0,
+            description="The radius :math:`R` of the sphere",
+            types=(float, int),
+            base_type=float,
+            validator=_enforce_positive_radius,
+        ),
+    ],
+)
+
+
+class SphereAtOrigin(
+    Surface, metaclass=_SurfaceClassFactory, spec=_sphere_at_origin_spec
+):
+    """Represents surface SO: a sphere centered at the origin.
+
+    The surface equation is:
+
+    .. math::
+
+        x^2 + y^2 + z^2 - R^2 = 0
+
+    .. versionadded:: 1.3.0
+
+    Parameters
+    ----------
+    input : Union[Input, str]
+        The Input object representing the input
+    number : int
+        The number to set for this object.
+    """
+
+    def validate(self):
+        super().validate()
+        if self.radius is None:
+            raise IllegalState(f"Surface: {self.number} does not have a radius set.")
+
+
+# ---------------------------------------------------------------------------
+# GeneralSphere  (S)
+# ---------------------------------------------------------------------------
+
+_general_sphere_spec = _SurfaceTypeSpec(
+    surface_types={SurfaceType.S},
+    num_param_values=4,
+    params=[
+        _SurfaceParamSpec(
+            name="x",
+            start_idx=0,
+            description="The :math:`x`-coordinate of the sphere center :math:`x_0`",
+            types=(float, int),
+            base_type=float,
+        ),
+        _SurfaceParamSpec(
+            name="y",
+            start_idx=1,
+            description="The :math:`y`-coordinate of the sphere center :math:`y_0`",
+            types=(float, int),
+            base_type=float,
+        ),
+        _SurfaceParamSpec(
+            name="z",
+            start_idx=2,
+            description="The :math:`z`-coordinate of the sphere center :math:`z_0`",
+            types=(float, int),
+            base_type=float,
+        ),
+        _SurfaceParamSpec(
+            name="center",
+            start_idx=0,
+            is_tuple=True,
+            tuple_length=3,
+            description="Center coordinates :math:`(x_0, y_0, z_0)` of the sphere",
+            types=(float, int),
+            base_type=float,
+        ),
+        _SurfaceParamSpec(
+            name="radius",
+            start_idx=3,
+            description="The radius :math:`R` of the sphere",
+            types=(float, int),
+            base_type=float,
+            validator=_enforce_positive_radius,
+        ),
+    ],
+)
+
+
+class GeneralSphere(Surface, metaclass=_SurfaceClassFactory, spec=_general_sphere_spec):
+    """Represents surface S: a general sphere.
+
+    The surface equation is:
+
+    .. math::
+
+        (x - x_0)^2 + (y - y_0)^2 + (z - z_0)^2 - R^2 = 0
+
+    .. versionadded:: 1.3.0
+
+    Parameters
+    ----------
+    input : Union[Input, str]
+        The Input object representing the input
+    number : int
+        The number to set for this object.
+    """
+
+    def validate(self):
+        super().validate()
+        if self.radius is None:
+            raise IllegalState(f"Surface: {self.number} does not have a radius set.")
+        if any(c is None for c in self.center):
+            raise IllegalState(f"Surface: {self.number} does not have a center set.")
+
+
+# ---------------------------------------------------------------------------
+# SphereOnAxis  (SX, SY, SZ)
+# ---------------------------------------------------------------------------
+
+_sphere_on_axis_spec = _SurfaceTypeSpec(
+    surface_types={SurfaceType.SX, SurfaceType.SY, SurfaceType.SZ},
+    num_param_values=2,
+    params=[
+        _SurfaceParamSpec(
+            name="location",
+            start_idx=0,
+            description="The location :math:`a` of the sphere center along the axis",
+            types=(float, int),
+            base_type=float,
+        ),
+        _SurfaceParamSpec(
+            name="radius",
+            start_idx=1,
+            description="The radius :math:`R` of the sphere",
+            types=(float, int),
+            base_type=float,
+            validator=_enforce_positive_radius,
+        ),
+    ],
+)
+
+
+class SphereOnAxis(Surface, metaclass=_SurfaceClassFactory, spec=_sphere_on_axis_spec):
+    """Represents surfaces SX, SY, SZ: a sphere centered on a coordinate axis.
+
+    The surface equation (e.g. for SX) is:
+
+    .. math::
+
+        (x - a)^2 + y^2 + z^2 - R^2 = 0
+
+    .. versionadded:: 1.3.0
+
+    Parameters
+    ----------
+    input : Union[Input, str]
+        The Input object representing the input
+    number : int
+        The number to set for this object.
+    surface_type : Union[SurfaceType, str]
+        The surface_type to set for this object
+    """
+
+    COORDINATE = {SurfaceType.SX: "x", SurfaceType.SY: "y", SurfaceType.SZ: "z"}
+    """Maps surface type to the axis name for the sphere's center."""
+
+    def validate(self):
+        super().validate()
+        if self.location is None:
+            raise IllegalState(f"Surface: {self.number} does not have a location set.")
+        if self.radius is None:
+            raise IllegalState(f"Surface: {self.number} does not have a radius set.")

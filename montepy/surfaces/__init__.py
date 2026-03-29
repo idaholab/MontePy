@@ -6,14 +6,17 @@ from . import surface
 from . import surface_builder
 
 # promote objects
-from .axis_plane import AxisPlane
-from .cylinder_par_axis import CylinderParAxis
-from .sphere_on_axis import SphereOnAxis
-from .sphere_at_origin import SphereAtOrigin
-from .general_sphere import GeneralSphere
-from .general_plane import GeneralPlane
+from .surface import (
+    AxisPlane,
+    CylinderOnAxis,
+    CylinderParAxis,
+    GeneralPlane,
+    GeneralSphere,
+    SphereAtOrigin,
+    SphereOnAxis,
+    Surface,
+)
 from .half_space import HalfSpace, UnitHalfSpace
-from .surface import Surface
 from .surface_type import SurfaceType
 
 # promote functions

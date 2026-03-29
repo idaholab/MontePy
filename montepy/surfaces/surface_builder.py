@@ -1,13 +1,16 @@
 # Copyright 2024, Battelle Energy Alliance, LLC All Rights Reserved.
-from montepy.surfaces.axis_plane import AxisPlane
-from montepy.surfaces.surface import Surface, InitInput
+from montepy.surfaces.surface import (
+    AxisPlane,
+    CylinderOnAxis,
+    CylinderParAxis,
+    GeneralPlane,
+    GeneralSphere,
+    InitInput,
+    SphereAtOrigin,
+    SphereOnAxis,
+    Surface,
+)
 from montepy.surfaces.surface_type import SurfaceType
-from montepy.surfaces.cylinder_on_axis import CylinderOnAxis
-from montepy.surfaces.cylinder_par_axis import CylinderParAxis
-from montepy.surfaces.general_plane import GeneralPlane
-from montepy.surfaces.general_sphere import GeneralSphere
-from montepy.surfaces.sphere_at_origin import SphereAtOrigin
-from montepy.surfaces.sphere_on_axis import SphereOnAxis
 
 
 def parse_surface(input: InitInput):
