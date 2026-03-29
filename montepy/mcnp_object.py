@@ -5,7 +5,7 @@ import copy
 import functools
 import itertools as it
 import textwrap
-from typing import TypeAlias, Union
+from typing import TypeAlias, Union, Type
 import warnings
 import weakref
 
@@ -161,7 +161,7 @@ class MCNP_Object(ABC, metaclass=_ExceptionContextAdder):
 
     @staticmethod
     def _generate_default_node(
-        value_type: type, default: str, padding: str = " ", never_pad: bool = False
+        value_type: Type, default: str, padding: str = " ", never_pad: bool = False
     ):
         """Generates a "default" or blank ValueNode.
 
@@ -172,9 +172,9 @@ class MCNP_Object(ABC, metaclass=_ExceptionContextAdder):
 
         Parameters
         ----------
-        value_type : type
+        value_type : typing.Type
             the data type for the ValueNode.
-        default : value_type
+        default : typing.Any
             the default value to provide (type needs to agree with
             value_type)
         padding : str, None
