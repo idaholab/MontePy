@@ -168,9 +168,10 @@ nitpicky = True
 
 # Exact (type, target) pairs that cannot be resolved and should be ignored.
 nitpick_ignore = [
-    ('py:class', 'type'),
-    ('py:class', 'montepy.input_parser.syntax_node.ShortcutNode.type'),
-    ('py:class', 'montepy.input_parser.syntax_node.ValueNode.type'),
+    ("py:attr", "type"),
+    ("py:class", "type"),
+    ("py:class", "montepy.input_parser.syntax_node.ShortcutNode.type"),
+    ("py:class", "montepy.input_parser.syntax_node.ValueNode.type"),
     # sly has no intersphinx inventory; all sly.* cross-refs are unresolvable
     ("py:class", "sly.Parser"),
     ("py:class", "sly.Lexer"),
