@@ -559,7 +559,7 @@ So there is a convenient way to update a surface, but how do you easily get the 
 For instance what if you want to shift a cell up in Z by 10 cm? 
 It would be horrible to have to get each surface by their number, and hoping you don't change the numbers along the way.
 
-The :class:`~montepy.Surfaces` collection has a generator for every type of surface in MCNP.
+The :class:`~montepy.surface_collection.Surfaces` collection has a generator for every type of surface in MCNP.
 These are very easy to find: they are just the lower case version of the 
 MCNP surface mnemonic. 
 This previous code is much simpler now:
