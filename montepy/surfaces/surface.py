@@ -1,6 +1,8 @@
 # Copyright 2024-2025, Battelle Energy Alliance, LLC All Rights Reserved.
 from __future__ import annotations
 import copy
+from collections.abc import Callable
+from dataclasses import asdict, dataclass
 from typing import Union
 from numbers import Real
 
@@ -9,6 +11,7 @@ from montepy.input_parser import syntax_node
 from montepy.exceptions import *
 from montepy.data_inputs import transform
 from montepy.input_parser.surface_parser import SurfaceParser
+from montepy.mcnp_object import _ExceptionContextAdder
 from montepy.numbered_mcnp_object import Numbered_MCNP_Object, InitInput
 from montepy.surfaces import half_space
 from montepy.surfaces.surface_type import SurfaceType
@@ -20,6 +23,111 @@ def _surf_type_validator(self, surf_type):
         raise ValueError(
             f"{type(self).__name__} must be a surface of type: {[e.value for e in self._allowed_surface_types()]}"
         )
+
+
+@dataclass
+class _SurfaceParamSpec:
+    name: str
+    start_idx: int
+    description: str
+    types: tuple[type, ...]
+    is_tuple: bool = False
+    base_type: type = None
+    tuple_length: int = None
+    validator: Callable = None
+
+
+@dataclass
+class _ParamLoader:
+    attr_name: str
+    is_tuple: bool
+    start_idx: int
+
+
+@dataclass
+class _SurfaceTypeSpec:
+    surface_types: Set[SurfaceType]
+    num_param_values: int
+    params: list[_SurfaceParamSpec]
+
+
+class _SurfaceClassFactory(_ExceptionContextAdder):
+    def __new__(cls, name, bases, namespace, spec: SurfaceTypeSpec = None, **kwargs):
+        if spec is None:
+            return super().__new__(cls, name, bases, namespace, **kwargs)
+        param_loaders = []
+        _SurfaceClassFactory.build_params_props(cls, spec, param_loaders)
+        return super().__new__(cls, name, bases, namespace, **kwargs)
+
+    @classmethod
+    def build_params_props(metaclass, cls, spec, param_loaders):
+        for param in spec.params:
+            param_loaders.append(
+                _ParamLoader(param.name, param.is_tuple, param.start_idx)
+            )
+            if param.is_tuple:
+                setattr(cls, param.name, metaclass.build_tuple_prop(param))
+            else:
+                setattr(cls, param.name, metaclass.build_scalar_prop(param))
+
+    @classmethod
+    def build_tuple_prop(metacls, param):
+        attr_name = f"_{param.name}"
+        base_func = metacls.gen_tuple_getter(attr_name)
+        base_func.__name__ = param.name
+        print("tuple")
+        base_func.__doc__ = base_func.__doc__.format(**asdict(param))
+        setter = metacls.gen_tuple_setter(attr_name, param.tuple_length, param.name)
+        return property(base_func, setter)
+
+    @classmethod
+    def build_scalar_prop(metacls, param):
+        base_func = copy.deepcopy(metacls.dummy_function)
+        base_func.__name__ = param.name
+        base_func.__doc__ = base_func.__doc__.format(**asdict(param))
+        return make_prop_val_node(
+            f"_{param.name}", param.types, param.base_type, param.validator
+        )(base_func)
+
+    def dummy_function(self) -> float:
+        """
+        {description}
+
+        Returns
+        -------
+        float
+        """
+
+    @classmethod
+    def gen_tuple_getter(meta_class, hidden_param):
+        def dummy_tuple_function(self) -> float:
+            """
+            {description}
+
+            Returns
+            -------
+            tuple[{{", ".join(["float"] * tuple_length)}}]
+            """
+            data = getattr(self, hidden_param)
+            return tuple(x.value for x in data)
+
+        return dummy_tuple_function
+
+    @classmethod
+    def gen_tuple_setter(meta_class, hidden_param, length, name):
+        def dummy_tuple_setter(self, vals):
+            if not isinstance(vals, (list, tuple)):
+                raise TypeError(f"{name} must be a list")
+            if len(coordinates) != length:
+                raise ValueError(f"{name} must have exactly {length} elements")
+            for val in vals:
+                if not isinstance(val, Real):
+                    # assume it ends in an "s"
+                    raise TypeError(f"{name[:-1]} must be a number. {val} given.")
+            for in_val, storage in zip(vals, getattr(self, hidden_param)):
+                storage.value = val
+
+        return dummy_tuple_setter
 
 
 class Surface(Numbered_MCNP_Object):
@@ -455,3 +563,29 @@ class Surface(Numbered_MCNP_Object):
                 f"Surface number must be set for a surface to be used in a geometry definition."
             )
         return half_space.UnitHalfSpace(self, True, False)
+
+
+# CylinderOnAxis spec
+cylinder_on_axis_spec = _SurfaceTypeSpec(
+    surface_types={SurfaceType.CX, SurfaceType.CY, SurfaceType.CZ},
+    num_param_values=1,
+    params=[
+        _SurfaceParamSpec(
+            **{
+                "name": "radius",
+                "types": (float, int),
+                "base_type": float,
+                "description": "RADIUS!",
+                "start_idx": 0,
+            }
+        )
+    ],
+)
+
+
+class CylinderOnAxis(
+    Surface, metaclass=_SurfaceClassFactory, spec=cylinder_on_axis_spec
+):
+    """Represents surfaces: CX, CY, CZ"""
+
+    pass
