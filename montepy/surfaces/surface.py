@@ -33,7 +33,7 @@ class _SurfaceParamSpec:
     types: tuple[type, ...]
     is_tuple: bool = False
     base_type: type = None
-    tuple_length: int = None
+    tuple_length: int = 1
     validator: Callable = None
 
 
@@ -42,6 +42,7 @@ class _ParamLoader:
     attr_name: str
     is_tuple: bool
     start_idx: int
+    tuple_length: int = 1
 
 
 @dataclass
@@ -49,6 +50,7 @@ class _SurfaceTypeSpec:
     surface_types: Set[SurfaceType]
     num_param_values: int
     params: list[_SurfaceParamSpec]
+    equation: Callable = None
 
 
 class _SurfaceClassFactory(_ExceptionContextAdder):
@@ -57,13 +59,20 @@ class _SurfaceClassFactory(_ExceptionContextAdder):
             return super().__new__(cls, name, bases, namespace, **kwargs)
         param_loaders = []
         _SurfaceClassFactory.build_params_props(namespace, spec, param_loaders)
+        namespace["_PARAM_LOADERS"] = param_loaders
+        namespace["_NUM_PARAMS"] = spec.num_param_values
         return super().__new__(cls, name, bases, namespace, **kwargs)
 
     @classmethod
     def build_params_props(metaclass, namespace, spec, param_loaders):
         for param in spec.params:
             param_loaders.append(
-                _ParamLoader(param.name, param.is_tuple, param.start_idx)
+                _ParamLoader(
+                    f"_{param.name}",
+                    param.is_tuple,
+                    param.start_idx,
+                    param.tuple_length,
+                )
             )
             if param.is_tuple:
                 namespace[param.name] = metaclass.build_tuple_prop(param)
@@ -225,9 +234,22 @@ class Surface(Numbered_MCNP_Object):
         # parse the parameters
         for entry in self._tree["data"]:
             self._surface_constants.append(entry)
+        self._load_params()
 
-    @staticmethod
-    def _number_of_params():
+    def _load_params(self):
+        for param_loader in self._PARAM_LOADERS:
+            data = self._surface_constants[
+                param_loader.start_idx : param_loader.start_idx
+                + param_loader.tuple_length
+            ]
+            if param_loader.is_tuple:
+                data = tuple(data)
+            else:
+                data = data[0]
+            setattr(self, param_loader.attr_name, data)
+
+    @classmethod
+    def _number_of_params(cls):
         """
         The number of defaults parameters to load into the syntax tree.
 
@@ -235,7 +257,7 @@ class Surface(Numbered_MCNP_Object):
         -------
         int
         """
-        return 1
+        return cls._NUM_PARAMS
 
     @staticmethod
     def _allowed_surface_types():
@@ -547,7 +569,30 @@ class Surface(Numbered_MCNP_Object):
         list
             A list of the surfaces that are identical
         """
-        return []
+        if self.old_periodic_surface:
+            return []
+        ret = []
+        # do not assume transform and periodic surfaces are the same.
+        for surface in surfaces:
+            if surface == self or surface.surface_type == self.surface_type:
+                continue
+            if surface.old_periodic_surface:
+                continue
+            if (self.transform is None) != (surface.transform is None):
+                continue
+            if self.transform and not self.transform.equivalent(
+                surface.transform, tolerance
+            ):
+                continue
+            if np.all(
+                np.isclose(
+                    self._surface_constants,
+                    surface.surface_constants,
+                    rel_tol=tolerance,
+                )
+            ):
+                ret.append(surface)
+        return ret
 
     def __neg__(self):
         if not self.number or self.number <= 0:
