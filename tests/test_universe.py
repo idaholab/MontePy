@@ -565,16 +565,18 @@ class TestFill:
             else:
                 assert old_val == new_val
 
+
 def test_cell_universe_nullify_with_problem():
     import montepy
+
     p = montepy.MCNP_Problem("tests/inputs/test.imcnp")
     p.parse_input()
     c = list(p.cells)[0]
-    
+
     assert c.universe.number != 0
     c.universe = None
     assert c.universe.number == 0
-    
+
     c = list(p.cells)[1]
     assert c.universe.number == 0
     del c.universe
