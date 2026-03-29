@@ -205,7 +205,12 @@ class CellModifierInput(DataInputAbstract):
 
     def link_to_problem(self, problem, *, deepcopy: bool = False):
         super().link_to_problem(problem)
-        if problem and not hasattr(self, "_not_parsed") and self.set_in_cell_block:
+        if (
+            not deepcopy
+            and problem
+            and not hasattr(self, "_not_parsed")
+            and self.set_in_cell_block
+        ):
             self._problem.print_in_data_block[self._class_prefix()] = False
 
     def _accept_from_data(self, value):
@@ -333,6 +338,8 @@ class CellModifierInput(DataInputAbstract):
         attr, _ = montepy.Cell._INPUTS_TO_PROPERTY[type(self)]
         for cell in self._problem.cells:
             input = getattr(cell, attr)
+            if hasattr(input, "_not_parsed"):
+                input.full_parse()
             ret.append(input._tree_value)
         return ret
 

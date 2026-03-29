@@ -397,8 +397,11 @@ class Importance(CellModifierInput):
         particle_pairings = collections.defaultdict(set)
         for particle in self._problem.mode.particles:
             for cell in self._problem.cells:
+                imp = cell._importance
+                if hasattr(imp, "_not_parsed"):
+                    imp.full_parse()
                 try:
-                    tree = cell.importance._particle_importances[particle]
+                    tree = imp._particle_importances[particle]
                 except KeyError:
                     raise NotImplementedError(
                         f"Importance data not available for cell {cell.number} for particle: "
@@ -559,7 +562,7 @@ class Importance(CellModifierInput):
 
     def link_to_problem(self, problem, *, deepcopy: bool = False):
         super().link_to_problem(problem, deepcopy=deepcopy)
-        if problem and self._explicitly_set:
+        if not deepcopy and problem and self._explicitly_set:
             self._problem.print_in_data_block._set_all_or_none(self._class_prefix())
 
 

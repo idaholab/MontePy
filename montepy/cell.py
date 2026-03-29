@@ -804,13 +804,14 @@ class Cell(Numbered_MCNP_Object):
         deepcopy: bool = False,
     ):
         super().link_to_problem(problem)
-        if not hasattr(self, "_not_parsed") and not deepcopy:
-            self._complements.link_to_problem(problem)
-            self._surfaces.link_to_problem(problem)
+        if not hasattr(self, "_not_parsed"):
+            if not deepcopy:
+                self._complements.link_to_problem(problem)
+                self._surfaces.link_to_problem(problem)
             for attr, _ in Cell._INPUTS_TO_PROPERTY.values():
                 input = getattr(self, attr, None)
                 if input:
-                    input.link_to_problem(problem)
+                    input.link_to_problem(problem, deepcopy=deepcopy)
 
     def __lt__(self, other):
         return self.number < other.number
