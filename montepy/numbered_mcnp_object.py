@@ -121,9 +121,12 @@ class Numbered_MCNP_Object(MCNP_Object):
                     # check if iterable
                     iter(child_collect)
                     assert not isinstance(child_collect, MCNP_Object)
+                    # give priority to problem level collection
+                    for obj in child_collect:
+                        obj._unlink_from_collection()
                     # ensure isn't a material or something
                     prob_collect.update(child_collect)
-                except (TypeError, AssertionError):
+                except (TypeError, AssertionError) as e:
                     prob_collect.append(child_collect)
 
     @property
