@@ -607,7 +607,7 @@ It has had to implement some janky metaclass properties in order to allow subcla
 
 First, read the `SLY Documentation <https://sly.readthedocs.io/en/latest/sly.html#writing-a-parser>`_.
 You should also be aware of the tokens that are available.
-See the tokens module: :mod:`montepy.input_parser.tokens` for what tokens are available.
+See the tokens module: ``montepy.input_parser.tokens`` for what tokens are available.
 The tokenization process is slightly contextual.
 The context is only changed by the :class:`~montepy.input_parser.block_type.BlockType`.
 The lexers used are:

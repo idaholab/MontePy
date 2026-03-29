@@ -176,6 +176,8 @@ nitpick_ignore = [
     ("py:class", "sly.yacc.Parser"),
     ("py:class", "sly.yacc.ParserMeta"),
     ("py:class", "sly.yacc.YaccProduction"),
+    ("py:class", "InitInput"),
+    ("py:class", "value_type"),
     # Subpackages referenced with :mod: in docs; autodoc indexes individual classes
     # but not the package-level modules themselves
     # typing.Union is not in the Python intersphinx inventory as a py:data target
