@@ -56,26 +56,25 @@ class _SurfaceClassFactory(_ExceptionContextAdder):
         if spec is None:
             return super().__new__(cls, name, bases, namespace, **kwargs)
         param_loaders = []
-        _SurfaceClassFactory.build_params_props(cls, spec, param_loaders)
+        _SurfaceClassFactory.build_params_props(namespace, spec, param_loaders)
         return super().__new__(cls, name, bases, namespace, **kwargs)
 
     @classmethod
-    def build_params_props(metaclass, cls, spec, param_loaders):
+    def build_params_props(metaclass, namespace, spec, param_loaders):
         for param in spec.params:
             param_loaders.append(
                 _ParamLoader(param.name, param.is_tuple, param.start_idx)
             )
             if param.is_tuple:
-                setattr(cls, param.name, metaclass.build_tuple_prop(param))
+                namespace[param.name] = metaclass.build_tuple_prop(param)
             else:
-                setattr(cls, param.name, metaclass.build_scalar_prop(param))
+                namespace[param.name] = metaclass.build_scalar_prop(param)
 
     @classmethod
     def build_tuple_prop(metacls, param):
         attr_name = f"_{param.name}"
         base_func = metacls.gen_tuple_getter(attr_name)
         base_func.__name__ = param.name
-        print("tuple")
         base_func.__doc__ = base_func.__doc__.format(**asdict(param))
         setter = metacls.gen_tuple_setter(attr_name, param.tuple_length, param.name)
         return property(base_func, setter)
