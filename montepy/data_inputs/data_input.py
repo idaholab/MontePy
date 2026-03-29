@@ -178,7 +178,7 @@ class DataInputAbstract(MCNP_Object):
 
         Returns
         -------
-        ListNode
+        montepy.input_parser.syntax_node.ListNode
             The syntax tree with the information.
         """
         return self._tree["data"]
@@ -191,7 +191,7 @@ class DataInputAbstract(MCNP_Object):
 
         Returns
         -------
-        ClassifierNode
+        montepy.input_parser.syntax_node.ClassifierNode
             the classifier for this data_input.
         """
         return self._tree["classifier"]

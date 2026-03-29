@@ -5,6 +5,7 @@ import itertools
 from numbers import Integral, Real
 import sly
 from typing import Union
+import collections.abc
 import warnings
 
 from montepy.cells import Cells
@@ -412,7 +413,7 @@ class Cell(Numbered_MCNP_Object):
         This does not guarantee that MCNP will able to calculate the volume.
         Complex geometries may make this impossible.
 
-        See :func:`~montepy.cells.Cells.allow_mcnp_volume_calc`
+        See :attr:`~montepy.Cells.allow_mcnp_volume_calc`
 
         Returns
         -------
@@ -594,7 +595,7 @@ class Cell(Numbered_MCNP_Object):
         return self._surfaces
 
     @property
-    def parameters(self):
+    def parameters(self) -> dict[str, str]:
         """A dictionary of the additional parameters for the object.
 
         e.g.: ``1 0 -1 u=1 imp:n=0.5`` has the parameters
@@ -602,11 +603,8 @@ class Cell(Numbered_MCNP_Object):
 
         Returns
         -------
-        unknown
+        dict[str, str]
             a dictionary of the key-value pairs of the parameters.
-
-
-        :rytpe: dict
         """
         return self._parameters
 
@@ -620,7 +618,7 @@ class Cell(Numbered_MCNP_Object):
     def complements(self):
         """The Cell objects that this cell is a complement of
 
-        :rytpe: :class:`montepy.cells.Cells`
+        :rtype: :class:`montepy.Cells`
         """
         return self._complements
 
@@ -632,7 +630,7 @@ class Cell(Numbered_MCNP_Object):
 
         Returns
         -------
-        generator
+        collections.abc.Generator[Cell, None, None]
         """
         if self._problem:
             for cell in self._problem.cells:
@@ -671,7 +669,7 @@ class Cell(Numbered_MCNP_Object):
 
         .. versionchanged:: 1.0.0
 
-            The form of the deleting_dict was changed as :class:`~montepy.surfaces.Surface` is no longer hashable.
+            The form of the deleting_dict was changed as :class:`~montepy.Surface` is no longer hashable.
 
         Parameters
         ----------

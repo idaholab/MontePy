@@ -5,7 +5,7 @@ import copy
 import functools
 import itertools as it
 import textwrap
-from typing import Union
+from typing import TypeAlias, Union, Type
 import warnings
 import weakref
 
@@ -25,11 +25,11 @@ from montepy.input_parser.syntax_node import (
 )
 import montepy
 
-InitInput = Union[montepy.input_parser.mcnp_input.Input, str]
+InitInput: TypeAlias = Union[montepy.input_parser.mcnp_input.Input, str]
 
 
 class _ExceptionContextAdder(ABCMeta):
-    """A metaclass for wrapping all class properties and methods in :func:`~montepy.errors.add_line_number_to_exception`."""
+    """A metaclass for wrapping all class properties and methods in :func:`~montepy.exceptions.add_line_number_to_exception`."""
 
     @staticmethod
     def _wrap_attr_call(func):
@@ -161,7 +161,7 @@ class MCNP_Object(ABC, metaclass=_ExceptionContextAdder):
 
     @staticmethod
     def _generate_default_node(
-        value_type: type, default: str, padding: str = " ", never_pad: bool = False
+        value_type: Type, default: str, padding: str = " ", never_pad: bool = False
     ):
         """Generates a "default" or blank ValueNode.
 
@@ -172,9 +172,9 @@ class MCNP_Object(ABC, metaclass=_ExceptionContextAdder):
 
         Parameters
         ----------
-        value_type : Class
+        value_type : typing.Type
             the data type for the ValueNode.
-        default : value_type
+        default : typing.Any
             the default value to provide (type needs to agree with
             value_type)
         padding : str, None
@@ -205,11 +205,11 @@ class MCNP_Object(ABC, metaclass=_ExceptionContextAdder):
 
         Returns
         -------
-        unknown
+        dict[str, str]
             a dictionary of the key-value pairs of the parameters.
 
 
-        :rytpe: dict
+        :rtype: dict
         """
         return self._parameters
 
