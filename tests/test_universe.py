@@ -581,3 +581,31 @@ def test_cell_universe_nullify_with_problem():
     assert c.universe.number == 0
     del c.universe
     assert c.universe.number == 0
+
+
+def test_cell_universe_nullify_adds_zero_universe():
+    import montepy
+
+    p = montepy.MCNP_Problem("out2.imcnp")
+    c = montepy.Cell()
+    c.number = 1
+    p.cells.append(c)
+
+    assert 0 not in p.universes.numbers
+    c.universe = None
+    assert 0 in p.universes.numbers
+    assert c.universe.number == 0
+
+
+def test_cell_universe_delete_adds_zero_universe():
+    import montepy
+
+    p = montepy.MCNP_Problem("out2.imcnp")
+    c = montepy.Cell()
+    c.number = 1
+    p.cells.append(c)
+
+    assert 0 not in p.universes.numbers
+    del c.universe
+    assert 0 in p.universes.numbers
+    assert c.universe.number == 0
