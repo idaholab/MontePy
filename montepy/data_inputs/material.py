@@ -1336,6 +1336,8 @@ See <https://www.montepy.org/migrations/migrate0_1.html> for more information ""
             yield fraction
 
     def __bool__(self):
+        if hasattr(self, "_not_parsed"):
+            return True
         return bool(self._components)
 
     @make_prop_pointer("_thermal_scattering", thermal_scattering.ThermalScatteringLaw)
