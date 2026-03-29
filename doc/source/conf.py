@@ -144,10 +144,7 @@ apidoc_module_dir = "../../montepy"
 apidoc_module_first = True
 apidoc_separate_modules = True
 
-suppress_warnings = [
-    "epub.unknown_project_files",
-    "RemovedInSphinx11Warning",
-]
+suppress_warnings = ["epub.unknown_project_files"]
 
 
 # Add any paths that contain custom static files (such as style sheets) here,

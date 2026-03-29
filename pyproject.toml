@@ -55,8 +55,7 @@ build = [
 ]
 doc = [
 	"montepy[build]",
-	# This is needed for a sphinx bug. See #414.
-	"sphinx>=7.4.0", 
+	"sphinx~=8.0", 
 	"sphinxcontrib-apidoc", 
 	"pydata_sphinx_theme",
 	"sphinx-favicon",
