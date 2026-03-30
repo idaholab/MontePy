@@ -179,6 +179,7 @@ class Surface(Numbered_MCNP_Object):
     _PARAM_LOADERS: list = []
     _NUM_PARAMS: int = 0
     _ALLOWED_SURFACE_TYPES: set = None
+    _VARIABLE_NUM_PARAMS: bool = False
 
     def __init__(
         self,
@@ -259,6 +260,7 @@ class Surface(Numbered_MCNP_Object):
             self._surface_constants.append(entry)
         if (
             type(self) != Surface
+            and not self._VARIABLE_NUM_PARAMS
             and len(self._surface_constants) != self._number_of_params()
         ):
             raise ValueError(
@@ -1317,9 +1319,19 @@ class GeneralPlane(Surface, metaclass=_SurfaceClassFactory, spec=_general_plane_
         The number to set for this object.
     """
 
+    _VARIABLE_NUM_PARAMS = True
+
+    def _load_params(self):
+        self._enforce_constants()
+        super()._load_params()
+
     def validate(self):
         super().validate()
         self._enforce_constants(_validation_call=True)
+        if any(c is None for c in (self.A, self.B, self.C, self.D)):
+            raise IllegalState(
+                f"Surface: {self.number} does not have all plane coefficients (A, B, C, D) set."
+            )
 
     def _enforce_constants(self, _validation_call=False):
         if len(self.surface_constants) not in {4, 9}:
