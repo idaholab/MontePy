@@ -900,6 +900,7 @@ _x_cylinder_par_axis_spec = _SurfaceTypeSpec(
             validator=_enforce_positive_radius,
         ),
     ],
+    equation=lambda x, y, z, c: (y - c[0]) ** 2 + (z - c[1]) ** 2 - c[2] ** 2,
 )
 
 _y_cylinder_par_axis_spec = _SurfaceTypeSpec(
@@ -1143,6 +1144,7 @@ _x_plane_spec = _SurfaceTypeSpec(
             base_type=float,
         ),
     ],
+    equation=lambda x, y, z, c: x - c[0],
 )
 
 _y_plane_spec = _SurfaceTypeSpec(
@@ -1164,6 +1166,7 @@ _y_plane_spec = _SurfaceTypeSpec(
             base_type=float,
         ),
     ],
+    equation=lambda x, y, z, c: y - c[0],
 )
 
 _z_plane_spec = _SurfaceTypeSpec(
@@ -1185,6 +1188,7 @@ _z_plane_spec = _SurfaceTypeSpec(
             base_type=float,
         ),
     ],
+    equation=lambda x, y, z, c: z - c[0],
 )
 
 
@@ -1294,6 +1298,7 @@ _general_plane_spec = _SurfaceTypeSpec(
             base_type=float,
         ),
     ],
+    equation=lambda x, y, z, c: c[0] * x + c[1] * y + c[2] * z - c[3],
 )
 
 
@@ -1366,6 +1371,7 @@ _sphere_at_origin_spec = _SurfaceTypeSpec(
             validator=_enforce_positive_radius,
         ),
     ],
+    equation=lambda x, y, z, c: x**2 + y**2 + z**2 - c[0] ** 2,
 )
 
 
@@ -1452,6 +1458,10 @@ _general_sphere_spec = _SurfaceTypeSpec(
             validator=_enforce_positive_radius,
         ),
     ],
+    equation=lambda x, y, z, c: (x - c[0]) ** 2
+    + (y - c[1]) ** 2
+    + (z - c[2]) ** 2
+    - c[3] ** 2,
 )
 
 
@@ -1578,6 +1588,7 @@ _x_sphere_spec = _SurfaceTypeSpec(
             validator=_enforce_positive_radius,
         ),
     ],
+    equation=lambda x, y, z, c: (x - c[0]) ** 2 + y**2 + z**2 - c[1] ** 2,
 )
 
 _y_sphere_spec = _SurfaceTypeSpec(
@@ -1607,6 +1618,7 @@ _y_sphere_spec = _SurfaceTypeSpec(
             validator=_enforce_positive_radius,
         ),
     ],
+    equation=lambda x, y, z, c: x**2 + (y - c[0]) ** 2 + z**2 - c[1] ** 2,
 )
 
 _z_sphere_spec = _SurfaceTypeSpec(
@@ -1636,6 +1648,7 @@ _z_sphere_spec = _SurfaceTypeSpec(
             validator=_enforce_positive_radius,
         ),
     ],
+    equation=lambda x, y, z, c: x**2 + y**2 + (z - c[0]) ** 2 - c[1] ** 2,
 )
 
 
@@ -1797,6 +1810,7 @@ _x_cone_spec = _SurfaceTypeSpec(
             base_type=float,
         ),
     ],
+    equation=lambda x, y, z, c: y**2 + z**2 - c[1] * (x - c[0]) ** 2,
 )
 
 _y_cone_spec = _SurfaceTypeSpec(
@@ -1825,6 +1839,7 @@ _y_cone_spec = _SurfaceTypeSpec(
             base_type=float,
         ),
     ],
+    equation=lambda x, y, z, c: x**2 + z**2 - c[1] * (y - c[0]) ** 2,
 )
 
 _z_cone_spec = _SurfaceTypeSpec(
@@ -1853,6 +1868,7 @@ _z_cone_spec = _SurfaceTypeSpec(
             base_type=float,
         ),
     ],
+    equation=lambda x, y, z, c: x**2 + y**2 - c[1] * (z - c[0]) ** 2,
 )
 
 
