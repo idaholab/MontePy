@@ -61,7 +61,13 @@ Cylinders
    :nosignatures:
    :template: myclass.rst
 
+   montepy.XCylinder
+   montepy.YCylinder
+   montepy.ZCylinder
    montepy.CylinderOnAxis
+   montepy.XCylinderParAxis
+   montepy.YCylinderParAxis
+   montepy.ZCylinderParAxis
    montepy.CylinderParAxis
 
 Planes
@@ -72,6 +78,9 @@ Planes
    :nosignatures:
    :template: myclass.rst
 
+   montepy.XPlane
+   montepy.YPlane
+   montepy.ZPlane
    montepy.AxisPlane
    montepy.GeneralPlane
 
@@ -85,6 +94,9 @@ Spheres
    :template: myclass.rst
 
    montepy.SphereAtOrigin
+   montepy.XSphere
+   montepy.YSphere
+   montepy.ZSphere
    montepy.SphereOnAxis
    montepy.GeneralSphere
 
@@ -97,7 +109,13 @@ Cones
    :nosignatures:
    :template: myclass.rst
 
+   montepy.XCone
+   montepy.YCone
+   montepy.ZCone
    montepy.ConeOnAxis
+   montepy.XConeParAxis
+   montepy.YConeParAxis
+   montepy.ZConeParAxis
    montepy.ConeParAxis
 
 
@@ -121,6 +139,9 @@ Tori
    :nosignatures:
    :template: myclass.rst
 
+   montepy.XTorus
+   montepy.YTorus
+   montepy.ZTorus
    montepy.Torus
 
 
