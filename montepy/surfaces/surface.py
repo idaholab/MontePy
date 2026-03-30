@@ -8,6 +8,7 @@ from typing import Union
 from numbers import Real
 import warnings
 
+import numpy as np
 import montepy
 from montepy.input_parser import syntax_node
 from montepy.exceptions import *
@@ -145,7 +146,7 @@ class _SurfaceClassFactory(_ExceptionContextAdder):
                 raise ValueError(f"{name} must have exactly {length} elements")
             converted = []
             for val in vals:
-                if types and not isinstance(val, types):
+                if types and not isinstance(val, (*types, Real)):
                     raise TypeError(f"{elem_name} must be a number. {val} given.")
                 if base_type is not None:
                     val = base_type(val)
@@ -608,7 +609,7 @@ class Surface(Numbered_MCNP_Object):
         ret = []
         # do not assume transform and periodic surfaces are the same.
         for surface in surfaces:
-            if surface == self or surface.surface_type == self.surface_type:
+            if surface == self or surface.surface_type != self.surface_type:
                 continue
             if surface.old_periodic_surface:
                 continue
@@ -620,9 +621,9 @@ class Surface(Numbered_MCNP_Object):
                 continue
             if np.all(
                 np.isclose(
-                    self._surface_constants,
+                    self.surface_constants,
                     surface.surface_constants,
-                    rel_tol=tolerance,
+                    rtol=tolerance,
                 )
             ):
                 ret.append(surface)
