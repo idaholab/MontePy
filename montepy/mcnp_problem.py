@@ -177,7 +177,7 @@ class MCNP_Problem:
     def set_mode(self, particles):
         """Sets the mode of problem to the given particles.
 
-        For details see: :func:`montepy.data_cards.mode.Mode.set`.
+        For details see: :meth:`~montepy.Mode.set`.
 
         Parameters
         ----------
@@ -301,7 +301,7 @@ class MCNP_Problem:
         -------
         list
             a list of the
-            :class:`~montepy.data_cards.data_card.DataCardAbstract`
+            :class:`~montepy.data_inputs.data_input.DataInputAbstract`
             objects, ordered by the order they were in the input file.
         """
         self.__relink_objs()

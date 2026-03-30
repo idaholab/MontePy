@@ -77,10 +77,10 @@ def make_prop_val_node(
     hidden_param : str
         The string representing the parameter name of the internally
         stored ValueNode.
-    types : Class, tuple
+    types : type, tuple
         the acceptable types for the settable, which is passed to
         isinstance. If an empty tuple will be type(self).
-    validator : function
+    validator : collections.abc.Callable
         A validator function to run on values before setting. Must
         accept func(self, value).
     deletable : bool
@@ -147,10 +147,10 @@ def make_prop_pointer(
     hidden_param : str
         The string representing the parameter name of the internally
         stored ValueNode.
-    types : Class, tuple
+    types : type, tuple
         the acceptable types for the settable, which is passed to
         isinstance, if an empty tuple is provided the type will be self.
-    validator : function
+    validator : collections.abc.Callable
         A validator function to run on values before setting. Must
         accept func(self, value).
     deletable : bool
