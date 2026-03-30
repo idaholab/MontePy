@@ -704,6 +704,77 @@ class CylinderOnAxis(
 
 
 # ---------------------------------------------------------------------------
+# XCylinder, YCylinder, ZCylinder  (CX, CY, CZ — axis-specific)
+# ---------------------------------------------------------------------------
+
+
+class XCylinder(CylinderOnAxis):
+    """Represents surface CX: an infinite cylinder whose axis is the X-axis.
+
+    The surface equation is:
+
+    .. math::
+
+        y^2 + z^2 - R^2 = 0
+
+    .. versionadded:: 1.4.0
+
+    Parameters
+    ----------
+    input : Union[Input, str]
+        The Input object representing the input
+    number : int
+        The number to set for this object.
+    """
+
+    _ALLOWED_SURFACE_TYPES = {SurfaceType.CX}
+
+
+class YCylinder(CylinderOnAxis):
+    """Represents surface CY: an infinite cylinder whose axis is the Y-axis.
+
+    The surface equation is:
+
+    .. math::
+
+        x^2 + z^2 - R^2 = 0
+
+    .. versionadded:: 1.4.0
+
+    Parameters
+    ----------
+    input : Union[Input, str]
+        The Input object representing the input
+    number : int
+        The number to set for this object.
+    """
+
+    _ALLOWED_SURFACE_TYPES = {SurfaceType.CY}
+
+
+class ZCylinder(CylinderOnAxis):
+    """Represents surface CZ: an infinite cylinder whose axis is the Z-axis.
+
+    The surface equation is:
+
+    .. math::
+
+        x^2 + y^2 - R^2 = 0
+
+    .. versionadded:: 1.4.0
+
+    Parameters
+    ----------
+    input : Union[Input, str]
+        The Input object representing the input
+    number : int
+        The number to set for this object.
+    """
+
+    _ALLOWED_SURFACE_TYPES = {SurfaceType.CZ}
+
+
+# ---------------------------------------------------------------------------
 # CylinderParAxis  (C/X, C/Y, C/Z)
 # ---------------------------------------------------------------------------
 
@@ -772,6 +843,194 @@ class CylinderParAxis(
             raise IllegalState(f"Surface: {self.number} does not have a radius set.")
         if any(c is None for c in self.coordinates):
             raise IllegalState(f"Surface: {self.number} does not have coordinates set.")
+
+
+# ---------------------------------------------------------------------------
+# XCylinderParAxis, YCylinderParAxis, ZCylinderParAxis  (axis-specific)
+# ---------------------------------------------------------------------------
+
+_x_cylinder_par_axis_spec = _SurfaceTypeSpec(
+    surface_types={SurfaceType.C_X},
+    num_param_values=3,
+    params=[
+        _SurfaceParamSpec(
+            name="coordinates",
+            start_idx=0,
+            is_tuple=True,
+            tuple_length=2,
+            description=r"The off-axis coordinates :math:`(y_0, z_0)` of the cylinder axis",
+            types=(float, int),
+            base_type=float,
+        ),
+        _SurfaceParamSpec(
+            name="y",
+            start_idx=0,
+            description=r"The :math:`y`-coordinate :math:`y_0` of the cylinder axis",
+            types=(float, int),
+            base_type=float,
+        ),
+        _SurfaceParamSpec(
+            name="z",
+            start_idx=1,
+            description=r"The :math:`z`-coordinate :math:`z_0` of the cylinder axis",
+            types=(float, int),
+            base_type=float,
+        ),
+        _SurfaceParamSpec(
+            name="radius",
+            start_idx=2,
+            description="The radius :math:`R` of the cylinder",
+            types=(float, int),
+            base_type=float,
+            validator=_enforce_positive_radius,
+        ),
+    ],
+)
+
+_y_cylinder_par_axis_spec = _SurfaceTypeSpec(
+    surface_types={SurfaceType.C_Y},
+    num_param_values=3,
+    params=[
+        _SurfaceParamSpec(
+            name="coordinates",
+            start_idx=0,
+            is_tuple=True,
+            tuple_length=2,
+            description=r"The off-axis coordinates :math:`(x_0, z_0)` of the cylinder axis",
+            types=(float, int),
+            base_type=float,
+        ),
+        _SurfaceParamSpec(
+            name="x",
+            start_idx=0,
+            description=r"The :math:`x`-coordinate :math:`x_0` of the cylinder axis",
+            types=(float, int),
+            base_type=float,
+        ),
+        _SurfaceParamSpec(
+            name="z",
+            start_idx=1,
+            description=r"The :math:`z`-coordinate :math:`z_0` of the cylinder axis",
+            types=(float, int),
+            base_type=float,
+        ),
+        _SurfaceParamSpec(
+            name="radius",
+            start_idx=2,
+            description="The radius :math:`R` of the cylinder",
+            types=(float, int),
+            base_type=float,
+            validator=_enforce_positive_radius,
+        ),
+    ],
+)
+
+_z_cylinder_par_axis_spec = _SurfaceTypeSpec(
+    surface_types={SurfaceType.C_Z},
+    num_param_values=3,
+    params=[
+        _SurfaceParamSpec(
+            name="coordinates",
+            start_idx=0,
+            is_tuple=True,
+            tuple_length=2,
+            description=r"The off-axis coordinates :math:`(x_0, y_0)` of the cylinder axis",
+            types=(float, int),
+            base_type=float,
+        ),
+        _SurfaceParamSpec(
+            name="x",
+            start_idx=0,
+            description=r"The :math:`x`-coordinate :math:`x_0` of the cylinder axis",
+            types=(float, int),
+            base_type=float,
+        ),
+        _SurfaceParamSpec(
+            name="y",
+            start_idx=1,
+            description=r"The :math:`y`-coordinate :math:`y_0` of the cylinder axis",
+            types=(float, int),
+            base_type=float,
+        ),
+        _SurfaceParamSpec(
+            name="radius",
+            start_idx=2,
+            description="The radius :math:`R` of the cylinder",
+            types=(float, int),
+            base_type=float,
+            validator=_enforce_positive_radius,
+        ),
+    ],
+)
+
+
+class XCylinderParAxis(
+    CylinderParAxis, metaclass=_SurfaceClassFactory, spec=_x_cylinder_par_axis_spec
+):
+    """Represents surface C/X: an infinite cylinder whose axis is parallel to
+    the X-axis, offset to :math:`(y_0, z_0)`.
+
+    The surface equation is:
+
+    .. math::
+
+        (y - y_0)^2 + (z - z_0)^2 - R^2 = 0
+
+    .. versionadded:: 1.4.0
+
+    Parameters
+    ----------
+    input : Union[Input, str]
+        The Input object representing the input
+    number : int
+        The number to set for this object.
+    """
+
+
+class YCylinderParAxis(
+    CylinderParAxis, metaclass=_SurfaceClassFactory, spec=_y_cylinder_par_axis_spec
+):
+    """Represents surface C/Y: an infinite cylinder whose axis is parallel to
+    the Y-axis, offset to :math:`(x_0, z_0)`.
+
+    The surface equation is:
+
+    .. math::
+
+        (x - x_0)^2 + (z - z_0)^2 - R^2 = 0
+
+    .. versionadded:: 1.4.0
+
+    Parameters
+    ----------
+    input : Union[Input, str]
+        The Input object representing the input
+    number : int
+        The number to set for this object.
+    """
+
+
+class ZCylinderParAxis(
+    CylinderParAxis, metaclass=_SurfaceClassFactory, spec=_z_cylinder_par_axis_spec
+):
+    """Represents surface C/Z: an infinite cylinder whose axis is parallel to
+    the Z-axis, offset to :math:`(x_0, y_0)`.
+
+    The surface equation is:
+
+    .. math::
+
+        (x - x_0)^2 + (y - y_0)^2 - R^2 = 0
+
+    .. versionadded:: 1.4.0
+
+    Parameters
+    ----------
+    input : Union[Input, str]
+        The Input object representing the input
+    number : int
+        The number to set for this object.
+    """
 
 
 # ---------------------------------------------------------------------------
@@ -844,6 +1103,134 @@ class AxisPlane(Surface, metaclass=_SurfaceClassFactory, spec=_axis_plane_spec):
         super().validate()
         if self.location is None:
             raise IllegalState(f"Surface: {self.number} does not have a location set.")
+
+
+# ---------------------------------------------------------------------------
+# XPlane, YPlane, ZPlane  (PX, PY, PZ — axis-specific)
+# ---------------------------------------------------------------------------
+
+_x_plane_spec = _SurfaceTypeSpec(
+    surface_types={SurfaceType.PX},
+    num_param_values=1,
+    params=[
+        _SurfaceParamSpec(
+            name="location",
+            start_idx=0,
+            description="The location :math:`d` of the plane along the axis",
+            types=(float, int),
+            base_type=float,
+        ),
+        _SurfaceParamSpec(
+            name="x",
+            start_idx=0,
+            description="The :math:`x`-intercept :math:`d` of the plane",
+            types=(float, int),
+            base_type=float,
+        ),
+    ],
+)
+
+_y_plane_spec = _SurfaceTypeSpec(
+    surface_types={SurfaceType.PY},
+    num_param_values=1,
+    params=[
+        _SurfaceParamSpec(
+            name="location",
+            start_idx=0,
+            description="The location :math:`d` of the plane along the axis",
+            types=(float, int),
+            base_type=float,
+        ),
+        _SurfaceParamSpec(
+            name="y",
+            start_idx=0,
+            description="The :math:`y`-intercept :math:`d` of the plane",
+            types=(float, int),
+            base_type=float,
+        ),
+    ],
+)
+
+_z_plane_spec = _SurfaceTypeSpec(
+    surface_types={SurfaceType.PZ},
+    num_param_values=1,
+    params=[
+        _SurfaceParamSpec(
+            name="location",
+            start_idx=0,
+            description="The location :math:`d` of the plane along the axis",
+            types=(float, int),
+            base_type=float,
+        ),
+        _SurfaceParamSpec(
+            name="z",
+            start_idx=0,
+            description="The :math:`z`-intercept :math:`d` of the plane",
+            types=(float, int),
+            base_type=float,
+        ),
+    ],
+)
+
+
+class XPlane(AxisPlane, metaclass=_SurfaceClassFactory, spec=_x_plane_spec):
+    """Represents surface PX: a plane normal to the X-axis.
+
+    The surface equation is:
+
+    .. math::
+
+        x - d = 0
+
+    .. versionadded:: 1.4.0
+
+    Parameters
+    ----------
+    input : Union[Input, str]
+        The Input object representing the input
+    number : int
+        The number to set for this object.
+    """
+
+
+class YPlane(AxisPlane, metaclass=_SurfaceClassFactory, spec=_y_plane_spec):
+    """Represents surface PY: a plane normal to the Y-axis.
+
+    The surface equation is:
+
+    .. math::
+
+        y - d = 0
+
+    .. versionadded:: 1.4.0
+
+    Parameters
+    ----------
+    input : Union[Input, str]
+        The Input object representing the input
+    number : int
+        The number to set for this object.
+    """
+
+
+class ZPlane(AxisPlane, metaclass=_SurfaceClassFactory, spec=_z_plane_spec):
+    """Represents surface PZ: a plane normal to the Z-axis.
+
+    The surface equation is:
+
+    .. math::
+
+        z - d = 0
+
+    .. versionadded:: 1.4.0
+
+    Parameters
+    ----------
+    input : Union[Input, str]
+        The Input object representing the input
+    number : int
+        The number to set for this object.
+    """
 
 
 # ---------------------------------------------------------------------------
@@ -1130,6 +1517,158 @@ class SphereOnAxis(Surface, metaclass=_SurfaceClassFactory, spec=_sphere_on_axis
 
 
 # ---------------------------------------------------------------------------
+# XSphere, YSphere, ZSphere  (SX, SY, SZ — axis-specific)
+# ---------------------------------------------------------------------------
+
+_x_sphere_spec = _SurfaceTypeSpec(
+    surface_types={SurfaceType.SX},
+    num_param_values=2,
+    params=[
+        _SurfaceParamSpec(
+            name="location",
+            start_idx=0,
+            description="The location :math:`a` of the sphere center along the axis",
+            types=(float, int),
+            base_type=float,
+        ),
+        _SurfaceParamSpec(
+            name="x",
+            start_idx=0,
+            description="The :math:`x`-coordinate :math:`a` of the sphere center",
+            types=(float, int),
+            base_type=float,
+        ),
+        _SurfaceParamSpec(
+            name="radius",
+            start_idx=1,
+            description="The radius :math:`R` of the sphere",
+            types=(float, int),
+            base_type=float,
+            validator=_enforce_positive_radius,
+        ),
+    ],
+)
+
+_y_sphere_spec = _SurfaceTypeSpec(
+    surface_types={SurfaceType.SY},
+    num_param_values=2,
+    params=[
+        _SurfaceParamSpec(
+            name="location",
+            start_idx=0,
+            description="The location :math:`a` of the sphere center along the axis",
+            types=(float, int),
+            base_type=float,
+        ),
+        _SurfaceParamSpec(
+            name="y",
+            start_idx=0,
+            description="The :math:`y`-coordinate :math:`a` of the sphere center",
+            types=(float, int),
+            base_type=float,
+        ),
+        _SurfaceParamSpec(
+            name="radius",
+            start_idx=1,
+            description="The radius :math:`R` of the sphere",
+            types=(float, int),
+            base_type=float,
+            validator=_enforce_positive_radius,
+        ),
+    ],
+)
+
+_z_sphere_spec = _SurfaceTypeSpec(
+    surface_types={SurfaceType.SZ},
+    num_param_values=2,
+    params=[
+        _SurfaceParamSpec(
+            name="location",
+            start_idx=0,
+            description="The location :math:`a` of the sphere center along the axis",
+            types=(float, int),
+            base_type=float,
+        ),
+        _SurfaceParamSpec(
+            name="z",
+            start_idx=0,
+            description="The :math:`z`-coordinate :math:`a` of the sphere center",
+            types=(float, int),
+            base_type=float,
+        ),
+        _SurfaceParamSpec(
+            name="radius",
+            start_idx=1,
+            description="The radius :math:`R` of the sphere",
+            types=(float, int),
+            base_type=float,
+            validator=_enforce_positive_radius,
+        ),
+    ],
+)
+
+
+class XSphere(SphereOnAxis, metaclass=_SurfaceClassFactory, spec=_x_sphere_spec):
+    """Represents surface SX: a sphere centered on the X-axis.
+
+    The surface equation is:
+
+    .. math::
+
+        (x - a)^2 + y^2 + z^2 - R^2 = 0
+
+    .. versionadded:: 1.4.0
+
+    Parameters
+    ----------
+    input : Union[Input, str]
+        The Input object representing the input
+    number : int
+        The number to set for this object.
+    """
+
+
+class YSphere(SphereOnAxis, metaclass=_SurfaceClassFactory, spec=_y_sphere_spec):
+    """Represents surface SY: a sphere centered on the Y-axis.
+
+    The surface equation is:
+
+    .. math::
+
+        x^2 + (y - a)^2 + z^2 - R^2 = 0
+
+    .. versionadded:: 1.4.0
+
+    Parameters
+    ----------
+    input : Union[Input, str]
+        The Input object representing the input
+    number : int
+        The number to set for this object.
+    """
+
+
+class ZSphere(SphereOnAxis, metaclass=_SurfaceClassFactory, spec=_z_sphere_spec):
+    """Represents surface SZ: a sphere centered on the Z-axis.
+
+    The surface equation is:
+
+    .. math::
+
+        x^2 + y^2 + (z - a)^2 - R^2 = 0
+
+    .. versionadded:: 1.4.0
+
+    Parameters
+    ----------
+    input : Union[Input, str]
+        The Input object representing the input
+    number : int
+        The number to set for this object.
+    """
+
+
+# ---------------------------------------------------------------------------
 # ConeOnAxis  (KX, KY, KZ)
 # ---------------------------------------------------------------------------
 
@@ -1189,6 +1728,164 @@ class ConeOnAxis(Surface, metaclass=_SurfaceClassFactory, spec=_cone_on_axis_spe
             raise IllegalState(f"Surface: {self.number} does not have an apex set.")
         if self.t_squared is None:
             raise IllegalState(f"Surface: {self.number} does not have t_squared set.")
+
+
+# ---------------------------------------------------------------------------
+# XCone, YCone, ZCone  (KX, KY, KZ — axis-specific)
+# ---------------------------------------------------------------------------
+
+_x_cone_spec = _SurfaceTypeSpec(
+    surface_types={SurfaceType.KX},
+    num_param_values=2,
+    params=[
+        _SurfaceParamSpec(
+            name="apex",
+            start_idx=0,
+            description="The position :math:`a` of the cone apex along the axis",
+            types=(float, int),
+            base_type=float,
+        ),
+        _SurfaceParamSpec(
+            name="x",
+            start_idx=0,
+            description="The :math:`x`-coordinate :math:`a` of the cone apex",
+            types=(float, int),
+            base_type=float,
+        ),
+        _SurfaceParamSpec(
+            name="t_squared",
+            start_idx=1,
+            description=r"The squared tangent of the half-angle :math:`t^2`",
+            types=(float, int),
+            base_type=float,
+        ),
+    ],
+)
+
+_y_cone_spec = _SurfaceTypeSpec(
+    surface_types={SurfaceType.KY},
+    num_param_values=2,
+    params=[
+        _SurfaceParamSpec(
+            name="apex",
+            start_idx=0,
+            description="The position :math:`a` of the cone apex along the axis",
+            types=(float, int),
+            base_type=float,
+        ),
+        _SurfaceParamSpec(
+            name="y",
+            start_idx=0,
+            description="The :math:`y`-coordinate :math:`a` of the cone apex",
+            types=(float, int),
+            base_type=float,
+        ),
+        _SurfaceParamSpec(
+            name="t_squared",
+            start_idx=1,
+            description=r"The squared tangent of the half-angle :math:`t^2`",
+            types=(float, int),
+            base_type=float,
+        ),
+    ],
+)
+
+_z_cone_spec = _SurfaceTypeSpec(
+    surface_types={SurfaceType.KZ},
+    num_param_values=2,
+    params=[
+        _SurfaceParamSpec(
+            name="apex",
+            start_idx=0,
+            description="The position :math:`a` of the cone apex along the axis",
+            types=(float, int),
+            base_type=float,
+        ),
+        _SurfaceParamSpec(
+            name="z",
+            start_idx=0,
+            description="The :math:`z`-coordinate :math:`a` of the cone apex",
+            types=(float, int),
+            base_type=float,
+        ),
+        _SurfaceParamSpec(
+            name="t_squared",
+            start_idx=1,
+            description=r"The squared tangent of the half-angle :math:`t^2`",
+            types=(float, int),
+            base_type=float,
+        ),
+    ],
+)
+
+
+class XCone(ConeOnAxis, metaclass=_SurfaceClassFactory, spec=_x_cone_spec):
+    """Represents surface KX: a cone whose apex lies on the X-axis.
+
+    The surface equation is:
+
+    .. math::
+
+        y^2 + z^2 - t^2 (x - a)^2 = 0
+
+    The optional third surface constant selects a single nappe
+    (``+1`` upper, ``-1`` lower); omitting it gives both nappes.
+
+    .. versionadded:: 1.4.0
+
+    Parameters
+    ----------
+    input : Union[Input, str]
+        The Input object representing the input
+    number : int
+        The number to set for this object.
+    """
+
+
+class YCone(ConeOnAxis, metaclass=_SurfaceClassFactory, spec=_y_cone_spec):
+    """Represents surface KY: a cone whose apex lies on the Y-axis.
+
+    The surface equation is:
+
+    .. math::
+
+        x^2 + z^2 - t^2 (y - a)^2 = 0
+
+    The optional third surface constant selects a single nappe
+    (``+1`` upper, ``-1`` lower); omitting it gives both nappes.
+
+    .. versionadded:: 1.4.0
+
+    Parameters
+    ----------
+    input : Union[Input, str]
+        The Input object representing the input
+    number : int
+        The number to set for this object.
+    """
+
+
+class ZCone(ConeOnAxis, metaclass=_SurfaceClassFactory, spec=_z_cone_spec):
+    """Represents surface KZ: a cone whose apex lies on the Z-axis.
+
+    The surface equation is:
+
+    .. math::
+
+        x^2 + y^2 - t^2 (z - a)^2 = 0
+
+    The optional third surface constant selects a single nappe
+    (``+1`` upper, ``-1`` lower); omitting it gives both nappes.
+
+    .. versionadded:: 1.4.0
+
+    Parameters
+    ----------
+    input : Union[Input, str]
+        The Input object representing the input
+    number : int
+        The number to set for this object.
+    """
 
 
 # ---------------------------------------------------------------------------
@@ -1272,6 +1969,89 @@ class ConeParAxis(Surface, metaclass=_SurfaceClassFactory, spec=_cone_par_axis_s
             raise IllegalState(f"Surface: {self.number} does not have an apex set.")
         if self.t_squared is None:
             raise IllegalState(f"Surface: {self.number} does not have t_squared set.")
+
+
+# ---------------------------------------------------------------------------
+# XConeParAxis, YConeParAxis, ZConeParAxis  (axis-specific)
+# ---------------------------------------------------------------------------
+
+
+class XConeParAxis(ConeParAxis):
+    """Represents surface K/X: a cone whose axis is parallel to the X-axis
+    with its apex at an arbitrary point :math:`(x_0, y_0, z_0)`.
+
+    The surface equation is:
+
+    .. math::
+
+        (y - y_0)^2 + (z - z_0)^2 - t^2 (x - x_0)^2 = 0
+
+    The optional fifth surface constant selects a single nappe
+    (``+1`` upper, ``-1`` lower); omitting it gives both nappes.
+
+    .. versionadded:: 1.4.0
+
+    Parameters
+    ----------
+    input : Union[Input, str]
+        The Input object representing the input
+    number : int
+        The number to set for this object.
+    """
+
+    _ALLOWED_SURFACE_TYPES = {SurfaceType.K_X}
+
+
+class YConeParAxis(ConeParAxis):
+    """Represents surface K/Y: a cone whose axis is parallel to the Y-axis
+    with its apex at an arbitrary point :math:`(x_0, y_0, z_0)`.
+
+    The surface equation is:
+
+    .. math::
+
+        (x - x_0)^2 + (z - z_0)^2 - t^2 (y - y_0)^2 = 0
+
+    The optional fifth surface constant selects a single nappe
+    (``+1`` upper, ``-1`` lower); omitting it gives both nappes.
+
+    .. versionadded:: 1.4.0
+
+    Parameters
+    ----------
+    input : Union[Input, str]
+        The Input object representing the input
+    number : int
+        The number to set for this object.
+    """
+
+    _ALLOWED_SURFACE_TYPES = {SurfaceType.K_Y}
+
+
+class ZConeParAxis(ConeParAxis):
+    """Represents surface K/Z: a cone whose axis is parallel to the Z-axis
+    with its apex at an arbitrary point :math:`(x_0, y_0, z_0)`.
+
+    The surface equation is:
+
+    .. math::
+
+        (x - x_0)^2 + (y - y_0)^2 - t^2 (z - z_0)^2 = 0
+
+    The optional fifth surface constant selects a single nappe
+    (``+1`` upper, ``-1`` lower); omitting it gives both nappes.
+
+    .. versionadded:: 1.4.0
+
+    Parameters
+    ----------
+    input : Union[Input, str]
+        The Input object representing the input
+    number : int
+        The number to set for this object.
+    """
+
+    _ALLOWED_SURFACE_TYPES = {SurfaceType.K_Z}
 
 
 # ---------------------------------------------------------------------------
@@ -1661,6 +2441,83 @@ class Torus(Surface, metaclass=_SurfaceClassFactory, spec=_torus_spec):
             )
         if any(r is None for r in self.minor_radii):
             raise IllegalState(f"Surface: {self.number} does not have minor_radii set.")
+
+
+# ---------------------------------------------------------------------------
+# XTorus, YTorus, ZTorus  (TX, TY, TZ — axis-specific)
+# ---------------------------------------------------------------------------
+
+
+class XTorus(Torus):
+    """Represents surface TX: a torus whose axis of symmetry is the X-axis.
+
+    The surface equation is:
+
+    .. math::
+
+        \\left(\\sqrt{(y - y_0)^2 + (z - z_0)^2} - A\\right)^2
+        \\frac{1}{B^2}
+        + \\frac{(x - x_0)^2}{C^2} - 1 = 0
+
+    .. versionadded:: 1.4.0
+
+    Parameters
+    ----------
+    input : Union[Input, str]
+        The Input object representing the input
+    number : int
+        The number to set for this object.
+    """
+
+    _ALLOWED_SURFACE_TYPES = {SurfaceType.TX}
+
+
+class YTorus(Torus):
+    """Represents surface TY: a torus whose axis of symmetry is the Y-axis.
+
+    The surface equation is:
+
+    .. math::
+
+        \\left(\\sqrt{(x - x_0)^2 + (z - z_0)^2} - A\\right)^2
+        \\frac{1}{B^2}
+        + \\frac{(y - y_0)^2}{C^2} - 1 = 0
+
+    .. versionadded:: 1.4.0
+
+    Parameters
+    ----------
+    input : Union[Input, str]
+        The Input object representing the input
+    number : int
+        The number to set for this object.
+    """
+
+    _ALLOWED_SURFACE_TYPES = {SurfaceType.TY}
+
+
+class ZTorus(Torus):
+    """Represents surface TZ: a torus whose axis of symmetry is the Z-axis.
+
+    The surface equation is:
+
+    .. math::
+
+        \\left(\\sqrt{(x - x_0)^2 + (y - y_0)^2} - A\\right)^2
+        \\frac{1}{B^2}
+        + \\frac{(z - z_0)^2}{C^2} - 1 = 0
+
+    .. versionadded:: 1.4.0
+
+    Parameters
+    ----------
+    input : Union[Input, str]
+        The Input object representing the input
+    number : int
+        The number to set for this object.
+    """
+
+    _ALLOWED_SURFACE_TYPES = {SurfaceType.TZ}
 
 
 # ---------------------------------------------------------------------------

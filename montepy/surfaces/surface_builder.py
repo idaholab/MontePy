@@ -24,15 +24,56 @@ from montepy.surfaces.surface import (
     Torus,
     TruncatedRightCone,
     Wedge,
+    XCone,
+    XConeParAxis,
+    XCylinder,
+    XCylinderParAxis,
+    XPlane,
+    XSphere,
+    XTorus,
+    YCone,
+    YConeParAxis,
+    YCylinder,
+    YCylinderParAxis,
+    YPlane,
+    YSphere,
+    YTorus,
+    ZCone,
+    ZConeParAxis,
+    ZCylinder,
+    ZCylinderParAxis,
+    ZPlane,
+    ZSphere,
+    ZTorus,
 )
 from montepy.surfaces.surface_type import SurfaceType
 
 _ST = SurfaceType
 
-# Specific axis-variant classes (e.g. future XCylinder, YPlane) take
-# precedence over the generic grouped classes below.  Add entries here
-# when those classes are defined.
-_SPECIFIC_DISPATCH: dict = {}
+# Axis-specific classes take precedence over the generic grouped classes below.
+_SPECIFIC_DISPATCH: dict = {
+    _ST.CX: XCylinder,
+    _ST.CY: YCylinder,
+    _ST.CZ: ZCylinder,
+    _ST.C_X: XCylinderParAxis,
+    _ST.C_Y: YCylinderParAxis,
+    _ST.C_Z: ZCylinderParAxis,
+    _ST.PX: XPlane,
+    _ST.PY: YPlane,
+    _ST.PZ: ZPlane,
+    _ST.SX: XSphere,
+    _ST.SY: YSphere,
+    _ST.SZ: ZSphere,
+    _ST.KX: XCone,
+    _ST.KY: YCone,
+    _ST.KZ: ZCone,
+    _ST.K_X: XConeParAxis,
+    _ST.K_Y: YConeParAxis,
+    _ST.K_Z: ZConeParAxis,
+    _ST.TX: XTorus,
+    _ST.TY: YTorus,
+    _ST.TZ: ZTorus,
+}
 
 # Generic grouped classes: one class handles a family of surface types.
 _GENERIC_DISPATCH: dict = {
