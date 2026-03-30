@@ -3,6 +3,7 @@ from __future__ import annotations
 import copy
 from collections.abc import Callable
 from dataclasses import asdict, dataclass
+import math
 from typing import Union
 from numbers import Real
 import warnings
@@ -87,7 +88,14 @@ class _SurfaceClassFactory(_ExceptionContextAdder):
         base_func = metacls.gen_tuple_getter(attr_name)
         base_func.__name__ = param.name
         base_func.__doc__ = base_func.__doc__.format(**asdict(param))
-        setter = metacls.gen_tuple_setter(attr_name, param.tuple_length, param.name)
+        setter = metacls.gen_tuple_setter(
+            attr_name,
+            param.tuple_length,
+            param.name,
+            param.types,
+            param.base_type,
+            param.validator,
+        )
         return property(base_func, setter)
 
     @classmethod
@@ -124,17 +132,27 @@ class _SurfaceClassFactory(_ExceptionContextAdder):
         return dummy_tuple_function
 
     @classmethod
-    def gen_tuple_setter(meta_class, hidden_param, length, name):
+    def gen_tuple_setter(
+        meta_class, hidden_param, length, name, types, base_type, validator
+    ):
+        # singular element name: strip trailing 's' if the tuple name ends in one
+        elem_name = name[:-1] if name.endswith("s") else name
+
         def dummy_tuple_setter(self, vals):
             if not isinstance(vals, (list, tuple)):
-                raise TypeError(f"{name} must be a list")
+                raise TypeError(f"{name} must be a list or tuple")
             if len(vals) != length:
                 raise ValueError(f"{name} must have exactly {length} elements")
+            converted = []
             for val in vals:
-                if not isinstance(val, Real):
-                    # assume it ends in an "s"
-                    raise TypeError(f"{name[:-1]} must be a number. {val} given.")
-            for in_val, storage in zip(vals, getattr(self, hidden_param)):
+                if types and not isinstance(val, types):
+                    raise TypeError(f"{elem_name} must be a number. {val} given.")
+                if base_type is not None:
+                    val = base_type(val)
+                if validator is not None:
+                    validator(self, val)
+                converted.append(val)
+            for in_val, storage in zip(converted, getattr(self, hidden_param)):
                 storage.value = in_val
 
         return dummy_tuple_setter
@@ -1090,3 +1108,1446 @@ class SphereOnAxis(Surface, metaclass=_SurfaceClassFactory, spec=_sphere_on_axis
             raise IllegalState(f"Surface: {self.number} does not have a location set.")
         if self.radius is None:
             raise IllegalState(f"Surface: {self.number} does not have a radius set.")
+
+
+# ---------------------------------------------------------------------------
+# ConeOnAxis  (KX, KY, KZ)
+# ---------------------------------------------------------------------------
+
+_cone_on_axis_spec = _SurfaceTypeSpec(
+    surface_types={SurfaceType.KX, SurfaceType.KY, SurfaceType.KZ},
+    num_param_values=2,
+    params=[
+        _SurfaceParamSpec(
+            name="apex",
+            start_idx=0,
+            description="The position :math:`a` of the cone apex along the axis",
+            types=(float, int),
+            base_type=float,
+        ),
+        _SurfaceParamSpec(
+            name="t_squared",
+            start_idx=1,
+            description=r"The squared tangent of the half-angle :math:`t^2`",
+            types=(float, int),
+            base_type=float,
+        ),
+    ],
+)
+
+
+class ConeOnAxis(Surface, metaclass=_SurfaceClassFactory, spec=_cone_on_axis_spec):
+    """Represents surfaces KX, KY, KZ: a cone whose apex lies on a coordinate axis.
+
+    The surface equation (e.g. for KZ) is:
+
+    .. math::
+
+        x^2 + y^2 - t^2 (z - a)^2 = 0
+
+    The optional third surface constant selects a single nappe
+    (``+1`` upper, ``-1`` lower); omitting it gives both nappes.
+    Access it via ``surface_constants[2]`` if present.
+
+    .. versionadded:: 1.3.0
+
+    Parameters
+    ----------
+    input : Union[Input, str]
+        The Input object representing the input
+    number : int
+        The number to set for this object.
+    surface_type : Union[SurfaceType, str]
+        The surface_type to set for this object
+    """
+
+    COORDINATE = {SurfaceType.KX: "x", SurfaceType.KY: "y", SurfaceType.KZ: "z"}
+    """Maps surface type to the axis name for the cone's apex."""
+
+    def validate(self):
+        super().validate()
+        if self.apex is None:
+            raise IllegalState(f"Surface: {self.number} does not have an apex set.")
+        if self.t_squared is None:
+            raise IllegalState(f"Surface: {self.number} does not have t_squared set.")
+
+
+# ---------------------------------------------------------------------------
+# ConeParAxis  (K/X, K/Y, K/Z)
+# ---------------------------------------------------------------------------
+
+_cone_par_axis_spec = _SurfaceTypeSpec(
+    surface_types={SurfaceType.K_X, SurfaceType.K_Y, SurfaceType.K_Z},
+    num_param_values=4,
+    params=[
+        _SurfaceParamSpec(
+            name="x",
+            start_idx=0,
+            description="The :math:`x`-coordinate of the cone apex :math:`x_0`",
+            types=(float, int),
+            base_type=float,
+        ),
+        _SurfaceParamSpec(
+            name="y",
+            start_idx=1,
+            description="The :math:`y`-coordinate of the cone apex :math:`y_0`",
+            types=(float, int),
+            base_type=float,
+        ),
+        _SurfaceParamSpec(
+            name="z",
+            start_idx=2,
+            description="The :math:`z`-coordinate of the cone apex :math:`z_0`",
+            types=(float, int),
+            base_type=float,
+        ),
+        _SurfaceParamSpec(
+            name="apex",
+            start_idx=0,
+            is_tuple=True,
+            tuple_length=3,
+            description="Apex coordinates :math:`(x_0, y_0, z_0)` of the cone",
+            types=(float, int),
+            base_type=float,
+        ),
+        _SurfaceParamSpec(
+            name="t_squared",
+            start_idx=3,
+            description=r"The squared tangent of the half-angle :math:`t^2`",
+            types=(float, int),
+            base_type=float,
+        ),
+    ],
+)
+
+
+class ConeParAxis(Surface, metaclass=_SurfaceClassFactory, spec=_cone_par_axis_spec):
+    """Represents surfaces K/X, K/Y, K/Z: a cone whose axis is parallel to a
+    coordinate axis with its apex at an arbitrary point.
+
+    The surface equation (e.g. for K/Z) is:
+
+    .. math::
+
+        (x - x_0)^2 + (y - y_0)^2 - t^2 (z - z_0)^2 = 0
+
+    The optional fifth surface constant selects a single nappe
+    (``+1`` upper, ``-1`` lower); omitting it gives both nappes.
+    Access it via ``surface_constants[4]`` if present.
+
+    .. versionadded:: 1.3.0
+
+    Parameters
+    ----------
+    input : Union[Input, str]
+        The Input object representing the input
+    number : int
+        The number to set for this object.
+    surface_type : Union[SurfaceType, str]
+        The surface_type to set for this object
+    """
+
+    def validate(self):
+        super().validate()
+        if any(c is None for c in self.apex):
+            raise IllegalState(f"Surface: {self.number} does not have an apex set.")
+        if self.t_squared is None:
+            raise IllegalState(f"Surface: {self.number} does not have t_squared set.")
+
+
+# ---------------------------------------------------------------------------
+# AxisAlignedQuadric  (SQ)
+# ---------------------------------------------------------------------------
+
+_axis_aligned_quadric_spec = _SurfaceTypeSpec(
+    surface_types={SurfaceType.SQ},
+    num_param_values=10,
+    params=[
+        _SurfaceParamSpec(
+            name="A",
+            start_idx=0,
+            description=r"Coefficient :math:`A` in :math:`A(x-x_0)^2 + B(y-y_0)^2 + C(z-z_0)^2 + D(x-x_0) + E(y-y_0) + F(z-z_0) + G = 0`",
+            types=(float, int),
+            base_type=float,
+        ),
+        _SurfaceParamSpec(
+            name="B",
+            start_idx=1,
+            description=r"Coefficient :math:`B` in :math:`A(x-x_0)^2 + B(y-y_0)^2 + C(z-z_0)^2 + D(x-x_0) + E(y-y_0) + F(z-z_0) + G = 0`",
+            types=(float, int),
+            base_type=float,
+        ),
+        _SurfaceParamSpec(
+            name="C",
+            start_idx=2,
+            description=r"Coefficient :math:`C` in :math:`A(x-x_0)^2 + B(y-y_0)^2 + C(z-z_0)^2 + D(x-x_0) + E(y-y_0) + F(z-z_0) + G = 0`",
+            types=(float, int),
+            base_type=float,
+        ),
+        _SurfaceParamSpec(
+            name="D",
+            start_idx=3,
+            description=r"Coefficient :math:`D` in :math:`A(x-x_0)^2 + B(y-y_0)^2 + C(z-z_0)^2 + D(x-x_0) + E(y-y_0) + F(z-z_0) + G = 0`",
+            types=(float, int),
+            base_type=float,
+        ),
+        _SurfaceParamSpec(
+            name="E",
+            start_idx=4,
+            description=r"Coefficient :math:`E` in :math:`A(x-x_0)^2 + B(y-y_0)^2 + C(z-z_0)^2 + D(x-x_0) + E(y-y_0) + F(z-z_0) + G = 0`",
+            types=(float, int),
+            base_type=float,
+        ),
+        _SurfaceParamSpec(
+            name="F",
+            start_idx=5,
+            description=r"Coefficient :math:`F` in :math:`A(x-x_0)^2 + B(y-y_0)^2 + C(z-z_0)^2 + D(x-x_0) + E(y-y_0) + F(z-z_0) + G = 0`",
+            types=(float, int),
+            base_type=float,
+        ),
+        _SurfaceParamSpec(
+            name="G",
+            start_idx=6,
+            description=r"Constant :math:`G` in :math:`A(x-x_0)^2 + B(y-y_0)^2 + C(z-z_0)^2 + D(x-x_0) + E(y-y_0) + F(z-z_0) + G = 0`",
+            types=(float, int),
+            base_type=float,
+        ),
+        _SurfaceParamSpec(
+            name="x",
+            start_idx=7,
+            description="The :math:`x`-coordinate of the reference point :math:`x_0`",
+            types=(float, int),
+            base_type=float,
+        ),
+        _SurfaceParamSpec(
+            name="y",
+            start_idx=8,
+            description="The :math:`y`-coordinate of the reference point :math:`y_0`",
+            types=(float, int),
+            base_type=float,
+        ),
+        _SurfaceParamSpec(
+            name="z",
+            start_idx=9,
+            description="The :math:`z`-coordinate of the reference point :math:`z_0`",
+            types=(float, int),
+            base_type=float,
+        ),
+        _SurfaceParamSpec(
+            name="center",
+            start_idx=7,
+            is_tuple=True,
+            tuple_length=3,
+            description="Reference point :math:`(x_0, y_0, z_0)` of the quadric",
+            types=(float, int),
+            base_type=float,
+        ),
+    ],
+)
+
+
+class AxisAlignedQuadric(
+    Surface, metaclass=_SurfaceClassFactory, spec=_axis_aligned_quadric_spec
+):
+    """Represents surface SQ: an ellipsoid, hyperboloid, or paraboloid whose
+    axes are parallel to the coordinate axes.
+
+    The surface equation is:
+
+    .. math::
+
+        A(x-x_0)^2 + B(y-y_0)^2 + C(z-z_0)^2
+        + D(x-x_0) + E(y-y_0) + F(z-z_0) + G = 0
+
+    .. versionadded:: 1.3.0
+
+    Parameters
+    ----------
+    input : Union[Input, str]
+        The Input object representing the input
+    number : int
+        The number to set for this object.
+    """
+
+    def validate(self):
+        super().validate()
+        for name in ("A", "B", "C", "D", "E", "F", "G"):
+            if getattr(self, name) is None:
+                raise IllegalState(
+                    f"Surface: {self.number} coefficient {name} is not set."
+                )
+        if any(c is None for c in self.center):
+            raise IllegalState(f"Surface: {self.number} does not have a center set.")
+
+
+# ---------------------------------------------------------------------------
+# GeneralQuadric  (GQ)
+# ---------------------------------------------------------------------------
+
+_general_quadric_spec = _SurfaceTypeSpec(
+    surface_types={SurfaceType.GQ},
+    num_param_values=10,
+    params=[
+        _SurfaceParamSpec(
+            name="A",
+            start_idx=0,
+            description=r"Coefficient :math:`A` in :math:`Ax^2 + By^2 + Cz^2 + Dxy + Eyz + Fxz + Gx + Hy + Jz + K = 0`",
+            types=(float, int),
+            base_type=float,
+        ),
+        _SurfaceParamSpec(
+            name="B",
+            start_idx=1,
+            description=r"Coefficient :math:`B` in :math:`Ax^2 + By^2 + Cz^2 + Dxy + Eyz + Fxz + Gx + Hy + Jz + K = 0`",
+            types=(float, int),
+            base_type=float,
+        ),
+        _SurfaceParamSpec(
+            name="C",
+            start_idx=2,
+            description=r"Coefficient :math:`C` in :math:`Ax^2 + By^2 + Cz^2 + Dxy + Eyz + Fxz + Gx + Hy + Jz + K = 0`",
+            types=(float, int),
+            base_type=float,
+        ),
+        _SurfaceParamSpec(
+            name="D",
+            start_idx=3,
+            description=r"Coefficient :math:`D` in :math:`Ax^2 + By^2 + Cz^2 + Dxy + Eyz + Fxz + Gx + Hy + Jz + K = 0`",
+            types=(float, int),
+            base_type=float,
+        ),
+        _SurfaceParamSpec(
+            name="E",
+            start_idx=4,
+            description=r"Coefficient :math:`E` in :math:`Ax^2 + By^2 + Cz^2 + Dxy + Eyz + Fxz + Gx + Hy + Jz + K = 0`",
+            types=(float, int),
+            base_type=float,
+        ),
+        _SurfaceParamSpec(
+            name="F",
+            start_idx=5,
+            description=r"Coefficient :math:`F` in :math:`Ax^2 + By^2 + Cz^2 + Dxy + Eyz + Fxz + Gx + Hy + Jz + K = 0`",
+            types=(float, int),
+            base_type=float,
+        ),
+        _SurfaceParamSpec(
+            name="G",
+            start_idx=6,
+            description=r"Coefficient :math:`G` in :math:`Ax^2 + By^2 + Cz^2 + Dxy + Eyz + Fxz + Gx + Hy + Jz + K = 0`",
+            types=(float, int),
+            base_type=float,
+        ),
+        _SurfaceParamSpec(
+            name="H",
+            start_idx=7,
+            description=r"Coefficient :math:`H` in :math:`Ax^2 + By^2 + Cz^2 + Dxy + Eyz + Fxz + Gx + Hy + Jz + K = 0`",
+            types=(float, int),
+            base_type=float,
+        ),
+        _SurfaceParamSpec(
+            name="J",
+            start_idx=8,
+            description=r"Coefficient :math:`J` in :math:`Ax^2 + By^2 + Cz^2 + Dxy + Eyz + Fxz + Gx + Hy + Jz + K = 0`",
+            types=(float, int),
+            base_type=float,
+        ),
+        _SurfaceParamSpec(
+            name="K",
+            start_idx=9,
+            description=r"Constant :math:`K` in :math:`Ax^2 + By^2 + Cz^2 + Dxy + Eyz + Fxz + Gx + Hy + Jz + K = 0`",
+            types=(float, int),
+            base_type=float,
+        ),
+    ],
+)
+
+
+class GeneralQuadric(
+    Surface, metaclass=_SurfaceClassFactory, spec=_general_quadric_spec
+):
+    """Represents surface GQ: a general quadric surface (cylinder, cone,
+    ellipsoid, hyperboloid, or paraboloid) at arbitrary orientation.
+
+    The surface equation is:
+
+    .. math::
+
+        Ax^2 + By^2 + Cz^2 + Dxy + Eyz + Fxz + Gx + Hy + Jz + K = 0
+
+    .. versionadded:: 1.3.0
+
+    Parameters
+    ----------
+    input : Union[Input, str]
+        The Input object representing the input
+    number : int
+        The number to set for this object.
+    """
+
+    def validate(self):
+        super().validate()
+        for name in ("A", "B", "C", "D", "E", "F", "G", "H", "J", "K"):
+            if getattr(self, name) is None:
+                raise IllegalState(
+                    f"Surface: {self.number} coefficient {name} is not set."
+                )
+
+
+# ---------------------------------------------------------------------------
+# Torus  (TX, TY, TZ)
+# ---------------------------------------------------------------------------
+
+_torus_spec = _SurfaceTypeSpec(
+    surface_types={SurfaceType.TX, SurfaceType.TY, SurfaceType.TZ},
+    num_param_values=6,
+    params=[
+        _SurfaceParamSpec(
+            name="x",
+            start_idx=0,
+            description="The :math:`x`-coordinate of the torus center",
+            types=(float, int),
+            base_type=float,
+        ),
+        _SurfaceParamSpec(
+            name="y",
+            start_idx=1,
+            description="The :math:`y`-coordinate of the torus center",
+            types=(float, int),
+            base_type=float,
+        ),
+        _SurfaceParamSpec(
+            name="z",
+            start_idx=2,
+            description="The :math:`z`-coordinate of the torus center",
+            types=(float, int),
+            base_type=float,
+        ),
+        _SurfaceParamSpec(
+            name="center",
+            start_idx=0,
+            is_tuple=True,
+            tuple_length=3,
+            description="Center coordinates :math:`(x_0, y_0, z_0)` of the torus",
+            types=(float, int),
+            base_type=float,
+        ),
+        _SurfaceParamSpec(
+            name="major_radius",
+            start_idx=3,
+            description="Major radius :math:`A`: distance from the torus center to the tube center",
+            types=(float, int),
+            base_type=float,
+            validator=_enforce_positive_radius,
+        ),
+        _SurfaceParamSpec(
+            name="minor_radii",
+            start_idx=4,
+            is_tuple=True,
+            tuple_length=2,
+            description=r"Minor radii :math:`(B, C)` of the tube cross-section",
+            types=(float, int),
+            base_type=float,
+            validator=_enforce_positive_radius,
+        ),
+        _SurfaceParamSpec(
+            name="minor_radius_1",
+            start_idx=4,
+            description="Minor radius :math:`B` perpendicular to the torus axis",
+            types=(float, int),
+            base_type=float,
+            validator=_enforce_positive_radius,
+        ),
+        _SurfaceParamSpec(
+            name="minor_radius_2",
+            start_idx=5,
+            description="Minor radius :math:`C` parallel to the torus axis",
+            types=(float, int),
+            base_type=float,
+            validator=_enforce_positive_radius,
+        ),
+    ],
+)
+
+
+class Torus(Surface, metaclass=_SurfaceClassFactory, spec=_torus_spec):
+    """Represents surfaces TX, TY, TZ: an elliptical torus whose axis of
+    symmetry is parallel to a coordinate axis.
+
+    The surface equation (e.g. for TZ) is:
+
+    .. math::
+
+        \\left(\\sqrt{(x-x_0)^2+(y-y_0)^2} - A\\right)^2 / B^2
+        + (z-z_0)^2 / C^2 - 1 = 0
+
+    .. versionadded:: 1.3.0
+
+    Parameters
+    ----------
+    input : Union[Input, str]
+        The Input object representing the input
+    number : int
+        The number to set for this object.
+    surface_type : Union[SurfaceType, str]
+        The surface_type to set for this object
+    """
+
+    @property
+    def minor_radius(self):
+        """The minor radius of the torus when the tube cross-section is
+        circular, i.e. when :attr:`minor_radius_1` :math:`B` and
+        :attr:`minor_radius_2` :math:`C` are equal.
+
+        Getting this property raises :class:`ValueError` if the two minor
+        radii are not approximately equal.
+
+        Setting this property assigns the same value to both
+        :attr:`minor_radius_1` and :attr:`minor_radius_2`.
+
+        Returns
+        -------
+        float
+
+        Raises
+        ------
+        ValueError
+            If :attr:`minor_radius_1` and :attr:`minor_radius_2` differ.
+        """
+        r1, r2 = self.minor_radius_1, self.minor_radius_2
+        if r1 is None or r2 is None:
+            return None
+        if not math.isclose(r1, r2):
+            raise ValueError(
+                f"minor_radius is only defined when minor_radius_1 and "
+                f"minor_radius_2 are equal. Got {r1} and {r2}."
+            )
+        return r1
+
+    @minor_radius.setter
+    def minor_radius(self, value):
+        if not isinstance(value, (float, int)):
+            raise TypeError(f"minor_radius must be a number. {value} given.")
+        value = float(value)
+        _enforce_positive_radius(self, value)
+        self.minor_radius_1 = value
+        self.minor_radius_2 = value
+
+    def validate(self):
+        super().validate()
+        if any(c is None for c in self.center):
+            raise IllegalState(f"Surface: {self.number} does not have a center set.")
+        if self.major_radius is None:
+            raise IllegalState(
+                f"Surface: {self.number} does not have a major_radius set."
+            )
+        if any(r is None for r in self.minor_radii):
+            raise IllegalState(f"Surface: {self.number} does not have minor_radii set.")
+
+
+# ---------------------------------------------------------------------------
+# Box  (BOX)
+# ---------------------------------------------------------------------------
+
+_box_spec = _SurfaceTypeSpec(
+    surface_types={SurfaceType.BOX},
+    num_param_values=12,
+    params=[
+        _SurfaceParamSpec(
+            name="corner",
+            start_idx=0,
+            is_tuple=True,
+            tuple_length=3,
+            description="Corner point :math:`(v_x, v_y, v_z)` of the box",
+            types=(float, int),
+            base_type=float,
+        ),
+        _SurfaceParamSpec(
+            name="edge_1",
+            start_idx=3,
+            is_tuple=True,
+            tuple_length=3,
+            description="First edge vector :math:`\\mathbf{a}_1` of the box",
+            types=(float, int),
+            base_type=float,
+        ),
+        _SurfaceParamSpec(
+            name="edge_2",
+            start_idx=6,
+            is_tuple=True,
+            tuple_length=3,
+            description="Second edge vector :math:`\\mathbf{a}_2` of the box",
+            types=(float, int),
+            base_type=float,
+        ),
+        _SurfaceParamSpec(
+            name="edge_3",
+            start_idx=9,
+            is_tuple=True,
+            tuple_length=3,
+            description="Third edge vector :math:`\\mathbf{a}_3` of the box",
+            types=(float, int),
+            base_type=float,
+        ),
+    ],
+)
+
+
+class Box(Surface, metaclass=_SurfaceClassFactory, spec=_box_spec):
+    """Represents macrobody BOX: a general orthogonal box defined by a corner
+    point and three edge vectors.
+
+    .. versionadded:: 1.3.0
+
+    Parameters
+    ----------
+    input : Union[Input, str]
+        The Input object representing the input
+    number : int
+        The number to set for this object.
+    """
+
+    def validate(self):
+        super().validate()
+        if any(c is None for c in self.corner):
+            raise IllegalState(f"Surface: {self.number} does not have a corner set.")
+
+
+# ---------------------------------------------------------------------------
+# RectangularParallelepiped  (RPP)
+# ---------------------------------------------------------------------------
+
+_rpp_spec = _SurfaceTypeSpec(
+    surface_types={SurfaceType.RPP},
+    num_param_values=6,
+    params=[
+        _SurfaceParamSpec(
+            name="x_min",
+            start_idx=0,
+            description="Minimum :math:`x` extent",
+            types=(float, int),
+            base_type=float,
+        ),
+        _SurfaceParamSpec(
+            name="x_max",
+            start_idx=1,
+            description="Maximum :math:`x` extent",
+            types=(float, int),
+            base_type=float,
+        ),
+        _SurfaceParamSpec(
+            name="y_min",
+            start_idx=2,
+            description="Minimum :math:`y` extent",
+            types=(float, int),
+            base_type=float,
+        ),
+        _SurfaceParamSpec(
+            name="y_max",
+            start_idx=3,
+            description="Maximum :math:`y` extent",
+            types=(float, int),
+            base_type=float,
+        ),
+        _SurfaceParamSpec(
+            name="z_min",
+            start_idx=4,
+            description="Minimum :math:`z` extent",
+            types=(float, int),
+            base_type=float,
+        ),
+        _SurfaceParamSpec(
+            name="z_max",
+            start_idx=5,
+            description="Maximum :math:`z` extent",
+            types=(float, int),
+            base_type=float,
+        ),
+        _SurfaceParamSpec(
+            name="x_bounds",
+            start_idx=0,
+            is_tuple=True,
+            tuple_length=2,
+            description=":math:`x` bounds :math:`(x_{min}, x_{max})`",
+            types=(float, int),
+            base_type=float,
+        ),
+        _SurfaceParamSpec(
+            name="y_bounds",
+            start_idx=2,
+            is_tuple=True,
+            tuple_length=2,
+            description=":math:`y` bounds :math:`(y_{min}, y_{max})`",
+            types=(float, int),
+            base_type=float,
+        ),
+        _SurfaceParamSpec(
+            name="z_bounds",
+            start_idx=4,
+            is_tuple=True,
+            tuple_length=2,
+            description=":math:`z` bounds :math:`(z_{min}, z_{max})`",
+            types=(float, int),
+            base_type=float,
+        ),
+    ],
+)
+
+
+class RectangularParallelepiped(
+    Surface, metaclass=_SurfaceClassFactory, spec=_rpp_spec
+):
+    """Represents macrobody RPP: an axis-aligned rectangular parallelepiped
+    defined by min/max extents on each axis.
+
+    .. versionadded:: 1.3.0
+
+    Parameters
+    ----------
+    input : Union[Input, str]
+        The Input object representing the input
+    number : int
+        The number to set for this object.
+    """
+
+    def validate(self):
+        super().validate()
+        for attr in ("x_min", "x_max", "y_min", "y_max", "z_min", "z_max"):
+            if getattr(self, attr) is None:
+                raise IllegalState(f"Surface: {self.number} does not have {attr} set.")
+
+
+# ---------------------------------------------------------------------------
+# SphereMacrobody  (SPH)
+# ---------------------------------------------------------------------------
+
+_sphere_macrobody_spec = _SurfaceTypeSpec(
+    surface_types={SurfaceType.SPH},
+    num_param_values=4,
+    params=[
+        _SurfaceParamSpec(
+            name="x",
+            start_idx=0,
+            description="The :math:`x`-coordinate of the sphere center",
+            types=(float, int),
+            base_type=float,
+        ),
+        _SurfaceParamSpec(
+            name="y",
+            start_idx=1,
+            description="The :math:`y`-coordinate of the sphere center",
+            types=(float, int),
+            base_type=float,
+        ),
+        _SurfaceParamSpec(
+            name="z",
+            start_idx=2,
+            description="The :math:`z`-coordinate of the sphere center",
+            types=(float, int),
+            base_type=float,
+        ),
+        _SurfaceParamSpec(
+            name="center",
+            start_idx=0,
+            is_tuple=True,
+            tuple_length=3,
+            description="Center coordinates :math:`(x_0, y_0, z_0)` of the sphere",
+            types=(float, int),
+            base_type=float,
+        ),
+        _SurfaceParamSpec(
+            name="radius",
+            start_idx=3,
+            description="The radius :math:`R` of the sphere",
+            types=(float, int),
+            base_type=float,
+            validator=_enforce_positive_radius,
+        ),
+    ],
+)
+
+
+class SphereMacrobody(
+    Surface, metaclass=_SurfaceClassFactory, spec=_sphere_macrobody_spec
+):
+    """Represents macrobody SPH: a sphere defined by center and radius.
+
+    .. versionadded:: 1.3.0
+
+    Parameters
+    ----------
+    input : Union[Input, str]
+        The Input object representing the input
+    number : int
+        The number to set for this object.
+    """
+
+    def validate(self):
+        super().validate()
+        if any(c is None for c in self.center):
+            raise IllegalState(f"Surface: {self.number} does not have a center set.")
+        if self.radius is None:
+            raise IllegalState(f"Surface: {self.number} does not have a radius set.")
+
+
+# ---------------------------------------------------------------------------
+# RightCircularCylinder  (RCC)
+# ---------------------------------------------------------------------------
+
+_rcc_spec = _SurfaceTypeSpec(
+    surface_types={SurfaceType.RCC},
+    num_param_values=7,
+    params=[
+        _SurfaceParamSpec(
+            name="x",
+            start_idx=0,
+            description="The :math:`x`-coordinate of the base center",
+            types=(float, int),
+            base_type=float,
+        ),
+        _SurfaceParamSpec(
+            name="y",
+            start_idx=1,
+            description="The :math:`y`-coordinate of the base center",
+            types=(float, int),
+            base_type=float,
+        ),
+        _SurfaceParamSpec(
+            name="z",
+            start_idx=2,
+            description="The :math:`z`-coordinate of the base center",
+            types=(float, int),
+            base_type=float,
+        ),
+        _SurfaceParamSpec(
+            name="center",
+            start_idx=0,
+            is_tuple=True,
+            tuple_length=3,
+            description="Base center coordinates :math:`(v_x, v_y, v_z)`",
+            types=(float, int),
+            base_type=float,
+        ),
+        _SurfaceParamSpec(
+            name="height_vector",
+            start_idx=3,
+            is_tuple=True,
+            tuple_length=3,
+            description="Height vector :math:`\\mathbf{h}` from base to top center",
+            types=(float, int),
+            base_type=float,
+        ),
+        _SurfaceParamSpec(
+            name="radius",
+            start_idx=6,
+            description="The radius :math:`R` of the cylinder",
+            types=(float, int),
+            base_type=float,
+            validator=_enforce_positive_radius,
+        ),
+    ],
+)
+
+
+class RightCircularCylinder(Surface, metaclass=_SurfaceClassFactory, spec=_rcc_spec):
+    """Represents macrobody RCC: a right circular cylinder defined by a base
+    center, height vector, and radius.
+
+    .. versionadded:: 1.3.0
+
+    Parameters
+    ----------
+    input : Union[Input, str]
+        The Input object representing the input
+    number : int
+        The number to set for this object.
+    """
+
+    def validate(self):
+        super().validate()
+        if any(c is None for c in self.center):
+            raise IllegalState(f"Surface: {self.number} does not have a center set.")
+        if any(h is None for h in self.height_vector):
+            raise IllegalState(
+                f"Surface: {self.number} does not have a height_vector set."
+            )
+        if self.radius is None:
+            raise IllegalState(f"Surface: {self.number} does not have a radius set.")
+
+
+# ---------------------------------------------------------------------------
+# RightHexagonalPrism  (RHP / HEX)
+# ---------------------------------------------------------------------------
+
+_rhp_spec = _SurfaceTypeSpec(
+    surface_types={SurfaceType.RHP, SurfaceType.HEX},
+    num_param_values=15,
+    params=[
+        _SurfaceParamSpec(
+            name="x",
+            start_idx=0,
+            description="The :math:`x`-coordinate of the base center",
+            types=(float, int),
+            base_type=float,
+        ),
+        _SurfaceParamSpec(
+            name="y",
+            start_idx=1,
+            description="The :math:`y`-coordinate of the base center",
+            types=(float, int),
+            base_type=float,
+        ),
+        _SurfaceParamSpec(
+            name="z",
+            start_idx=2,
+            description="The :math:`z`-coordinate of the base center",
+            types=(float, int),
+            base_type=float,
+        ),
+        _SurfaceParamSpec(
+            name="center",
+            start_idx=0,
+            is_tuple=True,
+            tuple_length=3,
+            description="Base center coordinates :math:`(v_x, v_y, v_z)`",
+            types=(float, int),
+            base_type=float,
+        ),
+        _SurfaceParamSpec(
+            name="height_vector",
+            start_idx=3,
+            is_tuple=True,
+            tuple_length=3,
+            description="Height vector :math:`\\mathbf{h}` from base to top center",
+            types=(float, int),
+            base_type=float,
+        ),
+        _SurfaceParamSpec(
+            name="facet_vector_1",
+            start_idx=6,
+            is_tuple=True,
+            tuple_length=3,
+            description="First facet vector from base center to a flat-face midpoint",
+            types=(float, int),
+            base_type=float,
+        ),
+        _SurfaceParamSpec(
+            name="facet_vector_2",
+            start_idx=9,
+            is_tuple=True,
+            tuple_length=3,
+            description="Second facet vector from base center to a flat-face midpoint",
+            types=(float, int),
+            base_type=float,
+        ),
+        _SurfaceParamSpec(
+            name="facet_vector_3",
+            start_idx=12,
+            is_tuple=True,
+            tuple_length=3,
+            description="Third facet vector from base center to a flat-face midpoint",
+            types=(float, int),
+            base_type=float,
+        ),
+    ],
+)
+
+
+class RightHexagonalPrism(Surface, metaclass=_SurfaceClassFactory, spec=_rhp_spec):
+    """Represents macrobodies RHP and HEX: a right hexagonal prism defined by
+    a base center, height vector, and three facet vectors.
+
+    .. versionadded:: 1.3.0
+
+    Parameters
+    ----------
+    input : Union[Input, str]
+        The Input object representing the input
+    number : int
+        The number to set for this object.
+    """
+
+    def validate(self):
+        super().validate()
+        if any(c is None for c in self.center):
+            raise IllegalState(f"Surface: {self.number} does not have a center set.")
+        if any(h is None for h in self.height_vector):
+            raise IllegalState(
+                f"Surface: {self.number} does not have a height_vector set."
+            )
+
+
+# ---------------------------------------------------------------------------
+# RightEllipticalCylinder  (REC)
+# ---------------------------------------------------------------------------
+
+_rec_spec = _SurfaceTypeSpec(
+    surface_types={SurfaceType.REC},
+    num_param_values=12,
+    params=[
+        _SurfaceParamSpec(
+            name="x",
+            start_idx=0,
+            description="The :math:`x`-coordinate of the base center",
+            types=(float, int),
+            base_type=float,
+        ),
+        _SurfaceParamSpec(
+            name="y",
+            start_idx=1,
+            description="The :math:`y`-coordinate of the base center",
+            types=(float, int),
+            base_type=float,
+        ),
+        _SurfaceParamSpec(
+            name="z",
+            start_idx=2,
+            description="The :math:`z`-coordinate of the base center",
+            types=(float, int),
+            base_type=float,
+        ),
+        _SurfaceParamSpec(
+            name="center",
+            start_idx=0,
+            is_tuple=True,
+            tuple_length=3,
+            description="Base center coordinates :math:`(v_x, v_y, v_z)`",
+            types=(float, int),
+            base_type=float,
+        ),
+        _SurfaceParamSpec(
+            name="height_vector",
+            start_idx=3,
+            is_tuple=True,
+            tuple_length=3,
+            description="Height vector :math:`\\mathbf{h}` from base to top center",
+            types=(float, int),
+            base_type=float,
+        ),
+        _SurfaceParamSpec(
+            name="semi_major_axis",
+            start_idx=6,
+            is_tuple=True,
+            tuple_length=3,
+            description="Semi-major axis vector :math:`\\mathbf{r}_1` of the elliptical cross-section",
+            types=(float, int),
+            base_type=float,
+        ),
+        _SurfaceParamSpec(
+            name="semi_minor_axis",
+            start_idx=9,
+            is_tuple=True,
+            tuple_length=3,
+            description="Semi-minor axis vector :math:`\\mathbf{r}_2` of the elliptical cross-section",
+            types=(float, int),
+            base_type=float,
+        ),
+    ],
+)
+
+
+class RightEllipticalCylinder(Surface, metaclass=_SurfaceClassFactory, spec=_rec_spec):
+    """Represents macrobody REC: a right elliptical cylinder defined by a base
+    center, height vector, and semi-axis vectors.
+
+    .. versionadded:: 1.3.0
+
+    Parameters
+    ----------
+    input : Union[Input, str]
+        The Input object representing the input
+    number : int
+        The number to set for this object.
+    """
+
+    def validate(self):
+        super().validate()
+        if any(c is None for c in self.center):
+            raise IllegalState(f"Surface: {self.number} does not have a center set.")
+        if any(h is None for h in self.height_vector):
+            raise IllegalState(
+                f"Surface: {self.number} does not have a height_vector set."
+            )
+
+
+# ---------------------------------------------------------------------------
+# TruncatedRightCone  (TRC)
+# ---------------------------------------------------------------------------
+
+_trc_spec = _SurfaceTypeSpec(
+    surface_types={SurfaceType.TRC},
+    num_param_values=8,
+    params=[
+        _SurfaceParamSpec(
+            name="x",
+            start_idx=0,
+            description="The :math:`x`-coordinate of the base center",
+            types=(float, int),
+            base_type=float,
+        ),
+        _SurfaceParamSpec(
+            name="y",
+            start_idx=1,
+            description="The :math:`y`-coordinate of the base center",
+            types=(float, int),
+            base_type=float,
+        ),
+        _SurfaceParamSpec(
+            name="z",
+            start_idx=2,
+            description="The :math:`z`-coordinate of the base center",
+            types=(float, int),
+            base_type=float,
+        ),
+        _SurfaceParamSpec(
+            name="center",
+            start_idx=0,
+            is_tuple=True,
+            tuple_length=3,
+            description="Base center coordinates :math:`(v_x, v_y, v_z)`",
+            types=(float, int),
+            base_type=float,
+        ),
+        _SurfaceParamSpec(
+            name="height_vector",
+            start_idx=3,
+            is_tuple=True,
+            tuple_length=3,
+            description="Height vector :math:`\\mathbf{h}` from base center to top center",
+            types=(float, int),
+            base_type=float,
+        ),
+        _SurfaceParamSpec(
+            name="base_radius",
+            start_idx=6,
+            description="The radius :math:`r_1` of the base",
+            types=(float, int),
+            base_type=float,
+            validator=_enforce_positive_radius,
+        ),
+        _SurfaceParamSpec(
+            name="top_radius",
+            start_idx=7,
+            description="The radius :math:`r_2` of the top",
+            types=(float, int),
+            base_type=float,
+            validator=_enforce_positive_radius,
+        ),
+    ],
+)
+
+
+class TruncatedRightCone(Surface, metaclass=_SurfaceClassFactory, spec=_trc_spec):
+    """Represents macrobody TRC: a truncated right-angle cone defined by a base
+    center, height vector, and two radii.
+
+    .. versionadded:: 1.3.0
+
+    Parameters
+    ----------
+    input : Union[Input, str]
+        The Input object representing the input
+    number : int
+        The number to set for this object.
+    """
+
+    def validate(self):
+        super().validate()
+        if any(c is None for c in self.center):
+            raise IllegalState(f"Surface: {self.number} does not have a center set.")
+        if any(h is None for h in self.height_vector):
+            raise IllegalState(
+                f"Surface: {self.number} does not have a height_vector set."
+            )
+        if self.base_radius is None:
+            raise IllegalState(
+                f"Surface: {self.number} does not have a base_radius set."
+            )
+        if self.top_radius is None:
+            raise IllegalState(
+                f"Surface: {self.number} does not have a top_radius set."
+            )
+
+
+# ---------------------------------------------------------------------------
+# Ellipsoid  (ELL)
+# ---------------------------------------------------------------------------
+
+_ellipsoid_spec = _SurfaceTypeSpec(
+    surface_types={SurfaceType.ELL},
+    num_param_values=7,
+    params=[
+        _SurfaceParamSpec(
+            name="focus_1",
+            start_idx=0,
+            is_tuple=True,
+            tuple_length=3,
+            description="First focus coordinates :math:`(v_{1x}, v_{1y}, v_{1z})`",
+            types=(float, int),
+            base_type=float,
+        ),
+        _SurfaceParamSpec(
+            name="focus_2",
+            start_idx=3,
+            is_tuple=True,
+            tuple_length=3,
+            description="Second focus coordinates :math:`(v_{2x}, v_{2y}, v_{2z})`",
+            types=(float, int),
+            base_type=float,
+        ),
+        _SurfaceParamSpec(
+            name="semi_major_axis",
+            start_idx=6,
+            description="Semi-major axis length :math:`r_m` (positive) or half the distance between foci (negative)",
+            types=(float, int),
+            base_type=float,
+        ),
+    ],
+)
+
+
+class Ellipsoid(Surface, metaclass=_SurfaceClassFactory, spec=_ellipsoid_spec):
+    """Represents macrobody ELL: an ellipsoid defined by two foci and a
+    semi-major axis length.
+
+    .. versionadded:: 1.3.0
+
+    Parameters
+    ----------
+    input : Union[Input, str]
+        The Input object representing the input
+    number : int
+        The number to set for this object.
+    """
+
+    def validate(self):
+        super().validate()
+        if any(f is None for f in self.focus_1):
+            raise IllegalState(f"Surface: {self.number} does not have focus_1 set.")
+        if any(f is None for f in self.focus_2):
+            raise IllegalState(f"Surface: {self.number} does not have focus_2 set.")
+        if self.semi_major_axis is None:
+            raise IllegalState(
+                f"Surface: {self.number} does not have semi_major_axis set."
+            )
+
+
+# ---------------------------------------------------------------------------
+# Wedge  (WED)
+# ---------------------------------------------------------------------------
+
+_wedge_spec = _SurfaceTypeSpec(
+    surface_types={SurfaceType.WED},
+    num_param_values=12,
+    params=[
+        _SurfaceParamSpec(
+            name="corner",
+            start_idx=0,
+            is_tuple=True,
+            tuple_length=3,
+            description="Corner vertex :math:`(v_x, v_y, v_z)` of the wedge base",
+            types=(float, int),
+            base_type=float,
+        ),
+        _SurfaceParamSpec(
+            name="edge_1",
+            start_idx=3,
+            is_tuple=True,
+            tuple_length=3,
+            description="First base edge vector :math:`\\mathbf{r}_1`",
+            types=(float, int),
+            base_type=float,
+        ),
+        _SurfaceParamSpec(
+            name="edge_2",
+            start_idx=6,
+            is_tuple=True,
+            tuple_length=3,
+            description="Second base edge vector :math:`\\mathbf{r}_2`",
+            types=(float, int),
+            base_type=float,
+        ),
+        _SurfaceParamSpec(
+            name="height_vector",
+            start_idx=9,
+            is_tuple=True,
+            tuple_length=3,
+            description="Height vector :math:`\\mathbf{h}` extruding the triangular base",
+            types=(float, int),
+            base_type=float,
+        ),
+    ],
+)
+
+
+class Wedge(Surface, metaclass=_SurfaceClassFactory, spec=_wedge_spec):
+    """Represents macrobody WED: a wedge defined by a corner vertex, two base
+    edge vectors, and a height vector.
+
+    .. versionadded:: 1.3.0
+
+    Parameters
+    ----------
+    input : Union[Input, str]
+        The Input object representing the input
+    number : int
+        The number to set for this object.
+    """
+
+    def validate(self):
+        super().validate()
+        if any(c is None for c in self.corner):
+            raise IllegalState(f"Surface: {self.number} does not have a corner set.")
+        if any(h is None for h in self.height_vector):
+            raise IllegalState(
+                f"Surface: {self.number} does not have a height_vector set."
+            )
+
+
+# ---------------------------------------------------------------------------
+# ArbitraryPolyhedron  (ARB)
+# ---------------------------------------------------------------------------
+
+_arb_spec = _SurfaceTypeSpec(
+    surface_types={SurfaceType.ARB},
+    num_param_values=30,
+    params=[
+        _SurfaceParamSpec(
+            name="vertex_1",
+            start_idx=0,
+            is_tuple=True,
+            tuple_length=3,
+            description="Vertex 1 coordinates :math:`(x_1, y_1, z_1)`",
+            types=(float, int),
+            base_type=float,
+        ),
+        _SurfaceParamSpec(
+            name="vertex_2",
+            start_idx=3,
+            is_tuple=True,
+            tuple_length=3,
+            description="Vertex 2 coordinates :math:`(x_2, y_2, z_2)`",
+            types=(float, int),
+            base_type=float,
+        ),
+        _SurfaceParamSpec(
+            name="vertex_3",
+            start_idx=6,
+            is_tuple=True,
+            tuple_length=3,
+            description="Vertex 3 coordinates :math:`(x_3, y_3, z_3)`",
+            types=(float, int),
+            base_type=float,
+        ),
+        _SurfaceParamSpec(
+            name="vertex_4",
+            start_idx=9,
+            is_tuple=True,
+            tuple_length=3,
+            description="Vertex 4 coordinates :math:`(x_4, y_4, z_4)`",
+            types=(float, int),
+            base_type=float,
+        ),
+        _SurfaceParamSpec(
+            name="vertex_5",
+            start_idx=12,
+            is_tuple=True,
+            tuple_length=3,
+            description="Vertex 5 coordinates :math:`(x_5, y_5, z_5)`",
+            types=(float, int),
+            base_type=float,
+        ),
+        _SurfaceParamSpec(
+            name="vertex_6",
+            start_idx=15,
+            is_tuple=True,
+            tuple_length=3,
+            description="Vertex 6 coordinates :math:`(x_6, y_6, z_6)`",
+            types=(float, int),
+            base_type=float,
+        ),
+        _SurfaceParamSpec(
+            name="vertex_7",
+            start_idx=18,
+            is_tuple=True,
+            tuple_length=3,
+            description="Vertex 7 coordinates :math:`(x_7, y_7, z_7)`",
+            types=(float, int),
+            base_type=float,
+        ),
+        _SurfaceParamSpec(
+            name="vertex_8",
+            start_idx=21,
+            is_tuple=True,
+            tuple_length=3,
+            description="Vertex 8 coordinates :math:`(x_8, y_8, z_8)`",
+            types=(float, int),
+            base_type=float,
+        ),
+        _SurfaceParamSpec(
+            name="facet_1",
+            start_idx=24,
+            description="Face 1 descriptor: digit string of up to 4 vertex indices",
+            types=(float, int),
+            base_type=float,
+        ),
+        _SurfaceParamSpec(
+            name="facet_2",
+            start_idx=25,
+            description="Face 2 descriptor: digit string of up to 4 vertex indices",
+            types=(float, int),
+            base_type=float,
+        ),
+        _SurfaceParamSpec(
+            name="facet_3",
+            start_idx=26,
+            description="Face 3 descriptor: digit string of up to 4 vertex indices",
+            types=(float, int),
+            base_type=float,
+        ),
+        _SurfaceParamSpec(
+            name="facet_4",
+            start_idx=27,
+            description="Face 4 descriptor: digit string of up to 4 vertex indices",
+            types=(float, int),
+            base_type=float,
+        ),
+        _SurfaceParamSpec(
+            name="facet_5",
+            start_idx=28,
+            description="Face 5 descriptor: digit string of up to 4 vertex indices",
+            types=(float, int),
+            base_type=float,
+        ),
+        _SurfaceParamSpec(
+            name="facet_6",
+            start_idx=29,
+            description="Face 6 descriptor: digit string of up to 4 vertex indices",
+            types=(float, int),
+            base_type=float,
+        ),
+    ],
+)
+
+
+class ArbitraryPolyhedron(Surface, metaclass=_SurfaceClassFactory, spec=_arb_spec):
+    """Represents macrobody ARB: an arbitrary convex polyhedron defined by up
+    to 8 vertices and 6 face descriptors.
+
+    Vertices are given as :math:`(x, y, z)` triples (24 values total).
+    Each face descriptor is a 4-digit integer whose digits are the 1-based
+    vertex indices forming that face (0 if the face has fewer than 4 vertices).
+
+    .. versionadded:: 1.3.0
+
+    Parameters
+    ----------
+    input : Union[Input, str]
+        The Input object representing the input
+    number : int
+        The number to set for this object.
+    """
+
+    def validate(self):
+        super().validate()
+        if any(v is None for v in self.vertex_1):
+            raise IllegalState(f"Surface: {self.number} does not have vertex_1 set.")

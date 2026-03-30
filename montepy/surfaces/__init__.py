@@ -7,13 +7,28 @@ from . import surface_builder
 
 # promote objects
 from .surface import (
+    ArbitraryPolyhedron,
+    AxisAlignedQuadric,
     AxisPlane,
+    Box,
+    ConeOnAxis,
+    ConeParAxis,
     CylinderOnAxis,
     CylinderParAxis,
+    Ellipsoid,
     GeneralPlane,
+    GeneralQuadric,
     GeneralSphere,
+    RectangularParallelepiped,
+    RightCircularCylinder,
+    RightEllipticalCylinder,
+    RightHexagonalPrism,
+    SphereMacrobody,
     SphereAtOrigin,
     SphereOnAxis,
+    Torus,
+    TruncatedRightCone,
+    Wedge,
     Surface,
 )
 from .half_space import HalfSpace, UnitHalfSpace
