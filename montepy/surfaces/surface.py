@@ -65,6 +65,7 @@ class _SurfaceClassFactory(_ExceptionContextAdder):
         namespace["_PARAM_LOADERS"] = param_loaders
         namespace["_NUM_PARAMS"] = spec.num_param_values
         namespace["_ALLOWED_SURFACE_TYPES"] = spec.surface_types
+        namespace["__equation"] = spec.equation
         return super().__new__(cls, name, bases, namespace, **kwargs)
 
     @classmethod
@@ -939,6 +940,7 @@ _y_cylinder_par_axis_spec = _SurfaceTypeSpec(
             validator=_enforce_positive_radius,
         ),
     ],
+    equation=lambda x, y, z, c: (x - c[0]) ** 2 + (z - c[1]) ** 2 - c[2] ** 2,
 )
 
 _z_cylinder_par_axis_spec = _SurfaceTypeSpec(
@@ -977,6 +979,7 @@ _z_cylinder_par_axis_spec = _SurfaceTypeSpec(
             validator=_enforce_positive_radius,
         ),
     ],
+    equation=lambda x, y, z, c: (x - c[0]) ** 2 + (y - c[1]) ** 2 - c[2] ** 2,
 )
 
 
@@ -2201,6 +2204,13 @@ _axis_aligned_quadric_spec = _SurfaceTypeSpec(
             base_type=float,
         ),
     ],
+    equation=lambda x, y, z, c: c[0] * (x - c[7]) ** 2
+    + c[1] * (y - c[8]) ** 2
+    + c[2] * (z - c[9]) ** 2
+    + 2 * c[3] * (x - c[7])
+    + 2 * c[4] * (y - c[8])
+    + 2 * c[5] * (z - c[10])
+    + c[6],
 )
 
 
@@ -2317,6 +2327,16 @@ _general_quadric_spec = _SurfaceTypeSpec(
             base_type=float,
         ),
     ],
+    equation=lambda x, y, z, c: c[0] * x**2
+    + c[1] * y**2
+    + c[2] * z**2
+    + c[3] * x * y
+    + c[4] * y * z
+    + c[5] * z * x
+    + c[6] * x
+    + c[7] * y
+    + c[9] * z
+    + c[10],
 )
 
 
