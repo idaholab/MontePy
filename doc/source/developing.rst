@@ -42,7 +42,7 @@ Utility functions are allowed at this level as well.
 
 input_parser
 ^^^^^^^^^^^^
-The :mod:`montepy.input_parser` contains all functions and classes involved in syntax parsing.
+The ``montepy.input_parser`` contains all functions and classes involved in syntax parsing.
 Generally this is all invoked through :func:`~montepy.input_parser.input_reader.read_input`,
 which returns an :class:`~montepy.MCNP_Problem` instance.
 
