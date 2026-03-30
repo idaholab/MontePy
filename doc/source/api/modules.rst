@@ -53,7 +53,7 @@ General Surface utilities
    montepy.HalfSpace
 
 
-Cylinders 
+Cylinders
 ^^^^^^^^^
 
 .. autosummary::
@@ -61,10 +61,10 @@ Cylinders
    :nosignatures:
    :template: myclass.rst
 
-   montepy.CylinderParAxis
    montepy.CylinderOnAxis
+   montepy.CylinderParAxis
 
-Planes 
+Planes
 ^^^^^^
 
 .. autosummary::
@@ -72,8 +72,8 @@ Planes
    :nosignatures:
    :template: myclass.rst
 
-   montepy.GeneralPlane
    montepy.AxisPlane
+   montepy.GeneralPlane
 
 
 Spheres
@@ -84,9 +84,64 @@ Spheres
    :nosignatures:
    :template: myclass.rst
 
-   montepy.GeneralSphere
    montepy.SphereAtOrigin
    montepy.SphereOnAxis
+   montepy.GeneralSphere
+
+
+Cones
+^^^^^
+
+.. autosummary::
+   :toctree: generated
+   :nosignatures:
+   :template: myclass.rst
+
+   montepy.ConeOnAxis
+   montepy.ConeParAxis
+
+
+Quadrics
+^^^^^^^^
+
+.. autosummary::
+   :toctree: generated
+   :nosignatures:
+   :template: myclass.rst
+
+   montepy.AxisAlignedQuadric
+   montepy.GeneralQuadric
+
+
+Tori
+^^^^
+
+.. autosummary::
+   :toctree: generated
+   :nosignatures:
+   :template: myclass.rst
+
+   montepy.Torus
+
+
+Macrobodies
+^^^^^^^^^^^
+
+.. autosummary::
+   :toctree: generated
+   :nosignatures:
+   :template: myclass.rst
+
+   montepy.Box
+   montepy.RectangularParallelepiped
+   montepy.SphereMacrobody
+   montepy.RightCircularCylinder
+   montepy.RightHexagonalPrism
+   montepy.RightEllipticalCylinder
+   montepy.TruncatedRightCone
+   montepy.Ellipsoid
+   montepy.Wedge
+   montepy.ArbitraryPolyhedron
 
 
 Data Inputs

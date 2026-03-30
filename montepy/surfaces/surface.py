@@ -741,6 +741,7 @@ class CylinderParAxis(
 
         Added number parameter
 
+
     Parameters
     ----------
     input : Union[Input, str]
@@ -794,9 +795,16 @@ class AxisPlane(Surface, metaclass=_SurfaceClassFactory, spec=_axis_plane_spec):
 
         z - d = 0
 
+    .. tip::
+
+        Since version 1.4.0 this has not been the preferred class for working with ``PX``, ``PY``, and ``PZ`` surfaces.
+        Instead :class:`~montepy.XPlane`, :class:`~montepy.YPlane`, and :class:`~montepy.ZPlane` are preferred.
+        There is no plan at this time to deprecate this class, but its use is not going to be promoted.
+
     .. versionchanged:: 1.0.0
 
         Added number parameter
+
 
     Parameters
     ----------
