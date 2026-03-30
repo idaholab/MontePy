@@ -13,7 +13,7 @@ Material = montepy.data_inputs.material.Material
 
 
 class Materials(NumberedDataObjectCollection):
-    """A container of multiple :class:`~montepy.data_inputs.material.Material` instances.
+    """A container of multiple :class:`~montepy.Material` instances.
 
     This collection can be sliced to get a subset of the materials.
     Slicing is done based on the material numbers, not their order in the input.
@@ -28,7 +28,7 @@ class Materials(NumberedDataObjectCollection):
     Notes
     -----
     When items are added to this (and this object is linked to a problem),
-    they will also be added to :func:`montepy.mcnp_problem.MCNP_Problem.data_inputs`.
+    they will also be added to :attr:`montepy.MCNP_Problem.data_inputs`.
 
     Notes
     -----
@@ -48,7 +48,7 @@ class Materials(NumberedDataObjectCollection):
         self,
         *nuclides: Union[
             montepy.data_inputs.nuclide.Nuclide,
-            montepy.data_inputs.nuclide.Nucleus,
+            montepy.Nucleus,
             montepy.Element,
             str,
             int,
@@ -58,7 +58,7 @@ class Materials(NumberedDataObjectCollection):
     ) -> Generator[Material]:
         """Get all materials that contain any of these these nuclides.
 
-        This uses :func:`~montepy.data_inputs.material.Material.contains` under the hood.
+        This uses :func:`~montepy.Material.contains_all` under the hood.
         See that documentation for more guidance.
 
         Examples
@@ -112,7 +112,7 @@ class Materials(NumberedDataObjectCollection):
         self,
         *nuclides: Union[
             montepy.data_inputs.nuclide.Nuclide,
-            montepy.data_inputs.nuclide.Nucleus,
+            montepy.Nucleus,
             montepy.Element,
             str,
             int,
@@ -122,7 +122,7 @@ class Materials(NumberedDataObjectCollection):
     ) -> Generator[Material]:
         """Get all materials that contain all of these nuclides.
 
-        This uses :func:`~montepy.data_inputs.material.Material.contains` under the hood.
+        This uses :func:`~montepy.Material.contains_all` under the hood.
         See that documentation for more guidance.
 
         Examples
@@ -176,7 +176,7 @@ class Materials(NumberedDataObjectCollection):
         self,
         *nuclides: Union[
             montepy.data_inputs.nuclide.Nuclide,
-            montepy.data_inputs.nuclide.Nucleus,
+            montepy.Nucleus,
             montepy.Element,
             str,
             int,
@@ -192,7 +192,7 @@ class Materials(NumberedDataObjectCollection):
         def sort_by_type(nuclide):
             type_map = {
                 montepy.data_inputs.element.Element: 0,
-                montepy.data_inputs.nuclide.Nucleus: 1,
+                montepy.Nucleus: 1,
                 montepy.data_inputs.nuclide.Nuclide: 2,
             }
             return type_map[type(nuclide)]

@@ -73,7 +73,7 @@ class SLY_Supressor:
         ----------
         msg : str
             The message to display.
-        token : Token
+        token : sly.lex.Token
             the token that caused the error if any.
         lineno : int
             the current lineno of the error (from SLY not the file), if
@@ -125,7 +125,7 @@ class MCNP_Parser(Parser, metaclass=MetaBuilder):
 
         Parameters
         ----------
-        token_generator : generator
+        token_generator : collections.abc.Generator
             the token generator from ``lexer.tokenize``.
         input : Input
             the input that is being lexed and parsed.
@@ -186,7 +186,7 @@ class MCNP_Parser(Parser, metaclass=MetaBuilder):
 
         Returns
         -------
-        ListNode
+        montepy.input_parser.syntax_node.ListNode
         """
         if len(p) == 1:
             sequence = syntax_node.ListNode("number sequence")
@@ -517,7 +517,7 @@ class MCNP_Parser(Parser, metaclass=MetaBuilder):
 
         Returns
         -------
-        ClassifierNode
+        montepy.input_parser.syntax_node.ClassifierNode
         """
         if hasattr(p, "classifier"):
             classifier = p.classifier
@@ -544,7 +544,7 @@ class MCNP_Parser(Parser, metaclass=MetaBuilder):
 
         Returns
         -------
-        ClassifierNode
+        montepy.input_parser.syntax_node.ClassifierNode
         """
         classifier = p.classifier
         if len(p) > 1:
@@ -594,7 +594,7 @@ class MCNP_Parser(Parser, metaclass=MetaBuilder):
 
         Parameters
         ----------
-        token : Token
+        token : sly.lex.Token
             the token that broke the parsing rules.
         """
         # self._debug_parsing_error(token)
