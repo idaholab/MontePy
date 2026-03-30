@@ -194,15 +194,6 @@ Universal Utilities and constants
    montepy.exceptions
    montepy.utilities
 
-Subpackages
-^^^^^^^^^^^
-
-.. toctree::
-   :maxdepth: 1
-
-   montepy.data_inputs
-   montepy.surfaces
-   montepy.input_parser
 
    
 Object Builders
