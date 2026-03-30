@@ -1332,7 +1332,7 @@ Output.o
         )
         mcnp_in = montepy.input_parser.mcnp_input
         input_order = [mcnp_in.Message, mcnp_in.Title]
-        input_order += [mcnp_in.Input] * 29
+        input_order += [mcnp_in.Input] * 65
         for i, input in enumerate(generator):
             print(input.input_lines)
             print(input_order[i])
