@@ -257,6 +257,13 @@ class Surface(Numbered_MCNP_Object):
         # parse the parameters
         for entry in self._tree["data"]:
             self._surface_constants.append(entry)
+        if (
+            type(self) != Surface
+            and len(self._surface_constants) != self._number_of_params()
+        ):
+            raise ValueError(
+                f"{type(self).__name__} must be given {self._number_of_params()} surface constants, but {len(self._surface_constants)} were given"
+            )
         self._load_params()
 
     def _load_params(self):
@@ -911,11 +918,6 @@ class GeneralPlane(Surface, metaclass=_SurfaceClassFactory, spec=_general_plane_
         The number to set for this object.
     """
 
-    def __init__(self, input=None, number=None):
-        super().__init__(input, number)
-        if input:
-            self._enforce_constants()
-
     def validate(self):
         super().validate()
         self._enforce_constants(_validation_call=True)
@@ -1013,6 +1015,15 @@ _general_sphere_spec = _SurfaceTypeSpec(
         ),
         _SurfaceParamSpec(
             name="center",
+            start_idx=0,
+            is_tuple=True,
+            tuple_length=3,
+            description="Center coordinates :math:`(x_0, y_0, z_0)` of the sphere",
+            types=(float, int),
+            base_type=float,
+        ),
+        _SurfaceParamSpec(
+            name="coordinates",
             start_idx=0,
             is_tuple=True,
             tuple_length=3,
