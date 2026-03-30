@@ -228,7 +228,7 @@ class NumberedObjectCollection(ABC):
 
         Returns
         -------
-        generator
+        collections.abc.Generator
         """
         for obj in self._objects:
             # update cache every time we go through all objects
