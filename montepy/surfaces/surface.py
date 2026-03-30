@@ -683,6 +683,12 @@ class CylinderOnAxis(
 
         x^2 + y^2 - R^2 = 0
 
+    .. tip::
+
+        Since version 1.4.0 this has not been the preferred class for working with ``CX``, ``CY``, and ``CZ`` surfaces.
+        Instead :class:`~montepy.XCylinder`, :class:`~montepy.YCylinder`, and :class:`~montepy.ZCylinder` are preferred.
+        There is no plan at this time to deprecate this class, but its use is not going to be promoted.
+
     .. versionchanged:: 1.0.0
 
         Added number parameter
@@ -814,6 +820,12 @@ class CylinderParAxis(
     .. math::
 
         (x - x_0)^2 + (y - y_0)^2 - R^2 = 0
+
+    .. tip::
+
+        Since version 1.4.0 this has not been the preferred class for working with ``C/X``, ``C/Y``, and ``C/Z`` surfaces.
+        Instead :class:`~montepy.XCylinderParAxis`, :class:`~montepy.YCylinderParAxis`, and :class:`~montepy.ZCylinderParAxis` are preferred.
+        There is no plan at this time to deprecate this class, but its use is not going to be promoted.
 
     .. versionchanged:: 1.0.0
 
@@ -1493,6 +1505,12 @@ class SphereOnAxis(Surface, metaclass=_SurfaceClassFactory, spec=_sphere_on_axis
 
         (x - a)^2 + y^2 + z^2 - R^2 = 0
 
+    .. tip::
+
+        Since version 1.4.0 this has not been the preferred class for working with ``SX``, ``SY``, and ``SZ`` surfaces.
+        Instead :class:`~montepy.XSphere`, :class:`~montepy.YSphere`, and :class:`~montepy.ZSphere` are preferred.
+        There is no plan at this time to deprecate this class, but its use is not going to be promoted.
+
     .. versionadded:: 1.3.0
 
     Parameters
@@ -1706,6 +1724,12 @@ class ConeOnAxis(Surface, metaclass=_SurfaceClassFactory, spec=_cone_on_axis_spe
     The optional third surface constant selects a single nappe
     (``+1`` upper, ``-1`` lower); omitting it gives both nappes.
     Access it via ``surface_constants[2]`` if present.
+
+    .. tip::
+
+        Since version 1.4.0 this has not been the preferred class for working with ``KX``, ``KY``, and ``KZ`` surfaces.
+        Instead :class:`~montepy.XCone`, :class:`~montepy.YCone`, and :class:`~montepy.ZCone` are preferred.
+        There is no plan at this time to deprecate this class, but its use is not going to be promoted.
 
     .. versionadded:: 1.3.0
 
@@ -1950,6 +1974,12 @@ class ConeParAxis(Surface, metaclass=_SurfaceClassFactory, spec=_cone_par_axis_s
     The optional fifth surface constant selects a single nappe
     (``+1`` upper, ``-1`` lower); omitting it gives both nappes.
     Access it via ``surface_constants[4]`` if present.
+
+    .. tip::
+
+        Since version 1.4.0 this has not been the preferred class for working with ``K/X``, ``K/Y``, and ``K/Z`` surfaces.
+        Instead :class:`~montepy.XConeParAxis`, :class:`~montepy.YConeParAxis`, and :class:`~montepy.ZConeParAxis` are preferred.
+        There is no plan at this time to deprecate this class, but its use is not going to be promoted.
 
     .. versionadded:: 1.3.0
 
@@ -2378,6 +2408,12 @@ class Torus(Surface, metaclass=_SurfaceClassFactory, spec=_torus_spec):
 
         \\left(\\sqrt{(x-x_0)^2+(y-y_0)^2} - A\\right)^2 / B^2
         + (z-z_0)^2 / C^2 - 1 = 0
+
+    .. tip::
+
+        Since version 1.4.0 this has not been the preferred class for working with ``TX``, ``TY``, and ``TZ`` surfaces.
+        Instead :class:`~montepy.XTorus`, :class:`~montepy.YTorus`, and :class:`~montepy.ZTorus` are preferred.
+        There is no plan at this time to deprecate this class, but its use is not going to be promoted.
 
     .. versionadded:: 1.3.0
 
