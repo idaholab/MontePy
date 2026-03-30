@@ -19,8 +19,8 @@ c surfaces
 5    CZ 113  $ inner wall of first wall
 10   CZ 114  $ outer wall of first wall
 12   CZ 115  $ outer wall of vacuum vessel
-15   CZ 150  $ outer wall of breeder blanket
-20   CZ 151  $ outer wall of breeder cladding
+15   CZ 150.00  $ outer wall of breeder blanket
+20   CZ 151.00  $ outer wall of breeder cladding
 25   CZ 200  $ inner radius of magnets
 30   CZ 205  $ outer radius of magnets
 *100 PZ -50  $ reflective boundary
