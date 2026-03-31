@@ -22,6 +22,5 @@ ifndef FAST
 	cp ../dist/*.whl "$(SOURCEDIR)"/wheels
 	mkdir -p "$(SOURCEDIR)"/_contents
 	cp -rL ../demo/* "$(SOURCEDIR)"/_contents
-	@$(SPHINXBUILD) -M $@ "$(SOURCEDIR)" "$(BUILDDIR)" $(SPHINXOPTS) $(O)
 endif
 	@$(SPHINXBUILD) -M $@ "$(SOURCEDIR)" "$(BUILDDIR)" $(SPHINXOPTS) $(O)
