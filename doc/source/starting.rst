@@ -535,28 +535,22 @@ and appends it to necessary collections (if requested):
 Surfaces
 --------
 
+.. versionchanged:: 1.4.0
+
+   TODO
+
 The most important unsung heroes of an MCNP problem are the surfaces.
 They may be tedious to work with but you can't get anything done without them.
 MCNP supports *a lot* of types of surfaces, and all of them are special in their own way.
 You can see all the surface types here: :class:`~montepy.SurfaceType`.
-By default all surfaces are an instance of :class:`~montepy.Surface`.
-They will always have the properties: ``surface_type``, and ``surface_constants``.
-If you need to modify the surface you can do so through the ``surface_constants`` list.
-But for some of our favorite surfaces 
-(``CX``, ``CY``, ``CZ``, ``C\X``, ``C\Y``, ``C\Z``, ``PX``, ``PY``, ``PZ``),
-these will be a special subclass of ``Surface``, 
-that will truly understand surface constants for what the mean.
+All surfaces are an inherit from :class:`~montepy.Surface`, or are directly an instance of :class:`~montepy.Surface`.
+They will always have the properties: :attr:`~montepy.Surface.surface_type`, and :attr:`surface_constants`.
+For almost all surface types (except for axisymmetric surfaces defined by points, i.e., :attr:`~montepy.SurfaceType.X`, :attr:`~montepy.SurfaceType.Y`, and :attr:`~montepy.SurfaceType.Z`),
+   a custom class is defined for it.
+For example, :class:`~montepy.XPlane` represents all :attr:`~montepy.SurfaceType.PX` surfaces by default.
+These classes expose the ``surface_constants`` through more intuitive property names like: :attr:`~montepy.XPlane.radius`.
 See the :doc:`API documentation <api/modules>` for specific surface classes and their documentation.
 
-# TODO
-
-Two useful examples are the :class:`~montepy.CylinderOnAxis`, 
-which covers ``CX``, ``CY``, and ``CZ``,
-and the :class:`~montepy.AxisPlane`,
-which covers ``PX``, ``PY``, ``PZ``.
-The first contains the parameter: ``radius``, 
-and the second one contains the parameters: ``location``. 
-These describe their single surface constant.
 
 
 Getting Surfaces by Type the easy way

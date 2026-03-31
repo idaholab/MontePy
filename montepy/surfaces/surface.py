@@ -367,7 +367,7 @@ class Surface(Numbered_MCNP_Object):
     def surface_type(self):
         """The mnemonic for the type of surface.
 
-        E.g. CY, PX, etc.
+        E.g. :attr:`~montepy.SurfaceType.CZ`, :attr:`~montepy.SurfaceType.CZ` etc.
 
         Returns
         -------
