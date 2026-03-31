@@ -1819,6 +1819,42 @@ class ConeOnAxis(Surface, metaclass=_SurfaceClassFactory, spec=_cone_on_axis_spe
 
     _VARIABLE_NUM_PARAMS = True
 
+    @property
+    def sign(self):
+        """The optional sign flag selecting a single nappe of the cone.
+
+        A value of ``+1`` selects the upper nappe and ``-1`` the lower nappe.
+        Returns ``None`` if the flag was not specified in the input.
+
+        Returns
+        -------
+        int or None
+        """
+        sc = self.surface_constants
+        if len(sc) > 2:
+            return sc[2]
+        return None
+
+    @sign.setter
+    def sign(self, value):
+        if value is None:
+            del self.sign
+            return
+        if value not in {1, -1}:
+            raise ValueError(f"sign must be +1 or -1. {value} given.")
+        if len(self._surface_constants) > 2:
+            self._surface_constants[2].value = value
+        else:
+            node = self._generate_default_node(int, value)
+            self._surface_constants.append(node)
+            self._tree["data"].append(node)
+
+    @sign.deleter
+    def sign(self):
+        if len(self._surface_constants) > 2:
+            node = self._surface_constants.pop()
+            self._tree["data"].remove(node)
+
     def _enforce_constants(self, _validation_call=False):
         n = len(self.surface_constants)
         if n not in {2, 3}:
@@ -2082,6 +2118,42 @@ class ConeParAxis(Surface, metaclass=_SurfaceClassFactory, spec=_cone_par_axis_s
     """
 
     _VARIABLE_NUM_PARAMS = True
+
+    @property
+    def sign(self):
+        """The optional sign flag selecting a single nappe of the cone.
+
+        A value of ``+1`` selects the upper nappe and ``-1`` the lower nappe.
+        Returns ``None`` if the flag was not specified in the input.
+
+        Returns
+        -------
+        int or None
+        """
+        sc = self.surface_constants
+        if len(sc) > 4:
+            return sc[4]
+        return None
+
+    @sign.setter
+    def sign(self, value):
+        if value is None:
+            del self.sign
+            return
+        if value not in {1, -1}:
+            raise ValueError(f"sign must be +1 or -1. {value} given.")
+        if len(self._surface_constants) > 4:
+            self._surface_constants[4].value = value
+        else:
+            node = self._generate_default_node(int, value)
+            self._surface_constants.append(node)
+            self._tree["data"].append(node)
+
+    @sign.deleter
+    def sign(self):
+        if len(self._surface_constants) > 4:
+            node = self._surface_constants.pop()
+            self._tree["data"].remove(node)
 
     def _enforce_constants(self, _validation_call=False):
         n = len(self.surface_constants)
@@ -2687,35 +2759,6 @@ class Torus(Surface, metaclass=_SurfaceClassFactory, spec=_torus_spec):
         The surface_type to set for this object
     """
 
-    _VARIABLE_NUM_PARAMS = True
-
-    @property
-    def sign(self):
-        """The optional sign flag selecting which nappe of the torus is used.
-
-        A value of ``+1`` selects the outer nappe and ``-1`` the inner nappe.
-        Returns ``None`` if the flag was not specified in the input.
-
-        Returns
-        -------
-        int or None
-        """
-        sc = self.surface_constants
-        if len(sc) > 6:
-            return sc[6]
-        return None
-
-    def _enforce_constants(self, _validation_call=False):
-        n = len(self.surface_constants)
-        if n not in {6, 7}:
-            message = (
-                f"A {type(self).__name__} must have 6 or 7 surface constants "
-                f"(6 required + optional sign flag), but {n} were given."
-            )
-            if not _validation_call:
-                raise ValueError(message)
-            raise IllegalState(message)
-
     @property
     def minor_radius(self):
         """The minor radius of the torus when the tube cross-section is
@@ -2758,7 +2801,6 @@ class Torus(Surface, metaclass=_SurfaceClassFactory, spec=_torus_spec):
 
     def validate(self):
         super().validate()
-        self._enforce_constants(_validation_call=True)
         if any(c is None for c in self.center):
             raise IllegalState(f"Surface: {self.number} does not have a center set.")
         if self.major_radius is None:
