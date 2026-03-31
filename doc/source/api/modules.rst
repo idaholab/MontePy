@@ -34,7 +34,7 @@ Collections
 
    montepy.Cells
    montepy.Materials
-   montepy.surface_collection.Surfaces
+   montepy.Surfaces
    montepy.Transforms
    montepy.Universes
 

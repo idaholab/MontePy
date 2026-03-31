@@ -390,7 +390,7 @@ There are a number of tools to avoid this though:
 #. :func:`~montepy.numbered_object_collection.NumberedObjectCollection.next_number` will find the next 
    number available by taking the highest number used and increasing it.
 
-The collections also have a property called :func:`~montepy.numbered_object_collection.NumberedObjectCollection.numbers`, which lists all numbers that are in use.
+The collections also have a property called :attr:`~montepy.numbered_object_collection.NumberedObjectCollection.numbers`, which lists all numbers that are in use.
 Note that using this property has some perils that will be covered in the next section.
 
 
@@ -402,7 +402,7 @@ First, what is a generator?
 Basically they are iterators that are dynamically created.
 They don't hold any information until you ask for it.
 
-The first example of this is the :attr:`~montepy.NumberedObjectCollection.numbers` property. 
+The first example of this is the :attr:`~montepy.numbered_object_collection.NumberedObjectCollection.numbers` property. 
 The collection doesn't keep this information until it is needed.
 When you ask for the ``numbers`` python then iterates over all of the objects in
 the collection and gets their number at the exact moment.
@@ -434,7 +434,7 @@ False
 
 Using the generators in this way does not cause any issues, but there are ways to cause issues
 by making "stale" information.
-This can be done by making a copy of it with :func:`list`. 
+This can be done by making a copy of it with :class:`list`. 
 
 .. doctest::
 
@@ -462,7 +462,7 @@ Cloning Objects
 ^^^^^^^^^^^^^^^
 
 In the past the only way to make a copy of a MontePy object was with :func:`copy.deepcopy`.
-In MontePy 0.5.0 a better way was introduced: :func:`~montepy.MCNP_Object.clone`.
+In MontePy 0.5.0 a better way was introduced: :func:`~montepy.mcnp_object.MCNP_Object.clone`.
 How numbered objects, for instance :class:`~montepy.Cell`, is more complicated.
 If a ``Cell`` or a group of ``Cells`` are cloned their numbers will be to changed to avoid collisions.
 However, if a whole :class:`~montepy.MCNP_Problem` is cloned these objects will not have their numbers changed.
@@ -543,7 +543,7 @@ Surfaces
    Now the preferred classes are :class:`~montepy.XCylinder`, :class:`~montepy.XCylinderParAxis`,
    and :class:`~montepy.XPlane` respectively.
    These all inherit from the original classes (e.g., ``XPlane`` inherets from ``AxisPlane``),
-   so :func:`isinstance` still works the same as before this change.
+   so :func:`~builtins.isinstance` still works the same as before this change.
    There is no plan to deprecate these root classes, 
    just the documentation will not recommend using them directly.
 
@@ -552,11 +552,11 @@ They may be tedious to work with but you can't get anything done without them.
 MCNP supports *a lot* of types of surfaces, and all of them are special in their own way.
 You can see all the surface types here: :class:`~montepy.SurfaceType`.
 All surfaces are an inherit from :class:`~montepy.Surface`, or are directly an instance of :class:`~montepy.Surface`.
-They will always have the properties: :attr:`~montepy.Surface.surface_type`, and :attr:`surface_constants`.
+They will always have the properties: :attr:`~montepy.Surface.surface_type`, and :attr:`~montepy.Surface.surface_constants`.
 For almost all surface types (except for axisymmetric surfaces defined by points, i.e., :attr:`~montepy.SurfaceType.X`, :attr:`~montepy.SurfaceType.Y`, and :attr:`~montepy.SurfaceType.Z`),
 a custom class is defined for it.
 For example, :class:`~montepy.XPlane` represents all :attr:`~montepy.SurfaceType.PX` surfaces by default.
-These classes expose the ``surface_constants`` through more intuitive property names like: :attr:`~montepy.XPlane.radius`.
+These classes expose the ``surface_constants`` through more intuitive property names like: :attr:`~montepy.XPlane.location`.
 See the :doc:`API documentation <api/modules>` for specific surface classes and their documentation.
 
 
