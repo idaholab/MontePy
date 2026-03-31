@@ -1051,3 +1051,163 @@ def test_simple_problem_parses_all_surface_types(simple_problem):
     expected = set(range(2000, 2036))
     actual = set(simple_problem.surfaces.numbers)
     assert expected.issubset(actual), f"Missing surface numbers: {expected - actual}"
+
+
+@pytest.mark.parametrize(
+    "surf_str, absent_idx",
+    [
+        ("1 KZ 0.0 1.0", 2),
+        ("1 K/Z 0.0 0.0 0.0 0.25", 4),
+    ],
+)
+def test_cone_sign_absent(surf_str, absent_idx):
+    """sign returns None when the optional nappe flag is not present."""
+    surf = surface_builder(surf_str)
+    assert surf.sign is None
+
+
+@pytest.mark.parametrize(
+    "surf_str, expected_sign",
+    [
+        ("1 KZ 0.0 1.0 1", 1),
+        ("1 KZ 0.0 1.0 -1", -1),
+        ("1 K/Z 0.0 0.0 0.0 0.25 1", 1),
+        ("1 K/Z 0.0 0.0 0.0 0.25 -1", -1),
+    ],
+)
+def test_cone_sign_present(surf_str, expected_sign):
+    """sign reads +1 or -1 from input when the nappe flag is given."""
+    surf = surface_builder(surf_str)
+    assert surf.sign == expected_sign
+
+
+@pytest.mark.filterwarnings("ignore")
+@pytest.mark.parametrize(
+    "surf_str",
+    [
+        "1 KZ 0.0 1.0",
+        "1 K/Z 0.0 0.0 0.0 0.25",
+    ],
+)
+def test_cone_sign_setter_and_round_trip(surf_str):
+    """Setting sign appends the nappe flag and survives an export/re-parse round-trip."""
+    surf = surface_builder(surf_str)
+    surf.sign = 1
+    assert surf.sign == 1
+    verify_export(surf)
+
+    surf.sign = -1
+    assert surf.sign == -1
+    verify_export(surf)
+
+
+@pytest.mark.parametrize(
+    "surf_str",
+    [
+        "1 KZ 0.0 1.0",
+        "1 K/Z 0.0 0.0 0.0 0.25",
+    ],
+)
+def test_cone_sign_setter_none_clears(surf_str):
+    """Setting sign to None removes the nappe flag."""
+    surf = surface_builder(surf_str)
+    surf.sign = 1
+    assert surf.sign == 1
+    surf.sign = None
+    assert surf.sign is None
+    verify_export(surf)
+
+
+@pytest.mark.parametrize(
+    "surf_str",
+    [
+        "1 KZ 0.0 1.0 1",
+        "1 K/Z 0.0 0.0 0.0 0.25 1",
+    ],
+)
+def test_cone_sign_deleter(surf_str):
+    """Deleting sign removes the nappe flag and round-trip survives."""
+    surf = surface_builder(surf_str)
+    assert surf.sign is not None
+    del surf.sign
+    assert surf.sign is None
+    verify_export(surf)
+
+
+@pytest.mark.parametrize(
+    "surf_str",
+    [
+        "1 KZ 0.0 1.0",
+        "1 K/Z 0.0 0.0 0.0 0.25",
+    ],
+)
+def test_cone_sign_invalid_raises(surf_str):
+    """sign setter rejects values other than +1 or -1."""
+    surf = surface_builder(surf_str)
+    with pytest.raises(ValueError):
+        surf.sign = 2
+    with pytest.raises(ValueError):
+        surf.sign = 0
+
+
+@pytest.mark.parametrize(
+    "surf_str",
+    [
+        "1 KZ 0.0 1.0 0.0 0.0",  # ConeOnAxis: 4 params (needs 2 or 3)
+        "1 K/Z 0.0 0.0 0.0 0.25 1 1",  # ConeParAxis: 6 params (needs 4 or 5)
+    ],
+)
+def test_cone_enforce_constants_wrong_count(surf_str):
+    """Cones with the wrong number of surface constants raise ValueError."""
+    with pytest.raises(ValueError):
+        surface_builder(surf_str)
+
+
+@pytest.mark.parametrize(
+    "cls, surf_type",
+    [
+        (ConeOnAxis, SurfaceType.KZ),
+        (ConeParAxis, SurfaceType.K_Z),
+    ],
+)
+def test_cone_validate_apex_none(cls, surf_type):
+    """validate() raises IllegalState when apex is not set."""
+    surf = cls(number=5)
+    surf.surface_type = surf_type
+    with pytest.raises(IllegalState):
+        surf.validate()
+
+
+@pytest.mark.parametrize(
+    "cls, surf_type, apex_val",
+    [
+        (ConeOnAxis, SurfaceType.KZ, 0.0),
+        (ConeParAxis, SurfaceType.K_Z, [0.0, 0.0, 0.0]),
+    ],
+)
+def test_cone_validate_t_squared_none(cls, surf_type, apex_val):
+    """validate() raises IllegalState when apex is set but t_squared is not."""
+    surf = cls(number=5)
+    surf.surface_type = surf_type
+    surf.apex = apex_val
+    with pytest.raises(IllegalState):
+        surf.validate()
+
+
+@pytest.mark.parametrize(
+    "cls, surf_type, extra_count",
+    [
+        (ConeOnAxis, SurfaceType.KZ, 2),  # 0+2=2, then add 2 more → 4, not in {2,3}
+        (ConeParAxis, SurfaceType.K_Z, 2),  # 0+2=2, then add 2 more → 4, not in {4,5}
+    ],
+)
+def test_cone_enforce_constants_illegal_state(cls, surf_type, extra_count):
+    """validate() raises IllegalState when _surface_constants has wrong count."""
+    surf = cls(number=5)
+    surf.surface_type = surf_type
+    for _ in range(extra_count):
+        node = surf._generate_default_node(float, 0.0)
+        surf._surface_constants.append(node)
+        surf._tree["data"].append(node)
+    with pytest.raises(IllegalState):
+        surf.validate()
