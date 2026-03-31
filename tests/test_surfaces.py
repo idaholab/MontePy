@@ -423,11 +423,13 @@ def test_origin_sphere_init():
     assert surf.number == 5
 
 
+@pytest.mark.filterwarnings("ignore")
 def test_axis_plane_location_setter():
     surf = surface_builder("1 PZ 0.0")
     assert surf.location == 0.0
     surf.location = 10.0
     assert surf.location == 10.0
+    verify_export(surf)
     with pytest.raises(TypeError):
         surf.location = "hi"
 
@@ -442,6 +444,7 @@ def test_sphere_radius_setter():
         assert surf.radius == 5.0
         surf.radius = 3.0
         assert surf.radius == 3.0
+        verify_export(surf)
         with pytest.raises(TypeError):
             surf.radius = "foo"
         with pytest.raises(ValueError):
@@ -464,6 +467,7 @@ def test_cylinder_axis_radius_setter():
     assert surf.radius == 5.0
     surf.radius = 3.0
     assert surf.radius == 3.0
+    verify_export(surf)
     with pytest.raises(TypeError):
         surf.radius = "foo"
     with pytest.raises(ValueError):
@@ -475,6 +479,7 @@ def test_cylinder_radius_setter():
     assert surf.radius == 5.0
     surf.radius = 3.0
     assert surf.radius == 3.0
+    verify_export(surf)
     with pytest.raises(TypeError):
         surf.radius = "foo"
     with pytest.raises(ValueError):
@@ -486,6 +491,7 @@ def test_cylinder_location_setter():
     assert surf.coordinates == (3.0, 4.0)
     surf.coordinates = [1, 2]
     assert surf.coordinates == (1, 2)
+    verify_export(surf)
     # test wrong type
     with pytest.raises(TypeError):
         surf.coordinates = "fo"
@@ -499,6 +505,7 @@ def test_sphere_coordinate_setter():
     assert surf.coordinates == (3.0, 4.0, 5)
     surf.coordinates = [1, 2, 3]
     assert surf.coordinates == (1, 2, 3)
+    verify_export(surf)
     # test wrong type
     with pytest.raises(TypeError):
         surf.coordinates = 6
@@ -514,6 +521,7 @@ def test_sphere_location_setter():
     assert surf.location == 3.0
     surf.location = 4.0
     assert surf.location == 4.0
+    verify_export(surf)
     # test length issues
     with pytest.raises(TypeError):
         surf.location = "over there"
@@ -900,6 +908,7 @@ _SCALAR_PROPS = [
 # fmt: on
 
 
+@pytest.mark.filterwarnings("ignore")
 @pytest.mark.parametrize(
     "surf_str, prop, expected, new_val, rejects_negative", _SCALAR_PROPS
 )
@@ -912,6 +921,7 @@ def test_surface_scalar_prop(surf_str, prop, expected, new_val, rejects_negative
     assert getattr(surf, prop) == pytest.approx(
         new_val
     ), f"{type(surf).__name__}.{prop}: value not updated after set"
+    verify_export(surf)
     with pytest.raises(TypeError):
         setattr(surf, prop, "bad")
     if rejects_negative:
@@ -989,6 +999,7 @@ _TUPLE_PROPS = [
 
 
 @pytest.mark.parametrize("surf_str, prop, expected, new_val", _TUPLE_PROPS)
+@pytest.mark.filterwarnings("ignore")
 def test_surface_tuple_prop(surf_str, prop, expected, new_val):
     surf = surface_builder(surf_str)
     actual = getattr(surf, prop)
@@ -1005,6 +1016,7 @@ def test_surface_tuple_prop(surf_str, prop, expected, new_val):
         assert a == pytest.approx(
             e
         ), f"{type(surf).__name__}.{prop}: value not updated after set"
+    verify_export(surf)
     # wrong type for an element
     with pytest.raises(TypeError):
         setattr(surf, prop, ["bad"] * len(new_val))
@@ -1026,6 +1038,7 @@ def test_torus_minor_radius_mismatch():
     assert surf.minor_radius is None
 
 
+@pytest.mark.filterwarnings("ignore")
 def test_torus_minor_radius_setter_syncs_both():
     """Setting minor_radius updates both minor_radius_1 and minor_radius_2."""
     surf = surface_builder("1 TX 0 0 0 5 2 2")
@@ -1033,6 +1046,7 @@ def test_torus_minor_radius_setter_syncs_both():
     assert surf.minor_radius_1 == pytest.approx(1.5)
     assert surf.minor_radius_2 == pytest.approx(1.5)
     assert surf.minor_radius == pytest.approx(1.5)
+    verify_export(surf)
 
 
 def test_torus_minor_radii_rejects_negative():
