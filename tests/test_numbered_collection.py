@@ -72,6 +72,9 @@ class TestNumberedObjectCollection:
             2033,
             2034,
             2035,
+            2036,
+            2037,
+            2038,
         ]
         mat_numbers = [1, 2, 3]
         problem = cp_simple_problem

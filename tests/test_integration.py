@@ -44,7 +44,7 @@ def data_universe_problem():
 
 
 def test_original_input(simple_problem):
-    cell_order = [Message, Title] + [Input] * 65
+    cell_order = [Message, Title] + [Input] * 68
     for i, input_ob in enumerate(simple_problem.original_inputs):
         assert isinstance(input_ob, cell_order[i])
 
@@ -132,6 +132,9 @@ def test_surface_parsing(simple_problem):
         2033,
         2034,
         2035,
+        2036,
+        2037,
+        2038,
     ]
     for i, surf in enumerate(simple_problem.surfaces):
         assert surf.number == surf_numbers[i]
