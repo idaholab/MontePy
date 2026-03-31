@@ -532,6 +532,27 @@ def test_sphere_location_setter():
                 "transform": montepy.data_inputs.data_parser.parse_data("TR1 0 0 10.0"),
             },
         ),
+        (XCylinder, SurfaceType.CX, {"radius": 0.5}),
+        (YCylinder, SurfaceType.CY, {"radius": 0.5}),
+        (ZCylinder, SurfaceType.CZ, {"radius": 0.5}),
+        (XConeParAxis, SurfaceType.K_X, {"apex": (1.0, 2.0, 3.0), "t_squared": 0.25}),
+        (YConeParAxis, SurfaceType.K_Y, {"apex": (1.0, 2.0, 3.0), "t_squared": 0.25}),
+        (ZConeParAxis, SurfaceType.K_Z, {"apex": (1.0, 2.0, 3.0), "t_squared": 0.25}),
+        (
+            XTorus,
+            SurfaceType.TX,
+            {"center": (0.0, 0.0, 0.0), "major_radius": 5.0, "minor_radii": [2.0, 2.0]},
+        ),
+        (
+            YTorus,
+            SurfaceType.TY,
+            {"center": (0.0, 0.0, 0.0), "major_radius": 5.0, "minor_radii": [2.0, 2.0]},
+        ),
+        (
+            ZTorus,
+            SurfaceType.TZ,
+            {"center": (0.0, 0.0, 0.0), "major_radius": 5.0, "minor_radii": [2.0, 2.0]},
+        ),
     ],
 )
 def test_scratch_surface_generation(cls, surf_type, params: dict):
