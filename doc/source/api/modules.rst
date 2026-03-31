@@ -38,12 +38,6 @@ Collections
    montepy.Transforms
    montepy.Universes
 
-.. suppresses error with toctree 
-
-.. toctree::
-   :hidden:
-
-   api/generated/montepy.surface_collection.Surfaces
 
 Surface Objects
 ---------------
