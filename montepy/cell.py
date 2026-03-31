@@ -269,12 +269,7 @@ class Cell(Numbered_MCNP_Object):
 
     @universe.deleter
     def universe(self):
-        if self._problem:
-            if 0 not in self._problem.universes.numbers:
-                self._problem.universes.append(Universe(0))
-            self._universe.universe = self._problem.universes[0]
-        else:
-            self._universe._universe = None
+        self.universe = None
 
     @property
     def fill(self):
