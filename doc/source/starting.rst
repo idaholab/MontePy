@@ -542,7 +542,7 @@ Surfaces
    ``CX``, ``C/X``, and ``PX`` respectively.
    Now the preferred classes are :class:`~montepy.XCylinder`, :class:`~montepy.XCylinderParAxis`,
    and :class:`~montepy.XPlane` respectively.
-   These all inherit from the original classes (e.g., ``XPlane`` inherets from ``AxisPlane``),
+   These all inherit from the original classes (e.g., ``XPlane`` inherits from ``AxisPlane``),
    so :func:`python:isinstance` still works the same as before this change.
    There is no plan to deprecate these root classes, 
    just the documentation will not recommend using them directly.
