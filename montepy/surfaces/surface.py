@@ -1187,6 +1187,13 @@ _x_plane_spec = _SurfaceTypeSpec(
             types=(float, int),
             base_type=float,
         ),
+        _SurfaceParamSpec(
+            name="d",
+            start_idx=0,
+            description="Alias for :attr:`location` following MCNP manual notation (:math:`d`).",
+            types=(float, int),
+            base_type=float,
+        ),
     ],
     equation=lambda x, y, z, c: x - c[0],
 )
@@ -1209,6 +1216,13 @@ _y_plane_spec = _SurfaceTypeSpec(
             types=(float, int),
             base_type=float,
         ),
+        _SurfaceParamSpec(
+            name="d",
+            start_idx=0,
+            description="Alias for :attr:`location` following MCNP manual notation (:math:`d`).",
+            types=(float, int),
+            base_type=float,
+        ),
     ],
     equation=lambda x, y, z, c: y - c[0],
 )
@@ -1228,6 +1242,13 @@ _z_plane_spec = _SurfaceTypeSpec(
             name="z",
             start_idx=0,
             description="The :math:`z`-intercept :math:`d` of the plane",
+            types=(float, int),
+            base_type=float,
+        ),
+        _SurfaceParamSpec(
+            name="d",
+            start_idx=0,
+            description="Alias for :attr:`location` following MCNP manual notation (:math:`d`).",
             types=(float, int),
             base_type=float,
         ),
