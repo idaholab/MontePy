@@ -484,7 +484,7 @@ class Surface(Numbered_MCNP_Object):
 
         Returns
         -------
-        generator
+        collections.abc.Generator
         """
         if self._problem:
             for cell in self._problem.cells:

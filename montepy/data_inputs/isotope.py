@@ -3,7 +3,7 @@ class Isotope:
 
     .. deprecated:: 0.4.1
 
-        This will class is deprecated, and has been renamed: :class:`~montepy.data_inputs.nuclide.Nuclide`.
+        This will class is deprecated, and has been renamed: :class:`~montepy.Nuclide`.
         For more details see the :ref:`migrate 0 1`.
 
     Raises

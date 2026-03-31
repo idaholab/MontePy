@@ -6,7 +6,7 @@ from montepy.data_inputs.transform import Transform
 
 
 class Transforms(NumberedDataObjectCollection):
-    """A container of multiple :class:`~montepy.data_inputs.transform.Transform` instances.
+    """A container of multiple :class:`~montepy.Transform` instances.
 
     This collection can be sliced to get a subset of the Transforms.
     Slicing is done based on the Transform numbers, not their order in the input.

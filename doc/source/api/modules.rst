@@ -34,7 +34,7 @@ Collections
 
    montepy.Cells
    montepy.Materials
-   montepy.Surfaces
+   montepy.surface_collection.Surfaces
    montepy.Transforms
    montepy.Universes
 
@@ -51,6 +51,7 @@ General Surface utilities
 
    montepy.Surface
    montepy.HalfSpace
+   montepy.UnitHalfSpace
 
 
 Cylinders
@@ -177,7 +178,9 @@ Materials
    :template: myclass.rst
    
    montepy.Element
+   montepy.Library
    montepy.Material
+   montepy.Nucleus
    montepy.Nuclide
    montepy.ThermalScatteringLaw
    
@@ -229,6 +232,7 @@ Abstract Classes
    :template: myclass.rst
    
    montepy.mcnp_object.MCNP_Object
+   montepy._singleton.SingletonGroup
    montepy.data_inputs.cell_modifier.CellModifierInput
    montepy.data_inputs.data_input.DataInputAbstract
    montepy.data_inputs.data_input.ForbiddenDataInput
@@ -250,6 +254,7 @@ Enumerations
    :template: myclass.rst
 
    montepy.geometry_operators.Operator
+   montepy.LibraryType
    montepy.particle.Particle
    montepy.SurfaceType
    montepy.input_parser.shortcuts.Shortcuts
@@ -265,6 +270,7 @@ Universal Utilities and constants
    montepy.exceptions
    montepy.utilities
 
+
    
 Object Builders
 ^^^^^^^^^^^^^^^
@@ -278,6 +284,12 @@ Object Builders
    montepy.input_parser.input_syntax_reader.read_data
    montepy.input_parser.input_syntax_reader.read_front_matters
    montepy.surfaces.surface_builder.parse_surface
+
+Type Aliases
+^^^^^^^^^^^^
+
+.. autodata:: montepy.mcnp_object.InitInput
+   :no-value:
 
 Parser Data Types
 ^^^^^^^^^^^^^^^^^
