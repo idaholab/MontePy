@@ -89,7 +89,9 @@ class _SurfaceClassFactory(_ExceptionContextAdder):
         attr_name = f"_{param.name}"
         base_func = metacls.gen_tuple_getter(attr_name)
         base_func.__name__ = param.name
-        base_func.__doc__ = base_func.__doc__.format(**asdict(param))
+        base_func.__doc__ = base_func.__doc__.format(
+            **{"tuple_str": ", ".join(["float"] * param.tuple_length)} | asdict(param)
+        )
         setter = metacls.gen_tuple_setter(
             attr_name,
             param.tuple_length,
@@ -126,7 +128,7 @@ class _SurfaceClassFactory(_ExceptionContextAdder):
 
             Returns
             -------
-            tuple[{{", ".join(["float"] * tuple_length)}}]
+            tuple[{tuple_str}]
             """
             data = getattr(self, hidden_param)
             return tuple(x.value for x in data)
