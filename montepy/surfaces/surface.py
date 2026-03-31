@@ -162,7 +162,7 @@ class _SurfaceClassFactory(_ExceptionContextAdder):
         return dummy_tuple_setter
 
 
-class Surface(Numbered_MCNP_Object):
+class Surface(Numbered_MCNP_Object, metaclass=_SurfaceClassFactory):
     """Object to hold a single MCNP surface
 
     .. versionchanged:: 1.0.0

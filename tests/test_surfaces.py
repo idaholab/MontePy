@@ -252,6 +252,8 @@ def test_surface_constants_setter():
             surf.surface_constants = "foo"
         with pytest.raises(ValueError):
             surf.surface_constants = [1, "foo"]
+        with pytest.raises(TypeError):
+            surf.surface_constants = ["foo"]
 
 
 def test_surface_number_setter():
@@ -1016,6 +1018,12 @@ def test_torus_minor_radius_mismatch():
     surf = surface_builder("1 TX 0 0 0 5 2 3")
     with pytest.raises(ValueError):
         _ = surf.minor_radius
+    with pytest.raises(ValueError):
+        surf.minor_radius
+    surf = ZTorus()
+    assert surf.minor_radius is None
+    surf.minor_radius_1 = 1.0
+    assert surf.minor_radius is None
 
 
 def test_torus_minor_radius_setter_syncs_both():
