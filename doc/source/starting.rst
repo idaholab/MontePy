@@ -505,7 +505,7 @@ and for data inputs this is :func:`~montepy.data_inputs.data_parser.parse_data`.
 
    >>> surf = montepy.parse_surface("1 cz 5.0")
    >>> type(surf)
-   <class 'montepy.surfaces.cylinder_on_axis.CylinderOnAxis'>
+   <class 'montepy.surfaces.surface.ZCylinder'>
    >>> surf.radius
    5.0
    >>> mat = montepy.parse_data("m1 1001.80c 1")
