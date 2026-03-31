@@ -271,6 +271,7 @@ class Surface(Numbered_MCNP_Object):
         self._load_params()
 
     def _load_params(self):
+        self._enforce_constants()
         for param_loader in self._PARAM_LOADERS:
             data = self._surface_constants[
                 param_loader.start_idx : param_loader.start_idx
@@ -281,6 +282,9 @@ class Surface(Numbered_MCNP_Object):
             else:
                 data = data[0]
             setattr(self, param_loader.attr_name, data)
+
+    def _enforce_constants(self, _validation_call=False):
+        pass
 
     @classmethod
     def _number_of_params(cls):
@@ -717,8 +721,56 @@ class CylinderOnAxis(
 # XCylinder, YCylinder, ZCylinder  (CX, CY, CZ — axis-specific)
 # ---------------------------------------------------------------------------
 
+_x_cylinder_spec = _SurfaceTypeSpec(
+    surface_types={SurfaceType.CX},
+    num_param_values=1,
+    params=[
+        _SurfaceParamSpec(
+            name="radius",
+            start_idx=0,
+            description="The radius :math:`R` of the cylinder",
+            types=(float, int),
+            base_type=float,
+            validator=_enforce_positive_radius,
+        ),
+    ],
+    equation=lambda x, y, z, c: y**2 + z**2 - c[0] ** 2,
+)
 
-class XCylinder(CylinderOnAxis):
+_y_cylinder_spec = _SurfaceTypeSpec(
+    surface_types={SurfaceType.CY},
+    num_param_values=1,
+    params=[
+        _SurfaceParamSpec(
+            name="radius",
+            start_idx=0,
+            description="The radius :math:`R` of the cylinder",
+            types=(float, int),
+            base_type=float,
+            validator=_enforce_positive_radius,
+        ),
+    ],
+    equation=lambda x, y, z, c: x**2 + z**2 - c[0] ** 2,
+)
+
+_z_cylinder_spec = _SurfaceTypeSpec(
+    surface_types={SurfaceType.CZ},
+    num_param_values=1,
+    params=[
+        _SurfaceParamSpec(
+            name="radius",
+            start_idx=0,
+            description="The radius :math:`R` of the cylinder",
+            types=(float, int),
+            base_type=float,
+            validator=_enforce_positive_radius,
+        ),
+    ],
+    equation=lambda x, y, z, c: x**2 + y**2 - c[0] ** 2,
+)
+
+
+class XCylinder(CylinderOnAxis, metaclass=_SurfaceClassFactory, spec=_x_cylinder_spec):
     """Represents surface CX: an infinite cylinder whose axis is the X-axis.
 
     The surface equation is:
@@ -737,10 +789,8 @@ class XCylinder(CylinderOnAxis):
         The number to set for this object.
     """
 
-    _ALLOWED_SURFACE_TYPES = {SurfaceType.CX}
 
-
-class YCylinder(CylinderOnAxis):
+class YCylinder(CylinderOnAxis, metaclass=_SurfaceClassFactory, spec=_y_cylinder_spec):
     """Represents surface CY: an infinite cylinder whose axis is the Y-axis.
 
     The surface equation is:
@@ -759,10 +809,8 @@ class YCylinder(CylinderOnAxis):
         The number to set for this object.
     """
 
-    _ALLOWED_SURFACE_TYPES = {SurfaceType.CY}
 
-
-class ZCylinder(CylinderOnAxis):
+class ZCylinder(CylinderOnAxis, metaclass=_SurfaceClassFactory, spec=_z_cylinder_spec):
     """Represents surface CZ: an infinite cylinder whose axis is the Z-axis.
 
     The surface equation is:
@@ -780,8 +828,6 @@ class ZCylinder(CylinderOnAxis):
     number : int
         The number to set for this object.
     """
-
-    _ALLOWED_SURFACE_TYPES = {SurfaceType.CZ}
 
 
 # ---------------------------------------------------------------------------
@@ -1330,10 +1376,6 @@ class GeneralPlane(Surface, metaclass=_SurfaceClassFactory, spec=_general_plane_
 
     _VARIABLE_NUM_PARAMS = True
 
-    def _load_params(self):
-        self._enforce_constants()
-        super()._load_params()
-
     def validate(self):
         super().validate()
         self._enforce_constants(_validation_call=True)
@@ -1775,8 +1817,22 @@ class ConeOnAxis(Surface, metaclass=_SurfaceClassFactory, spec=_cone_on_axis_spe
     COORDINATE = {SurfaceType.KX: "x", SurfaceType.KY: "y", SurfaceType.KZ: "z"}
     """Maps surface type to the axis name for the cone's apex."""
 
+    _VARIABLE_NUM_PARAMS = True
+
+    def _enforce_constants(self, _validation_call=False):
+        n = len(self.surface_constants)
+        if n not in {2, 3}:
+            message = (
+                f"A {type(self).__name__} must have 2 or 3 surface constants "
+                f"(2 required + optional nappe flag), but {n} were given."
+            )
+            if not _validation_call:
+                raise ValueError(message)
+            raise IllegalState(message)
+
     def validate(self):
         super().validate()
+        self._enforce_constants(_validation_call=True)
         if self.apex is None:
             raise IllegalState(f"Surface: {self.number} does not have an apex set.")
         if self.t_squared is None:
@@ -2025,8 +2081,22 @@ class ConeParAxis(Surface, metaclass=_SurfaceClassFactory, spec=_cone_par_axis_s
         The surface_type to set for this object
     """
 
+    _VARIABLE_NUM_PARAMS = True
+
+    def _enforce_constants(self, _validation_call=False):
+        n = len(self.surface_constants)
+        if n not in {4, 5}:
+            message = (
+                f"A {type(self).__name__} must have 4 or 5 surface constants "
+                f"(4 required + optional nappe flag), but {n} were given."
+            )
+            if not _validation_call:
+                raise ValueError(message)
+            raise IllegalState(message)
+
     def validate(self):
         super().validate()
+        self._enforce_constants(_validation_call=True)
         if any(c is None for c in self.apex):
             raise IllegalState(f"Surface: {self.number} does not have an apex set.")
         if self.t_squared is None:
@@ -2037,8 +2107,151 @@ class ConeParAxis(Surface, metaclass=_SurfaceClassFactory, spec=_cone_par_axis_s
 # XConeParAxis, YConeParAxis, ZConeParAxis  (axis-specific)
 # ---------------------------------------------------------------------------
 
+_x_cone_par_axis_spec = _SurfaceTypeSpec(
+    surface_types={SurfaceType.K_X},
+    num_param_values=4,
+    params=[
+        _SurfaceParamSpec(
+            name="x",
+            start_idx=0,
+            description="The :math:`x`-coordinate of the cone apex :math:`x_0`",
+            types=(float, int),
+            base_type=float,
+        ),
+        _SurfaceParamSpec(
+            name="y",
+            start_idx=1,
+            description="The :math:`y`-coordinate of the cone apex :math:`y_0`",
+            types=(float, int),
+            base_type=float,
+        ),
+        _SurfaceParamSpec(
+            name="z",
+            start_idx=2,
+            description="The :math:`z`-coordinate of the cone apex :math:`z_0`",
+            types=(float, int),
+            base_type=float,
+        ),
+        _SurfaceParamSpec(
+            name="apex",
+            start_idx=0,
+            is_tuple=True,
+            tuple_length=3,
+            description="Apex coordinates :math:`(x_0, y_0, z_0)` of the cone",
+            types=(float, int),
+            base_type=float,
+        ),
+        _SurfaceParamSpec(
+            name="t_squared",
+            start_idx=3,
+            description=r"The squared tangent of the half-angle :math:`t^2`",
+            types=(float, int),
+            base_type=float,
+        ),
+    ],
+    equation=lambda x, y, z, c: (y - c[1]) ** 2
+    + (z - c[2]) ** 2
+    - c[3] * (x - c[0]) ** 2,
+)
 
-class XConeParAxis(ConeParAxis):
+_y_cone_par_axis_spec = _SurfaceTypeSpec(
+    surface_types={SurfaceType.K_Y},
+    num_param_values=4,
+    params=[
+        _SurfaceParamSpec(
+            name="x",
+            start_idx=0,
+            description="The :math:`x`-coordinate of the cone apex :math:`x_0`",
+            types=(float, int),
+            base_type=float,
+        ),
+        _SurfaceParamSpec(
+            name="y",
+            start_idx=1,
+            description="The :math:`y`-coordinate of the cone apex :math:`y_0`",
+            types=(float, int),
+            base_type=float,
+        ),
+        _SurfaceParamSpec(
+            name="z",
+            start_idx=2,
+            description="The :math:`z`-coordinate of the cone apex :math:`z_0`",
+            types=(float, int),
+            base_type=float,
+        ),
+        _SurfaceParamSpec(
+            name="apex",
+            start_idx=0,
+            is_tuple=True,
+            tuple_length=3,
+            description="Apex coordinates :math:`(x_0, y_0, z_0)` of the cone",
+            types=(float, int),
+            base_type=float,
+        ),
+        _SurfaceParamSpec(
+            name="t_squared",
+            start_idx=3,
+            description=r"The squared tangent of the half-angle :math:`t^2`",
+            types=(float, int),
+            base_type=float,
+        ),
+    ],
+    equation=lambda x, y, z, c: (x - c[0]) ** 2
+    + (z - c[2]) ** 2
+    - c[3] * (y - c[1]) ** 2,
+)
+
+_z_cone_par_axis_spec = _SurfaceTypeSpec(
+    surface_types={SurfaceType.K_Z},
+    num_param_values=4,
+    params=[
+        _SurfaceParamSpec(
+            name="x",
+            start_idx=0,
+            description="The :math:`x`-coordinate of the cone apex :math:`x_0`",
+            types=(float, int),
+            base_type=float,
+        ),
+        _SurfaceParamSpec(
+            name="y",
+            start_idx=1,
+            description="The :math:`y`-coordinate of the cone apex :math:`y_0`",
+            types=(float, int),
+            base_type=float,
+        ),
+        _SurfaceParamSpec(
+            name="z",
+            start_idx=2,
+            description="The :math:`z`-coordinate of the cone apex :math:`z_0`",
+            types=(float, int),
+            base_type=float,
+        ),
+        _SurfaceParamSpec(
+            name="apex",
+            start_idx=0,
+            is_tuple=True,
+            tuple_length=3,
+            description="Apex coordinates :math:`(x_0, y_0, z_0)` of the cone",
+            types=(float, int),
+            base_type=float,
+        ),
+        _SurfaceParamSpec(
+            name="t_squared",
+            start_idx=3,
+            description=r"The squared tangent of the half-angle :math:`t^2`",
+            types=(float, int),
+            base_type=float,
+        ),
+    ],
+    equation=lambda x, y, z, c: (x - c[0]) ** 2
+    + (y - c[1]) ** 2
+    - c[3] * (z - c[2]) ** 2,
+)
+
+
+class XConeParAxis(
+    ConeParAxis, metaclass=_SurfaceClassFactory, spec=_x_cone_par_axis_spec
+):
     """Represents surface K/X: a cone whose axis is parallel to the X-axis
     with its apex at an arbitrary point :math:`(x_0, y_0, z_0)`.
 
@@ -2061,10 +2274,10 @@ class XConeParAxis(ConeParAxis):
         The number to set for this object.
     """
 
-    _ALLOWED_SURFACE_TYPES = {SurfaceType.K_X}
 
-
-class YConeParAxis(ConeParAxis):
+class YConeParAxis(
+    ConeParAxis, metaclass=_SurfaceClassFactory, spec=_y_cone_par_axis_spec
+):
     """Represents surface K/Y: a cone whose axis is parallel to the Y-axis
     with its apex at an arbitrary point :math:`(x_0, y_0, z_0)`.
 
@@ -2087,10 +2300,10 @@ class YConeParAxis(ConeParAxis):
         The number to set for this object.
     """
 
-    _ALLOWED_SURFACE_TYPES = {SurfaceType.K_Y}
 
-
-class ZConeParAxis(ConeParAxis):
+class ZConeParAxis(
+    ConeParAxis, metaclass=_SurfaceClassFactory, spec=_z_cone_par_axis_spec
+):
     """Represents surface K/Z: a cone whose axis is parallel to the Z-axis
     with its apex at an arbitrary point :math:`(x_0, y_0, z_0)`.
 
@@ -2112,8 +2325,6 @@ class ZConeParAxis(ConeParAxis):
     number : int
         The number to set for this object.
     """
-
-    _ALLOWED_SURFACE_TYPES = {SurfaceType.K_Z}
 
 
 # ---------------------------------------------------------------------------
@@ -2476,6 +2687,35 @@ class Torus(Surface, metaclass=_SurfaceClassFactory, spec=_torus_spec):
         The surface_type to set for this object
     """
 
+    _VARIABLE_NUM_PARAMS = True
+
+    @property
+    def sign(self):
+        """The optional sign flag selecting which nappe of the torus is used.
+
+        A value of ``+1`` selects the outer nappe and ``-1`` the inner nappe.
+        Returns ``None`` if the flag was not specified in the input.
+
+        Returns
+        -------
+        int or None
+        """
+        sc = self.surface_constants
+        if len(sc) > 6:
+            return sc[6]
+        return None
+
+    def _enforce_constants(self, _validation_call=False):
+        n = len(self.surface_constants)
+        if n not in {6, 7}:
+            message = (
+                f"A {type(self).__name__} must have 6 or 7 surface constants "
+                f"(6 required + optional sign flag), but {n} were given."
+            )
+            if not _validation_call:
+                raise ValueError(message)
+            raise IllegalState(message)
+
     @property
     def minor_radius(self):
         """The minor radius of the torus when the tube cross-section is
@@ -2518,6 +2758,7 @@ class Torus(Surface, metaclass=_SurfaceClassFactory, spec=_torus_spec):
 
     def validate(self):
         super().validate()
+        self._enforce_constants(_validation_call=True)
         if any(c is None for c in self.center):
             raise IllegalState(f"Surface: {self.number} does not have a center set.")
         if self.major_radius is None:
@@ -2532,8 +2773,233 @@ class Torus(Surface, metaclass=_SurfaceClassFactory, spec=_torus_spec):
 # XTorus, YTorus, ZTorus  (TX, TY, TZ — axis-specific)
 # ---------------------------------------------------------------------------
 
+_x_torus_spec = _SurfaceTypeSpec(
+    surface_types={SurfaceType.TX},
+    num_param_values=6,
+    params=[
+        _SurfaceParamSpec(
+            name="x",
+            start_idx=0,
+            description="The :math:`x`-coordinate of the torus center",
+            types=(float, int),
+            base_type=float,
+        ),
+        _SurfaceParamSpec(
+            name="y",
+            start_idx=1,
+            description="The :math:`y`-coordinate of the torus center",
+            types=(float, int),
+            base_type=float,
+        ),
+        _SurfaceParamSpec(
+            name="z",
+            start_idx=2,
+            description="The :math:`z`-coordinate of the torus center",
+            types=(float, int),
+            base_type=float,
+        ),
+        _SurfaceParamSpec(
+            name="center",
+            start_idx=0,
+            is_tuple=True,
+            tuple_length=3,
+            description="Center coordinates :math:`(x_0, y_0, z_0)` of the torus",
+            types=(float, int),
+            base_type=float,
+        ),
+        _SurfaceParamSpec(
+            name="major_radius",
+            start_idx=3,
+            description="Major radius :math:`A`: distance from the torus center to the tube center",
+            types=(float, int),
+            base_type=float,
+            validator=_enforce_positive_radius,
+        ),
+        _SurfaceParamSpec(
+            name="minor_radii",
+            start_idx=4,
+            is_tuple=True,
+            tuple_length=2,
+            description=r"Minor radii :math:`(B, C)` of the tube cross-section",
+            types=(float, int),
+            base_type=float,
+            validator=_enforce_positive_radius,
+        ),
+        _SurfaceParamSpec(
+            name="minor_radius_1",
+            start_idx=4,
+            description="Minor radius :math:`B` perpendicular to the torus axis",
+            types=(float, int),
+            base_type=float,
+            validator=_enforce_positive_radius,
+        ),
+        _SurfaceParamSpec(
+            name="minor_radius_2",
+            start_idx=5,
+            description="Minor radius :math:`C` parallel to the torus axis",
+            types=(float, int),
+            base_type=float,
+            validator=_enforce_positive_radius,
+        ),
+    ],
+    equation=lambda x, y, z, c: (np.sqrt((y - c[1]) ** 2 + (z - c[2]) ** 2) - c[3]) ** 2
+    / c[4] ** 2
+    + (x - c[0]) ** 2 / c[5] ** 2
+    - 1,
+)
 
-class XTorus(Torus):
+_y_torus_spec = _SurfaceTypeSpec(
+    surface_types={SurfaceType.TY},
+    num_param_values=6,
+    params=[
+        _SurfaceParamSpec(
+            name="x",
+            start_idx=0,
+            description="The :math:`x`-coordinate of the torus center",
+            types=(float, int),
+            base_type=float,
+        ),
+        _SurfaceParamSpec(
+            name="y",
+            start_idx=1,
+            description="The :math:`y`-coordinate of the torus center",
+            types=(float, int),
+            base_type=float,
+        ),
+        _SurfaceParamSpec(
+            name="z",
+            start_idx=2,
+            description="The :math:`z`-coordinate of the torus center",
+            types=(float, int),
+            base_type=float,
+        ),
+        _SurfaceParamSpec(
+            name="center",
+            start_idx=0,
+            is_tuple=True,
+            tuple_length=3,
+            description="Center coordinates :math:`(x_0, y_0, z_0)` of the torus",
+            types=(float, int),
+            base_type=float,
+        ),
+        _SurfaceParamSpec(
+            name="major_radius",
+            start_idx=3,
+            description="Major radius :math:`A`: distance from the torus center to the tube center",
+            types=(float, int),
+            base_type=float,
+            validator=_enforce_positive_radius,
+        ),
+        _SurfaceParamSpec(
+            name="minor_radii",
+            start_idx=4,
+            is_tuple=True,
+            tuple_length=2,
+            description=r"Minor radii :math:`(B, C)` of the tube cross-section",
+            types=(float, int),
+            base_type=float,
+            validator=_enforce_positive_radius,
+        ),
+        _SurfaceParamSpec(
+            name="minor_radius_1",
+            start_idx=4,
+            description="Minor radius :math:`B` perpendicular to the torus axis",
+            types=(float, int),
+            base_type=float,
+            validator=_enforce_positive_radius,
+        ),
+        _SurfaceParamSpec(
+            name="minor_radius_2",
+            start_idx=5,
+            description="Minor radius :math:`C` parallel to the torus axis",
+            types=(float, int),
+            base_type=float,
+            validator=_enforce_positive_radius,
+        ),
+    ],
+    equation=lambda x, y, z, c: (np.sqrt((x - c[0]) ** 2 + (z - c[2]) ** 2) - c[3]) ** 2
+    / c[4] ** 2
+    + (y - c[1]) ** 2 / c[5] ** 2
+    - 1,
+)
+
+_z_torus_spec = _SurfaceTypeSpec(
+    surface_types={SurfaceType.TZ},
+    num_param_values=6,
+    params=[
+        _SurfaceParamSpec(
+            name="x",
+            start_idx=0,
+            description="The :math:`x`-coordinate of the torus center",
+            types=(float, int),
+            base_type=float,
+        ),
+        _SurfaceParamSpec(
+            name="y",
+            start_idx=1,
+            description="The :math:`y`-coordinate of the torus center",
+            types=(float, int),
+            base_type=float,
+        ),
+        _SurfaceParamSpec(
+            name="z",
+            start_idx=2,
+            description="The :math:`z`-coordinate of the torus center",
+            types=(float, int),
+            base_type=float,
+        ),
+        _SurfaceParamSpec(
+            name="center",
+            start_idx=0,
+            is_tuple=True,
+            tuple_length=3,
+            description="Center coordinates :math:`(x_0, y_0, z_0)` of the torus",
+            types=(float, int),
+            base_type=float,
+        ),
+        _SurfaceParamSpec(
+            name="major_radius",
+            start_idx=3,
+            description="Major radius :math:`A`: distance from the torus center to the tube center",
+            types=(float, int),
+            base_type=float,
+            validator=_enforce_positive_radius,
+        ),
+        _SurfaceParamSpec(
+            name="minor_radii",
+            start_idx=4,
+            is_tuple=True,
+            tuple_length=2,
+            description=r"Minor radii :math:`(B, C)` of the tube cross-section",
+            types=(float, int),
+            base_type=float,
+            validator=_enforce_positive_radius,
+        ),
+        _SurfaceParamSpec(
+            name="minor_radius_1",
+            start_idx=4,
+            description="Minor radius :math:`B` perpendicular to the torus axis",
+            types=(float, int),
+            base_type=float,
+            validator=_enforce_positive_radius,
+        ),
+        _SurfaceParamSpec(
+            name="minor_radius_2",
+            start_idx=5,
+            description="Minor radius :math:`C` parallel to the torus axis",
+            types=(float, int),
+            base_type=float,
+            validator=_enforce_positive_radius,
+        ),
+    ],
+    equation=lambda x, y, z, c: (np.sqrt((x - c[0]) ** 2 + (y - c[1]) ** 2) - c[3]) ** 2
+    / c[4] ** 2
+    + (z - c[2]) ** 2 / c[5] ** 2
+    - 1,
+)
+
+
+class XTorus(Torus, metaclass=_SurfaceClassFactory, spec=_x_torus_spec):
     """Represents surface TX: a torus whose axis of symmetry is the X-axis.
 
     The surface equation is:
@@ -2554,10 +3020,8 @@ class XTorus(Torus):
         The number to set for this object.
     """
 
-    _ALLOWED_SURFACE_TYPES = {SurfaceType.TX}
 
-
-class YTorus(Torus):
+class YTorus(Torus, metaclass=_SurfaceClassFactory, spec=_y_torus_spec):
     """Represents surface TY: a torus whose axis of symmetry is the Y-axis.
 
     The surface equation is:
@@ -2578,10 +3042,8 @@ class YTorus(Torus):
         The number to set for this object.
     """
 
-    _ALLOWED_SURFACE_TYPES = {SurfaceType.TY}
 
-
-class ZTorus(Torus):
+class ZTorus(Torus, metaclass=_SurfaceClassFactory, spec=_z_torus_spec):
     """Represents surface TZ: a torus whose axis of symmetry is the Z-axis.
 
     The surface equation is:
@@ -2601,8 +3063,6 @@ class ZTorus(Torus):
     number : int
         The number to set for this object.
     """
-
-    _ALLOWED_SURFACE_TYPES = {SurfaceType.TZ}
 
 
 # ---------------------------------------------------------------------------
