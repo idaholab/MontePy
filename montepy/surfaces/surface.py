@@ -557,6 +557,11 @@ class Surface(Numbered_MCNP_Object):
             raise IllegalState(
                 f"Surface: {self.number} does not have a surface type set."
             )
+        self._enforce_constants(_validation_call=True)
+        if any(c is None for c in self.surface_constants):
+            raise IllegalState(
+                f"Surface: {self.number} does not have all required constants set."
+            )
 
     def _update_values(self):
         modifier = self._tree["surface_num"]["modifier"]
@@ -711,11 +716,6 @@ class CylinderOnAxis(
         The surface_type to set for this object
     """
 
-    def validate(self):
-        super().validate()
-        if self.radius is None:
-            raise IllegalState(f"Surface: {self.number} does not have a radius set.")
-
 
 # ---------------------------------------------------------------------------
 # XCylinder, YCylinder, ZCylinder  (CX, CY, CZ — axis-specific)
@@ -789,6 +789,8 @@ class XCylinder(CylinderOnAxis, metaclass=_SurfaceClassFactory, spec=_x_cylinder
         The number to set for this object.
     """
 
+    pass
+
 
 class YCylinder(CylinderOnAxis, metaclass=_SurfaceClassFactory, spec=_y_cylinder_spec):
     """Represents surface CY: an infinite cylinder whose axis is the Y-axis.
@@ -809,6 +811,8 @@ class YCylinder(CylinderOnAxis, metaclass=_SurfaceClassFactory, spec=_y_cylinder
         The number to set for this object.
     """
 
+    pass
+
 
 class ZCylinder(CylinderOnAxis, metaclass=_SurfaceClassFactory, spec=_z_cylinder_spec):
     """Represents surface CZ: an infinite cylinder whose axis is the Z-axis.
@@ -828,6 +832,8 @@ class ZCylinder(CylinderOnAxis, metaclass=_SurfaceClassFactory, spec=_z_cylinder
     number : int
         The number to set for this object.
     """
+
+    pass
 
 
 # ---------------------------------------------------------------------------
@@ -898,13 +904,6 @@ class CylinderParAxis(
         SurfaceType.C_Z: {0: "x", 1: "y"},
     }
     """Which coordinate corresponds to which axis for each cylinder type."""
-
-    def validate(self):
-        super().validate()
-        if self.radius is None:
-            raise IllegalState(f"Surface: {self.number} does not have a radius set.")
-        if any(c is None for c in self.coordinates):
-            raise IllegalState(f"Surface: {self.number} does not have coordinates set.")
 
 
 # ---------------------------------------------------------------------------
@@ -1051,6 +1050,8 @@ class XCylinderParAxis(
         The number to set for this object.
     """
 
+    pass
+
 
 class YCylinderParAxis(
     CylinderParAxis, metaclass=_SurfaceClassFactory, spec=_y_cylinder_par_axis_spec
@@ -1073,6 +1074,8 @@ class YCylinderParAxis(
     number : int
         The number to set for this object.
     """
+
+    pass
 
 
 class ZCylinderParAxis(
@@ -1097,6 +1100,8 @@ class ZCylinderParAxis(
         The number to set for this object.
     """
 
+    pass
+
 
 # ---------------------------------------------------------------------------
 # AxisPlane  (PX, PY, PZ)
@@ -1110,6 +1115,13 @@ _axis_plane_spec = _SurfaceTypeSpec(
             name="location",
             start_idx=0,
             description="The location :math:`d` of the plane along the axis",
+            types=(float, int),
+            base_type=float,
+        ),
+        _SurfaceParamSpec(
+            name="d",
+            start_idx=0,
+            description="Alias for :attr:`location` following MCNP manual notation (:math:`d`).",
             types=(float, int),
             base_type=float,
         ),
@@ -1149,25 +1161,6 @@ class AxisPlane(Surface, metaclass=_SurfaceClassFactory, spec=_axis_plane_spec):
 
     COORDINATE = {SurfaceType.PX: "x", SurfaceType.PY: "y", SurfaceType.PZ: "z"}
     """Maps surface type to the axis name for the plane's location."""
-
-    @property
-    def d(self):
-        """Alias for :attr:`location` following MCNP manual notation (:math:`d`).
-
-        Returns
-        -------
-        float
-        """
-        return self.location
-
-    @d.setter
-    def d(self, value):
-        self.location = value
-
-    def validate(self):
-        super().validate()
-        if self.location is None:
-            raise IllegalState(f"Surface: {self.number} does not have a location set.")
 
 
 # ---------------------------------------------------------------------------
@@ -1260,6 +1253,8 @@ class XPlane(AxisPlane, metaclass=_SurfaceClassFactory, spec=_x_plane_spec):
         The number to set for this object.
     """
 
+    pass
+
 
 class YPlane(AxisPlane, metaclass=_SurfaceClassFactory, spec=_y_plane_spec):
     """Represents surface PY: a plane normal to the Y-axis.
@@ -1280,6 +1275,8 @@ class YPlane(AxisPlane, metaclass=_SurfaceClassFactory, spec=_y_plane_spec):
         The number to set for this object.
     """
 
+    pass
+
 
 class ZPlane(AxisPlane, metaclass=_SurfaceClassFactory, spec=_z_plane_spec):
     """Represents surface PZ: a plane normal to the Z-axis.
@@ -1299,6 +1296,8 @@ class ZPlane(AxisPlane, metaclass=_SurfaceClassFactory, spec=_z_plane_spec):
     number : int
         The number to set for this object.
     """
+
+    pass
 
 
 # ---------------------------------------------------------------------------
@@ -1376,14 +1375,6 @@ class GeneralPlane(Surface, metaclass=_SurfaceClassFactory, spec=_general_plane_
 
     _VARIABLE_NUM_PARAMS = True
 
-    def validate(self):
-        super().validate()
-        self._enforce_constants(_validation_call=True)
-        if any(c is None for c in (self.A, self.B, self.C, self.D)):
-            raise IllegalState(
-                f"Surface: {self.number} does not have all plane coefficients (A, B, C, D) set."
-            )
-
     def _enforce_constants(self, _validation_call=False):
         if len(self.surface_constants) not in {4, 9}:
             message = (
@@ -1441,10 +1432,7 @@ class SphereAtOrigin(
         The number to set for this object.
     """
 
-    def validate(self):
-        super().validate()
-        if self.radius is None:
-            raise IllegalState(f"Surface: {self.number} does not have a radius set.")
+    pass
 
 
 # ---------------------------------------------------------------------------
@@ -1529,12 +1517,7 @@ class GeneralSphere(Surface, metaclass=_SurfaceClassFactory, spec=_general_spher
         The number to set for this object.
     """
 
-    def validate(self):
-        super().validate()
-        if self.radius is None:
-            raise IllegalState(f"Surface: {self.number} does not have a radius set.")
-        if any(c is None for c in self.center):
-            raise IllegalState(f"Surface: {self.number} does not have a center set.")
+    pass
 
 
 # ---------------------------------------------------------------------------
@@ -1593,13 +1576,6 @@ class SphereOnAxis(Surface, metaclass=_SurfaceClassFactory, spec=_sphere_on_axis
 
     COORDINATE = {SurfaceType.SX: "x", SurfaceType.SY: "y", SurfaceType.SZ: "z"}
     """Maps surface type to the axis name for the sphere's center."""
-
-    def validate(self):
-        super().validate()
-        if self.location is None:
-            raise IllegalState(f"Surface: {self.number} does not have a location set.")
-        if self.radius is None:
-            raise IllegalState(f"Surface: {self.number} does not have a radius set.")
 
 
 # ---------------------------------------------------------------------------
@@ -1716,6 +1692,8 @@ class XSphere(SphereOnAxis, metaclass=_SurfaceClassFactory, spec=_x_sphere_spec)
         The number to set for this object.
     """
 
+    pass
+
 
 class YSphere(SphereOnAxis, metaclass=_SurfaceClassFactory, spec=_y_sphere_spec):
     """Represents surface SY: a sphere centered on the Y-axis.
@@ -1736,6 +1714,8 @@ class YSphere(SphereOnAxis, metaclass=_SurfaceClassFactory, spec=_y_sphere_spec)
         The number to set for this object.
     """
 
+    pass
+
 
 class ZSphere(SphereOnAxis, metaclass=_SurfaceClassFactory, spec=_z_sphere_spec):
     """Represents surface SZ: a sphere centered on the Z-axis.
@@ -1755,6 +1735,8 @@ class ZSphere(SphereOnAxis, metaclass=_SurfaceClassFactory, spec=_z_sphere_spec)
     number : int
         The number to set for this object.
     """
+
+    pass
 
 
 # ---------------------------------------------------------------------------
@@ -1802,7 +1784,7 @@ class ConeOnAxis(Surface, metaclass=_SurfaceClassFactory, spec=_cone_on_axis_spe
         Instead :class:`~montepy.XCone`, :class:`~montepy.YCone`, and :class:`~montepy.ZCone` are preferred.
         There is no plan at this time to deprecate this class, but its use is not going to be promoted.
 
-    .. versionadded:: 1.3.0
+    .. versionadded:: 1.4.0
 
     Parameters
     ----------
@@ -1865,14 +1847,6 @@ class ConeOnAxis(Surface, metaclass=_SurfaceClassFactory, spec=_cone_on_axis_spe
             if not _validation_call:
                 raise ValueError(message)
             raise IllegalState(message)
-
-    def validate(self):
-        super().validate()
-        self._enforce_constants(_validation_call=True)
-        if self.apex is None:
-            raise IllegalState(f"Surface: {self.number} does not have an apex set.")
-        if self.t_squared is None:
-            raise IllegalState(f"Surface: {self.number} does not have t_squared set.")
 
 
 # ---------------------------------------------------------------------------
@@ -1989,6 +1963,8 @@ class XCone(ConeOnAxis, metaclass=_SurfaceClassFactory, spec=_x_cone_spec):
         The number to set for this object.
     """
 
+    pass
+
 
 class YCone(ConeOnAxis, metaclass=_SurfaceClassFactory, spec=_y_cone_spec):
     """Represents surface KY: a cone whose apex lies on the Y-axis.
@@ -2012,6 +1988,8 @@ class YCone(ConeOnAxis, metaclass=_SurfaceClassFactory, spec=_y_cone_spec):
         The number to set for this object.
     """
 
+    pass
+
 
 class ZCone(ConeOnAxis, metaclass=_SurfaceClassFactory, spec=_z_cone_spec):
     """Represents surface KZ: a cone whose apex lies on the Z-axis.
@@ -2034,6 +2012,8 @@ class ZCone(ConeOnAxis, metaclass=_SurfaceClassFactory, spec=_z_cone_spec):
     number : int
         The number to set for this object.
     """
+
+    pass
 
 
 # ---------------------------------------------------------------------------
@@ -2105,7 +2085,7 @@ class ConeParAxis(Surface, metaclass=_SurfaceClassFactory, spec=_cone_par_axis_s
         Instead :class:`~montepy.XConeParAxis`, :class:`~montepy.YConeParAxis`, and :class:`~montepy.ZConeParAxis` are preferred.
         There is no plan at this time to deprecate this class, but its use is not going to be promoted.
 
-    .. versionadded:: 1.3.0
+    .. versionadded:: 1.4.0
 
     Parameters
     ----------
@@ -2165,14 +2145,6 @@ class ConeParAxis(Surface, metaclass=_SurfaceClassFactory, spec=_cone_par_axis_s
             if not _validation_call:
                 raise ValueError(message)
             raise IllegalState(message)
-
-    def validate(self):
-        super().validate()
-        self._enforce_constants(_validation_call=True)
-        if any(c is None for c in self.apex):
-            raise IllegalState(f"Surface: {self.number} does not have an apex set.")
-        if self.t_squared is None:
-            raise IllegalState(f"Surface: {self.number} does not have t_squared set.")
 
 
 # ---------------------------------------------------------------------------
@@ -2346,6 +2318,8 @@ class XConeParAxis(
         The number to set for this object.
     """
 
+    pass
+
 
 class YConeParAxis(
     ConeParAxis, metaclass=_SurfaceClassFactory, spec=_y_cone_par_axis_spec
@@ -2372,6 +2346,8 @@ class YConeParAxis(
         The number to set for this object.
     """
 
+    pass
+
 
 class ZConeParAxis(
     ConeParAxis, metaclass=_SurfaceClassFactory, spec=_z_cone_par_axis_spec
@@ -2397,6 +2373,8 @@ class ZConeParAxis(
     number : int
         The number to set for this object.
     """
+
+    pass
 
 
 # ---------------------------------------------------------------------------
@@ -2510,7 +2488,7 @@ class AxisAlignedQuadric(
         A(x-x_0)^2 + B(y-y_0)^2 + C(z-z_0)^2
         + D(x-x_0) + E(y-y_0) + F(z-z_0) + G = 0
 
-    .. versionadded:: 1.3.0
+    .. versionadded:: 1.4.0
 
     Parameters
     ----------
@@ -2520,15 +2498,7 @@ class AxisAlignedQuadric(
         The number to set for this object.
     """
 
-    def validate(self):
-        super().validate()
-        for name in ("A", "B", "C", "D", "E", "F", "G"):
-            if getattr(self, name) is None:
-                raise IllegalState(
-                    f"Surface: {self.number} coefficient {name} is not set."
-                )
-        if any(c is None for c in self.center):
-            raise IllegalState(f"Surface: {self.number} does not have a center set.")
+    pass
 
 
 # ---------------------------------------------------------------------------
@@ -2635,7 +2605,7 @@ class GeneralQuadric(
 
         Ax^2 + By^2 + Cz^2 + Dxy + Eyz + Fxz + Gx + Hy + Jz + K = 0
 
-    .. versionadded:: 1.3.0
+    .. versionadded:: 1.4.0
 
     Parameters
     ----------
@@ -2645,13 +2615,7 @@ class GeneralQuadric(
         The number to set for this object.
     """
 
-    def validate(self):
-        super().validate()
-        for name in ("A", "B", "C", "D", "E", "F", "G", "H", "J", "K"):
-            if getattr(self, name) is None:
-                raise IllegalState(
-                    f"Surface: {self.number} coefficient {name} is not set."
-                )
+    pass
 
 
 # ---------------------------------------------------------------------------
@@ -2747,7 +2711,7 @@ class Torus(Surface, metaclass=_SurfaceClassFactory, spec=_torus_spec):
         Instead :class:`~montepy.XTorus`, :class:`~montepy.YTorus`, and :class:`~montepy.ZTorus` are preferred.
         There is no plan at this time to deprecate this class, but its use is not going to be promoted.
 
-    .. versionadded:: 1.3.0
+    .. versionadded:: 1.4.0
 
     Parameters
     ----------
@@ -2798,17 +2762,6 @@ class Torus(Surface, metaclass=_SurfaceClassFactory, spec=_torus_spec):
         _enforce_positive_radius(self, value)
         self.minor_radius_1 = value
         self.minor_radius_2 = value
-
-    def validate(self):
-        super().validate()
-        if any(c is None for c in self.center):
-            raise IllegalState(f"Surface: {self.number} does not have a center set.")
-        if self.major_radius is None:
-            raise IllegalState(
-                f"Surface: {self.number} does not have a major_radius set."
-            )
-        if any(r is None for r in self.minor_radii):
-            raise IllegalState(f"Surface: {self.number} does not have minor_radii set.")
 
 
 # ---------------------------------------------------------------------------
@@ -3062,6 +3015,8 @@ class XTorus(Torus, metaclass=_SurfaceClassFactory, spec=_x_torus_spec):
         The number to set for this object.
     """
 
+    pass
+
 
 class YTorus(Torus, metaclass=_SurfaceClassFactory, spec=_y_torus_spec):
     """Represents surface TY: a torus whose axis of symmetry is the Y-axis.
@@ -3084,6 +3039,8 @@ class YTorus(Torus, metaclass=_SurfaceClassFactory, spec=_y_torus_spec):
         The number to set for this object.
     """
 
+    pass
+
 
 class ZTorus(Torus, metaclass=_SurfaceClassFactory, spec=_z_torus_spec):
     """Represents surface TZ: a torus whose axis of symmetry is the Z-axis.
@@ -3105,6 +3062,8 @@ class ZTorus(Torus, metaclass=_SurfaceClassFactory, spec=_z_torus_spec):
     number : int
         The number to set for this object.
     """
+
+    pass
 
 
 # ---------------------------------------------------------------------------
@@ -3159,7 +3118,7 @@ class Box(Surface, metaclass=_SurfaceClassFactory, spec=_box_spec):
     """Represents macrobody BOX: a general orthogonal box defined by a corner
     point and three edge vectors.
 
-    .. versionadded:: 1.3.0
+    .. versionadded:: 1.4.0
 
     Parameters
     ----------
@@ -3169,10 +3128,7 @@ class Box(Surface, metaclass=_SurfaceClassFactory, spec=_box_spec):
         The number to set for this object.
     """
 
-    def validate(self):
-        super().validate()
-        if any(c is None for c in self.corner):
-            raise IllegalState(f"Surface: {self.number} does not have a corner set.")
+    pass
 
 
 # ---------------------------------------------------------------------------
@@ -3262,7 +3218,7 @@ class RectangularParallelepiped(
     """Represents macrobody RPP: an axis-aligned rectangular parallelepiped
     defined by min/max extents on each axis.
 
-    .. versionadded:: 1.3.0
+    .. versionadded:: 1.4.0
 
     Parameters
     ----------
@@ -3272,11 +3228,7 @@ class RectangularParallelepiped(
         The number to set for this object.
     """
 
-    def validate(self):
-        super().validate()
-        for attr in ("x_min", "x_max", "y_min", "y_max", "z_min", "z_max"):
-            if getattr(self, attr) is None:
-                raise IllegalState(f"Surface: {self.number} does not have {attr} set.")
+    pass
 
 
 # ---------------------------------------------------------------------------
@@ -3334,7 +3286,7 @@ class SphereMacrobody(
 ):
     """Represents macrobody SPH: a sphere defined by center and radius.
 
-    .. versionadded:: 1.3.0
+    .. versionadded:: 1.4.0
 
     Parameters
     ----------
@@ -3344,12 +3296,7 @@ class SphereMacrobody(
         The number to set for this object.
     """
 
-    def validate(self):
-        super().validate()
-        if any(c is None for c in self.center):
-            raise IllegalState(f"Surface: {self.number} does not have a center set.")
-        if self.radius is None:
-            raise IllegalState(f"Surface: {self.number} does not have a radius set.")
+    pass
 
 
 # ---------------------------------------------------------------------------
@@ -3415,7 +3362,7 @@ class RightCircularCylinder(Surface, metaclass=_SurfaceClassFactory, spec=_rcc_s
     """Represents macrobody RCC: a right circular cylinder defined by a base
     center, height vector, and radius.
 
-    .. versionadded:: 1.3.0
+    .. versionadded:: 1.4.0
 
     Parameters
     ----------
@@ -3425,16 +3372,7 @@ class RightCircularCylinder(Surface, metaclass=_SurfaceClassFactory, spec=_rcc_s
         The number to set for this object.
     """
 
-    def validate(self):
-        super().validate()
-        if any(c is None for c in self.center):
-            raise IllegalState(f"Surface: {self.number} does not have a center set.")
-        if any(h is None for h in self.height_vector):
-            raise IllegalState(
-                f"Surface: {self.number} does not have a height_vector set."
-            )
-        if self.radius is None:
-            raise IllegalState(f"Surface: {self.number} does not have a radius set.")
+    pass
 
 
 # ---------------------------------------------------------------------------
@@ -3519,7 +3457,7 @@ class RightHexagonalPrism(Surface, metaclass=_SurfaceClassFactory, spec=_rhp_spe
     """Represents macrobodies RHP and HEX: a right hexagonal prism defined by
     a base center, height vector, and three facet vectors.
 
-    .. versionadded:: 1.3.0
+    .. versionadded:: 1.4.0
 
     Parameters
     ----------
@@ -3529,14 +3467,7 @@ class RightHexagonalPrism(Surface, metaclass=_SurfaceClassFactory, spec=_rhp_spe
         The number to set for this object.
     """
 
-    def validate(self):
-        super().validate()
-        if any(c is None for c in self.center):
-            raise IllegalState(f"Surface: {self.number} does not have a center set.")
-        if any(h is None for h in self.height_vector):
-            raise IllegalState(
-                f"Surface: {self.number} does not have a height_vector set."
-            )
+    pass
 
 
 # ---------------------------------------------------------------------------
@@ -3612,7 +3543,7 @@ class RightEllipticalCylinder(Surface, metaclass=_SurfaceClassFactory, spec=_rec
     """Represents macrobody REC: a right elliptical cylinder defined by a base
     center, height vector, and semi-axis vectors.
 
-    .. versionadded:: 1.3.0
+    .. versionadded:: 1.4.0
 
     Parameters
     ----------
@@ -3622,14 +3553,7 @@ class RightEllipticalCylinder(Surface, metaclass=_SurfaceClassFactory, spec=_rec
         The number to set for this object.
     """
 
-    def validate(self):
-        super().validate()
-        if any(c is None for c in self.center):
-            raise IllegalState(f"Surface: {self.number} does not have a center set.")
-        if any(h is None for h in self.height_vector):
-            raise IllegalState(
-                f"Surface: {self.number} does not have a height_vector set."
-            )
+    pass
 
 
 # ---------------------------------------------------------------------------
@@ -3703,7 +3627,7 @@ class TruncatedRightCone(Surface, metaclass=_SurfaceClassFactory, spec=_trc_spec
     """Represents macrobody TRC: a truncated right-angle cone defined by a base
     center, height vector, and two radii.
 
-    .. versionadded:: 1.3.0
+    .. versionadded:: 1.4.0
 
     Parameters
     ----------
@@ -3713,22 +3637,7 @@ class TruncatedRightCone(Surface, metaclass=_SurfaceClassFactory, spec=_trc_spec
         The number to set for this object.
     """
 
-    def validate(self):
-        super().validate()
-        if any(c is None for c in self.center):
-            raise IllegalState(f"Surface: {self.number} does not have a center set.")
-        if any(h is None for h in self.height_vector):
-            raise IllegalState(
-                f"Surface: {self.number} does not have a height_vector set."
-            )
-        if self.base_radius is None:
-            raise IllegalState(
-                f"Surface: {self.number} does not have a base_radius set."
-            )
-        if self.top_radius is None:
-            raise IllegalState(
-                f"Surface: {self.number} does not have a top_radius set."
-            )
+    pass
 
 
 # ---------------------------------------------------------------------------
@@ -3772,7 +3681,7 @@ class Ellipsoid(Surface, metaclass=_SurfaceClassFactory, spec=_ellipsoid_spec):
     """Represents macrobody ELL: an ellipsoid defined by two foci and a
     semi-major axis length.
 
-    .. versionadded:: 1.3.0
+    .. versionadded:: 1.4.0
 
     Parameters
     ----------
@@ -3782,16 +3691,7 @@ class Ellipsoid(Surface, metaclass=_SurfaceClassFactory, spec=_ellipsoid_spec):
         The number to set for this object.
     """
 
-    def validate(self):
-        super().validate()
-        if any(f is None for f in self.focus_1):
-            raise IllegalState(f"Surface: {self.number} does not have focus_1 set.")
-        if any(f is None for f in self.focus_2):
-            raise IllegalState(f"Surface: {self.number} does not have focus_2 set.")
-        if self.semi_major_axis is None:
-            raise IllegalState(
-                f"Surface: {self.number} does not have semi_major_axis set."
-            )
+    pass
 
 
 # ---------------------------------------------------------------------------
@@ -3846,7 +3746,7 @@ class Wedge(Surface, metaclass=_SurfaceClassFactory, spec=_wedge_spec):
     """Represents macrobody WED: a wedge defined by a corner vertex, two base
     edge vectors, and a height vector.
 
-    .. versionadded:: 1.3.0
+    .. versionadded:: 1.4.0
 
     Parameters
     ----------
@@ -3856,14 +3756,7 @@ class Wedge(Surface, metaclass=_SurfaceClassFactory, spec=_wedge_spec):
         The number to set for this object.
     """
 
-    def validate(self):
-        super().validate()
-        if any(c is None for c in self.corner):
-            raise IllegalState(f"Surface: {self.number} does not have a corner set.")
-        if any(h is None for h in self.height_vector):
-            raise IllegalState(
-                f"Surface: {self.number} does not have a height_vector set."
-            )
+    pass
 
 
 # ---------------------------------------------------------------------------
@@ -4000,7 +3893,7 @@ class ArbitraryPolyhedron(Surface, metaclass=_SurfaceClassFactory, spec=_arb_spe
     Each face descriptor is a 4-digit integer whose digits are the 1-based
     vertex indices forming that face (0 if the face has fewer than 4 vertices).
 
-    .. versionadded:: 1.3.0
+    .. versionadded:: 1.4.0
 
     Parameters
     ----------
@@ -4010,7 +3903,4 @@ class ArbitraryPolyhedron(Surface, metaclass=_SurfaceClassFactory, spec=_arb_spe
         The number to set for this object.
     """
 
-    def validate(self):
-        super().validate()
-        if any(v is None for v in self.vertex_1):
-            raise IllegalState(f"Surface: {self.number} does not have vertex_1 set.")
+    pass
