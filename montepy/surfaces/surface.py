@@ -4,11 +4,11 @@ import copy
 from collections.abc import Callable
 from dataclasses import asdict, dataclass
 import math
+import numpy as np
 from typing import Union
 from numbers import Real
 import warnings
 
-import numpy as np
 import montepy
 from montepy.input_parser import syntax_node
 from montepy.exceptions import *
@@ -30,6 +30,8 @@ def _surf_type_validator(self, surf_type):
 
 @dataclass
 class _SurfaceParamSpec:
+    """Specification for a surface type's parameters"""
+
     name: str
     start_idx: int
     description: str
@@ -42,6 +44,8 @@ class _SurfaceParamSpec:
 
 @dataclass
 class _ParamLoader:
+    """Specification for how to load surface_constants into attributes"""
+
     attr_name: str
     is_tuple: bool
     start_idx: int
@@ -50,6 +54,10 @@ class _ParamLoader:
 
 @dataclass
 class _SurfaceTypeSpec:
+    """
+    Specification for a class for a surface type.
+    """
+
     surface_types: Set[SurfaceType]
     num_param_values: int
     params: list[_SurfaceParamSpec]
@@ -57,6 +65,13 @@ class _SurfaceTypeSpec:
 
 
 class _SurfaceClassFactory(_ExceptionContextAdder):
+    """A metaclass for building :class:`Surface` instances.
+
+    This will take a specification and add the necessary properties
+    to the class. It will load the required class attributes so that
+    the init function is able to load the right data into the new attributes.
+    """
+
     def __new__(cls, name, bases, namespace, spec: SurfaceTypeSpec = None, **kwargs):
         if spec is None:
             return super().__new__(cls, name, bases, namespace, **kwargs)
@@ -1360,6 +1375,13 @@ _general_plane_spec = _SurfaceTypeSpec(
             base_type=float,
         ),
         _SurfaceParamSpec(
+            name="offset",
+            start_idx=3,
+            description="Alias for :attr:`D`",
+            types=(float, int),
+            base_type=float,
+        ),
+        _SurfaceParamSpec(
             name="normal",
             start_idx=0,
             is_tuple=True,
@@ -1799,7 +1821,7 @@ class ConeOnAxis(Surface, metaclass=_SurfaceClassFactory, spec=_cone_on_axis_spe
 
     The optional third surface constant selects a single nappe
     (``+1`` upper, ``-1`` lower); omitting it gives both nappes.
-    Access it via ``surface_constants[2]`` if present.
+    Access it via :attr:`sign`.
 
     .. tip::
 
@@ -1975,6 +1997,7 @@ class XCone(ConeOnAxis, metaclass=_SurfaceClassFactory, spec=_x_cone_spec):
 
     The optional third surface constant selects a single nappe
     (``+1`` upper, ``-1`` lower); omitting it gives both nappes.
+    Access it via :attr:`sign`.
 
     .. versionadded:: 1.4.0
 
@@ -1998,8 +2021,9 @@ class YCone(ConeOnAxis, metaclass=_SurfaceClassFactory, spec=_y_cone_spec):
 
         x^2 + z^2 - t^2 (y - a)^2 = 0
 
-    The optional third surface constant selects a single nappe
+    The optional last surface constant selects a single nappe
     (``+1`` upper, ``-1`` lower); omitting it gives both nappes.
+    Access it via :attr:`sign`.
 
     .. versionadded:: 1.4.0
 
@@ -2023,8 +2047,9 @@ class ZCone(ConeOnAxis, metaclass=_SurfaceClassFactory, spec=_z_cone_spec):
 
         x^2 + y^2 - t^2 (z - a)^2 = 0
 
-    The optional third surface constant selects a single nappe
+    The optional last surface constant selects a single nappe
     (``+1`` upper, ``-1`` lower); omitting it gives both nappes.
+    Access it via :attr:`sign`.
 
     .. versionadded:: 1.4.0
 
@@ -2098,9 +2123,9 @@ class ConeParAxis(Surface, metaclass=_SurfaceClassFactory, spec=_cone_par_axis_s
 
         (x - x_0)^2 + (y - y_0)^2 - t^2 (z - z_0)^2 = 0
 
-    The optional fifth surface constant selects a single nappe
+    The optional last surface constant selects a single nappe
     (``+1`` upper, ``-1`` lower); omitting it gives both nappes.
-    Access it via ``surface_constants[4]`` if present.
+    Access it via :attr:`sign`.
 
     .. tip::
 
@@ -2328,8 +2353,9 @@ class XConeParAxis(
 
         (y - y_0)^2 + (z - z_0)^2 - t^2 (x - x_0)^2 = 0
 
-    The optional fifth surface constant selects a single nappe
+    The optional last surface constant selects a single nappe
     (``+1`` upper, ``-1`` lower); omitting it gives both nappes.
+    Access it via :attr:`sign`.
 
     .. versionadded:: 1.4.0
 
@@ -2356,8 +2382,9 @@ class YConeParAxis(
 
         (x - x_0)^2 + (z - z_0)^2 - t^2 (y - y_0)^2 = 0
 
-    The optional fifth surface constant selects a single nappe
+    The optional last surface constant selects a single nappe
     (``+1`` upper, ``-1`` lower); omitting it gives both nappes.
+    Access it via :attr:`sign`.
 
     .. versionadded:: 1.4.0
 
@@ -2384,8 +2411,9 @@ class ZConeParAxis(
 
         (x - x_0)^2 + (y - y_0)^2 - t^2 (z - z_0)^2 = 0
 
-    The optional fifth surface constant selects a single nappe
+    The optional last surface constant selects a single nappe
     (``+1`` upper, ``-1`` lower); omitting it gives both nappes.
+    Access it via :attr:`sign`.
 
     .. versionadded:: 1.4.0
 
@@ -2721,7 +2749,7 @@ class Torus(Surface, metaclass=_SurfaceClassFactory, spec=_torus_spec):
     """Represents surfaces TX, TY, TZ: an elliptical torus whose axis of
     symmetry is parallel to a coordinate axis.
 
-    The surface equation (e.g. for TZ) is:
+    The surface equation (e.g., for TZ) is:
 
     .. math::
 
