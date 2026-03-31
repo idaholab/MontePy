@@ -197,6 +197,15 @@ def test_validator():
     with pytest.raises(IllegalState):
         surf.format_for_mcnp_input(vers)
     surf._surface_type = SurfaceType.P
+    # wrong constant count via _enforce_constants(_validation_call=True) → IllegalState
+    for _ in range(2):
+        node = surf._surface_constants.pop()
+        surf._tree["data"].remove(node)
+    with pytest.raises(IllegalState):
+        surf.validate()
+    # restore and verify None-coefficient path
+    surf = GeneralPlane(number=2)
+    surf._surface_type = SurfaceType.P
     with pytest.raises(IllegalState):
         surf.validate()
     # general sphere
@@ -1211,3 +1220,56 @@ def test_cone_enforce_constants_illegal_state(cls, surf_type, extra_count):
         surf._tree["data"].append(node)
     with pytest.raises(IllegalState):
         surf.validate()
+
+
+def test_find_duplicate_surfaces():
+    """Exercises every branch of Surface.find_duplicate_surfaces."""
+
+    def make_tr(spec):
+        return montepy.data_inputs.data_parser.parse_data(spec)
+
+    # self is periodic — early return
+    self_periodic = surface_builder("1 -2 PZ 0.0")
+    ref = surface_builder("2 PZ 0.0")
+    self_periodic.update_pointers(montepy.Surfaces([ref]), [])
+    assert self_periodic.find_duplicate_surfaces([ref], 1e-6) == []
+
+    # surface == self — skipped
+    s = surface_builder("1 PZ 5.0")
+    assert s.find_duplicate_surfaces([s], 1e-6) == []
+
+    # different surface type — skipped
+    pz = surface_builder("1 PZ 5.0")
+    px = surface_builder("2 PX 5.0")
+    assert pz.find_duplicate_surfaces([px], 1e-6) == []
+
+    # candidate has periodic surface — skipped
+    candidate_periodic = surface_builder("3 -2 PZ 5.0")
+    candidate_periodic.update_pointers(montepy.Surfaces([ref]), [])
+    assert pz.find_duplicate_surfaces([candidate_periodic], 1e-6) == []
+
+    # one has transform, other does not — skipped (both directions)
+    plain = surface_builder("1 PZ 5.0")
+    with_tr = surface_builder("2 10 PZ 5.0")
+    with_tr.update_pointers([], [make_tr("TR10 0 0 0")])
+    assert plain.find_duplicate_surfaces([with_tr], 1e-6) == []
+    assert with_tr.find_duplicate_surfaces([plain], 1e-6) == []
+
+    # both have transforms but they differ — skipped
+    s1 = surface_builder("1 10 PZ 5.0")
+    s2 = surface_builder("2 11 PZ 5.0")
+    s1.update_pointers([], [make_tr("TR10 0 0 0")])
+    s2.update_pointers([], [make_tr("TR11 0 0 99")])
+    assert s1.find_duplicate_surfaces([s2], 1e-6) == []
+
+    # both have equivalent transforms and matching constants — duplicate found
+    s3 = surface_builder("3 12 PZ 5.0")
+    s4 = surface_builder("4 13 PZ 5.0")
+    s3.update_pointers([], [make_tr("TR12 0 0 0")])
+    s4.update_pointers([], [make_tr("TR13 0 0 0")])
+    assert s3.find_duplicate_surfaces([s4], 1e-6) == [s4]
+
+    # no transform, matching constants — duplicate found
+    sa = surface_builder("1 PZ 5.0")
+    sb = surface_builder("2 PZ 5.0")
+    assert sa.find_duplicate_surfaces([sb], 1e-6) == [sb]
