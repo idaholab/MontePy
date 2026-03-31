@@ -57,9 +57,7 @@ surfaces
 ^^^^^^^^
 This package contains all surface classes.
 All classes need to be children of :class:`~montepy.Surface`.
-When possible new surface classes should combine similar planes.
-For example :class:`~montepy.AxisPlane` covers ``PX``, ``PY``, and ``PZ``.
-
+Nearly all classes that are necessary are now implemented. 
 
 Introduction to SLY and Syntax Trees
 ------------------------------------
@@ -338,30 +336,21 @@ For example the ``Surface`` number setter looks like:
 
 
 Surface: :class:`~montepy.Surface`
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 This is the parent class for all Surface classes.
 You will also need to update :func:`~montepy.surfaces.surface_builder.parse_surface`.
 You should expose clear parameters such as ``radius`` or ``location``.
 ``format_for_mcnp_input()`` is handled by default.
 
-How to __init__
-"""""""""""""""
-After running the super init method
-you will then have access to ``self.surface_type``, and ``self.surface_constants``.
-You will need to implement a ``_allowed_surface_types`` to specify which surface types are allowed for your class.
-You then need to verify that there are the correct number of surface constants. 
-You will also need to add a branch in the logic for :func:`montepy.surfaces.surface_builder.parse_surface`.
+How the classes are Built
+"""""""""""""""""""""""""
 
-:func:`~montepy.Surface.find_duplicate_surfaces`
-"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
-This function is meant to find very similar surfaces that cause geometry errors,
-such as two ``PZ`` surfaces that are 1 micron apart.
-This should return a list of surfaces that are within the provided tolerance similar to this one.
-Things to consider.
-
-#. The list provided will *not* include ``self``, ``self`` is not considered redundant with regards to ``self``.
-#. Surfaces can be modified in many ways including: being periodic with respect to a surface, being transformed, being a periodic surface, and
-   being a white surface. To say that two surfaces are duplicate all of these factors must be considered. 
+All of the children of :class:`~montepy.Surface` use the ``montepy.surfaces.surface._SurfaceClassFactory`` metaclass.
+This takes a ``spec`` that is of type ``_SurfaceTypeSpec``,
+which then contains a list of ``_SurfaceParamSpec`` instances.
+The metaclass then adds the given ``_SurfaceParamSpec`` as properties to the class,
+and handles ensuring that the data is properly loaded during parsing. 
+For more details see the current implementations of existing classes as examples.
 
 
 Data Inputs: :class:`~montepy.data_inputs.data_input.DataInputAbstract`
@@ -425,15 +414,6 @@ Note this field can be ``None``.
 When setting a number you must check for numbering collisions with the method:
 :func:`~montepy.numbered_object_collection.NumberedObjectCollection.check_number`.
 This function returns nothing, but will raise an error when a number collision occurs.
-For example the ``Surface`` number setter looks like::
-        
-    @number.setter
-    def number(self, number):
-        assert isinstance(number, int)
-        assert number > 0
-        if self._problem:
-            self._problem.surfaces.check_number(number)
-        self._surface_number = number
 
 Data Cards that Modify Cells :class:`~montepy.data_inputs.cell_modifier.CellModifierInput`
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
