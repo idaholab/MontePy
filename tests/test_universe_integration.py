@@ -166,6 +166,7 @@ def test_fill_long_mcnp_str_wrap(cells):
             montepy.MCNP_VERSION = old_vers
             prob.mcnp_version = montepy.MCNP_VERSION
 
+
 def test_cell_universe_nullify_with_problem():
     import montepy
 
