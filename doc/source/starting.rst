@@ -97,6 +97,10 @@ You can specify a specific version from `PyPI`_ be installed using:
 
 ``pip install montepy==<version>``
 
+Or using conda-forge:
+
+``conda install conda-forge::montepy==<version>``
+
 Tutorials and Demonstrations
 ----------------------------
 
@@ -112,7 +116,7 @@ These tutorial can be launched here:
    :new_tab_button_text: Launch jupyter in your browswer
    
 
-To access these demonstrations you can run:
+To access these demonstrations locally you can run:
 
 .. code-block:: bash
 
@@ -125,7 +129,7 @@ These notebooks are not complete, and have missing code you need to fill in.
 If you get stuck there are complete notebooks in the ``answers`` folder, that you can refer to. 
 
 Finally if you want to present these notebooks in a workshop, 
-we use `RISE <https://rise.readthedocs.io/en/latest/>`_.
+we use `RISE <https://rise.readthedocs.io/en/latest/>`_ to turn the notebooks into a slideshow.
 You can install this with ``pip install montepy[demo-present]``.
 
 Best Practices
@@ -151,11 +155,11 @@ Before we begin, here are some guidelines to keep in mind while scripting your w
 Reading a File
 --------------
 
-MontePy offers the :func:`montepy.read_input` (actually :func:`~montepy.input_parser.input_reader.read_input`) function for getting started.
+MontePy offers the :func:`montepy.read_input` function for getting started.
 It will read the specified MCNP input file, and return an MontePy :class:`~montepy.MCNP_Problem` object.
 
 >>> import montepy
->>> problem = montepy.read_input("tests/inputs/test.imcnp")
+>>> problem = montepy.read_input("foo.imcnp")
 >>> len(problem.cells)
 5
 
@@ -357,7 +361,7 @@ This can be done quickly with a for loop:
        cell.number += 1000
 
 Number Collisions Should Be Impossible
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 The ``NumberedObjectCollection`` has various mechanisms internally to avoid number collisions 
 (two objects having the same number).
@@ -543,6 +547,8 @@ But for some of our favorite surfaces
 these will be a special subclass of ``Surface``, 
 that will truly understand surface constants for what the mean.
 See the :doc:`API documentation <api/modules>` for specific surface classes and their documentation.
+
+# TODO
 
 Two useful examples are the :class:`~montepy.CylinderOnAxis`, 
 which covers ``CX``, ``CY``, and ``CZ``,
