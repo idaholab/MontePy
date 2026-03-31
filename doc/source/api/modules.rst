@@ -291,7 +291,6 @@ Object Builders
    montepy.input_parser.input_syntax_reader.read_data
    montepy.input_parser.input_syntax_reader.read_front_matters
    montepy.surfaces.surface_builder.parse_surface
-   montepy.surfaces.surface._SurfaceClassFactory
 
 
 Type Aliases
