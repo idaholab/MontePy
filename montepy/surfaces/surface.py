@@ -1145,7 +1145,7 @@ _axis_plane_spec = _SurfaceTypeSpec(
             base_type=float,
         ),
         _SurfaceParamSpec(
-            name="d",
+            name="D",
             start_idx=0,
             description="Alias for :attr:`location` following MCNP manual notation (:math:`D`).",
             types=(float, int),
