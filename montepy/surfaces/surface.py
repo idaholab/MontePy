@@ -128,21 +128,26 @@ class _SurfaceClassFactory(_ExceptionContextAdder):
 
     @classmethod
     def build_scalar_prop(metacls, param):
-        base_func = copy.deepcopy(metacls.dummy_function)
+        base_func = metacls.gen_scalar_getter()
         base_func.__name__ = param.name
         base_func.__doc__ = base_func.__doc__.format(**asdict(param))
         return make_prop_val_node(
             f"_{param.name}", param.types, param.base_type, param.validator
         )(base_func)
 
-    def dummy_function(self) -> float:
-        """
-        {description}
+    @classmethod
+    def gen_scalar_getter(meta_class):
+        def dummy_function(self) -> float:
+            """
+            {description}
 
-        Returns
-        -------
-        float
-        """
+            Returns
+            -------
+            float
+            """
+            pass
+
+        return dummy_function
 
     @classmethod
     def gen_tuple_getter(meta_class, hidden_param):
