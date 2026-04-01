@@ -191,3 +191,14 @@ def make_prop_pointer(
         return getter
 
     return decorator
+
+def make_deprecation_getter(old_prefix, new_prefix, new_scope):
+    def getter(name):
+        if not name.startswith("__"):  # ignore __warningregistry__ and other magic
+            warnings.warn(
+                message=f"{old_prefix}.{name} will be deprecated. Instead, use {new_prefix}.{name}",
+                category=FutureWarning,
+                stacklevel=2,
+            )
+            return getattr(new_scope, name)
+    return getter 
