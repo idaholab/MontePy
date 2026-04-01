@@ -316,7 +316,7 @@ class Surface(Numbered_MCNP_Object, metaclass=_SurfaceClassFactory):
 
     @classmethod
     def _allowed_surface_types(cls):
-        """ 
+        """
         The allowed surface types for this surface type.
 
         Returns

@@ -1,5 +1,5 @@
 # Copyright 2024-2026, Battelle Energy Alliance, LLC All Rights Reserved.
-from montepy.surfaces.surface import * 
+from montepy.surfaces.surface import *
 from montepy.surfaces.surface_type import SurfaceType
 
 _ST = SurfaceType
