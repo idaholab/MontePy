@@ -2,8 +2,13 @@
 
 import warnings
 import montepy.exceptions
-from montepy.utilities import make_deprecation_getter
 
 
-__gettattr__ = make_deprecation_getter("montepy.errors", "montepy.exceptions", montepy.exceptions) 
-
+def __getattr__(name):
+    if not name.startswith("__"):  # ignore __warningregistry__ and other magic
+        warnings.warn(
+            message=f"montepy.errors.{name} will be deprecated. Instead, use montepy.exceptions.{name}",
+            category=FutureWarning,
+            stacklevel=2,
+        )
+    return getattr(montepy.exceptions, name)
