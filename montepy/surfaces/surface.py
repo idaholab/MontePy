@@ -1140,14 +1140,14 @@ _axis_plane_spec = _SurfaceTypeSpec(
         _SurfaceParamSpec(
             name="location",
             start_idx=0,
-            description="The location :math:`d` of the plane along the axis",
+            description="The location :math:`D` of the plane along the axis",
             types=(float, int),
             base_type=float,
         ),
         _SurfaceParamSpec(
             name="d",
             start_idx=0,
-            description="Alias for :attr:`location` following MCNP manual notation (:math:`d`).",
+            description="Alias for :attr:`location` following MCNP manual notation (:math:`D`).",
             types=(float, int),
             base_type=float,
         ),
@@ -1200,21 +1200,21 @@ _x_plane_spec = _SurfaceTypeSpec(
         _SurfaceParamSpec(
             name="location",
             start_idx=0,
-            description="The location :math:`d` of the plane along the axis",
+            description="The location :math:`D` of the plane along the axis",
             types=(float, int),
             base_type=float,
         ),
         _SurfaceParamSpec(
             name="x",
             start_idx=0,
-            description="The :math:`x`-intercept :math:`d` of the plane",
+            description="The :math:`x`-intercept :math:`D` of the plane",
             types=(float, int),
             base_type=float,
         ),
         _SurfaceParamSpec(
-            name="d",
+            name="D",
             start_idx=0,
-            description="Alias for :attr:`location` following MCNP manual notation (:math:`d`).",
+            description="Alias for :attr:`location` following MCNP manual notation (:math:`D`).",
             types=(float, int),
             base_type=float,
         ),
@@ -1229,21 +1229,21 @@ _y_plane_spec = _SurfaceTypeSpec(
         _SurfaceParamSpec(
             name="location",
             start_idx=0,
-            description="The location :math:`d` of the plane along the axis",
+            description="The location :math:`D` of the plane along the axis",
             types=(float, int),
             base_type=float,
         ),
         _SurfaceParamSpec(
             name="y",
             start_idx=0,
-            description="The :math:`y`-intercept :math:`d` of the plane",
+            description="The :math:`y`-intercept :math:`D` of the plane",
             types=(float, int),
             base_type=float,
         ),
         _SurfaceParamSpec(
-            name="d",
+            name="D",
             start_idx=0,
-            description="Alias for :attr:`location` following MCNP manual notation (:math:`d`).",
+            description="Alias for :attr:`location` following MCNP manual notation (:math:`D`).",
             types=(float, int),
             base_type=float,
         ),
@@ -1258,21 +1258,21 @@ _z_plane_spec = _SurfaceTypeSpec(
         _SurfaceParamSpec(
             name="location",
             start_idx=0,
-            description="The location :math:`d` of the plane along the axis",
+            description="The location :math:`D` of the plane along the axis",
             types=(float, int),
             base_type=float,
         ),
         _SurfaceParamSpec(
             name="z",
             start_idx=0,
-            description="The :math:`z`-intercept :math:`d` of the plane",
+            description="The :math:`z`-intercept :math:`D` of the plane",
             types=(float, int),
             base_type=float,
         ),
         _SurfaceParamSpec(
-            name="d",
+            name="D",
             start_idx=0,
-            description="Alias for :attr:`location` following MCNP manual notation (:math:`d`).",
+            description="Alias for :attr:`location` following MCNP manual notation (:math:`D`).",
             types=(float, int),
             base_type=float,
         ),
@@ -1288,7 +1288,7 @@ class XPlane(AxisPlane, metaclass=_SurfaceClassFactory, spec=_x_plane_spec):
 
     .. math::
 
-        x - d = 0
+        x - D = 0
 
     .. versionadded:: 1.4.0
 
@@ -1310,7 +1310,7 @@ class YPlane(AxisPlane, metaclass=_SurfaceClassFactory, spec=_y_plane_spec):
 
     .. math::
 
-        y - d = 0
+        y - D = 0
 
     .. versionadded:: 1.4.0
 
@@ -1332,7 +1332,7 @@ class ZPlane(AxisPlane, metaclass=_SurfaceClassFactory, spec=_z_plane_spec):
 
     .. math::
 
-        z - d = 0
+        z - D = 0
 
     .. versionadded:: 1.4.0
 
@@ -1585,7 +1585,7 @@ _sphere_on_axis_spec = _SurfaceTypeSpec(
         _SurfaceParamSpec(
             name="location",
             start_idx=0,
-            description="The location :math:`a` of the sphere center along the axis",
+            description="The location :math:`x_0` (or :math:`y_0`, or :math:`z_0`) of the sphere center along the axis",
             types=(float, int),
             base_type=float,
         ),
@@ -1608,7 +1608,7 @@ class SphereOnAxis(Surface, metaclass=_SurfaceClassFactory, spec=_sphere_on_axis
 
     .. math::
 
-        (x - a)^2 + y^2 + z^2 - R^2 = 0
+        (x - x_0)^2 + y^2 + z^2 - R^2 = 0
 
     .. tip::
 
@@ -1643,14 +1643,14 @@ _x_sphere_spec = _SurfaceTypeSpec(
         _SurfaceParamSpec(
             name="location",
             start_idx=0,
-            description="The location :math:`a` of the sphere center along the axis",
+            description="The location :math:`x_0` of the sphere center along the axis",
             types=(float, int),
             base_type=float,
         ),
         _SurfaceParamSpec(
             name="x",
             start_idx=0,
-            description="The :math:`x`-coordinate :math:`a` of the sphere center",
+            description="The :math:`x`-coordinate :math:`x_0` of the sphere center",
             types=(float, int),
             base_type=float,
         ),
@@ -1673,14 +1673,14 @@ _y_sphere_spec = _SurfaceTypeSpec(
         _SurfaceParamSpec(
             name="location",
             start_idx=0,
-            description="The location :math:`a` of the sphere center along the axis",
+            description="The location :math:`y_0` of the sphere center along the axis",
             types=(float, int),
             base_type=float,
         ),
         _SurfaceParamSpec(
             name="y",
             start_idx=0,
-            description="The :math:`y`-coordinate :math:`a` of the sphere center",
+            description="The :math:`y`-coordinate :math:`y_0` of the sphere center",
             types=(float, int),
             base_type=float,
         ),
@@ -1703,14 +1703,14 @@ _z_sphere_spec = _SurfaceTypeSpec(
         _SurfaceParamSpec(
             name="location",
             start_idx=0,
-            description="The location :math:`a` of the sphere center along the axis",
+            description="The location :math:`z_0` of the sphere center along the axis",
             types=(float, int),
             base_type=float,
         ),
         _SurfaceParamSpec(
             name="z",
             start_idx=0,
-            description="The :math:`z`-coordinate :math:`a` of the sphere center",
+            description="The :math:`z`-coordinate :math:`z_0` of the sphere center",
             types=(float, int),
             base_type=float,
         ),
@@ -1734,7 +1734,7 @@ class XSphere(SphereOnAxis, metaclass=_SurfaceClassFactory, spec=_x_sphere_spec)
 
     .. math::
 
-        (x - a)^2 + y^2 + z^2 - R^2 = 0
+        (x - x_0)^2 + y^2 + z^2 - R^2 = 0
 
     .. versionadded:: 1.4.0
 
@@ -1756,7 +1756,7 @@ class YSphere(SphereOnAxis, metaclass=_SurfaceClassFactory, spec=_y_sphere_spec)
 
     .. math::
 
-        x^2 + (y - a)^2 + z^2 - R^2 = 0
+        x^2 + (y - y_0)^2 + z^2 - R^2 = 0
 
     .. versionadded:: 1.4.0
 
@@ -1778,7 +1778,7 @@ class ZSphere(SphereOnAxis, metaclass=_SurfaceClassFactory, spec=_z_sphere_spec)
 
     .. math::
 
-        x^2 + y^2 + (z - a)^2 - R^2 = 0
+        x^2 + y^2 + (z - z_0)^2 - R^2 = 0
 
     .. versionadded:: 1.4.0
 
@@ -1804,7 +1804,7 @@ _cone_on_axis_spec = _SurfaceTypeSpec(
         _SurfaceParamSpec(
             name="apex",
             start_idx=0,
-            description="The position :math:`a` of the cone apex along the axis",
+            description="The position :math:`x_0` (or :math:`y_0`, or :math:`z_0`)  of the cone apex along the axis",
             types=(float, int),
             base_type=float,
         ),
@@ -1826,7 +1826,7 @@ class ConeOnAxis(Surface, metaclass=_SurfaceClassFactory, spec=_cone_on_axis_spe
 
     .. math::
 
-        x^2 + y^2 - t^2 (z - a)^2 = 0
+        x^2 + y^2 - t^2 (z - z_0)^2 = 0
 
     The optional third surface constant selects a single nappe
     (``+1`` upper, ``-1`` lower); omitting it gives both nappes.
@@ -1914,14 +1914,14 @@ _x_cone_spec = _SurfaceTypeSpec(
         _SurfaceParamSpec(
             name="apex",
             start_idx=0,
-            description="The position :math:`a` of the cone apex along the axis",
+            description="The position :math:`x_0` of the cone apex along the axis",
             types=(float, int),
             base_type=float,
         ),
         _SurfaceParamSpec(
             name="x",
             start_idx=0,
-            description="The :math:`x`-coordinate :math:`a` of the cone apex",
+            description="The :math:`x`-coordinate :math:`x_0` of the cone apex",
             types=(float, int),
             base_type=float,
         ),
@@ -1943,14 +1943,14 @@ _y_cone_spec = _SurfaceTypeSpec(
         _SurfaceParamSpec(
             name="apex",
             start_idx=0,
-            description="The position :math:`a` of the cone apex along the axis",
+            description="The position :math:`y_0` of the cone apex along the axis",
             types=(float, int),
             base_type=float,
         ),
         _SurfaceParamSpec(
             name="y",
             start_idx=0,
-            description="The :math:`y`-coordinate :math:`a` of the cone apex",
+            description="The :math:`y`-coordinate :math:`y_0` of the cone apex",
             types=(float, int),
             base_type=float,
         ),
@@ -1972,14 +1972,14 @@ _z_cone_spec = _SurfaceTypeSpec(
         _SurfaceParamSpec(
             name="apex",
             start_idx=0,
-            description="The position :math:`a` of the cone apex along the axis",
+            description="The position :math:`z_0` of the cone apex along the axis",
             types=(float, int),
             base_type=float,
         ),
         _SurfaceParamSpec(
             name="z",
             start_idx=0,
-            description="The :math:`z`-coordinate :math:`a` of the cone apex",
+            description="The :math:`z`-coordinate :math:`z_0` of the cone apex",
             types=(float, int),
             base_type=float,
         ),
@@ -2002,7 +2002,7 @@ class XCone(ConeOnAxis, metaclass=_SurfaceClassFactory, spec=_x_cone_spec):
 
     .. math::
 
-        y^2 + z^2 - t^2 (x - a)^2 = 0
+        y^2 + z^2 - t^2 (x - x_0)^2 = 0
 
     The optional third surface constant selects a single nappe
     (``+1`` upper, ``-1`` lower); omitting it gives both nappes.
@@ -2028,7 +2028,7 @@ class YCone(ConeOnAxis, metaclass=_SurfaceClassFactory, spec=_y_cone_spec):
 
     .. math::
 
-        x^2 + z^2 - t^2 (y - a)^2 = 0
+        x^2 + z^2 - t^2 (y - y_0)^2 = 0
 
     The optional last surface constant selects a single nappe
     (``+1`` upper, ``-1`` lower); omitting it gives both nappes.
@@ -2054,7 +2054,7 @@ class ZCone(ConeOnAxis, metaclass=_SurfaceClassFactory, spec=_z_cone_spec):
 
     .. math::
 
-        x^2 + y^2 - t^2 (z - a)^2 = 0
+        x^2 + y^2 - t^2 (z - y_0)^2 = 0
 
     The optional last surface constant selects a single nappe
     (``+1`` upper, ``-1`` lower); omitting it gives both nappes.
@@ -2689,21 +2689,21 @@ _torus_spec = _SurfaceTypeSpec(
         _SurfaceParamSpec(
             name="x",
             start_idx=0,
-            description="The :math:`x`-coordinate of the torus center",
+            description="The :math:`x`-coordinate, :math:`x_0`, of the torus center",
             types=(float, int),
             base_type=float,
         ),
         _SurfaceParamSpec(
             name="y",
             start_idx=1,
-            description="The :math:`y`-coordinate of the torus center",
+            description="The :math:`y`-coordinate, :math:`y_0`, of the torus center",
             types=(float, int),
             base_type=float,
         ),
         _SurfaceParamSpec(
             name="z",
             start_idx=2,
-            description="The :math:`z`-coordinate of the torus center",
+            description="The :math:`z`-coordinate, :math:`z_0`, of the torus center",
             types=(float, int),
             base_type=float,
         ),
@@ -2720,6 +2720,14 @@ _torus_spec = _SurfaceTypeSpec(
             name="major_radius",
             start_idx=3,
             description="Major radius :math:`A`: distance from the torus center to the tube center",
+            types=(float, int),
+            base_type=float,
+            validator=_enforce_positive_radius,
+        ),
+        _SurfaceParamSpec(
+            name="A",
+            start_idx=3,
+            description="Alias for :attr:`major_radius`",
             types=(float, int),
             base_type=float,
             validator=_enforce_positive_radius,
@@ -2743,9 +2751,25 @@ _torus_spec = _SurfaceTypeSpec(
             validator=_enforce_positive_radius,
         ),
         _SurfaceParamSpec(
+            name="B",
+            start_idx=4,
+            description="Alias of :attr:`minor_radius_1`",
+            types=(float, int),
+            base_type=float,
+            validator=_enforce_positive_radius,
+        ),
+        _SurfaceParamSpec(
             name="minor_radius_2",
             start_idx=5,
             description="Minor radius :math:`C` parallel to the torus axis",
+            types=(float, int),
+            base_type=float,
+            validator=_enforce_positive_radius,
+        ),
+        _SurfaceParamSpec(
+            name="C",
+            start_idx=5,
+            description="Alias of :attr:`minor_radius_2",
             types=(float, int),
             base_type=float,
             validator=_enforce_positive_radius,
@@ -2762,8 +2786,7 @@ class Torus(Surface, metaclass=_SurfaceClassFactory, spec=_torus_spec):
 
     .. math::
 
-        \\left(\\sqrt{(x-x_0)^2+(y-y_0)^2} - A\\right)^2 / B^2
-        + (z-z_0)^2 / C^2 - 1 = 0
+        \\frac{(z-z_0)^2}{B^2} + \\frac{\\left(\\sqrt{(x-x_0)^2+(y-y_0)^2} - A\\right)^2}{C^2} - 1 = 0
 
     .. tip::
 
@@ -2786,8 +2809,8 @@ class Torus(Surface, metaclass=_SurfaceClassFactory, spec=_torus_spec):
     @property
     def minor_radius(self):
         """The minor radius of the torus when the tube cross-section is
-        circular, i.e. when :attr:`minor_radius_1` :math:`B` and
-        :attr:`minor_radius_2` :math:`C` are equal.
+        circular, i.e. when :attr:`minor_radius_1`, :math:`B`, and
+        :attr:`minor_radius_2`, :math:`C`, are equal.
 
         Getting this property raises :class:`ValueError` if the two minor
         radii are not approximately equal.
@@ -2835,21 +2858,21 @@ _x_torus_spec = _SurfaceTypeSpec(
         _SurfaceParamSpec(
             name="x",
             start_idx=0,
-            description="The :math:`x`-coordinate of the torus center",
+            description="The :math:`x`-coordinate, :math:`x_0`, of the torus center",
             types=(float, int),
             base_type=float,
         ),
         _SurfaceParamSpec(
             name="y",
             start_idx=1,
-            description="The :math:`y`-coordinate of the torus center",
+            description="The :math:`y`-coordinate, :math:`y_0`, of the torus center",
             types=(float, int),
             base_type=float,
         ),
         _SurfaceParamSpec(
             name="z",
             start_idx=2,
-            description="The :math:`z`-coordinate of the torus center",
+            description="The :math:`z`-coordinate, :math:`z_0`, of the torus center",
             types=(float, int),
             base_type=float,
         ),
@@ -2866,6 +2889,14 @@ _x_torus_spec = _SurfaceTypeSpec(
             name="major_radius",
             start_idx=3,
             description="Major radius :math:`A`: distance from the torus center to the tube center",
+            types=(float, int),
+            base_type=float,
+            validator=_enforce_positive_radius,
+        ),
+        _SurfaceParamSpec(
+            name="A",
+            start_idx=3,
+            description="Alias for :attr:`major_radius`",
             types=(float, int),
             base_type=float,
             validator=_enforce_positive_radius,
@@ -2889,9 +2920,25 @@ _x_torus_spec = _SurfaceTypeSpec(
             validator=_enforce_positive_radius,
         ),
         _SurfaceParamSpec(
+            name="B",
+            start_idx=4,
+            description="Alias of :attr:`minor_radius_1`",
+            types=(float, int),
+            base_type=float,
+            validator=_enforce_positive_radius,
+        ),
+        _SurfaceParamSpec(
             name="minor_radius_2",
             start_idx=5,
             description="Minor radius :math:`C` parallel to the torus axis",
+            types=(float, int),
+            base_type=float,
+            validator=_enforce_positive_radius,
+        ),
+        _SurfaceParamSpec(
+            name="C",
+            start_idx=5,
+            description="Alias of :attr:`minor_radius_2",
             types=(float, int),
             base_type=float,
             validator=_enforce_positive_radius,
@@ -2910,21 +2957,21 @@ _y_torus_spec = _SurfaceTypeSpec(
         _SurfaceParamSpec(
             name="x",
             start_idx=0,
-            description="The :math:`x`-coordinate of the torus center",
+            description="The :math:`x`-coordinate, :math:`x_0`, of the torus center",
             types=(float, int),
             base_type=float,
         ),
         _SurfaceParamSpec(
             name="y",
             start_idx=1,
-            description="The :math:`y`-coordinate of the torus center",
+            description="The :math:`y`-coordinate, :math:`y_0`, of the torus center",
             types=(float, int),
             base_type=float,
         ),
         _SurfaceParamSpec(
             name="z",
             start_idx=2,
-            description="The :math:`z`-coordinate of the torus center",
+            description="The :math:`z`-coordinate, :math:`z_0`, of the torus center",
             types=(float, int),
             base_type=float,
         ),
@@ -2941,6 +2988,14 @@ _y_torus_spec = _SurfaceTypeSpec(
             name="major_radius",
             start_idx=3,
             description="Major radius :math:`A`: distance from the torus center to the tube center",
+            types=(float, int),
+            base_type=float,
+            validator=_enforce_positive_radius,
+        ),
+        _SurfaceParamSpec(
+            name="A",
+            start_idx=3,
+            description="Alias for :attr:`major_radius`",
             types=(float, int),
             base_type=float,
             validator=_enforce_positive_radius,
@@ -2964,9 +3019,25 @@ _y_torus_spec = _SurfaceTypeSpec(
             validator=_enforce_positive_radius,
         ),
         _SurfaceParamSpec(
+            name="B",
+            start_idx=4,
+            description="Alias of :attr:`minor_radius_1`",
+            types=(float, int),
+            base_type=float,
+            validator=_enforce_positive_radius,
+        ),
+        _SurfaceParamSpec(
             name="minor_radius_2",
             start_idx=5,
             description="Minor radius :math:`C` parallel to the torus axis",
+            types=(float, int),
+            base_type=float,
+            validator=_enforce_positive_radius,
+        ),
+        _SurfaceParamSpec(
+            name="C",
+            start_idx=5,
+            description="Alias of :attr:`minor_radius_2",
             types=(float, int),
             base_type=float,
             validator=_enforce_positive_radius,
@@ -2985,21 +3056,21 @@ _z_torus_spec = _SurfaceTypeSpec(
         _SurfaceParamSpec(
             name="x",
             start_idx=0,
-            description="The :math:`x`-coordinate of the torus center",
+            description="The :math:`x`-coordinate, :math:`x_0`, of the torus center",
             types=(float, int),
             base_type=float,
         ),
         _SurfaceParamSpec(
             name="y",
             start_idx=1,
-            description="The :math:`y`-coordinate of the torus center",
+            description="The :math:`y`-coordinate, :math:`y_0`, of the torus center",
             types=(float, int),
             base_type=float,
         ),
         _SurfaceParamSpec(
             name="z",
             start_idx=2,
-            description="The :math:`z`-coordinate of the torus center",
+            description="The :math:`z`-coordinate, :math:`z_0`, of the torus center",
             types=(float, int),
             base_type=float,
         ),
@@ -3016,6 +3087,14 @@ _z_torus_spec = _SurfaceTypeSpec(
             name="major_radius",
             start_idx=3,
             description="Major radius :math:`A`: distance from the torus center to the tube center",
+            types=(float, int),
+            base_type=float,
+            validator=_enforce_positive_radius,
+        ),
+        _SurfaceParamSpec(
+            name="A",
+            start_idx=3,
+            description="Alias for :attr:`major_radius`",
             types=(float, int),
             base_type=float,
             validator=_enforce_positive_radius,
@@ -3039,9 +3118,25 @@ _z_torus_spec = _SurfaceTypeSpec(
             validator=_enforce_positive_radius,
         ),
         _SurfaceParamSpec(
+            name="B",
+            start_idx=4,
+            description="Alias of :attr:`minor_radius_1`",
+            types=(float, int),
+            base_type=float,
+            validator=_enforce_positive_radius,
+        ),
+        _SurfaceParamSpec(
             name="minor_radius_2",
             start_idx=5,
             description="Minor radius :math:`C` parallel to the torus axis",
+            types=(float, int),
+            base_type=float,
+            validator=_enforce_positive_radius,
+        ),
+        _SurfaceParamSpec(
+            name="C",
+            start_idx=5,
+            description="Alias of :attr:`minor_radius_2",
             types=(float, int),
             base_type=float,
             validator=_enforce_positive_radius,
@@ -3061,9 +3156,7 @@ class XTorus(Torus, metaclass=_SurfaceClassFactory, spec=_x_torus_spec):
 
     .. math::
 
-        \\left(\\sqrt{(y - y_0)^2 + (z - z_0)^2} - A\\right)^2
-        \\frac{1}{B^2}
-        + \\frac{(x - x_0)^2}{C^2} - 1 = 0
+        \\frac{(x-x_0)^2}{B^2} + \\frac{\\left(\\sqrt{(y-y_0)^2+(z-z_0)^2} - A\\right)^2}{C^2} - 1 = 0
 
     .. versionadded:: 1.4.0
 
@@ -3085,9 +3178,7 @@ class YTorus(Torus, metaclass=_SurfaceClassFactory, spec=_y_torus_spec):
 
     .. math::
 
-        \\left(\\sqrt{(x - x_0)^2 + (z - z_0)^2} - A\\right)^2
-        \\frac{1}{B^2}
-        + \\frac{(y - y_0)^2}{C^2} - 1 = 0
+        \\frac{(y-y_0)^2}{B^2} + \\frac{\\left(\\sqrt{(x-x_0)^2+(z-z_0)^2} - A\\right)^2}{C^2} - 1 = 0
 
     .. versionadded:: 1.4.0
 
@@ -3109,9 +3200,7 @@ class ZTorus(Torus, metaclass=_SurfaceClassFactory, spec=_z_torus_spec):
 
     .. math::
 
-        \\left(\\sqrt{(x - x_0)^2 + (y - y_0)^2} - A\\right)^2
-        \\frac{1}{B^2}
-        + \\frac{(z - z_0)^2}{C^2} - 1 = 0
+        \\frac{(z-z_0)^2}{B^2} + \\frac{\\left(\\sqrt{(x-x_0)^2+(y-y_0)^2} - A\\right)^2}{C^2} - 1 = 0
 
     .. versionadded:: 1.4.0
 
