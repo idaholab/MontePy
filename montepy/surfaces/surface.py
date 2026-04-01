@@ -58,7 +58,7 @@ class _SurfaceTypeSpec:
     Specification for a class for a surface type.
     """
 
-    surface_types: Set[SurfaceType]
+    surface_types: set[SurfaceType]
     num_param_values: int
     params: list[_SurfaceParamSpec]
     equation: Callable = None
@@ -72,7 +72,7 @@ class _SurfaceClassFactory(_ExceptionContextAdder):
     the init function is able to load the right data into the new attributes.
     """
 
-    def __new__(cls, name, bases, namespace, spec: SurfaceTypeSpec = None, **kwargs):
+    def __new__(cls, name, bases, namespace, spec: _SurfaceTypeSpec = None, **kwargs):
         if spec is None:
             return super().__new__(cls, name, bases, namespace, **kwargs)
         param_loaders = []
@@ -316,7 +316,7 @@ class Surface(Numbered_MCNP_Object, metaclass=_SurfaceClassFactory):
 
     @classmethod
     def _allowed_surface_types(cls):
-        """ "
+        """ 
         The allowed surface types for this surface type.
 
         Returns
