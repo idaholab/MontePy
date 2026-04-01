@@ -81,6 +81,11 @@ class _SurfaceClassFactory(_ExceptionContextAdder):
         namespace["_NUM_PARAMS"] = spec.num_param_values
         namespace["_ALLOWED_SURFACE_TYPES"] = spec.surface_types
         namespace["__equation"] = spec.equation
+        # default surface_type scenario
+        if len(spec.surface_types) == 1:
+            surf_type = next(iter(spec.surface_types))
+            namespace["_surface_type"] = surf_type
+            namespace["__init__"] = Surface._no_surf_type_init
         return super().__new__(cls, name, bases, namespace, **kwargs)
 
     @classmethod
@@ -286,6 +291,9 @@ class Surface(Numbered_MCNP_Object, metaclass=_SurfaceClassFactory):
                 f"{type(self).__name__} must be given {self._number_of_params()} surface constants, but {len(self._surface_constants)} were given"
             )
         self._load_params()
+
+    def _no_surf_type_init(self, input: InitInput = None, number: int = None, **kwargs):
+        self.__init__(input, number, surface_type=self._surface_type)
 
     def _load_params(self):
         self._enforce_constants()
