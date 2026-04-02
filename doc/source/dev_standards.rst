@@ -101,7 +101,7 @@ Naming Conventions
    and ``set``).
 #. Within reason: avoid abbreviating words. Above all, prioritize legibility.
 #. For user facing functions and attributes, short names are best.
-   (:func:`~montepy.surfaces.surface.Surface.surface_constants`, really should have been ``constants`` in hind-sight).
+   (:attr:`~montepy.Surface.surface_constants`, really should have been ``constants`` in hind-sight).
 
 
 Doc Strings
@@ -248,7 +248,7 @@ Here are the principles for writing new tests:
 #. Use property based testing with `hypothesis <https://hypothesis.readthedocs.io/en/latest/>`_, when it makes sense.
    This is generally for complicated functions that users use frequently, such as constructors.
    See this `tutorial for an introduction to property based testing
-   <https://semaphoreci.com/blog/property-based-testing-python-hypothesis-pytest>`_. 
+   <https://semaphore.io/blog/property-based-testing-python-hypothesis-pytest>`_. 
 
 Test Organization
 ^^^^^^^^^^^^^^^^^

@@ -46,6 +46,24 @@ def test_universe_setter(cells):
         cell_verify(basic_cell)
 
 
+def test_universe_nullify(cells):
+    """Cell.universe can be set to None (or deleted) to reset to the default."""
+    for basic_cell in cells:
+        uni = Universe(5)
+        basic_cell.universe = uni
+        assert basic_cell.universe is not None
+
+        # Setting to None should work
+        basic_cell.universe = None
+        assert basic_cell.universe is None
+
+        # Setting back, then using del
+        basic_cell.universe = uni
+        assert basic_cell.universe is not None
+        del basic_cell.universe
+        assert basic_cell.universe is None
+
+
 def test_fill_setter(cells):
     for basic_cell in cells:
         uni = Universe(5)
@@ -120,7 +138,7 @@ def test_fill_multi_universe_order(cells):
         output = cell.format_for_mcnp_input((6, 2, 0))
         words = " ".join(output).split()
         start_idx = 6
-        if "imp:n=1" in words:
+        if "imp" in words[3].lower():
             start_idx += 1
         print(output)
         new_universes = list(map(int, words[start_idx:]))
@@ -147,3 +165,48 @@ def test_fill_long_mcnp_str_wrap(cells):
             assert len(obj.mcnp_str().split("\n")) > 1
             montepy.MCNP_VERSION = old_vers
             prob.mcnp_version = montepy.MCNP_VERSION
+
+
+def test_cell_universe_nullify_with_problem():
+    import montepy
+
+    p = montepy.MCNP_Problem("tests/inputs/test.imcnp")
+    p.parse_input()
+    c = list(p.cells)[0]
+
+    assert c.universe.number != 0
+    c.universe = None
+    assert c.universe.number == 0
+
+    c = list(p.cells)[1]
+    assert c.universe.number == 0
+    del c.universe
+    assert c.universe.number == 0
+
+
+def test_cell_universe_nullify_adds_zero_universe():
+    import montepy
+
+    p = montepy.MCNP_Problem("out2.imcnp")
+    c = montepy.Cell()
+    c.number = 1
+    p.cells.append(c)
+
+    assert 0 not in p.universes.numbers
+    c.universe = None
+    assert 0 in p.universes.numbers
+    assert c.universe.number == 0
+
+
+def test_cell_universe_delete_adds_zero_universe():
+    import montepy
+
+    p = montepy.MCNP_Problem("out2.imcnp")
+    c = montepy.Cell()
+    c.number = 1
+    p.cells.append(c)
+
+    assert 0 not in p.universes.numbers
+    del c.universe
+    assert 0 in p.universes.numbers
+    assert c.universe.number == 0

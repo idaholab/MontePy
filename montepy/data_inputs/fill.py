@@ -288,7 +288,7 @@ class Fill(CellModifierInput):
 
         Returns
         -------
-        np.ndarray
+        numpy.ndarray
             the universes that the cell will be filled with as a 3-D
             array.
 
@@ -347,8 +347,8 @@ class Fill(CellModifierInput):
 
         Parameters
         ----------
-        value : np.ndarray or None
-            A 3D numpy array of :class:`~montepy.universe.Universe` objects,
+        value : numpy.ndarray or None
+            A 3D numpy array of :class:`~montepy.Universe` objects,
             a 3D numpy array of integer universe IDs, or None to clear the
             universes. Arrays with 0, 1, or 2 dimensions are automatically
             expanded to 3D by adding dimensions at the end.
@@ -430,7 +430,7 @@ class Fill(CellModifierInput):
 
         Returns
         -------
-        :class:`numpy.ndarry`
+        :class:`numpy.ndarray`
             the minimum indices of the matrix for complex fills
         """
         pass
@@ -448,7 +448,7 @@ class Fill(CellModifierInput):
 
         Returns
         -------
-        :class:`numpy.ndarry`
+        :class:`numpy.ndarray`
             the maximum indices of the matrix for complex fills
         """
         pass
@@ -615,7 +615,7 @@ class Fill(CellModifierInput):
 
         Returns
         -------
-        unknown
+        range
             range
         """
         return range(self._axis_size(axis))

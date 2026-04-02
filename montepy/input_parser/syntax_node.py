@@ -467,7 +467,7 @@ class GeometryTree(SyntaxNodeBase):
 
         Returns
         -------
-        ListNode
+        montepy.input_parser.syntax_node.ListNode
         """
 
         def add_leaf(list_node, leaf, short_type):
@@ -668,7 +668,7 @@ class PaddingNode(SyntaxNodeBase):
 
         Returns
         -------
-        unknown
+        bool
             true iff the padding at that node is only spaces that are
             not ``\\n``.
 
@@ -823,7 +823,7 @@ class CommentNode(SyntaxNodeBase):
 
     Parameters
     ----------
-    input : Token
+    input : sly.lex.Token
         the token from the lexer
     """
 
@@ -948,7 +948,7 @@ class ValueNode(SyntaxNodeBase):
     ----------
     token : str
         the original token for the ValueNode.
-    token_type : class
+    token_type : type
         the type for the ValueNode.
     padding : PaddingNode
         the padding for this node.
@@ -1038,11 +1038,11 @@ class ValueNode(SyntaxNodeBase):
 
         Parameters
         ----------
-        enum_class : Class
+        enum_class : type
             the class for the enum to use.
         allow_none : bool
             Whether or not to allow None as a value.
-        format_type : Class
+        format_type : type
             the base data type to format this ValueNode as.
         switch_to_upper : bool
             Whether or not to convert a string to upper case before
@@ -1257,6 +1257,26 @@ class ValueNode(SyntaxNodeBase):
             return not math.isclose(
                 self._print_value, self._og_value, rel_tol=rel_tol, abs_tol=abs_tol
             )
+        if isinstance(self._type, type) and issubclass(self._type, enum.Enum):
+            canonical = self.value.value
+            if isinstance(canonical, str):
+                # Compare case-insensitively: the original token may differ in
+                # case from the normalised enum value (e.g. "sO" → SO).
+                # If they match modulo case the field is unchanged and the
+                # original token casing is preserved on write.
+                #
+                # _og_value may not be a string for integer-based enums (e.g.
+                # Lattice), where convert_to_int() runs before convert_to_enum()
+                # leaving _og_value as an int.  Normalise to str for the
+                # case-insensitive compare.
+                og = (
+                    self._og_value
+                    if isinstance(self._og_value, str)
+                    else str(self._og_value)
+                )
+                return canonical.upper() != og.upper()
+            # Integer-valued enums (e.g. Lattice): case is irrelevant; fall
+            # through to the exact-equality check below.
         return self.value != self._og_value
 
     def _avoid_rounding_truncation(self):
@@ -1426,7 +1446,7 @@ class ValueNode(SyntaxNodeBase):
 
         Returns
         -------
-        Class
+        type
             the class for the value of this node.
         """
         return self._type
@@ -1461,7 +1481,7 @@ class ValueNode(SyntaxNodeBase):
 
         Returns
         -------
-        float, int, str, enum
+        float, int, str, enum.Enum
             the node's value in type ``type``.
         """
         return self._value
@@ -1513,7 +1533,7 @@ class ValueNode(SyntaxNodeBase):
 
 
 class ParticleNode(SyntaxNodeBase):
-    """A node to hold particles information in a :class:`ClassifierNode`.
+    """A node to hold particles information in a :class:`~montepy.input_parser.syntax_node.ClassifierNode`.
 
     Parameters
     ----------
@@ -1999,7 +2019,7 @@ class MaterialsNode(SyntaxNodeBase):
 
 
 class ShortcutNode(ListNode):
-    """A node that pretends to be a :class:`ListNode` but is actually representing a shortcut.
+    """A node that pretends to be a :class:`~montepy.input_parser.syntax_node.ListNode` but is actually representing a shortcut.
 
     This takes the shortcut tokens, and expands it into their "virtual" values.
 
@@ -2479,7 +2499,7 @@ class ShortcutNode(ListNode):
 
 
 class ClassifierNode(SyntaxNodeBase):
-    """A node to represent the classifier for a :class:`montepy.data_input.DataInput`
+    """A node to represent the classifier for a :class:`~montepy.data_inputs.data_input.DataInput`
 
     e.g., represents ``M4``, ``F104:n,p``, ``IMP:n,e``.
     """

@@ -2,6 +2,7 @@
 import montepy
 import os
 import io
+from pathlib import Path
 import pytest
 from montepy.cell import Cell
 from montepy.particle import Particle
@@ -194,6 +195,16 @@ class TestImportance:
         for particle in imp:
             assert particle in particles
             assert imp[particle] == pytest.approx(1.0)
+        for part in imp.keys():
+            assert particle in particles
+        assert set(imp.keys()) == set(particles)
+        for val in imp.values():
+            assert val == pytest.approx(1.0)
+        assert len(list(imp.values())) == len(particles)
+        for part, val in imp.items():
+            assert particle in particles
+            assert val == pytest.approx(1.0)
+        assert len(list(imp.items())) == len(particles)
         for particle in particles:
             assert particle in imp
         with pytest.raises(TypeError):

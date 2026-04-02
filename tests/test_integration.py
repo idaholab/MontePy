@@ -44,7 +44,7 @@ def data_universe_problem():
 
 
 def test_original_input(simple_problem):
-    cell_order = [Message, Title] + [Input] * 29
+    cell_order = [Message, Title] + [Input] * 68
     for i, input_ob in enumerate(simple_problem.original_inputs):
         assert isinstance(input_ob, cell_order[i])
 
@@ -89,7 +89,53 @@ def test_material_parsing(simple_problem):
 
 
 def test_surface_parsing(simple_problem):
-    surf_numbers = [1000, 1005, 1010, 1015, 1020, 1025]
+    surf_numbers = [
+        1000,
+        1005,
+        1010,
+        1015,
+        1020,
+        1025,
+        2000,
+        2001,
+        2002,
+        2003,
+        2004,
+        2005,
+        2006,
+        2007,
+        2008,
+        2009,
+        2010,
+        2011,
+        2012,
+        2013,
+        2014,
+        2015,
+        2016,
+        2017,
+        2018,
+        2019,
+        2020,
+        2021,
+        2022,
+        2023,
+        2024,
+        2025,
+        2026,
+        2027,
+        2028,
+        2029,
+        2030,
+        2031,
+        2032,
+        2033,
+        2034,
+        2035,
+        2036,
+        2037,
+        2038,
+    ]
     for i, surf in enumerate(simple_problem.surfaces):
         assert surf.number == surf_numbers[i]
 
@@ -1130,7 +1176,9 @@ Flags:
 """
 _SKIP_LINES = {
     # I don't care about the edge case of shortcuts in a material def.
-    "tests/inputs/test_complement_edge.imcnp": {37: 0, 38: 0, 39: 0},
+    # Also technically this file's importance is invalid, but a good test of defaults,
+    # allow expansion
+    "tests/inputs/test_complement_edge.imcnp": {2: 0, 6: 0, 15: 0, 37: 0, 38: 0, 39: 0},
 }
 
 
@@ -1162,12 +1210,12 @@ def test_read_write_cycle(file):
     fh.close = lambda: None
     problem.write_problem(fh)
     fh.seek(0)
+    lines = [line.rstrip() for line in fh]
+    [print(line) for line in lines]
+    fh.seek(0)
     # test valid syntax
     new_problem = montepy.read_input(fh)
     # verify lines are similar
-    fh.seek(0)
-    lines = [line.rstrip() for line in fh]
-    [print(line) for line in lines]
     with open(file, "r") as gold_fh:
         gold_fh_iter = iter(gold_fh)
         lines_iter = iter(lines)
@@ -1185,7 +1233,9 @@ def test_read_write_cycle(file):
                 assert new_line == "10214   0    (1  2I 4 )"
                 continue
             try:
-                assert new_line == gold_line.rstrip().expandtabs(8)
+                assert new_line == gold_line.rstrip().expandtabs(
+                    8
+                ), f"line {i} is not matching"
             except AssertionError as e:
                 # handle case of making importance explicit
                 if "IMP:n=0.0" in new_line:

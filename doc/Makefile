@@ -17,8 +17,10 @@ help:
 # Catch-all target: route all unknown targets to Sphinx using the new
 # "make mode" option.  $(O) is meant as a shortcut for $(SPHINXOPTS).
 %: Makefile
+ifndef FAST
 	python -m build ..
 	cp ../dist/*.whl "$(SOURCEDIR)"/wheels
 	mkdir -p "$(SOURCEDIR)"/_contents
 	cp -rL ../demo/* "$(SOURCEDIR)"/_contents
+endif
 	@$(SPHINXBUILD) -M $@ "$(SOURCEDIR)" "$(BUILDDIR)" $(SPHINXOPTS) $(O)

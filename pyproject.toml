@@ -55,8 +55,7 @@ build = [
 ]
 doc = [
 	"montepy[build]",
-	# This is needed for a sphinx bug. See #414.
-	"sphinx>=7.4.0", 
+	"sphinx~=8.0", 
 	"sphinxcontrib-apidoc", 
 	"pydata_sphinx_theme",
 	"sphinx-favicon",
@@ -68,7 +67,7 @@ doc = [
 ]
 format = ["black>=26.1,<27.0"]
 develop = [
-	"montepy[test,doc,format]",
+	"montepy[test,doc,format,build]",
 ]
 demos = ["jupyter", "ipykernel>=6,<8"]
 presentations=["montepy[demos]", "jupyterlab-rise"]

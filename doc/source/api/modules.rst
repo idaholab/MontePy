@@ -38,6 +38,7 @@ Collections
    montepy.Transforms
    montepy.Universes
 
+
 Surface Objects
 ---------------
 
@@ -51,9 +52,10 @@ General Surface utilities
 
    montepy.Surface
    montepy.HalfSpace
+   montepy.UnitHalfSpace
 
 
-Cylinders 
+Cylinders
 ^^^^^^^^^
 
 .. autosummary::
@@ -61,10 +63,16 @@ Cylinders
    :nosignatures:
    :template: myclass.rst
 
-   montepy.CylinderParAxis
+   montepy.XCylinder
+   montepy.YCylinder
+   montepy.ZCylinder
    montepy.CylinderOnAxis
+   montepy.XCylinderParAxis
+   montepy.YCylinderParAxis
+   montepy.ZCylinderParAxis
+   montepy.CylinderParAxis
 
-Planes 
+Planes
 ^^^^^^
 
 .. autosummary::
@@ -72,8 +80,11 @@ Planes
    :nosignatures:
    :template: myclass.rst
 
-   montepy.GeneralPlane
+   montepy.XPlane
+   montepy.YPlane
+   montepy.ZPlane
    montepy.AxisPlane
+   montepy.GeneralPlane
 
 
 Spheres
@@ -84,9 +95,76 @@ Spheres
    :nosignatures:
    :template: myclass.rst
 
-   montepy.GeneralSphere
    montepy.SphereAtOrigin
+   montepy.XSphere
+   montepy.YSphere
+   montepy.ZSphere
    montepy.SphereOnAxis
+   montepy.GeneralSphere
+
+
+Cones
+^^^^^
+
+.. autosummary::
+   :toctree: generated
+   :nosignatures:
+   :template: myclass.rst
+
+   montepy.XCone
+   montepy.YCone
+   montepy.ZCone
+   montepy.ConeOnAxis
+   montepy.XConeParAxis
+   montepy.YConeParAxis
+   montepy.ZConeParAxis
+   montepy.ConeParAxis
+
+
+Quadrics
+^^^^^^^^
+
+.. autosummary::
+   :toctree: generated
+   :nosignatures:
+   :template: myclass.rst
+
+   montepy.AxisAlignedQuadric
+   montepy.GeneralQuadric
+
+
+Tori
+^^^^
+
+.. autosummary::
+   :toctree: generated
+   :nosignatures:
+   :template: myclass.rst
+
+   montepy.XTorus
+   montepy.YTorus
+   montepy.ZTorus
+   montepy.Torus
+
+
+Macrobodies
+^^^^^^^^^^^
+
+.. autosummary::
+   :toctree: generated
+   :nosignatures:
+   :template: myclass.rst
+
+   montepy.Box
+   montepy.RectangularParallelepiped
+   montepy.SphereMacrobody
+   montepy.RightCircularCylinder
+   montepy.RightHexagonalPrism
+   montepy.RightEllipticalCylinder
+   montepy.TruncatedRightCone
+   montepy.Ellipsoid
+   montepy.Wedge
+   montepy.ArbitraryPolyhedron
 
 
 Data Inputs
@@ -101,7 +179,9 @@ Materials
    :template: myclass.rst
    
    montepy.Element
+   montepy.Library
    montepy.Material
+   montepy.Nucleus
    montepy.Nuclide
    montepy.ThermalScatteringLaw
    
@@ -153,6 +233,7 @@ Abstract Classes
    :template: myclass.rst
    
    montepy.mcnp_object.MCNP_Object
+   montepy._singleton.SingletonGroup
    montepy.data_inputs.cell_modifier.CellModifierInput
    montepy.data_inputs.data_input.DataInputAbstract
    montepy.data_inputs.data_input.ForbiddenDataInput
@@ -174,6 +255,7 @@ Enumerations
    :template: myclass.rst
 
    montepy.geometry_operators.Operator
+   montepy.LibraryType
    montepy.particle.Particle
    montepy.SurfaceType
    montepy.input_parser.shortcuts.Shortcuts
@@ -189,6 +271,7 @@ Universal Utilities and constants
    montepy.exceptions
    montepy.utilities
 
+
    
 Object Builders
 ^^^^^^^^^^^^^^^
@@ -202,6 +285,13 @@ Object Builders
    montepy.input_parser.input_syntax_reader.read_data
    montepy.input_parser.input_syntax_reader.read_front_matters
    montepy.surfaces.surface_builder.parse_surface
+
+
+Type Aliases
+^^^^^^^^^^^^
+
+.. autodata:: montepy.mcnp_object.InitInput
+   :no-value:
 
 Parser Data Types
 ^^^^^^^^^^^^^^^^^

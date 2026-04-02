@@ -6,7 +6,7 @@ from montepy.universe import Universe
 
 
 class Universes(NumberedObjectCollection):
-    """A container of multiple :class:`~montepy.universe.Universe` instances.
+    """A container of multiple :class:`~montepy.Universe` instances.
 
     This collection can be sliced to get a subset of the universe.
     Slicing is done based on the universe numbers, not their order in the input.
