@@ -109,18 +109,46 @@ class MCNP_Object(ABC, metaclass=_ExceptionContextAdder):
     @staticmethod
     @abstractmethod
     def _parser():
+        """
+        The class (not instance) of the parser for this class.
+
+        Returns
+        ------
+        type
+        """
         pass
 
     @abstractmethod
     def _init_blank(self):
+        """
+        Initialize the object to a base state, before any parsing.
+
+        This should not setup the syntax tree though.
+        """
         pass
 
     @abstractmethod
     def _parse_tree(self):
+        """
+        Takes the information from syntax tree and link it to the internal attributes.
+
+        Use self._tree for this.
+        """
         pass
 
     @abstractmethod
     def _generate_default_tree(self, **kwargs):
+        """
+        Generate default syntax trees that can be exported once the object is not in an illegal state.
+
+        For leaves generally use ``self._generate_default_nod(<type, None)``.
+        Save the tree to self._tree
+
+        Arguments
+        ---------
+        **kwargs: dict
+           Allows passing additional arguments through __init__ as **kwargs
+        """
         pass
 
     def __setattr__(self, key, value):
@@ -141,6 +169,14 @@ class MCNP_Object(ABC, metaclass=_ExceptionContextAdder):
             )
 
     def _jit_light_init(self, input: Input):
+        """Called when just-in-time parsing is occuring.
+
+        This will
+
+        1. Create a self._JitParser instance
+        2. Call that parse on the input
+        3. load the returned "tree" as instance attributes
+        """
         self._not_parsed = True
         self._input = input
         parser = self._JitParser()
@@ -152,21 +188,32 @@ class MCNP_Object(ABC, metaclass=_ExceptionContextAdder):
         self._tree = bare_tree
         return self
 
-    _KEYS_TO_PRESERVE = set()
+    _KEYS_TO_PRESERVE: set[str] = set()
+    """
+    Object attributes that need to persist from JIT to fully parsed.
+    """
 
     @property
     def full_parsed(self):
-        """
-        TODO
+        """Whether this has been fully parsed, or is just JIT parsed.
+
+        Returns
+        -------
+        bool
+           True iff this is fully parsed, False means this is still just-in-time parsed.
         """
         return not hasattr(self, "_not_parsed")
 
     def full_parse(self):
+        """Fully parses this object, and disable just-in-time parsing for it.
+
+        Returns
+        -------
+        None
+           The object will be mutated and fully parsed.
+        """
         # TODO deprecate update_pointers
         # TODO test for catastrophic surface, material, transform renumbering
-        # TODO update str and repr to be jit safe
-        # TODO update push to cell method
-        # TODO handle material-thermal linking
         if hasattr(self, "_not_parsed") and self._not_parsed:
             del self._not_parsed
             problem = self._problem
@@ -181,6 +228,9 @@ class MCNP_Object(ABC, metaclass=_ExceptionContextAdder):
                 self.link_to_problem(problem)
 
     def _load_old_data(self, old_data):
+        """
+        Method to load old data that needs to persist from JIT parsed to full parsed state.
+        """
         [setattr(self, k, v) for k, v in old_data.items()]
 
     def search(self, search: str | re.Pattern) -> bool:
