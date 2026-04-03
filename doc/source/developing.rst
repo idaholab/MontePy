@@ -320,6 +320,114 @@ For more detail in how to work with them read the next section on MCNP_Objects: 
 
 
 
+.. _jit-parsing:
+
+Just-in-Time (JIT) Parsing
+---------------------------
+
+By default, MontePy defers the full parse of each input until the data are actually
+needed.
+On first read only a lightweight "JIT" parse is performed: enough to categorize
+the input and extract its number (for
+:class:`~montepy.numbered_mcnp_object.Numbered_MCNP_Object` subclasses).
+The raw :class:`~montepy.input_parser.mcnp_input.Input` object is stored and the full
+parse is triggered on-demand.
+
+How it works
+^^^^^^^^^^^^
+
+#. ``MCNP_Object.__init__`` is called with ``jit_parse=True`` (the default).
+#. ``_jit_light_init`` instantiates ``self._JitParser()``, parses only the first few
+   tokens, and stores the results as instance attributes.
+   The attribute ``_not_parsed = True`` is set as a marker.
+#. If the JIT parse raises **any** exception (including ``AttributeError`` when
+   ``_JitParser`` is not defined), the exception is caught and a full parse is
+   performed automatically as a fallback.
+   JIT parsing is explicitly "fast and dirty" — correctness is guaranteed by this
+   fallback, not by the JIT parser itself.
+#. When the full data are required, :func:`~montepy.mcnp_object.MCNP_Object.full_parse`
+   is called.
+   This re-runs ``__init__`` with ``jit_parse=False``, triggering a full parse via
+   ``_parse_tree``.
+   Any attributes listed in ``_KEYS_TO_PRESERVE`` are carried over from the JIT state.
+
+.. warning::
+
+   JIT parsers must be context-free (no state, no look-back).
+   Do **not** add context-sensitive logic to a ``_JitParser``.
+   Keep it minimal: parse only what is needed to categorize the input and read its
+   number.
+   Anything that could fail gracefully will be handled by the automatic fallback to
+   full parsing.
+
+``needs_full_ast`` vs ``needs_full_cst``
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Two decorators are provided to trigger a full parse on demand.
+They differ in *what kind* of parsed data they signal is needed:
+
+:func:`~montepy.utilities.needs_full_ast`
+   Use on **getters** (reading data).
+   Signals that an Abstract Syntax Tree (AST) — the semantic values — is sufficient.
+
+:func:`~montepy.utilities.needs_full_cst`
+   Use on **setters and deleters** (modifying data).
+   Signals that a Concrete Syntax Tree (CST) — which preserves whitespace and
+   comment formatting — is required so that the modified input can be written back
+   faithfully.
+
+Both decorators currently call ``self.full_parse()`` and are therefore functionally
+identical.
+The distinction is preserved as infrastructure for a possible future where JIT parsing
+can provide a partial AST (enough for reads) without yet building the full CST (needed
+for writes).
+Using the correct decorator now ensures that future optimization can be applied without
+changing call sites.
+
+.. code-block:: python
+
+    from montepy.utilities import needs_full_ast, needs_full_cst
+
+    @property
+    @needs_full_ast          # reading: AST is sufficient
+    def density(self):
+        return self._density_node.value
+
+    @density.setter
+    @needs_full_cst          # writing: CST required for faithful round-trip output
+    def density(self, value):
+        self._density_node.value = value
+
+Supporting JIT parsing in a new class
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+To add JIT support to a new class:
+
+#. Set ``_JitParser`` to the lightweight, context-free parser class that parses only
+   the minimum needed tokens (number, classifier, etc.):
+
+   .. code-block:: python
+
+       class MyInput(MCNP_Object):
+
+           @staticmethod
+           def _parser():
+               return MyFullParser()
+
+           _JitParser = MyJitParser
+
+#. If any data must survive the JIT → full-parse transition (e.g., problem links
+   established between the two steps), add those attribute names to
+   ``_KEYS_TO_PRESERVE``:
+
+   .. code-block:: python
+
+       _KEYS_TO_PRESERVE = {"_some_attr"}
+
+#. Decorate getters with ``@needs_full_ast`` and setters/deleters with
+   ``@needs_full_cst``.
+
+
 Inheritance
 -----------
 
@@ -330,37 +438,66 @@ There are many abstract or simply parent classes that are designed to be subclas
 Input: :class:`~montepy.mcnp_object.MCNP_Object`
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-All classes that represent a single input card *must* subclass this. 
+All classes that represent a single input card *must* subclass this.
 For example: some children are: :class:`~montepy.cell.Cell`, :class:`~montepy.surfaces.surface.Surface`.
 
 How to __init__
 """""""""""""""
-Your init function signature should be: ``def __init__(self, input)``.
-You should then immediately populate default values, and then
-call ``super().__init__(input, self._parser)``.
-This way if ``super().__init__`` fails, 
-there will be enough information for the error reporting to not fail,
-when trying to convert the objects to strings.
-This will then populate the parameters: ``_tree``, and ``comments``.
-Now you should (inside an in if block checking ``input_card``) parse 
-``self._tree``.
-Classes need to support "from scratch" creation e.g., ``cell = Cell()``.
+
+Most subclasses should **not** define a custom ``__init__``.
+The base class ``MCNP_Object.__init__`` handles both from-scratch creation and
+input parsing (including JIT parsing).
+Instead, subclasses implement three hook methods that the base ``__init__`` calls:
+
+* :func:`~montepy.mcnp_object.MCNP_Object._init_blank` — called first, before any parsing.
+  Initialize every internal attribute to a safe default value here.
+  This ensures that even a partially-constructed object can still be converted
+  to a string for error reporting.
+
+* :func:`~montepy.mcnp_object.MCNP_Object._parse_tree` — called after a full parse has
+  occurred (i.e., ``self._tree`` is populated).
+  Extract semantic values from the syntax tree and store them as internal attributes.
+
+* :func:`~montepy.mcnp_object.MCNP_Object._generate_default_tree` — called when no
+  ``input`` argument is provided (from-scratch creation, e.g., ``Cell()``).
+  Build a default syntax tree and store it in ``self._tree``.
+  Use ``self._generate_default_node(type, default_value)`` for individual leaf nodes.
+  Any keyword arguments passed to ``__init__`` beyond ``input`` and ``jit_parse``
+  are forwarded here via ``**kwargs``.
+
+If you need a custom ``__init__`` (e.g., to add extra constructor arguments), match
+the parent signature and delegate to ``super().__init__``:
+
+.. code-block:: python
+
+    @args_checked
+    def __init__(self, input: InitInput = None, *, number: ty.PositiveInt = None,
+                 jit_parse: bool = True):
+        super().__init__(input, jit_parse=jit_parse, number=number)
+
+Classes need to support "from scratch" creation, e.g., ``cell = Cell()``.
 
 Working with Parsers, and the Syntax Tree
 """""""""""""""""""""""""""""""""""""""""
 
-The parent class init function requires an instance of a parser object.
-Note this is an instance, and not the class itself.
-The init function will then run ``parser.parse()``. 
-Most objects in MontePy will initialize and keep the parser object at the (MontePy) class level, to reduce overhead.
+Each subclass must implement the abstract ``@staticmethod`` ``_parser()``, which must
+return a **new parser instance** each time it is called:
 
 .. code-block:: python
 
-   class Cell(MCNP_Object):
-       # Snip
-       _parser = CellParser()
-       # snip
+   class MyInput(MCNP_Object):
 
+       @staticmethod
+       def _parser():
+           return MyFullParser()
+
+       _JitParser = MyJitParser
+
+``_JitParser`` is a companion class attribute for just-in-time parsing (see
+:ref:`jit-parsing`).
+It should be set to the lightweight JIT parser class for this object.
+If ``_JitParser`` is not defined and JIT parsing is requested, the ``AttributeError``
+is caught and the object automatically falls back to a full parse.
 
 If the input was parsed correctly the syntax tree returned will be stored in ``self._tree``.
 If not the errors will be raised automatically.
@@ -522,12 +659,13 @@ You will also need to update :func:`~montepy.surfaces.surface_builder.surface_bu
 You should expose clear parameters such as ``radius`` or ``location``.
 ``format_for_mcnp_input()`` is handled by default.
 
-How to __init__
-"""""""""""""""
-After running the super init method
-you will then have access to ``self.surface_type``, and ``self.surface_constants``.
-You will need to implement a ``_allowed_surface_types`` to specify which surface types are allowed for your class.
-You then need to verify that there are the correct number of surface constants. 
+How to implement
+""""""""""""""""
+Surface subclasses use the same hook pattern as :class:`~montepy.mcnp_object.MCNP_Object`.
+In ``_parse_tree`` you will have access to ``self.surface_type``, and ``self.surface_constants``
+(populated by the parent ``_parse_tree``).
+You will need to implement ``_allowed_surface_types`` to specify which surface types are allowed for your class.
+You then need to verify that there are the correct number of surface constants.
 You will also need to add a branch in the logic for :func:`montepy.surfaces.surface_builder.surface_builder`.
 
 :func:`~montepy.surfaces.surface.Surface.find_duplicate_surfaces`
@@ -623,25 +761,28 @@ Both of these are appropriate uses of this class.
 This class adds a lot of machinery to handle the complexities of these data inputs,
 that is because these data can be specified in the Cell *or* Data block.
 
-How to __init__
-"""""""""""""""
-Similar to other inputs you need to match the parent signature and run super on it:
+How to implement
+""""""""""""""""
+Like other ``MCNP_Object`` subclasses, most of the work is done in the hook methods
+``_init_blank``, ``_parse_tree``, and ``_generate_default_tree``.
+The base class ``CellModifierInput.__init__`` accepts extra arguments used when
+constructing the object from a ``Cell`` parameter block:
 
 .. code-block:: python
 
-    def __init__(self, input=None, in_cell_block=False, key=None, value=None):
-             super().__init__(input, in_cell_block, key, value)  
+    def __init__(self, input=None, in_cell_block=False, key=None, value=None,
+                 *, jit_parse: bool = True):
+        super().__init__(input, in_cell_block, key, value, jit_parse=jit_parse)
 
-The added arguments add more information for invoking this from a ``Cell``. 
-When doing so the ``in_cell_block`` will obviously be true,
-and the ``key``, and ``value`` will be taken from the ``parameters`` syntax tree. 
+The added arguments add more information for invoking this from a ``Cell``.
+When doing so ``in_cell_block`` will be true,
+and ``key`` and ``value`` will be taken from the ``parameters`` syntax tree.
 These will all be automatically called from ``Cell`` as discussed below.
-Most of the boiler plate will be handled by super. 
-The goals for init function should be: 
+The goals for the hook methods should be:
 
-#. initialize default values needed for when this is initialized from a blank call.
-#. Parse the data provided in the ``input``, when ``in_cell_block`` is False.
-#. Parse the data given in ``key`` and ``value`` when ``in_cell_block`` is True.
+#. ``_init_blank``: initialize default values needed for when this is initialized from a blank call.
+#. ``_parse_tree``: parse the data provided in ``input`` (when ``in_cell_block`` is False)
+   or the data given in ``key`` and ``value`` (when ``in_cell_block`` is True).
 
 
 On data Ownership
