@@ -159,6 +159,41 @@ It will read the specified MCNP input file, and return an MontePy :class:`~monte
 >>> len(problem.cells)
 5
 
+Performance: Just-in-Time Parsing
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+By default MontePy uses **just-in-time (JIT) parsing**, though this can be disabled
+by passing ``jit_parse=False`` to :func:`~montepy.input_parser.input_reader.read_input`.
+When JIT parsing is enabled, each input is only parsed enough to categorize it and
+record its number on first read.
+The full parse of each object is deferred until you actually access its data.
+
+This means:
+
+* **The first access** of any object's data may be slightly slower while the full parse
+  runs. Subsequent accesses are normal speed.
+* **Iterating over all objects** (e.g., looping over every cell to read densities) will
+  trigger a full parse of every object and can therefore be slow for large files.
+
+.. note::
+
+   If you need to pre-parse everything up front (for example, to ensure all errors
+   surface immediately), you can pass ``jit_parse=False`` to
+   :func:`~montepy.input_parser.input_reader.read_input`, or call
+   :func:`~montepy.mcnp_object.MCNP_Object.full_parse` on individual objects.
+
+Operations that trigger mass parsing
+"""""""""""""""""""""""""""""""""""""
+
+Some operations force every object in the problem to be fully re-parsed at once.
+For large problems these can be a significant one-time cost.
+
+* **Switching a cell-modifier between the cell block and the data block** — via
+  :func:`~montepy.mcnp_problem.MCNP_Problem.print_in_data_block` — forces every cell
+  to be fully re-parsed, because each cell's syntax tree must be rebuilt to either
+  absorb or expel the modifier.
+
+
 Writing a File
 --------------
 
