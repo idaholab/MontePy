@@ -4,13 +4,12 @@ from abc import ABC, ABCMeta, abstractmethod
 import copy
 import functools
 import itertools as it
-import sys
 import textwrap
-from typing import Union
+from typing import TypeAlias, Union, Type
 import warnings
 import weakref
 
-from montepy.errors import *
+from montepy.exceptions import *
 from montepy.constants import (
     BLANK_SPACE_CONTINUE,
     COMMENT_FINDER,
@@ -26,11 +25,11 @@ from montepy.input_parser.syntax_node import (
 )
 import montepy
 
-InitInput = Union[montepy.input_parser.mcnp_input.Input, str]
+InitInput: TypeAlias = Union[montepy.input_parser.mcnp_input.Input, str]
 
 
 class _ExceptionContextAdder(ABCMeta):
-    """A metaclass for wrapping all class properties and methods in :func:`~montepy.errors.add_line_number_to_exception`."""
+    """A metaclass for wrapping all class properties and methods in :func:`~montepy.exceptions.add_line_number_to_exception`."""
 
     @staticmethod
     def _wrap_attr_call(func):
@@ -154,20 +153,15 @@ class MCNP_Object(ABC, metaclass=_ExceptionContextAdder):
         if key.startswith("_"):
             super().__setattr__(key, value)
         else:
-            # kwargs added in 3.10
-            if sys.version_info >= (3, 10):
-                raise AttributeError(
-                    f"'{type(self).__name__}' object has no attribute '{key}'",
-                    obj=self,
-                    name=key,
-                )
             raise AttributeError(
                 f"'{type(self).__name__}' object has no attribute '{key}'",
+                obj=self,
+                name=key,
             )
 
     @staticmethod
     def _generate_default_node(
-        value_type: type, default: str, padding: str = " ", never_pad: bool = False
+        value_type: Type, default: str, padding: str = " ", never_pad: bool = False
     ):
         """Generates a "default" or blank ValueNode.
 
@@ -178,9 +172,9 @@ class MCNP_Object(ABC, metaclass=_ExceptionContextAdder):
 
         Parameters
         ----------
-        value_type : Class
+        value_type : typing.Type
             the data type for the ValueNode.
-        default : value_type
+        default : typing.Any
             the default value to provide (type needs to agree with
             value_type)
         padding : str, None
@@ -211,11 +205,11 @@ class MCNP_Object(ABC, metaclass=_ExceptionContextAdder):
 
         Returns
         -------
-        unknown
+        dict[str, str]
             a dictionary of the key-value pairs of the parameters.
 
 
-        :rytpe: dict
+        :rtype: dict
         """
         return self._parameters
 
@@ -231,13 +225,13 @@ class MCNP_Object(ABC, metaclass=_ExceptionContextAdder):
         """
         pass
 
-    def format_for_mcnp_input(self, mcnp_version: tuple[int]) -> list[str]:
+    def format_for_mcnp_input(self, mcnp_version: tuple[int, int, int]) -> list[str]:
         """Creates a list of strings representing this MCNP_Object that can be
         written to file.
 
         Parameters
         ----------
-        mcnp_version : tuple[int]
+        mcnp_version : tuple[int, int, int]
             The tuple for the MCNP version that must be exported to.
 
         Returns
@@ -248,7 +242,6 @@ class MCNP_Object(ABC, metaclass=_ExceptionContextAdder):
         self.validate()
         self._update_values()
         self._tree.check_for_graveyard_comments()
-        message = None
         with warnings.catch_warnings(record=True) as ws:
             lines = self.wrap_string_for_mcnp(self._tree.format(), mcnp_version, True)
         self._flush_line_expansion_warning(lines, ws)
@@ -458,6 +451,13 @@ The new input was:\n\n"""
 
     @_problem.setter
     def _problem(self, problem):
+        """
+        The problem this object is associated with if any.
+
+        Returns
+        -------
+        montepy.MCNP_Problem | None
+        """
         if problem is None:
             self._problem_ref = None
             return
@@ -478,6 +478,9 @@ The new input was:\n\n"""
         return self._tree.get_trailing_comment()
 
     def _delete_trailing_comment(self):
+        """
+        Deletes trailing comments from an object when it has been moved to another object.
+        """
         self._tree._delete_trailing_comment()
 
     def _grab_beginning_comment(self, padding: list[PaddingNode], last_obj=None):

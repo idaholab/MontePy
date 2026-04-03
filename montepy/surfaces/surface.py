@@ -6,7 +6,7 @@ from numbers import Real
 
 import montepy
 from montepy.input_parser import syntax_node
-from montepy.errors import *
+from montepy.exceptions import *
 from montepy.data_inputs import transform
 from montepy.input_parser.surface_parser import SurfaceParser
 from montepy.numbered_mcnp_object import Numbered_MCNP_Object, InitInput
@@ -68,7 +68,7 @@ class Surface(Numbered_MCNP_Object):
             self._generate_default_tree(number, surface_type)
         # surface number
         self._number = self._tree["surface_num"]["number"]
-        self._number._convert_to_int()
+        self._number.convert_to_int()
         self._old_number = copy.deepcopy(self._number)
         if "modifier" in self._tree["surface_num"]:
             self._modifier = self._tree["surface_num"]["modifier"]
@@ -98,7 +98,7 @@ class Surface(Numbered_MCNP_Object):
         # parse surface mnemonic
         try:
             # enforce enums
-            self._surface_type._convert_to_enum(
+            self._surface_type.convert_to_enum(
                 SurfaceType, allow_none=True, switch_to_upper=True
             )
         # this should never be reached due to SLY rules.
@@ -319,7 +319,7 @@ class Surface(Numbered_MCNP_Object):
 
         Returns
         -------
-        generator
+        collections.abc.Generator
         """
         if self._problem:
             for cell in self._problem.cells:
@@ -330,11 +330,17 @@ class Surface(Numbered_MCNP_Object):
         return f"SURFACE: {self.number}, {self.surface_type}"
 
     def __repr__(self):
+        boundary = "None"
+        if self.is_reflecting:
+            boundary = "Reflective"
+        elif self.is_white_boundary:
+            boundary = "White"
         return (
             f"SURFACE: {self.number}, {self.surface_type}, "
             f"periodic surface: {self.periodic_surface}, "
             f"transform: {self.transform}, "
-            f"constants: {self.surface_constants}"
+            f"constants: {self.surface_constants}, "
+            f"Boundary: {boundary}"
         )
 
     def update_pointers(self, surfaces, data_inputs):

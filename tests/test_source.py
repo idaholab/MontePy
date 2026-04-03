@@ -13,5 +13,5 @@ def test_source_parse_and_parrot(line):
     input = Input([line], BlockType.DATA)
     data = parse_data(input)
     assert data.mcnp_str() == line
-    with pytest.raises(montepy.errors.UnsupportedFeature):
+    with pytest.raises(montepy.exceptions.UnsupportedFeature):
         data.data

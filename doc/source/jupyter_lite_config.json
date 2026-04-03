@@ -1,0 +1,8 @@
+{
+  "LiteBuildConfig": {
+    "output_dir": "build/html/lite",
+    "PipliteAddon" : {
+	    "piplite_urls": "wheels/"
+    }
+  }
+}

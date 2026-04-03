@@ -10,7 +10,7 @@ from montepy.data_inputs.nuclide import Nucleus, Nuclide, Library
 from montepy.data_inputs.material import Material, _DefaultLibraries as DL
 from montepy.data_inputs.material_component import MaterialComponent
 from montepy.data_inputs.thermal_scattering import ThermalScatteringLaw
-from montepy.errors import MalformedInputError, UnknownElement
+from montepy.exceptions import MalformedInputError, UnknownElement
 from montepy.input_parser.block_type import BlockType
 from montepy.input_parser.mcnp_input import Input
 from montepy.particle import LibraryType
@@ -47,8 +47,7 @@ class TestMaterial:
 
     @pytest.fixture
     def parsed_material(_):
-        return Material(
-            """M1   1001.00c   0.05
+        return Material("""M1   1001.00c   0.05
       1001.04c   0.05
       1001.80c   0.05
       1001.04p   0.05
@@ -64,8 +63,7 @@ class TestMaterial:
       95242      0.05
       27560.50c  0.05
       94239      0.05
-      28000.60c  0.05"""
-        )
+      28000.60c  0.05""")
 
     @pytest.fixture
     def materials(_, big_material, parsed_material):
@@ -146,9 +144,9 @@ class TestMaterial:
 
     def test_material_validator(_):
         material = Material()
-        with pytest.raises(montepy.errors.IllegalState):
+        with pytest.raises(montepy.exceptions.IllegalState):
             material.validate()
-        with pytest.raises(montepy.errors.IllegalState):
+        with pytest.raises(montepy.exceptions.IllegalState):
             material.format_for_mcnp_input((6, 2, 0))
 
     def test_material_number_setter(_):
@@ -645,7 +643,7 @@ Pu-239   (80c) 0.1
         with pytest.raises(ValueError):
             mat.add_nuclide(Nuclide("1001.80c"), -1.0)
 
-    @pytest.mark.filterwarnings("ignore::montepy.errors.LineExpansionWarning")
+    @pytest.mark.filterwarnings("ignore::montepy.exceptions.LineExpansionWarning")
     def test_add_nuclide_export(_, materials):
         for big_material in materials:
             _.verify_export(big_material)
@@ -700,23 +698,23 @@ class TestThermalScattering:
 
     def test_thermal_scatter_validate(_):
         thermal = ThermalScatteringLaw()
-        with pytest.raises(montepy.errors.IllegalState):
+        with pytest.raises(montepy.exceptions.IllegalState):
             thermal.validate()
-        with pytest.raises(montepy.errors.IllegalState):
+        with pytest.raises(montepy.exceptions.IllegalState):
             thermal.format_for_mcnp_input((6, 2, 0))
         material = Material()
         material.number = 1
         thermal._old_number = montepy.input_parser.syntax_node.ValueNode("1", int)
         thermal.update_pointers([material])
-        with pytest.raises(montepy.errors.IllegalState):
+        with pytest.raises(montepy.exceptions.IllegalState):
             thermal.validate()
         thermal._old_number = montepy.input_parser.syntax_node.ValueNode("2", int)
-        with pytest.raises(montepy.errors.MalformedInputError):
+        with pytest.raises(montepy.exceptions.MalformedInputError):
             thermal.update_pointers([material])
-        with pytest.raises(montepy.errors.IllegalState):
+        with pytest.raises(montepy.exceptions.IllegalState):
             thermal.validate()
         thermal._old_number = montepy.input_parser.syntax_node.ValueNode("2", int)
-        with pytest.raises(montepy.errors.MalformedInputError):
+        with pytest.raises(montepy.exceptions.MalformedInputError):
             thermal.update_pointers([material])
 
     def test_thermal_scattering_add(self):

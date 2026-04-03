@@ -15,6 +15,7 @@ BAD_INPUTS = {
     "test_extra_data_param.imcnp",
     "test_extra_data_imp.imcnp",
     "number_conflict_pin_cell.imcnp",
+    "test_pin_cell_extra_block_warning.imcnp",
 }
 IGNORE_FILES = {
     "testReadRec1.imcnp",
@@ -24,6 +25,7 @@ IGNORE_FILES = {
     "bad_encoding.imcnp",
     "unicode.imcnp",
     "file2read.imcnp",
+    "test_not_imp.imcnp",
 }
 
 BAD_ENCODING_FILES = {

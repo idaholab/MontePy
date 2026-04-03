@@ -18,9 +18,10 @@ from .constants import DEFAULT_VERSION as MCNP_VERSION
 
 from montepy.data_inputs.material import Material
 from montepy.data_inputs.transform import Transform
-from montepy.data_inputs.nuclide import Library, Nuclide
+from montepy.data_inputs.nuclide import Library, Nuclide, Nucleus
 from montepy.data_inputs.element import Element
 from montepy.data_inputs.lattice import LatticeType
+from montepy.data_inputs import Mode
 from montepy.data_inputs.thermal_scattering import ThermalScatteringLaw
 from montepy.data_inputs.data_parser import parse_data
 
@@ -47,9 +48,10 @@ from montepy.universes import Universes
 from montepy.surface_collection import Surfaces
 from montepy.transforms import Transforms
 
-import montepy.errors
-import sys
+import montepy.exceptions
+import montepy.errors  # deprecated
 
+import sys
 
 try:
     from . import _version

@@ -1,20 +1,35 @@
 # Copyright 2024, Battelle Energy Alliance, LLC All Rights Reserved.
-from unittest import TestCase
-
+import pytest
 from montepy.utilities import fortran_float
 
+import math
 
-class testFortranFloat(TestCase):
-    def test_normal_float_parse(self):
-        tests = {"123": 123, "1.23": 1.23, "1.2e+3": 1.2e3, "1.2e-3": 1.2e-3}
-        for test_string in tests:
-            self.assertAlmostEqual(fortran_float(test_string), tests[test_string])
 
-    def test_stupid_float_parse(self):
-        tests = {"1.2+3": 1.2e3, "1.2-3": 1.2e-3, "-2-3": -2.0e-3}
-        for test_string in tests:
-            self.assertAlmostEqual(fortran_float(test_string), tests[test_string])
+@pytest.mark.parametrize(
+    "test_string,expected",
+    [
+        ("123", 123),
+        ("1.23", 1.23),
+        ("1.2e+3", 1.2e3),
+        ("1.2e-3", 1.2e-3),
+    ],
+)
+def test_normal_float_parse(test_string, expected):
+    assert math.isclose(fortran_float(test_string), expected)
 
-    def test_raise_error(self):
-        with self.assertRaises(ValueError):
-            fortran_float("Dog")
+
+@pytest.mark.parametrize(
+    "test_string,expected",
+    [
+        ("1.2+3", 1.2e3),
+        ("1.2-3", 1.2e-3),
+        ("-2-3", -2.0e-3),
+    ],
+)
+def test_stupid_float_parse(test_string, expected):
+    assert math.isclose(fortran_float(test_string), expected)
+
+
+def test_raise_error():
+    with pytest.raises(ValueError):
+        fortran_float("Dog")

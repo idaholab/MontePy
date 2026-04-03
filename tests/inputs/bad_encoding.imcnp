@@ -1,4 +1,4 @@
-MESSAGE: this is a message
+MESSAGE: n=bad_encoding.
 it should show up at the beginning
 foo
 Note: this file in encoded in "extended ascii": "CP-1252"

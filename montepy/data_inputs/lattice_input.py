@@ -3,7 +3,7 @@ import itertools
 
 from montepy.data_inputs.cell_modifier import CellModifierInput, InitInput
 from montepy.data_inputs.lattice import LatticeType
-from montepy.errors import *
+from montepy.exceptions import *
 from montepy.input_parser.mcnp_input import Jump
 from montepy.input_parser import syntax_node
 from montepy.mcnp_object import MCNP_Object
@@ -38,8 +38,8 @@ class LatticeInput(CellModifierInput):
             if key:
                 try:
                     val = value["data"][0]
-                    val._convert_to_int()
-                    val._convert_to_enum(LatticeType, int)
+                    val.convert_to_int()
+                    val.convert_to_enum(LatticeType, int)
                 except ValueError as e:
                     raise ValueError("Cell Lattice must be 1 or 2")
                 self._lattice = val
@@ -48,8 +48,8 @@ class LatticeInput(CellModifierInput):
             words = self.data
             for word in words:
                 try:
-                    word._convert_to_int()
-                    word._convert_to_enum(LatticeType, int)
+                    word.convert_to_int()
+                    word.convert_to_enum(LatticeType, int)
                     self._lattice.append(word)
                 except ValueError:
                     raise MalformedInputError(
@@ -59,7 +59,7 @@ class LatticeInput(CellModifierInput):
     def _generate_default_cell_tree(self):
         list_node = syntax_node.ListNode("number sequence")
         data = self._generate_default_node(int, None)
-        data._convert_to_enum(LatticeType, True, int)
+        data.convert_to_enum(LatticeType, True, int)
         list_node.append(data)
         classifier = syntax_node.ClassifierNode()
         classifier.prefix = self._generate_default_node(

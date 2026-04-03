@@ -12,10 +12,23 @@ Fixes # (issue number)
 
 - [ ] I have performed a self-review of my own code.
 - [ ] The code follows the standards outlined in the [development documentation](https://www.montepy.org/en/stable/dev_standards.html).
-- [ ] I have formatted my code with `black` version 25.
+- [ ] I have formatted my code with `black` version 25 or 26.
 - [ ] I have added tests that prove my fix is effective or that my feature works (if applicable).
 
 ---
+
+### LLM Disclosure
+
+1. Are you?
+
+   - [ ] A human user 
+   - [ ] A large language model (LLM), including ones acting on behalf of a human
+
+1. Were any large language models (LLM or "AI") used in to generate any of this code?
+
+  - [ ] Yes
+      - Model(s) used:
+  - [ ] No
 
 <details open> 
 
@@ -42,6 +55,7 @@ Fixes # (issue number)
 
 Ensure that:
 
+- [ ] This PR fully addresses and resolves the referenced issue(s).
 - [ ] The submitted code is consistent with the merge checklist outlined [here](https://www.montepy.org/en/stable/dev_checklist.html#merge-checklist).
 - [ ] The PR covers all relevant aspects according to the development guidelines.
 - [ ] 100% coverage of the patch is achieved, or justification for a variance is given.

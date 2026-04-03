@@ -6,7 +6,7 @@ import itertools as it
 
 import montepy
 import montepy.cells
-from montepy.errors import NumberConflictError
+from montepy.exceptions import NumberConflictError
 import pytest
 import os
 
@@ -55,6 +55,21 @@ class TestNumberedObjectCollection:
         with pytest.raises(ValueError):
             cp_simple_problem.materials.check_number(-1)
 
+    def test_update_number_not_in_cache(self):
+        """Test that _update_number silently returns when object is not in cache."""
+        cells = montepy.Cells()
+        cell1 = montepy.Cell()
+        cell1.number = 1
+        cells.append(cell1)
+        # Create a cell that is NOT in this collection
+        other_cell = montepy.Cell()
+        other_cell.number = 999
+        # Call _update_number with an object that isn't tracked by this collection
+        cells._update_number(1, 10, other_cell)
+        # The original cell 1 should still be accessible and unchanged
+        assert cells[1] is cell1
+        assert cells[1].number == 1
+
     def test_objects(self, cp_simple_problem):
         generated = list(cp_simple_problem.cells)
         objects = cp_simple_problem.cells.objects
@@ -82,15 +97,6 @@ class TestNumberedObjectCollection:
         extender[1].number = 60
         surfaces.extend(extender)
         assert len(surfaces) == size + 2
-        # force a num_cache miss
-        extender = copy.deepcopy(extender)
-        for surf in extender:
-            surf._problem = None
-        surfaces[1000].number = 1
-        extender[0].number = 1000
-        extender[1].number = 70
-        surfaces.extend(extender)
-        assert len(surfaces) == size + 4
         with pytest.raises(TypeError):
             surfaces.extend(5)
         with pytest.raises(TypeError):
@@ -111,6 +117,11 @@ class TestNumberedObjectCollection:
             cells.append(cell)
         with pytest.raises(TypeError):
             cells.append(5)
+        # Directly set a negative internal value to cover the guard in
+        # __internal_append (bypasses the property-level validator).
+        cell._number.value = -1
+        with pytest.raises(ValueError):
+            cells.append(cell)
         cell.number = 20
         cells.append(cell)
         assert len(cells) == size + 1
@@ -161,10 +172,31 @@ class TestNumberedObjectCollection:
             cells.append_renumber(cell, "hi")
         cell = copy.deepcopy(cell)
         cell._problem = None
+        cell._collection_ref = None
         cell.number = 1
         cells.append_renumber(cell)
         assert cell.number == 4
         assert len(cells) == size + 2
+
+    def test_append_renumber_none_number(self, cp_simple_problem):
+        """Test that append_renumber assigns the next available number when
+        the object has no number yet (number is None).  Regression test for
+        GitHub issue #880.
+        """
+        cells = copy.deepcopy(cp_simple_problem.cells)
+        size = len(cells)
+        # montepy.Cell() created from scratch has number == None
+        new_cell = montepy.Cell()
+        assert new_cell.number is None, "Sanity: fresh Cell should have number=None"
+        assigned = cells.append_renumber(new_cell)
+        assert new_cell.number is not None, "Cell should have been assigned a number"
+        assert new_cell.number > 0, "Assigned number must be positive"
+        assert assigned == new_cell.number, "Return value must match assigned number"
+        assert assigned in cells.numbers, "Cell must be present in collection"
+        assert (
+            new_cell in cells
+        ), "Cell object must be iterable-accessible in collection"
+        assert len(cells) == size + 1
 
     def test_append_renumber_problems(self, cp_simple_problem):
         print(hex(id(cp_simple_problem.materials._problem)))
@@ -179,6 +211,44 @@ class TestNumberedObjectCollection:
         assert new_num == 2, "Material not renumbered correctly."
         assert len(prob2.materials) == len_mats + 1, "Material not appended"
         assert prob2.materials[2] is mat1, "Material 2 is not the new material"
+
+    def test_extend_renumber(self, cp_simple_problem):
+        cells = copy.deepcopy(cp_simple_problem.cells)
+        size = len(cells)
+        # Test basic extend
+        new_cells = []
+        for i in range(10, 13):
+            cell = montepy.Cell()
+            cell.number = i
+            new_cells.append(cell)
+        cells.extend_renumber(new_cells)
+        assert len(cells) == size + 3
+        assert 10 in cells.numbers
+        # Test with conflicting numbers
+        conflict_cells = []
+        for i in range(1, 3):
+            cell = copy.deepcopy(cells[i])
+            cell._problem = None
+            cell._collection_ref = None
+            cell.number = 1  # conflict
+            conflict_cells.append(cell)
+        cells.extend_renumber(conflict_cells, step=1)
+        assert len(cells) == size + 5
+        # Check if renumbering happened
+        assert conflict_cells[0].number != 1
+        assert conflict_cells[1].number != 1
+        # Test type errors
+        with pytest.raises(TypeError):
+            cells.extend_renumber(5)
+        with pytest.raises(TypeError):
+            cells.extend_renumber([5])
+        with pytest.raises(TypeError):
+            cells.extend_renumber([], step="hi")
+        # Test return value
+        size_before = len(cells)
+        result = cells.extend_renumber([])
+        assert result is None
+        assert len(cells) == size_before
 
     def test_request_number(self, cp_simple_problem):
         cells = cp_simple_problem.cells

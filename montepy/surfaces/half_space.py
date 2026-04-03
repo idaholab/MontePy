@@ -1,7 +1,7 @@
 # Copyright 2024-2025, Battelle Energy Alliance, LLC All Rights Reserved.
 from __future__ import annotations
 import montepy
-from montepy.errors import *
+from montepy.exceptions import *
 from montepy.geometry_operators import Operator
 from montepy.input_parser.syntax_node import (
     GeometryTree,
@@ -171,7 +171,7 @@ class HalfSpace:
 
         1. Link this HalfSpace (and its children) to the parent cell.
         2. Update the divider parameter to point to the relevant surface or cell.
-        3. Update the parent's :func:`~montepy.cell.Cell.surfaces`, and :func:`~montepy.cell.Cell.complements`.
+        3. Update the parent's :attr:`~montepy.Cell.surfaces`, and :attr:`~montepy.Cell.complements`.
 
         Parameters
         ----------
@@ -216,17 +216,18 @@ class HalfSpace:
     def remove_duplicate_surfaces(
         self,
         deleting_dict: dict[
-            int, tuple[montepy.surfaces.Surface, montepy.surfaces.Surface]
+            int,
+            tuple[montepy.surfaces.surface.Surface, montepy.surfaces.surface.Surface],
         ],
     ):
         """Updates old surface numbers to prepare for deleting surfaces.
 
         This will ensure any new surfaces or complements properly get added to the parent
-        cell's :func:`~montepy.cell.Cell.surfaces` and :func:`~montepy.cell.Cell.complements`.
+        cell's :attr:`~montepy.Cell.surfaces` and :attr:`~montepy.Cell.complements`.
 
         .. versionchanged:: 1.0.0
 
-            The form of the deleting_dict was changed as :class:`~montepy.surfaces.Surface` is no longer hashable.
+            The form of the deleting_dict was changed as :class:`~montepy.Surface` is no longer hashable.
 
         Parameters
         ----------
@@ -399,38 +400,24 @@ class HalfSpace:
     def __iand__(self, other):
         if not isinstance(other, HalfSpace):
             raise TypeError(f"Right hand side must be HalfSpace. {other} given.")
+        self._add_new_children_to_cell(other)
         if isinstance(self, UnitHalfSpace):
             return self & other
-        right_leaf = (
-            self.right is not None and isinstance(self.right, UnitHalfSpace)
-        ) or self.right is None
-        if right_leaf:
-            if self.right is not None:
-                self.right = self.right & other
-                return self
-            else:
-                return (~self.left) & other
-        self.right &= other
-        self._add_new_children_to_cell(other)
-        return self
+        if self.right is None:
+            # if this is a complement operator delete self
+            return (~self.left) & other
+        return self & other
 
     def __ior__(self, other):
         if not isinstance(other, HalfSpace):
             raise TypeError(f"Right hand side must be HalfSpace. {other} given.")
+        self._add_new_children_to_cell(other)
         if isinstance(self, UnitHalfSpace):
             return self | other
-        right_leaf = (
-            self.right is not None and isinstance(self.right, UnitHalfSpace)
-        ) or self.right is None
-        if right_leaf:
-            if self.right is not None:
-                self.right = self.right | other
-                return self
-            else:
-                return (~self.left) | other
-        self.right |= other
-        self._add_new_children_to_cell(other)
-        return self
+        if self.right is None:
+            # if this is a complement operator delete self
+            return (~self.left) | other
+        return self | other
 
     def __and__(self, other):
         if not isinstance(other, HalfSpace):
@@ -721,17 +708,18 @@ class UnitHalfSpace(HalfSpace):
     def remove_duplicate_surfaces(
         self,
         deleting_dict: dict[
-            int, tuple[montepy.surfaces.Surface, montepy.surfaces.Surface]
+            int,
+            tuple[montepy.surfaces.surface.Surface, montepy.surfaces.surface.Surface],
         ],
     ):
         """Updates old surface numbers to prepare for deleting surfaces.
 
         This will ensure any new surfaces or complements properly get added to the parent
-        cell's :func:`~montepy.cell.Cell.surfaces` and :func:`~montepy.cell.Cell.complements`.
+        cell's :attr:`~montepy.Cell.surfaces` and :attr:`~montepy.Cell.complements`.
 
         .. versionchanged:: 1.0.0
 
-            The form of the deleting_dict was changed as :class:`~montepy.surfaces.Surface` is no longer hashable.
+            The form of the deleting_dict was changed as :class:`~montepy.Surface` is no longer hashable.
 
         Parameters
         ----------

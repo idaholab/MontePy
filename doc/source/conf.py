@@ -17,11 +17,10 @@ import sys
 sys.path.insert(0, os.path.abspath("../.."))
 import montepy
 
-
 # -- Project information -----------------------------------------------------
 
 project = "MontePy"
-copyright = "2021 – 2025, Battelle Energy Alliance LLC."
+copyright = "2021 – 2026, Battelle Energy Alliance LLC."
 author = "Micah D. Gale (@micahgale), Travis J. Labossiere-Hickman (@tjlaboss)"
 
 version = importlib.metadata.version("montepy")
@@ -33,6 +32,7 @@ release = version  # Will be true at website deployment.
 # ones.
 extensions = [
     "sphinx.ext.autodoc",
+    "sphinx.ext.autosummary",
     "sphinx.ext.napoleon",
     "sphinx.ext.intersphinx",
     "sphinx.ext.extlinks",
@@ -41,6 +41,7 @@ extensions = [
     "sphinx_favicon",
     "sphinx_copybutton",
     "autodocsumm",
+    "jupyterlite_sphinx",
 ]
 
 # Add any paths that contain templates here, relative to this directory.
@@ -55,10 +56,14 @@ html_logo = "monty.svg"
 
 html_baseurl = "https://www.montepy.org/en/stable/"
 html_extra_path = ["robots.txt", "foo.imcnp"]
+
+# jupyter lite
+jupyterlite_config = "jupyter_lite_config.json"
+jupyterlite_overrides = "jupyter_lite.json"
 # List of patterns, relative to source directory, that match files and
 # directories to ignore when looking for source files.
 # This pattern also affects html_static_path and html_extra_path.
-exclude_patterns = []
+exclude_patterns = ["_contents/*"]
 
 # autodoc
 autodoc_typehints = "both"
@@ -77,6 +82,10 @@ autodoc_default_options = {
 linkcheck_ignore = [
     "https://nucleardata.lanl.gov/.*",
     "https://www.osti.gov/.*",  # Ignore osti.gov URLs
+    # GitHub returns 429/502 for link-checkers hitting issue/PR links in CI;
+    # the :issue: and :pull: extlinks are validated by the PR workflow itself.
+    r"https://github\.com/idaholab/MontePy/(issues|pull)/.*",
+    "https://zenodo.org/.*",
 ]
 
 # -- External link configuration ---------------------------------------------
@@ -98,11 +107,13 @@ extlinks = {
     "manual63": (UM63 + "#subsection.%s", "MCNP 6.3.0 manual § %s"),
     "manual63part": (UM63 + "#part.%s", "MCNP 6.3.0 manual part %s"),
     "manual63chapter": (UM63 + "#chapter.%s", "MCNP 6.3.0 manual Ch. %s"),
+    "manual63sub": (UM63 + "#subsubsection.%s", "MCNP 6.3.0 manual § %s"),
     # MCNP 6.3.1 User's Manual
     "manual631sec": (UM631 + "#section.%s", "MCNP 6.3.1 manual § %s"),
     "manual631": (UM631 + "#subsection.%s", "MCNP 6.3.1 manual § %s"),
     "manual631part": (UM631 + "#part.%s", "MCNP 6.3.1 manual part %s"),
     "manual631chapter": (UM631 + "#chapter.%s", "MCNP 6.3.1 manual Ch. %s"),
+    "manual631sub": (UM631 + "#subsubsection.%s", "MCNP 6.3.1 manual § %s"),
     # MCNP 6.2 User's manual
     "manual62": (UM62 + "#page=%s", "MCNP 6.2 manual p. %s"),
     "issue": ("https://github.com/idaholab/MontePy/issues/%s", "#%s"),
@@ -127,6 +138,7 @@ html_theme_options = {
             "type": "fontawesome",
         },
     ],
+    "show_toc_level": 2,
 }
 html_sidebars = {
     "**": ["search-field.html", "sidebar-nav-bs.html", "sidebar-ethical-ads.html"]
@@ -135,7 +147,53 @@ apidoc_module_dir = "../../montepy"
 apidoc_module_first = True
 apidoc_separate_modules = True
 
-suppress_warnings = ["epub.unknown_project_files"]
+suppress_warnings = [
+    "epub.unknown_project_files",
+    # autosummary.import_cycle is a cosmetic warning triggered by re-exporting
+    # classes at the top-level montepy namespace (e.g. montepy.AxisPlane); safe
+    # to suppress because the re-exports are intentional.
+    "autosummary.import_cycle",
+]
+
+# -- Intersphinx mapping -----------------------------------------------------
+# Allows cross-references to Python stdlib, NumPy, etc.
+intersphinx_mapping = {
+    "python": ("https://docs.python.org/3", None),
+    "numpy": ("https://numpy.org/doc/stable/", None),
+}
+
+# -- Nitpicky mode -----------------------------------------------------------
+# Treat broken cross-references as warnings (CI promotes them to errors via -W).
+nitpicky = True
+
+# Exact (type, target) pairs that cannot be resolved and should be ignored.
+nitpick_ignore = [
+    ("py:attr", "type"),
+    ("py:class", "type"),
+    ("py:class", "montepy.input_parser.syntax_node.ShortcutNode.type"),
+    ("py:class", "montepy.input_parser.syntax_node.ValueNode.type"),
+    # sly has no intersphinx inventory; all sly.* cross-refs are unresolvable
+    ("py:class", "sly.Parser"),
+    ("py:class", "sly.Lexer"),
+    ("py:class", "sly.lex.Token"),
+    ("py:class", "sly.lex.Lexer"),
+    ("py:class", "sly.yacc.Parser"),
+    ("py:class", "sly.yacc.ParserMeta"),
+    ("py:class", "sly.yacc.YaccProduction"),
+    ("py:class", "InitInput"),
+    
+    # Subpackages referenced with :mod: in docs; autodoc indexes individual classes
+    # but not the package-level modules themselves
+    # typing.Union is not in the Python intersphinx inventory as a py:data target
+    ("py:data", "typing.Union"),
+]
+
+# Regex patterns for cross-reference targets that cannot be resolved.
+nitpick_ignore_regex = [
+    # sphinx_autodoc_typehints generates "self" and "self._attr" refs for some
+    # return-type annotations; these cannot be resolved and are harmless
+    (r"py:class", r"^self(\._\w+)?$"),
+]
 
 
 # Add any paths that contain custom static files (such as style sheets) here,

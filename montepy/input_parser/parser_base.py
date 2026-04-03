@@ -50,7 +50,7 @@ class MetaBuilder(sly.yacc.ParserMeta):
 
 
 class SLY_Supressor:
-    """This is a fake logger meant to mostly make warnings dissapear."""
+    """This is a fake logger meant to mostly make warnings disappear."""
 
     def __init__(self):
         self._parse_fail_queue = []
@@ -73,7 +73,7 @@ class SLY_Supressor:
         ----------
         msg : str
             The message to display.
-        token : Token
+        token : sly.lex.Token
             the token that caused the error if any.
         lineno : int
             the current lineno of the error (from SLY not the file), if
@@ -125,7 +125,7 @@ class MCNP_Parser(Parser, metaclass=MetaBuilder):
 
         Parameters
         ----------
-        token_generator : generator
+        token_generator : collections.abc.Generator
             the token generator from ``lexer.tokenize``.
         input : Input
             the input that is being lexed and parsed.
@@ -186,7 +186,7 @@ class MCNP_Parser(Parser, metaclass=MetaBuilder):
 
         Returns
         -------
-        ListNode
+        montepy.input_parser.syntax_node.ListNode
         """
         if len(p) == 1:
             sequence = syntax_node.ListNode("number sequence")
@@ -200,6 +200,24 @@ class MCNP_Parser(Parser, metaclass=MetaBuilder):
                     sequence.append(node)
             else:
                 sequence.append(p[1])
+        return sequence
+
+    @_(
+        '"(" number_sequence ")"',
+        '"(" number_sequence ")" padding',
+        '"(" padding number_sequence ")" padding',
+    )
+    def number_sequence(self, p):
+        sequence = syntax_node.ListNode("parenthetical statement")
+        sequence.append(p[0])
+        for node in list(p)[1:]:
+            if isinstance(node, syntax_node.ListNode):
+                for val in node.nodes:
+                    sequence.append(val)
+            elif isinstance(node, str):
+                sequence.append(syntax_node.PaddingNode(node))
+            else:
+                sequence.append(node)
         return sequence
 
     @_(
@@ -499,7 +517,7 @@ class MCNP_Parser(Parser, metaclass=MetaBuilder):
 
         Returns
         -------
-        ClassifierNode
+        montepy.input_parser.syntax_node.ClassifierNode
         """
         if hasattr(p, "classifier"):
             classifier = p.classifier
@@ -526,7 +544,7 @@ class MCNP_Parser(Parser, metaclass=MetaBuilder):
 
         Returns
         -------
-        ClassifierNode
+        montepy.input_parser.syntax_node.ClassifierNode
         """
         classifier = p.classifier
         if len(p) > 1:
@@ -547,6 +565,28 @@ class MCNP_Parser(Parser, metaclass=MetaBuilder):
                 return "*"
         return p[0]
 
+    @_('"("', '"(" padding')
+    def lparen_phrase(self, p):
+        """
+        A left parenthesis "(" and its padding.
+        """
+        pad = syntax_node.PaddingNode(p[0])
+        if len(p) > 1:
+            for node in p.padding.nodes:
+                pad.append(node)
+        return pad
+
+    @_('")"', '")" padding')
+    def rparen_phrase(self, p):
+        """
+        A right parenthesis ")" and its padding.
+        """
+        pad = syntax_node.PaddingNode(p[0])
+        if len(p) > 1:
+            for node in p.padding.nodes:
+                pad.append(node)
+        return pad
+
     def error(self, token):
         """Default error handling.
 
@@ -554,9 +594,10 @@ class MCNP_Parser(Parser, metaclass=MetaBuilder):
 
         Parameters
         ----------
-        token : Token
+        token : sly.lex.Token
             the token that broke the parsing rules.
         """
+        # self._debug_parsing_error(token)
         if token:
             lineno = getattr(token, "lineno", 0)
             if self._input and self._input.lexer:

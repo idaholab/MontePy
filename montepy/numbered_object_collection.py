@@ -8,7 +8,7 @@ from numbers import Integral
 
 import montepy
 from montepy.numbered_mcnp_object import Numbered_MCNP_Object
-from montepy.errors import *
+from montepy.exceptions import *
 from montepy.utilities import *
 
 
@@ -19,6 +19,7 @@ def _enforce_positive(self, num):
 
 class NumberedObjectCollection(ABC):
     """A collections of MCNP objects.
+
 
     .. _collect ex:
 
@@ -177,6 +178,7 @@ class NumberedObjectCollection(ABC):
                         )
                     )
                 self.__num_cache[obj.number] = obj
+                obj._link_to_collection(self)
             self._objects = objects
 
     def link_to_problem(self, problem):
@@ -197,6 +199,11 @@ class NumberedObjectCollection(ABC):
             self._problem_ref = weakref.ref(problem)
         for obj in self:
             obj.link_to_problem(problem)
+            # the _collection_ref that points to the main cells collection.
+            if problem is not None:
+                existing_coll = obj._collection
+                if existing_coll is None or existing_coll._problem is not problem:
+                    obj._link_to_collection(self)
 
     @property
     def _problem(self):
@@ -221,7 +228,7 @@ class NumberedObjectCollection(ABC):
 
         Returns
         -------
-        generator
+        collections.abc.Generator
         """
         for obj in self._objects:
             # update cache every time we go through all objects
@@ -243,17 +250,13 @@ class NumberedObjectCollection(ABC):
         """
         if not isinstance(number, Integral):
             raise TypeError("The number must be an int")
-
         if number < 0:
             raise ValueError(f"The number must be non-negative. {number} given.")
         conflict = False
-        # only can trust cache if being updated
-        if self._problem:
-            if number in self.__num_cache:
-                conflict = True
-        else:
-            if number in self.numbers:
-                conflict = True
+        # __num_cache is treated as authoritative: any present key is considered in use
+        if number in self.__num_cache:
+            conflict = True
+
         if conflict:
             raise NumberConflictError(
                 f"Number {number} is already in use for the collection: {type(self).__name__} by {self[number]}"
@@ -341,10 +344,8 @@ class NumberedObjectCollection(ABC):
                 )
             if obj.number in nums:
                 raise NumberConflictError(
-                    (
-                        f"When adding to {type(self).__name__} there was a number collision due to "
-                        f"adding {obj} which conflicts with {self[obj.number]}"
-                    )
+                    f"When adding to {type(self).__name__} there was a number collision due to "
+                    f"adding {obj} which conflicts with existing object number {obj.number}"
                 )
             nums.add(obj.number)
         for obj in other_list:
@@ -359,7 +360,9 @@ class NumberedObjectCollection(ABC):
             the object to delete
         """
         if not isinstance(delete, self._obj_class):
-            raise TypeError("")
+            raise TypeError(
+                f"Expected {self._obj_class.__name__}. {delete} of type: {type(delete).__name__} given."
+            )
         candidate = self[delete.number]
         if delete is candidate:
             del self[delete.number]
@@ -494,6 +497,7 @@ class NumberedObjectCollection(ABC):
                 )
         self.__num_cache[obj.number] = obj
         self._objects.append(obj)
+        obj._link_to_collection(self)
         self._append_hook(obj, **kwargs)
         if self._problem:
             obj.link_to_problem(self._problem)
@@ -505,6 +509,7 @@ class NumberedObjectCollection(ABC):
         """
         self.__num_cache.pop(obj.number, None)
         self._objects.remove(obj)
+        obj._unlink_from_collection()
         self._delete_hook(obj, **kwargs)
 
     def add(self, obj: Numbered_MCNP_Object):
@@ -608,9 +613,12 @@ class NumberedObjectCollection(ABC):
             raise TypeError(f"object being appended must be of type: {self._obj_class}")
         if not isinstance(step, Integral):
             raise TypeError("The step number must be an int")
-        number = obj.number if obj.number > 0 else 1
+        if obj.number is None or obj.number <= 0:
+            obj.number = 1
+        number = obj.number
         if self._problem:
             obj.link_to_problem(self._problem)
+        obj._unlink_from_collection()
         try:
             self.append(obj)
         except (NumberConflictError, ValueError) as e:
@@ -619,6 +627,41 @@ class NumberedObjectCollection(ABC):
             self.append(obj)
 
         return number
+
+    def extend_renumber(self, other_list, step=1):
+        """Extends the collection with the given list, renumbering objects that have conflicts.
+
+        This differs from :func:`extend` which fails on conflicts, and :func:`append_renumber`
+        which handles single objects. This method processes multiple
+        objects by checking and renumbering before adding.
+
+        Parameters
+        ----------
+        other_list : list
+            the list of objects to add.
+        step : int
+            the incrementing step to use to find new numbers (default: 1).
+
+        """
+
+        if not isinstance(other_list, (list, type(self))):
+            raise TypeError("The extending list must be a list")
+        if not isinstance(step, Integral):
+            raise TypeError("The step number must be an int")
+
+        for obj in other_list:
+            if not isinstance(obj, self._obj_class):
+                raise TypeError(
+                    f"The object in the list {obj} is not of type: {self._obj_class}"
+                )
+
+            try:
+                self.check_number(obj.number)
+            except NumberConflictError:
+                new_num = self.request_number(obj.number if obj.number > 0 else 1, step)
+                obj.number = new_num
+
+            self.append(obj)  # After loop all objects are added i.e extended
 
     def request_number(self, start_num=None, step=None):
         """Requests a new available number.
@@ -632,14 +675,16 @@ class NumberedObjectCollection(ABC):
         If starting_number, or step are not specified :func:`starting_number`,
         and :func:`step` are used as default values.
 
-
         .. versionchanged:: 0.5.0
             In 0.5.0 the default values were changed to reference :func:`starting_number` and :func:`step`.
+
+        .. versionchanged:: 1.2.0
+            start_num is now only a suggestion for the starting point. The returned number is not guaranteed to be start_num, but will be the next available number after start_num (or after the last assigned number).
 
         Parameters
         ----------
         start_num : int
-            the starting number to check.
+            Suggested starting number to check. Not guaranteed to be the returned value.
         step : int
             the increment to jump by to find new numbers.
 
@@ -656,13 +701,21 @@ class NumberedObjectCollection(ABC):
             start_num = self.starting_number
         if step is None:
             step = self.step
-        number = start_num
+        try:
+            self.check_number(start_num)
+            return start_num
+        except NumberConflictError:
+            pass
+        # Increment to next available number. If not set use start_num as is
+        last_assigned = getattr(self, "_last_assigned_number", start_num - step) + step
+        number = max(start_num, last_assigned)
         while True:
             try:
                 self.check_number(number)
                 break
             except NumberConflictError:
                 number += step
+        self._last_assigned_number = number
         return number
 
     def next_number(self, step=1):
@@ -1069,18 +1122,7 @@ class NumberedObjectCollection(ABC):
         -------
         Numbered_MCNP_Object
         """
-        try:
-            ret = self.__num_cache[i]
-            if ret.number == i:
-                return ret
-        except KeyError:
-            pass
-        for obj in self._objects:
-            self.__num_cache[obj.number] = obj
-            if obj.number == i:
-                self.__num_cache[i] = obj
-                return obj
-        return default
+        return self.__num_cache.get(i, default)
 
     def keys(self) -> typing.Generator[int, None, None]:
         """Get iterator of the collection's numbers.
@@ -1136,6 +1178,19 @@ class NumberedObjectCollection(ABC):
 
 
 class NumberedDataObjectCollection(NumberedObjectCollection):
+    """
+    This is a an abstract collection for numbered objects that are also Data Inputs.
+
+    This collection can be sliced to get a subset of the numberedDataObjectCollection.
+    Slicing is done based on the numberedDataObjectCollection numbers, not their order in the input.
+    For example, ``problem.numberedDataObjectCollection[1:3]`` will return a new `numberedDataObjectCollection`
+    containing numberedDataObjectCollection with numbers from 1 to 3, inclusive.
+
+    See also
+    --------
+    :class:`~montepy.numbered_object_collection.NumberedObjectCollection`
+    """
+
     def __init__(self, obj_class, objects=None, problem=None):
         self._last_index = None
         if problem and objects:

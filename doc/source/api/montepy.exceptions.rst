@@ -1,8 +1,8 @@
-montepy.transforms module
+montepy.exceptions module
 =========================
 
 
-.. automodule:: montepy.transforms
+.. automodule:: montepy.exceptions
    :members:
    :inherited-members:
    :undoc-members:

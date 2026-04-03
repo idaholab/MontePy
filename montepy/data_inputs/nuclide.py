@@ -45,7 +45,7 @@ class Library(SingletonGroup):
 
     Raises
     ------
-    TypeErrror
+    TypeError
         if a string is not provided.
     ValueError
         if a valid library is not provided.
@@ -104,7 +104,7 @@ class Library(SingletonGroup):
 
     @property
     def library_type(self) -> LibraryType:
-        """The :class:`~montepy.particle.LibraryType` of this library.
+        """The :class:`~montepy.LibraryType` of this library.
 
         This corresponds to the type of library this would specified
         in a material definition e.g., ``NLIB``, ``PLIB``, etc.
@@ -344,7 +344,9 @@ class Nucleus(SingletonGroup):
 
     def __lt__(self, other):
         if not isinstance(other, type(self)):
-            raise TypeError
+            raise TypeError(
+                f"Can't compare Nuclide to other values. {other} of type {type(other)}."
+            )
         return (self.Z, self.A, self.meta_state) < (other.Z, other.A, other.meta_state)
 
     def __str__(self):

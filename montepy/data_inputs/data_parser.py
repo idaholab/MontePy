@@ -27,7 +27,7 @@ PREFIX_MATCHES = {
     universe_input.UniverseInput,
 }
 
-VERBOTEN = {"de", "sdef"}
+VERBOTEN = {"de", "sdef", "fmesh"}
 
 
 def parse_data(input: montepy.mcnp_object.InitInput):

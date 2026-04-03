@@ -37,6 +37,21 @@ Here is a quick summary of release types used, that is not meant to be authorita
   Features are not locked at this point, and may change.
   This is signified by adding ``a\d+`` to the end of the *next* release.
 
+Dependency Support
+------------------
+
+MontePy has adopted `SPEC 0 <https://scientific-python.org/specs/spec-0000/>`_. 
+
+This project supports:
+
+* All minor versions of Python released 36 months prior to the project, and at minimum the two latest minor versions.
+
+* All minor versions of numpy released in the 24 months prior to the project, and at minimum the last three minor versions.
+* In ``pyproject.toml``, the ``requires-python`` variable should be set to the minimum supported version of Python. All supported minor versions of Python should be in the test matrix and have binary artifacts built for the release.
+
+Minimum Python and NumPy version support should be adjusted upward on every major and minor release, but never on a patch release.
+
+
 
 Design Philosophy
 -----------------
@@ -86,7 +101,7 @@ Naming Conventions
    and ``set``).
 #. Within reason: avoid abbreviating words. Above all, prioritize legibility.
 #. For user facing functions and attributes, short names are best.
-   (:func:`~montepy.surfaces.surface.Surface.surface_constants`, really should have been ``constants`` in hind-sight).
+   (:attr:`~montepy.Surface.surface_constants`, really should have been ``constants`` in hind-sight).
 
 
 Doc Strings
@@ -211,6 +226,14 @@ Here is the docstrings for :class:`~montepy.cell.Cell`.
             number: int = None,
         ):
 
+
+Adding New Object to Website
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+The Sphinx website uses `autosummary <https://www.sphinx-doc.org/es/master/usage/extensions/autosummary.html#generating-stub-pages-automatically>_`.
+Each class or module must be pointed to in ``doc/source/api/modules.rst``, 
+it is preferable to point to the classes themselves, and not the modules.
+
 Testing
 -------
 
@@ -225,7 +248,7 @@ Here are the principles for writing new tests:
 #. Use property based testing with `hypothesis <https://hypothesis.readthedocs.io/en/latest/>`_, when it makes sense.
    This is generally for complicated functions that users use frequently, such as constructors.
    See this `tutorial for an introduction to property based testing
-   <https://semaphoreci.com/blog/property-based-testing-python-hypothesis-pytest>`_. 
+   <https://semaphore.io/blog/property-based-testing-python-hypothesis-pytest>`_. 
 
 Test Organization
 ^^^^^^^^^^^^^^^^^

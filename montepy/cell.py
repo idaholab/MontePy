@@ -5,6 +5,7 @@ import itertools
 from numbers import Integral, Real
 import sly
 from typing import Union
+import collections.abc
 import warnings
 
 from montepy.cells import Cells
@@ -12,7 +13,7 @@ from montepy.data_inputs import importance, fill, lattice_input, universe_input,
 from montepy.data_inputs.data_parser import PREFIX_MATCHES
 from montepy.input_parser.cell_parser import CellParser
 from montepy.input_parser import syntax_node
-from montepy.errors import *
+from montepy.exceptions import *
 from montepy.numbered_mcnp_object import Numbered_MCNP_Object, InitInput
 from montepy.data_inputs.material import Material
 from montepy.geometry_operators import Operator
@@ -227,6 +228,13 @@ class Cell(Numbered_MCNP_Object):
         Each particle's importance is a property of Importance.
         e.g., ``cell.importance.photon = 1.0``.
 
+        Deleting an importance resets it to the default value (1.0).
+        e.g., ``del cell.importance.neutron``.
+
+        .. versionchanged:: 1.2.0
+
+            Default importance value changed from 0.0 to 1.0 to match MCNP defaults.
+
         Returns
         -------
         Importance
@@ -247,9 +255,21 @@ class Cell(Numbered_MCNP_Object):
 
     @universe.setter
     def universe(self, value):
+        if value is None:
+            if self._problem:
+                if 0 not in self._problem.universes.numbers:
+                    self._problem.universes.append(Universe(0))
+                value = self._problem.universes[0]
+            else:
+                self._universe._universe = None
+                return
         if not isinstance(value, Universe):
             raise TypeError("universe must be set to a Universe")
         self._universe.universe = value
+
+    @universe.deleter
+    def universe(self):
+        self.universe = None
 
     @property
     def fill(self):
@@ -325,7 +345,7 @@ class Cell(Numbered_MCNP_Object):
 
         Returns
         -------
-        Lattice
+        LatticeType
             the type of lattice being used
         """
         return self._lattice.lattice
@@ -340,6 +360,11 @@ class Cell(Numbered_MCNP_Object):
 
     @property
     def lattice(self):
+        """
+        .. deprecated:: 1.0.0
+
+            Use :func:`lattice_type` instead.
+        """
         _lattice_deprecation_warning()
         return self.lattice_type
 
@@ -383,7 +408,7 @@ class Cell(Numbered_MCNP_Object):
         This does not guarantee that MCNP will able to calculate the volume.
         Complex geometries may make this impossible.
 
-        See :func:`~montepy.cells.Cells.allow_mcnp_volume_calc`
+        See :attr:`~montepy.Cells.allow_mcnp_volume_calc`
 
         Returns
         -------
@@ -565,7 +590,7 @@ class Cell(Numbered_MCNP_Object):
         return self._surfaces
 
     @property
-    def parameters(self):
+    def parameters(self) -> dict[str, str]:
         """A dictionary of the additional parameters for the object.
 
         e.g.: ``1 0 -1 u=1 imp:n=0.5`` has the parameters
@@ -573,11 +598,8 @@ class Cell(Numbered_MCNP_Object):
 
         Returns
         -------
-        unknown
+        dict[str, str]
             a dictionary of the key-value pairs of the parameters.
-
-
-        :rytpe: dict
         """
         return self._parameters
 
@@ -591,7 +613,7 @@ class Cell(Numbered_MCNP_Object):
     def complements(self):
         """The Cell objects that this cell is a complement of
 
-        :rytpe: :class:`montepy.cells.Cells`
+        :rtype: :class:`montepy.Cells`
         """
         return self._complements
 
@@ -603,7 +625,7 @@ class Cell(Numbered_MCNP_Object):
 
         Returns
         -------
-        generator
+        collections.abc.Generator[Cell, None, None]
         """
         if self._problem:
             for cell in self._problem.cells:
@@ -642,7 +664,7 @@ class Cell(Numbered_MCNP_Object):
 
         .. versionchanged:: 1.0.0
 
-            The form of the deleting_dict was changed as :class:`~montepy.surfaces.Surface` is no longer hashable.
+            The form of the deleting_dict was changed as :class:`~montepy.Surface` is no longer hashable.
 
         Parameters
         ----------
@@ -915,6 +937,10 @@ class Cell(Numbered_MCNP_Object):
         for key in keys:
             attr = getattr(self, key)
             setattr(result, key, copy.deepcopy(attr, memo))
+        # Clear collection ref so cloned cell isn't linked to original collection
+        # This prevents number conflict checks against the original collection
+        # The clone will be properly linked when added to a collection
+        result._collection_ref = None
         # copy geometry
         for special in special_keys:
             new_objs = []

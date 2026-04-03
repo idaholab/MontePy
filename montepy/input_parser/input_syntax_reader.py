@@ -8,13 +8,12 @@ import sly
 import warnings
 
 from montepy.constants import *
-from montepy.errors import *
+from montepy.exceptions import *
 from montepy.input_parser.block_type import BlockType
 from montepy.input_parser.input_file import MCNP_InputFile
 from montepy.input_parser.mcnp_input import Input, Message, ReadInput, Title
 from montepy.input_parser.read_parser import ReadParser
 from montepy.utilities import is_comment
-
 
 reading_queue = deque()
 
@@ -39,7 +38,7 @@ def read_input_syntax(input_file, mcnp_version=DEFAULT_VERSION, replace=True):
 
     Returns
     -------
-    generator
+    collections.abc.Generator
         a generator of MCNP_Object objects
     """
     global reading_queue
@@ -56,7 +55,7 @@ def read_input_syntax(input_file, mcnp_version=DEFAULT_VERSION, replace=True):
 def read_front_matters(fh, mcnp_version):
     """Reads the beginning of an MCNP file for all of the unusual data there.
 
-    This is a generator function that will yield multiple :class:`MCNP_Input` instances.
+    This is a generator function that will yield multiple :class:`~montepy.input_parser.mcnp_input.Input` instances.
 
     Warnings
     --------
@@ -105,7 +104,7 @@ def read_front_matters(fh, mcnp_version):
 def read_data(fh, mcnp_version, block_type=None, recursion=False):
     """Reads the bulk of an MCNP file for all of the MCNP data.
 
-    This is a generator function that will yield multiple :class:`MCNP_Input` instances.
+    This is a generator function that will yield multiple :class:`~montepy.input_parser.mcnp_input.Input` instances.
 
     Warnings
     --------
@@ -131,8 +130,8 @@ def read_data(fh, mcnp_version, block_type=None, recursion=False):
 
     Returns
     -------
-    MCNP_Input
-        MCNP_Input instances: Inputs that represent the data in the MCNP
+    Input
+        Input instances: Inputs that represent the data in the MCNP
         input.
     """
     current_file = fh
@@ -146,6 +145,7 @@ def read_data(fh, mcnp_version, block_type=None, recursion=False):
 
     def flush_block():
         nonlocal block_counter, block_type
+        # keep parsing while there is input or termination has not been triggered
         if len(input_raw_lines) > 0:
             yield from flush_input()
         block_counter += 1
@@ -154,6 +154,17 @@ def read_data(fh, mcnp_version, block_type=None, recursion=False):
 
     def flush_input():
         nonlocal input_raw_lines
+        # IF 3  BLOCKS are parsed, the rest should be ignored with a warning and print 3 lines
+        if block_counter >= 3:
+            joined_lines = "\n".join(input_raw_lines[0:3])
+            msg = f"Unexpected input after line {current_file.lineno - 1}\n line content: {joined_lines}\n"
+            warnings.warn(
+                msg,
+                UndefinedBlock,
+                stacklevel=6,
+            )
+            return
+
         start_line = current_file.lineno + 1 - len(input_raw_lines)
         input = Input(
             input_raw_lines,
@@ -191,6 +202,7 @@ def read_data(fh, mcnp_version, block_type=None, recursion=False):
             and input_raw_lines
         ):
             yield from flush_input()
+
         # die if it is a vertical syntax format
         start_o_line = line[0:BLANK_SPACE_CONTINUE]
         # eliminate comments, and inputs that use # for other syntax
@@ -215,11 +227,13 @@ def read_data(fh, mcnp_version, block_type=None, recursion=False):
         old_line = line
         line = line[:line_length]
         if len(old_line) != len(line):
-            if len(line.split("$")[0]) >= line_length and not COMMENT_FINDER.match(
+            comment_free = old_line.split("$")[0]
+            if len(comment_free.rstrip()) > line_length and not COMMENT_FINDER.match(
                 line
             ):
                 warnings.warn(
-                    f"The line: {old_line} exceeded the allowed line length of: {line_length} for MCNP {mcnp_version}",
+                    f"The line number {fh.lineno} exceeded the allowed line length of: {line_length} for MCNP{mcnp_version} "
+                    f'and "{comment_free[line_length -1:].rstrip()}" was removed.',
                     LineOverRunWarning,
                 )
             # if extra length is a comment keep it long

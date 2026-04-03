@@ -27,6 +27,16 @@ def __create_surface_generator(surf_type):
 class Surfaces(NumberedObjectCollection):
     """A collection of multiple :class:`montepy.surfaces.surface.Surface` instances.
 
+    This collection can be sliced to get a subset of the surfaces.
+    Slicing is done based on the surface numbers, not their order in the input.
+    For example, ``problem.surfaces[1:3]`` will return a new `Surfaces` collection
+    containing surfaces with numbers from 1 to 3, inclusive.
+
+    See also
+    --------
+    :class:`~montepy.numbered_object_collection.NumberedObjectCollection`
+
+
     This collection has a generator for every supported type of MCNP surface.
     These are accessed by the for lower case version of the MCNP mnemonic.
     For example you can access all planes normal to the z-axis through .pz

@@ -1,13 +1,23 @@
 # Copyright 2024-2025, Battelle Energy Alliance, LLC All Rights Reserved.
 import montepy
 from montepy.numbered_object_collection import NumberedObjectCollection
-from montepy.errors import *
+from montepy.exceptions import *
 import warnings
 from numbers import Integral
 
 
 class Cells(NumberedObjectCollection):
-    """A collections of multiple :class:`montepy.cell.Cell` objects.
+    """A collections of multiple :class:`montepy.Cell` objects.
+
+    This collection can be sliced to get a subset of the cells.
+    Slicing is done based on the cell numbers, not their order in the input.
+    For example, ``problem.cells[1:3]`` will return a new `Cells` collection
+    containing cells with numbers from 1 to 3, inclusive.
+
+    See also
+    --------
+    :class:`~montepy.numbered_object_collection.NumberedObjectCollection`
+
 
     Notes
     -----
@@ -54,16 +64,17 @@ class Cells(NumberedObjectCollection):
                     raise e
 
     def set_equal_importance(self, importance, vacuum_cells=tuple()):
-        """Sets all cells except the vacuum cells to the same importance using :func:`montepy.data_cards.importance.Importance.all`.
+        """Sets all cells except the vacuum cells to the same importance using :attr:`montepy.data_inputs.importance.Importance.all`.
 
-        The vacuum cells will be set to 0.0. You can specify cell numbers or cell objects.
+        The "vacuum" cells are those on the outside of a vacuum boundary condition, i.e., the "graveyard".
+        That is to say, their importance will be set to 0.0. You can specify cell numbers or cell objects.
 
         Parameters
         ----------
         importance : float
             the importance to apply to all cells
         vacuum_cells : list
-            the cells that are the vacuum boundary with 0 importance
+            the list of cells or cell numbers with 0 importance
         """
         if not isinstance(vacuum_cells, (list, tuple, set)):
             raise TypeError("vacuum_cells must be a list or set")
