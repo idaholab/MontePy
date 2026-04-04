@@ -1,11 +1,8 @@
-use chumsky::prelude::*;
-use monteparser::parser::input_parser;
+use monteparser::syntax_node::SyntaxNode::Node;
 
 fn main() {
-    let parser = input_parser();
-    let input = "1 0 2 &
--5 6 
-     imp:n=1 
-";
-    parser.parse(input);
+    use monteparser::syntax_node::SyntaxNode::ValueNodeRust;
+    let mut node = ValueNodeRust::new(&"123");
+    node.convert_to_int();
+    println!("{}", node.format());
 }
