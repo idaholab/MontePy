@@ -284,6 +284,9 @@ class Cell(Numbered_MCNP_Object):
         Importance
             the importance for the Cell.
         """
+        if not self._importance.full_parsed:
+            if self._problem:
+                self._problem.cells._importance.full_parse()
         return self._importance
 
     @property
@@ -841,7 +844,11 @@ class Cell(Numbered_MCNP_Object):
             a list of strings for the lines that this input will occupy.
         """
         if hasattr(self, "_not_parsed"):
-            return self._input.input_lines
+            lines = self._input.input_lines
+            if lines and lines[-1] and not lines[-1][-1].isspace():
+                lines = list(lines)
+                lines[-1] = lines[-1] + " "
+            return lines
         self.validate()
         self._update_values()
         self._tree.check_for_graveyard_comments()

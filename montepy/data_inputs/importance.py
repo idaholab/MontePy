@@ -58,6 +58,7 @@ class Importance(CellModifierInput):
     """
     Marks that if one cell has a value all cells must have values, no matter the default.
     """
+    _KEYS_TO_PRESERVE = {"_parked_value", "_inputs"}
 
     def _init_blank(self):
         self._particle_importances = {}
@@ -220,10 +221,13 @@ class Importance(CellModifierInput):
         if hasattr(self, "_not_parsed") and self._not_parsed:
             super().full_parse()
         # handle all other inputs
+        has_extra = bool(self._inputs)
         for input in self._inputs:
             input.full_parse()
             self.merge(input)
         self._inputs.clear()
+        if has_extra and not self.in_cell_block and self._problem:
+            self.push_to_cells()
 
     def _original_lines(self):
         ret = super()._original_lines()
