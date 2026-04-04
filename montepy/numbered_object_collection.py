@@ -528,7 +528,8 @@ class NumberedObjectCollection(ABC):
                 )
         self.__num_cache[obj.number] = obj
         self._objects.append(obj)
-        if obj._collection is None:
+        if obj._collection is not self:
+            obj._unlink_from_collection()
             obj._link_to_collection(self)
         self._append_hook(obj, **kwargs)
         if self._problem:
