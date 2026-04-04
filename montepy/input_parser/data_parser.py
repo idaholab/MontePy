@@ -302,7 +302,7 @@ class JitDataParser:
                         number = syntax_node.ValueNode(token.value, int)
                         token = next(tokenizer)
                     # handle particles
-                    elif token.type == ":":
+                    if token.type == ":":
                         particles = [token.value]
                         for token in tokenizer:
                             if token.type in {",", "PARTICLE", "PARTICLE_SPECIAL"}:
@@ -314,8 +314,6 @@ class JitDataParser:
                         particles = syntax_node.ParticleNode(
                             "jit particles", "".join(particles)
                         )
-                    else:
-                        assert False
                     classifier.number = number
                     if particles:
                         classifier.particles = particles

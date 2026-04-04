@@ -57,7 +57,7 @@ fc4  2-group flux
 f4:n 1 2 3
 e4   0.625e-6
 f6:p 1
-f7:n 1
+f7 1
 C execution
 ksrc 0 0 0
 kcode 100000 1.000 50 1050
