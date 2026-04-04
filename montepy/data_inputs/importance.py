@@ -100,9 +100,7 @@ class Importance(CellModifierInput):
 
     def _generate_default_cell_tree(self, particle=None):
         classifier = syntax_node.ClassifierNode()
-        classifier.prefix = self._generate_default_node(
-            str, self._class_prefix().upper(), None
-        )
+        classifier.prefix = self._generate_default_node(str, self._class_prefix(), None)
         if particle is None:
             particles = syntax_node.ParticleNode("imp particle", "n")
             particle = Particle.NEUTRON
@@ -319,6 +317,18 @@ class Importance(CellModifierInput):
                 other_particles = self._particle_importances[particle][
                     "classifier"
                 ].particles
+                # Extend classifier with equal-value mode particles not yet in it.
+                # This handles cells pushed from the data block, where each
+                # particle gets its own single-particle classifier.
+                if self._problem:
+                    for other_part in self._problem.mode.particles:
+                        if other_part not in other_particles and math.isclose(
+                            self[particle],
+                            self[other_part],
+                            rel_tol=rel_tol,
+                            abs_tol=abs_tol,
+                        ):
+                            other_particles.add(other_part)
                 to_remove = set()
                 for other_part in other_particles:
                     if other_part != particle:
@@ -398,8 +408,18 @@ class Importance(CellModifierInput):
 
     def _collect_new_values(self):
         new_vals = collections.defaultdict(list)
-        particle_pairings = collections.defaultdict(set)
+        # Seed pairings from _real_tree classifiers so that particle groups
+        # originally written together (e.g. imp:n,p) are preserved even when
+        # cell-level importances were generated with single-particle classifiers
+        # (which happens after push_to_cells creates default cell trees).
+        # Both particles in a combined entry (e.g. N and P for imp:n,p) each
+        # have a deepcopy of the same original tree, so the pairing is symmetric.
+        particle_pairings = {
+            p: t["classifier"].particles.particles for p, t in self._real_tree.items()
+        }
         for particle in self._problem.mode.particles:
+            if particle not in particle_pairings:
+                particle_pairings[particle] = {particle}
             for cell in self._problem.cells:
                 imp = cell._importance
                 if hasattr(imp, "_not_parsed"):
@@ -413,12 +433,6 @@ class Importance(CellModifierInput):
                         "is not yet implemented in MontePy."
                     )
                 new_vals[particle].append(tree["data"][0])
-                if len(particle_pairings[particle]) == 0:
-                    particle_pairings[particle] = tree["classifier"].particles.particles
-                else:
-                    particle_pairings[particle] &= tree[
-                        "classifier"
-                    ].particles.particles
         return self._try_combine_values(new_vals, particle_pairings)
 
     def _update_values(self, in_middle=False):

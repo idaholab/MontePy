@@ -132,7 +132,7 @@ class Cell(Numbered_MCNP_Object):
                 new_obj = getattr(self, key)
                 # grab the only data that needs to survive
                 if hasattr(value, "_parked_value"):
-                    new_obj._accept_from_data(value._parked_value)
+                    new_obj._accept_and_update(value._parked_value)
             else:
                 setattr(self, key, value)
 
