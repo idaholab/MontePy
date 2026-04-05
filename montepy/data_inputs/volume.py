@@ -1,7 +1,7 @@
 # Copyright 2024, Battelle Energy Alliance, LLC All Rights Reserved.
 
 from montepy.utilities import *
-from montepy.data_inputs.cell_modifier import CellModifierInput
+from montepy.data_inputs.cell_modifier import CellModifierInput, cell_mod_prop
 from montepy.exceptions import *
 from montepy.constants import DEFAULT_VERSION
 from montepy.input_parser.mcnp_input import Jump
@@ -99,6 +99,7 @@ class Volume(CellModifierInput):
     def _has_classifier():
         return 0
 
+    @cell_mod_prop("_volume")
     @make_prop_val_node(
         "_volume",
         (float, int, type(None)),
@@ -183,7 +184,10 @@ class Volume(CellModifierInput):
                     cell._volume._accept_from_data(vol)
 
     def _accept_and_update(self, value):
-        self._volume = value
+        if self._volume.value is not None and value.value is not None:
+            raise RedundantParameterSpecification("vol", value.value)
+        if value.value is not None:
+            self._volume = value
 
     def _clear_data(self):
         del self._volume

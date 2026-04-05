@@ -23,11 +23,10 @@ def cell_mod_prop(
         base_prop = func
 
         def getter(self):
-            if hasattr(self, "_not_parsed") and self._not_parsed:
-                if self._problem:
-                    data_version = getattr(self._problem.cells, cells_param)
-                    if not data_version.full_parsed:
-                        data_version.full_parse()
+            if self._problem:
+                data_version = getattr(self._problem.cells, cells_param)
+                if data_version._input is not None and not data_version.full_parsed:
+                    data_version.full_parse()
                     data_version.push_to_cells()
             return base_prop.fget(self)
 
