@@ -14,14 +14,6 @@ import typing
 import warnings
 
 
-# TODO: add a new decorator (e.g. cell_attr_prop) for Cell properties that
-# return a CellModifierInput directly (e.g. importance, volume, lattice).
-# When the modifier's full_parsed is False the decorator should call
-# full_parse() on the data-block version
-# (getattr(self._problem.cells, modifier_attr).full_parse()) so
-# push_to_cells() fires before the value is returned.
-# Apply the decorator to Cell.importance, Cell.volume, and any other
-# Cell properties that expose a CellModifierInput object directly.
 def cell_mod_prop(
     cells_param,
 ):
@@ -34,6 +26,8 @@ def cell_mod_prop(
             if hasattr(self, "_not_parsed") and self._not_parsed:
                 if self._problem:
                     data_version = getattr(self._problem.cells, cells_param)
+                    if not data_version.full_parsed:
+                        data_version.full_parse()
                     data_version.push_to_cells()
             return base_prop.fget(self)
 
