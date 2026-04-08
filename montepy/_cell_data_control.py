@@ -31,11 +31,17 @@ class CellDataPrintController:
                 key.lower() in self._print_data
                 and self._print_data[key.lower()] != value
             ):
-                getattr(
+                data_modifier = getattr(
                     self._problem().cells, self._CLASSIFIER_TO_ATTRIBUTE[key.lower()]
-                ).full_parse()
+                )
+                data_modifier.full_parse()
                 for cell in self._problem().cells:
                     cell.full_parse()
+                # Only push data block → cells when switching from data block (True)
+                # to cell block (False). Going the other direction would clobber
+                # cell-block values with empty data-block defaults.
+                if self._print_data[key.lower()] and not value:
+                    data_modifier.push_to_cells()
             self._print_data[key.lower()] = value
         else:
             raise KeyError(f"{key} is not a supported cell modifier in MCNP")

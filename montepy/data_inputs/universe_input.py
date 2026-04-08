@@ -216,23 +216,30 @@ class UniverseInput(CellModifierInput):
             return
         if not self.in_cell_block:
             cells = self._problem.cells
-            if len(self._old_numbers) > 1 or (
+            has_data = len(self._old_numbers) > 1 or (
                 len(self._old_numbers) == 1 and self._old_numbers[0].value is not None
-            ):
+            )
+            if has_data:
                 self._check_redundant_definitions()
-                for cell, uni_number in itertools.zip_longest(
-                    cells, self._old_numbers, fillvalue=None
-                ):
-                    if isinstance(uni_number, (Jump, type(None))):
-                        continue
+            universes = self._problem.universes
+            for cell, uni_number in itertools.zip_longest(
+                cells, self._old_numbers, fillvalue=None
+            ):
+                if has_data and not isinstance(uni_number, (Jump, type(None))):
                     cell._universe._accept_from_data(uni_number)
                     if uni_number.is_negative:
                         cell._universe._not_truncated = True
-            universes = self._problem.universes
-            for cell in cells:
-                uni_num = cell.old_universe_number
-                if uni_num is None:
-                    uni_num = 0
+                    # Use the data-block number directly for universe lookup
+                    uni_num = (
+                        abs(uni_number.value) if uni_number.value is not None else 0
+                    )
+                else:
+                    # Jump or no data: use old_universe_number only if fully parsed
+                    if hasattr(cell._universe, "_not_parsed"):
+                        continue
+                    uni_num = cell.old_universe_number
+                    if uni_num is None:
+                        uni_num = 0
                 if uni_num not in universes.numbers:
                     universe = Universe(uni_num)
                     universe.link_to_problem(self._problem)

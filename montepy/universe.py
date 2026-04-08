@@ -144,8 +144,9 @@ class Universe(Numbered_MCNP_Object):
                     cells_to_claim.append(cell)
                 elif cell.search(str(self.number)):
                     cell.full_parse()
-                    # TODO does uni_inp get thrown out?
-                    if uni_inp.old_number == self.number:
+                    # Use cell._universe after full_parse (not uni_inp, which is the
+                    # old blank JIT proxy with no key/value info and old_number=0).
+                    if cell._universe.old_number == self.number:
                         cells_to_claim.append(cell)
         self.soft_claim(cells_to_claim)
 

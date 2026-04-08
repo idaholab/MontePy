@@ -130,9 +130,11 @@ class Cell(Numbered_MCNP_Object):
         for key, value in old_data.items():
             if key in cell_mod_keys:
                 new_obj = getattr(self, key)
-                # grab the only data that needs to survive
+                # Transfer the parked value so that when full_parse() is triggered
+                # later (via @needs_full_ast), it applies the data-block value.
+                # Calling _accept_and_update directly would be cleared by full_parse().
                 if hasattr(value, "_parked_value"):
-                    new_obj._accept_and_update(value._parked_value)
+                    new_obj._parked_value = value._parked_value
             else:
                 setattr(self, key, value)
 

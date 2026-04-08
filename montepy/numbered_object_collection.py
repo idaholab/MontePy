@@ -198,6 +198,14 @@ class NumberedObjectCollection(ABC):
             if problem is not None:
                 existing_coll = obj._collection
                 if existing_coll is None or existing_coll._problem is not problem:
+                    # If already linked to a problem-less collection (e.g. standalone
+                    # cell's surfaces), unlink first so we can re-link to self.
+                    if (
+                        existing_coll is not None
+                        and existing_coll is not self
+                        and existing_coll._problem is None
+                    ):
+                        obj._unlink_from_collection()
                     obj._link_to_collection(self)
 
     def finalize_init(self):
