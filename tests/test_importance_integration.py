@@ -50,10 +50,10 @@ def test_print_explicit_default_imp(problem):  # based on #892
     stream.close()
     cells = new_problem.cells
     for cell_num, imp_str in {
-        4: "IMP:n=2.0 IMP:p=2.0",
-        6: "IMP:n=1.0 IMP:p=1.0",
-        7: "IMP:n=4.0 IMP:p=1.0",
-        8: "IMP:n=5.0 IMP:p=1.0",
+        4: "imp:n=2.0 imp:p=2.0",
+        6: "imp:n=1.0 imp:p=1.0",
+        7: "imp:n=4.0 imp:p=1.0",
+        8: "imp:n=5.0 imp:p=1.0",
     }.items():
         print(cell_num, imp_str)
         assert imp_str in cells[cell_num]._input.input_text
@@ -84,8 +84,8 @@ def test_splitting_part_combos(problem):  # based on #913
 
     cells = new_problem.cells
     for cell_num, imp_str in {
-        4: "IMP:n=2.0 IMP:p=2.0",
-        6: "IMP:n=4.0 IMP:p=3.0",
+        4: "imp:n=2.0 imp:p=2.0",
+        6: "imp:n=4.0 imp:p=3.0",
     }.items():
         print(cell_num, imp_str)
         assert imp_str in cells[cell_num]._input.input_text
