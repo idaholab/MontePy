@@ -1314,7 +1314,18 @@ def test_find_duplicate_surfaces():
     assert sa.find_duplicate_surfaces([sb], 1e-6) == [sb]
 
 
-@pytest.mark.parametrize("Class", [montepy.surfaces.cylinder_on_axis.CylinderOnAxis])
+@pytest.mark.parametrize(
+    "Class",
+    [
+        montepy.surfaces.axis_plane.AxisPlane,
+        montepy.surfaces.cylinder_on_axis.CylinderOnAxis,
+        montepy.surfaces.cylinder_par_axis.CylinderParAxis,
+        montepy.surfaces.general_plane.GeneralPlane,
+        montepy.surfaces.general_sphere.GeneralSphere,
+        montepy.surfaces.sphere_at_origin.SphereAtOrigin,
+        montepy.surfaces.sphere_on_axis.SphereOnAxis,
+    ],
+)
 def test_surface_deprecation(Class):
     with pytest.warns(DeprecationWarning):
         Class(number=5)
