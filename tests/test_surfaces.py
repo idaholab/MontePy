@@ -351,10 +351,10 @@ def test_axis_plane_init():
     bad_inputs = ["1 P 0.0", "1 PZ 0.0 10.0"]
     for bad_input in bad_inputs:
         with pytest.raises(ValueError):
-            montepy.surfaces.axis_plane.AxisPlane(bad_input)
+            AxisPlane(bad_input)
         with pytest.raises(ValueError):
-            montepy.surfaces.axis_plane.AxisPlane(Input([bad_input], BlockType.SURFACE))
-    surf = montepy.surfaces.axis_plane.AxisPlane(number=5)
+            AxisPlane(Input([bad_input], BlockType.SURFACE))
+    surf = AxisPlane(number=5)
     assert surf.number == 5
 
 
