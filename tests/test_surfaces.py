@@ -1312,3 +1312,9 @@ def test_find_duplicate_surfaces():
     sa = surface_builder("1 PZ 5.0")
     sb = surface_builder("2 PZ 5.0")
     assert sa.find_duplicate_surfaces([sb], 1e-6) == [sb]
+
+
+@pytest.mark.parametrize("Class", [montepy.surfaces.cylinder_on_axis.CylinderOnAxis])
+def test_surface_deprecation(Class):
+    with pytest.warns(DeprecationWarning):
+        Class(number=5)
