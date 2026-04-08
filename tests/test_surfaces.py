@@ -11,25 +11,25 @@ from montepy.exceptions import (
 )
 from montepy.input_parser.block_type import BlockType
 from montepy.input_parser.mcnp_input import Input
-from montepy.surfaces.axis_plane import AxisPlane
-from montepy.surfaces.cylinder_on_axis import CylinderOnAxis
-from montepy.surfaces.cylinder_par_axis import CylinderParAxis
-from montepy.surfaces.general_plane import GeneralPlane
-from montepy.surfaces.general_sphere import GeneralSphere
-from montepy.surfaces.sphere_at_origin import SphereAtOrigin
-from montepy.surfaces.sphere_on_axis import SphereOnAxis
 from montepy.surfaces.surface import (
     ArbitraryPolyhedron,
     AxisAlignedQuadric,
+    AxisPlane,
     Box,
     ConeOnAxis,
     ConeParAxis,
+    CylinderOnAxis,
+    CylinderParAxis,
     Ellipsoid,
+    GeneralPlane,
+    GeneralSphere,
     GeneralQuadric,
     RectangularParallelepiped,
     RightCircularCylinder,
     RightEllipticalCylinder,
     RightHexagonalPrism,
+    SphereAtOrigin,
+    SphereOnAxis,
     SphereMacrobody,
     Surface,
     Torus,
@@ -384,12 +384,10 @@ def test_gen_plane_init():
     bad_inputs = ["1 PZ 0.0", "1 P 0.0"]
     for bad_input in bad_inputs:
         with pytest.raises(ValueError):
-            montepy.surfaces.general_plane.GeneralPlane(bad_input)
+            GeneralPlane(bad_input)
         with pytest.raises(ValueError):
-            montepy.surfaces.general_plane.GeneralPlane(
-                Input([bad_input], BlockType.SURFACE)
-            )
-    surf = montepy.surfaces.general_plane.GeneralPlane(number=5)
+            GeneralPlane(Input([bad_input], BlockType.SURFACE))
+    surf = GeneralPlane(number=5)
     assert surf.number == 5
 
 
@@ -456,10 +454,10 @@ def test_general_plane_constants():
     warn_inputs = ["17 p 0. 0. 0. 0. 0. 1. 0. 1. 1. 0. 1. 0."]
     for error_input in error_inputs:
         with pytest.raises(ValueError):
-            montepy.surfaces.general_plane.GeneralPlane(error_input)
+            GeneralPlane(error_input)
     for warn_input in warn_inputs:
         with pytest.raises(SurfaceConstantsWarning):
-            montepy.surfaces.general_plane.GeneralPlane(warn_input)
+            GeneralPlane(warn_input)
 
 
 def test_cylinder_axis_radius_setter():
