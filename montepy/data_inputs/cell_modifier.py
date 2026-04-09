@@ -132,7 +132,6 @@ class CellModifierInput(DataInputAbstract):
                 )
             else:
                 self.__init__(self._input, jit_parse=False)
-                self.push_to_cells()
             [setattr(self, k, v) for k, v in old_data.items()]
             if hasattr(self, "_parked_value"):
                 try:
@@ -144,6 +143,8 @@ class CellModifierInput(DataInputAbstract):
                     ) from e
             if problem:
                 self.link_to_problem(problem)
+                if not self.in_cell_block and self._input is not None:
+                    self.push_to_cells()
 
     def _generate_default_tree(self):
         if self.in_cell_block:
@@ -261,6 +262,8 @@ class CellModifierInput(DataInputAbstract):
         if not self._in_cell_block and self._problem:
             cells = self._problem.cells
             for cell in cells:
+                if hasattr(cell, "_not_parsed") and cell._not_parsed:
+                    cell.full_parse()
                 if getattr(cell, attr).set_in_cell_block:
                     raise montepy.exceptions.MalformedInputError(
                         cell._input,

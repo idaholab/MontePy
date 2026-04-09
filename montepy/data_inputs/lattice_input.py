@@ -119,7 +119,7 @@ class LatticeInput(CellModifierInput):
                     cells, self._lattice, fillvalue=None
                 ):
                     if not isinstance(lattice, (Jump, type(None))):
-                        cell._lattice._accept_from_data(lattice)
+                        cell._lattice._accept_from_data(lattice.value)
 
     def _accept_and_update(self, value):
         self.lattice = value

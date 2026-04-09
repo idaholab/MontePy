@@ -184,7 +184,8 @@ class Volume(CellModifierInput):
                     cell._volume._accept_from_data(vol)
 
     def _accept_and_update(self, value):
-        if self._volume.value is not None and value.value is not None:
+        existing = self._volume.value if self._volume is not None else None
+        if existing is not None and value.value is not None:
             raise RedundantParameterSpecification("vol", value.value)
         if value.value is not None:
             self._volume = value

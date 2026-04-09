@@ -235,7 +235,7 @@ class UniverseInput(CellModifierInput):
                     )
                 else:
                     # Jump or no data: use old_universe_number only if fully parsed
-                    if hasattr(cell._universe, "_not_parsed"):
+                    if cell is None or hasattr(cell._universe, "_not_parsed"):
                         continue
                     uni_num = cell.old_universe_number
                     if uni_num is None:
