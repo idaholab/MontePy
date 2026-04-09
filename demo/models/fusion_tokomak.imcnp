@@ -5,26 +5,24 @@ C B.N. Sorbom, et al. ARC: A compact, high-field, fusion nuclear science facilit
 c     Fusion Engineering and Design, Volume 100, 2015, Pages 378-405 doi: 10.1016/j.fusengdes.2015.07.008
 c
 C cells
-1   0           -1       +100 -105 imp:n=1 $ source cell
-5   0           +1  -5   +100 -105 imp:n=1 $ vacuum 
-10  5   -19.3   +5  -10  +100 -105 imp:n=1 $ tungsten first wall
-13  20   -5.0  +10  -12  +100 -105 imp:n=1 $ vacuum vessel
-15  10   -0.5  +15 -20   +100 -105 imp:n=1 $ breeder blanket
-20  0          +20 -25   +100 -105 imp:n=1 $ void behind magnets
-25  15   -8.9  +25 -30   +100 -105 imp:n=1 $magnets
-30  0          +30 :     -100 : +105 imp:n=0 $graveyard cell
+1   0           -1      imp:n=1 $ source cell
+5   0           +1  -5  imp:n=1 $ vacuum 
+10  5   -19.3   +5  -10 imp:n=1 $ tungsten first wall
+13  20   -5.0  +10  -12 imp:n=1 $ vacuum vessel
+15  10   -0.5  +15 -20  imp:n=1 $ breeder blanket
+20  0          +20 -25  imp:n=1 $ void behind magnets
+25  15   -8.9  +25 -30  imp:n=1 $magnets
+30  0          +30      imp:n=0 $graveyard cell
 
 c surfaces
-1    CZ 1    $ source cell
-5    CZ 113  $ inner wall of first wall
-10   CZ 114  $ outer wall of first wall
-12   CZ 115  $ outer wall of vacuum vessel
-15   CZ 150.00  $ outer wall of breeder blanket
-20   CZ 151.00  $ outer wall of breeder cladding
-25   CZ 200  $ inner radius of magnets
-30   CZ 205  $ outer radius of magnets
-*100 PZ -50  $ reflective boundary
-*105 PZ  50  
+1    TZ 0.0 0.0 0.0 330 1      1    $ source cell
+5    TZ 0.0 0.0 0.0 330 113    113  $ inner wall of first wall
+10   TZ 0.0 0.0 0.0 330 114    114  $ outer wall of first wall
+12   TZ 0.0 0.0 0.0 330 115    115  $ outer wall of vacuum vessel
+15   TZ 0.0 0.0 0.0 330 150.00 150.00  $ outer wall of breeder blanket
+20   TZ 0.0 0.0 0.0 330 151.00 151.00  $ outer wall of breeder cladding
+25   TZ 0.0 0.0 0.0 330 200    200  $ inner radius of magnets
+30   TZ 0.0 0.0 0.0 330 205    205  $ outer radius of magnets
 
 c data
 M5  74168.70c 1.0 $ tungsten
