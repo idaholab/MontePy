@@ -314,21 +314,10 @@ class Importance(CellModifierInput):
                     self._problem and particle not in self._problem.mode
                 ):
                     continue
-                other_particles = self._particle_importances[particle][
+                particle_node = self._particle_importances[particle][
                     "classifier"
                 ].particles
-                # Extend classifier with equal-value mode particles not yet in it.
-                # This handles cells pushed from the data block, where each
-                # particle gets its own single-particle classifier.
-                if self._problem:
-                    for other_part in self._problem.mode.particles:
-                        if other_part not in other_particles and math.isclose(
-                            self[particle],
-                            self[other_part],
-                            rel_tol=rel_tol,
-                            abs_tol=abs_tol,
-                        ):
-                            other_particles.add(other_part)
+                other_particles = set(particle_node.particles)
                 to_remove = set()
                 for other_part in other_particles:
                     if other_part != particle:
@@ -341,8 +330,8 @@ class Importance(CellModifierInput):
                             particles_printed.add(other_part)
                         else:
                             to_remove.add(other_part)
-                for removee in to_remove:
-                    other_particles.remove(removee)
+                if to_remove:
+                    particle_node.particles = other_particles - to_remove
                 ret = ensure_has_end_space(ret)
                 ret += self._particle_importances[particle].format()
                 particles_printed.add(particle)
