@@ -301,6 +301,7 @@ class Surface(Numbered_MCNP_Object):
         """
         pass
 
+    # TODO handle case of deleting value, but the access looks for old value again.
     @prop_pointer_from_problem(
         "_periodic_surface",
         "old_periodic_surface",
