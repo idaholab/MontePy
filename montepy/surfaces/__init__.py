@@ -2,6 +2,10 @@
 from . import axis_plane
 from . import cylinder_par_axis
 from . import cylinder_on_axis
+from . import general_plane
+from . import general_sphere
+from . import sphere_at_origin
+from . import sphere_on_axis
 from . import half_space
 from . import surface_builder
 
