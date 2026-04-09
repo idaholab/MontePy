@@ -9,7 +9,8 @@ C cells
 5   0           +1  -5  imp:n=1 $ vacuum 
 10  5   -19.3   +5  -10 imp:n=1 $ tungsten first wall
 13  20   -5.0  +10  -12 imp:n=1 $ vacuum vessel
-15  10   -0.5  +15 -20  imp:n=1 $ breeder blanket
+15  10   -0.5  +12 -15  imp:n=1 $ breeder blanket
+18  20   -5.0  +15 -20  imp:n=1 $breeder can
 20  0          +20 -25  imp:n=1 $ void behind magnets
 25  15   -8.9  +25 -30  imp:n=1 $magnets
 30  0          +30      imp:n=0 $graveyard cell
