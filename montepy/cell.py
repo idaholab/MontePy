@@ -402,7 +402,7 @@ class Cell(Numbered_MCNP_Object):
     @lattice_type.setter
     @args_checked
     @needs_full_ast
-    def lattice_type(self, value: montepy.LatticeType = None):
+    def lattice_type(self, value: montepy.LatticeType | int | None = None):
         self._lattice.lattice = value
 
     @lattice_type.deleter
