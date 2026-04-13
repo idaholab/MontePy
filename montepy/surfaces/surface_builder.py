@@ -1,13 +1,74 @@
-# Copyright 2024, Battelle Energy Alliance, LLC All Rights Reserved.
-from montepy.surfaces.axis_plane import AxisPlane
-from montepy.surfaces.surface import Surface, InitInput
+# Copyright 2024-2026, Battelle Energy Alliance, LLC All Rights Reserved.
+from montepy.surfaces.surface import *
 from montepy.surfaces.surface_type import SurfaceType
-from montepy.surfaces.cylinder_on_axis import CylinderOnAxis
-from montepy.surfaces.cylinder_par_axis import CylinderParAxis
-from montepy.surfaces.general_plane import GeneralPlane
-from montepy.surfaces.general_sphere import GeneralSphere
-from montepy.surfaces.sphere_at_origin import SphereAtOrigin
-from montepy.surfaces.sphere_on_axis import SphereOnAxis
+
+_ST = SurfaceType
+
+# Axis-specific classes take precedence over the generic grouped classes below.
+_SPECIFIC_DISPATCH: dict = {
+    _ST.CX: XCylinder,
+    _ST.CY: YCylinder,
+    _ST.CZ: ZCylinder,
+    _ST.C_X: XCylinderParAxis,
+    _ST.C_Y: YCylinderParAxis,
+    _ST.C_Z: ZCylinderParAxis,
+    _ST.PX: XPlane,
+    _ST.PY: YPlane,
+    _ST.PZ: ZPlane,
+    _ST.SX: XSphere,
+    _ST.SY: YSphere,
+    _ST.SZ: ZSphere,
+    _ST.KX: XCone,
+    _ST.KY: YCone,
+    _ST.KZ: ZCone,
+    _ST.K_X: XConeParAxis,
+    _ST.K_Y: YConeParAxis,
+    _ST.K_Z: ZConeParAxis,
+    _ST.TX: XTorus,
+    _ST.TY: YTorus,
+    _ST.TZ: ZTorus,
+}
+
+# Generic grouped classes: one class handles a family of surface types.
+_GENERIC_DISPATCH: dict = {
+    _ST.CX: CylinderOnAxis,
+    _ST.CY: CylinderOnAxis,
+    _ST.CZ: CylinderOnAxis,
+    _ST.C_X: CylinderParAxis,
+    _ST.C_Y: CylinderParAxis,
+    _ST.C_Z: CylinderParAxis,
+    _ST.PX: AxisPlane,
+    _ST.PY: AxisPlane,
+    _ST.PZ: AxisPlane,
+    _ST.P: GeneralPlane,
+    _ST.SO: SphereAtOrigin,
+    _ST.S: GeneralSphere,
+    _ST.SX: SphereOnAxis,
+    _ST.SY: SphereOnAxis,
+    _ST.SZ: SphereOnAxis,
+    _ST.KX: ConeOnAxis,
+    _ST.KY: ConeOnAxis,
+    _ST.KZ: ConeOnAxis,
+    _ST.K_X: ConeParAxis,
+    _ST.K_Y: ConeParAxis,
+    _ST.K_Z: ConeParAxis,
+    _ST.SQ: AxisAlignedQuadric,
+    _ST.GQ: GeneralQuadric,
+    _ST.TX: Torus,
+    _ST.TY: Torus,
+    _ST.TZ: Torus,
+    _ST.BOX: Box,
+    _ST.RPP: RectangularParallelepiped,
+    _ST.SPH: SphereMacrobody,
+    _ST.RCC: RightCircularCylinder,
+    _ST.RHP: RightHexagonalPrism,
+    _ST.HEX: RightHexagonalPrism,
+    _ST.REC: RightEllipticalCylinder,
+    _ST.TRC: TruncatedRightCone,
+    _ST.ELL: Ellipsoid,
+    _ST.WED: Wedge,
+    _ST.ARB: ArbitraryPolyhedron,
+}
 
 
 def parse_surface(input: InitInput):
@@ -24,25 +85,13 @@ def parse_surface(input: InitInput):
         A Surface object properly parsed. If supported a sub-class of
         Surface will be given.
     """
-    ST = SurfaceType
     buffer_surface = Surface(input)
-    type_of_surface = buffer_surface.surface_type
-    if type_of_surface in [ST.C_X, ST.C_Y, ST.C_Z]:
-        return CylinderParAxis(input)
-    elif type_of_surface in [ST.CX, ST.CY, ST.CZ]:
-        return CylinderOnAxis(input)
-    elif type_of_surface in [ST.PX, ST.PY, ST.PZ]:
-        return AxisPlane(input)
-    elif type_of_surface == ST.P:
-        return GeneralPlane(input)
-    elif type_of_surface == ST.S:
-        return GeneralSphere(input)
-    elif type_of_surface == ST.SO:
-        return SphereAtOrigin(input)
-    elif type_of_surface in [ST.SX, ST.SY, ST.SZ]:
-        return SphereOnAxis(input)
-    else:
+    cls = _SPECIFIC_DISPATCH.get(buffer_surface.surface_type) or _GENERIC_DISPATCH.get(
+        buffer_surface.surface_type
+    )
+    if cls is None:
         return buffer_surface
+    return cls(input)
 
 
 surface_builder = parse_surface

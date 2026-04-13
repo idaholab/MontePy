@@ -97,6 +97,10 @@ You can specify a specific version from `PyPI`_ be installed using:
 
 ``pip install montepy==<version>``
 
+Or using conda-forge:
+
+``conda install conda-forge::montepy==<version>``
+
 Tutorials and Demonstrations
 ----------------------------
 
@@ -112,7 +116,7 @@ These tutorial can be launched here:
    :new_tab_button_text: Launch jupyter in your browswer
    
 
-To access these demonstrations you can run:
+To access these demonstrations locally you can run:
 
 .. code-block:: bash
 
@@ -125,7 +129,7 @@ These notebooks are not complete, and have missing code you need to fill in.
 If you get stuck there are complete notebooks in the ``answers`` folder, that you can refer to. 
 
 Finally if you want to present these notebooks in a workshop, 
-we use `RISE <https://rise.readthedocs.io/en/latest/>`_.
+we use `RISE <https://rise.readthedocs.io/en/latest/>`_ to turn the notebooks into a slideshow.
 You can install this with ``pip install montepy[demo-present]``.
 
 Best Practices
@@ -151,13 +155,13 @@ Before we begin, here are some guidelines to keep in mind while scripting your w
 Reading a File
 --------------
 
-MontePy offers the :func:`montepy.read_input` (actually :func:`~montepy.input_parser.input_reader.read_input`) function for getting started.
+MontePy offers the :func:`montepy.read_input` function for getting started.
 It will read the specified MCNP input file, and return an MontePy :class:`~montepy.MCNP_Problem` object.
 
 >>> import montepy
->>> problem = montepy.read_input("tests/inputs/test.imcnp")
+>>> problem = montepy.read_input("foo.imcnp")
 >>> len(problem.cells)
-5
+2
 
 Writing a File
 --------------
@@ -186,7 +190,7 @@ also accepts an open file handle, stream, or other object with a ``write()`` met
 ...     problem.write_problem(fh)
 >>> new_problem = montepy.read_input("foo_bar.imcnp")
 >>> len(new_problem.cells)
-5
+2
 
 
 If no changes are made to the problem in MontePy, the entire file should just be parroted out as it was in the original file
@@ -357,7 +361,7 @@ This can be done quickly with a for loop:
        cell.number += 1000
 
 Number Collisions Should Be Impossible
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 The ``NumberedObjectCollection`` has various mechanisms internally to avoid number collisions 
 (two objects having the same number).
@@ -386,19 +390,19 @@ There are a number of tools to avoid this though:
 #. :func:`~montepy.numbered_object_collection.NumberedObjectCollection.next_number` will find the next 
    number available by taking the highest number used and increasing it.
 
-The collections also have a property called :func:`~montepy.numbered_object_collection.NumberedObjectCollection.numbers`, which lists all numbers that are in use.
+The collections also have a property called :attr:`~montepy.numbered_object_collection.NumberedObjectCollection.numbers`, which lists all numbers that are in use.
 Note that using this property has some perils that will be covered in the next section.
 
 
 Beware the Generators!
 ^^^^^^^^^^^^^^^^^^^^^^
 
-The Collections ( ``cells``, ``surfaces``, ``materials``, ``universes``, etc.) offer many generators. 
+The Collections ( :class:`~montepy.Cells`, :class:`~montepy.Surfaces`, :class:`~montepy.Materials`, :class:`~montepy.Universes`, etc.) offer many generators. 
 First, what is a generator? 
 Basically they are iterators that are dynamically created.
 They don't hold any information until you ask for it.
 
-The first example of this is the ``numbers`` property. 
+The first example of this is the :attr:`~montepy.numbered_object_collection.NumberedObjectCollection.numbers` property. 
 The collection doesn't keep this information until it is needed.
 When you ask for the ``numbers`` python then iterates over all of the objects in
 the collection and gets their number at the exact moment.
@@ -430,7 +434,7 @@ False
 
 Using the generators in this way does not cause any issues, but there are ways to cause issues
 by making "stale" information.
-This can be done by making a copy of it with ``list()``. 
+This can be done by making a copy of it with :class:`list`. 
 
 .. doctest::
 
@@ -457,7 +461,7 @@ The simple solution is to just access the generators directly; don't try to make
 Cloning Objects
 ^^^^^^^^^^^^^^^
 
-In the past the only way to make a copy of a MontePy object was with `copy.deepcopy <https://docs.python.org/3/library/copy.html#copy.deepcopy>`_.
+In the past the only way to make a copy of a MontePy object was with :func:`copy.deepcopy`.
 In MontePy 0.5.0 a better way was introduced: :func:`~montepy.mcnp_object.MCNP_Object.clone`.
 How numbered objects, for instance :class:`~montepy.Cell`, is more complicated.
 If a ``Cell`` or a group of ``Cells`` are cloned their numbers will be to changed to avoid collisions.
@@ -480,7 +484,7 @@ First all :class:`~montepy.mcnp_object.MCNP_Object` constructors can take a stri
    >>> cell.importance[montepy.Particle.NEUTRON]
    1.0
    >>> # surfaces
-   >>> surf = montepy.AxisPlane("5 PZ 10")
+   >>> surf = montepy.ZPlane("5 PZ 10")
    >>> surf.number 
    5
    >>> surf.location
@@ -505,7 +509,7 @@ and for data inputs this is :func:`~montepy.data_inputs.data_parser.parse_data`.
 
    >>> surf = montepy.parse_surface("1 cz 5.0")
    >>> type(surf)
-   <class 'montepy.surfaces.cylinder_on_axis.CylinderOnAxis'>
+   <class 'montepy.surfaces.surface.ZCylinder'>
    >>> surf.radius
    5.0
    >>> mat = montepy.parse_data("m1 1001.80c 1")
@@ -531,26 +535,30 @@ and appends it to necessary collections (if requested):
 Surfaces
 --------
 
+.. versionchanged:: 1.4.0
+
+   In past versions the classes: :class:`~montepy.CylinderOnAxis`, :class:`~montepy.CylinderParAxis`,
+   and :class:`~montepy.AxisPlane` were the preferred and only way to work with the surface types:
+   ``CX``, ``C/X``, and ``PX`` respectively.
+   Now the preferred classes are :class:`~montepy.XCylinder`, :class:`~montepy.XCylinderParAxis`,
+   and :class:`~montepy.XPlane` respectively.
+   These all inherit from the original classes (e.g., ``XPlane`` inherits from ``AxisPlane``),
+   so :func:`python:isinstance` still works the same as before this change.
+   There is no plan to deprecate these root classes, 
+   just the documentation will not recommend using them directly.
+
 The most important unsung heroes of an MCNP problem are the surfaces.
 They may be tedious to work with but you can't get anything done without them.
 MCNP supports *a lot* of types of surfaces, and all of them are special in their own way.
 You can see all the surface types here: :class:`~montepy.SurfaceType`.
-By default all surfaces are an instance of :class:`~montepy.Surface`.
-They will always have the properties: ``surface_type``, and ``surface_constants``.
-If you need to modify the surface you can do so through the ``surface_constants`` list.
-But for some of our favorite surfaces 
-(``CX``, ``CY``, ``CZ``, ``C\X``, ``C\Y``, ``C\Z``, ``PX``, ``PY``, ``PZ``),
-these will be a special subclass of ``Surface``, 
-that will truly understand surface constants for what the mean.
+All surfaces are an inherit from :class:`~montepy.Surface`, or are directly an instance of :class:`~montepy.Surface`.
+They will always have the properties: :attr:`~montepy.Surface.surface_type`, and :attr:`~montepy.Surface.surface_constants`.
+For almost all surface types (except for axisymmetric surfaces defined by points, i.e., :attr:`~montepy.SurfaceType.X`, :attr:`~montepy.SurfaceType.Y`, and :attr:`~montepy.SurfaceType.Z`),
+a custom class is defined for it.
+For example, :class:`~montepy.XPlane` represents all :attr:`~montepy.SurfaceType.PX` surfaces by default.
+These classes expose the ``surface_constants`` through more intuitive property names like: :attr:`~montepy.XPlane.location`.
 See the :doc:`API documentation <api/modules>` for specific surface classes and their documentation.
 
-Two useful examples are the :class:`~montepy.CylinderOnAxis`, 
-which covers ``CX``, ``CY``, and ``CZ``,
-and the :class:`~montepy.AxisPlane`,
-which covers ``PX``, ``PY``, ``PZ``.
-The first contains the parameter: ``radius``, 
-and the second one contains the parameters: ``location``. 
-These describe their single surface constant.
 
 
 Getting Surfaces by Type the easy way
@@ -594,12 +602,10 @@ For Example:
 
    from montepy.surfaces.surface_type import SurfaceType
 
-   bottom = montepy.surfaces.axis_plane.AxisPlane()
-   bottom.surface_type = SurfaceType.PZ
+   bottom = montepy.ZPlane()
    bottom.is_reflecting = True
 
-   cyl = montepy.surfaces.cylinder_on_axis.CylinderOnAxis()
-   cyl.surface_type = SurfaceType.CZ
+   cyl = montepy.surfaces.ZCylinder()
    cyl.is_white_boundary = True
 
 
@@ -612,8 +618,7 @@ So to continue with the previous example:
    bottom.location = 0.0
    bottom.is_reflecting = False
 
-   top = montepy.surfaces.axis_plane.AxisPlane()
-   top.surface_type = SurfaceType.PZ
+   top = montepy.ZPlane()
    top.location = 1.26
 
    bottom.periodic_surface = top
@@ -805,28 +810,23 @@ Order of precedence and grouping is automatically handled by Python so you can e
    from montepy.surfaces.surface_type import SurfaceType
 
    # build blank surfaces 
-   bottom_plane = montepy.surfaces.axis_plane.AxisPlane(number=1)
-   bottom_plane.surface_type = SurfaceType.PZ
+   bottom_plane = montepy.ZPlane(number=1)
    bottom_plane.location = 0.0
 
-   top_plane = montepy.surfaces.axis_plane.AxisPlane(number=2)
-   top_plane.surface_type = SurfaceType.PZ
+   top_plane = montepy.ZPlane(number=2)
    top_plane.location = 10.0
 
-   fuel_cylinder = montepy.surfaces.cylinder_on_axis.CylinderOnAxis(number=3)
-   fuel_cylinder.surface_type = SurfaceType.CZ
+   fuel_cylinder = montepy.ZCylinder(number=3)
    fuel_cylinder.radius = 1.26 / 2
 
-   clad_cylinder = montepy.surfaces.cylinder_on_axis.CylinderOnAxis(number=4)
+   clad_cylinder = montepy.ZCylinder(number=4)
    clad_cylinder.radius = (1.26 / 2) + 1e-3 # fuel, gap, cladding
    clad_cylinder.surface_type = SurfaceType.CZ
 
-   clad_od = montepy.surfaces.cylinder_on_axis.CylinderOnAxis(number=5)
+   clad_od = montepy.surfaces.ZCylinder(number=5)
    clad_od.radius = clad_cylinder.radius + 0.1 # add thickness
-   clad_od.surface_type = SurfaceType.CZ
-   other_fuel = montepy.surfaces.cylinder_on_axis.CylinderOnAxis(number=6)
+   other_fuel = montepy.ZCylinder(number=6)
    other_fuel.radius = 3.0
-   other_fuel.surface_type = SurfaceType.CZ
 
    #make weird truncated fuel sample
    slug_half_space = +bottom_plane & -top_plane & -fuel_cylinder
@@ -838,7 +838,7 @@ Order of precedence and grouping is automatically handled by Python so you can e
 .. note::
 
   MontePy does not check if the geometry definition is "rational".
-  It doesn't check for being finite, existent (having any volume at all), or being infinite.
+  It doesn't check a geometry defintion for being finite, existent (having any volume at all), or being infinite.
   Nor does it check for overlapping geometry.
 
 Setting and Modifying Geometry
@@ -856,7 +856,7 @@ This will completely redefine the cell's geometry. You can also modify the geome
 
 .. testcode::
 
-    fuel_cyl = montepy.CylinderOnAxis()
+    fuel_cyl = montepy.ZCylinder()
     fuel_cyl.number = 20
     fuel_cyl.radius = 1.20
     other_fuel_region = -fuel_cyl
