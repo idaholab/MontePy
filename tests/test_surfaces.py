@@ -11,14 +11,52 @@ from montepy.exceptions import (
 )
 from montepy.input_parser.block_type import BlockType
 from montepy.input_parser.mcnp_input import Input
-from montepy.surfaces.axis_plane import AxisPlane
-from montepy.surfaces.cylinder_on_axis import CylinderOnAxis
-from montepy.surfaces.cylinder_par_axis import CylinderParAxis
-from montepy.surfaces.general_plane import GeneralPlane
-from montepy.surfaces.general_sphere import GeneralSphere
-from montepy.surfaces.sphere_at_origin import SphereAtOrigin
-from montepy.surfaces.sphere_on_axis import SphereOnAxis
-from montepy.surfaces.surface import Surface
+from montepy.surfaces.surface import (
+    ArbitraryPolyhedron,
+    AxisAlignedQuadric,
+    AxisPlane,
+    Box,
+    ConeOnAxis,
+    ConeParAxis,
+    CylinderOnAxis,
+    CylinderParAxis,
+    Ellipsoid,
+    GeneralPlane,
+    GeneralSphere,
+    GeneralQuadric,
+    RectangularParallelepiped,
+    RightCircularCylinder,
+    RightEllipticalCylinder,
+    RightHexagonalPrism,
+    SphereAtOrigin,
+    SphereOnAxis,
+    SphereMacrobody,
+    Surface,
+    Torus,
+    TruncatedRightCone,
+    Wedge,
+    XCone,
+    XConeParAxis,
+    XCylinder,
+    XCylinderParAxis,
+    XPlane,
+    XSphere,
+    XTorus,
+    YCone,
+    YConeParAxis,
+    YCylinder,
+    YCylinderParAxis,
+    YPlane,
+    YSphere,
+    YTorus,
+    ZCone,
+    ZConeParAxis,
+    ZCylinder,
+    ZCylinderParAxis,
+    ZPlane,
+    ZSphere,
+    ZTorus,
+)
 from montepy.surfaces.surface_builder import surface_builder
 from montepy.surfaces.surface_type import SurfaceType
 
@@ -159,6 +197,15 @@ def test_validator():
     with pytest.raises(IllegalState):
         surf.format_for_mcnp_input(vers)
     surf._surface_type = SurfaceType.P
+    # wrong constant count via _enforce_constants(_validation_call=True) → IllegalState
+    for _ in range(2):
+        node = surf._surface_constants.pop()
+        surf._tree["data"].remove(node)
+    with pytest.raises(IllegalState):
+        surf.validate()
+    # restore and verify None-coefficient path
+    surf = GeneralPlane(number=2)
+    surf._surface_type = SurfaceType.P
     with pytest.raises(IllegalState):
         surf.validate()
     # general sphere
@@ -205,6 +252,8 @@ def test_surface_constants_setter():
             surf.surface_constants = "foo"
         with pytest.raises(ValueError):
             surf.surface_constants = [1, "foo"]
+        with pytest.raises(TypeError):
+            surf.surface_constants = ["foo"]
 
 
 def test_surface_number_setter():
@@ -302,10 +351,10 @@ def test_axis_plane_init():
     bad_inputs = ["1 P 0.0", "1 PZ 0.0 10.0"]
     for bad_input in bad_inputs:
         with pytest.raises(ValueError):
-            montepy.surfaces.axis_plane.AxisPlane(bad_input)
+            AxisPlane(bad_input)
         with pytest.raises(ValueError):
-            montepy.surfaces.axis_plane.AxisPlane(Input([bad_input], BlockType.SURFACE))
-    surf = montepy.surfaces.axis_plane.AxisPlane(number=5)
+            AxisPlane(Input([bad_input], BlockType.SURFACE))
+    surf = AxisPlane(number=5)
     assert surf.number == 5
 
 
@@ -335,12 +384,10 @@ def test_gen_plane_init():
     bad_inputs = ["1 PZ 0.0", "1 P 0.0"]
     for bad_input in bad_inputs:
         with pytest.raises(ValueError):
-            montepy.surfaces.general_plane.GeneralPlane(bad_input)
+            GeneralPlane(bad_input)
         with pytest.raises(ValueError):
-            montepy.surfaces.general_plane.GeneralPlane(
-                Input([bad_input], BlockType.SURFACE)
-            )
-    surf = montepy.surfaces.general_plane.GeneralPlane(number=5)
+            GeneralPlane(Input([bad_input], BlockType.SURFACE))
+    surf = GeneralPlane(number=5)
     assert surf.number == 5
 
 
@@ -374,11 +421,13 @@ def test_origin_sphere_init():
     assert surf.number == 5
 
 
+@pytest.mark.filterwarnings("ignore")
 def test_axis_plane_location_setter():
     surf = surface_builder("1 PZ 0.0")
     assert surf.location == 0.0
     surf.location = 10.0
     assert surf.location == 10.0
+    verify_export(surf)
     with pytest.raises(TypeError):
         surf.location = "hi"
 
@@ -393,6 +442,7 @@ def test_sphere_radius_setter():
         assert surf.radius == 5.0
         surf.radius = 3.0
         assert surf.radius == 3.0
+        verify_export(surf)
         with pytest.raises(TypeError):
             surf.radius = "foo"
         with pytest.raises(ValueError):
@@ -404,10 +454,10 @@ def test_general_plane_constants():
     warn_inputs = ["17 p 0. 0. 0. 0. 0. 1. 0. 1. 1. 0. 1. 0."]
     for error_input in error_inputs:
         with pytest.raises(ValueError):
-            montepy.surfaces.general_plane.GeneralPlane(error_input)
+            GeneralPlane(error_input)
     for warn_input in warn_inputs:
         with pytest.raises(SurfaceConstantsWarning):
-            montepy.surfaces.general_plane.GeneralPlane(warn_input)
+            GeneralPlane(warn_input)
 
 
 def test_cylinder_axis_radius_setter():
@@ -415,6 +465,7 @@ def test_cylinder_axis_radius_setter():
     assert surf.radius == 5.0
     surf.radius = 3.0
     assert surf.radius == 3.0
+    verify_export(surf)
     with pytest.raises(TypeError):
         surf.radius = "foo"
     with pytest.raises(ValueError):
@@ -426,6 +477,7 @@ def test_cylinder_radius_setter():
     assert surf.radius == 5.0
     surf.radius = 3.0
     assert surf.radius == 3.0
+    verify_export(surf)
     with pytest.raises(TypeError):
         surf.radius = "foo"
     with pytest.raises(ValueError):
@@ -437,6 +489,7 @@ def test_cylinder_location_setter():
     assert surf.coordinates == (3.0, 4.0)
     surf.coordinates = [1, 2]
     assert surf.coordinates == (1, 2)
+    verify_export(surf)
     # test wrong type
     with pytest.raises(TypeError):
         surf.coordinates = "fo"
@@ -450,6 +503,7 @@ def test_sphere_coordinate_setter():
     assert surf.coordinates == (3.0, 4.0, 5)
     surf.coordinates = [1, 2, 3]
     assert surf.coordinates == (1, 2, 3)
+    verify_export(surf)
     # test wrong type
     with pytest.raises(TypeError):
         surf.coordinates = 6
@@ -465,6 +519,7 @@ def test_sphere_location_setter():
     assert surf.location == 3.0
     surf.location = 4.0
     assert surf.location == 4.0
+    verify_export(surf)
     # test length issues
     with pytest.raises(TypeError):
         surf.location = "over there"
@@ -493,6 +548,27 @@ def test_sphere_location_setter():
                 "radius": 0.5,
                 "transform": montepy.data_inputs.data_parser.parse_data("TR1 0 0 10.0"),
             },
+        ),
+        (XCylinder, SurfaceType.CX, {"radius": 0.5}),
+        (YCylinder, SurfaceType.CY, {"radius": 0.5}),
+        (ZCylinder, SurfaceType.CZ, {"radius": 0.5}),
+        (XConeParAxis, SurfaceType.K_X, {"apex": (1.0, 2.0, 3.0), "t_squared": 0.25}),
+        (YConeParAxis, SurfaceType.K_Y, {"apex": (1.0, 2.0, 3.0), "t_squared": 0.25}),
+        (ZConeParAxis, SurfaceType.K_Z, {"apex": (1.0, 2.0, 3.0), "t_squared": 0.25}),
+        (
+            XTorus,
+            SurfaceType.TX,
+            {"center": (0.0, 0.0, 0.0), "major_radius": 5.0, "minor_radii": [2.0, 2.0]},
+        ),
+        (
+            YTorus,
+            SurfaceType.TY,
+            {"center": (0.0, 0.0, 0.0), "major_radius": 5.0, "minor_radii": [2.0, 2.0]},
+        ),
+        (
+            ZTorus,
+            SurfaceType.TZ,
+            {"center": (0.0, 0.0, 0.0), "major_radius": 5.0, "minor_radii": [2.0, 2.0]},
         ),
     ],
 )
@@ -621,3 +697,635 @@ def test_surface_preserves_mnemonic_case(in_str, expected):
     """Surface mnemonics should be written with the original case (issue #522)."""
     surf = Surface(in_str)
     assert surf.mcnp_str() == expected
+
+
+# ---------------------------------------------------------------------------
+# Tests for all new surface classes generated by _SurfaceClassFactory
+# ---------------------------------------------------------------------------
+
+# fmt: off
+@pytest.mark.parametrize("surf_str, expected_cls", [
+    # axis-specific dispatch
+    ("1 PX 1.0",                  XPlane),
+    ("1 PY 1.0",                  YPlane),
+    ("1 PZ 1.0",                  ZPlane),
+    ("1 CX 1.0",                  XCylinder),
+    ("1 CY 1.0",                  YCylinder),
+    ("1 CZ 1.0",                  ZCylinder),
+    ("1 C/X 1.0 2.0 3.0",        XCylinderParAxis),
+    ("1 C/Y 1.0 2.0 3.0",        YCylinderParAxis),
+    ("1 C/Z 1.0 2.0 3.0",        ZCylinderParAxis),
+    ("1 SX 1.0 2.0",              XSphere),
+    ("1 SY 1.0 2.0",              YSphere),
+    ("1 SZ 1.0 2.0",              ZSphere),
+    ("1 KX 1.0 0.25",             XCone),
+    ("1 KY 1.0 0.25",             YCone),
+    ("1 KZ 1.0 0.25",             ZCone),
+    ("1 K/X 1.0 2.0 3.0 0.25",   XConeParAxis),
+    ("1 K/Y 1.0 2.0 3.0 0.25",   YConeParAxis),
+    ("1 K/Z 1.0 2.0 3.0 0.25",   ZConeParAxis),
+    ("1 TX 0 0 0 5 2 2",          XTorus),
+    ("1 TY 0 0 0 5 2 2",          YTorus),
+    ("1 TZ 0 0 0 5 2 2",          ZTorus),
+    # generic grouped dispatch
+    ("1 SO 1.0",                  SphereAtOrigin),
+    ("1 S 1 2 3 4",               GeneralSphere),
+    ("1 P 1 0 0 5",               GeneralPlane),
+    ("1 SQ 1 1 1 0 0 0 -4 0 0 0", AxisAlignedQuadric),
+    ("1 GQ 1 1 1 0 0 0 0 0 0 -4", GeneralQuadric),
+    ("1 BOX 0 0 0 1 0 0 0 1 0 0 0 1", Box),
+    ("1 RPP -1 1 -1 1 -1 1",      RectangularParallelepiped),
+    ("1 SPH 0 0 0 1",              SphereMacrobody),
+    ("1 RCC 0 0 0 0 0 1 1",       RightCircularCylinder),
+    ("1 REC 0 0 0 0 0 1 1 0 0 0 0.5 0", RightEllipticalCylinder),
+    ("1 TRC 0 0 0 0 0 1 2 1",     TruncatedRightCone),
+    ("1 ELL -1 0 0 1 0 0 5",      Ellipsoid),
+    ("1 WED 0 0 0 1 0 0 0 1 0 0 0 1", Wedge),
+])
+def test_surface_dispatch(surf_str, expected_cls):
+    """surface_builder returns the correct specific class for every surface type."""
+    surf = surface_builder(surf_str)
+    assert isinstance(surf, expected_cls), (
+        f"Expected {expected_cls.__name__}, got {type(surf).__name__}"
+    )
+
+
+# Scalar property tests: (surf_str, prop, expected_val, new_val, rejects_negative)
+# rejects_negative=True means the property has a positive-value validator.
+_SCALAR_PROPS = [
+    # XPlane — location and x are the same node
+    ("1 PX 1.0",  "location", 1.0, 2.0,  False),
+    ("1 PX 1.0",  "x",        1.0, 2.0,  False),
+    # YPlane
+    ("1 PY 2.0",  "location", 2.0, 3.0,  False),
+    ("1 PY 2.0",  "y",        2.0, 3.0,  False),
+    # ZPlane
+    ("1 PZ 3.0",  "location", 3.0, 4.0,  False),
+    ("1 PZ 3.0",  "z",        3.0, 4.0,  False),
+    # AxisPlane D alias
+    ("1 PX 1.0",  "D",        1.0, 2.0,  False),
+    ("1 PY 2.0",  "D",        2.0, 3.0,  False),
+    ("1 PZ 3.0",  "D",        3.0, 4.0,  False),
+    # GeneralPlane coefficients
+    ("1 P 1.0 0.0 0.0 5.0", "A", 1.0, 2.0, False),
+    ("1 P 1.0 0.0 0.0 5.0", "B", 0.0, 1.0, False),
+    ("1 P 1.0 0.0 0.0 5.0", "C", 0.0, 1.0, False),
+    ("1 P 1.0 0.0 0.0 5.0", "D",      5.0, 3.0, False),
+    ("1 P 1.0 0.0 0.0 5.0", "offset", 5.0, 3.0, False),
+    # SphereAtOrigin
+    ("1 SO 2.0",  "radius",   2.0, 3.0,  True),
+    # GeneralSphere
+    ("1 S 1.0 2.0 3.0 4.0", "x",      1.0, 5.0, False),
+    ("1 S 1.0 2.0 3.0 4.0", "y",      2.0, 6.0, False),
+    ("1 S 1.0 2.0 3.0 4.0", "z",      3.0, 7.0, False),
+    ("1 S 1.0 2.0 3.0 4.0", "radius", 4.0, 1.0, True),
+    # XSphere — location and x share node
+    ("1 SX 5.0 2.0", "location", 5.0, 6.0, False),
+    ("1 SX 5.0 2.0", "x",        5.0, 6.0, False),
+    ("1 SX 5.0 2.0", "radius",   2.0, 3.0, True),
+    # YSphere
+    ("1 SY 5.0 2.0", "location", 5.0, 6.0, False),
+    ("1 SY 5.0 2.0", "y",        5.0, 6.0, False),
+    ("1 SY 5.0 2.0", "radius",   2.0, 3.0, True),
+    # ZSphere
+    ("1 SZ 5.0 2.0", "location", 5.0, 6.0, False),
+    ("1 SZ 5.0 2.0", "z",        5.0, 6.0, False),
+    ("1 SZ 5.0 2.0", "radius",   2.0, 3.0, True),
+    # XCylinder / YCylinder / ZCylinder
+    ("1 CX 3.0", "radius", 3.0, 5.0, True),
+    ("1 CY 3.0", "radius", 3.0, 5.0, True),
+    ("1 CZ 3.0", "radius", 3.0, 5.0, True),
+    # XCylinderParAxis — y, z map to coordinates[0], coordinates[1]
+    ("1 C/X 1.0 2.0 3.0", "y",      1.0, 4.0, False),
+    ("1 C/X 1.0 2.0 3.0", "z",      2.0, 5.0, False),
+    ("1 C/X 1.0 2.0 3.0", "radius", 3.0, 6.0, True),
+    # YCylinderParAxis
+    ("1 C/Y 1.0 2.0 3.0", "x",      1.0, 4.0, False),
+    ("1 C/Y 1.0 2.0 3.0", "z",      2.0, 5.0, False),
+    ("1 C/Y 1.0 2.0 3.0", "radius", 3.0, 6.0, True),
+    # ZCylinderParAxis
+    ("1 C/Z 1.0 2.0 3.0", "x",      1.0, 4.0, False),
+    ("1 C/Z 1.0 2.0 3.0", "y",      2.0, 5.0, False),
+    ("1 C/Z 1.0 2.0 3.0", "radius", 3.0, 6.0, True),
+    # XCone — apex and x share node
+    ("1 KX 5.0 0.25", "apex",      5.0,  6.0,  False),
+    ("1 KX 5.0 0.25", "x",         5.0,  6.0,  False),
+    ("1 KX 5.0 0.25", "t_squared", 0.25, 0.5,  False),
+    # YCone
+    ("1 KY 5.0 0.25", "apex",      5.0,  6.0,  False),
+    ("1 KY 5.0 0.25", "y",         5.0,  6.0,  False),
+    ("1 KY 5.0 0.25", "t_squared", 0.25, 0.5,  False),
+    # ZCone
+    ("1 KZ 5.0 0.25", "apex",      5.0,  6.0,  False),
+    ("1 KZ 5.0 0.25", "z",         5.0,  6.0,  False),
+    ("1 KZ 5.0 0.25", "t_squared", 0.25, 0.5,  False),
+    # XConeParAxis (inherits x,y,z,t_squared from ConeParAxis spec)
+    ("1 K/X 1.0 2.0 3.0 0.25", "x",         1.0,  4.0,  False),
+    ("1 K/X 1.0 2.0 3.0 0.25", "y",         2.0,  5.0,  False),
+    ("1 K/X 1.0 2.0 3.0 0.25", "z",         3.0,  6.0,  False),
+    ("1 K/X 1.0 2.0 3.0 0.25", "t_squared", 0.25, 0.5,  False),
+    # YConeParAxis
+    ("1 K/Y 1.0 2.0 3.0 0.25", "x",         1.0,  4.0,  False),
+    ("1 K/Y 1.0 2.0 3.0 0.25", "y",         2.0,  5.0,  False),
+    ("1 K/Y 1.0 2.0 3.0 0.25", "z",         3.0,  6.0,  False),
+    ("1 K/Y 1.0 2.0 3.0 0.25", "t_squared", 0.25, 0.5,  False),
+    # ZConeParAxis
+    ("1 K/Z 1.0 2.0 3.0 0.25", "x",         1.0,  4.0,  False),
+    ("1 K/Z 1.0 2.0 3.0 0.25", "y",         2.0,  5.0,  False),
+    ("1 K/Z 1.0 2.0 3.0 0.25", "z",         3.0,  6.0,  False),
+    ("1 K/Z 1.0 2.0 3.0 0.25", "t_squared", 0.25, 0.5,  False),
+    # AxisAlignedQuadric
+    ("1 SQ 1 1 1 0 0 0 -4 0 0 0", "A", 1.0,  2.0,  False),
+    ("1 SQ 1 1 1 0 0 0 -4 0 0 0", "B", 1.0,  2.0,  False),
+    ("1 SQ 1 1 1 0 0 0 -4 0 0 0", "C", 1.0,  2.0,  False),
+    ("1 SQ 1 1 1 0 0 0 -4 0 0 0", "D", 0.0,  1.0,  False),
+    ("1 SQ 1 1 1 0 0 0 -4 0 0 0", "E", 0.0,  1.0,  False),
+    ("1 SQ 1 1 1 0 0 0 -4 0 0 0", "F", 0.0,  1.0,  False),
+    ("1 SQ 1 1 1 0 0 0 -4 0 0 0", "G", -4.0, -1.0, False),
+    ("1 SQ 1 1 1 0 0 0 -4 0 0 0", "x", 0.0,  1.0,  False),
+    ("1 SQ 1 1 1 0 0 0 -4 0 0 0", "y", 0.0,  2.0,  False),
+    ("1 SQ 1 1 1 0 0 0 -4 0 0 0", "z", 0.0,  3.0,  False),
+    # GeneralQuadric
+    ("1 GQ 1 1 1 0 0 0 0 0 0 -4", "A", 1.0,  2.0,  False),
+    ("1 GQ 1 1 1 0 0 0 0 0 0 -4", "B", 1.0,  2.0,  False),
+    ("1 GQ 1 1 1 0 0 0 0 0 0 -4", "C", 1.0,  2.0,  False),
+    ("1 GQ 1 1 1 0 0 0 0 0 0 -4", "D", 0.0,  1.0,  False),
+    ("1 GQ 1 1 1 0 0 0 0 0 0 -4", "E", 0.0,  1.0,  False),
+    ("1 GQ 1 1 1 0 0 0 0 0 0 -4", "F", 0.0,  1.0,  False),
+    ("1 GQ 1 1 1 0 0 0 0 0 0 -4", "G", 0.0,  1.0,  False),
+    ("1 GQ 1 1 1 0 0 0 0 0 0 -4", "H", 0.0,  1.0,  False),
+    ("1 GQ 1 1 1 0 0 0 0 0 0 -4", "J", 0.0,  1.0,  False),
+    ("1 GQ 1 1 1 0 0 0 0 0 0 -4", "K", -4.0, -1.0, False),
+    # XTorus — x/y/z, major_radius, minor_radius_1/2, minor_radius
+    ("1 TX 0 0 0 5 2 2", "x",             0.0, 1.0, False),
+    ("1 TX 0 0 0 5 2 2", "y",             0.0, 2.0, False),
+    ("1 TX 0 0 0 5 2 2", "z",             0.0, 3.0, False),
+    ("1 TX 0 0 0 5 2 2", "major_radius",  5.0, 6.0, True),
+    ("1 TX 0 0 0 5 2 2", "minor_radius_1", 2.0, 1.0, True),
+    ("1 TX 0 0 0 5 2 2", "minor_radius_2", 2.0, 1.0, True),
+    ("1 TX 0 0 0 5 2 2", "minor_radius",  2.0, 3.0, True),
+    # YTorus / ZTorus — spot check major_radius
+    ("1 TY 0 0 0 5 2 2", "major_radius",  5.0, 6.0, True),
+    ("1 TZ 0 0 0 5 2 2", "major_radius",  5.0, 6.0, True),
+    # RPP scalars
+    ("1 RPP -1 1 -2 2 -3 3", "x_min", -1.0, -5.0, False),
+    ("1 RPP -1 1 -2 2 -3 3", "x_max",  1.0,  5.0, False),
+    ("1 RPP -1 1 -2 2 -3 3", "y_min", -2.0, -5.0, False),
+    ("1 RPP -1 1 -2 2 -3 3", "y_max",  2.0,  5.0, False),
+    ("1 RPP -1 1 -2 2 -3 3", "z_min", -3.0, -5.0, False),
+    ("1 RPP -1 1 -2 2 -3 3", "z_max",  3.0,  5.0, False),
+    # SPH scalars
+    ("1 SPH 1 2 3 4", "x",      1.0, 5.0, False),
+    ("1 SPH 1 2 3 4", "y",      2.0, 6.0, False),
+    ("1 SPH 1 2 3 4", "z",      3.0, 7.0, False),
+    ("1 SPH 1 2 3 4", "radius", 4.0, 2.0, True),
+    # RCC scalars
+    ("1 RCC 1 2 3 0 0 1 1.5", "x",      1.0, 5.0, False),
+    ("1 RCC 1 2 3 0 0 1 1.5", "y",      2.0, 6.0, False),
+    ("1 RCC 1 2 3 0 0 1 1.5", "z",      3.0, 7.0, False),
+    ("1 RCC 1 2 3 0 0 1 1.5", "radius", 1.5, 2.0, True),
+    # RHP scalars
+    ("1 RHP 0 0 0 0 0 1 1 0 0 -0.5 0.866 0 -0.5 -0.866 0", "x", 0.0, 1.0, False),
+    ("1 RHP 0 0 0 0 0 1 1 0 0 -0.5 0.866 0 -0.5 -0.866 0", "y", 0.0, 2.0, False),
+    ("1 RHP 0 0 0 0 0 1 1 0 0 -0.5 0.866 0 -0.5 -0.866 0", "z", 0.0, 3.0, False),
+    # REC scalars
+    ("1 REC 0 0 0 0 0 1 1 0 0 0 0.5 0", "x", 0.0, 1.0, False),
+    ("1 REC 0 0 0 0 0 1 1 0 0 0 0.5 0", "y", 0.0, 2.0, False),
+    ("1 REC 0 0 0 0 0 1 1 0 0 0 0.5 0", "z", 0.0, 3.0, False),
+    # TRC scalars
+    ("1 TRC 0 0 0 0 0 1 2 1", "x",           0.0, 1.0, False),
+    ("1 TRC 0 0 0 0 0 1 2 1", "y",           0.0, 2.0, False),
+    ("1 TRC 0 0 0 0 0 1 2 1", "z",           0.0, 3.0, False),
+    ("1 TRC 0 0 0 0 0 1 2 1", "base_radius", 2.0, 3.0, True),
+    ("1 TRC 0 0 0 0 0 1 2 1", "top_radius",  1.0, 0.5, True),
+    # ELL scalar
+    ("1 ELL -1 0 0 1 0 0 5", "semi_major_axis", 5.0, 6.0, False),
+    # ARB facet scalars
+    ("1 ARB 0 0 0 1 0 0 1 1 0 0 1 0 0 0 1 1 0 1 1 1 1 0 1 1 1234 1265 2376 3487 4158 5678",
+     "facet_1", 1234.0, 1235.0, False),
+    ("1 ARB 0 0 0 1 0 0 1 1 0 0 1 0 0 0 1 1 0 1 1 1 1 0 1 1 1234 1265 2376 3487 4158 5678",
+     "facet_6", 5678.0, 5679.0, False),
+]
+# fmt: on
+
+
+@pytest.mark.filterwarnings("ignore")
+@pytest.mark.parametrize(
+    "surf_str, prop, expected, new_val, rejects_negative", _SCALAR_PROPS
+)
+def test_surface_scalar_prop(surf_str, prop, expected, new_val, rejects_negative):
+    surf = surface_builder(surf_str)
+    assert getattr(surf, prop) == pytest.approx(
+        expected
+    ), f"{type(surf).__name__}.{prop}: expected {expected}"
+    setattr(surf, prop, new_val)
+    assert getattr(surf, prop) == pytest.approx(
+        new_val
+    ), f"{type(surf).__name__}.{prop}: value not updated after set"
+    verify_export(surf)
+    with pytest.raises(TypeError):
+        setattr(surf, prop, "bad")
+    if rejects_negative:
+        with pytest.raises(ValueError):
+            setattr(surf, prop, -1.0)
+
+
+# fmt: off
+# Tuple property tests: (surf_str, prop, expected_tuple, new_tuple)
+_TUPLE_PROPS = [
+    # GeneralPlane normal
+    ("1 P 1 0 0 5",  "normal",      (1.0, 0.0, 0.0), [2.0, 1.0, 0.0]),
+    # GeneralSphere center / coordinates
+    ("1 S 1 2 3 4",  "center",      (1.0, 2.0, 3.0), [4.0, 5.0, 6.0]),
+    ("1 S 1 2 3 4",  "coordinates", (1.0, 2.0, 3.0), [4.0, 5.0, 6.0]),
+    # XCylinderParAxis — coordinates shares storage with y/z
+    ("1 C/X 1 2 3",  "coordinates", (1.0, 2.0),       [3.0, 4.0]),
+    # YCylinderParAxis
+    ("1 C/Y 1 2 3",  "coordinates", (1.0, 2.0),       [3.0, 4.0]),
+    # ZCylinderParAxis
+    ("1 C/Z 1 2 3",  "coordinates", (1.0, 2.0),       [3.0, 4.0]),
+    # ConeParAxis apex tuple
+    ("1 K/X 1 2 3 0.25", "apex",    (1.0, 2.0, 3.0), [4.0, 5.0, 6.0]),
+    ("1 K/Y 1 2 3 0.25", "apex",    (1.0, 2.0, 3.0), [4.0, 5.0, 6.0]),
+    ("1 K/Z 1 2 3 0.25", "apex",    (1.0, 2.0, 3.0), [4.0, 5.0, 6.0]),
+    # AxisAlignedQuadric center
+    ("1 SQ 1 1 1 0 0 0 -4 1 2 3", "center", (1.0, 2.0, 3.0), [4.0, 5.0, 6.0]),
+    # Torus center and minor_radii
+    ("1 TX 1 2 3 5 2 2", "center",      (1.0, 2.0, 3.0), [4.0, 5.0, 6.0]),
+    ("1 TX 0 0 0 5 2 2", "minor_radii", (2.0, 2.0),       [1.0, 1.0]),
+    # Box tuples
+    ("1 BOX 0 0 0 1 0 0 0 1 0 0 0 1", "corner", (0.0, 0.0, 0.0), [1.0, 1.0, 1.0]),
+    ("1 BOX 0 0 0 1 0 0 0 1 0 0 0 1", "edge_1", (1.0, 0.0, 0.0), [2.0, 0.0, 0.0]),
+    ("1 BOX 0 0 0 1 0 0 0 1 0 0 0 1", "edge_2", (0.0, 1.0, 0.0), [0.0, 2.0, 0.0]),
+    ("1 BOX 0 0 0 1 0 0 0 1 0 0 0 1", "edge_3", (0.0, 0.0, 1.0), [0.0, 0.0, 2.0]),
+    # RPP bounds tuples
+    ("1 RPP -1 1 -2 2 -3 3", "x_bounds", (-1.0, 1.0), [-2.0, 2.0]),
+    ("1 RPP -1 1 -2 2 -3 3", "y_bounds", (-2.0, 2.0), [-3.0, 3.0]),
+    ("1 RPP -1 1 -2 2 -3 3", "z_bounds", (-3.0, 3.0), [-4.0, 4.0]),
+    # SphereMacrobody center
+    ("1 SPH 1 2 3 4",  "center",        (1.0, 2.0, 3.0), [4.0, 5.0, 6.0]),
+    # RCC tuples
+    ("1 RCC 1 2 3 0 0 1 1.5", "center",        (1.0, 2.0, 3.0), [4.0, 5.0, 6.0]),
+    ("1 RCC 1 2 3 0 0 1 1.5", "height_vector", (0.0, 0.0, 1.0), [0.0, 1.0, 0.0]),
+    # RHP tuples
+    ("1 RHP 0 0 0 0 0 1 1 0 0 -0.5 0.866 0 -0.5 -0.866 0",
+     "center",        (0.0, 0.0, 0.0), [1.0, 1.0, 1.0]),
+    ("1 RHP 0 0 0 0 0 1 1 0 0 -0.5 0.866 0 -0.5 -0.866 0",
+     "height_vector", (0.0, 0.0, 1.0), [0.0, 1.0, 0.0]),
+    ("1 RHP 0 0 0 0 0 1 1 0 0 -0.5 0.866 0 -0.5 -0.866 0",
+     "facet_vector_1", (1.0, 0.0, 0.0),    [2.0, 0.0, 0.0]),
+    ("1 RHP 0 0 0 0 0 1 1 0 0 -0.5 0.866 0 -0.5 -0.866 0",
+     "facet_vector_2", (-0.5, 0.866, 0.0), [0.0, 1.0, 0.0]),
+    ("1 RHP 0 0 0 0 0 1 1 0 0 -0.5 0.866 0 -0.5 -0.866 0",
+     "facet_vector_3", (-0.5, -0.866, 0.0), [0.0, -1.0, 0.0]),
+    # REC tuples
+    ("1 REC 0 0 0 0 0 1 1 0 0 0 0.5 0", "center",         (0.0, 0.0, 0.0), [1.0, 1.0, 1.0]),
+    ("1 REC 0 0 0 0 0 1 1 0 0 0 0.5 0", "height_vector",  (0.0, 0.0, 1.0), [0.0, 1.0, 0.0]),
+    ("1 REC 0 0 0 0 0 1 1 0 0 0 0.5 0", "semi_major_axis", (1.0, 0.0, 0.0), [2.0, 0.0, 0.0]),
+    ("1 REC 0 0 0 0 0 1 1 0 0 0 0.5 0", "semi_minor_axis", (0.0, 0.5, 0.0), [0.0, 1.0, 0.0]),
+    # TRC tuples
+    ("1 TRC 0 0 0 0 0 1 2 1", "center",        (0.0, 0.0, 0.0), [1.0, 1.0, 1.0]),
+    ("1 TRC 0 0 0 0 0 1 2 1", "height_vector", (0.0, 0.0, 1.0), [0.0, 1.0, 0.0]),
+    # ELL tuples
+    ("1 ELL -1 0 0 1 0 0 5", "focus_1", (-1.0, 0.0, 0.0), [0.0, -1.0, 0.0]),
+    ("1 ELL -1 0 0 1 0 0 5", "focus_2", ( 1.0, 0.0, 0.0), [0.0,  1.0, 0.0]),
+    # Wedge tuples
+    ("1 WED 0 0 0 1 0 0 0 1 0 0 0 1", "corner",        (0.0, 0.0, 0.0), [1.0, 1.0, 1.0]),
+    ("1 WED 0 0 0 1 0 0 0 1 0 0 0 1", "edge_1",        (1.0, 0.0, 0.0), [2.0, 0.0, 0.0]),
+    ("1 WED 0 0 0 1 0 0 0 1 0 0 0 1", "edge_2",        (0.0, 1.0, 0.0), [0.0, 2.0, 0.0]),
+    ("1 WED 0 0 0 1 0 0 0 1 0 0 0 1", "height_vector", (0.0, 0.0, 1.0), [0.0, 0.0, 2.0]),
+    # ARB vertex tuples
+    ("1 ARB 0 0 0 1 0 0 1 1 0 0 1 0 0 0 1 1 0 1 1 1 1 0 1 1 1234 1265 2376 3487 4158 5678",
+     "vertex_1", (0.0, 0.0, 0.0), [1.0, 1.0, 1.0]),
+    ("1 ARB 0 0 0 1 0 0 1 1 0 0 1 0 0 0 1 1 0 1 1 1 1 0 1 1 1234 1265 2376 3487 4158 5678",
+     "vertex_2", (1.0, 0.0, 0.0), [2.0, 0.0, 0.0]),
+    ("1 ARB 0 0 0 1 0 0 1 1 0 0 1 0 0 0 1 1 0 1 1 1 1 0 1 1 1234 1265 2376 3487 4158 5678",
+     "vertex_3", (1.0, 1.0, 0.0), [2.0, 2.0, 0.0]),
+    ("1 ARB 0 0 0 1 0 0 1 1 0 0 1 0 0 0 1 1 0 1 1 1 1 0 1 1 1234 1265 2376 3487 4158 5678",
+     "vertex_4", (0.0, 1.0, 0.0), [0.0, 2.0, 0.0]),
+    ("1 ARB 0 0 0 1 0 0 1 1 0 0 1 0 0 0 1 1 0 1 1 1 1 0 1 1 1234 1265 2376 3487 4158 5678",
+     "vertex_5", (0.0, 0.0, 1.0), [0.0, 0.0, 2.0]),
+    ("1 ARB 0 0 0 1 0 0 1 1 0 0 1 0 0 0 1 1 0 1 1 1 1 0 1 1 1234 1265 2376 3487 4158 5678",
+     "vertex_6", (1.0, 0.0, 1.0), [2.0, 0.0, 2.0]),
+    ("1 ARB 0 0 0 1 0 0 1 1 0 0 1 0 0 0 1 1 0 1 1 1 1 0 1 1 1234 1265 2376 3487 4158 5678",
+     "vertex_7", (1.0, 1.0, 1.0), [2.0, 2.0, 2.0]),
+    ("1 ARB 0 0 0 1 0 0 1 1 0 0 1 0 0 0 1 1 0 1 1 1 1 0 1 1 1234 1265 2376 3487 4158 5678",
+     "vertex_8", (0.0, 1.0, 1.0), [1.0, 2.0, 2.0]),
+]
+# fmt: on
+
+
+@pytest.mark.parametrize("surf_str, prop, expected, new_val", _TUPLE_PROPS)
+@pytest.mark.filterwarnings("ignore")
+def test_surface_tuple_prop(surf_str, prop, expected, new_val):
+    surf = surface_builder(surf_str)
+    actual = getattr(surf, prop)
+    assert len(actual) == len(
+        expected
+    ), f"{type(surf).__name__}.{prop}: length mismatch"
+    for a, e in zip(actual, expected):
+        assert a == pytest.approx(
+            e
+        ), f"{type(surf).__name__}.{prop}: expected {expected}, got {actual}"
+    setattr(surf, prop, new_val)
+    updated = getattr(surf, prop)
+    for a, e in zip(updated, new_val):
+        assert a == pytest.approx(
+            e
+        ), f"{type(surf).__name__}.{prop}: value not updated after set"
+    verify_export(surf)
+    # wrong type for an element
+    with pytest.raises(TypeError):
+        setattr(surf, prop, ["bad"] * len(new_val))
+    # wrong length
+    with pytest.raises(ValueError):
+        setattr(surf, prop, new_val + [0.0])
+
+
+def test_torus_minor_radius_mismatch():
+    """minor_radius getter raises ValueError when the two minor radii differ."""
+    surf = surface_builder("1 TX 0 0 0 5 2 3")
+    with pytest.raises(ValueError):
+        _ = surf.minor_radius
+    with pytest.raises(ValueError):
+        surf.minor_radius
+    surf = ZTorus()
+    assert surf.minor_radius is None
+    surf.minor_radius_1 = 1.0
+    assert surf.minor_radius is None
+
+
+@pytest.mark.filterwarnings("ignore")
+def test_torus_minor_radius_setter_syncs_both():
+    """Setting minor_radius updates both minor_radius_1 and minor_radius_2."""
+    surf = surface_builder("1 TX 0 0 0 5 2 2")
+    surf.minor_radius = 1.5
+    assert surf.minor_radius_1 == pytest.approx(1.5)
+    assert surf.minor_radius_2 == pytest.approx(1.5)
+    assert surf.minor_radius == pytest.approx(1.5)
+    verify_export(surf)
+
+
+def test_torus_minor_radii_rejects_negative():
+    surf = surface_builder("1 TX 0 0 0 5 2 2")
+    with pytest.raises(ValueError):
+        surf.minor_radii = [2.0, -1.0]
+
+
+def test_axis_specific_overlapping_nodes():
+    """Setting the axis-named prop and the generic prop both update the same node."""
+    # ZPlane: location and z share the same ValueNode
+    surf = surface_builder("1 PZ 5.0")
+    surf.z = 10.0
+    assert surf.location == pytest.approx(10.0)
+    surf.location = 20.0
+    assert surf.z == pytest.approx(20.0)
+
+    # XSphere: x and location share the same ValueNode
+    surf = surface_builder("1 SX 3.0 1.0")
+    surf.x = 7.0
+    assert surf.location == pytest.approx(7.0)
+
+    # XCylinderParAxis: y/z share coordinates[0]/[1]
+    surf = surface_builder("1 C/X 1.0 2.0 3.0")
+    surf.y = 9.0
+    assert surf.coordinates[0] == pytest.approx(9.0)
+    surf.z = 8.0
+    assert surf.coordinates[1] == pytest.approx(8.0)
+
+
+def test_simple_problem_parses_all_surface_types(simple_problem):
+    """test.imcnp round-trip: every new surface number is present and parseable."""
+    expected = set(range(2000, 2036))
+    actual = set(simple_problem.surfaces.numbers)
+    assert expected.issubset(actual), f"Missing surface numbers: {expected - actual}"
+
+
+@pytest.mark.parametrize(
+    "surf_str, absent_idx",
+    [
+        ("1 KZ 0.0 1.0", 2),
+        ("1 K/Z 0.0 0.0 0.0 0.25", 4),
+    ],
+)
+def test_cone_sign_absent(surf_str, absent_idx):
+    """sign returns None when the optional nappe flag is not present."""
+    surf = surface_builder(surf_str)
+    assert surf.sign is None
+
+
+@pytest.mark.parametrize(
+    "surf_str, expected_sign",
+    [
+        ("1 KZ 0.0 1.0 1", 1),
+        ("1 KZ 0.0 1.0 -1", -1),
+        ("1 K/Z 0.0 0.0 0.0 0.25 1", 1),
+        ("1 K/Z 0.0 0.0 0.0 0.25 -1", -1),
+    ],
+)
+def test_cone_sign_present(surf_str, expected_sign):
+    """sign reads +1 or -1 from input when the nappe flag is given."""
+    surf = surface_builder(surf_str)
+    assert surf.sign == expected_sign
+
+
+@pytest.mark.filterwarnings("ignore")
+@pytest.mark.parametrize(
+    "surf_str",
+    [
+        "1 KZ 0.0 1.0",
+        "1 K/Z 0.0 0.0 0.0 0.25",
+    ],
+)
+def test_cone_sign_setter_and_round_trip(surf_str):
+    """Setting sign appends the nappe flag and survives an export/re-parse round-trip."""
+    surf = surface_builder(surf_str)
+    surf.sign = 1
+    assert surf.sign == 1
+    verify_export(surf)
+
+    surf.sign = -1
+    assert surf.sign == -1
+    verify_export(surf)
+
+
+@pytest.mark.parametrize(
+    "surf_str",
+    [
+        "1 KZ 0.0 1.0",
+        "1 K/Z 0.0 0.0 0.0 0.25",
+    ],
+)
+def test_cone_sign_setter_none_clears(surf_str):
+    """Setting sign to None removes the nappe flag."""
+    surf = surface_builder(surf_str)
+    surf.sign = 1
+    assert surf.sign == 1
+    surf.sign = None
+    assert surf.sign is None
+    verify_export(surf)
+
+
+@pytest.mark.parametrize(
+    "surf_str",
+    [
+        "1 KZ 0.0 1.0 1",
+        "1 K/Z 0.0 0.0 0.0 0.25 1",
+    ],
+)
+def test_cone_sign_deleter(surf_str):
+    """Deleting sign removes the nappe flag and round-trip survives."""
+    surf = surface_builder(surf_str)
+    assert surf.sign is not None
+    del surf.sign
+    assert surf.sign is None
+    verify_export(surf)
+
+
+@pytest.mark.parametrize(
+    "surf_str",
+    [
+        "1 KZ 0.0 1.0",
+        "1 K/Z 0.0 0.0 0.0 0.25",
+    ],
+)
+def test_cone_sign_invalid_raises(surf_str):
+    """sign setter rejects values other than +1 or -1."""
+    surf = surface_builder(surf_str)
+    with pytest.raises(ValueError):
+        surf.sign = 2
+    with pytest.raises(ValueError):
+        surf.sign = 0
+
+
+@pytest.mark.parametrize(
+    "surf_str",
+    [
+        "1 KZ 0.0 1.0 0.0 0.0",  # ConeOnAxis: 4 params (needs 2 or 3)
+        "1 K/Z 0.0 0.0 0.0 0.25 1 1",  # ConeParAxis: 6 params (needs 4 or 5)
+    ],
+)
+def test_cone_enforce_constants_wrong_count(surf_str):
+    """Cones with the wrong number of surface constants raise ValueError."""
+    with pytest.raises(ValueError):
+        surface_builder(surf_str)
+
+
+@pytest.mark.parametrize(
+    "cls, surf_type",
+    [
+        (ConeOnAxis, SurfaceType.KZ),
+        (ConeParAxis, SurfaceType.K_Z),
+    ],
+)
+def test_cone_validate_apex_none(cls, surf_type):
+    """validate() raises IllegalState when apex is not set."""
+    surf = cls(number=5)
+    surf.surface_type = surf_type
+    with pytest.raises(IllegalState):
+        surf.validate()
+
+
+@pytest.mark.parametrize(
+    "cls, surf_type, apex_val",
+    [
+        (ConeOnAxis, SurfaceType.KZ, 0.0),
+        (ConeParAxis, SurfaceType.K_Z, [0.0, 0.0, 0.0]),
+    ],
+)
+def test_cone_validate_t_squared_none(cls, surf_type, apex_val):
+    """validate() raises IllegalState when apex is set but t_squared is not."""
+    surf = cls(number=5)
+    surf.surface_type = surf_type
+    surf.apex = apex_val
+    with pytest.raises(IllegalState):
+        surf.validate()
+
+
+@pytest.mark.parametrize(
+    "cls, surf_type, extra_count",
+    [
+        (ConeOnAxis, SurfaceType.KZ, 2),  # 0+2=2, then add 2 more → 4, not in {2,3}
+        (ConeParAxis, SurfaceType.K_Z, 2),  # 0+2=2, then add 2 more → 4, not in {4,5}
+    ],
+)
+def test_cone_enforce_constants_illegal_state(cls, surf_type, extra_count):
+    """validate() raises IllegalState when _surface_constants has wrong count."""
+    surf = cls(number=5)
+    surf.surface_type = surf_type
+    for _ in range(extra_count):
+        node = surf._generate_default_node(float, 0.0)
+        surf._surface_constants.append(node)
+        surf._tree["data"].append(node)
+    with pytest.raises(IllegalState):
+        surf.validate()
+
+
+def test_find_duplicate_surfaces():
+    """Exercises every branch of Surface.find_duplicate_surfaces."""
+
+    def make_tr(spec):
+        return montepy.data_inputs.data_parser.parse_data(spec)
+
+    # self is periodic — early return
+    self_periodic = surface_builder("1 -2 PZ 0.0")
+    ref = surface_builder("2 PZ 0.0")
+    self_periodic.update_pointers(montepy.Surfaces([ref]), [])
+    assert self_periodic.find_duplicate_surfaces([ref], 1e-6) == []
+
+    # surface == self — skipped
+    s = surface_builder("1 PZ 5.0")
+    assert s.find_duplicate_surfaces([s], 1e-6) == []
+
+    # different surface type — skipped
+    pz = surface_builder("1 PZ 5.0")
+    px = surface_builder("2 PX 5.0")
+    assert pz.find_duplicate_surfaces([px], 1e-6) == []
+
+    # candidate has periodic surface — skipped
+    candidate_periodic = surface_builder("3 -2 PZ 5.0")
+    candidate_periodic.update_pointers(montepy.Surfaces([ref]), [])
+    assert pz.find_duplicate_surfaces([candidate_periodic], 1e-6) == []
+
+    # one has transform, other does not — skipped (both directions)
+    plain = surface_builder("1 PZ 5.0")
+    with_tr = surface_builder("2 10 PZ 5.0")
+    with_tr.update_pointers([], [make_tr("TR10 0 0 0")])
+    assert plain.find_duplicate_surfaces([with_tr], 1e-6) == []
+    assert with_tr.find_duplicate_surfaces([plain], 1e-6) == []
+
+    # both have transforms but they differ — skipped
+    s1 = surface_builder("1 10 PZ 5.0")
+    s2 = surface_builder("2 11 PZ 5.0")
+    s1.update_pointers([], [make_tr("TR10 0 0 0")])
+    s2.update_pointers([], [make_tr("TR11 0 0 99")])
+    assert s1.find_duplicate_surfaces([s2], 1e-6) == []
+
+    # both have equivalent transforms and matching constants — duplicate found
+    s3 = surface_builder("3 12 PZ 5.0")
+    s4 = surface_builder("4 13 PZ 5.0")
+    s3.update_pointers([], [make_tr("TR12 0 0 0")])
+    s4.update_pointers([], [make_tr("TR13 0 0 0")])
+    assert s3.find_duplicate_surfaces([s4], 1e-6) == [s4]
+
+    # no transform, matching constants — duplicate found
+    sa = surface_builder("1 PZ 5.0")
+    sb = surface_builder("2 PZ 5.0")
+    assert sa.find_duplicate_surfaces([sb], 1e-6) == [sb]
+
+
+@pytest.mark.parametrize(
+    "Class",
+    [
+        montepy.surfaces.axis_plane.AxisPlane,
+        montepy.surfaces.cylinder_on_axis.CylinderOnAxis,
+        montepy.surfaces.cylinder_par_axis.CylinderParAxis,
+        montepy.surfaces.general_plane.GeneralPlane,
+        montepy.surfaces.general_sphere.GeneralSphere,
+        montepy.surfaces.sphere_at_origin.SphereAtOrigin,
+        montepy.surfaces.sphere_on_axis.SphereOnAxis,
+    ],
+)
+def test_surface_deprecation(Class):
+    with pytest.warns(DeprecationWarning):
+        Class(number=5)

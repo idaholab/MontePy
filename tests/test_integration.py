@@ -44,7 +44,7 @@ def data_universe_problem():
 
 
 def test_original_input(simple_problem):
-    cell_order = [Message, Title] + [Input] * 29
+    cell_order = [Message, Title] + [Input] * 68
     for i, input_ob in enumerate(simple_problem.original_inputs):
         assert isinstance(input_ob, cell_order[i])
 
@@ -89,7 +89,53 @@ def test_material_parsing(simple_problem):
 
 
 def test_surface_parsing(simple_problem):
-    surf_numbers = [1000, 1005, 1010, 1015, 1020, 1025]
+    surf_numbers = [
+        1000,
+        1005,
+        1010,
+        1015,
+        1020,
+        1025,
+        2000,
+        2001,
+        2002,
+        2003,
+        2004,
+        2005,
+        2006,
+        2007,
+        2008,
+        2009,
+        2010,
+        2011,
+        2012,
+        2013,
+        2014,
+        2015,
+        2016,
+        2017,
+        2018,
+        2019,
+        2020,
+        2021,
+        2022,
+        2023,
+        2024,
+        2025,
+        2026,
+        2027,
+        2028,
+        2029,
+        2030,
+        2031,
+        2032,
+        2033,
+        2034,
+        2035,
+        2036,
+        2037,
+        2038,
+    ]
     for i, surf in enumerate(simple_problem.surfaces):
         assert surf.number == surf_numbers[i]
 
