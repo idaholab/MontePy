@@ -439,6 +439,23 @@ class HalfSpace:
             length += len(self.right)
         return length
 
+    def __iter__(self):
+        """Iterate over all :class:`UnitHalfSpace` leaves in depth-first order.
+
+        This allows you to walk every leaf of the geometry tree, for example::
+
+            for unit in cell.geometry:
+                print(unit.divider, unit.side)
+
+        Yields
+        ------
+        UnitHalfSpace
+            each leaf node in the tree, left subtree before right.
+        """
+        yield from iter(self.left)
+        if self.right is not None:
+            yield from iter(self.right)
+
     def __eq__(self, other):
         # don't allow subclassing on right side
         if type(self) != type(other):
@@ -745,6 +762,16 @@ class UnitHalfSpace(HalfSpace):
     def __len__(self):
         return 1
 
+    def __iter__(self):
+        """Iterate over this leaf node.
+
+        Yields
+        ------
+        UnitHalfSpace
+            this leaf itself.
+        """
+        yield self
+
     def __eq__(self, other):
         if not isinstance(other, UnitHalfSpace):
             raise TypeError("UnitHalfSpace can't be equal to other type")
@@ -753,3 +780,4 @@ class UnitHalfSpace(HalfSpace):
             and self.divider is other.divider
             and self.side == other.side
         )
+    
