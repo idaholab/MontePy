@@ -32,7 +32,6 @@ MontePy Changelog
 * Enable Sphinx nitpicky mode and fix ~30 broken cross-references in the developer guide, user guide, and migration docs (:issue:`889`).
 * Remove redundant "montepy.*" prefix from navigation in the API docs (:issue:`901`).
 
-
 1.3.0
 --------------
 
