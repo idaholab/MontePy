@@ -35,7 +35,6 @@ MontePy Changelog
 * ``Cell.universe`` can now be set to ``None`` (or deleted via ``del cell.universe``) to reset the universe assignment back to the default (:issue:`902`).
 * Added ``extend_renumber`` to ``NumberedObjectCollection`` with related test cases (:issue:`881`).
 * Made :class:`montepy.data_inputs.importance.Importance` more ``dict``-like with ``keys``, ``values``, and ``items`` functions (:pull:`921`).
-* API to Allow editing cell geometry definition (:issue:`945`)
 
 1.3.0
 --------------
