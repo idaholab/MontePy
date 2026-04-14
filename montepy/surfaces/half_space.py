@@ -247,6 +247,49 @@ class HalfSpace:
             if self.right is not None:
                 self.right.remove_duplicate_surfaces(new_deleting_dict)
 
+    def replace(
+        self,
+        old_divider: montepy.surfaces.surface.Surface | montepy.Cell,
+        new_divider: montepy.surfaces.surface.Surface | montepy.Cell,
+    ) -> None:
+        """Replace all occurrences of a divider in this geometry tree.
+
+        Parameters
+        ----------
+        old_divider : Surface, Cell
+            the divider to be replaced.
+        new_divider : Surface, Cell
+            the divider to replace it with.
+
+        Raises
+        ------
+        TypeError
+            if either argument is not a Surface or Cell.
+        ValueError
+            if old_divider is not found in the geometry tree.
+        """
+        if not isinstance(
+            old_divider, (montepy.surfaces.surface.Surface, montepy.Cell)
+        ):
+            raise TypeError(
+                f"old_divider must be a Surface or Cell. {old_divider} given."
+            )
+        if not isinstance(
+            new_divider, (montepy.surfaces.surface.Surface, montepy.Cell)
+        ):
+            raise TypeError(
+                f"new_divider must be a Surface or Cell. {new_divider} given."
+            )
+        replaced = self._replace_recursive(old_divider, new_divider)
+        if not replaced:
+            raise ValueError(f"{old_divider} not found in geometry tree.")
+
+    def _replace_recursive(self, old_divider, new_divider) -> bool:
+        replaced = self.left._replace_recursive(old_divider, new_divider)
+        if self.right is not None:
+            replaced |= self.right._replace_recursive(old_divider, new_divider)
+        return replaced
+
     def _get_leaf_objects(self):
         """Get all of the leaf objects for this tree.
 
@@ -699,6 +742,12 @@ class UnitHalfSpace(HalfSpace):
             self._node.value = self.divider.number
         self._node.is_negative = not self.side
 
+    def _replace_recursive(self, old_divider, new_divider) -> bool:
+        replaced = self.left._replace_recursive(old_divider, new_divider)
+        if self.right is not None:
+            replaced |= self.right._replace_recursive(old_divider, new_divider)
+        return replaced
+
     def _get_leaf_objects(self):
         if isinstance(
             self._divider, (montepy.cell.Cell, montepy.surfaces.surface.Surface)
@@ -780,4 +829,3 @@ class UnitHalfSpace(HalfSpace):
             and self.divider is other.divider
             and self.side == other.side
         )
-    
