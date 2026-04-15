@@ -12,7 +12,7 @@ C cells
 15  10   -0.5  +12 -15  imp:n=1 $ breeder blanket
 18  20   -5.0  +15 -20  imp:n=1 $breeder can
 20  0          +20 -25  imp:n=1 $ void behind magnets
-25  15   -8.9  +25 -30  imp:n=1 $magnets
+25  15   -8.9  +25 -30  imp:n=1 $ magnets
 30  0          +30      imp:n=0 $graveyard cell
 
 c surfaces
@@ -29,7 +29,7 @@ c data
 M5  74168.70c 1.0 $ tungsten
 M10 3006.80c   0.06 3007.80c 0.94$ breeder
 M15   29063.50c  0.692
-      29065      0.309 $ magnets
+      29065.50c  0.309 $ magnets
 M20  26000.50c 1.0$ stainless steel
 SDEF cel=1
 NPS 1000
