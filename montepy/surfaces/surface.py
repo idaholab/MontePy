@@ -319,6 +319,12 @@ class Surface(Numbered_MCNP_Object):
         """
         pass
 
+    @periodic_surface.deleter
+    @needs_full_ast
+    def periodic_surface(self):
+        self._periodic_surface = None
+        self._old_periodic_surface.value = None
+
     @prop_pointer_from_problem(
         "_transform",
         "old_transform_number",
@@ -335,6 +341,12 @@ class Surface(Numbered_MCNP_Object):
         Transform
         """
         pass
+
+    @transform.deleter
+    @needs_full_ast
+    def transform(self):
+        self._transform = None
+        self._old_transform_number.value = None
 
     @make_prop_val_node("_old_number")
     def old_number(self):
