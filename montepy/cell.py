@@ -236,10 +236,14 @@ class Cell(Numbered_MCNP_Object):
                     if not getattr(self, attr).set_in_cell_block:
                         setattr(self, attr, input)
                     else:
-                        if not ban_repeat:
-                            getattr(self, attr).merge(
-                                input_class(in_cell_block=True, key=key, value=value)
+                        if ban_repeat:
+                            raise ValueError(
+                                f"Cell {self.number}: {input_class._class_prefix().upper()} "
+                                "specified more than once in cell block"
                             )
+                        getattr(self, attr).merge(
+                            input_class(in_cell_block=True, key=key, value=value)
+                        )
         # Add defaults to tree
         for input_class, (attr, _) in self._INPUTS_TO_PROPERTY.items():
             has_imp = False
