@@ -779,7 +779,10 @@ def test_enable_mcnp_vol_calc(simple_problem):
 def test_cell_multi_volume():
     in_str = "1 0 -1 VOL=1 VOL 5"
     with pytest.raises(ValueError):
-        montepy.Cell(Input([in_str], montepy.input_parser.block_type.BlockType.CELL))
+        montepy.Cell(
+            Input([in_str], montepy.input_parser.block_type.BlockType.CELL),
+            jit_parse=False,
+        )
 
 
 def test_universe_cell_parsing(simple_problem):
