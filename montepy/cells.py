@@ -183,6 +183,14 @@ class Cells(NumberedObjectCollection):
         for input_class, (attr, _) in montepy.Cell._INPUTS_TO_PROPERTY.items():
             if input_class not in self.__loaded_inputs:
                 self._problem.print_in_data_block[input_class._class_prefix()] = False
+            else:
+                modifier = getattr(self, attr, None)
+                if (
+                    modifier is not None
+                    and not modifier.in_cell_block
+                    and modifier._input is not None
+                ):
+                    modifier.push_to_cells()
 
     def _run_children_format_for_mcnp(self, data_inputs, mcnp_version):
         ret = []
