@@ -26,6 +26,41 @@ from montepy.input_parser.input_file import MCNP_InputFile
 from montepy.universes import Universe, Universes
 from montepy.transforms import Transforms
 import montepy
+import re as _re
+
+_COMMENT_LINE_RE = _re.compile(r"^\s{0,4}[cC](\s|$)")
+
+
+def _extract_trailing_from_input(raw_input):
+    """Extract trailing c-style comment lines from a raw Input object's input_lines.
+
+    When JIT parsing is active, trailing comments don't appear in the JIT tree.
+    This function reads them from the raw input lines and removes them from
+    ``raw_input.input_lines`` so they won't be re-output when the object is
+    fully parsed later.
+
+    Returns a list of PaddingNode/CommentNode objects suitable for
+    ``_grab_beginning_comment``, or ``None`` if there are no trailing comments.
+    """
+    from montepy.input_parser.syntax_node import PaddingNode
+
+    lines = raw_input.input_lines
+    # find the first trailing comment line (from the end)
+    split = len(lines)
+    for i in range(len(lines) - 1, -1, -1):
+        if _COMMENT_LINE_RE.match(lines[i]):
+            split = i
+        else:
+            break
+    if split == len(lines):
+        return None
+    comment_lines = lines[split:]
+    # Remove them from the raw input so they're not re-output on full parse
+    raw_input._input_lines = lines[:split]
+    padding = PaddingNode()
+    for line in comment_lines:
+        padding.append(line, is_comment=True)
+    return padding.nodes if padding.nodes else None
 
 
 class MCNP_Problem:
@@ -405,6 +440,7 @@ class MCNP_Problem:
             jit_parse = False
         trailing_comment = None
         last_obj = None
+        last_input = None
         last_block = None
         OBJ_MATCHER = {
             block_type.BlockType.CELL: (Cell, self._cells),
@@ -431,6 +467,7 @@ class MCNP_Problem:
                 elif isinstance(input, mcnp_input.Input):
                     if last_block != input.block_type:
                         trailing_comment = None
+                        last_input = None
                         last_block = input.block_type
                     obj_parser, obj_container = OBJ_MATCHER[input.block_type]
                     if len(input.input_lines) > 0:
@@ -465,12 +502,30 @@ class MCNP_Problem:
                             obj, montepy.data_inputs.cell_modifier.CellModifierInput
                         ):
                             self.cells.grab_input(obj, self, check_input)
-                    if not jit_parse:
-                        if trailing_comment is not None and last_obj is not None:
-                            obj._grab_beginning_comment(trailing_comment, last_obj)
-                            last_obj._delete_trailing_comment()
-                        trailing_comment = obj.trailing_comment
-                        last_obj = obj
+                    obj_tree = getattr(obj, "_tree", None)
+                    has_start_pad = obj_tree is not None and "start_pad" in getattr(
+                        obj_tree, "nodes", {}
+                    )
+                    # In JIT mode, trailing comments may not be in the JIT tree;
+                    # fall back to extracting them from raw input lines.
+                    if (
+                        trailing_comment is None
+                        and last_input is not None
+                        and has_start_pad
+                    ):
+                        trailing_comment = _extract_trailing_from_input(last_input)
+                    if (
+                        trailing_comment is not None
+                        and last_obj is not None
+                        and has_start_pad
+                    ):
+                        obj._grab_beginning_comment(trailing_comment, last_obj)
+                        last_obj._tree._delete_trailing_comment()
+                        trailing_comment = None
+                    if obj_tree is not None:
+                        trailing_comment = obj_tree.get_trailing_comment()
+                    last_obj = obj
+                    last_input = input
         except UnsupportedFeature as e:
             if check_input:
                 warnings.warn(f"{type(e).__name__}: {e.message}", stacklevel=2)
