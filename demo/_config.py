@@ -12,4 +12,5 @@ def IFrame(src, width=X_RES, height=Y_RES, extras=None, **kwargs):
 async def install_montepy():
     if "pyodide" in sys.modules:
         import piplite
+
         await piplite.install("montepy")

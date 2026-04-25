@@ -264,7 +264,8 @@ class HalfSpace:
         Raises
         ------
         TypeError
-            if either argument is not a Surface or Cell.
+            if either argument is not a Surface or Cell, or if they are not the
+            same kind (e.g. one is a Surface and the other is a Cell).
         ValueError
             if old_divider is not found in the geometry tree.
         """
@@ -280,9 +281,26 @@ class HalfSpace:
             raise TypeError(
                 f"new_divider must be a Surface or Cell. {new_divider} given."
             )
+        if isinstance(old_divider, montepy.Cell) != isinstance(
+            new_divider, montepy.Cell
+        ):
+            raise TypeError(
+                f"old_divider and new_divider must both be Surfaces or both be Cells. "
+                f"Got {type(old_divider).__name__} and {type(new_divider).__name__}."
+            )
         replaced = self._replace_recursive(old_divider, new_divider)
         if not replaced:
-            raise ValueError(f"{old_divider} not found in geometry tree.")
+            raise ValueError(
+                f"{old_divider} (number: {old_divider.number}) not found in geometry tree."
+            )
+        if self._cell is not None:
+            container = (
+                self._cell.complements
+                if isinstance(old_divider, montepy.Cell)
+                else self._cell.surfaces
+            )
+            if old_divider in container:
+                container.remove(old_divider)
 
     def _replace_recursive(self, old_divider, new_divider) -> bool:
         replaced = self.left._replace_recursive(old_divider, new_divider)
@@ -743,10 +761,10 @@ class UnitHalfSpace(HalfSpace):
         self._node.is_negative = not self.side
 
     def _replace_recursive(self, old_divider, new_divider) -> bool:
-        replaced = self.left._replace_recursive(old_divider, new_divider)
-        if self.right is not None:
-            replaced |= self.right._replace_recursive(old_divider, new_divider)
-        return replaced
+        if self._divider is old_divider:
+            self.divider = new_divider
+            return True
+        return False
 
     def _get_leaf_objects(self):
         if isinstance(
