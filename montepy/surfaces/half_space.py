@@ -828,10 +828,9 @@ class UnitHalfSpace(HalfSpace):
             if isinstance(self.divider, ValueNode) or type(new_obj) == type(
                 self.divider
             ):
-                # Bypass the divider setter to avoid triggering container.append;
-                # remove_duplicate_surfaces is only remapping references, not
-                # adding new surfaces — the clone process handles that separately.
-                self._divider = new_obj
+                # Use the divider setter so any parent cell bookkeeping stays
+                # synchronized with the remapped geometry.
+                self.divider = new_obj
 
     def __len__(self):
         return 1
