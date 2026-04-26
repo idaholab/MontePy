@@ -6,7 +6,7 @@ Next Release
 ============
 
 **Features Added**
-* Added :func:`~montepy.surfaces.half_space.HalfSpace.replace` to swap dividers in a cell geometry tree, and ``__iter__`` to traverse geometry leaves (:issue:`737`).
+* Added ``replace`` :class:`~montepy.surfaces.half_space.HalfSpace` to swap dividers in a cell geometry tree, and ``__iter__`` to traverse geometry leaves (:issue:`737`).
 
 
 1.4 releases
