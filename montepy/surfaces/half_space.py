@@ -293,14 +293,18 @@ class HalfSpace:
             raise ValueError(
                 f"{old_divider} (number: {old_divider.number}) not found in geometry tree."
             )
-        if self._cell is not None:
-            container = (
-                self._cell.complements
-                if isinstance(old_divider, montepy.Cell)
-                else self._cell.surfaces
-            )
-            if old_divider in container:
-                container.remove(old_divider)
+        # _cell is only set on UnitHalfSpace leaves, not on internal HalfSpace nodes.
+        # Find the parent cell via any leaf and remove the old divider from its collection.
+        for leaf in self:
+            if leaf._cell is not None:
+                container = (
+                    leaf._cell.complements
+                    if isinstance(old_divider, montepy.Cell)
+                    else leaf._cell.surfaces
+                )
+                if old_divider in container:
+                    container.remove(old_divider)
+                break
 
     def _replace_recursive(self, old_divider, new_divider) -> bool:
         replaced = self.left._replace_recursive(old_divider, new_divider)
@@ -824,7 +828,10 @@ class UnitHalfSpace(HalfSpace):
             if isinstance(self.divider, ValueNode) or type(new_obj) == type(
                 self.divider
             ):
-                self.divider = new_obj
+                # Bypass the divider setter to avoid triggering container.append;
+                # remove_duplicate_surfaces is only remapping references, not
+                # adding new surfaces — the clone process handles that separately.
+                self._divider = new_obj
 
     def __len__(self):
         return 1

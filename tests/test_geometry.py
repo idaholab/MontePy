@@ -552,19 +552,21 @@ def test_update_operators_in_node():
 
 
 def _make_linked_geometry(*surfs):
-    """Helper: build a parent cell whose geometry is already linked via update_pointers.
+    """Helper: build a parent cell whose geometry is already linked.
 
     Returns (parent_cell, half_space) where every UnitHalfSpace leaf has
     self._cell set so the old-divider cleanup path in replace() is exercised.
     """
     parent = montepy.Cell()
     parent.number = 99
+    # Populate parent.surfaces up front so all surfaces are present before replace()
+    for surf in surfs:
+        parent.surfaces.append(surf)
     half_space = None
     for surf in surfs:
         leaf = +surf
-        # wire the leaf to the parent cell so _cell is set
-        surf_col = montepy.surface_collection.Surfaces(list(parent.surfaces) + [surf])
-        leaf.update_pointers(montepy.cells.Cells(), surf_col, parent)
+        # Wire _cell directly since dividers are already resolved objects, not ints
+        leaf._cell = parent
         half_space = leaf if half_space is None else half_space & leaf
     return parent, half_space
 
