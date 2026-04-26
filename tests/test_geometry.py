@@ -546,3 +546,160 @@ def test_update_operators_in_node():
     half_space.operator = Operator.UNION
     half_space._update_values()
     assert half_space.node.format() == "-1 : 1"
+
+
+# ── replace() tests ───────────────────────────────────────────────────────────
+
+
+def _make_linked_geometry(*surfs):
+    """Helper: build a parent cell whose geometry is already linked.
+
+    Returns (parent_cell, half_space) where every UnitHalfSpace leaf has
+    self._cell set so the old-divider cleanup path in replace() is exercised.
+    """
+    parent = montepy.Cell()
+    parent.number = 99
+    # Populate parent.surfaces up front so all surfaces are present before replace()
+    for surf in surfs:
+        parent.surfaces.append(surf)
+    half_space = None
+    for surf in surfs:
+        leaf = +surf
+        # Wire _cell directly since dividers are already resolved objects, not ints
+        leaf._cell = parent
+        half_space = leaf if half_space is None else half_space & leaf
+    return parent, half_space
+
+
+def test_replace_surface_basic():
+    """replace() swaps old surface for new one throughout the tree."""
+    surf1 = montepy.CylinderOnAxis()
+    surf2 = montepy.CylinderOnAxis()
+    surf3 = montepy.CylinderOnAxis()
+    surf1.number = 1
+    surf2.number = 2
+    surf3.number = 3
+    half_space = +surf1 & -surf2
+    half_space.replace(surf1, surf3)
+    # surf3 should now appear in place of surf1
+    leaves = list(half_space)
+    dividers = [leaf.divider for leaf in leaves]
+    assert surf3 in dividers
+    assert surf1 not in dividers
+    assert surf2 in dividers
+
+
+def test_replace_surface_updates_cell_surfaces():
+    """After replace(), old surface is removed from cell.surfaces and new one is present."""
+    surf1 = montepy.CylinderOnAxis()
+    surf2 = montepy.CylinderOnAxis()
+    surf3 = montepy.CylinderOnAxis()
+    surf1.number = 1
+    surf2.number = 2
+    surf3.number = 3
+    parent, half_space = _make_linked_geometry(surf1, surf2)
+    half_space.replace(surf1, surf3)
+    assert surf3 in parent.surfaces
+    assert surf1 not in parent.surfaces
+    assert surf2 in parent.surfaces  # untouched
+
+
+def test_replace_on_leaf():
+    """replace() called directly on a UnitHalfSpace (leaf) works correctly."""
+    surf1 = montepy.CylinderOnAxis()
+    surf2 = montepy.CylinderOnAxis()
+    surf1.number = 1
+    surf2.number = 2
+    leaf = +surf1
+    leaf.replace(surf1, surf2)
+    assert leaf.divider is surf2
+
+
+def test_replace_not_found_raises():
+    """replace() raises ValueError when old_divider is absent from the tree."""
+    surf1 = montepy.CylinderOnAxis()
+    surf2 = montepy.CylinderOnAxis()
+    surf3 = montepy.CylinderOnAxis()
+    surf1.number = 1
+    surf2.number = 2
+    surf3.number = 3
+    half_space = +surf1 & -surf2
+    with pytest.raises(ValueError):
+        half_space.replace(surf3, surf1)
+
+
+def test_replace_wrong_kind_raises():
+    """replace() raises TypeError when mixing Surface and Cell arguments."""
+    surf = montepy.CylinderOnAxis()
+    surf.number = 1
+    cell = montepy.Cell()
+    cell.number = 2
+    half_space = +surf
+    with pytest.raises(TypeError):
+        half_space.replace(surf, cell)
+
+
+def test_replace_invalid_type_raises():
+    """replace() raises TypeError when either argument is not a Surface or Cell."""
+    surf = montepy.CylinderOnAxis()
+    surf.number = 1
+    half_space = +surf
+    with pytest.raises(TypeError):
+        half_space.replace("not a surface", surf)
+    with pytest.raises(TypeError):
+        half_space.replace(surf, 42)
+
+
+def test_replace_subclass_surface():
+    """replace() accepts any Surface subclass for either argument (no false type errors)."""
+    surf1 = montepy.CylinderOnAxis()  # subclass of Surface
+    surf2 = montepy.AxisPlane()  # different subclass of Surface
+    surf1.number = 1
+    surf2.number = 2
+    half_space = +surf1 & -surf1
+    # Should not raise — both are Surfaces regardless of subclass
+    half_space.replace(surf1, surf2)
+    for leaf in half_space:
+        assert leaf.divider is surf2
+
+
+# ── __iter__ tests ────────────────────────────────────────────────────────────
+
+
+def test_halfspace_iter_leaves_in_order():
+    """HalfSpace.__iter__ yields all UnitHalfSpace leaves depth-first left-to-right."""
+    surf1 = montepy.CylinderOnAxis()
+    surf2 = montepy.CylinderOnAxis()
+    surf3 = montepy.CylinderOnAxis()
+    surf1.number = 1
+    surf2.number = 2
+    surf3.number = 3
+    half_space = (+surf1 & -surf2) | +surf3
+    leaves = list(half_space)
+    assert len(leaves) == 3
+    assert all(isinstance(leaf, UnitHalfSpace) for leaf in leaves)
+    assert leaves[0].divider is surf1
+    assert leaves[1].divider is surf2
+    assert leaves[2].divider is surf3
+
+
+def test_halfspace_iter_count_matches_len():
+    """len(half_space) equals the number of leaves yielded by iteration."""
+    surf1 = montepy.CylinderOnAxis()
+    surf2 = montepy.CylinderOnAxis()
+    surf3 = montepy.CylinderOnAxis()
+    surf1.number = 1
+    surf2.number = 2
+    surf3.number = 3
+    half_space = +surf1 & -surf2 & +surf3
+    assert len(list(half_space)) == len(half_space)
+
+
+def test_unit_halfspace_iter():
+    """UnitHalfSpace.__iter__ yields exactly itself."""
+    surf = montepy.CylinderOnAxis()
+    surf.number = 1
+    leaf = +surf
+    leaves = list(leaf)
+    assert len(leaves) == 1
+    assert leaves[0] is leaf
