@@ -38,6 +38,7 @@ Next Release
 * Enable Sphinx nitpicky mode and fix ~30 broken cross-references in the developer guide, user guide, and migration docs (:issue:`889`).
 
 1.3 releases
+============
 
 1.3.0
 --------------
