@@ -279,6 +279,7 @@ Object Builders
 .. autosummary::
    :toctree: generated
    :nosignatures:
+   :template: mofunc.rst
 
    montepy.data_inputs.data_parser.parse_data
    montepy.input_parser.input_syntax_reader.read_input_syntax
