@@ -8,6 +8,7 @@ Next Release
 **Features Added**
 
 * Added ``HalfSpace.replace`` to swap dividers in a cell geometry tree, and ``HalfSpace.__iter__`` to traverse geometry leaves (:issue:`737`).
+
 1.4 releases
 ============
 

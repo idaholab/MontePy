@@ -249,16 +249,16 @@ class HalfSpace:
 
     def replace(
         self,
-        old_divider: montepy.surfaces.surface.Surface | montepy.Cell,
-        new_divider: montepy.surfaces.surface.Surface | montepy.Cell,
+        old_divider: montepy.Surface | montepy.Cell,
+        new_divider: montepy.Surface | montepy.Cell,
     ) -> None:
         """Replace all occurrences of a divider in this geometry tree.
 
         Parameters
         ----------
-        old_divider : Surface, Cell
+        old_divider : Surface or Cell
             the divider to be replaced.
-        new_divider : Surface, Cell
+        new_divider : Surface or Cell
             the divider to replace it with.
 
         Raises
@@ -267,7 +267,11 @@ class HalfSpace:
             if either argument is not a Surface or Cell, or if they are not the
             same kind (e.g. one is a Surface and the other is a Cell).
         ValueError
-            if old_divider is not found in the geometry tree.
+            if old_divider is not found in the geometry tree, or if
+            old_divider and new_divider are the same object.
+        IllegalState
+            if the geometry tree has not been linked via update_pointers()
+            (i.e. leaf dividers are still integers from parsing).
         """
         if not isinstance(
             old_divider, (montepy.surfaces.surface.Surface, montepy.Cell)
@@ -288,6 +292,16 @@ class HalfSpace:
                 f"old_divider and new_divider must both be Surfaces or both be Cells. "
                 f"Got {type(old_divider).__name__} and {type(new_divider).__name__}."
             )
+        if new_divider is old_divider:
+            raise ValueError(
+                "new_divider and old_divider are the same object; nothing to replace."
+            )
+        for leaf in self:
+            if isinstance(leaf._divider, Integral):
+                raise IllegalState(
+                    "Geometry tree has not been linked to objects yet. "
+                    "Run Cell.update_pointers() before calling replace()."
+                )
         replaced = self._replace_recursive(old_divider, new_divider)
         if not replaced:
             raise ValueError(
