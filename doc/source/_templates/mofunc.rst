@@ -1,5 +1,5 @@
 {{ objname }}
-{{ "=" * objname|length }}
+{{ underline }}
 
 .. currentmodule:: {{ module }}
 
