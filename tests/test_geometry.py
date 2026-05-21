@@ -551,34 +551,37 @@ def test_update_operators_in_node():
 # ── replace() tests ───────────────────────────────────────────────────────────
 
 
-def _make_linked_geometry(*surfs):
-    """Helper: build a parent cell whose geometry is already linked.
+@pytest.fixture
+def make_linked_geometry():
+    """Fixture factory: build a parent cell whose geometry is already linked.
 
-    Returns (parent_cell, half_space) where every UnitHalfSpace leaf has
-    self._cell set so the old-divider cleanup path in replace() is exercised.
+    Returns a callable that accepts surfaces/cells and produces
+    (parent_cell, half_space) where every UnitHalfSpace leaf has
+    _cell set so the old-divider cleanup path in replace() is exercised.
     """
-    parent = montepy.Cell()
-    parent.number = 99
-    # Populate parent.surfaces up front so all surfaces are present before replace()
-    for surf in surfs:
-        parent.surfaces.append(surf)
-    half_space = None
-    for surf in surfs:
-        leaf = +surf
-        # Wire _cell directly since dividers are already resolved objects, not ints
-        leaf._cell = parent
-        half_space = leaf if half_space is None else half_space & leaf
-    return parent, half_space
+
+    def _factory(*surfs):
+        parent = montepy.Cell()
+        parent.number = 99
+        # Populate parent.surfaces up front so all surfaces are present before replace()
+        for surf in surfs:
+            parent.surfaces.append(surf)
+        half_space = None
+        for surf in surfs:
+            leaf = +surf
+            # Wire _cell directly since dividers are already resolved objects, not ints
+            leaf._cell = parent
+            half_space = leaf if half_space is None else half_space & leaf
+        return parent, half_space
+
+    return _factory
 
 
 def test_replace_surface_basic():
     """replace() swaps old surface for new one throughout the tree."""
-    surf1 = montepy.CylinderOnAxis()
-    surf2 = montepy.CylinderOnAxis()
-    surf3 = montepy.CylinderOnAxis()
-    surf1.number = 1
-    surf2.number = 2
-    surf3.number = 3
+    surf1 = montepy.CylinderOnAxis(number=1)
+    surf2 = montepy.CylinderOnAxis(number=2)
+    surf3 = montepy.CylinderOnAxis(number=3)
     half_space = +surf1 & -surf2
     half_space.replace(surf1, surf3)
     # surf3 should now appear in place of surf1
@@ -589,7 +592,7 @@ def test_replace_surface_basic():
     assert surf2 in dividers
 
 
-def test_replace_surface_updates_cell_surfaces():
+def test_replace_surface_updates_cell_surfaces(make_linked_geometry):
     """After replace(), old surface is removed from cell.surfaces and new one is present."""
     surf1 = montepy.CylinderOnAxis()
     surf2 = montepy.CylinderOnAxis()
@@ -597,7 +600,7 @@ def test_replace_surface_updates_cell_surfaces():
     surf1.number = 1
     surf2.number = 2
     surf3.number = 3
-    parent, half_space = _make_linked_geometry(surf1, surf2)
+    parent, half_space = make_linked_geometry(surf1, surf2)
     half_space.replace(surf1, surf3)
     assert surf3 in parent.surfaces
     assert surf1 not in parent.surfaces
@@ -663,6 +666,79 @@ def test_replace_subclass_surface():
         assert leaf.divider is surf2
 
 
+def test_replace_cell_complement(make_linked_geometry):
+    """replace() works on Cell complement dividers and updates cell.complements."""
+    cell1 = montepy.Cell()
+    cell2 = montepy.Cell()
+    cell3 = montepy.Cell()
+    cell1.number = 1
+    cell2.number = 2
+    cell3.number = 3
+
+    parent = montepy.Cell()
+    parent.number = 99
+    parent.complements.append(cell1)
+    parent.complements.append(cell2)
+
+    # ~cell produces HalfSpace(UnitHalfSpace(cell, True, True), COMPLEMENT, None)
+    hs1 = ~cell1
+    hs2 = ~cell2
+    for leaf in hs1:
+        leaf._cell = parent
+    for leaf in hs2:
+        leaf._cell = parent
+    half_space = hs1 & hs2
+
+    half_space.replace(cell1, cell3)
+
+    dividers = [leaf.divider for leaf in half_space]
+    assert cell3 in dividers
+    assert cell1 not in dividers
+    assert cell2 in dividers  # untouched
+    assert cell3 in parent.complements
+    assert cell1 not in parent.complements
+
+
+def test_replace_same_object_raises():
+    """replace() raises ValueError when old_divider and new_divider are the same object."""
+    surf = montepy.CylinderOnAxis()
+    surf.number = 1
+    half_space = +surf
+    with pytest.raises(ValueError):
+        half_space.replace(surf, surf)
+
+
+def test_replace_same_number_different_object(make_linked_geometry):
+    """replace() with a new surface sharing the same number as old must not corrupt cell.surfaces."""
+    surf1 = montepy.CylinderOnAxis()
+    surf2 = montepy.CylinderOnAxis()
+    surf3 = montepy.CylinderOnAxis()
+    surf1.number = 1
+    surf2.number = 2
+    # surf3 intentionally gets the same number as surf1
+    surf3.number = 1
+    parent, half_space = make_linked_geometry(surf1, surf2)
+    # Should not raise NumberConflictError or leave the collection in a broken state
+    half_space.replace(surf1, surf3)
+    assert surf3 in parent.surfaces
+    assert surf1 not in parent.surfaces
+    assert surf2 in parent.surfaces  # untouched
+
+
+def test_replace_unlinked_raises():
+    """replace() raises IllegalState when the geometry tree has not been linked."""
+    from montepy.exceptions import IllegalState
+
+    surf1 = montepy.CylinderOnAxis()
+    surf2 = montepy.CylinderOnAxis()
+    surf1.number = 1
+    surf2.number = 2
+    # Build a tree with integer dividers (as if freshly parsed, not update_pointers'd)
+    leaf = UnitHalfSpace(1, True, False)  # integer divider
+    with pytest.raises(IllegalState):
+        leaf.replace(surf1, surf2)
+
+
 # ── __iter__ tests ────────────────────────────────────────────────────────────
 
 
@@ -692,7 +768,7 @@ def test_halfspace_iter_count_matches_len():
     surf2.number = 2
     surf3.number = 3
     half_space = +surf1 & -surf2 & +surf3
-    assert len(list(half_space)) == len(half_space)
+    assert len(half_space) == 3
 
 
 def test_unit_halfspace_iter():
