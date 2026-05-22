@@ -5,6 +5,7 @@ import copy
 import itertools as it
 import re
 import textwrap
+from typing import TypeAlias, Union, Type
 import warnings
 import weakref
 
@@ -73,12 +74,16 @@ class MCNP_Object(ABC, metaclass=_ExceptionContextAdder):
             input = montepy.input_parser.mcnp_input.Input(
                 input.split("\n"), self._BLOCK_TYPE
             )
+        jit_fallback = False
         if jit_parse:
             try:
                 return self._jit_light_init(input)
             # fall back to full parsing on any errors
             except Exception:
                 jit_parse = False
+                jit_fallback = True
+                if hasattr(self, "_not_parsed"):
+                    del self._not_parsed
         parser = self._parser()
         try:
             try:
@@ -105,6 +110,8 @@ class MCNP_Object(ABC, metaclass=_ExceptionContextAdder):
             )
         if "parameters" in self._tree:
             self._parameters = self._tree["parameters"]
+        if jit_fallback:
+            self._parse_tree()
 
     @staticmethod
     @abstractmethod
@@ -255,7 +262,7 @@ class MCNP_Object(ABC, metaclass=_ExceptionContextAdder):
 
     @staticmethod
     def _generate_default_node(
-        value_type: type, default: str, padding: str = " ", never_pad: bool = False
+        value_type: Type, default: str, padding: str = " ", never_pad: bool = False
     ):
         """Generates a "default" or blank ValueNode.
 
@@ -266,9 +273,9 @@ class MCNP_Object(ABC, metaclass=_ExceptionContextAdder):
 
         Parameters
         ----------
-        value_type : Class
+        value_type : typing.Type
             the data type for the ValueNode.
-        default : value_type
+        default : typing.Any
             the default value to provide (type needs to agree with
             value_type)
         padding : str, None
@@ -300,11 +307,11 @@ class MCNP_Object(ABC, metaclass=_ExceptionContextAdder):
 
         Returns
         -------
-        unknown
+        dict[str, str]
             a dictionary of the key-value pairs of the parameters.
 
 
-        :rytpe: dict
+        :rtype: dict
         """
         return self._parameters
 

@@ -244,7 +244,7 @@ class CellModifierInput(DataInputAbstract):
     @property
     @abstractmethod
     def has_information(self) -> bool:
-        """For a cell instance of :class:`montepy.data_cards.cell_modifier.CellModifierCard` returns True iff there is information here worth printing out.
+        """For a cell instance of :class:`montepy.data_inputs.cell_modifier.CellModifierInput` returns True iff there is information here worth printing out.
 
         e.g., a manually set volume for a cell
 
@@ -330,7 +330,7 @@ class CellModifierInput(DataInputAbstract):
     def _collect_new_values(self) -> list[syntax_node.ValueNode]:
         """Gets a list of the ValueNodes that hold the information for all cells.
 
-        This will be a list in the same order as :func:`montepy.mcnp_problem.MCNP_Problem.cells`.
+        This will be a list in the same order as :attr:`montepy.MCNP_Problem.cells`.
 
         Returns
         -------

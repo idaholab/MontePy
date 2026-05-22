@@ -147,7 +147,7 @@ class ClassifierParser(DataParser):
 
     Returns
     -------
-    ClassifierNode
+    montepy.input_parser.syntax_node.ClassifierNode
         the classifier of the data input.
     """
 
@@ -254,7 +254,7 @@ class ParamOnlyDataParser(DataParser):
 
         Returns
         -------
-        ClassifierNode
+        montepy.input_parser.syntax_node.ClassifierNode
         """
         if hasattr(p, "spec_classifier"):
             classifier = p.spec_classifier

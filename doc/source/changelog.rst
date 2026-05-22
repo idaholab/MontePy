@@ -3,21 +3,29 @@ MontePy Changelog
 *****************
 
 
-#next release#
+1.5 releases
+============
+
+1.5.0
 --------------
 
 **Features Added**
 
+* Add just-in-time (JIT) parsing.
+* Add _checkvalue.py_ to codebase (:issue:`687`).
 
-* Add _checkvalue.py_ to codebase (:issue:`687`). 
-* Added ``extend_renumber`` to ``NumberedObjectCollection`` with related test cases (:issue:`881`).
-
-
-1.3 releases
+1.4 releases
 ============
 
-#Next Version#
+1.4.0
 --------------
+
+**Feature Added**
+
+* Added surface classes to support almost all surface types such as :class:`~montepy.XPlane` and :class:`~montepy.YTorus` (:issue:`502`).
+* ``Cell.universe`` can now be set to ``None`` (or deleted via ``del cell.universe``) to reset the universe assignment back to the default (:issue:`902`).
+* Added ``extend_renumber`` to ``NumberedObjectCollection`` with related test cases (:issue:`881`).
+* Made :class:`montepy.data_inputs.importance.Importance` more ``dict``-like with ``keys``, ``values``, and ``items`` functions (:pull:`921`).
 
 **Bugs Fixed**
 
@@ -30,10 +38,13 @@ MontePy Changelog
 
 * Removed Guardrails from :class:`~montepy.numbered_object_collection.NumberedObjectCollection` (:issue:`895`)
 
-**Feature Added**
+**Documentation**
 
-* Added ``extend_renumber`` to ``NumberedObjectCollection`` with related test cases (:issue:`881`).
-* Made :class:`montepy.data_inputs.Importance` more ``dict``-like with ``keys``, ``values``, and ``items`` functions (:pull:`921`).
+* Enable Sphinx nitpicky mode and fix ~30 broken cross-references in the developer guide, user guide, and migration docs (:issue:`889`).
+* Remove redundant "montepy.*" prefix from navigation in the API docs (:issue:`901`).
+
+1.3 releases
+============
 
 1.3.0
 -----
@@ -95,14 +106,6 @@ MontePy Changelog
       :new_tab_button_text: Launch jupyter in your browswer
 
 * Improved documentation for :class:`~montepy.numbered_object_collection.NumberedObjectCollection` on Slicing behavior. (:issue:`798`)
-<<<<<<< HEAD
-=======
-* Reorganized Python API documentation. Some hyperlinks may be broken now (:pull:`828`).
-
-**Documentation**
-
-* Improved documentation for NumberedObjectCollections on Slicing behavior. (:issue:`798`)
->>>>>>> minor-rel-dev
 * Reorganized Python API documentation. Some hyperlinks may be broken now (:pull:`828`).
 
 **Deprecations**
@@ -202,11 +205,11 @@ MontePy Changelog
 * Made NumberedObjectCollections act like a set (:issue:`138`).
 * Automatically added children objects, e.g., the surfaces in a cell, to the problem when the cell is added to the problem (:issue:`63`).
 * Added ability to parse all MCNP objects from a string (:issue:`88`).
-* Added function: :func:`~montepy.mcnp_problem.MCNP_Problem.parse` to parse arbitrary MCNP object (:issue:`88`).
+* Added function: :meth:`~montepy.MCNP_Problem.parse` to parse arbitrary MCNP object (:issue:`88`).
 * An error is now raised when typos in object attributes are used, e.g., ``cell.nubmer`` (:issue:`508`).
 * Warnings are no longer raised for comments that exceed the maximum line lengths (:issue:`188`).
 * Particle type exceptions are now warnings, not errors (:issue:`381`).
-* Added :func:`~montepy.data_inputs.material.Material.clear` to ``Material`` to clear out all nuclides (:issue:`665`).
+* Added :meth:`~montepy.Material.clear` to ``Material`` to clear out all nuclides (:issue:`665`).
 * Allow any ``Real`` type for floating point numbers and any ``Integral`` type for integer numbers during type enforcement (:issue:`679`).
 * Avoided multiple ``LineExpansionWarnings`` coming from the same object on export (:issue:`198`).
 * Added ``mcnp_str`` function to all ``MCNP_Object`` to quickly get the string that would be printed in the MCNP input file (:issue:`700`).
@@ -228,9 +231,9 @@ MontePy Changelog
  
 **Breaking Changes**
 
-* Removed :func:`~montepy.data_inputs.material.Material.material_components``. See :ref:`migrate 0 1` (:pull:`507`).
+* Removed ``Material.material_components``. See :ref:`migrate 0 1` (:pull:`507`).
 * Removed :class:`~montepy.data_inputs.isotope.Isotope` and changed them to :class:`~montepy.data_inputs.nuclide.Nuclide`.
-* Removed :func:`~montepy.mcnp_problem.MCNP_Problem.add_cell_children_to_problem` as it is no longer needed. 
+* Removed ``MCNP_Problem.add_cell_children_to_problem`` as it is no longer needed.
 
 **Deprecated code Removed**
 

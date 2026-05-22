@@ -121,7 +121,7 @@ class MCNP_InputFile:
 
         Returns
         -------
-        unknown
+        MCNP_InputFile
             self
 
         Raises

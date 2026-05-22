@@ -7,12 +7,9 @@ class LatticeType(Enum):
     """Represents the options for the lattice ``LAT``."""
 
     RECTANGULAR = 1
-    """A rectangular prism is a type of hexahedron: solid with six faces."""
+    """Rectangular hexahedral lattice type (a solid with six faces)."""
     HEXAHEDRAL = RECTANGULAR
-    """Hexhedra are solids with six faces.
-    
-    One such solid is a rectangular prism.
-    """
+    """Alias for :attr:`RECTANGULAR`; hexahedra are solids with six faces."""
     HEXAGONAL = 2
     """Hexagonal prisms are solids with eight faces."""
 

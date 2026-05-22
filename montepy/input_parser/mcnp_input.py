@@ -203,7 +203,7 @@ class Input(ParsingNode):
 
         Returns
         -------
-        Token
+        collections.abc.Generator
             a generator of tokens.
         """
         if self.block_type == BlockType.CELL:

@@ -1,9 +1,9 @@
 # Copyright 2024, Battelle Energy Alliance, LLC All Rights Reserved.
-from enum import unique, Enum
+from enum import unique, StrEnum
 
 
 @unique
-class Particle(str, Enum):
+class Particle(StrEnum):
     """Supported MCNP supported particles.
 
     Taken from :manual62:`46`.
@@ -61,7 +61,7 @@ class Particle(str, Enum):
 
 
 @unique
-class LibraryType(str, Enum):
+class LibraryType(StrEnum):
     """Enum to represent the possible types that a nuclear data library can be.
 
     .. versionadded:: 1.0.0

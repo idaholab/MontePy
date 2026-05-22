@@ -38,7 +38,7 @@ def read_input_syntax(input_file, mcnp_version=DEFAULT_VERSION, replace=True):
 
     Returns
     -------
-    generator
+    collections.abc.Generator
         a generator of MCNP_Object objects
     """
     global reading_queue
@@ -55,7 +55,7 @@ def read_input_syntax(input_file, mcnp_version=DEFAULT_VERSION, replace=True):
 def read_front_matters(fh, mcnp_version):
     """Reads the beginning of an MCNP file for all of the unusual data there.
 
-    This is a generator function that will yield multiple :class:`MCNP_Input` instances.
+    This is a generator function that will yield multiple :class:`~montepy.input_parser.mcnp_input.Input` instances.
 
     Warnings
     --------
@@ -104,7 +104,7 @@ def read_front_matters(fh, mcnp_version):
 def read_data(fh, mcnp_version, block_type=None, recursion=False):
     """Reads the bulk of an MCNP file for all of the MCNP data.
 
-    This is a generator function that will yield multiple :class:`MCNP_Input` instances.
+    This is a generator function that will yield multiple :class:`~montepy.input_parser.mcnp_input.Input` instances.
 
     Warnings
     --------
@@ -130,8 +130,8 @@ def read_data(fh, mcnp_version, block_type=None, recursion=False):
 
     Returns
     -------
-    MCNP_Input
-        MCNP_Input instances: Inputs that represent the data in the MCNP
+    Input
+        Input instances: Inputs that represent the data in the MCNP
         input.
     """
     current_file = fh

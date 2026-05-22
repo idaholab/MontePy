@@ -223,7 +223,7 @@ class DataInputAbstract(MCNP_Object):
 
         Returns
         -------
-        ListNode
+        montepy.input_parser.syntax_node.ListNode
             The syntax tree with the information.
         """
         return self._tree["data"]
@@ -236,7 +236,7 @@ class DataInputAbstract(MCNP_Object):
 
         Returns
         -------
-        ClassifierNode
+        montepy.input_parser.syntax_node.ClassifierNode
             the classifier for this data_input.
         """
         return self._tree["classifier"]
@@ -430,6 +430,9 @@ class ForbiddenDataInput(DataInputAbstract):
                 input.split("\n"), self._BLOCK_TYPE
             )
         self._input = input
+
+    def _parse_tree(self):
+        pass
 
     @property
     def _class_prefix(self):

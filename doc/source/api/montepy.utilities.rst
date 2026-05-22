@@ -1,5 +1,5 @@
-montepy.utilities module
-========================
+utilities
+=========
 
 
 .. automodule:: montepy.utilities

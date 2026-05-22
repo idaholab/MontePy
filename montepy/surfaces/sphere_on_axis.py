@@ -1,23 +1,28 @@
-# Copyright 2026, Battelle Energy Alliance, LLC All Rights Reserved.
-from __future__ import annotations
-
-import montepy
-from .surface_type import SurfaceType
-from .surface import Surface, InitInput
-from montepy.exceptions import *
-from montepy.utilities import *
-import montepy.types as ty
+# Copyright 2024-2026, Battelle Energy Alliance, LLC All Rights Reserved.
+from .surface import SphereOnAxis as Parent
+import warnings
 
 
-def _enforce_positive_radius(self, value):
-    if value < 0.0:
-        raise ValueError(f"Radius must be positive. {value} given")
+class SphereOnAxis(Parent):
+    """Represents surfaces SX, SY, SZ: a sphere centered on a coordinate axis.
 
+    The surface equation (e.g. for SX) is:
 
-class SphereOnAxis(Surface):
-    """Represents surfaces SX, SY, and SZ: spheres on axes
+    .. math::
+
+        (x - x_0)^2 + y^2 + z^2 - R^2 = 0
+
+    .. tip::
+
+        Since version 1.4.0 this has not been the preferred class for working with ``SX``, ``SY``, and ``SZ`` surfaces.
+        Instead :class:`~montepy.XSphere`, :class:`~montepy.YSphere`, and :class:`~montepy.ZSphere` are preferred.
+        There is no plan at this time to deprecate this class, but its use is not going to be promoted.
 
     .. versionadded:: 1.3.0
+
+    .. deprecated:: 1.4.0
+
+       Access this class through ``montepy.SphereOnAxis`` instead.
 
     Parameters
     ----------
@@ -25,63 +30,13 @@ class SphereOnAxis(Surface):
         The Input object representing the input
     number : int
         The number to set for this object.
-    surface_type: Union[SurfaceType, str]
+    surface_type : Union[SurfaceType, str]
         The surface_type to set for this object
     """
 
-    COORDINATE = {SurfaceType.SX: "x", SurfaceType.SY: "y", SurfaceType.SZ: "z"}
-
-    def _load_constants(self):
-        if len(self.surface_constants) != 2:
-            raise ValueError(
-                f"{self.__class__.__name__} must have exactly 2 surface_constants"
-            )
-        self._location, self._radius = self._surface_constants
-
-    @staticmethod
-    def _allowed_surface_types():
-        return {SurfaceType.SX, SurfaceType.SY, SurfaceType.SZ}
-
-    @staticmethod
-    def _number_of_params():
-        return 2
-
-    @make_prop_val_node(
-        "_radius", (float, int), float, validator=_enforce_positive_radius
-    )
-    def radius(self):
-        """The radius of the sphere
-
-        Returns
-        -------
-        float
-        """
-        pass
-
-    @make_prop_val_node("_location", (float, int), float)
-    def location(self):
-        """The location of the center of the sphere in space
-
-        Returns
-        -------
-        float
-        """
-        pass
-
-    @staticmethod
-    def _allowed_surface_types():
-        return {SurfaceType.SX, SurfaceType.SY, SurfaceType.SZ}
-
-    def validate(self):
-        super().validate()
-        if self.radius is None:
-            raise IllegalState(f"Surface: {self.number} does not have a radius set.")
-        if self.location is None:
-            raise IllegalState(f"Surface: {self.number} does not have a location set.")
-
-    @args_checked
-    def find_duplicate_surfaces(
-        self, surfaces: montepy.Surfaces, tolerance: ty.PositiveReal
-    ):  # pragma: no cover
-        """Duplicate sphere finding is not yet implemented"""
-        return []
+    def __init__(self, *args, **kwargs):
+        warnings.warn(
+            "Submodule access to this class is deprecated. Use montepy.SphereOnAxis instead.",
+            category=DeprecationWarning,
+        )
+        super().__init__(*args, **kwargs)

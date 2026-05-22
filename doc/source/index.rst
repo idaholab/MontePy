@@ -21,6 +21,12 @@ MontePy can be installed with pip:
 
    pip install montepy
 
+or with conda:
+
+.. code-block:: shell
+
+   conda install conda-forge::montepy
+
 
 Use cases
 ---------
