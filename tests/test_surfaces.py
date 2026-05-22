@@ -1313,58 +1313,74 @@ def test_cone_enforce_constants_illegal_state(cls, surf_type, extra_count):
         surf.validate()
 
 
-# TODO: rewrite test to link objects on-the-fly via properties/problem instead of update_pointers
 def test_find_duplicate_surfaces():
     """Exercises every branch of Surface.find_duplicate_surfaces."""
 
     def make_tr(spec):
         return montepy.data_inputs.data_parser.parse_data(spec)
 
+    def link(surfaces, transforms=()):
+        """Create a minimal problem, populate it, and link all surfaces to it."""
+        prob = montepy.MCNP_Problem()
+        for tr in transforms:
+            prob.transforms.append(tr)
+        for surf in surfaces:
+            prob.surfaces.append(surf)
+            surf.link_to_problem(prob)
+        return prob
+
     # self is periodic — early return
     self_periodic = surface_builder("1 -2 PZ 0.0")
     ref = surface_builder("2 PZ 0.0")
-    self_periodic.update_pointers(montepy.Surfaces([ref]), [])
-    assert self_periodic.find_duplicate_surfaces([ref], 1e-6) == []
+    prob1 = link([self_periodic, ref])
+    assert self_periodic.find_duplicate_surfaces(montepy.Surfaces([ref]), 1e-6) == []
 
     # surface == self — skipped
     s = surface_builder("1 PZ 5.0")
-    assert s.find_duplicate_surfaces([s], 1e-6) == []
+    assert s.find_duplicate_surfaces(montepy.Surfaces([s]), 1e-6) == []
 
-    # different surface type — skipped
+    # different surface type — skipped (no problem linkage needed, no pointers)
     pz = surface_builder("1 PZ 5.0")
     px = surface_builder("2 PX 5.0")
-    assert pz.find_duplicate_surfaces([px], 1e-6) == []
+    assert pz.find_duplicate_surfaces(montepy.Surfaces([px]), 1e-6) == []
 
     # candidate has periodic surface — skipped
+    pz2 = surface_builder("1 PZ 5.0")
+    ref2 = surface_builder("2 PZ 0.0")
     candidate_periodic = surface_builder("3 -2 PZ 5.0")
-    candidate_periodic.update_pointers(montepy.Surfaces([ref]), [])
-    assert pz.find_duplicate_surfaces([candidate_periodic], 1e-6) == []
+    prob2 = link([pz2, ref2, candidate_periodic])
+    assert (
+        pz2.find_duplicate_surfaces(montepy.Surfaces([candidate_periodic]), 1e-6) == []
+    )
 
     # one has transform, other does not — skipped (both directions)
+    tr10 = make_tr("TR10 0 0 0")
     plain = surface_builder("1 PZ 5.0")
     with_tr = surface_builder("2 10 PZ 5.0")
-    with_tr.update_pointers([], [make_tr("TR10 0 0 0")])
-    assert plain.find_duplicate_surfaces([with_tr], 1e-6) == []
-    assert with_tr.find_duplicate_surfaces([plain], 1e-6) == []
+    prob3 = link([plain, with_tr], [tr10])
+    assert plain.find_duplicate_surfaces(montepy.Surfaces([with_tr]), 1e-6) == []
+    assert with_tr.find_duplicate_surfaces(montepy.Surfaces([plain]), 1e-6) == []
 
     # both have transforms but they differ — skipped
+    tr10b = make_tr("TR10 0 0 0")
+    tr11 = make_tr("TR11 0 0 99")
     s1 = surface_builder("1 10 PZ 5.0")
     s2 = surface_builder("2 11 PZ 5.0")
-    s1.update_pointers([], [make_tr("TR10 0 0 0")])
-    s2.update_pointers([], [make_tr("TR11 0 0 99")])
-    assert s1.find_duplicate_surfaces([s2], 1e-6) == []
+    prob4 = link([s1, s2], [tr10b, tr11])
+    assert s1.find_duplicate_surfaces(montepy.Surfaces([s2]), 1e-6) == []
 
     # both have equivalent transforms and matching constants — duplicate found
+    tr12 = make_tr("TR12 0 0 0")
+    tr13 = make_tr("TR13 0 0 0")
     s3 = surface_builder("3 12 PZ 5.0")
     s4 = surface_builder("4 13 PZ 5.0")
-    s3.update_pointers([], [make_tr("TR12 0 0 0")])
-    s4.update_pointers([], [make_tr("TR13 0 0 0")])
-    assert s3.find_duplicate_surfaces([s4], 1e-6) == [s4]
+    prob5 = link([s3, s4], [tr12, tr13])
+    assert s3.find_duplicate_surfaces(montepy.Surfaces([s4]), 1e-6) == [s4]
 
     # no transform, matching constants — duplicate found
     sa = surface_builder("1 PZ 5.0")
     sb = surface_builder("2 PZ 5.0")
-    assert sa.find_duplicate_surfaces([sb], 1e-6) == [sb]
+    assert sa.find_duplicate_surfaces(montepy.Surfaces([sb]), 1e-6) == [sb]
 
 
 @pytest.mark.parametrize(
