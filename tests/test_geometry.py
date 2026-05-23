@@ -720,9 +720,12 @@ def test_replace_same_number_different_object(make_linked_geometry):
     parent, half_space = make_linked_geometry(surf1, surf2)
     # Should not raise NumberConflictError or leave the collection in a broken state
     half_space.replace(surf1, surf3)
-    assert surf3 in parent.surfaces
-    assert surf1 not in parent.surfaces
-    assert surf2 in parent.surfaces  # untouched
+    # Numbered_object_collection.__contains__ is number-based, so use identity checks
+    # to distinguish surf1 and surf3 which share the same number.
+    surfaces = list(parent.surfaces)
+    assert any(s is surf3 for s in surfaces)
+    assert not any(s is surf1 for s in surfaces)
+    assert any(s is surf2 for s in surfaces)  # untouched
 
 
 def test_replace_unlinked_raises():
@@ -779,3 +782,4 @@ def test_unit_halfspace_iter():
     leaves = list(leaf)
     assert len(leaves) == 1
     assert leaves[0] is leaf
+    

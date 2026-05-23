@@ -296,29 +296,39 @@ class HalfSpace:
             raise ValueError(
                 "new_divider and old_divider are the same object; nothing to replace."
             )
+        # Validate the tree is fully linked before touching anything.
         for leaf in self:
             if isinstance(leaf._divider, Integral):
                 raise IllegalState(
                     "Geometry tree has not been linked to objects yet. "
                     "Run Cell.update_pointers() before calling replace()."
                 )
+        # Remove old_divider from the parent cell's container BEFORE calling
+        # _replace_recursive. The divider setter appends new_divider when it
+        # runs; if old_divider is still present at that point and shares a number
+        # with new_divider, the collection can raise NumberConflictError or skip
+        # the append, leaving bookkeeping in an inconsistent state.
+        cell = None
+        for leaf in self:
+            if leaf._cell is not None:
+                cell = leaf._cell
+                break
+        if cell is not None:
+            container = (
+                cell.complements
+                if isinstance(old_divider, montepy.Cell)
+                else cell.surfaces
+            )
+            if old_divider in container:
+                container.remove(old_divider)
         replaced = self._replace_recursive(old_divider, new_divider)
         if not replaced:
+            # Replacement failed — restore old_divider so the cell stays consistent.
+            if cell is not None and old_divider not in container:
+                container.append(old_divider)
             raise ValueError(
                 f"{old_divider} (number: {old_divider.number}) not found in geometry tree."
             )
-        # _cell is only set on UnitHalfSpace leaves, not on internal HalfSpace nodes.
-        # Find the parent cell via any leaf and remove the old divider from its collection.
-        for leaf in self:
-            if leaf._cell is not None:
-                container = (
-                    leaf._cell.complements
-                    if isinstance(old_divider, montepy.Cell)
-                    else leaf._cell.surfaces
-                )
-                if old_divider in container:
-                    container.remove(old_divider)
-                break
 
     def _replace_recursive(self, old_divider, new_divider) -> bool:
         replaced = self.left._replace_recursive(old_divider, new_divider)
