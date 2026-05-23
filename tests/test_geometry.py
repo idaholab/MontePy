@@ -782,4 +782,3 @@ def test_unit_halfspace_iter():
     leaves = list(leaf)
     assert len(leaves) == 1
     assert leaves[0] is leaf
-    
