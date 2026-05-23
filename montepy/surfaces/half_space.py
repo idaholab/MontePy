@@ -324,11 +324,17 @@ class HalfSpace:
         replaced = self._replace_recursive(old_divider, new_divider)
         if not replaced:
             # Replacement failed — restore old_divider so the cell stays consistent.
-            if cell is not None and old_divider not in container:
+            if cell is not None and not any(s is old_divider for s in container):
                 container.append(old_divider)
             raise ValueError(
                 f"{old_divider} (number: {old_divider.number}) not found in geometry tree."
             )
+        # The UnitHalfSpace.divider setter may silently skip appending new_divider
+        # if an object with the same number already appears in the container (e.g.
+        # when new_divider.number == old_divider.number and old_divider was just
+        # removed). Explicitly ensure new_divider is present by identity.
+        if cell is not None and not any(s is new_divider for s in container):
+            container.append(new_divider)
 
     def _replace_recursive(self, old_divider, new_divider) -> bool:
         replaced = self.left._replace_recursive(old_divider, new_divider)
