@@ -120,7 +120,9 @@ def test_geometry_comments():
       :(-11536    97  -401 )  $ C 3 Lower water
       :(-11546    97  -401 )  $ C 4 Lower water
       :(-11556    97  -401 )  $ C 5 Lower water
-      :(-11576    97  -401 ) imp:n=1 $ C 7 Lower water""".split("\n")
+      :(-11576    97  -401 ) imp:n=1 $ C 7 Lower water""".split(
+        "\n"
+    )
     input_obj = montepy.input_parser.mcnp_input.Input(
         in_strs, montepy.input_parser.block_type.BlockType.CELL
     )
