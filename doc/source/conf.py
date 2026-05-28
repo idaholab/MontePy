@@ -181,7 +181,6 @@ nitpick_ignore = [
     ("py:class", "sly.yacc.ParserMeta"),
     ("py:class", "sly.yacc.YaccProduction"),
     ("py:class", "InitInput"),
-    
     # Subpackages referenced with :mod: in docs; autodoc indexes individual classes
     # but not the package-level modules themselves
     # typing.Union is not in the Python intersphinx inventory as a py:data target
@@ -200,3 +199,41 @@ nitpick_ignore_regex = [
 # relative to this directory. They are copied after the builtin static files,
 # so a file named "default.css" will overwrite the builtin "default.css".
 html_static_path = ["_static"]
+
+
+def _extract_docstring_summary(obj):
+    """Extract first sentence of docstring for SEO meta description."""
+    if not obj.__doc__:
+        return None
+    doc = obj.__doc__.strip()
+    lines = doc.split("\n")
+    first_line = lines[0].strip()
+    if not first_line:
+        first_line = next((l.strip() for l in lines if l.strip()), None)
+    if first_line and len(first_line) > 5:
+        return first_line[:150]
+    return None
+
+
+def _add_meta_descriptions(app, docname, source):
+    """Inject meta directives for API docs from Python docstrings."""
+    if not docname.startswith("api/generated/"):
+        return
+
+    obj_name = docname.replace("api/generated/", "")
+    try:
+        parts = obj_name.split(".")
+        obj = montepy
+        for part in parts:
+            obj = getattr(obj, part)
+
+        summary = _extract_docstring_summary(obj)
+        if summary:
+            meta_directive = f".. meta::\n   :description lang=en: {summary}\n\n"
+            source[0] = meta_directive + source[0]
+    except (AttributeError, ImportError):
+        pass
+
+
+def setup(app):
+    app.connect("source-read", _add_meta_descriptions)
