@@ -131,7 +131,7 @@ html_theme = "pydata_sphinx_theme"
 html_theme_options = {
     "navbar_start": ["navbar-logo", "project", "version"],
     "logo": {
-        "alt_text": "MontePy - Documentation Home. The image is the MontePy logo: a red over white ball with a python inside of it.",
+        "alt_text": "MontePy documentation home.",
     },
     "icon_links": [
         {
