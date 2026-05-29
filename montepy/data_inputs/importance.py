@@ -314,9 +314,7 @@ class Importance(CellModifierInput):
                     self._problem and particle not in self._problem.mode
                 ):
                     continue
-                particle_node = self._particle_importances[particle][
-                    "classifier"
-                ].particles
+                particle_node = self._particle_importances[particle]["classifier"].particles
                 other_particles = set(particle_node.particles)
                 to_remove = set()
                 for other_part in other_particles:

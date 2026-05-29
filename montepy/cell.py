@@ -978,6 +978,7 @@ class Cell(Numbered_MCNP_Object):
         special_keys = {"_surfaces", "_complements"}
         keys -= special_keys
         memo = {}
+        memo[id(self)] = result
 
         def num(obj):
             if isinstance(obj, ty.Integral):
