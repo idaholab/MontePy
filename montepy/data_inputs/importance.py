@@ -314,9 +314,13 @@ class Importance(CellModifierInput):
                     self._problem and particle not in self._problem.mode
                 ):
                     continue
-                particle_node = self._particle_importances[particle]["classifier"].particles
+                particle_node = self._particle_importances[particle][
+                    "classifier"
+                ].particles
                 if self._problem:
-                    candidates = self._problem.mode.particles - particles_printed - {particle}
+                    candidates = (
+                        self._problem.mode.particles - particles_printed - {particle}
+                    )
                 else:
                     candidates = set(particle_node.particles) - {particle}
                 new_node_particles = {particle}
