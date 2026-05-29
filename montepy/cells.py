@@ -191,6 +191,16 @@ class Cells(NumberedObjectCollection):
                     and modifier._input is not None
                 ):
                     modifier.push_to_cells()
+        # Rebuild _print_data in stable order: inputs found in the data block first,
+        # then cell-block inputs, both groups in _INPUTS_TO_PROPERTY order.
+        ctrl = self._problem.print_in_data_block
+        prefixes = [cls._class_prefix() for cls in montepy.Cell._INPUTS_TO_PROPERTY]
+        in_data_block = [k for k in prefixes if ctrl._print_data.get(k, False)]
+        in_cell_block = [k for k in prefixes if not ctrl._print_data.get(k, True)]
+        ordered = {k: True for k in in_data_block}
+        ordered.update({k: False for k in in_cell_block})
+        ctrl._print_data.clear()
+        ctrl._print_data.update(ordered)
 
     def _run_children_format_for_mcnp(self, data_inputs, mcnp_version):
         ret = []
