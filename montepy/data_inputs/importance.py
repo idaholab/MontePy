@@ -315,21 +315,23 @@ class Importance(CellModifierInput):
                 ):
                     continue
                 particle_node = self._particle_importances[particle]["classifier"].particles
-                other_particles = set(particle_node.particles)
-                to_remove = set()
-                for other_part in other_particles:
-                    if other_part != particle:
-                        if math.isclose(
-                            self[particle],
-                            self[other_part],
-                            rel_tol=rel_tol,
-                            abs_tol=abs_tol,
-                        ):
-                            particles_printed.add(other_part)
-                        else:
-                            to_remove.add(other_part)
-                if to_remove:
-                    particle_node.particles = other_particles - to_remove
+                if self._problem:
+                    candidates = self._problem.mode.particles - particles_printed - {particle}
+                else:
+                    candidates = set(particle_node.particles) - {particle}
+                new_node_particles = {particle}
+                for other_part in candidates:
+                    if other_part not in self._particle_importances:
+                        continue
+                    if math.isclose(
+                        self[particle],
+                        self[other_part],
+                        rel_tol=rel_tol,
+                        abs_tol=abs_tol,
+                    ):
+                        new_node_particles.add(other_part)
+                        particles_printed.add(other_part)
+                particle_node.particles = new_node_particles
                 ret = ensure_has_end_space(ret)
                 ret += self._particle_importances[particle].format()
                 particles_printed.add(particle)
@@ -575,10 +577,10 @@ def _generate_default_data_tree(particle):
     list_node = syntax_node.ListNode("number sequence")
     list_node.append(syntax_node.ValueNode(str(Importance._DEFAULT_IMP), float))
     classifier = syntax_node.ClassifierNode()
-    classifier.prefix = syntax_node.ValueNode("IMP", str)
+    classifier.prefix = syntax_node.ValueNode("imp", str)
     classifier.padding = syntax_node.PaddingNode(" ")
     classifier.particles = syntax_node.ParticleNode(
-        "IMP_particles", f":{particle.value}"
+        "IMP_particles", f":{particle.value.lower()}"
     )
     classifier.particles.particles = {particle}
     return syntax_node.SyntaxNode(
