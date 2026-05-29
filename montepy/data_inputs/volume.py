@@ -187,7 +187,9 @@ class Volume(CellModifierInput):
         existing = self._volume.value if self._volume is not None else None
         if existing is not None and value.value is not None:
             raise RedundantParameterSpecification("vol", value.value)
-        if value.value is not None:
+        # Always store the node to preserve object identity for update_with_new_values
+        # so that J shortcuts in the data block are correctly matched and not stripped.
+        if existing is None:
             self._volume = value
 
     def _clear_data(self):
