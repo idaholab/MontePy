@@ -34,6 +34,8 @@ class UniverseInput(CellModifierInput):
         the value syntax tree from the key-value pair in a cell
     """
 
+    _KEYS_TO_PRESERVE = {"_universe", "_not_truncated"}
+
     def _init_blank(self):
         self._universe = None
         self._old_numbers = []
@@ -155,7 +157,6 @@ class UniverseInput(CellModifierInput):
             return self._universe
 
     @property
-    @needs_full_ast
     def not_truncated(self) -> bool:
         """Indicates if this cell has been marked as not being truncated for optimization.
 
