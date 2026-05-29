@@ -4,20 +4,10 @@ MontePy Changelog
 
 
 1.5 releases
-============
+=============
 
-1.5.0
---------------
 
-**Features Added**
-
-* Add just-in-time (JIT) parsing.
-* Add _checkvalue.py_ to codebase (:issue:`687`).
-
-1.4 releases
-============
-
-1.4.0
+#Next Version#
 --------------
 
 **Feature Added**

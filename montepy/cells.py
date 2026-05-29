@@ -10,7 +10,7 @@ import montepy.types as ty
 
 
 class Cells(NumberedObjectCollection):
-    """A collections of multiple :class:`montepy.cell.Cell` objects.
+    """A collections of multiple :class:`montepy.Cell` objects.
 
     This collection can be sliced to get a subset of the cells.
     Slicing is done based on the cell numbers, not their order in the input.
