@@ -238,13 +238,16 @@ def test_problem_str(simple_problem):
 def test_write_to_file(simple_problem):
     out = "foo.imcnp"
     simple_problem = copy.deepcopy(simple_problem)
+    # Detect jit mode from the fixture: JIT objects are not yet full_parsed.
+    # Re-read with the same mode so trailing-comment placement is consistent.
+    use_jit = not simple_problem.data_inputs[0].full_parsed
     try:
         problem = copy.deepcopy(simple_problem)
         problem.write_to_file(out)
         with open(out, "r") as fh:
             for line in fh:
                 print(line.rstrip())
-        test_problem = montepy.read_input(out)
+        test_problem = montepy.read_input(out, jit_parse=use_jit)
         for i, cell in enumerate(simple_problem.cells):
             num = cell.number
             assert num == test_problem.cells[num].number
@@ -1018,7 +1021,7 @@ def test_fill_parsing(universe_problem):
             assert (cell.fill.max_index == np.array([1.0, 1.0, 0.0])).all()
             assert cell.fill.universes[0][0][0].number == answer[0][0][0]
             assert cell.fill.universes[1][1][0].number == answer[1][1][0]
-            assert cell.fill.transform == universe_problem.transforms[5]
+            assert cell.fill.transform is problem.transforms[5]
         else:
             assert cell.fill.universe.number == answer
 
