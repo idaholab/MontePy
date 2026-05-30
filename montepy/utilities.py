@@ -261,7 +261,7 @@ def prop_pointer_from_problem(
             except KeyError as e:
                 raise BrokenObjectLinkError(
                     type(self).__name__,
-                    self.number,
+                    getattr(self, "number", None),
                     prob_collection_param.rstrip("s"),  # plural to singular,
                     id_num,
                 )
