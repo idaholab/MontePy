@@ -303,11 +303,9 @@ class HalfSpace:
                     "Geometry tree has not been linked to objects yet. "
                     "Run Cell.update_pointers() before calling replace()."
                 )
-        # Remove old_divider from the parent cell's container BEFORE calling
-        # _replace_recursive. The divider setter appends new_divider when it
-        # runs; if old_divider is still present at that point and shares a number
-        # with new_divider, the collection can raise NumberConflictError or skip
-        # the append, leaving bookkeeping in an inconsistent state.
+        # Remove old_divider from the parent cell's container before calling
+        # _replace_recursive so replacing with a different object that reuses the
+        # same number does not trip the collection's conflict checks.
         cell = None
         for leaf in self:
             if leaf._cell is not None:
@@ -323,18 +321,13 @@ class HalfSpace:
                 container.remove(old_divider)
         replaced = self._replace_recursive(old_divider, new_divider)
         if not replaced:
-            # Replacement failed — restore old_divider so the cell stays consistent.
-            if cell is not None and not any(s is old_divider for s in container):
+            # Replacement failed, so restore the original divider to keep the
+            # parent cell's collection consistent.
+            if cell is not None:
                 container.append(old_divider)
             raise ValueError(
                 f"{old_divider} (number: {old_divider.number}) not found in geometry tree."
             )
-        # The UnitHalfSpace.divider setter may silently skip appending new_divider
-        # if an object with the same number already appears in the container (e.g.
-        # when new_divider.number == old_divider.number and old_divider was just
-        # removed). Explicitly ensure new_divider is present by identity.
-        if cell is not None and not any(s is new_divider for s in container):
-            container.append(new_divider)
 
     def _replace_recursive(self, old_divider, new_divider) -> bool:
         replaced = self.left._replace_recursive(old_divider, new_divider)

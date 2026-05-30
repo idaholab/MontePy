@@ -4,6 +4,7 @@ import montepy
 from montepy.geometry_operators import Operator
 from montepy.input_parser import syntax_node
 from montepy.surfaces.half_space import HalfSpace, UnitHalfSpace
+from tests.test_cell_problem import verify_export as verify_cell_export
 
 
 def test_halfspace_init():
@@ -726,6 +727,25 @@ def test_replace_same_number_different_object(make_linked_geometry):
     assert any(s is surf3 for s in surfaces)
     assert not any(s is surf1 for s in surfaces)
     assert any(s is surf2 for s in surfaces)  # untouched
+
+
+def test_replace_same_number_different_object_verify_export():
+    """Replacing with a same-number surface still exports and re-parses cleanly."""
+    surf1 = montepy.CylinderOnAxis(number=1)
+    surf2 = montepy.CylinderOnAxis(number=2)
+    surf3 = montepy.CylinderOnAxis(number=1)
+    parent = montepy.Cell(number=99)
+    parent.geometry = +surf1 & -surf2
+    parent.importance.neutron = 1.0
+    for leaf in parent.geometry:
+        leaf._cell = parent
+
+    parent.geometry.replace(surf1, surf3)
+
+    surfaces = list(parent.surfaces)
+    assert any(s is surf3 for s in surfaces)
+    assert not any(s is surf1 for s in surfaces)
+    verify_cell_export(parent)
 
 
 def test_replace_unlinked_raises():
