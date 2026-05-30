@@ -822,12 +822,12 @@ class MCNP_Problem:
             if the object's number is already taken
         """
         try:
-            obj = montepy.parse_data(input, jit_parse=jit_parse)
+            obj = montepy.parse_data(input, jit_parse=False)
         except ParsingError:
             try:
-                obj = montepy.parse_surface(input, jit_parse=jit_parse)
+                obj = montepy.parse_surface(input, jit_parse=False)
             except ParsingError:
-                obj = montepy.Cell(input, jit_parse=jit_parse)
+                obj = montepy.Cell(input, jit_parse=False)
                 # let final parsing error bubble up
         obj.link_to_problem(self)
         if append:
