@@ -58,7 +58,7 @@ class Importance(CellModifierInput):
     """
     Marks that if one cell has a value all cells must have values, no matter the default.
     """
-    _KEYS_TO_PRESERVE = {"_parked_value", "_inputs"}
+    _KEYS_TO_PRESERVE = {"_parked_value", "_inputs", "_part_combos"}
 
     def _init_blank(self):
         self._particle_importances = {}
@@ -280,6 +280,7 @@ class Importance(CellModifierInput):
             for cell_imp, cell in zip(cell_importances, self._problem.cells):
                 for particle, val in cell_imp.items():
                     cell._importance._accept_from_data(particle, val)
+                cell._importance._part_combos = list(self._part_combos)
 
     def _accept_from_data(self, key, value):
         if hasattr(self, "_not_parsed"):
@@ -317,12 +318,18 @@ class Importance(CellModifierInput):
                 particle_node = self._particle_importances[particle][
                     "classifier"
                 ].particles
-                if self._problem:
-                    candidates = (
-                        self._problem.mode.particles - particles_printed - {particle}
-                    )
-                else:
-                    candidates = set(particle_node.particles) - {particle}
+                # Use _part_combos to find particles that should stay grouped
+                # (set by push_to_cells from a combined data-block entry, or by
+                # _parse_cell_tree for a combined cell-block entry).
+                # Falls back to same-node particles when no combos are recorded.
+                candidates_from_combos = set()
+                for combo in self._part_combos:
+                    if particle in combo:
+                        candidates_from_combos = combo - particles_printed - {particle}
+                        break
+                candidates = candidates_from_combos or (
+                    set(particle_node.particles) - {particle}
+                )
                 new_node_particles = {particle}
                 for other_part in candidates:
                     if other_part not in self._particle_importances:
