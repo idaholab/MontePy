@@ -276,6 +276,8 @@ class Fill(CellModifierInput):
         if value is not None:
             self._universes = None
             self.multiple_universes = False
+        else:
+            self._old_number.value = None
 
     @universe.deleter
     @needs_full_cst
