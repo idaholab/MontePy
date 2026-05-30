@@ -93,12 +93,12 @@ class Cells(NumberedObjectCollection):
         vacuum_cells : list
             the list of cells or cell numbers with 0 importance
         """
-        cells_buff = set()
+        cells_buff = []
         for cell in vacuum_cells:
             if isinstance(cell, ty.Integral):
-                cells_buff.add(self[cell])
+                cells_buff.append(self[cell])
             else:
-                cells_buff.add(cell)
+                cells_buff.append(cell)
         vacuum_cells = cells_buff
         for cell in self:
             if cell not in vacuum_cells:
