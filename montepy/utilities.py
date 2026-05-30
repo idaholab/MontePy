@@ -144,7 +144,9 @@ def make_prop_val_node(
             def deleter(self):
                 if hasattr(self, "_not_parsed"):
                     self.full_parse()
-                setattr(self, hidden_param, None)
+                node = getattr(self, hidden_param, None)
+                if node is not None:
+                    node.value = None
 
             getter = getter.deleter(deleter)
         return getter
