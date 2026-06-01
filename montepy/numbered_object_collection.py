@@ -36,7 +36,7 @@ class NumberedObjectCollection(ABC):
         >>> problem = montepy.read_input("tests/inputs/test.imcnp")
         >>> cell = problem.cells[2]
         >>> print(cell)
-        CELL: 2, mat: 2, DENS: 8.0 atom/b-cm
+        Cell: 2
 
     You can also add, and delete items like you would in a dictionary normally.
     Though :func:`append` and :func:`add` are the preferred way of adding items.

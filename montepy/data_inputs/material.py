@@ -173,7 +173,7 @@ class Material(data_input.DataInputAbstract, Numbered_MCNP_Object):
 
     .. testoutput::
 
-        MATERIAL: 1, ['hydrogen', 'oxygen']
+        Material: 1
 
     Materials are iterable
     ^^^^^^^^^^^^^^^^^^^^^^
@@ -245,7 +245,7 @@ class Material(data_input.DataInputAbstract, Numbered_MCNP_Object):
 
     .. testoutput::
 
-        MATERIAL: 1, ['hydrogen', 'oxygen', 'boron']
+        Material: 1
 
     Default Libraries
     ^^^^^^^^^^^^^^^^^

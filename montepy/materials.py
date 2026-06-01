@@ -103,7 +103,7 @@ class Materials(NumberedDataObjectCollection):
 
         .. testoutput::
 
-            MATERIAL: 1, ['hydrogen', 'oxygen']
+            Material: 1
 
         .. versionadded:: 1.0.0
 
@@ -162,7 +162,7 @@ class Materials(NumberedDataObjectCollection):
 
         .. testoutput::
 
-            MATERIAL: 1, ['hydrogen', 'oxygen']
+            Material: 1
 
         .. versionadded:: 1.0.0
 
