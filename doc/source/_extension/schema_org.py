@@ -18,7 +18,9 @@ from typing import Any, Dict
 from sphinx.application import Sphinx
 
 
-def add_schema_org_data(app: Sphinx, pagename: str, templatename: str, context: Dict, doctree: Any) -> None:
+def add_schema_org_data(
+    app: Sphinx, pagename: str, templatename: str, context: Dict, doctree: Any
+) -> None:
     """Add schema.org JSON-LD to page if configured."""
     configs = app.config.schema_org_configs
     if not configs or pagename not in configs:
@@ -26,7 +28,7 @@ def add_schema_org_data(app: Sphinx, pagename: str, templatename: str, context: 
 
     schema_data = configs[pagename]
     schema_json = json.dumps(schema_data, indent=2)
-    context['schema_org_data'] = schema_json
+    context["schema_org_data"] = schema_json
 
 
 def setup(app: Sphinx) -> Dict[str, Any]:
