@@ -44,6 +44,7 @@ extensions = [
     "autodocsumm",
     "jupyterlite_sphinx",
     "schema_org",
+    "sphinx_sitemap",
 ]
 
 # -- Schema.org structured data ----------------------------------------------
@@ -110,7 +111,8 @@ favicons = [
 ]
 html_logo = "monty.svg"
 
-html_baseurl = "https://www.montepy.org/en/stable/"
+html_baseurl = os.environ.get("READTHEDOCS_CANONICAL_URL", "https://www.montepy.org/en/stable/")
+sitemap_url_scheme = "{link}"
 html_extra_path = ["robots.txt", "foo.imcnp"]
 
 # jupyter lite
