@@ -15,7 +15,6 @@ Add to conf.py:
 import json
 from typing import Any, Dict
 
-from docutils import nodes
 from sphinx.application import Sphinx
 
 

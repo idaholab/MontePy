@@ -1,61 +1,3 @@
-"""Sphinx extension to inject schema.org JSON-LD structured data.
-
-Add to conf.py:
-    extensions = [..., "schema_org"]
-
-    schema_org_configs = {
-        "index": {
-            "@type": "SoftwareApplication",
-            "name": "MontePy",
-            ...
-        }
-    }
-"""
-
-import json
-from typing import Any, Dict
-
-from docutils import nodes
-from sphinx.application import Sphinx
-
-
-def add_schema_org_data(app: Sphinx, pagename: str, templatename: str, context: Dict, doctree: Any) -> None:
-    """Add schema.org JSON-LD to page if configured."""
-    configs = app.config.schema_org_configs
-    if not configs or pagename not in configs:
-        return
-
-    schema_data = configs[pagename]
-    schema_json = json.dumps(schema_data, indent=2)
-    context['schema_org_data'] = schema_json
-
-
-def setup(app: Sphinx) -> Dict[str, Any]:
-    """Register the extension."""
-    app.add_config_value("schema_org_configs", {}, "html")
-    app.connect("html-page-context", add_schema_org_data)
-
-    return {
-        "version": "0.1.0",
-        "parallel_read_safe": True,
-        "parallel_write_safe": True,
-    }
-(base)
-(mgale@INL436227)-(~/dev/montepy) (seo_opt)
- ^_^->cat doc/source/_templates/page.html
-{% extends "!page.html" %}
-
-{% block body %}
-  {{ super() }}
-  {% if pagename == 'index' and schema_org_data %}
-  <script type="application/ld+json">
-  {{ schema_org_data | safe }}
-  </script>
-  {% endif %}
-{% endblock %}
-(base)
-(mgale@INL436227)-(~/dev/montepy) (seo_opt)
- ^_^->cat doc/source/conf.py
 # Configuration file for the Sphinx documentation builder.
 #
 # This file only contains a selection of the most common options. For a full
@@ -73,6 +15,7 @@ import os
 import sys
 
 sys.path.insert(0, os.path.abspath("../.."))
+sys.path.insert(0, os.path.abspath("_extension"))
 import montepy
 
 # -- Project information -----------------------------------------------------
@@ -100,7 +43,62 @@ extensions = [
     "sphinx_copybutton",
     "autodocsumm",
     "jupyterlite_sphinx",
+    "schema_org",
 ]
+
+# -- Schema.org structured data ----------------------------------------------
+# Drives JSON-LD injection via the schema_org extension.
+# Only pages listed here get a <script type="application/ld+json"> block.
+schema_org_configs = {
+    "index": {
+        "@context": "https://schema.org",
+        "@type": "SoftwareApplication",
+        "name": "MontePy",
+        "description": (
+            "The most user-friendly Python library for reading, editing, "
+            "and writing MCNP input files."
+        ),
+        "url": "https://www.montepy.org/",
+        "applicationCategory": "Scientific/Engineering",
+        "operatingSystem": "Linux, macOS, Windows",
+        "license": "https://github.com/idaholab/MontePy/blob/main/LICENSE",
+        "author": {
+            "@type": "Organization",
+            "name": "Battelle Energy Alliance LLC",
+        },
+        "softwareVersion": version,
+        "downloadUrl": "https://pypi.org/project/montepy/",
+    },
+    "faq": {
+        "@context": "https://schema.org",
+        "@type": "FAQPage",
+        "mainEntity": [
+            {
+                "@type": "Question",
+                "name": "How do I fix a UnicodeDecodeError when opening an MCNP file in MontePy?",
+                "acceptedAnswer": {
+                    "@type": "Answer",
+                    "text": (
+                        "Try passing a different encoding to read_input(), such as "
+                        "'utf8' or 'cp1252'. Alternatively, use the change_to_ascii "
+                        "utility to remove all non-ASCII characters from the file."
+                    ),
+                },
+            },
+            {
+                "@type": "Question",
+                "name": "Will MontePy ever support MCNP output files?",
+                "acceptedAnswer": {
+                    "@type": "Answer",
+                    "text": (
+                        "No. MontePy is scoped to reading and writing MCNP input "
+                        "files only. Output file parsing is outside the project scope."
+                    ),
+                },
+            },
+        ],
+    },
+}
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ["_templates"]
