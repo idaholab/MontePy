@@ -18,13 +18,63 @@ sys.path.insert(0, os.path.abspath("../.."))
 sys.path.insert(0, os.path.abspath("_extension"))
 import montepy
 
+
+def _get_project_metadata():
+    """Extract project metadata from package distribution."""
+    try:
+        dist = importlib.metadata.distribution("montepy")
+    except importlib.metadata.PackageNotFoundError:
+        return {}
+
+    metadata = {
+        "name": dist.metadata.get("Name", "MontePy"),
+        "version": dist.metadata.get("Version", "unknown"),
+        "description": dist.metadata.get("Summary", ""),
+        "license": dist.metadata.get("License", "MIT"),
+        "homepage": None,
+        "authors": [],
+        "keywords": [],
+    }
+
+    # Extract keywords
+    if "Keywords" in dist.metadata:
+        keywords_str = dist.metadata.get("Keywords", "")
+        if keywords_str:
+            metadata["keywords"] = [kw.strip() for kw in keywords_str.split(",")]
+
+    # Extract homepage from project URLs
+    if hasattr(dist, "metadata") and "Project-URL" in dist.metadata:
+        urls = dist.metadata.get_all("Project-URL") or []
+        for url_entry in urls:
+            if url_entry.startswith("Homepage"):
+                metadata["homepage"] = (
+                    url_entry.split(", ", 1)[1] if ", " in url_entry else None
+                )
+                break
+
+    # Extract authors from Author-Email field
+    if "Author-Email" in dist.metadata:
+        author_email = dist.metadata.get("Author-Email")
+        if author_email:
+            authors = []
+            for entry in author_email.split(", "):
+                entry = entry.strip()
+                if entry:
+                    authors.append(entry)
+            metadata["authors"] = authors
+
+    return metadata
+
+
+_metadata = _get_project_metadata()
+
 # -- Project information -----------------------------------------------------
 
 project = "MontePy"
 copyright = "2021 – 2026, Battelle Energy Alliance LLC."
-author = "Micah D. Gale (@micahgale), Travis J. Labossiere-Hickman (@tjlaboss)"
+author = ", ".join(_metadata.get("authors", []))
 
-version = importlib.metadata.version("montepy")
+version = _metadata.get("version", "unknown")
 release = version  # Will be true at website deployment.
 # -- General configuration ---------------------------------------------------
 
@@ -56,20 +106,21 @@ schema_org_configs = {
         "@context": "https://schema.org",
         "@type": "SoftwareApplication",
         "name": "MontePy",
-        "description": (
-            "The most user-friendly Python library for reading, editing, "
-            "and writing MCNP input files."
-        ),
-        "url": "https://www.montepy.org/",
+        "description": _metadata.get("description", ""),
+        "url": _metadata.get("homepage", "https://www.montepy.org/"),
         "applicationCategory": "Scientific/Engineering",
         "operatingSystem": "Linux, macOS, Windows",
         "license": "https://github.com/idaholab/MontePy/blob/main/LICENSE",
-        "author": {
-            "@type": "Organization",
-            "name": "Battelle Energy Alliance LLC",
-        },
+        "author": [
+            {
+                "@type": "Person",
+                "name": author.split("<")[0].strip(),
+            }
+            for author in _metadata.get("authors", [])
+        ],
         "softwareVersion": version,
         "downloadUrl": "https://pypi.org/project/montepy/",
+        "keywords": ", ".join(_metadata.get("keywords", [])),
     },
     "faq": {
         "@context": "https://schema.org",
@@ -112,7 +163,9 @@ favicons = [
 ]
 html_logo = "monty.svg"
 
-html_baseurl = os.environ.get("READTHEDOCS_CANONICAL_URL", "https://www.montepy.org/en/stable/")
+html_baseurl = os.environ.get(
+    "READTHEDOCS_CANONICAL_URL", "https://www.montepy.org/en/stable/"
+)
 sitemap_url_scheme = "{link}"
 html_extra_path = ["robots.txt", "foo.imcnp", "LICENSE"]
 
