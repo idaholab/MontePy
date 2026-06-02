@@ -1,3 +1,7 @@
+.. meta::
+   :description lang=en:
+        MontePy command-line utilities for checking MCNP input files for errors, plus other tools for working with MCNP problems from the terminal.
+
 Utility Scripts
 ===============
 

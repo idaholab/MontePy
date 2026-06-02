@@ -1,6 +1,9 @@
 User-agent: *
 
-Disallow: /en/latest/ # Hidden version
+# Block non-stable versions to avoid duplicate content
+Disallow: /en/latest/
+Disallow: /en/v
 Disallow: /_/downloads
 
 Sitemap: https://www.montepy.org/sitemap.xml
+Sitemap: https://www.montepy.org/en/stable/sitemap.xml
