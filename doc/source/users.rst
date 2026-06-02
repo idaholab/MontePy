@@ -1,3 +1,7 @@
+.. meta::
+   :description lang=en:
+        User guide for MontePy: installation, tutorials, tips, utilities, and reference documentation for the Python MCNP input file library.
+
 User Guide
 ==========
 
