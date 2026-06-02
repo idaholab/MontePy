@@ -1,3 +1,7 @@
+.. meta::
+   :description lang=en:
+        Defines the scope of MontePy: what features the project supports, what falls outside it, and how to decide where new functionality belongs.
+
 .. _scope:
 
 MontePy Scope

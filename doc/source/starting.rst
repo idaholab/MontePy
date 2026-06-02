@@ -1,8 +1,6 @@
 .. meta::
    :description lang=en:
-        Montepy is the most user-friendly Python library for reading, editing, and writing MCNP input files.
-        It can be easily installed using pip.
-        This tutorial covers the basics of getting started with MontePy.
+        MontePy is the most user-friendly Python library for reading, editing, and writing MCNP input files. Install with pip and get started quickly.
 
 Getting Started with MontePy
 ============================

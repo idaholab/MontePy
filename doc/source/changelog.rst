@@ -1,3 +1,7 @@
+.. meta::
+   :description lang=en:
+        MontePy release notes and changelog: new features, bug fixes, and improvements across all versions of the Python MCNP input file library.
+
 *****************
 MontePy Changelog
 *****************
