@@ -47,8 +47,7 @@ class TestMaterial:
 
     @pytest.fixture
     def parsed_material(_):
-        return Material(
-            """M1   1001.00c   0.05
+        return Material("""M1   1001.00c   0.05
       1001.04c   0.05
       1001.80c   0.05
       1001.04p   0.05
@@ -64,8 +63,7 @@ class TestMaterial:
       95242      0.05
       27560.50c  0.05
       94239      0.05
-      28000.60c  0.05"""
-        )
+      28000.60c  0.05""")
 
     @pytest.fixture
     def materials(_, big_material, parsed_material):
