@@ -177,6 +177,8 @@ def check_type_and_value(
     none_ok: bool = False,
 ):
     annotations = []
+    if isinstance(expected_type, typing.TypeAliasType):
+        expected_type = expected_type.evaluate_value()
     if isinstance(expected_type, typing._AnnotatedAlias):
         args = typing.get_args(expected_type)
         annotations = args[1:]
