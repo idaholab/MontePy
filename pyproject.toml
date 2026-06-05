@@ -55,8 +55,7 @@ build = [
 ]
 doc = [
 	"montepy[build]",
-	"sphinx~=8.0", 
-	"sphinxcontrib-apidoc", 
+	"sphinx>=9.0.0", 
 	"pydata_sphinx_theme",
 	"sphinx-favicon",
 	"sphinx-copybutton",
