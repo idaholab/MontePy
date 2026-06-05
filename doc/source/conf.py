@@ -67,11 +67,20 @@ jupyterlite_overrides = "jupyter_lite.json"
 exclude_patterns = ["_contents/*"]
 
 # autodoc
-autodoc_typehints = "both"
+#autodoc_typehints = "both"
 typehints_use_signature = True
 typehints_use_signature_return = True
-autodoc_typehints_description_target = "all"
+#autodoc_typehints_description_target = "all"
 autodoc_member_order = "groupwise"
+autodoc_type_aliases = {
+    "ty.PositiveInt": "montepy.types.PositiveInt",
+    "ty.NegativeInt": "montepy.types.NegativeInt",
+    "ty.NonNegativeInt": "montepy.types.NonNegativeInt",
+    "ty.PositiveReal": "montepy.types.PositiveReal",
+    "ty.NegativeReal": "montepy.types.NegativeReal",
+    "ty.NonNegativeReal": "montepy.types.NonNegativeReal",
+    "ty.VersionType": "montepy.types.VersionType",
+}
 # Display the version
 display_version = True
 autodoc_default_options = {
