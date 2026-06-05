@@ -1,6 +1,6 @@
 from collections.abc import Iterable, Callable
 from numbers import Real, Integral
-from typing import Annotated, Self
+from typing import Annotated, Self, TypeAlias
 
 import montepy._check_value as cv
 
@@ -159,37 +159,37 @@ def greater_than(minimum: Real, equality: bool = False):
     return wrapper
 
 
-"""
-Common types to be used for type annotations.
-"""
-
-type PositiveInt = Annotated[Integral, positive]
+PositiveInt: TypeAlias = Annotated[Integral, positive]
 r"""
 An integer that is positive, i.e., a member of the set :math:`\mathbb{Z}_{\gt0}`.
 """
 
-type NegativeInt = Annotated[Integral, negative]
+NegativeInt: TypeAlias = Annotated[Integral, negative]
 r"""
 An integer that is negative, i.e., a member of the set :math:`\mathbb{Z}_{\lt0}`.
 """
 
-type NonNegativeInt = Annotated[Integral, non_negative]
+NonNegativeInt: TypeAlias = Annotated[Integral, non_negative]
 r"""
-An integer that is negative, i.e., a member of the set :math:`\mathbb{Z}_{\geq0}`.
+An integer that is non-negative, i.e., a member of the set :math:`\mathbb{Z}_{\geq0}`.
 """
 
-type PositiveReal = Annotated[Real, positive]
+PositiveReal: TypeAlias = Annotated[Real, positive]
 r"""
 A real number that is positive, i.e., a member of the set :math:`\mathbb{R}_{\gt0}`.
 """
 
-type NegativeReal = Annotated[Real, negative]
+NegativeReal: TypeAlias = Annotated[Real, negative]
 r"""
-A real number that is negative, i.e., a member of the set :math:`\mathbb{R}_{\gt0}`.
+A real number that is negative, i.e., a member of the set :math:`\mathbb{R}_{\lt0}`.
 """
-type NonNegativeReal = Annotated[Real, non_negative]
+
+NonNegativeReal: TypeAlias = Annotated[Real, non_negative]
 r"""
 A real number that is not negative, i.e., a member of the set :math:`\mathbb{R}_{\geq0}`.
 """
 
-type VersionType = tuple[PositiveInt, NonNegativeInt, NonNegativeInt]
+VersionType: TypeAlias = tuple[PositiveInt, NonNegativeInt, NonNegativeInt]
+r"""
+A 3-tuple of ``(major, minor, patch)`` version integers.
+"""
