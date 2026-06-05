@@ -67,10 +67,10 @@ jupyterlite_overrides = "jupyter_lite.json"
 exclude_patterns = ["_contents/*"]
 
 # autodoc
-#autodoc_typehints = "both"
+autodoc_typehints = "both"
 typehints_use_signature = True
 typehints_use_signature_return = True
-#autodoc_typehints_description_target = "all"
+autodoc_typehints_description_target = "all"
 autodoc_member_order = "groupwise"
 autodoc_type_aliases = {
     "ty.PositiveInt": "montepy.types.PositiveInt",
@@ -169,6 +169,7 @@ suppress_warnings = [
 # Allows cross-references to Python stdlib, NumPy, etc.
 intersphinx_mapping = {
     "python": ("https://docs.python.org/3", None),
+    "numbers": ("https://docs.python.org/3/library/", None),
     "numpy": ("https://numpy.org/doc/stable/", None),
 }
 
@@ -190,8 +191,6 @@ nitpick_ignore = [
     ("py:class", "sly.yacc.Parser"),
     ("py:class", "sly.yacc.ParserMeta"),
     ("py:class", "sly.yacc.YaccProduction"),
-    ("py:class", "InitInput"),
-    
     # Subpackages referenced with :mod: in docs; autodoc indexes individual classes
     # but not the package-level modules themselves
     # typing.Union is not in the Python intersphinx inventory as a py:data target
