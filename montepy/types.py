@@ -163,33 +163,33 @@ def greater_than(minimum: Real, equality: bool = False):
 Common types to be used for type annotations.
 """
 
-PositiveInt = Annotated[Integral, positive]
+type PositiveInt = Annotated[Integral, positive]
 r"""
 An integer that is positive, i.e., a member of the set :math:`\mathbb{Z}_{\gt0}`.
 """
 
-NegativeInt = Annotated[Integral, negative]
+type NegativeInt = Annotated[Integral, negative]
 r"""
 An integer that is negative, i.e., a member of the set :math:`\mathbb{Z}_{\lt0}`.
 """
 
-NonNegativeInt = Annotated[Integral, non_negative]
+type NonNegativeInt = Annotated[Integral, non_negative]
 r"""
 An integer that is negative, i.e., a member of the set :math:`\mathbb{Z}_{\geq0}`.
 """
 
-PositiveReal = Annotated[Real, positive]
+type PositiveReal = Annotated[Real, positive]
 r"""
 A real number that is positive, i.e., a member of the set :math:`\mathbb{R}_{\gt0}`.
 """
 
-NegativeReal = Annotated[Real, negative]
+type NegativeReal = Annotated[Real, negative]
 r"""
 A real number that is negative, i.e., a member of the set :math:`\mathbb{R}_{\gt0}`.
 """
-NonNegativeReal = Annotated[Real, non_negative]
+type NonNegativeReal = Annotated[Real, non_negative]
 r"""
 A real number that is not negative, i.e., a member of the set :math:`\mathbb{R}_{\geq0}`.
 """
 
-VersionType = tuple[PositiveInt, NonNegativeInt, NonNegativeInt]
+type VersionType = tuple[PositiveInt, NonNegativeInt, NonNegativeInt]
