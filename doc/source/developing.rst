@@ -153,7 +153,7 @@ Value Enforcement
 MontePy also supports value enforcement in the type annotations, 
 through `typing.Annotated <https://docs.python.org/3/library/typing.html#typing.Annotated>`_ 
 allowed values can also be specified.
-MontePy provides functions for the most common value checks, such as :func:`~montepy.utilities.positive`. For instance:
+MontePy provides functions for the most common value checks, such as :func:`~montepy.types.positive`. For instance:
 
 .. testcode::
 
@@ -164,7 +164,7 @@ MontePy provides functions for the most common value checks, such as :func:`~mon
    def foo(a: Annotated[Integral, ty.positive]):
         pass
 
-Some enforcers accept arguments, such as :func:`~montepy.utilities.greater_than`:
+Some enforcers accept arguments, such as :func:`~montepy.types.greater_than`:
 
 .. testcode::
 
@@ -195,7 +195,7 @@ It is helpful to look through the value enforcement process to understand why.
 
 #. A custom type is created/Annotated.
    A new type is created with the enforcer stored as ``AnnotatedTypeAlias.__metadata__``.
-   For some enforcers, such as :func:`~montepy.utilities.greater_than`, this stage will accept arguments.
+   For some enforcers, such as :func:`~montepy.types.greater_than`, this stage will accept arguments.
 #. The function is called. At this stage the wrapped function is called, and all of the enforcer functions are called with the actual values passed before the nested decorated function is called. The functions must accept the arguments: ``(func_name, name, value)``. 
 
 Some pseudo-implementations may be helpful here.
@@ -209,7 +209,7 @@ For a simple implementation, let's look at how :func:`~montepy.utilties.positive
                f"The value, {x}, given to {func_name} for argument, {name} is not positive"
            )
 
-For a more complicated scenario let's look at how you might implement :func:`~montepy.utilities.greater_than`:
+For a more complicated scenario let's look at how you might implement :func:`~montepy.types.greater_than`:
 
 .. code-block:: python
 
