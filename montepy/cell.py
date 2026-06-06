@@ -86,12 +86,18 @@ class Cell(Numbered_MCNP_Object):
 
         Added number parameter
 
+    .. versionchanged:: 1.5.0
+
+        Added ``jit_parse`` parameter
+
     Parameters
     ----------
     input : Input | str
         The Input syntax object this will wrap and parse.
     number : int
         The number to set for this object.
+    jit_parse : bool
+        Parse the object just-in-time, when the information is actually needed, if True.
     """
 
     _POINTER_ATTRS = {"material", "complements", "surfaces", "fill"}  # TODO special

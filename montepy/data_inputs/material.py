@@ -284,12 +284,18 @@ class Material(data_input.DataInputAbstract, Numbered_MCNP_Object):
             * Added ability to search by Nuclide
             * Added Support for default libraries (e.g., ``nlib=80c``).
 
+    .. versionchanged:: 1.5.0
+
+        Added ``jit_parse`` parameter
+
     Parameters
     ----------
     input : Input | str
         The Input syntax object this will wrap and parse.
     number : int
         The number to set for this object.
+    jit_parse : bool
+        Parse the object just-in-time, when the information is actually needed, if True.
     """
 
     _parser = MaterialParser

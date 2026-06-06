@@ -20,10 +20,16 @@ class Universe(Numbered_MCNP_Object):
     """Class to represent an MCNP universe, but not handle the input
     directly.
 
+    .. versionchanged:: 1.5.0
+
+        Added ``jit_parse`` parameter
+
     Parameters
     ----------
     number : int
         The number for the universe, must be ≥ 0
+    jit_parse : bool
+        Parse the object just-in-time, when the information is actually needed, if True.
     """
 
     _POINTER_ATTRS = set()

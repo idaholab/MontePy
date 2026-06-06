@@ -32,6 +32,10 @@ def _verify_3d_index(self, indices):
 class Fill(CellModifierInput):
     """Object to handle the ``FILL`` input in cell and data blocks.
 
+    .. versionchanged:: 1.5.0
+
+        Added ``jit_parse`` parameter
+
     Parameters
     ----------
     input : Input | str
@@ -42,6 +46,8 @@ class Fill(CellModifierInput):
         the key from the key-value pair in a cell
     value : SyntaxNode
         the value syntax tree from the key-value pair in a cell
+    jit_parse : bool
+        Parse the object just-in-time, when the information is actually needed, if True.
     """
 
     DIMENSIONS = {"i": 0, "j": 1, "k": 2}

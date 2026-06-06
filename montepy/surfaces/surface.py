@@ -87,8 +87,21 @@ class _SurfaceClassFactory(_ExceptionContextAdder):
             surf_type = next(iter(spec.surface_types))
             namespace["_surface_type"] = surf_type
 
-            def __init__(self, input: InitInput = None, number: int = None, **kwargs):
-                Surface.__init__(self, input, number, surface_type=surf_type, **kwargs)
+            @args_checked
+            def __init__(
+                self,
+                input: InitInput = None,
+                number: ty.PositiveInt = None,
+                *,
+                jit_parse: bool = True,
+            ):
+                Surface.__init__(
+                    self,
+                    input,
+                    number,
+                    surface_type=surf_type,
+                    jit_parse=jit_parse**kwargs,
+                )
 
             namespace["__init__"] = __init__
         return super().__new__(cls, name, bases, namespace, **kwargs)
@@ -200,14 +213,20 @@ class Surface(Numbered_MCNP_Object, metaclass=_SurfaceClassFactory):
 
         Added number parameter
 
+    .. versionchanged:: 1.5.0
+
+        Added ``jit_parse`` parameter
+
     Parameters
     ----------
-    input : Input | str
+    input : InitInput
         The Input object representing the input
-    number : int
+    number : PositiveInt
         The number to set for this object.
     surface_type: SurfaceType | str
         The surface_type to set for this object
+    jit_parse : bool
+        Parse the object just-in-time, when the information is actually needed, if True.
     """
 
     _JitParser = JitSurfParser
@@ -740,14 +759,20 @@ class CylinderOnAxis(
 
         Added number parameter
 
+    .. versionchanged:: 1.5.0
+
+        Added ``jit_parse`` parameter
+
     Parameters
     ----------
-    input : Union[Input, str]
+    input : Input | str
         The Input object representing the input
-    number : int
+    number : PositiveInt
         The number to set for this object.
-    surface_type : Union[SurfaceType, str]
+    surface_type : SurfaceType | str
         The surface_type to set for this object
+    jit_parse : bool
+        Parse the object just-in-time, when the information is actually needed, if True.
     """
 
 
@@ -815,12 +840,18 @@ class XCylinder(CylinderOnAxis, metaclass=_SurfaceClassFactory, spec=_x_cylinder
 
     .. versionadded:: 1.4.0
 
+    .. versionchanged:: 1.5.0
+
+        Added ``jit_parse`` parameter
+
     Parameters
     ----------
-    input : Union[Input, str]
+    input : Input | str
         The Input object representing the input
-    number : int
+    number : PositiveInt
         The number to set for this object.
+    jit_parse : bool
+        Parse the object just-in-time, when the information is actually needed, if True.
     """
 
     pass
@@ -837,12 +868,18 @@ class YCylinder(CylinderOnAxis, metaclass=_SurfaceClassFactory, spec=_y_cylinder
 
     .. versionadded:: 1.4.0
 
+    .. versionchanged:: 1.5.0
+
+        Added ``jit_parse`` parameter
+
     Parameters
     ----------
-    input : Union[Input, str]
+    input : Input | str
         The Input object representing the input
-    number : int
+    number : PositiveInt
         The number to set for this object.
+    jit_parse : bool
+        Parse the object just-in-time, when the information is actually needed, if True.
     """
 
     pass
@@ -859,12 +896,18 @@ class ZCylinder(CylinderOnAxis, metaclass=_SurfaceClassFactory, spec=_z_cylinder
 
     .. versionadded:: 1.4.0
 
+    .. versionchanged:: 1.5.0
+
+        Added ``jit_parse`` parameter
+
     Parameters
     ----------
-    input : Union[Input, str]
+    input : Input | str
         The Input object representing the input
-    number : int
+    number : PositiveInt
         The number to set for this object.
+    jit_parse : bool
+        Parse the object just-in-time, when the information is actually needed, if True.
     """
 
     pass
@@ -921,15 +964,21 @@ class CylinderParAxis(
 
         Added number parameter
 
+    .. versionchanged:: 1.5.0
+
+        Added ``jit_parse`` parameter
+
 
     Parameters
     ----------
-    input : Union[Input, str]
+    input : InitInput
         The Input object representing the input
-    number : int
+    number : PositiveInt
         The number to set for this object.
-    surface_type : Union[SurfaceType, str]
-        The surface_type to set for this object
+    surface_type : SurfaceType | str
+        The surface type to set for this object
+    jit_parse : bool
+        Parse the object just-in-time, when the information is actually needed, if True.
     """
 
     COORDINATE_PAIRS = {
@@ -1076,12 +1125,18 @@ class XCylinderParAxis(
 
     .. versionadded:: 1.4.0
 
+    .. versionchanged:: 1.5.0
+
+        Added ``jit_parse`` parameter
+
     Parameters
     ----------
-    input : Union[Input, str]
+    input : Input | str
         The Input object representing the input
-    number : int
+    number : PositiveInt
         The number to set for this object.
+    jit_parse : bool
+        Parse the object just-in-time, when the information is actually needed, if True.
     """
 
     pass
@@ -1101,12 +1156,18 @@ class YCylinderParAxis(
 
     .. versionadded:: 1.4.0
 
+    .. versionchanged:: 1.5.0
+
+        Added ``jit_parse`` parameter
+
     Parameters
     ----------
-    input : Union[Input, str]
+    input : Input | str
         The Input object representing the input
-    number : int
+    number : PositiveInt
         The number to set for this object.
+    jit_parse : bool
+        Parse the object just-in-time, when the information is actually needed, if True.
     """
 
     pass
@@ -1126,12 +1187,18 @@ class ZCylinderParAxis(
 
     .. versionadded:: 1.4.0
 
+    .. versionchanged:: 1.5.0
+
+        Added ``jit_parse`` parameter
+
     Parameters
     ----------
-    input : Union[Input, str]
+    input : Input | str
         The Input object representing the input
-    number : int
+    number : PositiveInt
         The number to set for this object.
+    jit_parse : bool
+        Parse the object just-in-time, when the information is actually needed, if True.
     """
 
     pass
@@ -1182,15 +1249,21 @@ class AxisPlane(Surface, metaclass=_SurfaceClassFactory, spec=_axis_plane_spec):
 
         Added number parameter
 
+    .. versionchanged:: 1.5.0
+
+        Added ``jit_parse`` parameter
+
 
     Parameters
     ----------
-    input : Union[Input, str]
+    input : Input | str
         The Input object representing the input
-    number : int
+    number : PositiveInt
         The number to set for this object.
-    surface_type : Union[SurfaceType, str]
+    surface_type : SurfaceType | str
         The surface_type to set for this object
+    jit_parse : bool
+        Parse the object just-in-time, when the information is actually needed, if True.
     """
 
     COORDINATE = {SurfaceType.PX: "x", SurfaceType.PY: "y", SurfaceType.PZ: "z"}
@@ -1300,12 +1373,18 @@ class XPlane(AxisPlane, metaclass=_SurfaceClassFactory, spec=_x_plane_spec):
 
     .. versionadded:: 1.4.0
 
+    .. versionchanged:: 1.5.0
+
+        Added ``jit_parse`` parameter
+
     Parameters
     ----------
-    input : Union[Input, str]
+    input : InitInput
         The Input object representing the input
-    number : int
+    number : PositiveInt
         The number to set for this object.
+    jit_parse : bool
+        Parse the object just-in-time, when the information is actually needed, if True.
     """
 
     pass
@@ -1322,12 +1401,18 @@ class YPlane(AxisPlane, metaclass=_SurfaceClassFactory, spec=_y_plane_spec):
 
     .. versionadded:: 1.4.0
 
+    .. versionchanged:: 1.5.0
+
+        Added ``jit_parse`` parameter
+
     Parameters
     ----------
-    input : Union[Input, str]
+    input : InitInput
         The Input object representing the input
-    number : int
+    number : PositiveInt
         The number to set for this object.
+    jit_parse : bool
+        Parse the object just-in-time, when the information is actually needed, if True.
     """
 
     pass
@@ -1344,12 +1429,18 @@ class ZPlane(AxisPlane, metaclass=_SurfaceClassFactory, spec=_z_plane_spec):
 
     .. versionadded:: 1.4.0
 
+    .. versionchanged:: 1.5.0
+
+        Added ``jit_parse`` parameter
+
     Parameters
     ----------
-    input : Union[Input, str]
+    input : InitInput
         The Input object representing the input
-    number : int
+    number : PositiveInt
         The number to set for this object.
+    jit_parse : bool
+        Parse the object just-in-time, when the information is actually needed, if True.
     """
 
     pass
@@ -1427,12 +1518,18 @@ class GeneralPlane(Surface, metaclass=_SurfaceClassFactory, spec=_general_plane_
 
         Added number parameter
 
+    .. versionchanged:: 1.5.0
+
+        Added ``jit_parse`` parameter
+
     Parameters
     ----------
-    input : Union[Input, str]
+    input : InitInput
         The Input object representing the input
-    number : int
+    number : PositiveInt
         The number to set for this object.
+    jit_parse : bool
+        Parse the object just-in-time, when the information is actually needed, if True.
     """
 
     _VARIABLE_NUM_PARAMS = True
@@ -1486,12 +1583,18 @@ class SphereAtOrigin(
 
     .. versionadded:: 1.3.0
 
+    .. versionchanged:: 1.5.0
+
+        Added ``jit_parse`` parameter
+
     Parameters
     ----------
-    input : Union[Input, str]
+    input : InitInput
         The Input object representing the input
-    number : int
+    number : PositiveInt
         The number to set for this object.
+    jit_parse : bool
+        Parse the object just-in-time, when the information is actually needed, if True.
     """
 
     pass
@@ -1571,12 +1674,18 @@ class GeneralSphere(Surface, metaclass=_SurfaceClassFactory, spec=_general_spher
 
     .. versionadded:: 1.3.0
 
+    .. versionchanged:: 1.5.0
+
+        Added ``jit_parse`` parameter
+
     Parameters
     ----------
-    input : Union[Input, str]
+    input : InitInput
         The Input object representing the input
-    number : int
+    number : PositiveInt
         The number to set for this object.
+    jit_parse : bool
+        Parse the object just-in-time, when the information is actually needed, if True.
     """
 
     pass
@@ -1626,14 +1735,20 @@ class SphereOnAxis(Surface, metaclass=_SurfaceClassFactory, spec=_sphere_on_axis
 
     .. versionadded:: 1.3.0
 
+    .. versionchanged:: 1.5.0
+
+        Added ``jit_parse`` parameter
+
     Parameters
     ----------
-    input : Union[Input, str]
+    input : InitInput
         The Input object representing the input
-    number : int
+    number : PositiveInt
         The number to set for this object.
     surface_type : Union[SurfaceType, str]
-        The surface_type to set for this object
+        The surface type to set for this object
+    jit_parse : bool
+        Parse the object just-in-time, when the information is actually needed, if True.
     """
 
     COORDINATE = {SurfaceType.SX: "x", SurfaceType.SY: "y", SurfaceType.SZ: "z"}
@@ -1746,12 +1861,18 @@ class XSphere(SphereOnAxis, metaclass=_SurfaceClassFactory, spec=_x_sphere_spec)
 
     .. versionadded:: 1.4.0
 
+    .. versionchanged:: 1.5.0
+
+        Added ``jit_parse`` parameter
+
     Parameters
     ----------
-    input : Union[Input, str]
+    input : InitInput
         The Input object representing the input
-    number : int
+    number : PositiveInt
         The number to set for this object.
+    jit_parse : bool
+        Parse the object just-in-time, when the information is actually needed, if True.
     """
 
     pass
@@ -1768,12 +1889,18 @@ class YSphere(SphereOnAxis, metaclass=_SurfaceClassFactory, spec=_y_sphere_spec)
 
     .. versionadded:: 1.4.0
 
+    .. versionchanged:: 1.5.0
+
+        Added ``jit_parse`` parameter
+
     Parameters
     ----------
-    input : Union[Input, str]
+    input : InitInput
         The Input object representing the input
-    number : int
+    number : PositiveInt
         The number to set for this object.
+    jit_parse : bool
+        Parse the object just-in-time, when the information is actually needed, if True.
     """
 
     pass
@@ -1790,12 +1917,18 @@ class ZSphere(SphereOnAxis, metaclass=_SurfaceClassFactory, spec=_z_sphere_spec)
 
     .. versionadded:: 1.4.0
 
+    .. versionchanged:: 1.5.0
+
+        Added ``jit_parse`` parameter
+
     Parameters
     ----------
-    input : Union[Input, str]
+    input : InitInput
         The Input object representing the input
-    number : int
+    number : PositiveInt
         The number to set for this object.
+    jit_parse : bool
+        Parse the object just-in-time, when the information is actually needed, if True.
     """
 
     pass
@@ -1848,14 +1981,20 @@ class ConeOnAxis(Surface, metaclass=_SurfaceClassFactory, spec=_cone_on_axis_spe
 
     .. versionadded:: 1.4.0
 
+    .. versionchanged:: 1.5.0
+
+        Added ``jit_parse`` parameter
+
     Parameters
     ----------
-    input : Union[Input, str]
+    input : InitInput
         The Input object representing the input
-    number : int
+    number : PositiveInt
         The number to set for this object.
     surface_type : Union[SurfaceType, str]
-        The surface_type to set for this object
+        The surface type to set for this object
+    jit_parse : bool
+        Parse the object just-in-time, when the information is actually needed, if True.
     """
 
     COORDINATE = {SurfaceType.KX: "x", SurfaceType.KY: "y", SurfaceType.KZ: "z"}
@@ -2020,12 +2159,18 @@ class XCone(ConeOnAxis, metaclass=_SurfaceClassFactory, spec=_x_cone_spec):
 
     .. versionadded:: 1.4.0
 
+    .. versionchanged:: 1.5.0
+
+        Added ``jit_parse`` parameter
+
     Parameters
     ----------
-    input : Union[Input, str]
+    input : InitInput
         The Input object representing the input
-    number : int
+    number : PositiveInt
         The number to set for this object.
+    jit_parse : bool
+        Parse the object just-in-time, when the information is actually needed, if True.
     """
 
     pass
@@ -2046,12 +2191,18 @@ class YCone(ConeOnAxis, metaclass=_SurfaceClassFactory, spec=_y_cone_spec):
 
     .. versionadded:: 1.4.0
 
+    .. versionchanged:: 1.5.0
+
+        Added ``jit_parse`` parameter
+
     Parameters
     ----------
-    input : Union[Input, str]
+    input : InitInput
         The Input object representing the input
-    number : int
+    number : PositiveInt
         The number to set for this object.
+    jit_parse : bool
+        Parse the object just-in-time, when the information is actually needed, if True.
     """
 
     pass
@@ -2072,12 +2223,18 @@ class ZCone(ConeOnAxis, metaclass=_SurfaceClassFactory, spec=_z_cone_spec):
 
     .. versionadded:: 1.4.0
 
+    .. versionchanged:: 1.5.0
+
+        Added ``jit_parse`` parameter
+
     Parameters
     ----------
-    input : Union[Input, str]
+    input : InitInput
         The Input object representing the input
-    number : int
+    number : PositiveInt
         The number to set for this object.
+    jit_parse : bool
+        Parse the object just-in-time, when the information is actually needed, if True.
     """
 
     pass
@@ -2154,14 +2311,20 @@ class ConeParAxis(Surface, metaclass=_SurfaceClassFactory, spec=_cone_par_axis_s
 
     .. versionadded:: 1.4.0
 
+    .. versionchanged:: 1.5.0
+
+        Added ``jit_parse`` parameter
+
     Parameters
     ----------
-    input : Union[Input, str]
+    input : InitInput
         The Input object representing the input
-    number : int
+    number : PositiveInt
         The number to set for this object.
     surface_type : Union[SurfaceType, str]
-        The surface_type to set for this object
+        The surface type to set for this object
+    jit_parse : bool
+        Parse the object just-in-time, when the information is actually needed, if True.
     """
 
     _VARIABLE_NUM_PARAMS = True
@@ -2380,12 +2543,18 @@ class XConeParAxis(
 
     .. versionadded:: 1.4.0
 
+    .. versionchanged:: 1.5.0
+
+        Added ``jit_parse`` parameter
+
     Parameters
     ----------
-    input : Union[Input, str]
+    input : InitInput
         The Input object representing the input
-    number : int
+    number : PositiveInt
         The number to set for this object.
+    jit_parse : bool
+        Parse the object just-in-time, when the information is actually needed, if True.
     """
 
     pass
@@ -2409,12 +2578,18 @@ class YConeParAxis(
 
     .. versionadded:: 1.4.0
 
+    .. versionchanged:: 1.5.0
+
+        Added ``jit_parse`` parameter
+
     Parameters
     ----------
-    input : Union[Input, str]
+    input : InitInput
         The Input object representing the input
-    number : int
+    number : PositiveInt
         The number to set for this object.
+    jit_parse : bool
+        Parse the object just-in-time, when the information is actually needed, if True.
     """
 
     pass
@@ -2438,12 +2613,18 @@ class ZConeParAxis(
 
     .. versionadded:: 1.4.0
 
+    .. versionchanged:: 1.5.0
+
+        Added ``jit_parse`` parameter
+
     Parameters
     ----------
-    input : Union[Input, str]
+    input : InitInput
         The Input object representing the input
-    number : int
+    number : PositiveInt
         The number to set for this object.
+    jit_parse : bool
+        Parse the object just-in-time, when the information is actually needed, if True.
     """
 
     pass
@@ -2562,12 +2743,18 @@ class AxisAlignedQuadric(
 
     .. versionadded:: 1.4.0
 
+    .. versionchanged:: 1.5.0
+
+        Added ``jit_parse`` parameter
+
     Parameters
     ----------
-    input : Union[Input, str]
+    input : InitInput
         The Input object representing the input
-    number : int
+    number : PositiveInt
         The number to set for this object.
+    jit_parse : bool
+        Parse the object just-in-time, when the information is actually needed, if True.
     """
 
     pass
@@ -2679,12 +2866,18 @@ class GeneralQuadric(
 
     .. versionadded:: 1.4.0
 
+    .. versionchanged:: 1.5.0
+
+        Added ``jit_parse`` parameter
+
     Parameters
     ----------
-    input : Union[Input, str]
+    input : InitInput
         The Input object representing the input
-    number : int
+    number : PositiveInt
         The number to set for this object.
+    jit_parse : bool
+        Parse the object just-in-time, when the information is actually needed, if True.
     """
 
     pass
@@ -2808,14 +3001,20 @@ class Torus(Surface, metaclass=_SurfaceClassFactory, spec=_torus_spec):
 
     .. versionadded:: 1.4.0
 
+    .. versionchanged:: 1.5.0
+
+        Added ``jit_parse`` parameter
+
     Parameters
     ----------
-    input : Union[Input, str]
+    input : InitInput
         The Input object representing the input
-    number : int
+    number : PositiveInt
         The number to set for this object.
     surface_type : Union[SurfaceType, str]
-        The surface_type to set for this object
+        The surface type to set for this object
+    jit_parse : bool
+        Parse the object just-in-time, when the information is actually needed, if True.
     """
 
     @property
@@ -3172,12 +3371,18 @@ class XTorus(Torus, metaclass=_SurfaceClassFactory, spec=_x_torus_spec):
 
     .. versionadded:: 1.4.0
 
+    .. versionchanged:: 1.5.0
+
+        Added ``jit_parse`` parameter
+
     Parameters
     ----------
-    input : Union[Input, str]
+    input : InitInput
         The Input object representing the input
-    number : int
+    number : PositiveInt
         The number to set for this object.
+    jit_parse : bool
+        Parse the object just-in-time, when the information is actually needed, if True.
     """
 
     pass
@@ -3194,12 +3399,18 @@ class YTorus(Torus, metaclass=_SurfaceClassFactory, spec=_y_torus_spec):
 
     .. versionadded:: 1.4.0
 
+    .. versionchanged:: 1.5.0
+
+        Added ``jit_parse`` parameter
+
     Parameters
     ----------
-    input : Union[Input, str]
+    input : InitInput
         The Input object representing the input
-    number : int
+    number : PositiveInt
         The number to set for this object.
+    jit_parse : bool
+        Parse the object just-in-time, when the information is actually needed, if True.
     """
 
     pass
@@ -3216,12 +3427,18 @@ class ZTorus(Torus, metaclass=_SurfaceClassFactory, spec=_z_torus_spec):
 
     .. versionadded:: 1.4.0
 
+    .. versionchanged:: 1.5.0
+
+        Added ``jit_parse`` parameter
+
     Parameters
     ----------
-    input : Union[Input, str]
+    input : InitInput
         The Input object representing the input
-    number : int
+    number : PositiveInt
         The number to set for this object.
+    jit_parse : bool
+        Parse the object just-in-time, when the information is actually needed, if True.
     """
 
     pass
@@ -3281,12 +3498,18 @@ class Box(Surface, metaclass=_SurfaceClassFactory, spec=_box_spec):
 
     .. versionadded:: 1.4.0
 
+    .. versionchanged:: 1.5.0
+
+        Added ``jit_parse`` parameter
+
     Parameters
     ----------
-    input : Union[Input, str]
+    input : InitInput
         The Input object representing the input
-    number : int
+    number : PositiveInt
         The number to set for this object.
+    jit_parse : bool
+        Parse the object just-in-time, when the information is actually needed, if True.
     """
 
     pass
@@ -3381,12 +3604,18 @@ class RectangularParallelepiped(
 
     .. versionadded:: 1.4.0
 
+    .. versionchanged:: 1.5.0
+
+        Added ``jit_parse`` parameter
+
     Parameters
     ----------
-    input : Union[Input, str]
+    input : InitInput
         The Input object representing the input
-    number : int
+    number : PositiveInt
         The number to set for this object.
+    jit_parse : bool
+        Parse the object just-in-time, when the information is actually needed, if True.
     """
 
     pass
@@ -3449,12 +3678,18 @@ class SphereMacrobody(
 
     .. versionadded:: 1.4.0
 
+    .. versionchanged:: 1.5.0
+
+        Added ``jit_parse`` parameter
+
     Parameters
     ----------
-    input : Union[Input, str]
+    input : InitInput
         The Input object representing the input
-    number : int
+    number : PositiveInt
         The number to set for this object.
+    jit_parse : bool
+        Parse the object just-in-time, when the information is actually needed, if True.
     """
 
     pass
@@ -3525,12 +3760,18 @@ class RightCircularCylinder(Surface, metaclass=_SurfaceClassFactory, spec=_rcc_s
 
     .. versionadded:: 1.4.0
 
+    .. versionchanged:: 1.5.0
+
+        Added ``jit_parse`` parameter
+
     Parameters
     ----------
-    input : Union[Input, str]
+    input : InitInput
         The Input object representing the input
-    number : int
+    number : PositiveInt
         The number to set for this object.
+    jit_parse : bool
+        Parse the object just-in-time, when the information is actually needed, if True.
     """
 
     pass
@@ -3620,12 +3861,18 @@ class RightHexagonalPrism(Surface, metaclass=_SurfaceClassFactory, spec=_rhp_spe
 
     .. versionadded:: 1.4.0
 
+    .. versionchanged:: 1.5.0
+
+        Added ``jit_parse`` parameter
+
     Parameters
     ----------
-    input : Union[Input, str]
+    input : InitInput
         The Input object representing the input
-    number : int
+    number : PositiveInt
         The number to set for this object.
+    jit_parse : bool
+        Parse the object just-in-time, when the information is actually needed, if True.
     """
 
     pass
@@ -3706,12 +3953,18 @@ class RightEllipticalCylinder(Surface, metaclass=_SurfaceClassFactory, spec=_rec
 
     .. versionadded:: 1.4.0
 
+    .. versionchanged:: 1.5.0
+
+        Added ``jit_parse`` parameter
+
     Parameters
     ----------
-    input : Union[Input, str]
+    input : InitInput
         The Input object representing the input
-    number : int
+    number : PositiveInt
         The number to set for this object.
+    jit_parse : bool
+        Parse the object just-in-time, when the information is actually needed, if True.
     """
 
     pass
@@ -3790,12 +4043,18 @@ class TruncatedRightCone(Surface, metaclass=_SurfaceClassFactory, spec=_trc_spec
 
     .. versionadded:: 1.4.0
 
+    .. versionchanged:: 1.5.0
+
+        Added ``jit_parse`` parameter
+
     Parameters
     ----------
-    input : Union[Input, str]
+    input : InitInput
         The Input object representing the input
-    number : int
+    number : PositiveInt
         The number to set for this object.
+    jit_parse : bool
+        Parse the object just-in-time, when the information is actually needed, if True.
     """
 
     pass
@@ -3844,12 +4103,18 @@ class Ellipsoid(Surface, metaclass=_SurfaceClassFactory, spec=_ellipsoid_spec):
 
     .. versionadded:: 1.4.0
 
+    .. versionchanged:: 1.5.0
+
+        Added ``jit_parse`` parameter
+
     Parameters
     ----------
-    input : Union[Input, str]
+    input : InitInput
         The Input object representing the input
-    number : int
+    number : PositiveInt
         The number to set for this object.
+    jit_parse : bool
+        Parse the object just-in-time, when the information is actually needed, if True.
     """
 
     pass
@@ -3909,12 +4174,18 @@ class Wedge(Surface, metaclass=_SurfaceClassFactory, spec=_wedge_spec):
 
     .. versionadded:: 1.4.0
 
+    .. versionchanged:: 1.5.0
+
+        Added ``jit_parse`` parameter
+
     Parameters
     ----------
-    input : Union[Input, str]
+    input : InitInput
         The Input object representing the input
-    number : int
+    number : PositiveInt
         The number to set for this object.
+    jit_parse : bool
+        Parse the object just-in-time, when the information is actually needed, if True.
     """
 
     pass
@@ -4056,12 +4327,18 @@ class ArbitraryPolyhedron(Surface, metaclass=_SurfaceClassFactory, spec=_arb_spe
 
     .. versionadded:: 1.4.0
 
+    .. versionchanged:: 1.5.0
+
+        Added ``jit_parse`` parameter
+
     Parameters
     ----------
-    input : Union[Input, str]
+    input : InitInput
         The Input object representing the input
-    number : int
+    number : PositiveInt
         The number to set for this object.
+    jit_parse : bool
+        Parse the object just-in-time, when the information is actually needed, if True.
     """
 
     pass

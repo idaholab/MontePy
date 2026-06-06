@@ -9,10 +9,18 @@ import montepy.types as ty
 class Mode(DataInputAbstract):
     """Class for the particle mode for a problem.
 
+    .. versionchanged:: 1.5.0
+
+        Added ``jit_parse`` parameter
+
     Parameters
     ----------
     input : Input
         the Input object representing this data input
+    fast_parse : bool
+        Whether or not to only parse the first word for the type of data.
+    jit_parse : bool
+        Parse the object just-in-time, when the information is actually needed, if True.
     """
 
     def _init_blank(self):

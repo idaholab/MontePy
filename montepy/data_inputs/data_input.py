@@ -42,6 +42,10 @@ class _ClassifierInput(Input):
 class DataInputAbstract(MCNP_Object):
     """Parent class to describe all MCNP data inputs.
 
+    .. versionchanged:: 1.5.0
+
+        Added ``jit_parse`` parameter
+
     Parameters
     ----------
     input : Input | str
@@ -49,6 +53,8 @@ class DataInputAbstract(MCNP_Object):
     fast_parse : bool
         Whether or not to only parse the first word for the type of
         data.
+    jit_parse : bool
+        Parse the object just-in-time, when the information is actually needed, if True.
     """
 
     _parser = DataParser
@@ -339,6 +345,10 @@ class DataInputAbstract(MCNP_Object):
 class DataInput(DataInputAbstract):
     """Catch-all for all other MCNP data inputs.
 
+    .. versionchanged:: 1.5.0
+
+        Added ``jit_parse`` parameter
+
     Parameters
     ----------
     input : Input | str
@@ -348,6 +358,8 @@ class DataInput(DataInputAbstract):
         data.
     prefix : str
         The input prefix found during parsing (internal use only)
+    jit_parse : bool
+        Parse the object just-in-time, when the information is actually needed, if True.
     """
 
     @args_checked
@@ -404,6 +416,10 @@ class ForbiddenDataInput(DataInputAbstract):
     * ``DE``
     * ``SDEF``
 
+    .. versionchanged:: 1.5.0
+
+        Added ``jit_parse`` parameter
+
     Parameters
     ----------
     input : Input | str
@@ -413,6 +429,8 @@ class ForbiddenDataInput(DataInputAbstract):
         data.
     prefix : str
         The input prefix found during parsing (internal use only)
+    jit_parse : bool
+        Parse the object just-in-time, when the information is actually needed, if True.
     """
 
     @args_checked

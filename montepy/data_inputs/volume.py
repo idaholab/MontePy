@@ -19,6 +19,10 @@ def _ensure_positive(self, value):
 class Volume(CellModifierInput):
     """Class for the data input that modifies cell volumes; ``VOL``.
 
+    .. versionchanged:: 1.5.0
+
+        Added ``jit_parse`` parameter
+
     Parameters
     ----------
     input : Input
@@ -29,6 +33,8 @@ class Volume(CellModifierInput):
         the key from the key-value pair in a cell
     value : SyntaxNode
         the value syntax tree from the key-value pair in a cell
+    jit_parse : bool
+        Parse the object just-in-time, when the information is actually needed, if True.
     """
 
     def _init_blank(self):

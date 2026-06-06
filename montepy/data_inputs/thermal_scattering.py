@@ -25,12 +25,18 @@ class ThermalScatteringLaw(DataInputAbstract):
     * :manual63:`5.6.2`
     * :manual62:`110`
 
+    .. versionchanged:: 1.5.0
+
+        Added ``jit_parse`` parameter
+
     Parameters
     ----------
     input : Input | str
         the Input object representing this data input
     material : Material
         the parent Material object that owns this
+    jit_parse : bool
+        Parse the object just-in-time, when the information is actually needed, if True.
     """
 
     _parser = ThermalParser

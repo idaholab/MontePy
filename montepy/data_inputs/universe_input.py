@@ -22,6 +22,10 @@ class UniverseInput(CellModifierInput):
     """Object to actually handle the ``U`` input in cells
     and data blocks.
 
+    .. versionchanged:: 1.5.0
+
+        Added ``jit_parse`` parameter
+
     Parameters
     ----------
     input : Input | str
@@ -32,6 +36,8 @@ class UniverseInput(CellModifierInput):
         the key from the key-value pair in a cell
     value : SyntaxNode
         the value syntax tree from the key-value pair in a cell
+    jit_parse : bool
+        Parse the object just-in-time, when the information is actually needed, if True.
     """
 
     _KEYS_TO_PRESERVE = {"_universe", "_not_truncated"}

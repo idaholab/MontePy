@@ -15,6 +15,10 @@ from montepy.utilities import *
 class LatticeInput(CellModifierInput):
     """Object to handle the inputs from ``LAT``.
 
+    .. versionchanged:: 1.5.0
+
+        Added ``jit_parse`` parameter
+
     Parameters
     ----------
     input : Input | str
@@ -25,6 +29,8 @@ class LatticeInput(CellModifierInput):
         the key from the key-value pair in a cell
     value : SyntaxNode
         the value syntax tree from the key-value pair in a cell
+    jit_parse : bool
+        Parse the object just-in-time, when the information is actually needed, if True.
     """
 
     def _init_blank(self):
