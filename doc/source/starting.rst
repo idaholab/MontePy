@@ -193,7 +193,7 @@ Some operations force every object in the problem to be fully re-parsed at once.
 For large problems these can be a significant one-time cost.
 
 * **Switching a cell-modifier between the cell block and the data block** — via
-  :func:`~montepy.mcnp_problem.MCNP_Problem.print_in_data_block` — forces every cell
+  :attr:`~montepy.MCNP_Problem.print_in_data_block` — forces every cell
   to be fully re-parsed, because each cell's syntax tree must be rebuilt to either
   absorb or expel the modifier.
 

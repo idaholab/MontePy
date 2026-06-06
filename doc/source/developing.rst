@@ -199,7 +199,7 @@ It is helpful to look through the value enforcement process to understand why.
 #. The function is called. At this stage the wrapped function is called, and all of the enforcer functions are called with the actual values passed before the nested decorated function is called. The functions must accept the arguments: ``(func_name, name, value)``. 
 
 Some pseudo-implementations may be helpful here.
-For a simple implementation, let's look at how :func:`~montepy.utilties.positive` could be written:
+For a simple implementation, let's look at how :func:`~montepy.types.positive` could be written:
 
 .. code-block:: python
 
@@ -447,16 +447,16 @@ The base class ``MCNP_Object.__init__`` handles both from-scratch creation and
 input parsing (including JIT parsing).
 Instead, subclasses implement three hook methods that the base ``__init__`` calls:
 
-* :func:`~montepy.mcnp_object.MCNP_Object._init_blank` — called first, before any parsing.
+* :meth:`~montepy.mcnp_object.MCNP_Object._init_blank` — called first, before any parsing.
   Initialize every internal attribute to a safe default value here.
   This ensures that even a partially-constructed object can still be converted
   to a string for error reporting.
 
-* :func:`~montepy.mcnp_object.MCNP_Object._parse_tree` — called after a full parse has
+* :meth:`~montepy.mcnp_object.MCNP_Object._parse_tree` — called after a full parse has
   occurred (i.e., ``self._tree`` is populated).
   Extract semantic values from the syntax tree and store them as internal attributes.
 
-* :func:`~montepy.mcnp_object.MCNP_Object._generate_default_tree` — called when no
+* :meth:`~montepy.mcnp_object.MCNP_Object._generate_default_tree` — called when no
   ``input`` argument is provided (from-scratch creation, e.g., ``Cell()``).
   Build a default syntax tree and store it in ``self._tree``.
   Use ``self._generate_default_node(type, default_value)`` for individual leaf nodes.
@@ -676,8 +676,7 @@ When adding a child you will also need to update the
 :func:`~montepy.data_inputs.data_parser.parse_data` function.
 This can be done by adding the class to ``PREFIX_MATCHES``.
 In general first comply with standards for this class's parent: :class:`~montepy.mcnp_object.MCNP_Object`.
-In addition you will need to implement :func:`~montepy.data_inputs.data_input.DataInputAbstract.update_pointers` 
-if you need it.
+If you need to link objects after parsing (e.g. resolving number references to objects), override :meth:`~montepy.mcnp_object.MCNP_Object._parse_tree`.
 
 During init the inputs' "name word" (e.g., ``M3``, ``kcode``, ``f7:n``) is validated and parsed.
 Conceptually these names can contain up to four sections.

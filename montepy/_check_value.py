@@ -125,7 +125,8 @@ def args_checked(func: Callable):
 
     Returns
     -------
-    A decorated function that will do type and value checking at run time based on the annotation.
+    Callable
+        A decorated function that will do type and value checking at run time based on the annotation.
 
     Raises
     ------
@@ -369,7 +370,7 @@ def check_length(func_name, name, value, length_min, length_max=None):
         The name of the function this was called from
     name : str
         Description of value being checked
-    value : collections.Sized
+    value : collections.abc.Sized
         Object to check length of
     length_min : int
         Minimum length of object
@@ -409,7 +410,7 @@ def check_increasing(func_name: str, name: str, value, equality: bool = False):
         The name of the function this was called from
     name : str
         Description of value being checked
-    value : iterable
+    value : Iterable
         Object to check if increasing
     equality : bool, optional
         Whether equality is allowed. Defaults to False.

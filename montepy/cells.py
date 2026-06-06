@@ -81,7 +81,7 @@ class Cells(NumberedObjectCollection):
         importance: ty.PositiveReal,
         vacuum_cells: ty.Iterable[montepy.Cell | ty.PositiveInt] = tuple(),
     ):
-        """Sets all cells except the vacuum cells to the same importance using :func:`montepy.data_cards.importance.Importance.all`.
+        """Sets all cells except the vacuum cells to the same importance using :func:`montepy.data_inputs.importance.Importance.all`.
 
         The "vacuum" cells are those on the outside of a vacuum boundary condition, i.e., the "graveyard".
         That is to say, their importance will be set to 0.0. You can specify cell numbers or cell objects.

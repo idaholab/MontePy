@@ -154,7 +154,7 @@ class MCNP_Object(ABC, metaclass=_ExceptionContextAdder):
         Arguments
         ---------
         **kwargs: dict
-           Allows passing additional arguments through __init__ as **kwargs
+           Allows passing additional arguments through __init__ as ``**kwargs``
         """
         pass
 
