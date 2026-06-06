@@ -100,7 +100,8 @@ class _SurfaceClassFactory(_ExceptionContextAdder):
                     input,
                     number,
                     surface_type=surf_type,
-                    jit_parse=jit_parse**kwargs,
+                    jit_parse=jit_parse,
+                    **kwargs,
                 )
 
             namespace["__init__"] = __init__
