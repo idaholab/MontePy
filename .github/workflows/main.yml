@@ -88,19 +88,19 @@ jobs:
       - run: coverage xml
         if:  ${{ success() || failure() }}
       - name: Upload test report
-        if: ${{ matrix.python-version == '3.14' && matrix.numpy-version == '2.3' && (success() || failure() )}}
+        if: ${{ matrix.python-version == '3.14' && matrix.numpy-version == '2.4' && (success() || failure() )}}
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
         with:
           name: test
           path: test_report.xml
       - name: Upload coverage report
-        if: ${{ matrix.python-version == '3.14' && matrix.numpy-version == '2.3' && (success() || failure() )}}
+        if: ${{ matrix.python-version == '3.14' && matrix.numpy-version == '2.4' && (success() || failure() )}}
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
         with:
           name: coverage
           path: coverage.xml
       - name: Coveralls GitHub Action
-        if: ${{ matrix.python-version == '3.14' && matrix.numpy-version == '2.3' && (success() || failure() )}}
+        if: ${{ matrix.python-version == '3.14' && matrix.numpy-version == '2.4' && (success() || failure() )}}
         uses: coverallsapp/github-action@5cbfd81b66ca5d10c19b062c04de0199c215fb6e
         with:
           file: coverage.xml
