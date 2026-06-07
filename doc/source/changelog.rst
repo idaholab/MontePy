@@ -13,12 +13,11 @@ MontePy Changelog
 **Feature Added**
 
 * Added support for just-in-time parsing (:issue:`529`).
+* Add _checkvalue.py_ to codebase (:issue:`687`). 
 
 **Performance Improvement**
 
 * Add just-in-time parsing which can significantly improve performance for working with large models under some circumstances (:issue:`529`).
-
-
 
 1.4 releases
 =============
@@ -77,10 +76,6 @@ MontePy Changelog
 
 1.2.0
 -----
-
-**Performance Improvement**
-
-* Optimized :math:`\mathcal{O}(N^2)` scaling in :func:`~montepy.numbered_object_collection.NumberedObjectCollection.request_number` by improving ``NumberedObjectCollection.check_number`` to :math:`\mathcal{O}(N)` (:issue:`786`). 
 
 **Features Added**
 
@@ -157,7 +152,6 @@ MontePy Changelog
 **Features Added**
 
 * Added demonstration jupyter notebooks for working with Pin Cell and PWR assemblies in MontePy.
-* Add _checkvalue.py_ to codebase (:issue:`687`). 
 
 **Bugs Fixed**
 
@@ -185,13 +179,6 @@ MontePy Changelog
 
 1.0 releases
 ============
-
-#Next Version#
---------------
-
-**Code Improvements**
-
-* Add _checkvalue.py_ to codebase (:issue:`687`). 
 
 
 1.0.0
