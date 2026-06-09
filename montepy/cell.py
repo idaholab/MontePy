@@ -231,8 +231,7 @@ class Cell(Numbered_MCNP_Object):
         """Parses the parameters to make the object and load as an attribute"""
         found_class_prefixes = set()
         for key, value in self.parameters.nodes.items():
-            for input_class in PREFIX_MATCHES:
-                prefix = input_class._class_prefix()
+            for prefix, input_class in PREFIX_MATCHES.items():
                 if input_class in Cell._INPUTS_TO_PROPERTY and prefix in key.lower():
                     attr, ban_repeat = Cell._INPUTS_TO_PROPERTY[input_class]
                     key = str(value["classifier"]).lower()

@@ -17,7 +17,7 @@ from montepy.data_inputs import (
 )
 from montepy.data_inputs import transform
 
-PREFIX_MATCHES = {
+DATA_CLASSES = {
     fill.Fill,
     importance.Importance,
     lattice_input.LatticeInput,
@@ -28,6 +28,8 @@ PREFIX_MATCHES = {
     volume.Volume,
     universe_input.UniverseInput,
 }
+
+PREFIX_MATCHES = {c._class_prefix(): c for c in DATA_CLASSES}
 
 VERBOTEN = {"de", "sdef", "fmesh"}
 
@@ -56,11 +58,9 @@ def parse_data(
     prefix = base_input.prefix
     if base_input.prefix in VERBOTEN:
         return data_input.ForbiddenDataInput(input)
-    for DataClass in PREFIX_MATCHES:
-        if prefix == DataClass._class_prefix():
-            if issubclass(
-                DataClass, montepy.data_inputs.cell_modifier.CellModifierInput
-            ):
-                return DataClass(input, problem=problem, jit_parse=jit_parse)
-            return DataClass(input, jit_parse=jit_parse)
+    DataClass = PREFIX_MATCHES.get(prefix)
+    if DataClass is not None:
+        if issubclass(DataClass, montepy.data_inputs.cell_modifier.CellModifierInput):
+            return DataClass(input, problem=problem, jit_parse=jit_parse)
+        return DataClass(input, jit_parse=jit_parse)
     return data_input.DataInput(input, jit_parse=jit_parse)
