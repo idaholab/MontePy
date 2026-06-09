@@ -85,7 +85,6 @@ class UniverseInput(CellModifierInput):
 
     @needs_full_ast
     def _find_and_populate_universe(self, number) -> Universe:
-        # TODO warn about universe 0
         if self.in_cell_block:
             raise IllegalStateError(
                 f"This should only be called for data block instances."
@@ -163,6 +162,7 @@ class UniverseInput(CellModifierInput):
             return self._universe
 
     @property
+    @needs_full_ast
     def not_truncated(self) -> bool:
         """Indicates if this cell has been marked as not being truncated for optimization.
 

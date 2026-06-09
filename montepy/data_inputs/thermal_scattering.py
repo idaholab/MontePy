@@ -101,6 +101,7 @@ class ThermalScatteringLaw(DataInputAbstract):
         return self._parent_material
 
     @property
+    @needs_full_ast
     def thermal_scattering_laws(self) -> list[str]:
         """The thermal scattering laws to use for this material as strings.
 
@@ -115,13 +116,13 @@ class ThermalScatteringLaw(DataInputAbstract):
 
     @thermal_scattering_laws.setter
     @args_checked
-    @needs_full_ast
+    @needs_full_cst
     def thermal_scattering_laws(self, laws: ty.Iterable[str]):
         self._scattering_laws.clear()
         for law in laws:
             self._scattering_laws.append(self._generate_default_node(str, law))
 
-    @needs_full_ast
+    @needs_full_cst
     def add_scattering_law(self, law):
         """Adds the requested scattering law to this material
 
