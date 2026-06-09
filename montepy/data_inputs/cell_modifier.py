@@ -17,6 +17,10 @@ import warnings
 def cell_mod_prop(
     cells_param,
 ):
+    """
+    Decorator for tying a cell modifier property to the parent cells object to pull from data block.
+    """
+
     def decorator(func):
         # must decorate a property
         assert isinstance(func, property)
@@ -54,6 +58,8 @@ class CellModifierInput(DataInputAbstract):
         the key from the key-value pair in a cell
     value : SyntaxNode
         the value syntax tree from the key-value pair in a cell
+    problem: MCNP_Problem
+        the base problem to be linked to.
     jit_parse : bool
         Parse the object just-in-time, when the information is actually needed, if True.
     """
@@ -225,7 +231,6 @@ class CellModifierInput(DataInputAbstract):
         if hasattr(self, "_not_parsed"):
             self._parked_value = value
         else:
-            # TODO raise error if already parsed
             self._accept_and_update(value)
 
     @abstractmethod
@@ -263,7 +268,6 @@ class CellModifierInput(DataInputAbstract):
 
     def _check_redundant_definitions(self):
         """Checks that data wasn't given in data block and the cell block."""
-        # TODO Use this less and more safely
         attr, _ = montepy.Cell._INPUTS_TO_PROPERTY[type(self)]
         if not self._in_cell_block and self._problem:
             cells = self._problem.cells
@@ -308,7 +312,6 @@ class CellModifierInput(DataInputAbstract):
                 return True
             return self.has_information
         attr, _ = montepy.Cell._INPUTS_TO_PROPERTY[type(self)]
-        # handle not fully parsed
         if len(self.data) > 1 or (
             len(self.data) == 1
             and self.data[0] is not None
