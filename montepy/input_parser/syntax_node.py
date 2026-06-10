@@ -959,7 +959,7 @@ class ValueNode(SyntaxNodeBase):
     _FORMATTERS = {
         float: {
             "value_length": 0,
-            "precision": 5,
+            "precision": 15,
             "zero_padding": 0,
             "sign": "-",
             "divider": "e",
