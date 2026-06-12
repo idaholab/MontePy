@@ -967,7 +967,7 @@ class ValueNode(SyntaxNodeBase):
             "exponent_zero_pad": 0,
             "as_int": False,
             "int_tolerance": 1e-6,
-            "is_scientific": True,
+            "is_scientific": False,
             "rel_eps": 1e-6,
             "abs_eps": 1e-9,
         },
