@@ -1,10 +1,13 @@
 use pyo3::prelude::*;
 
 #[pymodule]
-pub mod SyntaxNode {
+pub mod syntax_node {
 
     use pyo3::prelude::*;
+    use pyo3::types::{PyFloat, PyInt, PyType};
     use std::collections::HashMap;
+
+
     pub enum SyntaxNodeEnum {
         SyntaxNodeRust,
         ValueNodeRust,
@@ -25,7 +28,7 @@ pub mod SyntaxNode {
         Str(String),
     }
 
-    #[pyclass(subclass,extends=SyntaxNodeRust)]
+    #[pyclass(subclass)]
     pub struct ValueNodeRust {
         _value: ValueType,
         _token: String,
@@ -35,7 +38,7 @@ pub mod SyntaxNode {
     #[pymethods]
     impl ValueNodeRust {
         #[new]
-        pub fn new(token: String) -> PyResult<Self> {
+        pub fn new(token: String, node_type: &PyType) -> PyResult<Self> {
             Ok(Self {
                 _value: ValueType::Str(token.to_string()),
                 _token: token.to_string(),

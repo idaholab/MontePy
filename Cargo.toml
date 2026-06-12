@@ -5,7 +5,7 @@ edition = "2024"
 
 [dependencies]
 pyo3 = ">=0.25.0"
-chumsky = { version = ">=0.11", Numbers = true}
+chumsky = { version = ">=0.11" }
 cstree = ">=0.13"
 rowan = ">=0.15"
 
