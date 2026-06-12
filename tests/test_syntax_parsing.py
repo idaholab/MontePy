@@ -239,8 +239,8 @@ class TestValueNode:
             (None, float, 1.23, "1.23 ", False),
             (None, float, 1.23456789, "1.23456789 ", False),
             # max precision: 15
-            (None, float, 1.012345678912345, "1.0123456789012345 ", False),
-            (None, float, 1.0123456789123456, "1.0123456789012346 ", False),
+            (None, float, 1.012345678954321, "1.012345678954321 ", False),
+            (None, float, 1.0123456789123451, "1.012345678912345 ", False),
         ],
     )
     def test_value_float_format(_, input, val_type, val, answer, expand):
