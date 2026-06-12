@@ -38,7 +38,8 @@ InitInput = montepy.input_parser.mcnp_input.Input | str
 class MCNP_Object(ABC, metaclass=_ExceptionContextAdder):
     """Abstract class for semantic representations of MCNP inputs.
 
-    .. versionchanged:: 1.2.0
+    .. versionchanged:: 1.5.0
+
         * Removed parser as an argument (now an abstract property)
         * Added jit_parse argument
 
