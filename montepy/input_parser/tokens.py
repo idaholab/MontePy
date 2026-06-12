@@ -462,6 +462,20 @@ class DataLexer(ParticleLexer):
         return t
 
 
+class TallyLexer(DataLexer):
+    """A lexer for tally inputs.
+
+    Adds ``[`` and ``]`` as literals so lattice index syntax like
+    ``[0 0 0]`` tokenizes correctly instead of being consumed by FILE_PATH.
+    FILE_PATH is narrowed to exclude ``[`` and ``]`` so the literals take
+    precedence (SLY matches string-pattern tokens before literals).
+    """
+
+    tokens = DataLexer.tokens
+    literals = DataLexer.literals | {"[", "]"}
+    FILE_PATH = r'[^><:"%,;=&\(\)|?*\s\[\]]+'
+
+
 class SurfaceLexer(MCNP_Lexer):
     """A lexer for Surface inputs.
 
