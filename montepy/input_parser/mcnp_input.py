@@ -191,7 +191,7 @@ class Input(ParsingNode):
     def format_for_mcnp_input(self, mcnp_version):
         pass
 
-    def tokenize(self):
+    def tokenize(self, lexer_class=None):
         """Tokenizes this input as a stream of Tokens.
 
         This is a generator of Tokens.
@@ -201,12 +201,19 @@ class Input(ParsingNode):
         * In a surface block :class:`~montepy.input_parser.tokens.SurfaceLexer` is used.
         * In a data block :class:`~montepy.input_parser.tokens.DataLexer` is used.
 
+        Parameters
+        ----------
+        lexer_class : type, optional
+            If provided, overrides the default lexer selection.
+
         Returns
         -------
         collections.abc.Generator
             a generator of tokens.
         """
-        if self.block_type == BlockType.CELL:
+        if lexer_class is not None:
+            lexer = lexer_class()
+        elif self.block_type == BlockType.CELL:
             lexer = CellLexer()
         elif self.block_type == BlockType.SURFACE:
             lexer = SurfaceLexer()
