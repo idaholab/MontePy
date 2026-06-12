@@ -212,7 +212,7 @@ For large problems these can be a significant one-time cost.
 Avoid Mass Parsing with ``search``
 """"""""""""""""""""""""""""""""""
 
-All objects will have the :meth:`~montepy.MCNP_Object.search` method.
+All objects will have the :meth:`~montepy.mcnp_object.MCNP_Object.search` method.
 This will search the object for the given string in its input from the file, 
 without triggering a full parse.
 This can be used to avoid a mass parse when searching on a specific attribute. 
