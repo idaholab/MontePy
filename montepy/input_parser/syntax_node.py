@@ -1305,7 +1305,11 @@ class ValueNode(SyntaxNodeBase):
             precision += 1
         self._formatter["precision"] = precision
         # add in significant digits before the decimal  to be consistent with `g` format.
-        if not self._formatter["is_scientific"] and not self._is_reversed:
+        if (
+            not self._formatter["is_scientific"]
+            and not self._is_reversed
+            and self.value != 0
+        ):
             exp = math.floor(math.log10(abs(self.value)))
             self._formatter["precision"] += exp + 1
 
