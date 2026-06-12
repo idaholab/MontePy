@@ -81,7 +81,7 @@ fc64 Cell 1 in universe 1
 f64:n (1<1)
 C F4: deeper nested universe path
 fc74 Cell nested two universes deep
-f74:n (1<1<2)
+f74:n (1<1< 2)
 C F4: lattice element tally
 fc84 Lattice element tally
 f84:n (1[0 0 0]<2)
@@ -111,5 +111,15 @@ C tally segment, multiple surfaces with total and complement
 fs44 -1000 -1005 t c
 C tally segment, positive surface orientation
 fs54 +1000 c
+F154:n,p  (1 < (2[0 0 0] 2[0 1 0]) < 5)
+F1464:n  (1 < 2[0:1 0:1 0:0] < 5)
+c --- FORM 7: Range of elements, collapsed into one averaged bin --------------
+F174:n  (1 < (2[0:1 0:1 0:0]) < 5)
+c --- FORM 8: Non-contiguous individual elements, separate bins ---------------
+F184:n  (1 < 2[0 0 0, 0 1 0] < 5)
+c --- FORM 9: No brackets -- all elements, all merged into one bin ------------
+F194:n  (1 < 2 < 5)
+F104:n  ((u=1) < 2[0 0 0] < 5)
+F114:n  (u=1 < 2[0 0 0] < 5)
 C tally print specifier
 fq4 f e
