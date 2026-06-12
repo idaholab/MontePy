@@ -91,7 +91,8 @@ class MCNP_Object(ABC, metaclass=_ExceptionContextAdder):
             # raised if restarted without ever parsing
             except AttributeError as e:
                 pass
-            tokenizer = input.tokenize()
+            lexer_class = getattr(parser, "_lexer_class", None)
+            tokenizer = input.tokenize(lexer_class=lexer_class)
             self._tree = parser.parse(tokenizer, input)
             # consume token stream
             tokenizer.close()

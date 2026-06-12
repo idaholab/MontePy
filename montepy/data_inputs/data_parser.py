@@ -63,4 +63,4 @@ def parse_data(
         if issubclass(DataClass, montepy.data_inputs.cell_modifier.CellModifierInput):
             return DataClass(input, problem=problem, jit_parse=jit_parse)
         return DataClass(input, jit_parse=jit_parse)
-    return data_input.DataInput(input, jit_parse=jit_parse)
+    return data_input.DataInput(input, prefix=prefix, jit_parse=jit_parse)
