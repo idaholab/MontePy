@@ -5,6 +5,8 @@ import montepy
 from montepy.data_inputs.data_parser import parse_data
 from montepy.input_parser.block_type import BlockType
 from montepy.input_parser.mcnp_input import Input
+from montepy.input_parser.tally_parser import TallyParser
+from montepy.input_parser.tokens import TallyLexer
 
 
 class TestTallyParser:
@@ -66,6 +68,33 @@ class TestTallyParser:
         assert data.mcnp_str() == line
         with pytest.raises(montepy.exceptions.UnsupportedFeature):
             data.data
+
+
+class TestTallyPathSyntax:
+    """Tests for complex MCNP tally path syntax (universe paths, lattice elements)."""
+
+    _parser = TallyParser()
+    _lexer = TallyLexer()
+
+    @pytest.mark.parametrize(
+        "line",
+        [
+            "f64:n (1<1)",
+            "f74:n (1<1< 2)",
+            "f84:n (1[0 0 0]<2)",
+            "f94:n (1[0 0 0]<2<3)",
+            "F154:n,p  (1 < (2[0 0 0] 2[0 1 0]) < 5)",
+            "F1464:n  (1 < 2[0:1 0:1 0:0] < 5)",
+            "F174:n  (1 < (2[0:1 0:1 0:0]) < 5)",
+            "F184:n  (1 < 2[0 0 0, 0 1 0] < 5)",
+            "F194:n  (1 < 2 < 5)",
+            "F104:n  ((u=1) < 2[0 0 0] < 5)",
+            "F114:n  (u=1 < 2[0 0 0] < 5)",
+        ],
+    )
+    def test_tally_path_parsing(self, line):
+        result = self._parser.parse(self._lexer.tokenize(line))
+        assert result is not None, f"TallyParser failed to parse: {line}"
 
 
 class TestFmesh:
