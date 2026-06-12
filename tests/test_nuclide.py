@@ -483,6 +483,7 @@ class TestNucleus:
             ({"meta_state": "hi"}, TypeError),
             ({"meta_state": -1}, ValueError),
             ({"meta_state": 5}, ValueError),
+            ({"element": Element(1), "A": 0, "meta_state": 2}, ValueError),
         ],
     )
     def test_nucleus_bad_init(_, kwargs, error):

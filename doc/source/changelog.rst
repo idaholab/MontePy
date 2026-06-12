@@ -2,16 +2,39 @@
 MontePy Changelog
 *****************
 
-1.3 releases
-============
+
+1.5 releases
+=============
+
 
 #Next Version#
-==============
+--------------
+
+**Feature Added**
+
+* Added support for just-in-time parsing (:issue:`529`).
+* Add _checkvalue.py_ to codebase (:issue:`687`). 
+
+**Performance Improvement**
+
+* Add just-in-time parsing which can significantly improve performance for working with large models under some circumstances (:issue:`529`).
+
+1.4 releases
+=============
+
+1.4.0
+--------------
+
+**Feature Added**
+
+* Added surface classes to support almost all surface types such as :class:`~montepy.XPlane` and :class:`~montepy.YTorus` (:issue:`502`).
+* ``Cell.universe`` can now be set to ``None`` (or deleted via ``del cell.universe``) to reset the universe assignment back to the default (:issue:`902`).
+* Added ``extend_renumber`` to ``NumberedObjectCollection`` with related test cases (:issue:`881`).
+* Made :class:`montepy.data_inputs.importance.Importance` more ``dict``-like with ``keys``, ``values``, and ``items`` functions (:pull:`921`).
 
 **Bugs Fixed**
 
 * Fixed a bug where surface type mnemonics (e.g. ``SO``, ``PZ``) were always written in uppercase, discarding the original case supplied by the user (e.g. ``sO``, ``Pz``) (:issue:`522`).
-
 * Fixed a bug where ``append_renumber`` raised a ``TypeError`` when called with an object whose ``number`` is ``None`` (e.g. an object created with no arguments) (:issue:`880`).
 * Fixed a bug where the importance of cells made from scratch are usually not printed to the output file (:pull:`921`).
 
@@ -22,15 +45,13 @@ MontePy Changelog
 **Documentation**
 
 * Enable Sphinx nitpicky mode and fix ~30 broken cross-references in the developer guide, user guide, and migration docs (:issue:`889`).
+* Remove redundant "montepy.*" prefix from navigation in the API docs (:issue:`901`).
 
-**Feature Added**
-
-* ``Cell.universe`` can now be set to ``None`` (or deleted via ``del cell.universe``) to reset the universe assignment back to the default (:issue:`902`).
-* Added ``extend_renumber`` to ``NumberedObjectCollection`` with related test cases (:issue:`881`).
-* Made :class:`montepy.data_inputs.importance.Importance` more ``dict``-like with ``keys``, ``values``, and ``items`` functions (:pull:`921`).
+1.3 releases
+============
 
 1.3.0
---------------
+-----
 
 **Performance Improvement**
 
@@ -56,10 +77,6 @@ MontePy Changelog
 1.2.0
 -----
 
-**Performance Improvement**
-
-* Optimized :math:`\mathcal{O}(N^2)` scaling in :func:`~montepy.numbered_object_collection.NumberedObjectCollection.request_number` by improving ``NumberedObjectCollection.check_number`` to :math:`\mathcal{O}(N)` (:issue:`786`). 
-
 **Features Added**
 
 * Added checking for additional input after the ``data`` block, and raising a warning if it exists (:issue:`525`).
@@ -68,6 +85,10 @@ MontePy Changelog
 * Allow setting ``cell.fill.universes`` with a numpy array of universe IDs (:issue:`736`).
 * Added Boundary condition type to the representation of a ``montepy.Surface`` (e.g., ``repr(surf)``)  (:issue:`682`).
 * Changed default importance value from 0.0 to 1.0 to match MCNP defaults. (:issue:`735`)
+
+**Performance Improvement**
+
+* Optimized :math:`\mathcal{O}(N^2)` scaling in :func:`montepy.numbered_object_collection.NumberedObjectCollection.request_number` by improving ``NumberedObjectCollection.check_number`` to :math:`\mathcal{O}(N)` (:issue:`786`).
 
 **Bugs Fixed**
 
@@ -158,6 +179,7 @@ MontePy Changelog
 
 1.0 releases
 ============
+
 
 1.0.0
 --------------

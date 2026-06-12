@@ -1,6 +1,9 @@
 # Copyright 2024, Battelle Energy Alliance, LLC All Rights Reserved.
+from __future__ import annotations
+import re
 
 import montepy
+from montepy.utilities import *
 from montepy.data_inputs import (
     data_input,
     fill,
@@ -13,9 +16,8 @@ from montepy.data_inputs import (
     volume,
 )
 from montepy.data_inputs import transform
-import re
 
-PREFIX_MATCHES = {
+DATA_CLASSES = {
     fill.Fill,
     importance.Importance,
     lattice_input.LatticeInput,
@@ -27,15 +29,23 @@ PREFIX_MATCHES = {
     universe_input.UniverseInput,
 }
 
+PREFIX_MATCHES = {c._class_prefix(): c for c in DATA_CLASSES}
+
 VERBOTEN = {"de", "sdef", "fmesh"}
 
 
-def parse_data(input: montepy.mcnp_object.InitInput):
+@args_checked
+def parse_data(
+    input: montepy.mcnp_object.InitInput,
+    problem: montepy.MCNP_Problem = None,
+    *,
+    jit_parse: bool = True,
+):
     """Parses the data input as the appropriate object if it is supported.
 
     Parameters
     ----------
-    input : Union[Input, str]
+    input : Input | str
         the Input object for this Data input
 
     Returns
@@ -48,7 +58,9 @@ def parse_data(input: montepy.mcnp_object.InitInput):
     prefix = base_input.prefix
     if base_input.prefix in VERBOTEN:
         return data_input.ForbiddenDataInput(input)
-    for data_class in PREFIX_MATCHES:
-        if prefix == data_class._class_prefix():
-            return data_class(input)
-    return data_input.DataInput(input, prefix=prefix)
+    DataClass = PREFIX_MATCHES.get(prefix)
+    if DataClass is not None:
+        if issubclass(DataClass, montepy.data_inputs.cell_modifier.CellModifierInput):
+            return DataClass(input, problem=problem, jit_parse=jit_parse)
+        return DataClass(input, jit_parse=jit_parse)
+    return data_input.DataInput(input, jit_parse=jit_parse)

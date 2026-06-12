@@ -270,3 +270,55 @@ class ParamOnlyDataParser(DataParser):
         if hasattr(p, "particle_type"):
             classifier.particles = p.particle_type
         return classifier
+
+
+class JitDataParser:
+
+    @staticmethod
+    def parse(tokenizer):
+        for token in tokenizer:
+            if token.type in {
+                "SPACE",
+                "COMMENT",
+                "DOLLAR_COMMENT",
+                "PARTICLE_SPECIAL",
+            }:
+                continue
+            elif token.type in {
+                "TEXT",
+                "KEYWORD",
+                "PARTICLE",
+                "SOURCE_COMMENT",
+                "TALLY_COMMENT",
+            }:
+                mnemonic = syntax_node.ValueNode(token.value, str)
+                classifier = syntax_node.ClassifierNode()
+                classifier.prefix = mnemonic
+                number = syntax_node.ValueNode(None, int)
+                particles = None
+                try:
+                    token = next(tokenizer)
+                    if token.type in {"NUMBER", "NULL"}:
+                        number = syntax_node.ValueNode(token.value, int)
+                        token = next(tokenizer)
+                    # handle particles
+                    if token.type == ":":
+                        particles = [token.value]
+                        for token in tokenizer:
+                            if token.type in {",", "PARTICLE", "PARTICLE_SPECIAL"}:
+                                particles.append(token.value)
+                            elif token.type in {"SPACE", "COMMENT", "DOLLAR_COMMENT"}:
+                                break
+                            else:
+                                assert False
+                        particles = syntax_node.ParticleNode(
+                            "jit particles", "".join(particles)
+                        )
+                    classifier.number = number
+                    if particles:
+                        classifier.particles = particles
+                except StopIteration:
+                    pass
+                return syntax_node.SyntaxNode("classifier", {"classifier": classifier})
+            else:
+                assert False

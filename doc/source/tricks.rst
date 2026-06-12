@@ -36,7 +36,7 @@ Getting Highest PZ plane
 .. doctest::
 
     >>> max(surfaces.pz, key = lambda x: x.location)
-    SURFACE: 1025, PZ, periodic surface: None, transform: None, constants: [15.0], Boundary: None
+    ZPlane('1025 PZ 15\nC --- one surface of every remaining type ---\nC Planes', number=1025, jit_parse=False)
 
 Getting the Lowest PZ plane
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -46,7 +46,7 @@ Similarly you can get the lowest surface with the min function:
 .. doctest::
 
     >>> min(surfaces.pz, key = lambda x: x.location)
-    SURFACE: 1020, PZ, periodic surface: None, transform: None, constants: [10.0], Boundary: None
+    ZPlane('1020 PZ 10', number=1020, jit_parse=False)
 
 Getting the Largest CZ Cylinder
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -56,7 +56,7 @@ Similar to before you can use this method to find cylinders by their radius:
 .. doctest::
 
     >>> max(surfaces.cz, key = lambda x: x.radius)
-    SURFACE: 1015, CZ, periodic surface: None, transform: None, constants: [5.0], Boundary: None
+    ZCylinder('1015 CZ 5.0', number=1015, jit_parse=False)
 
 Translating Cells
 -----------------

@@ -51,21 +51,21 @@ jobs:
         run: .github/scripts/check_version.py
       - run: python -m build .
       - name: Sign the dists with Sigstore
-        uses: sigstore/gh-action-sigstore-python@a309ff8b426b58ec0e2a45f0f869d46889d02405
+        uses: sigstore/gh-action-sigstore-python@04cffa1d795717b140764e8b640de88853c92acc
         with:
           inputs: >-
             ./dist/*.tar.gz
             ./dist/*.whl
       - name: Create a GitHub release
         run: | 
-             gh release create "v${ steps.get_version.outputs.version }" \
-             --title="Release ${ steps.get_version.outputs.version }" \
+             gh release create "v${{ steps.get_version.outputs.version }}" \
+             --title="Release ${{ steps.get_version.outputs.version }}" \
              --generate-notes -d
       - run: >-
           gh release upload
           'v${{ steps.get_version.outputs.version }}' dist/**
           --repo '${{ github.repository }}'
-      - uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
         with: 
            name: build
            path: |
@@ -89,7 +89,7 @@ jobs:
           name: build
           path: dist/
       - name: Publish distribution 📦 to PyPI
-        uses: pypa/gh-action-pypi-publish@ed0c53931b1dc9bd32cbe73a98c7f6766f8a527e
+        uses: pypa/gh-action-pypi-publish@cef221092ed1bacb1cc03d23a2d87d1d172e277b
         with:
           repository-url: https://test.pypi.org/legacy/
 
@@ -108,7 +108,7 @@ jobs:
           name: build
           path: dist/
       - name: Publish distribution 📦 to PyPI
-        uses: pypa/gh-action-pypi-publish@ed0c53931b1dc9bd32cbe73a98c7f6766f8a527e
+        uses: pypa/gh-action-pypi-publish@cef221092ed1bacb1cc03d23a2d87d1d172e277b
 
 
        

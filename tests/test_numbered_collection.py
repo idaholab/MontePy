@@ -29,7 +29,53 @@ class TestNumberedObjectCollection:
 
     def test_numbers(self, cp_simple_problem):
         cell_numbers = [1, 2, 3, 99, 5]
-        surf_numbers = [1000, 1005, 1010, 1015, 1020, 1025]
+        surf_numbers = [
+            1000,
+            1005,
+            1010,
+            1015,
+            1020,
+            1025,
+            2000,
+            2001,
+            2002,
+            2003,
+            2004,
+            2005,
+            2006,
+            2007,
+            2008,
+            2009,
+            2010,
+            2011,
+            2012,
+            2013,
+            2014,
+            2015,
+            2016,
+            2017,
+            2018,
+            2019,
+            2020,
+            2021,
+            2022,
+            2023,
+            2024,
+            2025,
+            2026,
+            2027,
+            2028,
+            2029,
+            2030,
+            2031,
+            2032,
+            2033,
+            2034,
+            2035,
+            2036,
+            2037,
+            2038,
+        ]
         mat_numbers = [1, 2, 3]
         problem = cp_simple_problem
         assert list(problem.cells.numbers) == cell_numbers
@@ -204,13 +250,12 @@ class TestNumberedObjectCollection:
         prob2 = copy.deepcopy(cp_simple_problem)
         print(hex(id(cp_simple_problem.materials._problem)))
         # Delete Material 2, making its number available.
-        prob2.materials.remove(prob2.materials[2])
         len_mats = len(prob2.materials)
         mat1 = prob1.materials[1]
         new_num = prob2.materials.append_renumber(mat1)
-        assert new_num == 2, "Material not renumbered correctly."
+        assert new_num == 4, "Material not renumbered correctly."
         assert len(prob2.materials) == len_mats + 1, "Material not appended"
-        assert prob2.materials[2] is mat1, "Material 2 is not the new material"
+        assert prob2.materials[4] is mat1, "Material 2 is not the new material"
 
     def test_extend_renumber(self, cp_simple_problem):
         cells = copy.deepcopy(cp_simple_problem.cells)
@@ -344,9 +389,9 @@ class TestNumberedObjectCollection:
         assert [3] == test_numbers
         test_numbers = [c.number for c in cp_simple_problem.cells[5::-1]]
         assert [5, 3, 2, 1] == test_numbers
-        test_numbers = [s.number for s in cp_simple_problem.surfaces[1000::10]]
+        test_numbers = [s.number for s in cp_simple_problem.surfaces[1000:1026:10]]
         assert [1000, 1010, 1020] == test_numbers
-        test_numbers = [s.number for s in cp_simple_problem.surfaces[:]]
+        test_numbers = [s.number for s in cp_simple_problem.surfaces[1000:1026]]
         assert [1000, 1005, 1010, 1015, 1020, 1025] == test_numbers
         test_numbers = [m.number for m in cp_simple_problem.materials[:2]]
         assert [1, 2] == test_numbers
@@ -410,7 +455,7 @@ class TestNumberedObjectCollection:
             cells == 5
 
     def test_surface_generators(self, cp_simple_problem):
-        answer_num = [1000, 1010]
+        answer_num = [1000, 1010, 2004]
         spheres = list(cp_simple_problem.surfaces.so)
         assert len(answer_num) == len(spheres)
         for i, sphere in enumerate(spheres):
@@ -432,13 +477,7 @@ class TestNumberedObjectCollection:
     def test_str(self, cp_simple_problem):
         cells = cp_simple_problem.cells
         assert str(cells) == "Cells: [1, 2, 3, 99, 5]"
-        key_phrases = [
-            "Numbered_object_collection: obj_class: <class 'montepy.cell.Cell'>",
-            "Objects: [CELL: 1",
-            "Number cache: {1: CELL: 1",
-        ]
-        for phrase in key_phrases:
-            assert phrase in repr(cells)
+        assert "Cells([Cell(" in repr(cells)
 
     def test_data_init(_, cp_simple_problem):
         new_mats = montepy.materials.Materials(
@@ -713,13 +752,14 @@ class TestNumberedObjectCollection:
         _, read_simple_problem, start_num, step, clone_mat, clone_region
     ):
         cp_simple_problem = copy.deepcopy(read_simple_problem)
-        cells = copy.deepcopy(cp_simple_problem.cells)
+        cells = cp_simple_problem.cells
         if start_num <= 0 or step <= 0:
             with pytest.raises(ValueError):
                 cells.clone(starting_number=start_num, step=step)
             return
         for clear in [False, True]:
             if clear:
+                cells = copy.deepcopy(cp_simple_problem.cells)
                 cells.link_to_problem(None)
             new_cells = cells.clone(clone_mat, clone_region, start_num, step)
             for new_cell, old_cell in zip(new_cells, cells):

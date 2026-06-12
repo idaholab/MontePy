@@ -50,13 +50,12 @@ test = [
 ]
 build = [
 	"build",
-	"setuptools>=64.0.0",
-	"setuptools-scm>=8",
+	"setuptools>=80.0.0",
+	"setuptools-scm>=8,<10.0",
 ]
 doc = [
 	"montepy[build]",
-	"sphinx~=8.0", 
-	"sphinxcontrib-apidoc", 
+	"sphinx>=9.0.0", 
 	"pydata_sphinx_theme",
 	"sphinx-favicon",
 	"sphinx-copybutton",
@@ -70,6 +69,7 @@ develop = [
 	"montepy[test,doc,format,build]",
 ]
 demos = ["jupyter", "ipykernel>=6,<8"]
+presentations=["montepy[demos]", "jupyterlab-rise"]
 demo-test = ["montepy[demos]", "papermill"]
 
 demo-present = ["montepy[demos]", "jupyterlab-rise"]
@@ -81,12 +81,15 @@ Repository = "https://github.com/idaholab/MontePy.git"
 Documentation = "https://www.montepy.org/"
 "Bug Tracker" = "https://github.com/idaholab/MontePy/issues"
 Changelog = "https://www.montepy.org/en/stable/changelog.html"
+PyPI = "https://pypi.org/project/montepy/"
+conda-forge = "https://anaconda.org/channels/conda-forge/packages/montepy/overview"
+coverage = "https://coveralls.io/github/idaholab/MontePy"
 
 [project.scripts]
 "change_to_ascii" = "montepy._scripts.change_to_ascii:main"
 
 [build-system]
-requires = ["setuptools>=77.0.0", "setuptools_scm>=8"]
+requires = ["setuptools>=80.0.0", "setuptools_scm>=8,<10.0"]
 build-backend = "setuptools.build_meta"
 
 [tool.setuptools_scm]

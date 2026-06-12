@@ -7,7 +7,7 @@ from montepy.surfaces.half_space import HalfSpace, UnitHalfSpace
 
 
 def test_halfspace_init():
-    surface = montepy.surfaces.CylinderOnAxis()
+    surface = montepy.CylinderOnAxis()
     surface.number = 1
     node = montepy.input_parser.syntax_node.GeometryTree("hi", {}, "*", " ", " ")
     half_space = HalfSpace(+surface, Operator.UNION, -surface, node)
@@ -30,7 +30,7 @@ def test_halfspace_init():
 
 
 def test_get_leaves():
-    surface = montepy.surfaces.CylinderOnAxis()
+    surface = montepy.CylinderOnAxis()
     surface.number = 1
     cell = montepy.Cell()
     cell.number = 1
@@ -41,7 +41,7 @@ def test_get_leaves():
 
 
 def test_half_len():
-    surface = montepy.surfaces.CylinderOnAxis()
+    surface = montepy.CylinderOnAxis()
     cell = montepy.Cell()
     surface.number = 1
     cell.number = 1
@@ -129,7 +129,7 @@ def test_unit_str():
 
 # test geometry integration
 def test_surface_half_space():
-    surface = montepy.surfaces.cylinder_on_axis.CylinderOnAxis()
+    surface = montepy.CylinderOnAxis()
     surface.number = 1
     half_space = +surface
     assert isinstance(half_space, HalfSpace)
@@ -167,9 +167,9 @@ def test_cell_half_space():
 
 
 def test_parens_node_export():
-    surf1 = montepy.surfaces.cylinder_on_axis.CylinderOnAxis()
-    surf2 = montepy.surfaces.cylinder_on_axis.CylinderOnAxis()
-    surf3 = montepy.surfaces.cylinder_on_axis.CylinderOnAxis()
+    surf1 = montepy.CylinderOnAxis()
+    surf2 = montepy.CylinderOnAxis()
+    surf3 = montepy.CylinderOnAxis()
     surf1.number = 1
     surf2.number = 2
     surf3.number = 3
@@ -261,7 +261,7 @@ def test_iand_recursion():
     with pytest.raises(TypeError):
         half_space &= "hi"
     # test with unit halfspaces
-    surf = montepy.surfaces.CylinderParAxis()
+    surf = montepy.CylinderParAxis()
     surf.number = 5
     # test going from leaf to tree
     half_space = -surf
@@ -298,7 +298,7 @@ def test_ior_recursion():
     with pytest.raises(TypeError):
         half_space |= "hi"
     # test with unit halfspaces
-    surf = montepy.surfaces.CylinderParAxis()
+    surf = montepy.CylinderParAxis()
     surf.number = 5
     half_space = -surf
     half_space |= +surf
@@ -400,7 +400,7 @@ def test_update_new_parens():
     tree = parser.parse(input.tokenize())
     geometry = tree["geometry"]
     half_space = HalfSpace.parse_input_node(geometry)
-    surf3 = montepy.surfaces.cylinder_on_axis.CylinderOnAxis()
+    surf3 = montepy.CylinderOnAxis()
     surf3.number = 3
     half2 = half_space.right
     half_space.right = half2 | +surf3
@@ -457,7 +457,7 @@ def test_unit_divider_setter():
     assert half_space.divider is cell2
     assert cell2 in parent.complements
     # test with surface
-    surf = montepy.surfaces.CylinderParAxis()
+    surf = montepy.CylinderParAxis()
     surf.number = 5
     with pytest.raises(TypeError):
         half_space.divider = surf
@@ -470,7 +470,7 @@ def test_unit_divider_setter():
 
 
 def test_unit_create_default_node():
-    surf = montepy.surfaces.CylinderParAxis()
+    surf = montepy.CylinderParAxis()
     surf.number = 1
     half_space = UnitHalfSpace(surf, True, False)
     half_space._ensure_has_nodes()
@@ -492,7 +492,7 @@ def test_unit_create_default_node():
 
 
 def test_tree_create_default_node():
-    surf = montepy.surfaces.CylinderParAxis()
+    surf = montepy.CylinderParAxis()
     surf.number = 1
     half_space = -surf | +surf
     half_space._ensure_has_nodes()
@@ -522,7 +522,7 @@ def test_tree_create_default_node():
 
 
 def test_update_operators_in_node():
-    surf = montepy.surfaces.CylinderParAxis()
+    surf = montepy.CylinderParAxis()
     surf.number = 1
     half_space = -surf | +surf
     half_space._ensure_has_nodes()

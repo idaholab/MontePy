@@ -2,8 +2,8 @@
 from __future__ import annotations
 from abc import ABC, ABCMeta, abstractmethod
 import copy
-import functools
 import itertools as it
+import re
 import textwrap
 from typing import TypeAlias, Union, Type
 import warnings
@@ -23,124 +23,140 @@ from montepy.input_parser.syntax_node import (
     ParametersNode,
     ValueNode,
 )
+from montepy.input_parser.mcnp_input import Input
+from montepy.utilities import *
+
+# must be last for circular imports
 import montepy
+from montepy._exception_context import _ExceptionContextAdder
+from montepy.utilities import *
+import montepy.types as ty
 
-InitInput: TypeAlias = Union[montepy.input_parser.mcnp_input.Input, str]
-
-
-class _ExceptionContextAdder(ABCMeta):
-    """A metaclass for wrapping all class properties and methods in :func:`~montepy.exceptions.add_line_number_to_exception`."""
-
-    @staticmethod
-    def _wrap_attr_call(func):
-        """Wraps the function, and returns the modified function."""
-
-        @functools.wraps(func)
-        def wrapped(*args, **kwargs):
-            try:
-                return func(*args, **kwargs)
-            except Exception as e:
-                if len(args) > 0 and isinstance(args[0], MCNP_Object):
-                    self = args[0]
-                    if hasattr(self, "_handling_exception"):
-                        raise e
-                    self._handling_exception = True
-                    try:
-                        add_line_number_to_exception(e, self)
-                    finally:
-                        del self._handling_exception
-                else:
-                    raise e
-
-        if isinstance(func, staticmethod):
-            return staticmethod(wrapped)
-        if isinstance(func, classmethod):
-            return classmethod(wrapped)
-        return wrapped
-
-    def __new__(meta, classname, bases, attributes):
-        """This will replace all properties and callable attributes with
-        wrapped versions.
-        """
-        new_attrs = {}
-        for key, value in attributes.items():
-            if key.startswith("_"):
-                new_attrs[key] = value
-            if callable(value):
-                new_attrs[key] = _ExceptionContextAdder._wrap_attr_call(value)
-            elif isinstance(value, property):
-                new_props = {}
-                for attr_name in {"fget", "fset", "fdel", "doc"}:
-                    try:
-                        assert getattr(value, attr_name)
-                        new_props[attr_name] = _ExceptionContextAdder._wrap_attr_call(
-                            getattr(value, attr_name)
-                        )
-                    except (AttributeError, AssertionError):
-                        new_props[attr_name] = None
-
-                new_attrs[key] = property(**new_props)
-            else:
-                new_attrs[key] = value
-        cls = super().__new__(meta, classname, bases, new_attrs)
-        return cls
+InitInput = montepy.input_parser.mcnp_input.Input | str
 
 
 class MCNP_Object(ABC, metaclass=_ExceptionContextAdder):
     """Abstract class for semantic representations of MCNP inputs.
 
+    .. versionchanged:: 1.2.0
+        * Removed parser as an argument (now an abstract property)
+        * Added jit_parse argument
+
     Parameters
     ----------
-    input : Union[Input, str]
+    input : Input | str
         The Input syntax object this will wrap and parse.
-    parser : MCNP_Parser
-        The parser object to parse the input with.
+    jit_parse : bool
+        Parse the object just-in-time, when the information is actually needed, if True.
     """
 
-    def __init__(
-        self,
-        input: InitInput,
-        parser: montepy.input_parser.parser_base.MCNP_Parser,
-    ):
+    def __init__(self, input: InitInput, *, jit_parse: bool = True, **kwargs):
         try:
             self._BLOCK_TYPE
         except AttributeError:
             self._BLOCK_TYPE = montepy.input_parser.block_type.BlockType.DATA
-        self._problem_ref = None
+        # Preserve an existing problem reference when re-initializing
+        if not hasattr(self, "_problem_ref"):
+            self._problem_ref = None
         self._parameters = ParametersNode()
         self._input = None
+        self._init_blank()
         if input:
-            if not isinstance(input, (montepy.input_parser.mcnp_input.Input, str)):
-                raise TypeError(f"input must be an Input or str. {input} given.")
-            if isinstance(input, str):
-                input = montepy.input_parser.mcnp_input.Input(
-                    input.split("\n"), self._BLOCK_TYPE
-                )
+            self._parse_input(input, jit_parse)
+            if jit_parse:
+                return
+        else:
+            self._generate_default_tree(**kwargs)
+        self._parse_tree()
+
+    def _parse_input(self, input, jit_parse):
+        if isinstance(input, str):
+            input = montepy.input_parser.mcnp_input.Input(
+                input.split("\n"), self._BLOCK_TYPE
+            )
+        jit_fallback = False
+        if jit_parse:
             try:
-                try:
-                    parser.restart()
-                # raised if restarted without ever parsing
-                except AttributeError as e:
-                    pass
-                tokenizer = input.tokenize()
-                self._tree = parser.parse(tokenizer, input)
-                # consume token stream
-                tokenizer.close()
-                self._input = input
-            except ValueError as e:
-                if isinstance(e, UnsupportedFeature):
-                    raise e
-                raise MalformedInputError(
-                    input, f"Error parsing object of type: {type(self)}: {e.args[0]}"
-                ).with_traceback(e.__traceback__)
-            if self._tree is None:
-                raise ParsingError(
-                    input,
-                    "",
-                    parser.log.clear_queue(),
-                )
-            if "parameters" in self._tree:
-                self._parameters = self._tree["parameters"]
+                return self._jit_light_init(input)
+            # fall back to full parsing on any errors
+            except Exception:
+                jit_parse = False
+                jit_fallback = True
+                if hasattr(self, "_not_parsed"):
+                    del self._not_parsed
+        parser = self._parser()
+        try:
+            try:
+                parser.restart()
+            # raised if restarted without ever parsing
+            except AttributeError as e:
+                pass
+            tokenizer = input.tokenize()
+            self._tree = parser.parse(tokenizer, input)
+            # consume token stream
+            tokenizer.close()
+            self._input = input
+        except ValueError as e:
+            if isinstance(e, UnsupportedFeature):
+                raise e
+            raise MalformedInputError(
+                input, f"Error parsing object of type: {type(self)}: {e.args[0]}"
+            ).with_traceback(e.__traceback__)
+        if self._tree is None:
+            raise ParsingError(
+                input,
+                "",
+                parser.log.clear_queue(),
+            )
+        if "parameters" in self._tree:
+            self._parameters = self._tree["parameters"]
+        if jit_fallback:
+            self._parse_tree()
+
+    @staticmethod
+    @abstractmethod
+    def _parser():
+        """
+        The class (not instance) of the parser for this class.
+
+        Returns
+        ------
+        type
+        """
+        pass
+
+    @abstractmethod
+    def _init_blank(self):
+        """
+        Initialize the object to a base state, before any parsing.
+
+        This should not setup the syntax tree though.
+        """
+        pass
+
+    @abstractmethod
+    def _parse_tree(self):
+        """
+        Takes the information from syntax tree and link it to the internal attributes.
+
+        Use self._tree for this.
+        """
+        pass
+
+    @abstractmethod
+    def _generate_default_tree(self, **kwargs):
+        """
+        Generate default syntax trees that can be exported once the object is not in an illegal state.
+
+        For leaves generally use ``self._generate_default_nod(<type, None)``.
+        Save the tree to self._tree
+
+        Arguments
+        ---------
+        **kwargs: dict
+           Allows passing additional arguments through __init__ as ``**kwargs``
+        """
+        pass
 
     def __setattr__(self, key, value):
         # handle properties first
@@ -158,6 +174,91 @@ class MCNP_Object(ABC, metaclass=_ExceptionContextAdder):
                 obj=self,
                 name=key,
             )
+
+    def _jit_light_init(self, input: Input):
+        """Called when just-in-time parsing is occuring.
+
+        This will
+
+        1. Create a self._JitParser instance
+        2. Call that parse on the input
+        3. load the returned "tree" as instance attributes
+        """
+        self._not_parsed = True
+        self._input = input
+        parser = self._JitParser()
+        tokenizer = input.tokenize()
+        bare_tree = parser.parse(tokenizer)
+        tokenizer.close()
+        for key, node in bare_tree.nodes.items():
+            setattr(self, f"_{key}", node)
+        self._tree = bare_tree
+        return self
+
+    _KEYS_TO_PRESERVE: set[str] = set()
+    """
+    Object attributes that need to persist from JIT to fully parsed.
+    """
+
+    @property
+    def full_parsed(self):
+        """Whether this has been fully parsed, or is just JIT parsed.
+
+        Returns
+        -------
+        bool
+           True iff this is fully parsed, False means this is still just-in-time parsed.
+        """
+        return not hasattr(self, "_not_parsed")
+
+    def full_parse(self):
+        """Fully parses this object, and disable just-in-time parsing for it.
+
+        Returns
+        -------
+        None
+           The object will be mutated and fully parsed.
+        """
+        # TODO deprecate update_pointers
+        # TODO test for catastrophic surface, material, transform renumbering
+        if hasattr(self, "_not_parsed") and self._not_parsed:
+            del self._not_parsed
+            problem = self._problem
+            old_data = {
+                k: getattr(self, k, None)
+                for k in self._KEYS_TO_PRESERVE
+                if getattr(self, k, None) is not None
+            }
+            self.__init__(self._input, jit_parse=False)
+            self._load_old_data(old_data)
+            if problem:
+                self.link_to_problem(problem)
+
+    def _load_old_data(self, old_data):
+        """
+        Method to load old data that needs to persist from JIT parsed to full parsed state.
+        """
+        [setattr(self, k, v) for k, v in old_data.items()]
+
+    def search(self, search: str | re.Pattern) -> bool:
+        """
+        Searches this input for the given string, or compiled regular expression.
+
+        Parameters
+        ----------
+        search : str | re.Pattern
+            The pattern to search for.
+
+        Returns
+        -------
+        bool
+            Whether this
+        """
+        # TODO make num_search
+        # \Dnumber(\D|$)
+        if self._input is None:
+            return
+        return self._input.search(search)
 
     @staticmethod
     def _generate_default_node(
@@ -197,6 +298,7 @@ class MCNP_Object(ABC, metaclass=_ExceptionContextAdder):
         return ValueNode(str(default), value_type, padding_node, never_pad)
 
     @property
+    @needs_full_ast
     def parameters(self) -> dict[str, str]:
         """A dictionary of the additional parameters for the object.
 
@@ -213,6 +315,7 @@ class MCNP_Object(ABC, metaclass=_ExceptionContextAdder):
         """
         return self._parameters
 
+    @needs_full_ast
     @abstractmethod
     def _update_values(self):
         """Method to update values in syntax tree with new values.
@@ -225,13 +328,14 @@ class MCNP_Object(ABC, metaclass=_ExceptionContextAdder):
         """
         pass
 
-    def format_for_mcnp_input(self, mcnp_version: tuple[int, int, int]) -> list[str]:
+    @args_checked
+    def format_for_mcnp_input(self, mcnp_version: ty.VersionType) -> list[str]:
         """Creates a list of strings representing this MCNP_Object that can be
         written to file.
 
         Parameters
         ----------
-        mcnp_version : tuple[int, int, int]
+        mcnp_version : ty.VersionType
             The tuple for the MCNP version that must be exported to.
 
         Returns
@@ -239,6 +343,8 @@ class MCNP_Object(ABC, metaclass=_ExceptionContextAdder):
         list
             a list of strings for the lines that this input will occupy.
         """
+        if hasattr(self, "_not_parsed"):
+            return self._input.input_lines
         self.validate()
         self._update_values()
         self._tree.check_for_graveyard_comments()
@@ -247,14 +353,15 @@ class MCNP_Object(ABC, metaclass=_ExceptionContextAdder):
         self._flush_line_expansion_warning(lines, ws)
         return lines
 
-    def mcnp_str(self, mcnp_version: tuple[int] = None):
+    @args_checked
+    def mcnp_str(self, mcnp_version: ty.VersionType = None) -> str:
         """Returns a string of this input as it would appear in an MCNP input file.
 
         ..versionadded:: 1.0.0
 
         Parameters
         ----------
-        mcnp_version: tuple[int]
+        mcnp_version: ty.VersionType
             The tuple for the MCNP version that must be exported to.
 
         Returns
@@ -296,6 +403,7 @@ The new input was:\n\n"""
             warnings.warn(warning, stacklevel=4)
 
     @property
+    @needs_full_ast
     def comments(self) -> list[PaddingNode]:
         """The comments associated with this input if any.
 
@@ -310,6 +418,7 @@ The new input was:\n\n"""
         return list(self._tree.comments)
 
     @property
+    @needs_full_ast
     def leading_comments(self) -> list[PaddingNode]:
         """Any comments that come before the beginning of the input proper.
 
@@ -318,40 +427,42 @@ The new input was:\n\n"""
         list
             the leading comments.
         """
-        return list(self._tree["start_pad"].comments)
+        possible_comments = list(self._tree["start_pad"].comments)
+        if (
+            not possible_comments
+            and not hasattr(self, "_grabbed_leading")
+            and self._problem
+        ):
+            leading_comments = self._problem._get_leading_comment(self)
+            if leading_comments:
+                self._grab_beginning_comment(leading_comments)
+                self._grabbed_leading = True
+                return self.leading_comments
+        return possible_comments
 
     @leading_comments.setter
-    def leading_comments(self, comments):
-        if not isinstance(comments, (list, tuple, CommentNode)):
-            raise TypeError(
-                f"Comments must be a CommentNode, or a list of Comments. {comments} given."
-            )
+    @needs_full_cst
+    @args_checked
+    def leading_comments(self, comments: ty.Iterable[CommentNode | str] | CommentNode):
         if isinstance(comments, CommentNode):
             comments = [comments]
-        if isinstance(comments, (list, tuple)):
-            for comment in comments:
-                if not isinstance(comment, CommentNode):
-                    raise TypeError(
-                        f"Comments must be a CommentNode, or a list of Comments. {comment} given."
-                    )
-
-        for i, comment in enumerate(comments):
-            if not isinstance(comment, CommentNode):
-                raise TypeError(
-                    f"Comment must be a CommentNode. {comment} given at index {i}."
-                )
         new_nodes = list(*zip(comments, it.cycle(["\n"])))
         if self._tree["start_pad"] is None:
             self._tree["start_pad"] = PaddingNode(" ")
         self._tree["start_pad"]._nodes = new_nodes
 
     @leading_comments.deleter
+    @needs_full_cst
     def leading_comments(self):
         self._tree["start_pad"]._delete_trailing_comment()
 
     @staticmethod
+    @args_checked
     def wrap_string_for_mcnp(
-        string, mcnp_version, is_first_line, suppress_blank_end=True
+        string: str,
+        mcnp_version: ty.VersionType,
+        is_first_line: bool,
+        suppress_blank_end: bool = True,
     ) -> list[str]:
         """Wraps the list of the words to be a well formed MCNP input.
 
@@ -426,7 +537,13 @@ The new input was:\n\n"""
         """Validates that the object is in a usable state."""
         pass
 
-    def link_to_problem(self, problem: montepy.mcnp_problem.MCNP_Problem):
+    @args_checked
+    def link_to_problem(
+        self,
+        problem: montepy.mcnp_problem.MCNP_Problem = None,
+        *,
+        deepcopy: bool = False,
+    ):
         """Links the input to the parent problem for this input.
 
         This is done so that inputs can find links to other objects.
@@ -435,9 +552,9 @@ The new input was:\n\n"""
         ----------
         problem : MCNP_Problem
             The problem to link this input to.
+        deepcopy : bool
+            If this is occuring during a problem level deepcopy
         """
-        if not isinstance(problem, (montepy.mcnp_problem.MCNP_Problem, type(None))):
-            raise TypeError("problem must be an MCNP_Problem")
         if problem is None:
             self._problem_ref = None
         else:
@@ -464,6 +581,7 @@ The new input was:\n\n"""
         self.link_to_problem(problem)
 
     @property
+    @needs_full_ast
     def trailing_comment(self) -> list[PaddingNode]:
         """The trailing comments and padding of an input.
 
@@ -508,3 +626,21 @@ The new input was:\n\n"""
             a new instance identical to this object.
         """
         return copy.deepcopy(self)
+
+    def __str__(self):
+        # TODO ensure this doesn't pull attributes on JIT_parsed objects.
+        # Switch to hooks system.
+        return f"{type(self).__name__}"
+
+    def __repr__(self):
+        ret = f"{type(self).__name__}("
+        if self._input:
+            args = [f"{repr('\n'.join(self._input.input_lines))}"]
+        else:
+            args = []
+        args += self._repr_args()
+        args.append(f"jit_parse={not self.full_parsed}")
+        return ret + ", ".join(args) + ")"
+
+    def _repr_args(self):
+        return []

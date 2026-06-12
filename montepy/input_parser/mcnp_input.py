@@ -1,13 +1,16 @@
 # Copyright 2024, Battelle Energy Alliance, LLC All Rights Reserved.
 from abc import ABC, abstractmethod
 import math
+import re
+
 from montepy.exceptions import *
+from montepy.utilities import *
 from montepy.input_parser.block_type import BlockType
 from montepy.constants import BLANK_SPACE_CONTINUE, get_max_line_length
 from montepy.input_parser.read_parser import ReadParser
 from montepy.input_parser.tokens import CellLexer, SurfaceLexer, DataLexer
 from montepy.utilities import *
-import re
+import montepy.types as ty
 
 
 class Jump:
@@ -78,12 +81,8 @@ class ParsingNode(ABC):
         the lines read straight from the input file.
     """
 
-    def __init__(self, input_lines):
-        if not isinstance(input_lines, list):
-            raise TypeError("input_lines must be a list")
-        for line in input_lines:
-            if not isinstance(line, str):
-                raise TypeError(f"element: {line} in input_lines must be a string")
+    @args_checked
+    def __init__(self, input_lines: list[str]):
         self._input_lines = input_lines
 
     @property
@@ -141,10 +140,11 @@ class Input(ParsingNode):
     list
     """
 
-    def __init__(self, input_lines, block_type, input_file=None, lineno=None):
+    @args_checked
+    def __init__(
+        self, input_lines, block_type: BlockType, input_file=None, lineno=None
+    ):
         super().__init__(input_lines)
-        if not isinstance(block_type, BlockType):
-            raise TypeError("block_type must be BlockType")
         self._block_type = block_type
         self._input_file = input_file
         self._lineno = lineno
@@ -230,6 +230,9 @@ class Input(ParsingNode):
             token.value = token.value.rstrip("\n")
             if token.value:
                 yield token
+        # if closed upstream
+        except GeneratorExit:
+            generator.close()
         self._lexer = None
 
     @make_prop_pointer("_lexer")
@@ -243,6 +246,28 @@ class Input(ParsingNode):
         MCNP_Lexer
         """
         pass
+
+    def search(self, search: str | re.Pattern) -> bool:
+        """
+        Searches this input for the given string, or compiled regular expression.
+
+        Parameters
+        ----------
+        search : str | re.Pattern
+            The pattern to search for.
+
+        Returns
+        -------
+        bool
+            Whether this
+        """
+        searcher = lambda line: search in line
+        if isinstance(search, re.Pattern):
+            searcher = lambda line: (search.match(line)) is not None
+        for line in self.input_lines:
+            if searcher(line):
+                return True
+        return False
 
 
 class ReadInput(Input):
@@ -318,13 +343,9 @@ class Message(ParsingNode):
         the strings of each line in the message block
     """
 
-    def __init__(self, input_lines, lines):
+    @args_checked
+    def __init__(self, input_lines, lines: list[str]):
         super().__init__(input_lines)
-        if not isinstance(lines, list):
-            raise TypeError("lines must be a list")
-        for line in lines:
-            if not isinstance(line, str):
-                raise TypeError(f"line {line} in lines must be a string")
         buff = []
         for line in lines:
             buff.append(line.rstrip())
@@ -374,7 +395,8 @@ class Title(ParsingNode):
         The string for the title of the problem.
     """
 
-    def __init__(self, input_lines, title):
+    @args_checked
+    def __init__(self, input_lines, title: str):
         """
         Parameters
         ----------
@@ -384,8 +406,6 @@ class Title(ParsingNode):
             The string for the title of the problem.
         """
         super().__init__(input_lines)
-        if not isinstance(title, str):
-            raise TypeError("title must be a string")
         self._title = title.rstrip()
 
     @property

@@ -2,9 +2,9 @@ name: CI testing
 
 on: 
   pull_request:
-    branches: [develop, alpha-test-dev, alpha-test, minor-rel-dev]
+    branches: ["*dev*", alpha-test*]
   push: 
-     branches: [develop, main, alpha-test, minor-rel-dev]
+     branches: ["*dev*", main, alpha-test*]
 
 jobs:
   build:
@@ -45,7 +45,7 @@ jobs:
       - run: pip install --user . montepy[develop]
       - run: pip freeze
       - name: Upload build artifacts
-        uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
         if: ${{ matrix.python-version == '3.13'}}
         with: 
            name: build
@@ -58,11 +58,11 @@ jobs:
     strategy:
       matrix:
         python-version: ["3.12", "3.13", "3.14"]
-        numpy-version: ["2.0", "2.3"]
+        numpy-version: ["2.0", "2.4"]
         sly-version: ["0.5"]
         include:
           - python-version: "3.13"
-            numpy-version: "2.3"
+            numpy-version: "2.4"
             sly-version: "0.4"
     
     steps:
@@ -88,19 +88,19 @@ jobs:
       - run: coverage xml
         if:  ${{ success() || failure() }}
       - name: Upload test report
-        if: ${{ matrix.python-version == '3.14' && matrix.numpy-version == '2.3' && (success() || failure() )}}
-        uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f
+        if: ${{ matrix.python-version == '3.14' && matrix.numpy-version == '2.4' && (success() || failure() )}}
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
         with:
           name: test
           path: test_report.xml
       - name: Upload coverage report
-        if: ${{ matrix.python-version == '3.14' && matrix.numpy-version == '2.3' && (success() || failure() )}}
-        uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f
+        if: ${{ matrix.python-version == '3.14' && matrix.numpy-version == '2.4' && (success() || failure() )}}
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
         with:
           name: coverage
           path: coverage.xml
       - name: Coveralls GitHub Action
-        if: ${{ matrix.python-version == '3.14' && matrix.numpy-version == '2.3' && (success() || failure() )}}
+        if: ${{ matrix.python-version == '3.14' && matrix.numpy-version == '2.4' && (success() || failure() )}}
         uses: coverallsapp/github-action@5cbfd81b66ca5d10c19b062c04de0199c215fb6e
         with:
           file: coverage.xml
@@ -128,7 +128,7 @@ jobs:
       - run: pip install . montepy[doc,build]
       - run: cd doc && make html SPHINXOPTS="-W --keep-going -E"
         name: Build site strictly
-      - uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
         with:
           name: website
           path: doc/build

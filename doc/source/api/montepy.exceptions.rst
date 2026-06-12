@@ -1,5 +1,5 @@
-montepy.exceptions module
-=========================
+exceptions
+==========
 
 
 .. automodule:: montepy.exceptions

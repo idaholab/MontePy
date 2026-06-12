@@ -6,15 +6,19 @@ import traceback
 class LineOverRunWarning(UserWarning):
     """Raised when non-comment inputs exceed the allowed line length in an input."""
 
-    def __init__(self, message):
-        self.message = message
+    pass
 
 
 class UndefinedBlock(UserWarning):
     """Raised when additional blocks exist after the default data block."""
 
-    def __init__(self, message):
-        self.message = message
+    pass
+
+
+class MalformedInputWarning(UserWarning):
+    """Raised when there is a possible, but not fatal error with the MCNP input not related to the parser."""
+
+    pass
 
 
 class MalformedInputError(ValueError):
@@ -232,7 +236,7 @@ def add_line_number_to_exception(error, broken_robot):
     """
     # avoid calling this n times recursively
     if hasattr(error, "montepy_handled"):
-        raise error
+        raise error.with_traceback(error.__traceback__.tb_next)
     error.montepy_handled = True
     args = error.args
     trace = error.__traceback__
@@ -256,7 +260,7 @@ def add_line_number_to_exception(error, broken_robot):
             message = f"{message}\n\nError came from an object of type {type(broken_robot)} from an unknown file."
     args = (message,) + args[1:]
     error.args = args
-    raise error.with_traceback(trace)
+    raise error.with_traceback(trace.tb_next)
 
 
 class SurfaceConstantsWarning(UserWarning):

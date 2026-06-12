@@ -1,8 +1,11 @@
 # Copyright 2024, Battelle Energy Alliance, LLC All Rights Reserved.
 from __future__ import annotations
+
 import montepy
+from montepy.utilities import *
 from montepy.numbered_object_collection import NumberedObjectCollection
 from montepy.universe import Universe
+import montepy.types as ty
 
 
 class Universes(NumberedObjectCollection):
@@ -23,5 +26,20 @@ class Universes(NumberedObjectCollection):
     For examples see the ``NumberedObjectCollection`` :ref:`collect ex`.
     """
 
-    def __init__(self, objects: list = None, problem: montepy.MCNP_Problem = None):
+    @args_checked
+    def __init__(
+        self,
+        objects: ty.Iterable[Universe] = None,
+        problem: montepy.MCNP_Problem = None,
+    ):
         super().__init__(Universe, objects, problem)
+
+    def __getitem__(self, key):
+        try:
+            return super().__getitem__(key)
+        except KeyError as e:
+            if self._problem:
+                new_uni = self._problem.cells._universe._find_and_populate_universe(key)
+                if new_uni is not None:
+                    return new_uni
+            raise e

@@ -3,11 +3,13 @@
 from __future__ import annotations
 import collections as co
 import copy
-from typing import Generator, Union
-from numbers import Integral, Real
+from typing import Generator
 
 import montepy
+from montepy.data_inputs.nuclide import NuclideLike
 from montepy.numbered_object_collection import NumberedDataObjectCollection
+from montepy.utilities import *
+import montepy.types as ty
 
 Material = montepy.data_inputs.material.Material
 
@@ -37,25 +39,51 @@ class Materials(NumberedDataObjectCollection):
 
     Parameters
     ----------
-    objects : list
+    objects : list[Material]
         the list of materials to start with if needed
     """
 
-    def __init__(self, objects=None, problem=None):
-        super().__init__(Material, objects, problem)
+    @staticmethod
+    def _parent_collections():
+        return ("cells", "material", False)
 
+    @args_checked
+    def __init__(
+        self, objects: list[Material] = None, problem: montepy.MCNP_Problem = None
+    ):
+        super().__init__(Material, objects, problem)
+        self._tsl_queue = {}
+
+    @args_checked
+    def append(self, obj: montepy.Material | montepy.ThermalScatteringLaw, **kwargs):
+        if isinstance(obj, montepy.Material):
+            if obj.number in self._tsl_queue:
+                tsl = self._tsl_queue.pop(obj.number)
+                tsl._link_to_parent(obj)
+                obj.thermal_scattering = tsl
+            super().append(obj, **kwargs)
+        elif isinstance(obj, montepy.ThermalScatteringLaw):
+            try:
+                obj._link_to_parent(self[obj.old_number])
+                self[obj.old_number].thermal_scattering = obj
+            except KeyError:
+                self._tsl_queue[obj.old_number] = obj
+
+    def finalize_init(self):
+        # Raise error for unflushed connection
+        for num, tsl in self._tsl_queue.items():
+            raise MalformedInputError(
+                tsl._input,
+                f'Thermal scattering Law "MT" input has no parent material with number: {num}',
+            )
+
+    @args_checked
     def get_containing_any(
         self,
-        *nuclides: Union[
-            montepy.data_inputs.nuclide.Nuclide,
-            montepy.Nucleus,
-            montepy.Element,
-            str,
-            int,
-        ],
-        threshold: float = 0.0,
+        *nuclides: NuclideLike,
+        threshold: ty.Real = 0.0,
         strict: bool = False,
-    ) -> Generator[Material]:
+    ) -> Generator[Material, None, None]:
         """Get all materials that contain any of these these nuclides.
 
         This uses :func:`~montepy.Material.contains_all` under the hood.
@@ -75,13 +103,13 @@ class Materials(NumberedDataObjectCollection):
 
         .. testoutput::
 
-            MATERIAL: 1, ['hydrogen', 'oxygen']
+            Material: 1
 
         .. versionadded:: 1.0.0
 
         Parameters
         ----------
-        *nuclides : Union[Nuclide, Nucleus, Element, str, int]
+        *nuclides : Nuclide | Nucleus | Element | str | int
             a plurality of nuclides to check for.
         threshold : float
             the minimum concentration of a nuclide to be considered. The
@@ -93,7 +121,7 @@ class Materials(NumberedDataObjectCollection):
 
         Returns
         -------
-        Generator[Material]
+        Generator[Material, None, None]
             A generator of all matching materials
 
         Raises
@@ -108,18 +136,13 @@ class Materials(NumberedDataObjectCollection):
             *nuclides, bool_func=any, threshold=threshold, strict=strict
         )
 
+    @args_checked
     def get_containing_all(
         self,
-        *nuclides: Union[
-            montepy.data_inputs.nuclide.Nuclide,
-            montepy.Nucleus,
-            montepy.Element,
-            str,
-            int,
-        ],
-        threshold: float = 0.0,
+        *nuclides: NuclideLike,
+        threshold: ty.Real = 0.0,
         strict: bool = False,
-    ) -> Generator[Material]:
+    ) -> Generator[Material, None, None]:
         """Get all materials that contain all of these nuclides.
 
         This uses :func:`~montepy.Material.contains_all` under the hood.
@@ -139,13 +162,13 @@ class Materials(NumberedDataObjectCollection):
 
         .. testoutput::
 
-            MATERIAL: 1, ['hydrogen', 'oxygen']
+            Material: 1
 
         .. versionadded:: 1.0.0
 
         Parameters
         ----------
-        *nuclides : Union[Nuclide, Nucleus, Element, str, int]
+        *nuclides : Nuclide | Nucleus | Element | str | int
             a plurality of nuclides to check for.
         threshold : float
             the minimum concentration of a nuclide to be considered. The
@@ -157,7 +180,7 @@ class Materials(NumberedDataObjectCollection):
 
         Returns
         -------
-        Generator[Material]
+        Generator[Material, None, None]
             A generator of all matching materials
 
         Raises
@@ -174,17 +197,11 @@ class Materials(NumberedDataObjectCollection):
 
     def _contains_arb(
         self,
-        *nuclides: Union[
-            montepy.data_inputs.nuclide.Nuclide,
-            montepy.Nucleus,
-            montepy.Element,
-            str,
-            int,
-        ],
+        *nuclides: NuclideLike,
         bool_func: co.abc.Callable[co.abc.Iterable[bool]],
-        threshold: float = 0.0,
+        threshold: ty.Real = 0.0,
         strict: bool = False,
-    ) -> Generator[Material]:
+    ) -> Generator[Material, None, None]:
         nuclide_finders = []
         for nuclide in nuclides:
             nuclide_finders.append(Material._promote_nuclide(nuclide, strict))
@@ -245,12 +262,13 @@ class Materials(NumberedDataObjectCollection):
             self.append(default)
             return self.default_libraries
 
+    @args_checked
     def mix(
         self,
         materials: list[Material],
-        fractions: list[float],
-        starting_number=None,
-        step=None,
+        fractions: list[ty.NonNegativeReal],
+        starting_number: ty.PositiveInt = None,
+        step: ty.PositiveInt = None,
     ) -> Material:
         """Mix the given materials in the provided fractions to create a new material.
 
@@ -298,9 +316,9 @@ class Materials(NumberedDataObjectCollection):
         fractions
             the corresponding fractions for each material in either atom
             or mass fractions, depending on the materials fraction type.
-        starting_number : Union[int, None]
+        starting_number : int | None
             the starting number to assign this new material.
-        step : Union[int, None]
+        step : int | None
             the step size to take when finding a new number.
 
         Returns
@@ -318,42 +336,17 @@ class Materials(NumberedDataObjectCollection):
             not all the materials are of the same fraction type, or if a
             negative starting_number or step are given.
         """
-        if not isinstance(materials, list):
-            raise TypeError(f"materials must be a list. {materials} given.")
         if len(materials) == 0:
             raise ValueError(f"materials must be non-empty. {materials} given.")
         for mat in materials:
-            if not isinstance(mat, Material):
-                raise TypeError(
-                    f"material in materials is not of type Material. {mat} given."
-                )
             if mat.is_atom_fraction != materials[0].is_atom_fraction:
                 raise ValueError(
                     f"All materials must have the same is_atom_fraction value. {mat} is the odd one out."
                 )
-        if not isinstance(fractions, list):
-            raise TypeError(f"fractions must be a list. {fractions} given.")
-        for frac in fractions:
-            if not isinstance(frac, Real):
-                raise TypeError(f"fraction in fractions must be a float. {frac} given.")
-            if frac < 0.0:
-                raise ValueError(f"Fraction cannot be negative. {frac} given.")
         if len(fractions) != len(materials):
             raise ValueError(
                 f"Length of materials and fractions don't match. The lengths are, materials: {len(materials)}, fractions: {len(fractions)}"
             )
-        if not isinstance(starting_number, (Integral, type(None))):
-            raise TypeError(
-                f"starting_number must be an int. {starting_number} of type {type(starting_number)} given."
-            )
-        if starting_number is not None and starting_number <= 0:
-            raise ValueError(
-                f"starting_number must be positive. {starting_number} given."
-            )
-        if not isinstance(step, (Integral, type(None))):
-            raise TypeError(f"step must be an int. {step} of type {type(step)} given.")
-        if step is not None and step <= 0:
-            raise ValueError(f"step must be positive. {step} given.")
         ret = Material()
         if starting_number is None:
             starting_number = self.starting_number

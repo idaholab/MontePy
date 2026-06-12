@@ -1,12 +1,20 @@
 # Copyright 2024, Battelle Energy Alliance, LLC All Rights Reserved.
 import itertools
-from montepy.data_inputs.cell_modifier import CellModifierInput, InitInput
+
+import montepy
+from montepy.utilities import *
+from montepy.data_inputs.cell_modifier import (
+    CellModifierInput,
+    InitInput,
+    cell_mod_prop,
+)
 from montepy.exceptions import *
 from montepy.constants import DEFAULT_VERSION
 from montepy.input_parser.mcnp_input import Jump
 from montepy.input_parser import syntax_node
 from montepy.mcnp_object import MCNP_Object
 from montepy.universe import Universe
+import montepy.types as ty
 from montepy.utilities import *
 
 
@@ -14,9 +22,13 @@ class UniverseInput(CellModifierInput):
     """Object to actually handle the ``U`` input in cells
     and data blocks.
 
+    .. versionchanged:: 1.5.0
+
+        Added ``jit_parse`` parameter
+
     Parameters
     ----------
-    input : Union[Input, str]
+    input : Input | str
         the Input object representing this data input
     in_cell_block : bool
         if this card came from the cell block of an input file.
@@ -24,37 +36,36 @@ class UniverseInput(CellModifierInput):
         the key from the key-value pair in a cell
     value : SyntaxNode
         the value syntax tree from the key-value pair in a cell
+    jit_parse : bool
+        Parse the object just-in-time, when the information is actually needed, if True.
     """
 
-    def __init__(
-        self,
-        input: InitInput = None,
-        in_cell_block: bool = False,
-        key: str = None,
-        value: syntax_node.SyntaxNode = None,
-    ):
+    _KEYS_TO_PRESERVE = {"_universe", "_not_truncated"}
+
+    def _init_blank(self):
         self._universe = None
         self._old_numbers = []
         self._old_number = self._generate_default_node(int, Jump())
         self._not_truncated = False
-        super().__init__(input, in_cell_block, key, value)
-        if self.in_cell_block:
-            if key:
-                val = self._tree["data"][0]
-                val.is_negatable_identifier = True
-                self._not_truncated = val.is_negative
-                self._old_number = val
-        elif input:
-            self._universes = []
-            for node in self.data:
-                try:
-                    node.is_negatable_identifier = True
-                    self._old_numbers.append(node)
-                except ValueError:
-                    raise MalformedInputError(
-                        input,
-                        f"Cell universes must be an integer ≥ 0. {node} was given",
-                    )
+
+    def _parse_cell_tree(self):
+        if self._in_key:
+            val = self._tree["data"][0]
+            val.is_negatable_identifier = True
+            self._not_truncated = val.is_negative
+            self._old_number = val
+
+    def _parse_data_tree(self):
+        self._universes = []
+        for node in self.data:
+            try:
+                node.is_negatable_identifier = True
+                self._old_numbers.append(node)
+            except ValueError:
+                raise MalformedInputError(
+                    input,
+                    f"Cell universes must be an integer ≥ 0. {node} was given",
+                )
 
     def _generate_default_cell_tree(self):
         list_node = syntax_node.ListNode("number sequence")
@@ -72,6 +83,45 @@ class UniverseInput(CellModifierInput):
             },
         )
 
+    @needs_full_ast
+    def _find_and_populate_universe(self, number) -> Universe:
+        if self.in_cell_block:
+            raise IllegalStateError(
+                f"This should only be called for data block instances."
+            )
+        if not self._problem:
+            return
+        found = number == 0
+        if found:
+            pass
+        elif len(self.data) > 1 or (
+            len(self.data) == 1 and self.data[0].value is not None
+        ):
+            for datum in self.data:
+                if datum.value == number:
+                    found = True
+                    break
+        else:
+            for cell in self._problem.cells:
+                u_inp = cell._universe
+                # fully parsed
+                if not hasattr(u_inp, "_not_parsed"):
+                    if u_inp.old_number == number:
+                        found = True
+                        break
+                else:
+                    if cell.search(str(number)):
+                        cell.full_parse()
+                        if cell._universe.old_number == number:
+                            found = True
+                            break
+        # universe exists
+        if found:
+            uni = montepy.Universe(number)
+            uni.link_to_problem(self._problem)
+            uni.grab_cells_from_jit_parse()
+            return uni
+
     @staticmethod
     def _class_prefix():
         return "u"
@@ -86,9 +136,11 @@ class UniverseInput(CellModifierInput):
 
     @make_prop_val_node("_old_number")
     def old_number(self):
-        pass
+        if self._old_number.value is None:
+            return 0
 
     @property
+    @needs_full_ast
     def old_numbers(self):
         ret = []
         for value in self._old_numbers:
@@ -99,17 +151,19 @@ class UniverseInput(CellModifierInput):
         return ret
 
     @property
-    def has_information(self):
+    def has_information(self) -> bool:
         if self.in_cell_block:
             return self.universe is not None and self.universe.number != 0
 
-    @make_prop_pointer("_universe", Universe)
-    def universe(self):
+    @cell_mod_prop("_universe")
+    @prop_pointer_from_problem("_universe", "old_number", "universes", Universe)
+    def universe(self) -> Universe:
         if self.in_cell_block:
             return self._universe
 
     @property
-    def not_truncated(self):
+    @needs_full_ast
+    def not_truncated(self) -> bool:
         """Indicates if this cell has been marked as not being truncated for optimization.
 
         See Note 1 from section 3.3.1.5.1 of the user manual (LA-UR-17-29981).
@@ -133,12 +187,13 @@ class UniverseInput(CellModifierInput):
         return self._not_truncated
 
     @not_truncated.setter
-    def not_truncated(self, value):
-        if not isinstance(value, bool):
-            raise TypeError("truncated_by_parent must be a bool")
+    @needs_full_cst
+    @args_checked
+    def not_truncated(self, value: bool):
         self._not_truncated = value
 
     @property
+    @needs_full_ast
     def _tree_value(self):
         val = self._old_number
         val.value = 0
@@ -162,26 +217,36 @@ class UniverseInput(CellModifierInput):
             other._input, "Cannot have two universe inputs for the problem"
         )
 
+    @needs_full_ast
     def push_to_cells(self):
         if not self._problem:
             return
         if not self.in_cell_block:
             cells = self._problem.cells
-            if self._old_numbers:
+            has_data = len(self._old_numbers) > 1 or (
+                len(self._old_numbers) == 1 and self._old_numbers[0].value is not None
+            )
+            if has_data:
                 self._check_redundant_definitions()
-                for cell, uni_number in itertools.zip_longest(
-                    cells, self._old_numbers, fillvalue=None
-                ):
-                    if isinstance(uni_number, (Jump, type(None))):
-                        continue
-                    cell._universe._old_number = uni_number
+            universes = self._problem.universes
+            for cell, uni_number in itertools.zip_longest(
+                cells, self._old_numbers, fillvalue=None
+            ):
+                if has_data and not isinstance(uni_number, (Jump, type(None))):
+                    cell._universe._accept_from_data(uni_number)
                     if uni_number.is_negative:
                         cell._universe._not_truncated = True
-            universes = self._problem.universes
-            for cell in cells:
-                uni_num = cell.old_universe_number
-                if uni_num is None:
-                    uni_num = 0
+                    # Use the data-block number directly for universe lookup
+                    uni_num = (
+                        abs(uni_number.value) if uni_number.value is not None else 0
+                    )
+                else:
+                    # Jump or no data: use old_universe_number only if fully parsed
+                    if cell is None or hasattr(cell._universe, "_not_parsed"):
+                        continue
+                    uni_num = cell.old_universe_number
+                    if uni_num is None:
+                        uni_num = 0
                 if uni_num not in universes.numbers:
                     universe = Universe(uni_num)
                     universe.link_to_problem(self._problem)
@@ -190,21 +255,11 @@ class UniverseInput(CellModifierInput):
                     universe = universes[uni_num]
                 cell._universe._universe = universe
 
+    def _accept_and_update(self, value):
+        self._old_number = value
+
     def _clear_data(self):
         del self._old_numbers
-
-    def __str__(self):
-        ret = "\n".join(self.format_for_mcnp_input(DEFAULT_VERSION))
-        return ret
-
-    def __repr__(self):
-        ret = (
-            f"UNIVERSE: in_cell: {self._in_cell_block}"
-            f" set_in_block: {self.set_in_cell_block}, "
-            f"Universe : {self._universe}, "
-            f"Old Numbers: {self._old_numbers if hasattr(self, '_old_numbers') else ''}"
-        )
-        return ret
 
     def _update_cell_values(self):
         if self.universe is not None:

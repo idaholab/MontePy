@@ -1,5 +1,5 @@
-montepy.constants module
-========================
+constants
+=========
 
 
 .. automodule:: montepy.constants

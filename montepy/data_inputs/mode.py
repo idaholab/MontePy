@@ -1,37 +1,35 @@
 # Copyright 2024, Battelle Energy Alliance, LLC All Rights Reserved.
-from montepy.data_inputs.data_input import DataInputAbstract
+from montepy.utilities import *
+from montepy.data_inputs.data_input import DataInputAbstract, InitInput
 from montepy.input_parser import syntax_node
 from montepy.particle import Particle
+import montepy.types as ty
 
 
 class Mode(DataInputAbstract):
     """Class for the particle mode for a problem.
 
+    .. versionchanged:: 1.5.0
+
+        Added ``jit_parse`` parameter
+
     Parameters
     ----------
     input : Input
         the Input object representing this data input
+    fast_parse : bool
+        Whether or not to only parse the first word for the type of data.
+    jit_parse : bool
+        Parse the object just-in-time, when the information is actually needed, if True.
     """
 
-    def __init__(self, input=None):
-        super().__init__(input)
-        if input:
-            self._particles = set()
-            self._parse_and_override_particle_modes(
-                [p.value for p in self._tree["data"]]
-            )
-        else:
-            self._particles = {Particle.NEUTRON}
-            classifier = syntax_node.ClassifierNode()
-            classifier.prefix = self._generate_default_node(str, "MODE")
-            classifier.padding = syntax_node.PaddingNode(" ")
-            self._tree = syntax_node.SyntaxNode(
-                "mode",
-                {
-                    "classifier": classifier,
-                    "data": syntax_node.ListNode("particles"),
-                },
-            )
+    def _init_blank(self):
+        self._particles = {Particle.NEUTRON}
+
+    def _parse_tree(self):
+        super()._parse_tree()
+        self._particles = set()
+        self._parse_and_override_particle_modes([p.value for p in self._tree["data"]])
 
     def _parse_and_override_particle_modes(self, particles):
         self._particles = set()
@@ -40,7 +38,12 @@ class Mode(DataInputAbstract):
                 raise TypeError(f"Mode particle must be a str. {particle} given.")
             self._particles.add(Particle(particle.upper()))
 
+    def _generate_default_tree(self):
+        super()._generate_default_tree()
+        self._tree["data"].append(self._generate_default_node(str, "N"))
+
     @property
+    @needs_full_ast
     def particles(self):
         """The type of particles involved in this problem.
 
@@ -52,7 +55,9 @@ class Mode(DataInputAbstract):
         """
         return self._particles.copy()
 
-    def add(self, particle):
+    @args_checked
+    @needs_full_cst
+    def add(self, particle: Particle | str | syntax_node.ValueNode):
         """Adds the given particle to the problem.
 
         If specifying particle type by string this must be the MCNP shorthand,
@@ -68,8 +73,6 @@ class Mode(DataInputAbstract):
         ValueError
             if string is not a valid particle shorthand.
         """
-        if not isinstance(particle, (Particle, str, syntax_node.ValueNode)):
-            raise TypeError("particle must be a Particle instance")
         if isinstance(particle, (str, syntax_node.ValueNode)):
             # error catching not needed
             # enum will raise ValueError "foo is not a valid Particle"
@@ -78,7 +81,9 @@ class Mode(DataInputAbstract):
             particle = Particle(particle.upper())
         self._particles.add(particle)
 
-    def remove(self, particle):
+    @args_checked
+    @needs_full_cst
+    def remove(self, particle: Particle | str):
         """Remove the given particle from the problem
 
         Parameters
@@ -91,13 +96,13 @@ class Mode(DataInputAbstract):
         ValueError
             if string is not a valid particle shorthand.
         """
-        if not isinstance(particle, (Particle, str)):
-            raise TypeError("particle must be a Particle instance")
         if isinstance(particle, str):
             particle = Particle(particle.upper())
         self._particles.remove(particle)
 
-    def set(self, particles):
+    @args_checked
+    @needs_full_cst
+    def set(self, particles: str | ty.Iterable[Particle | str]):
         """Completely override the current mode.
 
         Can specify it as:
@@ -115,14 +120,10 @@ class Mode(DataInputAbstract):
         ValueError
             if string is not a valid particle shorthand.
         """
-        if not isinstance(particles, (list, set, str)):
-            raise TypeError("particles must be a list, string, or set")
-        if isinstance(particles, (list, set)):
+        if isinstance(particles, ty.Iterable) and not isinstance(particles, str):
             is_str = True
             for particle in particles:
-                if not isinstance(particle, (str, Particle)):
-                    raise TypeError("particle must be a Particle or string")
-                if not isinstance(particle, str):
+                if isinstance(particle, Particle):
                     is_str = False
         else:
             particles = particles.split()
@@ -135,17 +136,17 @@ class Mode(DataInputAbstract):
                     raise ValueError("cannot mix particle and string in mode")
             self._particles = set(particles)
 
+    @needs_full_ast
     def __contains__(self, obj):
         return obj in self._particles
 
+    @needs_full_ast
     def __iter__(self):
         return iter(self._particles)
 
+    @needs_full_ast
     def __len__(self):
         return len(self._particles)
-
-    def __str__(self):
-        return f"Mode: {self.particles}"
 
     @staticmethod
     def _class_prefix():

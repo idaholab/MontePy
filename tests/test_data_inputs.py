@@ -32,7 +32,7 @@ def test_data_card_empty_constructor():
 def test_data_card_str():
     in_str = "vol 1 1 0"
     data = DataInput(in_str)
-    assert str(data) == "DATA INPUT: vol "
+    assert str(data) == "DataInput: vol"
 
 
 def test_data_card_format_mcnp():
@@ -92,7 +92,8 @@ def test_data_card_mutate_print():
 
 
 def test_print_in_data_block():
-    cell_controller = CellDataPrintController()
+    problem = montepy.MCNP_Problem()
+    cell_controller = CellDataPrintController(problem)
     cell_controller["imp"] = True
     cell_controller["Imp"] = True
     assert cell_controller["IMP"]
@@ -112,10 +113,12 @@ def test_volume_init_cell():
     vol = 1.0
     list_node = syntax_node.ListNode("data")
     list_node.append(syntax_node.ValueNode(str(vol), float))
+    classifier = syntax_node.ClassifierNode()
+    classifier.prefix = syntax_node.ValueNode("VoL", str)
     node = syntax_node.SyntaxNode(
         "volume",
         {
-            "classifier": syntax_node.ValueNode("VoL", str),
+            "classifier": classifier,
             "seperator": syntax_node.ValueNode("=", str),
             "data": list_node,
         },
@@ -134,24 +137,24 @@ def test_volume_init_cell():
         node = syntax_node.SyntaxNode(
             "volume",
             {
-                "classifier": syntax_node.ValueNode("VoL", str),
+                "classifier": classifier,
                 "seperator": syntax_node.ValueNode("=", str),
                 "data": list_node,
             },
         )
-        card = volume.Volume(key="VoL", value=node, in_cell_block=True)
+        card = volume.Volume(key="VoL", value=node, in_cell_block=True, jit_parse=False)
     with pytest.raises(ValueError):
         list_node = syntax_node.ListNode("data")
         list_node.append(syntax_node.ValueNode("-1", float))
         node = syntax_node.SyntaxNode(
             "volume",
             {
-                "classifier": syntax_node.ValueNode("VoL", str),
+                "classifier": classifier,
                 "seperator": syntax_node.ValueNode("=", str),
                 "data": list_node,
             },
         )
-        card = volume.Volume(key="VoL", value=node, in_cell_block=True)
+        card = volume.Volume(key="VoL", value=node, in_cell_block=True, jit_parse=False)
 
 
 def test_volume_init_data():
@@ -184,7 +187,7 @@ def test_volume_init_data():
 def test_volume_init_data():
     in_str = "VOL 1 1 2J 0"
     input_card = Input([in_str], BlockType.DATA)
-    vol_card = parse_data(input_card)
+    vol_card = parse_data(input_card, jit_parse=False)
     answers = [1.0, 1.0, None, None, 0.0]
     for i, vol in enumerate(vol_card._volume):
         if isinstance(vol, syntax_node.ValueNode):
@@ -199,19 +202,20 @@ def test_volume_init_data():
     in_str = "VOL NO s 1 2J 0"
     input_card = Input([in_str], BlockType.DATA)
     with pytest.raises(MalformedInputError):
-        vol_card = parse_data(input_card)
+        vol_card = parse_data(input_card, jit_parse=False)
     # negative volume
     in_str = "VOL NO -1 1 2J 0"
     input_card = Input([in_str], BlockType.DATA)
     with pytest.raises(MalformedInputError):
-        vol_card = parse_data(input_card)
+        vol_card = parse_data(input_card, jit_parse=False)
 
 
 def test_volumes_for_only_some_cells():
-    cells = [
-        montepy.Cell(Input([f"{i + 1} 0 -1 u=3"], BlockType.CELL)) for i in range(10)
-    ]
-    prob = MCNP_Problem(None)
+    cells = montepy.Cells(
+        [montepy.Cell(f"{i + 1} 0 -1 u=3", jit_parse=False) for i in range(10)]
+    )
+    prob = MCNP_Problem()
+    prob.surfaces.append(montepy.Surface("1 PZ 1"))
     prob.cells = cells
     vol_card = Input(["VOL 1 1 2 3 5"], BlockType.DATA)
     vol_data = volume.Volume(vol_card, in_cell_block=False)
@@ -226,10 +230,12 @@ def test_volume_setter():
     vol = 1.0
     list_node = syntax_node.ListNode("data")
     list_node.append(syntax_node.ValueNode(str(vol), float))
+    classifier = syntax_node.ClassifierNode()
+    classifier.prefix = syntax_node.ValueNode("VoL", str)
     node = syntax_node.SyntaxNode(
         "volume",
         {
-            "classifier": syntax_node.ValueNode("VoL", str),
+            "classifier": classifier,
             "seperator": syntax_node.ValueNode("=", str),
             "data": list_node,
         },
@@ -247,10 +253,12 @@ def test_volume_deleter():
     vol = 1.0
     list_node = syntax_node.ListNode("data")
     list_node.append(syntax_node.ValueNode(str(vol), float))
+    classifier = syntax_node.ClassifierNode()
+    classifier.prefix = syntax_node.ValueNode("VoL", str)
     node = syntax_node.SyntaxNode(
         "volume",
         {
-            "classifier": syntax_node.ValueNode("VoL", str),
+            "classifier": classifier,
             "seperator": syntax_node.ValueNode("=", str),
             "data": list_node,
         },
@@ -264,10 +272,12 @@ def test_volume_merge():
     vol = 1.0
     list_node = syntax_node.ListNode("data")
     list_node.append(syntax_node.ValueNode(str(vol), float))
+    classifier = syntax_node.ClassifierNode()
+    classifier.prefix = syntax_node.ValueNode("VoL", str)
     node = syntax_node.SyntaxNode(
         "volume",
         {
-            "classifier": syntax_node.ValueNode("VoL", str),
+            "classifier": classifier,
             "seperator": syntax_node.ValueNode("=", str),
             "data": list_node,
         },
@@ -282,16 +292,18 @@ def test_volume_repr():
     vol = 1.0
     list_node = syntax_node.ListNode("data")
     list_node.append(syntax_node.ValueNode(str(vol), float))
+    classifier = syntax_node.ClassifierNode()
+    classifier.prefix = syntax_node.ValueNode("VoL", str)
     node = syntax_node.SyntaxNode(
         "volume",
         {
-            "classifier": syntax_node.ValueNode("VoL", str),
+            "classifier": classifier,
             "seperator": syntax_node.ValueNode("=", str),
             "data": list_node,
         },
     )
     card = volume.Volume(key="VoL", value=node, in_cell_block=True)
-    assert "VOLUME" in repr(card)
+    assert "Volume" in repr(card)
 
 
 def test_data_clone():

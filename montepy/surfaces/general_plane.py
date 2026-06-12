@@ -1,19 +1,26 @@
-# Copyright 2024, Battelle Energy Alliance, LLC All Rights Reserved.
-from typing import Union
+# Copyright 2024-2026, Battelle Energy Alliance, LLC All Rights Reserved.
+from .surface import GeneralPlane as Parent
 import warnings
 
-import montepy
-from montepy.exceptions import *
-from montepy.surfaces.surface_type import SurfaceType
-from montepy.surfaces.surface import Surface, InitInput
 
+class GeneralPlane(Parent):
+    """Represents surface P: a general plane.
 
-class GeneralPlane(Surface):
-    """Represents P
+    The surface equation is:
+
+    .. math::
+
+        Ax + By + Cz - D = 0
+
+    May also be defined by three points (9 surface constants).
 
     .. versionchanged:: 1.0.0
 
         Added number parameter
+
+    .. deprecated:: 1.4.0
+
+       Access this class through ``montepy.GeneralPlane`` instead.
 
     Parameters
     ----------
@@ -23,28 +30,9 @@ class GeneralPlane(Surface):
         The number to set for this object.
     """
 
-    def __init__(
-        self,
-        input: InitInput = None,
-        number: int = None,
-    ):
-        super().__init__(input, number)
-        if input:
-            if self.surface_type != SurfaceType.P:
-                raise ValueError("A GeneralPlane must be a surface of type P")
-            self._enforce_constants()
-
-    def validate(self):
-        super().validate()
-        self._enforce_constants(_validation_call=True)
-
-    def _enforce_constants(self, _validation_call=False):
-        if len(self.surface_constants) not in {4, 9}:
-            message = f"A GeneralPlane must have either 4 or 9 surface constants. {len(self.surface_constants)} constants are provided."
-            if len(self.surface_constants) < 9:
-                if not _validation_call:
-                    raise ValueError(message)
-                else:
-                    raise IllegalState(message)
-            else:
-                warnings.warn(message, SurfaceConstantsWarning)
+    def __init__(self, *args, **kwargs):
+        warnings.warn(
+            "Submodule access to this class is deprecated. Use montepy.GeneralPlane instead.",
+            category=DeprecationWarning,
+        )
+        super().__init__(*args, **kwargs)
