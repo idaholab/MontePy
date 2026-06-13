@@ -11,6 +11,7 @@ from montepy.data_inputs import (
     lattice_input,
     material,
     mode,
+    tally,
     thermal_scattering,
     universe_input,
     volume,
@@ -23,6 +24,7 @@ DATA_CLASSES = {
     lattice_input.LatticeInput,
     material.Material,
     mode.Mode,
+    tally.Tally,
     thermal_scattering.ThermalScatteringLaw,
     transform.Transform,
     volume.Volume,
@@ -60,6 +62,8 @@ def parse_data(
         return data_input.ForbiddenDataInput(input)
     DataClass = PREFIX_MATCHES.get(prefix)
     if DataClass is not None:
+        if DataClass is tally.Tally:
+            return tally.Tally.from_input(input, jit_parse=jit_parse)
         if issubclass(DataClass, montepy.data_inputs.cell_modifier.CellModifierInput):
             return DataClass(input, problem=problem, jit_parse=jit_parse)
         return DataClass(input, jit_parse=jit_parse)

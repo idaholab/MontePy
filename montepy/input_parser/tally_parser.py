@@ -68,7 +68,9 @@ class TallyParser(DataParser):
         else:
             ret = syntax_node.ListNode("tally numbers")
             item = p[0]
-        if isinstance(item, syntax_node.ListNode):
+        # Preserve ListNode("tally group") intact so grouping structure is not lost.
+        # Only flatten other ListNode subclasses (e.g. ShortcutNode).
+        if isinstance(item, syntax_node.ListNode) and item.name != "tally group":
             for node in item.nodes:
                 ret.append(node)
         else:
@@ -95,7 +97,9 @@ class TallyParser(DataParser):
         else:
             ret = syntax_node.ListNode("tally group body")
         item = p.tally_group_item
-        if isinstance(item, syntax_node.ListNode):
+        # Only flatten ShortcutNode (e.g. repeat/jump sequences).
+        # Preserve lattice_phrase, universe_phrase, and nested tally_group intact.
+        if isinstance(item, syntax_node.ShortcutNode):
             for node in item.nodes:
                 ret.append(node)
         else:

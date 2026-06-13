@@ -1,122 +1,710 @@
 # Copyright 2024, Battelle Energy Alliance, LLC All Rights Reserved.
+from __future__ import annotations
 import copy
+from typing import Generator
 
 import montepy
 from montepy.cells import Cells
+from montepy.surface_collection import Surfaces
 from montepy.data_inputs.data_input import DataInputAbstract
 from montepy.data_inputs.tally_type import TallyType
+from montepy.exceptions import MalformedInputError
 from montepy.input_parser.tally_parser import TallyParser
 from montepy.input_parser import syntax_node
 from montepy.numbered_mcnp_object import Numbered_MCNP_Object
+import montepy.types as ty
 from montepy.utilities import *
+from montepy.mcnp_object import InitInput
 
 _TALLY_TYPE_MODULUS = 10
 
 
-def _number_validator(self, number):
-    if number <= 0:
-        raise ValueError("number must be > 0")
-    if number % _TALL_TYPE_MODULUS != self._type.value:
-        raise ValueError(f"Tally Type cannot be changed.")
-    if self._problem:
-        self._problem.tallies.check_number(number)
+class LatticeIndex:
+    """A lattice element index ``[i j k]`` in a tally path specification.
 
+    Parameters
+    ----------
+    dimensions : list
+        List of :class:`int` (single element index) or
+        ``tuple[int, int]`` (range ``i1:i2``).
+    """
 
-class Tally(DataInputAbstract, Numbered_MCNP_Object):
-    """ """
+    __slots__ = ("_dimensions",)
 
-    # todo type enforcement
-    _parser = TallyParser()
+    def __init__(self, dimensions):
+        self._dimensions = list(dimensions)
 
-    __slots__ = {"_groups", "_type", "_number", "_old_number", "_include_total"}
+    @property
+    def dimensions(self):
+        """The list of indices or (start, end) ranges."""
+        return list(self._dimensions)
 
-    def __init__(self, input=None):
-        self._cells = Cells()
-        self._old_number = None
-        self._number = self._generate_default_node(int, -1)
-        super().__init__(input)
-        if input:
-            num = self._input_number
-            self._old_number = copy.deepcopy(num)
-            self._number = num
-            try:
-                tally_type = TallyType(self.number % _TALLY_TYPE_MODULUS)
-            except ValueError as e:
-                raise MalformedInputEror(input, f"Tally Type provided not allowed: {e}")
-            groups, has_total = TallyGroup.parse_tally_specification(
-                self._tree["tally"]
-            )
-            self._groups = groups
-            self._include_total = has_total
-
-    @staticmethod
-    def _class_prefix():
-        return "f"
-
-    @staticmethod
-    def _has_number():
-        return True
-
-    @staticmethod
-    def _has_classifier():
-        return 2
-
-    @make_prop_val_node("_old_number")
-    def old_number(self):
-        """
-        The material number that was used in the read file
-
-        :rtype: int
-        """
-        pass
-
-    @make_prop_val_node("_number", int, validator=_number_validator)
-    def number(self):
-        """
-        The number to use to identify the material by
-
-        :rtype: int
-        """
-        pass
+    def __repr__(self):
+        return f"LatticeIndex({self._dimensions})"
 
 
 class TallyGroup:
-    __slots__ = {"_cells", "_old_numbers"}
+    """Abstract base for a tally scoring group."""
 
-    def __init__(self, cells=None, nodes=None):
-        self._cells = montepy.cells.Cells()
-        self._old_numbers = []
+    def __contains__(self, item) -> bool:
+        raise NotImplementedError
+
+
+class FlatGroup(TallyGroup):
+    """A flat list of cells/surfaces to score over.
+
+    Used as both a top-level bin and as an individual level in a
+    :class:`PathGroup` chain.
+
+    Parameters
+    ----------
+    numbers : list[int]
+        Cell or surface numbers.
+    lattice_indices : list[LatticeIndex | None], optional
+        Lattice indices parallel to ``numbers``.
+    is_grouped : bool
+        ``True`` = parenthesized union (one averaged bin);
+        ``False`` = separate bins.
+    universe_spec : int, optional
+        Universe number if ``U=N`` syntax was used.
+    """
+
+    __slots__ = (
+        "_old_numbers",
+        "_lattice_indices",
+        "_is_grouped",
+        "_universe_spec",
+        "_cells_or_surfaces",
+    )
+
+    def __init__(self, numbers, lattice_indices=None, *, is_grouped, universe_spec=None):
+        self._old_numbers = list(numbers)
+        self._lattice_indices = lattice_indices or [None] * len(self._old_numbers)
+        self._is_grouped = is_grouped
+        self._universe_spec = universe_spec
+        self._cells_or_surfaces = []
+
+    @property
+    def old_numbers(self):
+        """The original cell/surface numbers as read."""
+        return list(self._old_numbers)
+
+    @property
+    def is_grouped(self):
+        """``True`` if entries form a union bin (parenthesized)."""
+        return self._is_grouped
+
+    @property
+    def universe_spec(self):
+        """Universe number if ``U=N`` syntax was used, else ``None``."""
+        return self._universe_spec
+
+    def __contains__(self, item) -> bool:
+        if self._cells_or_surfaces:
+            return item in self._cells_or_surfaces
+        for num in self._old_numbers:
+            if hasattr(item, "old_number") and item.old_number == num:
+                return True
+            if hasattr(item, "number") and item.number == num:
+                return True
+        return False
+
+    def __repr__(self):
+        return f"FlatGroup({self._old_numbers}, grouped={self._is_grouped})"
+
+
+class PathGroup(TallyGroup):
+    """A universe-path group for repeated-structures tallies.
+
+    Parameters
+    ----------
+    levels : list[FlatGroup]
+        Levels in the ``<`` chain, innermost (scored) first.
+    """
+
+    __slots__ = ("_levels",)
+
+    def __init__(self, levels):
+        self._levels = list(levels)
+
+    @property
+    def levels(self):
+        """FlatGroup levels, innermost (scored) first."""
+        return list(self._levels)
+
+    def inside(self, *cells_or_surfaces, lattice=None) -> PathGroup:
+        """Append an outer level and return self for chaining.
+
+        Parameters
+        ----------
+        cells_or_surfaces : Cell | Surface
+            Objects at this level.
+        lattice : list[int], optional
+            Lattice index dimensions for the first element.
+
+        Returns
+        -------
+        PathGroup
+            ``self``, for method chaining.
+        """
+        numbers = [obj.number for obj in cells_or_surfaces]
+        indices = [None] * len(numbers)
+        if lattice is not None and numbers:
+            indices[0] = LatticeIndex(lattice)
+        is_grouped = len(cells_or_surfaces) > 1
+        self._levels.append(FlatGroup(numbers, indices, is_grouped=is_grouped))
+        return self
+
+    def __contains__(self, item) -> bool:
+        if not self._levels:
+            return False
+        return item in self._levels[0]
+
+    def __repr__(self):
+        return f"PathGroup(levels={len(self._levels)})"
+
+
+def _parse_lattice_phrase(lattice_node) -> LatticeIndex:
+    """Parse a ``ListNode("lattice phrase")`` into a :class:`LatticeIndex`."""
+    dimensions = []
+    for n in lattice_node.nodes:
+        if isinstance(n, syntax_node.PaddingNode):
+            continue
+        if isinstance(n, syntax_node.ListNode) and n.name == "lattice range":
+            vals = [m.value for m in n.nodes if isinstance(m, syntax_node.ValueNode)]
+            if len(vals) >= 2:
+                dimensions.append((int(vals[0]), int(vals[1])))
+        elif isinstance(n, syntax_node.ValueNode) and isinstance(n.value, (int, float)):
+            dimensions.append(int(n.value))
+    return LatticeIndex(dimensions)
+
+
+def _extract_numbers_with_lattice(nodes):
+    """Pair each numeric ValueNode with its immediately following lattice phrase.
+
+    Returns ``(numbers, lattice_indices)`` where ``lattice_indices[i]`` is a
+    :class:`LatticeIndex` or ``None``.
+    """
+    numbers = []
+    lattice_indices = []
+    i = 0
+    while i < len(nodes):
+        n = nodes[i]
+        if isinstance(n, syntax_node.ValueNode) and isinstance(n.value, (int, float)) and not isinstance(n.value, bool):
+            numbers.append(int(n.value))
+            if (
+                i + 1 < len(nodes)
+                and isinstance(nodes[i + 1], syntax_node.ListNode)
+                and nodes[i + 1].name == "lattice phrase"
+            ):
+                lattice_indices.append(_parse_lattice_phrase(nodes[i + 1]))
+                i += 2
+                continue
+            else:
+                lattice_indices.append(None)
+        i += 1
+    return numbers, lattice_indices
+
+
+def _extract_universe_spec_from_nodes(nodes):
+    """Extract universe number from nodes that may contain a universe_phrase ListNode."""
+    for n in nodes:
+        if isinstance(n, syntax_node.ListNode) and n.name == "universe phrase":
+            for m in n.nodes:
+                if isinstance(m, syntax_node.ValueNode) and isinstance(m.value, (int, float)):
+                    return int(m.value)
+        elif isinstance(n, syntax_node.ListNode) and n.name == "tally group":
+            inner = list(n.nodes)[1:-1]
+            result = _extract_universe_spec_from_nodes(inner)
+            if result is not None:
+                return result
+    return None
+
+
+def _parse_body_segment(nodes, *, is_grouped) -> FlatGroup:
+    numbers, lattice_indices = _extract_numbers_with_lattice(nodes)
+    universe_spec = _extract_universe_spec_from_nodes(nodes)
+    return FlatGroup(numbers, lattice_indices, is_grouped=is_grouped, universe_spec=universe_spec)
+
+
+def _parse_segment_as_level(seg) -> FlatGroup:
+    """Parse a path segment (between ``<`` separators) into a :class:`FlatGroup` level."""
+    non_pad = [n for n in seg if not isinstance(n, syntax_node.PaddingNode)]
+    if (
+        len(non_pad) == 1
+        and isinstance(non_pad[0], syntax_node.ListNode)
+        and non_pad[0].name == "tally group"
+    ):
+        inner_body = list(non_pad[0].nodes)[1:-1]
+        return _parse_body_segment(inner_body, is_grouped=True)
+    return _parse_body_segment(seg, is_grouped=False)
+
+
+def _parse_tally_group_node(group_node) -> TallyGroup:
+    nodes = list(group_node.nodes)
+    body = nodes[1:-1] if len(nodes) >= 2 else nodes
+
+    path_sep_indices = [
+        i
+        for i, n in enumerate(body)
+        if (
+            isinstance(n, syntax_node.ValueNode)
+            and isinstance(n.value, str)
+            and n.value.strip() == "<"
+        )
+    ]
+
+    if not path_sep_indices:
+        return _parse_body_segment(body, is_grouped=True)
+
+    segments = []
+    start = 0
+    for sep_i in path_sep_indices:
+        segments.append(body[start:sep_i])
+        start = sep_i + 1
+    segments.append(body[start:])
+
+    return PathGroup([_parse_segment_as_level(seg) for seg in segments])
+
+
+def _parse_tally_numbers(tally_numbers_node) -> list[TallyGroup]:
+    groups = []
+    for node in tally_numbers_node:
+        if isinstance(node, syntax_node.PaddingNode):
+            continue
+        if isinstance(node, syntax_node.ValueNode):
+            v = node.value
+            if v is None:
+                continue
+            if isinstance(v, (int, float)) and not isinstance(v, bool):
+                groups.append(FlatGroup([int(v)], is_grouped=False))
+        elif isinstance(node, syntax_node.ListNode) and node.name == "tally group":
+            groups.append(_parse_tally_group_node(node))
+    return groups
+
+
+class Tally(DataInputAbstract, Numbered_MCNP_Object):
+    """Base class for MCNP F-card tallies (F1, F2, F4, F5, F6, F7, F8).
+
+    Use :meth:`from_input` as a factory to create the appropriate subclass
+    when reading from a file.
+    """
+
+    _POINTER_ATTRS = set()
 
     @staticmethod
-    def parse_tally_specification(tally_spec):
-        # TODO type enforcement
-        ret = []
-        in_parens = False
-        buff = None
-        has_total = False
-        for node in tally_spec:
-            # TODO handle total
-            if in_parens:
-                if node.value == ")":
-                    in_parens = False
-                    buff._append_node(node)
-                    ret.append(buff)
-                    buff = None
-                else:
-                    buff._append_node(node)
-            else:
-                if node.value == "(":
-                    in_parens = True
-                    buff = TallyGroup()
-                    buff._append_node(node)
-                else:
-                    ret.append(TallyGroup(nodes=[node]))
-        return (ret, has_total)
+    def _parser():
+        return TallyParser()
 
-    def _append_node(self, node):
-        if not isinstance(node, syntax_node.ValueNode):
-            raise ValueError(f"Can only append ValueNode. {node} given")
-        self._old_numbers.append(node)
+    def _init_blank(self):
+        super()._init_blank()
+        self._old_number = self._generate_default_node(int, -1)
+        self._groups = []
+        self._include_total = False
 
-    def append(self, cell):
-        self._cells.append(cell)
+    def _parse_tree(self):
+        super()._parse_tree()
+        num = self._input_number
+        self._old_number = copy.deepcopy(num)
+        self._number = num
+        self._parse_tally_body()
+
+    def _generate_default_tree(self, **kwargs):
+        ret = {}
+        ret["start_pad"] = syntax_node.PaddingNode()
+        ret["classifier"] = syntax_node.ClassifierNode()
+        ret["classifier"].prefix = syntax_node.ValueNode(
+            self._class_prefix().upper(), str, padding=None, never_pad=True
+        )
+        ret["classifier"].number = self._generate_default_node(int, -1)
+        ret["keyword"] = syntax_node.ValueNode(None, str, padding=None)
+        tally_numbers = syntax_node.ListNode("tally numbers")
+        end_node = syntax_node.ValueNode(None, str)
+        ret["data"] = syntax_node.SyntaxNode(
+            "tally list", {"tally": tally_numbers, "end": end_node}
+        )
+        ret["parameters"] = syntax_node.ParametersNode()
+        self._tree = syntax_node.SyntaxNode("blank data tree", ret)
+
+    @args_checked
+    def __init__(
+        self,
+        input: InitInput = None,
+        number: ty.PositiveInt = None,
+        *,
+        jit_parse: bool = True,
+    ):
+        Numbered_MCNP_Object.__init__(self, input, number, jit_parse=jit_parse)
+
+    @staticmethod
+    def _class_prefix() -> str:
+        return "f"
+
+    @staticmethod
+    def _has_number() -> bool:
+        return True
+
+    @staticmethod
+    def _has_classifier() -> int:
+        return 1
+
+    @staticmethod
+    def _parent_collections():
+        return ()
+
+    def _parse_tally_body(self):
+        if self._input is None:
+            return
+        num = self._input_number.value
+        try:
+            TallyType(num % _TALLY_TYPE_MODULUS)
+        except ValueError as e:
+            raise MalformedInputError(self._input, f"Invalid tally type digit: {e}")
+        tally_list = self._tree["data"]
+        end_node = tally_list["end"]
+        self._include_total = (
+            end_node.value is not None and str(end_node.value).upper() == "T"
+        )
+        self._groups = _parse_tally_numbers(tally_list["tally"])
+
+    def _number_validator(self, number):
+        tally_type = getattr(type(self), "_TALLY_TYPE", None)
+        if tally_type is not None and number % _TALLY_TYPE_MODULUS != tally_type.value:
+            raise ValueError(
+                f"Cannot change tally type via number setter; "
+                f"expected last digit {tally_type.value}, "
+                f"got {number % _TALLY_TYPE_MODULUS}."
+            )
+        super()._number_validator(number)
+
+    @make_prop_val_node("_old_number")
+    def old_number(self):
+        """The tally number as read from the input file."""
+        pass
+
+    @property
+    @needs_full_ast
+    def tally_type(self) -> TallyType | None:
+        """The MCNP tally type (e.g. ``TallyType.CELL_FLUX`` for F4)."""
+        return getattr(type(self), "_TALLY_TYPE", None)
+
+    @property
+    @needs_full_ast
+    def groups(self) -> list[TallyGroup]:
+        """The list of :class:`TallyGroup` objects defining what is scored."""
+        return list(self._groups)
+
+    @property
+    @needs_full_ast
+    def include_total(self) -> bool:
+        """``True`` if a total bin (T) is appended."""
+        return self._include_total
+
+    def __contains__(self, item) -> bool:
+        if hasattr(self, "_not_parsed"):
+            return False
+        for group in self._groups:
+            if item in group:
+                return True
+        return False
+
+    @classmethod
+    def from_input(cls, input, *, jit_parse: bool = True) -> Tally:
+        """Factory: create the appropriate :class:`Tally` subclass from an input.
+
+        Parameters
+        ----------
+        input : Input | str
+            The raw MCNP input object.
+        jit_parse : bool
+            Whether to defer full parsing.
+
+        Returns
+        -------
+        Tally
+            An instance of the correct subclass for the tally type digit.
+        """
+        base = Tally(input, jit_parse=True)
+        num = base._number.value
+        try:
+            tally_type = TallyType(num % _TALLY_TYPE_MODULUS)
+        except ValueError:
+            raise MalformedInputError(
+                input,
+                f"Tally type digit {num % _TALLY_TYPE_MODULUS} is not valid.",
+            )
+        subclass = _TALLY_TYPE_MAP.get(tally_type)
+        if subclass is None:
+            return base
+        return subclass(input, jit_parse=jit_parse)
+
+    def link_to_problem(self, problem, *, deepcopy=False):
+        super().link_to_problem(problem)
+
+    def _update_values(self):
+        pass
+
+    @args_checked
+    @needs_full_cst
+    def clone(
+        self,
+        starting_number: ty.PositiveInt = None,
+        step: ty.PositiveInt = None,
+    ) -> Tally:
+        """Clone this tally with a new number.
+
+        See :meth:`~montepy.numbered_mcnp_object.Numbered_MCNP_Object.clone`.
+        """
+        return super().clone(starting_number, step)
+
+    def __str__(self):
+        try:
+            return f"TALLY: {self.number}"
+        except Exception:
+            return "TALLY: (unparsed)"
+
+    def __repr__(self):
+        try:
+            ttype = getattr(type(self), "_TALLY_TYPE", None)
+            ngroups = len(getattr(self, "_groups", []))
+            return f"TALLY: {self.number}, type: {ttype}, groups: {ngroups}"
+        except Exception:
+            return "TALLY: (unparsed)"
+
+
+class SurfaceTally(Tally):
+    """Intermediate class for tallies that score on surfaces (F1, F2)."""
+
+    def _init_blank(self):
+        super()._init_blank()
+        self._surfaces = Surfaces()
+
+    @property
+    @needs_full_ast
+    def surfaces(self) -> Surfaces:
+        """The surfaces this tally scores over."""
+        return self._surfaces
+
+    @args_checked
+    def add_surface(self, surface: montepy.Surface) -> None:
+        """Add a single surface as a separate scoring bin.
+
+        Parameters
+        ----------
+        surface : Surface
+            The surface to add.
+        """
+        self._groups.append(FlatGroup([surface.number], is_grouped=False))
+        if surface not in self._surfaces:
+            self._surfaces.append(surface)
+
+    def add_group(self, surfaces) -> None:
+        """Add surfaces as a single union (averaged) bin.
+
+        Parameters
+        ----------
+        surfaces : Iterable[Surface]
+            The surfaces to group.
+        """
+        surfaces = list(surfaces)
+        numbers = [s.number for s in surfaces]
+        self._groups.append(FlatGroup(numbers, is_grouped=True))
+        for s in surfaces:
+            if s not in self._surfaces:
+                self._surfaces.append(s)
+
+    def add_path_group(self, *surfaces) -> PathGroup:
+        """Add a universe-path group rooted at the given surfaces.
+
+        Returns the :class:`PathGroup` for chaining via :meth:`PathGroup.inside`.
+
+        Parameters
+        ----------
+        surfaces : Surface
+            The innermost-level surfaces.
+
+        Returns
+        -------
+        PathGroup
+            The new path group (already appended).
+        """
+        numbers = [s.number for s in surfaces]
+        is_grouped = len(surfaces) > 1
+        first_level = FlatGroup(numbers, is_grouped=is_grouped)
+        pg = PathGroup([first_level])
+        self._groups.append(pg)
+        return pg
+
+    def link_to_problem(self, problem, *, deepcopy=False):
+        super().link_to_problem(problem)
+        if problem is not None and not hasattr(self, "_not_parsed"):
+            for group in self._groups:
+                self._link_group_surfaces(group, problem)
+
+    def _link_group_surfaces(self, group, problem):
+        if isinstance(group, FlatGroup):
+            for num in group._old_numbers:
+                try:
+                    # Use _surfaces directly to avoid triggering __relink_objs via the property.
+                    surface = problem._surfaces[num]
+                    if surface not in group._cells_or_surfaces:
+                        group._cells_or_surfaces.append(surface)
+                    if surface not in self._surfaces:
+                        self._surfaces.append(surface)
+                except KeyError:
+                    pass
+        elif isinstance(group, PathGroup):
+            for level in group._levels:
+                self._link_group_surfaces(level, problem)
+
+
+class CellTally(Tally):
+    """Intermediate class for tallies that score in cells (F4, F6, F7, F8)."""
+
+    def _init_blank(self):
+        super()._init_blank()
+        self._cells = Cells()
+
+    @property
+    @needs_full_ast
+    def cells(self) -> Cells:
+        """The cells this tally scores in."""
+        return self._cells
+
+    @args_checked
+    def add_cell(self, cell: montepy.Cell) -> None:
+        """Add a single cell as a separate scoring bin.
+
+        Parameters
+        ----------
+        cell : Cell
+            The cell to add.
+        """
+        self._groups.append(FlatGroup([cell.number], is_grouped=False))
+        if cell not in self._cells:
+            self._cells.append(cell)
+
+    def add_group(self, cells) -> None:
+        """Add cells as a single union (averaged) bin.
+
+        Parameters
+        ----------
+        cells : Iterable[Cell]
+            The cells to group.
+        """
+        cells = list(cells)
+        numbers = [c.number for c in cells]
+        self._groups.append(FlatGroup(numbers, is_grouped=True))
+        for c in cells:
+            if c not in self._cells:
+                self._cells.append(c)
+
+    def add_path_group(self, *cells) -> PathGroup:
+        """Add a universe-path group rooted at the given cells.
+
+        Returns the :class:`PathGroup` for chaining via :meth:`PathGroup.inside`.
+
+        Parameters
+        ----------
+        cells : Cell
+            The innermost-level cells.
+
+        Returns
+        -------
+        PathGroup
+            The new path group (already appended).
+        """
+        numbers = [c.number for c in cells]
+        is_grouped = len(cells) > 1
+        first_level = FlatGroup(numbers, is_grouped=is_grouped)
+        pg = PathGroup([first_level])
+        self._groups.append(pg)
+        return pg
+
+    def link_to_problem(self, problem, *, deepcopy=False):
+        super().link_to_problem(problem)
+        if problem is not None and not hasattr(self, "_not_parsed"):
+            for group in self._groups:
+                self._link_group_cells(group, problem)
+
+    def _link_group_cells(self, group, problem):
+        if isinstance(group, FlatGroup):
+            for num in group._old_numbers:
+                try:
+                    # Use _cells directly to avoid triggering __relink_objs via the property.
+                    cell = problem._cells[num]
+                    if cell not in group._cells_or_surfaces:
+                        group._cells_or_surfaces.append(cell)
+                    if cell not in self._cells:
+                        self._cells.append(cell)
+                except KeyError:
+                    pass
+        elif isinstance(group, PathGroup):
+            if group._levels:
+                self._link_group_cells(group._levels[0], problem)
+
+
+class DetectorTally(Tally):
+    """F5: point/ring detector tally."""
+
+    _TALLY_TYPE = TallyType.DETECTOR
+
+
+# ── Concrete subclasses ────────────────────────────────────────────────────────
+
+
+class SurfaceCurrentTally(SurfaceTally):
+    """F1: surface current tally."""
+
+    _TALLY_TYPE = TallyType.CURRENT
+
+
+class SurfaceFluxTally(SurfaceTally):
+    """F2: average surface flux tally."""
+
+    _TALLY_TYPE = TallyType.SURFACE_FLUX
+
+
+class CellFluxTally(CellTally):
+    """F4: cell flux tally."""
+
+    _TALLY_TYPE = TallyType.CELL_FLUX
+
+
+class EnergyDepositionTally(CellTally):
+    """F6: energy deposition tally."""
+
+    _TALLY_TYPE = TallyType.ENERGY_DEPOSITION
+
+
+class FissionEnergyDepositionTally(CellTally):
+    """F7: fission energy deposition tally."""
+
+    _TALLY_TYPE = TallyType.FISSION_ENERGY_DEPOSITION
+
+
+class EnergyDetectorPulseTally(CellTally):
+    """F8: energy-detector pulse height tally."""
+
+    _TALLY_TYPE = TallyType.ENERGY_DETECTOR_PULSE
+
+
+_TALLY_TYPE_MAP: dict[TallyType, type[Tally]] = {
+    TallyType.CURRENT: SurfaceCurrentTally,
+    TallyType.SURFACE_FLUX: SurfaceFluxTally,
+    TallyType.CELL_FLUX: CellFluxTally,
+    TallyType.DETECTOR: DetectorTally,
+    TallyType.ENERGY_DEPOSITION: EnergyDepositionTally,
+    TallyType.FISSION_ENERGY_DEPOSITION: FissionEnergyDepositionTally,
+    TallyType.ENERGY_DETECTOR_PULSE: EnergyDetectorPulseTally,
+}
+
+# ── Convenience aliases ────────────────────────────────────────────────────────
+
+F1Tally = SurfaceCurrentTally
+F2Tally = SurfaceFluxTally
+F4Tally = CellFluxTally
+F5Tally = DetectorTally
+F6Tally = EnergyDepositionTally
+F7Tally = FissionEnergyDepositionTally
+F8Tally = EnergyDetectorPulseTally
