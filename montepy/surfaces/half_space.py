@@ -643,7 +643,9 @@ class UnitHalfSpace(HalfSpace):
                 container = self._cell.complements
             else:
                 container = self._cell.surfaces
-            if div not in container:
+            try:
+                container[div.number]
+            except KeyError:
                 container.append(div)
 
     @make_prop_pointer("_is_cell", bool)
