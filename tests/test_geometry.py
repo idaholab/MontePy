@@ -762,6 +762,40 @@ def test_replace_unlinked_raises():
         leaf.replace(surf1, surf2)
 
 
+def test_ensure_has_parens_right_union():
+    """_ensure_has_parens wraps the RIGHT side in GROUP when it's a union under intersection."""
+    surf1 = montepy.CylinderOnAxis()
+    surf2 = montepy.CylinderOnAxis()
+    surf3 = montepy.CylinderOnAxis()
+    surf1.number = 1
+    surf2.number = 2
+    surf3.number = 3
+    # left is a leaf, right is a union → right must be wrapped in GROUP
+    half_space = +surf1 & (+surf2 | -surf3)
+    half_space._ensure_has_nodes()
+    assert half_space.right.operator == Operator.GROUP
+    assert half_space.node.format() == "1 (2 : -3)"
+
+
+def test_replace_not_found_restores_nothing(make_linked_geometry):
+    """replace() raises ValueError and does NOT restore old_divider when it was
+    present in cell.surfaces but absent from the geometry tree."""
+    surf1 = montepy.CylinderOnAxis()
+    surf2 = montepy.CylinderOnAxis()
+    surf3 = montepy.CylinderOnAxis()
+    surf1.number = 1
+    surf2.number = 2
+    surf3.number = 3
+    # geometry only contains surf1; surf2 is in cell.surfaces but not the tree
+    parent, half_space = make_linked_geometry(surf1)
+    # manually add surf2 to cell.surfaces so removed_from_container=True path is hit
+    parent.surfaces.append(surf2)
+    with pytest.raises(ValueError):
+        half_space.replace(surf2, surf3)
+    # surf2 must NOT be restored — Micah's directive
+    assert surf2 not in parent.surfaces
+
+
 # ── __iter__ tests ────────────────────────────────────────────────────────────
 
 
