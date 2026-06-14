@@ -252,27 +252,6 @@ class HalfSpace:
         old_divider: montepy.Surface | montepy.Cell,
         new_divider: montepy.Surface | montepy.Cell,
     ) -> None:
-        """Replace all occurrences of a divider in this geometry tree.
-
-        Parameters
-        ----------
-        old_divider : Surface or Cell
-            the divider to be replaced.
-        new_divider : Surface or Cell
-            the divider to replace it with.
-
-        Raises
-        ------
-        TypeError
-            if either argument is not a Surface or Cell, or if they are not the
-            same kind (e.g. one is a Surface and the other is a Cell).
-        ValueError
-            if old_divider is not found in the geometry tree, or if
-            old_divider and new_divider are the same object.
-        IllegalState
-            if the geometry tree has not been linked via update_pointers()
-            (i.e. leaf dividers are still integers from parsing).
-        """
         if not isinstance(
             old_divider, (montepy.surfaces.surface.Surface, montepy.Cell)
         ):
@@ -296,21 +275,22 @@ class HalfSpace:
             raise ValueError(
                 "new_divider and old_divider are the same object; nothing to replace."
             )
-        # Validate the tree is fully linked before touching anything.
         for leaf in self:
             if isinstance(leaf._divider, Integral):
                 raise IllegalState(
                     "Geometry tree has not been linked to objects yet. "
                     "Run Cell.update_pointers() before calling replace()."
                 )
-        # Remove old_divider from the parent cell's container before calling
-        # _replace_recursive so replacing with a different object that reuses the
-        # same number does not trip the collection's conflict checks.
+
+        # Find parent cell
         cell = None
         for leaf in self:
             if leaf._cell is not None:
                 cell = leaf._cell
                 break
+
+        # Remove old_divider from parent cell's container only if present
+        removed_from_container = False
         if cell is not None:
             container = (
                 cell.complements
@@ -319,12 +299,13 @@ class HalfSpace:
             )
             if old_divider in container:
                 container.remove(old_divider)
+                removed_from_container = True
+
         replaced = self._replace_recursive(old_divider, new_divider)
         if not replaced:
-            # Replacement failed, so restore the original divider to keep the
-            # parent cell's collection consistent.
-            if cell is not None:
-                container.append(old_divider)
+            # old_divider was never in the geometry tree.
+            # Per Micah: don't add it back (it was never legitimately there),
+            # but still raise ValueError.
             raise ValueError(
                 f"{old_divider} (number: {old_divider.number}) not found in geometry tree."
             )
