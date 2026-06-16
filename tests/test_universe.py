@@ -489,8 +489,8 @@ class TestFill:
             fill1.merge(fill2)
 
     @given(
-        indices=st.lists(st.integers(), min_size=3, max_size=3),
-        width=st.lists(st.integers(1), min_size=3, max_size=3),
+        indices=st.lists(st.integers(-1_000_000, 1_000_000), min_size=3, max_size=3),
+        width=st.lists(st.integers(1, 1_000_000), min_size=3, max_size=3),
     )
     def test_fill_index_setter(self, indices, width):
         fill = self.simple_fill.clone()
