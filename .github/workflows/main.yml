@@ -58,7 +58,9 @@ jobs:
     strategy:
       matrix:
         python-version: ["3.12", "3.13", "3.14", "3.15-dev"]
-        numpy-version: ["2.0", "2.4"]
+        # 2.0.0 is pinned to a minor version, whereas 2.4 is pinned to a major version.
+        # Though it may be confusing this will install 2.5, etc.
+        numpy-version: ["2.0.0", "2.4"]
         sly-version: ["0.5"]
         include:
           - python-version: "3.13"
