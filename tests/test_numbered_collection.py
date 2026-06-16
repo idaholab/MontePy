@@ -13,7 +13,8 @@ import os
 
 class TestNumberedObjectCollection:
 
-    @pytest.fixture(scope="class")
+    @pytest.fixture
+    @classmethod
     def read_simple_problem(_):
         return montepy.read_input(os.path.join("tests", "inputs", "test.imcnp"))
 
@@ -825,7 +826,8 @@ class TestNumberedObjectCollection:
 
 class TestMaterials:
 
-    @pytest.fixture(scope="class")
+    @pytest.fixture
+    @classmethod
     def m0_prob(_):
         return montepy.read_input(
             os.path.join("tests", "inputs", "test_importance.imcnp")
