@@ -13,7 +13,7 @@ jobs:
       contents: read
     strategy:
       matrix:
-        python-version: ["3.12", "3.13", "3.14"]
+        python-version: ["3.12", "3.13", "3.14", "3.15-dev"]
 
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
@@ -57,7 +57,7 @@ jobs:
       actions: write
     strategy:
       matrix:
-        python-version: ["3.12", "3.13", "3.14"]
+        python-version: ["3.12", "3.13", "3.14", "3.15-dev"]
         numpy-version: ["2.0", "2.4"]
         sly-version: ["0.5"]
         include:
