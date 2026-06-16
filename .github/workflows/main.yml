@@ -14,6 +14,7 @@ jobs:
     strategy:
       matrix:
         python-version: ["3.12", "3.13", "3.14", "3.15-dev"]
+    continue-on-error: ${{ matrix.python-version == '3.15-dev' }}
 
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
@@ -53,7 +54,7 @@ jobs:
 
   test:
     runs-on: ubuntu-latest
-    permissions: 
+    permissions:
       actions: write
     strategy:
       matrix:
@@ -66,7 +67,8 @@ jobs:
           - python-version: "3.13"
             numpy-version: "2.4"
             sly-version: "0.4"
-    
+    continue-on-error: ${{ matrix.python-version == '3.15-dev' }}
+
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
         with:
