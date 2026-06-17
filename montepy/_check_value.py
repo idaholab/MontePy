@@ -177,6 +177,30 @@ def check_type_and_value(
     *,
     none_ok: bool = False,
 ):
+    """Check one argument's type and any ``Annotated`` value constraints.
+
+    Called by ``args_checked`` for each bound argument. Strips ``Annotated``
+    metadata (value-constraint callables from ``montepy.types``, e.g.
+    ``positive``) from ``expected_type``, delegates the bare type check to
+    :func:`check_type`, then invokes each constraint callable in turn.
+
+    Parameters
+    ----------
+    func_name : str
+        Name of the decorated function, used in error messages.
+    name : str
+        Argument name, used in error messages.
+    value : object
+        The argument value to validate.
+    expected_type : type
+        The annotation from the function signature. May be a plain type, a
+        parameterised generic (e.g. ``list[int]``), or an ``Annotated`` type whose
+        extra args are constraint callables.
+    expected_iter_type : type or None, optional
+        Expected element type when ``value`` is iterable.
+    none_ok : bool, optional
+        Whether ``None`` passes validation without further checks.
+    """
     annotations = []
     if isinstance(expected_type, typing.TypeAliasType):
         expected_type = expected_type.__value__
@@ -328,6 +352,25 @@ def check_type_iterable(
     *,
     none_ok: bool = False,
 ):
+    """Check a ``GenericAlias`` annotation (e.g. ``list[int]``, ``dict[str, int]``).
+
+    Called internally by :func:`check_type` when it detects the annotation is a
+    ``GenericAlias``. Extracts the origin type and element-type arguments, then
+    recurses into :func:`check_type_and_value` for each element.
+
+    Parameters
+    ----------
+    func_name : str
+        Name of the decorated function, used in error messages.
+    name : str
+        Argument name, used in error messages.
+    value : object
+        The argument value to validate.
+    expected_type : type
+        A parameterised generic such as ``list[int]`` or ``dict[str, float]``.
+    none_ok : bool, optional
+        Whether ``None`` passes validation without further checks.
+    """
     base_cls = typing.get_origin(expected_type)
     args = typing.get_args(expected_type)
     check_type_and_value(func_name, name, value, base_cls, none_ok=none_ok)

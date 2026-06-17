@@ -384,12 +384,6 @@ class Cell(Numbered_MCNP_Object):
             return False
         return self._universe.not_truncated
 
-    @property
-    def not_truncated(self):
-        if self.universe.number == 0:
-            return False
-        return self._universe.not_truncated
-
     @not_truncated.setter
     @args_checked
     @needs_full_ast
@@ -835,6 +829,20 @@ class Cell(Numbered_MCNP_Object):
         *,
         deepcopy: bool = False,
     ):
+        """Links the input to the parent problem for this input.
+
+        This is done so that inputs can find links to other objects.
+
+        .. versionchanged:: 1.5.0
+            Added the ``deepcopy`` parameter.
+
+        Parameters
+        ----------
+        problem : MCNP_Problem
+            The problem to link this input to.
+        deepcopy : bool
+            If this is occurring during a problem level deepcopy.
+        """
         super().link_to_problem(problem)
         if not hasattr(self, "_not_parsed"):
             if not deepcopy:

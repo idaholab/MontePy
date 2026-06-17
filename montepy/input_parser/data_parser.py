@@ -273,6 +273,7 @@ class ParamOnlyDataParser(DataParser):
 
 
 class JitDataParser:
+    """A lightweight data-input parser that extracts only the classifier keyword for JIT parsing."""
 
     @staticmethod
     def parse(tokenizer):
