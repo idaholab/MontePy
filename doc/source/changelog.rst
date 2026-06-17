@@ -2,7 +2,6 @@
 MontePy Changelog
 *****************
 
-
 1.5 releases
 =============
 
@@ -10,14 +9,15 @@ MontePy Changelog
 #Next Version#
 --------------
 
-**Feature Added**
+**Features Added**
 
 * Added support for just-in-time parsing (:issue:`529`).
-* Add _checkvalue.py_ to codebase (:issue:`687`). 
+* Add _checkvalue.py_ to codebase (:issue:`687`).
 
 **Performance Improvement**
 
 * Add just-in-time parsing which can significantly improve performance for working with large models under some circumstances (:issue:`529`).
+
 
 1.4 releases
 =============

@@ -8,7 +8,7 @@ from setuptools_scm import get_version
 parser = argparse.ArgumentParser()
 parser.add_argument("-a", "--alpha", action="store_true")
 DEPLOY_VERSION = r"\d+\.\d+\.\d+"
-ALPHA_VERSION = DEPLOY_VERSION + r"a\d+"
+ALPHA_VERSION = DEPLOY_VERSION + r"(a|b|rc)\d+"
 args = parser.parse_args()
 if args.alpha:
     print("checking alpha release")

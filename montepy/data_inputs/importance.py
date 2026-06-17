@@ -60,6 +60,7 @@ class Importance(CellModifierInput):
     """
 
     _DEFAULT_IMP = 1.0
+
     _ALL_OR_NOTHING = True
     """
     Marks that if one cell has a value all cells must have values, no matter the default.

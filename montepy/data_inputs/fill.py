@@ -624,7 +624,6 @@ class Fill(CellModifierInput):
         Returns
         -------
         range
-            range
         """
         return range(self._axis_size(axis))
 

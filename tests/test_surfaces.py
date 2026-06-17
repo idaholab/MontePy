@@ -543,6 +543,10 @@ def test_cylinder_location_setter():
     # test wrong type
     with pytest.raises(TypeError):
         surf.coordinates = "fo"
+    with pytest.raises(TypeError):
+        surf.coordinates = {5, 6, 7}
+    with pytest.raises(TypeError):
+        surf.coordinates = iter((5, 6, 7))
     # test length issues
     with pytest.raises(ValueError):
         surf.coordinates = [3, 4, 5]
@@ -559,6 +563,10 @@ def test_sphere_coordinate_setter():
         surf.coordinates = 6
     with pytest.raises(TypeError):
         surf.coordinates = (6, 7, "eight")
+    with pytest.raises(TypeError):
+        surf.coordinates = {6, 7}
+    with pytest.raises(TypeError):
+        surf.coordinates = iter((6, 7))
     # test length issues
     with pytest.raises(ValueError):
         surf.coordinates = [6, 7]
