@@ -26,14 +26,19 @@ class Numbered_MCNP_Object(MCNP_Object):
     ----------
     input : Input | str
         The Input syntax object this will wrap and parse.
-    number : int
+    number : ty.NonNegativeInt
         The number to set for this object.
     jit_parse : bool
         Parse the object just-in-time, when the information is actually needed, if True.
     """
 
     def __init__(
-        self, input: InitInput, number: int = None, *, jit_parse: bool = True, **kwargs
+        self,
+        input: InitInput,
+        number: ty.NonNegativeInt = None,
+        *,
+        jit_parse: bool = True,
+        **kwargs,
     ):
         if not input:
             self._number = self._generate_default_node(int, -1)
@@ -47,9 +52,14 @@ class Numbered_MCNP_Object(MCNP_Object):
             self.number = number
 
     _CHILD_OBJ_MAP = {}
-    """"""
+    """
+    Maps the children objects/collections (e.g., surfaces) to where to put them in the parent problem.
+    """
 
     _KEYS_TO_PRESERVE = {"_collection_ref"}
+    """
+    The keys (attributes) of the class to preserve during a full parse.
+    """
 
     @property
     def number(self):
@@ -69,8 +79,6 @@ class Numbered_MCNP_Object(MCNP_Object):
         self._number.value = value
 
     def _number_validator(self, number):
-        if number < 0:
-            raise ValueError("number must be >= 0")
         if self._collection is not None:
             collection = self._collection
             collection.check_number(number)
@@ -78,6 +86,9 @@ class Numbered_MCNP_Object(MCNP_Object):
             collection._update_number(self.number, number, self)
 
     def _find_impacted_parents(self, new_number):
+        """
+        Find parent objects (e.g., cells for surfaces) to fully parse when this number changes to prevent breaking.
+        """
         if self.number == new_number:
             return
         if not self._problem:

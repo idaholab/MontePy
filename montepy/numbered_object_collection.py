@@ -209,7 +209,7 @@ class NumberedObjectCollection(ABC):
                     obj._link_to_collection(self)
 
     def finalize_init(self):
-        """TODO"""
+        """Finish setting up this collection after the parent problem has completed parsing."""
         pass
 
     @property
@@ -267,7 +267,7 @@ class NumberedObjectCollection(ABC):
             )
 
     def search_parent_objs_by_child(self, child, parent_prop, prop_container=False):
-        """ """
+        """Searches the parent collection (e.g., cells for surfaces) that may has this child object, and parse it."""
         search_str = str(child.number)
         for obj in self:
             # possible candidate without full parsing

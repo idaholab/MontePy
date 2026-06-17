@@ -146,6 +146,7 @@ class Cells(NumberedObjectCollection):
         """
         Grab a data block CellModifier input and link it to this problem.
         """
+
         def handle_error(e):
             if check_input:
                 warnings.warn(f"{type(e).__name__}: {e.message}", stacklevel=3)

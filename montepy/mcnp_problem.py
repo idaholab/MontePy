@@ -779,7 +779,9 @@ class MCNP_Problem:
 
     @args_checked
     def parse(
-        self, input: str, append: bool = True, *, jit_parse: bool = True
+        self,
+        input: str,
+        append: bool = True,
     ) -> montepy.mcnp_object.MCNP_Object:
         """Parses the MCNP object given by the string, and links it adds it to this problem.
 
@@ -792,7 +794,7 @@ class MCNP_Problem:
         This is done mostly for optimization to go from easiest parsing to hardest.
         This will:
 
-        #. Parse the input
+        #. Parse the input (fully)
         #. Link it to other objects in the problem. Note: this will raise an error if those objects don't exist.
         #. Append it to the appropriate collection
 
@@ -803,7 +805,6 @@ class MCNP_Problem:
             this does not need to meet MCNP line length rules.
         append : bool
             Whether to append this parsed object to this problem.
-        TODO
 
         Returns
         -------
@@ -844,6 +845,16 @@ class MCNP_Problem:
         return obj
 
     def full_parse(self):
+        """
+        Trigger a full parse for all objects in this problem.
+
+        .. note::
+
+            For large models this could be a very expensive operation.
+
+        .. versionadded:: 1.5.0
+
+        """
         for collection in [self.cells, self.surfaces, self.data_inputs]:
             for obj in collection:
                 obj.full_parse()

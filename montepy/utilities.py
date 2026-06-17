@@ -217,6 +217,12 @@ def make_prop_pointer(
 
 
 def needs_full_ast(func):
+    """
+    Marks a function as needed having the abstract syntax tree.
+
+    Calling a marked function will lead to a full (abstract) parse.
+    """
+
     @functools.wraps(func)
     def decorator(self, *args, **kwargs):
         if hasattr(self, "_not_parsed"):
@@ -227,6 +233,11 @@ def needs_full_ast(func):
 
 
 needs_full_cst = needs_full_ast
+"""
+Marks a function as needed having the concrete syntax tree.
+
+Calling a marked function will lead to a full parse.
+"""
 
 
 def prop_pointer_from_problem(
@@ -239,9 +250,31 @@ def prop_pointer_from_problem(
     deletable: bool = False,
 ):
     """
-    TODO
+    Marks a function, and turns it into a property that is an object pointer (:func:`make_prop_pointer`), which can be pulled from the problem
+    automatically.
 
-    TODO raise BrokenObjectLinkError
+    When this property is not populated, and a problem is linked, the object is fetched from the problem.
+
+    parameters
+    ----------
+    hidden_param: str
+       the _private attribute where the object is stored.
+    id_param: str
+       the parameter of the ID number for the object to pull.
+    prob_collection_param: str
+       the parameter of the problem of the collection, from which to grab this object from.
+    types: type[type]
+       the allowed types for making this property settable.
+    base_type: type
+       the type to coerce all other types to.
+    validator: Callable
+       A function to call on setting for additional validation
+    deletable:
+        Whether deletion should be allowed.
+    raises
+    ------
+    BrokenObjectLinkError
+        When the object can not be found.
     """
 
     def decorator(func):
@@ -284,7 +317,32 @@ def prop_pointer_collect_from_problem(
     deletable: bool = False,
 ):
     """
-    TODO
+    Marks a function, and turns it into a property that is an object pointer to a collection (:func:`make_prop_pointer`), which can be pulled from the problem
+    automatically.
+
+    When this property is not populated, and a problem is linked, the object is fetched from the problem.
+    This differs from :func:`prop_pointer_from_problem` because this stores multiple objects.
+
+    parameters
+    ----------
+    hidden_param: str
+       the _private attribute where the object is stored.
+    id_param: str
+       the parameter of the ID number for the object to pull.
+    prob_collection_param: str
+       the parameter of the problem of the collection, from which to grab this object from.
+    types: type[type]
+       the allowed types for making this property settable.
+    base_type: type
+       the type to coerce all other types to.
+    validator: Callable
+       A function to call on setting for additional validation
+    deletable:
+        Whether deletion should be allowed.
+    raises
+    ------
+    BrokenObjectLinkError
+        When the object can not be found.
     """
 
     def decorator(func):
