@@ -13,10 +13,11 @@ jobs:
       contents: read
     strategy:
       matrix:
-        python-version: ["3.12", "3.13", "3.14"]
+        python-version: ["3.12", "3.13", "3.14", "3.15-dev"]
+    continue-on-error: ${{ matrix.python-version == '3.15-dev' }}
 
     steps:
-      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+      - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10
         with: 
           fetch-depth: 0
           fetch-tags: true
@@ -53,20 +54,23 @@ jobs:
 
   test:
     runs-on: ubuntu-latest
-    permissions: 
+    permissions:
       actions: write
     strategy:
       matrix:
-        python-version: ["3.12", "3.13", "3.14"]
-        numpy-version: ["2.0", "2.4"]
+        python-version: ["3.12", "3.13", "3.14", "3.15-dev"]
+        # 2.0.0 is pinned to a minor version, whereas 2.4 is pinned to a major version.
+        # Though it may be confusing this will install 2.5, etc.
+        numpy-version: ["2.0.0", "2.4"]
         sly-version: ["0.5"]
         include:
           - python-version: "3.13"
             numpy-version: "2.4"
             sly-version: "0.4"
-    
+    continue-on-error: ${{ matrix.python-version == '3.15-dev' }}
+
     steps:
-      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+      - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10
         with:
           persist-credentials: false
       - name: set up python  ${{ matrix.python-version }}
@@ -116,7 +120,7 @@ jobs:
       contents: read
     
     steps:
-      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+      - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10
         with:
           fetch-depth: 0
           fetch-tags: true
@@ -143,7 +147,7 @@ jobs:
       contents: read
     
     steps:
-      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+      - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10
         with:
           fetch-depth: 0
           fetch-tags: true
@@ -171,7 +175,7 @@ jobs:
     
     steps:
 
-      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+      - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10
         with:
           persist-credentials: false
       - name: set up python 3.14
@@ -187,7 +191,7 @@ jobs:
       contents: read
     
     steps:
-      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+      - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10
         with:
           persist-credentials: false
       - name: set up python 3.14
@@ -208,7 +212,7 @@ jobs:
       contents: read
     
     steps:
-      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+      - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10
         with:
           persist-credentials: false
       - name: set up python 3.14
@@ -227,7 +231,7 @@ jobs:
     if: github.ref != 'refs/heads/main'
     
     steps:
-      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+      - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10
         with:
           persist-credentials: false
       - name: Check for changes

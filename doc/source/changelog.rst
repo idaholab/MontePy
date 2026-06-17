@@ -16,6 +16,14 @@ Next Release
 1.4 releases
 ============
 
+#Next Version#
+--------------
+
+**Bugs Fixed**
+
+* Fixed bug where values for user generated objects would be rounded off at five digits no matter what. This will now round off at 15 digits if necessary (:issue:`962`).
+
+
 1.4.0
 --------------
 
