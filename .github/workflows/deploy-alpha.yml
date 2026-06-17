@@ -11,7 +11,7 @@ jobs:
       contents: read
     runs-on: ubuntu-latest    
     steps:
-      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+      - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10
         with:
           persist-credentials: false
       - name: set up python  3.14
@@ -33,7 +33,7 @@ jobs:
     env:
       GH_TOKEN: ${{ github.token }}
     steps:
-      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+      - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10
         with:
           fetch-depth: 0
           fetch-tags: true
@@ -50,15 +50,15 @@ jobs:
         run: .github/scripts/check_version.py --alpha 
       - run: python -m build .
       - name: Sign the dists with Sigstore
-        uses: sigstore/gh-action-sigstore-python@a309ff8b426b58ec0e2a45f0f869d46889d02405
+        uses: sigstore/gh-action-sigstore-python@04cffa1d795717b140764e8b640de88853c92acc
         with:
           inputs: >-
             ./dist/*.tar.gz
             ./dist/*.whl
       - name: Create a GitHub release
-        run: | 
-            gh release create "v${ steps.get_version.outputs.version }" \
-            --title="Release ${ steps.get_version.outputs.version }" \
+        run: |
+            gh release create "v${{ steps.get_version.outputs.version }}" \
+            --title="Release ${{ steps.get_version.outputs.version }}" \
             --generate-notes -d
       - run: >-
           gh release upload

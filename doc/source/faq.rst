@@ -1,3 +1,7 @@
+.. meta::
+   :description lang=en:
+        Common errors and debugging tips for MontePy, including how to fix UnicodeDecodeError when reading MCNP input files.
+
 Frequently Asked Questions
 ==========================
 

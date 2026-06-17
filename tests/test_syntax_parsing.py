@@ -234,6 +234,13 @@ class TestValueNode:
             ("0.5", float, 0, "0.0", False),
             ("hi", str, "foo", "foo", True),
             ("hi", str, None, "", False),
+            # default rounding
+            (None, float, 1.0, "1 ", False),
+            (None, float, 1.23, "1.23 ", False),
+            (None, float, 1.23456789, "1.23456789 ", False),
+            # max precision: 15
+            (None, float, 1.012345678954321, "1.012345678954321 ", False),
+            (None, float, 1.0123456789123451, "1.012345678912345 ", False),
         ],
     )
     def test_value_float_format(_, input, val_type, val, answer, expand):

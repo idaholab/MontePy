@@ -488,7 +488,7 @@ class TestFill:
             fill1.merge(fill2)
 
     @given(
-        indices=st.lists(st.integers(0, 2**20), min_size=3, max_size=3),
+        indices=st.lists(st.integers(-2**20, 2**20), min_size=3, max_size=3),
         width=st.lists(st.integers(1, 2**20), min_size=3, max_size=3),
     )
     def test_fill_index_setter(self, indices, width):
