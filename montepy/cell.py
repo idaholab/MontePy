@@ -4,7 +4,7 @@ from __future__ import annotations
 import copy
 import itertools
 import sly
-from typing import Union
+from typing import Annotated, Union
 import collections.abc
 import warnings
 
@@ -423,7 +423,7 @@ class Cell(Numbered_MCNP_Object):
         self,
         value: (
             montepy.LatticeType
-            | Annotated[ty.Integral, ty.greater_than(1, True), ty.less_than(2, true)]
+            | Annotated[ty.Integral, ty.greater_than(1, True), ty.less_than(2, True)]
             | None
         ) = None,
     ):

@@ -1314,9 +1314,9 @@ def test_arbitrary_parse(simple_problem):
         transform = simple_problem.parse("tr25 0 0 1", append)
         assert (transform in simple_problem.transforms) == append
         with pytest.raises(ParsingError):
-            simple_problem.parse("123 hello this is invalid", jit_parse=False)
+            simple_problem.parse("123 hello this is invalid")
         with pytest.raises(ParsingError):
-            simple_problem.parse("hello this is invalid", jit_parse=True)
+            simple_problem.parse("hello this is invalid")
 
 
 def test_volume_setter(simple_problem):
