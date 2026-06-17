@@ -143,6 +143,9 @@ class Cells(NumberedObjectCollection):
             getattr(self, attr).link_to_problem(problem, deepcopy=deepcopy)
 
     def grab_input(self, input: MCNP_Object, problem, check_input: bool = False):
+        """
+        Grab a data block CellModifier input and link it to this problem.
+        """
         def handle_error(e):
             if check_input:
                 warnings.warn(f"{type(e).__name__}: {e.message}", stacklevel=3)
@@ -178,7 +181,7 @@ class Cells(NumberedObjectCollection):
 
     def finalize_init(self):
         """
-        TODO
+        Finish up grabbing CellModifier inputs and finalize all linked objects.
         """
         for input_class, (attr, _) in montepy.Cell._INPUTS_TO_PROPERTY.items():
             if input_class not in self.__loaded_inputs:
