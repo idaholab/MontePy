@@ -109,7 +109,7 @@ def test_set_mode():
         mode.set(5)
     with pytest.raises(TypeError):
         mode.set([5])
-    mode.set(["n", Particle.PHOTON])
-    assert len(mode) == 2
-    mode.set([Particle.PHOTON, "n"])
-    assert len(mode) == 2
+    with pytest.raises(ValueError):
+        mode.set(["n", Particle.PHOTON])
+    with pytest.raises(ValueError):
+        mode.set([Particle.PHOTON, "n"])

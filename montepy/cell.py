@@ -1,28 +1,27 @@
 # Copyright 2024-2025, Battelle Energy Alliance, LLC All Rights Reserved.
 from __future__ import annotations
+
 import copy
 import itertools
-from numbers import Integral, Real
 import sly
-from typing import Union
-import collections.abc
 import warnings
 
+import montepy
 from montepy.cells import Cells
 from montepy.data_inputs import importance, fill, lattice_input, universe_input, volume
 from montepy.data_inputs.data_parser import PREFIX_MATCHES
-from montepy.input_parser.cell_parser import CellParser
-from montepy.input_parser import syntax_node
-from montepy.exceptions import *
-from montepy.numbered_mcnp_object import Numbered_MCNP_Object, InitInput
 from montepy.data_inputs.material import Material
 from montepy.geometry_operators import Operator
+from montepy.input_parser import syntax_node
+from montepy.input_parser.cell_parser import CellParser
+from montepy.numbered_mcnp_object import Numbered_MCNP_Object, InitInput
+from montepy.surface_collection import Surfaces
 from montepy.surfaces.half_space import HalfSpace, UnitHalfSpace
 from montepy.surfaces.surface import Surface
-from montepy.surface_collection import Surfaces
 from montepy.universe import Universe
+from montepy.exceptions import *
 from montepy.utilities import *
-import montepy
+import montepy.types as ty
 
 
 def _link_geometry_to_cell(self, geom):
@@ -86,7 +85,7 @@ class Cell(Numbered_MCNP_Object):
 
     Parameters
     ----------
-    input : Union[Input, str]
+    input : Input | str
         The Input syntax object this will wrap and parse.
     number : int
         The number to set for this object.
@@ -122,10 +121,11 @@ class Cell(Numbered_MCNP_Object):
 
     _parser = CellParser()
 
+    @args_checked
     def __init__(
         self,
-        input: InitInput = None,
-        number: int = None,
+        input: montepy.mcnp_object.InitInput = None,
+        number: ty.PositiveInt = None,
     ):
         self._BLOCK_TYPE = montepy.input_parser.block_type.BlockType.CELL
         self._CHILD_OBJ_MAP = {
@@ -254,7 +254,8 @@ class Cell(Numbered_MCNP_Object):
         return self._universe.universe
 
     @universe.setter
-    def universe(self, value):
+    @args_checked
+    def universe(self, value: montepy.Universe):
         if value is None:
             if self._problem:
                 if 0 not in self._problem.universes.numbers:
@@ -263,9 +264,6 @@ class Cell(Numbered_MCNP_Object):
             else:
                 self._universe._universe = None
                 return
-        if not isinstance(value, Universe):
-            raise TypeError("universe must be set to a Universe")
-        self._universe.universe = value
 
     @universe.deleter
     def universe(self):
@@ -320,10 +318,15 @@ class Cell(Numbered_MCNP_Object):
             return False
         return self._universe.not_truncated
 
+    @property
+    def not_truncated(self):
+        if self.universe.number == 0:
+            return False
+        return self._universe.not_truncated
+
     @not_truncated.setter
-    def not_truncated(self, value):
-        if not isinstance(value, bool):
-            raise TypeError("not_truncated_by_parent must be a bool")
+    @args_checked
+    def not_truncated(self, value: bool):
         if self.universe.number == 0 and value:
             raise ValueError("can't specify if cell is truncated for universe 0")
         self._universe._not_truncated = value
@@ -351,7 +354,7 @@ class Cell(Numbered_MCNP_Object):
         return self._lattice.lattice
 
     @lattice_type.setter
-    def lattice_type(self, value):
+    def lattice_type(self, value: montepy.LatticeType = None):
         self._lattice.lattice = value
 
     @lattice_type.deleter
@@ -369,7 +372,8 @@ class Cell(Numbered_MCNP_Object):
         return self.lattice_type
 
     @lattice.setter
-    def lattice(self, value):
+    @args_checked
+    def lattice(self, value: montepy.LatticeType):
         _lattice_deprecation_warning()
         self.lattice_type = value
 
@@ -392,7 +396,7 @@ class Cell(Numbered_MCNP_Object):
         return self._volume.volume
 
     @volume.setter
-    def volume(self, value):
+    def volume(self, value: ty.PositiveReal):
         self._volume.volume = value
 
     @volume.deleter
@@ -516,11 +520,8 @@ class Cell(Numbered_MCNP_Object):
         return self._density
 
     @atom_density.setter
-    def atom_density(self, density: float):
-        if not isinstance(density, Real):
-            raise TypeError("Atom density must be a number.")
-        elif density < 0:
-            raise ValueError("Atom density must be a positive number.")
+    @args_checked
+    def atom_density(self, density: ty.PositiveReal):
         self._is_atom_dens = True
         self._density = float(density)
 
@@ -543,11 +544,8 @@ class Cell(Numbered_MCNP_Object):
         return self._density
 
     @mass_density.setter
-    def mass_density(self, density: float):
-        if not isinstance(density, Real):
-            raise TypeError("Mass density must be a number.")
-        elif density < 0:
-            raise ValueError("Mass density must be a positive number.")
+    @args_checked
+    def mass_density(self, density: ty.PositiveReal):
         self._is_atom_dens = False
         self._density = float(density)
 
@@ -604,9 +602,8 @@ class Cell(Numbered_MCNP_Object):
         return self._parameters
 
     @parameters.setter
-    def parameters(self, params):
-        if not isinstance(params, dict):
-            raise TypeError("parameters must be a dict")
+    @args_checked
+    def parameters(self, params: dict):
         self._parameters = params
 
     @property
@@ -633,7 +630,12 @@ class Cell(Numbered_MCNP_Object):
                     if self in cell.complements:
                         yield cell
 
-    def update_pointers(self, cells, materials, surfaces):
+    def update_pointers(
+        self,
+        cells: montepy.cells.Cells,
+        materials: montepy.materials.Materials,
+        surfaces: montepy.surface_collection.Surfaces,
+    ):
         """Attaches this object to the appropriate objects for surfaces and materials.
 
         Parameters
@@ -657,9 +659,11 @@ class Cell(Numbered_MCNP_Object):
                     )
             else:
                 self._material = None
-        self._geometry.update_pointers(cells, surfaces, self)
+        if self.geometry:
+            self._geometry.update_pointers(cells, surfaces, self)
 
-    def remove_duplicate_surfaces(self, deleting_dict):
+    @args_checked
+    def remove_duplicate_surfaces(self, deleting_dict: dict):
         """Updates old surface numbers to prepare for deleting surfaces.
 
         .. versionchanged:: 1.0.0
@@ -677,7 +681,7 @@ class Cell(Numbered_MCNP_Object):
         new_deleting_dict = {}
 
         def get_num(obj):
-            if isinstance(obj, Integral):
+            if isinstance(obj, ty.Integral):
                 return obj
             return obj.number
 
@@ -701,7 +705,7 @@ class Cell(Numbered_MCNP_Object):
         for input_class, (attr, _) in self._INPUTS_TO_PROPERTY.items():
             getattr(self, attr)._update_values()
 
-    def _generate_default_tree(self, number: int = None):
+    def _generate_default_tree(self, number: ty.Integral = None):
         material = syntax_node.SyntaxNode(
             "material",
             {
@@ -731,7 +735,8 @@ class Cell(Numbered_MCNP_Object):
         if self.geometry is None or len(self.geometry) == 0:
             raise IllegalState(f"Cell {self.number} has no geometry defined.")
 
-    def link_to_problem(self, problem):
+    @args_checked
+    def link_to_problem(self, problem: montepy.MCNP_Problem = None):
         super().link_to_problem(problem)
         self.complements.link_to_problem(problem)
         self.surfaces.link_to_problem(problem)
@@ -787,7 +792,9 @@ class Cell(Numbered_MCNP_Object):
         base_node = UnitHalfSpace(self, True, True)
         return HalfSpace(base_node, Operator.COMPLEMENT)
 
-    def format_for_mcnp_input(self, mcnp_version):
+    def format_for_mcnp_input(
+        self, mcnp_version: tuple[ty.Integral, ty.Integral, ty.Integral]
+    ) -> list[str]:
         """Creates a string representation of this MCNP_Object that can be
         written to file.
 
@@ -855,13 +862,14 @@ class Cell(Numbered_MCNP_Object):
         ret = "\n".join([l for l in ret.splitlines() if l.strip()])
         return self.wrap_string_for_mcnp(ret, mcnp_version, True)
 
+    @args_checked
     def clone(
         self,
-        clone_material=False,
-        clone_region=False,
-        starting_number=None,
-        step=None,
-        add_collect=True,
+        clone_material: bool = False,
+        clone_region: bool = False,
+        starting_number: ty.PositiveInt = None,
+        step: ty.PositiveInt = None,
+        add_collect: bool = True,
     ):
         """Create a new almost independent instance of this cell with a new number.
 
@@ -891,22 +899,6 @@ class Cell(Numbered_MCNP_Object):
         Cell
             a cloned copy of this cell.
         """
-        if not isinstance(clone_material, bool):
-            raise TypeError(
-                f"clone_material must be a boolean. {clone_material} given."
-            )
-        if not isinstance(clone_region, bool):
-            raise TypeError(f"clone_region must be a boolean. {clone_region} given.")
-        if not isinstance(starting_number, (Integral, type(None))):
-            raise TypeError(
-                f"Starting_number must be an int. {type(starting_number)} given."
-            )
-        if not isinstance(step, (Integral, type(None))):
-            raise TypeError(f"step must be an int. {type(step)} given.")
-        if starting_number is not None and starting_number <= 0:
-            raise ValueError(f"starting_number must be >= 1. {starting_number} given.")
-        if step is not None and step <= 0:
-            raise ValueError(f"step must be >= 1. {step} given.")
         if starting_number is None:
             starting_number = (
                 self._problem.cells.starting_number if self._problem else 1
@@ -929,7 +921,7 @@ class Cell(Numbered_MCNP_Object):
         memo = {}
 
         def num(obj):
-            if isinstance(obj, Integral):
+            if isinstance(obj, ty.Integral):
                 return obj
             return obj.number
 
@@ -965,7 +957,8 @@ class Cell(Numbered_MCNP_Object):
                 region_change_map[num(obj)] = (obj, new_obj)
                 new_objs.append(new_obj)
             setattr(result, special, type(collection)(new_objs))
-            result.geometry.remove_duplicate_surfaces(region_change_map)
+            if self.geometry:
+                result.geometry.remove_duplicate_surfaces(region_change_map)
         if self._problem:
             result.number = self._problem.cells.request_number(starting_number, step)
             if add_collect:

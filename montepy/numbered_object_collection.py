@@ -4,17 +4,13 @@ from abc import ABC
 import itertools as it
 import typing
 import weakref
-from numbers import Integral
 
 import montepy
+from montepy.utilities import *
 from montepy.numbered_mcnp_object import Numbered_MCNP_Object
 from montepy.exceptions import *
 from montepy.utilities import *
-
-
-def _enforce_positive(self, num):
-    if num <= 0:
-        raise ValueError(f"Value must be greater than 0. {num} given.")
+import montepy.types as ty
 
 
 class NumberedObjectCollection(ABC):
@@ -147,10 +143,11 @@ class NumberedObjectCollection(ABC):
         the problem to link this collection to.
     """
 
+    @args_checked
     def __init__(
         self,
         obj_class: type,
-        objects: list = None,
+        objects: ty.Iterable[montepy.numbered_mcnp_object.Numbered_MCNP_Object] = None,
         problem: montepy.MCNP_Problem = None,
     ):
         self.__num_cache = {}
@@ -163,13 +160,7 @@ class NumberedObjectCollection(ABC):
         if problem is not None:
             self._problem_ref = weakref.ref(problem)
         if objects:
-            if not isinstance(objects, list):
-                raise TypeError("NumberedObjectCollection must be built from a list")
             for obj in objects:
-                if not isinstance(obj, obj_class):
-                    raise TypeError(
-                        f"The object: {obj} being added to a NumberedObjectCollection is not of type {obj_class}"
-                    )
                 if obj.number in self.__num_cache:
                     raise NumberConflictError(
                         (
@@ -181,7 +172,8 @@ class NumberedObjectCollection(ABC):
                 obj._link_to_collection(self)
             self._objects = objects
 
-    def link_to_problem(self, problem):
+    @args_checked
+    def link_to_problem(self, problem: montepy.MCNP_Problem = None):
         """Links the card to the parent problem for this card.
 
         This is done so that cards can find links to other objects.
@@ -191,8 +183,6 @@ class NumberedObjectCollection(ABC):
         problem : MCNP_Problem
             The problem to link this card to.
         """
-        if not isinstance(problem, (montepy.mcnp_problem.MCNP_Problem, type(None))):
-            raise TypeError("problem must be an MCNP_Problem")
         if problem is None:
             self._problem_ref = None
         else:
@@ -235,7 +225,8 @@ class NumberedObjectCollection(ABC):
             self.__num_cache[obj.number] = obj
             yield obj.number
 
-    def check_number(self, number):
+    @args_checked
+    def check_number(self, number: ty.NonNegativeInt):
         """Checks if the number is already in use, and if so raises an error.
 
         Parameters
@@ -248,10 +239,6 @@ class NumberedObjectCollection(ABC):
         NumberConflictError
             if this number is in use.
         """
-        if not isinstance(number, Integral):
-            raise TypeError("The number must be an int")
-        if number < 0:
-            raise ValueError(f"The number must be non-negative. {number} given.")
         conflict = False
         # __num_cache is treated as authoritative: any present key is considered in use
         if number in self.__num_cache:
@@ -293,7 +280,8 @@ class NumberedObjectCollection(ABC):
         """
         return self._objects[:]
 
-    def pop(self, pos=-1):
+    @args_checked
+    def pop(self, pos: ty.Integral = -1):
         """Pop the final items off of the collection
 
         Parameters
@@ -306,8 +294,6 @@ class NumberedObjectCollection(ABC):
         Numbered_MCNP_Object
             the final elements
         """
-        if not isinstance(pos, Integral):
-            raise TypeError("The index for popping must be an int")
         obj = self._objects[pos]
         self.__internal_delete(obj)
         return obj
@@ -317,7 +303,10 @@ class NumberedObjectCollection(ABC):
         self._objects.clear()
         self.__num_cache.clear()
 
-    def extend(self, other_list):
+    @args_checked
+    def extend(
+        self, other_list: ty.Iterable[montepy.numbered_mcnp_object.Numbered_MCNP_Object]
+    ):
         """Extends this collection with another list.
 
         Parameters
@@ -330,8 +319,6 @@ class NumberedObjectCollection(ABC):
         NumberConflictError
             if these items conflict with existing elements.
         """
-        if not isinstance(other_list, (list, type(self))):
-            raise TypeError("The extending list must be a list")
         # this is the optimized version to get all numbers
         if self._problem:
             nums = set(self.__num_cache)
@@ -351,7 +338,7 @@ class NumberedObjectCollection(ABC):
         for obj in other_list:
             self.__internal_append(obj)
 
-    def remove(self, delete):
+    def remove(self, delete: montepy.numbered_mcnp_object.Numbered_MCNP_Object):
         """Removes the given object from the collection.
 
         Parameters
@@ -369,7 +356,10 @@ class NumberedObjectCollection(ABC):
         else:
             raise KeyError(f"This object is not in this collection")
 
-    def clone(self, starting_number=None, step=None):
+    @args_checked
+    def clone(
+        self, starting_number: ty.PositiveInt = None, step: ty.PositiveInt = None
+    ):
         """Create a new instance of this collection, with all new independent
         objects with new numbers.
 
@@ -395,16 +385,6 @@ class NumberedObjectCollection(ABC):
         type(self)
             a cloned copy of this object.
         """
-        if not isinstance(starting_number, (Integral, type(None))):
-            raise TypeError(
-                f"Starting_number must be an int. {type(starting_number)} given."
-            )
-        if not isinstance(step, (Integral, type(None))):
-            raise TypeError(f"step must be an int. {type(step)} given.")
-        if starting_number is not None and starting_number <= 0:
-            raise ValueError(f"starting_number must be >= 1. {starting_number} given.")
-        if step is not None and step <= 0:
-            raise ValueError(f"step must be >= 1. {step} given.")
         if starting_number is None:
             starting_number = self.starting_number
         if step is None:
@@ -417,7 +397,11 @@ class NumberedObjectCollection(ABC):
             starting_number = new_obj.number + step
         return type(self)(objs)
 
-    @make_prop_pointer("_start_num", Integral, validator=_enforce_positive)
+    @make_prop_pointer(
+        "_start_num",
+        ty.Integral,
+        validator=lambda _, x: ty.positive("starting_number", "starting_number", x),
+    )
     def starting_number(self):
         """The starting number to use when an object is cloned.
 
@@ -428,7 +412,9 @@ class NumberedObjectCollection(ABC):
         """
         pass
 
-    @make_prop_pointer("_step", Integral, validator=_enforce_positive)
+    @make_prop_pointer(
+        "_step", ty.Integral, validator=lambda _, x: ty.positive("step", "step", x)
+    )
     def step(self):
         """The step size to use to find a valid number during cloning.
 
@@ -590,7 +576,8 @@ class NumberedObjectCollection(ABC):
             raise TypeError(f"object being appended must be of type: {self._obj_class}")
         self.__internal_append(obj, **kwargs)
 
-    def append_renumber(self, obj, step=1):
+    @args_checked
+    def append_renumber(self, obj, step: ty.PositiveInt = 1):
         """Appends the object, but will renumber the object if collision occurs.
 
         This behaves like append, except if there is a number collision the object will
@@ -611,8 +598,6 @@ class NumberedObjectCollection(ABC):
         """
         if not isinstance(obj, self._obj_class):
             raise TypeError(f"object being appended must be of type: {self._obj_class}")
-        if not isinstance(step, Integral):
-            raise TypeError("The step number must be an int")
         if obj.number is None or obj.number <= 0:
             obj.number = 1
         number = obj.number
@@ -628,7 +613,12 @@ class NumberedObjectCollection(ABC):
 
         return number
 
-    def extend_renumber(self, other_list, step=1):
+    @args_checked
+    def extend_renumber(
+        self,
+        other_list: ty.Iterable[montepy.numbered_mcnp_object.Numbered_MCNP_Object],
+        step: ty.PositiveInt = 1,
+    ):
         """Extends the collection with the given list, renumbering objects that have conflicts.
 
         This differs from :func:`extend` which fails on conflicts, and :func:`append_renumber`
@@ -644,17 +634,7 @@ class NumberedObjectCollection(ABC):
 
         """
 
-        if not isinstance(other_list, (list, type(self))):
-            raise TypeError("The extending list must be a list")
-        if not isinstance(step, Integral):
-            raise TypeError("The step number must be an int")
-
         for obj in other_list:
-            if not isinstance(obj, self._obj_class):
-                raise TypeError(
-                    f"The object in the list {obj} is not of type: {self._obj_class}"
-                )
-
             try:
                 self.check_number(obj.number)
             except NumberConflictError:
@@ -663,7 +643,10 @@ class NumberedObjectCollection(ABC):
 
             self.append(obj)  # After loop all objects are added i.e extended
 
-    def request_number(self, start_num=None, step=None):
+    @args_checked
+    def request_number(
+        self, start_num: ty.PositiveInt = None, step: ty.PositiveInt = None
+    ):
         """Requests a new available number.
 
         This method does not "reserve" this number. Objects
@@ -693,10 +676,6 @@ class NumberedObjectCollection(ABC):
         int
             an available number
         """
-        if not isinstance(start_num, (Integral, type(None))):
-            raise TypeError("start_num must be an int")
-        if not isinstance(step, (Integral, type(None))):
-            raise TypeError("step must be an int")
         if start_num is None:
             start_num = self.starting_number
         if step is None:
@@ -718,7 +697,8 @@ class NumberedObjectCollection(ABC):
         self._last_assigned_number = number
         return number
 
-    def next_number(self, step=1):
+    @args_checked
+    def next_number(self, step: ty.PositiveInt = 1):
         """Get the next available number, based on the maximum number.
 
         This works by finding the current maximum number, and then adding the
@@ -729,10 +709,6 @@ class NumberedObjectCollection(ABC):
         step : int
             how much to increase the last number by
         """
-        if not isinstance(step, Integral):
-            raise TypeError("step must be an int")
-        if step <= 0:
-            raise ValueError("step must be > 0")
         return max(self.numbers) + step
 
     def __get_slice(self, i: slice):
@@ -774,25 +750,22 @@ class NumberedObjectCollection(ABC):
         # obj_class is always implemented in child classes.
         return type(self)(numbered_objects)
 
-    def __getitem__(self, i):
+    @args_checked
+    def __getitem__(self, i: slice | ty.Integral):
         if isinstance(i, slice):
             return self.__get_slice(i)
-        elif not isinstance(i, Integral):
-            raise TypeError("index must be an int or slice")
         ret = self.get(i)
         if ret is None:
             raise KeyError(f"Object with number {i} not found in {type(self)}")
         return ret
 
-    def __delitem__(self, idx):
-        if not isinstance(idx, Integral):
-            raise TypeError("index must be an int")
+    @args_checked
+    def __delitem__(self, idx: ty.Integral):
         obj = self[idx]
         self.__internal_delete(obj)
 
-    def __setitem__(self, key, newvalue):
-        if not isinstance(key, Integral):
-            raise TypeError("index must be an int")
+    @args_checked
+    def __setitem__(self, key: ty.Integral, newvalue):
         self.append(newvalue)
 
     def __len__(self):
@@ -1200,7 +1173,8 @@ class NumberedDataObjectCollection(NumberedObjectCollection):
                 pass
         super().__init__(obj_class, objects, problem)
 
-    def _append_hook(self, obj, insert_in_data=True):
+    @args_checked
+    def _append_hook(self, obj, insert_in_data: bool = True):
         """Appends the given object to the end of this collection.
 
         Parameters

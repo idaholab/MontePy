@@ -37,6 +37,7 @@ extensions = [
     "sphinx.ext.intersphinx",
     "sphinx.ext.extlinks",
     "sphinx.ext.doctest",
+    "sphinx.ext.mathjax",
     "sphinx_autodoc_typehints",
     "sphinx_favicon",
     "sphinx_copybutton",
@@ -55,7 +56,7 @@ favicons = [
 html_logo = "monty.svg"
 
 html_baseurl = "https://www.montepy.org/en/stable/"
-html_extra_path = ["robots.txt", "foo.imcnp"]
+html_extra_path = ["robots.txt", "foo.imcnp", "LICENSE"]
 
 # jupyter lite
 jupyterlite_config = "jupyter_lite_config.json"

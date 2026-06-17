@@ -276,6 +276,38 @@ def test_surface_surface_type_setter():
     with pytest.raises(ValueError):
         surf.surface_type = SurfaceType.CX
 
+    surf = montepy.surfaces.parse_surface("1 PZ 0.0")
+    with pytest.raises(ValueError):
+        surf.surface_type = "CX"
+    with pytest.raises(ValueError):
+        surf.surface_type = SurfaceType.CX
+
+
+def test_surface_constants_setter():
+    in_str = "1 PZ 0.0"
+    input_obj = Input([in_str], BlockType.SURFACE)
+    surf = Surface(input_obj)
+    surf.surface_constants = [10.0]
+    assert surf.surface_constants[0] == 10.0
+    with pytest.raises(TypeError):
+        surf.surface_constants = "foo"
+    with pytest.raises(TypeError):
+        surf.surface_constants = [1, "foo"]
+    with pytest.raises(ValueError):
+        surf.surface_constants = [1, 2, 3, 4, 5]
+
+
+def test_surface_number_setter():
+    in_str = "1 PZ 0.0"
+    input_obj = Input([in_str], BlockType.SURFACE)
+    surf = Surface(input_obj)
+    surf.number = 20
+    assert surf.number == 20
+    with pytest.raises(TypeError):
+        surf.number = "foo"
+    with pytest.raises(ValueError):
+        surf.number = -5
+
 
 def test_surface_ordering():
     surf1 = Surface("1 PZ 0.0")
@@ -493,6 +525,10 @@ def test_cylinder_location_setter():
     # test wrong type
     with pytest.raises(TypeError):
         surf.coordinates = "fo"
+    with pytest.raises(TypeError):
+        surf.coordinates = {5, 6, 7}
+    with pytest.raises(TypeError):
+        surf.coordinates = iter((5, 6, 7))
     # test length issues
     with pytest.raises(ValueError):
         surf.coordinates = [3, 4, 5]
@@ -509,6 +545,10 @@ def test_sphere_coordinate_setter():
         surf.coordinates = 6
     with pytest.raises(TypeError):
         surf.coordinates = (6, 7, "eight")
+    with pytest.raises(TypeError):
+        surf.coordinates = {6, 7}
+    with pytest.raises(TypeError):
+        surf.coordinates = iter((6, 7))
     # test length issues
     with pytest.raises(ValueError):
         surf.coordinates = [6, 7]

@@ -21,6 +21,7 @@ doc/build/*
 .coverage
 .hypothesis/
 .idea/
+.vscode/
 .venv/
 .ipynb_checkpoints/
 montepy/_version.py

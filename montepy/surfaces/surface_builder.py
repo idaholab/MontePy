@@ -71,12 +71,13 @@ _GENERIC_DISPATCH: dict = {
 }
 
 
+@args_checked
 def parse_surface(input: InitInput):
     """Builds a Surface object for the type of Surface
 
     Parameters
     ----------
-    input : Union[Input, str]
+    input : Input | str
         The Input object representing the input
 
     Returns
@@ -102,7 +103,7 @@ surface_builder = parse_surface
 
 Parameters
 ----------
-input : Union[Input, str]
+input : Input | str
     The Input object representing the input
 
 Returns

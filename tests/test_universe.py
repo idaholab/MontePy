@@ -472,7 +472,7 @@ class TestFill:
 
         # Test 4D array raises ValueError
         with pytest.raises(ValueError):
-            fill.universes = np.zeros((2, 2, 2, 2))
+            fill.universes = np.zeros((2, 2, 2, 2), dtype=np.int32)
 
     def test_fill_str(self, complicated_fill):
         fill = copy.deepcopy(complicated_fill)

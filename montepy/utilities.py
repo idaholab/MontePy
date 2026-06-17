@@ -1,5 +1,9 @@
-# Copyright 2024, Battelle Energy Alliance, LLC All Rights Reserved.
+# Copyright 2024-2025, Battelle Energy Alliance, LLC All Rights Reserved.
+
 from montepy.constants import BLANK_SPACE_CONTINUE
+from montepy._check_value import args_checked
+import montepy.types as ty
+
 import functools
 import re
 
@@ -8,7 +12,8 @@ A package for helper universal utility functions
 """
 
 
-def fortran_float(number_string):
+@args_checked
+def fortran_float(number_string: str | ty.Real):
     """Attempts to convert a FORTRAN formatted float string to a float.
 
     FORTRAN allows silly things for scientific notation like ``6.02+23``
@@ -40,7 +45,8 @@ def fortran_float(number_string):
             raise ValueError(f"Value Not parsable as float: {number_string}") from e
 
 
-def is_comment(line):
+@args_checked
+def is_comment(line: str):
     """Determines if the line is a ``C comment`` style comment.
 
     Parameters

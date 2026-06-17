@@ -1,16 +1,19 @@
 # Copyright 2024, Battelle Energy Alliance, LLC All Rights Reserved.
+from __future__ import annotations
 import collections
 import copy
 import math
 import warnings
 
 import montepy
+from montepy.utilities import *
 from montepy.data_inputs.cell_modifier import CellModifierInput, InitInput
 from montepy.exceptions import *
 from montepy.constants import DEFAULT_VERSION, rel_tol, abs_tol
 from montepy.input_parser import syntax_node
 from montepy.mcnp_object import MCNP_Object
 from montepy.particle import Particle
+import montepy.types as ty
 from montepy.utilities import *
 import numbers
 
@@ -40,7 +43,7 @@ class Importance(CellModifierInput):
 
     Parameters
     ----------
-    input : Union[Input, str]
+    input : Input | str
         the Input object representing this data input
     in_cell_block : bool
         if this card came from the cell block of an input file.
@@ -57,6 +60,7 @@ class Importance(CellModifierInput):
     Marks that if one cell has a value all cells must have values, no matter the default.
     """
 
+    @args_checked
     def __init__(
         self,
         input: InitInput = None,
@@ -180,9 +184,8 @@ class Importance(CellModifierInput):
         if self.in_cell_block:
             return self.set_in_cell_block
 
-    def merge(self, other):
-        if not isinstance(other, type(self)):
-            raise TypeError("Can only be merged with other Importance object")
+    @args_checked
+    def merge(self, other: Importance):
         if self.in_cell_block != other.in_cell_block:
             raise ValueError("Can not mix cell-level and data-level Importance objects")
         if other.set_in_cell_block:
@@ -207,9 +210,8 @@ class Importance(CellModifierInput):
     def __contains__(self, value):
         return value in self._particle_importances
 
-    def __getitem__(self, particle):
-        if not isinstance(particle, Particle):
-            raise TypeError("Key must be a particle")
+    @args_checked
+    def __getitem__(self, particle: Particle):
         self._check_particle_in_problem(particle)
         try:
             val = self._particle_importances[particle]["data"][0]
@@ -217,22 +219,16 @@ class Importance(CellModifierInput):
         except KeyError:
             return self._DEFAULT_IMP
 
-    def __setitem__(self, particle, value):
-        if not isinstance(particle, Particle):
-            raise TypeError("Key must be a particle")
+    @args_checked
+    def __setitem__(self, particle: Particle, value: ty.NonNegativeReal):
         self._check_particle_in_problem(particle)
-        if not isinstance(value, numbers.Number):
-            raise TypeError("importance must be a number")
-        if value < 0:
-            raise ValueError("importance must be ≥ 0")
         if particle not in self._particle_importances:
             self._generate_default_cell_tree(particle)
         self._explicitly_set = True
         self._particle_importances[particle]["data"][0].value = value
 
-    def __delitem__(self, particle):
-        if not isinstance(particle, Particle):
-            raise TypeError("Key must be a particle")
+    @args_checked
+    def __delitem__(self, particle: Particle):
         del self._particle_importances[particle]
 
     def __str__(self):
@@ -350,12 +346,9 @@ class Importance(CellModifierInput):
         return None
 
     @all.setter
-    def all(self, value):
-        if not isinstance(value, numbers.Number):
-            raise TypeError("All importance must be a float")
+    @args_checked
+    def all(self, value: ty.NonNegativeReal):
         value = float(value)
-        if value < 0.0:
-            raise ValueError("Importance must be ≥ 0.0")
         self._explicitly_set = True
         if self._problem:
             for particle in self._problem.mode:
@@ -458,7 +451,7 @@ class Importance(CellModifierInput):
         pass
 
     @property
-    def trailing_comment(self):
+    def trailing_comment(self) -> syntax_node.CommentNode:
         """The trailing comments and padding of an input.
 
         Generally this will be blank as these will be moved to be a leading comment for the next input.

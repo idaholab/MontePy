@@ -24,7 +24,7 @@ class GeneralPlane(Parent):
 
     Parameters
     ----------
-    input : Union[Input, str]
+    input : Input | str
         The Input object representing the input
     number : int
         The number to set for this object.

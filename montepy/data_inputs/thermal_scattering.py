@@ -2,10 +2,12 @@
 from __future__ import annotations
 
 import montepy
+from montepy.utilities import *
 from montepy.data_inputs.data_input import DataInputAbstract, InitInput
 from montepy.input_parser.thermal_parser import ThermalParser
 from montepy import mcnp_object
 from montepy.exceptions import *
+import montepy.types as ty
 from montepy.utilities import *
 
 
@@ -24,7 +26,7 @@ class ThermalScatteringLaw(DataInputAbstract):
 
     Parameters
     ----------
-    input : Union[Input, str]
+    input : Input | str
         the Input object representing this data input
     material : Material
         the parent Material object that owns this
@@ -32,7 +34,7 @@ class ThermalScatteringLaw(DataInputAbstract):
 
     _parser = ThermalParser()
 
-    def __init__(self, input: InitInput = "", material: montepy.Material = None):
+    def __init__(self, input: InitInput = "", material=None):
         self._old_number = self._generate_default_node(int, -1)
         self._parent_material = None
         self._scattering_laws = []
@@ -77,12 +79,12 @@ class ThermalScatteringLaw(DataInputAbstract):
         return self._parent_material
 
     @property
-    def thermal_scattering_laws(self):
+    def thermal_scattering_laws(self) -> list[str]:
         """The thermal scattering laws to use for this material as strings.
 
         Returns
         -------
-        list
+        list[str]
         """
         ret = []
         for law in self._scattering_laws:
@@ -90,14 +92,8 @@ class ThermalScatteringLaw(DataInputAbstract):
         return ret
 
     @thermal_scattering_laws.setter
-    def thermal_scattering_laws(self, laws):
-        if not isinstance(laws, list):
-            raise TypeError("thermal_scattering_laws must be a list")
-        for law in laws:
-            if not isinstance(law, str):
-                raise TypeError(
-                    f"element {law} in thermal_scattering_laws must be a string"
-                )
+    @args_checked
+    def thermal_scattering_laws(self, laws: ty.Iterable[str]):
         self._scattering_laws.clear()
         for law in laws:
             self._scattering_laws.append(self._generate_default_node(str, law))

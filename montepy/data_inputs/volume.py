@@ -1,10 +1,13 @@
 # Copyright 2024, Battelle Energy Alliance, LLC All Rights Reserved.
+
+from montepy.utilities import *
 from montepy.data_inputs.cell_modifier import CellModifierInput
 from montepy.exceptions import *
 from montepy.constants import DEFAULT_VERSION
 from montepy.input_parser.mcnp_input import Jump
 from montepy.input_parser import syntax_node
-from montepy.mcnp_object import MCNP_Object
+from montepy.mcnp_object import MCNP_Object, InitInput
+import montepy.types as ty
 from montepy.utilities import *
 
 
@@ -28,7 +31,14 @@ class Volume(CellModifierInput):
         the value syntax tree from the key-value pair in a cell
     """
 
-    def __init__(self, input=None, in_cell_block=False, key=None, value=None):
+    @args_checked
+    def __init__(
+        self,
+        input: InitInput = None,
+        in_cell_block: bool = False,
+        key: str = None,
+        value: syntax_node.SyntaxNode = None,
+    ):
         self._volume = self._generate_default_node(float, None)
         self._calc_by_mcnp = True
         super().__init__(input, in_cell_block, key, value)
@@ -102,7 +112,7 @@ class Volume(CellModifierInput):
         validator=_ensure_positive,
         deletable=True,
     )
-    def volume(self):
+    def volume(self) -> float:
         """The actual cell volume.
 
         Only available at the cell level.
@@ -120,7 +130,7 @@ class Volume(CellModifierInput):
             return self._volume
 
     @property
-    def is_mcnp_calculated(self):
+    def is_mcnp_calculated(self) -> bool:
         """Indicates whether or not the cell volume will attempt to be calculated by MCNP.
 
         This can be disabled by either manually setting the volume or disabling
@@ -145,7 +155,7 @@ class Volume(CellModifierInput):
             self._calc_by_mcnp = value
 
     @property
-    def has_information(self):
+    def has_information(self) -> bool:
         if self.in_cell_block:
             return self.set
 
