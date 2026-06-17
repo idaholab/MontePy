@@ -425,7 +425,14 @@ class Cell(Numbered_MCNP_Object):
     @lattice_type.setter
     @args_checked
     @needs_full_ast
-    def lattice_type(self, value: montepy.LatticeType | int | None = None):
+    def lattice_type(
+        self,
+        value: (
+            montepy.LatticeType
+            | Annotated[ty.Integral, ty.greater_than(1, True), ty.less_than(2, true)]
+            | None
+        ) = None,
+    ):
         self._lattice.lattice = value
 
     @lattice_type.deleter
