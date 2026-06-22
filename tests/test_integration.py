@@ -218,6 +218,54 @@ def test_problem_str(simple_problem):
     assert "MCNP problem for: tests/inputs/test.imcnp" in output
 
 
+def _user_facing_objects(problem):
+    """Yield a problem's user-facing objects: the problem, its top-level
+    members, every collection and its members, the data-block inputs, and the
+    cell-block modifiers."""
+    yield problem
+    # top-level objects a user can print directly (``message`` may be ``None``)
+    for obj in (problem.input_file, problem.message, problem.title, problem.mode):
+        if obj is not None:
+            yield obj
+    for collection in (
+        problem.cells,
+        problem.surfaces,
+        problem.materials,
+        problem.universes,
+        problem.transforms,
+    ):
+        yield collection
+        yield from collection
+    # data-block inputs, e.g. ``Volume``, ``Mode`` (see the original report)
+    yield from problem.data_inputs
+    # cell-block modifier objects
+    for cell in problem.cells:
+        yield cell.importance
+        yield cell.fill
+
+
+@pytest.mark.parametrize(
+    "problem_fixture",
+    [
+        "simple_problem",
+        "importance_problem",
+        "universe_problem",
+        "data_universe_problem",
+    ],
+)
+def test_str_and_repr_do_not_raise(request, problem_fixture):
+    """``str`` and ``repr`` of user-facing objects must never raise (:issue:`152`).
+
+    Some attributes are not populated in every context (e.g. a ``Volume`` in
+    the data block), which used to make ``__repr__`` raise ``AttributeError``.
+    """
+    problem = request.getfixturevalue(problem_fixture)
+    for obj in _user_facing_objects(problem):
+        for func in (str, repr):
+            # an empty string is a valid result; the requirement is "never raises"
+            assert isinstance(func(obj), str)
+
+
 def test_write_to_file(simple_problem):
     out = "foo.imcnp"
     try:
