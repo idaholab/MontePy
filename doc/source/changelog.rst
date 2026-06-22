@@ -12,6 +12,10 @@ MontePy Changelog
 #Next Version#
 --------------
 
+**Feature Added**
+
+* Added support for the ``in`` operator on comments, so a comment's text can be searched with e.g. ``"keyword" in comment`` (:issue:`185`).
+
 **Bugs Fixed**
 
 * Fixed bug where values for user generated objects would be rounded off at five digits no matter what. This will now round off at 15 digits if necessary (:issue:`962`).

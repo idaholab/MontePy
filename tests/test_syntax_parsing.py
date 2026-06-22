@@ -603,6 +603,20 @@ class TestPaddingNode:
         assert len(list(comment.comments)) == 1
         assert len(comment.contents) == 0
 
+    def test_comment_contains(self):
+        comment = syntax_node.CommentNode("c hello world")
+        assert "hello" in comment
+        assert "goodbye" not in comment
+        # the delimiter itself is not part of the contents
+        assert "c " not in comment
+        # works for dollar comments and across appended lines
+        comment.append("c second line")
+        assert "second" in comment
+        assert "note" in syntax_node.CommentNode("$ note here")
+        # non-string operands are rejected like normal str containment
+        with pytest.raises(TypeError):
+            5 in comment
+
 
 def test_graveyard_comment():
     padding = syntax_node.PaddingNode(" ")

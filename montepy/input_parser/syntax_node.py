@@ -937,6 +937,24 @@ class CommentNode(SyntaxNodeBase):
     def __eq__(self, other):
         return str(self) == str(other)
 
+    def __contains__(self, value):
+        """Checks if a string is found in the contents of this comment.
+
+        This allows searching a comment by its text, e.g.
+        ``"important" in comment``.
+
+        Parameters
+        ----------
+        value : str
+            the string to search for.
+
+        Returns
+        -------
+        bool
+            True iff ``value`` is a substring of this comment's ``contents``.
+        """
+        return value in self.contents
+
 
 class ValueNode(SyntaxNodeBase):
     """A syntax node to represent the leaf node.
