@@ -1054,17 +1054,42 @@ class ValueNode(SyntaxNodeBase):
         if self._type not in {float, int}:
             raise ValueError(f"ValueNode must be a float to convert to int")
         self._type = int
+
+        def convert_token_to_int():
+            try:
+                return int(self._token)
+            except ValueError as e:
+                parts = self._token.split(".")
+                if len(parts) > 1 and int(parts[1]) == 0:
+                    return int(parts[0])
+                raise e
+
         if self._token is not None and not isinstance(
             self._token, input_parser.mcnp_input.Jump
         ):
             try:
-                self._value = int(self._token)
-            except ValueError as e:
-                parts = self._token.split(".")
-                if len(parts) > 1 and int(parts[1]) == 0:
-                    self._value = int(parts[0])
+                token_value = fortran_float(self._token)
+            except ValueError:
+                token_value = None
+            if self._value is not None and token_value is not None:
+                current_value = float(self._value)
+                if not math.isclose(
+                    current_value, token_value, rel_tol=rel_tol, abs_tol=abs_tol
+                ):
+                    if not math.isclose(
+                        current_value,
+                        int(current_value),
+                        rel_tol=rel_tol,
+                        abs_tol=abs_tol,
+                    ):
+                        raise ValueError(
+                            "ValueNode must hold an integer value to convert to int"
+                        )
+                    self._value = int(current_value)
                 else:
-                    raise e
+                    self._value = convert_token_to_int()
+            else:
+                self._value = convert_token_to_int()
         self._formatter = self._FORMATTERS[int].copy()
 
     def convert_to_enum(

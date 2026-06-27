@@ -86,6 +86,53 @@ class TestUniverseInput:
         input_obj = Input(["U -2"], BlockType.DATA)
         UniverseInput(input_obj)
 
+    def test_universe_data_card_multiply_shortcut(self, tmp_path):
+        input_file = tmp_path / "test_universe_m_shortcut.imcnp"
+        input_file.write_text("""MCNP Test Model
+C Cells
+C Graveyard
+99    0 +1010
+C Seven spheres within a sphere
+1 1 -10 -1001
+2 1 -10 -1002
+3 1 -10 -1003
+4 1 -10 -1004
+5 1 -10 -1005
+6 1 -10 -1006
+7 1 -10 -1007
+8     0 -1010  1001  1002  1003  1004  1005  1006  1007
+
+C surfaces
+1001 SO      0.1
+1002 SX -1.1 0.1
+1003 SX +1.1 0.1
+1004 SY -1.1 0.1
+1005 SY +1.1 0.1
+1006 SZ -1.1 0.1
+1007 SZ +1.1 0.1
+1010 SO 3
+
+C data
+C mX fails to parse
+C     _ 1  2 10 _ 3 21 21
+U     J 1 2M 5M J 3 7M 1M
+C materials
+C UO2 5 atpt enriched
+m1        92235.80c           5
+          92238.80c          95
+C execution
+ksrc 0 0 0
+kcode 100000 1.000 50 1050
+mode n p
+""")
+        problem = montepy.read_input(input_file)
+        universe_numbers = [
+            cell.universe.number if cell.universe is not None else None
+            for cell in problem.cells
+        ]
+
+        assert universe_numbers == [0, 1, 2, 10, 0, 3, 21, 21, 0]
+
     def test_str(self):
         universe_input = copy.deepcopy(self.universe)
         uni = Universe(5)

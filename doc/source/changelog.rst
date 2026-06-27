@@ -10,6 +10,17 @@ MontePy Changelog
 1.5 Releases
 ============
 
+**Features Added**
+
+* Added ``HalfSpace.replace`` to swap dividers in a cell geometry tree, and ``HalfSpace.__iter__`` to traverse geometry leaves (:issue:`737`).
+
+**Bugs Fixed**
+
+* Fixed parsing of multiply shortcuts in universe data cards such as ``1 8M`` (:pull:`975`).
+
+1.4 releases
+============
+
 #Next Version#
 --------------
 **Features Added**
