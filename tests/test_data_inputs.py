@@ -80,8 +80,9 @@ in_strs = {
     ],
 )
 def test_data_parser(identifier, ident_case, w, expected_type):
-    obj = parse_data(w)
-    assert isinstance(obj, expected_type)
+    for jit_parse in {True, False}:
+        obj = parse_data(w, jit_parse=jit_parse)
+        assert isinstance(obj, expected_type)
 
 
 def test_data_card_mutate_print():
