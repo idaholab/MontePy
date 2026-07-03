@@ -1327,3 +1327,10 @@ def test_volume_setter(simple_problem):
         cell.volume = "hi"
     with pytest.raises(ValueError):
         cell.volume = -1
+
+
+def test_problem_jit_parse():
+    problem = montepy.read_input(Path("tests") / "inputs" / "test.imcnp")
+    for objects in (problem.cells, problem.surfaces, problem.data_inputs):
+        for obj in objects:
+            assert not obj.full_parsed
