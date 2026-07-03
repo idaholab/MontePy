@@ -29,7 +29,7 @@ def cell_mod_prop(
         def getter(self):
             if self._problem:
                 data_version = getattr(self._problem.cells, cells_param)
-                if data_version._input is not None and not data_version.full_parsed:
+                if data_version._input is not None and not data_version.fully_parsed:
                     data_version.full_parse()
                     data_version.push_to_cells()
             return base_prop.fget(self)

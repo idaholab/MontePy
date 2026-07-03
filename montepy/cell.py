@@ -297,7 +297,7 @@ class Cell(Numbered_MCNP_Object):
         Importance
             the importance for the Cell.
         """
-        if not self._importance.full_parsed:
+        if not self._importance.fully_parsed:
             if self._problem:
                 self._problem.cells._importance.full_parse()
         return self._importance

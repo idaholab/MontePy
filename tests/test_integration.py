@@ -238,9 +238,9 @@ def test_problem_str(simple_problem):
 def test_write_to_file(simple_problem):
     out = "foo.imcnp"
     simple_problem = copy.deepcopy(simple_problem)
-    # Detect jit mode from the fixture: JIT objects are not yet full_parsed.
+    # Detect jit mode from the fixture: JIT objects are not yet fully_parsed.
     # Re-read with the same mode so trailing-comment placement is consistent.
-    use_jit = not simple_problem.data_inputs[0].full_parsed
+    use_jit = not simple_problem.data_inputs[0].fully_parsed
     try:
         problem = copy.deepcopy(simple_problem)
         problem.write_to_file(out)
@@ -1333,4 +1333,4 @@ def test_problem_jit_parse():
     problem = montepy.read_input(Path("tests") / "inputs" / "test.imcnp")
     for objects in (problem.cells, problem.surfaces, problem.data_inputs):
         for obj in objects:
-            assert not obj.full_parsed
+            assert not obj.fully_parsed

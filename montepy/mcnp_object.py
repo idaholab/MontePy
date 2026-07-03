@@ -203,7 +203,7 @@ class MCNP_Object(ABC, metaclass=_ExceptionContextAdder):
     """
 
     @property
-    def full_parsed(self):
+    def fully_parsed(self):
         """Whether this has been fully parsed, or is just JIT parsed.
 
         Returns
@@ -641,7 +641,7 @@ The new input was:\n\n"""
         else:
             args = []
         args += self._repr_args()
-        args.append(f"jit_parse={not self.full_parsed}")
+        args.append(f"jit_parse={not self.fully_parsed}")
         return ret + ", ".join(args) + ")"
 
     def _repr_args(self):
