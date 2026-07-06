@@ -825,6 +825,25 @@ class CommentNode(SyntaxNodeBase):
     ----------
     input : sly.lex.Token
         the token from the lexer
+
+    Examples
+    --------
+
+    Searching within a comment
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+    You can check whether a substring appears in a comment's text with the
+    ``in`` operator. This works for both ``c`` style and ``$`` (dollar)
+    comments, and searches the comment's ``contents`` (the text without the
+    comment delimiter).
+
+    .. testcode::
+
+        from montepy.input_parser.syntax_node import CommentNode
+
+        comment = CommentNode("c the important fuel region")
+        assert "important" in comment
+        assert "coolant" not in comment
     """
 
     _MATCHER = re.compile(
