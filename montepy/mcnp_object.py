@@ -306,7 +306,7 @@ The new input was:\n\n"""
         Returns
         -------
         CommentCollection
-            a list of the comments associated with this comment, which also
+            a list of the comments associated with this object, which also
             supports searching the comments' text (e.g. ``"foo" in
             obj.comments``).
         """

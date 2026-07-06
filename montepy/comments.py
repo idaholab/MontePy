@@ -96,17 +96,30 @@ class CommentCollection(list):
         -------
         CommentCollection
             a new collection of the comments that matched.
+
+        Raises
+        ------
+        TypeError
+            if ``pattern`` is not a str, or a pattern compiled from a str.
         """
         if isinstance(pattern, re.Pattern):
+            # bytes patterns cannot search the comments' str contents
+            if not isinstance(pattern.pattern, str):
+                raise TypeError(
+                    f"pattern must be a str, or a pattern compiled from a str. {pattern} given."
+                )
             matcher = pattern.search
-        elif regex:
-            matcher = re.compile(pattern).search
         else:
             if not isinstance(pattern, str):
-                raise TypeError(f"pattern must be a str. {pattern} given.")
+                raise TypeError(
+                    f"pattern must be a str, or a pattern compiled from a str. {pattern} given."
+                )
+            if regex:
+                matcher = re.compile(pattern).search
+            else:
 
-            def matcher(contents):
-                return pattern in contents
+                def matcher(contents):
+                    return pattern in contents
 
         return CommentCollection(
             comment for comment in self if matcher(comment.contents)

@@ -651,9 +651,14 @@ class TestPaddingNode:
         assert isinstance(matches, montepy.CommentCollection)
         # compiled patterns are always treated as regular expressions
         assert len(comments.search(re.compile("notes"))) == 1
-        # non-string patterns are rejected
+        # non-string patterns are rejected, with or without regex
         with pytest.raises(TypeError):
             comments.search(5)
+        with pytest.raises(TypeError):
+            comments.search(5, regex=True)
+        # bytes patterns cannot search the str contents
+        with pytest.raises(TypeError):
+            comments.search(re.compile(b"fuel"))
 
 
 def test_object_comments_are_collection():
