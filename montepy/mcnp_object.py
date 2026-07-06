@@ -9,6 +9,7 @@ from typing import TypeAlias, Union, Type
 import warnings
 import weakref
 
+from montepy.comments import CommentCollection
 from montepy.exceptions import *
 from montepy.constants import (
     BLANK_SPACE_CONTINUE,
@@ -296,7 +297,7 @@ The new input was:\n\n"""
             warnings.warn(warning, stacklevel=4)
 
     @property
-    def comments(self) -> list[PaddingNode]:
+    def comments(self) -> CommentCollection:
         """The comments associated with this input if any.
 
         This includes all ``C`` comments before this card that aren't part of another card,
@@ -304,21 +305,24 @@ The new input was:\n\n"""
 
         Returns
         -------
-        list
-            a list of the comments associated with this comment.
+        CommentCollection
+            a list of the comments associated with this comment, which also
+            supports searching the comments' text (e.g. ``"foo" in
+            obj.comments``).
         """
-        return list(self._tree.comments)
+        return CommentCollection(self._tree.comments)
 
     @property
-    def leading_comments(self) -> list[PaddingNode]:
+    def leading_comments(self) -> CommentCollection:
         """Any comments that come before the beginning of the input proper.
 
         Returns
         -------
-        list
-            the leading comments.
+        CommentCollection
+            the leading comments, which also support searching the comments'
+            text (e.g. ``"foo" in obj.leading_comments``).
         """
-        return list(self._tree["start_pad"].comments)
+        return CommentCollection(self._tree["start_pad"].comments)
 
     @leading_comments.setter
     def leading_comments(self, comments):

@@ -15,6 +15,7 @@ MontePy Changelog
 **Feature Added**
 
 * Added support for the ``in`` operator on comments, so a comment's text can be searched with e.g. ``"keyword" in comment`` (:issue:`185`).
+* Added :class:`~montepy.comments.CommentCollection`, now returned by ``comments`` and ``leading_comments``, so an object can be found by its comments with e.g. ``"keyword" in cell.comments``, or searched by regular expression with ``cell.comments.search`` (:issue:`185`).
 
 **Bugs Fixed**
 

@@ -1,6 +1,8 @@
 # Copyright 2024, Battelle Energy Alliance, LLC All Rights Reserved.
 import copy
 from io import StringIO
+import os
+import re
 import pytest
 
 import montepy
@@ -616,6 +618,53 @@ class TestPaddingNode:
         # non-string operands are rejected like normal str containment
         with pytest.raises(TypeError):
             5 in comment
+
+    def test_comment_collection_contains(self):
+        comments = montepy.CommentCollection(
+            [
+                syntax_node.CommentNode("c the fuel region"),
+                syntax_node.CommentNode("$ moderator notes"),
+            ]
+        )
+        # strings search the text of all comments
+        assert "fuel" in comments
+        assert "notes" in comments
+        assert "graphite" not in comments
+        # anything else keeps normal list membership behavior
+        assert comments[0] in comments
+        assert syntax_node.CommentNode("c not in there") not in comments
+        assert 5 not in comments
+
+    def test_comment_collection_search(self):
+        comments = montepy.CommentCollection(
+            [
+                syntax_node.CommentNode("c the fuel region"),
+                syntax_node.CommentNode("$ moderator notes"),
+            ]
+        )
+        # substring search
+        assert [c.contents for c in comments.search("fuel")] == ["the fuel region"]
+        assert len(comments.search("graphite")) == 0
+        # regex search
+        matches = comments.search(r"(?i)FUEL|MODERATOR", regex=True)
+        assert len(matches) == 2
+        assert isinstance(matches, montepy.CommentCollection)
+        # compiled patterns are always treated as regular expressions
+        assert len(comments.search(re.compile("notes"))) == 1
+        # non-string patterns are rejected
+        with pytest.raises(TypeError):
+            comments.search(5)
+
+
+def test_object_comments_are_collection():
+    problem = montepy.read_input(os.path.join("tests", "inputs", "test.imcnp"))
+    cell = problem.cells[1]
+    assert isinstance(cell.comments, montepy.CommentCollection)
+    assert isinstance(cell.leading_comments, montepy.CommentCollection)
+    # an object can be found by its comment text (#185)
+    assert "hidden vertical" in cell.comments
+    assert "not actually in there" not in cell.comments
+    assert len(cell.comments.search(r"(?i)HIDDEN", regex=True)) == 1
 
 
 def test_graveyard_comment():
