@@ -829,21 +829,14 @@ class CommentNode(SyntaxNodeBase):
     Examples
     --------
 
-    Searching within a comment
-    ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    The ``in`` operator searches the comment's text — its ``contents``
+    without the ``c``/``$`` delimiter:
 
-    You can check whether a substring appears in a comment's text with the
-    ``in`` operator. This works for both ``c`` style and ``$`` (dollar)
-    comments, and searches the comment's ``contents`` (the text without the
-    comment delimiter).
+    .. doctest::
 
-    .. testcode::
-
-        from montepy.input_parser.syntax_node import CommentNode
-
-        comment = CommentNode("c the important fuel region")
-        assert "important" in comment
-        assert "coolant" not in comment
+        >>> from montepy.input_parser.syntax_node import CommentNode
+        >>> "important" in CommentNode("c the important fuel region")
+        True
     """
 
     _MATCHER = re.compile(

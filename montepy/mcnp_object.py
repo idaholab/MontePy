@@ -306,9 +306,8 @@ The new input was:\n\n"""
         Returns
         -------
         CommentCollection
-            a list of the comments associated with this object, which also
-            supports searching the comments' text (e.g. ``"foo" in
-            obj.comments``).
+            the comments associated with this object; supports searching
+            the comments' text, e.g. ``"foo" in obj.comments``.
         """
         return CommentCollection(self._tree.comments)
 
@@ -319,8 +318,8 @@ The new input was:\n\n"""
         Returns
         -------
         CommentCollection
-            the leading comments, which also support searching the comments'
-            text (e.g. ``"foo" in obj.leading_comments``).
+            the leading comments; supports searching the comments' text,
+            e.g. ``"foo" in obj.leading_comments``.
         """
         return CommentCollection(self._tree["start_pad"].comments)
 

@@ -8,70 +8,26 @@ class CommentCollection(list):
     """A list of the comments in an object that supports searching by text.
 
     This is a :class:`list` of :class:`~montepy.input_parser.syntax_node.CommentNode`
-    instances, and behaves like a normal list in every way. In addition, it
-    supports searching the text of its comments.
+    instances, and behaves like a normal list in every way. In addition,
+    checking a string with the ``in`` operator searches the *text* of all
+    comments, so an object can be found by its comments; anything other than a
+    string keeps the normal list membership behavior.
 
     Examples
     --------
 
-    Searching comments with ``in``
-    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    .. doctest::
 
-    Checking a string with the ``in`` operator searches the *text* of all
-    comments in the collection, so an object can be found by its comments:
-
-    .. testcode::
-
-        import montepy
-
-        problem = montepy.read_input("foo.imcnp")
-
-        for material in problem.materials:
-            if "light water" in material.comments:
-                print("found material:", material.number)
-
-    .. testoutput::
-
-        found material: 1
-
-    Checking anything other than a string keeps the normal :class:`list`
-    behavior, so membership tests for
-    :class:`~montepy.input_parser.syntax_node.CommentNode` instances are
-    unchanged.
-
-    Searching comments by pattern
-    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-
-    :func:`search` finds the comments matching a substring, or a regular
-    expression with ``regex=True``:
-
-    .. testcode::
-
-        material = problem.materials[1]
-        for comment in material.comments.search(r"(?i)LIGHT", regex=True):
-            print(comment.contents)
-
-    .. testoutput::
-
-        light water
-
+        >>> import montepy
+        >>> problem = montepy.read_input("foo.imcnp")
+        >>> "light water" in problem.materials[1].comments
+        True
+        >>> problem.materials[1].comments.search(r"(?i)LIGHT", regex=True)[0].contents
+        'light water'
     """
 
     def __contains__(self, item):
-        """Checks if a string is in the text of any comment, or if a comment is in this list.
-
-        Parameters
-        ----------
-        item : str or object
-            a string to search the text of all comments for, or any other
-            object to check list membership for.
-
-        Returns
-        -------
-        bool
-            for a string: True iff the string is contained in any comment's
-            ``contents``; otherwise: normal list membership.
-        """
+        """For a string: search the text of all comments; otherwise: normal list membership."""
         if isinstance(item, str):
             return bool(self.search(item))
         return super().__contains__(item)
@@ -102,25 +58,17 @@ class CommentCollection(list):
         TypeError
             if ``pattern`` is not a str, or a pattern compiled from a str.
         """
-        if isinstance(pattern, re.Pattern):
-            # bytes patterns cannot search the comments' str contents
-            if not isinstance(pattern.pattern, str):
-                raise TypeError(
-                    f"pattern must be a str, or a pattern compiled from a str. {pattern} given."
-                )
+        if isinstance(pattern, re.Pattern) and isinstance(pattern.pattern, str):
             matcher = pattern.search
+        elif isinstance(pattern, str) and regex:
+            matcher = re.compile(pattern).search
+        elif isinstance(pattern, str):
+
+            def matcher(contents):
+                return pattern in contents
+
         else:
-            if not isinstance(pattern, str):
-                raise TypeError(
-                    f"pattern must be a str, or a pattern compiled from a str. {pattern} given."
-                )
-            if regex:
-                matcher = re.compile(pattern).search
-            else:
-
-                def matcher(contents):
-                    return pattern in contents
-
-        return CommentCollection(
-            comment for comment in self if matcher(comment.contents)
-        )
+            raise TypeError(
+                f"pattern must be a str, or a pattern compiled from a str. {pattern} given."
+            )
+        return CommentCollection(c for c in self if matcher(c.contents))
