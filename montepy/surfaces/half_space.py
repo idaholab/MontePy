@@ -247,6 +247,75 @@ class HalfSpace:
             if self.right is not None:
                 self.right.remove_duplicate_surfaces(new_deleting_dict)
 
+    def replace(
+        self,
+        old_divider: montepy.Surface | montepy.Cell,
+        new_divider: montepy.Surface | montepy.Cell,
+    ) -> None:
+        if not isinstance(
+            old_divider, (montepy.surfaces.surface.Surface, montepy.Cell)
+        ):
+            raise TypeError(
+                f"old_divider must be a Surface or Cell. {old_divider} given."
+            )
+        if not isinstance(
+            new_divider, (montepy.surfaces.surface.Surface, montepy.Cell)
+        ):
+            raise TypeError(
+                f"new_divider must be a Surface or Cell. {new_divider} given."
+            )
+        if isinstance(old_divider, montepy.Cell) != isinstance(
+            new_divider, montepy.Cell
+        ):
+            raise TypeError(
+                f"old_divider and new_divider must both be Surfaces or both be Cells. "
+                f"Got {type(old_divider).__name__} and {type(new_divider).__name__}."
+            )
+        if new_divider is old_divider:
+            raise ValueError(
+                "new_divider and old_divider are the same object; nothing to replace."
+            )
+        for leaf in self:
+            if isinstance(leaf._divider, Integral):
+                raise IllegalState(
+                    "Geometry tree has not been linked to objects yet. "
+                    "Run Cell.update_pointers() before calling replace()."
+                )
+
+        # Find parent cell
+        cell = None
+        for leaf in self:
+            if leaf._cell is not None:
+                cell = leaf._cell
+                break
+
+        # Remove old_divider from parent cell's container only if present
+        removed_from_container = False
+        if cell is not None:
+            container = (
+                cell.complements
+                if isinstance(old_divider, montepy.Cell)
+                else cell.surfaces
+            )
+            if old_divider in container:
+                container.remove(old_divider)
+                removed_from_container = True
+
+        replaced = self._replace_recursive(old_divider, new_divider)
+        if not replaced:
+            # old_divider was never in the geometry tree.
+            # Per Micah: don't add it back (it was never legitimately there),
+            # but still raise ValueError.
+            raise ValueError(
+                f"{old_divider} (number: {old_divider.number}) not found in geometry tree."
+            )
+
+    def _replace_recursive(self, old_divider, new_divider) -> bool:
+        replaced = self.left._replace_recursive(old_divider, new_divider)
+        if self.right is not None:
+            replaced |= self.right._replace_recursive(old_divider, new_divider)
+        return replaced
+
     def _get_leaf_objects(self):
         """Get all of the leaf objects for this tree.
 
@@ -439,6 +508,23 @@ class HalfSpace:
             length += len(self.right)
         return length
 
+    def __iter__(self):
+        """Iterate over all :class:`UnitHalfSpace` leaves in depth-first order.
+
+        This allows you to walk every leaf of the geometry tree, for example::
+
+            for unit in cell.geometry:
+                print(unit.divider, unit.side)
+
+        Yields
+        ------
+        UnitHalfSpace
+            each leaf node in the tree, left subtree before right.
+        """
+        yield from iter(self.left)
+        if self.right is not None:
+            yield from iter(self.right)
+
     def __eq__(self, other):
         # don't allow subclassing on right side
         if type(self) != type(other):
@@ -557,7 +643,9 @@ class UnitHalfSpace(HalfSpace):
                 container = self._cell.complements
             else:
                 container = self._cell.surfaces
-            if div not in container:
+            try:
+                container[div.number]
+            except KeyError:
                 container.append(div)
 
     @make_prop_pointer("_is_cell", bool)
@@ -682,6 +770,12 @@ class UnitHalfSpace(HalfSpace):
             self._node.value = self.divider.number
         self._node.is_negative = not self.side
 
+    def _replace_recursive(self, old_divider, new_divider) -> bool:
+        if self._divider is old_divider:
+            self.divider = new_divider
+            return True
+        return False
+
     def _get_leaf_objects(self):
         if isinstance(
             self._divider, (montepy.cell.Cell, montepy.surfaces.surface.Surface)
@@ -740,10 +834,22 @@ class UnitHalfSpace(HalfSpace):
             if isinstance(self.divider, ValueNode) or type(new_obj) == type(
                 self.divider
             ):
+                # Use the divider setter so any parent cell bookkeeping stays
+                # synchronized with the remapped geometry.
                 self.divider = new_obj
 
     def __len__(self):
         return 1
+
+    def __iter__(self):
+        """Iterate over this leaf node.
+
+        Yields
+        ------
+        UnitHalfSpace
+            this leaf itself.
+        """
+        yield self
 
     def __eq__(self, other):
         if not isinstance(other, UnitHalfSpace):
