@@ -1,14 +1,14 @@
 # Copyright 2026, Battelle Energy Alliance, LLC All Rights Reserved.
-from collections.abc import Sequence
+from collections.abc import Collection
 import re
 
 
-class CommentCollection(Sequence):
+class CommentCollection(Collection):
     """A read-only collection of the comments in an object that supports searching by text.
 
-    This is a :class:`~collections.abc.Sequence` of
-    :class:`~montepy.input_parser.syntax_node.CommentNode` instances, so it
-    supports indexing, slicing, iteration, and ``len()``. Checking a string
+    This is a :class:`~collections.abc.Collection` of
+    :class:`~montepy.input_parser.syntax_node.CommentNode` instances that
+    also supports indexing, slicing, and ``len()``. Checking a string
     with the ``in`` operator searches the *text* of all comments, so an
     object can be found by its comments; anything other than a string keeps
     normal membership behavior.
@@ -28,8 +28,9 @@ class CommentCollection(Sequence):
 
     Parameters
     ----------
-    comments : iterable of CommentNode
-        the comments in this collection.
+    comments : collections.abc.Iterable
+        the comments in this collection, as an iterable of
+        :class:`~montepy.input_parser.syntax_node.CommentNode`.
     """
 
     __slots__ = ("_comments",)
@@ -41,6 +42,9 @@ class CommentCollection(Sequence):
         if isinstance(i, slice):
             return CommentCollection(self._comments[i])
         return self._comments[i]
+
+    def __iter__(self):
+        return iter(self._comments)
 
     def __len__(self):
         return len(self._comments)

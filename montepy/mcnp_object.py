@@ -325,13 +325,13 @@ The new input was:\n\n"""
 
     @leading_comments.setter
     def leading_comments(self, comments):
-        if not isinstance(comments, (list, tuple, CommentNode)):
+        if not isinstance(comments, (list, tuple, CommentNode, CommentCollection)):
             raise TypeError(
                 f"Comments must be a CommentNode, or a list of Comments. {comments} given."
             )
         if isinstance(comments, CommentNode):
             comments = [comments]
-        if isinstance(comments, (list, tuple)):
+        if isinstance(comments, (list, tuple, CommentCollection)):
             for comment in comments:
                 if not isinstance(comment, CommentNode):
                     raise TypeError(
