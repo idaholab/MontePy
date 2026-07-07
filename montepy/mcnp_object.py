@@ -303,6 +303,10 @@ The new input was:\n\n"""
         This includes all ``C`` comments before this card that aren't part of another card,
         and any comments that are inside this card.
 
+        .. versionchanged:: 1.5.0
+
+            Returns a :class:`~montepy.comments.CommentCollection` instead of a list.
+
         Returns
         -------
         CommentCollection
@@ -314,6 +318,10 @@ The new input was:\n\n"""
     @property
     def leading_comments(self) -> CommentCollection:
         """Any comments that come before the beginning of the input proper.
+
+        .. versionchanged:: 1.5.0
+
+            Returns a :class:`~montepy.comments.CommentCollection` instead of a list.
 
         Returns
         -------

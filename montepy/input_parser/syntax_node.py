@@ -821,6 +821,10 @@ class PaddingNode(SyntaxNodeBase):
 class CommentNode(SyntaxNodeBase):
     """Object to represent a comment in an MCNP problem.
 
+    .. versionchanged:: 1.5.0
+
+        A comment's text can now be searched with the ``in`` operator.
+
     Parameters
     ----------
     input : sly.lex.Token

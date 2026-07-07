@@ -13,6 +13,8 @@ class CommentCollection(Collection):
     object can be found by its comments; anything other than a string keeps
     normal membership behavior.
 
+    .. versionadded:: 1.5.0
+
     Examples
     --------
 
@@ -64,6 +66,8 @@ class CommentCollection(Collection):
         The search is run against each comment's
         :attr:`~montepy.input_parser.syntax_node.CommentNode.contents`, that
         is the comment's text without its delimiters (``c``/``$``).
+
+        .. versionadded:: 1.5.0
 
         Parameters
         ----------
