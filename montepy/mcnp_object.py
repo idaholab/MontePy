@@ -298,7 +298,7 @@ The new input was:\n\n"""
 
     @property
     def comments(self) -> CommentCollection:
-        """The comments associated with this input if any.
+        """The comments associated with this object if any.
 
         This includes all ``C`` comments before this card that aren't part of another card,
         and any comments that are inside this card.
