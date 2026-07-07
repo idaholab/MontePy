@@ -829,7 +829,7 @@ class CommentNode(SyntaxNodeBase):
     Examples
     --------
 
-    The ``in`` operator searches the comment's text — its ``contents``
+    The ``in`` operator searches the comment's text, its ``contents``,
     without the ``c``/``$`` delimiter:
 
     .. doctest::

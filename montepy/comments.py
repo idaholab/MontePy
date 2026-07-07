@@ -2,8 +2,6 @@
 from collections.abc import Sequence
 import re
 
-from montepy.input_parser.syntax_node import CommentNode
-
 
 class CommentCollection(Sequence):
     """A read-only collection of the comments in an object that supports searching by text.
@@ -24,7 +22,8 @@ class CommentCollection(Sequence):
         >>> problem = montepy.read_input("foo.imcnp")
         >>> "light water" in problem.materials[1].comments
         True
-        >>> problem.materials[1].comments.search(r"(?i)LIGHT", regex=True)[0].contents
+        >>> import re
+        >>> problem.materials[1].comments.search(re.compile(r"(?i)LIGHT"))[0].contents
         'light water'
 
     Parameters
@@ -36,7 +35,7 @@ class CommentCollection(Sequence):
     __slots__ = ("_comments",)
 
     def __init__(self, comments=()):
-        self._comments = list(comments)
+        self._comments = tuple(comments)
 
     def __getitem__(self, i):
         if isinstance(i, slice):
@@ -55,7 +54,7 @@ class CommentCollection(Sequence):
     def __repr__(self):
         return f"CommentCollection({self._comments!r})"
 
-    def search(self, pattern, regex=False):
+    def search(self, pattern):
         """Searches the text of the comments in this collection.
 
         The search is run against each comment's
@@ -65,11 +64,8 @@ class CommentCollection(Sequence):
         Parameters
         ----------
         pattern : str or re.Pattern
-            the substring to search for, or a regular expression when
-            ``regex`` is True. Compiled patterns are always treated as
-            regular expressions.
-        regex : bool
-            whether to interpret ``pattern`` as a regular expression.
+            a substring to search for, or a compiled regular expression
+            (e.g. ``re.compile(pattern, re.IGNORECASE)``).
 
         Returns
         -------
@@ -81,15 +77,10 @@ class CommentCollection(Sequence):
         TypeError
             if ``pattern`` is not a str, or a pattern compiled from a str.
         """
-        if isinstance(pattern, re.Pattern) and isinstance(pattern.pattern, str):
+        if isinstance(pattern, str):
+            matcher = re.compile(re.escape(pattern)).search
+        elif isinstance(pattern, re.Pattern) and isinstance(pattern.pattern, str):
             matcher = pattern.search
-        elif isinstance(pattern, str) and regex:
-            matcher = re.compile(pattern).search
-        elif isinstance(pattern, str):
-
-            def matcher(contents):
-                return pattern in contents
-
         else:
             raise TypeError(
                 f"pattern must be a str, or a pattern compiled from a str. {pattern} given."
