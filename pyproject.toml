@@ -51,7 +51,7 @@ test = [
 build = [
 	"build",
 	"setuptools>=80.0.0",
-	"setuptools-scm>=8,<10.0",
+	"setuptools-scm>=8,<11.0",
 ]
 doc = [
 	"montepy[build]",
