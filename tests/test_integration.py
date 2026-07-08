@@ -558,6 +558,17 @@ def test_comments_setter(simple_problem):
         cell.leading_comments = 5
 
 
+def test_comments_setter_multiple_comments(simple_problem):
+    cell = copy.deepcopy(simple_problem.cells[1])
+    comment = simple_problem.surfaces[1000].comments[0]
+    comments = [comment, copy.deepcopy(comment)]
+    cell.leading_comments = comments
+    assert len(cell.leading_comments) == 2
+    assert [comment.contents for comment in cell.leading_comments] == [
+        comment.contents for comment in comments
+    ]
+
+
 def test_problem_linker():
     cell = montepy.Cell()
     with pytest.raises(TypeError):

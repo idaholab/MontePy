@@ -3,7 +3,6 @@ from __future__ import annotations
 from abc import ABC, ABCMeta, abstractmethod
 import copy
 import functools
-import itertools as it
 import textwrap
 from typing import TypeAlias, Union, Type
 import warnings
@@ -335,23 +334,17 @@ The new input was:\n\n"""
     def leading_comments(self, comments):
         if not isinstance(comments, (list, tuple, CommentNode, CommentCollection)):
             raise TypeError(
-                f"Comments must be a CommentNode, or a list of Comments. {comments} given."
+                f"Comments must be a CommentNode, CommentCollection, or list/tuple of CommentNodes. {comments} given."
             )
         if isinstance(comments, CommentNode):
             comments = [comments]
-        if isinstance(comments, (list, tuple, CommentCollection)):
-            for comment in comments:
-                if not isinstance(comment, CommentNode):
-                    raise TypeError(
-                        f"Comments must be a CommentNode, or a list of Comments. {comment} given."
-                    )
 
         for i, comment in enumerate(comments):
             if not isinstance(comment, CommentNode):
                 raise TypeError(
                     f"Comment must be a CommentNode. {comment} given at index {i}."
                 )
-        new_nodes = list(*zip(comments, it.cycle(["\n"])))
+        new_nodes = [node for comment in comments for node in (comment, "\n")]
         if self._tree["start_pad"] is None:
             self._tree["start_pad"] = PaddingNode(" ")
         self._tree["start_pad"]._nodes = new_nodes
