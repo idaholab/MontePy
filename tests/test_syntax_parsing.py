@@ -1,7 +1,6 @@
 # Copyright 2024, Battelle Energy Alliance, LLC All Rights Reserved.
 import copy
 from io import StringIO
-import os
 import re
 import pytest
 
@@ -657,16 +656,23 @@ class TestPaddingNode:
         with pytest.raises(TypeError):
             comments.search(re.compile(b"fuel"))
 
-
-def test_object_comments_are_collection():
-    problem = montepy.read_input(os.path.join("tests", "inputs", "test.imcnp"))
-    cell = problem.cells[1]
-    assert isinstance(cell.comments, montepy.CommentCollection)
-    assert isinstance(cell.leading_comments, montepy.CommentCollection)
-    # an object can be found by its comment text (#185)
-    assert "hidden vertical" in cell.comments
-    assert "not actually in there" not in cell.comments
-    assert len(cell.comments.search(re.compile(r"(?i)HIDDEN"))) == 1
+    def test_comment_collection_sequence(self):
+        c1 = syntax_node.CommentNode("c the fuel region")
+        c2 = syntax_node.CommentNode("$ moderator notes")
+        comments = montepy.CommentCollection([c1, c2])
+        # indexing, slicing, iteration, and length
+        assert len(comments) == 2
+        assert comments[0] is c1
+        assert comments[-1] is c2
+        sliced = comments[0:1]
+        assert isinstance(sliced, montepy.CommentCollection)
+        assert list(sliced) == [c1]
+        assert [c.contents for c in comments] == ["the fuel region", "moderator notes"]
+        # Sequence mixins
+        assert list(reversed(comments)) == [c2, c1]
+        assert comments.index(c2) == 1
+        assert comments.count(c1) == 1
+        assert "CommentCollection" in repr(comments)
 
 
 def test_graveyard_comment():

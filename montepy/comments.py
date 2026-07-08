@@ -1,14 +1,17 @@
 # Copyright 2026, Battelle Energy Alliance, LLC All Rights Reserved.
-from collections.abc import Collection
+from __future__ import annotations
+from collections.abc import Iterable, Iterator, Sequence
 import re
 
+from montepy.input_parser.syntax_node import CommentNode
 
-class CommentCollection(Collection):
+
+class CommentCollection(Sequence):
     """A read-only collection of the comments in an object that supports searching by text.
 
-    This is a :class:`~collections.abc.Collection` of
-    :class:`~montepy.input_parser.syntax_node.CommentNode` instances that
-    also supports indexing, slicing, and ``len()``. Checking a string
+    This is a :class:`~collections.abc.Sequence` of
+    :class:`~montepy.input_parser.syntax_node.CommentNode` instances, so it
+    supports indexing, slicing, iteration, and ``len()``. Checking a string
     with the ``in`` operator searches the *text* of all comments, so an
     object can be found by its comments; anything other than a string keeps
     normal membership behavior.
@@ -37,30 +40,30 @@ class CommentCollection(Collection):
 
     __slots__ = ("_comments",)
 
-    def __init__(self, comments=()):
+    def __init__(self, comments: Iterable[CommentNode] = ()) -> None:
         self._comments = tuple(comments)
 
-    def __getitem__(self, i):
+    def __getitem__(self, i: int | slice) -> CommentNode | CommentCollection:
         if isinstance(i, slice):
             return CommentCollection(self._comments[i])
         return self._comments[i]
 
-    def __iter__(self):
+    def __iter__(self) -> Iterator[CommentNode]:
         return iter(self._comments)
 
-    def __len__(self):
+    def __len__(self) -> int:
         return len(self._comments)
 
-    def __contains__(self, item):
+    def __contains__(self, item: object) -> bool:
         """For a string: search the text of all comments; otherwise: normal membership."""
         if isinstance(item, str):
             return any(item in comment for comment in self._comments)
         return item in self._comments
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return f"CommentCollection({self._comments!r})"
 
-    def search(self, pattern):
+    def search(self, pattern: str | re.Pattern) -> CommentCollection:
         """Searches the text of the comments in this collection.
 
         The search is run against each comment's
@@ -85,10 +88,17 @@ class CommentCollection(Collection):
         TypeError
             if ``pattern`` is not a str, or a pattern compiled from a str.
         """
-        if isinstance(pattern, str):
-            matcher = re.compile(re.escape(pattern)).search
-        elif isinstance(pattern, re.Pattern) and isinstance(pattern.pattern, str):
+        if isinstance(pattern, re.Pattern):
+            if not isinstance(pattern.pattern, str):
+                raise TypeError(
+                    f"pattern must be a str, or a pattern compiled from a str. {pattern} given."
+                )
             matcher = pattern.search
+        elif isinstance(pattern, str):
+
+            def matcher(contents):
+                return pattern in contents
+
         else:
             raise TypeError(
                 f"pattern must be a str, or a pattern compiled from a str. {pattern} given."

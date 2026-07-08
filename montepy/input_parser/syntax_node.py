@@ -959,6 +959,8 @@ class CommentNode(SyntaxNodeBase):
         This allows searching a comment by its text, e.g.
         ``"important" in comment``.
 
+        .. versionadded:: 1.5.0
+
         Parameters
         ----------
         value : str
