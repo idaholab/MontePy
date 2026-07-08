@@ -12,12 +12,6 @@ Next Release
 **Features Added**
 
 * Added ``HalfSpace.replace`` to swap dividers in a cell geometry tree, and ``HalfSpace.__iter__`` to traverse geometry leaves (:issue:`737`).
-* Added support for the ``in`` operator on comments, so a comment's text can be searched with e.g. ``"keyword" in comment`` (:issue:`185`).
-* Added :class:`~montepy.comments.CommentCollection`, now returned by ``comments`` and ``leading_comments``, so an object can be found by its comments with e.g. ``"keyword" in cell.comments``, or searched by regular expression with ``cell.comments.search`` (:issue:`185`).
-
-**Bugs Fixed**
-
-* Fixed ``leading_comments`` crashing when set with more than one comment (:pull:`972`).
 
 1.4 releases
 ============
@@ -25,8 +19,14 @@ Next Release
 #Next Version#
 --------------
 
+**Feature Added**
+
+* Added support for the ``in`` operator on comments, so a comment's text can be searched with e.g. ``"keyword" in comment`` (:issue:`185`).
+* Added :class:`~montepy.comments.CommentCollection`, now returned by ``comments`` and ``leading_comments``, so an object can be found by its comments with e.g. ``"keyword" in cell.comments``, or searched by regular expression with ``cell.comments.search`` (:issue:`185`).
+
 **Bugs Fixed**
 
+* Fixed ``leading_comments`` crashing when set with more than one comment (:pull:`972`).
 * Fixed bug where values for user generated objects would be rounded off at five digits no matter what. This will now round off at 15 digits if necessary (:issue:`962`).
 
 
