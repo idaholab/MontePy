@@ -33,6 +33,7 @@ Collections
    :template: myclass.rst
 
    montepy.Cells
+   montepy.CommentCollection
    montepy.Materials
    montepy.Surfaces
    montepy.Transforms

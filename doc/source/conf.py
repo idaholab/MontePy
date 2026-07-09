@@ -306,6 +306,10 @@ nitpick_ignore_regex = [
     # sphinx_autodoc_typehints generates "self" and "self._attr" refs for some
     # return-type annotations; these cannot be resolved and are harmless
     (r"py:class", r"^self(\._\w+)?$"),
+    # collections.abc.Sequence's inherited count/index carry C-style docstrings
+    # whose return annotations (e.g. "integer -- return number of occurrences
+    # of value") are not resolvable cross-references
+    (r"py:class", r"^integer -- return .*$"),
 ]
 
 
