@@ -52,18 +52,18 @@ test = [
 build = [
 	"build",
 	"setuptools>=80.0.0",
-	"setuptools-scm>=8,<10.0",
+	"setuptools-scm>=8,<11.0",
 ]
 doc = [
 	"montepy[build]",
-	"sphinx~=8.0", 
+	"sphinx>=8.0.0,<9.0.0", 
 	"sphinxcontrib-apidoc", 
 	"pydata_sphinx_theme",
 	"sphinx-favicon",
 	"sphinx-copybutton",
   	"sphinx_autodoc_typehints",
 	"autodocsumm",
-	"jupyterlite-sphinx",
+	"jupyterlite-sphinx>=0.22",
 	"jupyterlite-pyodide-kernel",
 	"sphinx-sitemap",
 ]
