@@ -1,4 +1,5 @@
 # Copyright 2024, Battelle Energy Alliance, LLC All Rights Reserved.
+from collections.abc import Iterator
 import copy
 import io
 from pathlib import Path
@@ -218,7 +219,7 @@ def test_problem_str(simple_problem):
     assert "MCNP problem for: tests/inputs/test.imcnp" in output
 
 
-def _user_facing_objects(problem):
+def _user_facing_objects(problem: montepy.MCNP_Problem) -> Iterator[object]:
     """Yield a problem's user-facing objects: the problem, its top-level
     members, every collection and its members, the data-block inputs, and the
     cell-block modifiers."""
@@ -254,10 +255,10 @@ def _user_facing_objects(problem):
     ],
 )
 def test_str_and_repr_do_not_raise(request, problem_fixture):
-    """``str`` and ``repr`` of user-facing objects must never raise (:issue:`152`).
+    """str and repr of user-facing objects must never raise (#152).
 
-    Some attributes are not populated in every context (e.g. a ``Volume`` in
-    the data block), which used to make ``__repr__`` raise ``AttributeError``.
+    Some attributes are not populated in every context (e.g. a Volume in
+    the data block), which used to make __repr__ raise AttributeError.
     """
     problem = request.getfixturevalue(problem_fixture)
     for obj in _user_facing_objects(problem):
