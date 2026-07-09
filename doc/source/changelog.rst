@@ -6,18 +6,15 @@
 MontePy Changelog
 *****************
 
-Next Release
-============
 
-**Features Added**
-
-* Added ``HalfSpace.replace`` to swap dividers in a cell geometry tree, and ``HalfSpace.__iter__`` to traverse geometry leaves (:issue:`737`).
-
-1.4 releases
+1.5 Releases
 ============
 
 #Next Version#
 --------------
+**Features Added**
+
+* Added ``HalfSpace.replace`` to swap dividers in a cell geometry tree, and ``HalfSpace.__iter__`` to traverse geometry leaves (:issue:`737`).
 
 **Feature Added**
 
@@ -29,6 +26,8 @@ Next Release
 * Fixed ``leading_comments`` crashing when set with more than one comment (:pull:`972`).
 * Fixed bug where values for user generated objects would be rounded off at five digits no matter what. This will now round off at 15 digits if necessary (:issue:`962`).
 
+1.4 releases
+============
 
 1.4.0
 --------------
