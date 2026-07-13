@@ -15,6 +15,7 @@ MontePy Changelog
 **Features Added**
 
 * Added ``HalfSpace.replace`` to swap dividers in a cell geometry tree, and ``HalfSpace.__iter__`` to traverse geometry leaves (:issue:`737`).
+* Added :func:`~montepy.cell.Cell.is_mass_dens` as the logical complement of ``is_atom_dens``, returning ``None`` when no density is set (:issue:`964`).
 
 **Feature Added**
 

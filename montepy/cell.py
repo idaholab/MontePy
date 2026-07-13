@@ -567,6 +567,22 @@ class Cell(Numbered_MCNP_Object):
         """
         return self._is_atom_dens
 
+    @property
+    def is_mass_dens(self):
+        """Whether or not the density is in mass density [g/cc].
+
+        This is the logical complement of :func:`is_atom_dens`. True means
+        it is in mass density, False means atom density [a/b-cm]. If no
+        density is set this will return ``None``.
+
+        Returns
+        -------
+        bool, None
+        """
+        if self._is_atom_dens is None:
+            return None
+        return not self._is_atom_dens
+
     @make_prop_val_node("_old_mat_number")
     def old_mat_number(self):
         """The material number provided in the original input file
