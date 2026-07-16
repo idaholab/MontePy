@@ -52,7 +52,7 @@ Fixes # (issue number)
 ---
 
 <details>
-<summary><h3>First-Time Contributor Checklist</h3></summary>
+<summary><h2>First-Time Contributor Checklist</h2></summary>
 
 - [ ] If this is your first contribution, add yourself to `pyproject.toml` if you wish to do so.
 
@@ -60,7 +60,7 @@ Fixes # (issue number)
 
 ---
 
-### Additional Notes for Reviewers
+## Additional Notes for Reviewers
 
 Ensure that:
 
