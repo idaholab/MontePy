@@ -32,10 +32,19 @@ Fixes # (issue number)
 
 <details open> 
 
-<summary><h3>Documentation Checklist</h3></summary>
+<summary><h2>Documentation Checklist</h2></summary>
 
 - [ ] I have documented all added classes and methods.
+- [ ] I have added [type hints](https://peps.python.org/pep-0484/) to all functions as needed.
+- [ ] I have marked all changes with the `.. versionchanged::` or `.. versionadded::` directives.
+
+
+<h3>Infrastructure Changes </h3>
+
 - [ ] For infrastructure updates, I have updated the developer's guide.
+
+<h3>Significant features or Behavior changes </h3>
+
 - [ ] For significant new features, I have added a section to the getting started guide.
 
 </details>
