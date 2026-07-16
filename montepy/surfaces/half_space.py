@@ -545,6 +545,19 @@ class HalfSpace:
     def _generate_default_tree(self):
         pass
 
+    def format_for_mcnp_input(self) -> str:
+        """Return this geometry in MCNP input syntax.
+
+        The geometry tree is updated before formatting so changes to divider
+        numbers, sides, and operators are reflected in the returned value.
+        """
+        self._update_values()
+        return self.node.format()
+
+    def mcnp_str(self) -> str:
+        """Return this geometry as it would appear in an MCNP input file."""
+        return self.format_for_mcnp_input()
+
     def __str__(self):
         if self.operator == Operator.COMPLEMENT:
             return f"{self.operator.value}{self.left}"

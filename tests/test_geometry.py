@@ -85,6 +85,18 @@ def test_half_str():
     repr(half_space)
 
 
+def test_halfspace_mcnp_string():
+    surf1 = montepy.CylinderOnAxis(number=1)
+    surf2 = montepy.CylinderOnAxis(number=2)
+    geometry = -surf1 & (+surf2 | -surf1)
+
+    assert geometry.format_for_mcnp_input() == "-1 (2 : -1)"
+    assert geometry.mcnp_str() == "-1 (2 : -1)"
+
+    surf1.number = 3
+    assert geometry.mcnp_str() == "-3 (2 : -3)"
+
+
 def test_unit_half_init():
     node = montepy.input_parser.syntax_node.ValueNode("123", float)
     half_space = UnitHalfSpace(123, True, False, node)
