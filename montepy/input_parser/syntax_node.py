@@ -1055,41 +1055,33 @@ class ValueNode(SyntaxNodeBase):
             raise ValueError(f"ValueNode must be a float to convert to int")
         self._type = int
 
-        def convert_token_to_int():
-            try:
-                return int(self._token)
-            except ValueError as e:
-                parts = self._token.split(".")
-                if len(parts) > 1 and int(parts[1]) == 0:
-                    return int(parts[0])
-                raise e
-
         if self._token is not None and not isinstance(
             self._token, input_parser.mcnp_input.Jump
         ):
-            try:
-                token_value = fortran_float(self._token)
-            except ValueError:
-                token_value = None
-            if self._value is not None and token_value is not None:
-                current_value = float(self._value)
+            token_value = fortran_float(self._token)
+            current_value = float(self._value)
+            if not math.isclose(
+                current_value, token_value, rel_tol=rel_tol, abs_tol=abs_tol
+            ):
                 if not math.isclose(
-                    current_value, token_value, rel_tol=rel_tol, abs_tol=abs_tol
+                    current_value,
+                    int(current_value),
+                    rel_tol=rel_tol,
+                    abs_tol=abs_tol,
                 ):
-                    if not math.isclose(
-                        current_value,
-                        int(current_value),
-                        rel_tol=rel_tol,
-                        abs_tol=abs_tol,
-                    ):
-                        raise ValueError(
-                            "ValueNode must hold an integer value to convert to int"
-                        )
-                    self._value = int(current_value)
-                else:
-                    self._value = convert_token_to_int()
+                    raise ValueError(
+                        "ValueNode must hold an integer value to convert to int"
+                    )
+                self._value = int(current_value)
             else:
-                self._value = convert_token_to_int()
+                try:
+                    self._value = int(self._token)
+                except ValueError as e:
+                    parts = self._token.split(".")
+                    if len(parts) > 1 and int(parts[1]) == 0:
+                        self._value = int(parts[0])
+                    else:
+                        raise e
         self._formatter = self._FORMATTERS[int].copy()
 
     def convert_to_enum(
@@ -2239,6 +2231,8 @@ class ShortcutNode(ListNode):
                 last_val = p[0].nodes["left"]
         else:
             last_val = p[0].nodes[-1]
+            if isinstance(last_val, ShortcutNode):
+                last_val = last_val.nodes[-1]
         if last_val.value is None:
             raise ValueError(f"Multiply cannot follow a jump. Given: {list(p)}")
         self._nodes.append(copy.deepcopy(last_val))
