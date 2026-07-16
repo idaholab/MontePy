@@ -70,7 +70,7 @@ def test_cell_is_mass_dens():
     assert cell.is_mass_dens is True
     assert cell.is_mass_dens == (not cell.is_atom_dens)
     # atom density set
-    cell.atom_density = 1.6
+    cell.atom_density = 0.016
     assert cell.is_mass_dens is False
     assert cell.is_mass_dens == (not cell.is_atom_dens)
 
