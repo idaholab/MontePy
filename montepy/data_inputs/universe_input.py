@@ -257,6 +257,7 @@ class UniverseInput(CellModifierInput):
 
     def _accept_and_update(self, value):
         self._old_number = value
+        self._not_truncated = value.is_negative
 
     def _clear_data(self):
         del self._old_numbers
