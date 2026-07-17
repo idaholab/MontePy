@@ -41,5 +41,6 @@ class Universes(NumberedObjectCollection):
             if self._problem:
                 new_uni = self._problem.cells._universe._find_and_populate_universe(key)
                 if new_uni is not None:
+                    self.append(new_uni)
                     return new_uni
             raise e

@@ -196,9 +196,13 @@ class UniverseInput(CellModifierInput):
     @needs_full_ast
     def _tree_value(self):
         val = self._old_number
-        val.value = 0
-        if self.universe is not None:
-            val.value = self.universe.number
+        val.is_negatable_identifier = True
+        # Resolve the universe number before mutating val.value.
+        # val.value = 0 would corrupt _old_number, making old_number return 0,
+        # which causes @prop_pointer_from_problem to look up Universe(0) instead
+        # of the correct universe.
+        uni = self.universe
+        val.value = uni.number if uni is not None else 0
         val.is_negative = self.not_truncated
         return val
 
@@ -232,17 +236,27 @@ class UniverseInput(CellModifierInput):
             for cell, uni_number in itertools.zip_longest(
                 cells, self._old_numbers, fillvalue=None
             ):
-                if has_data and not isinstance(uni_number, (Jump, type(None))):
+                is_jump = (
+                    uni_number is None
+                    or isinstance(uni_number, Jump)
+                    or (
+                        isinstance(uni_number, syntax_node.ValueNode)
+                        and uni_number.value is None
+                    )
+                )
+                if has_data and not is_jump:
                     cell._universe._accept_from_data(uni_number)
                     if uni_number.is_negative:
                         cell._universe._not_truncated = True
                     # Use the data-block number directly for universe lookup
-                    uni_num = (
-                        abs(uni_number.value) if uni_number.value is not None else 0
-                    )
+                    uni_num = abs(uni_number.value)
                 else:
-                    # Jump or no data: use old_universe_number only if fully parsed
-                    if cell is None or hasattr(cell._universe, "_not_parsed"):
+                    # Jump or no data: skip JIT cells (identified by _not_parsed on the
+                    # cell itself, not the blank modifier which always has _not_parsed).
+                    if cell is None or hasattr(cell, "_not_parsed"):
+                        continue
+                    # Don't overwrite a universe the user has explicitly assigned
+                    if cell._universe._universe is not None:
                         continue
                     uni_num = cell.old_universe_number
                     if uni_num is None:
