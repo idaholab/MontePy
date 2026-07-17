@@ -270,7 +270,7 @@ class Input(ParsingNode):
         """
         searcher = lambda line: search in line
         if isinstance(search, re.Pattern):
-            searcher = lambda line: (search.match(line)) is not None
+            searcher = lambda line: (search.search(line)) is not None
         for line in self.input_lines:
             if searcher(line):
                 return True
