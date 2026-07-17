@@ -553,7 +553,7 @@ class MCNP_Problem:
         for collect_type in self._NUMBERED_OBJ_MAP.values():
             try:
                 attr_name = f"_{collect_type.__name__.lower()}"
-                getattr(self, attr_name).finalize_init()
+                getattr(self, attr_name).finalize_init(jit_parse=jit_parse)
             except (BrokenObjectLinkError, MalformedInputError) as e:
                 handle_error(e)
         if jit_parse:

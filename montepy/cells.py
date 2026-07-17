@@ -180,7 +180,7 @@ class Cells(NumberedObjectCollection):
                     handle_error(e)
             self.__loaded_inputs.add(type(input))
 
-    def finalize_init(self):
+    def finalize_init(self, jit_parse: bool = False):
         """
         Finish up grabbing CellModifier inputs and finalize all linked objects.
         """
@@ -194,7 +194,10 @@ class Cells(NumberedObjectCollection):
                     and not modifier.in_cell_block
                     and modifier._input is not None
                 ):
-                    modifier.push_to_cells()
+                    if jit_parse:
+                        modifier._check_redundant_definitions()
+                    else:
+                        modifier.push_to_cells()
         # Rebuild _print_data in stable order: inputs found in the data block first,
         # then cell-block inputs, both groups in _INPUTS_TO_PROPERTY order.
         ctrl = self._problem.print_in_data_block

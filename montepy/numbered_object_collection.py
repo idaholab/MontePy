@@ -208,7 +208,7 @@ class NumberedObjectCollection(ABC):
                         obj._unlink_from_collection()
                     obj._link_to_collection(self)
 
-    def finalize_init(self):
+    def finalize_init(self, jit_parse: bool = False):
         """Finish setting up this collection after the parent problem has completed parsing."""
         pass
 

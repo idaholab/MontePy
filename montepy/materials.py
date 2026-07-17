@@ -69,7 +69,7 @@ class Materials(NumberedDataObjectCollection):
             except KeyError:
                 self._tsl_queue[obj.old_number] = obj
 
-    def finalize_init(self):
+    def finalize_init(self, jit_parse: bool = False):
         # Raise error for unflushed connection
         for num, tsl in self._tsl_queue.items():
             raise MalformedInputError(
