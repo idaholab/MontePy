@@ -268,12 +268,21 @@ class CellModifierInput(DataInputAbstract):
 
     def _check_redundant_definitions(self):
         """Checks that data wasn't given in data block and the cell block."""
+        import re
+
         attr, _ = montepy.Cell._INPUTS_TO_PROPERTY[type(self)]
         if not self._in_cell_block and self._problem:
             cells = self._problem.cells
+            prefix = type(self)._class_prefix()
+            jit_pattern = re.compile(rf"\b{re.escape(prefix)}\b", re.IGNORECASE)
             for cell in cells:
-                if hasattr(cell, "_not_parsed") and cell._not_parsed:
-                    cell.full_parse()
+                if hasattr(cell, "_not_parsed"):
+                    if cell.search(jit_pattern):
+                        cell.full_parse()
+                        if not getattr(cell, attr).set_in_cell_block:
+                            continue
+                    else:
+                        continue
                 if getattr(cell, attr).set_in_cell_block:
                     raise montepy.exceptions.MalformedInputError(
                         cell._input,
