@@ -295,7 +295,7 @@ class JitDataParser:
                 mnemonic = syntax_node.ValueNode(token.value, str)
                 classifier = syntax_node.ClassifierNode()
                 classifier.prefix = mnemonic
-                number = syntax_node.ValueNode(None, int)
+                number = None
                 particles = None
                 try:
                     token = next(tokenizer)
@@ -315,7 +315,8 @@ class JitDataParser:
                         particles = syntax_node.ParticleNode(
                             "jit particles", "".join(particles)
                         )
-                    classifier.number = number
+                    if number is not None:
+                        classifier.number = number
                     if particles:
                         classifier.particles = particles
                 except StopIteration:
