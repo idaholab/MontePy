@@ -86,10 +86,13 @@ def parse_surface(input: InitInput, problem=None, *, jit_parse: bool = True):
         Surface will be given.
     """
     buffer_surface = Surface(input, jit_parse=True)
-    cls = _SPECIFIC_DISPATCH.get(buffer_surface.surface_type) or _GENERIC_DISPATCH.get(
-        buffer_surface.surface_type
-    )
+    # Access _surface_type directly: it is populated by the JIT (light) parser
+    # as a SurfaceType enum, so no full parse is needed here.
+    surf_type = buffer_surface._surface_type.value
+    cls = _SPECIFIC_DISPATCH.get(surf_type) or _GENERIC_DISPATCH.get(surf_type)
     if cls is None:
+        if not jit_parse:
+            buffer_surface.full_parse()
         return buffer_surface
     return cls(input, jit_parse=jit_parse)
 
