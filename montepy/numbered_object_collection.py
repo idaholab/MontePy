@@ -228,6 +228,9 @@ class NumberedObjectCollection(ABC):
     def __setstate__(self, crunchy_data):
         crunchy_data["_problem_ref"] = None
         self.__dict__.update(crunchy_data)
+        # Re-establish _collection_ref weakrefs stripped during pickling/deepcopy.
+        for obj in self._objects:
+            obj._collection_ref = weakref.ref(self)
 
     @property
     def numbers(self):
@@ -537,8 +540,13 @@ class NumberedObjectCollection(ABC):
         self.__num_cache[obj.number] = obj
         self._objects.append(obj)
         if obj._collection is not self:
-            obj._unlink_from_collection()
-            obj._link_to_collection(self)
+            current_owner = obj._collection
+            # Only claim ownership when there is no existing problem-level owner.
+            # Sub-collections (complements, surfaces) must not displace the main
+            # problem-level collection as the authoritative owner for number tracking.
+            if current_owner is None or current_owner._problem is None:
+                obj._unlink_from_collection()
+                obj._link_to_collection(self)
         self._append_hook(obj, **kwargs)
         if self._problem:
             obj.link_to_problem(self._problem)
