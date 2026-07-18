@@ -141,6 +141,11 @@ class ThermalScatteringLaw(DataInputAbstract):
                 message = f"No thermal scattering laws given for thermal scattering {hex(id(self))}"
             raise IllegalState(message)
 
+    def format_for_mcnp_input(self, mcnp_version):
+        if hasattr(self, "_not_parsed"):
+            self.full_parse()
+        return super().format_for_mcnp_input(mcnp_version)
+
     def _update_values(self):
         if self.parent_material is not None:
             self._tree["classifier"].number.value = self.parent_material.number
