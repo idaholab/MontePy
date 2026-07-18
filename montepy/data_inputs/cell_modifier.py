@@ -108,6 +108,18 @@ class CellModifierInput(DataInputAbstract):
         if jit_parse:
             self._not_parsed = True
 
+    def _jit_light_init(self, input):
+        super()._jit_light_init(input)
+        if "start_pad" not in self._tree:
+            from montepy.input_parser.syntax_node import PaddingNode, SyntaxNode
+
+            self._tree = SyntaxNode(
+                self._tree.name,
+                {"start_pad": PaddingNode(), **self._tree.nodes},
+            )
+            self._start_pad = self._tree["start_pad"]
+        return self
+
     def _parse_tree(self):
         super()._parse_tree()
         if self.in_cell_block:
@@ -133,8 +145,15 @@ class CellModifierInput(DataInputAbstract):
             old_data = {
                 k: getattr(self, k, None)
                 for k in self._KEYS_TO_PRESERVE
-                if getattr(self, k, None) is not None
+                if getattr(self, k, None)
             }
+            # Preserve leading comments stored in the JIT tree's start_pad so they
+            # survive the __init__ reinit below.
+            jit_start_pad_nodes = None
+            if hasattr(self, "_tree") and "start_pad" in self._tree:
+                nodes = list(self._tree["start_pad"].nodes)
+                if nodes:
+                    jit_start_pad_nodes = nodes
             if self.in_cell_block:
                 self.__init__(
                     in_cell_block=True,
@@ -145,6 +164,10 @@ class CellModifierInput(DataInputAbstract):
             else:
                 self.__init__(self._input, jit_parse=False)
             [setattr(self, k, v) for k, v in old_data.items()]
+            if jit_start_pad_nodes and "start_pad" in self._tree:
+                self._tree["start_pad"]._nodes = (
+                    jit_start_pad_nodes + list(self._tree["start_pad"].nodes)
+                )
             if hasattr(self, "_parked_value"):
                 try:
                     self._accept_and_update(self._parked_value)
@@ -415,7 +438,19 @@ class CellModifierInput(DataInputAbstract):
             a list of strings for the lines that this input will occupy.
         """
         if hasattr(self, "_not_parsed") and self._input is not None:
-            return self._original_lines()
+            # Only take the JIT fast-path when this modifier would actually be
+            # printed here (in_cell_block XOR print_in_data_block).  Otherwise
+            # fall through to full_parse so that push_to_cells runs and cell-
+            # block values are available.
+            if self._problem:
+                _pidb = self._problem.print_in_data_block[
+                    self._class_prefix().upper()
+                ]
+                if always_print or self.in_cell_block != _pidb:
+                    return self._original_lines()
+                # Not printing here; full_parse so push_to_cells fires below.
+            else:
+                return self._original_lines()
         self.validate()
         self._tree.check_for_graveyard_comments(has_following)
         if not self._problem:
@@ -453,6 +488,11 @@ class CellModifierInput(DataInputAbstract):
     def _original_lines(self):
         if self.in_cell_block:
             return self._tree.format().split("\n")
+        if hasattr(self, "_not_parsed") and "start_pad" in self._tree:
+            pad_str = self._tree["start_pad"].format()
+            if pad_str.strip():
+                pad_lines = [l for l in pad_str.split("\n") if l.strip()]
+                return pad_lines + self._input.input_lines
         return self._input.input_lines
 
     @args_checked
