@@ -144,11 +144,10 @@ class MCNP_Object(ABC, metaclass=_ExceptionContextAdder):
 
     def __setattr__(self, key, value):
         # handle properties first
-        if hasattr(type(self), key):
-            descriptor = getattr(type(self), key)
-            if isinstance(descriptor, property):
-                descriptor.__set__(self, value)
-                return
+        descriptor = getattr(type(self), key, None)
+        if isinstance(descriptor, property):
+            descriptor.__set__(self, value)
+            return
         # handle _private second
         if key.startswith("_"):
             super().__setattr__(key, value)
