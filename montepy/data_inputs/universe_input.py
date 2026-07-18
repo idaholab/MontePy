@@ -117,6 +117,12 @@ class UniverseInput(CellModifierInput):
                             break
         # universe exists
         if found:
+            # Accessing self.data above (via @needs_full_ast) may have triggered
+            # full_parse() -> push_to_cells(), which already created and registered
+            # this universe.  Return the existing object to avoid a NumberConflictError.
+            existing = self._problem.universes.get(number)
+            if existing is not None:
+                return existing
             uni = montepy.Universe(number)
             uni.link_to_problem(self._problem)
             uni.grab_cells_from_jit_parse()
