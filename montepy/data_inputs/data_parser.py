@@ -34,7 +34,6 @@ PREFIX_MATCHES = {c._class_prefix(): c for c in DATA_CLASSES}
 VERBOTEN = {"de", "sdef", "fmesh"}
 
 
-@args_checked
 def parse_data(
     input: montepy.mcnp_object.InitInput,
     problem: montepy.MCNP_Problem = None,
