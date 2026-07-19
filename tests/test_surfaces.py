@@ -810,6 +810,24 @@ def test_surface_dispatch(surf_str, expected_cls):
     )
 
 
+def test_surface_dispatch_peek_failure_fallback(monkeypatch):
+    """A JIT peek failure on otherwise-valid syntax must not misclassify
+    the surface -- it must fall back to the same dispatch a successful
+    peek would have produced, not silently default to the generic Surface
+    base class."""
+
+    def broken_peek(cls, input):
+        raise RuntimeError("simulated JIT peek failure")
+
+    monkeypatch.setattr(
+        montepy.surfaces.surface.Surface, "_peek_light_parse", classmethod(broken_peek)
+    )
+    surf = surface_builder("1 PZ 0.0")
+    assert isinstance(surf, AxisPlane), (
+        f"Expected AxisPlane despite peek failure, got {type(surf).__name__}"
+    )
+
+
 # Scalar property tests: (surf_str, prop, expected_val, new_val, rejects_negative)
 # rejects_negative=True means the property has a positive-value validator.
 _SCALAR_PROPS = [
