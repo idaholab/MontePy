@@ -85,6 +85,35 @@ def test_data_parser(identifier, ident_case, w, expected_type):
         assert isinstance(obj, expected_type)
 
 
+def test_data_parser_peek_failure_fallback(monkeypatch):
+    """A JIT peek failure on otherwise-valid syntax must not misclassify
+    the data input -- it must fall back to the same dispatch a successful
+    peek would have produced, not silently default to the generic
+    DataInput base class."""
+
+    def broken_peek(cls, input):
+        raise RuntimeError("simulated JIT peek failure")
+
+    monkeypatch.setattr(DataInput, "_peek_light_parse", classmethod(broken_peek))
+    obj = parse_data("m235 1001.80c 1.0")
+    assert isinstance(obj, material.Material), (
+        f"Expected Material despite peek failure, got {type(obj).__name__}"
+    )
+
+
+def test_data_parser_malformed_prefix(monkeypatch):
+    """A truly malformed data input (not just a JIT hiccup) should still
+    raise a sane, contextual error via the fallback construction, not a
+    raw/uncontextual exception."""
+
+    def broken_peek(cls, input):
+        raise RuntimeError("simulated JIT peek failure")
+
+    monkeypatch.setattr(DataInput, "_peek_light_parse", classmethod(broken_peek))
+    with pytest.raises(Exception):
+        parse_data("$ this is not a valid data input at all !@#$")
+
+
 def test_data_card_mutate_print():
     in_str = "IMP:N 1 1"
     data = DataInput(in_str)
