@@ -217,6 +217,24 @@ def check_type_and_value(
         annotation(func_name, name, value)
 
 
+def _union_shape_matches(value: typing.Any, arg: typing.Any) -> bool:
+    """Cheaply check if ``value`` could plausibly satisfy a Union member.
+
+    For a plain type this is just ``isinstance(value, arg)``. For a
+    parameterised generic (e.g. ``list[int]``) this checks ``value`` against
+    the generic's origin (e.g. ``list``), without walking any elements.
+    ``Annotated`` members are unwrapped to their underlying type first,
+    since ``typing.get_origin`` returns ``typing.Annotated`` itself, not the
+    wrapped type.
+    """
+    if isinstance(arg, typing._AnnotatedAlias):
+        arg = typing.get_args(arg)[0]
+    origin = typing.get_origin(arg)
+    if origin is None:
+        origin = arg
+    return isinstance(origin, type) and isinstance(value, origin)
+
+
 def check_type(
     func_name: str,
     name: str,
@@ -277,14 +295,33 @@ def check_type(
     # detect complicated recursion of types
     if isinstance(expected_type, _UNION_TYPES):
         # handle cases isisntance can't (not all types are classes)
-        if not all((isinstance(t, type) for t in typing.get_args(expected_type))):
+        args = typing.get_args(expected_type)
+        if any(not isinstance(t, type) for t in args):
+            # Cheaply narrow down to the union members whose *container* type
+            # actually matches before doing the expensive (and possibly
+            # recursive, per-element) full validation. This avoids using a
+            # raised-and-caught TypeError as the mechanism for rejecting
+            # mismatched branches, e.g. `list[Particle] | set[Particle]`
+            # given a set no longer has to fully walk+reject the list branch.
+            candidates = [arg for arg in args if _union_shape_matches(value, arg)]
+            if not candidates:
+                raise_error()
+                return
+            if len(candidates) == 1:
+                check_type_and_value(
+                    func_name, name, value, candidates[0], none_ok=none_ok
+                )
+                return
+            # rare: multiple branches share the same container type (e.g.
+            # list[int] | list[str]); only now do we need to actually try
+            # each candidate to disambiguate.
             errors = []
-            for arg in expected_type.__args__:
+            for arg in candidates:
                 try:
                     check_type_and_value(func_name, name, value, arg, none_ok=none_ok)
                 except TypeError as e:
                     errors.append(e)
-            if len(errors) == len(expected_type.__args__):
+            if len(errors) == len(candidates):
                 raise_error()
             return
 
