@@ -87,7 +87,6 @@ class _SurfaceClassFactory(_ExceptionContextAdder):
             surf_type = next(iter(spec.surface_types))
             namespace["_surface_type"] = surf_type
 
-            @args_checked
             def __init__(
                 self,
                 input: InitInput = None,
