@@ -230,6 +230,7 @@ class Surface(Numbered_MCNP_Object, metaclass=_SurfaceClassFactory):
     """
 
     _JitParser = JitSurfParser
+    _BLOCK_TYPE = montepy.input_parser.block_type.BlockType.SURFACE
     _PARAM_LOADERS: list = []
     _NUM_PARAMS: int = 0
     _ALLOWED_SURFACE_TYPES: set = None

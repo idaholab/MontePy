@@ -196,6 +196,36 @@ class MCNP_Object(ABC, metaclass=_ExceptionContextAdder):
         self._tree = bare_tree
         return self
 
+    @classmethod
+    def _peek_light_parse(cls, input: InitInput):
+        """Runs ``cls._JitParser`` directly against ``input``, with no
+        instance construction and no ``@args_checked`` validation.
+
+        For dispatchers that need to read one discriminating field (e.g.
+        surface type, data prefix) before picking a concrete subclass.
+        The JIT parser is not fully robust, so callers must catch parse
+        failures themselves and fall back to a real constructor call
+        for both correctness and error reporting -- this has no instance
+        to attach file/line context to.
+
+        Returns
+        -------
+        SyntaxNode
+            the light-parsed tree; see the class's ``_JitParser`` for
+            which fields it populates.
+        """
+        if isinstance(input, str):
+            block_type = getattr(
+                cls, "_BLOCK_TYPE", montepy.input_parser.block_type.BlockType.DATA
+            )
+            input = montepy.input_parser.mcnp_input.Input(
+                input.split("\n"), block_type
+            )
+        tokenizer = input.tokenize()
+        bare_tree = cls._JitParser.parse(tokenizer)
+        tokenizer.close()
+        return bare_tree
+
     _KEYS_TO_PRESERVE: set[str] = set()
     """
     Object attributes that need to persist from JIT to fully parsed.
