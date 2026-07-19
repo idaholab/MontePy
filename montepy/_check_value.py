@@ -138,6 +138,9 @@ def args_checked(func: Callable):
 
     args_spec = inspect.signature(func)
     arg_checkers = {}
+    positional_names = []
+    var_positional_name = None
+    var_keyword_name = None
     for arg_name, arg_spec in args_spec.parameters.items():
         checkers = []
         none_ok = arg_spec.default is None
@@ -145,21 +148,48 @@ def args_checked(func: Callable):
         if type_checker:
             checkers.append(type_checker)
         arg_checkers[arg_name] = checkers
+        kind = arg_spec.kind
+        if kind in (
+            inspect._ParameterKind.POSITIONAL_ONLY,
+            inspect._ParameterKind.POSITIONAL_OR_KEYWORD,
+        ):
+            positional_names.append(arg_name)
+        elif kind == inspect._ParameterKind.VAR_POSITIONAL:
+            var_positional_name = arg_name
+        elif kind == inspect._ParameterKind.VAR_KEYWORD:
+            var_keyword_name = arg_name
+    num_positional = len(positional_names)
+    var_positional_checkers = (
+        arg_checkers[var_positional_name] if var_positional_name else []
+    )
+    var_keyword_checkers = arg_checkers[var_keyword_name] if var_keyword_name else []
 
     @functools.wraps(func)
     def wrapper(*args, **kwargs):
-        bound = args_spec.bind(*args, **kwargs)
-        for arg_name, arg_vals in bound.arguments.items():
-            checkers = arg_checkers[arg_name]
-            arg_type = args_spec.parameters[arg_name].kind
-            if arg_type == inspect._ParameterKind.VAR_POSITIONAL:
-                args_iter = arg_vals
-            elif arg_type == inspect._ParameterKind.VAR_KEYWORD:
-                args_iter = arg_vals.values()
+        # Map call arguments straight to their checkers by position/name,
+        # using the signature shape precomputed above, instead of
+        # re-deriving that mapping on every call via inspect.Signature.bind().
+        # A malformed call (wrong arity, unknown kwarg, etc.) simply skips
+        # checking here and is left to raise its own TypeError from the
+        # real call below, same as bind() would have raised, just without
+        # duplicating that validation up front.
+        for i, val in enumerate(args):
+            if i < num_positional:
+                checkers = arg_checkers[positional_names[i]]
+            elif var_positional_name is not None:
+                checkers = var_positional_checkers
             else:
-                args_iter = (arg_vals,)
-            for val in args_iter:
-                [checker(val) for checker in checkers]
+                continue
+            for checker in checkers:
+                checker(val)
+        for name, val in kwargs.items():
+            checkers = arg_checkers.get(name)
+            if checkers is None:
+                if var_keyword_name is None:
+                    continue
+                checkers = var_keyword_checkers
+            for checker in checkers:
+                checker(val)
         try:
             return func(*args, **kwargs)
         except Exception as e:
