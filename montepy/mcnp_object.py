@@ -64,8 +64,9 @@ class _ExceptionContextAdder(ABCMeta):
         """
         new_attrs = {}
         for key, value in attributes.items():
-            if key.startswith("_"):
+            if key.startswith("_") and key != "__init__":
                 new_attrs[key] = value
+                continue
             if callable(value):
                 new_attrs[key] = _ExceptionContextAdder._wrap_attr_call(value)
             elif isinstance(value, property):
@@ -144,11 +145,10 @@ class MCNP_Object(ABC, metaclass=_ExceptionContextAdder):
 
     def __setattr__(self, key, value):
         # handle properties first
-        if hasattr(type(self), key):
-            descriptor = getattr(type(self), key)
-            if isinstance(descriptor, property):
-                descriptor.__set__(self, value)
-                return
+        descriptor = getattr(type(self), key, None)
+        if isinstance(descriptor, property):
+            descriptor.__set__(self, value)
+            return
         # handle _private second
         if key.startswith("_"):
             super().__setattr__(key, value)

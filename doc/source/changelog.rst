@@ -27,6 +27,10 @@ MontePy Changelog
 * Fixed ``leading_comments`` crashing when set with more than one comment (:pull:`972`).
 * Fixed bug where values for user generated objects would be rounded off at five digits no matter what. This will now round off at 15 digits if necessary (:issue:`962`).
 
+**Performance Improvement**
+
+* Fixed ``_ExceptionContextAdder`` wrapping every method and property, including private and dunder ones, in a try/except due to a missing ``continue``, and reduced ``MCNP_Object.__setattr__`` from two class lookups to one (:issue:`990`).
+
 1.4 releases
 ============
 
