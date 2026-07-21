@@ -1059,7 +1059,7 @@ class ValueNode(SyntaxNodeBase):
             self._token, input_parser.mcnp_input.Jump
         ):
             token_value = fortran_float(self._token)
-            current_value = float(self._value)
+            current_value = token_value if self._value is None else float(self._value)
             if not math.isclose(
                 current_value, token_value, rel_tol=rel_tol, abs_tol=abs_tol
             ):
