@@ -165,8 +165,8 @@ class CellModifierInput(DataInputAbstract):
                 self.__init__(self._input, jit_parse=False)
             [setattr(self, k, v) for k, v in old_data.items()]
             if jit_start_pad_nodes and "start_pad" in self._tree:
-                self._tree["start_pad"]._nodes = (
-                    jit_start_pad_nodes + list(self._tree["start_pad"].nodes)
+                self._tree["start_pad"]._nodes = jit_start_pad_nodes + list(
+                    self._tree["start_pad"].nodes
                 )
             if hasattr(self, "_parked_value"):
                 try:
@@ -443,9 +443,7 @@ class CellModifierInput(DataInputAbstract):
             # fall through to full_parse so that push_to_cells runs and cell-
             # block values are available.
             if self._problem:
-                _pidb = self._problem.print_in_data_block[
-                    self._class_prefix().upper()
-                ]
+                _pidb = self._problem.print_in_data_block[self._class_prefix().upper()]
                 if always_print or self.in_cell_block != _pidb:
                     return self._original_lines()
                 # Not printing here; full_parse so push_to_cells fires below.

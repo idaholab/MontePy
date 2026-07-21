@@ -218,9 +218,7 @@ class MCNP_Object(ABC, metaclass=_ExceptionContextAdder):
             block_type = getattr(
                 cls, "_BLOCK_TYPE", montepy.input_parser.block_type.BlockType.DATA
             )
-            input = montepy.input_parser.mcnp_input.Input(
-                input.split("\n"), block_type
-            )
+            input = montepy.input_parser.mcnp_input.Input(input.split("\n"), block_type)
         tokenizer = input.tokenize()
         bare_tree = cls._JitParser.parse(tokenizer)
         tokenizer.close()
