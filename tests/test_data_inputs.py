@@ -96,9 +96,9 @@ def test_data_parser_peek_failure_fallback(monkeypatch):
 
     monkeypatch.setattr(DataInput, "_peek_light_parse", classmethod(broken_peek))
     obj = parse_data("m235 1001.80c 1.0")
-    assert isinstance(obj, material.Material), (
-        f"Expected Material despite peek failure, got {type(obj).__name__}"
-    )
+    assert isinstance(
+        obj, material.Material
+    ), f"Expected Material despite peek failure, got {type(obj).__name__}"
 
 
 def test_data_parser_malformed_prefix(monkeypatch):

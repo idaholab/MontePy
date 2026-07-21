@@ -4,11 +4,13 @@ from abc import ABC, ABCMeta, abstractmethod
 import copy
 import itertools as it
 import re
+import functools
 import textwrap
 from typing import TypeAlias, Union, Type
 import warnings
 import weakref
 
+from montepy.comments import CommentCollection
 from montepy.exceptions import *
 from montepy.constants import (
     BLANK_SPACE_CONTINUE,
@@ -433,49 +435,58 @@ The new input was:\n\n"""
 
     @property
     @needs_full_ast
-    def comments(self) -> list[PaddingNode]:
-        """The comments associated with this input if any.
+    def comments(self) -> CommentCollection:
+        """The comments associated with this object if any.
 
         This includes all ``C`` comments before this card that aren't part of another card,
         and any comments that are inside this card.
 
+        .. versionchanged:: 1.5.0
+
+            Returns a :class:`~montepy.comments.CommentCollection` instead of a list.
+
         Returns
         -------
-        list
-            a list of the comments associated with this comment.
+        CommentCollection
+            the comments associated with this object; supports searching
+            the comments' text, e.g. ``"foo" in obj.comments``.
         """
-        return list(self._tree.comments)
+        return CommentCollection(self._tree.comments)
 
     @property
     @needs_full_ast
-    def leading_comments(self) -> list[PaddingNode]:
+    def leading_comments(self) -> CommentCollection:
         """Any comments that come before the beginning of the input proper.
+
+        .. versionchanged:: 1.5.0
+
+            Returns a :class:`~montepy.comments.CommentCollection` instead of a list.
 
         Returns
         -------
-        list
-            the leading comments.
+        CommentCollection
+            the leading comments; supports searching the comments' text,
+            e.g. ``"foo" in obj.leading_comments``.
         """
-        possible_comments = list(self._tree["start_pad"].comments)
-        if (
-            not possible_comments
-            and not hasattr(self, "_grabbed_leading")
-            and self._problem
-        ):
-            leading_comments = self._problem._get_leading_comment(self)
-            if leading_comments:
-                self._grab_beginning_comment(leading_comments)
-                self._grabbed_leading = True
-                return self.leading_comments
-        return possible_comments
+        return CommentCollection(self._tree["start_pad"].comments)
 
     @leading_comments.setter
     @needs_full_cst
     @args_checked
     def leading_comments(self, comments: ty.Iterable[CommentNode | str] | CommentNode):
+        if not isinstance(comments, (list, tuple, CommentNode, CommentCollection)):
+            raise TypeError(
+                f"Comments must be a CommentNode, CommentCollection, or list/tuple of CommentNodes. {comments} given."
+            )
         if isinstance(comments, CommentNode):
             comments = [comments]
-        new_nodes = list(*zip(comments, it.cycle(["\n"])))
+
+        for i, comment in enumerate(comments):
+            if not isinstance(comment, CommentNode):
+                raise TypeError(
+                    f"Comment must be a CommentNode. {comment} given at index {i}."
+                )
+        new_nodes = [node for comment in comments for node in (comment, "\n")]
         if self._tree["start_pad"] is None:
             self._tree["start_pad"] = PaddingNode(" ")
         self._tree["start_pad"]._nodes = new_nodes

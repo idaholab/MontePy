@@ -821,10 +821,26 @@ class PaddingNode(SyntaxNodeBase):
 class CommentNode(SyntaxNodeBase):
     """Object to represent a comment in an MCNP problem.
 
+    .. versionchanged:: 1.5.0
+
+        A comment's text can now be searched with the ``in`` operator.
+
     Parameters
     ----------
     input : sly.lex.Token
         the token from the lexer
+
+    Examples
+    --------
+
+    The ``in`` operator searches the comment's text, its ``contents``,
+    without the ``c``/``$`` delimiter:
+
+    .. doctest::
+
+        >>> from montepy.input_parser.syntax_node import CommentNode
+        >>> "important" in CommentNode("c the important fuel region")
+        True
     """
 
     _MATCHER = re.compile(
@@ -936,6 +952,26 @@ class CommentNode(SyntaxNodeBase):
 
     def __eq__(self, other):
         return str(self) == str(other)
+
+    def __contains__(self, value):
+        """Checks if a string is found in the contents of this comment.
+
+        This allows searching a comment by its text, e.g.
+        ``"important" in comment``.
+
+        .. versionadded:: 1.5.0
+
+        Parameters
+        ----------
+        value : str
+            the string to search for.
+
+        Returns
+        -------
+        bool
+            True iff ``value`` is a substring of this comment's ``contents``.
+        """
+        return value in self.contents
 
 
 class ValueNode(SyntaxNodeBase):

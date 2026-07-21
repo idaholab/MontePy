@@ -2,6 +2,7 @@
 import copy
 import io
 from pathlib import Path
+import re
 
 import pytest
 import os
@@ -590,6 +591,29 @@ def test_comments_setter(simple_problem):
         cell.leading_comments = [5]
     with pytest.raises(TypeError):
         cell.leading_comments = 5
+
+
+def test_comments_setter_multiple_comments(simple_problem):
+    cell = copy.deepcopy(simple_problem.cells[1])
+    comment = simple_problem.surfaces[1000].comments[0]
+    comments = [comment, copy.deepcopy(comment)]
+    cell.leading_comments = comments
+    assert len(cell.leading_comments) == 2
+    assert [comment.contents for comment in cell.leading_comments] == [
+        comment.contents for comment in comments
+    ]
+
+
+def test_object_comments_are_collection(simple_problem):
+    cell = simple_problem.cells[1]
+    assert isinstance(cell.comments, montepy.CommentCollection)
+    assert isinstance(cell.leading_comments, montepy.CommentCollection)
+    # an object can be found by its comment text (#185)
+    assert "hidden vertical" in cell.comments
+    assert "not actually in there" not in cell.comments
+    # both search pattern types work against an object's comments
+    assert len(cell.comments.search("hidden")) == 1
+    assert len(cell.comments.search(re.compile(r"(?i)HIDDEN"))) == 1
 
 
 def test_problem_linker():
