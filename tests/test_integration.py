@@ -241,8 +241,11 @@ def _user_facing_objects(problem: montepy.MCNP_Problem) -> Iterator[object]:
     yield from problem.data_inputs
     # cell-block modifier objects
     for cell in problem.cells:
-        yield cell.importance
-        yield cell.fill
+        yield cell.geometry
+        yield cell.leading_comments
+        yield from (
+            getattr(cell, attr) for attr, _ in cell._INPUTS_TO_PROPERTY.values()
+        )
 
 
 @pytest.mark.parametrize(
