@@ -16,9 +16,6 @@ MontePy Changelog
 
 * Added ``HalfSpace.replace`` to swap dividers in a cell geometry tree, and ``HalfSpace.__iter__`` to traverse geometry leaves (:issue:`737`).
 * Added :func:`~montepy.Cell.is_mass_dens` as the logical complement of :func:`~montepy.Cell.is_atom_dens`, returning ``None`` when no density is set (:issue:`964`).
-
-**Feature Added**
-
 * Added support for the ``in`` operator on comments, so a comment's text can be searched with e.g. ``"keyword" in comment`` (:issue:`185`).
 * Added :class:`~montepy.comments.CommentCollection`, now returned by ``comments`` and ``leading_comments``, so an object can be found by its comments with e.g. ``"keyword" in cell.comments``, or searched by regular expression with ``cell.comments.search`` (:issue:`185`).
 
