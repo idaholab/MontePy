@@ -2,7 +2,6 @@ import montepy
 
 import numpy as np
 
-
 """
 These data were aggregated from a subset of MCNP models included in the following projects:
 
@@ -182,6 +181,22 @@ NUM_CONSTANTS = {
     _st.TRC: 8,
     _st.S: 4,
     _st.SPH: 4,
+    _st.KX: 3,
+    _st.KY: 3,
+    _st.K_X: 5,
+    _st.K_Y: 5,
+    _st.K_Z: 5,
+    _st.GQ: 10,
+    _st.TX: 6,
+    _st.TY: 6,
+    _st.TZ: 6,
+    _st.X: 9,
+    _st.Y: 9,
+    _st.HEX: 15,
+    _st.REC: 12,
+    _st.ELL: 7,
+    _st.WED: 12,
+    _st.ARB: 30,
 }
 SURFACE_CONSTANT = lambda: np.round(
     np.random.uniform(0.0, 15.0), np.random.randint(1, 8)
