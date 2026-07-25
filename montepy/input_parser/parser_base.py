@@ -283,6 +283,9 @@ class MCNP_Parser(Parser, metaclass=MetaBuilder):
             list_node.append(p[0])
             list_node.append(short_cut)
             return list_node
+        if isinstance(p[0], syntax_node.ListNode):
+            p[0].append(short_cut)
+            return p[0]
         return short_cut
 
     @_("shortcut_sequence", "shortcut_sequence padding")

@@ -3,12 +3,12 @@ from __future__ import annotations
 from abc import ABC, ABCMeta, abstractmethod
 import copy
 import functools
-import itertools as it
 import textwrap
 from typing import TypeAlias, Union, Type
 import warnings
 import weakref
 
+from montepy.comments import CommentCollection
 from montepy.exceptions import *
 from montepy.constants import (
     BLANK_SPACE_CONTINUE,
@@ -64,8 +64,9 @@ class _ExceptionContextAdder(ABCMeta):
         """
         new_attrs = {}
         for key, value in attributes.items():
-            if key.startswith("_"):
+            if key.startswith("_") and key != "__init__":
                 new_attrs[key] = value
+                continue
             if callable(value):
                 new_attrs[key] = _ExceptionContextAdder._wrap_attr_call(value)
             elif isinstance(value, property):
@@ -144,11 +145,10 @@ class MCNP_Object(ABC, metaclass=_ExceptionContextAdder):
 
     def __setattr__(self, key, value):
         # handle properties first
-        if hasattr(type(self), key):
-            descriptor = getattr(type(self), key)
-            if isinstance(descriptor, property):
-                descriptor.__set__(self, value)
-                return
+        descriptor = getattr(type(self), key, None)
+        if isinstance(descriptor, property):
+            descriptor.__set__(self, value)
+            return
         # handle _private second
         if key.startswith("_"):
             super().__setattr__(key, value)
@@ -296,51 +296,55 @@ The new input was:\n\n"""
             warnings.warn(warning, stacklevel=4)
 
     @property
-    def comments(self) -> list[PaddingNode]:
-        """The comments associated with this input if any.
+    def comments(self) -> CommentCollection:
+        """The comments associated with this object if any.
 
         This includes all ``C`` comments before this card that aren't part of another card,
         and any comments that are inside this card.
 
+        .. versionchanged:: 1.5.0
+
+            Returns a :class:`~montepy.comments.CommentCollection` instead of a list.
+
         Returns
         -------
-        list
-            a list of the comments associated with this comment.
+        CommentCollection
+            the comments associated with this object; supports searching
+            the comments' text, e.g. ``"foo" in obj.comments``.
         """
-        return list(self._tree.comments)
+        return CommentCollection(self._tree.comments)
 
     @property
-    def leading_comments(self) -> list[PaddingNode]:
+    def leading_comments(self) -> CommentCollection:
         """Any comments that come before the beginning of the input proper.
+
+        .. versionchanged:: 1.5.0
+
+            Returns a :class:`~montepy.comments.CommentCollection` instead of a list.
 
         Returns
         -------
-        list
-            the leading comments.
+        CommentCollection
+            the leading comments; supports searching the comments' text,
+            e.g. ``"foo" in obj.leading_comments``.
         """
-        return list(self._tree["start_pad"].comments)
+        return CommentCollection(self._tree["start_pad"].comments)
 
     @leading_comments.setter
     def leading_comments(self, comments):
-        if not isinstance(comments, (list, tuple, CommentNode)):
+        if not isinstance(comments, (list, tuple, CommentNode, CommentCollection)):
             raise TypeError(
-                f"Comments must be a CommentNode, or a list of Comments. {comments} given."
+                f"Comments must be a CommentNode, CommentCollection, or list/tuple of CommentNodes. {comments} given."
             )
         if isinstance(comments, CommentNode):
             comments = [comments]
-        if isinstance(comments, (list, tuple)):
-            for comment in comments:
-                if not isinstance(comment, CommentNode):
-                    raise TypeError(
-                        f"Comments must be a CommentNode, or a list of Comments. {comment} given."
-                    )
 
         for i, comment in enumerate(comments):
             if not isinstance(comment, CommentNode):
                 raise TypeError(
                     f"Comment must be a CommentNode. {comment} given at index {i}."
                 )
-        new_nodes = list(*zip(comments, it.cycle(["\n"])))
+        new_nodes = [node for comment in comments for node in (comment, "\n")]
         if self._tree["start_pad"] is None:
             self._tree["start_pad"] = PaddingNode(" ")
         self._tree["start_pad"]._nodes = new_nodes

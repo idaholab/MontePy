@@ -16,6 +16,7 @@ authors = [
 	{name = "Paul Ferney", email="Paul.Ferney@inl.gov"},
 	{name = "Digvijay Yeware", email="yewaredigvijay@gmail.com"},
 	{name = "Harsh Dayal", email="harshdayal13@gmail.com"},
+	{name = "Yusra Rasool", email = "ryusra9@gmail.com"},
 ]
 keywords = ["MCNP", "neutronics", "imcnp", "input file", "monte carlo", "radiation transport"]
 license = "MIT"
@@ -91,7 +92,7 @@ coverage = "https://coveralls.io/github/idaholab/MontePy"
 "change_to_ascii" = "montepy._scripts.change_to_ascii:main"
 
 [build-system]
-requires = ["setuptools>=80.0.0", "setuptools_scm>=8,<10.0"]
+requires = ["setuptools>=80.0.0", "setuptools_scm>=8,<11.0"]
 build-backend = "setuptools.build_meta"
 
 [tool.setuptools_scm]

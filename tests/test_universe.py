@@ -86,6 +86,12 @@ class TestUniverseInput:
         input_obj = Input(["U -2"], BlockType.DATA)
         UniverseInput(input_obj)
 
+    def test_universe_data_card_multiply_shortcut(self):
+        input_obj = Input(["U J 1 2M 5M 3M J 3 7M 1M"], BlockType.DATA)
+        uni_card = UniverseInput(input_obj)
+
+        assert uni_card.old_numbers == [None, 1, 2, 10, 30, None, 3, 21, 21]
+
     def test_str(self):
         universe_input = copy.deepcopy(self.universe)
         uni = Universe(5)

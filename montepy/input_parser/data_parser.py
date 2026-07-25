@@ -101,12 +101,10 @@ class DataParser(MCNP_Parser):
     # Manually specifying because more levels break SLY. Might be hitting some hard coded limit.
     @_(
         "NUMBER_WORD",
-        "NUM_MULTIPLY",
         "NUMBER_WORD padding ",
-        "NUM_MULTIPLY padding",
     )
     def text_phrase(self, p):
-        self._flush_phrase(p, str)
+        return self._flush_phrase(p, str)
 
     @_("text_phrase", "text_sequence text_phrase")
     def text_sequence(self, p):
