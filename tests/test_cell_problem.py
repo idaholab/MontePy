@@ -141,6 +141,14 @@ def test_cell_paremeters_no_eq():
     assert cell.parameters["PWT"]["data"][0].value == 1.0
 
 
+def test_cell_geometry_triggers_full_parse_when_jit():
+    cell = Cell("1 1 0.5 2")
+    assert not cell.fully_parsed
+    geometry = cell.geometry
+    assert cell.fully_parsed
+    assert isinstance(geometry, montepy.surfaces.half_space.HalfSpace)
+
+
 @pytest.mark.parametrize(
     "line, is_void, mat_number, density, atom_dens, parameters",
     [

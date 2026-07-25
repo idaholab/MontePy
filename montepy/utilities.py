@@ -176,7 +176,7 @@ def make_prop_pointer(
         @functools.wraps(func)
         def getter(self):
             if not hasattr(self, hidden_param) and hasattr(self, "_not_parsed"):
-                self._full_parse()
+                self.full_parse()
             result = func(self)
             if result:
                 return result
