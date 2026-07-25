@@ -278,7 +278,7 @@ class HalfSpace:
                 "new_divider and old_divider are the same object; nothing to replace."
             )
         for leaf in self:
-            if isinstance(leaf._divider, Integral):
+            if isinstance(leaf._divider, ty.Integral):
                 raise IllegalState(
                     "Geometry tree has not been linked to objects yet. "
                     "Run Cell.update_pointers() before calling replace()."
