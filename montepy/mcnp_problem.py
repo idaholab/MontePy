@@ -60,7 +60,27 @@ def _extract_trailing_from_input(raw_input):
     padding = PaddingNode()
     for line in comment_lines:
         padding.append(line, is_comment=True)
+        padding.append("\n")
     return padding.nodes if padding.nodes else None
+
+
+def _prepend_comment_to_input(raw_input, nodes):
+    """Prepend previously-extracted trailing comment nodes onto an input's
+    raw lines, for an object that has not been fully parsed yet.
+
+    This lets the comment become part of the object's own ``start_pad``
+    naturally, once it is eventually fully parsed, instead of requiring
+    tree surgery on a JIT stub that doesn't have a ``start_pad`` yet.
+    """
+    from montepy.input_parser.syntax_node import PaddingNode
+
+    padding = PaddingNode()
+    padding._nodes = list(nodes)
+    text = padding.format()
+    comment_lines = text.split("\n")
+    if comment_lines and comment_lines[-1] == "":
+        comment_lines.pop()
+    raw_input._input_lines = comment_lines + list(raw_input.input_lines)
 
 
 class MCNP_Problem:
@@ -507,20 +527,23 @@ class MCNP_Problem:
                         obj_tree, "nodes", {}
                     )
                     # In JIT mode, trailing comments may not be in the JIT tree;
-                    # fall back to extracting them from raw input lines.
-                    if (
-                        trailing_comment is None
-                        and last_input is not None
-                        and has_start_pad
-                    ):
+                    # fall back to extracting them from raw input lines. This
+                    # doesn't depend on obj's own tree, only on last_input's
+                    # raw lines, so it must not be gated on has_start_pad.
+                    used_fallback = False
+                    if trailing_comment is None and last_input is not None:
                         trailing_comment = _extract_trailing_from_input(last_input)
-                    if (
-                        trailing_comment is not None
-                        and last_obj is not None
-                        and has_start_pad
-                    ):
-                        obj._grab_beginning_comment(trailing_comment, last_obj)
-                        last_obj._tree._delete_trailing_comment()
+                        used_fallback = trailing_comment is not None
+                    if trailing_comment is not None and last_obj is not None:
+                        if has_start_pad:
+                            obj._grab_beginning_comment(trailing_comment, last_obj)
+                        else:
+                            # obj hasn't been fully parsed yet (JIT stub); stash
+                            # the comment on its raw lines so its own eventual
+                            # full parse picks it up as its start_pad naturally.
+                            _prepend_comment_to_input(input, trailing_comment)
+                        if not used_fallback:
+                            last_obj._tree._delete_trailing_comment()
                         trailing_comment = None
                     if obj_tree is not None:
                         trailing_comment = obj_tree.get_trailing_comment()
