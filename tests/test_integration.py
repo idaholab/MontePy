@@ -266,26 +266,32 @@ def _user_facing_objects(problem: montepy.MCNP_Problem) -> Iterator[object]:
         )
 
 
-@pytest.mark.parametrize(
-    "problem_fixture",
-    [
-        "simple_problem",
-        "importance_problem",
-        "universe_problem",
-        "data_universe_problem",
-    ],
-)
-def test_str_and_repr_do_not_raise(request, problem_fixture):
+def _assert_str_and_repr_do_not_raise(problem):
     """str and repr of user-facing objects must never raise (#152).
 
     Some attributes are not populated in every context (e.g. a Volume in
     the data block), which used to make __repr__ raise AttributeError.
     """
-    problem = request.getfixturevalue(problem_fixture)
     for obj in _user_facing_objects(problem):
         for func in (str, repr):
             # an empty string is a valid result; the requirement is "never raises"
             assert isinstance(func(obj), str)
+
+
+def test_str_and_repr_do_not_raise_simple(simple_problem):
+    _assert_str_and_repr_do_not_raise(simple_problem)
+
+
+def test_str_and_repr_do_not_raise_importance(importance_problem):
+    _assert_str_and_repr_do_not_raise(importance_problem)
+
+
+def test_str_and_repr_do_not_raise_universe(universe_problem):
+    _assert_str_and_repr_do_not_raise(universe_problem)
+
+
+def test_str_and_repr_do_not_raise_data_universe(data_universe_problem):
+    _assert_str_and_repr_do_not_raise(data_universe_problem)
 
 
 def test_write_to_file(simple_problem):
