@@ -101,8 +101,6 @@ def make_prop_val_node(
         @needs_full_ast
         @functools.wraps(func)
         def getter(self):
-            if not hasattr(self, hidden_param) and hasattr(self, "_not_parsed"):
-                self.full_parse()
             result = func(self)
             if result is not None:
                 return result
@@ -116,8 +114,6 @@ def make_prop_val_node(
 
             @needs_full_cst
             def setter(self, value):
-                if hasattr(self, "_not_parsed"):
-                    self.full_parse()
                 nonlocal types
                 if isinstance(types, tuple) and len(types) == 0:
                     types = type(self)
@@ -142,8 +138,6 @@ def make_prop_val_node(
 
             @needs_full_cst
             def deleter(self):
-                if hasattr(self, "_not_parsed"):
-                    self.full_parse()
                 node = getattr(self, hidden_param, None)
                 if node is not None:
                     node.value = None
