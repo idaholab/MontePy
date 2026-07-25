@@ -1,5 +1,6 @@
 import argparse
 import montepy
+import textwrap
 import warnings
 
 from constants import *
@@ -15,7 +16,7 @@ def create_surface():
     for _ in range(num_constants):
         constants.append(str(SURFACE_CONSTANT()))
     surf = montepy.surfaces.surface_builder.parse_surface(
-        f"{num} {surf_type} {' '.join(constants)}"
+        "\n".join(textwrap.wrap(f"{num} {surf_type} {' '.join(constants)}", width=128))
     )
     return surf
 
@@ -63,7 +64,7 @@ def create_cell(problem):
     surf_selector = lambda: np.random.choice(np.fromiter(problem._surfaces, dtype="O"))
     for _ in range(int(num_surfaces)):
         # if cell complement
-        if CELL_GEOM_COMP():
+        if len(problem.cells) > 0 and CELL_GEOM_COMP():
             halfspace = ~cell_selector()
         else:
             surf = surf_selector()
