@@ -9,7 +9,7 @@ import montepy.types as ty
 class Mode(DataInputAbstract):
     """Class for the particle mode for a problem.
 
-    .. versionchanged:: 1.5.0
+    .. versionchanged:: 1.6.0b1
 
         Added ``jit_parse`` parameter
 

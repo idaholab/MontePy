@@ -22,7 +22,7 @@ class UniverseInput(CellModifierInput):
     """Object to actually handle the ``U`` input in cells
     and data blocks.
 
-    .. versionchanged:: 1.5.0
+    .. versionchanged:: 1.6.0b1
 
         Added ``jit_parse`` parameter
 

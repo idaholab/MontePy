@@ -86,7 +86,7 @@ class Cell(Numbered_MCNP_Object):
 
         Added number parameter
 
-    .. versionchanged:: 1.5.0
+    .. versionchanged:: 1.6.0b1
 
         Added ``jit_parse`` parameter
 
@@ -850,7 +850,7 @@ class Cell(Numbered_MCNP_Object):
 
         This is done so that inputs can find links to other objects.
 
-        .. versionchanged:: 1.5.0
+        .. versionchanged:: 1.6.0b1
             Added the ``deepcopy`` parameter.
 
         Parameters

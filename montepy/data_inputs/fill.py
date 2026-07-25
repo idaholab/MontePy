@@ -32,7 +32,7 @@ def _verify_3d_index(self, indices):
 class Fill(CellModifierInput):
     """Object to handle the ``FILL`` input in cell and data blocks.
 
-    .. versionchanged:: 1.5.0
+    .. versionchanged:: 1.6.0b1
 
         Added ``jit_parse`` parameter
 

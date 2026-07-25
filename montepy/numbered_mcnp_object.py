@@ -18,7 +18,7 @@ class Numbered_MCNP_Object(MCNP_Object):
 
         Added number parameter
 
-    .. versionchanged:: 1.5.0
+    .. versionchanged:: 1.6.0b1
 
         Added ``jit_parse`` parameter
 

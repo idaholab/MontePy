@@ -42,7 +42,7 @@ class _ClassifierInput(Input):
 class DataInputAbstract(MCNP_Object):
     """Parent class to describe all MCNP data inputs.
 
-    .. versionchanged:: 1.5.0
+    .. versionchanged:: 1.6.0b1
 
         Added ``jit_parse`` parameter
 
@@ -345,7 +345,7 @@ class DataInputAbstract(MCNP_Object):
 class DataInput(DataInputAbstract):
     """Catch-all for all other MCNP data inputs.
 
-    .. versionchanged:: 1.5.0
+    .. versionchanged:: 1.6.0b1
 
         Added ``jit_parse`` parameter
 
@@ -422,7 +422,7 @@ class ForbiddenDataInput(DataInputAbstract):
     * ``DE``
     * ``SDEF``
 
-    .. versionchanged:: 1.5.0
+    .. versionchanged:: 1.6.0b1
 
         Added ``jit_parse`` parameter
 
