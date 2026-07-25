@@ -64,6 +64,42 @@ class TestValueNode:
             node = syntax_node.ValueNode("1.23", float)
             node.convert_to_int()
 
+    def test_valuenode_convert_to_int_multiply_non_integer(self):
+        # Simulate a multiply-expanded node where _value differs from
+        # _token and the expanded value is not integer-like.
+        node = syntax_node.ValueNode("1.1", float)
+        node._value = 5.5  # 1.1 * 5 via multiply shortcut
+        with pytest.raises(ValueError, match="integer value"):
+            node.convert_to_int()
+
+    def test_valuenode_convert_to_int_value_none(self):
+        # When _value is None but _token is a valid number string,
+        # convert_to_int should fall back to parsing the token.
+        node = syntax_node.ValueNode("5", float)
+        node._value = None
+        node.convert_to_int()
+        assert node.type == int
+        assert node.value == 5
+
+    def test_valuenode_convert_to_int_unparseable_token(self):
+        # When _token becomes unparseable as a float (defensive path),
+        # convert_to_int falls back to convert_token_to_int which may
+        # raise if the token is also not int-parseable.
+        node = syntax_node.ValueNode("5", float)
+        node._token = "invalid"
+        node._value = 3.0
+        with pytest.raises(ValueError):
+            node.convert_to_int()
+
+    def test_valuenode_convert_to_int_multiply_integer(self):
+        # Simulate a multiply-expanded node where _value differs from
+        # _token but the expanded value is still integer-like.
+        node = syntax_node.ValueNode("1", float)
+        node._value = 10.0  # 1 * 10 via multiply shortcut
+        node.convert_to_int()
+        assert node.type == int
+        assert node.value == 10
+
     def test_valuenode_convert_to_enum(self):
         node = syntax_node.ValueNode("1", float)
         lat = montepy.data_inputs.lattice.LatticeType

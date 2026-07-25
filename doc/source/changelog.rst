@@ -26,7 +26,7 @@ MontePy Changelog
 1.5 Releases
 ============
 
-#Next Version#
+1.5.0
 --------------
 **Features Added**
 
@@ -37,6 +37,7 @@ MontePy Changelog
 
 **Bugs Fixed**
 
+* Fixed parsing of multiply shortcuts in universe data cards such as ``1 8M`` (:pull:`975`).
 * Fixed ``leading_comments`` crashing when set with more than one comment (:pull:`972`).
 * Fixed bug where values for user generated objects would be rounded off at five digits no matter what. This will now round off at 15 digits if necessary (:issue:`962`).
 
