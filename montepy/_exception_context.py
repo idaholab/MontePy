@@ -46,7 +46,7 @@ class _ExceptionContextAdder(ABCMeta):
             if key.startswith("_") and key != "__init__":
                 new_attrs[key] = value
                 continue
-            if inspect.isfunction(value):
+            if inspect.isfunction(value) or isinstance(value, staticmethod):
                 new_attrs[key] = _ExceptionContextAdder._wrap_attr_call(value)
             elif isinstance(value, property):
                 new_props = {}
