@@ -86,9 +86,7 @@ class UniverseInput(CellModifierInput):
     @needs_full_ast
     def _find_and_populate_universe(self, number) -> Universe:
         if self.in_cell_block:
-            raise IllegalState(
-                f"This should only be called for data block instances."
-            )
+            raise IllegalState(f"This should only be called for data block instances.")
         if not self._problem:
             return
         found = number == 0
