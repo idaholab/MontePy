@@ -16,7 +16,13 @@ def create_surface():
     for _ in range(num_constants):
         constants.append(str(SURFACE_CONSTANT()))
     surf = montepy.surfaces.surface_builder.parse_surface(
-        "\n".join(textwrap.wrap(f"{num} {surf_type} {' '.join(constants)}", width=128))
+        "\n".join(
+            textwrap.wrap(
+                f"{num} {surf_type} {' '.join(constants)}",
+                width=128,
+                subsequent_indent=" " * 5,
+            )
+        )
     )
     return surf
 
