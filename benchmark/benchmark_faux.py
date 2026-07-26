@@ -7,14 +7,20 @@ import timeit
 data = []
 
 for path in Path("faux_models").glob("*.imcnp"):
-    buffer = {"path": path, "size": os.path.getsize(path)}
-    time = timeit.timeit(f"montepy.read_input('{path}')", number=1, globals=globals())
-    buffer["time"] = time
-    buffer["rate"] = buffer["size"] / time
-    data.append(buffer)
+    try: 
+        buffer = {"path": path, "size": os.path.getsize(path)}
+        time = timeit.timeit(f"montepy.read_input('{path}')", number=1, globals=globals())
+        buffer["time"] = time
+        buffer["rate"] = buffer["size"] / time
+        data.append(buffer)
+        print(path)
+    except KeyboardInterrupt as e:
+        raise e
+    except Exception as e:
+        print(e)
 
 data = pd.DataFrame(data)
 data.to_pickle(f"fake_benchmark_{montepy.__version__}.pkl")
-data.to_excel("faux_benchmark_{montepy.__version__}.xlsx")
+data.to_excel(f"faux_benchmark_{montepy.__version__}.xlsx")
 
 
