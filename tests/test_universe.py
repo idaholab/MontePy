@@ -93,6 +93,42 @@ class TestUniverseInput:
 
         assert uni_card.old_numbers == [None, 1, 2, 10, 30, None, 3, 21, 21]
 
+    def test_find_and_populate_universe_cell_block_raises(self):
+        with pytest.raises(IllegalState):
+            self.universe._find_and_populate_universe(5)
+
+    def test_find_and_populate_universe_no_problem(self):
+        input_obj = Input(["U 5"], BlockType.DATA)
+        uni_card = UniverseInput(input_obj, jit_parse=False)
+        assert uni_card._problem is None
+        assert uni_card._find_and_populate_universe(5) is None
+
+    def test_push_to_cells_defaults_to_universe_zero(self):
+        # a data-block "U" card shorter than the cell list leaves later
+        # cells without a real entry; a fully-parsed cell with no cell-block
+        # U= of its own should default to universe 0.
+        in_str = """Test problem
+1 0 -1 imp:n=1
+2 0 1 imp:n=1
+
+1 SO 5.0
+2 SO 6.0
+
+U 5
+"""
+        with io.StringIO(in_str) as fh:
+            problem = montepy.read_input(fh, jit_parse=False)
+        cell2 = problem.cells[2]
+        assert cell2.universe.number == 0
+
+    def test_clear_data_via_cells_blank_modifier_setup(self):
+        # Cells(jit_parse=False) triggers __setup_blank_cell_modifiers to
+        # push_to_cells()+_clear_data() on the blank universe modifier it
+        # creates, freeing _old_numbers.
+        problem = montepy.MCNP_Problem()
+        cells = montepy.Cells(problem=problem, jit_parse=False)
+        assert not hasattr(cells._universe, "_old_numbers")
+
     def test_str(self):
         universe_input = copy.deepcopy(self.universe)
         uni = Universe(5)

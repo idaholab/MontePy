@@ -86,7 +86,7 @@ class UniverseInput(CellModifierInput):
     @needs_full_ast
     def _find_and_populate_universe(self, number) -> Universe:
         if self.in_cell_block:
-            raise IllegalStateError(
+            raise IllegalState(
                 f"This should only be called for data block instances."
             )
         if not self._problem:
@@ -265,8 +265,6 @@ class UniverseInput(CellModifierInput):
                     if cell._universe._universe is not None:
                         continue
                     uni_num = cell.old_universe_number
-                    if uni_num is None:
-                        uni_num = 0
                 if uni_num not in universes.numbers:
                     universe = Universe(uni_num)
                     universe.link_to_problem(self._problem)
