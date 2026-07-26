@@ -318,6 +318,44 @@ def test_volume_merge():
         card.merge(card2)
 
 
+def test_volume_full_parse_parked_value_conflict():
+    # a genuinely fully-parsed cell-block Volume, artificially re-lazified
+    # to exercise the "parked value gets reapplied on full_parse" path.
+    cell = montepy.Cell("1 0 -1 vol=5.0", jit_parse=False)
+    vol_mod = cell._volume
+    vol_mod._not_parsed = True
+    vol_mod._parked_value = syntax_node.ValueNode("7.0", float)
+    with pytest.raises(ValueError):
+        vol_mod.full_parse()
+
+
+def test_cell_modifier_full_parse_preserves_jit_leading_comment():
+    input_card = Input(["VOL 1.0 1.0"], BlockType.DATA)
+    vol_card = volume.Volume(input_card, jit_parse=True)
+    # no comment in the raw text; inject one directly into the JIT tree's
+    # start_pad to isolate the preservation logic in full_parse() from
+    # the normal grammar's own (separate) comment handling.
+    vol_card._tree["start_pad"]._nodes = [
+        syntax_node.CommentNode("c injected leading comment"),
+        "\n",
+    ]
+    vol_card.full_parse()
+    assert "injected leading comment" in str(vol_card.leading_comments)
+
+
+def test_cell_modifier_original_lines_includes_jit_leading_comment():
+    input_card = Input(["VOL 1.0 1.0"], BlockType.DATA)
+    vol_card = volume.Volume(input_card, jit_parse=True)
+    vol_card._tree["start_pad"]._nodes = [
+        syntax_node.CommentNode("c injected leading comment"),
+        "\n",
+    ]
+    # not linked to a problem, so format_for_mcnp_input takes the JIT
+    # fast-path and returns _original_lines() without a full parse.
+    lines = vol_card.format_for_mcnp_input((6, 2, 0))
+    assert lines == ["c injected leading comment", "VOL 1.0 1.0"]
+
+
 def test_volume_repr():
     vol = 1.0
     list_node = syntax_node.ListNode("data")

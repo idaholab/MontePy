@@ -172,7 +172,12 @@ class CellModifierInput(DataInputAbstract):
                 try:
                     self._accept_and_update(self._parked_value)
                 except (ValueError, TypeError) as e:
-                    raise type(e)(
+                    # e's class may have a custom __init__ (e.g.
+                    # RedundantParameterSpecification takes (key, new_value),
+                    # not a single message), so re-raise as its plain base
+                    # type instead of type(e) to avoid breaking on that.
+                    error_type = ValueError if isinstance(e, ValueError) else TypeError
+                    raise error_type(
                         f"Invalid value given for data block input for {type(self).__name__}. "
                         f"Original error: {e}"
                     ) from e
