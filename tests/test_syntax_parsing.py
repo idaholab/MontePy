@@ -1756,3 +1756,37 @@ class DataInputTestFixture(montepy.data_inputs.data_input.DataInputAbstract):
 
     def _has_classifier(self):
         return self._has_classifier1
+
+
+def test_jit_cell_parser_asserts_on_unexpected_token():
+    from montepy.input_parser.cell_parser import JitCellParser
+
+    inp = Input(["abc 0 -1"], BlockType.CELL)
+    tokenizer = inp.tokenize()
+    with pytest.raises(AssertionError):
+        JitCellParser.parse(tokenizer)
+
+
+def test_input_tokenize_lexer_class_override():
+    from montepy.input_parser.tokens import CellLexer
+
+    # lexer_class is never actually set by any current caller (it's read
+    # via getattr(parser, "_lexer_class", None), which is always None), but
+    # it's a legitimate direct override for tokenize().
+    inp = Input(["1 0 -1"], BlockType.DATA)
+    generator = inp.tokenize(lexer_class=CellLexer)
+    next(generator)
+    assert isinstance(inp._lexer, CellLexer)
+    generator.close()
+
+
+def test_jit_data_parser_asserts_on_unexpected_particle_token():
+    from montepy.input_parser.data_parser import JitDataParser
+
+    # no space between the particle designator and "=1": the "=" token
+    # appears where only a particle-continuation or terminating
+    # whitespace/comment is expected.
+    inp = Input(["IMP:N=1"], BlockType.DATA)
+    tokenizer = inp.tokenize()
+    with pytest.raises(AssertionError):
+        JitDataParser.parse(tokenizer)

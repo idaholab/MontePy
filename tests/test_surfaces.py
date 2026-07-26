@@ -104,6 +104,17 @@ def test_surface_init():
         Surface(Input(["1 INL 0.0"], BlockType.SURFACE), jit_parse=False)
 
 
+def test_enforce_values_no_surface_type():
+    # if neither an already-set _surface_type nor a "surface_type" tree
+    # entry is available, _enforce_values must return early rather than
+    # crash trying to enum-convert a missing value.
+    surf = Surface()
+    del surf._surface_type
+    del surf._tree.nodes["surface_type"]
+    surf._enforce_values()
+    assert not hasattr(surf, "_surface_type")
+
+
 def test_surface_transform_and_periodic():
     # test transform
     in_str = "1 5 PZ 0"

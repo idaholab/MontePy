@@ -1,4 +1,5 @@
 # Copyright 2024, Battelle Energy Alliance, LLC All Rights Reserved.
+import io
 import pytest
 
 import montepy
@@ -359,6 +360,27 @@ def test_cell_modifier_original_lines_includes_jit_leading_comment():
     # fast-path and returns _original_lines() without a full parse.
     lines = vol_card.format_for_mcnp_input((6, 2, 0))
     assert lines == ["c injected leading comment", "VOL 1.0 1.0"]
+
+
+def test_check_redundant_definitions_false_positive_keyword_match():
+    # cell1's raw text mentions "vol" only in a $ comment, not as a real
+    # cell-block VOL= parameter. _check_redundant_definitions forces a
+    # full parse on the keyword-text match, then must recognize
+    # set_in_cell_block is actually False and skip it (continue), letting
+    # the data-block VOL card apply normally.
+    in_str = """Test problem
+1 0 -1 imp:n=1 $ mentions vol here
+2 0 1 imp:n=1
+
+1 SO 5.0
+2 SO 6.0
+
+VOL 1.0 2.0
+"""
+    with io.StringIO(in_str) as fh:
+        problem = montepy.read_input(fh, jit_parse=True)
+    assert problem.cells[1].volume == 1.0
+    assert problem.cells[2].volume == 2.0
 
 
 def test_volume_repr():

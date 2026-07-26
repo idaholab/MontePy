@@ -149,6 +149,17 @@ def test_cell_geometry_triggers_full_parse_when_jit():
     assert isinstance(geometry, montepy.surfaces.half_space.HalfSpace)
 
 
+def test_parse_keyword_modifiers_ban_repeat():
+    # Volume (like Universe/Lattice/Fill) bans being specified twice in the
+    # cell block; a normal duplicate "vol=1 vol=2" is actually caught
+    # earlier at the parameter-tree level (RedundantParameterSpecification),
+    # so directly re-invoking _parse_keyword_modifiers is what exercises
+    # this guard.
+    cell = Cell("1 0 -1 vol=1", jit_parse=False)
+    with pytest.raises(ValueError, match="specified more than once"):
+        cell._parse_keyword_modifiers()
+
+
 @pytest.mark.parametrize(
     "line, is_void, mat_number, density, atom_dens, parameters",
     [
