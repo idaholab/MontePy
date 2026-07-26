@@ -473,19 +473,9 @@ The new input was:\n\n"""
     @leading_comments.setter
     @needs_full_cst
     @args_checked
-    def leading_comments(self, comments: ty.Iterable[CommentNode | str] | CommentNode):
-        if not isinstance(comments, (list, tuple, CommentNode, CommentCollection)):
-            raise TypeError(
-                f"Comments must be a CommentNode, CommentCollection, or list/tuple of CommentNodes. {comments} given."
-            )
+    def leading_comments(self, comments: ty.Iterable[CommentNode] | CommentNode):
         if isinstance(comments, CommentNode):
             comments = [comments]
-
-        for i, comment in enumerate(comments):
-            if not isinstance(comment, CommentNode):
-                raise TypeError(
-                    f"Comment must be a CommentNode. {comment} given at index {i}."
-                )
         new_nodes = [node for comment in comments for node in (comment, "\n")]
         if self._tree["start_pad"] is None:
             self._tree["start_pad"] = PaddingNode(" ")
