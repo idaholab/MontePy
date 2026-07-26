@@ -220,3 +220,13 @@ def test_transform_renumber_updates_fill_transform_reference():
     transform.number = 6
     assert cell.fill.transform is transform
     assert cell.fill.transform.number == 6
+
+
+def test_link_to_collection_already_linked_raises():
+    from montepy.transforms import Transforms
+
+    transform = Transform(number=6)
+    original_collection = Transforms([transform])
+    other_collection = Transforms()
+    with pytest.raises(IllegalState):
+        transform._link_to_collection(other_collection)

@@ -82,15 +82,13 @@ class Numbered_MCNP_Object(MCNP_Object):
         if self._collection is not None:
             collection = self._collection
             collection.check_number(number)
-            self._find_impacted_parents(number)
+            self._find_impacted_parents()
             collection._update_number(self.number, number, self)
 
-    def _find_impacted_parents(self, new_number):
+    def _find_impacted_parents(self):
         """
         Find parent objects (e.g., cells for surfaces) to fully parse when this number changes to prevent breaking.
         """
-        if self.number == new_number:
-            return
         if not self._problem:
             return
         for collection_name, parent_prop, is_container in self._parent_collections():
