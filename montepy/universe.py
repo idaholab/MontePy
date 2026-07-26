@@ -144,8 +144,8 @@ class Universe(Numbered_MCNP_Object):
             else:
                 uni_inp = cell._universe
                 if (
-                    hasattr(uni_inp, "_parked_data")
-                    and uni_inp._parked_data.value == self.number
+                    hasattr(uni_inp, "_parked_value")
+                    and uni_inp._parked_value.value == self.number
                 ):
                     cells_to_claim.append(cell)
                 elif cell.search(str(self.number)):

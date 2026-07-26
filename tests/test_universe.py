@@ -1,5 +1,6 @@
 # Copyright 2024 - 2025, Battelle Energy Alliance, LLC All Rights Reserved.
 import copy
+import io
 import os
 from hypothesis import given, strategies as st
 import numpy as np
@@ -600,3 +601,56 @@ def test_cell_universe_setter_type_error():
     c = montepy.Cell()
     with pytest.raises(TypeError):
         c.universe = 5
+
+
+def test_universe_soft_claim_single_cell():
+    cell = Cell("3 0 -1", jit_parse=False)
+    uni = Universe(9)
+    uni.soft_claim(cell)
+    assert cell.universe.number == 9
+
+
+def test_universe_grab_cells_from_jit_parse_no_problem():
+    uni = Universe(9)
+    # not linked to any problem; should just return without raising.
+    uni.grab_cells_from_jit_parse()
+
+
+def test_universe_grab_cells_from_jit_parse_parked_value():
+    in_str = """Test problem
+1 0 -1 imp:n=1
+2 0 1
+
+1 SO 5.0
+"""
+    with io.StringIO(in_str) as fh:
+        problem = montepy.read_input(fh, jit_parse=True)
+    cell = problem.cells[1]
+    assert hasattr(cell, "_not_parsed")
+    # simulate a data-block universe assignment parked on the still-JIT
+    # cell's universe modifier, without ever forcing a full parse.
+    cell._universe._parked_value = syntax_node.ValueNode("5", int)
+    uni = Universe(5)
+    uni.link_to_problem(problem)
+    uni.grab_cells_from_jit_parse()
+    assert cell.universe.number == 5
+
+
+def test_universe_renumber_updates_cell_universe_reference():
+    in_str = """Test problem
+1 0 -1 u=5 imp:n=1
+2 0 1
+
+1 SO 5.0
+"""
+    with io.StringIO(in_str) as fh:
+        problem = montepy.read_input(fh, jit_parse=True)
+    uni = problem.universes[5]
+    cell = problem.cells[1]
+    # rename before ever touching cell.universe, so the only way it can
+    # still resolve to the right object afterward is via
+    # NumberedObjectCollection.search_parent_objs_by_child using
+    # Universe._parent_collections.
+    uni.number = 8
+    assert cell.universe is uni
+    assert cell.universe.number == 8
