@@ -865,6 +865,4 @@ class MCNP_Problem:
         for collection in [self.cells, self.surfaces, self.data_inputs]:
             for obj in collection:
                 obj.full_parse()
-        self.cells.update_pointers(
-            self.cells, self.materials, self.surfaces, self.data_inputs, self
-        )
+        self.__update_internal_pointers(jit_parse=False)

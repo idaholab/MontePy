@@ -61,3 +61,14 @@ def test_surfaces_setter(problem):
     assert problem.surfaces._problem is problem
     problem.surfaces = []
     assert len(problem.surfaces) == 0
+
+
+def test_problem_full_parse():
+    problem = montepy.read_input("tests/inputs/test.imcnp", jit_parse=True)
+    assert all(not cell.fully_parsed for cell in problem.cells)
+    problem.full_parse()
+    assert all(cell.fully_parsed for cell in problem.cells)
+    assert all(surface.fully_parsed for surface in problem.surfaces)
+    assert all(
+        getattr(data_input, "fully_parsed", True) for data_input in problem.data_inputs
+    )
