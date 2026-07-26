@@ -821,10 +821,26 @@ class PaddingNode(SyntaxNodeBase):
 class CommentNode(SyntaxNodeBase):
     """Object to represent a comment in an MCNP problem.
 
+    .. versionchanged:: 1.5.0
+
+        A comment's text can now be searched with the ``in`` operator.
+
     Parameters
     ----------
     input : sly.lex.Token
         the token from the lexer
+
+    Examples
+    --------
+
+    The ``in`` operator searches the comment's text, its ``contents``,
+    without the ``c``/``$`` delimiter:
+
+    .. doctest::
+
+        >>> from montepy.input_parser.syntax_node import CommentNode
+        >>> "important" in CommentNode("c the important fuel region")
+        True
     """
 
     _MATCHER = re.compile(
@@ -937,6 +953,26 @@ class CommentNode(SyntaxNodeBase):
     def __eq__(self, other):
         return str(self) == str(other)
 
+    def __contains__(self, value):
+        """Checks if a string is found in the contents of this comment.
+
+        This allows searching a comment by its text, e.g.
+        ``"important" in comment``.
+
+        .. versionadded:: 1.5.0
+
+        Parameters
+        ----------
+        value : str
+            the string to search for.
+
+        Returns
+        -------
+        bool
+            True iff ``value`` is a substring of this comment's ``contents``.
+        """
+        return value in self.contents
+
 
 class ValueNode(SyntaxNodeBase):
     """A syntax node to represent the leaf node.
@@ -959,7 +995,7 @@ class ValueNode(SyntaxNodeBase):
     _FORMATTERS = {
         float: {
             "value_length": 0,
-            "precision": 5,
+            "precision": 15,
             "zero_padding": 0,
             "sign": "-",
             "divider": "e",
@@ -967,7 +1003,7 @@ class ValueNode(SyntaxNodeBase):
             "exponent_zero_pad": 0,
             "as_int": False,
             "int_tolerance": 1e-6,
-            "is_scientific": True,
+            "is_scientific": False,
             "rel_eps": 1e-6,
             "abs_eps": 1e-9,
         },
@@ -1018,17 +1054,34 @@ class ValueNode(SyntaxNodeBase):
         if self._type not in {float, int}:
             raise ValueError(f"ValueNode must be a float to convert to int")
         self._type = int
+
         if self._token is not None and not isinstance(
             self._token, input_parser.mcnp_input.Jump
         ):
-            try:
-                self._value = int(self._token)
-            except ValueError as e:
-                parts = self._token.split(".")
-                if len(parts) > 1 and int(parts[1]) == 0:
-                    self._value = int(parts[0])
-                else:
-                    raise e
+            token_value = fortran_float(self._token)
+            current_value = token_value if self._value is None else float(self._value)
+            if not math.isclose(
+                current_value, token_value, rel_tol=rel_tol, abs_tol=abs_tol
+            ):
+                if not math.isclose(
+                    current_value,
+                    int(current_value),
+                    rel_tol=rel_tol,
+                    abs_tol=abs_tol,
+                ):
+                    raise ValueError(
+                        "ValueNode must hold an integer value to convert to int"
+                    )
+                self._value = int(current_value)
+            else:
+                try:
+                    self._value = int(self._token)
+                except ValueError as e:
+                    parts = self._token.split(".")
+                    if len(parts) > 1 and int(parts[1]) == 0:
+                        self._value = int(parts[0])
+                    else:
+                        raise e
         self._formatter = self._FORMATTERS[int].copy()
 
     def convert_to_enum(
@@ -1304,6 +1357,14 @@ class ValueNode(SyntaxNodeBase):
         ):
             precision += 1
         self._formatter["precision"] = precision
+        # add in significant digits before the decimal  to be consistent with `g` format.
+        if (
+            not self._formatter["is_scientific"]
+            and not self._is_reversed
+            and self.value != 0
+        ):
+            exp = math.floor(math.log10(abs(self.value)))
+            self._formatter["precision"] += exp + 1
 
     def format(self):
         if not self._value_changed:
@@ -2160,6 +2221,8 @@ class ShortcutNode(ListNode):
                 last_val = p[0].nodes["left"]
         else:
             last_val = p[0].nodes[-1]
+            if isinstance(last_val, ShortcutNode):
+                last_val = last_val.nodes[-1]
         if last_val.value is None:
             raise ValueError(f"Multiply cannot follow a jump. Given: {list(p)}")
         self._nodes.append(copy.deepcopy(last_val))

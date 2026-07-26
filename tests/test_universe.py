@@ -86,6 +86,12 @@ class TestUniverseInput:
         input_obj = Input(["U -2"], BlockType.DATA)
         UniverseInput(input_obj)
 
+    def test_universe_data_card_multiply_shortcut(self):
+        input_obj = Input(["U J 1 2M 5M 3M J 3 7M 1M"], BlockType.DATA)
+        uni_card = UniverseInput(input_obj)
+
+        assert uni_card.old_numbers == [None, 1, 2, 10, 30, None, 3, 21, 21]
+
     def test_str(self):
         universe_input = copy.deepcopy(self.universe)
         uni = Universe(5)
@@ -489,8 +495,8 @@ class TestFill:
             fill1.merge(fill2)
 
     @given(
-        indices=st.lists(st.integers(), min_size=3, max_size=3),
-        width=st.lists(st.integers(1), min_size=3, max_size=3),
+        indices=st.lists(st.integers(-1_000_000, 1_000_000), min_size=3, max_size=3),
+        width=st.lists(st.integers(1, 1_000_000), min_size=3, max_size=3),
     )
     def test_fill_index_setter(self, indices, width):
         fill = self.simple_fill.clone()

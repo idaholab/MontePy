@@ -1,0 +1,10 @@
+{% extends "!page.html" %}
+
+{% block extrahead %}
+  {{ super() }}
+  {% if schema_org_data %}
+  <script type="application/ld+json">
+  {{ schema_org_data | safe }}
+  </script>
+  {% endif %}
+{% endblock %}

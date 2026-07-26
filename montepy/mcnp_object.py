@@ -3,10 +3,12 @@ from __future__ import annotations
 from abc import ABC, ABCMeta, abstractmethod
 import copy
 import itertools as it
+import functools
 import textwrap
 import warnings
 import weakref
 
+from montepy.comments import CommentCollection
 from montepy.exceptions import *
 from montepy.constants import (
     BLANK_SPACE_CONTINUE,
@@ -87,11 +89,10 @@ class MCNP_Object(ABC, metaclass=_ExceptionContextAdder):
 
     def __setattr__(self, key, value):
         # handle properties first
-        if hasattr(type(self), key):
-            descriptor = getattr(type(self), key)
-            if isinstance(descriptor, property):
-                descriptor.__set__(self, value)
-                return
+        descriptor = getattr(type(self), key, None)
+        if isinstance(descriptor, property):
+            descriptor.__set__(self, value)
+            return
         # handle _private second
         if key.startswith("_"):
             super().__setattr__(key, value)
@@ -241,29 +242,39 @@ The new input was:\n\n"""
             warnings.warn(warning, stacklevel=4)
 
     @property
-    def comments(self) -> list[PaddingNode]:
-        """The comments associated with this input if any.
+    def comments(self) -> CommentCollection:
+        """The comments associated with this object if any.
 
         This includes all ``C`` comments before this card that aren't part of another card,
         and any comments that are inside this card.
 
+        .. versionchanged:: 1.5.0
+
+            Returns a :class:`~montepy.comments.CommentCollection` instead of a list.
+
         Returns
         -------
-        list
-            a list of the comments associated with this comment.
+        CommentCollection
+            the comments associated with this object; supports searching
+            the comments' text, e.g. ``"foo" in obj.comments``.
         """
-        return list(self._tree.comments)
+        return CommentCollection(self._tree.comments)
 
     @property
-    def leading_comments(self) -> list[PaddingNode]:
+    def leading_comments(self) -> CommentCollection:
         """Any comments that come before the beginning of the input proper.
+
+        .. versionchanged:: 1.5.0
+
+            Returns a :class:`~montepy.comments.CommentCollection` instead of a list.
 
         Returns
         -------
-        list
-            the leading comments.
+        CommentCollection
+            the leading comments; supports searching the comments' text,
+            e.g. ``"foo" in obj.leading_comments``.
         """
-        return list(self._tree["start_pad"].comments)
+        return CommentCollection(self._tree["start_pad"].comments)
 
     @leading_comments.setter
     @args_checked

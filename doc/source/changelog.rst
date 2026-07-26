@@ -1,8 +1,12 @@
+.. meta::
+   :description lang=en:
+        MontePy release notes and changelog: new features, bug fixes, and improvements across all versions of the Python MCNP input file library.
+
 *****************
 MontePy Changelog
 *****************
 
-1.5 releases
+1.6 releases
 ============
 
 #next release#
@@ -11,6 +15,28 @@ MontePy Changelog
 **Features Added**
 
 * Add _checkvalue.py_ to codebase (:issue:`687`). 
+
+1.5 Releases
+============
+
+1.5.0
+--------------
+**Features Added**
+
+* Added ``HalfSpace.replace`` to swap dividers in a cell geometry tree, and ``HalfSpace.__iter__`` to traverse geometry leaves (:issue:`737`).
+* Added :func:`~montepy.Cell.is_mass_dens` as the logical complement of :func:`~montepy.Cell.is_atom_dens`, returning ``None`` when no density is set (:issue:`964`).
+* Added support for the ``in`` operator on comments, so a comment's text can be searched with e.g. ``"keyword" in comment`` (:issue:`185`).
+* Added :class:`~montepy.comments.CommentCollection`, now returned by ``comments`` and ``leading_comments``, so an object can be found by its comments with e.g. ``"keyword" in cell.comments``, or searched by regular expression with ``cell.comments.search`` (:issue:`185`).
+
+**Bugs Fixed**
+
+* Fixed parsing of multiply shortcuts in universe data cards such as ``1 8M`` (:pull:`975`).
+* Fixed ``leading_comments`` crashing when set with more than one comment (:pull:`972`).
+* Fixed bug where values for user generated objects would be rounded off at five digits no matter what. This will now round off at 15 digits if necessary (:issue:`962`).
+
+**Performance Improvement**
+
+* Fixed ``_ExceptionContextAdder`` wrapping every method and property, including private and dunder ones, in a try/except due to a missing ``continue``, and reduced ``MCNP_Object.__setattr__`` from two class lookups to one (:issue:`990`).
 
 1.4 releases
 ============

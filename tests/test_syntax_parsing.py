@@ -1,6 +1,7 @@
 # Copyright 2024, Battelle Energy Alliance, LLC All Rights Reserved.
 import copy
 from io import StringIO
+import re
 import pytest
 
 import montepy
@@ -62,6 +63,42 @@ class TestValueNode:
         with pytest.raises(ValueError):
             node = syntax_node.ValueNode("1.23", float)
             node.convert_to_int()
+
+    def test_valuenode_convert_to_int_multiply_non_integer(self):
+        # Simulate a multiply-expanded node where _value differs from
+        # _token and the expanded value is not integer-like.
+        node = syntax_node.ValueNode("1.1", float)
+        node._value = 5.5  # 1.1 * 5 via multiply shortcut
+        with pytest.raises(ValueError, match="integer value"):
+            node.convert_to_int()
+
+    def test_valuenode_convert_to_int_value_none(self):
+        # When _value is None but _token is a valid number string,
+        # convert_to_int should fall back to parsing the token.
+        node = syntax_node.ValueNode("5", float)
+        node._value = None
+        node.convert_to_int()
+        assert node.type == int
+        assert node.value == 5
+
+    def test_valuenode_convert_to_int_unparseable_token(self):
+        # When _token becomes unparseable as a float (defensive path),
+        # convert_to_int falls back to convert_token_to_int which may
+        # raise if the token is also not int-parseable.
+        node = syntax_node.ValueNode("5", float)
+        node._token = "invalid"
+        node._value = 3.0
+        with pytest.raises(ValueError):
+            node.convert_to_int()
+
+    def test_valuenode_convert_to_int_multiply_integer(self):
+        # Simulate a multiply-expanded node where _value differs from
+        # _token but the expanded value is still integer-like.
+        node = syntax_node.ValueNode("1", float)
+        node._value = 10.0  # 1 * 10 via multiply shortcut
+        node.convert_to_int()
+        assert node.type == int
+        assert node.value == 10
 
     def test_valuenode_convert_to_enum(self):
         node = syntax_node.ValueNode("1", float)
@@ -234,6 +271,13 @@ class TestValueNode:
             ("0.5", float, 0, "0.0", False),
             ("hi", str, "foo", "foo", True),
             ("hi", str, None, "", False),
+            # default rounding
+            (None, float, 1.0, "1 ", False),
+            (None, float, 1.23, "1.23 ", False),
+            (None, float, 1.23456789, "1.23456789 ", False),
+            # max precision: 15
+            (None, float, 1.012345678954321, "1.012345678954321 ", False),
+            (None, float, 1.0123456789123451, "1.012345678912345 ", False),
         ],
     )
     def test_value_float_format(_, input, val_type, val, answer, expand):
@@ -595,6 +639,76 @@ class TestPaddingNode:
         assert comment.is_dollar
         assert len(list(comment.comments)) == 1
         assert len(comment.contents) == 0
+
+    def test_comment_contains(self):
+        comment = syntax_node.CommentNode("c hello world")
+        assert "hello" in comment
+        assert "goodbye" not in comment
+        # the delimiter itself is not part of the contents
+        assert "c " not in comment
+        # works for dollar comments and across appended lines
+        comment.append("c second line")
+        assert "second" in comment
+        assert "note" in syntax_node.CommentNode("$ note here")
+        # non-string operands are rejected like normal str containment
+        with pytest.raises(TypeError):
+            5 in comment
+
+    def test_comment_collection_contains(self):
+        comments = montepy.CommentCollection(
+            [
+                syntax_node.CommentNode("c the fuel region"),
+                syntax_node.CommentNode("$ moderator notes"),
+            ]
+        )
+        # strings search the text of all comments
+        assert "fuel" in comments
+        assert "notes" in comments
+        assert "graphite" not in comments
+        # anything else keeps normal list membership behavior
+        assert comments[0] in comments
+        assert syntax_node.CommentNode("c not in there") not in comments
+        assert 5 not in comments
+
+    def test_comment_collection_search(self):
+        comments = montepy.CommentCollection(
+            [
+                syntax_node.CommentNode("c the fuel region"),
+                syntax_node.CommentNode("$ moderator notes"),
+            ]
+        )
+        # substring search, incl. regex metacharacters taken literally
+        assert [c.contents for c in comments.search("fuel")] == ["the fuel region"]
+        assert len(comments.search("graphite")) == 0
+        assert len(comments.search("fuel|moderator")) == 0
+        # compiled patterns are treated as regular expressions
+        matches = comments.search(re.compile(r"(?i)FUEL|MODERATOR"))
+        assert len(matches) == 2
+        assert isinstance(matches, montepy.CommentCollection)
+        # non-string patterns are rejected
+        with pytest.raises(TypeError):
+            comments.search(5)
+        # bytes patterns cannot search the str contents
+        with pytest.raises(TypeError):
+            comments.search(re.compile(b"fuel"))
+
+    def test_comment_collection_sequence(self):
+        c1 = syntax_node.CommentNode("c the fuel region")
+        c2 = syntax_node.CommentNode("$ moderator notes")
+        comments = montepy.CommentCollection([c1, c2])
+        # indexing, slicing, iteration, and length
+        assert len(comments) == 2
+        assert comments[0] is c1
+        assert comments[-1] is c2
+        sliced = comments[0:1]
+        assert isinstance(sliced, montepy.CommentCollection)
+        assert list(sliced) == [c1]
+        assert [c.contents for c in comments] == ["the fuel region", "moderator notes"]
+        # Sequence mixins
+        assert list(reversed(comments)) == [c2, c1]
+        assert comments.index(c2) == 1
+        assert comments.count(c1) == 1
+        assert "CommentCollection" in repr(comments)
 
 
 def test_graveyard_comment():

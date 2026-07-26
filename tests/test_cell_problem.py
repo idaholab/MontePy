@@ -60,6 +60,21 @@ def test_cell_density_setter():
         cell.mass_density = -5
 
 
+def test_cell_is_mass_dens():
+    # no density set yet
+    cell = Cell()
+    assert cell.is_mass_dens is None
+    assert cell.is_atom_dens is None
+    # mass density set
+    cell.mass_density = 1.5
+    assert cell.is_mass_dens is True
+    assert cell.is_mass_dens == (not cell.is_atom_dens)
+    # atom density set
+    cell.atom_density = 0.016
+    assert cell.is_mass_dens is False
+    assert cell.is_mass_dens == (not cell.is_atom_dens)
+
+
 def test_cell_density_deleter():
     in_str = "1 1 0.5 2"
     cell = Cell(in_str)

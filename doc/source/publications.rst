@@ -1,4 +1,8 @@
-Publications 
+.. meta::
+   :description lang=en:
+        How to cite MontePy in your research: peer-reviewed journal article, conference papers, and permanent software DOIs for Zenodo and OSTI.
+
+Publications
 ============
 
 Permanent Link to Software

@@ -1,3 +1,7 @@
+.. meta::
+   :description lang=en:
+        Known bugs and limitations in MontePy, including less obvious unsupported MCNP features and suggested workarounds.
+
 **************************
 Known Bugs and limitations
 **************************

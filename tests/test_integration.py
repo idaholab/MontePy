@@ -1,7 +1,9 @@
 # Copyright 2024, Battelle Energy Alliance, LLC All Rights Reserved.
+from collections.abc import Iterator
 import copy
 import io
 from pathlib import Path
+import re
 
 import pytest
 import os
@@ -216,6 +218,57 @@ def test_read_card_recursion():
 def test_problem_str(simple_problem):
     output = str(simple_problem)
     assert "MCNP problem for: tests/inputs/test.imcnp" in output
+
+
+def _user_facing_objects(problem: montepy.MCNP_Problem) -> Iterator[object]:
+    """Yield a problem's user-facing objects: the problem, its top-level
+    members, every collection and its members, the data-block inputs, and the
+    cell-block modifiers."""
+    yield problem
+    # top-level objects a user can print directly (``message`` may be ``None``)
+    for obj in (problem.input_file, problem.message, problem.title, problem.mode):
+        if obj is not None:
+            yield obj
+    for collection in (
+        problem.cells,
+        problem.surfaces,
+        problem.materials,
+        problem.universes,
+        problem.transforms,
+    ):
+        yield collection
+        yield from collection
+    # data-block inputs, e.g. ``Volume``, ``Mode`` (see the original report)
+    yield from problem.data_inputs
+    # cell-block modifier objects
+    for cell in problem.cells:
+        yield cell.geometry
+        yield cell.leading_comments
+        yield from (
+            getattr(cell, attr) for attr, _ in cell._INPUTS_TO_PROPERTY.values()
+        )
+
+
+@pytest.mark.parametrize(
+    "problem_fixture",
+    [
+        "simple_problem",
+        "importance_problem",
+        "universe_problem",
+        "data_universe_problem",
+    ],
+)
+def test_str_and_repr_do_not_raise(request, problem_fixture):
+    """str and repr of user-facing objects must never raise (#152).
+
+    Some attributes are not populated in every context (e.g. a Volume in
+    the data block), which used to make __repr__ raise AttributeError.
+    """
+    problem = request.getfixturevalue(problem_fixture)
+    for obj in _user_facing_objects(problem):
+        for func in (str, repr):
+            # an empty string is a valid result; the requirement is "never raises"
+            assert isinstance(func(obj), str)
 
 
 def test_write_to_file(simple_problem):
@@ -556,6 +609,29 @@ def test_comments_setter(simple_problem):
         cell.leading_comments = [5]
     with pytest.raises(TypeError):
         cell.leading_comments = 5
+
+
+def test_comments_setter_multiple_comments(simple_problem):
+    cell = copy.deepcopy(simple_problem.cells[1])
+    comment = simple_problem.surfaces[1000].comments[0]
+    comments = [comment, copy.deepcopy(comment)]
+    cell.leading_comments = comments
+    assert len(cell.leading_comments) == 2
+    assert [comment.contents for comment in cell.leading_comments] == [
+        comment.contents for comment in comments
+    ]
+
+
+def test_object_comments_are_collection(simple_problem):
+    cell = simple_problem.cells[1]
+    assert isinstance(cell.comments, montepy.CommentCollection)
+    assert isinstance(cell.leading_comments, montepy.CommentCollection)
+    # an object can be found by its comment text (#185)
+    assert "hidden vertical" in cell.comments
+    assert "not actually in there" not in cell.comments
+    # both search pattern types work against an object's comments
+    assert len(cell.comments.search("hidden")) == 1
+    assert len(cell.comments.search(re.compile(r"(?i)HIDDEN"))) == 1
 
 
 def test_problem_linker():

@@ -1,3 +1,7 @@
+.. meta::
+   :description lang=en:
+        Tips and tricks for working efficiently with MontePy, the Python library for reading, editing, and writing MCNP input files.
+
 Tips and Tricks
 ===============
 
