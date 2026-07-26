@@ -2,7 +2,7 @@ name: Alpha-Deploy
 
 on: 
   push:
-    branches: [alpha-test]
+    branches: [alpha-test, beta-test]
 
 
 jobs:
@@ -11,11 +11,11 @@ jobs:
       contents: read
     runs-on: ubuntu-latest    
     steps:
-      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0
         with:
           persist-credentials: false
       - name: set up python  3.14
-        uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405
+        uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1
         with: 
           python-version: 3.14
       - run: pip install . montepy[develop]
@@ -33,13 +33,13 @@ jobs:
     env:
       GH_TOKEN: ${{ github.token }}
     steps:
-      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0
         with:
           fetch-depth: 0
           fetch-tags: true
           persist-credentials: false
       - name: set up python  3.14
-        uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405
+        uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1
         with: 
           python-version: 3.14
       - run: pip install . montepy[build]
@@ -50,15 +50,15 @@ jobs:
         run: .github/scripts/check_version.py --alpha 
       - run: python -m build .
       - name: Sign the dists with Sigstore
-        uses: sigstore/gh-action-sigstore-python@a309ff8b426b58ec0e2a45f0f869d46889d02405
+        uses: sigstore/gh-action-sigstore-python@5b79a39c381910c090341a2c9b0bf022c8b387e1
         with:
           inputs: >-
             ./dist/*.tar.gz
             ./dist/*.whl
       - name: Create a GitHub release
-        run: | 
-            gh release create "v${ steps.get_version.outputs.version }" \
-            --title="Release ${ steps.get_version.outputs.version }" \
+        run: |
+            gh release create "v${{ steps.get_version.outputs.version }}" \
+            --title="Release ${{ steps.get_version.outputs.version }}" \
             --generate-notes -d
       - run: >-
           gh release upload

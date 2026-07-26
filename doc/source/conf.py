@@ -358,6 +358,10 @@ nitpick_ignore_regex = [
     # autodoc_type_aliases remapping can produce quoted strings like
     # 'montepy.types.PositiveInt' when get_type_hints returns a ForwardRef.
     (r"py:class", r"^'[^']+'\s*$"),
+    # collections.abc.Sequence's inherited count/index carry C-style docstrings
+    # whose return annotations (e.g. "integer -- return number of occurrences
+    # of value") are not resolvable cross-references
+    (r"py:class", r"^integer -- return .*$"),
 ]
 
 

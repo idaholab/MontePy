@@ -483,3 +483,43 @@ def test_checked_list_good():
     check_list.insert(0, 5)
     assert check_list[0] == 5
     assert len(check_list) == 6
+
+
+def test_args_checked_skips_extra_positional_without_var_positional():
+    @cv.args_checked
+    def one_arg(a: str):
+        pass
+
+    # too many positional args and no *args to catch them: our checker
+    # skips checking the extra arg and lets the real call raise Python's
+    # own arity TypeError.
+    with pytest.raises(TypeError, match="positional argument"):
+        one_arg("a", "b")
+
+
+def test_args_checked_skips_unknown_keyword_without_var_keyword():
+    @cv.args_checked
+    def one_arg(a: str):
+        pass
+
+    # unexpected keyword and no **kwargs to catch it: our checker skips
+    # checking it and lets the real call raise Python's own TypeError.
+    with pytest.raises(TypeError, match="unexpected keyword argument"):
+        one_arg(a="a", b="b")
+
+
+def test_args_checked_type_alias_annotation():
+    type StrAlias = str
+
+    @cv.args_checked
+    def aliased(a: StrAlias):
+        pass
+
+    aliased("ok")
+    with pytest.raises(TypeError, match="Unable to set.+"):
+        aliased(5)
+
+
+def test_check_type_union_multi_candidate_all_fail():
+    with pytest.raises(TypeError, match="Unable to set.+"):
+        cv.check_type("f", "a", [1.5, 2.5], list[int] | list[str])

@@ -4,7 +4,7 @@ from __future__ import annotations
 import copy
 import itertools
 import sly
-from typing import Union
+from typing import Annotated, Union
 import collections.abc
 import warnings
 
@@ -86,7 +86,7 @@ class Cell(Numbered_MCNP_Object):
 
         Added number parameter
 
-    .. versionchanged:: 1.5.0
+    .. versionchanged:: 1.6.0b1
 
         Added ``jit_parse`` parameter
 
@@ -231,8 +231,7 @@ class Cell(Numbered_MCNP_Object):
         """Parses the parameters to make the object and load as an attribute"""
         found_class_prefixes = set()
         for key, value in self.parameters.nodes.items():
-            for input_class in PREFIX_MATCHES:
-                prefix = input_class._class_prefix()
+            for prefix, input_class in PREFIX_MATCHES.items():
                 if input_class in Cell._INPUTS_TO_PROPERTY and prefix in key.lower():
                     attr, ban_repeat = Cell._INPUTS_TO_PROPERTY[input_class]
                     key = str(value["classifier"]).lower()
@@ -298,7 +297,7 @@ class Cell(Numbered_MCNP_Object):
         Importance
             the importance for the Cell.
         """
-        if not self._importance.full_parsed:
+        if not self._importance.fully_parsed:
             if self._problem:
                 self._problem.cells._importance.full_parse()
         return self._importance
@@ -385,12 +384,6 @@ class Cell(Numbered_MCNP_Object):
             return False
         return self._universe.not_truncated
 
-    @property
-    def not_truncated(self):
-        if self.universe.number == 0:
-            return False
-        return self._universe.not_truncated
-
     @not_truncated.setter
     @args_checked
     @needs_full_ast
@@ -426,7 +419,14 @@ class Cell(Numbered_MCNP_Object):
     @lattice_type.setter
     @args_checked
     @needs_full_ast
-    def lattice_type(self, value: montepy.LatticeType | int | None = None):
+    def lattice_type(
+        self,
+        value: (
+            montepy.LatticeType
+            | Annotated[ty.Integral, ty.greater_than(1, True), ty.less_than(2, True)]
+            | None
+        ) = None,
+    ):
         self._lattice.lattice = value
 
     @lattice_type.deleter
@@ -663,6 +663,23 @@ class Cell(Numbered_MCNP_Object):
         """
         return self._is_atom_dens
 
+    @property
+    def is_mass_dens(self) -> bool | None:
+        """Whether or not the density is in mass density [g/cc].
+
+        This is the logical complement of :func:`is_atom_dens`. True means
+        it is in mass density, False means atom density [a/b-cm]. If no
+        density is set this will return ``None``.
+
+        .. versionadded:: 1.5.0
+
+        Returns
+        -------
+        bool, None
+        """
+        if self._is_atom_dens is not None:
+            return not self._is_atom_dens
+
     @make_prop_val_node("_old_mat_number")
     def old_mat_number(self):
         """The material number provided in the original input file
@@ -829,6 +846,20 @@ class Cell(Numbered_MCNP_Object):
         *,
         deepcopy: bool = False,
     ):
+        """Links the input to the parent problem for this input.
+
+        This is done so that inputs can find links to other objects.
+
+        .. versionchanged:: 1.6.0b1
+            Added the ``deepcopy`` parameter.
+
+        Parameters
+        ----------
+        problem : MCNP_Problem
+            The problem to link this input to.
+        deepcopy : bool
+            If this is occurring during a problem level deepcopy.
+        """
         super().link_to_problem(problem)
         if not hasattr(self, "_not_parsed"):
             if not deepcopy:

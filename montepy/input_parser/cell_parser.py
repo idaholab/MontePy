@@ -284,6 +284,7 @@ class CellParser(MCNP_Parser):
 
 
 class JitCellParser:
+    """A lightweight cell parser that extracts only the cell number for JIT parsing."""
 
     @staticmethod
     def parse(tokenizer):

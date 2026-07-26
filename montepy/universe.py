@@ -20,7 +20,7 @@ class Universe(Numbered_MCNP_Object):
     """Class to represent an MCNP universe, but not handle the input
     directly.
 
-    .. versionchanged:: 1.5.0
+    .. versionchanged:: 1.6.0b1
 
         Added ``jit_parse`` parameter
 
@@ -144,8 +144,8 @@ class Universe(Numbered_MCNP_Object):
             else:
                 uni_inp = cell._universe
                 if (
-                    hasattr(uni_inp, "_parked_data")
-                    and uni_inp._parked_data.value == self.number
+                    hasattr(uni_inp, "_parked_value")
+                    and uni_inp._parked_value.value == self.number
                 ):
                     cells_to_claim.append(cell)
                 elif cell.search(str(self.number)):

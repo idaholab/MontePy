@@ -6,12 +6,49 @@
 MontePy Changelog
 *****************
 
-
-1.5 releases
+1.6 releases
 =============
 
 
 #Next Version#
+--------------
+
+**Features Added**
+
+* Added support for just-in-time parsing (:issue:`529`).
+* Add _checkvalue.py_ to codebase (:issue:`687`).
+
+**Performance Improvement**
+
+* Add just-in-time parsing which can significantly improve performance for working with large models under some circumstances (:issue:`529`).
+
+
+1.5 Releases
+============
+
+1.5.0
+--------------
+**Features Added**
+
+* Added ``HalfSpace.replace`` to swap dividers in a cell geometry tree, and ``HalfSpace.__iter__`` to traverse geometry leaves (:issue:`737`).
+* Added :func:`~montepy.Cell.is_mass_dens` as the logical complement of :func:`~montepy.Cell.is_atom_dens`, returning ``None`` when no density is set (:issue:`964`).
+* Added support for the ``in`` operator on comments, so a comment's text can be searched with e.g. ``"keyword" in comment`` (:issue:`185`).
+* Added :class:`~montepy.comments.CommentCollection`, now returned by ``comments`` and ``leading_comments``, so an object can be found by its comments with e.g. ``"keyword" in cell.comments``, or searched by regular expression with ``cell.comments.search`` (:issue:`185`).
+
+**Bugs Fixed**
+
+* Fixed parsing of multiply shortcuts in universe data cards such as ``1 8M`` (:pull:`975`).
+* Fixed ``leading_comments`` crashing when set with more than one comment (:pull:`972`).
+* Fixed bug where values for user generated objects would be rounded off at five digits no matter what. This will now round off at 15 digits if necessary (:issue:`962`).
+
+**Performance Improvement**
+
+* Fixed ``_ExceptionContextAdder`` wrapping every method and property, including private and dunder ones, in a try/except due to a missing ``continue``, and reduced ``MCNP_Object.__setattr__`` from two class lookups to one (:issue:`990`).
+
+1.4 releases
+============
+
+1.4.0
 --------------
 
 **Feature Added**
@@ -24,7 +61,6 @@ MontePy Changelog
 **Bugs Fixed**
 
 * Fixed a bug where surface type mnemonics (e.g. ``SO``, ``PZ``) were always written in uppercase, discarding the original case supplied by the user (e.g. ``sO``, ``Pz``) (:issue:`522`).
-
 * Fixed a bug where ``append_renumber`` raised a ``TypeError`` when called with an object whose ``number`` is ``None`` (e.g. an object created with no arguments) (:issue:`880`).
 * Fixed a bug where the importance of cells made from scratch are usually not printed to the output file (:pull:`921`).
 
@@ -66,10 +102,6 @@ MontePy Changelog
 
 1.2.0
 -----
-
-**Performance Improvement**
-
-* Optimized :math:`\mathcal{O}(N^2)` scaling in :func:`~montepy.numbered_object_collection.NumberedObjectCollection.request_number` by improving ``NumberedObjectCollection.check_number`` to :math:`\mathcal{O}(N)` (:issue:`786`). 
 
 **Features Added**
 
@@ -146,7 +178,6 @@ MontePy Changelog
 **Features Added**
 
 * Added demonstration jupyter notebooks for working with Pin Cell and PWR assemblies in MontePy.
-* Add _checkvalue.py_ to codebase (:issue:`687`). 
 
 **Bugs Fixed**
 
@@ -174,13 +205,6 @@ MontePy Changelog
 
 1.0 releases
 ============
-
-#Next Version#
---------------
-
-**Code Improvements**
-
-* Add _checkvalue.py_ to codebase (:issue:`687`). 
 
 
 1.0.0

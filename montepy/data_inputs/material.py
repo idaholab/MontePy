@@ -284,7 +284,7 @@ class Material(data_input.DataInputAbstract, Numbered_MCNP_Object):
             * Added ability to search by Nuclide
             * Added Support for default libraries (e.g., ``nlib=80c``).
 
-    .. versionchanged:: 1.5.0
+    .. versionchanged:: 1.6.0b1
 
         Added ``jit_parse`` parameter
 
@@ -776,7 +776,7 @@ See <https://www.montepy.org/migrations/migrate0_1.html> for more information ""
 
         Parameters
         ----------
-        *nuclides : Nuclide | Nucleus | Element | str | int
+        *nuclides : NuclideLike
             a plurality of nuclides to check for.
         threshold : float
             the minimum concentration of a nuclide to be considered. The
@@ -841,7 +841,7 @@ See <https://www.montepy.org/migrations/migrate0_1.html> for more information ""
 
         Parameters
         ----------
-        *nuclides : Nuclide | Nucleus | Element | str | int
+        *nuclides : NuclideLike
             a plurality of nuclides to check for.
         threshold : float
             the minimum concentration of a nuclide to be considered. The
@@ -1413,7 +1413,11 @@ See <https://www.montepy.org/migrations/migrate0_1.html> for more information ""
     def _has_classifier():
         return 0
 
-    def comp_str(self):
+    @needs_full_ast
+    def comp_str(self) -> str:
+        """
+        Creates a string representation of the material and its components.
+        """
         ret = f"MATERIAL: {self.number} fractions: "
         if self.is_atom_fraction:
             ret += "atom\n"
@@ -1428,7 +1432,10 @@ See <https://www.montepy.org/migrations/migrate0_1.html> for more information ""
         return ret
 
     @needs_full_ast
-    def pretty_str(self):
+    def pretty_str(self) -> str:
+        """
+        Returns a string of the material, and a summary of the elements in it.
+        """
         elements = self.get_material_elements()
         print_el = []
         if len(elements) > MAX_PRINT_ELEMENTS:

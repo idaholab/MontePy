@@ -2,6 +2,7 @@
 import hypothesis
 from hypothesis import given, settings, strategies as st
 import copy
+import io
 import itertools as it
 
 import montepy
@@ -13,7 +14,8 @@ import os
 
 class TestNumberedObjectCollection:
 
-    @pytest.fixture(scope="class")
+    @pytest.fixture
+    @classmethod
     def read_simple_problem(_):
         return montepy.read_input(os.path.join("tests", "inputs", "test.imcnp"))
 
@@ -819,7 +821,8 @@ class TestNumberedObjectCollection:
 
 class TestMaterials:
 
-    @pytest.fixture(scope="class")
+    @pytest.fixture
+    @classmethod
     def m0_prob(_):
         return montepy.read_input(
             os.path.join("tests", "inputs", "test_importance.imcnp")
@@ -990,3 +993,36 @@ class TestMaterials:
             assert new_mat.number == starting_num
         else:
             assert (new_mat.number - starting_num) % step == 0
+
+    def test_materials_append_resolves_queued_tsl(_):
+        materials = montepy.materials.Materials()
+        mt = montepy.data_inputs.thermal_scattering.ThermalScatteringLaw(
+            "MT1 lwtr.23t"
+        )
+        materials.append(mt)
+        assert 1 in materials._tsl_queue
+        mat = montepy.Material("M1 1001.80c 1.0")
+        materials.append(mat)
+        assert 1 not in materials._tsl_queue
+        assert mat.thermal_scattering is mt
+
+    def test_material_renumber_updates_cell_material_reference(_):
+        in_str = """Test problem
+1 5 1.0 -1 imp:n=1
+2 0 1
+
+1 SO 5.0
+
+M5 1001.80c 1.0
+"""
+        with io.StringIO(in_str) as fh:
+            problem = montepy.read_input(fh, jit_parse=True)
+        mat = problem.materials[5]
+        cell = problem.cells[1]
+        # rename before ever touching cell.material, so the only way it can
+        # still resolve to the right object afterward is via
+        # NumberedObjectCollection.search_parent_objs_by_child using
+        # Material._parent_collections.
+        mat.number = 7
+        assert cell.material is mat
+        assert cell.material.number == 7

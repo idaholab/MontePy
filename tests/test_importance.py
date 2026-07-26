@@ -284,6 +284,35 @@ class TestImportance:
         with pytest.raises(MalformedInputError):
             imp1.merge(imp2)
 
+    def test_importance_merge_self_still_jit(self):
+        # self still JIT, other already fully parsed: merge must fully
+        # parse self first before merging other in.
+        imp1 = Importance("IMP:N,P 1 0")
+        imp2 = Importance("IMP:E 0 0", jit_parse=False)
+        assert not imp1.fully_parsed
+        imp1.merge(imp2)
+        assert imp1.fully_parsed
+        assert Particle.ELECTRON in imp1
+
+    def test_importance_merge_defers_when_both_jit(self):
+        # both self and other still JIT: merge is deferred onto _inputs
+        # rather than forcing a parse, and _original_lines() surfaces the
+        # queued input's raw lines alongside self's own.
+        imp1 = Importance("IMP:N 1")
+        imp2 = Importance("IMP:P 1")
+        imp1.merge(imp2)
+        assert imp1._inputs == [imp2]
+        assert imp1._original_lines() == ["IMP:N 1", "IMP:P 1"]
+
+    def test_importance_format_skips_untracked_combo_particle(self):
+        # a particle listed in _part_combos that isn't actually tracked in
+        # _particle_importances (e.g. because it was filtered out
+        # elsewhere) must be skipped, not raise a KeyError.
+        cell = Cell("1 0 -1 imp:n=1", jit_parse=False)
+        imp = cell.importance
+        imp._part_combos = [{Particle.NEUTRON, Particle.PHOTON}]
+        assert imp._format_tree() == "imp:n=1"
+
     def test_redundant_importance(self):
         with pytest.raises(MalformedInputError):
             montepy.read_input(

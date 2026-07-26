@@ -1,4 +1,4 @@
-from collections.abc import Iterable, Callable
+from collections.abc import Iterable, Callable, Sequence
 from numbers import Real, Integral
 from typing import Annotated, Self, TypeAlias
 
@@ -9,6 +9,8 @@ def positive(func_name, name, x):
     r"""
     A higher-order function to be used with ``args_checked`` to ensure a value is positive,
     i.e., :math:`x\gt 0`.
+
+    .. versionadded:: 1.6.0b1
 
     Example
     ^^^^^^^
@@ -32,6 +34,8 @@ def negative(func_name, name, x):
     A higher-order function to be used with ``args_checked`` to ensure a value is negative,
     i.e., :math:`x\lt 0`.
 
+    .. versionadded:: 1.6.0b1
+
     Example
     ^^^^^^^
 
@@ -53,6 +57,8 @@ def non_positive(func_name, name, x):
     r"""
     A higher-order function to be used with ``args_checked`` to ensure a value is non-positive,
     i.e., :math:`x\leq 0`.
+
+    .. versionadded:: 1.6.0b1
 
     Example
     ^^^^^^^
@@ -76,6 +82,8 @@ def non_negative(func_name, name, x):
     A higher-order function to be used with ``args_checked`` to ensure a value is non-negative,
     i.e., :math:`x\geq 0`.
 
+    .. versionadded:: 1.6.0b1
+
     Example
     ^^^^^^^
 
@@ -96,6 +104,8 @@ def non_negative(func_name, name, x):
 def less_than(maximum: Real, equality=False):
     r"""
     A higher-order function for use with ``args_checked`` to enforce a value being less than a value.
+
+    .. versionadded:: 1.6.0b1
 
 
     Examples
@@ -130,6 +140,8 @@ def greater_than(minimum: Real, equality: bool = False):
     r"""
     A higher-order function for use with ``args_checked`` to enforce a value being greater than a value.
 
+    .. versionadded:: 1.6.0b1
+
 
     Examples
     ^^^^^^^^
@@ -162,34 +174,48 @@ def greater_than(minimum: Real, equality: bool = False):
 PositiveInt: TypeAlias = Annotated[Integral, positive]
 r"""
 An integer that is positive, i.e., a member of the set :math:`\mathbb{Z}_{\gt0}`.
+
+.. versionadded:: 1.6.0b1
 """
 
 NegativeInt: TypeAlias = Annotated[Integral, negative]
 r"""
 An integer that is negative, i.e., a member of the set :math:`\mathbb{Z}_{\lt0}`.
+
+.. versionadded:: 1.6.0b1
 """
 
 NonNegativeInt: TypeAlias = Annotated[Integral, non_negative]
 r"""
 An integer that is non-negative, i.e., a member of the set :math:`\mathbb{Z}_{\geq0}`.
+
+.. versionadded:: 1.6.0b1
 """
 
 PositiveReal: TypeAlias = Annotated[Real, positive]
 r"""
 A real number that is positive, i.e., a member of the set :math:`\mathbb{R}_{\gt0}`.
+
+.. versionadded:: 1.6.0b1
 """
 
 NegativeReal: TypeAlias = Annotated[Real, negative]
 r"""
 A real number that is negative, i.e., a member of the set :math:`\mathbb{R}_{\lt0}`.
+
+.. versionadded:: 1.6.0b1
 """
 
 NonNegativeReal: TypeAlias = Annotated[Real, non_negative]
 r"""
 A real number that is not negative, i.e., a member of the set :math:`\mathbb{R}_{\geq0}`.
+
+.. versionadded:: 1.6.0b1
 """
 
 VersionType: TypeAlias = tuple[PositiveInt, NonNegativeInt, NonNegativeInt]
 r"""
 A 3-tuple of ``(major, minor, patch)`` version integers.
+
+.. versionadded:: 1.6.0b1
 """

@@ -48,8 +48,6 @@ For more complex types, `typing.Union <https://docs.python.org/3/library/typing.
    def bar(a: Integral | str):
        pass
 
-In this case for both ``foo`` and ``bar`` the type for ``a`` is the exact same.
-
 .. Note::
 
    The pipe syntax is preferred for specifying ``typing.Union``, e.g., ``Integral | str``.
@@ -59,7 +57,7 @@ In this case for both ``foo`` and ``bar`` the type for ``a`` is the exact same.
    When working with numbers avoid using the types ``float`` and ``int``.
    An ``int`` can substitute for a ``float`` in almost all cases, and
    sometimes libraries, like numpy, provide their own equivalent types.
-   Rather you should the `numbers <https://docs.python.org/3/library/numbers.html>`_ package instead.
+   Rather you should use the `numbers <https://docs.python.org/3/library/numbers.html>`_ package instead.
    Specifically ``numbers.Real`` and ``numbers.Integral`` are the most commonly used types in
    MontePy.
 

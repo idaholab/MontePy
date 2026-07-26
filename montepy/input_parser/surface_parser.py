@@ -56,6 +56,7 @@ class SurfaceParser(MCNP_Parser):
 
 
 class JitSurfParser:
+    """A lightweight surface parser that extracts only the surface number and type for JIT parsing."""
 
     @staticmethod
     def parse(tokenizer: typing.Generator[Token, None, None]):

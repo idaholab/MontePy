@@ -60,7 +60,27 @@ def _extract_trailing_from_input(raw_input):
     padding = PaddingNode()
     for line in comment_lines:
         padding.append(line, is_comment=True)
+        padding.append("\n")
     return padding.nodes if padding.nodes else None
+
+
+def _prepend_comment_to_input(raw_input, nodes):
+    """Prepend previously-extracted trailing comment nodes onto an input's
+    raw lines, for an object that has not been fully parsed yet.
+
+    This lets the comment become part of the object's own ``start_pad``
+    naturally, once it is eventually fully parsed, instead of requiring
+    tree surgery on a JIT stub that doesn't have a ``start_pad`` yet.
+    """
+    from montepy.input_parser.syntax_node import PaddingNode
+
+    padding = PaddingNode()
+    padding._nodes = list(nodes)
+    text = padding.format()
+    comment_lines = text.split("\n")
+    if comment_lines and comment_lines[-1] == "":
+        comment_lines.pop()
+    raw_input._input_lines = comment_lines + list(raw_input.input_lines)
 
 
 class MCNP_Problem:
@@ -507,20 +527,23 @@ class MCNP_Problem:
                         obj_tree, "nodes", {}
                     )
                     # In JIT mode, trailing comments may not be in the JIT tree;
-                    # fall back to extracting them from raw input lines.
-                    if (
-                        trailing_comment is None
-                        and last_input is not None
-                        and has_start_pad
-                    ):
+                    # fall back to extracting them from raw input lines. This
+                    # doesn't depend on obj's own tree, only on last_input's
+                    # raw lines, so it must not be gated on has_start_pad.
+                    used_fallback = False
+                    if trailing_comment is None and last_input is not None:
                         trailing_comment = _extract_trailing_from_input(last_input)
-                    if (
-                        trailing_comment is not None
-                        and last_obj is not None
-                        and has_start_pad
-                    ):
-                        obj._grab_beginning_comment(trailing_comment, last_obj)
-                        last_obj._tree._delete_trailing_comment()
+                        used_fallback = trailing_comment is not None
+                    if trailing_comment is not None and last_obj is not None:
+                        if has_start_pad:
+                            obj._grab_beginning_comment(trailing_comment, last_obj)
+                        else:
+                            # obj hasn't been fully parsed yet (JIT stub); stash
+                            # the comment on its raw lines so its own eventual
+                            # full parse picks it up as its start_pad naturally.
+                            _prepend_comment_to_input(input, trailing_comment)
+                        if not used_fallback:
+                            last_obj._tree._delete_trailing_comment()
                         trailing_comment = None
                     if obj_tree is not None:
                         trailing_comment = obj_tree.get_trailing_comment()
@@ -553,7 +576,7 @@ class MCNP_Problem:
         for collect_type in self._NUMBERED_OBJ_MAP.values():
             try:
                 attr_name = f"_{collect_type.__name__.lower()}"
-                getattr(self, attr_name).finalize_init()
+                getattr(self, attr_name).finalize_init(jit_parse=jit_parse)
             except (BrokenObjectLinkError, MalformedInputError) as e:
                 handle_error(e)
         if jit_parse:
@@ -738,22 +761,6 @@ class MCNP_Problem:
             warning = LineExpansionWarning(message)
             warnings.warn(warning, stacklevel=3)
 
-    def _get_leading_comment(self, obj):
-        if isinstance(obj, Cell):
-            return self.cells._get_leading_comment(obj)
-        if isinstance(obj, surface.Surface):
-            return self.surfaces._get_leading_comment(obj)
-        # data inputs now
-        try:
-            idx = self.data_inputs.index(obj)
-            if idx <= 0:
-                return None
-            comment = self.data_inputs[idx - 1].trailing_comment
-            self.data_inputs[idx - 1]._delete_trailing_comment()
-            return comment
-        except ValueError as e:
-            raise ValueError(f"Object: {obj} is not part of this problem.") from e
-
     def __load_data_inputs_to_object(self, data_inputs):
         """Loads data input into their appropriate problem attribute.
 
@@ -779,7 +786,9 @@ class MCNP_Problem:
 
     @args_checked
     def parse(
-        self, input: str, append: bool = True, *, jit_parse: bool = True
+        self,
+        input: str,
+        append: bool = True,
     ) -> montepy.mcnp_object.MCNP_Object:
         """Parses the MCNP object given by the string, and links it adds it to this problem.
 
@@ -792,7 +801,7 @@ class MCNP_Problem:
         This is done mostly for optimization to go from easiest parsing to hardest.
         This will:
 
-        #. Parse the input
+        #. Parse the input (fully)
         #. Link it to other objects in the problem. Note: this will raise an error if those objects don't exist.
         #. Append it to the appropriate collection
 
@@ -803,7 +812,6 @@ class MCNP_Problem:
             this does not need to meet MCNP line length rules.
         append : bool
             Whether to append this parsed object to this problem.
-        TODO
 
         Returns
         -------
@@ -844,9 +852,17 @@ class MCNP_Problem:
         return obj
 
     def full_parse(self):
+        """
+        Trigger a full parse for all objects in this problem.
+
+        .. note::
+
+            For large models this could be a very expensive operation.
+
+        .. versionadded:: 1.6.0b1
+
+        """
         for collection in [self.cells, self.surfaces, self.data_inputs]:
             for obj in collection:
                 obj.full_parse()
-        self.cells.update_pointers(
-            self.cells, self.materials, self.surfaces, self.data_inputs, self
-        )
+        self.__update_internal_pointers(jit_parse=False)

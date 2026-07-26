@@ -24,10 +24,10 @@ import montepy.types as ty
 class _ClassifierInput(Input):
     """A specialized subclass that returns only 1 useful token."""
 
-    def tokenize(self):
+    def tokenize(self, lexer_class=None):
         """Returns one token after all starting comments and spaces."""
         last_in_comment = True
-        for token in super().tokenize():
+        for token in super().tokenize(lexer_class=lexer_class):
             if token is None:
                 break
             if last_in_comment:
@@ -42,7 +42,7 @@ class _ClassifierInput(Input):
 class DataInputAbstract(MCNP_Object):
     """Parent class to describe all MCNP data inputs.
 
-    .. versionchanged:: 1.5.0
+    .. versionchanged:: 1.6.0b1
 
         Added ``jit_parse`` parameter
 
@@ -345,7 +345,7 @@ class DataInputAbstract(MCNP_Object):
 class DataInput(DataInputAbstract):
     """Catch-all for all other MCNP data inputs.
 
-    .. versionchanged:: 1.5.0
+    .. versionchanged:: 1.6.0b1
 
         Added ``jit_parse`` parameter
 
@@ -362,6 +362,8 @@ class DataInput(DataInputAbstract):
         Parse the object just-in-time, when the information is actually needed, if True.
     """
 
+    _KEYS_TO_PRESERVE = {"_prefix"}
+
     @args_checked
     def __init__(
         self,
@@ -371,6 +373,10 @@ class DataInput(DataInputAbstract):
         prefix: str = None,
         jit_parse: bool = True,
     ):
+        # When re-initializing from full_parse(), _prefix is already set from the
+        # JIT pass; reuse it so _load_correct_parser selects the right parser.
+        if prefix is None and hasattr(self, "_prefix"):
+            prefix = self._prefix
         if prefix:
             self._load_correct_parser(prefix)
         super().__init__(input, fast_parse, jit_parse=jit_parse)
@@ -402,7 +408,7 @@ class DataInput(DataInputAbstract):
             "sdef": PARAM_PARSER,
         }
         if prefix.lower() in PARSER_PREFIX_MAP:
-            self._parser = PARSER_PREFIX_MAP[prefix.lower()]()
+            self._parser = PARSER_PREFIX_MAP[prefix.lower()]
 
     def __str__(self):
         return super().__str__() + f": {self.classifier.prefix.value}"
@@ -416,7 +422,7 @@ class ForbiddenDataInput(DataInputAbstract):
     * ``DE``
     * ``SDEF``
 
-    .. versionchanged:: 1.5.0
+    .. versionchanged:: 1.6.0b1
 
         Added ``jit_parse`` parameter
 

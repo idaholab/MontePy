@@ -69,3 +69,4 @@ Nearly all classes that are necessary are now implemented.
    devguide/collections_dev
    devguide/cell_modifier
    devguide/pointers_generators
+

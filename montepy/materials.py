@@ -43,10 +43,6 @@ class Materials(NumberedDataObjectCollection):
         the list of materials to start with if needed
     """
 
-    @staticmethod
-    def _parent_collections():
-        return ("cells", "material", False)
-
     @args_checked
     def __init__(
         self, objects: list[Material] = None, problem: montepy.MCNP_Problem = None
@@ -60,16 +56,17 @@ class Materials(NumberedDataObjectCollection):
             if obj.number in self._tsl_queue:
                 tsl = self._tsl_queue.pop(obj.number)
                 tsl._link_to_parent(obj)
-                obj.thermal_scattering = tsl
+                obj._thermal_scattering = tsl
             super().append(obj, **kwargs)
         elif isinstance(obj, montepy.ThermalScatteringLaw):
             try:
-                obj._link_to_parent(self[obj.old_number])
-                self[obj.old_number].thermal_scattering = obj
+                mat = self[obj._old_number.value]
+                obj._link_to_parent(mat)
+                mat._thermal_scattering = obj
             except KeyError:
-                self._tsl_queue[obj.old_number] = obj
+                self._tsl_queue[obj._old_number.value] = obj
 
-    def finalize_init(self):
+    def finalize_init(self, jit_parse: bool = False):
         # Raise error for unflushed connection
         for num, tsl in self._tsl_queue.items():
             raise MalformedInputError(

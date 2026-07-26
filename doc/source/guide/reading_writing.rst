@@ -54,6 +54,37 @@ For large problems these can be a significant one-time cost.
   to be fully re-parsed, because each cell's syntax tree must be rebuilt to either
   absorb or expel the modifier.
 
+* **Accessing generators pointing back to parent objects does not trigger mass parsing**.
+  MontePy has a number of object properties, which are generators, that list parent objects that use the given object.
+  For instance :meth:`montepy.Surface.cells` lists all of the cells that use the given surface.
+  To determine if a cell uses a given surface a full parse is necessary.
+  However, using these generators will not trigger a parsing of every cell.
+  Instead, the :meth:`~montepy.Cell.search` method is used to search for the surface's number first.
+  This reduces the number of cells that need to be fully parsed to only to those which have the exact number of the surface somewhere in their definition.
+  For long surface numbers this should yield very few false positives.
+
+
+Avoid Mass Parsing with ``search``
+""""""""""""""""""""""""""""""""""
+
+All objects will have the :meth:`~montepy.mcnp_object.MCNP_Object.search` method.
+This will search the object for the given string in its input from the file,
+without triggering a full parse.
+This can be used to avoid a mass parse when searching on a specific attribute.
+For instance you could try the following to find all cells with a density of :math:`8.912 \rm \frac{g}{cm^3}`.
+
+.. testcode::
+
+   import math
+
+   TEST_DENSITY = 8.912
+
+   matching_cells = []
+   for cell in problem.cells:
+       if cell.search(str(TEST_DENSITY)) and not cell.is_atom_dens:
+           if math.isclose(cell.mass_density, TEST_DENSITY):
+               matching_cells.append(cell)
+
 
 Writing a File
 --------------

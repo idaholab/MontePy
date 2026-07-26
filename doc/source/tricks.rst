@@ -40,7 +40,7 @@ Getting Highest PZ plane
 .. doctest::
 
     >>> max(surfaces.pz, key = lambda x: x.location)
-    ZPlane('1025 PZ 15\nC --- one surface of every remaining type ---\nC Planes', number=1025, jit_parse=False)
+    ZPlane('1025 PZ 15', number=1025, jit_parse=False)
 
 Getting the Lowest PZ plane
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~
