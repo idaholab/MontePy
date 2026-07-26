@@ -828,6 +828,23 @@ def test_surface_dispatch_peek_failure_fallback(monkeypatch):
     )
 
 
+def test_surface_dispatch_peek_failure_undispatched_type_full_parse(monkeypatch):
+    """A JIT peek failure on a surface type with no specific/generic dispatch
+    class (e.g. axisymmetric-by-points "X") must fall back to a plain
+    Surface, and when jit_parse=False is requested it must be fully parsed
+    rather than left as a JIT stub."""
+
+    def broken_peek(cls, input):
+        raise RuntimeError("simulated JIT peek failure")
+
+    monkeypatch.setattr(
+        montepy.surfaces.surface.Surface, "_peek_light_parse", classmethod(broken_peek)
+    )
+    surf = surface_builder("1 X 1 2 3 4", jit_parse=False)
+    assert type(surf) is montepy.surfaces.surface.Surface
+    assert surf.fully_parsed
+
+
 # Scalar property tests: (surf_str, prop, expected_val, new_val, rejects_negative)
 # rejects_negative=True means the property has a positive-value validator.
 _SCALAR_PROPS = [
