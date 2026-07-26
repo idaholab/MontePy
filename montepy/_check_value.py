@@ -336,7 +336,6 @@ def check_type(
             candidates = [arg for arg in args if _union_shape_matches(value, arg)]
             if not candidates:
                 raise_error()
-                return
             if len(candidates) == 1:
                 check_type_and_value(
                     func_name, name, value, candidates[0], none_ok=none_ok
