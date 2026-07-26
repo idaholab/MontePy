@@ -56,7 +56,7 @@ class Volume(CellModifierInput):
         tree = self._tree
         if "parameters" in tree:
             raise MalformedInputError(
-                input, f"Volume card can't accept any key-value parameters"
+                self._input, f"Volume card can't accept any key-value parameters"
             )
         if (
             "keyword" in tree

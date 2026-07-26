@@ -238,6 +238,11 @@ def test_volume_init_data():
     input_card = Input([in_str], BlockType.DATA)
     with pytest.raises(MalformedInputError):
         vol_card = parse_data(input_card, jit_parse=False)
+    # key-value parameters aren't allowed on a VOL data card
+    in_str = "VOL 1.0 key=val"
+    input_card = Input([in_str], BlockType.DATA)
+    with pytest.raises(MalformedInputError):
+        vol_card = parse_data(input_card, jit_parse=False)
 
 
 def test_volumes_for_only_some_cells():
