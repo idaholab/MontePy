@@ -176,7 +176,7 @@ class Transform(data_input.DataInputAbstract, Numbered_MCNP_Object):
     @displacement_vector.setter
     @needs_full_cst
     @args_checked
-    def displacement_vector(self, vector: np.ndarray[float]):
+    def displacement_vector(self, vector: np.ndarray[ty.Real]):
         if len(vector) != 3:
             raise ValueError("displacement_vector must have three components")
         self._displacement_vector = vector
@@ -195,7 +195,7 @@ class Transform(data_input.DataInputAbstract, Numbered_MCNP_Object):
     @rotation_matrix.setter
     @needs_full_cst
     @args_checked
-    def rotation_matrix(self, matrix: np.ndarray[float]):
+    def rotation_matrix(self, matrix: np.ndarray[ty.Real]):
         if len(matrix) < 5 or len(matrix) > 9:
             raise ValueError("rotation_matrix must have between 5 and 9 components.")
         self._rotation_matrix = matrix
