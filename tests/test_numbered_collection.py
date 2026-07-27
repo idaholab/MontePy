@@ -996,9 +996,7 @@ class TestMaterials:
 
     def test_materials_append_resolves_queued_tsl(_):
         materials = montepy.materials.Materials()
-        mt = montepy.data_inputs.thermal_scattering.ThermalScatteringLaw(
-            "MT1 lwtr.23t"
-        )
+        mt = montepy.data_inputs.thermal_scattering.ThermalScatteringLaw("MT1 lwtr.23t")
         materials.append(mt)
         assert 1 in materials._tsl_queue
         mat = montepy.Material("M1 1001.80c 1.0")

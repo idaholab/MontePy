@@ -323,9 +323,7 @@ class TestFill:
         self.simple_fill = Fill(in_cell_block=True, key="fill", value=tree)
 
     def test_universes_detached_from_problem_raises(self):
-        cell = Cell(
-            "1 0 -1 lat=1 fill= 0:1 0:1 0:0 1 0 1", jit_parse=False
-        )
+        cell = Cell("1 0 -1 lat=1 fill= 0:1 0:1 0:0 1 0 1", jit_parse=False)
         fill = cell.fill
         assert fill.multiple_universes
         assert fill._problem is None
